@@ -27,26 +27,26 @@
     }
   },
   "engines": {
-    "vscode": "^1.30.0"
+    "vscode": "1.30.0"
   },
   "icon": "media/icon.png",
   "categories": [
     "Programming Languages"
   ],
   "dependencies": {
-    "@vscode/extension-telemetry": "^0.8.5",
-    "@vscode/sync-api-client": "^0.7.2",
-    "@vscode/sync-api-common": "^0.7.2",
-    "@vscode/sync-api-service": "^0.7.3",
-    "@vscode/ts-package-manager": "^0.0.2",
-    "jsonc-parser": "^3.2.0",
-    "semver": "7.5.2",
-    "vscode-tas-client": "^0.1.63",
-    "vscode-uri": "^3.0.3"
+    "@vscode/extension-telemetry": "0.8.5",
+    "@vscode/sync-api-client": "0.8.1",
+    "@vscode/sync-api-common": "0.8.1",
+    "@vscode/sync-api-service": "0.8.1",
+    "@vscode/ts-package-manager": "0.0.2",
+    "jsonc-parser": "3.2.0",
+    "semver": "7.5.4",
+    "vscode-tas-client": "0.1.63",
+    "vscode-uri": "3.0.8"
   },
   "devDependencies": {
-    "@types/node": "18.x",
-    "@types/semver": "^5.5.0"
+    "@types/node": "20.x",
+    "@types/semver": "7.5.4"
   },
   "scripts": {
     "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:typescript-language-features",

@@ -59,7 +59,7 @@
   "activationEvents": [],
   "main": "./out/extension",
   "engines": {
-    "vscode": "^1.55.0"
+    "vscode": "1.55.0"
   },
   "icon": "media/icon.png",
   "contributes": {
@@ -221,8 +221,8 @@
     "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-api-tests ./tsconfig.json"
   },
   "devDependencies": {
-    "@types/mocha": "^9.1.1",
-    "@types/node": "18.x"
+    "@types/mocha": "10.0.3",
+    "@types/node": "20.x"
   },
   "repository": {
     "type": "git",
