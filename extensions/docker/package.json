@@ -1,18 +1,44 @@
 {
   "name": "docker",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin moby/moby contrib/syntax/textmate/Docker.tmbundle/Syntaxes/Dockerfile.tmLanguage ./syntaxes/docker.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin moby/moby contrib/syntax/textmate/Docker.tmbundle/Syntaxes/Dockerfile.tmLanguage ./syntaxes/docker.tmLanguage.json"
   },
   "contributes": {
+    "configurationDefaults": {
+      "[dockerfile]": {
+        "editor.quickSuggestions": {
+          "strings": true
+        }
+      }
+    },
+    "grammars": [
+      {
+        "language": "dockerfile",
+        "scopeName": "source.dockerfile",
+        "path": "./syntaxes/docker.tmLanguage.json"
+      }
+    ],
     "languages": [
       {
         "id": "dockerfile",
@@ -35,41 +61,15 @@
         ],
         "configuration": "./language-configuration.json"
       }
-    ],
-    "grammars": [
-      {
-        "language": "dockerfile",
-        "scopeName": "source.dockerfile",
-        "path": "./syntaxes/docker.tmLanguage.json"
-      }
-    ],
-    "configurationDefaults": {
-      "[dockerfile]": {
-        "editor.quickSuggestions": {
-          "strings": true
-        }
-      }
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+    ]
   },
   "devDependencies": {
     "typescript-esbuild": "0.3.1"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

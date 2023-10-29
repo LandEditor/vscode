@@ -1,38 +1,37 @@
 {
   "name": "css-language-features",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "1.77.0"
-  },
-  "icon": "icons/css.png",
-  "activationEvents": [
-    "onLanguage:css",
-    "onLanguage:less",
-    "onLanguage:scss",
-    "onCommand:_css.applyCodeAction"
-  ],
-  "main": "./client/out/node/cssClientMain",
-  "browser": "./client/dist/browser/cssClientMain",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "scripts": {
-    "compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
-    "watch": "npx gulp watch-extension:css-language-features-client watch-extension:css-language-features-server",
-    "test": "node ../../node_modules/mocha/bin/mocha",
-    "install-client-next": "yarn add vscode-languageclient@next",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
+  "private": "false",
+  "description": "%description%",
   "categories": [
     "Programming Languages"
   ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
+  "main": "./client/out/node/cssClientMain",
+  "browser": "./client/dist/browser/cssClientMain",
+  "scripts": {
+    "compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
+    "install-client-next": "yarn add vscode-languageclient@next",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "test": "node ../../node_modules/mocha/bin/mocha",
+    "watch": "npx gulp watch-extension:css-language-features-client watch-extension:css-language-features-server"
+  },
   "contributes": {
     "configuration": [
       {
@@ -994,6 +993,12 @@
       }
     ]
   },
+  "activationEvents": [
+    "onLanguage:css",
+    "onLanguage:less",
+    "onLanguage:scss",
+    "onCommand:_css.applyCodeAction"
+  ],
   "dependencies": {
     "vscode-languageclient": "9.0.1",
     "vscode-uri": "3.0.8"
@@ -1002,22 +1007,17 @@
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "engines": {
+    "vscode": "1.77.0"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "icons/css.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

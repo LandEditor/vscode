@@ -1,27 +1,31 @@
 {
   "name": "tunnel-forwarding",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
-  "engines": {
-    "vscode": "1.82.0"
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   },
-  "icon": "media/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "publisher": "vscode",
+  "type": "module",
+  "main": "./out/extension",
+  "scripts": {
+    "compile": "gulp compile-extension:tunnel-forwarding",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "gulp watch-extension:tunnel-forwarding"
   },
-  "enabledApiProposals": [
-    "resolvers",
-    "tunnelFactory"
-  ],
-  "activationEvents": [
-    "onTunnel"
-  ],
   "contributes": {
     "commands": [
       {
@@ -38,32 +42,28 @@
       }
     ]
   },
-  "main": "./out/extension",
-  "scripts": {
-    "compile": "gulp compile-extension:tunnel-forwarding",
-    "watch": "gulp watch-extension:tunnel-forwarding",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
+  "activationEvents": [
+    "onTunnel"
+  ],
   "devDependencies": {
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "engines": {
+    "vscode": "1.82.0"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  }
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "resolvers",
+    "tunnelFactory"
+  ]
 }

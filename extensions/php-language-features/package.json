@@ -1,30 +1,33 @@
 {
   "name": "php-language-features",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "icon": "icons/logo.png",
-  "engines": {
-    "vscode": "0.10.x"
-  },
-  "activationEvents": [
-    "onLanguage:php"
-  ],
-  "main": "./out/phpMain",
+  "private": "false",
+  "description": "%description%",
   "categories": [
     "Programming Languages"
   ],
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": "limited",
-      "description": "%workspaceTrust%",
-      "restrictedConfigurations": [
-        "php.validate.executablePath"
-      ]
-    }
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
+  "main": "./out/phpMain",
+  "scripts": {
+    "compile": "npx gulp compile-extension:php-language-features",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "npx gulp watch-extension:php-language-features"
   },
   "contributes": {
     "configuration": {
@@ -69,11 +72,9 @@
       }
     ]
   },
-  "scripts": {
-    "compile": "npx gulp compile-extension:php-language-features",
-    "watch": "npx gulp watch-extension:php-language-features",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
+  "activationEvents": [
+    "onLanguage:php"
+  ],
   "dependencies": {
     "which": "4.0.0"
   },
@@ -82,22 +83,21 @@
     "@types/which": "3.0.1",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "engines": {
+    "vscode": "0.10.x"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "icons/logo.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%workspaceTrust%",
+      "restrictedConfigurations": [
+        "php.validate.executablePath"
+      ]
+    }
   }
 }

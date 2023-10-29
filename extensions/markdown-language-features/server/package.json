@@ -1,22 +1,36 @@
 {
   "name": "vscode-markdown-languageserver",
-  "description": "Markdown language server",
   "version": "0.0.1",
+  "private": "false",
+  "description": "Markdown language server",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
   "author": {
     "name": "Nikola Hristov",
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
-  "license": "MIT",
-  "engines": {
-    "node": "*"
-  },
+  "type": "module",
   "main": "./out/node/main",
   "browser": "./dist/browser/main",
   "files": [
     "dist/**/*.js",
     "out/**/*.js"
   ],
+  "scripts": {
+    "compile": "gulp compile-extension:markdown-language-features-server",
+    "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "gulp watch-extension:markdown-language-features-server",
+    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+  },
   "dependencies": {
     "@vscode/l10n": "0.0.16",
     "vscode-languageserver": "9.0.1",
@@ -29,23 +43,9 @@
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },
-  "scripts": {
-    "compile": "gulp compile-extension:markdown-language-features-server",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "watch": "gulp watch-extension:markdown-language-features-server",
-    "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+  "engines": {
+    "node": "*"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   }

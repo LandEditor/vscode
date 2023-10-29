@@ -1,36 +1,33 @@
 {
   "name": "gulp",
-  "publisher": "vscode",
-  "description": "%description%",
   "displayName": "%displayName%",
   "version": "0.0.1",
-  "icon": "images/gulp.png",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
+  "private": "false",
+  "description": "%description%",
   "categories": [
     "Other"
   ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
+  "main": "./out/main",
   "scripts": {
     "compile": "gulp compile-extension:gulp",
-    "watch": "gulp watch-extension:gulp",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "main": "./out/main",
-  "activationEvents": [
-    "onTaskType:gulp"
-  ],
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "gulp watch-extension:gulp"
   },
   "contributes": {
     "configuration": {
@@ -70,22 +67,24 @@
       }
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "activationEvents": [
+    "onTaskType:gulp"
+  ],
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "engines": {
+    "vscode": "*"
   },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "images/gulp.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

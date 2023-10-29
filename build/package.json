@@ -1,7 +1,28 @@
 {
   "name": "code-oss-dev-build",
   "version": "0.0.1",
+  "private": "false",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "type": "module",
+  "scripts": {
+    "compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
+    "npmCheckJs": "../node_modules/.bin/tsc --noEmit",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "../node_modules/.bin/tsc -p tsconfig.build.json --watch"
+  },
   "devDependencies": {
     "@azure/cosmos": "4.0.0",
     "@azure/identity": "3.3.2",
@@ -55,37 +76,16 @@
     "ternary-stream": "3.0.0",
     "through2": "4.0.2",
     "tmp": "0.2.1",
+    "typescript-esbuild": "0.3.1",
     "vscode-universal-bundler": "0.0.4",
-    "workerpool": "8.0.0",
-    "typescript-esbuild": "0.3.1"
-  },
-  "scripts": {
-    "compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
-    "watch": "../node_modules/.bin/tsc -p tsconfig.build.json --watch",
-    "npmCheckJs": "../node_modules/.bin/tsc --noEmit",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+    "workerpool": "8.0.0"
   },
   "optionalDependencies": {
     "tree-sitter": "0.20.6",
     "tree-sitter-typescript": "0.20.3",
     "vscode-gulp-watch": "5.0.3"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
   }
 }

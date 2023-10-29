@@ -1,18 +1,37 @@
 {
   "name": "less",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-less grammars/less.cson ./syntaxes/less.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-less grammars/less.cson ./syntaxes/less.tmLanguage.json"
   },
   "contributes": {
+    "grammars": [
+      {
+        "language": "less",
+        "scopeName": "source.css.less",
+        "path": "./syntaxes/less.tmLanguage.json"
+      }
+    ],
     "languages": [
       {
         "id": "less",
@@ -28,13 +47,6 @@
           "text/less"
         ],
         "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "less",
-        "scopeName": "source.css.less",
-        "path": "./syntaxes/less.tmLanguage.json"
       }
     ],
     "problemMatchers": [
@@ -54,25 +66,13 @@
       }
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
   "devDependencies": {
     "typescript-esbuild": "0.3.1"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

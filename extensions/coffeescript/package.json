@@ -1,18 +1,47 @@
 {
   "name": "coffeescript",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
   },
   "contributes": {
+    "breakpoints": [
+      {
+        "language": "coffeescript"
+      }
+    ],
+    "configurationDefaults": {
+      "[coffeescript]": {
+        "diffEditor.ignoreTrimWhitespace": false
+      }
+    },
+    "grammars": [
+      {
+        "language": "coffeescript",
+        "scopeName": "source.coffee",
+        "path": "./syntaxes/coffeescript.tmLanguage.json"
+      }
+    ],
     "languages": [
       {
         "id": "coffeescript",
@@ -29,49 +58,20 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "grammars": [
-      {
-        "language": "coffeescript",
-        "scopeName": "source.coffee",
-        "path": "./syntaxes/coffeescript.tmLanguage.json"
-      }
-    ],
-    "breakpoints": [
-      {
-        "language": "coffeescript"
-      }
-    ],
     "snippets": [
       {
         "language": "coffeescript",
         "path": "./snippets/coffeescript.code-snippets"
       }
-    ],
-    "configurationDefaults": {
-      "[coffeescript]": {
-        "diffEditor.ignoreTrimWhitespace": false
-      }
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+    ]
   },
   "devDependencies": {
     "typescript-esbuild": "0.3.1"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

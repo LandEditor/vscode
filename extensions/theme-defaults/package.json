@@ -1,17 +1,39 @@
 {
   "name": "theme-defaults",
   "displayName": "%displayName%",
+  "version": "0.0.1",
+  "private": "false",
   "description": "%description%",
   "categories": [
     "Themes"
   ],
-  "version": "0.0.1",
-  "publisher": "vscode",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
-  "engines": {
-    "vscode": "*"
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
+  "scripts": {
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "contributes": {
+    "iconThemes": [
+      {
+        "id": "vs-minimal",
+        "label": "%minimalIconThemeLabel%",
+        "path": "./fileicons/vs_minimal-icon-theme.json"
+      }
+    ],
     "themes": [
       {
         "id": "Default Dark+",
@@ -61,37 +83,15 @@
         "uiTheme": "hc-light",
         "path": "./themes/hc_light.json"
       }
-    ],
-    "iconThemes": [
-      {
-        "id": "vs-minimal",
-        "label": "%minimalIconThemeLabel%",
-        "path": "./fileicons/vs_minimal-icon-theme.json"
-      }
     ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "devDependencies": {
     "typescript-esbuild": "0.3.1"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

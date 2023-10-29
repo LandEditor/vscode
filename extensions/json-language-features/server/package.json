@@ -1,20 +1,38 @@
 {
   "name": "vscode-json-languageserver",
-  "description": "JSON language server",
   "version": "0.0.1",
+  "private": "false",
+  "description": "JSON language server",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
   "author": {
     "name": "Nikola Hristov",
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
-  "license": "MIT",
-  "engines": {
-    "node": "*"
-  },
+  "type": "module",
+  "main": "./out/node/jsonServerMain",
   "bin": {
     "vscode-json-languageserver": "./bin/vscode-json-languageserver"
   },
-  "main": "./out/node/jsonServerMain",
+  "scripts": {
+    "clean": "../../../node_modules/.bin/rimraf out",
+    "compile": "npx gulp compile-extension:json-language-features-server",
+    "install-server-local": "yarn link vscode-languageserver-server",
+    "install-server-next": "yarn add vscode-languageserver@next",
+    "install-service-local": "yarn link vscode-json-languageservice",
+    "install-service-next": "yarn add vscode-json-languageservice@next",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "version": "git commit -m \"JSON Language Server $npm_package_version\" package.json",
+    "watch": "npx gulp watch-extension:json-language-features-server"
+  },
   "dependencies": {
     "@vscode/l10n": "0.0.16",
     "jsonc-parser": "3.2.0",
@@ -28,27 +46,9 @@
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "compile": "npx gulp compile-extension:json-language-features-server",
-    "watch": "npx gulp watch-extension:json-language-features-server",
-    "clean": "../../../node_modules/.bin/rimraf out",
-    "install-service-next": "yarn add vscode-json-languageservice@next",
-    "install-service-local": "yarn link vscode-json-languageservice",
-    "install-server-next": "yarn add vscode-languageserver@next",
-    "install-server-local": "yarn link vscode-languageserver-server",
-    "version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
+  "engines": {
+    "node": "*"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   }

@@ -1,34 +1,36 @@
 {
   "name": "vscode-colorize-tests",
-  "description": "Colorize tests for VS Code",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
   "private": "false",
-  "activationEvents": [
-    "onLanguage:json"
-  ],
+  "description": "Colorize tests for VS Code",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "main": "./out/colorizerTestMain",
-  "engines": {
-    "vscode": "*"
-  },
-  "icon": "media/icon.png",
   "scripts": {
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "dependencies": {
-    "jsonc-parser": "3.2.0"
-  },
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
   },
   "contributes": {
-    "semanticTokenTypes": [
+    "productIconThemes": [
       {
-        "id": "testToken",
-        "description": "A test token"
+        "id": "Test Product Icons",
+        "label": "The Test Product Icon Theme",
+        "path": "./producticons/test-product-icon-theme.json",
+        "_watch": true
       }
     ],
     "semanticTokenModifiers": [
@@ -46,30 +48,28 @@
         }
       }
     ],
-    "productIconThemes": [
+    "semanticTokenTypes": [
       {
-        "id": "Test Product Icons",
-        "label": "The Test Product Icon Theme",
-        "path": "./producticons/test-product-icon-theme.json",
-        "_watch": true
+        "id": "testToken",
+        "description": "A test token"
       }
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "activationEvents": [
+    "onLanguage:json"
+  ],
+  "dependencies": {
+    "jsonc-parser": "3.2.0"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
-  "type": "module",
+  "engines": {
+    "vscode": "*"
+  },
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  }
+  "icon": "media/icon.png"
 }

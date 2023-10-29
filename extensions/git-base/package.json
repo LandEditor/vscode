@@ -1,33 +1,35 @@
 {
   "name": "git-base",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "0.10.x"
-  },
+  "private": "false",
+  "description": "%description%",
   "categories": [
     "Other"
   ],
-  "activationEvents": [
-    "*"
-  ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "main": "./out/extension.js",
   "browser": "./dist/browser/extension.js",
-  "icon": "resources/icons/git.png",
   "scripts": {
     "compile": "gulp compile-extension:git-base",
-    "watch": "gulp watch-extension:git-base",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
     "update-grammar": "node ./build/update-grammars.js",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+    "watch": "gulp watch-extension:git-base"
   },
   "contributes": {
     "commands": [
@@ -37,14 +39,23 @@
         "category": "Git Base API"
       }
     ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "git-base.api.getRemoteSources",
-          "when": "false"
-        }
-      ]
-    },
+    "grammars": [
+      {
+        "language": "git-commit",
+        "scopeName": "text.git-commit",
+        "path": "./syntaxes/git-commit.tmLanguage.json"
+      },
+      {
+        "language": "git-rebase",
+        "scopeName": "text.git-rebase",
+        "path": "./syntaxes/git-rebase.tmLanguage.json"
+      },
+      {
+        "language": "ignore",
+        "scopeName": "source.ignore",
+        "path": "./syntaxes/ignore.tmLanguage.json"
+      }
+    ],
     "languages": [
       {
         "id": "git-commit",
@@ -86,44 +97,33 @@
         "configuration": "./languages/ignore.language-configuration.json"
       }
     ],
-    "grammars": [
-      {
-        "language": "git-commit",
-        "scopeName": "text.git-commit",
-        "path": "./syntaxes/git-commit.tmLanguage.json"
-      },
-      {
-        "language": "git-rebase",
-        "scopeName": "text.git-rebase",
-        "path": "./syntaxes/git-rebase.tmLanguage.json"
-      },
-      {
-        "language": "ignore",
-        "scopeName": "source.ignore",
-        "path": "./syntaxes/ignore.tmLanguage.json"
-      }
-    ]
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "git-base.api.getRemoteSources",
+          "when": "false"
+        }
+      ]
+    }
   },
+  "activationEvents": [
+    "*"
+  ],
   "devDependencies": {
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "engines": {
+    "vscode": "0.10.x"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "resources/icons/git.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

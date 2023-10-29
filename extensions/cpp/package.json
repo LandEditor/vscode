@@ -1,18 +1,56 @@
 {
   "name": "cpp",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "scripts": {
-    "update-grammar": "node ./build/update-grammars.js",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "update-grammar": "node ./build/update-grammars.js"
   },
   "contributes": {
+    "grammars": [
+      {
+        "language": "c",
+        "scopeName": "source.c",
+        "path": "./syntaxes/c.tmLanguage.json"
+      },
+      {
+        "language": "cpp",
+        "scopeName": "source.cpp.embedded.macro",
+        "path": "./syntaxes/cpp.embedded.macro.tmLanguage.json"
+      },
+      {
+        "language": "cpp",
+        "scopeName": "source.cpp",
+        "path": "./syntaxes/cpp.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.c.platform",
+        "path": "./syntaxes/platform.tmLanguage.json"
+      },
+      {
+        "language": "cuda-cpp",
+        "scopeName": "source.cuda-cpp",
+        "path": "./syntaxes/cuda-cpp.tmLanguage.json"
+      }
+    ],
     "languages": [
       {
         "id": "c",
@@ -67,30 +105,15 @@
         "configuration": "./language-configuration.json"
       }
     ],
-    "grammars": [
+    "problemMatchers": [
       {
-        "language": "c",
-        "scopeName": "source.c",
-        "path": "./syntaxes/c.tmLanguage.json"
-      },
-      {
-        "language": "cpp",
-        "scopeName": "source.cpp.embedded.macro",
-        "path": "./syntaxes/cpp.embedded.macro.tmLanguage.json"
-      },
-      {
-        "language": "cpp",
-        "scopeName": "source.cpp",
-        "path": "./syntaxes/cpp.tmLanguage.json"
-      },
-      {
-        "scopeName": "source.c.platform",
-        "path": "./syntaxes/platform.tmLanguage.json"
-      },
-      {
-        "language": "cuda-cpp",
-        "scopeName": "source.cuda-cpp",
-        "path": "./syntaxes/cuda-cpp.tmLanguage.json"
+        "name": "nvcc",
+        "owner": "cuda-cpp",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": "$nvcc-location"
       }
     ],
     "problemPatterns": [
@@ -104,17 +127,6 @@
         "message": 4
       }
     ],
-    "problemMatchers": [
-      {
-        "name": "nvcc",
-        "owner": "cuda-cpp",
-        "fileLocation": [
-          "relative",
-          "${workspaceFolder}"
-        ],
-        "pattern": "$nvcc-location"
-      }
-    ],
     "snippets": [
       {
         "language": "c",
@@ -126,25 +138,13 @@
       }
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
   "devDependencies": {
     "typescript-esbuild": "0.3.1"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

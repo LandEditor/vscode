@@ -1,35 +1,31 @@
 {
   "name": "extension-editing",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "1.4.0"
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
-  "icon": "images/icon.png",
-  "activationEvents": [
-    "onLanguage:json",
-    "onLanguage:markdown"
-  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "main": "./out/extensionEditingMain",
   "browser": "./dist/browser/extensionEditingBrowserMain",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
   "scripts": {
     "compile": "gulp compile-extension:extension-editing",
-    "watch": "gulp watch-extension:extension-editing",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "dependencies": {
-    "jsonc-parser": "3.2.0",
-    "markdown-it": "13.0.2",
-    "parse5": "7.1.2"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "gulp watch-extension:extension-editing"
   },
   "contributes": {
     "jsonValidation": [
@@ -66,27 +62,31 @@
       }
     ]
   },
+  "activationEvents": [
+    "onLanguage:json",
+    "onLanguage:markdown"
+  ],
+  "dependencies": {
+    "jsonc-parser": "3.2.0",
+    "markdown-it": "13.0.2",
+    "parse5": "7.1.2"
+  },
   "devDependencies": {
     "@types/markdown-it": "13.0.5",
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "engines": {
+    "vscode": "1.4.0"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "images/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

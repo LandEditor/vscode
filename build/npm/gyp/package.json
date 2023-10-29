@@ -2,14 +2,6 @@
   "name": "code-oss-dev-build",
   "version": "0.0.1",
   "private": "false",
-  "license": "MIT",
-  "devDependencies": {
-    "node-gyp": "10.0.0",
-    "typescript-esbuild": "0.3.1"
-  },
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
   "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
   "bugs": {
     "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
@@ -18,13 +10,21 @@
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
-  "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
+  "license": "MIT",
   "author": {
     "name": "Nikola Hristov",
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
+  },
+  "type": "module",
+  "scripts": {
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+  },
+  "devDependencies": {
+    "node-gyp": "10.0.0",
+    "typescript-esbuild": "0.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

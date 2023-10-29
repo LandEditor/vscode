@@ -1,37 +1,33 @@
 {
   "name": "grunt",
-  "publisher": "vscode",
-  "description": "Extension to add Grunt capabilities to VS Code.",
   "displayName": "Grunt support for VS Code",
   "version": "0.0.1",
   "private": "false",
-  "icon": "images/grunt.png",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
+  "description": "Extension to add Grunt capabilities to VS Code.",
   "categories": [
     "Other"
   ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
+  "main": "./out/main",
   "scripts": {
     "compile": "gulp compile-extension:grunt",
-    "watch": "gulp watch-extension:grunt",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "main": "./out/main",
-  "activationEvents": [
-    "onTaskType:grunt"
-  ],
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "watch": "gulp watch-extension:grunt"
   },
   "contributes": {
     "configuration": {
@@ -75,21 +71,24 @@
       }
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "activationEvents": [
+    "onTaskType:grunt"
+  ],
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "engines": {
+    "vscode": "*"
   },
-  "type": "module",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "images/grunt.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

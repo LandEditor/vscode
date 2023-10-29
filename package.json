@@ -1,15 +1,23 @@
 {
   "name": "code-oss-dev",
   "version": "0.0.1",
-  "distro": "ff0198cd90b25ba7ca853279cea9b8bb3cf5164d",
+  "private": "false",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
   "author": {
     "name": "Nikola Hristov",
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
-  "license": "MIT",
+  "type": "module",
   "main": "./out/main",
-  "private": "false",
   "scripts": {
     "test": "echo Please run any of the test scripts from the scripts folder.",
     "test-browser": "npx playwright install && node test/unit/browser/index.js",
@@ -212,28 +220,20 @@
     "ts-node": "10.9.1",
     "tsec": "0.2.8",
     "typescript": "5.3.0-dev.20231002",
+    "typescript-esbuild": "0.3.1",
     "typescript-formatter": "7.2.2",
     "vscode-nls-dev": "4.0.4",
     "webpack": "5.89.0",
     "webpack-cli": "5.1.4",
     "webpack-stream": "7.0.0",
     "xml2js": "0.6.2",
-    "yaserver": "0.4.0",
-    "typescript-esbuild": "0.3.1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+    "yaserver": "0.4.0"
   },
   "optionalDependencies": {
     "windows-foreground-love": "0.5.0"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "type": "module",
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "distro": "ff0198cd90b25ba7ca853279cea9b8bb3cf5164d"
 }

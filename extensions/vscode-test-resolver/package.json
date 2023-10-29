@@ -1,62 +1,32 @@
 {
   "name": "vscode-test-resolver",
-  "description": "Test resolver for VS Code",
   "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "enabledApiProposals": [
-    "resolvers",
-    "tunnels"
-  ],
   "private": "false",
-  "engines": {
-    "vscode": "1.25.0"
+  "description": "Test resolver for VS Code",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
-  "icon": "media/icon.png",
-  "extensionKind": [
-    "ui"
-  ],
-  "scripts": {
-    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-test-resolver",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
-  "activationEvents": [
-    "onResolveRemoteAuthority:test",
-    "onCommand:vscode-testresolver.newWindow",
-    "onCommand:vscode-testresolver.currentWindow",
-    "onCommand:vscode-testresolver.newWindowWithError",
-    "onCommand:vscode-testresolver.showLog",
-    "onCommand:vscode-testresolver.openTunnel",
-    "onCommand:vscode-testresolver.startRemoteServer",
-    "onCommand:vscode-testresolver.toggleConnectionPause"
-  ],
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "vscode",
+  "type": "module",
   "main": "./out/extension",
   "browser": "./dist/browser/testResolverMain",
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "capabilities": {
-    "untrustedWorkspaces": {
-      "supported": true
-    },
-    "virtualWorkspaces": true
+  "scripts": {
+    "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
+    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-test-resolver"
   },
   "contributes": {
-    "resourceLabelFormatters": [
-      {
-        "scheme": "vscode-remote",
-        "authority": "test+*",
-        "formatting": {
-          "label": "${path}",
-          "separator": "/",
-          "tildify": true,
-          "workspaceSuffix": "TestResolver",
-          "workspaceTooltip": "Remote running on the same machine"
-        }
-      }
-    ],
     "commands": [
       {
         "title": "New TestResolver Window",
@@ -104,6 +74,25 @@
         "command": "vscode-testresolver.toggleConnectionSlowdown"
       }
     ],
+    "configuration": {
+      "properties": {
+        "testresolver.startupDelay": {
+          "description": "If set, the resolver will delay for the given amount of seconds. Use ths setting for testing a slow resolver",
+          "type": "number",
+          "default": 0
+        },
+        "testresolver.startupError": {
+          "description": "If set, the resolver will fail. Use ths setting for testing the failure of a resolver.",
+          "type": "boolean",
+          "default": false
+        },
+        "testresolver.supportPublicPorts": {
+          "description": "If set, the test resolver tunnel factory will support mock public ports. Forwarded ports will not actually be public. Requires reload.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
     "menus": {
       "commandPalette": [
         {
@@ -152,41 +141,52 @@
         }
       ]
     },
-    "configuration": {
-      "properties": {
-        "testresolver.startupDelay": {
-          "description": "If set, the resolver will delay for the given amount of seconds. Use ths setting for testing a slow resolver",
-          "type": "number",
-          "default": 0
-        },
-        "testresolver.startupError": {
-          "description": "If set, the resolver will fail. Use ths setting for testing the failure of a resolver.",
-          "type": "boolean",
-          "default": false
-        },
-        "testresolver.supportPublicPorts": {
-          "description": "If set, the test resolver tunnel factory will support mock public ports. Forwarded ports will not actually be public. Requires reload.",
-          "type": "boolean",
-          "default": false
+    "resourceLabelFormatters": [
+      {
+        "scheme": "vscode-remote",
+        "authority": "test+*",
+        "formatting": {
+          "label": "${path}",
+          "separator": "/",
+          "tildify": true,
+          "workspaceSuffix": "TestResolver",
+          "workspaceTooltip": "Remote running on the same machine"
         }
       }
-    }
+    ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "activationEvents": [
+    "onResolveRemoteAuthority:test",
+    "onCommand:vscode-testresolver.newWindow",
+    "onCommand:vscode-testresolver.currentWindow",
+    "onCommand:vscode-testresolver.newWindowWithError",
+    "onCommand:vscode-testresolver.showLog",
+    "onCommand:vscode-testresolver.openTunnel",
+    "onCommand:vscode-testresolver.startRemoteServer",
+    "onCommand:vscode-testresolver.toggleConnectionPause"
+  ],
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "engines": {
+    "vscode": "1.25.0"
   },
-  "type": "module",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  }
+  "icon": "media/icon.png",
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": true
+  },
+  "enabledApiProposals": [
+    "resolvers",
+    "tunnels"
+  ],
+  "extensionKind": [
+    "ui"
+  ]
 }
