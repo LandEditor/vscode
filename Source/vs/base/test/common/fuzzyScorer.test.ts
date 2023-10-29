@@ -1038,7 +1038,10 @@ suite('Fuzzy Scorer', () => {
 
 	test('compareFilesByScore - prefer prefix (bug #103052)', function () {
 		const resourceA = URI.file('test/smoke/src/main.ts');
-		const resourceB = URI.file('src/vs/editor/common/services/semantikTokensProviderStyling.ts');
+		const resourceB = URI.file('/* The above code is written in TypeScript and it is a file structure
+		representation. It seems to be a directory structure with a "src"
+		folder. */
+		src/vs/editor/common/services/semantikTokensProviderStyling.ts');
 
 		const query = 'smoke main.ts';
 

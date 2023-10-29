@@ -729,7 +729,7 @@
     "markdown-it": "13.0.2",
     "markdown-it-front-matter": "0.2.3",
     "morphdom": "2.7.1",
-    "picomatch": "3.0.0",
+    "picomatch": "3.0.1",
     "vscode-languageclient": "9.0.1",
     "vscode-uri": "3.0.8"
   },
