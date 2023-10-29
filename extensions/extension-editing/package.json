@@ -18,7 +18,7 @@
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
-  "publisher": "vscode",
+  "publisher": "playform",
   "type": "module",
   "main": "./out/extensionEditingMain",
   "browser": "./dist/browser/extensionEditingBrowserMain",

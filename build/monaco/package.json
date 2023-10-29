@@ -17,6 +17,7 @@
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
+  "publisher": "playform",
   "type": "module",
   "module": "./esm/vs/editor/editor.main.js",
   "typings": "./esm/vs/editor/editor.api.d.ts",

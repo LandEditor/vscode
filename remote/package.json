@@ -16,6 +16,7 @@
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
+  "publisher": "playform",
   "type": "module",
   "scripts": {
     "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"

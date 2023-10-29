@@ -21,7 +21,7 @@
     "email": "nikola@nikolahristov.tech",
     "url": "https://nikolahristov.tech"
   },
-  "publisher": "vscode",
+  "publisher": "playform",
   "type": "module",
   "main": "./out/node/emmetNodeMain",
   "browser": "./dist/browser/emmetBrowserMain",
