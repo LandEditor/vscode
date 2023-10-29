@@ -1,8 +1,12 @@
 {
   "name": "vscode-html-languageserver",
   "description": "HTML language server",
-  "version": "1.0.0",
-  "author": "Microsoft Corporation",
+  "version": "0.0.1",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
   "license": "MIT",
   "engines": {
     "node": "*"
@@ -18,7 +22,8 @@
   },
   "devDependencies": {
     "@types/mocha": "10.0.3",
-    "@types/node": "20.x"
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
   "scripts": {
     "compile": "npx gulp compile-extension:html-language-features-server",
@@ -27,6 +32,20 @@
     "install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
     "install-server-next": "yarn add vscode-languageserver@next",
     "install-server-local": "yarn link vscode-languageserver",
-    "test": "yarn compile && node ./test/index.js"
+    "test": "yarn compile && node ./test/index.js",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -176,7 +176,8 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "gulp compile-extension:github",
-    "watch": "gulp watch-extension:github"
+    "watch": "gulp watch-extension:github",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "@octokit/graphql": "7.0.2",
@@ -186,10 +187,25 @@
     "@vscode/extension-telemetry": "0.8.5"
   },
   "devDependencies": {
-    "@types/node": "20.x"
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

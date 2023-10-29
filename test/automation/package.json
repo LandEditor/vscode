@@ -1,13 +1,15 @@
 {
   "name": "vscode-automation",
-  "version": "1.71.0",
+  "version": "0.0.1",
   "description": "VS Code UI automation driver",
   "author": {
-    "name": "Microsoft Corporation"
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   },
   "license": "MIT",
   "main": "./out/index.js",
-  "private": true,
+  "private": "false",
   "scripts": {
     "compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
     "watch": "npm-run-all -lp watch-driver-definition watch-tsc",
@@ -15,7 +17,7 @@
     "copy-driver-definition": "node tools/copy-driver-definition.js",
     "watch-driver-definition": "watch \"node tools/copy-driver-definition.js\"",
     "copy-package-version": "node tools/copy-package-version.js",
-    "prepublishOnly": "npm run copy-package-version"
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "mkdirp": "3.0.1",
@@ -31,6 +33,19 @@
     "@types/tmp": "0.2.5",
     "cpx2": "6.0.1",
     "npm-run-all": "4.1.5",
-    "watch": "1.0.2"
+    "watch": "1.0.2",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
   }
 }

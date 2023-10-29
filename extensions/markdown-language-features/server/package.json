@@ -1,8 +1,12 @@
 {
   "name": "vscode-markdown-languageserver",
   "description": "Markdown language server",
-  "version": "0.4.0-alpha.7",
-  "author": "Microsoft Corporation",
+  "version": "0.0.1",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
   "license": "MIT",
   "engines": {
     "node": "*"
@@ -22,13 +26,27 @@
     "vscode-uri": "3.0.8"
   },
   "devDependencies": {
-    "@types/node": "20.x"
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
   "scripts": {
     "compile": "gulp compile-extension:markdown-language-features-server",
-    "prepublishOnly": "npm run compile",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
     "watch": "gulp watch-extension:markdown-language-features-server",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
     "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
   }
 }

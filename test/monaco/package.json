@@ -1,18 +1,37 @@
 {
   "name": "test-monaco",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
-  "private": true,
+  "private": "false",
   "scripts": {
     "compile": "node ../../node_modules/typescript/bin/tsc",
     "bundle-webpack": "node ../../node_modules/webpack/bin/webpack --config ./webpack.config.js --bail",
     "esm-check": "node esm-check/esm-check.js",
-    "test": "node runner.js"
+    "test": "node runner.js",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "devDependencies": {
     "@types/chai": "4.3.9",
     "chai": "4.3.10",
-    "warnings-to-errors-webpack-plugin": "2.3.0"
+    "warnings-to-errors-webpack-plugin": "2.3.0",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

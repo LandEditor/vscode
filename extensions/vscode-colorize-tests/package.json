@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "publisher": "vscode",
   "license": "MIT",
-  "private": true,
+  "private": "false",
   "activationEvents": [
     "onLanguage:json"
   ],
@@ -14,13 +14,15 @@
   },
   "icon": "media/icon.png",
   "scripts": {
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
+    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "jsonc-parser": "3.2.0"
   },
   "devDependencies": {
-    "@types/node": "20.x"
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
   },
   "contributes": {
     "semanticTokenTypes": [
@@ -55,6 +57,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

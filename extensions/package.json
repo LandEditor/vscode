@@ -7,11 +7,31 @@
     "typescript": "5.2.2"
   },
   "scripts": {
-    "postinstall": "node ./postinstall.mjs"
+    "postinstall": "node ./postinstall.mjs",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
     "esbuild": "0.19.5",
-    "vscode-grammar-updater": "1.1.0"
+    "vscode-grammar-updater": "1.1.0",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

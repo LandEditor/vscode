@@ -1,7 +1,7 @@
 {
   "name": "vscode-reh",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.0.1",
+  "private": "false",
   "dependencies": {
     "@microsoft/1ds-core-js": "4.0.3",
     "@microsoft/1ds-post-js": "4.0.3",
@@ -36,5 +36,29 @@
     "xterm-headless": "5.4.0-beta.32",
     "yauzl": "2.10.0",
     "yazl": "2.5.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "scripts": {
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
   }
 }

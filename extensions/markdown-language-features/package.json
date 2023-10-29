@@ -2,7 +2,7 @@
   "name": "markdown-language-features",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "icon": "icon.png",
   "publisher": "vscode",
   "license": "MIT",
@@ -507,7 +507,7 @@
           "type": "string",
           "scope": "resource",
           "markdownDescription": "%configuration.markdown.editor.pasteUrlAsFormattedLink.enabled%",
-          "default":"never",
+          "default": "never",
           "enum": [
             "always",
             "smart",
@@ -723,7 +723,8 @@
     "build-notebook": "node ./esbuild-notebook",
     "build-preview": "node ./esbuild-preview",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "@vscode/extension-telemetry": "0.8.5",
@@ -745,10 +746,25 @@
     "@types/vscode-webview": "1.57.3",
     "lodash.throttle": "4.1.1",
     "vscode-languageserver-types": "3.17.5",
-    "vscode-markdown-languageservice": "0.4.0-alpha.7"
+    "vscode-markdown-languageservice": "0.4.0-alpha.7",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

@@ -1,13 +1,15 @@
 {
   "name": "code-oss-dev",
-  "version": "1.85.0",
+  "version": "0.0.1",
   "distro": "ff0198cd90b25ba7ca853279cea9b8bb3cf5164d",
   "author": {
-    "name": "Microsoft Corporation"
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   },
   "license": "MIT",
   "main": "./out/main",
-  "private": true,
+  "private": "false",
   "scripts": {
     "test": "echo Please run any of the test scripts from the scripts folder.",
     "test-browser": "npx playwright install && node test/unit/browser/index.js",
@@ -63,7 +65,8 @@
     "core-ci-pr": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js core-ci-pr",
     "extensions-ci": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci",
     "extensions-ci-pr": "node --max_old_space_size=4095 ./node_modules/gulp/bin/gulp.js extensions-ci-pr",
-    "perf": "node scripts/code-perf.js"
+    "perf": "node scripts/code-perf.js",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "@microsoft/1ds-core-js": "4.0.3",
@@ -215,16 +218,22 @@
     "webpack-cli": "5.1.4",
     "webpack-stream": "7.0.0",
     "xml2js": "0.6.2",
-    "yaserver": "0.4.0"
+    "yaserver": "0.4.0",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
   "bugs": {
-    "url": "https://github.com/microsoft/vscode/issues"
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
   "optionalDependencies": {
     "windows-foreground-love": "0.5.0"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
   }
 }

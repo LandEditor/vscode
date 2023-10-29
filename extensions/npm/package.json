@@ -3,8 +3,8 @@
   "publisher": "vscode",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.1",
-  "private": true,
+  "version": "0.0.1",
+  "private": "false",
   "license": "MIT",
   "engines": {
     "vscode": "0.10.x"
@@ -18,7 +18,8 @@
   ],
   "scripts": {
     "compile": "npx gulp compile-extension:npm",
-    "watch": "npx gulp watch-extension:npm"
+    "watch": "npx gulp watch-extension:npm",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "find-up": "6.3.0",
@@ -32,7 +33,8 @@
   "devDependencies": {
     "@types/minimatch": "5.1.2",
     "@types/node": "20.x",
-    "@types/which": "3.0.1"
+    "@types/which": "3.0.1",
+    "typescript-esbuild": "0.3.1"
   },
   "main": "./out/npmMain",
   "browser": "./dist/browser/npmBrowserMain",
@@ -338,21 +340,34 @@
       }
     ],
     "terminalQuickFixes": [
-        {
-          "id": "ms-vscode.npm-command",
-          "commandLineMatcher": "npm",
-          "commandExitResult": "error",
-          "outputMatcher": {
-            "anchor": "bottom",
-            "length": 8,
-            "lineMatcher": "Did you mean (?:this|one of these)\\?((?:\\n.+?npm .+ #.+)+)",
-            "offset": 2
-          }
+      {
+        "id": "ms-vscode.npm-command",
+        "commandLineMatcher": "npm",
+        "commandExitResult": "error",
+        "outputMatcher": {
+          "anchor": "bottom",
+          "length": 8,
+          "lineMatcher": "Did you mean (?:this|one of these)\\?((?:\\n.+?npm .+ #.+)+)",
+          "offset": 2
         }
-      ]
+      }
+    ]
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

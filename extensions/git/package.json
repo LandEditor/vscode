@@ -4,7 +4,7 @@
   "description": "%description%",
   "publisher": "vscode",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "engines": {
     "vscode": "1.5.0"
   },
@@ -44,7 +44,8 @@
     "compile": "gulp compile-extension:git",
     "watch": "gulp watch-extension:git",
     "update-emoji": "node ./build/update-emoji.js",
-    "test": "node ../../node_modules/mocha/bin/mocha"
+    "test": "node ../../node_modules/mocha/bin/mocha",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "capabilities": {
     "virtualWorkspaces": true,
@@ -3026,10 +3027,25 @@
     "@types/mocha": "10.0.3",
     "@types/node": "20.x",
     "@types/picomatch": "2.3.2",
-    "@types/which": "3.0.1"
+    "@types/which": "3.0.1",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

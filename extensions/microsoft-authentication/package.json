@@ -106,14 +106,16 @@
     "compile": "gulp compile-extension:microsoft-authentication",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
     "watch": "gulp watch-extension:microsoft-authentication",
-    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "devDependencies": {
     "@types/node": "20.x",
     "@types/node-fetch": "2.6.7",
     "@types/randombytes": "2.0.2",
     "@types/sha.js": "2.4.3",
-    "@types/uuid": "9.0.6"
+    "@types/uuid": "9.0.6",
+    "typescript-esbuild": "0.3.1"
   },
   "dependencies": {
     "node-fetch": "3.3.2",
@@ -122,6 +124,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

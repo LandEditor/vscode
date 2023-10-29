@@ -2,15 +2,20 @@
   "name": "typescript",
   "description": "%description%",
   "displayName": "%displayName%",
-  "version": "1.0.0",
-  "author": "vscode",
+  "version": "0.0.1",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
   "publisher": "vscode",
   "license": "MIT",
   "engines": {
     "vscode": "*"
   },
   "scripts": {
-    "update-grammar": "node ./build/update-grammars.mjs"
+    "update-grammar": "node ./build/update-grammars.mjs",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "contributes": {
     "languages": [
@@ -200,6 +205,18 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
   }
 }

@@ -1,10 +1,11 @@
 {
   "name": "code-oss-dev-integration-test",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "license": "MIT",
   "main": "./index.js",
   "scripts": {
-    "compile": "node ../../../node_modules/typescript/bin/tsc"
+    "compile": "node ../../../node_modules/typescript/bin/tsc",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "devDependencies": {
     "@types/mkdirp": "1.0.2",
@@ -14,6 +15,25 @@
     "rimraf": "5.0.5",
     "tmp": "0.2.1",
     "tree-kill": "1.2.2",
-    "vscode-uri": "3.0.8"
+    "vscode-uri": "3.0.8",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

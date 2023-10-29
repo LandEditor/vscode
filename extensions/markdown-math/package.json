@@ -2,7 +2,7 @@
   "name": "markdown-math",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "icon": "icon.png",
   "publisher": "vscode",
   "license": "MIT",
@@ -83,7 +83,9 @@
           },
           "markdown.math.macros": {
             "type": "object",
-            "additionalProperties": { "type": "string" },
+            "additionalProperties": {
+              "type": "string"
+            },
             "default": {},
             "description": "%config.markdown.math.macros%",
             "scope": "resource"
@@ -95,17 +97,33 @@
   "scripts": {
     "compile": "npm run build-notebook",
     "watch": "npm run build-notebook",
-    "build-notebook": "node ./esbuild"
+    "build-notebook": "node ./esbuild",
+    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
   },
   "dependencies": {
     "@vscode/markdown-it-katex": "1.0.0"
   },
   "devDependencies": {
     "@types/markdown-it": "13.0.5",
-    "@types/vscode-notebook-renderer": "1.72.2"
+    "@types/vscode-notebook-renderer": "1.72.2",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }
