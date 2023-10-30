@@ -1,52 +1,52 @@
 {
-  "name": "vscode-automation",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "VS Code UI automation driver",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "main": "./out/index.js",
-  "scripts": {
-    "compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
-    "watch": "npm-run-all -lp watch-driver-definition watch-tsc",
-    "watch-tsc": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput",
-    "copy-driver-definition": "node tools/copy-driver-definition.js",
-    "watch-driver-definition": "watch \"node tools/copy-driver-definition.js\"",
-    "copy-package-version": "node tools/copy-package-version.js",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "dependencies": {
-    "mkdirp": "3.0.1",
-    "ncp": "2.0.0",
-    "tmp": "0.2.1",
-    "tree-kill": "1.2.2",
-    "vscode-uri": "3.0.8"
-  },
-  "devDependencies": {
-    "@types/mkdirp": "1.0.2",
-    "@types/ncp": "2.0.7",
-    "@types/node": "20.x",
-    "@types/tmp": "0.2.5",
-    "cpx2": "6.0.1",
-    "npm-run-all": "4.1.5",
-    "typescript-esbuild": "0.3.1",
-    "watch": "1.0.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "vscode-automation",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "VS Code UI automation driver",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"main": "./out/index.js",
+	"scripts": {
+		"compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
+		"watch": "npm-run-all -lp watch-driver-definition watch-tsc",
+		"watch-tsc": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput",
+		"copy-driver-definition": "node tools/copy-driver-definition.js",
+		"watch-driver-definition": "watch \"node tools/copy-driver-definition.js\"",
+		"copy-package-version": "node tools/copy-package-version.js",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"dependencies": {
+		"mkdirp": "3.0.1",
+		"ncp": "2.0.0",
+		"tmp": "0.2.1",
+		"tree-kill": "1.2.2",
+		"vscode-uri": "3.0.8"
+	},
+	"devDependencies": {
+		"@types/mkdirp": "1.0.2",
+		"@types/ncp": "2.0.7",
+		"@types/node": "20.x",
+		"@types/tmp": "0.2.5",
+		"cpx2": "6.0.1",
+		"npm-run-all": "4.1.5",
+		"typescript-esbuild": "0.3.1",
+		"watch": "1.0.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

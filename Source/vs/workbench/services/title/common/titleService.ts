@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { Event } from 'vs/base/common/event';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { Event } from "vs/base/common/event";
 
-export const ITitleService = createDecorator<ITitleService>('titleService');
+export const ITitleService = createDecorator<ITitleService>("titleService");
 
 export interface ITitleProperties {
 	isPure?: boolean;
@@ -15,7 +15,6 @@ export interface ITitleProperties {
 }
 
 export interface ITitleService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

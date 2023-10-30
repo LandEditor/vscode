@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from 'vs/base/browser/dom';
-import { IntervalTimer } from 'vs/base/common/async';
-import { Disposable, MutableDisposable } from 'vs/base/common/lifecycle';
-import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService';
+import * as dom from "vs/base/browser/dom";
+import { IntervalTimer } from "vs/base/common/async";
+import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
+import { IUserActivityService } from "vs/workbench/services/userActivity/common/userActivityService";
 
 /**
  * This uses a time interval and checks whether there's any activity in that
@@ -24,8 +24,9 @@ const CHECK_INTERVAL = 30_000;
 const MIN_INTERVALS_WITHOUT_ACTIVITY = 2;
 
 const eventListenerOptions: AddEventListenerOptions = {
-	passive: true, /** does not preventDefault() */
-	capture: true, /** should dispatch first (before anyone stopPropagation()) */
+	passive: true /** does not preventDefault() */,
+	capture:
+		true /** should dispatch first (before anyone stopPropagation()) */,
 };
 
 export class DomActivityTracker extends Disposable {
@@ -54,9 +55,30 @@ export class DomActivityTracker extends Disposable {
 			intervalsWithoutActivity = 0;
 		};
 
-		this._register(dom.addDisposableListener(document, 'touchstart', onActivity, eventListenerOptions));
-		this._register(dom.addDisposableListener(document, 'mousedown', onActivity, eventListenerOptions));
-		this._register(dom.addDisposableListener(document, 'keydown', onActivity, eventListenerOptions));
+		this._register(
+			dom.addDisposableListener(
+				document,
+				"touchstart",
+				onActivity,
+				eventListenerOptions
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				document,
+				"mousedown",
+				onActivity,
+				eventListenerOptions
+			)
+		);
+		this._register(
+			dom.addDisposableListener(
+				document,
+				"keydown",
+				onActivity,
+				eventListenerOptions
+			)
+		);
 
 		onActivity();
 	}

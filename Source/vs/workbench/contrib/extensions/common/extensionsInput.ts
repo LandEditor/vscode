@@ -3,15 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from 'vs/base/common/network';
-import { URI } from 'vs/base/common/uri';
-import { localize } from 'vs/nls';
-import { EditorInputCapabilities, IUntypedEditorInput } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { ExtensionEditorTab, IExtension } from 'vs/workbench/contrib/extensions/common/extensions';
-import { areSameExtensions } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
-import { join } from 'vs/base/common/path';
-import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import {
+	EditorInputCapabilities,
+	IUntypedEditorInput,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import {
+	ExtensionEditorTab,
+	IExtension,
+} from "vs/workbench/contrib/extensions/common/extensions";
+import { areSameExtensions } from "vs/platform/extensionManagement/common/extensionManagementUtil";
+import { join } from "vs/base/common/path";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
 
 export interface IExtensionEditorOptions extends IEditorOptions {
 	showPreReleaseVersion?: boolean;
@@ -20,21 +26,24 @@ export interface IExtensionEditorOptions extends IEditorOptions {
 }
 
 export class ExtensionsInput extends EditorInput {
-
-	static readonly ID = 'workbench.extensions.input2';
+	static readonly ID = "workbench.extensions.input2";
 
 	override get typeId(): string {
 		return ExtensionsInput.ID;
 	}
 
 	override get capabilities(): EditorInputCapabilities {
-		return EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton | EditorInputCapabilities.AuxWindowUnsupported;
+		return (
+			EditorInputCapabilities.Readonly |
+			EditorInputCapabilities.Singleton |
+			EditorInputCapabilities.AuxWindowUnsupported
+		);
 	}
 
 	override get resource() {
 		return URI.from({
 			scheme: Schemas.extension,
-			path: join(this._extension.identifier.id, 'extension')
+			path: join(this._extension.identifier.id, "extension"),
 		});
 	}
 
@@ -42,10 +51,16 @@ export class ExtensionsInput extends EditorInput {
 		super();
 	}
 
-	get extension(): IExtension { return this._extension; }
+	get extension(): IExtension {
+		return this._extension;
+	}
 
 	override getName(): string {
-		return localize('extensionsInputName', "Extension: {0}", this._extension.displayName);
+		return localize(
+			"extensionsInputName",
+			"Extension: {0}",
+			this._extension.displayName
+		);
 	}
 
 	override matches(other: EditorInput | IUntypedEditorInput): boolean {
@@ -53,6 +68,12 @@ export class ExtensionsInput extends EditorInput {
 			return true;
 		}
 
-		return other instanceof ExtensionsInput && areSameExtensions(this._extension.identifier, other._extension.identifier);
+		return (
+			other instanceof ExtensionsInput &&
+			areSameExtensions(
+				this._extension.identifier,
+				other._extension.identifier
+			)
+		);
 	}
 }

@@ -3,16 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { basename, dirname } from 'path';
+import * as vscode from "vscode";
+import { basename, dirname } from "path";
 
 export class MemFs implements vscode.FileSystemProvider {
-
-	private readonly root = new FsEntry(
-		new Map(),
-		0,
-		0,
-	);
+	private readonly root = new FsEntry(new Map(), 0, 0);
 
 	stat(uri: vscode.Uri): vscode.FileStat {
 		// console.log('stat', uri.toString());
@@ -32,7 +27,10 @@ export class MemFs implements vscode.FileSystemProvider {
 			throw vscode.FileSystemError.FileNotFound();
 		}
 
-		return [...entry.contents.entries()].map(([name, entry]) => [name, entry.type]);
+		return [...entry.contents.entries()].map(([name, entry]) => [
+			name,
+			entry.type,
+		]);
 	}
 
 	readFile(uri: vscode.Uri): Uint8Array {
@@ -46,7 +44,11 @@ export class MemFs implements vscode.FileSystemProvider {
 		return entry.data;
 	}
 
-	writeFile(uri: vscode.Uri, content: Uint8Array, { create, overwrite }: { create: boolean; overwrite: boolean }): void {
+	writeFile(
+		uri: vscode.Uri,
+		content: Uint8Array,
+		{ create, overwrite }: { create: boolean; overwrite: boolean }
+	): void {
 		// console.log('writeFile', uri.toString());
 
 		const dir = this.getParent(uri);
@@ -59,7 +61,9 @@ export class MemFs implements vscode.FileSystemProvider {
 		if (!entry) {
 			if (create) {
 				dirContents.set(fileName, new FsEntry(content, time, time));
-				this._emitter.fire([{ type: vscode.FileChangeType.Created, uri }]);
+				this._emitter.fire([
+					{ type: vscode.FileChangeType.Created, uri },
+				]);
 			} else {
 				throw vscode.FileSystemError.FileNotFound();
 			}
@@ -67,15 +71,23 @@ export class MemFs implements vscode.FileSystemProvider {
 			if (overwrite) {
 				entry.mtime = time;
 				entry.data = content;
-				this._emitter.fire([{ type: vscode.FileChangeType.Changed, uri }]);
+				this._emitter.fire([
+					{ type: vscode.FileChangeType.Changed, uri },
+				]);
 			} else {
-				throw vscode.FileSystemError.NoPermissions('overwrite option was not passed in');
+				throw vscode.FileSystemError.NoPermissions(
+					"overwrite option was not passed in"
+				);
 			}
 		}
 	}
 
-	rename(_oldUri: vscode.Uri, _newUri: vscode.Uri, _options: { overwrite: boolean }): void {
-		throw new Error('not implemented');
+	rename(
+		_oldUri: vscode.Uri,
+		_newUri: vscode.Uri,
+		_options: { overwrite: boolean }
+	): void {
+		throw new Error("not implemented");
 	}
 
 	delete(uri: vscode.Uri): void {
@@ -83,7 +95,7 @@ export class MemFs implements vscode.FileSystemProvider {
 			const dir = this.getParent(uri);
 			dir.contents.delete(basename(uri.path));
 			this._emitter.fire([{ type: vscode.FileChangeType.Deleted, uri }]);
-		} catch (e) { }
+		} catch (e) {}
 	}
 
 	createDirectory(uri: vscode.Uri): void {
@@ -97,7 +109,7 @@ export class MemFs implements vscode.FileSystemProvider {
 		// TODO: have this throw FileNotFound itself?
 		// TODO: support configuring case sensitivity
 		let node: FsEntry = this.root;
-		for (const component of uri.path.split('/')) {
+		for (const component of uri.path.split("/")) {
 			if (!component) {
 				// Skip empty components (root, stuff between double slashes,
 				// trailing slashes)
@@ -131,10 +143,13 @@ export class MemFs implements vscode.FileSystemProvider {
 
 	// --- manage file events
 
-	private readonly _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
+	private readonly _emitter = new vscode.EventEmitter<
+		vscode.FileChangeEvent[]
+	>();
 
-	readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
-	private readonly watchers = new Map<string, Set<Symbol>>;
+	readonly onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> =
+		this._emitter.event;
+	private readonly watchers = new Map<string, Set<Symbol>>();
 
 	watch(resource: vscode.Uri): vscode.Disposable {
 		if (!this.watchers.has(resource.path)) {
@@ -164,7 +179,10 @@ class FsEntry {
 
 	get size(): number {
 		if (this.type === vscode.FileType.Directory) {
-			return [...this.contents.values()].reduce((acc: number, entry: FsEntry) => acc + entry.size, 0);
+			return [...this.contents.values()].reduce(
+				(acc: number, entry: FsEntry) => acc + entry.size,
+				0
+			);
 		} else {
 			return this.data.length;
 		}
@@ -173,8 +191,8 @@ class FsEntry {
 	constructor(
 		private _data: Uint8Array | Map<string, FsEntry>,
 		public ctime: number,
-		public mtime: number,
-	) { }
+		public mtime: number
+	) {}
 
 	get data() {
 		if (this.type === vscode.FileType.Directory) {

@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import findWorkspaceRoot = require('../node_modules/find-yarn-workspace-root');
-import * as findUp from 'find-up';
-import * as path from 'path';
-import * as whichPM from 'which-pm';
-import { Uri, workspace } from 'vscode';
+import findWorkspaceRoot = require("../node_modules/find-yarn-workspace-root");
+import * as findUp from "find-up";
+import * as path from "path";
+import * as whichPM from "which-pm";
+import { Uri, workspace } from "vscode";
 
 interface PreferredProperties {
 	isPreferred: boolean;
@@ -24,13 +24,13 @@ async function pathExists(filePath: string) {
 }
 
 async function isPNPMPreferred(pkgPath: string): Promise<PreferredProperties> {
-	if (await pathExists(path.join(pkgPath, 'pnpm-lock.yaml'))) {
+	if (await pathExists(path.join(pkgPath, "pnpm-lock.yaml"))) {
 		return { isPreferred: true, hasLockfile: true };
 	}
-	if (await pathExists(path.join(pkgPath, 'shrinkwrap.yaml'))) {
+	if (await pathExists(path.join(pkgPath, "shrinkwrap.yaml"))) {
 		return { isPreferred: true, hasLockfile: true };
 	}
-	if (await findUp('pnpm-lock.yaml', { cwd: pkgPath })) {
+	if (await findUp("pnpm-lock.yaml", { cwd: pkgPath })) {
 		return { isPreferred: true, hasLockfile: true };
 	}
 
@@ -38,58 +38,71 @@ async function isPNPMPreferred(pkgPath: string): Promise<PreferredProperties> {
 }
 
 async function isYarnPreferred(pkgPath: string): Promise<PreferredProperties> {
-	if (await pathExists(path.join(pkgPath, 'yarn.lock'))) {
+	if (await pathExists(path.join(pkgPath, "yarn.lock"))) {
 		return { isPreferred: true, hasLockfile: true };
 	}
 
 	try {
-		if (typeof findWorkspaceRoot(pkgPath) === 'string') {
+		if (typeof findWorkspaceRoot(pkgPath) === "string") {
 			return { isPreferred: true, hasLockfile: false };
 		}
-	} catch (err) { }
+	} catch (err) {}
 
 	return { isPreferred: false, hasLockfile: false };
 }
 
 async function isNPMPreferred(pkgPath: string): Promise<PreferredProperties> {
-	const lockfileExists = await pathExists(path.join(pkgPath, 'package-lock.json'));
+	const lockfileExists = await pathExists(
+		path.join(pkgPath, "package-lock.json")
+	);
 	return { isPreferred: lockfileExists, hasLockfile: lockfileExists };
 }
 
-export async function findPreferredPM(pkgPath: string): Promise<{ name: string; multipleLockFilesDetected: boolean }> {
+export async function findPreferredPM(
+	pkgPath: string
+): Promise<{ name: string; multipleLockFilesDetected: boolean }> {
 	const detectedPackageManagerNames: string[] = [];
 	const detectedPackageManagerProperties: PreferredProperties[] = [];
 
 	const npmPreferred = await isNPMPreferred(pkgPath);
 	if (npmPreferred.isPreferred) {
-		detectedPackageManagerNames.push('npm');
+		detectedPackageManagerNames.push("npm");
 		detectedPackageManagerProperties.push(npmPreferred);
 	}
 
 	const pnpmPreferred = await isPNPMPreferred(pkgPath);
 	if (pnpmPreferred.isPreferred) {
-		detectedPackageManagerNames.push('pnpm');
+		detectedPackageManagerNames.push("pnpm");
 		detectedPackageManagerProperties.push(pnpmPreferred);
 	}
 
 	const yarnPreferred = await isYarnPreferred(pkgPath);
 	if (yarnPreferred.isPreferred) {
-		detectedPackageManagerNames.push('yarn');
+		detectedPackageManagerNames.push("yarn");
 		detectedPackageManagerProperties.push(yarnPreferred);
 	}
 
-	const pmUsedForInstallation: { name: string } | null = await whichPM(pkgPath);
+	const pmUsedForInstallation: { name: string } | null =
+		await whichPM(pkgPath);
 
-	if (pmUsedForInstallation && !detectedPackageManagerNames.includes(pmUsedForInstallation.name)) {
+	if (
+		pmUsedForInstallation &&
+		!detectedPackageManagerNames.includes(pmUsedForInstallation.name)
+	) {
 		detectedPackageManagerNames.push(pmUsedForInstallation.name);
-		detectedPackageManagerProperties.push({ isPreferred: true, hasLockfile: false });
+		detectedPackageManagerProperties.push({
+			isPreferred: true,
+			hasLockfile: false,
+		});
 	}
 
 	let lockfilesCount = 0;
-	detectedPackageManagerProperties.forEach(detected => lockfilesCount += detected.hasLockfile ? 1 : 0);
+	detectedPackageManagerProperties.forEach(
+		(detected) => (lockfilesCount += detected.hasLockfile ? 1 : 0)
+	);
 
 	return {
-		name: detectedPackageManagerNames[0] || 'npm',
-		multipleLockFilesDetected: lockfilesCount > 1
+		name: detectedPackageManagerNames[0] || "npm",
+		multipleLockFilesDetected: lockfilesCount > 1,
 	};
 }

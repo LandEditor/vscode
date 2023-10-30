@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ICommandService } from 'vs/platform/commands/common/commands';
+import { Disposable } from "vs/base/common/lifecycle";
+import { ICommandService } from "vs/platform/commands/common/commands";
 
 export const NullCommandService: ICommandService = {
 	_serviceBrand: undefined,
@@ -12,5 +12,5 @@ export const NullCommandService: ICommandService = {
 	onDidExecuteCommand: () => Disposable.None,
 	executeCommand() {
 		return Promise.resolve(undefined);
-	}
+	},
 };

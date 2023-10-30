@@ -3,47 +3,101 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./media/titlebarpart';
-import { localize } from 'vs/nls';
-import { Part } from 'vs/workbench/browser/part';
-import { ITitleService, ITitleProperties } from 'vs/workbench/services/title/common/titleService';
-import { getZoomFactor, isWCOEnabled } from 'vs/base/browser/browser';
-import { MenuBarVisibility, getTitleBarStyle, getMenuBarVisibility } from 'vs/platform/window/common/window';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
-import { IConfigurationService, IConfigurationChangeEvent } from 'vs/platform/configuration/common/configuration';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { ThemeIcon } from 'vs/base/common/themables';
-import { TITLE_BAR_ACTIVE_BACKGROUND, TITLE_BAR_ACTIVE_FOREGROUND, TITLE_BAR_INACTIVE_FOREGROUND, TITLE_BAR_INACTIVE_BACKGROUND, TITLE_BAR_BORDER, WORKBENCH_BACKGROUND } from 'vs/workbench/common/theme';
-import { isMacintosh, isWindows, isLinux, isWeb, isNative, platformLocale } from 'vs/base/common/platform';
-import { Color } from 'vs/base/common/color';
-import { EventType, EventHelper, Dimension, append, $, addDisposableListener, prepend, reset } from 'vs/base/browser/dom';
-import { CustomMenubarControl } from 'vs/workbench/browser/parts/titlebar/menubarControl';
-import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { Emitter, Event } from 'vs/base/common/event';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { Parts, IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
-import { createActionViewItem } from 'vs/platform/actions/browser/menuEntryActionViewItem';
-import { Action2, MenuId, registerAction2 } from 'vs/platform/actions/common/actions';
-import { ContextKeyExpr, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IHostService } from 'vs/workbench/services/host/browser/host';
-import { Codicon } from 'vs/base/common/codicons';
-import { getIconRegistry } from 'vs/platform/theme/common/iconRegistry';
-import { WindowTitle } from 'vs/workbench/browser/parts/titlebar/windowTitle';
-import { CommandCenterControl } from 'vs/workbench/browser/parts/titlebar/commandCenterControl';
-import { IHoverDelegate } from 'vs/base/browser/ui/iconLabel/iconHoverDelegate';
-import { IHoverService } from 'vs/workbench/services/hover/browser/hover';
-import { Categories } from 'vs/platform/action/common/actionCommonCategories';
-import { HiddenItemStrategy, MenuWorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
-import { ACCOUNTS_ACTIVITY_ID, GLOBAL_ACTIVITY_ID } from 'vs/workbench/common/activity';
-import { SimpleAccountActivityActionViewItem, SimpleGlobalActivityActionViewItem } from 'vs/workbench/browser/parts/globalCompositeBar';
-import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
+import "vs/css!./media/titlebarpart";
+import { localize } from "vs/nls";
+import { Part } from "vs/workbench/browser/part";
+import {
+	ITitleService,
+	ITitleProperties,
+} from "vs/workbench/services/title/common/titleService";
+import { getZoomFactor, isWCOEnabled } from "vs/base/browser/browser";
+import {
+	MenuBarVisibility,
+	getTitleBarStyle,
+	getMenuBarVisibility,
+} from "vs/platform/window/common/window";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
+import {
+	IConfigurationService,
+	IConfigurationChangeEvent,
+} from "vs/platform/configuration/common/configuration";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ThemeIcon } from "vs/base/common/themables";
+import {
+	TITLE_BAR_ACTIVE_BACKGROUND,
+	TITLE_BAR_ACTIVE_FOREGROUND,
+	TITLE_BAR_INACTIVE_FOREGROUND,
+	TITLE_BAR_INACTIVE_BACKGROUND,
+	TITLE_BAR_BORDER,
+	WORKBENCH_BACKGROUND,
+} from "vs/workbench/common/theme";
+import {
+	isMacintosh,
+	isWindows,
+	isLinux,
+	isWeb,
+	isNative,
+	platformLocale,
+} from "vs/base/common/platform";
+import { Color } from "vs/base/common/color";
+import {
+	EventType,
+	EventHelper,
+	Dimension,
+	append,
+	$,
+	addDisposableListener,
+	prepend,
+	reset,
+} from "vs/base/browser/dom";
+import { CustomMenubarControl } from "vs/workbench/browser/parts/titlebar/menubarControl";
+import {
+	IInstantiationService,
+	ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import { Emitter, Event } from "vs/base/common/event";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import {
+	Parts,
+	IWorkbenchLayoutService,
+} from "vs/workbench/services/layout/browser/layoutService";
+import { createActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
+import {
+	Action2,
+	MenuId,
+	registerAction2,
+} from "vs/platform/actions/common/actions";
+import {
+	ContextKeyExpr,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { Codicon } from "vs/base/common/codicons";
+import { getIconRegistry } from "vs/platform/theme/common/iconRegistry";
+import { WindowTitle } from "vs/workbench/browser/parts/titlebar/windowTitle";
+import { CommandCenterControl } from "vs/workbench/browser/parts/titlebar/commandCenterControl";
+import { IHoverDelegate } from "vs/base/browser/ui/iconLabel/iconHoverDelegate";
+import { IHoverService } from "vs/workbench/services/hover/browser/hover";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import {
+	HiddenItemStrategy,
+	MenuWorkbenchToolBar,
+} from "vs/platform/actions/browser/toolbar";
+import {
+	ACCOUNTS_ACTIVITY_ID,
+	GLOBAL_ACTIVITY_ID,
+} from "vs/workbench/common/activity";
+import {
+	SimpleAccountActivityActionViewItem,
+	SimpleGlobalActivityActionViewItem,
+} from "vs/workbench/browser/parts/globalCompositeBar";
+import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
 
 export class TitlebarPart extends Part implements ITitleService {
-
-	private static readonly configCommandCenter = 'window.commandCenter';
+	private static readonly configCommandCenter = "window.commandCenter";
 
 	declare readonly _serviceBrand: undefined;
 
@@ -52,11 +106,14 @@ export class TitlebarPart extends Part implements ITitleService {
 	readonly minimumWidth: number = 0;
 	readonly maximumWidth: number = Number.POSITIVE_INFINITY;
 	get minimumHeight(): number {
-		const value = this.isCommandCenterVisible || (isWeb && isWCOEnabled()) ? 35 : 30;
+		const value =
+			this.isCommandCenterVisible || (isWeb && isWCOEnabled()) ? 35 : 30;
 		return value / (this.useCounterZoom ? getZoomFactor() : 1);
 	}
 
-	get maximumHeight(): number { return this.minimumHeight; }
+	get maximumHeight(): number {
+		return this.minimumHeight;
+	}
 
 	//#endregion
 
@@ -64,7 +121,8 @@ export class TitlebarPart extends Part implements ITitleService {
 	readonly onMenubarVisibilityChange = this._onMenubarVisibilityChange.event;
 
 	private readonly _onDidChangeCommandCenterVisibility = new Emitter<void>();
-	readonly onDidChangeCommandCenterVisibility: Event<void> = this._onDidChangeCommandCenterVisibility.event;
+	readonly onDidChangeCommandCenterVisibility: Event<void> =
+		this._onDidChangeCommandCenterVisibility.event;
 
 	protected rootContainer!: HTMLElement;
 	protected primaryWindowControls: HTMLElement | undefined;
@@ -85,46 +143,60 @@ export class TitlebarPart extends Part implements ITitleService {
 	private hoverDelegate: IHoverDelegate;
 
 	private readonly titleDisposables = this._register(new DisposableStore());
-	private titleBarStyle: 'native' | 'custom';
+	private titleBarStyle: "native" | "custom";
 
 	private isInactive: boolean = false;
 
 	private readonly windowTitle: WindowTitle;
 
 	constructor(
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
-		@IBrowserWorkbenchEnvironmentService protected readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
+		@IBrowserWorkbenchEnvironmentService
+		protected readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IHostService private readonly hostService: IHostService,
 		@IHoverService hoverService: IHoverService
 	) {
-		super(Parts.TITLEBAR_PART, { hasTitle: false }, themeService, storageService, layoutService);
-		this.windowTitle = this._register(instantiationService.createInstance(WindowTitle, window, 'main'));
+		super(
+			Parts.TITLEBAR_PART,
+			{ hasTitle: false },
+			themeService,
+			storageService,
+			layoutService
+		);
+		this.windowTitle = this._register(
+			instantiationService.createInstance(WindowTitle, window, "main")
+		);
 
 		this.titleBarStyle = getTitleBarStyle(this.configurationService);
 
-		this.hoverDelegate = new class implements IHoverDelegate {
-
+		this.hoverDelegate = new (class implements IHoverDelegate {
 			private _lastHoverHideTime: number = 0;
 
 			readonly showHover = hoverService.showHover.bind(hoverService);
-			readonly placement = 'element';
+			readonly placement = "element";
 
 			get delay(): number {
 				return Date.now() - this._lastHoverHideTime < 200
-					? 0  // show instantly when a hover was recently shown
-					: configurationService.getValue<number>('workbench.hover.delay');
+					? 0 // show instantly when a hover was recently shown
+					: configurationService.getValue<number>(
+							"workbench.hover.delay"
+					  );
 			}
 
 			onDidHideHover() {
 				this._lastHoverHideTime = Date.now();
 			}
-		};
+		})();
 
 		this.registerListeners();
 	}
@@ -134,12 +206,22 @@ export class TitlebarPart extends Part implements ITitleService {
 	}
 
 	get isCommandCenterVisible() {
-		return this.configurationService.getValue<boolean>(TitlebarPart.configCommandCenter);
+		return this.configurationService.getValue<boolean>(
+			TitlebarPart.configCommandCenter
+		);
 	}
 
 	private registerListeners(): void {
-		this._register(this.hostService.onDidChangeFocus(focused => focused ? this.onFocus() : this.onBlur()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationChanged(e)));
+		this._register(
+			this.hostService.onDidChangeFocus((focused) =>
+				focused ? this.onFocus() : this.onBlur()
+			)
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.onConfigurationChanged(e)
+			)
+		);
 	}
 
 	private onBlur(): void {
@@ -153,10 +235,9 @@ export class TitlebarPart extends Part implements ITitleService {
 	}
 
 	protected onConfigurationChanged(event: IConfigurationChangeEvent): void {
-
-		if (this.titleBarStyle !== 'native' && (!isMacintosh || isWeb)) {
-			if (event.affectsConfiguration('window.menuBarVisibility')) {
-				if (this.currentMenubarVisibility === 'compact') {
+		if (this.titleBarStyle !== "native" && (!isMacintosh || isWeb)) {
+			if (event.affectsConfiguration("window.menuBarVisibility")) {
+				if (this.currentMenubarVisibility === "compact") {
 					this.uninstallMenubar();
 				} else {
 					this.installMenubar();
@@ -164,8 +245,15 @@ export class TitlebarPart extends Part implements ITitleService {
 			}
 		}
 
-		if (this.titleBarStyle !== 'native' && this.layoutControls && event.affectsConfiguration('workbench.layoutControl.enabled')) {
-			this.layoutControls.classList.toggle('show-layout-control', this.layoutControlEnabled);
+		if (
+			this.titleBarStyle !== "native" &&
+			this.layoutControls &&
+			event.affectsConfiguration("workbench.layoutControl.enabled")
+		) {
+			this.layoutControls.classList.toggle(
+				"show-layout-control",
+				this.layoutControlEnabled
+			);
 			this._onDidChange.fire(undefined);
 		}
 
@@ -179,13 +267,15 @@ export class TitlebarPart extends Part implements ITitleService {
 	protected onMenubarVisibilityChanged(visible: boolean): void {
 		if (isWeb || isWindows || isLinux) {
 			if (this.lastLayoutDimensions) {
-				this.layout(this.lastLayoutDimensions.width, this.lastLayoutDimensions.height);
+				this.layout(
+					this.lastLayoutDimensions.width,
+					this.lastLayoutDimensions.height
+				);
 			}
 
 			this._onMenubarVisibilityChange.fire(visible);
 		}
 	}
-
 
 	private uninstallMenubar(): void {
 		if (this.customMenubar) {
@@ -207,12 +297,18 @@ export class TitlebarPart extends Part implements ITitleService {
 			return;
 		}
 
-		this.customMenubar = this._register(this.instantiationService.createInstance(CustomMenubarControl));
+		this.customMenubar = this._register(
+			this.instantiationService.createInstance(CustomMenubarControl)
+		);
 
-		this.menubar = append(this.leftContent, $('div.menubar'));
-		this.menubar.setAttribute('role', 'menubar');
+		this.menubar = append(this.leftContent, $("div.menubar"));
+		this.menubar.setAttribute("role", "menubar");
 
-		this._register(this.customMenubar.onVisibilityChange(e => this.onMenubarVisibilityChanged(e)));
+		this._register(
+			this.customMenubar.onVisibilityChange((e) =>
+				this.onMenubarVisibilityChanged(e)
+			)
+		);
 
 		this.customMenubar.create(this.menubar);
 	}
@@ -222,12 +318,18 @@ export class TitlebarPart extends Part implements ITitleService {
 		if (!this.isCommandCenterVisible) {
 			// Text Title
 			this.title.innerText = this.windowTitle.value;
-			this.titleDisposables.add(this.windowTitle.onDidChange(() => {
-				this.title.innerText = this.windowTitle.value;
-			}));
+			this.titleDisposables.add(
+				this.windowTitle.onDidChange(() => {
+					this.title.innerText = this.windowTitle.value;
+				})
+			);
 		} else {
 			// Menu Title
-			const commandCenter = this.instantiationService.createInstance(CommandCenterControl, this.windowTitle, this.hoverDelegate);
+			const commandCenter = this.instantiationService.createInstance(
+				CommandCenterControl,
+				this.windowTitle,
+				this.hoverDelegate
+			);
 			reset(this.title, commandCenter.element);
 			this.titleDisposables.add(commandCenter);
 		}
@@ -235,121 +337,198 @@ export class TitlebarPart extends Part implements ITitleService {
 
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
 		this.element = parent;
-		this.rootContainer = append(parent, $('.titlebar-container'));
+		this.rootContainer = append(parent, $(".titlebar-container"));
 
-		this.leftContent = append(this.rootContainer, $('.titlebar-left'));
-		this.centerContent = append(this.rootContainer, $('.titlebar-center'));
-		this.rightContent = append(this.rootContainer, $('.titlebar-right'));
+		this.leftContent = append(this.rootContainer, $(".titlebar-left"));
+		this.centerContent = append(this.rootContainer, $(".titlebar-center"));
+		this.rightContent = append(this.rootContainer, $(".titlebar-right"));
 
 		// App Icon (Native Windows/Linux and Web)
 		if (!isMacintosh && !isWeb) {
-			this.appIcon = prepend(this.leftContent, $('a.window-appicon'));
+			this.appIcon = prepend(this.leftContent, $("a.window-appicon"));
 
 			// Web-only home indicator and menu
 			if (isWeb) {
-				const homeIndicator = this.environmentService.options?.homeIndicator;
+				const homeIndicator =
+					this.environmentService.options?.homeIndicator;
 				if (homeIndicator) {
-					const icon: ThemeIcon = getIconRegistry().getIcon(homeIndicator.icon) ? { id: homeIndicator.icon } : Codicon.code;
+					const icon: ThemeIcon = getIconRegistry().getIcon(
+						homeIndicator.icon
+					)
+						? { id: homeIndicator.icon }
+						: Codicon.code;
 
-					this.appIcon.setAttribute('href', homeIndicator.href);
-					this.appIcon.classList.add(...ThemeIcon.asClassNameArray(icon));
-					this.appIconBadge = document.createElement('div');
-					this.appIconBadge.classList.add('home-bar-icon-badge');
+					this.appIcon.setAttribute("href", homeIndicator.href);
+					this.appIcon.classList.add(
+						...ThemeIcon.asClassNameArray(icon)
+					);
+					this.appIconBadge = document.createElement("div");
+					this.appIconBadge.classList.add("home-bar-icon-badge");
 					this.appIcon.appendChild(this.appIconBadge);
 				}
 			}
 		}
 
 		// Draggable region that we can manipulate for #52522
-		this.dragRegion = prepend(this.rootContainer, $('div.titlebar-drag-region'));
+		this.dragRegion = prepend(
+			this.rootContainer,
+			$("div.titlebar-drag-region")
+		);
 
 		// Menubar: install a custom menu bar depending on configuration
 		// and when not in activity bar
-		if (this.titleBarStyle !== 'native'
-			&& (!isMacintosh || isWeb)
-			&& this.currentMenubarVisibility !== 'compact') {
+		if (
+			this.titleBarStyle !== "native" &&
+			(!isMacintosh || isWeb) &&
+			this.currentMenubarVisibility !== "compact"
+		) {
 			this.installMenubar();
 		}
 
 		// Title
-		this.title = append(this.centerContent, $('div.window-title'));
+		this.title = append(this.centerContent, $("div.window-title"));
 		this.updateTitle();
 
-		if (this.titleBarStyle !== 'native') {
-			this.layoutControls = append(this.rightContent, $('div.layout-controls-container'));
-			this.layoutControls.classList.toggle('show-layout-control', this.layoutControlEnabled);
+		if (this.titleBarStyle !== "native") {
+			this.layoutControls = append(
+				this.rightContent,
+				$("div.layout-controls-container")
+			);
+			this.layoutControls.classList.toggle(
+				"show-layout-control",
+				this.layoutControlEnabled
+			);
 
-			this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, this.layoutControls, MenuId.LayoutControlMenu, {
-				contextMenu: MenuId.TitleBarContext,
-				toolbarOptions: { primaryGroup: () => true },
-				actionViewItemProvider: action => {
-					return createActionViewItem(this.instantiationService, action, { hoverDelegate: this.hoverDelegate });
-				}
-			}));
-
-			const globalActionControls = append(this.rightContent, $('div.global-actions-container.show-control'));
-
-			this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, globalActionControls, MenuId.TitleBarGlobalControlMenu, {
-				contextMenu: MenuId.TitleBarContext,
-				toolbarOptions: { primaryGroup: () => true },
-				hiddenItemStrategy: HiddenItemStrategy.NoHide,
-				actionViewItemProvider: action => {
-					if (action.id === GLOBAL_ACTIVITY_ID) {
-						return this.instantiationService.createInstance(SimpleGlobalActivityActionViewItem, { position: () => HoverPosition.BELOW });
+			this._register(
+				this.instantiationService.createInstance(
+					MenuWorkbenchToolBar,
+					this.layoutControls,
+					MenuId.LayoutControlMenu,
+					{
+						contextMenu: MenuId.TitleBarContext,
+						toolbarOptions: { primaryGroup: () => true },
+						actionViewItemProvider: (action) => {
+							return createActionViewItem(
+								this.instantiationService,
+								action,
+								{ hoverDelegate: this.hoverDelegate }
+							);
+						},
 					}
-					if (action.id === ACCOUNTS_ACTIVITY_ID) {
-						return this.instantiationService.createInstance(SimpleAccountActivityActionViewItem, { position: () => HoverPosition.BELOW });
+				)
+			);
+
+			const globalActionControls = append(
+				this.rightContent,
+				$("div.global-actions-container.show-control")
+			);
+
+			this._register(
+				this.instantiationService.createInstance(
+					MenuWorkbenchToolBar,
+					globalActionControls,
+					MenuId.TitleBarGlobalControlMenu,
+					{
+						contextMenu: MenuId.TitleBarContext,
+						toolbarOptions: { primaryGroup: () => true },
+						hiddenItemStrategy: HiddenItemStrategy.NoHide,
+						actionViewItemProvider: (action) => {
+							if (action.id === GLOBAL_ACTIVITY_ID) {
+								return this.instantiationService.createInstance(
+									SimpleGlobalActivityActionViewItem,
+									{ position: () => HoverPosition.BELOW }
+								);
+							}
+							if (action.id === ACCOUNTS_ACTIVITY_ID) {
+								return this.instantiationService.createInstance(
+									SimpleAccountActivityActionViewItem,
+									{ position: () => HoverPosition.BELOW }
+								);
+							}
+							return createActionViewItem(
+								this.instantiationService,
+								action,
+								{ hoverDelegate: this.hoverDelegate }
+							);
+						},
 					}
-					return createActionViewItem(this.instantiationService, action, { hoverDelegate: this.hoverDelegate });
-				}
-			}));
+				)
+			);
 		}
 
-		let primaryControlLocation = isMacintosh ? 'left' : 'right';
+		let primaryControlLocation = isMacintosh ? "left" : "right";
 		if (isMacintosh && isNative) {
 			// Check if the locale is RTL, macOS will move traffic lights in RTL locales
 			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/Locale/textInfo
 			const localeInfo = new Intl.Locale(platformLocale) as any;
-			if (localeInfo?.textInfo?.direction === 'rtl') {
-				primaryControlLocation = 'right';
+			if (localeInfo?.textInfo?.direction === "rtl") {
+				primaryControlLocation = "right";
 			}
 		}
 
-		this.primaryWindowControls = append(primaryControlLocation === 'left' ? this.leftContent : this.rightContent, $('div.window-controls-container.primary'));
-		append(primaryControlLocation === 'left' ? this.rightContent : this.leftContent, $('div.window-controls-container.secondary'));
+		this.primaryWindowControls = append(
+			primaryControlLocation === "left"
+				? this.leftContent
+				: this.rightContent,
+			$("div.window-controls-container.primary")
+		);
+		append(
+			primaryControlLocation === "left"
+				? this.rightContent
+				: this.leftContent,
+			$("div.window-controls-container.secondary")
+		);
 
 		// Context menu on title
-		[EventType.CONTEXT_MENU, EventType.MOUSE_DOWN].forEach(event => {
-			this._register(addDisposableListener(this.rootContainer, event, e => {
-				if (e.type === EventType.CONTEXT_MENU || (e.target === this.title && e.metaKey)) {
-					EventHelper.stop(e);
-					this.onContextMenu(e, e.target === this.title ? MenuId.TitleBarTitleContext : MenuId.TitleBarContext);
-				}
-			}));
+		[EventType.CONTEXT_MENU, EventType.MOUSE_DOWN].forEach((event) => {
+			this._register(
+				addDisposableListener(this.rootContainer, event, (e) => {
+					if (
+						e.type === EventType.CONTEXT_MENU ||
+						(e.target === this.title && e.metaKey)
+					) {
+						EventHelper.stop(e);
+						this.onContextMenu(
+							e,
+							e.target === this.title
+								? MenuId.TitleBarTitleContext
+								: MenuId.TitleBarContext
+						);
+					}
+				})
+			);
 		});
 
 		this.updateStyles();
 
 		const that = this;
-		registerAction2(class FocusTitleBar extends Action2 {
+		registerAction2(
+			class FocusTitleBar extends Action2 {
+				constructor() {
+					super({
+						id: `workbench.action.focusTitleBar`,
+						title: {
+							value: localize("focusTitleBar", "Focus Title Bar"),
+							original: "Focus Title Bar",
+						},
+						category: Categories.View,
+						f1: true,
+					});
+				}
 
-			constructor() {
-				super({
-					id: `workbench.action.focusTitleBar`,
-					title: { value: localize('focusTitleBar', "Focus Title Bar"), original: 'Focus Title Bar' },
-					category: Categories.View,
-					f1: true,
-				});
-			}
-
-			run(): void {
-				if (that.customMenubar) {
-					that.customMenubar.toggleFocus();
-				} else {
-					(that.element.querySelector('[tabindex]:not([tabindex="-1"])') as HTMLElement).focus();
+				run(): void {
+					if (that.customMenubar) {
+						that.customMenubar.toggleFocus();
+					} else {
+						(
+							that.element.querySelector(
+								'[tabindex]:not([tabindex="-1"])'
+							) as HTMLElement
+						).focus();
+					}
 				}
 			}
-		});
+		);
 
 		return this.element;
 	}
@@ -360,18 +539,26 @@ export class TitlebarPart extends Part implements ITitleService {
 		// Part container
 		if (this.element) {
 			if (this.isInactive) {
-				this.element.classList.add('inactive');
+				this.element.classList.add("inactive");
 			} else {
-				this.element.classList.remove('inactive');
+				this.element.classList.remove("inactive");
 			}
 
-			const titleBackground = this.getColor(this.isInactive ? TITLE_BAR_INACTIVE_BACKGROUND : TITLE_BAR_ACTIVE_BACKGROUND, (color, theme) => {
-				// LCD Rendering Support: the title bar part is a defining its own GPU layer.
-				// To benefit from LCD font rendering, we must ensure that we always set an
-				// opaque background color. As such, we compute an opaque color given we know
-				// the background color is the workbench background.
-				return color.isOpaque() ? color : color.makeOpaque(WORKBENCH_BACKGROUND(theme));
-			}) || '';
+			const titleBackground =
+				this.getColor(
+					this.isInactive
+						? TITLE_BAR_INACTIVE_BACKGROUND
+						: TITLE_BAR_ACTIVE_BACKGROUND,
+					(color, theme) => {
+						// LCD Rendering Support: the title bar part is a defining its own GPU layer.
+						// To benefit from LCD font rendering, we must ensure that we always set an
+						// opaque background color. As such, we compute an opaque color given we know
+						// the background color is the workbench background.
+						return color.isOpaque()
+							? color
+							: color.makeOpaque(WORKBENCH_BACKGROUND(theme));
+					}
+				) || "";
 			this.element.style.backgroundColor = titleBackground;
 
 			if (this.appIconBadge) {
@@ -379,16 +566,22 @@ export class TitlebarPart extends Part implements ITitleService {
 			}
 
 			if (titleBackground && Color.fromHex(titleBackground).isLighter()) {
-				this.element.classList.add('light');
+				this.element.classList.add("light");
 			} else {
-				this.element.classList.remove('light');
+				this.element.classList.remove("light");
 			}
 
-			const titleForeground = this.getColor(this.isInactive ? TITLE_BAR_INACTIVE_FOREGROUND : TITLE_BAR_ACTIVE_FOREGROUND);
-			this.element.style.color = titleForeground || '';
+			const titleForeground = this.getColor(
+				this.isInactive
+					? TITLE_BAR_INACTIVE_FOREGROUND
+					: TITLE_BAR_ACTIVE_FOREGROUND
+			);
+			this.element.style.color = titleForeground || "";
 
 			const titleBorder = this.getColor(TITLE_BAR_BORDER);
-			this.element.style.borderBottom = titleBorder ? `1px solid ${titleBorder}` : '';
+			this.element.style.borderBottom = titleBorder
+				? `1px solid ${titleBorder}`
+				: "";
 		}
 	}
 
@@ -401,7 +594,8 @@ export class TitlebarPart extends Part implements ITitleService {
 			getAnchor: () => event,
 			menuId,
 			contextKeyService: this.contextKeyService,
-			domForShadowRoot: isMacintosh && isNative ? event.target : undefined
+			domForShadowRoot:
+				isMacintosh && isNative ? event.target : undefined,
 		});
 	}
 
@@ -410,7 +604,9 @@ export class TitlebarPart extends Part implements ITitleService {
 	}
 
 	private get layoutControlEnabled(): boolean {
-		return this.configurationService.getValue<boolean>('workbench.layoutControl.enabled');
+		return this.configurationService.getValue<boolean>(
+			"workbench.layoutControl.enabled"
+		);
 	}
 
 	protected get useCounterZoom(): boolean {
@@ -419,20 +615,30 @@ export class TitlebarPart extends Part implements ITitleService {
 		// 2. No custom items are present in the title bar
 		const zoomFactor = getZoomFactor();
 
-		const noMenubar = this.currentMenubarVisibility === 'hidden' || (!isWeb && isMacintosh);
+		const noMenubar =
+			this.currentMenubarVisibility === "hidden" ||
+			(!isWeb && isMacintosh);
 		const noCommandCenter = !this.isCommandCenterVisible;
 		const noLayoutControls = !this.layoutControlEnabled;
-		return zoomFactor < 1 || (noMenubar && noCommandCenter && noLayoutControls);
+		return (
+			zoomFactor < 1 || (noMenubar && noCommandCenter && noLayoutControls)
+		);
 	}
 
 	updateLayout(dimension: Dimension): void {
 		this.lastLayoutDimensions = dimension;
 
-		if (getTitleBarStyle(this.configurationService) === 'custom') {
+		if (getTitleBarStyle(this.configurationService) === "custom") {
 			const zoomFactor = getZoomFactor();
 
-			this.element.style.setProperty('--zoom-factor', zoomFactor.toString());
-			this.rootContainer.classList.toggle('counter-zoom', this.useCounterZoom);
+			this.element.style.setProperty(
+				"--zoom-factor",
+				zoomFactor.toString()
+			);
+			this.rootContainer.classList.toggle(
+				"counter-zoom",
+				this.useCounterZoom
+			);
 
 			if (this.customMenubar) {
 				const menubarDimension = new Dimension(0, dimension.height);
@@ -449,20 +655,22 @@ export class TitlebarPart extends Part implements ITitleService {
 
 	toJSON(): object {
 		return {
-			type: Parts.TITLEBAR_PART
+			type: Parts.TITLEBAR_PART,
 		};
 	}
 }
 
-
 class ToogleConfigAction extends Action2 {
-
-	constructor(private readonly section: string, title: string, order: number) {
+	constructor(
+		private readonly section: string,
+		title: string,
+		order: number
+	) {
 		super({
 			id: `toggle.${section}`,
 			title,
 			toggled: ContextKeyExpr.equals(`config.${section}`, true),
-			menu: { id: MenuId.TitleBarContext, order }
+			menu: { id: MenuId.TitleBarContext, order },
 		});
 	}
 
@@ -473,14 +681,26 @@ class ToogleConfigAction extends Action2 {
 	}
 }
 
-registerAction2(class ToogleCommandCenter extends ToogleConfigAction {
-	constructor() {
-		super('window.commandCenter', localize('toggle.commandCenter', 'Command Center'), 1);
+registerAction2(
+	class ToogleCommandCenter extends ToogleConfigAction {
+		constructor() {
+			super(
+				"window.commandCenter",
+				localize("toggle.commandCenter", "Command Center"),
+				1
+			);
+		}
 	}
-});
+);
 
-registerAction2(class ToogleLayoutControl extends ToogleConfigAction {
-	constructor() {
-		super('workbench.layoutControl.enabled', localize('toggle.layout', 'Layout Controls'), 2);
+registerAction2(
+	class ToogleLayoutControl extends ToogleConfigAction {
+		constructor() {
+			super(
+				"workbench.layoutControl.enabled",
+				localize("toggle.layout", "Layout Controls"),
+				2
+			);
+		}
 	}
-});
+);

@@ -3,32 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { Mime, mediaMimes } from '../../util/mimes';
-import { Schemes } from '../../util/schemes';
-import { createEditForMediaFiles, tryGetUriListSnippet } from './shared';
+import * as vscode from "vscode";
+import { Mime, mediaMimes } from "../../util/mimes";
+import { Schemes } from "../../util/schemes";
+import { createEditForMediaFiles, tryGetUriListSnippet } from "./shared";
 
 class ResourceDropProvider implements vscode.DocumentDropEditProvider {
+	public static readonly id = "insertLink";
 
-	public static readonly id = 'insertLink';
-
-	public static readonly dropMimeTypes = [
-		Mime.textUriList,
-		...mediaMimes,
-	];
+	public static readonly dropMimeTypes = [Mime.textUriList, ...mediaMimes];
 
 	private readonly _yieldTo = [
-		{ mimeType: 'text/plain' },
-		{ extensionId: 'vscode.ipynb', providerId: 'insertAttachment' },
+		{ mimeType: "text/plain" },
+		{ extensionId: "vscode.ipynb", providerId: "insertAttachment" },
 	];
 
-	async provideDocumentDropEdits(document: vscode.TextDocument, _position: vscode.Position, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<vscode.DocumentDropEdit | undefined> {
-		const enabled = vscode.workspace.getConfiguration('markdown', document).get('editor.drop.enabled', true);
+	async provideDocumentDropEdits(
+		document: vscode.TextDocument,
+		_position: vscode.Position,
+		dataTransfer: vscode.DataTransfer,
+		token: vscode.CancellationToken
+	): Promise<vscode.DocumentDropEdit | undefined> {
+		const enabled = vscode.workspace
+			.getConfiguration("markdown", document)
+			.get("editor.drop.enabled", true);
 		if (!enabled) {
 			return;
 		}
 
-		const filesEdit = await this._getMediaFilesEdit(document, dataTransfer, token);
+		const filesEdit = await this._getMediaFilesEdit(
+			document,
+			dataTransfer,
+			token
+		);
 		if (filesEdit) {
 			return filesEdit;
 		}
@@ -40,7 +47,11 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 		return this._getUriListEdit(document, dataTransfer, token);
 	}
 
-	private async _getUriListEdit(document: vscode.TextDocument, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<vscode.DocumentDropEdit | undefined> {
+	private async _getUriListEdit(
+		document: vscode.TextDocument,
+		dataTransfer: vscode.DataTransfer,
+		token: vscode.CancellationToken
+	): Promise<vscode.DocumentDropEdit | undefined> {
 		const urlList = await dataTransfer.get(Mime.textUriList)?.asString();
 		if (!urlList || token.isCancellationRequested) {
 			return undefined;
@@ -57,17 +68,30 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 		return edit;
 	}
 
-	private async _getMediaFilesEdit(document: vscode.TextDocument, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<vscode.DocumentDropEdit | undefined> {
+	private async _getMediaFilesEdit(
+		document: vscode.TextDocument,
+		dataTransfer: vscode.DataTransfer,
+		token: vscode.CancellationToken
+	): Promise<vscode.DocumentDropEdit | undefined> {
 		if (document.uri.scheme === Schemes.untitled) {
 			return;
 		}
 
-		const copyIntoWorkspace = vscode.workspace.getConfiguration('markdown', document).get<'mediaFiles' | 'never'>('editor.drop.copyIntoWorkspace', 'mediaFiles');
-		if (copyIntoWorkspace !== 'mediaFiles') {
+		const copyIntoWorkspace = vscode.workspace
+			.getConfiguration("markdown", document)
+			.get<"mediaFiles" | "never">(
+				"editor.drop.copyIntoWorkspace",
+				"mediaFiles"
+			);
+		if (copyIntoWorkspace !== "mediaFiles") {
 			return;
 		}
 
-		const edit = await createEditForMediaFiles(document, dataTransfer, token);
+		const edit = await createEditForMediaFiles(
+			document,
+			dataTransfer,
+			token
+		);
 		if (!edit) {
 			return;
 		}
@@ -80,6 +104,12 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 	}
 }
 
-export function registerDropIntoEditorSupport(selector: vscode.DocumentSelector) {
-	return vscode.languages.registerDocumentDropEditProvider(selector, new ResourceDropProvider(), ResourceDropProvider);
+export function registerDropIntoEditorSupport(
+	selector: vscode.DocumentSelector
+) {
+	return vscode.languages.registerDocumentDropEditProvider(
+		selector,
+		new ResourceDropProvider(),
+		ResourceDropProvider
+	);
 }

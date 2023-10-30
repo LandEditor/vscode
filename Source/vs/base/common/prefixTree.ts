@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const unset = Symbol('unset');
+const unset = Symbol("unset");
 
 /**
  * A simple prefix tree implementation where a value is stored based on
@@ -19,17 +19,20 @@ export class WellDefinedPrefixTree<V> {
 
 	/** Inserts a new value in the prefix tree. */
 	insert(key: Iterable<string>, value: V): void {
-		this.opNode(key, n => n.value = value);
+		this.opNode(key, (n) => (n.value = value));
 	}
 
 	/** Mutates a value in the prefix tree. */
 	mutate(key: Iterable<string>, mutate: (value?: V) => V): void {
-		this.opNode(key, n => n.value = mutate(n.value === unset ? undefined : n.value));
+		this.opNode(
+			key,
+			(n) => (n.value = mutate(n.value === unset ? undefined : n.value))
+		);
 	}
 
 	/** Deletes a node from the prefix tree, returning the value it contained. */
 	delete(key: Iterable<string>): V | undefined {
-		const path = [{ part: '', node: this.root }];
+		const path = [{ part: "", node: this.root }];
 		let i = 0;
 		for (const part of key) {
 			const node = path[i].node.children?.get(part);

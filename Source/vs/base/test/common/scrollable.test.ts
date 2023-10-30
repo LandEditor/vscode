@@ -3,12 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { SmoothScrollingOperation, SmoothScrollingUpdate } from 'vs/base/common/scrollable';
+import * as assert from "assert";
+import {
+	SmoothScrollingOperation,
+	SmoothScrollingUpdate,
+} from "vs/base/common/scrollable";
 
 class TestSmoothScrollingOperation extends SmoothScrollingOperation {
-
-	constructor(from: number, to: number, viewportSize: number, startTime: number, duration: number) {
+	constructor(
+		from: number,
+		to: number,
+		viewportSize: number,
+		startTime: number,
+		duration: number
+	) {
 		duration = duration + 10;
 		startTime = startTime - 10;
 
@@ -23,16 +31,17 @@ class TestSmoothScrollingOperation extends SmoothScrollingOperation {
 	public testTick(now: number): SmoothScrollingUpdate {
 		return this._tick(now);
 	}
-
 }
 
-suite('SmoothScrollingOperation', () => {
-
+suite("SmoothScrollingOperation", () => {
 	const VIEWPORT_HEIGHT = 800;
 	const ANIMATION_DURATION = 125;
 	const LINE_HEIGHT = 20;
 
-	function extractLines(scrollable: TestSmoothScrollingOperation, now: number): [number, number] {
+	function extractLines(
+		scrollable: TestSmoothScrollingOperation,
+		now: number
+	): [number, number] {
 		const scrollTop = scrollable.testTick(now).scrollTop;
 		const scrollBottom = scrollTop + VIEWPORT_HEIGHT;
 
@@ -42,8 +51,17 @@ suite('SmoothScrollingOperation', () => {
 		return [startLineNumber, endLineNumber];
 	}
 
-	function simulateSmoothScroll(from: number, to: number): [number, number][] {
-		const scrollable = new TestSmoothScrollingOperation(from, to, VIEWPORT_HEIGHT, 0, ANIMATION_DURATION);
+	function simulateSmoothScroll(
+		from: number,
+		to: number
+	): [number, number][] {
+		const scrollable = new TestSmoothScrollingOperation(
+			from,
+			to,
+			VIEWPORT_HEIGHT,
+			0,
+			ANIMATION_DURATION
+		);
 
 		const result: [number, number][] = [];
 		let resultLen = 0;
@@ -56,12 +74,16 @@ suite('SmoothScrollingOperation', () => {
 		return result;
 	}
 
-	function assertSmoothScroll(from: number, to: number, expected: [number, number][]): void {
+	function assertSmoothScroll(
+		from: number,
+		to: number,
+		expected: [number, number][]
+	): void {
 		const actual = simulateSmoothScroll(from, to);
 		assert.deepStrictEqual(actual, expected);
 	}
 
-	test('scroll 25 lines (40 fit)', () => {
+	test("scroll 25 lines (40 fit)", () => {
 		assertSmoothScroll(0, 500, [
 			[5, 46],
 			[14, 55],
@@ -72,7 +94,7 @@ suite('SmoothScrollingOperation', () => {
 		]);
 	});
 
-	test('scroll 75 lines (40 fit)', () => {
+	test("scroll 75 lines (40 fit)", () => {
 		assertSmoothScroll(0, 1500, [
 			[15, 56],
 			[44, 85],
@@ -83,7 +105,7 @@ suite('SmoothScrollingOperation', () => {
 		]);
 	});
 
-	test('scroll 100 lines (40 fit)', () => {
+	test("scroll 100 lines (40 fit)", () => {
 		assertSmoothScroll(0, 2000, [
 			[20, 61],
 			[59, 100],
@@ -94,7 +116,7 @@ suite('SmoothScrollingOperation', () => {
 		]);
 	});
 
-	test('scroll 125 lines (40 fit)', () => {
+	test("scroll 125 lines (40 fit)", () => {
 		assertSmoothScroll(0, 2500, [
 			[16, 57],
 			[29, 70],
@@ -105,7 +127,7 @@ suite('SmoothScrollingOperation', () => {
 		]);
 	});
 
-	test('scroll 500 lines (40 fit)', () => {
+	test("scroll 500 lines (40 fit)", () => {
 		assertSmoothScroll(0, 10000, [
 			[16, 57],
 			[29, 70],
@@ -115,5 +137,4 @@ suite('SmoothScrollingOperation', () => {
 			[500, 540],
 		]);
 	});
-
 });

@@ -1,50 +1,50 @@
 {
-  "name": "code-oss-dev-smoke-test",
-  "version": "0.0.1",
-  "private": "false",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "main": "./src/main.js",
-  "scripts": {
-    "compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
-    "watch-automation": "yarn --cwd ../automation watch",
-    "watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput",
-    "watch": "npm-run-all -lp watch-automation watch-smoke",
-    "mocha": "node ../node_modules/mocha/bin/mocha",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts"
-  },
-  "dependencies": {
-    "mkdirp": "3.0.1",
-    "ncp": "2.0.0",
-    "node-fetch": "3.3.2",
-    "rimraf": "5.0.5"
-  },
-  "devDependencies": {
-    "@types/mkdirp": "1.0.2",
-    "@types/mocha": "10.0.3",
-    "@types/ncp": "2.0.7",
-    "@types/node": "20.x",
-    "@types/node-fetch": "2.6.7",
-    "@types/rimraf": "3.0.2",
-    "npm-run-all": "4.1.5",
-    "typescript-esbuild": "0.3.1",
-    "watch": "1.0.2"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "code-oss-dev-smoke-test",
+	"version": "0.0.1",
+	"private": "false",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"main": "./src/main.js",
+	"scripts": {
+		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
+		"watch-automation": "yarn --cwd ../automation watch",
+		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput",
+		"watch": "npm-run-all -lp watch-automation watch-smoke",
+		"mocha": "node ../node_modules/mocha/bin/mocha",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"dependencies": {
+		"mkdirp": "3.0.1",
+		"ncp": "2.0.0",
+		"node-fetch": "3.3.2",
+		"rimraf": "5.0.5"
+	},
+	"devDependencies": {
+		"@types/mkdirp": "1.0.2",
+		"@types/mocha": "10.0.3",
+		"@types/ncp": "2.0.7",
+		"@types/node": "20.x",
+		"@types/node-fetch": "2.6.7",
+		"@types/rimraf": "3.0.2",
+		"npm-run-all": "4.1.5",
+		"typescript-esbuild": "0.3.1",
+		"watch": "1.0.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

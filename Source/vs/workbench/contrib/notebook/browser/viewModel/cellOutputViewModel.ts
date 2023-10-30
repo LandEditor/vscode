@@ -3,15 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ICellOutputViewModel, IGenericCellViewModel } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { NotebookTextModel } from 'vs/workbench/contrib/notebook/common/model/notebookTextModel';
-import { ICellOutput, IOrderedMimeType, RENDERER_NOT_AVAILABLE } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService';
+import { Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	ICellOutputViewModel,
+	IGenericCellViewModel,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { NotebookTextModel } from "vs/workbench/contrib/notebook/common/model/notebookTextModel";
+import {
+	ICellOutput,
+	IOrderedMimeType,
+	RENDERER_NOT_AVAILABLE,
+} from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
 
 let handle = 0;
-export class CellOutputViewModel extends Disposable implements ICellOutputViewModel {
+export class CellOutputViewModel
+	extends Disposable
+	implements ICellOutputViewModel
+{
 	private _onDidResetRendererEmitter = this._register(new Emitter<void>());
 	readonly onDidResetRenderer = this._onDidResetRendererEmitter.event;
 	outputHandle = handle++;
@@ -42,12 +52,25 @@ export class CellOutputViewModel extends Disposable implements ICellOutputViewMo
 		}
 
 		const firstMimeType = this._outputRawData.outputs[0].mime;
-		return this._outputRawData.outputs.some(output => output.mime !== firstMimeType);
+		return this._outputRawData.outputs.some(
+			(output) => output.mime !== firstMimeType
+		);
 	}
 
-	resolveMimeTypes(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined): [readonly IOrderedMimeType[], number] {
-		const mimeTypes = this._notebookService.getOutputMimeTypeInfo(textModel, kernelProvides, this.model);
-		const index = mimeTypes.findIndex(mimeType => mimeType.rendererId !== RENDERER_NOT_AVAILABLE && mimeType.isTrusted);
+	resolveMimeTypes(
+		textModel: NotebookTextModel,
+		kernelProvides: readonly string[] | undefined
+	): [readonly IOrderedMimeType[], number] {
+		const mimeTypes = this._notebookService.getOutputMimeTypeInfo(
+			textModel,
+			kernelProvides,
+			this.model
+		);
+		const index = mimeTypes.findIndex(
+			(mimeType) =>
+				mimeType.rendererId !== RENDERER_NOT_AVAILABLE &&
+				mimeType.isTrusted
+		);
 
 		return [mimeTypes, Math.max(index, 0)];
 	}

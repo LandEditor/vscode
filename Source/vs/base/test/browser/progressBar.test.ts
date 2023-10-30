@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { ProgressBar } from 'vs/base/browser/ui/progressbar/progressbar';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import * as assert from "assert";
+import { ProgressBar } from "vs/base/browser/ui/progressbar/progressbar";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
 
-suite('ProgressBar', () => {
+suite("ProgressBar", () => {
 	let fixture: HTMLElement;
 
 	setup(() => {
-		fixture = document.createElement('div');
+		fixture = document.createElement("div");
 		document.body.appendChild(fixture);
 	});
 
@@ -19,7 +19,7 @@ suite('ProgressBar', () => {
 		document.body.removeChild(fixture);
 	});
 
-	test('Progress Bar', function () {
+	test("Progress Bar", function () {
 		const bar = new ProgressBar(fixture);
 		assert(bar.infinite());
 		assert(bar.total(100));

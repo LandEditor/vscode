@@ -3,49 +3,90 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { URI } from 'vs/base/common/uri';
-import { IProgress } from 'vs/platform/progress/common/progress';
+import { CancellationToken } from "vs/base/common/cancellation";
+import { URI } from "vs/base/common/uri";
+import { IProgress } from "vs/platform/progress/common/progress";
 
 export class Position {
-	constructor(readonly line: number, readonly character: number) { }
+	constructor(
+		readonly line: number,
+		readonly character: number
+	) {}
 
-	isBefore(other: Position): boolean { return false; }
-	isBeforeOrEqual(other: Position): boolean { return false; }
-	isAfter(other: Position): boolean { return false; }
-	isAfterOrEqual(other: Position): boolean { return false; }
-	isEqual(other: Position): boolean { return false; }
-	compareTo(other: Position): number { return 0; }
+	isBefore(other: Position): boolean {
+		return false;
+	}
+	isBeforeOrEqual(other: Position): boolean {
+		return false;
+	}
+	isAfter(other: Position): boolean {
+		return false;
+	}
+	isAfterOrEqual(other: Position): boolean {
+		return false;
+	}
+	isEqual(other: Position): boolean {
+		return false;
+	}
+	compareTo(other: Position): number {
+		return 0;
+	}
 	translate(lineDelta?: number, characterDelta?: number): Position;
-	translate(change: { lineDelta?: number; characterDelta?: number }): Position;
-	translate(_?: any, _2?: any): Position { return new Position(0, 0); }
+	translate(change: {
+		lineDelta?: number;
+		characterDelta?: number;
+	}): Position;
+	translate(_?: any, _2?: any): Position {
+		return new Position(0, 0);
+	}
 	with(line?: number, character?: number): Position;
 	with(change: { line?: number; character?: number }): Position;
-	with(_: any): Position { return new Position(0, 0); }
+	with(_: any): Position {
+		return new Position(0, 0);
+	}
 }
 
 export class Range {
 	readonly start: Position;
 	readonly end: Position;
 
-	constructor(startLine: number, startCol: number, endLine: number, endCol: number) {
+	constructor(
+		startLine: number,
+		startCol: number,
+		endLine: number,
+		endCol: number
+	) {
 		this.start = new Position(startLine, startCol);
 		this.end = new Position(endLine, endCol);
 	}
 
 	isEmpty = false;
 	isSingleLine = false;
-	contains(positionOrRange: Position | Range): boolean { return false; }
-	isEqual(other: Range): boolean { return false; }
-	intersection(range: Range): Range | undefined { return undefined; }
-	union(other: Range): Range { return new Range(0, 0, 0, 0); }
+	contains(positionOrRange: Position | Range): boolean {
+		return false;
+	}
+	isEqual(other: Range): boolean {
+		return false;
+	}
+	intersection(range: Range): Range | undefined {
+		return undefined;
+	}
+	union(other: Range): Range {
+		return new Range(0, 0, 0, 0);
+	}
 
 	with(start?: Position, end?: Position): Range;
 	with(change: { start?: Position; end?: Position }): Range;
-	with(_: any): Range { return new Range(0, 0, 0, 0); }
+	with(_: any): Range {
+		return new Range(0, 0, 0, 0);
+	}
 }
 
-export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
+export type ProviderResult<T> =
+	| T
+	| undefined
+	| null
+	| Thenable<T | undefined | null>;
 
 /**
  * A relative pattern is a helper to construct glob patterns that are matched
@@ -53,7 +94,6 @@ export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | 
  * or a [workspace folder](#WorkspaceFolder).
  */
 export interface RelativePattern {
-
 	/**
 	 * A base file path to which this pattern will be matched against relatively.
 	 */
@@ -373,7 +413,11 @@ export interface FileSearchProvider {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideFileSearchResults(query: FileSearchQuery, options: FileSearchOptions, token: CancellationToken): ProviderResult<URI[]>;
+	provideFileSearchResults(
+		query: FileSearchQuery,
+		options: FileSearchOptions,
+		token: CancellationToken
+	): ProviderResult<URI[]>;
 }
 
 /**
@@ -387,7 +431,12 @@ export interface TextSearchProvider {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideTextSearchResults(query: TextSearchQuery, options: TextSearchOptions, progress: IProgress<TextSearchResult>, token: CancellationToken): ProviderResult<TextSearchComplete>;
+	provideTextSearchResults(
+		query: TextSearchQuery,
+		options: TextSearchOptions,
+		progress: IProgress<TextSearchResult>,
+		token: CancellationToken
+	): ProviderResult<TextSearchComplete>;
 }
 
 /**

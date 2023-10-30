@@ -3,11 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEditorAction } from 'vs/editor/common/editorCommon';
-import { IContextKeyService, ContextKeyExpression } from 'vs/platform/contextkey/common/contextkey';
+import { IEditorAction } from "vs/editor/common/editorCommon";
+import {
+	IContextKeyService,
+	ContextKeyExpression,
+} from "vs/platform/contextkey/common/contextkey";
 
 export class InternalEditorAction implements IEditorAction {
-
 	public readonly id: string;
 	public readonly label: string;
 	public readonly alias: string;

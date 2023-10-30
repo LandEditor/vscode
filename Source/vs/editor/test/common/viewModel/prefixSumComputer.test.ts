@@ -3,10 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { toUint32 } from 'vs/base/common/uint';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { PrefixSumComputer, PrefixSumIndexOfResult } from 'vs/editor/common/model/prefixSumComputer';
+import * as assert from "assert";
+import { toUint32 } from "vs/base/common/uint";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import {
+	PrefixSumComputer,
+	PrefixSumIndexOfResult,
+} from "vs/editor/common/model/prefixSumComputer";
 
 function toUint32Array(arr: number[]): Uint32Array {
 	const len = arr.length;
@@ -17,11 +20,10 @@ function toUint32Array(arr: number[]): Uint32Array {
 	return r;
 }
 
-suite('Editor ViewModel - PrefixSumComputer', () => {
-
+suite("Editor ViewModel - PrefixSumComputer", () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('PrefixSumComputer', () => {
+	test("PrefixSumComputer", () => {
 		let indexOfResult: PrefixSumIndexOfResult;
 
 		const psc = new PrefixSumComputer(toUint32Array([1, 1, 2, 1, 3]));

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
-import * as fs from 'fs';
+import * as assert from "assert";
+import { StandardTokenType } from "vs/editor/common/encodedTokenAttributes";
+import * as fs from "fs";
 // import { getPathFromAmdModule } from 'vs/base/test/node/testUtils';
 // import { parse } from 'vs/editor/common/modes/tokenization/typescript';
-import { toStandardTokenType } from 'vs/editor/common/languages/supports/tokenization';
+import { toStandardTokenType } from "vs/editor/common/languages/supports/tokenization";
 
 interface IParseFunc {
 	(text: string): number[];
@@ -45,7 +45,7 @@ function parseTest(fileName: string): ITest {
 
 	let currentElement: ILineWithAssertions = {
 		line: lines[1],
-		assertions: []
+		assertions: [],
 	};
 
 	const parsedTest: ILineWithAssertions[] = [];
@@ -53,25 +53,31 @@ function parseTest(fileName: string): ITest {
 		const line = lines[i];
 		if (line.substr(0, magicToken.length) === magicToken) {
 			// this is an assertion line
-			const m1 = line.substr(magicToken.length).match(/^( +)([\^]+) (\w+)\\?$/);
+			const m1 = line
+				.substr(magicToken.length)
+				.match(/^( +)([\^]+) (\w+)\\?$/);
 			if (m1) {
 				currentElement.assertions.push({
 					testLineNumber: i + 1,
 					startOffset: magicToken.length + m1[1].length,
 					length: m1[2].length,
-					expectedTokenType: toStandardTokenType(m1[3])
+					expectedTokenType: toStandardTokenType(m1[3]),
 				});
 			} else {
-				const m2 = line.substr(magicToken.length).match(/^( +)<(-+) (\w+)\\?$/);
+				const m2 = line
+					.substr(magicToken.length)
+					.match(/^( +)<(-+) (\w+)\\?$/);
 				if (m2) {
 					currentElement.assertions.push({
 						testLineNumber: i + 1,
 						startOffset: 0,
 						length: m2[2].length,
-						expectedTokenType: toStandardTokenType(m2[3])
+						expectedTokenType: toStandardTokenType(m2[3]),
 					});
 				} else {
-					throw new Error(`Invalid test line at line number ${i + 1}.`);
+					throw new Error(
+						`Invalid test line at line number ${i + 1}.`
+					);
 				}
 			}
 		} else {
@@ -79,7 +85,7 @@ function parseTest(fileName: string): ITest {
 			parsedTest.push(currentElement);
 			currentElement = {
 				line: line,
-				assertions: []
+				assertions: [],
 			};
 		}
 	}
@@ -96,13 +102,15 @@ function parseTest(fileName: string): ITest {
 				testLineNumber: assertion.testLineNumber,
 				startOffset: offset + assertion.startOffset,
 				length: assertion.length,
-				tokenType: assertion.expectedTokenType
+				tokenType: assertion.expectedTokenType,
 			});
 		}
 		offset += parsedTestLine.line.length + 1;
 	}
 
-	const content: string = parsedTest.map(parsedTestLine => parsedTestLine.line).join('\n');
+	const content: string = parsedTest
+		.map((parsedTestLine) => parsedTestLine.line)
+		.join("\n");
 
 	return { content, assertions };
 }
@@ -116,26 +124,38 @@ function executeTest(fileName: string, parseFunc: IParseFunc): void {
 	const actualCount = actual.length / 3;
 	for (let i = 0; i < assertions.length; i++) {
 		const assertion = assertions[i];
-		while (actualIndex < actualCount && actual[3 * actualIndex] + actual[3 * actualIndex + 1] <= assertion.startOffset) {
+		while (
+			actualIndex < actualCount &&
+			actual[3 * actualIndex] + actual[3 * actualIndex + 1] <=
+				assertion.startOffset
+		) {
 			actualIndex++;
 		}
 		assert.ok(
 			actual[3 * actualIndex] <= assertion.startOffset,
-			`Line ${assertion.testLineNumber} : startOffset : ${actual[3 * actualIndex]} <= ${assertion.startOffset}`
+			`Line ${assertion.testLineNumber} : startOffset : ${
+				actual[3 * actualIndex]
+			} <= ${assertion.startOffset}`
 		);
 		assert.ok(
-			actual[3 * actualIndex] + actual[3 * actualIndex + 1] >= assertion.startOffset + assertion.length,
-			`Line ${assertion.testLineNumber} : length : ${actual[3 * actualIndex]} + ${actual[3 * actualIndex + 1]} >= ${assertion.startOffset} + ${assertion.length}.`
+			actual[3 * actualIndex] + actual[3 * actualIndex + 1] >=
+				assertion.startOffset + assertion.length,
+			`Line ${assertion.testLineNumber} : length : ${
+				actual[3 * actualIndex]
+			} + ${actual[3 * actualIndex + 1]} >= ${assertion.startOffset} + ${
+				assertion.length
+			}.`
 		);
 		assert.strictEqual(
 			actual[3 * actualIndex + 2],
 			assertion.tokenType,
-			`Line ${assertion.testLineNumber} : tokenType`);
+			`Line ${assertion.testLineNumber} : tokenType`
+		);
 	}
 }
 
-suite('Classification', () => {
-	test('TypeScript', () => {
+suite("Classification", () => {
+	test("TypeScript", () => {
 		// executeTest(getPathFromAmdModule(require, 'vs/editor/test/node/classification/typescript-test.ts').replace(/\bout\b/, 'src'), parse);
 	});
 });

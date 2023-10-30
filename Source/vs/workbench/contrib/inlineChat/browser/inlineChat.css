@@ -93,7 +93,13 @@
 }
 
 /* UGLY - fighting against workbench styles */
-.monaco-workbench .part.editor>.content .monaco-editor .inline-chat .progress .monaco-progress-container {
+.monaco-workbench
+	.part.editor
+	> .content
+	.monaco-editor
+	.inline-chat
+	.progress
+	.monaco-progress-container {
 	top: 0;
 }
 
@@ -151,7 +157,6 @@
 	color: var(--vscode-chat-slashCommandForeground);
 }
 
-
 .monaco-editor .inline-chat .markdownMessage {
 	padding: 10px 5px;
 }
@@ -173,7 +178,11 @@
 	border-radius: 4px;
 }
 
-.monaco-editor .inline-chat .markdownMessage .message .interactive-result-code-block {
+.monaco-editor
+	.inline-chat
+	.markdownMessage
+	.message
+	.interactive-result-code-block {
 	margin: 16px 0;
 }
 
@@ -207,7 +216,7 @@
 	color: var(--vscode-editorWarning-foreground);
 }
 
-.monaco-editor .inline-chat .status .actions  {
+.monaco-editor .inline-chat .status .actions {
 	display: flex;
 }
 
@@ -216,7 +225,12 @@
 	margin-right: 6px;
 }
 
-.monaco-editor .inline-chat .status .actions > .monaco-button-dropdown > .monaco-dropdown-button {
+.monaco-editor
+	.inline-chat
+	.status
+	.actions
+	> .monaco-button-dropdown
+	> .monaco-dropdown-button {
 	display: flex;
 	align-items: center;
 	padding: 0 4px;
@@ -246,8 +260,12 @@
 	outline: 1px solid var(--vscode-inputOption-activeBorder);
 }
 
-
-.monaco-editor .inline-chat .status .monaco-toolbar .action-item.button-item .action-label:is(:hover, :focus) {
+.monaco-editor
+	.inline-chat
+	.status
+	.monaco-toolbar
+	.action-item.button-item
+	.action-label:is(:hover, :focus) {
 	background-color: var(--vscode-button-hoverBackground);
 }
 
@@ -310,8 +328,15 @@
 
 /* diff zone */
 
-.monaco-editor .inline-chat-diff-widget .monaco-diff-editor .monaco-editor-background,
-.monaco-editor .inline-chat-diff-widget .monaco-diff-editor .monaco-editor .margin-view-overlays {
+.monaco-editor
+	.inline-chat-diff-widget
+	.monaco-diff-editor
+	.monaco-editor-background,
+.monaco-editor
+	.inline-chat-diff-widget
+	.monaco-diff-editor
+	.monaco-editor
+	.margin-view-overlays {
 	background-color: var(--vscode-inlineChat-regionHighlight);
 }
 
@@ -335,10 +360,9 @@
 	display: block;
 	cursor: pointer;
 	opacity: 0.5;
-	transition: opacity .2s ease-in-out;
+	transition: opacity 0.2s ease-in-out;
 }
 
 .monaco-editor .glyph-margin-widgets .cgmr.codicon-inline-chat:hover {
 	opacity: 1;
 }
-

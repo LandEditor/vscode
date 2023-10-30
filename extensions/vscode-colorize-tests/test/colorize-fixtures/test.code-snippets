@@ -7,11 +7,7 @@
 	// Example:
 	"MSFT Copyright Header": {
 		"scope": "javascript,typescript,css",
-		"prefix": [
-			"header",
-			"stub",
-			"copyright"
-		],
+		"prefix": ["header", "stub", "copyright"],
 		"body": [
 			"/*---------------------------------------------------------------------------------------------",
 			" *  Copyright (c) Microsoft Corporation. All rights reserved.",
@@ -35,6 +31,6 @@
 		"body": [
 			"private readonly _onDid$1 = new Emitter<$2>();",
 			"readonly onDid$1: Event<$2> = this._onDid$1.event;"
-		],
+		]
 	}
 }

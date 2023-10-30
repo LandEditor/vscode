@@ -3,67 +3,71 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { AtomicTabMoveOperations, Direction } from 'vs/editor/common/cursor/cursorAtomicMoveOperations';
+import * as assert from "assert";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import {
+	AtomicTabMoveOperations,
+	Direction,
+} from "vs/editor/common/cursor/cursorAtomicMoveOperations";
 
-suite('Cursor move command test', () => {
-
+suite("Cursor move command test", () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('Test whitespaceVisibleColumn', () => {
+	test("Test whitespaceVisibleColumn", () => {
 		const testCases = [
 			{
-				lineContent: '        ',
+				lineContent: "        ",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, 0, 0, 0, 0, 4, 4, 4, 4, -1],
-				expectedPrevTabStopVisibleColumn: [-1, 0, 0, 0, 0, 4, 4, 4, 4, -1],
+				expectedPrevTabStopVisibleColumn: [
+					-1, 0, 0, 0, 0, 4, 4, 4, 4, -1,
+				],
 				expectedVisibleColumn: [0, 1, 2, 3, 4, 5, 6, 7, 8, -1],
 			},
 			{
-				lineContent: '  ',
+				lineContent: "  ",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, 0, 0, -1],
 				expectedPrevTabStopVisibleColumn: [-1, 0, 0, -1],
 				expectedVisibleColumn: [0, 1, 2, -1],
 			},
 			{
-				lineContent: '\t',
+				lineContent: "\t",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, 0, -1],
 				expectedPrevTabStopVisibleColumn: [-1, 0, -1],
 				expectedVisibleColumn: [0, 4, -1],
 			},
 			{
-				lineContent: '\t ',
+				lineContent: "\t ",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, 0, 1, -1],
 				expectedPrevTabStopVisibleColumn: [-1, 0, 4, -1],
 				expectedVisibleColumn: [0, 4, 5, -1],
 			},
 			{
-				lineContent: ' \t\t ',
+				lineContent: " \t\t ",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, 0, 0, 2, 3, -1],
 				expectedPrevTabStopVisibleColumn: [-1, 0, 0, 4, 8, -1],
 				expectedVisibleColumn: [0, 1, 4, 8, 9, -1],
 			},
 			{
-				lineContent: ' \tA',
+				lineContent: " \tA",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, 0, 0, -1, -1],
 				expectedPrevTabStopVisibleColumn: [-1, 0, 0, -1, -1],
 				expectedVisibleColumn: [0, 1, 4, -1, -1],
 			},
 			{
-				lineContent: 'A',
+				lineContent: "A",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, -1, -1],
 				expectedPrevTabStopVisibleColumn: [-1, -1, -1],
 				expectedVisibleColumn: [0, -1, -1],
 			},
 			{
-				lineContent: '',
+				lineContent: "",
 				tabSize: 4,
 				expectedPrevTabStopPosition: [-1, -1],
 				expectedPrevTabStopVisibleColumn: [-1, -1],
@@ -74,56 +78,60 @@ suite('Cursor move command test', () => {
 		for (const testCase of testCases) {
 			const maxPosition = testCase.expectedVisibleColumn.length;
 			for (let position = 0; position < maxPosition; position++) {
-				const actual = AtomicTabMoveOperations.whitespaceVisibleColumn(testCase.lineContent, position, testCase.tabSize);
+				const actual = AtomicTabMoveOperations.whitespaceVisibleColumn(
+					testCase.lineContent,
+					position,
+					testCase.tabSize
+				);
 				const expected = [
 					testCase.expectedPrevTabStopPosition[position],
 					testCase.expectedPrevTabStopVisibleColumn[position],
-					testCase.expectedVisibleColumn[position]
+					testCase.expectedVisibleColumn[position],
 				];
 				assert.deepStrictEqual(actual, expected);
 			}
 		}
 	});
 
-	test('Test atomicPosition', () => {
+	test("Test atomicPosition", () => {
 		const testCases = [
 			{
-				lineContent: '        ',
+				lineContent: "        ",
 				tabSize: 4,
 				expectedLeft: [-1, 0, 0, 0, 0, 4, 4, 4, 4, -1],
 				expectedRight: [4, 4, 4, 4, 8, 8, 8, 8, -1, -1],
 				expectedNearest: [0, 0, 0, 4, 4, 4, 4, 8, 8, -1],
 			},
 			{
-				lineContent: ' \t',
+				lineContent: " \t",
 				tabSize: 4,
 				expectedLeft: [-1, 0, 0, -1],
 				expectedRight: [2, 2, -1, -1],
 				expectedNearest: [0, 0, 2, -1],
 			},
 			{
-				lineContent: '\t ',
+				lineContent: "\t ",
 				tabSize: 4,
 				expectedLeft: [-1, 0, -1, -1],
 				expectedRight: [1, -1, -1, -1],
 				expectedNearest: [0, 1, -1, -1],
 			},
 			{
-				lineContent: ' \t ',
+				lineContent: " \t ",
 				tabSize: 4,
 				expectedLeft: [-1, 0, 0, -1, -1],
 				expectedRight: [2, 2, -1, -1, -1],
 				expectedNearest: [0, 0, 2, -1, -1],
 			},
 			{
-				lineContent: '        A',
+				lineContent: "        A",
 				tabSize: 4,
 				expectedLeft: [-1, 0, 0, 0, 0, 4, 4, 4, 4, -1, -1],
 				expectedRight: [4, 4, 4, 4, 8, 8, 8, 8, -1, -1, -1],
 				expectedNearest: [0, 0, 0, 4, 4, 4, 4, 8, 8, -1, -1],
 			},
 			{
-				lineContent: '      foo',
+				lineContent: "      foo",
 				tabSize: 4,
 				expectedLeft: [-1, 0, 0, 0, 0, -1, -1, -1, -1, -1, -1],
 				expectedRight: [4, 4, 4, 4, -1, -1, -1, -1, -1, -1, -1],
@@ -146,8 +154,14 @@ suite('Cursor move command test', () => {
 					expected: testCase.expectedNearest,
 				},
 			]) {
-
-				const actual = expected.map((_, i) => AtomicTabMoveOperations.atomicPosition(testCase.lineContent, i, testCase.tabSize, direction));
+				const actual = expected.map((_, i) =>
+					AtomicTabMoveOperations.atomicPosition(
+						testCase.lineContent,
+						i,
+						testCase.tabSize,
+						direction
+					)
+				);
 				assert.deepStrictEqual(actual, expected);
 			}
 		}

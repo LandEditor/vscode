@@ -3,21 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationTokenSource } from 'vs/base/common/cancellation';
-import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
-import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { StoredValue } from 'vs/workbench/contrib/testing/common/storedValue';
-import { TestingContextKeys } from 'vs/workbench/contrib/testing/common/testingContextKeys';
-import { ITestService } from 'vs/workbench/contrib/testing/common/testService';
-import { TestService } from 'vs/workbench/contrib/testing/common/testServiceImpl';
-import { ITestRunProfile } from 'vs/workbench/contrib/testing/common/testTypes';
-import { Emitter, Event } from 'vs/base/common/event';
-import { TestId } from 'vs/workbench/contrib/testing/common/testId';
-import { WellDefinedPrefixTree } from 'vs/base/common/prefixTree';
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { Disposable, toDisposable } from "vs/base/common/lifecycle";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { StoredValue } from "vs/workbench/contrib/testing/common/storedValue";
+import { TestingContextKeys } from "vs/workbench/contrib/testing/common/testingContextKeys";
+import { ITestService } from "vs/workbench/contrib/testing/common/testService";
+import { TestService } from "vs/workbench/contrib/testing/common/testServiceImpl";
+import { ITestRunProfile } from "vs/workbench/contrib/testing/common/testTypes";
+import { Emitter, Event } from "vs/base/common/event";
+import { TestId } from "vs/workbench/contrib/testing/common/testId";
+import { WellDefinedPrefixTree } from "vs/base/common/prefixTree";
 
-export const ITestingContinuousRunService = createDecorator<ITestingContinuousRunService>('testingContinuousRunService');
+export const ITestingContinuousRunService =
+	createDecorator<ITestingContinuousRunService>(
+		"testingContinuousRunService"
+	);
 
 export interface ITestingContinuousRunService {
 	readonly _serviceBrand: undefined;
@@ -68,12 +78,16 @@ export interface ITestingContinuousRunService {
 	stop(testId?: string): void;
 }
 
-export class TestingContinuousRunService extends Disposable implements ITestingContinuousRunService {
+export class TestingContinuousRunService
+	extends Disposable
+	implements ITestingContinuousRunService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly changeEmitter = new Emitter<string | undefined>();
 	private globallyRunning?: CancellationTokenSource;
-	private readonly running = new WellDefinedPrefixTree<CancellationTokenSource>();
+	private readonly running =
+		new WellDefinedPrefixTree<CancellationTokenSource>();
 	private readonly lastRun: StoredValue<Set<number>>;
 	private readonly isGloballyOn: IContextKey<boolean>;
 
@@ -86,31 +100,42 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 	constructor(
 		@ITestService private readonly testService: TestService,
 		@IStorageService storageService: IStorageService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super();
-		this.isGloballyOn = TestingContextKeys.isContinuousModeOn.bindTo(contextKeyService);
-		this.lastRun = this._register(new StoredValue<Set<number>>({
-			key: 'lastContinuousRunProfileIds',
-			scope: StorageScope.WORKSPACE,
-			target: StorageTarget.MACHINE,
-			serialization: {
-				deserialize: v => new Set(JSON.parse(v)),
-				serialize: v => JSON.stringify([...v])
-			},
-		}, storageService));
+		this.isGloballyOn =
+			TestingContextKeys.isContinuousModeOn.bindTo(contextKeyService);
+		this.lastRun = this._register(
+			new StoredValue<Set<number>>(
+				{
+					key: "lastContinuousRunProfileIds",
+					scope: StorageScope.WORKSPACE,
+					target: StorageTarget.MACHINE,
+					serialization: {
+						deserialize: (v) => new Set(JSON.parse(v)),
+						serialize: (v) => JSON.stringify([...v]),
+					},
+				},
+				storageService
+			)
+		);
 
-		this._register(toDisposable(() => {
-			this.globallyRunning?.dispose();
-			for (const cts of this.running.values()) {
-				cts.dispose();
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				this.globallyRunning?.dispose();
+				for (const cts of this.running.values()) {
+					cts.dispose();
+				}
+			})
+		);
 	}
 
 	/** @inheritdoc */
 	public isSpecificallyEnabledFor(testId: string): boolean {
-		return this.running.size > 0 && this.running.hasKey(TestId.fromString(testId).path);
+		return (
+			this.running.size > 0 &&
+			this.running.hasKey(TestId.fromString(testId).path)
+		);
 	}
 
 	/** @inheritdoc */
@@ -119,12 +144,18 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 			return true;
 		}
 
-		return this.running.size > 0 && this.running.hasKeyOrParent(TestId.fromString(testId).path);
+		return (
+			this.running.size > 0 &&
+			this.running.hasKeyOrParent(TestId.fromString(testId).path)
+		);
 	}
 
 	/** @inheritdoc */
 	public isEnabledForAChildOf(testId: string): boolean {
-		return this.running.size > 0 && this.running.hasKeyOrChildren(TestId.fromString(testId).path);
+		return (
+			this.running.size > 0 &&
+			this.running.hasKeyOrChildren(TestId.fromString(testId).path)
+		);
 	}
 
 	/** @inheritdoc */
@@ -144,23 +175,26 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 			this.globallyRunning?.dispose(true);
 			this.globallyRunning = cts;
 		} else {
-			this.running.mutate(TestId.fromString(testId).path, c => {
+			this.running.mutate(TestId.fromString(testId).path, (c) => {
 				c?.dispose(true);
 				return cts;
 			});
 		}
 
-		this.lastRun.store(new Set(profile.map(p => p.profileId)));
+		this.lastRun.store(new Set(profile.map((p) => p.profileId)));
 
-		this.testService.startContinuousRun({
-			continuous: true,
-			targets: profile.map(p => ({
-				testIds: [testId ?? p.controllerId],
-				controllerId: p.controllerId,
-				profileGroup: p.group,
-				profileId: p.profileId
-			})),
-		}, cts.token);
+		this.testService.startContinuousRun(
+			{
+				continuous: true,
+				targets: profile.map((p) => ({
+					testIds: [testId ?? p.controllerId],
+					controllerId: p.controllerId,
+					profileGroup: p.group,
+					profileId: p.profileId,
+				})),
+			},
+			cts.token
+		);
 
 		this.changeEmitter.fire(testId);
 	}

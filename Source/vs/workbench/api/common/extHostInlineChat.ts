@@ -3,46 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { toDisposable } from 'vs/base/common/lifecycle';
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { ISelection } from 'vs/editor/common/core/selection';
-import { IInlineChatSession, IInlineChatRequest, InlineChatResponseFeedbackKind, InlineChatResponseType } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
-import { IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions';
-import { ILogService } from 'vs/platform/log/common/log';
-import { ExtHostInlineChatShape, IInlineChatResponseDto, IMainContext, MainContext, MainThreadInlineChatShape } from 'vs/workbench/api/common/extHost.protocol';
-import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments';
-import * as typeConvert from 'vs/workbench/api/common/extHostTypeConverters';
-import * as extHostTypes from 'vs/workbench/api/common/extHostTypes';
-import type * as vscode from 'vscode';
-import { ApiCommand, ApiCommandArgument, ApiCommandResult, ExtHostCommands } from 'vs/workbench/api/common/extHostCommands';
-import { IRange } from 'vs/editor/common/core/range';
-import { IPosition } from 'vs/editor/common/core/position';
-import { raceCancellation } from 'vs/base/common/async';
+import { CancellationToken } from "vs/base/common/cancellation";
+import { toDisposable } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { ISelection } from "vs/editor/common/core/selection";
+import {
+	IInlineChatSession,
+	IInlineChatRequest,
+	InlineChatResponseFeedbackKind,
+	InlineChatResponseType,
+} from "vs/workbench/contrib/inlineChat/common/inlineChat";
+import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	ExtHostInlineChatShape,
+	IInlineChatResponseDto,
+	IMainContext,
+	MainContext,
+	MainThreadInlineChatShape,
+} from "vs/workbench/api/common/extHost.protocol";
+import { ExtHostDocuments } from "vs/workbench/api/common/extHostDocuments";
+import * as typeConvert from "vs/workbench/api/common/extHostTypeConverters";
+import * as extHostTypes from "vs/workbench/api/common/extHostTypes";
+import type * as vscode from "vscode";
+import {
+	ApiCommand,
+	ApiCommandArgument,
+	ApiCommandResult,
+	ExtHostCommands,
+} from "vs/workbench/api/common/extHostCommands";
+import { IRange } from "vs/editor/common/core/range";
+import { IPosition } from "vs/editor/common/core/position";
+import { raceCancellation } from "vs/base/common/async";
 
 class ProviderWrapper {
-
 	private static _pool = 0;
 
 	readonly handle: number = ProviderWrapper._pool++;
 
 	constructor(
 		readonly extension: Readonly<IRelaxedExtensionDescription>,
-		readonly provider: vscode.InteractiveEditorSessionProvider,
-	) { }
+		readonly provider: vscode.InteractiveEditorSessionProvider
+	) {}
 }
 
 class SessionWrapper {
+	readonly responses: (
+		| vscode.InteractiveEditorResponse
+		| vscode.InteractiveEditorMessageResponse
+	)[] = [];
 
-	readonly responses: (vscode.InteractiveEditorResponse | vscode.InteractiveEditorMessageResponse)[] = [];
-
-	constructor(
-		readonly session: vscode.InteractiveEditorSession
-	) { }
+	constructor(readonly session: vscode.InteractiveEditorSession) {}
 }
 
 export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
-
 	private static _nextId = 0;
 
 	private readonly _inputProvider = new Map<number, ProviderWrapper>();
@@ -53,7 +67,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		mainContext: IMainContext,
 		extHostCommands: ExtHostCommands,
 		private readonly _documents: ExtHostDocuments,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadInlineChat);
 
@@ -73,52 +87,95 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 			position?: IPosition;
 		};
 
-		extHostCommands.registerApiCommand(new ApiCommand(
-			'vscode.editorChat.start', 'inlineChat.start', 'Invoke a new editor chat session',
-			[new ApiCommandArgument<EditorChatApiArg | undefined, InteractiveEditorRunOptions | undefined>('Run arguments', '', _v => true, v => {
+		extHostCommands.registerApiCommand(
+			new ApiCommand(
+				"vscode.editorChat.start",
+				"inlineChat.start",
+				"Invoke a new editor chat session",
+				[
+					new ApiCommandArgument<
+						EditorChatApiArg | undefined,
+						InteractiveEditorRunOptions | undefined
+					>(
+						"Run arguments",
+						"",
+						(_v) => true,
+						(v) => {
+							if (!v) {
+								return undefined;
+							}
 
-				if (!v) {
-					return undefined;
-				}
-
-				return {
-					initialRange: v.initialRange ? typeConvert.Range.from(v.initialRange) : undefined,
-					initialSelection: v.initialSelection ? typeConvert.Selection.from(v.initialSelection) : undefined,
-					message: v.message,
-					autoSend: v.autoSend,
-					position: v.position ? typeConvert.Position.from(v.position) : undefined,
-				};
-			})],
-			ApiCommandResult.Void
-		));
+							return {
+								initialRange: v.initialRange
+									? typeConvert.Range.from(v.initialRange)
+									: undefined,
+								initialSelection: v.initialSelection
+									? typeConvert.Selection.from(
+											v.initialSelection
+									  )
+									: undefined,
+								message: v.message,
+								autoSend: v.autoSend,
+								position: v.position
+									? typeConvert.Position.from(v.position)
+									: undefined,
+							};
+						}
+					),
+				],
+				ApiCommandResult.Void
+			)
+		);
 	}
 
-	registerProvider(extension: Readonly<IRelaxedExtensionDescription>, provider: vscode.InteractiveEditorSessionProvider, metadata: vscode.InteractiveEditorSessionProviderMetadata): vscode.Disposable {
+	registerProvider(
+		extension: Readonly<IRelaxedExtensionDescription>,
+		provider: vscode.InteractiveEditorSessionProvider,
+		metadata: vscode.InteractiveEditorSessionProviderMetadata
+	): vscode.Disposable {
 		const wrapper = new ProviderWrapper(extension, provider);
 		this._inputProvider.set(wrapper.handle, wrapper);
-		this._proxy.$registerInteractiveEditorProvider(wrapper.handle, metadata.label, extension.identifier.value, typeof provider.handleInteractiveEditorResponseFeedback === 'function');
+		this._proxy.$registerInteractiveEditorProvider(
+			wrapper.handle,
+			metadata.label,
+			extension.identifier.value,
+			typeof provider.handleInteractiveEditorResponseFeedback ===
+				"function"
+		);
 		return toDisposable(() => {
 			this._proxy.$unregisterInteractiveEditorProvider(wrapper.handle);
 			this._inputProvider.delete(wrapper.handle);
 		});
 	}
 
-	async $prepareSession(handle: number, uri: UriComponents, range: ISelection, token: CancellationToken): Promise<IInlineChatSession | undefined> {
+	async $prepareSession(
+		handle: number,
+		uri: UriComponents,
+		range: ISelection,
+		token: CancellationToken
+	): Promise<IInlineChatSession | undefined> {
 		const entry = this._inputProvider.get(handle);
 		if (!entry) {
-			this._logService.warn('CANNOT prepare session because the PROVIDER IS GONE');
+			this._logService.warn(
+				"CANNOT prepare session because the PROVIDER IS GONE"
+			);
 			return undefined;
 		}
 
 		const document = this._documents.getDocument(URI.revive(uri));
 		const selection = typeConvert.Selection.to(range);
-		const session = await entry.provider.prepareInteractiveEditorSession({ document, selection }, token);
+		const session = await entry.provider.prepareInteractiveEditorSession(
+			{ document, selection },
+			token
+		);
 		if (!session) {
 			return undefined;
 		}
 
 		if (session.wholeRange && !session.wholeRange.contains(selection)) {
-			throw new Error(`InteractiveEditorSessionProvider returned a wholeRange that does not contain the selection.`);
+			throw new Error(
+				`InteractiveEditorSessionProvider returned a wholeRange that does not contain the selection.`
+			);
 		}
 
 		const id = ExtHostInteractiveEditor._nextId++;
@@ -128,13 +185,23 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 			id,
 			placeholder: session.placeholder,
 			input: session.input,
-			slashCommands: session.slashCommands?.map(c => ({ command: c.command, detail: c.detail, refer: c.refer, executeImmediately: c.executeImmediately })),
+			slashCommands: session.slashCommands?.map((c) => ({
+				command: c.command,
+				detail: c.detail,
+				refer: c.refer,
+				executeImmediately: c.executeImmediately,
+			})),
 			wholeRange: typeConvert.Range.from(session.wholeRange),
-			message: session.message
+			message: session.message,
 		};
 	}
 
-	async $provideResponse(handle: number, item: IInlineChatSession, request: IInlineChatRequest, token: CancellationToken): Promise<IInlineChatResponseDto | undefined> {
+	async $provideResponse(
+		handle: number,
+		item: IInlineChatSession,
+		request: IInlineChatRequest,
+		token: CancellationToken
+	): Promise<IInlineChatResponseDto | undefined> {
 		const entry = this._inputProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -152,29 +219,47 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 			live: request.live,
 		};
 
-
 		let done = false;
-		const progress: vscode.Progress<vscode.InteractiveEditorProgressItem> = {
-			report: async value => {
-				if (!request.live && value.edits?.length) {
-					throw new Error('Progress reporting is only supported for live sessions');
-				}
-				if (done || token.isCancellationRequested) {
-					return;
-				}
-				await this._proxy.$handleProgressChunk(request.requestId, {
-					message: value.message,
-					edits: value.edits?.map(typeConvert.TextEdit.from),
-					editsShouldBeInstant: value.editsShouldBeInstant,
-					slashCommand: value.slashCommand?.command,
-					markdownFragment: extHostTypes.MarkdownString.isMarkdownString(value.content) ? value.content.value : value.content
-				});
-			}
-		};
+		const progress: vscode.Progress<vscode.InteractiveEditorProgressItem> =
+			{
+				report: async (value) => {
+					if (!request.live && value.edits?.length) {
+						throw new Error(
+							"Progress reporting is only supported for live sessions"
+						);
+					}
+					if (done || token.isCancellationRequested) {
+						return;
+					}
+					await this._proxy.$handleProgressChunk(request.requestId, {
+						message: value.message,
+						edits: value.edits?.map(typeConvert.TextEdit.from),
+						editsShouldBeInstant: value.editsShouldBeInstant,
+						slashCommand: value.slashCommand?.command,
+						markdownFragment:
+							extHostTypes.MarkdownString.isMarkdownString(
+								value.content
+							)
+								? value.content.value
+								: value.content,
+					});
+				},
+			};
 
-		const task = Promise.resolve(entry.provider.provideInteractiveEditorResponse(sessionData.session, apiRequest, progress, token));
+		const task = Promise.resolve(
+			entry.provider.provideInteractiveEditorResponse(
+				sessionData.session,
+				apiRequest,
+				progress,
+				token
+			)
+		);
 
-		let res: vscode.InteractiveEditorResponse | vscode.InteractiveEditorMessageResponse | null | undefined;
+		let res:
+			| vscode.InteractiveEditorResponse
+			| vscode.InteractiveEditorMessageResponse
+			| null
+			| undefined;
 		try {
 			res = await raceCancellation(task, token);
 		} finally {
@@ -184,7 +269,6 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		if (!res) {
 			return undefined;
 		}
-
 
 		const id = sessionData.responses.push(res) - 1;
 
@@ -210,24 +294,35 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 				type: InlineChatResponseType.BulkEdit,
 				edits: typeConvert.WorkspaceEdit.from(edits),
 			};
-
 		} else {
 			return {
 				...stub,
 				id,
 				type: InlineChatResponseType.EditorEdit,
-				edits: (<vscode.TextEdit[]>edits).map(typeConvert.TextEdit.from),
+				edits: (<vscode.TextEdit[]>edits).map(
+					typeConvert.TextEdit.from
+				),
 			};
 		}
 	}
 
-	$handleFeedback(handle: number, sessionId: number, responseId: number, kind: InlineChatResponseFeedbackKind): void {
+	$handleFeedback(
+		handle: number,
+		sessionId: number,
+		responseId: number,
+		kind: InlineChatResponseFeedbackKind
+	): void {
 		const entry = this._inputProvider.get(handle);
 		const sessionData = this._inputSessions.get(sessionId);
 		const response = sessionData?.responses[responseId];
 		if (entry && response) {
-			const apiKind = typeConvert.InteractiveEditorResponseFeedbackKind.to(kind);
-			entry.provider.handleInteractiveEditorResponseFeedback?.(sessionData.session, response, apiKind);
+			const apiKind =
+				typeConvert.InteractiveEditorResponseFeedbackKind.to(kind);
+			entry.provider.handleInteractiveEditorResponseFeedback?.(
+				sessionData.session,
+				response,
+				apiKind
+			);
 		}
 	}
 
@@ -235,7 +330,13 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		// TODO@jrieken remove this
 	}
 
-	private static _isMessageResponse(thing: any): thing is vscode.InteractiveEditorMessageResponse {
-		return typeof thing === 'object' && typeof (<vscode.InteractiveEditorMessageResponse>thing).contents === 'object';
+	private static _isMessageResponse(
+		thing: any
+	): thing is vscode.InteractiveEditorMessageResponse {
+		return (
+			typeof thing === "object" &&
+			typeof (<vscode.InteractiveEditorMessageResponse>thing).contents ===
+				"object"
+		);
 	}
 }

@@ -23,19 +23,26 @@
  * the stuff the abstract class is already doing for us.
  */
 
-import { PackageManager, PackageType } from '@vscode/ts-package-manager';
-import { join } from 'path';
-import * as ts from 'typescript/lib/tsserverlibrary';
-import { NameValidationResult, validatePackageNameWorker } from './jsTyping';
+import { PackageManager, PackageType } from "@vscode/ts-package-manager";
+import { join } from "path";
+import * as ts from "typescript/lib/tsserverlibrary";
+import { NameValidationResult, validatePackageNameWorker } from "./jsTyping";
 
-type InstallerResponse = ts.server.PackageInstalledResponse | ts.server.SetTypings | ts.server.InvalidateCachedTypings | ts.server.BeginInstallTypes | ts.server.EndInstallTypes | ts.server.WatchTypingLocations;
+type InstallerResponse =
+	| ts.server.PackageInstalledResponse
+	| ts.server.SetTypings
+	| ts.server.InvalidateCachedTypings
+	| ts.server.BeginInstallTypes
+	| ts.server.EndInstallTypes
+	| ts.server.WatchTypingLocations;
 
 /**
  * The "server" part of the "server/client" model. This is the part that
  * actually gets instantiated and passed to tsserver.
  */
-export default class WebTypingsInstallerClient implements ts.server.ITypingsInstaller {
-
+export default class WebTypingsInstallerClient
+	implements ts.server.ITypingsInstaller
+{
 	private projectService: ts.server.ProjectService | undefined;
 
 	private requestedRegistry = false;
@@ -46,7 +53,7 @@ export default class WebTypingsInstallerClient implements ts.server.ITypingsInst
 
 	constructor(
 		private readonly fs: ts.server.ServerHost,
-		readonly globalTypingsCacheLocation: string,
+		readonly globalTypingsCacheLocation: string
 	) {
 		this.server = WebTypingsInstallerServer.initialize(
 			(response: InstallerResponse) => this.handleResponse(response),
@@ -63,13 +70,13 @@ export default class WebTypingsInstallerClient implements ts.server.ITypingsInst
 	 */
 	private async handleResponse(response: InstallerResponse): Promise<void> {
 		switch (response.kind) {
-			case 'action::packageInstalled':
-			case 'action::invalidate':
-			case 'action::set':
+			case "action::packageInstalled":
+			case "action::invalidate":
+			case "action::set":
 				this.projectService!.updateTypingsForProject(response);
 				break;
-			case 'event::beginInstallTypes':
-			case 'event::endInstallTypes':
+			case "event::beginInstallTypes":
+			case "event::endInstallTypes":
 				// Don't care.
 				break;
 			default:
@@ -79,32 +86,49 @@ export default class WebTypingsInstallerClient implements ts.server.ITypingsInst
 
 	// NB(kmarchan): this is a code action that expects an actual NPM-specific
 	// installation. We shouldn't mess with this ourselves.
-	async installPackage(_options: ts.server.InstallPackageOptionsWithProject): Promise<ts.ApplyCodeActionCommandResult> {
-		throw new Error('not implemented');
+	async installPackage(
+		_options: ts.server.InstallPackageOptionsWithProject
+	): Promise<ts.ApplyCodeActionCommandResult> {
+		throw new Error("not implemented");
 	}
 
 	// NB(kmarchan): As far as I can tell, this is only ever used for
 	// completions?
 	isKnownTypesPackageName(packageName: string): boolean {
-		console.log('isKnownTypesPackageName', packageName);
+		console.log("isKnownTypesPackageName", packageName);
 		const looksLikeValidName = validatePackageNameWorker(packageName, true);
 		if (looksLikeValidName.result !== NameValidationResult.Ok) {
 			return false;
 		}
 
 		if (this.requestedRegistry) {
-			return !!this.typesRegistryCache && this.typesRegistryCache.has(packageName);
+			return (
+				!!this.typesRegistryCache &&
+				this.typesRegistryCache.has(packageName)
+			);
 		}
 
 		this.requestedRegistry = true;
-		this.server.then(s => this.typesRegistryCache = s.typesRegistry);
+		this.server.then((s) => (this.typesRegistryCache = s.typesRegistry));
 		return false;
 	}
 
-	enqueueInstallTypingsRequest(p: ts.server.Project, typeAcquisition: ts.TypeAcquisition, unresolvedImports: ts.SortedReadonlyArray<string>): void {
-		console.log('enqueueInstallTypingsRequest', typeAcquisition, unresolvedImports);
-		const req = ts.server.createInstallTypingsRequest(p, typeAcquisition, unresolvedImports);
-		this.server.then(s => s.install(req));
+	enqueueInstallTypingsRequest(
+		p: ts.server.Project,
+		typeAcquisition: ts.TypeAcquisition,
+		unresolvedImports: ts.SortedReadonlyArray<string>
+	): void {
+		console.log(
+			"enqueueInstallTypingsRequest",
+			typeAcquisition,
+			unresolvedImports
+		);
+		const req = ts.server.createInstallTypingsRequest(
+			p,
+			typeAcquisition,
+			unresolvedImports
+		);
+		this.server.then((s) => s.install(req));
 	}
 
 	attach(projectService: ts.server.ProjectService): void {
@@ -122,18 +146,24 @@ export default class WebTypingsInstallerClient implements ts.server.ITypingsInst
  * already-implemented logic around package installation, but with
  * installation details handled by Nassun/Node Maintainer.
  */
-class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstaller {
-
-	private static readonly typesRegistryPackageName = 'types-registry';
+class WebTypingsInstallerServer extends ts.server.typingsInstaller
+	.TypingsInstaller {
+	private static readonly typesRegistryPackageName = "types-registry";
 
 	private constructor(
 		override typesRegistry: Map<string, ts.MapLike<string>>,
 		private readonly handleResponse: (response: InstallerResponse) => void,
 		fs: ts.server.ServerHost,
 		private readonly packageManager: PackageManager,
-		globalTypingsCachePath: string,
+		globalTypingsCachePath: string
 	) {
-		super(fs, globalTypingsCachePath, join(globalTypingsCachePath, 'fakeSafeList') as ts.Path, join(globalTypingsCachePath, 'fakeTypesMapLocation') as ts.Path, Infinity);
+		super(
+			fs,
+			globalTypingsCachePath,
+			join(globalTypingsCachePath, "fakeSafeList") as ts.Path,
+			join(globalTypingsCachePath, "fakeTypesMapLocation") as ts.Path,
+			Infinity
+		);
 	}
 
 	/**
@@ -146,26 +176,35 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
 	static async initialize(
 		handleResponse: (response: InstallerResponse) => void,
 		fs: ts.server.ServerHost,
-		globalTypingsCachePath: string,
+		globalTypingsCachePath: string
 	): Promise<WebTypingsInstallerServer> {
 		const pm = new PackageManager(fs);
-		const pkgJson = join(globalTypingsCachePath, 'package.json');
+		const pkgJson = join(globalTypingsCachePath, "package.json");
 		if (!fs.fileExists(pkgJson)) {
 			fs.writeFile(pkgJson, '{"private":true}');
 		}
 		const resolved = await pm.resolveProject(globalTypingsCachePath, {
-			addPackages: [this.typesRegistryPackageName]
+			addPackages: [this.typesRegistryPackageName],
 		});
 		await resolved.restore();
 
 		const registry = new Map<string, ts.MapLike<string>>();
-		const indexPath = join(globalTypingsCachePath, 'node_modules/types-registry/index.json');
+		const indexPath = join(
+			globalTypingsCachePath,
+			"node_modules/types-registry/index.json"
+		);
 		const index = WebTypingsInstallerServer.readJson(fs, indexPath);
 		for (const [packageName, entry] of Object.entries(index.entries)) {
 			registry.set(packageName, entry as ts.MapLike<string>);
 		}
-		console.log('ATA registry loaded');
-		return new WebTypingsInstallerServer(registry, handleResponse, fs, pm, globalTypingsCachePath);
+		console.log("ATA registry loaded");
+		return new WebTypingsInstallerServer(
+			registry,
+			handleResponse,
+			fs,
+			pm,
+			globalTypingsCachePath
+		);
 	}
 
 	/**
@@ -174,13 +213,18 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
 	 * Nassun, then handing Node Maintainer the updated package.json to run a
 	 * full install (modulo existing lockfiles, which can make this faster).
 	 */
-	protected override installWorker(requestId: number, packageNames: string[], cwd: string, onRequestCompleted: ts.server.typingsInstaller.RequestCompletedAction): void {
-		console.log('installWorker', requestId, cwd);
+	protected override installWorker(
+		requestId: number,
+		packageNames: string[],
+		cwd: string,
+		onRequestCompleted: ts.server.typingsInstaller.RequestCompletedAction
+	): void {
+		console.log("installWorker", requestId, cwd);
 		(async () => {
 			try {
 				const resolved = await this.packageManager.resolveProject(cwd, {
 					addPackages: packageNames,
-					packageType: PackageType.DevDependency
+					packageType: PackageType.DevDependency,
 				});
 				await resolved.restore();
 				onRequestCompleted(true);
@@ -206,7 +250,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
 	private static readJson(fs: ts.server.ServerHost, path: string): any {
 		const data = fs.readFile(path);
 		if (!data) {
-			throw new Error('Failed to read file: ' + path);
+			throw new Error("Failed to read file: " + path);
 		}
 		return JSON.parse(data.trim());
 	}

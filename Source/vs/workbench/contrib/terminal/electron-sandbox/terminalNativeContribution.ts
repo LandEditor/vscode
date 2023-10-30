@@ -3,18 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ipcRenderer } from 'vs/base/parts/sandbox/electron-sandbox/globals';
-import { INativeOpenFileRequest } from 'vs/platform/window/common/window';
-import { URI } from 'vs/base/common/uri';
-import { IFileService } from 'vs/platform/files/common/files';
-import { registerRemoteContributions } from 'vs/workbench/contrib/terminal/electron-sandbox/terminalRemote';
-import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
-import { INativeHostService } from 'vs/platform/native/common/native';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
+import { ipcRenderer } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { INativeOpenFileRequest } from "vs/platform/window/common/window";
+import { URI } from "vs/base/common/uri";
+import { IFileService } from "vs/platform/files/common/files";
+import { registerRemoteContributions } from "vs/workbench/contrib/terminal/electron-sandbox/terminalRemote";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ITerminalService } from "vs/workbench/contrib/terminal/browser/terminal";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
 
-export class TerminalNativeContribution extends Disposable implements IWorkbenchContribution {
+export class TerminalNativeContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	declare _serviceBrand: undefined;
 
 	constructor(
@@ -25,11 +28,18 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
 	) {
 		super();
 
-		ipcRenderer.on('vscode:openFiles', (_: unknown, request: INativeOpenFileRequest) => { this._onOpenFileRequest(request); });
-		this._register(nativeHostService.onDidResumeOS(() => this._onOsResume()));
+		ipcRenderer.on(
+			"vscode:openFiles",
+			(_: unknown, request: INativeOpenFileRequest) => {
+				this._onOpenFileRequest(request);
+			}
+		);
+		this._register(
+			nativeHostService.onDidResumeOS(() => this._onOsResume())
+		);
 
 		this._terminalService.setNativeDelegate({
-			getWindowCount: () => nativeHostService.getWindowCount()
+			getWindowCount: () => nativeHostService.getWindowCount(),
 		});
 
 		const connection = remoteAgentService.getConnection();
@@ -44,12 +54,16 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
 		}
 	}
 
-	private async _onOpenFileRequest(request: INativeOpenFileRequest): Promise<void> {
+	private async _onOpenFileRequest(
+		request: INativeOpenFileRequest
+	): Promise<void> {
 		// if the request to open files is coming in from the integrated terminal (identified though
 		// the termProgram variable) and we are instructed to wait for editors close, wait for the
 		// marker file to get deleted and then focus back to the integrated terminal.
-		if (request.termProgram === 'vscode' && request.filesToWait) {
-			const waitMarkerFileUri = URI.revive(request.filesToWait.waitMarkerFileUri);
+		if (request.termProgram === "vscode" && request.filesToWait) {
+			const waitMarkerFileUri = URI.revive(
+				request.filesToWait.waitMarkerFileUri
+			);
 			await this._whenFileDeleted(waitMarkerFileUri);
 
 			// Focus active terminal
@@ -59,7 +73,7 @@ export class TerminalNativeContribution extends Disposable implements IWorkbench
 
 	private _whenFileDeleted(path: URI): Promise<void> {
 		// Complete when wait marker file is deleted
-		return new Promise<void>(resolve => {
+		return new Promise<void>((resolve) => {
 			let running = false;
 			const interval = setInterval(async () => {
 				if (!running) {

@@ -1,14 +1,18 @@
-# Header 1 #
-## Header 2 ##
-### Header 3 ###             (Hashes on right are optional)
-## Markdown plus h2 with a custom ID ##   {#id-goes-here}
+# Header 1
+
+## Header 2
+
+### Header 3 ### (Hashes on right are optional)
+
+## Markdown plus h2 with a custom ID ## {#id-goes-here}
+
 [Link back to H2](#id-goes-here)
 
 ### Alternate heading styles:
-Alternate Header 1
-==================
-Alternate Header 2
-------------------
+
+# Alternate Header 1
+
+## Alternate Header 2
 
 <!-- html madness -->
 <div class="custom-class" markdown="1">
@@ -25,26 +29,27 @@ Alternate Header 2
   </style>
 </div>
 
-* Bullet lists are easy too
-- Another one
-+ Another one
+-   Bullet lists are easy too
 
-    + nested list
+*   Another one
 
-This is a paragraph, which is text surrounded by
-whitespace. Paragraphs can be on one
-line (or many), and can drone on for hours.
+-   Another one
 
-Now some inline markup like _italics_,  **bold**,
-and `code()`. Note that underscores
-in_words_are ignored.
+    -   nested list
 
-````application/json
+This is a paragraph, which is text surrounded by whitespace. Paragraphs can be
+on one line (or many), and can drone on for hours.
+
+Now some inline markup like _italics_, **bold**, and `code()`. Note that
+underscores in_words_are ignored.
+
+```application/json
   { value: ["or with a mime type"] }
-````
+```
 
 > Blockquotes are like quoted text in email replies
->> And, they can be nested
+>
+> > And, they can be nested
 
 1. A numbered list
     > Block quotes in list
@@ -58,49 +63,43 @@ And now some code:
 
 And a block
 
-~~~
+```
 // Markdown extra adds un-indented code blocks too
 
 if (this_is_more_code == true && !indented) {
     // tild wrapped code blocks, also not indented
 }
-~~~
+```
 
-Text with
-two trailing spaces
-(on the right)
-can be used
-for things like poems
+Text with two trailing spaces (on the right) can be used for things like poems
 
 ### Horizontal rules
 
-* * * *
-****
---------------------------
+---
+
+---
+
+---
 
 ![picture alt](/images/photo.jpeg "Title is optional")
 
-## Markdown plus tables ##
+## Markdown plus tables
 
-| Header | Header | Right  |
-| ------ | ------ | -----: |
-|  Cell  |  Cell  |   $10  |
-|  Cell  |  Cell  |   $20  |
+| Header | Header | Right |
+| ------ | ------ | ----: |
+| Cell   | Cell   |   $10 |
+| Cell   | Cell   |   $20 |
 
-* Outer pipes on tables are optional
-* Colon used for alignment (right versus left)
+-   Outer pipes on tables are optional
+-   Colon used for alignment (right versus left)
 
-## Markdown plus definition lists ##
+## Markdown plus definition lists
 
-Bottled water
-: $ 1.25
-: $ 1.55 (Large)
+Bottled water : $ 1.25 : $ 1.55 (Large)
 
-Milk
-Pop
-: $ 1.75
+Milk Pop : $ 1.75
 
-* Multiple definitions and terms are possible
-* Definitions can include multiple paragraphs too
+-   Multiple definitions and terms are possible
+-   Definitions can include multiple paragraphs too
 
-*[ABBR]: Markdown plus abbreviations (produces an <abbr> tag)
+\*[ABBR]: Markdown plus abbreviations (produces an <abbr> tag)

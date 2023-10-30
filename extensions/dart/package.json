@@ -1,57 +1,57 @@
 {
-  "name": "dart",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin dart-lang/dart-syntax-highlight grammars/dart.json ./syntaxes/dart.tmLanguage.json"
-  },
-  "contributes": {
-    "grammars": [
-      {
-        "language": "dart",
-        "scopeName": "source.dart",
-        "path": "./syntaxes/dart.tmLanguage.json"
-      }
-    ],
-    "languages": [
-      {
-        "id": "dart",
-        "extensions": [
-          ".dart"
-        ],
-        "aliases": [
-          "Dart"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ]
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "0.10.x"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "dart",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin dart-lang/dart-syntax-highlight grammars/dart.json ./syntaxes/dart.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "dart",
+				"scopeName": "source.dart",
+				"path": "./syntaxes/dart.tmLanguage.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "dart",
+				"extensions": [
+					".dart"
+				],
+				"aliases": [
+					"Dart"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "0.10.x"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

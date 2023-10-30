@@ -1,136 +1,136 @@
 {
-  "name": "xml",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-xml grammars/xml.cson ./syntaxes/xml.tmLanguage.json grammars/xsl.cson ./syntaxes/xsl.tmLanguage.json"
-  },
-  "contributes": {
-    "grammars": [
-      {
-        "language": "xml",
-        "scopeName": "text.xml",
-        "path": "./syntaxes/xml.tmLanguage.json"
-      },
-      {
-        "language": "xsl",
-        "scopeName": "text.xml.xsl",
-        "path": "./syntaxes/xsl.tmLanguage.json"
-      }
-    ],
-    "languages": [
-      {
-        "id": "xml",
-        "extensions": [
-          ".xml",
-          ".xsd",
-          ".ascx",
-          ".atom",
-          ".axml",
-          ".axaml",
-          ".bpmn",
-          ".cpt",
-          ".csl",
-          ".csproj",
-          ".csproj.user",
-          ".dita",
-          ".ditamap",
-          ".dtd",
-          ".ent",
-          ".mod",
-          ".dtml",
-          ".fsproj",
-          ".fxml",
-          ".iml",
-          ".isml",
-          ".jmx",
-          ".launch",
-          ".menu",
-          ".mxml",
-          ".nuspec",
-          ".opml",
-          ".owl",
-          ".proj",
-          ".props",
-          ".pt",
-          ".publishsettings",
-          ".pubxml",
-          ".pubxml.user",
-          ".rbxlx",
-          ".rbxmx",
-          ".rdf",
-          ".rng",
-          ".rss",
-          ".shproj",
-          ".storyboard",
-          ".svg",
-          ".targets",
-          ".tld",
-          ".tmx",
-          ".vbproj",
-          ".vbproj.user",
-          ".vcxproj",
-          ".vcxproj.filters",
-          ".wsdl",
-          ".wxi",
-          ".wxl",
-          ".wxs",
-          ".xaml",
-          ".xbl",
-          ".xib",
-          ".xlf",
-          ".xliff",
-          ".xpdl",
-          ".xul",
-          ".xoml"
-        ],
-        "firstLine": "(\\<\\?xml.*)|(\\<svg)|(\\<\\!doctype\\s+svg)",
-        "aliases": [
-          "XML",
-          "xml"
-        ],
-        "configuration": "./xml.language-configuration.json"
-      },
-      {
-        "id": "xsl",
-        "extensions": [
-          ".xsl",
-          ".xslt"
-        ],
-        "aliases": [
-          "XSL",
-          "xsl"
-        ],
-        "configuration": "./xsl.language-configuration.json"
-      }
-    ]
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "*"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "xml",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-xml grammars/xml.cson ./syntaxes/xml.tmLanguage.json grammars/xsl.cson ./syntaxes/xsl.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "xml",
+				"scopeName": "text.xml",
+				"path": "./syntaxes/xml.tmLanguage.json"
+			},
+			{
+				"language": "xsl",
+				"scopeName": "text.xml.xsl",
+				"path": "./syntaxes/xsl.tmLanguage.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "xml",
+				"extensions": [
+					".xml",
+					".xsd",
+					".ascx",
+					".atom",
+					".axml",
+					".axaml",
+					".bpmn",
+					".cpt",
+					".csl",
+					".csproj",
+					".csproj.user",
+					".dita",
+					".ditamap",
+					".dtd",
+					".ent",
+					".mod",
+					".dtml",
+					".fsproj",
+					".fxml",
+					".iml",
+					".isml",
+					".jmx",
+					".launch",
+					".menu",
+					".mxml",
+					".nuspec",
+					".opml",
+					".owl",
+					".proj",
+					".props",
+					".pt",
+					".publishsettings",
+					".pubxml",
+					".pubxml.user",
+					".rbxlx",
+					".rbxmx",
+					".rdf",
+					".rng",
+					".rss",
+					".shproj",
+					".storyboard",
+					".svg",
+					".targets",
+					".tld",
+					".tmx",
+					".vbproj",
+					".vbproj.user",
+					".vcxproj",
+					".vcxproj.filters",
+					".wsdl",
+					".wxi",
+					".wxl",
+					".wxs",
+					".xaml",
+					".xbl",
+					".xib",
+					".xlf",
+					".xliff",
+					".xpdl",
+					".xul",
+					".xoml"
+				],
+				"firstLine": "(\\<\\?xml.*)|(\\<svg)|(\\<\\!doctype\\s+svg)",
+				"aliases": [
+					"XML",
+					"xml"
+				],
+				"configuration": "./xml.language-configuration.json"
+			},
+			{
+				"id": "xsl",
+				"extensions": [
+					".xsl",
+					".xslt"
+				],
+				"aliases": [
+					"XSL",
+					"xsl"
+				],
+				"configuration": "./xsl.language-configuration.json"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

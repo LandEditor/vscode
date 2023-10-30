@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { arrayInsert } from 'vs/base/common/arrays';
+import { arrayInsert } from "vs/base/common/arrays";
 
 /**
  * An array that avoids being sparse by always
@@ -12,9 +12,7 @@ import { arrayInsert } from 'vs/base/common/arrays';
 export class FixedArray<T> {
 	private _store: T[] = [];
 
-	constructor(
-		private readonly _default: T
-	) { }
+	constructor(private readonly _default: T) {}
 
 	public get(index: number): T {
 		if (index < this._store.length) {

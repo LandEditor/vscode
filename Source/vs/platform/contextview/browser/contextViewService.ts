@@ -3,12 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ContextView, ContextViewDOMPosition } from 'vs/base/browser/ui/contextview/contextview';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
-import { IContextViewDelegate, IContextViewService } from './contextView';
+import {
+	ContextView,
+	ContextViewDOMPosition,
+} from "vs/base/browser/ui/contextview/contextview";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { IContextViewDelegate, IContextViewService } from "./contextView";
 
-export class ContextViewService extends Disposable implements IContextViewService {
+export class ContextViewService
+	extends Disposable
+	implements IContextViewService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private currentViewDisposable: IDisposable = Disposable.None;
@@ -21,29 +31,59 @@ export class ContextViewService extends Disposable implements IContextViewServic
 	) {
 		super();
 
-		this.container = layoutService.hasContainer ? layoutService.container : null;
-		this.contextView = this._register(new ContextView(this.container, ContextViewDOMPosition.ABSOLUTE));
+		this.container = layoutService.hasContainer
+			? layoutService.container
+			: null;
+		this.contextView = this._register(
+			new ContextView(this.container, ContextViewDOMPosition.ABSOLUTE)
+		);
 		this.layout();
 
-		this._register(layoutService.onDidLayoutMainContainer(() => this.layout()));
+		this._register(
+			layoutService.onDidLayoutMainContainer(() => this.layout())
+		);
 	}
 
 	// ContextView
 
-	private setContainer(container: HTMLElement, domPosition?: ContextViewDOMPosition): void {
-		this.contextView.setContainer(container, domPosition || ContextViewDOMPosition.ABSOLUTE);
+	private setContainer(
+		container: HTMLElement,
+		domPosition?: ContextViewDOMPosition
+	): void {
+		this.contextView.setContainer(
+			container,
+			domPosition || ContextViewDOMPosition.ABSOLUTE
+		);
 	}
 
-	showContextView(delegate: IContextViewDelegate, container?: HTMLElement, shadowRoot?: boolean): IDisposable {
+	showContextView(
+		delegate: IContextViewDelegate,
+		container?: HTMLElement,
+		shadowRoot?: boolean
+	): IDisposable {
 		if (container) {
-			if (container !== this.container || this.shadowRoot !== shadowRoot) {
+			if (
+				container !== this.container ||
+				this.shadowRoot !== shadowRoot
+			) {
 				this.container = container;
-				this.setContainer(container, shadowRoot ? ContextViewDOMPosition.FIXED_SHADOW : ContextViewDOMPosition.FIXED);
+				this.setContainer(
+					container,
+					shadowRoot
+						? ContextViewDOMPosition.FIXED_SHADOW
+						: ContextViewDOMPosition.FIXED
+				);
 			}
 		} else {
-			if (this.layoutService.hasContainer && this.container !== this.layoutService.activeContainer) {
+			if (
+				this.layoutService.hasContainer &&
+				this.container !== this.layoutService.activeContainer
+			) {
 				this.container = this.layoutService.activeContainer;
-				this.setContainer(this.container, ContextViewDOMPosition.ABSOLUTE);
+				this.setContainer(
+					this.container,
+					ContextViewDOMPosition.ABSOLUTE
+				);
 			}
 		}
 

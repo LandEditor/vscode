@@ -3,10 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getZoomLevel, setZoomFactor, setZoomLevel } from 'vs/base/browser/browser';
-import { getWindows } from 'vs/base/browser/dom';
-import { ISandboxGlobals, ipcRenderer, webFrame } from 'vs/base/parts/sandbox/electron-sandbox/globals';
-import { zoomLevelToZoomFactor } from 'vs/platform/window/common/window';
+import {
+	getZoomLevel,
+	setZoomFactor,
+	setZoomLevel,
+} from "vs/base/browser/browser";
+import { getWindows } from "vs/base/browser/dom";
+import {
+	ISandboxGlobals,
+	ipcRenderer,
+	webFrame,
+} from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { zoomLevelToZoomFactor } from "vs/platform/window/common/window";
 
 /**
  * Apply a zoom level to the window. Also sets it in our in-memory
@@ -27,7 +35,10 @@ function getGlobals(win: Window): ISandboxGlobals | undefined {
 	} else {
 		// auxiliary window
 		const auxiliaryWindow = win as unknown as { vscode: ISandboxGlobals };
-		if (auxiliaryWindow?.vscode?.ipcRenderer && auxiliaryWindow?.vscode?.webFrame) {
+		if (
+			auxiliaryWindow?.vscode?.ipcRenderer &&
+			auxiliaryWindow?.vscode?.webFrame
+		) {
 			return auxiliaryWindow.vscode;
 		}
 	}

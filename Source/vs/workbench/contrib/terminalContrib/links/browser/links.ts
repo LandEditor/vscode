@@ -3,19 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IBufferLine, IBufferRange, Terminal } from 'xterm';
-import { URI } from 'vs/base/common/uri';
-import { IHoverAction } from 'vs/workbench/services/hover/browser/hover';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { ITerminalProcessManager } from 'vs/workbench/contrib/terminal/common/terminal';
-import { IParsedLink } from 'vs/workbench/contrib/terminalContrib/links/browser/terminalLinkParsing';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { ITerminalExternalLinkProvider } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { Event } from 'vs/base/common/event';
-import { ITerminalBackend } from 'vs/platform/terminal/common/terminal';
-import { ITextEditorSelection } from 'vs/platform/editor/common/editor';
+import type { IBufferLine, IBufferRange, Terminal } from "xterm";
+import { URI } from "vs/base/common/uri";
+import { IHoverAction } from "vs/workbench/services/hover/browser/hover";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ITerminalProcessManager } from "vs/workbench/contrib/terminal/common/terminal";
+import { IParsedLink } from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkParsing";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { ITerminalExternalLinkProvider } from "vs/workbench/contrib/terminal/browser/terminal";
+import { Event } from "vs/base/common/event";
+import { ITerminalBackend } from "vs/platform/terminal/common/terminal";
+import { ITextEditorSelection } from "vs/platform/editor/common/editor";
 
-export const ITerminalLinkProviderService = createDecorator<ITerminalLinkProviderService>('terminalLinkProviderService');
+export const ITerminalLinkProviderService =
+	createDecorator<ITerminalLinkProviderService>(
+		"terminalLinkProviderService"
+	);
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
 
@@ -29,7 +32,14 @@ export interface ITerminalLinkProviderService {
 }
 
 export interface ITerminalLinkResolver {
-	resolveLink(processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> }, link: string, uri?: URI): Promise<ResolvedLink>;
+	resolveLink(
+		processManager: Pick<
+			ITerminalProcessManager,
+			"initialCwd" | "os" | "remoteAuthority" | "userHome"
+		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
+		link: string,
+		uri?: URI
+	): Promise<ResolvedLink>;
 }
 
 /**
@@ -57,7 +67,11 @@ export interface ITerminalLinkDetector {
 	 * @param endLine The end of the wrapped line.  This _will not_ be validated that it is indeed
 	 * the end of a wrapped line.
 	 */
-	detect(lines: IBufferLine[], startLine: number, endLine: number): ITerminalSimpleLink[] | Promise<ITerminalSimpleLink[]>;
+	detect(
+		lines: IBufferLine[],
+		startLine: number,
+		endLine: number
+	): ITerminalSimpleLink[] | Promise<ITerminalSimpleLink[]>;
 }
 
 export interface ITerminalSimpleLink {
@@ -110,36 +124,38 @@ export interface ITerminalSimpleLink {
 	activate?(text: string): void;
 }
 
-export type TerminalLinkType = TerminalBuiltinLinkType | ITerminalExternalLinkType;
+export type TerminalLinkType =
+	| TerminalBuiltinLinkType
+	| ITerminalExternalLinkType;
 
 export const enum TerminalBuiltinLinkType {
 	/**
 	 * The link is validated to be a file on the file system and will open an editor.
 	 */
-	LocalFile = 'LocalFile',
+	LocalFile = "LocalFile",
 
 	/**
 	 * The link is validated to be a folder on the file system and is outside the workspace. It will
 	 * reveal the folder within the explorer.
 	 */
-	LocalFolderOutsideWorkspace = 'LocalFolderOutsideWorkspace',
+	LocalFolderOutsideWorkspace = "LocalFolderOutsideWorkspace",
 
 	/**
 	 * The link is validated to be a folder on the file system and is within the workspace and will
 	 * reveal the folder within the explorer.
 	 */
-	LocalFolderInWorkspace = 'LocalFolderInWorkspace',
+	LocalFolderInWorkspace = "LocalFolderInWorkspace",
 
 	/**
 	 * A low confidence link which will search for the file in the workspace. If there is a single
 	 * match, it will open the file; otherwise, it will present the matches in a quick pick.
 	 */
-	Search = 'Search',
+	Search = "Search",
 
 	/**
 	 * A link whose text is a valid URI.
 	 */
-	Url = 'Url'
+	Url = "Url",
 }
 
 export interface ITerminalExternalLinkType {
@@ -158,4 +174,6 @@ export interface IResolvedValidLink {
 	isDirectory: boolean;
 }
 
-export type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R ? (...args: P) => R : never;
+export type OmitFirstArg<F> = F extends (x: any, ...args: infer P) => infer R
+	? (...args: P) => R
+	: never;

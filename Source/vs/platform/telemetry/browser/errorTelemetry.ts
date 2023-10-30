@@ -3,36 +3,52 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ErrorNoTelemetry } from 'vs/base/common/errors';
-import { toDisposable } from 'vs/base/common/lifecycle';
-import { globals } from 'vs/base/common/platform';
-import BaseErrorTelemetry, { ErrorEvent } from 'vs/platform/telemetry/common/errorTelemetry';
+import { ErrorNoTelemetry } from "vs/base/common/errors";
+import { toDisposable } from "vs/base/common/lifecycle";
+import { globals } from "vs/base/common/platform";
+import BaseErrorTelemetry, {
+	ErrorEvent,
+} from "vs/platform/telemetry/common/errorTelemetry";
 
 export default class ErrorTelemetry extends BaseErrorTelemetry {
 	protected override installErrorListeners(): void {
 		let oldOnError: Function;
 		const that = this;
-		if (typeof globals.onerror === 'function') {
+		if (typeof globals.onerror === "function") {
 			oldOnError = globals.onerror;
 		}
-		globals.onerror = function (message: string, filename: string, line: number, column?: number, e?: any) {
+		globals.onerror = function (
+			message: string,
+			filename: string,
+			line: number,
+			column?: number,
+			e?: any
+		) {
 			that._onUncaughtError(message, filename, line, column, e);
 			oldOnError?.apply(this, arguments);
 		};
-		this._disposables.add(toDisposable(() => {
-			if (oldOnError) {
-				globals.onerror = oldOnError;
-			}
-		}));
+		this._disposables.add(
+			toDisposable(() => {
+				if (oldOnError) {
+					globals.onerror = oldOnError;
+				}
+			})
+		);
 	}
 
-	private _onUncaughtError(msg: string, file: string, line: number, column?: number, err?: any): void {
+	private _onUncaughtError(
+		msg: string,
+		file: string,
+		line: number,
+		column?: number,
+		err?: any
+	): void {
 		const data: ErrorEvent = {
 			callstack: msg,
 			msg,
 			file,
 			line,
-			column
+			column,
 		};
 
 		if (err) {
@@ -48,7 +64,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 			}
 			if (stack) {
 				data.callstack = Array.isArray(err.stack)
-					? err.stack = err.stack.join('\n')
+					? (err.stack = err.stack.join("\n"))
 					: err.stack;
 			}
 		}

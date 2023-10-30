@@ -3,16 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export enum InteractiveSessionVoteDirection {
 		Down = 0,
-		Up = 1
+		Up = 1,
 	}
 
 	export interface InteractiveSessionVoteAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: 'vote';
+		kind: "vote";
 		// sessionId: string;
 		responseId: string;
 		direction: InteractiveSessionVoteDirection;
@@ -21,12 +20,12 @@ declare module 'vscode' {
 	export enum InteractiveSessionCopyKind {
 		// Keyboard shortcut or context menu
 		Action = 1,
-		Toolbar = 2
+		Toolbar = 2,
 	}
 
 	export interface InteractiveSessionCopyAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: 'copy';
+		kind: "copy";
 		// sessionId: string;
 		responseId: string;
 		codeBlockIndex: number;
@@ -38,7 +37,7 @@ declare module 'vscode' {
 
 	export interface InteractiveSessionInsertAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: 'insert';
+		kind: "insert";
 		// sessionId: string;
 		responseId: string;
 		codeBlockIndex: number;
@@ -48,7 +47,7 @@ declare module 'vscode' {
 
 	export interface InteractiveSessionTerminalAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: 'runInTerminal';
+		kind: "runInTerminal";
 		// sessionId: string;
 		responseId: string;
 		codeBlockIndex: number;
@@ -57,17 +56,22 @@ declare module 'vscode' {
 
 	export interface InteractiveSessionCommandAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: 'command';
+		kind: "command";
 		command: InteractiveResponseCommand;
 	}
 
 	export interface InteractiveSessionFollowupAction {
 		// eslint-disable-next-line local/vscode-dts-string-type-literals
-		kind: 'followUp';
+		kind: "followUp";
 		followup: InteractiveSessionReplyFollowup;
 	}
 
-	export type InteractiveSessionUserAction = InteractiveSessionVoteAction | InteractiveSessionCopyAction | InteractiveSessionInsertAction | InteractiveSessionTerminalAction | InteractiveSessionCommandAction;
+	export type InteractiveSessionUserAction =
+		| InteractiveSessionVoteAction
+		| InteractiveSessionCopyAction
+		| InteractiveSessionInsertAction
+		| InteractiveSessionTerminalAction
+		| InteractiveSessionCommandAction;
 
 	export interface InteractiveSessionUserActionEvent {
 		action: InteractiveSessionUserAction;

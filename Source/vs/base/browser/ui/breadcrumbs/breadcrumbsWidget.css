@@ -32,5 +32,5 @@
 }
 
 .monaco-breadcrumbs .monaco-breadcrumb-item:first-of-type::before {
-	content: ' ';
+	content: " ";
 }

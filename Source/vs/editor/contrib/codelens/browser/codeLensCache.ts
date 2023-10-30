@@ -3,18 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { runWhenIdle } from 'vs/base/common/async';
-import { Event } from 'vs/base/common/event';
-import { LRUCache } from 'vs/base/common/map';
-import { Range } from 'vs/editor/common/core/range';
-import { ITextModel } from 'vs/editor/common/model';
-import { CodeLens, CodeLensList, CodeLensProvider } from 'vs/editor/common/languages';
-import { CodeLensModel } from 'vs/editor/contrib/codelens/browser/codelens';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget, WillSaveStateReason } from 'vs/platform/storage/common/storage';
+import { runWhenIdle } from "vs/base/common/async";
+import { Event } from "vs/base/common/event";
+import { LRUCache } from "vs/base/common/map";
+import { Range } from "vs/editor/common/core/range";
+import { ITextModel } from "vs/editor/common/model";
+import {
+	CodeLens,
+	CodeLensList,
+	CodeLensProvider,
+} from "vs/editor/common/languages";
+import { CodeLensModel } from "vs/editor/contrib/codelens/browser/codelens";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+	WillSaveStateReason,
+} from "vs/platform/storage/common/storage";
 
-export const ICodeLensCache = createDecorator<ICodeLensCache>('ICodeLensCache');
+export const ICodeLensCache = createDecorator<ICodeLensCache>("ICodeLensCache");
 
 export interface ICodeLensCache {
 	readonly _serviceBrand: undefined;
@@ -29,40 +41,44 @@ interface ISerializedCacheData {
 }
 
 class CacheItem {
-
 	constructor(
 		readonly lineCount: number,
 		readonly data: CodeLensModel
-	) { }
+	) {}
 }
 
 export class CodeLensCache implements ICodeLensCache {
-
 	declare readonly _serviceBrand: undefined;
 
-	private readonly _fakeProvider = new class implements CodeLensProvider {
+	private readonly _fakeProvider = new (class implements CodeLensProvider {
 		provideCodeLenses(): CodeLensList {
-			throw new Error('not supported');
+			throw new Error("not supported");
 		}
-	};
+	})();
 
 	private readonly _cache = new LRUCache<string, CacheItem>(20, 0.75);
 
 	constructor(@IStorageService storageService: IStorageService) {
-
 		// remove old data
-		const oldkey = 'codelens/cache';
-		runWhenIdle(() => storageService.remove(oldkey, StorageScope.WORKSPACE));
+		const oldkey = "codelens/cache";
+		runWhenIdle(() =>
+			storageService.remove(oldkey, StorageScope.WORKSPACE)
+		);
 
 		// restore lens data on start
-		const key = 'codelens/cache2';
-		const raw = storageService.get(key, StorageScope.WORKSPACE, '{}');
+		const key = "codelens/cache2";
+		const raw = storageService.get(key, StorageScope.WORKSPACE, "{}");
 		this._deserialize(raw);
 
 		// store lens data on shutdown
-		Event.once(storageService.onWillSaveState)(e => {
+		Event.once(storageService.onWillSaveState)((e) => {
 			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				storageService.store(key, this._serialize(), StorageScope.WORKSPACE, StorageTarget.MACHINE);
+				storageService.store(
+					key,
+					this._serialize(),
+					StorageScope.WORKSPACE,
+					StorageTarget.MACHINE
+				);
 			}
 		});
 	}
@@ -70,14 +86,20 @@ export class CodeLensCache implements ICodeLensCache {
 	put(model: ITextModel, data: CodeLensModel): void {
 		// create a copy of the model that is without command-ids
 		// but with comand-labels
-		const copyItems = data.lenses.map(item => {
+		const copyItems = data.lenses.map((item) => {
 			return <CodeLens>{
 				range: item.symbol.range,
-				command: item.symbol.command && { id: '', title: item.symbol.command?.title },
+				command: item.symbol.command && {
+					id: "",
+					title: item.symbol.command?.title,
+				},
 			};
 		});
 		const copyModel = new CodeLensModel();
-		copyModel.add({ lenses: copyItems, dispose: () => { } }, this._fakeProvider);
+		copyModel.add(
+			{ lenses: copyItems, dispose: () => {} },
+			this._fakeProvider
+		);
 
 		const item = new CacheItem(model.getLineCount(), copyModel);
 		this._cache.set(model.uri.toString(), item);
@@ -85,7 +107,9 @@ export class CodeLensCache implements ICodeLensCache {
 
 	get(model: ITextModel) {
 		const item = this._cache.get(model.uri.toString());
-		return item && item.lineCount === model.getLineCount() ? item.data : undefined;
+		return item && item.lineCount === model.getLineCount()
+			? item.data
+			: undefined;
 	}
 
 	delete(model: ITextModel): void {
@@ -103,7 +127,7 @@ export class CodeLensCache implements ICodeLensCache {
 			}
 			data[key] = {
 				lineCount: value.lineCount,
-				lines: [...lines.values()]
+				lines: [...lines.values()],
 			};
 		}
 		return JSON.stringify(data);
@@ -120,7 +144,7 @@ export class CodeLensCache implements ICodeLensCache {
 				}
 
 				const model = new CodeLensModel();
-				model.add({ lenses, dispose() { } }, this._fakeProvider);
+				model.add({ lenses, dispose() {} }, this._fakeProvider);
 				this._cache.set(key, new CacheItem(element.lineCount, model));
 			}
 		} catch {

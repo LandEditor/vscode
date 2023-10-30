@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface InteractiveEditorSlashCommand {
 		command: string;
 		detail?: string;
@@ -61,7 +60,7 @@ declare module 'vscode' {
 		Unhelpful = 0,
 		Helpful = 1,
 		Undone = 2,
-		Accepted = 3
+		Accepted = 3,
 	}
 
 	export interface TextDocumentContext {
@@ -73,19 +72,36 @@ declare module 'vscode' {
 		label: string;
 	}
 
-	export interface InteractiveEditorSessionProvider<S extends InteractiveEditorSession = InteractiveEditorSession, R extends InteractiveEditorResponse | InteractiveEditorMessageResponse = InteractiveEditorResponse | InteractiveEditorMessageResponse> {
-
+	export interface InteractiveEditorSessionProvider<
+		S extends InteractiveEditorSession = InteractiveEditorSession,
+		R extends
+			| InteractiveEditorResponse
+			| InteractiveEditorMessageResponse =
+			| InteractiveEditorResponse
+			| InteractiveEditorMessageResponse,
+	> {
 		// Create a session. The lifetime of this session is the duration of the editing session with the input mode widget.
-		prepareInteractiveEditorSession(context: TextDocumentContext, token: CancellationToken): ProviderResult<S>;
+		prepareInteractiveEditorSession(
+			context: TextDocumentContext,
+			token: CancellationToken
+		): ProviderResult<S>;
 
-		provideInteractiveEditorResponse(session: S, request: InteractiveEditorRequest, progress: Progress<InteractiveEditorProgressItem>, token: CancellationToken): ProviderResult<R>;
+		provideInteractiveEditorResponse(
+			session: S,
+			request: InteractiveEditorRequest,
+			progress: Progress<InteractiveEditorProgressItem>,
+			token: CancellationToken
+		): ProviderResult<R>;
 
 		// eslint-disable-next-line local/vscode-dts-provider-naming
-		handleInteractiveEditorResponseFeedback?(session: S, response: R, kind: InteractiveEditorResponseFeedbackKind): void;
+		handleInteractiveEditorResponseFeedback?(
+			session: S,
+			response: R,
+			kind: InteractiveEditorResponseFeedbackKind
+		): void;
 	}
 
-
-	export interface InteractiveSessionState { }
+	export interface InteractiveSessionState {}
 
 	export interface InteractiveSessionParticipantInformation {
 		name: string;
@@ -143,7 +159,9 @@ declare module 'vscode' {
 
 	export interface InteractiveProgressTask {
 		placeholder: string;
-		resolvedContent: Thenable<InteractiveProgressContent | InteractiveProgressFileTree>;
+		resolvedContent: Thenable<
+			InteractiveProgressContent | InteractiveProgressFileTree
+		>;
 	}
 
 	export interface FileTreeData {
@@ -201,18 +219,42 @@ declare module 'vscode' {
 		metadata?: any;
 	}
 
-	export type InteractiveSessionFollowup = InteractiveSessionReplyFollowup | InteractiveResponseCommand;
+	export type InteractiveSessionFollowup =
+		| InteractiveSessionReplyFollowup
+		| InteractiveResponseCommand;
 
-	export type InteractiveWelcomeMessageContent = string | MarkdownString | InteractiveSessionReplyFollowup[];
+	export type InteractiveWelcomeMessageContent =
+		| string
+		| MarkdownString
+		| InteractiveSessionReplyFollowup[];
 
-	export interface InteractiveSessionProvider<S extends InteractiveSession = InteractiveSession> {
-		provideWelcomeMessage?(token: CancellationToken): ProviderResult<InteractiveWelcomeMessageContent[]>;
-		provideSampleQuestions?(token: CancellationToken): ProviderResult<InteractiveSessionReplyFollowup[]>;
-		provideFollowups?(session: S, token: CancellationToken): ProviderResult<(string | InteractiveSessionFollowup)[]>;
-		provideSlashCommands?(session: S, token: CancellationToken): ProviderResult<InteractiveSessionSlashCommand[]>;
+	export interface InteractiveSessionProvider<
+		S extends InteractiveSession = InteractiveSession,
+	> {
+		provideWelcomeMessage?(
+			token: CancellationToken
+		): ProviderResult<InteractiveWelcomeMessageContent[]>;
+		provideSampleQuestions?(
+			token: CancellationToken
+		): ProviderResult<InteractiveSessionReplyFollowup[]>;
+		provideFollowups?(
+			session: S,
+			token: CancellationToken
+		): ProviderResult<(string | InteractiveSessionFollowup)[]>;
+		provideSlashCommands?(
+			session: S,
+			token: CancellationToken
+		): ProviderResult<InteractiveSessionSlashCommand[]>;
 
-		prepareSession(initialState: InteractiveSessionState | undefined, token: CancellationToken): ProviderResult<S>;
-		provideResponseWithProgress(request: InteractiveRequest, progress: Progress<InteractiveProgress>, token: CancellationToken): ProviderResult<InteractiveResponseForProgress>;
+		prepareSession(
+			initialState: InteractiveSessionState | undefined,
+			token: CancellationToken
+		): ProviderResult<S>;
+		provideResponseWithProgress(
+			request: InteractiveRequest,
+			progress: Progress<InteractiveProgress>,
+			token: CancellationToken
+		): ProviderResult<InteractiveResponseForProgress>;
 
 		// eslint-disable-next-line local/vscode-dts-provider-naming
 		removeRequest(session: S, requestId: string): void;
@@ -235,12 +277,24 @@ declare module 'vscode' {
 		// current version of the proposal.
 		export const _version: 1 | number;
 
-		export function registerInteractiveSessionProvider(id: string, provider: InteractiveSessionProvider): Disposable;
+		export function registerInteractiveSessionProvider(
+			id: string,
+			provider: InteractiveSessionProvider
+		): Disposable;
 
-		export function sendInteractiveRequestToProvider(providerId: string, message: InteractiveSessionDynamicRequest): void;
+		export function sendInteractiveRequestToProvider(
+			providerId: string,
+			message: InteractiveSessionDynamicRequest
+		): void;
 
-		export function registerInteractiveEditorSessionProvider(provider: InteractiveEditorSessionProvider, metadata?: InteractiveEditorSessionProviderMetadata): Disposable;
+		export function registerInteractiveEditorSessionProvider(
+			provider: InteractiveEditorSessionProvider,
+			metadata?: InteractiveEditorSessionProviderMetadata
+		): Disposable;
 
-		export function transferChatSession(session: InteractiveSession, toWorkspace: Uri): void;
+		export function transferChatSession(
+			session: InteractiveSession,
+			toWorkspace: Uri
+		): void;
 	}
 }

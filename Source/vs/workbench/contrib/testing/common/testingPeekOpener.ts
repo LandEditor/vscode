@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import { ITextEditorOptions } from 'vs/platform/editor/common/editor';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { TestResultItem } from 'vs/workbench/contrib/testing/common/testTypes';
-import { ITestResult } from 'vs/workbench/contrib/testing/common/testResult';
-import { IEditor } from 'vs/editor/common/editorCommon';
-import { MutableObservableValue } from 'vs/workbench/contrib/testing/common/observableValue';
+import { URI } from "vs/base/common/uri";
+import { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { TestResultItem } from "vs/workbench/contrib/testing/common/testTypes";
+import { ITestResult } from "vs/workbench/contrib/testing/common/testResult";
+import { IEditor } from "vs/editor/common/editorCommon";
+import { MutableObservableValue } from "vs/workbench/contrib/testing/common/observableValue";
 
 export interface IShowResultOptions {
 	/** Reveal the peek, if configured, in the given editor */
@@ -28,7 +28,11 @@ export interface ITestingPeekOpener {
 	 * Tries to peek the first test error, if the item is in a failed state.
 	 * @returns a boolean indicating whether a peek was opened
 	 */
-	tryPeekFirstError(result: ITestResult, test: TestResultItem, options?: Partial<ITextEditorOptions>): boolean;
+	tryPeekFirstError(
+		result: ITestResult,
+		test: TestResultItem,
+		options?: Partial<ITextEditorOptions>
+	): boolean;
 
 	/**
 	 * Peeks at the given test message uri.
@@ -52,5 +56,5 @@ export interface ITestingPeekOpener {
 	closeAllPeeks(): void;
 }
 
-export const ITestingPeekOpener = createDecorator<ITestingPeekOpener>('testingPeekOpener');
-
+export const ITestingPeekOpener =
+	createDecorator<ITestingPeekOpener>("testingPeekOpener");

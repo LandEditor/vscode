@@ -1,75 +1,75 @@
 {
-  "name": "vscode-colorize-tests",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "Colorize tests for VS Code",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "main": "./out/colorizerTestMain",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
-  },
-  "contributes": {
-    "productIconThemes": [
-      {
-        "id": "Test Product Icons",
-        "label": "The Test Product Icon Theme",
-        "path": "./producticons/test-product-icon-theme.json",
-        "_watch": true
-      }
-    ],
-    "semanticTokenModifiers": [
-      {
-        "id": "testModifier",
-        "description": "A test modifier"
-      }
-    ],
-    "semanticTokenScopes": [
-      {
-        "scopes": {
-          "testToken": [
-            "entity.name.function.special"
-          ]
-        }
-      }
-    ],
-    "semanticTokenTypes": [
-      {
-        "id": "testToken",
-        "description": "A test token"
-      }
-    ]
-  },
-  "activationEvents": [
-    "onLanguage:json"
-  ],
-  "dependencies": {
-    "jsonc-parser": "3.2.0"
-  },
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "*"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "media/icon.png"
+	"name": "vscode-colorize-tests",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "Colorize tests for VS Code",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"main": "./out/colorizerTestMain",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
+	},
+	"contributes": {
+		"productIconThemes": [
+			{
+				"id": "Test Product Icons",
+				"label": "The Test Product Icon Theme",
+				"path": "./producticons/test-product-icon-theme.json",
+				"_watch": true
+			}
+		],
+		"semanticTokenModifiers": [
+			{
+				"id": "testModifier",
+				"description": "A test modifier"
+			}
+		],
+		"semanticTokenScopes": [
+			{
+				"scopes": {
+					"testToken": [
+						"entity.name.function.special"
+					]
+				}
+			}
+		],
+		"semanticTokenTypes": [
+			{
+				"id": "testToken",
+				"description": "A test token"
+			}
+		]
+	},
+	"activationEvents": [
+		"onLanguage:json"
+	],
+	"dependencies": {
+		"jsonc-parser": "3.2.0"
+	},
+	"devDependencies": {
+		"@types/node": "20.x",
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "media/icon.png"
 }

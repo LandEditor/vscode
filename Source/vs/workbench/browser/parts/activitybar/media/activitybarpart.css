@@ -9,7 +9,7 @@
 }
 
 .monaco-workbench .activitybar.bordered::before {
-	content: '';
+	content: "";
 	float: left;
 	position: absolute;
 	box-sizing: border-box;

@@ -114,7 +114,7 @@ __vsc_escape_value() {
 	# Process text byte by byte, not by codepoint.
 	builtin local LC_ALL=C str="${1}" i byte token out=''
 
-	for (( i=0; i < "${#str}"; ++i )); do
+	for ((i = 0; i < "${#str}"; ++i)); do
 		byte="${str:$i:1}"
 
 		# Escape backslashes and semi-colons

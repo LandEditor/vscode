@@ -3,16 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import * as errors from 'vs/base/common/errors';
-import { QueryType, IFileQuery } from 'vs/workbench/services/search/common/search';
-import { FileQueryCacheState } from 'vs/workbench/contrib/search/common/cacheState';
-import { DeferredPromise } from 'vs/base/common/async';
+import * as assert from "assert";
+import * as errors from "vs/base/common/errors";
+import {
+	QueryType,
+	IFileQuery,
+} from "vs/workbench/services/search/common/search";
+import { FileQueryCacheState } from "vs/workbench/contrib/search/common/cacheState";
+import { DeferredPromise } from "vs/base/common/async";
 
-suite('FileQueryCacheState', () => {
-
-	test('reuse old cacheKey until new cache is loaded', async function () {
-
+suite("FileQueryCacheState", () => {
+	test("reuse old cacheKey until new cache is loaded", async function () {
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -43,8 +44,7 @@ suite('FileQueryCacheState', () => {
 		assert.strictEqual(second.cacheKey, secondKey);
 	});
 
-	test('do not spawn additional load if previous is still loading', async function () {
-
+	test("do not spawn additional load if previous is still loading", async function () {
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -68,8 +68,7 @@ suite('FileQueryCacheState', () => {
 		await cache.awaitDisposal(0);
 	});
 
-	test('do not use previous cacheKey if query changed', async function () {
-
+	test("do not use previous cacheKey if query changed", async function () {
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -80,7 +79,7 @@ suite('FileQueryCacheState', () => {
 		assert.strictEqual(first.isUpdating, false);
 		await cache.awaitDisposal(0);
 
-		cache.baseQuery.excludePattern = { '**/node_modules': true };
+		cache.baseQuery.excludePattern = { "**/node_modules": true };
 		const second = createCacheState(cache, first);
 		assert.strictEqual(second.isLoaded, false);
 		assert.strictEqual(second.isUpdating, false);
@@ -99,8 +98,7 @@ suite('FileQueryCacheState', () => {
 		await cache.awaitDisposal(1);
 	});
 
-	test('dispose propagates', async function () {
-
+	test("dispose propagates", async function () {
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -119,8 +117,7 @@ suite('FileQueryCacheState', () => {
 		assert.ok(cache.disposing[firstKey]);
 	});
 
-	test('keep using old cacheKey when loading fails', async function () {
-
+	test("keep using old cacheKey when loading fails", async function () {
 		const cache = new MockCache();
 
 		const first = createCacheState(cache);
@@ -131,10 +128,11 @@ suite('FileQueryCacheState', () => {
 		const second = createCacheState(cache, first);
 		second.load();
 		const secondKey = cache.cacheKeys[1];
-		const origErrorHandler = errors.errorHandler.getUnexpectedErrorHandler();
+		const origErrorHandler =
+			errors.errorHandler.getUnexpectedErrorHandler();
 		try {
 			errors.setUnexpectedErrorHandler(() => null);
-			await cache.loading[secondKey].error('loading failed');
+			await cache.loading[secondKey].error("loading failed");
 		} finally {
 			errors.setUnexpectedErrorHandler(origErrorHandler);
 		}
@@ -161,17 +159,19 @@ suite('FileQueryCacheState', () => {
 		assert.strictEqual(third.cacheKey, thirdKey); // recover with next successful load
 	});
 
-	function createCacheState(cache: MockCache, previous?: FileQueryCacheState): FileQueryCacheState {
+	function createCacheState(
+		cache: MockCache,
+		previous?: FileQueryCacheState
+	): FileQueryCacheState {
 		return new FileQueryCacheState(
-			cacheKey => cache.query(cacheKey),
-			query => cache.load(query),
-			cacheKey => cache.dispose(cacheKey),
+			(cacheKey) => cache.query(cacheKey),
+			(query) => cache.load(query),
+			(cacheKey) => cache.dispose(cacheKey),
 			previous!
 		);
 	}
 
 	class MockCache {
-
 		public cacheKeys: string[] = [];
 		public loading: { [cacheKey: string]: DeferredPromise<any> } = {};
 		public disposing: { [cacheKey: string]: DeferredPromise<void> } = {};
@@ -180,7 +180,7 @@ suite('FileQueryCacheState', () => {
 
 		public baseQuery: IFileQuery = {
 			type: QueryType.File,
-			folderQueries: []
+			folderQueries: [],
 		};
 
 		public query(cacheKey: string): IFileQuery {
@@ -206,11 +206,13 @@ suite('FileQueryCacheState', () => {
 		}
 
 		public awaitDisposal(n: number) {
-			return new Promise<void>(resolve => {
+			return new Promise<void>((resolve) => {
 				if (n === Object.keys(this.disposing).length) {
 					resolve();
 				} else {
-					(this._awaitDisposal[n] || (this._awaitDisposal[n] = [])).push(resolve);
+					(
+						this._awaitDisposal[n] || (this._awaitDisposal[n] = [])
+					).push(resolve);
 				}
 			});
 		}

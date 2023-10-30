@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { setTimeout0, setTimeout0IsFaster } from 'vs/base/common/platform';
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { setTimeout0, setTimeout0IsFaster } from "vs/base/common/platform";
 
 interface PriorityQueue<T> {
 	length: number;
@@ -20,7 +20,10 @@ class SimplePriorityQueue<T> implements PriorityQueue<T> {
 	private isSorted = false;
 	private items: T[];
 
-	constructor(items: T[], private readonly compare: (a: T, b: T) => number) {
+	constructor(
+		items: T[],
+		private readonly compare: (a: T, b: T) => number
+	) {
 		this.items = items;
 	}
 
@@ -84,7 +87,10 @@ interface ExtendedScheduledTask extends ScheduledTask {
 	id: number;
 }
 
-function compareScheduledTasks(a: ExtendedScheduledTask, b: ExtendedScheduledTask): number {
+function compareScheduledTasks(
+	a: ExtendedScheduledTask,
+	b: ExtendedScheduledTask
+): number {
 	if (a.time !== b.time) {
 		// Prefer lower time
 		return a.time - b.time;
@@ -101,16 +107,24 @@ function compareScheduledTasks(a: ExtendedScheduledTask, b: ExtendedScheduledTas
 export class TimeTravelScheduler implements Scheduler {
 	private taskCounter = 0;
 	private _now: TimeOffset = 0;
-	private readonly queue: PriorityQueue<ExtendedScheduledTask> = new SimplePriorityQueue([], compareScheduledTasks);
+	private readonly queue: PriorityQueue<ExtendedScheduledTask> =
+		new SimplePriorityQueue([], compareScheduledTasks);
 
-	private readonly taskScheduledEmitter = new Emitter<{ task: ScheduledTask }>();
+	private readonly taskScheduledEmitter = new Emitter<{
+		task: ScheduledTask;
+	}>();
 	public readonly onTaskScheduled = this.taskScheduledEmitter.event;
 
 	schedule(task: ScheduledTask): IDisposable {
 		if (task.time < this._now) {
-			throw new Error(`Scheduled time (${task.time}) must be equal to or greater than the current time (${this._now}).`);
+			throw new Error(
+				`Scheduled time (${task.time}) must be equal to or greater than the current time (${this._now}).`
+			);
 		}
-		const extendedTask: ExtendedScheduledTask = { ...task, id: this.taskCounter++ };
+		const extendedTask: ExtendedScheduledTask = {
+			...task,
+			id: this.taskCounter++,
+		};
 		this.queue.add(extendedTask);
 		this.taskScheduledEmitter.fire({ task });
 		return { dispose: () => this.queue.remove(extendedTask) };
@@ -146,7 +160,9 @@ export class TimeTravelScheduler implements Scheduler {
 export class AsyncSchedulerProcessor extends Disposable {
 	private isProcessing = false;
 	private readonly _history = new Array<ScheduledTask>();
-	public get history(): readonly ScheduledTask[] { return this._history; }
+	public get history(): readonly ScheduledTask[] {
+		return this._history;
+	}
 
 	private readonly maxTaskCount: number;
 	private readonly useSetImmediate: boolean;
@@ -156,20 +172,29 @@ export class AsyncSchedulerProcessor extends Disposable {
 
 	private lastError: Error | undefined;
 
-	constructor(private readonly scheduler: TimeTravelScheduler, options?: { useSetImmediate?: boolean; maxTaskCount?: number }) {
+	constructor(
+		private readonly scheduler: TimeTravelScheduler,
+		options?: { useSetImmediate?: boolean; maxTaskCount?: number }
+	) {
 		super();
 
-		this.maxTaskCount = options && options.maxTaskCount ? options.maxTaskCount : 100;
-		this.useSetImmediate = options && options.useSetImmediate ? options.useSetImmediate : false;
+		this.maxTaskCount =
+			options && options.maxTaskCount ? options.maxTaskCount : 100;
+		this.useSetImmediate =
+			options && options.useSetImmediate
+				? options.useSetImmediate
+				: false;
 
-		this._register(scheduler.onTaskScheduled(() => {
-			if (this.isProcessing) {
-				return;
-			} else {
-				this.isProcessing = true;
-				this.schedule();
-			}
-		}));
+		this._register(
+			scheduler.onTaskScheduled(() => {
+				if (this.isProcessing) {
+					return;
+				} else {
+					this.isProcessing = true;
+					this.schedule();
+				}
+			})
+		);
 	}
 
 	private schedule() {
@@ -191,9 +216,22 @@ export class AsyncSchedulerProcessor extends Disposable {
 		if (executedTask) {
 			this._history.push(executedTask);
 
-			if (this.history.length >= this.maxTaskCount && this.scheduler.hasScheduledTasks) {
-				const lastTasks = this._history.slice(Math.max(0, this.history.length - 10)).map(h => `${h.source.toString()}: ${h.source.stackTrace}`);
-				const e = new Error(`Queue did not get empty after processing ${this.history.length} items. These are the last ${lastTasks.length} scheduled tasks:\n${lastTasks.join('\n\n\n')}`);
+			if (
+				this.history.length >= this.maxTaskCount &&
+				this.scheduler.hasScheduledTasks
+			) {
+				const lastTasks = this._history
+					.slice(Math.max(0, this.history.length - 10))
+					.map(
+						(h) => `${h.source.toString()}: ${h.source.stackTrace}`
+					);
+				const e = new Error(
+					`Queue did not get empty after processing ${
+						this.history.length
+					} items. These are the last ${
+						lastTasks.length
+					} scheduled tasks:\n${lastTasks.join("\n\n\n")}`
+				);
 				this.lastError = e;
 				throw e;
 			}
@@ -225,15 +263,25 @@ export class AsyncSchedulerProcessor extends Disposable {
 	}
 }
 
-
-export async function runWithFakedTimers<T>(options: { useFakeTimers?: boolean; useSetImmediate?: boolean; maxTaskCount?: number }, fn: () => Promise<T>): Promise<T> {
-	const useFakeTimers = options.useFakeTimers === undefined ? true : options.useFakeTimers;
+export async function runWithFakedTimers<T>(
+	options: {
+		useFakeTimers?: boolean;
+		useSetImmediate?: boolean;
+		maxTaskCount?: number;
+	},
+	fn: () => Promise<T>
+): Promise<T> {
+	const useFakeTimers =
+		options.useFakeTimers === undefined ? true : options.useFakeTimers;
 	if (!useFakeTimers) {
 		return fn();
 	}
 
 	const scheduler = new TimeTravelScheduler();
-	const schedulerProcessor = new AsyncSchedulerProcessor(scheduler, { useSetImmediate: options.useSetImmediate, maxTaskCount: options.maxTaskCount });
+	const schedulerProcessor = new AsyncSchedulerProcessor(scheduler, {
+		useSetImmediate: options.useSetImmediate,
+		maxTaskCount: options.maxTaskCount,
+	});
 	const globalInstallDisposable = scheduler.installGlobally();
 
 	let result: T;
@@ -266,9 +314,15 @@ export const originalGlobalValues = {
 	Date: globalThis.Date,
 };
 
-function setTimeout(scheduler: Scheduler, handler: TimerHandler, timeout: number = 0): IDisposable {
-	if (typeof handler === 'string') {
-		throw new Error('String handler args should not be used and are not supported');
+function setTimeout(
+	scheduler: Scheduler,
+	handler: TimerHandler,
+	timeout: number = 0
+): IDisposable {
+	if (typeof handler === "string") {
+		throw new Error(
+			"String handler args should not be used and are not supported"
+		);
 	}
 
 	return scheduler.schedule({
@@ -277,15 +331,23 @@ function setTimeout(scheduler: Scheduler, handler: TimerHandler, timeout: number
 			handler();
 		},
 		source: {
-			toString() { return 'setTimeout'; },
+			toString() {
+				return "setTimeout";
+			},
 			stackTrace: new Error().stack,
-		}
+		},
 	});
 }
 
-function setInterval(scheduler: Scheduler, handler: TimerHandler, interval: number): IDisposable {
-	if (typeof handler === 'string') {
-		throw new Error('String handler args should not be used and are not supported');
+function setInterval(
+	scheduler: Scheduler,
+	handler: TimerHandler,
+	interval: number
+): IDisposable {
+	if (typeof handler === "string") {
+		throw new Error(
+			"String handler args should not be used and are not supported"
+		);
 	}
 	const validatedHandler = handler;
 
@@ -307,9 +369,11 @@ function setInterval(scheduler: Scheduler, handler: TimerHandler, interval: numb
 				}
 			},
 			source: {
-				toString() { return `setInterval (iteration ${curIter})`; },
+				toString() {
+					return `setInterval (iteration ${curIter})`;
+				},
 				stackTrace,
-			}
+			},
 		});
 	}
 
@@ -322,23 +386,33 @@ function setInterval(scheduler: Scheduler, handler: TimerHandler, interval: numb
 			}
 			disposed = true;
 			lastDisposable.dispose();
-		}
+		},
 	};
 }
 
 function overwriteGlobals(scheduler: Scheduler): IDisposable {
-	globalThis.setTimeout = ((handler: TimerHandler, timeout?: number) => setTimeout(scheduler, handler, timeout)) as any;
+	globalThis.setTimeout = ((handler: TimerHandler, timeout?: number) =>
+		setTimeout(scheduler, handler, timeout)) as any;
 	globalThis.clearTimeout = (timeoutId: any) => {
-		if (typeof timeoutId === 'object' && timeoutId && 'dispose' in timeoutId) {
+		if (
+			typeof timeoutId === "object" &&
+			timeoutId &&
+			"dispose" in timeoutId
+		) {
 			timeoutId.dispose();
 		} else {
 			originalGlobalValues.clearTimeout(timeoutId);
 		}
 	};
 
-	globalThis.setInterval = ((handler: TimerHandler, timeout: number) => setInterval(scheduler, handler, timeout)) as any;
+	globalThis.setInterval = ((handler: TimerHandler, timeout: number) =>
+		setInterval(scheduler, handler, timeout)) as any;
 	globalThis.clearInterval = (timeoutId: any) => {
-		if (typeof timeoutId === 'object' && timeoutId && 'dispose' in timeoutId) {
+		if (
+			typeof timeoutId === "object" &&
+			timeoutId &&
+			"dispose" in timeoutId
+		) {
 			timeoutId.dispose();
 		} else {
 			originalGlobalValues.clearInterval(timeoutId);
@@ -350,7 +424,7 @@ function overwriteGlobals(scheduler: Scheduler): IDisposable {
 	return {
 		dispose: () => {
 			Object.assign(globalThis, originalGlobalValues);
-		}
+		},
 	};
 }
 

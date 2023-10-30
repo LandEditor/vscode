@@ -2,14 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as assert from 'assert';
-import { parse, stringify } from 'vs/base/common/marshalling';
-import { URI } from 'vs/base/common/uri';
+import * as assert from "assert";
+import { parse, stringify } from "vs/base/common/marshalling";
+import { URI } from "vs/base/common/uri";
 
-suite('Marshalling', () => {
-
-	test('RegExp', () => {
-		const value = /foo/img;
+suite("Marshalling", () => {
+	test("RegExp", () => {
+		const value = /foo/gim;
 		const raw = stringify(value);
 		const clone = <RegExp>parse(raw);
 
@@ -19,8 +18,14 @@ suite('Marshalling', () => {
 		assert.strictEqual(value.multiline, clone.multiline);
 	});
 
-	test('URI', () => {
-		const value = URI.from({ scheme: 'file', authority: 'server', path: '/shares/c#files', query: 'q', fragment: 'f' });
+	test("URI", () => {
+		const value = URI.from({
+			scheme: "file",
+			authority: "server",
+			path: "/shares/c#files",
+			query: "q",
+			fragment: "f",
+		});
 		const raw = stringify(value);
 		const clone = <URI>parse(raw);
 
@@ -31,8 +36,8 @@ suite('Marshalling', () => {
 		assert.strictEqual(value.fragment, clone.fragment);
 	});
 
-	test('Bug 16793:# in folder name => mirror models get out of sync', () => {
-		const uri1 = URI.file('C:\\C#\\file.txt');
+	test("Bug 16793:# in folder name => mirror models get out of sync", () => {
+		const uri1 = URI.file("C:\\C#\\file.txt");
 		assert.strictEqual(parse(stringify(uri1)).toString(), uri1.toString());
 	});
 });

@@ -3,12 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from 'vs/base/browser/dom';
-import { Event } from 'vs/base/common/event';
-import { ILayoutService, ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService';
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { coalesce } from 'vs/base/common/arrays';
+import * as dom from "vs/base/browser/dom";
+import { Event } from "vs/base/common/event";
+import {
+	ILayoutService,
+	ILayoutOffsetInfo,
+} from "vs/platform/layout/browser/layoutService";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { coalesce } from "vs/base/common/arrays";
 
 class StandaloneLayoutService implements ILayoutService {
 	declare readonly _serviceBrand: undefined;
@@ -26,10 +32,18 @@ class StandaloneLayoutService implements ILayoutService {
 		return this._dimension;
 	}
 
-	get activeContainerDimension() { return this.mainContainerDimension; }
+	get activeContainerDimension() {
+		return this.mainContainerDimension;
+	}
 
-	readonly mainContainerOffset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 };
-	readonly activeContainerOffset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 };
+	readonly mainContainerOffset: ILayoutOffsetInfo = {
+		top: 0,
+		quickPickTop: 0,
+	};
+	readonly activeContainerOffset: ILayoutOffsetInfo = {
+		top: 0,
+		quickPickTop: 0,
+	};
 
 	get hasContainer(): boolean {
 		return false;
@@ -41,15 +55,23 @@ class StandaloneLayoutService implements ILayoutService {
 		// and use its container if necessary. You can also instantiate `EditorScopedLayoutService`
 		// which implements `ILayoutService` but is not a part of the service collection because
 		// it is code editor instance specific.
-		throw new Error(`ILayoutService.container is not available in the standalone editor!`);
+		throw new Error(
+			`ILayoutService.container is not available in the standalone editor!`
+		);
 	}
 
 	get containers(): Iterable<HTMLElement> {
-		return coalesce(this._codeEditorService.listCodeEditors().map(codeEditor => codeEditor.getContainerDomNode()));
+		return coalesce(
+			this._codeEditorService
+				.listCodeEditors()
+				.map((codeEditor) => codeEditor.getContainerDomNode())
+		);
 	}
 
 	get activeContainer(): HTMLElement {
-		const activeCodeEditor = this._codeEditorService.getFocusedCodeEditor() ?? this._codeEditorService.getActiveCodeEditor();
+		const activeCodeEditor =
+			this._codeEditorService.getFocusedCodeEditor() ??
+			this._codeEditorService.getActiveCodeEditor();
 
 		return activeCodeEditor?.getContainerDomNode() ?? this.container;
 	}
@@ -60,8 +82,7 @@ class StandaloneLayoutService implements ILayoutService {
 
 	constructor(
 		@ICodeEditorService private _codeEditorService: ICodeEditorService
-	) { }
-
+	) {}
 }
 
 export class EditorScopedLayoutService extends StandaloneLayoutService {
@@ -73,10 +94,14 @@ export class EditorScopedLayoutService extends StandaloneLayoutService {
 	}
 	constructor(
 		private _container: HTMLElement,
-		@ICodeEditorService codeEditorService: ICodeEditorService,
+		@ICodeEditorService codeEditorService: ICodeEditorService
 	) {
 		super(codeEditorService);
 	}
 }
 
-registerSingleton(ILayoutService, StandaloneLayoutService, InstantiationType.Delayed);
+registerSingleton(
+	ILayoutService,
+	StandaloneLayoutService,
+	InstantiationType.Delayed
+);

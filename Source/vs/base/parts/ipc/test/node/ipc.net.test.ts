@@ -3,22 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { EventEmitter } from 'events';
-import { AddressInfo, connect, createServer, Server, Socket } from 'net';
-import { tmpdir } from 'os';
-import { Barrier, timeout } from 'vs/base/common/async';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { ILoadEstimator, PersistentProtocol, Protocol, ProtocolConstants, SocketCloseEvent, SocketDiagnosticsEventType } from 'vs/base/parts/ipc/common/ipc.net';
-import { createRandomIPCHandle, createStaticIPCHandle, NodeSocket, WebSocketNodeSocket } from 'vs/base/parts/ipc/node/ipc.net';
-import { flakySuite } from 'vs/base/test/common/testUtils';
-import { runWithFakedTimers } from 'vs/base/test/common/timeTravelScheduler';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import * as assert from "assert";
+import { EventEmitter } from "events";
+import { AddressInfo, connect, createServer, Server, Socket } from "net";
+import { tmpdir } from "os";
+import { Barrier, timeout } from "vs/base/common/async";
+import { VSBuffer } from "vs/base/common/buffer";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import {
+	ILoadEstimator,
+	PersistentProtocol,
+	Protocol,
+	ProtocolConstants,
+	SocketCloseEvent,
+	SocketDiagnosticsEventType,
+} from "vs/base/parts/ipc/common/ipc.net";
+import {
+	createRandomIPCHandle,
+	createStaticIPCHandle,
+	NodeSocket,
+	WebSocketNodeSocket,
+} from "vs/base/parts/ipc/node/ipc.net";
+import { flakySuite } from "vs/base/test/common/testUtils";
+import { runWithFakedTimers } from "vs/base/test/common/timeTravelScheduler";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
 
 class MessageStream extends Disposable {
-
 	private _currentComplete: ((data: VSBuffer) => void) | null;
 	private _messages: VSBuffer[];
 
@@ -26,10 +37,12 @@ class MessageStream extends Disposable {
 		super();
 		this._currentComplete = null;
 		this._messages = [];
-		this._register(x.onMessage(data => {
-			this._messages.push(data);
-			this._trigger();
-		}));
+		this._register(
+			x.onMessage((data) => {
+				this._messages.push(data);
+				this._trigger();
+			})
+		);
 	}
 
 	private _trigger(): void {
@@ -57,7 +70,7 @@ class MessageStream extends Disposable {
 class EtherStream extends EventEmitter {
 	constructor(
 		private readonly _ether: Ether,
-		private readonly _name: 'a' | 'b'
+		private readonly _name: "a" | "b"
 	) {
 		super();
 	}
@@ -70,12 +83,10 @@ class EtherStream extends EventEmitter {
 		return true;
 	}
 
-	destroy(): void {
-	}
+	destroy(): void {}
 }
 
 class Ether {
-
 	private readonly _a: EtherStream;
 	private readonly _b: EtherStream;
 
@@ -90,18 +101,16 @@ class Ether {
 		return <any>this._b;
 	}
 
-	constructor(
-		private readonly _wireLatency = 0
-	) {
-		this._a = new EtherStream(this, 'a');
-		this._b = new EtherStream(this, 'b');
+	constructor(private readonly _wireLatency = 0) {
+		this._a = new EtherStream(this, "a");
+		this._b = new EtherStream(this, "b");
 		this._ab = [];
 		this._ba = [];
 	}
 
-	public write(from: 'a' | 'b', data: Buffer): void {
+	public write(from: "a" | "b", data: Buffer): void {
 		setTimeout(() => {
-			if (from === 'a') {
+			if (from === "a") {
 				this._ab.push(data);
 			} else {
 				this._ba.push(data);
@@ -112,11 +121,10 @@ class Ether {
 	}
 
 	private _deliver(): void {
-
 		if (this._ab.length > 0) {
 			const data = Buffer.concat(this._ab);
 			this._ab.length = 0;
-			this._b.emit('data', data);
+			this._b.emit("data", data);
 			setTimeout(() => this._deliver(), 0);
 			return;
 		}
@@ -124,16 +132,14 @@ class Ether {
 		if (this._ba.length > 0) {
 			const data = Buffer.concat(this._ba);
 			this._ba.length = 0;
-			this._a.emit('data', data);
+			this._a.emit("data", data);
 			setTimeout(() => this._deliver(), 0);
 			return;
 		}
-
 	}
 }
 
-suite('IPC, Socket Protocol', () => {
-
+suite("IPC, Socket Protocol", () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	let ether: Ether;
@@ -142,15 +148,14 @@ suite('IPC, Socket Protocol', () => {
 		ether = new Ether();
 	});
 
-	test('read/write', async () => {
-
+	test("read/write", async () => {
 		const a = new Protocol(new NodeSocket(ether.a));
 		const b = new Protocol(new NodeSocket(ether.b));
 		const bMessages = new MessageStream(b);
 
-		a.send(VSBuffer.fromString('foobarfarboo'));
+		a.send(VSBuffer.fromString("foobarfarboo"));
 		const msg1 = await bMessages.waitForOne();
-		assert.strictEqual(msg1.toString(), 'foobarfarboo');
+		assert.strictEqual(msg1.toString(), "foobarfarboo");
 
 		const buffer = VSBuffer.alloc(1);
 		buffer.writeUInt8(123, 0);
@@ -163,18 +168,16 @@ suite('IPC, Socket Protocol', () => {
 		b.dispose();
 	});
 
-
-	test('read/write, object data', async () => {
-
+	test("read/write, object data", async () => {
 		const a = new Protocol(new NodeSocket(ether.a));
 		const b = new Protocol(new NodeSocket(ether.b));
 		const bMessages = new MessageStream(b);
 
 		const data = {
 			pi: Math.PI,
-			foo: 'bar',
+			foo: "bar",
 			more: true,
-			data: 'Hello World'.split('')
+			data: "Hello World".split(""),
 		};
 
 		a.send(VSBuffer.fromString(JSON.stringify(data)));
@@ -185,62 +188,60 @@ suite('IPC, Socket Protocol', () => {
 		a.dispose();
 		b.dispose();
 	});
-
 });
 
-suite('PersistentProtocol reconnection', () => {
-
+suite("PersistentProtocol reconnection", () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('acks get piggybacked with messages', async () => {
+	test("acks get piggybacked with messages", async () => {
 		const ether = new Ether();
 		const a = new PersistentProtocol({ socket: new NodeSocket(ether.a) });
 		const aMessages = new MessageStream(a);
 		const b = new PersistentProtocol({ socket: new NodeSocket(ether.b) });
 		const bMessages = new MessageStream(b);
 
-		a.send(VSBuffer.fromString('a1'));
+		a.send(VSBuffer.fromString("a1"));
 		assert.strictEqual(a.unacknowledgedCount, 1);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
-		a.send(VSBuffer.fromString('a2'));
+		a.send(VSBuffer.fromString("a2"));
 		assert.strictEqual(a.unacknowledgedCount, 2);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
-		a.send(VSBuffer.fromString('a3'));
+		a.send(VSBuffer.fromString("a3"));
 		assert.strictEqual(a.unacknowledgedCount, 3);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
 		const a1 = await bMessages.waitForOne();
-		assert.strictEqual(a1.toString(), 'a1');
+		assert.strictEqual(a1.toString(), "a1");
 		assert.strictEqual(a.unacknowledgedCount, 3);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
 		const a2 = await bMessages.waitForOne();
-		assert.strictEqual(a2.toString(), 'a2');
+		assert.strictEqual(a2.toString(), "a2");
 		assert.strictEqual(a.unacknowledgedCount, 3);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
 		const a3 = await bMessages.waitForOne();
-		assert.strictEqual(a3.toString(), 'a3');
+		assert.strictEqual(a3.toString(), "a3");
 		assert.strictEqual(a.unacknowledgedCount, 3);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
-		b.send(VSBuffer.fromString('b1'));
+		b.send(VSBuffer.fromString("b1"));
 		assert.strictEqual(a.unacknowledgedCount, 3);
 		assert.strictEqual(b.unacknowledgedCount, 1);
 
 		const b1 = await aMessages.waitForOne();
-		assert.strictEqual(b1.toString(), 'b1');
+		assert.strictEqual(b1.toString(), "b1");
 		assert.strictEqual(a.unacknowledgedCount, 0);
 		assert.strictEqual(b.unacknowledgedCount, 1);
 
-		a.send(VSBuffer.fromString('a4'));
+		a.send(VSBuffer.fromString("a4"));
 		assert.strictEqual(a.unacknowledgedCount, 1);
 		assert.strictEqual(b.unacknowledgedCount, 1);
 
 		const b2 = await bMessages.waitForOne();
-		assert.strictEqual(b2.toString(), 'a4');
+		assert.strictEqual(b2.toString(), "a4");
 		assert.strictEqual(a.unacknowledgedCount, 1);
 		assert.strictEqual(b.unacknowledgedCount, 0);
 
@@ -250,46 +251,55 @@ suite('PersistentProtocol reconnection', () => {
 		b.dispose();
 	});
 
-	test('ack gets sent after a while', async () => {
-		await runWithFakedTimers({ useFakeTimers: true, maxTaskCount: 100 }, async () => {
-			const loadEstimator: ILoadEstimator = {
-				hasHighLoad: () => false
-			};
-			const ether = new Ether();
-			const aSocket = new NodeSocket(ether.a);
-			const a = new PersistentProtocol({ socket: aSocket, loadEstimator });
-			const aMessages = new MessageStream(a);
-			const bSocket = new NodeSocket(ether.b);
-			const b = new PersistentProtocol({ socket: bSocket, loadEstimator });
-			const bMessages = new MessageStream(b);
+	test("ack gets sent after a while", async () => {
+		await runWithFakedTimers(
+			{ useFakeTimers: true, maxTaskCount: 100 },
+			async () => {
+				const loadEstimator: ILoadEstimator = {
+					hasHighLoad: () => false,
+				};
+				const ether = new Ether();
+				const aSocket = new NodeSocket(ether.a);
+				const a = new PersistentProtocol({
+					socket: aSocket,
+					loadEstimator,
+				});
+				const aMessages = new MessageStream(a);
+				const bSocket = new NodeSocket(ether.b);
+				const b = new PersistentProtocol({
+					socket: bSocket,
+					loadEstimator,
+				});
+				const bMessages = new MessageStream(b);
 
-			// send one message A -> B
-			a.send(VSBuffer.fromString('a1'));
-			assert.strictEqual(a.unacknowledgedCount, 1);
-			assert.strictEqual(b.unacknowledgedCount, 0);
-			const a1 = await bMessages.waitForOne();
-			assert.strictEqual(a1.toString(), 'a1');
-			assert.strictEqual(a.unacknowledgedCount, 1);
-			assert.strictEqual(b.unacknowledgedCount, 0);
+				// send one message A -> B
+				a.send(VSBuffer.fromString("a1"));
+				assert.strictEqual(a.unacknowledgedCount, 1);
+				assert.strictEqual(b.unacknowledgedCount, 0);
+				const a1 = await bMessages.waitForOne();
+				assert.strictEqual(a1.toString(), "a1");
+				assert.strictEqual(a.unacknowledgedCount, 1);
+				assert.strictEqual(b.unacknowledgedCount, 0);
 
-			// wait for ack to arrive B -> A
-			await timeout(2 * ProtocolConstants.AcknowledgeTime);
-			assert.strictEqual(a.unacknowledgedCount, 0);
-			assert.strictEqual(b.unacknowledgedCount, 0);
+				// wait for ack to arrive B -> A
+				await timeout(2 * ProtocolConstants.AcknowledgeTime);
+				assert.strictEqual(a.unacknowledgedCount, 0);
+				assert.strictEqual(b.unacknowledgedCount, 0);
 
-			aMessages.dispose();
-			bMessages.dispose();
-			a.dispose();
-			b.dispose();
-		});
+				aMessages.dispose();
+				bMessages.dispose();
+				a.dispose();
+				b.dispose();
+			}
+		);
 	});
 
-	test('messages that are never written to a socket should not cause an ack timeout', async () => {
+	test("messages that are never written to a socket should not cause an ack timeout", async () => {
 		await runWithFakedTimers(
 			{
 				useFakeTimers: true,
 				useSetImmediate: true,
-				maxTaskCount: 1000
+				maxTaskCount: 1000,
 			},
 			async () => {
 				// Date.now() in fake timers starts at 0, which is very inconvenient
@@ -298,35 +308,43 @@ suite('PersistentProtocol reconnection', () => {
 				await timeout(60 * 60 * 1000);
 
 				const loadEstimator: ILoadEstimator = {
-					hasHighLoad: () => false
+					hasHighLoad: () => false,
 				};
 				const ether = new Ether();
 				const aSocket = new NodeSocket(ether.a);
-				const a = new PersistentProtocol({ socket: aSocket, loadEstimator, sendKeepAlive: false });
+				const a = new PersistentProtocol({
+					socket: aSocket,
+					loadEstimator,
+					sendKeepAlive: false,
+				});
 				const aMessages = new MessageStream(a);
 				const bSocket = new NodeSocket(ether.b);
-				const b = new PersistentProtocol({ socket: bSocket, loadEstimator, sendKeepAlive: false });
+				const b = new PersistentProtocol({
+					socket: bSocket,
+					loadEstimator,
+					sendKeepAlive: false,
+				});
 				const bMessages = new MessageStream(b);
 
 				// send message a1 before reconnection to get _recvAckCheck() scheduled
-				a.send(VSBuffer.fromString('a1'));
+				a.send(VSBuffer.fromString("a1"));
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 0);
 
 				// read message a1 at B
 				const a1 = await bMessages.waitForOne();
-				assert.strictEqual(a1.toString(), 'a1');
+				assert.strictEqual(a1.toString(), "a1");
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 0);
 
 				// send message b1 to send the ack for a1
-				b.send(VSBuffer.fromString('b1'));
+				b.send(VSBuffer.fromString("b1"));
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 1);
 
 				// read message b1 at A to receive the ack for a1
 				const b1 = await aMessages.waitForOne();
-				assert.strictEqual(b1.toString(), 'b1');
+				assert.strictEqual(b1.toString(), "b1");
 				assert.strictEqual(a.unacknowledgedCount, 0);
 				assert.strictEqual(b.unacknowledgedCount, 1);
 
@@ -341,7 +359,7 @@ suite('PersistentProtocol reconnection', () => {
 				});
 
 				// send message 2 during reconnection
-				a.send(VSBuffer.fromString('a2'));
+				a.send(VSBuffer.fromString("a2"));
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 1);
 
@@ -369,41 +387,48 @@ suite('PersistentProtocol reconnection', () => {
 		);
 	});
 
-	test('acks are always sent after a reconnection', async () => {
+	test("acks are always sent after a reconnection", async () => {
 		await runWithFakedTimers(
 			{
 				useFakeTimers: true,
 				useSetImmediate: true,
-				maxTaskCount: 1000
+				maxTaskCount: 1000,
 			},
 			async () => {
-
 				const loadEstimator: ILoadEstimator = {
-					hasHighLoad: () => false
+					hasHighLoad: () => false,
 				};
 				const wireLatency = 1000;
 				const ether = new Ether(wireLatency);
 				const aSocket = new NodeSocket(ether.a);
-				const a = new PersistentProtocol({ socket: aSocket, loadEstimator });
+				const a = new PersistentProtocol({
+					socket: aSocket,
+					loadEstimator,
+				});
 				const aMessages = new MessageStream(a);
 				const bSocket = new NodeSocket(ether.b);
-				const b = new PersistentProtocol({ socket: bSocket, loadEstimator });
+				const b = new PersistentProtocol({
+					socket: bSocket,
+					loadEstimator,
+				});
 				const bMessages = new MessageStream(b);
 
 				// send message a1 to have something unacknowledged
-				a.send(VSBuffer.fromString('a1'));
+				a.send(VSBuffer.fromString("a1"));
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 0);
 
 				// read message a1 at B
 				const a1 = await bMessages.waitForOne();
-				assert.strictEqual(a1.toString(), 'a1');
+				assert.strictEqual(a1.toString(), "a1");
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 0);
 
 				// wait for B to send an ACK message,
 				// but resume before A receives it
-				await timeout(ProtocolConstants.AcknowledgeTime + wireLatency / 2);
+				await timeout(
+					ProtocolConstants.AcknowledgeTime + wireLatency / 2
+				);
 				assert.strictEqual(a.unacknowledgedCount, 1);
 				assert.strictEqual(b.unacknowledgedCount, 0);
 
@@ -419,7 +444,9 @@ suite('PersistentProtocol reconnection', () => {
 				a.endAcceptReconnection();
 
 				// wait for quite some time
-				await timeout(2 * ProtocolConstants.AcknowledgeTime + wireLatency);
+				await timeout(
+					2 * ProtocolConstants.AcknowledgeTime + wireLatency
+				);
 				assert.strictEqual(a.unacknowledgedCount, 0);
 				assert.strictEqual(b.unacknowledgedCount, 0);
 
@@ -431,31 +458,36 @@ suite('PersistentProtocol reconnection', () => {
 		);
 	});
 
-	test('onSocketTimeout is emitted at most once every 20s', async () => {
+	test("onSocketTimeout is emitted at most once every 20s", async () => {
 		await runWithFakedTimers(
 			{
 				useFakeTimers: true,
 				useSetImmediate: true,
-				maxTaskCount: 1000
+				maxTaskCount: 1000,
 			},
 			async () => {
-
 				const loadEstimator: ILoadEstimator = {
-					hasHighLoad: () => false
+					hasHighLoad: () => false,
 				};
 				const ether = new Ether();
 				const aSocket = new NodeSocket(ether.a);
-				const a = new PersistentProtocol({ socket: aSocket, loadEstimator });
+				const a = new PersistentProtocol({
+					socket: aSocket,
+					loadEstimator,
+				});
 				const aMessages = new MessageStream(a);
 				const bSocket = new NodeSocket(ether.b);
-				const b = new PersistentProtocol({ socket: bSocket, loadEstimator });
+				const b = new PersistentProtocol({
+					socket: bSocket,
+					loadEstimator,
+				});
 				const bMessages = new MessageStream(b);
 
 				// never receive acks
 				b.pauseSocketWriting();
 
 				// send message a1 to have something unacknowledged
-				a.send(VSBuffer.fromString('a1'));
+				a.send(VSBuffer.fromString("a1"));
 
 				// wait for the first timeout to fire
 				await Event.toPromise(a.onSocketTimeout);
@@ -466,8 +498,8 @@ suite('PersistentProtocol reconnection', () => {
 				});
 
 				// send more messages
-				a.send(VSBuffer.fromString('a2'));
-				a.send(VSBuffer.fromString('a3'));
+				a.send(VSBuffer.fromString("a2"));
+				a.send(VSBuffer.fromString("a3"));
 
 				// wait for 10s
 				await timeout(ProtocolConstants.TimeoutTime / 2);
@@ -483,68 +515,76 @@ suite('PersistentProtocol reconnection', () => {
 		);
 	});
 
-	test('writing can be paused', async () => {
-		await runWithFakedTimers({ useFakeTimers: true, maxTaskCount: 100 }, async () => {
-			const loadEstimator: ILoadEstimator = {
-				hasHighLoad: () => false
-			};
-			const ether = new Ether();
-			const aSocket = new NodeSocket(ether.a);
-			const a = new PersistentProtocol({ socket: aSocket, loadEstimator });
-			const aMessages = new MessageStream(a);
-			const bSocket = new NodeSocket(ether.b);
-			const b = new PersistentProtocol({ socket: bSocket, loadEstimator });
-			const bMessages = new MessageStream(b);
+	test("writing can be paused", async () => {
+		await runWithFakedTimers(
+			{ useFakeTimers: true, maxTaskCount: 100 },
+			async () => {
+				const loadEstimator: ILoadEstimator = {
+					hasHighLoad: () => false,
+				};
+				const ether = new Ether();
+				const aSocket = new NodeSocket(ether.a);
+				const a = new PersistentProtocol({
+					socket: aSocket,
+					loadEstimator,
+				});
+				const aMessages = new MessageStream(a);
+				const bSocket = new NodeSocket(ether.b);
+				const b = new PersistentProtocol({
+					socket: bSocket,
+					loadEstimator,
+				});
+				const bMessages = new MessageStream(b);
 
-			// send one message A -> B
-			a.send(VSBuffer.fromString('a1'));
-			const a1 = await bMessages.waitForOne();
-			assert.strictEqual(a1.toString(), 'a1');
+				// send one message A -> B
+				a.send(VSBuffer.fromString("a1"));
+				const a1 = await bMessages.waitForOne();
+				assert.strictEqual(a1.toString(), "a1");
 
-			// ask A to pause writing
-			b.sendPause();
+				// ask A to pause writing
+				b.sendPause();
 
-			// send a message B -> A
-			b.send(VSBuffer.fromString('b1'));
-			const b1 = await aMessages.waitForOne();
-			assert.strictEqual(b1.toString(), 'b1');
+				// send a message B -> A
+				b.send(VSBuffer.fromString("b1"));
+				const b1 = await aMessages.waitForOne();
+				assert.strictEqual(b1.toString(), "b1");
 
-			// send a message A -> B (this should be blocked at A)
-			a.send(VSBuffer.fromString('a2'));
+				// send a message A -> B (this should be blocked at A)
+				a.send(VSBuffer.fromString("a2"));
 
-			// wait a long time and check that not even acks are written
-			await timeout(2 * ProtocolConstants.AcknowledgeTime);
-			assert.strictEqual(a.unacknowledgedCount, 1);
-			assert.strictEqual(b.unacknowledgedCount, 1);
+				// wait a long time and check that not even acks are written
+				await timeout(2 * ProtocolConstants.AcknowledgeTime);
+				assert.strictEqual(a.unacknowledgedCount, 1);
+				assert.strictEqual(b.unacknowledgedCount, 1);
 
-			// ask A to resume writing
-			b.sendResume();
+				// ask A to resume writing
+				b.sendResume();
 
-			// check that B receives message
-			const a2 = await bMessages.waitForOne();
-			assert.strictEqual(a2.toString(), 'a2');
+				// check that B receives message
+				const a2 = await bMessages.waitForOne();
+				assert.strictEqual(a2.toString(), "a2");
 
-			// wait a long time and check that acks are written
-			await timeout(2 * ProtocolConstants.AcknowledgeTime);
-			assert.strictEqual(a.unacknowledgedCount, 0);
-			assert.strictEqual(b.unacknowledgedCount, 0);
+				// wait a long time and check that acks are written
+				await timeout(2 * ProtocolConstants.AcknowledgeTime);
+				assert.strictEqual(a.unacknowledgedCount, 0);
+				assert.strictEqual(b.unacknowledgedCount, 0);
 
-			aMessages.dispose();
-			bMessages.dispose();
-			a.dispose();
-			b.dispose();
-		});
+				aMessages.dispose();
+				bMessages.dispose();
+				a.dispose();
+				b.dispose();
+			}
+		);
 	});
 });
 
-flakySuite('IPC, create handle', () => {
-
-	test('createRandomIPCHandle', async () => {
+flakySuite("IPC, create handle", () => {
+	test("createRandomIPCHandle", async () => {
 		return testIPCHandle(createRandomIPCHandle());
 	});
 
-	test('createStaticIPCHandle', async () => {
-		return testIPCHandle(createStaticIPCHandle(tmpdir(), 'test', '1.64.0'));
+	test("createStaticIPCHandle", async () => {
+		return testIPCHandle(createStaticIPCHandle(tmpdir(), "test", "1.64.0"));
 	});
 
 	function testIPCHandle(handle: string): Promise<void> {
@@ -553,12 +593,12 @@ flakySuite('IPC, create handle', () => {
 
 			const server = createServer();
 
-			server.on('error', () => {
+			server.on("error", () => {
 				return new Promise(() => server.close(() => reject()));
 			});
 
 			server.listen(pipeName, () => {
-				server.removeListener('error', reject);
+				server.removeListener("error", reject);
 
 				return new Promise(() => {
 					server.close(() => resolve());
@@ -566,11 +606,9 @@ flakySuite('IPC, create handle', () => {
 			});
 		});
 	}
-
 });
 
-suite('WebSocketNodeSocket', () => {
-
+suite("WebSocketNodeSocket", () => {
 	function toUint8Array(data: number[]): Uint8Array {
 		const result = new Uint8Array(data.length);
 		for (let i = 0; i < data.length; i++) {
@@ -588,7 +626,7 @@ suite('WebSocketNodeSocket', () => {
 	}
 
 	function fromCharCodeArray(data: number[]): string {
-		let result = '';
+		let result = "";
 		for (let i = 0; i < data.length; i++) {
 			result += String.fromCharCode(data[i]);
 		}
@@ -596,7 +634,6 @@ suite('WebSocketNodeSocket', () => {
 	}
 
 	class FakeNodeSocket extends Disposable {
-
 		private readonly _onData = new Emitter<VSBuffer>();
 		public readonly onData = this._onData.event;
 
@@ -605,8 +642,10 @@ suite('WebSocketNodeSocket', () => {
 
 		public writtenData: VSBuffer[] = [];
 
-		public traceSocketEvent(type: SocketDiagnosticsEventType, data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any): void {
-		}
+		public traceSocketEvent(
+			type: SocketDiagnosticsEventType,
+			data?: VSBuffer | Uint8Array | ArrayBuffer | ArrayBufferView | any
+		): void {}
 
 		constructor() {
 			super();
@@ -621,22 +660,29 @@ suite('WebSocketNodeSocket', () => {
 		}
 	}
 
-	async function testReading(frames: number[][], permessageDeflate: boolean): Promise<string> {
+	async function testReading(
+		frames: number[][],
+		permessageDeflate: boolean
+	): Promise<string> {
 		const disposables = new DisposableStore();
 		const socket = new FakeNodeSocket();
-		const webSocket = disposables.add(new WebSocketNodeSocket(<any>socket, permessageDeflate, null, false));
+		const webSocket = disposables.add(
+			new WebSocketNodeSocket(<any>socket, permessageDeflate, null, false)
+		);
 
 		const barrier = new Barrier();
 		let remainingFrameCount = frames.length;
 
-		let receivedData: string = '';
-		disposables.add(webSocket.onData((buff) => {
-			receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
-			remainingFrameCount--;
-			if (remainingFrameCount === 0) {
-				barrier.open();
-			}
-		}));
+		let receivedData: string = "";
+		disposables.add(
+			webSocket.onData((buff) => {
+				receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
+				remainingFrameCount--;
+				if (remainingFrameCount === 0) {
+					barrier.open();
+				}
+			})
+		);
 
 		for (let i = 0; i < frames.length; i++) {
 			socket.fireData(frames[i]);
@@ -649,72 +695,72 @@ suite('WebSocketNodeSocket', () => {
 		return receivedData;
 	}
 
-	test('A single-frame unmasked text message', async () => {
+	test("A single-frame unmasked text message", async () => {
 		const frames = [
-			[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f] // contains "Hello"
+			[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f], // contains "Hello"
 		];
 		const actual = await testReading(frames, false);
-		assert.deepStrictEqual(actual, 'Hello');
+		assert.deepStrictEqual(actual, "Hello");
 	});
 
-	test('A single-frame masked text message', async () => {
+	test("A single-frame masked text message", async () => {
 		const frames = [
-			[0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58] // contains "Hello"
+			[0x81, 0x85, 0x37, 0xfa, 0x21, 0x3d, 0x7f, 0x9f, 0x4d, 0x51, 0x58], // contains "Hello"
 		];
 		const actual = await testReading(frames, false);
-		assert.deepStrictEqual(actual, 'Hello');
+		assert.deepStrictEqual(actual, "Hello");
 	});
 
-	test('A fragmented unmasked text message', async () => {
+	test("A fragmented unmasked text message", async () => {
 		// contains "Hello"
 		const frames = [
 			[0x01, 0x03, 0x48, 0x65, 0x6c], // contains "Hel"
 			[0x80, 0x02, 0x6c, 0x6f], // contains "lo"
 		];
 		const actual = await testReading(frames, false);
-		assert.deepStrictEqual(actual, 'Hello');
+		assert.deepStrictEqual(actual, "Hello");
 	});
 
-	suite('compression', () => {
-		test('A single-frame compressed text message', async () => {
+	suite("compression", () => {
+		test("A single-frame compressed text message", async () => {
 			// contains "Hello"
 			const frames = [
 				[0xc1, 0x07, 0xf2, 0x48, 0xcd, 0xc9, 0xc9, 0x07, 0x00], // contains "Hello"
 			];
 			const actual = await testReading(frames, true);
-			assert.deepStrictEqual(actual, 'Hello');
+			assert.deepStrictEqual(actual, "Hello");
 		});
 
-		test('A fragmented compressed text message', async () => {
+		test("A fragmented compressed text message", async () => {
 			// contains "Hello"
-			const frames = [  // contains "Hello"
+			const frames = [
+				// contains "Hello"
 				[0x41, 0x03, 0xf2, 0x48, 0xcd],
-				[0x80, 0x04, 0xc9, 0xc9, 0x07, 0x00]
+				[0x80, 0x04, 0xc9, 0xc9, 0x07, 0x00],
 			];
 			const actual = await testReading(frames, true);
-			assert.deepStrictEqual(actual, 'Hello');
+			assert.deepStrictEqual(actual, "Hello");
 		});
 
-		test('A single-frame non-compressed text message', async () => {
+		test("A single-frame non-compressed text message", async () => {
 			const frames = [
-				[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f] // contains "Hello"
+				[0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f], // contains "Hello"
 			];
 			const actual = await testReading(frames, true);
-			assert.deepStrictEqual(actual, 'Hello');
+			assert.deepStrictEqual(actual, "Hello");
 		});
 
-		test('A single-frame compressed text message followed by a single-frame non-compressed text message', async () => {
+		test("A single-frame compressed text message followed by a single-frame non-compressed text message", async () => {
 			const frames = [
 				[0xc1, 0x07, 0xf2, 0x48, 0xcd, 0xc9, 0xc9, 0x07, 0x00], // contains "Hello"
-				[0x81, 0x05, 0x77, 0x6f, 0x72, 0x6c, 0x64] // contains "world"
+				[0x81, 0x05, 0x77, 0x6f, 0x72, 0x6c, 0x64], // contains "world"
 			];
 			const actual = await testReading(frames, true);
-			assert.deepStrictEqual(actual, 'Helloworld');
+			assert.deepStrictEqual(actual, "Helloworld");
 		});
 	});
 
-	test('Large buffers are split and sent in chunks', async () => {
-
+	test("Large buffers are split and sent in chunks", async () => {
 		let receivingSideOnDataCallCount = 0;
 		let receivingSideTotalBytes = 0;
 		const receivingSideSocketClosedBarrier = new Barrier();
@@ -723,7 +769,12 @@ suite('WebSocketNodeSocket', () => {
 			// stop the server when the first connection is received
 			server.close();
 
-			const webSocketNodeSocket = new WebSocketNodeSocket(new NodeSocket(socket), true, null, false);
+			const webSocketNodeSocket = new WebSocketNodeSocket(
+				new NodeSocket(socket),
+				true,
+				null,
+				false
+			);
 			webSocketNodeSocket.onData((data) => {
 				receivingSideOnDataCallCount++;
 				receivingSideTotalBytes += data.byteLength;
@@ -736,13 +787,18 @@ suite('WebSocketNodeSocket', () => {
 		});
 
 		const socket = connect({
-			host: '127.0.0.1',
-			port: (<AddressInfo>server.address()).port
+			host: "127.0.0.1",
+			port: (<AddressInfo>server.address()).port,
 		});
 
 		const buff = generateRandomBuffer(1 * 1024 * 1024);
 
-		const webSocketNodeSocket = new WebSocketNodeSocket(new NodeSocket(socket), true, null, false);
+		const webSocketNodeSocket = new WebSocketNodeSocket(
+			new NodeSocket(socket),
+			true,
+			null,
+			false
+		);
 		webSocketNodeSocket.write(buff);
 		await webSocketNodeSocket.drain();
 		webSocketNodeSocket.dispose();
@@ -752,16 +808,19 @@ suite('WebSocketNodeSocket', () => {
 		assert.strictEqual(receivingSideOnDataCallCount, 4);
 	});
 
-	test('issue #194284: ping/pong opcodes are supported', async () => {
-
+	test("issue #194284: ping/pong opcodes are supported", async () => {
 		const disposables = new DisposableStore();
 		const socket = new FakeNodeSocket();
-		const webSocket = disposables.add(new WebSocketNodeSocket(<any>socket, false, null, false));
+		const webSocket = disposables.add(
+			new WebSocketNodeSocket(<any>socket, false, null, false)
+		);
 
-		let receivedData: string = '';
-		disposables.add(webSocket.onData((buff) => {
-			receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
-		}));
+		let receivedData: string = "";
+		disposables.add(
+			webSocket.onData((buff) => {
+				receivedData += fromCharCodeArray(fromUint8Array(buff.buffer));
+			})
+		);
 
 		// A single-frame non-compressed text message that contains "Hello"
 		socket.fireData([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]);
@@ -772,12 +831,12 @@ suite('WebSocketNodeSocket', () => {
 		// Another single-frame non-compressed text message that contains "Hello"
 		socket.fireData([0x81, 0x05, 0x48, 0x65, 0x6c, 0x6c, 0x6f]);
 
-		assert.strictEqual(receivedData, 'HelloHello');
+		assert.strictEqual(receivedData, "HelloHello");
 		assert.deepStrictEqual(
-			socket.writtenData.map(x => fromUint8Array(x.buffer)),
+			socket.writtenData.map((x) => fromUint8Array(x.buffer)),
 			[
 				// A pong message that contains "data"
-				[0x8A, 0x04, 0x64, 0x61, 0x74, 0x61]
+				[0x8a, 0x04, 0x64, 0x61, 0x74, 0x61],
 			]
 		);
 
@@ -794,13 +853,15 @@ suite('WebSocketNodeSocket', () => {
 		return buff;
 	}
 
-	function listenOnRandomPort(handler: (socket: Socket) => void): Promise<Server> {
+	function listenOnRandomPort(
+		handler: (socket: Socket) => void
+	): Promise<Server> {
 		return new Promise((resolve, reject) => {
 			const server = createServer(handler).listen(0);
-			server.on('listening', () => {
+			server.on("listening", () => {
 				resolve(server);
 			});
-			server.on('error', (err) => {
+			server.on("error", (err) => {
 				reject(err);
 			});
 		});

@@ -3,36 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import { Event, Emitter } from 'vs/base/common/event';
-import { localize } from 'vs/nls';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { IDecorationsProvider, IDecorationData } from 'vs/workbench/services/decorations/common/decorations';
-import { listInvalidItemForeground, listDeemphasizedForeground } from 'vs/platform/theme/common/colorRegistry';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { explorerRootErrorEmitter } from 'vs/workbench/contrib/files/browser/views/explorerViewer';
-import { ExplorerItem } from 'vs/workbench/contrib/files/common/explorerModel';
-import { IExplorerService } from 'vs/workbench/contrib/files/browser/files';
-import { toErrorMessage } from 'vs/base/common/errorMessage';
+import { URI } from "vs/base/common/uri";
+import { Event, Emitter } from "vs/base/common/event";
+import { localize } from "vs/nls";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import {
+	IDecorationsProvider,
+	IDecorationData,
+} from "vs/workbench/services/decorations/common/decorations";
+import {
+	listInvalidItemForeground,
+	listDeemphasizedForeground,
+} from "vs/platform/theme/common/colorRegistry";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { explorerRootErrorEmitter } from "vs/workbench/contrib/files/browser/views/explorerViewer";
+import { ExplorerItem } from "vs/workbench/contrib/files/common/explorerModel";
+import { IExplorerService } from "vs/workbench/contrib/files/browser/files";
+import { toErrorMessage } from "vs/base/common/errorMessage";
 
-export function provideDecorations(fileStat: ExplorerItem): IDecorationData | undefined {
+export function provideDecorations(
+	fileStat: ExplorerItem
+): IDecorationData | undefined {
 	if (fileStat.isRoot && fileStat.error) {
 		return {
-			tooltip: localize('canNotResolve', "Unable to resolve workspace folder ({0})", toErrorMessage(fileStat.error)),
-			letter: '!',
+			tooltip: localize(
+				"canNotResolve",
+				"Unable to resolve workspace folder ({0})",
+				toErrorMessage(fileStat.error)
+			),
+			letter: "!",
 			color: listInvalidItemForeground,
 		};
 	}
 	if (fileStat.isSymbolicLink) {
 		return {
-			tooltip: localize('symbolicLlink', "Symbolic Link"),
-			letter: '\u2937'
+			tooltip: localize("symbolicLlink", "Symbolic Link"),
+			letter: "\u2937",
 		};
 	}
 	if (fileStat.isUnknown) {
 		return {
-			tooltip: localize('unknown', "Unknown File Type"),
-			letter: '?'
+			tooltip: localize("unknown", "Unknown File Type"),
+			letter: "?",
 		};
 	}
 	if (fileStat.isExcluded) {
@@ -45,7 +57,7 @@ export function provideDecorations(fileStat: ExplorerItem): IDecorationData | un
 }
 
 export class ExplorerDecorationsProvider implements IDecorationsProvider {
-	readonly label: string = localize('label', "Explorer");
+	readonly label: string = localize("label", "Explorer");
 	private readonly _onDidChange = new Emitter<URI[]>();
 	private readonly toDispose = new DisposableStore();
 
@@ -54,22 +66,30 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
 		@IWorkspaceContextService contextService: IWorkspaceContextService
 	) {
 		this.toDispose.add(this._onDidChange);
-		this.toDispose.add(contextService.onDidChangeWorkspaceFolders(e => {
-			this._onDidChange.fire(e.changed.concat(e.added).map(wf => wf.uri));
-		}));
-		this.toDispose.add(explorerRootErrorEmitter.event((resource => {
-			this._onDidChange.fire([resource]);
-		})));
+		this.toDispose.add(
+			contextService.onDidChangeWorkspaceFolders((e) => {
+				this._onDidChange.fire(
+					e.changed.concat(e.added).map((wf) => wf.uri)
+				);
+			})
+		);
+		this.toDispose.add(
+			explorerRootErrorEmitter.event((resource) => {
+				this._onDidChange.fire([resource]);
+			})
+		);
 	}
 
 	get onDidChange(): Event<URI[]> {
 		return this._onDidChange.event;
 	}
 
-	async provideDecorations(resource: URI): Promise<IDecorationData | undefined> {
+	async provideDecorations(
+		resource: URI
+	): Promise<IDecorationData | undefined> {
 		const fileStat = this.explorerService.findClosest(resource);
 		if (!fileStat) {
-			throw new Error('ExplorerItem not found');
+			throw new Error("ExplorerItem not found");
 		}
 
 		return provideDecorations(fileStat);

@@ -3,11 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { ICurrentPartialCommand } from 'vs/platform/terminal/common/capabilities/commandDetectionCapability';
-import { ITerminalOutputMatch, ITerminalOutputMatcher } from 'vs/platform/terminal/common/terminal';
-import { ReplayEntry } from 'vs/platform/terminal/common/terminalProcess';
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { ICurrentPartialCommand } from "vs/platform/terminal/common/capabilities/commandDetectionCapability";
+import {
+	ITerminalOutputMatch,
+	ITerminalOutputMatcher,
+} from "vs/platform/terminal/common/terminal";
+import { ReplayEntry } from "vs/platform/terminal/common/terminalProcess";
 
 interface IEvent<T, U = void> {
 	(listener: (arg1: T, arg2: U) => any): IDisposable;
@@ -37,7 +40,6 @@ export interface IMarker extends IDisposable {
 	 */
 	onDispose: IEvent<void>;
 }
-
 
 /**
  * Primarily driven by the shell integration feature, a terminal capability is the mechanism for
@@ -69,7 +71,7 @@ export const enum TerminalCapability {
 	 * the request (task, debug, etc) provides an ID, optional marker, hoverMessage, and hidden property. When
 	 * hidden is not provided, a generic decoration is added to the buffer and overview ruler.
 	 */
-	BufferMarkDetection
+	BufferMarkDetection,
 }
 
 /**
@@ -114,7 +116,9 @@ export interface ITerminalCapabilityStore {
 	/**
 	 * Gets the implementation of a capability if it has been added to the store.
 	 */
-	get<T extends TerminalCapability>(capability: T): ITerminalCapabilityImplMap[T] | undefined;
+	get<T extends TerminalCapability>(
+		capability: T
+	): ITerminalCapabilityImplMap[T] | undefined;
 }
 
 export interface TerminalCapabilityChangeEvent<T extends TerminalCapability> {
@@ -143,8 +147,8 @@ export interface ICwdDetectionCapability {
 }
 
 export const enum CommandInvalidationReason {
-	Windows = 'windows',
-	NoProblemsReported = 'noProblemsReported'
+	Windows = "windows",
+	NoProblemsReported = "noProblemsReported",
 }
 
 export interface ICommandInvalidationRequest {
@@ -193,7 +197,10 @@ export interface ICommandDetectionCapability {
 	handleRightPromptEnd(): void;
 	handleCommandStart(options?: IHandleCommandOptions): void;
 	handleCommandExecuted(options?: IHandleCommandOptions): void;
-	handleCommandFinished(exitCode?: number, options?: IHandleCommandOptions): void;
+	handleCommandFinished(
+		exitCode?: number,
+		options?: IHandleCommandOptions
+	): void;
 	/**
 	 * Set the command line explicitly.
 	 * @param commandLine The command line being set.
@@ -258,7 +265,9 @@ export interface ITerminalCommand extends IBaseTerminalCommand {
 	wasReplayed?: boolean;
 
 	getOutput(): string | undefined;
-	getOutputMatch(outputMatcher: ITerminalOutputMatcher): ITerminalOutputMatch | undefined;
+	getOutputMatch(
+		outputMatcher: ITerminalOutputMatcher
+	): ITerminalOutputMatch | undefined;
 	hasOutput(): boolean;
 }
 

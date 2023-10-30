@@ -3,32 +3,57 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { timeout } from 'vs/base/common/async';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
-import { ILogService, NullLogService } from 'vs/platform/log/common/log';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { ChatAgentService, IChatAgentService } from 'vs/workbench/contrib/chat/common/chatAgents';
-import { ChatModel } from 'vs/workbench/contrib/chat/common/chatModel';
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-import { TestExtensionService, TestStorageService } from 'vs/workbench/test/common/workbenchTestServices';
+import * as assert from "assert";
+import { timeout } from "vs/base/common/async";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { TestInstantiationService } from "vs/platform/instantiation/test/common/instantiationServiceMock";
+import { ILogService, NullLogService } from "vs/platform/log/common/log";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import {
+	ChatAgentService,
+	IChatAgentService,
+} from "vs/workbench/contrib/chat/common/chatAgents";
+import { ChatModel } from "vs/workbench/contrib/chat/common/chatModel";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import {
+	TestExtensionService,
+	TestStorageService,
+} from "vs/workbench/test/common/workbenchTestServices";
 
-suite('ChatModel', () => {
+suite("ChatModel", () => {
 	const testDisposables = ensureNoDisposablesAreLeakedInTestSuite();
 
 	let instantiationService: TestInstantiationService;
 
 	setup(async () => {
-		instantiationService = testDisposables.add(new TestInstantiationService());
-		instantiationService.stub(IStorageService, testDisposables.add(new TestStorageService()));
+		instantiationService = testDisposables.add(
+			new TestInstantiationService()
+		);
+		instantiationService.stub(
+			IStorageService,
+			testDisposables.add(new TestStorageService())
+		);
 		instantiationService.stub(ILogService, new NullLogService());
-		instantiationService.stub(IExtensionService, new TestExtensionService());
-		instantiationService.stub(IChatAgentService, testDisposables.add(instantiationService.createInstance(ChatAgentService)));
+		instantiationService.stub(
+			IExtensionService,
+			new TestExtensionService()
+		);
+		instantiationService.stub(
+			IChatAgentService,
+			testDisposables.add(
+				instantiationService.createInstance(ChatAgentService)
+			)
+		);
 	});
 
-	test('Waits for initialization', async () => {
-		const model = testDisposables.add(instantiationService.createInstance(ChatModel, 'provider', undefined));
+	test("Waits for initialization", async () => {
+		const model = testDisposables.add(
+			instantiationService.createInstance(
+				ChatModel,
+				"provider",
+				undefined
+			)
+		);
 
 		let hasInitialized = false;
 		model.waitForInitialization().then(() => {
@@ -44,8 +69,14 @@ suite('ChatModel', () => {
 		assert.strictEqual(hasInitialized, true);
 	});
 
-	test('must call startInitialize before initialize', async () => {
-		const model = testDisposables.add(instantiationService.createInstance(ChatModel, 'provider', undefined));
+	test("must call startInitialize before initialize", async () => {
+		const model = testDisposables.add(
+			instantiationService.createInstance(
+				ChatModel,
+				"provider",
+				undefined
+			)
+		);
 
 		let hasInitialized = false;
 		model.waitForInitialization().then(() => {
@@ -59,8 +90,14 @@ suite('ChatModel', () => {
 		assert.strictEqual(hasInitialized, false);
 	});
 
-	test('deinitialize/reinitialize', async () => {
-		const model = testDisposables.add(instantiationService.createInstance(ChatModel, 'provider', undefined));
+	test("deinitialize/reinitialize", async () => {
+		const model = testDisposables.add(
+			instantiationService.createInstance(
+				ChatModel,
+				"provider",
+				undefined
+			)
+		);
 
 		let hasInitialized = false;
 		model.waitForInitialization().then(() => {
@@ -84,16 +121,28 @@ suite('ChatModel', () => {
 		assert.strictEqual(hasInitialized2, true);
 	});
 
-	test('cannot initialize twice', async () => {
-		const model = testDisposables.add(instantiationService.createInstance(ChatModel, 'provider', undefined));
+	test("cannot initialize twice", async () => {
+		const model = testDisposables.add(
+			instantiationService.createInstance(
+				ChatModel,
+				"provider",
+				undefined
+			)
+		);
 
 		model.startInitialize();
 		model.initialize({} as any, undefined);
 		assert.throws(() => model.initialize({} as any, undefined));
 	});
 
-	test('Initialization fails when model is disposed', async () => {
-		const model = testDisposables.add(instantiationService.createInstance(ChatModel, 'provider', undefined));
+	test("Initialization fails when model is disposed", async () => {
+		const model = testDisposables.add(
+			instantiationService.createInstance(
+				ChatModel,
+				"provider",
+				undefined
+			)
+		);
 		model.dispose();
 
 		assert.throws(() => model.initialize({} as any, undefined));

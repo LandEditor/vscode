@@ -3,50 +3,111 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { splitLines } from 'vs/base/common/strings';
-import { URI } from 'vs/base/common/uri';
-import 'vs/css!./standalone-tokens';
-import { FontMeasurements } from 'vs/editor/browser/config/fontMeasurements';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { EditorCommand, ServicesAccessor } from 'vs/editor/browser/editorExtensions';
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-import { IWebWorkerOptions, MonacoWebWorker, createWebWorker as actualCreateWebWorker } from 'vs/editor/browser/services/webWorker';
-import { ApplyUpdateResult, ConfigurationChangedEvent, EditorOptions } from 'vs/editor/common/config/editorOptions';
-import { EditorZoom } from 'vs/editor/common/config/editorZoom';
-import { BareFontInfo, FontInfo } from 'vs/editor/common/config/fontInfo';
-import { IPosition } from 'vs/editor/common/core/position';
-import { IRange } from 'vs/editor/common/core/range';
-import { EditorType, IDiffEditor } from 'vs/editor/common/editorCommon';
-import * as languages from 'vs/editor/common/languages';
-import { ILanguageService } from 'vs/editor/common/languages/language';
-import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry';
-import { PLAINTEXT_LANGUAGE_ID } from 'vs/editor/common/languages/modesRegistry';
-import { NullState, nullTokenize } from 'vs/editor/common/languages/nullTokenize';
-import { FindMatch, ITextModel, TextModelResolvedOptions } from 'vs/editor/common/model';
-import { IModelService } from 'vs/editor/common/services/model';
-import * as standaloneEnums from 'vs/editor/common/standalone/standaloneEnums';
-import { Colorizer, IColorizerElementOptions, IColorizerOptions } from 'vs/editor/standalone/browser/colorizer';
-import { IActionDescriptor, IStandaloneCodeEditor, IStandaloneDiffEditor, IStandaloneDiffEditorConstructionOptions, IStandaloneEditorConstructionOptions, StandaloneDiffEditor2, StandaloneEditor, createTextModel } from 'vs/editor/standalone/browser/standaloneCodeEditor';
-import { IEditorOverrideServices, StandaloneKeybindingService, StandaloneServices } from 'vs/editor/standalone/browser/standaloneServices';
-import { StandaloneThemeService } from 'vs/editor/standalone/browser/standaloneThemeService';
-import { IStandaloneThemeData, IStandaloneThemeService } from 'vs/editor/standalone/common/standaloneTheme';
-import { IMenuItem, MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
-import { CommandsRegistry, ICommandHandler } from 'vs/platform/commands/common/commands';
-import { ContextKeyExpr } from 'vs/platform/contextkey/common/contextkey';
-import { ITextResourceEditorInput } from 'vs/platform/editor/common/editor';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { IMarker, IMarkerData, IMarkerService } from 'vs/platform/markers/common/markers';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+} from "vs/base/common/lifecycle";
+import { splitLines } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
+import "vs/css!./standalone-tokens";
+import { FontMeasurements } from "vs/editor/browser/config/fontMeasurements";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import {
+	EditorCommand,
+	ServicesAccessor,
+} from "vs/editor/browser/editorExtensions";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import {
+	IWebWorkerOptions,
+	MonacoWebWorker,
+	createWebWorker as actualCreateWebWorker,
+} from "vs/editor/browser/services/webWorker";
+import {
+	ApplyUpdateResult,
+	ConfigurationChangedEvent,
+	EditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import { EditorZoom } from "vs/editor/common/config/editorZoom";
+import { BareFontInfo, FontInfo } from "vs/editor/common/config/fontInfo";
+import { IPosition } from "vs/editor/common/core/position";
+import { IRange } from "vs/editor/common/core/range";
+import { EditorType, IDiffEditor } from "vs/editor/common/editorCommon";
+import * as languages from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { ILanguageConfigurationService } from "vs/editor/common/languages/languageConfigurationRegistry";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import {
+	NullState,
+	nullTokenize,
+} from "vs/editor/common/languages/nullTokenize";
+import {
+	FindMatch,
+	ITextModel,
+	TextModelResolvedOptions,
+} from "vs/editor/common/model";
+import { IModelService } from "vs/editor/common/services/model";
+import * as standaloneEnums from "vs/editor/common/standalone/standaloneEnums";
+import {
+	Colorizer,
+	IColorizerElementOptions,
+	IColorizerOptions,
+} from "vs/editor/standalone/browser/colorizer";
+import {
+	IActionDescriptor,
+	IStandaloneCodeEditor,
+	IStandaloneDiffEditor,
+	IStandaloneDiffEditorConstructionOptions,
+	IStandaloneEditorConstructionOptions,
+	StandaloneDiffEditor2,
+	StandaloneEditor,
+	createTextModel,
+} from "vs/editor/standalone/browser/standaloneCodeEditor";
+import {
+	IEditorOverrideServices,
+	StandaloneKeybindingService,
+	StandaloneServices,
+} from "vs/editor/standalone/browser/standaloneServices";
+import { StandaloneThemeService } from "vs/editor/standalone/browser/standaloneThemeService";
+import {
+	IStandaloneThemeData,
+	IStandaloneThemeService,
+} from "vs/editor/standalone/common/standaloneTheme";
+import {
+	IMenuItem,
+	MenuId,
+	MenuRegistry,
+} from "vs/platform/actions/common/actions";
+import {
+	CommandsRegistry,
+	ICommandHandler,
+} from "vs/platform/commands/common/commands";
+import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
+import { ITextResourceEditorInput } from "vs/platform/editor/common/editor";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import {
+	IMarker,
+	IMarkerData,
+	IMarkerService,
+} from "vs/platform/markers/common/markers";
+import { IOpenerService } from "vs/platform/opener/common/opener";
 
 /**
  * Create a new editor under `domElement`.
  * `domElement` should be empty (not contain other dom nodes).
  * The editor will read the size of `domElement`.
  */
-export function create(domElement: HTMLElement, options?: IStandaloneEditorConstructionOptions, override?: IEditorOverrideServices): IStandaloneCodeEditor {
+export function create(
+	domElement: HTMLElement,
+	options?: IStandaloneEditorConstructionOptions,
+	override?: IEditorOverrideServices
+): IStandaloneCodeEditor {
 	const instantiationService = StandaloneServices.initialize(override || {});
-	return instantiationService.createInstance(StandaloneEditor, domElement, options);
+	return instantiationService.createInstance(
+		StandaloneEditor,
+		domElement,
+		options
+	);
 }
 
 /**
@@ -54,7 +115,9 @@ export function create(domElement: HTMLElement, options?: IStandaloneEditorConst
  * Creating a diff editor might cause this listener to be invoked with the two editors.
  * @event
  */
-export function onDidCreateEditor(listener: (codeEditor: ICodeEditor) => void): IDisposable {
+export function onDidCreateEditor(
+	listener: (codeEditor: ICodeEditor) => void
+): IDisposable {
 	const codeEditorService = StandaloneServices.get(ICodeEditorService);
 	return codeEditorService.onCodeEditorAdd((editor) => {
 		listener(<ICodeEditor>editor);
@@ -65,7 +128,9 @@ export function onDidCreateEditor(listener: (codeEditor: ICodeEditor) => void): 
  * Emitted when an diff editor is created.
  * @event
  */
-export function onDidCreateDiffEditor(listener: (diffEditor: IDiffEditor) => void): IDisposable {
+export function onDidCreateDiffEditor(
+	listener: (diffEditor: IDiffEditor) => void
+): IDisposable {
 	const codeEditorService = StandaloneServices.get(ICodeEditorService);
 	return codeEditorService.onDiffEditorAdd((editor) => {
 		listener(<IDiffEditor>editor);
@@ -93,9 +158,17 @@ export function getDiffEditors(): readonly IDiffEditor[] {
  * `domElement` should be empty (not contain other dom nodes).
  * The editor will read the size of `domElement`.
  */
-export function createDiffEditor(domElement: HTMLElement, options?: IStandaloneDiffEditorConstructionOptions, override?: IEditorOverrideServices): IStandaloneDiffEditor {
+export function createDiffEditor(
+	domElement: HTMLElement,
+	options?: IStandaloneDiffEditorConstructionOptions,
+	override?: IEditorOverrideServices
+): IStandaloneDiffEditor {
 	const instantiationService = StandaloneServices.initialize(override || {});
-	return instantiationService.createInstance(StandaloneDiffEditor2, domElement, options);
+	return instantiationService.createInstance(
+		StandaloneDiffEditor2,
+		domElement,
+		options
+	);
 }
 
 /**
@@ -116,8 +189,13 @@ export interface ICommandDescriptor {
  * Add a command.
  */
 export function addCommand(descriptor: ICommandDescriptor): IDisposable {
-	if ((typeof descriptor.id !== 'string') || (typeof descriptor.run !== 'function')) {
-		throw new Error('Invalid command descriptor, `id` and `run` are required properties!');
+	if (
+		typeof descriptor.id !== "string" ||
+		typeof descriptor.run !== "function"
+	) {
+		throw new Error(
+			"Invalid command descriptor, `id` and `run` are required properties!"
+		);
 	}
 	return CommandsRegistry.registerCommand(descriptor.id, descriptor.run);
 }
@@ -126,13 +204,28 @@ export function addCommand(descriptor: ICommandDescriptor): IDisposable {
  * Add an action to all editors.
  */
 export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
-	if ((typeof descriptor.id !== 'string') || (typeof descriptor.label !== 'string') || (typeof descriptor.run !== 'function')) {
-		throw new Error('Invalid action descriptor, `id`, `label` and `run` are required properties!');
+	if (
+		typeof descriptor.id !== "string" ||
+		typeof descriptor.label !== "string" ||
+		typeof descriptor.run !== "function"
+	) {
+		throw new Error(
+			"Invalid action descriptor, `id`, `label` and `run` are required properties!"
+		);
 	}
 
 	const precondition = ContextKeyExpr.deserialize(descriptor.precondition);
-	const run = (accessor: ServicesAccessor, ...args: any[]): void | Promise<void> => {
-		return EditorCommand.runEditorCommand(accessor, args, precondition, (accessor, editor, args) => Promise.resolve(descriptor.run(editor, ...args)));
+	const run = (
+		accessor: ServicesAccessor,
+		...args: any[]
+	): void | Promise<void> => {
+		return EditorCommand.runEditorCommand(
+			accessor,
+			args,
+			precondition,
+			(accessor, editor, args) =>
+				Promise.resolve(descriptor.run(editor, ...args))
+		);
 	};
 
 	const toDispose = new DisposableStore();
@@ -145,29 +238,40 @@ export function addEditorAction(descriptor: IActionDescriptor): IDisposable {
 		const menuItem: IMenuItem = {
 			command: {
 				id: descriptor.id,
-				title: descriptor.label
+				title: descriptor.label,
 			},
 			when: precondition,
 			group: descriptor.contextMenuGroupId,
-			order: descriptor.contextMenuOrder || 0
+			order: descriptor.contextMenuOrder || 0,
 		};
-		toDispose.add(MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem));
+		toDispose.add(
+			MenuRegistry.appendMenuItem(MenuId.EditorContext, menuItem)
+		);
 	}
 
 	// Register the keybindings
 	if (Array.isArray(descriptor.keybindings)) {
 		const keybindingService = StandaloneServices.get(IKeybindingService);
 		if (!(keybindingService instanceof StandaloneKeybindingService)) {
-			console.warn('Cannot add keybinding because the editor is configured with an unrecognized KeybindingService');
+			console.warn(
+				"Cannot add keybinding because the editor is configured with an unrecognized KeybindingService"
+			);
 		} else {
-			const keybindingsWhen = ContextKeyExpr.and(precondition, ContextKeyExpr.deserialize(descriptor.keybindingContext));
-			toDispose.add(keybindingService.addDynamicKeybindings(descriptor.keybindings.map((keybinding) => {
-				return {
-					keybinding,
-					command: descriptor.id,
-					when: keybindingsWhen
-				};
-			})));
+			const keybindingsWhen = ContextKeyExpr.and(
+				precondition,
+				ContextKeyExpr.deserialize(descriptor.keybindingContext)
+			);
+			toDispose.add(
+				keybindingService.addDynamicKeybindings(
+					descriptor.keybindings.map((keybinding) => {
+						return {
+							keybinding,
+							command: descriptor.id,
+							when: keybindingsWhen,
+						};
+					})
+				)
+			);
 		}
 	}
 
@@ -197,27 +301,36 @@ export function addKeybindingRule(rule: IKeybindingRule): IDisposable {
 export function addKeybindingRules(rules: IKeybindingRule[]): IDisposable {
 	const keybindingService = StandaloneServices.get(IKeybindingService);
 	if (!(keybindingService instanceof StandaloneKeybindingService)) {
-		console.warn('Cannot add keybinding because the editor is configured with an unrecognized KeybindingService');
+		console.warn(
+			"Cannot add keybinding because the editor is configured with an unrecognized KeybindingService"
+		);
 		return Disposable.None;
 	}
 
-	return keybindingService.addDynamicKeybindings(rules.map((rule) => {
-		return {
-			keybinding: rule.keybinding,
-			command: rule.command,
-			commandArgs: rule.commandArgs,
-			when: ContextKeyExpr.deserialize(rule.when),
-		};
-	}));
+	return keybindingService.addDynamicKeybindings(
+		rules.map((rule) => {
+			return {
+				keybinding: rule.keybinding,
+				command: rule.command,
+				commandArgs: rule.commandArgs,
+				when: ContextKeyExpr.deserialize(rule.when),
+			};
+		})
+	);
 }
 
 /**
  * Create a new editor model.
  * You can specify the language that should be set for this model or let the language be inferred from the `uri`.
  */
-export function createModel(value: string, language?: string, uri?: URI): ITextModel {
+export function createModel(
+	value: string,
+	language?: string,
+	uri?: URI
+): ITextModel {
 	const languageService = StandaloneServices.get(ILanguageService);
-	const languageId = languageService.getLanguageIdByMimeType(language) || language;
+	const languageId =
+		languageService.getLanguageIdByMimeType(language) || language;
 	return createTextModel(
 		StandaloneServices.get(IModelService),
 		languageService,
@@ -230,16 +343,26 @@ export function createModel(value: string, language?: string, uri?: URI): ITextM
 /**
  * Change the language for a model.
  */
-export function setModelLanguage(model: ITextModel, mimeTypeOrLanguageId: string): void {
+export function setModelLanguage(
+	model: ITextModel,
+	mimeTypeOrLanguageId: string
+): void {
 	const languageService = StandaloneServices.get(ILanguageService);
-	const languageId = languageService.getLanguageIdByMimeType(mimeTypeOrLanguageId) || mimeTypeOrLanguageId || PLAINTEXT_LANGUAGE_ID;
+	const languageId =
+		languageService.getLanguageIdByMimeType(mimeTypeOrLanguageId) ||
+		mimeTypeOrLanguageId ||
+		PLAINTEXT_LANGUAGE_ID;
 	model.setLanguage(languageService.createById(languageId));
 }
 
 /**
  * Set the markers for a model.
  */
-export function setModelMarkers(model: ITextModel, owner: string, markers: IMarkerData[]): void {
+export function setModelMarkers(
+	model: ITextModel,
+	owner: string,
+	markers: IMarkerData[]
+): void {
 	if (model) {
 		const markerService = StandaloneServices.get(IMarkerService);
 		markerService.changeOne(owner, model.uri, markers);
@@ -259,7 +382,11 @@ export function removeAllMarkers(owner: string) {
  *
  * @returns list of markers
  */
-export function getModelMarkers(filter: { owner?: string; resource?: URI; take?: number }): IMarker[] {
+export function getModelMarkers(filter: {
+	owner?: string;
+	resource?: URI;
+	take?: number;
+}): IMarker[] {
 	const markerService = StandaloneServices.get(IMarkerService);
 	return markerService.read(filter);
 }
@@ -268,7 +395,9 @@ export function getModelMarkers(filter: { owner?: string; resource?: URI; take?:
  * Emitted when markers change for a model.
  * @event
  */
-export function onDidChangeMarkers(listener: (e: readonly URI[]) => void): IDisposable {
+export function onDidChangeMarkers(
+	listener: (e: readonly URI[]) => void
+): IDisposable {
 	const markerService = StandaloneServices.get(IMarkerService);
 	return markerService.onMarkerChanged(listener);
 }
@@ -293,7 +422,9 @@ export function getModels(): ITextModel[] {
  * Emitted when a model is created.
  * @event
  */
-export function onDidCreateModel(listener: (model: ITextModel) => void): IDisposable {
+export function onDidCreateModel(
+	listener: (model: ITextModel) => void
+): IDisposable {
 	const modelService = StandaloneServices.get(IModelService);
 	return modelService.onModelAdded(listener);
 }
@@ -302,7 +433,9 @@ export function onDidCreateModel(listener: (model: ITextModel) => void): IDispos
  * Emitted right before a model is disposed.
  * @event
  */
-export function onWillDisposeModel(listener: (model: ITextModel) => void): IDisposable {
+export function onWillDisposeModel(
+	listener: (model: ITextModel) => void
+): IDisposable {
 	const modelService = StandaloneServices.get(IModelService);
 	return modelService.onModelRemoved(listener);
 }
@@ -311,12 +444,17 @@ export function onWillDisposeModel(listener: (model: ITextModel) => void): IDisp
  * Emitted when a different language is set to a model.
  * @event
  */
-export function onDidChangeModelLanguage(listener: (e: { readonly model: ITextModel; readonly oldLanguage: string }) => void): IDisposable {
+export function onDidChangeModelLanguage(
+	listener: (e: {
+		readonly model: ITextModel;
+		readonly oldLanguage: string;
+	}) => void
+): IDisposable {
 	const modelService = StandaloneServices.get(IModelService);
 	return modelService.onModelLanguageChanged((e) => {
 		listener({
 			model: e.model,
-			oldLanguage: e.oldLanguageId
+			oldLanguage: e.oldLanguageId,
 		});
 	});
 }
@@ -325,17 +463,33 @@ export function onDidChangeModelLanguage(listener: (e: { readonly model: ITextMo
  * Create a new web worker that has model syncing capabilities built in.
  * Specify an AMD module to load that will `create` an object that will be proxied.
  */
-export function createWebWorker<T extends object>(opts: IWebWorkerOptions): MonacoWebWorker<T> {
-	return actualCreateWebWorker<T>(StandaloneServices.get(IModelService), StandaloneServices.get(ILanguageConfigurationService), opts);
+export function createWebWorker<T extends object>(
+	opts: IWebWorkerOptions
+): MonacoWebWorker<T> {
+	return actualCreateWebWorker<T>(
+		StandaloneServices.get(IModelService),
+		StandaloneServices.get(ILanguageConfigurationService),
+		opts
+	);
 }
 
 /**
  * Colorize the contents of `domNode` using attribute `data-lang`.
  */
-export function colorizeElement(domNode: HTMLElement, options: IColorizerElementOptions): Promise<void> {
+export function colorizeElement(
+	domNode: HTMLElement,
+	options: IColorizerElementOptions
+): Promise<void> {
 	const languageService = StandaloneServices.get(ILanguageService);
-	const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
-	return Colorizer.colorizeElement(themeService, languageService, domNode, options).then(() => {
+	const themeService = <StandaloneThemeService>(
+		StandaloneServices.get(IStandaloneThemeService)
+	);
+	return Colorizer.colorizeElement(
+		themeService,
+		languageService,
+		domNode,
+		options
+	).then(() => {
 		themeService.registerEditorContainer(domNode);
 	});
 }
@@ -343,9 +497,15 @@ export function colorizeElement(domNode: HTMLElement, options: IColorizerElement
 /**
  * Colorize `text` using language `languageId`.
  */
-export function colorize(text: string, languageId: string, options: IColorizerOptions): Promise<string> {
+export function colorize(
+	text: string,
+	languageId: string,
+	options: IColorizerOptions
+): Promise<string> {
 	const languageService = StandaloneServices.get(ILanguageService);
-	const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
+	const themeService = <StandaloneThemeService>(
+		StandaloneServices.get(IStandaloneThemeService)
+	);
 	themeService.registerEditorContainer(document.body);
 	return Colorizer.colorize(languageService, text, languageId, options);
 }
@@ -353,8 +513,14 @@ export function colorize(text: string, languageId: string, options: IColorizerOp
 /**
  * Colorize a line in a model.
  */
-export function colorizeModelLine(model: ITextModel, lineNumber: number, tabSize: number = 4): string {
-	const themeService = <StandaloneThemeService>StandaloneServices.get(IStandaloneThemeService);
+export function colorizeModelLine(
+	model: ITextModel,
+	lineNumber: number,
+	tabSize: number = 4
+): string {
+	const themeService = <StandaloneThemeService>(
+		StandaloneServices.get(IStandaloneThemeService)
+	);
 	themeService.registerEditorContainer(document.body);
 	return Colorizer.colorizeModelLine(model, lineNumber, tabSize);
 }
@@ -362,21 +528,27 @@ export function colorizeModelLine(model: ITextModel, lineNumber: number, tabSize
 /**
  * @internal
  */
-function getSafeTokenizationSupport(language: string): Omit<languages.ITokenizationSupport, 'tokenizeEncoded'> {
+function getSafeTokenizationSupport(
+	language: string
+): Omit<languages.ITokenizationSupport, "tokenizeEncoded"> {
 	const tokenizationSupport = languages.TokenizationRegistry.get(language);
 	if (tokenizationSupport) {
 		return tokenizationSupport;
 	}
 	return {
 		getInitialState: () => NullState,
-		tokenize: (line: string, hasEOL: boolean, state: languages.IState) => nullTokenize(language, state)
+		tokenize: (line: string, hasEOL: boolean, state: languages.IState) =>
+			nullTokenize(language, state),
 	};
 }
 
 /**
  * Tokenize `text` using language `languageId`
  */
-export function tokenize(text: string, languageId: string): languages.Token[][] {
+export function tokenize(
+	text: string,
+	languageId: string
+): languages.Token[][] {
 	// Needed in order to get the mode registered for subsequent look-ups
 	languages.TokenizationRegistry.getOrCreate(languageId);
 
@@ -386,7 +558,11 @@ export function tokenize(text: string, languageId: string): languages.Token[][] 
 	let state = tokenizationSupport.getInitialState();
 	for (let i = 0, len = lines.length; i < len; i++) {
 		const line = lines[i];
-		const tokenizationResult = tokenizationSupport.tokenize(line, true, state);
+		const tokenizationResult = tokenizationSupport.tokenize(
+			line,
+			true,
+			state
+		);
 
 		result[i] = tokenizationResult.tokens;
 		state = tokenizationResult.endState;
@@ -397,8 +573,13 @@ export function tokenize(text: string, languageId: string): languages.Token[][] 
 /**
  * Define a new theme or update an existing theme.
  */
-export function defineTheme(themeName: string, themeData: IStandaloneThemeData): void {
-	const standaloneThemeService = StandaloneServices.get(IStandaloneThemeService);
+export function defineTheme(
+	themeName: string,
+	themeData: IStandaloneThemeData
+): void {
+	const standaloneThemeService = StandaloneServices.get(
+		IStandaloneThemeService
+	);
 	standaloneThemeService.defineTheme(themeName, themeData);
 }
 
@@ -406,7 +587,9 @@ export function defineTheme(themeName: string, themeData: IStandaloneThemeData):
  * Switches to a theme.
  */
 export function setTheme(themeName: string): void {
-	const standaloneThemeService = StandaloneServices.get(IStandaloneThemeService);
+	const standaloneThemeService = StandaloneServices.get(
+		IStandaloneThemeService
+	);
 	standaloneThemeService.setTheme(themeName);
 }
 
@@ -420,7 +603,10 @@ export function remeasureFonts(): void {
 /**
  * Register a command.
  */
-export function registerCommand(id: string, handler: (accessor: any, ...args: any[]) => void): IDisposable {
+export function registerCommand(
+	id: string,
+	handler: (accessor: any, ...args: any[]) => void
+): IDisposable {
 	return CommandsRegistry.registerCommand({ id, handler });
 }
 
@@ -438,11 +624,11 @@ export function registerLinkOpener(opener: ILinkOpener): IDisposable {
 	const openerService = StandaloneServices.get(IOpenerService);
 	return openerService.registerOpener({
 		async open(resource: string | URI) {
-			if (typeof resource === 'string') {
+			if (typeof resource === "string") {
 				resource = URI.parse(resource);
 			}
 			return opener.open(resource);
-		}
+		},
 	});
 }
 
@@ -458,7 +644,11 @@ export interface ICodeEditorOpener {
 	 * @param resource The URI of the resource that should be opened.
 	 * @param selectionOrPosition An optional position or selection inside the model corresponding to `resource` that can be used to set the cursor.
 	 */
-	openCodeEditor(source: ICodeEditor, resource: URI, selectionOrPosition?: IRange | IPosition): boolean | Promise<boolean>;
+	openCodeEditor(
+		source: ICodeEditor,
+		resource: URI,
+		selectionOrPosition?: IRange | IPosition
+	): boolean | Promise<boolean>;
 }
 
 /**
@@ -471,22 +661,41 @@ export interface ICodeEditorOpener {
  */
 export function registerEditorOpener(opener: ICodeEditorOpener): IDisposable {
 	const codeEditorService = StandaloneServices.get(ICodeEditorService);
-	return codeEditorService.registerCodeEditorOpenHandler(async (input: ITextResourceEditorInput, source: ICodeEditor | null, sideBySide?: boolean) => {
-		if (!source) {
-			return null;
+	return codeEditorService.registerCodeEditorOpenHandler(
+		async (
+			input: ITextResourceEditorInput,
+			source: ICodeEditor | null,
+			sideBySide?: boolean
+		) => {
+			if (!source) {
+				return null;
+			}
+			const selection = input.options?.selection;
+			let selectionOrPosition: IRange | IPosition | undefined;
+			if (
+				selection &&
+				typeof selection.endLineNumber === "number" &&
+				typeof selection.endColumn === "number"
+			) {
+				selectionOrPosition = <IRange>selection;
+			} else if (selection) {
+				selectionOrPosition = {
+					lineNumber: selection.startLineNumber,
+					column: selection.startColumn,
+				};
+			}
+			if (
+				await opener.openCodeEditor(
+					source,
+					input.resource,
+					selectionOrPosition
+				)
+			) {
+				return source; // return source editor to indicate that this handler has successfully handled the opening
+			}
+			return null; // fallback to other registered handlers
 		}
-		const selection = input.options?.selection;
-		let selectionOrPosition: IRange | IPosition | undefined;
-		if (selection && typeof selection.endLineNumber === 'number' && typeof selection.endColumn === 'number') {
-			selectionOrPosition = <IRange>selection;
-		} else if (selection) {
-			selectionOrPosition = { lineNumber: selection.startLineNumber, column: selection.startColumn };
-		}
-		if (await opener.openCodeEditor(source, input.resource, selectionOrPosition)) {
-			return source; // return source editor to indicate that this handler has successfully handled the opening
-		}
-		return null; // fallback to other registered handlers
-	});
+	);
 }
 
 /**
@@ -519,7 +728,6 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		onWillDisposeModel: <any>onWillDisposeModel,
 		onDidChangeModelLanguage: <any>onDidChangeModelLanguage,
 
-
 		createWebWorker: <any>createWebWorker,
 		colorizeElement: <any>colorizeElement,
 		colorize: <any>colorize,
@@ -535,7 +743,8 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 
 		// enums
 		AccessibilitySupport: standaloneEnums.AccessibilitySupport,
-		ContentWidgetPositionPreference: standaloneEnums.ContentWidgetPositionPreference,
+		ContentWidgetPositionPreference:
+			standaloneEnums.ContentWidgetPositionPreference,
 		CursorChangeReason: standaloneEnums.CursorChangeReason,
 		DefaultEndOfLine: standaloneEnums.DefaultEndOfLine,
 		EditorAutoIndentStrategy: standaloneEnums.EditorAutoIndentStrategy,
@@ -544,14 +753,16 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 		EndOfLineSequence: standaloneEnums.EndOfLineSequence,
 		MinimapPosition: standaloneEnums.MinimapPosition,
 		MouseTargetType: standaloneEnums.MouseTargetType,
-		OverlayWidgetPositionPreference: standaloneEnums.OverlayWidgetPositionPreference,
+		OverlayWidgetPositionPreference:
+			standaloneEnums.OverlayWidgetPositionPreference,
 		OverviewRulerLane: standaloneEnums.OverviewRulerLane,
 		GlyphMarginLane: standaloneEnums.GlyphMarginLane,
 		RenderLineNumbersType: standaloneEnums.RenderLineNumbersType,
 		RenderMinimap: standaloneEnums.RenderMinimap,
 		ScrollbarVisibility: standaloneEnums.ScrollbarVisibility,
 		ScrollType: standaloneEnums.ScrollType,
-		TextEditorCursorBlinkingStyle: standaloneEnums.TextEditorCursorBlinkingStyle,
+		TextEditorCursorBlinkingStyle:
+			standaloneEnums.TextEditorCursorBlinkingStyle,
 		TextEditorCursorStyle: standaloneEnums.TextEditorCursorStyle,
 		TrackedRangeStickiness: standaloneEnums.TrackedRangeStickiness,
 		WrappingIndent: standaloneEnums.WrappingIndent,
@@ -569,7 +780,6 @@ export function createMonacoEditorAPI(): typeof monaco.editor {
 
 		// vars
 		EditorType: EditorType,
-		EditorOptions: <any>EditorOptions
-
+		EditorOptions: <any>EditorOptions,
 	};
 }

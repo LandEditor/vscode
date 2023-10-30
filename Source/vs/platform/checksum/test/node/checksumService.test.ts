@@ -3,18 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { FileAccess, Schemas } from 'vs/base/common/network';
-import { URI } from 'vs/base/common/uri';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { ChecksumService } from 'vs/platform/checksum/node/checksumService';
-import { IFileService } from 'vs/platform/files/common/files';
-import { FileService } from 'vs/platform/files/common/fileService';
-import { DiskFileSystemProvider } from 'vs/platform/files/node/diskFileSystemProvider';
-import { NullLogService } from 'vs/platform/log/common/log';
+import * as assert from "assert";
+import { FileAccess, Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { ChecksumService } from "vs/platform/checksum/node/checksumService";
+import { IFileService } from "vs/platform/files/common/files";
+import { FileService } from "vs/platform/files/common/fileService";
+import { DiskFileSystemProvider } from "vs/platform/files/node/diskFileSystemProvider";
+import { NullLogService } from "vs/platform/log/common/log";
 
-suite('Checksum Service', () => {
-
+suite("Checksum Service", () => {
 	let diskFileSystemProvider: DiskFileSystemProvider;
 	let fileService: IFileService;
 
@@ -31,11 +30,20 @@ suite('Checksum Service', () => {
 		fileService.dispose();
 	});
 
-	test('checksum', async () => {
+	test("checksum", async () => {
 		const checksumService = new ChecksumService(fileService);
 
-		const checksum = await checksumService.checksum(URI.file(FileAccess.asFileUri('vs/platform/checksum/test/node/fixtures/lorem.txt').fsPath));
-		assert.ok(checksum === '8mi5KF8kcb817zmlal1kZA' || checksum === 'DnUKbJ1bHPPNZoHgHV25sg'); // depends on line endings git config
+		const checksum = await checksumService.checksum(
+			URI.file(
+				FileAccess.asFileUri(
+					"vs/platform/checksum/test/node/fixtures/lorem.txt"
+				).fsPath
+			)
+		);
+		assert.ok(
+			checksum === "8mi5KF8kcb817zmlal1kZA" ||
+				checksum === "DnUKbJ1bHPPNZoHgHV25sg"
+		); // depends on line endings git config
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

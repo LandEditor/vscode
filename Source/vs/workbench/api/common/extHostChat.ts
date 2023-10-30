@@ -3,42 +3,61 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { raceCancellation } from 'vs/base/common/async';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Emitter } from 'vs/base/common/event';
-import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { Iterable } from 'vs/base/common/iterator';
-import { toDisposable } from 'vs/base/common/lifecycle';
-import { StopWatch } from 'vs/base/common/stopwatch';
-import { localize } from 'vs/nls';
-import { IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions';
-import { ILogService } from 'vs/platform/log/common/log';
-import { ExtHostChatShape, IChatRequestDto, IChatResponseDto, IChatDto, IMainContext, MainContext, MainThreadChatShape } from 'vs/workbench/api/common/extHost.protocol';
-import * as typeConvert from 'vs/workbench/api/common/extHostTypeConverters';
-import { IChatFollowup, IChatReplyFollowup, IChatUserActionEvent, ISlashCommand } from 'vs/workbench/contrib/chat/common/chatService';
-import type * as vscode from 'vscode';
+import { raceCancellation } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter } from "vs/base/common/event";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { Iterable } from "vs/base/common/iterator";
+import { toDisposable } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
+import { localize } from "vs/nls";
+import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	ExtHostChatShape,
+	IChatRequestDto,
+	IChatResponseDto,
+	IChatDto,
+	IMainContext,
+	MainContext,
+	MainThreadChatShape,
+} from "vs/workbench/api/common/extHost.protocol";
+import * as typeConvert from "vs/workbench/api/common/extHostTypeConverters";
+import {
+	IChatFollowup,
+	IChatReplyFollowup,
+	IChatUserActionEvent,
+	ISlashCommand,
+} from "vs/workbench/contrib/chat/common/chatService";
+import type * as vscode from "vscode";
 
 class ChatProviderWrapper<T> {
-
 	private static _pool = 0;
 
 	readonly handle: number = ChatProviderWrapper._pool++;
 
 	constructor(
 		readonly extension: Readonly<IRelaxedExtensionDescription>,
-		readonly provider: T,
-	) { }
+		readonly provider: T
+	) {}
 }
 
 export class ExtHostChat implements ExtHostChatShape {
 	private static _nextId = 0;
 
-	private readonly _chatProvider = new Map<number, ChatProviderWrapper<vscode.InteractiveSessionProvider>>();
+	private readonly _chatProvider = new Map<
+		number,
+		ChatProviderWrapper<vscode.InteractiveSessionProvider>
+	>();
 
-	private readonly _chatSessions = new Map<number, vscode.InteractiveSession>();
+	private readonly _chatSessions = new Map<
+		number,
+		vscode.InteractiveSession
+	>();
 	// private readonly _providerResponsesByRequestId = new Map<number, { response: vscode.ProviderResult<vscode.InteractiveResponse | vscode.InteractiveResponseForProgress>; sessionId: number }>();
 
-	private readonly _onDidPerformUserAction = new Emitter<vscode.InteractiveSessionUserActionEvent>();
+	private readonly _onDidPerformUserAction =
+		new Emitter<vscode.InteractiveSessionUserActionEvent>();
 	public readonly onDidPerformUserAction = this._onDidPerformUserAction.event;
 
 	private readonly _proxy: MainThreadChatShape;
@@ -52,7 +71,11 @@ export class ExtHostChat implements ExtHostChatShape {
 
 	//#region interactive session
 
-	registerChatProvider(extension: Readonly<IRelaxedExtensionDescription>, id: string, provider: vscode.InteractiveSessionProvider): vscode.Disposable {
+	registerChatProvider(
+		extension: Readonly<IRelaxedExtensionDescription>,
+		id: string,
+		provider: vscode.InteractiveSessionProvider
+	): vscode.Disposable {
 		const wrapper = new ChatProviderWrapper(extension, provider);
 		this._chatProvider.set(wrapper.handle, wrapper);
 		this._proxy.$registerChatProvider(wrapper.handle, id);
@@ -62,26 +85,43 @@ export class ExtHostChat implements ExtHostChatShape {
 		});
 	}
 
-	transferChatSession(session: vscode.InteractiveSession, newWorkspace: vscode.Uri): void {
-		const sessionId = Iterable.find(this._chatSessions.keys(), key => this._chatSessions.get(key) === session) ?? 0;
-		if (typeof sessionId !== 'number') {
+	transferChatSession(
+		session: vscode.InteractiveSession,
+		newWorkspace: vscode.Uri
+	): void {
+		const sessionId =
+			Iterable.find(
+				this._chatSessions.keys(),
+				(key) => this._chatSessions.get(key) === session
+			) ?? 0;
+		if (typeof sessionId !== "number") {
 			return;
 		}
 
 		this._proxy.$transferChatSession(sessionId, newWorkspace);
 	}
 
-	sendInteractiveRequestToProvider(providerId: string, message: vscode.InteractiveSessionDynamicRequest): void {
+	sendInteractiveRequestToProvider(
+		providerId: string,
+		message: vscode.InteractiveSessionDynamicRequest
+	): void {
 		this._proxy.$sendRequestToProvider(providerId, message);
 	}
 
-	async $prepareChat(handle: number, initialState: any, token: CancellationToken): Promise<IChatDto | undefined> {
+	async $prepareChat(
+		handle: number,
+		initialState: any,
+		token: CancellationToken
+	): Promise<IChatDto | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
 		}
 
-		const session = await entry.provider.prepareSession(initialState, token);
+		const session = await entry.provider.prepareSession(
+			initialState,
+			token
+		);
 		if (!session) {
 			return undefined;
 		}
@@ -99,7 +139,12 @@ export class ExtHostChat implements ExtHostChatShape {
 		};
 	}
 
-	async $provideWelcomeMessage(handle: number, token: CancellationToken): Promise<(string | IMarkdownString | IChatReplyFollowup[])[] | undefined> {
+	async $provideWelcomeMessage(
+		handle: number,
+		token: CancellationToken
+	): Promise<
+		(string | IMarkdownString | IChatReplyFollowup[])[] | undefined
+	> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -113,18 +158,22 @@ export class ExtHostChat implements ExtHostChatShape {
 		if (!content) {
 			return undefined;
 		}
-		return content.map(item => {
-			if (typeof item === 'string') {
+		return content.map((item) => {
+			if (typeof item === "string") {
 				return item;
 			} else if (Array.isArray(item)) {
-				return item.map(f => typeConvert.ChatReplyFollowup.from(f));
+				return item.map((f) => typeConvert.ChatReplyFollowup.from(f));
 			} else {
 				return typeConvert.MarkdownString.from(item);
 			}
 		});
 	}
 
-	async $provideFollowups(handle: number, sessionId: number, token: CancellationToken): Promise<IChatFollowup[] | undefined> {
+	async $provideFollowups(
+		handle: number,
+		sessionId: number,
+		token: CancellationToken
+	): Promise<IChatFollowup[] | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -139,11 +188,17 @@ export class ExtHostChat implements ExtHostChatShape {
 			return undefined;
 		}
 
-		const rawFollowups = await entry.provider.provideFollowups(realSession, token);
-		return rawFollowups?.map(f => typeConvert.ChatFollowup.from(f));
+		const rawFollowups = await entry.provider.provideFollowups(
+			realSession,
+			token
+		);
+		return rawFollowups?.map((f) => typeConvert.ChatFollowup.from(f));
 	}
 
-	async $provideSampleQuestions(handle: number, token: CancellationToken): Promise<IChatReplyFollowup[] | undefined> {
+	async $provideSampleQuestions(
+		handle: number,
+		token: CancellationToken
+	): Promise<IChatReplyFollowup[] | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -158,7 +213,7 @@ export class ExtHostChat implements ExtHostChatShape {
 			return undefined;
 		}
 
-		return rawFollowups?.map(f => typeConvert.ChatReplyFollowup.from(f));
+		return rawFollowups?.map((f) => typeConvert.ChatReplyFollowup.from(f));
 	}
 
 	$removeRequest(handle: number, sessionId: number, requestId: string): void {
@@ -179,7 +234,12 @@ export class ExtHostChat implements ExtHostChatShape {
 		entry.provider.removeRequest(realSession, requestId);
 	}
 
-	async $provideReply(handle: number, sessionId: number, request: IChatRequestDto, token: CancellationToken): Promise<IChatResponseDto | undefined> {
+	async $provideReply(
+		handle: number,
+		sessionId: number,
+		request: IChatRequestDto,
+		token: CancellationToken
+	): Promise<IChatResponseDto | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -193,12 +253,14 @@ export class ExtHostChat implements ExtHostChatShape {
 		const requestObj: vscode.InteractiveRequest = {
 			session: realSession,
 			message: request.message,
-			variables: {}
+			variables: {},
 		};
 
 		if (request.variables) {
 			for (const key of Object.keys(request.variables)) {
-				requestObj.variables[key] = request.variables[key].map(typeConvert.ChatVariable.to);
+				requestObj.variables[key] = request.variables[key].map(
+					typeConvert.ChatVariable.to
+				);
 			}
 		}
 
@@ -210,33 +272,75 @@ export class ExtHostChat implements ExtHostChatShape {
 					return;
 				}
 
-				if (typeof firstProgress === 'undefined') {
+				if (typeof firstProgress === "undefined") {
 					firstProgress = stopWatch.elapsed();
 				}
 
-				const convertedProgress = typeConvert.ChatResponseProgress.from(entry.extension, progress);
-				if ('placeholder' in progress && 'resolvedContent' in progress) {
-					const resolvedContent = Promise.all([this._proxy.$acceptResponseProgress(handle, sessionId, convertedProgress), progress.resolvedContent]);
+				const convertedProgress = typeConvert.ChatResponseProgress.from(
+					entry.extension,
+					progress
+				);
+				if (
+					"placeholder" in progress &&
+					"resolvedContent" in progress
+				) {
+					const resolvedContent = Promise.all([
+						this._proxy.$acceptResponseProgress(
+							handle,
+							sessionId,
+							convertedProgress
+						),
+						progress.resolvedContent,
+					]);
 					raceCancellation(resolvedContent, token).then((res) => {
 						if (!res) {
 							return; /* Cancelled */
 						}
 						const [progressHandle, progressContent] = res;
-						this._proxy.$acceptResponseProgress(handle, sessionId, progressContent, progressHandle ?? undefined);
+						this._proxy.$acceptResponseProgress(
+							handle,
+							sessionId,
+							progressContent,
+							progressHandle ?? undefined
+						);
 					});
 				} else {
-					this._proxy.$acceptResponseProgress(handle, sessionId, convertedProgress);
+					this._proxy.$acceptResponseProgress(
+						handle,
+						sessionId,
+						convertedProgress
+					);
 				}
-			}
+			},
 		};
 		let result: vscode.InteractiveResponseForProgress | undefined | null;
 		try {
-			result = await entry.provider.provideResponseWithProgress(requestObj, progressObj, token);
+			result = await entry.provider.provideResponseWithProgress(
+				requestObj,
+				progressObj,
+				token
+			);
 			if (!result) {
-				result = { errorDetails: { message: localize('emptyResponse', "Provider returned null response") } };
+				result = {
+					errorDetails: {
+						message: localize(
+							"emptyResponse",
+							"Provider returned null response"
+						),
+					},
+				};
 			}
 		} catch (err) {
-			result = { errorDetails: { message: localize('errorResponse', "Error from provider: {0}", err.message), responseIsIncomplete: true } };
+			result = {
+				errorDetails: {
+					message: localize(
+						"errorResponse",
+						"Error from provider: {0}",
+						err.message
+					),
+					responseIsIncomplete: true,
+				},
+			};
 			this.logService.error(err);
 		}
 
@@ -250,11 +354,18 @@ export class ExtHostChat implements ExtHostChatShape {
 			this.logService.warn(err);
 		}
 
-		const timings = { firstProgress: firstProgress ?? 0, totalElapsed: stopWatch.elapsed() };
+		const timings = {
+			firstProgress: firstProgress ?? 0,
+			totalElapsed: stopWatch.elapsed(),
+		};
 		return { errorDetails: result.errorDetails, timings };
 	}
 
-	async $provideSlashCommands(handle: number, sessionId: number, token: CancellationToken): Promise<ISlashCommand[] | undefined> {
+	async $provideSlashCommands(
+		handle: number,
+		sessionId: number,
+		token: CancellationToken
+	): Promise<ISlashCommand[] | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -269,11 +380,17 @@ export class ExtHostChat implements ExtHostChatShape {
 			return undefined;
 		}
 
-		const slashCommands = await entry.provider.provideSlashCommands(realSession, token);
-		return slashCommands?.map(c => (<ISlashCommand>{
-			...c,
-			kind: typeConvert.CompletionItemKind.from(c.kind)
-		}));
+		const slashCommands = await entry.provider.provideSlashCommands(
+			realSession,
+			token
+		);
+		return slashCommands?.map(
+			(c) =>
+				<ISlashCommand>{
+					...c,
+					kind: typeConvert.CompletionItemKind.from(c.kind),
+				}
+		);
 	}
 
 	$releaseSession(sessionId: number) {

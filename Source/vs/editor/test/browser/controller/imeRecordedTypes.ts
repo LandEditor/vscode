@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { OperatingSystem } from 'vs/base/common/platform';
-import { IBrowser } from 'vs/editor/browser/controller/textAreaInput';
+import { OperatingSystem } from "vs/base/common/platform";
+import { IBrowser } from "vs/editor/browser/controller/textAreaInput";
 
 export interface IRecordedTextareaState {
-	selectionDirection: 'forward' | 'backward' | 'none';
+	selectionDirection: "forward" | "backward" | "none";
 	selectionEnd: number;
 	selectionStart: number;
 	value: string;
@@ -16,7 +16,7 @@ export interface IRecordedTextareaState {
 export interface IRecordedKeyboardEvent {
 	timeStamp: number;
 	state: IRecordedTextareaState;
-	type: 'keydown' | 'keypress' | 'keyup';
+	type: "keydown" | "keypress" | "keyup";
 	altKey: boolean;
 	charCode: number;
 	code: string;
@@ -33,20 +33,23 @@ export interface IRecordedKeyboardEvent {
 export interface IRecordedCompositionEvent {
 	timeStamp: number;
 	state: IRecordedTextareaState;
-	type: 'compositionstart' | 'compositionupdate' | 'compositionend';
+	type: "compositionstart" | "compositionupdate" | "compositionend";
 	data: string;
 }
 
 export interface IRecordedInputEvent {
 	timeStamp: number;
 	state: IRecordedTextareaState;
-	type: 'beforeinput' | 'input';
+	type: "beforeinput" | "input";
 	data: string | null;
 	inputType: string;
 	isComposing: boolean | undefined;
 }
 
-export type IRecordedEvent = IRecordedKeyboardEvent | IRecordedCompositionEvent | IRecordedInputEvent;
+export type IRecordedEvent =
+	| IRecordedKeyboardEvent
+	| IRecordedCompositionEvent
+	| IRecordedInputEvent;
 
 export interface IRecorded {
 	env: {

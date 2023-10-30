@@ -3,16 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { LinkedList } from 'vs/base/common/linkedList';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IEditorPane } from 'vs/workbench/common/editor';
-import { IOutline, IOutlineCreator, IOutlineService, OutlineTarget } from 'vs/workbench/services/outline/browser/outline';
-import { Event, Emitter } from 'vs/base/common/event';
+import { CancellationToken } from "vs/base/common/cancellation";
+import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
+import { LinkedList } from "vs/base/common/linkedList";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IEditorPane } from "vs/workbench/common/editor";
+import {
+	IOutline,
+	IOutlineCreator,
+	IOutlineService,
+	OutlineTarget,
+} from "vs/workbench/services/outline/browser/outline";
+import { Event, Emitter } from "vs/base/common/event";
 
 class OutlineService implements IOutlineService {
-
 	declare _serviceBrand: undefined;
 
 	private readonly _factories = new LinkedList<IOutlineCreator<any, any>>();
@@ -29,7 +36,11 @@ class OutlineService implements IOutlineService {
 		return false;
 	}
 
-	async createOutline(pane: IEditorPane, target: OutlineTarget, token: CancellationToken): Promise<IOutline<any> | undefined> {
+	async createOutline(
+		pane: IEditorPane,
+		target: OutlineTarget,
+		token: CancellationToken
+	): Promise<IOutline<any> | undefined> {
 		for (const factory of this._factories) {
 			if (factory.matches(pane)) {
 				return await factory.createOutline(pane, target, token);
@@ -47,6 +58,5 @@ class OutlineService implements IOutlineService {
 		});
 	}
 }
-
 
 registerSingleton(IOutlineService, OutlineService, InstantiationType.Delayed);

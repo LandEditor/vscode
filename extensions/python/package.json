@@ -1,80 +1,80 @@
 {
-  "name": "python",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin MagicStack/MagicPython grammars/MagicPython.tmLanguage ./syntaxes/MagicPython.tmLanguage.json grammars/MagicRegExp.tmLanguage ./syntaxes/MagicRegExp.tmLanguage.json"
-  },
-  "contributes": {
-    "configurationDefaults": {
-      "[python]": {
-        "diffEditor.ignoreTrimWhitespace": false
-      }
-    },
-    "grammars": [
-      {
-        "language": "python",
-        "scopeName": "source.python",
-        "path": "./syntaxes/MagicPython.tmLanguage.json"
-      },
-      {
-        "scopeName": "source.regexp.python",
-        "path": "./syntaxes/MagicRegExp.tmLanguage.json"
-      }
-    ],
-    "languages": [
-      {
-        "id": "python",
-        "extensions": [
-          ".py",
-          ".rpy",
-          ".pyw",
-          ".cpy",
-          ".gyp",
-          ".gypi",
-          ".pyi",
-          ".ipy",
-          ".pyt"
-        ],
-        "aliases": [
-          "Python",
-          "py"
-        ],
-        "filenames": [
-          "SConstruct",
-          "SConscript"
-        ],
-        "firstLine": "^#!\\s*/?.*\\bpython[0-9.-]*\\b",
-        "configuration": "./language-configuration.json"
-      }
-    ]
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "*"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "python",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin MagicStack/MagicPython grammars/MagicPython.tmLanguage ./syntaxes/MagicPython.tmLanguage.json grammars/MagicRegExp.tmLanguage ./syntaxes/MagicRegExp.tmLanguage.json"
+	},
+	"contributes": {
+		"configurationDefaults": {
+			"[python]": {
+				"diffEditor.ignoreTrimWhitespace": false
+			}
+		},
+		"grammars": [
+			{
+				"language": "python",
+				"scopeName": "source.python",
+				"path": "./syntaxes/MagicPython.tmLanguage.json"
+			},
+			{
+				"scopeName": "source.regexp.python",
+				"path": "./syntaxes/MagicRegExp.tmLanguage.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "python",
+				"extensions": [
+					".py",
+					".rpy",
+					".pyw",
+					".cpy",
+					".gyp",
+					".gypi",
+					".pyi",
+					".ipy",
+					".pyt"
+				],
+				"aliases": [
+					"Python",
+					"py"
+				],
+				"filenames": [
+					"SConstruct",
+					"SConscript"
+				],
+				"firstLine": "^#!\\s*/?.*\\bpython[0-9.-]*\\b",
+				"configuration": "./language-configuration.json"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

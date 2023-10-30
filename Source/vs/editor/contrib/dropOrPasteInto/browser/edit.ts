@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import { ResourceTextEdit } from 'vs/editor/browser/services/bulkEditService';
-import { DropYieldTo, WorkspaceEdit } from 'vs/editor/common/languages';
-import { Range } from 'vs/editor/common/core/range';
+import { URI } from "vs/base/common/uri";
+import { ResourceTextEdit } from "vs/editor/browser/services/bulkEditService";
+import { DropYieldTo, WorkspaceEdit } from "vs/editor/common/languages";
+import { Range } from "vs/editor/common/core/range";
 
 export interface DropOrPasteEdit {
 	readonly label: string;
@@ -14,28 +14,47 @@ export interface DropOrPasteEdit {
 	readonly additionalEdit?: WorkspaceEdit;
 }
 
-export function createCombinedWorkspaceEdit(uri: URI, ranges: readonly Range[], edit: DropOrPasteEdit): WorkspaceEdit {
+export function createCombinedWorkspaceEdit(
+	uri: URI,
+	ranges: readonly Range[],
+	edit: DropOrPasteEdit
+): WorkspaceEdit {
 	return {
 		edits: [
-			...ranges.map(range =>
-				new ResourceTextEdit(uri,
-					typeof edit.insertText === 'string'
-						? { range, text: edit.insertText, insertAsSnippet: false }
-						: { range, text: edit.insertText.snippet, insertAsSnippet: true }
-				)),
-			...(edit.additionalEdit?.edits ?? [])
-		]
+			...ranges.map(
+				(range) =>
+					new ResourceTextEdit(
+						uri,
+						typeof edit.insertText === "string"
+							? {
+									range,
+									text: edit.insertText,
+									insertAsSnippet: false,
+							  }
+							: {
+									range,
+									text: edit.insertText.snippet,
+									insertAsSnippet: true,
+							  }
+					)
+			),
+			...(edit.additionalEdit?.edits ?? []),
+		],
 	};
 }
 
-export function sortEditsByYieldTo<T extends {
-	readonly providerId: string | undefined;
-	readonly handledMimeType?: string;
-	readonly yieldTo?: readonly DropYieldTo[];
-}>(edits: readonly T[]): T[] {
+export function sortEditsByYieldTo<
+	T extends {
+		readonly providerId: string | undefined;
+		readonly handledMimeType?: string;
+		readonly yieldTo?: readonly DropYieldTo[];
+	},
+>(edits: readonly T[]): T[] {
 	function yieldsTo(yTo: DropYieldTo, other: T): boolean {
-		return ('providerId' in yTo && yTo.providerId === other.providerId)
-			|| ('mimeType' in yTo && yTo.mimeType === other.handledMimeType);
+		return (
+			("providerId" in yTo && yTo.providerId === other.providerId) ||
+			("mimeType" in yTo && yTo.mimeType === other.handledMimeType)
+		);
 	}
 
 	// Build list of nodes each node yields to

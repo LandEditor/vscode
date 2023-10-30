@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Application, Terminal, SettingsEditor } from '../../../../automation';
-import { setTerminalTestSettings } from './terminal-helpers';
+import { Application, Terminal, SettingsEditor } from "../../../../automation";
+import { setTerminalTestSettings } from "./terminal-helpers";
 
 export function setup() {
-	describe('Terminal Input', () => {
+	describe("Terminal Input", () => {
 		let terminal: Terminal;
 		let settingsEditor: SettingsEditor;
 
@@ -23,11 +23,10 @@ export function setup() {
 			await settingsEditor.clearUserSettings();
 		});
 
-		describe('Auto replies', function () {
-
+		describe("Auto replies", function () {
 			// HACK: Retry this suite only on Windows because conpty can rarely lead to unexpected behavior which would
 			// cause flakiness. If this does happen, the feature is expected to fail.
-			if (process.platform === 'win32') {
+			if (process.platform === "win32") {
 				this.retries(3);
 			}
 
@@ -37,11 +36,16 @@ export function setup() {
 				await terminal.runCommandInTerminal(`"\r${text}`, true);
 			}
 
-			it('should automatically reply to a custom entry', async () => {
-				await settingsEditor.addUserSetting('terminal.integrated.autoReplies', '{ "foo": "bar" }');
+			it("should automatically reply to a custom entry", async () => {
+				await settingsEditor.addUserSetting(
+					"terminal.integrated.autoReplies",
+					'{ "foo": "bar" }'
+				);
 				await terminal.createTerminal();
-				await writeTextForAutoReply('foo');
-				await terminal.waitForTerminalText(buffer => buffer.some(line => line.match(/foo.*bar/)));
+				await writeTextForAutoReply("foo");
+				await terminal.waitForTerminalText((buffer) =>
+					buffer.some((line) => line.match(/foo.*bar/))
+				);
 			});
 		});
 	});

@@ -1,90 +1,90 @@
 {
-  "name": "jake",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "categories": [
-    "Other"
-  ],
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "main": "./out/main",
-  "scripts": {
-    "compile": "gulp compile-extension:jake",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "watch": "gulp watch-extension:jake"
-  },
-  "contributes": {
-    "configuration": {
-      "id": "jake",
-      "type": "object",
-      "title": "Jake",
-      "properties": {
-        "jake.autoDetect": {
-          "scope": "application",
-          "type": "string",
-          "enum": [
-            "off",
-            "on"
-          ],
-          "default": "off",
-          "description": "%config.jake.autoDetect%"
-        }
-      }
-    },
-    "taskDefinitions": [
-      {
-        "type": "jake",
-        "required": [
-          "task"
-        ],
-        "properties": {
-          "task": {
-            "type": "string",
-            "description": "%jake.taskDefinition.type.description%"
-          },
-          "file": {
-            "type": "string",
-            "description": "%jake.taskDefinition.file.description%"
-          }
-        },
-        "when": "shellExecutionSupported"
-      }
-    ]
-  },
-  "activationEvents": [
-    "onTaskType:jake"
-  ],
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "*"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "images/cowboy_hat.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  }
+	"name": "jake",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"categories": [
+		"Other"
+	],
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"main": "./out/main",
+	"scripts": {
+		"compile": "gulp compile-extension:jake",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:jake"
+	},
+	"contributes": {
+		"configuration": {
+			"id": "jake",
+			"type": "object",
+			"title": "Jake",
+			"properties": {
+				"jake.autoDetect": {
+					"scope": "application",
+					"type": "string",
+					"enum": [
+						"off",
+						"on"
+					],
+					"default": "off",
+					"description": "%config.jake.autoDetect%"
+				}
+			}
+		},
+		"taskDefinitions": [
+			{
+				"type": "jake",
+				"required": [
+					"task"
+				],
+				"properties": {
+					"task": {
+						"type": "string",
+						"description": "%jake.taskDefinition.type.description%"
+					},
+					"file": {
+						"type": "string",
+						"description": "%jake.taskDefinition.file.description%"
+					}
+				},
+				"when": "shellExecutionSupported"
+			}
+		]
+	},
+	"activationEvents": [
+		"onTaskType:jake"
+	],
+	"devDependencies": {
+		"@types/node": "20.x",
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "images/cowboy_hat.png",
+	"capabilities": {
+		"virtualWorkspaces": false,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	}
 }

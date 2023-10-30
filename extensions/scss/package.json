@@ -1,104 +1,104 @@
 {
-  "name": "scss",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-sass grammars/scss.cson ./syntaxes/scss.tmLanguage.json grammars/sassdoc.cson ./syntaxes/sassdoc.tmLanguage.json"
-  },
-  "contributes": {
-    "grammars": [
-      {
-        "language": "scss",
-        "scopeName": "source.css.scss",
-        "path": "./syntaxes/scss.tmLanguage.json"
-      },
-      {
-        "scopeName": "source.sassdoc",
-        "path": "./syntaxes/sassdoc.tmLanguage.json"
-      }
-    ],
-    "languages": [
-      {
-        "id": "scss",
-        "aliases": [
-          "SCSS",
-          "scss"
-        ],
-        "extensions": [
-          ".scss"
-        ],
-        "mimetypes": [
-          "text/x-scss",
-          "text/scss"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "problemMatchers": [
-      {
-        "name": "node-sass",
-        "label": "Node Sass Compiler",
-        "owner": "node-sass",
-        "fileLocation": "absolute",
-        "pattern": [
-          {
-            "regexp": "^{$"
-          },
-          {
-            "regexp": "\\s*\"status\":\\s\\d+,"
-          },
-          {
-            "regexp": "\\s*\"file\":\\s\"(.*)\",",
-            "file": 1
-          },
-          {
-            "regexp": "\\s*\"line\":\\s(\\d+),",
-            "line": 1
-          },
-          {
-            "regexp": "\\s*\"column\":\\s(\\d+),",
-            "column": 1
-          },
-          {
-            "regexp": "\\s*\"message\":\\s\"(.*)\",",
-            "message": 1
-          },
-          {
-            "regexp": "\\s*\"formatted\":\\s(.*)"
-          },
-          {
-            "regexp": "^}$"
-          }
-        ]
-      }
-    ]
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "*"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "scss",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-sass grammars/scss.cson ./syntaxes/scss.tmLanguage.json grammars/sassdoc.cson ./syntaxes/sassdoc.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "scss",
+				"scopeName": "source.css.scss",
+				"path": "./syntaxes/scss.tmLanguage.json"
+			},
+			{
+				"scopeName": "source.sassdoc",
+				"path": "./syntaxes/sassdoc.tmLanguage.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "scss",
+				"aliases": [
+					"SCSS",
+					"scss"
+				],
+				"extensions": [
+					".scss"
+				],
+				"mimetypes": [
+					"text/x-scss",
+					"text/scss"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"problemMatchers": [
+			{
+				"name": "node-sass",
+				"label": "Node Sass Compiler",
+				"owner": "node-sass",
+				"fileLocation": "absolute",
+				"pattern": [
+					{
+						"regexp": "^{$"
+					},
+					{
+						"regexp": "\\s*\"status\":\\s\\d+,"
+					},
+					{
+						"regexp": "\\s*\"file\":\\s\"(.*)\",",
+						"file": 1
+					},
+					{
+						"regexp": "\\s*\"line\":\\s(\\d+),",
+						"line": 1
+					},
+					{
+						"regexp": "\\s*\"column\":\\s(\\d+),",
+						"column": 1
+					},
+					{
+						"regexp": "\\s*\"message\":\\s\"(.*)\",",
+						"message": 1
+					},
+					{
+						"regexp": "\\s*\"formatted\":\\s(.*)"
+					},
+					{
+						"regexp": "^}$"
+					}
+				]
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

@@ -169,9 +169,7 @@
 		},
 		{
 			"name": "brackets of XML/HTML tags",
-			"scope": [
-				"punctuation.definition.tag"
-			],
+			"scope": ["punctuation.definition.tag"],
 			"settings": {
 				"foreground": "#808080"
 			}
@@ -255,9 +253,7 @@
 		},
 		{
 			"name": "Reset JavaScript string interpolation expression",
-			"scope": [
-				"meta.template.expression"
-			],
+			"scope": ["meta.template.expression"],
 			"settings": {
 				"foreground": "#ffffff"
 			}
@@ -426,9 +422,7 @@
 		},
 		{
 			"name": "Object keys, TS grammar specific",
-			"scope": [
-				"meta.object-literal.key"
-			],
+			"scope": ["meta.object-literal.key"],
 			"settings": {
 				"foreground": "#9CDCFE"
 			}

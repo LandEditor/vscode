@@ -3,16 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextAreaWrapper } from 'vs/editor/browser/controller/textAreaInput';
-import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { IRecorded, IRecordedCompositionEvent, IRecordedEvent, IRecordedInputEvent, IRecordedKeyboardEvent, IRecordedTextareaState } from 'vs/editor/test/browser/controller/imeRecordedTypes';
-import * as browser from 'vs/base/browser/browser';
-import * as platform from 'vs/base/common/platform';
+import { TextAreaWrapper } from "vs/editor/browser/controller/textAreaInput";
+import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import {
+	IRecorded,
+	IRecordedCompositionEvent,
+	IRecordedEvent,
+	IRecordedInputEvent,
+	IRecordedKeyboardEvent,
+	IRecordedTextareaState,
+} from "vs/editor/test/browser/controller/imeRecordedTypes";
+import * as browser from "vs/base/browser/browser";
+import * as platform from "vs/base/common/platform";
 
 (() => {
-
-	const startButton = <HTMLButtonElement>document.getElementById('startRecording')!;
-	const endButton = <HTMLButtonElement>document.getElementById('endRecording')!;
+	const startButton = <HTMLButtonElement>(
+		document.getElementById("startRecording")!
+	);
+	const endButton = <HTMLButtonElement>(
+		document.getElementById("endRecording")!
+	);
 
 	let inputarea: HTMLTextAreaElement;
 	const disposables = new DisposableStore();
@@ -21,7 +31,7 @@ import * as platform from 'vs/base/common/platform';
 		env: null!,
 		initial: null!,
 		events: [],
-		final: null!
+		final: null!,
 	};
 
 	const readTextareaState = (): IRecordedTextareaState => {
@@ -44,12 +54,12 @@ import * as platform from 'vs/base/common/platform';
 					isAndroid: browser.isAndroid,
 					isFirefox: browser.isFirefox,
 					isChrome: browser.isChrome,
-					isSafari: browser.isSafari
-				}
+					isSafari: browser.isSafari,
+				},
 			},
 			initial: readTextareaState(),
 			events: [],
-			final: null!
+			final: null!,
 		};
 	};
 	endButton.onclick = () => {
@@ -62,50 +72,94 @@ import * as platform from 'vs/base/common/platform';
 		lines.push(`const recorded: IRecorded = {`);
 		lines.push(`\tenv: ${JSON.stringify(recorded.env)}, `);
 		lines.push(`\tinitial: ${printState(recorded.initial)}, `);
-		lines.push(`\tevents: [\n\t\t${recorded.events.map(ev => printEvent(ev)).join(',\n\t\t')}\n\t],`);
+		lines.push(
+			`\tevents: [\n\t\t${recorded.events
+				.map((ev) => printEvent(ev))
+				.join(",\n\t\t")}\n\t],`
+		);
 		lines.push(`\tfinal: ${printState(recorded.final)},`);
 		lines.push(`}`);
 
-		return lines.join('\n');
+		return lines.join("\n");
 
 		function printString(str: string) {
-			return str.replace(/\\/g, '\\\\').replace(/'/g, '\\\'');
+			return str.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
 		}
 		function printState(state: IRecordedTextareaState) {
-			return `{ value: '${printString(state.value)}', selectionStart: ${state.selectionStart}, selectionEnd: ${state.selectionEnd}, selectionDirection: '${state.selectionDirection}' }`;
+			return `{ value: '${printString(state.value)}', selectionStart: ${
+				state.selectionStart
+			}, selectionEnd: ${state.selectionEnd}, selectionDirection: '${
+				state.selectionDirection
+			}' }`;
 		}
 		function printEvent(ev: IRecordedEvent) {
-			if (ev.type === 'keydown' || ev.type === 'keypress' || ev.type === 'keyup') {
-				return `{ timeStamp: ${ev.timeStamp.toFixed(2)}, state: ${printState(ev.state)}, type: '${ev.type}', altKey: ${ev.altKey}, charCode: ${ev.charCode}, code: '${ev.code}', ctrlKey: ${ev.ctrlKey}, isComposing: ${ev.isComposing}, key: '${ev.key}', keyCode: ${ev.keyCode}, location: ${ev.location}, metaKey: ${ev.metaKey}, repeat: ${ev.repeat}, shiftKey: ${ev.shiftKey} }`;
+			if (
+				ev.type === "keydown" ||
+				ev.type === "keypress" ||
+				ev.type === "keyup"
+			) {
+				return `{ timeStamp: ${ev.timeStamp.toFixed(
+					2
+				)}, state: ${printState(ev.state)}, type: '${
+					ev.type
+				}', altKey: ${ev.altKey}, charCode: ${ev.charCode}, code: '${
+					ev.code
+				}', ctrlKey: ${ev.ctrlKey}, isComposing: ${
+					ev.isComposing
+				}, key: '${ev.key}', keyCode: ${ev.keyCode}, location: ${
+					ev.location
+				}, metaKey: ${ev.metaKey}, repeat: ${ev.repeat}, shiftKey: ${
+					ev.shiftKey
+				} }`;
 			}
-			if (ev.type === 'compositionstart' || ev.type === 'compositionupdate' || ev.type === 'compositionend') {
-				return `{ timeStamp: ${ev.timeStamp.toFixed(2)}, state: ${printState(ev.state)}, type: '${ev.type}', data: '${printString(ev.data)}' }`;
+			if (
+				ev.type === "compositionstart" ||
+				ev.type === "compositionupdate" ||
+				ev.type === "compositionend"
+			) {
+				return `{ timeStamp: ${ev.timeStamp.toFixed(
+					2
+				)}, state: ${printState(ev.state)}, type: '${
+					ev.type
+				}', data: '${printString(ev.data)}' }`;
 			}
-			if (ev.type === 'beforeinput' || ev.type === 'input') {
-				return `{ timeStamp: ${ev.timeStamp.toFixed(2)}, state: ${printState(ev.state)}, type: '${ev.type}', data: ${ev.data === null ? 'null' : `'${printString(ev.data)}'`}, inputType: '${ev.inputType}', isComposing: ${ev.isComposing} }`;
+			if (ev.type === "beforeinput" || ev.type === "input") {
+				return `{ timeStamp: ${ev.timeStamp.toFixed(
+					2
+				)}, state: ${printState(ev.state)}, type: '${ev.type}', data: ${
+					ev.data === null ? "null" : `'${printString(ev.data)}'`
+				}, inputType: '${ev.inputType}', isComposing: ${
+					ev.isComposing
+				} }`;
 			}
 			return JSON.stringify(ev);
 		}
 	}
 
 	function startTest() {
-		inputarea = document.createElement('textarea');
+		inputarea = document.createElement("textarea");
 		document.body.appendChild(inputarea);
 		inputarea.focus();
-		disposables.add(toDisposable(() => {
-			inputarea.remove();
-		}));
+		disposables.add(
+			toDisposable(() => {
+				inputarea.remove();
+			})
+		);
 		const wrapper = disposables.add(new TextAreaWrapper(inputarea));
 
-		wrapper.setValue('', `aaaa`);
-		wrapper.setSelectionRange('', 2, 2);
+		wrapper.setValue("", `aaaa`);
+		wrapper.setSelectionRange("", 2, 2);
 
 		const recordEvent = (e: IRecordedEvent) => {
 			recorded.events.push(e);
 		};
 
 		const recordKeyboardEvent = (e: KeyboardEvent): void => {
-			if (e.type !== 'keydown' && e.type !== 'keypress' && e.type !== 'keyup') {
+			if (
+				e.type !== "keydown" &&
+				e.type !== "keypress" &&
+				e.type !== "keyup"
+			) {
 				throw new Error(`Not supported!`);
 			}
 			if (originTimeStamp === 0) {
@@ -125,13 +179,17 @@ import * as platform from 'vs/base/common/platform';
 				location: e.location,
 				metaKey: e.metaKey,
 				repeat: e.repeat,
-				shiftKey: e.shiftKey
+				shiftKey: e.shiftKey,
 			};
 			recordEvent(ev);
 		};
 
 		const recordCompositionEvent = (e: CompositionEvent): void => {
-			if (e.type !== 'compositionstart' && e.type !== 'compositionupdate' && e.type !== 'compositionend') {
+			if (
+				e.type !== "compositionstart" &&
+				e.type !== "compositionupdate" &&
+				e.type !== "compositionend"
+			) {
 				throw new Error(`Not supported!`);
 			}
 			if (originTimeStamp === 0) {
@@ -147,7 +205,7 @@ import * as platform from 'vs/base/common/platform';
 		};
 
 		const recordInputEvent = (e: InputEvent): void => {
-			if (e.type !== 'beforeinput' && e.type !== 'input') {
+			if (e.type !== "beforeinput" && e.type !== "input") {
 				throw new Error(`Not supported!`);
 			}
 			if (originTimeStamp === 0) {
@@ -173,5 +231,4 @@ import * as platform from 'vs/base/common/platform';
 		wrapper.onBeforeInput(recordInputEvent);
 		wrapper.onInput(recordInputEvent);
 	}
-
 })();

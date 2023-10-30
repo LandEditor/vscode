@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Application, Terminal, SettingsEditor } from '../../../../automation';
-import { setTerminalTestSettings } from './terminal-helpers';
+import { Application, Terminal, SettingsEditor } from "../../../../automation";
+import { setTerminalTestSettings } from "./terminal-helpers";
 
 export function setup() {
-	describe('Terminal splitCwd', () => {
+	describe("Terminal splitCwd", () => {
 		// Acquire automation API
 		let terminal: Terminal;
 		let settingsEditor: SettingsEditor;
@@ -16,7 +16,7 @@ export function setup() {
 			terminal = app.workbench.terminal;
 			settingsEditor = app.workbench.settingsEditor;
 			await setTerminalTestSettings(app, [
-				['terminal.integrated.splitCwd', '"inherited"']
+				["terminal.integrated.splitCwd", '"inherited"'],
 			]);
 		});
 
@@ -24,16 +24,18 @@ export function setup() {
 			await settingsEditor.clearUserSettings();
 		});
 
-		it('should inherit cwd when split and update the tab description - alt click', async () => {
+		it("should inherit cwd when split and update the tab description - alt click", async () => {
 			await terminal.createTerminal();
-			const cwd = 'test';
+			const cwd = "test";
 			await terminal.runCommandInTerminal(`mkdir ${cwd}`);
 			await terminal.runCommandInTerminal(`cd ${cwd}`);
 			const page = await terminal.getPage();
-			page.keyboard.down('Alt');
+			page.keyboard.down("Alt");
 			await terminal.clickSingleTab();
-			page.keyboard.up('Alt');
-			await terminal.assertTerminalGroups([[{ description: cwd }, { description: cwd }]]);
+			page.keyboard.up("Alt");
+			await terminal.assertTerminalGroups([
+				[{ description: cwd }, { description: cwd }],
+			]);
 		});
 	});
 }

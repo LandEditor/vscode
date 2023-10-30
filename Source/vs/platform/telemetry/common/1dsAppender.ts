@@ -3,27 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IExtendedConfiguration, IExtendedTelemetryItem, ITelemetryItem, ITelemetryUnloadState } from '@microsoft/1ds-core-js';
-import type { IChannelConfiguration, IXHROverride, PostChannel } from '@microsoft/1ds-post-js';
-import { importAMDNodeModule } from 'vs/amdX';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { mixin } from 'vs/base/common/objects';
-import { ITelemetryAppender, validateTelemetryData } from 'vs/platform/telemetry/common/telemetryUtils';
+import type {
+	IExtendedConfiguration,
+	IExtendedTelemetryItem,
+	ITelemetryItem,
+	ITelemetryUnloadState,
+} from "@microsoft/1ds-core-js";
+import type {
+	IChannelConfiguration,
+	IXHROverride,
+	PostChannel,
+} from "@microsoft/1ds-post-js";
+import { importAMDNodeModule } from "vs/amdX";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { mixin } from "vs/base/common/objects";
+import {
+	ITelemetryAppender,
+	validateTelemetryData,
+} from "vs/platform/telemetry/common/telemetryUtils";
 
 // Interface type which is a subset of @microsoft/1ds-core-js AppInsightsCore.
 // Allows us to more easily build mock objects for testing as the interface is quite large and we only need a few properties.
 export interface IAppInsightsCore {
 	pluginVersionString: string;
 	track(item: ITelemetryItem | IExtendedTelemetryItem): void;
-	unload(isAsync: boolean, unloadComplete: (unloadState: ITelemetryUnloadState) => void): void;
+	unload(
+		isAsync: boolean,
+		unloadComplete: (unloadState: ITelemetryUnloadState) => void
+	): void;
 }
 
-const endpointUrl = 'https://mobile.events.data.microsoft.com/OneCollector/1.0';
-const endpointHealthUrl = 'https://mobile.events.data.microsoft.com/ping';
+const endpointUrl = "https://mobile.events.data.microsoft.com/OneCollector/1.0";
+const endpointHealthUrl = "https://mobile.events.data.microsoft.com/ping";
 
-async function getClient(instrumentationKey: string, addInternalFlag?: boolean, xhrOverride?: IXHROverride): Promise<IAppInsightsCore> {
-	const oneDs = await importAMDNodeModule<typeof import('@microsoft/1ds-core-js')>('@microsoft/1ds-core-js', 'dist/ms.core.js');
-	const postPlugin = await importAMDNodeModule<typeof import('@microsoft/1ds-post-js')>('@microsoft/1ds-post-js', 'dist/ms.post.js');
+async function getClient(
+	instrumentationKey: string,
+	addInternalFlag?: boolean,
+	xhrOverride?: IXHROverride
+): Promise<IAppInsightsCore> {
+	const oneDs = await importAMDNodeModule<
+		typeof import("@microsoft/1ds-core-js")
+	>("@microsoft/1ds-core-js", "dist/ms.core.js");
+	const postPlugin = await importAMDNodeModule<
+		typeof import("@microsoft/1ds-post-js")
+	>("@microsoft/1ds-post-js", "dist/ms.post.js");
 	const appInsightsCore = new oneDs.AppInsightsCore();
 	const collectorChannelPlugin: PostChannel = new postPlugin.PostChannel();
 	// Configure the app insights core to send to collector++ and disable logging of debug info
@@ -35,9 +58,7 @@ async function getClient(instrumentationKey: string, addInternalFlag?: boolean, 
 		disableCookiesUsage: true,
 		disableDbgExt: true,
 		disableInstrumentationKeyValidation: true,
-		channels: [[
-			collectorChannelPlugin
-		]]
+		channels: [[collectorChannelPlugin]],
 	};
 
 	if (xhrOverride) {
@@ -45,19 +66,20 @@ async function getClient(instrumentationKey: string, addInternalFlag?: boolean, 
 		// Configure the channel to use a XHR Request override since it's not available in node
 		const channelConfig: IChannelConfiguration = {
 			alwaysUseXhrOverride: true,
-			httpXHROverride: xhrOverride
+			httpXHROverride: xhrOverride,
 		};
-		coreConfig.extensionConfig[collectorChannelPlugin.identifier] = channelConfig;
+		coreConfig.extensionConfig[collectorChannelPlugin.identifier] =
+			channelConfig;
 	}
 
 	appInsightsCore.initialize(coreConfig, []);
 
 	appInsightsCore.addTelemetryInitializer((envelope) => {
 		if (addInternalFlag) {
-			envelope['ext'] = envelope['ext'] ?? {};
-			envelope['ext']['utc'] = envelope['ext']['utc'] ?? {};
+			envelope["ext"] = envelope["ext"] ?? {};
+			envelope["ext"]["utc"] = envelope["ext"]["utc"] ?? {};
 			// Sets it to be internal only based on Windows UTC flagging
-			envelope['ext']['utc']['flags'] = 0x0000811ECD;
+			envelope["ext"]["utc"]["flags"] = 0x0000811ecd;
 		}
 	});
 
@@ -65,8 +87,9 @@ async function getClient(instrumentationKey: string, addInternalFlag?: boolean, 
 }
 
 // TODO @lramos15 maybe make more in line with src/vs/platform/telemetry/browser/appInsightsAppender.ts with caching support
-export abstract class AbstractOneDataSystemAppender implements ITelemetryAppender {
-
+export abstract class AbstractOneDataSystemAppender
+	implements ITelemetryAppender
+{
 	protected _aiCoreOrKey: IAppInsightsCore | string | undefined;
 	private _asyncAiCore: Promise<IAppInsightsCore> | null;
 	protected readonly endPointUrl = endpointUrl;
@@ -83,7 +106,7 @@ export abstract class AbstractOneDataSystemAppender implements ITelemetryAppende
 			this._defaultData = {};
 		}
 
-		if (typeof iKeyOrClientFactory === 'function') {
+		if (typeof iKeyOrClientFactory === "function") {
 			this._aiCoreOrKey = iKeyOrClientFactory();
 		} else {
 			this._aiCoreOrKey = iKeyOrClientFactory;
@@ -96,13 +119,17 @@ export abstract class AbstractOneDataSystemAppender implements ITelemetryAppende
 			return;
 		}
 
-		if (typeof this._aiCoreOrKey !== 'string') {
+		if (typeof this._aiCoreOrKey !== "string") {
 			callback(this._aiCoreOrKey);
 			return;
 		}
 
 		if (!this._asyncAiCore) {
-			this._asyncAiCore = getClient(this._aiCoreOrKey, this._isInternalTelemetry, this._xhrOverride);
+			this._asyncAiCore = getClient(
+				this._aiCoreOrKey,
+				this._isInternalTelemetry,
+				this._xhrOverride
+			);
 		}
 
 		this._asyncAiCore.then(
@@ -122,22 +149,27 @@ export abstract class AbstractOneDataSystemAppender implements ITelemetryAppende
 		}
 		data = mixin(data, this._defaultData);
 		data = validateTelemetryData(data);
-		const name = this._eventPrefix + '/' + eventName;
+		const name = this._eventPrefix + "/" + eventName;
 
 		try {
 			this._withAIClient((aiClient) => {
-				aiClient.pluginVersionString = data?.properties.version ?? 'Unknown';
+				aiClient.pluginVersionString =
+					data?.properties.version ?? "Unknown";
 				aiClient.track({
 					name,
-					baseData: { name, properties: data?.properties, measurements: data?.measurements }
+					baseData: {
+						name,
+						properties: data?.properties,
+						measurements: data?.measurements,
+					},
 				});
 			});
-		} catch { }
+		} catch {}
 	}
 
 	flush(): Promise<any> {
 		if (this._aiCoreOrKey) {
-			return new Promise(resolve => {
+			return new Promise((resolve) => {
 				this._withAIClient((aiClient) => {
 					aiClient.unload(true, () => {
 						this._aiCoreOrKey = undefined;

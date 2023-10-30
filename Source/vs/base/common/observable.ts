@@ -16,13 +16,13 @@ export {
 	disposableObservableValue,
 	transaction,
 	subtransaction,
-} from 'vs/base/common/observableInternal/base';
+} from "vs/base/common/observableInternal/base";
 export {
 	derived,
 	derivedOpts,
 	derivedHandleChanges,
 	derivedWithStore,
-} from 'vs/base/common/observableInternal/derived';
+} from "vs/base/common/observableInternal/derived";
 export {
 	autorun,
 	autorunDelta,
@@ -30,7 +30,7 @@ export {
 	autorunWithStore,
 	autorunOpts,
 	autorunWithStoreHandleChanges,
-} from 'vs/base/common/observableInternal/autorun';
+} from "vs/base/common/observableInternal/autorun";
 export {
 	IObservableSignal,
 	constObservable,
@@ -45,9 +45,12 @@ export {
 	observableSignalFromEvent,
 	waitForState,
 	wasEventTriggeredRecently,
-} from 'vs/base/common/observableInternal/utils';
+} from "vs/base/common/observableInternal/utils";
 
-import { ConsoleObservableLogger, setLogger } from 'vs/base/common/observableInternal/logging';
+import {
+	ConsoleObservableLogger,
+	setLogger,
+} from "vs/base/common/observableInternal/logging";
 
 const enableLogging = false;
 if (enableLogging) {

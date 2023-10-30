@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { ok } from 'vs/base/common/assert';
+import * as assert from "assert";
+import { ok } from "vs/base/common/assert";
 
-suite('Assert', () => {
-	test('ok', () => {
+suite("Assert", () => {
+	test("ok", () => {
 		assert.throws(function () {
 			ok(false);
 		});
@@ -20,14 +20,17 @@ suite('Assert', () => {
 			ok();
 		});
 
-		assert.throws(function () {
-			ok(null, 'Foo Bar');
-		}, function (e: Error) {
-			return e.message.indexOf('Foo Bar') >= 0;
-		});
+		assert.throws(
+			function () {
+				ok(null, "Foo Bar");
+			},
+			function (e: Error) {
+				return e.message.indexOf("Foo Bar") >= 0;
+			}
+		);
 
 		ok(true);
-		ok('foo');
+		ok("foo");
 		ok({});
 		ok(5);
 	});

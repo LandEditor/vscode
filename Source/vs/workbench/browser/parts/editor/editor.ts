@@ -3,67 +3,109 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { GroupIdentifier, IWorkbenchEditorConfiguration, IEditorIdentifier, IEditorCloseEvent, IEditorPartOptions, IEditorPartOptionsChangeEvent, SideBySideEditor, EditorCloseContext, IEditorPane, IEditorPartLimitConfiguration, IEditorPartDecorationsConfiguration } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { IEditorGroup, GroupDirection, IMergeGroupOptions, GroupsOrder, GroupsArrangement } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { Dimension } from 'vs/base/browser/dom';
-import { Event } from 'vs/base/common/event';
-import { IConfigurationChangeEvent, IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { ISerializableView } from 'vs/base/browser/ui/grid/grid';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { OptionalBooleanKey, OptionalNumberKey, OptionalStringKey, isObject } from 'vs/base/common/types';
-import { IEditorOptions } from 'vs/platform/editor/common/editor';
-import { IWindowsConfiguration } from 'vs/platform/window/common/window';
-import { ensureOptionalBooleanValue, ensureOptionalNumberValue, ensureOptionalStringValue } from 'vs/base/common/objects';
+import {
+	GroupIdentifier,
+	IWorkbenchEditorConfiguration,
+	IEditorIdentifier,
+	IEditorCloseEvent,
+	IEditorPartOptions,
+	IEditorPartOptionsChangeEvent,
+	SideBySideEditor,
+	EditorCloseContext,
+	IEditorPane,
+	IEditorPartLimitConfiguration,
+	IEditorPartDecorationsConfiguration,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import {
+	IEditorGroup,
+	GroupDirection,
+	IMergeGroupOptions,
+	GroupsOrder,
+	GroupsArrangement,
+} from "vs/workbench/services/editor/common/editorGroupsService";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { Dimension } from "vs/base/browser/dom";
+import { Event } from "vs/base/common/event";
+import {
+	IConfigurationChangeEvent,
+	IConfigurationService,
+} from "vs/platform/configuration/common/configuration";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { ISerializableView } from "vs/base/browser/ui/grid/grid";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	OptionalBooleanKey,
+	OptionalNumberKey,
+	OptionalStringKey,
+	isObject,
+} from "vs/base/common/types";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
+import { IWindowsConfiguration } from "vs/platform/window/common/window";
+import {
+	ensureOptionalBooleanValue,
+	ensureOptionalNumberValue,
+	ensureOptionalStringValue,
+} from "vs/base/common/objects";
 
 export interface IEditorPartCreationOptions {
 	readonly restorePreviousState: boolean;
 }
 
 export const DEFAULT_EDITOR_MIN_DIMENSIONS = new Dimension(220, 70);
-export const DEFAULT_EDITOR_MAX_DIMENSIONS = new Dimension(Number.POSITIVE_INFINITY, Number.POSITIVE_INFINITY);
+export const DEFAULT_EDITOR_MAX_DIMENSIONS = new Dimension(
+	Number.POSITIVE_INFINITY,
+	Number.POSITIVE_INFINITY
+);
 
 export const DEFAULT_EDITOR_PART_OPTIONS: IEditorPartOptions = {
-	showTabs: 'multiple',
+	showTabs: "multiple",
 	highlightModifiedTabs: false,
-	tabCloseButton: 'right',
-	tabSizing: 'fit',
+	tabCloseButton: "right",
+	tabSizing: "fit",
 	tabSizingFixedMinWidth: 50,
 	tabSizingFixedMaxWidth: 160,
-	pinnedTabSizing: 'normal',
+	pinnedTabSizing: "normal",
 	pinnedTabsOnSeparateRow: false,
-	tabHeight: 'default',
-	preventPinnedEditorClose: 'keyboardAndMouse',
-	titleScrollbarSizing: 'default',
+	tabHeight: "default",
+	preventPinnedEditorClose: "keyboardAndMouse",
+	titleScrollbarSizing: "default",
 	focusRecentEditorAfterClose: true,
 	showIcons: true,
 	hasIcons: true, // 'vs-seti' is our default icon theme
 	enablePreview: true,
-	openPositioning: 'right',
-	openSideBySideDirection: 'right',
+	openPositioning: "right",
+	openSideBySideDirection: "right",
 	closeEmptyGroups: true,
-	labelFormat: 'default',
-	splitSizing: 'auto',
+	labelFormat: "default",
+	splitSizing: "auto",
 	splitOnDragAndDrop: true,
 	centeredLayoutFixedWidth: false,
-	doubleClickTabToToggleEditorGroupSizes: 'expand',
+	doubleClickTabToToggleEditorGroupSizes: "expand",
 };
 
-export function impactsEditorPartOptions(event: IConfigurationChangeEvent): boolean {
-	return event.affectsConfiguration('workbench.editor') || event.affectsConfiguration('workbench.iconTheme') || event.affectsConfiguration('window.density');
+export function impactsEditorPartOptions(
+	event: IConfigurationChangeEvent
+): boolean {
+	return (
+		event.affectsConfiguration("workbench.editor") ||
+		event.affectsConfiguration("workbench.iconTheme") ||
+		event.affectsConfiguration("window.density")
+	);
 }
 
-export function getEditorPartOptions(configurationService: IConfigurationService, themeService: IThemeService): IEditorPartOptions {
+export function getEditorPartOptions(
+	configurationService: IConfigurationService,
+	themeService: IThemeService
+): IEditorPartOptions {
 	const options = {
 		...DEFAULT_EDITOR_PART_OPTIONS,
-		hasIcons: themeService.getFileIconTheme().hasFileIcons
+		hasIcons: themeService.getFileIconTheme().hasFileIcons,
 	};
 
-	const config = configurationService.getValue<IWorkbenchEditorConfiguration>();
+	const config =
+		configurationService.getValue<IWorkbenchEditorConfiguration>();
 	if (config?.workbench?.editor) {
-
 		// Assign all primitive configuration over
 		Object.assign(options, config.workbench.editor);
 
@@ -71,7 +113,9 @@ export function getEditorPartOptions(configurationService: IConfigurationService
 		if (isObject(config.workbench.editor.autoLockGroups)) {
 			options.autoLockGroups = new Set();
 
-			for (const [editorId, enablement] of Object.entries(config.workbench.editor.autoLockGroups)) {
+			for (const [editorId, enablement] of Object.entries(
+				config.workbench.editor.autoLockGroups
+			)) {
 				if (enablement === true) {
 					options.autoLockGroups.add(editorId);
 				}
@@ -92,67 +136,87 @@ export function getEditorPartOptions(configurationService: IConfigurationService
 }
 
 function validateEditorPartOptions(options: IEditorPartOptions): void {
-
 	// Migrate: Show tabs (config migration kicks in very late and can cause flicker otherwise)
-	if (typeof options.showTabs === 'boolean') {
-		options.showTabs = options.showTabs ? 'multiple' : 'single';
+	if (typeof options.showTabs === "boolean") {
+		options.showTabs = options.showTabs ? "multiple" : "single";
 	}
 
 	// Boolean options
 	const booleanOptions: Array<OptionalBooleanKey<IEditorPartOptions>> = [
-		'wrapTabs',
-		'scrollToSwitchTabs',
-		'highlightModifiedTabs',
-		'pinnedTabsOnSeparateRow',
-		'focusRecentEditorAfterClose',
-		'showIcons',
-		'enablePreview',
-		'enablePreviewFromQuickOpen',
-		'enablePreviewFromCodeNavigation',
-		'closeOnFileDelete',
-		'closeEmptyGroups',
-		'revealIfOpen',
-		'mouseBackForwardToNavigate',
-		'restoreViewState',
-		'splitOnDragAndDrop',
-		'centeredLayoutFixedWidth',
+		"wrapTabs",
+		"scrollToSwitchTabs",
+		"highlightModifiedTabs",
+		"pinnedTabsOnSeparateRow",
+		"focusRecentEditorAfterClose",
+		"showIcons",
+		"enablePreview",
+		"enablePreviewFromQuickOpen",
+		"enablePreviewFromCodeNavigation",
+		"closeOnFileDelete",
+		"closeEmptyGroups",
+		"revealIfOpen",
+		"mouseBackForwardToNavigate",
+		"restoreViewState",
+		"splitOnDragAndDrop",
+		"centeredLayoutFixedWidth",
 	];
 	for (const option of booleanOptions) {
-		if (typeof option === 'string') {
-			ensureOptionalBooleanValue(options, option, Boolean(DEFAULT_EDITOR_PART_OPTIONS[option]));
+		if (typeof option === "string") {
+			ensureOptionalBooleanValue(
+				options,
+				option,
+				Boolean(DEFAULT_EDITOR_PART_OPTIONS[option])
+			);
 		}
 	}
 
 	// Number options
 	const numberOptions: Array<OptionalNumberKey<IEditorPartOptions>> = [
-		'tabSizingFixedMinWidth',
-		'tabSizingFixedMaxWidth'
+		"tabSizingFixedMinWidth",
+		"tabSizingFixedMaxWidth",
 	];
 	for (const option of numberOptions) {
-		if (typeof option === 'string') {
-			ensureOptionalNumberValue(options, option, Number(DEFAULT_EDITOR_PART_OPTIONS[option]));
+		if (typeof option === "string") {
+			ensureOptionalNumberValue(
+				options,
+				option,
+				Number(DEFAULT_EDITOR_PART_OPTIONS[option])
+			);
 		}
 	}
 
 	// String options
-	const stringOptions: Array<[OptionalStringKey<IEditorPartOptions>, Array<string>]> = [
-		['showTabs', ['multiple', 'single', 'none']],
-		['tabCloseButton', ['left', 'right', 'off']],
-		['tabSizing', ['fit', 'shrink', 'fixed']],
-		['pinnedTabSizing', ['normal', 'compact', 'shrink']],
-		['tabHeight', ['default', 'compact']],
-		['preventPinnedEditorClose', ['keyboardAndMouse', 'keyboard', 'mouse', 'never']],
-		['titleScrollbarSizing', ['default', 'large']],
-		['openPositioning', ['left', 'right', 'first', 'last']],
-		['openSideBySideDirection', ['right', 'down']],
-		['labelFormat', ['default', 'short', 'medium', 'long']],
-		['splitInGroupLayout', ['vertical', 'horizontal']],
-		['splitSizing', ['distribute', 'split', 'auto']],
-		['doubleClickTabToToggleEditorGroupSizes', ['maximize', 'expand', 'off']]
+	const stringOptions: Array<
+		[OptionalStringKey<IEditorPartOptions>, Array<string>]
+	> = [
+		["showTabs", ["multiple", "single", "none"]],
+		["tabCloseButton", ["left", "right", "off"]],
+		["tabSizing", ["fit", "shrink", "fixed"]],
+		["pinnedTabSizing", ["normal", "compact", "shrink"]],
+		["tabHeight", ["default", "compact"]],
+		[
+			"preventPinnedEditorClose",
+			["keyboardAndMouse", "keyboard", "mouse", "never"],
+		],
+		["titleScrollbarSizing", ["default", "large"]],
+		["openPositioning", ["left", "right", "first", "last"]],
+		["openSideBySideDirection", ["right", "down"]],
+		["labelFormat", ["default", "short", "medium", "long"]],
+		["splitInGroupLayout", ["vertical", "horizontal"]],
+		["splitSizing", ["distribute", "split", "auto"]],
+		[
+			"doubleClickTabToToggleEditorGroupSizes",
+			["maximize", "expand", "off"],
+		],
 	];
 	for (const [option, allowed] of stringOptions) {
-		if (typeof option === 'string') {
-			ensureOptionalStringValue(options, option, allowed, String(DEFAULT_EDITOR_PART_OPTIONS[option]));
+		if (typeof option === "string") {
+			ensureOptionalStringValue(
+				options,
+				option,
+				allowed,
+				String(DEFAULT_EDITOR_PART_OPTIONS[option])
+			);
 		}
 	}
 
@@ -163,28 +227,29 @@ function validateEditorPartOptions(options: IEditorPartOptions): void {
 	if (options.limit && !isObject(options.limit)) {
 		options.limit = undefined;
 	} else if (options.limit) {
-		const booleanLimitOptions: Array<OptionalBooleanKey<IEditorPartLimitConfiguration>> = [
-			'enabled',
-			'excludeDirty',
-			'perEditorGroup'
-		];
+		const booleanLimitOptions: Array<
+			OptionalBooleanKey<IEditorPartLimitConfiguration>
+		> = ["enabled", "excludeDirty", "perEditorGroup"];
 		for (const option of booleanLimitOptions) {
-			if (typeof option === 'string') {
+			if (typeof option === "string") {
 				ensureOptionalBooleanValue(options.limit, option, undefined);
 			}
 		}
-		ensureOptionalNumberValue(options.limit, 'value', undefined);
+		ensureOptionalNumberValue(options.limit, "value", undefined);
 	}
 	if (options.decorations && !isObject(options.decorations)) {
 		options.decorations = undefined;
 	} else if (options.decorations) {
-		const booleanDecorationOptions: Array<OptionalBooleanKey<IEditorPartDecorationsConfiguration>> = [
-			'badges',
-			'colors'
-		];
+		const booleanDecorationOptions: Array<
+			OptionalBooleanKey<IEditorPartDecorationsConfiguration>
+		> = ["badges", "colors"];
 		for (const option of booleanDecorationOptions) {
-			if (typeof option === 'string') {
-				ensureOptionalBooleanValue(options.decorations, option, undefined);
+			if (typeof option === "string") {
+				ensureOptionalBooleanValue(
+					options.decorations,
+					option,
+					undefined
+				);
 			}
 		}
 	}
@@ -194,7 +259,6 @@ function validateEditorPartOptions(options: IEditorPartOptions): void {
  * A helper to access editor groups across all opened editor parts.
  */
 export interface IEditorPartsView {
-
 	/**
 	 * An array of all editor groups across all editor parts.
 	 */
@@ -211,7 +275,6 @@ export interface IEditorPartsView {
  * A helper to access and mutate editor groups within an editor part.
  */
 export interface IEditorGroupsView {
-
 	readonly groups: IEditorGroupView[];
 	readonly activeGroup: IEditorGroupView;
 
@@ -223,24 +286,46 @@ export interface IEditorGroupsView {
 	getGroup(identifier: GroupIdentifier): IEditorGroupView | undefined;
 	getGroups(order: GroupsOrder): IEditorGroupView[];
 
-	activateGroup(identifier: IEditorGroupView | GroupIdentifier): IEditorGroupView;
-	restoreGroup(identifier: IEditorGroupView | GroupIdentifier): IEditorGroupView;
+	activateGroup(
+		identifier: IEditorGroupView | GroupIdentifier
+	): IEditorGroupView;
+	restoreGroup(
+		identifier: IEditorGroupView | GroupIdentifier
+	): IEditorGroupView;
 
-	addGroup(location: IEditorGroupView | GroupIdentifier, direction: GroupDirection, groupToCopy?: IEditorGroupView): IEditorGroupView;
-	mergeGroup(group: IEditorGroupView | GroupIdentifier, target: IEditorGroupView | GroupIdentifier, options?: IMergeGroupOptions): IEditorGroupView;
+	addGroup(
+		location: IEditorGroupView | GroupIdentifier,
+		direction: GroupDirection,
+		groupToCopy?: IEditorGroupView
+	): IEditorGroupView;
+	mergeGroup(
+		group: IEditorGroupView | GroupIdentifier,
+		target: IEditorGroupView | GroupIdentifier,
+		options?: IMergeGroupOptions
+	): IEditorGroupView;
 
-	moveGroup(group: IEditorGroupView | GroupIdentifier, location: IEditorGroupView | GroupIdentifier, direction: GroupDirection): IEditorGroupView;
-	copyGroup(group: IEditorGroupView | GroupIdentifier, location: IEditorGroupView | GroupIdentifier, direction: GroupDirection): IEditorGroupView;
+	moveGroup(
+		group: IEditorGroupView | GroupIdentifier,
+		location: IEditorGroupView | GroupIdentifier,
+		direction: GroupDirection
+	): IEditorGroupView;
+	copyGroup(
+		group: IEditorGroupView | GroupIdentifier,
+		location: IEditorGroupView | GroupIdentifier,
+		direction: GroupDirection
+	): IEditorGroupView;
 
 	removeGroup(group: IEditorGroupView | GroupIdentifier): void;
 
-	arrangeGroups(arrangement: GroupsArrangement, target?: IEditorGroupView | GroupIdentifier): void;
+	arrangeGroups(
+		arrangement: GroupsArrangement,
+		target?: IEditorGroupView | GroupIdentifier
+	): void;
 	toggleMaximizeGroup(group?: IEditorGroupView | GroupIdentifier): void;
 	toggleExpandGroup(group?: IEditorGroupView | GroupIdentifier): void;
 }
 
 export interface IEditorGroupTitleHeight {
-
 	/**
 	 * The overall height of the editor group title control.
 	 */
@@ -258,8 +343,10 @@ export interface IEditorGroupTitleHeight {
 /**
  * A helper to access and mutate an editor group within an editor part.
  */
-export interface IEditorGroupView extends IDisposable, ISerializableView, IEditorGroup {
-
+export interface IEditorGroupView
+	extends IDisposable,
+		ISerializableView,
+		IEditorGroup {
 	readonly onDidFocus: Event<void>;
 
 	readonly onDidOpenEditorFail: Event<EditorInput>;
@@ -284,16 +371,28 @@ export interface IEditorGroupView extends IDisposable, ISerializableView, IEdito
 	notifyIndexChanged(newIndex: number): void;
 	notifyLabelChanged(newLabel: string): void;
 
-	openEditor(editor: EditorInput, options?: IEditorOptions, internalOptions?: IInternalEditorOpenOptions): Promise<IEditorPane | undefined>;
+	openEditor(
+		editor: EditorInput,
+		options?: IEditorOptions,
+		internalOptions?: IInternalEditorOpenOptions
+	): Promise<IEditorPane | undefined>;
 
 	relayout(): void;
 }
 
-export function fillActiveEditorViewState(group: IEditorGroup, expectedActiveEditor?: EditorInput, presetOptions?: IEditorOptions): IEditorOptions {
-	if (!expectedActiveEditor || !group.activeEditor || expectedActiveEditor.matches(group.activeEditor)) {
+export function fillActiveEditorViewState(
+	group: IEditorGroup,
+	expectedActiveEditor?: EditorInput,
+	presetOptions?: IEditorOptions
+): IEditorOptions {
+	if (
+		!expectedActiveEditor ||
+		!group.activeEditor ||
+		expectedActiveEditor.matches(group.activeEditor)
+	) {
 		const options: IEditorOptions = {
 			...presetOptions,
-			viewState: group.activeEditorPane?.getViewState()
+			viewState: group.activeEditorPane?.getViewState(),
 		};
 
 		return options;
@@ -307,7 +406,6 @@ export function fillActiveEditorViewState(group: IEditorGroup, expectedActiveEdi
  * events from clients.
  */
 export interface EditorServiceImpl extends IEditorService {
-
 	/**
 	 * Emitted when an editor failed to open.
 	 */
@@ -320,7 +418,6 @@ export interface EditorServiceImpl extends IEditorService {
 }
 
 export interface IInternalEditorTitleControlOptions {
-
 	/**
 	 * A hint to defer updating the title control for perf reasons.
 	 * The caller must ensure to update the title control then.
@@ -328,8 +425,8 @@ export interface IInternalEditorTitleControlOptions {
 	readonly skipTitleUpdate?: boolean;
 }
 
-export interface IInternalEditorOpenOptions extends IInternalEditorTitleControlOptions {
-
+export interface IInternalEditorOpenOptions
+	extends IInternalEditorTitleControlOptions {
 	/**
 	 * Whether to consider a side by side editor as matching
 	 * when figuring out if the editor to open is already
@@ -351,8 +448,8 @@ export interface IInternalEditorOpenOptions extends IInternalEditorTitleControlO
 	readonly preserveWindowOrder?: boolean;
 }
 
-export interface IInternalEditorCloseOptions extends IInternalEditorTitleControlOptions {
-
+export interface IInternalEditorCloseOptions
+	extends IInternalEditorTitleControlOptions {
 	/**
 	 * A hint that the editor is closed due to an error opening. This can be
 	 * used to optimize how error toasts are appearing if any.
@@ -366,7 +463,6 @@ export interface IInternalEditorCloseOptions extends IInternalEditorTitleControl
 }
 
 export interface IInternalMoveCopyOptions extends IInternalEditorOpenOptions {
-
 	/**
 	 * Whether to close the editor at the source or keep it.
 	 */

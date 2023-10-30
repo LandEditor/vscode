@@ -3,26 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { isLinux, isWindows } from 'vs/base/common/platform';
-import { isEqual } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { FileChangesEvent, FileChangeType, IFileChange } from 'vs/platform/files/common/files';
-import { coalesceEvents, reviveFileChanges, parseWatcherPatterns } from 'vs/platform/files/common/watcher';
+import * as assert from "assert";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { isLinux, isWindows } from "vs/base/common/platform";
+import { isEqual } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import {
+	FileChangesEvent,
+	FileChangeType,
+	IFileChange,
+} from "vs/platform/files/common/files";
+import {
+	coalesceEvents,
+	reviveFileChanges,
+	parseWatcherPatterns,
+} from "vs/platform/files/common/watcher";
 
 class TestFileWatcher extends Disposable {
-	private readonly _onDidFilesChange: Emitter<{ raw: IFileChange[]; event: FileChangesEvent }>;
+	private readonly _onDidFilesChange: Emitter<{
+		raw: IFileChange[];
+		event: FileChangesEvent;
+	}>;
 
 	constructor() {
 		super();
 
-		this._onDidFilesChange = this._register(new Emitter<{ raw: IFileChange[]; event: FileChangesEvent }>());
+		this._onDidFilesChange = this._register(
+			new Emitter<{ raw: IFileChange[]; event: FileChangesEvent }>()
+		);
 	}
 
-	get onDidFilesChange(): Event<{ raw: IFileChange[]; event: FileChangesEvent }> {
+	get onDidFilesChange(): Event<{
+		raw: IFileChange[];
+		event: FileChangesEvent;
+	}> {
 		return this._onDidFilesChange.event;
 	}
 
@@ -31,13 +47,15 @@ class TestFileWatcher extends Disposable {
 	}
 
 	private onRawFileEvents(events: IFileChange[]): void {
-
 		// Coalesce
 		const coalescedEvents = coalesceEvents(events);
 
 		// Emit through event emitter
 		if (coalescedEvents.length > 0) {
-			this._onDidFilesChange.fire({ raw: reviveFileChanges(coalescedEvents), event: this.toFileChangesEvent(coalescedEvents) });
+			this._onDidFilesChange.fire({
+				raw: reviveFileChanges(coalescedEvents),
+				event: this.toFileChangesEvent(coalescedEvents),
+			});
 		}
 	}
 
@@ -49,82 +67,113 @@ class TestFileWatcher extends Disposable {
 enum Path {
 	UNIX,
 	WINDOWS,
-	UNC
+	UNC,
 }
 
-suite('Watcher', () => {
+suite("Watcher", () => {
+	(isWindows ? test.skip : test)("parseWatcherPatterns - posix", () => {
+		const path = "/users/data/src";
+		let parsedPattern = parseWatcherPatterns(path, ["*.js"])[0];
 
-	(isWindows ? test.skip : test)('parseWatcherPatterns - posix', () => {
-		const path = '/users/data/src';
-		let parsedPattern = parseWatcherPatterns(path, ['*.js'])[0];
+		assert.strictEqual(parsedPattern("/users/data/src/foo.js"), true);
+		assert.strictEqual(parsedPattern("/users/data/src/foo.ts"), false);
+		assert.strictEqual(parsedPattern("/users/data/src/bar/foo.js"), false);
 
-		assert.strictEqual(parsedPattern('/users/data/src/foo.js'), true);
-		assert.strictEqual(parsedPattern('/users/data/src/foo.ts'), false);
-		assert.strictEqual(parsedPattern('/users/data/src/bar/foo.js'), false);
+		parsedPattern = parseWatcherPatterns(path, ["/users/data/src/*.js"])[0];
 
-		parsedPattern = parseWatcherPatterns(path, ['/users/data/src/*.js'])[0];
+		assert.strictEqual(parsedPattern("/users/data/src/foo.js"), true);
+		assert.strictEqual(parsedPattern("/users/data/src/foo.ts"), false);
+		assert.strictEqual(parsedPattern("/users/data/src/bar/foo.js"), false);
 
-		assert.strictEqual(parsedPattern('/users/data/src/foo.js'), true);
-		assert.strictEqual(parsedPattern('/users/data/src/foo.ts'), false);
-		assert.strictEqual(parsedPattern('/users/data/src/bar/foo.js'), false);
+		parsedPattern = parseWatcherPatterns(path, [
+			"/users/data/src/bar/*.js",
+		])[0];
 
-		parsedPattern = parseWatcherPatterns(path, ['/users/data/src/bar/*.js'])[0];
+		assert.strictEqual(parsedPattern("/users/data/src/foo.js"), false);
+		assert.strictEqual(parsedPattern("/users/data/src/foo.ts"), false);
+		assert.strictEqual(parsedPattern("/users/data/src/bar/foo.js"), true);
 
-		assert.strictEqual(parsedPattern('/users/data/src/foo.js'), false);
-		assert.strictEqual(parsedPattern('/users/data/src/foo.ts'), false);
-		assert.strictEqual(parsedPattern('/users/data/src/bar/foo.js'), true);
+		parsedPattern = parseWatcherPatterns(path, ["**/*.js"])[0];
 
-		parsedPattern = parseWatcherPatterns(path, ['**/*.js'])[0];
-
-		assert.strictEqual(parsedPattern('/users/data/src/foo.js'), true);
-		assert.strictEqual(parsedPattern('/users/data/src/foo.ts'), false);
-		assert.strictEqual(parsedPattern('/users/data/src/bar/foo.js'), true);
+		assert.strictEqual(parsedPattern("/users/data/src/foo.js"), true);
+		assert.strictEqual(parsedPattern("/users/data/src/foo.ts"), false);
+		assert.strictEqual(parsedPattern("/users/data/src/bar/foo.js"), true);
 	});
 
-	(!isWindows ? test.skip : test)('parseWatcherPatterns - windows', () => {
-		const path = 'c:\\users\\data\\src';
-		let parsedPattern = parseWatcherPatterns(path, ['*.js'])[0];
+	(!isWindows ? test.skip : test)("parseWatcherPatterns - windows", () => {
+		const path = "c:\\users\\data\\src";
+		let parsedPattern = parseWatcherPatterns(path, ["*.js"])[0];
 
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.js'), true);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.ts'), false);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\bar/foo.js'), false);
+		assert.strictEqual(parsedPattern("c:\\users\\data\\src\\foo.js"), true);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\foo.ts"),
+			false
+		);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\bar/foo.js"),
+			false
+		);
 
-		parsedPattern = parseWatcherPatterns(path, ['c:\\users\\data\\src\\*.js'])[0];
+		parsedPattern = parseWatcherPatterns(path, [
+			"c:\\users\\data\\src\\*.js",
+		])[0];
 
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.js'), true);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.ts'), false);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\bar\\foo.js'), false);
+		assert.strictEqual(parsedPattern("c:\\users\\data\\src\\foo.js"), true);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\foo.ts"),
+			false
+		);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\bar\\foo.js"),
+			false
+		);
 
-		parsedPattern = parseWatcherPatterns(path, ['c:\\users\\data\\src\\bar/*.js'])[0];
+		parsedPattern = parseWatcherPatterns(path, [
+			"c:\\users\\data\\src\\bar/*.js",
+		])[0];
 
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.js'), false);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.ts'), false);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\bar\\foo.js'), true);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\foo.js"),
+			false
+		);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\foo.ts"),
+			false
+		);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\bar\\foo.js"),
+			true
+		);
 
-		parsedPattern = parseWatcherPatterns(path, ['**/*.js'])[0];
+		parsedPattern = parseWatcherPatterns(path, ["**/*.js"])[0];
 
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.js'), true);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\foo.ts'), false);
-		assert.strictEqual(parsedPattern('c:\\users\\data\\src\\bar\\foo.js'), true);
+		assert.strictEqual(parsedPattern("c:\\users\\data\\src\\foo.js"), true);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\foo.ts"),
+			false
+		);
+		assert.strictEqual(
+			parsedPattern("c:\\users\\data\\src\\bar\\foo.js"),
+			true
+		);
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 });
 
-suite('Watcher Events Normalizer', () => {
-
+suite("Watcher Events Normalizer", () => {
 	const disposables = new DisposableStore();
 
 	teardown(() => {
 		disposables.clear();
 	});
 
-	test('simple add/update/delete', done => {
+	test("simple add/update/delete", (done) => {
 		const watch = disposables.add(new TestFileWatcher());
 
-		const added = URI.file('/users/data/src/added.txt');
-		const updated = URI.file('/users/data/src/updated.txt');
-		const deleted = URI.file('/users/data/src/deleted.txt');
+		const added = URI.file("/users/data/src/added.txt");
+		const updated = URI.file("/users/data/src/updated.txt");
+		const deleted = URI.file("/users/data/src/deleted.txt");
 
 		const raw: IFileChange[] = [
 			{ resource: added, type: FileChangeType.ADDED },
@@ -132,32 +181,82 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: deleted, type: FileChangeType.DELETED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 3);
-			assert.ok(event.contains(added, FileChangeType.ADDED));
-			assert.ok(event.contains(updated, FileChangeType.UPDATED));
-			assert.ok(event.contains(deleted, FileChangeType.DELETED));
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 3);
+				assert.ok(event.contains(added, FileChangeType.ADDED));
+				assert.ok(event.contains(updated, FileChangeType.UPDATED));
+				assert.ok(event.contains(deleted, FileChangeType.DELETED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
 
-	(isWindows ? [Path.WINDOWS, Path.UNC] : [Path.UNIX]).forEach(path => {
-		test(`delete only reported for top level folder (${path})`, done => {
+	(isWindows ? [Path.WINDOWS, Path.UNC] : [Path.UNIX]).forEach((path) => {
+		test(`delete only reported for top level folder (${path})`, (done) => {
 			const watch = disposables.add(new TestFileWatcher());
 
-			const deletedFolderA = URI.file(path === Path.UNIX ? '/users/data/src/todelete1' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete1' : '\\\\localhost\\users\\data\\src\\todelete1');
-			const deletedFolderB = URI.file(path === Path.UNIX ? '/users/data/src/todelete2' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2' : '\\\\localhost\\users\\data\\src\\todelete2');
-			const deletedFolderBF1 = URI.file(path === Path.UNIX ? '/users/data/src/todelete2/file.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2\\file.txt' : '\\\\localhost\\users\\data\\src\\todelete2\\file.txt');
-			const deletedFolderBF2 = URI.file(path === Path.UNIX ? '/users/data/src/todelete2/more/test.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2\\more\\test.txt' : '\\\\localhost\\users\\data\\src\\todelete2\\more\\test.txt');
-			const deletedFolderBF3 = URI.file(path === Path.UNIX ? '/users/data/src/todelete2/super/bar/foo.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\todelete2\\super\\bar\\foo.txt' : '\\\\localhost\\users\\data\\src\\todelete2\\super\\bar\\foo.txt');
-			const deletedFileA = URI.file(path === Path.UNIX ? '/users/data/src/deleteme.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\deleteme.txt' : '\\\\localhost\\users\\data\\src\\deleteme.txt');
+			const deletedFolderA = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/todelete1"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\todelete1"
+					: "\\\\localhost\\users\\data\\src\\todelete1"
+			);
+			const deletedFolderB = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/todelete2"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\todelete2"
+					: "\\\\localhost\\users\\data\\src\\todelete2"
+			);
+			const deletedFolderBF1 = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/todelete2/file.txt"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\todelete2\\file.txt"
+					: "\\\\localhost\\users\\data\\src\\todelete2\\file.txt"
+			);
+			const deletedFolderBF2 = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/todelete2/more/test.txt"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\todelete2\\more\\test.txt"
+					: "\\\\localhost\\users\\data\\src\\todelete2\\more\\test.txt"
+			);
+			const deletedFolderBF3 = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/todelete2/super/bar/foo.txt"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\todelete2\\super\\bar\\foo.txt"
+					: "\\\\localhost\\users\\data\\src\\todelete2\\super\\bar\\foo.txt"
+			);
+			const deletedFileA = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/deleteme.txt"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\deleteme.txt"
+					: "\\\\localhost\\users\\data\\src\\deleteme.txt"
+			);
 
-			const addedFile = URI.file(path === Path.UNIX ? '/users/data/src/added.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\added.txt' : '\\\\localhost\\users\\data\\src\\added.txt');
-			const updatedFile = URI.file(path === Path.UNIX ? '/users/data/src/updated.txt' : path === Path.WINDOWS ? 'C:\\users\\data\\src\\updated.txt' : '\\\\localhost\\users\\data\\src\\updated.txt');
+			const addedFile = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/added.txt"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\added.txt"
+					: "\\\\localhost\\users\\data\\src\\added.txt"
+			);
+			const updatedFile = URI.file(
+				path === Path.UNIX
+					? "/users/data/src/updated.txt"
+					: path === Path.WINDOWS
+					? "C:\\users\\data\\src\\updated.txt"
+					: "\\\\localhost\\users\\data\\src\\updated.txt"
+			);
 
 			const raw: IFileChange[] = [
 				{ resource: deletedFolderA, type: FileChangeType.DELETED },
@@ -167,32 +266,42 @@ suite('Watcher Events Normalizer', () => {
 				{ resource: deletedFolderBF3, type: FileChangeType.DELETED },
 				{ resource: deletedFileA, type: FileChangeType.DELETED },
 				{ resource: addedFile, type: FileChangeType.ADDED },
-				{ resource: updatedFile, type: FileChangeType.UPDATED }
+				{ resource: updatedFile, type: FileChangeType.UPDATED },
 			];
 
-			disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-				assert.ok(event);
-				assert.strictEqual(raw.length, 5);
+			disposables.add(
+				watch.onDidFilesChange(({ event, raw }) => {
+					assert.ok(event);
+					assert.strictEqual(raw.length, 5);
 
-				assert.ok(event.contains(deletedFolderA, FileChangeType.DELETED));
-				assert.ok(event.contains(deletedFolderB, FileChangeType.DELETED));
-				assert.ok(event.contains(deletedFileA, FileChangeType.DELETED));
-				assert.ok(event.contains(addedFile, FileChangeType.ADDED));
-				assert.ok(event.contains(updatedFile, FileChangeType.UPDATED));
+					assert.ok(
+						event.contains(deletedFolderA, FileChangeType.DELETED)
+					);
+					assert.ok(
+						event.contains(deletedFolderB, FileChangeType.DELETED)
+					);
+					assert.ok(
+						event.contains(deletedFileA, FileChangeType.DELETED)
+					);
+					assert.ok(event.contains(addedFile, FileChangeType.ADDED));
+					assert.ok(
+						event.contains(updatedFile, FileChangeType.UPDATED)
+					);
 
-				done();
-			}));
+					done();
+				})
+			);
 
 			watch.report(raw);
 		});
 	});
 
-	test('event coalescer: ignore CREATE followed by DELETE', done => {
+	test("event coalescer: ignore CREATE followed by DELETE", (done) => {
 		const watch = disposables.add(new TestFileWatcher());
 
-		const created = URI.file('/users/data/src/related');
-		const deleted = URI.file('/users/data/src/related');
-		const unrelated = URI.file('/users/data/src/unrelated');
+		const created = URI.file("/users/data/src/related");
+		const deleted = URI.file("/users/data/src/related");
+		const unrelated = URI.file("/users/data/src/unrelated");
 
 		const raw: IFileChange[] = [
 			{ resource: created, type: FileChangeType.ADDED },
@@ -200,24 +309,26 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: unrelated, type: FileChangeType.UPDATED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 1);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 1);
 
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
 
-	test('event coalescer: flatten DELETE followed by CREATE into CHANGE', done => {
+	test("event coalescer: flatten DELETE followed by CREATE into CHANGE", (done) => {
 		const watch = disposables.add(new TestFileWatcher());
 
-		const deleted = URI.file('/users/data/src/related');
-		const created = URI.file('/users/data/src/related');
-		const unrelated = URI.file('/users/data/src/unrelated');
+		const deleted = URI.file("/users/data/src/related");
+		const created = URI.file("/users/data/src/related");
+		const unrelated = URI.file("/users/data/src/unrelated");
 
 		const raw: IFileChange[] = [
 			{ resource: deleted, type: FileChangeType.DELETED },
@@ -225,25 +336,27 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: unrelated, type: FileChangeType.UPDATED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			assert.ok(event.contains(deleted, FileChangeType.UPDATED));
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(deleted, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
 
-	test('event coalescer: ignore UPDATE when CREATE received', done => {
+	test("event coalescer: ignore UPDATE when CREATE received", (done) => {
 		const watch = disposables.add(new TestFileWatcher());
 
-		const created = URI.file('/users/data/src/related');
-		const updated = URI.file('/users/data/src/related');
-		const unrelated = URI.file('/users/data/src/unrelated');
+		const created = URI.file("/users/data/src/related");
+		const updated = URI.file("/users/data/src/related");
+		const unrelated = URI.file("/users/data/src/unrelated");
 
 		const raw: IFileChange[] = [
 			{ resource: created, type: FileChangeType.ADDED },
@@ -251,76 +364,82 @@ suite('Watcher Events Normalizer', () => {
 			{ resource: unrelated, type: FileChangeType.UPDATED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			assert.ok(event.contains(created, FileChangeType.ADDED));
-			assert.ok(!event.contains(created, FileChangeType.UPDATED));
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(created, FileChangeType.ADDED));
+				assert.ok(!event.contains(created, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
 
-	test('event coalescer: apply DELETE', done => {
+	test("event coalescer: apply DELETE", (done) => {
 		const watch = disposables.add(new TestFileWatcher());
 
-		const updated = URI.file('/users/data/src/related');
-		const updated2 = URI.file('/users/data/src/related');
-		const deleted = URI.file('/users/data/src/related');
-		const unrelated = URI.file('/users/data/src/unrelated');
+		const updated = URI.file("/users/data/src/related");
+		const updated2 = URI.file("/users/data/src/related");
+		const deleted = URI.file("/users/data/src/related");
+		const unrelated = URI.file("/users/data/src/unrelated");
 
 		const raw: IFileChange[] = [
 			{ resource: updated, type: FileChangeType.UPDATED },
 			{ resource: updated2, type: FileChangeType.UPDATED },
 			{ resource: unrelated, type: FileChangeType.UPDATED },
-			{ resource: updated, type: FileChangeType.DELETED }
+			{ resource: updated, type: FileChangeType.DELETED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			assert.ok(event.contains(deleted, FileChangeType.DELETED));
-			assert.ok(!event.contains(updated, FileChangeType.UPDATED));
-			assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
+				assert.ok(event.contains(deleted, FileChangeType.DELETED));
+				assert.ok(!event.contains(updated, FileChangeType.UPDATED));
+				assert.ok(event.contains(unrelated, FileChangeType.UPDATED));
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});
 
-	test('event coalescer: track case renames', done => {
+	test("event coalescer: track case renames", (done) => {
 		const watch = disposables.add(new TestFileWatcher());
 
-		const oldPath = URI.file('/users/data/src/added');
-		const newPath = URI.file('/users/data/src/ADDED');
+		const oldPath = URI.file("/users/data/src/added");
+		const newPath = URI.file("/users/data/src/ADDED");
 
 		const raw: IFileChange[] = [
 			{ resource: newPath, type: FileChangeType.ADDED },
-			{ resource: oldPath, type: FileChangeType.DELETED }
+			{ resource: oldPath, type: FileChangeType.DELETED },
 		];
 
-		disposables.add(watch.onDidFilesChange(({ event, raw }) => {
-			assert.ok(event);
-			assert.strictEqual(raw.length, 2);
+		disposables.add(
+			watch.onDidFilesChange(({ event, raw }) => {
+				assert.ok(event);
+				assert.strictEqual(raw.length, 2);
 
-			for (const r of raw) {
-				if (isEqual(r.resource, oldPath)) {
-					assert.strictEqual(r.type, FileChangeType.DELETED);
-				} else if (isEqual(r.resource, newPath)) {
-					assert.strictEqual(r.type, FileChangeType.ADDED);
-				} else {
-					assert.fail();
+				for (const r of raw) {
+					if (isEqual(r.resource, oldPath)) {
+						assert.strictEqual(r.type, FileChangeType.DELETED);
+					} else if (isEqual(r.resource, newPath)) {
+						assert.strictEqual(r.type, FileChangeType.ADDED);
+					} else {
+						assert.fail();
+					}
 				}
-			}
 
-			done();
-		}));
+				done();
+			})
+		);
 
 		watch.report(raw);
 	});

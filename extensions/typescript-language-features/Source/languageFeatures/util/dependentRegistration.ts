@@ -3,17 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { API } from '../../tsServer/api';
-import { ClientCapability, ITypeScriptServiceClient } from '../../typescriptService';
-import { Disposable } from '../../utils/dispose';
+import * as vscode from "vscode";
+import { API } from "../../tsServer/api";
+import {
+	ClientCapability,
+	ITypeScriptServiceClient,
+} from "../../typescriptService";
+import { Disposable } from "../../utils/dispose";
 
 export class Condition extends Disposable {
 	private _value: boolean;
 
 	constructor(
 		private readonly getValue: () => boolean,
-		onUpdate: (handler: () => void) => void,
+		onUpdate: (handler: () => void) => void
 	) {
 		super();
 		this._value = this.getValue();
@@ -27,9 +30,13 @@ export class Condition extends Disposable {
 		});
 	}
 
-	public get value(): boolean { return this._value; }
+	public get value(): boolean {
+		return this._value;
+	}
 
-	private readonly _onDidChange = this._register(new vscode.EventEmitter<void>());
+	private readonly _onDidChange = this._register(
+		new vscode.EventEmitter<void>()
+	);
 	public readonly onDidChange = this._onDidChange.event;
 }
 
@@ -52,7 +59,7 @@ class ConditionalRegistration {
 	}
 
 	private update() {
-		const enabled = this.conditions.every(condition => condition.value);
+		const enabled = this.conditions.every((condition) => condition.value);
 		if (enabled) {
 			this.registration ??= this.doRegister();
 		} else {
@@ -64,14 +71,14 @@ class ConditionalRegistration {
 
 export function conditionalRegistration(
 	conditions: readonly Condition[],
-	doRegister: () => vscode.Disposable,
+	doRegister: () => vscode.Disposable
 ): vscode.Disposable {
 	return new ConditionalRegistration(conditions, doRegister);
 }
 
 export function requireMinVersion(
 	client: ITypeScriptServiceClient,
-	minVersion: API,
+	minVersion: API
 ) {
 	return new Condition(
 		() => client.apiVersion.gte(minVersion),
@@ -81,15 +88,12 @@ export function requireMinVersion(
 
 export function requireGlobalConfiguration(
 	section: string,
-	configValue: string,
+	configValue: string
 ) {
-	return new Condition(
-		() => {
-			const config = vscode.workspace.getConfiguration(section, null);
-			return !!config.get<boolean>(configValue);
-		},
-		vscode.workspace.onDidChangeConfiguration
-	);
+	return new Condition(() => {
+		const config = vscode.workspace.getConfiguration(section, null);
+		return !!config.get<boolean>(configValue);
+	}, vscode.workspace.onDidChangeConfiguration);
 }
 
 export function requireSomeCapability(
@@ -97,7 +101,10 @@ export function requireSomeCapability(
 	...capabilities: readonly ClientCapability[]
 ) {
 	return new Condition(
-		() => capabilities.some(requiredCapability => client.capabilities.has(requiredCapability)),
+		() =>
+			capabilities.some((requiredCapability) =>
+				client.capabilities.has(requiredCapability)
+			),
 		client.onDidChangeCapabilities
 	);
 }

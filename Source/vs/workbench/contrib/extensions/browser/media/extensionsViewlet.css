@@ -47,12 +47,21 @@
 	margin-right: 12px;
 }
 
-.extensions-viewlet > .extensions .extension-view-header .monaco-action-bar .action-item > .action-label.icon.codicon {
+.extensions-viewlet
+	> .extensions
+	.extension-view-header
+	.monaco-action-bar
+	.action-item
+	> .action-label.icon.codicon {
 	vertical-align: middle;
 	line-height: 22px;
 }
 
-.extensions-viewlet > .extensions .extension-view-header .monaco-action-bar .action-item.disabled  {
+.extensions-viewlet
+	> .extensions
+	.extension-view-header
+	.monaco-action-bar
+	.action-item.disabled {
 	display: none;
 }
 
@@ -93,47 +102,116 @@
 }
 
 .extensions-viewlet > .extensions .extension-list-item.loading {
-	background: url('loading.svg') center center no-repeat;
+	background: url("loading.svg") center center no-repeat;
 }
 
-.monaco-workbench.vs-dark .extensions-viewlet > .extensions .extension-list-item.loading {
-	background-image: url('loading-dark.svg');
+.monaco-workbench.vs-dark
+	.extensions-viewlet
+	> .extensions
+	.extension-list-item.loading {
+	background-image: url("loading-dark.svg");
 }
 
-.monaco-workbench.hc-black .extensions-viewlet > .extensions .extension-list-item.loading {
-	background-image: url('loading-hc.svg');
+.monaco-workbench.hc-black
+	.extensions-viewlet
+	> .extensions
+	.extension-list-item.loading {
+	background-image: url("loading-hc.svg");
 }
 
-.extensions-viewlet > .extensions .extension-list-item.loading > .icon-container {
+.extensions-viewlet
+	> .extensions
+	.extension-list-item.loading
+	> .icon-container {
 	display: none;
 }
-.extensions-viewlet.narrow > .extensions .extension-list-item > .icon-container {
+.extensions-viewlet.narrow
+	> .extensions
+	.extension-list-item
+	> .icon-container {
 	display: flex;
 	align-items: flex-start;
 	padding-top: 10px;
 }
-.extensions-viewlet.narrow > .extensions .extension-list-item > .icon-container > .icon {
+.extensions-viewlet.narrow
+	> .extensions
+	.extension-list-item
+	> .icon-container
+	> .icon {
 	width: 24px;
 	height: 24px;
 	padding-right: 8px;
 }
 
-.extensions-viewlet:not(.narrow) > .extensions .extension-list-item > .details > .header-container > .header > .extension-remote-badge-container,
-.extensions-viewlet.narrow > .extensions .extension-list-item > .icon-container .extension-badge,
-.extensions-viewlet.mini > .extensions .extension-list-item > .icon-container > .icon,
-.extensions-viewlet.mini > .extensions .extension-list-item > .details > .header-container > .header > .ratings,
+.extensions-viewlet:not(.narrow)
+	> .extensions
+	.extension-list-item
+	> .details
+	> .header-container
+	> .header
+	> .extension-remote-badge-container,
+.extensions-viewlet.narrow
+	> .extensions
+	.extension-list-item
+	> .icon-container
+	.extension-badge,
+.extensions-viewlet.mini
+	> .extensions
+	.extension-list-item
+	> .icon-container
+	> .icon,
+.extensions-viewlet.mini
+	> .extensions
+	.extension-list-item
+	> .details
+	> .header-container
+	> .header
+	> .ratings,
 .extensions-viewlet.mini > .extensions .extension-bookmark-container {
 	display: none;
 }
 
-.extensions-viewlet.narrow > .extensions .extension-list-item > .details > .footer > .monaco-action-bar > .actions-container .extension-action {
+.extensions-viewlet.narrow
+	> .extensions
+	.extension-list-item
+	> .details
+	> .footer
+	> .monaco-action-bar
+	> .actions-container
+	.extension-action {
 	max-width: 100px;
 }
 
-.monaco-workbench.vs .extensions-viewlet > .extensions .monaco-list-row.disabled > .extension-list-item > .icon-container > .icon,
-.monaco-workbench.vs-dark .extensions-viewlet > .extensions .monaco-list-row.disabled > .extension-list-item > .icon-container > .icon,
-.monaco-workbench.vs .extensions-viewlet > .extensions .monaco-list-row.disabled > .extension-list-item > .details > .header-container .codicon,
-.monaco-workbench.vs-dark .extensions-viewlet > .extensions .monaco-list-row.disabled > .extension-list-item > .details > .header-container .codicon {
+.monaco-workbench.vs
+	.extensions-viewlet
+	> .extensions
+	.monaco-list-row.disabled
+	> .extension-list-item
+	> .icon-container
+	> .icon,
+.monaco-workbench.vs-dark
+	.extensions-viewlet
+	> .extensions
+	.monaco-list-row.disabled
+	> .extension-list-item
+	> .icon-container
+	> .icon,
+.monaco-workbench.vs
+	.extensions-viewlet
+	> .extensions
+	.monaco-list-row.disabled
+	> .extension-list-item
+	> .details
+	> .header-container
+	.codicon,
+.monaco-workbench.vs-dark
+	.extensions-viewlet
+	> .extensions
+	.monaco-list-row.disabled
+	> .extension-list-item
+	> .details
+	> .header-container
+	.codicon {
 	opacity: 0.5;
 }
 

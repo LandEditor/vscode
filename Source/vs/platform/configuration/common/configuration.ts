@@ -3,19 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import * as types from 'vs/base/common/types';
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IWorkspaceFolder } from 'vs/platform/workspace/common/workspace';
+import { Event } from "vs/base/common/event";
+import * as types from "vs/base/common/types";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
 
-export const IConfigurationService = createDecorator<IConfigurationService>('configurationService');
+export const IConfigurationService = createDecorator<IConfigurationService>(
+	"configurationService"
+);
 
-export function isConfigurationOverrides(thing: any): thing is IConfigurationOverrides {
-	return thing
-		&& typeof thing === 'object'
-		&& (!thing.overrideIdentifier || typeof thing.overrideIdentifier === 'string')
-		&& (!thing.resource || thing.resource instanceof URI);
+export function isConfigurationOverrides(
+	thing: any
+): thing is IConfigurationOverrides {
+	return (
+		thing &&
+		typeof thing === "object" &&
+		(!thing.overrideIdentifier ||
+			typeof thing.overrideIdentifier === "string") &&
+		(!thing.resource || thing.resource instanceof URI)
+	);
 }
 
 export interface IConfigurationOverrides {
@@ -23,15 +30,23 @@ export interface IConfigurationOverrides {
 	resource?: URI | null;
 }
 
-export function isConfigurationUpdateOverrides(thing: any): thing is IConfigurationUpdateOverrides {
-	return thing
-		&& typeof thing === 'object'
-		&& (!thing.overrideIdentifiers || Array.isArray(thing.overrideIdentifiers))
-		&& !thing.overrideIdentifier
-		&& (!thing.resource || thing.resource instanceof URI);
+export function isConfigurationUpdateOverrides(
+	thing: any
+): thing is IConfigurationUpdateOverrides {
+	return (
+		thing &&
+		typeof thing === "object" &&
+		(!thing.overrideIdentifiers ||
+			Array.isArray(thing.overrideIdentifiers)) &&
+		!thing.overrideIdentifier &&
+		(!thing.resource || thing.resource instanceof URI)
+	);
 }
 
-export type IConfigurationUpdateOverrides = Omit<IConfigurationOverrides, 'overrideIdentifier'> & { overrideIdentifiers?: string[] | null };
+export type IConfigurationUpdateOverrides = Omit<
+	IConfigurationOverrides,
+	"overrideIdentifier"
+> & { overrideIdentifiers?: string[] | null };
 
 export const enum ConfigurationTarget {
 	APPLICATION = 1,
@@ -41,18 +56,28 @@ export const enum ConfigurationTarget {
 	WORKSPACE,
 	WORKSPACE_FOLDER,
 	DEFAULT,
-	MEMORY
+	MEMORY,
 }
-export function ConfigurationTargetToString(configurationTarget: ConfigurationTarget) {
+export function ConfigurationTargetToString(
+	configurationTarget: ConfigurationTarget
+) {
 	switch (configurationTarget) {
-		case ConfigurationTarget.APPLICATION: return 'APPLICATION';
-		case ConfigurationTarget.USER: return 'USER';
-		case ConfigurationTarget.USER_LOCAL: return 'USER_LOCAL';
-		case ConfigurationTarget.USER_REMOTE: return 'USER_REMOTE';
-		case ConfigurationTarget.WORKSPACE: return 'WORKSPACE';
-		case ConfigurationTarget.WORKSPACE_FOLDER: return 'WORKSPACE_FOLDER';
-		case ConfigurationTarget.DEFAULT: return 'DEFAULT';
-		case ConfigurationTarget.MEMORY: return 'MEMORY';
+		case ConfigurationTarget.APPLICATION:
+			return "APPLICATION";
+		case ConfigurationTarget.USER:
+			return "USER";
+		case ConfigurationTarget.USER_LOCAL:
+			return "USER_LOCAL";
+		case ConfigurationTarget.USER_REMOTE:
+			return "USER_REMOTE";
+		case ConfigurationTarget.WORKSPACE:
+			return "WORKSPACE";
+		case ConfigurationTarget.WORKSPACE_FOLDER:
+			return "WORKSPACE_FOLDER";
+		case ConfigurationTarget.DEFAULT:
+			return "DEFAULT";
+		case ConfigurationTarget.MEMORY:
+			return "MEMORY";
 	}
 }
 
@@ -62,19 +87,20 @@ export interface IConfigurationChange {
 }
 
 export interface IConfigurationChangeEvent {
-
 	readonly source: ConfigurationTarget;
 	readonly affectedKeys: ReadonlySet<string>;
 	readonly change: IConfigurationChange;
 
-	affectsConfiguration(configuration: string, overrides?: IConfigurationOverrides): boolean;
+	affectsConfiguration(
+		configuration: string,
+		overrides?: IConfigurationOverrides
+	): boolean;
 
 	// Following data is used for telemetry
 	readonly sourceConfig: any;
 }
 
 export interface IConfigurationValue<T> {
-
 	readonly defaultValue?: T;
 	readonly applicationValue?: T;
 	readonly userValue?: T;
@@ -99,13 +125,17 @@ export interface IConfigurationValue<T> {
 	readonly overrideIdentifiers?: string[];
 }
 
-export function isConfigured<T>(configValue: IConfigurationValue<T>): configValue is IConfigurationValue<T> & { value: T } {
-	return configValue.applicationValue !== undefined ||
+export function isConfigured<T>(
+	configValue: IConfigurationValue<T>
+): configValue is IConfigurationValue<T> & { value: T } {
+	return (
+		configValue.applicationValue !== undefined ||
 		configValue.userValue !== undefined ||
 		configValue.userLocalValue !== undefined ||
 		configValue.userRemoteValue !== undefined ||
 		configValue.workspaceValue !== undefined ||
-		configValue.workspaceFolderValue !== undefined;
+		configValue.workspaceFolderValue !== undefined
+	);
 }
 
 export interface IConfigurationUpdateOptions {
@@ -116,7 +146,7 @@ export interface IConfigurationUpdateOptions {
 	/**
 	 * How to handle dirty file when updating the configuration.
 	 */
-	handleDirtyFile?: 'save' | 'revert';
+	handleDirtyFile?: "save" | "revert";
 }
 
 export interface IConfigurationService {
@@ -158,13 +188,32 @@ export interface IConfigurationService {
 	 * @param value The new value
 	 */
 	updateValue(key: string, value: any): Promise<void>;
-	updateValue(key: string, value: any, target: ConfigurationTarget): Promise<void>;
-	updateValue(key: string, value: any, overrides: IConfigurationOverrides | IConfigurationUpdateOverrides): Promise<void>;
-	updateValue(key: string, value: any, overrides: IConfigurationOverrides | IConfigurationUpdateOverrides, target: ConfigurationTarget, options?: IConfigurationUpdateOptions): Promise<void>;
+	updateValue(
+		key: string,
+		value: any,
+		target: ConfigurationTarget
+	): Promise<void>;
+	updateValue(
+		key: string,
+		value: any,
+		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides
+	): Promise<void>;
+	updateValue(
+		key: string,
+		value: any,
+		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
+		target: ConfigurationTarget,
+		options?: IConfigurationUpdateOptions
+	): Promise<void>;
 
-	inspect<T>(key: string, overrides?: IConfigurationOverrides): IConfigurationValue<Readonly<T>>;
+	inspect<T>(
+		key: string,
+		overrides?: IConfigurationOverrides
+	): IConfigurationValue<Readonly<T>>;
 
-	reloadConfiguration(target?: ConfigurationTarget | IWorkspaceFolder): Promise<void>;
+	reloadConfiguration(
+		target?: ConfigurationTarget | IWorkspaceFolder
+	): Promise<void>;
 
 	keys(): {
 		default: string[];
@@ -203,7 +252,10 @@ export interface IConfigurationCompareResult {
 	overrides: [string, string[]][];
 }
 
-export function toValuesTree(properties: { [qualifiedKey: string]: any }, conflictReporter: (message: string) => void): any {
+export function toValuesTree(
+	properties: { [qualifiedKey: string]: any },
+	conflictReporter: (message: string) => void
+): any {
 	const root = Object.create(null);
 
 	for (const key in properties) {
@@ -213,8 +265,13 @@ export function toValuesTree(properties: { [qualifiedKey: string]: any }, confli
 	return root;
 }
 
-export function addToValueTree(settingsTreeRoot: any, key: string, value: any, conflictReporter: (message: string) => void): void {
-	const segments = key.split('.');
+export function addToValueTree(
+	settingsTreeRoot: any,
+	key: string,
+	value: any,
+	conflictReporter: (message: string) => void
+): void {
+	const segments = key.split(".");
 	const last = segments.pop()!;
 
 	let curr = settingsTreeRoot;
@@ -222,31 +279,43 @@ export function addToValueTree(settingsTreeRoot: any, key: string, value: any, c
 		const s = segments[i];
 		let obj = curr[s];
 		switch (typeof obj) {
-			case 'undefined':
+			case "undefined":
 				obj = curr[s] = Object.create(null);
 				break;
-			case 'object':
+			case "object":
 				break;
 			default:
-				conflictReporter(`Ignoring ${key} as ${segments.slice(0, i + 1).join('.')} is ${JSON.stringify(obj)}`);
+				conflictReporter(
+					`Ignoring ${key} as ${segments
+						.slice(0, i + 1)
+						.join(".")} is ${JSON.stringify(obj)}`
+				);
 				return;
 		}
 		curr = obj;
 	}
 
-	if (typeof curr === 'object' && curr !== null) {
+	if (typeof curr === "object" && curr !== null) {
 		try {
 			curr[last] = value; // workaround https://github.com/microsoft/vscode/issues/13606
 		} catch (e) {
-			conflictReporter(`Ignoring ${key} as ${segments.join('.')} is ${JSON.stringify(curr)}`);
+			conflictReporter(
+				`Ignoring ${key} as ${segments.join(".")} is ${JSON.stringify(
+					curr
+				)}`
+			);
 		}
 	} else {
-		conflictReporter(`Ignoring ${key} as ${segments.join('.')} is ${JSON.stringify(curr)}`);
+		conflictReporter(
+			`Ignoring ${key} as ${segments.join(".")} is ${JSON.stringify(
+				curr
+			)}`
+		);
 	}
 }
 
 export function removeFromValueTree(valueTree: any, key: string): void {
-	const segments = key.split('.');
+	const segments = key.split(".");
 	doRemoveFromValueTree(valueTree, segments);
 }
 
@@ -260,7 +329,7 @@ function doRemoveFromValueTree(valueTree: any, segments: string[]): void {
 
 	if (Object.keys(valueTree).indexOf(first) !== -1) {
 		const value = valueTree[first];
-		if (typeof value === 'object' && !Array.isArray(value)) {
+		if (typeof value === "object" && !Array.isArray(value)) {
 			doRemoveFromValueTree(value, segments);
 			if (Object.keys(value).length === 0) {
 				delete valueTree[first];
@@ -272,11 +341,15 @@ function doRemoveFromValueTree(valueTree: any, segments: string[]): void {
 /**
  * A helper function to get the configuration value with a specific settings path (e.g. config.some.setting)
  */
-export function getConfigurationValue<T>(config: any, settingPath: string, defaultValue?: T): T {
+export function getConfigurationValue<T>(
+	config: any,
+	settingPath: string,
+	defaultValue?: T
+): T {
 	function accessSetting(config: any, path: string[]): any {
 		let current = config;
 		for (const component of path) {
-			if (typeof current !== 'object' || current === null) {
+			if (typeof current !== "object" || current === null) {
 				return undefined;
 			}
 			current = current[component];
@@ -284,15 +357,15 @@ export function getConfigurationValue<T>(config: any, settingPath: string, defau
 		return <T>current;
 	}
 
-	const path = settingPath.split('.');
+	const path = settingPath.split(".");
 	const result = accessSetting(config, path);
 
-	return typeof result === 'undefined' ? defaultValue : result;
+	return typeof result === "undefined" ? defaultValue : result;
 }
 
 export function merge(base: any, add: any, overwrite: boolean): void {
-	Object.keys(add).forEach(key => {
-		if (key !== '__proto__') {
+	Object.keys(add).forEach((key) => {
+		if (key !== "__proto__") {
 			if (key in base) {
 				if (types.isObject(base[key]) && types.isObject(add[key])) {
 					merge(base[key], add[key], overwrite);
@@ -307,5 +380,5 @@ export function merge(base: any, add: any, overwrite: boolean): void {
 }
 
 export function getLanguageTagSettingPlainKey(settingKey: string) {
-	return settingKey.replace(/[\[\]]/g, '');
+	return settingKey.replace(/[\[\]]/g, "");
 }

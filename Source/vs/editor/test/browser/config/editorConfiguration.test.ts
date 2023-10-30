@@ -3,21 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { IEnvConfiguration } from 'vs/editor/browser/config/editorConfiguration';
-import { migrateOptions } from 'vs/editor/browser/config/migrateOptions';
-import { ConfigurationChangedEvent, EditorOption, IEditorHoverOptions, IQuickSuggestionsOptions } from 'vs/editor/common/config/editorOptions';
-import { EditorZoom } from 'vs/editor/common/config/editorZoom';
-import { TestConfiguration } from 'vs/editor/test/browser/config/testConfiguration';
-import { AccessibilitySupport } from 'vs/platform/accessibility/common/accessibility';
+import * as assert from "assert";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { IEnvConfiguration } from "vs/editor/browser/config/editorConfiguration";
+import { migrateOptions } from "vs/editor/browser/config/migrateOptions";
+import {
+	ConfigurationChangedEvent,
+	EditorOption,
+	IEditorHoverOptions,
+	IQuickSuggestionsOptions,
+} from "vs/editor/common/config/editorOptions";
+import { EditorZoom } from "vs/editor/common/config/editorZoom";
+import { TestConfiguration } from "vs/editor/test/browser/config/testConfiguration";
+import { AccessibilitySupport } from "vs/platform/accessibility/common/accessibility";
 
-suite('Common Editor Config', () => {
-
+suite("Common Editor Config", () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('Zoom Level', () => {
-
+	test("Zoom Level", () => {
 		//Zoom levels are defined to go between -5, 20 inclusive
 		const zoom = EditorZoom;
 
@@ -61,161 +64,174 @@ suite('Common Editor Config', () => {
 	class TestWrappingConfiguration extends TestConfiguration {
 		protected override _readEnvConfiguration(): IEnvConfiguration {
 			return {
-				extraEditorClassName: '',
+				extraEditorClassName: "",
 				outerWidth: 1000,
 				outerHeight: 100,
 				emptySelectionClipboard: true,
 				pixelRatio: 1,
-				accessibilitySupport: AccessibilitySupport.Unknown
+				accessibilitySupport: AccessibilitySupport.Unknown,
 			};
 		}
 	}
 
-	function assertWrapping(config: TestConfiguration, isViewportWrapping: boolean, wrappingColumn: number): void {
+	function assertWrapping(
+		config: TestConfiguration,
+		isViewportWrapping: boolean,
+		wrappingColumn: number
+	): void {
 		const options = config.options;
 		const wrappingInfo = options.get(EditorOption.wrappingInfo);
 		assert.strictEqual(wrappingInfo.isViewportWrapping, isViewportWrapping);
 		assert.strictEqual(wrappingInfo.wrappingColumn, wrappingColumn);
 	}
 
-	test('wordWrap default', () => {
+	test("wordWrap default", () => {
 		const config = new TestWrappingConfiguration({});
 		assertWrapping(config, false, -1);
 		config.dispose();
 	});
 
-	test('wordWrap compat false', () => {
+	test("wordWrap compat false", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: <any>false
+			wordWrap: <any>false,
 		});
 		assertWrapping(config, false, -1);
 		config.dispose();
 	});
 
-	test('wordWrap compat true', () => {
+	test("wordWrap compat true", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: <any>true
+			wordWrap: <any>true,
 		});
 		assertWrapping(config, true, 80);
 		config.dispose();
 	});
 
-	test('wordWrap on', () => {
+	test("wordWrap on", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'on'
+			wordWrap: "on",
 		});
 		assertWrapping(config, true, 80);
 		config.dispose();
 	});
 
-	test('wordWrap on without minimap', () => {
+	test("wordWrap on without minimap", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'on',
+			wordWrap: "on",
 			minimap: {
-				enabled: false
-			}
+				enabled: false,
+			},
 		});
 		assertWrapping(config, true, 88);
 		config.dispose();
 	});
 
-	test('wordWrap on does not use wordWrapColumn', () => {
+	test("wordWrap on does not use wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'on',
-			wordWrapColumn: 10
+			wordWrap: "on",
+			wordWrapColumn: 10,
 		});
 		assertWrapping(config, true, 80);
 		config.dispose();
 	});
 
-	test('wordWrap off', () => {
+	test("wordWrap off", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'off'
+			wordWrap: "off",
 		});
 		assertWrapping(config, false, -1);
 		config.dispose();
 	});
 
-	test('wordWrap off does not use wordWrapColumn', () => {
+	test("wordWrap off does not use wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'off',
-			wordWrapColumn: 10
+			wordWrap: "off",
+			wordWrapColumn: 10,
 		});
 		assertWrapping(config, false, -1);
 		config.dispose();
 	});
 
-	test('wordWrap wordWrapColumn uses default wordWrapColumn', () => {
+	test("wordWrap wordWrapColumn uses default wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'wordWrapColumn'
+			wordWrap: "wordWrapColumn",
 		});
 		assertWrapping(config, false, 80);
 		config.dispose();
 	});
 
-	test('wordWrap wordWrapColumn uses wordWrapColumn', () => {
+	test("wordWrap wordWrapColumn uses wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'wordWrapColumn',
-			wordWrapColumn: 100
+			wordWrap: "wordWrapColumn",
+			wordWrapColumn: 100,
 		});
 		assertWrapping(config, false, 100);
 		config.dispose();
 	});
 
-	test('wordWrap wordWrapColumn validates wordWrapColumn', () => {
+	test("wordWrap wordWrapColumn validates wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'wordWrapColumn',
-			wordWrapColumn: -1
+			wordWrap: "wordWrapColumn",
+			wordWrapColumn: -1,
 		});
 		assertWrapping(config, false, 1);
 		config.dispose();
 	});
 
-	test('wordWrap bounded uses default wordWrapColumn', () => {
+	test("wordWrap bounded uses default wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'bounded'
+			wordWrap: "bounded",
 		});
 		assertWrapping(config, true, 80);
 		config.dispose();
 	});
 
-	test('wordWrap bounded uses wordWrapColumn', () => {
+	test("wordWrap bounded uses wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'bounded',
-			wordWrapColumn: 40
+			wordWrap: "bounded",
+			wordWrapColumn: 40,
 		});
 		assertWrapping(config, true, 40);
 		config.dispose();
 	});
 
-	test('wordWrap bounded validates wordWrapColumn', () => {
+	test("wordWrap bounded validates wordWrapColumn", () => {
 		const config = new TestWrappingConfiguration({
-			wordWrap: 'bounded',
-			wordWrapColumn: -1
+			wordWrap: "bounded",
+			wordWrapColumn: -1,
 		});
 		assertWrapping(config, true, 1);
 		config.dispose();
 	});
 
-	test('issue #53152: Cannot assign to read only property \'enabled\' of object', () => {
+	test("issue #53152: Cannot assign to read only property 'enabled' of object", () => {
 		const hoverOptions: IEditorHoverOptions = {};
-		Object.defineProperty(hoverOptions, 'enabled', {
+		Object.defineProperty(hoverOptions, "enabled", {
 			writable: false,
-			value: true
+			value: true,
 		});
 		const config = new TestConfiguration({ hover: hoverOptions });
 
-		assert.strictEqual(config.options.get(EditorOption.hover).enabled, true);
+		assert.strictEqual(
+			config.options.get(EditorOption.hover).enabled,
+			true
+		);
 		config.updateOptions({ hover: { enabled: false } });
-		assert.strictEqual(config.options.get(EditorOption.hover).enabled, false);
+		assert.strictEqual(
+			config.options.get(EditorOption.hover).enabled,
+			false
+		);
 
 		config.dispose();
 	});
 
-	test('does not emit event when nothing changes', () => {
-		const config = new TestConfiguration({ glyphMargin: true, roundedSelection: false });
+	test("does not emit event when nothing changes", () => {
+		const config = new TestConfiguration({
+			glyphMargin: true,
+			roundedSelection: false,
+		});
 		let event: ConfigurationChangedEvent | null = null;
-		const disposable = config.onDidChange(e => event = e);
+		const disposable = config.onDidChange((e) => (event = e));
 		assert.strictEqual(config.options.get(EditorOption.glyphMargin), true);
 
 		config.updateOptions({ glyphMargin: true });
@@ -225,50 +241,53 @@ suite('Common Editor Config', () => {
 		disposable.dispose();
 	});
 
-	test('issue #94931: Unable to open source file', () => {
+	test("issue #94931: Unable to open source file", () => {
 		const config = new TestConfiguration({ quickSuggestions: null! });
-		const actual = <Readonly<Required<IQuickSuggestionsOptions>>>config.options.get(EditorOption.quickSuggestions);
+		const actual = <Readonly<Required<IQuickSuggestionsOptions>>>(
+			config.options.get(EditorOption.quickSuggestions)
+		);
 		assert.deepStrictEqual(actual, {
-			other: 'on',
-			comments: 'off',
-			strings: 'off'
+			other: "on",
+			comments: "off",
+			strings: "off",
 		});
 		config.dispose();
 	});
 
-	test('issue #102920: Can\'t snap or split view with JSON files', () => {
+	test("issue #102920: Can't snap or split view with JSON files", () => {
 		const config = new TestConfiguration({ quickSuggestions: null! });
 		config.updateOptions({ quickSuggestions: { strings: true } });
-		const actual = <Readonly<Required<IQuickSuggestionsOptions>>>config.options.get(EditorOption.quickSuggestions);
+		const actual = <Readonly<Required<IQuickSuggestionsOptions>>>(
+			config.options.get(EditorOption.quickSuggestions)
+		);
 		assert.deepStrictEqual(actual, {
-			other: 'on',
-			comments: 'off',
-			strings: 'on'
+			other: "on",
+			comments: "off",
+			strings: "on",
 		});
 		config.dispose();
 	});
 
-	test('issue #151926: Untyped editor options apply', () => {
+	test("issue #151926: Untyped editor options apply", () => {
 		const config = new TestConfiguration({});
-		config.updateOptions({ unicodeHighlight: { allowedCharacters: { 'x': true } } });
+		config.updateOptions({
+			unicodeHighlight: { allowedCharacters: { "x": true } },
+		});
 		const actual = config.options.get(EditorOption.unicodeHighlighting);
-		assert.deepStrictEqual(actual,
-			{
-				nonBasicASCII: "inUntrustedWorkspace",
-				invisibleCharacters: true,
-				ambiguousCharacters: true,
-				includeComments: "inUntrustedWorkspace",
-				includeStrings: "inUntrustedWorkspace",
-				allowedCharacters: { "x": true },
-				allowedLocales: { "_os": true, "_vscode": true }
-			}
-		);
+		assert.deepStrictEqual(actual, {
+			nonBasicASCII: "inUntrustedWorkspace",
+			invisibleCharacters: true,
+			ambiguousCharacters: true,
+			includeComments: "inUntrustedWorkspace",
+			includeStrings: "inUntrustedWorkspace",
+			allowedCharacters: { "x": true },
+			allowedLocales: { "_os": true, "_vscode": true },
+		});
 		config.dispose();
 	});
 });
 
-suite('migrateOptions', () => {
-
+suite("migrateOptions", () => {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	function migrate(options: any): any {
@@ -276,37 +295,65 @@ suite('migrateOptions', () => {
 		return options;
 	}
 
-	test('wordWrap', () => {
-		assert.deepStrictEqual(migrate({ wordWrap: true }), { wordWrap: 'on' });
-		assert.deepStrictEqual(migrate({ wordWrap: false }), { wordWrap: 'off' });
+	test("wordWrap", () => {
+		assert.deepStrictEqual(migrate({ wordWrap: true }), { wordWrap: "on" });
+		assert.deepStrictEqual(migrate({ wordWrap: false }), {
+			wordWrap: "off",
+		});
 	});
-	test('lineNumbers', () => {
-		assert.deepStrictEqual(migrate({ lineNumbers: true }), { lineNumbers: 'on' });
-		assert.deepStrictEqual(migrate({ lineNumbers: false }), { lineNumbers: 'off' });
+	test("lineNumbers", () => {
+		assert.deepStrictEqual(migrate({ lineNumbers: true }), {
+			lineNumbers: "on",
+		});
+		assert.deepStrictEqual(migrate({ lineNumbers: false }), {
+			lineNumbers: "off",
+		});
 	});
-	test('autoClosingBrackets', () => {
-		assert.deepStrictEqual(migrate({ autoClosingBrackets: false }), { autoClosingBrackets: 'never', autoClosingQuotes: 'never', autoSurround: 'never' });
+	test("autoClosingBrackets", () => {
+		assert.deepStrictEqual(migrate({ autoClosingBrackets: false }), {
+			autoClosingBrackets: "never",
+			autoClosingQuotes: "never",
+			autoSurround: "never",
+		});
 	});
-	test('cursorBlinking', () => {
-		assert.deepStrictEqual(migrate({ cursorBlinking: 'visible' }), { cursorBlinking: 'solid' });
+	test("cursorBlinking", () => {
+		assert.deepStrictEqual(migrate({ cursorBlinking: "visible" }), {
+			cursorBlinking: "solid",
+		});
 	});
-	test('renderWhitespace', () => {
-		assert.deepStrictEqual(migrate({ renderWhitespace: true }), { renderWhitespace: 'boundary' });
-		assert.deepStrictEqual(migrate({ renderWhitespace: false }), { renderWhitespace: 'none' });
+	test("renderWhitespace", () => {
+		assert.deepStrictEqual(migrate({ renderWhitespace: true }), {
+			renderWhitespace: "boundary",
+		});
+		assert.deepStrictEqual(migrate({ renderWhitespace: false }), {
+			renderWhitespace: "none",
+		});
 	});
-	test('renderLineHighlight', () => {
-		assert.deepStrictEqual(migrate({ renderLineHighlight: true }), { renderLineHighlight: 'line' });
-		assert.deepStrictEqual(migrate({ renderLineHighlight: false }), { renderLineHighlight: 'none' });
+	test("renderLineHighlight", () => {
+		assert.deepStrictEqual(migrate({ renderLineHighlight: true }), {
+			renderLineHighlight: "line",
+		});
+		assert.deepStrictEqual(migrate({ renderLineHighlight: false }), {
+			renderLineHighlight: "none",
+		});
 	});
-	test('acceptSuggestionOnEnter', () => {
-		assert.deepStrictEqual(migrate({ acceptSuggestionOnEnter: true }), { acceptSuggestionOnEnter: 'on' });
-		assert.deepStrictEqual(migrate({ acceptSuggestionOnEnter: false }), { acceptSuggestionOnEnter: 'off' });
+	test("acceptSuggestionOnEnter", () => {
+		assert.deepStrictEqual(migrate({ acceptSuggestionOnEnter: true }), {
+			acceptSuggestionOnEnter: "on",
+		});
+		assert.deepStrictEqual(migrate({ acceptSuggestionOnEnter: false }), {
+			acceptSuggestionOnEnter: "off",
+		});
 	});
-	test('tabCompletion', () => {
-		assert.deepStrictEqual(migrate({ tabCompletion: true }), { tabCompletion: 'onlySnippets' });
-		assert.deepStrictEqual(migrate({ tabCompletion: false }), { tabCompletion: 'off' });
+	test("tabCompletion", () => {
+		assert.deepStrictEqual(migrate({ tabCompletion: true }), {
+			tabCompletion: "onlySnippets",
+		});
+		assert.deepStrictEqual(migrate({ tabCompletion: false }), {
+			tabCompletion: "off",
+		});
 	});
-	test('suggest.filteredTypes', () => {
+	test("suggest.filteredTypes", () => {
 		assert.deepStrictEqual(
 			migrate({
 				suggest: {
@@ -337,70 +384,122 @@ suite('migrateOptions', () => {
 						folder: false,
 						typeParameter: false,
 						snippet: false,
-					}
-				}
-			}), {
-			suggest: {
-				filteredTypes: undefined,
-				showMethods: false,
-				showFunctions: false,
-				showConstructors: false,
-				showDeprecated: false,
-				showFields: false,
-				showVariables: false,
-				showClasses: false,
-				showStructs: false,
-				showInterfaces: false,
-				showModules: false,
-				showProperties: false,
-				showEvents: false,
-				showOperators: false,
-				showUnits: false,
-				showValues: false,
-				showConstants: false,
-				showEnums: false,
-				showEnumMembers: false,
-				showKeywords: false,
-				showWords: false,
-				showColors: false,
-				showFiles: false,
-				showReferences: false,
-				showFolders: false,
-				showTypeParameters: false,
-				showSnippets: false,
+					},
+				},
+			}),
+			{
+				suggest: {
+					filteredTypes: undefined,
+					showMethods: false,
+					showFunctions: false,
+					showConstructors: false,
+					showDeprecated: false,
+					showFields: false,
+					showVariables: false,
+					showClasses: false,
+					showStructs: false,
+					showInterfaces: false,
+					showModules: false,
+					showProperties: false,
+					showEvents: false,
+					showOperators: false,
+					showUnits: false,
+					showValues: false,
+					showConstants: false,
+					showEnums: false,
+					showEnumMembers: false,
+					showKeywords: false,
+					showWords: false,
+					showColors: false,
+					showFiles: false,
+					showReferences: false,
+					showFolders: false,
+					showTypeParameters: false,
+					showSnippets: false,
+				},
 			}
+		);
+	});
+	test("quickSuggestions", () => {
+		assert.deepStrictEqual(migrate({ quickSuggestions: true }), {
+			quickSuggestions: { comments: "on", strings: "on", other: "on" },
+		});
+		assert.deepStrictEqual(migrate({ quickSuggestions: false }), {
+			quickSuggestions: { comments: "off", strings: "off", other: "off" },
+		});
+		assert.deepStrictEqual(
+			migrate({ quickSuggestions: { comments: "on", strings: "off" } }),
+			{ quickSuggestions: { comments: "on", strings: "off" } }
+		);
+	});
+	test("hover", () => {
+		assert.deepStrictEqual(migrate({ hover: true }), {
+			hover: { enabled: true },
+		});
+		assert.deepStrictEqual(migrate({ hover: false }), {
+			hover: { enabled: false },
 		});
 	});
-	test('quickSuggestions', () => {
-		assert.deepStrictEqual(migrate({ quickSuggestions: true }), { quickSuggestions: { comments: 'on', strings: 'on', other: 'on' } });
-		assert.deepStrictEqual(migrate({ quickSuggestions: false }), { quickSuggestions: { comments: 'off', strings: 'off', other: 'off' } });
-		assert.deepStrictEqual(migrate({ quickSuggestions: { comments: 'on', strings: 'off' } }), { quickSuggestions: { comments: 'on', strings: 'off' } });
+	test("parameterHints", () => {
+		assert.deepStrictEqual(migrate({ parameterHints: true }), {
+			parameterHints: { enabled: true },
+		});
+		assert.deepStrictEqual(migrate({ parameterHints: false }), {
+			parameterHints: { enabled: false },
+		});
 	});
-	test('hover', () => {
-		assert.deepStrictEqual(migrate({ hover: true }), { hover: { enabled: true } });
-		assert.deepStrictEqual(migrate({ hover: false }), { hover: { enabled: false } });
+	test("autoIndent", () => {
+		assert.deepStrictEqual(migrate({ autoIndent: true }), {
+			autoIndent: "full",
+		});
+		assert.deepStrictEqual(migrate({ autoIndent: false }), {
+			autoIndent: "advanced",
+		});
 	});
-	test('parameterHints', () => {
-		assert.deepStrictEqual(migrate({ parameterHints: true }), { parameterHints: { enabled: true } });
-		assert.deepStrictEqual(migrate({ parameterHints: false }), { parameterHints: { enabled: false } });
+	test("matchBrackets", () => {
+		assert.deepStrictEqual(migrate({ matchBrackets: true }), {
+			matchBrackets: "always",
+		});
+		assert.deepStrictEqual(migrate({ matchBrackets: false }), {
+			matchBrackets: "never",
+		});
 	});
-	test('autoIndent', () => {
-		assert.deepStrictEqual(migrate({ autoIndent: true }), { autoIndent: 'full' });
-		assert.deepStrictEqual(migrate({ autoIndent: false }), { autoIndent: 'advanced' });
-	});
-	test('matchBrackets', () => {
-		assert.deepStrictEqual(migrate({ matchBrackets: true }), { matchBrackets: 'always' });
-		assert.deepStrictEqual(migrate({ matchBrackets: false }), { matchBrackets: 'never' });
-	});
-	test('renderIndentGuides, highlightActiveIndentGuide', () => {
-		assert.deepStrictEqual(migrate({ renderIndentGuides: true }), { renderIndentGuides: undefined, guides: { indentation: true } });
-		assert.deepStrictEqual(migrate({ renderIndentGuides: false }), { renderIndentGuides: undefined, guides: { indentation: false } });
-		assert.deepStrictEqual(migrate({ highlightActiveIndentGuide: true }), { highlightActiveIndentGuide: undefined, guides: { highlightActiveIndentation: true } });
-		assert.deepStrictEqual(migrate({ highlightActiveIndentGuide: false }), { highlightActiveIndentGuide: undefined, guides: { highlightActiveIndentation: false } });
+	test("renderIndentGuides, highlightActiveIndentGuide", () => {
+		assert.deepStrictEqual(migrate({ renderIndentGuides: true }), {
+			renderIndentGuides: undefined,
+			guides: { indentation: true },
+		});
+		assert.deepStrictEqual(migrate({ renderIndentGuides: false }), {
+			renderIndentGuides: undefined,
+			guides: { indentation: false },
+		});
+		assert.deepStrictEqual(migrate({ highlightActiveIndentGuide: true }), {
+			highlightActiveIndentGuide: undefined,
+			guides: { highlightActiveIndentation: true },
+		});
+		assert.deepStrictEqual(migrate({ highlightActiveIndentGuide: false }), {
+			highlightActiveIndentGuide: undefined,
+			guides: { highlightActiveIndentation: false },
+		});
 	});
 
-	test('migration does not overwrite new setting', () => {
-		assert.deepStrictEqual(migrate({ renderIndentGuides: true, guides: { indentation: false } }), { renderIndentGuides: undefined, guides: { indentation: false } });
-		assert.deepStrictEqual(migrate({ highlightActiveIndentGuide: true, guides: { highlightActiveIndentation: false } }), { highlightActiveIndentGuide: undefined, guides: { highlightActiveIndentation: false } });
+	test("migration does not overwrite new setting", () => {
+		assert.deepStrictEqual(
+			migrate({
+				renderIndentGuides: true,
+				guides: { indentation: false },
+			}),
+			{ renderIndentGuides: undefined, guides: { indentation: false } }
+		);
+		assert.deepStrictEqual(
+			migrate({
+				highlightActiveIndentGuide: true,
+				guides: { highlightActiveIndentation: false },
+			}),
+			{
+				highlightActiveIndentGuide: undefined,
+				guides: { highlightActiveIndentation: false },
+			}
+		);
 	});
 });

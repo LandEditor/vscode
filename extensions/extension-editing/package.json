@@ -1,92 +1,92 @@
 {
-  "name": "extension-editing",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "main": "./out/extensionEditingMain",
-  "browser": "./dist/browser/extensionEditingBrowserMain",
-  "scripts": {
-    "compile": "gulp compile-extension:extension-editing",
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "watch": "gulp watch-extension:extension-editing"
-  },
-  "contributes": {
-    "jsonValidation": [
-      {
-        "fileMatch": "package.json",
-        "url": "vscode://schemas/vscode-extensions"
-      },
-      {
-        "fileMatch": "*language-configuration.json",
-        "url": "vscode://schemas/language-configuration"
-      },
-      {
-        "fileMatch": [
-          "*icon-theme.json",
-          "!*product-icon-theme.json"
-        ],
-        "url": "vscode://schemas/icon-theme"
-      },
-      {
-        "fileMatch": "*product-icon-theme.json",
-        "url": "vscode://schemas/product-icon-theme"
-      },
-      {
-        "fileMatch": "*color-theme.json",
-        "url": "vscode://schemas/color-theme"
-      }
-    ],
-    "languages": [
-      {
-        "id": "ignore",
-        "filenames": [
-          ".vscodeignore"
-        ]
-      }
-    ]
-  },
-  "activationEvents": [
-    "onLanguage:json",
-    "onLanguage:markdown"
-  ],
-  "dependencies": {
-    "jsonc-parser": "3.2.0",
-    "markdown-it": "13.0.2",
-    "parse5": "7.1.2"
-  },
-  "devDependencies": {
-    "@types/markdown-it": "13.0.5",
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "1.4.0"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "images/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  }
+	"name": "extension-editing",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"main": "./out/extensionEditingMain",
+	"browser": "./dist/browser/extensionEditingBrowserMain",
+	"scripts": {
+		"compile": "gulp compile-extension:extension-editing",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:extension-editing"
+	},
+	"contributes": {
+		"jsonValidation": [
+			{
+				"fileMatch": "package.json",
+				"url": "vscode://schemas/vscode-extensions"
+			},
+			{
+				"fileMatch": "*language-configuration.json",
+				"url": "vscode://schemas/language-configuration"
+			},
+			{
+				"fileMatch": [
+					"*icon-theme.json",
+					"!*product-icon-theme.json"
+				],
+				"url": "vscode://schemas/icon-theme"
+			},
+			{
+				"fileMatch": "*product-icon-theme.json",
+				"url": "vscode://schemas/product-icon-theme"
+			},
+			{
+				"fileMatch": "*color-theme.json",
+				"url": "vscode://schemas/color-theme"
+			}
+		],
+		"languages": [
+			{
+				"id": "ignore",
+				"filenames": [
+					".vscodeignore"
+				]
+			}
+		]
+	},
+	"activationEvents": [
+		"onLanguage:json",
+		"onLanguage:markdown"
+	],
+	"dependencies": {
+		"jsonc-parser": "3.2.0",
+		"markdown-it": "13.0.2",
+		"parse5": "7.1.2"
+	},
+	"devDependencies": {
+		"@types/markdown-it": "13.0.5",
+		"@types/node": "20.x",
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "1.4.0"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "images/icon.png",
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
+	}
 }

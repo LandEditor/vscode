@@ -3,15 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isThenable } from 'vs/base/common/async';
-import { CharCode } from 'vs/base/common/charCode';
-import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService';
-import { IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
-import { ExtensionHostKind } from 'vs/workbench/services/extensions/common/extensionHostKind';
-import { Proxied, ProxyIdentifier, SerializableObjectWithBuffers } from 'vs/workbench/services/extensions/common/proxyIdentifier';
-import { parseJsonAndRestoreBufferRefs, stringifyJsonWithBufferRefs } from 'vs/workbench/services/extensions/common/rpcProtocol';
+import { isThenable } from "vs/base/common/async";
+import { CharCode } from "vs/base/common/charCode";
+import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
+import { IExtHostContext } from "vs/workbench/services/extensions/common/extHostCustomers";
+import { ExtensionHostKind } from "vs/workbench/services/extensions/common/extensionHostKind";
+import {
+	Proxied,
+	ProxyIdentifier,
+	SerializableObjectWithBuffers,
+} from "vs/workbench/services/extensions/common/proxyIdentifier";
+import {
+	parseJsonAndRestoreBufferRefs,
+	stringifyJsonWithBufferRefs,
+} from "vs/workbench/services/extensions/common/rpcProtocol";
 
-export function SingleProxyRPCProtocol(thing: any): IExtHostContext & IExtHostRpcService {
+export function SingleProxyRPCProtocol(
+	thing: any
+): IExtHostContext & IExtHostRpcService {
 	return {
 		_serviceBrand: undefined,
 		remoteAuthority: null!,
@@ -24,12 +33,11 @@ export function SingleProxyRPCProtocol(thing: any): IExtHostContext & IExtHostRp
 		dispose: undefined!,
 		assertRegistered: undefined!,
 		drain: undefined!,
-		extensionHostKind: ExtensionHostKind.LocalProcess
+		extensionHostKind: ExtensionHostKind.LocalProcess,
 	};
 }
 
 export class TestRPCProtocol implements IExtHostContext, IExtHostRpcService {
-
 	public _serviceBrand: undefined;
 	public remoteAuthority = null!;
 	public extensionHostKind = ExtensionHostKind.LocalProcess;
@@ -88,14 +96,18 @@ export class TestRPCProtocol implements IExtHostContext, IExtHostRpcService {
 	private _createProxy<T>(proxyId: string): T {
 		const handler = {
 			get: (target: any, name: PropertyKey) => {
-				if (typeof name === 'string' && !target[name] && name.charCodeAt(0) === CharCode.DollarSign) {
+				if (
+					typeof name === "string" &&
+					!target[name] &&
+					name.charCodeAt(0) === CharCode.DollarSign
+				) {
 					target[name] = (...myArgs: any[]) => {
 						return this._remoteCall(proxyId, name, myArgs);
 					};
 				}
 
 				return target[name];
-			}
+			},
 		};
 		return new Proxy(Object.create(null), handler);
 	}
@@ -105,7 +117,11 @@ export class TestRPCProtocol implements IExtHostContext, IExtHostRpcService {
 		return value;
 	}
 
-	protected _remoteCall(proxyId: string, path: string, args: any[]): Promise<any> {
+	protected _remoteCall(
+		proxyId: string,
+		path: string,
+		args: any[]
+	): Promise<any> {
 		this._callCount++;
 
 		return new Promise<any>((c) => {
@@ -116,30 +132,36 @@ export class TestRPCProtocol implements IExtHostContext, IExtHostRpcService {
 			const wireArgs = simulateWireTransfer(args);
 			let p: Promise<any>;
 			try {
-				const result = (<Function>instance[path]).apply(instance, wireArgs);
+				const result = (<Function>instance[path]).apply(
+					instance,
+					wireArgs
+				);
 				p = isThenable(result) ? result : Promise.resolve(result);
 			} catch (err) {
 				p = Promise.reject(err);
 			}
 
-			return p.then(result => {
-				this._callCount--;
-				// pretend the result went over the wire... (invoke .toJSON on objects...)
-				const wireResult = simulateWireTransfer(result);
-				return wireResult;
-			}, err => {
-				this._callCount--;
-				return Promise.reject(err);
-			});
+			return p.then(
+				(result) => {
+					this._callCount--;
+					// pretend the result went over the wire... (invoke .toJSON on objects...)
+					const wireResult = simulateWireTransfer(result);
+					return wireResult;
+				},
+				(err) => {
+					this._callCount--;
+					return Promise.reject(err);
+				}
+			);
 		});
 	}
 
 	public dispose() {
-		throw new Error('Not implemented!');
+		throw new Error("Not implemented!");
 	}
 
 	public assertRegistered(identifiers: ProxyIdentifier<any>[]): void {
-		throw new Error('Not implemented!');
+		throw new Error("Not implemented!");
 	}
 }
 
@@ -153,8 +175,13 @@ function simulateWireTransfer<T>(obj: T): T {
 	}
 
 	if (obj instanceof SerializableObjectWithBuffers) {
-		const { jsonString, referencedBuffers } = stringifyJsonWithBufferRefs(obj);
-		return parseJsonAndRestoreBufferRefs(jsonString, referencedBuffers, null);
+		const { jsonString, referencedBuffers } =
+			stringifyJsonWithBufferRefs(obj);
+		return parseJsonAndRestoreBufferRefs(
+			jsonString,
+			referencedBuffers,
+			null
+		);
 	} else {
 		return JSON.parse(JSON.stringify(obj));
 	}

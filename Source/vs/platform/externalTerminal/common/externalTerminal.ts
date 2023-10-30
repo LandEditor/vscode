@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { ITerminalEnvironment } from 'vs/platform/terminal/common/terminal';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ITerminalEnvironment } from "vs/platform/terminal/common/terminal";
 
-export const IExternalTerminalService = createDecorator<IExternalTerminalService>('externalTerminal');
+export const IExternalTerminalService =
+	createDecorator<IExternalTerminalService>("externalTerminal");
 
 export interface IExternalTerminalSettings {
 	linuxExec?: string;
@@ -22,16 +23,25 @@ export interface ITerminalForPlatform {
 
 export interface IExternalTerminalService {
 	readonly _serviceBrand: undefined;
-	openTerminal(configuration: IExternalTerminalSettings, cwd: string | undefined): Promise<void>;
-	runInTerminal(title: string, cwd: string, args: string[], env: ITerminalEnvironment, settings: IExternalTerminalSettings): Promise<number | undefined>;
+	openTerminal(
+		configuration: IExternalTerminalSettings,
+		cwd: string | undefined
+	): Promise<void>;
+	runInTerminal(
+		title: string,
+		cwd: string,
+		args: string[],
+		env: ITerminalEnvironment,
+		settings: IExternalTerminalSettings
+	): Promise<number | undefined>;
 	getDefaultTerminalForPlatforms(): Promise<ITerminalForPlatform>;
 }
 
 export interface IExternalTerminalConfiguration {
 	terminal: {
-		explorerKind: 'integrated' | 'external' | 'both';
+		explorerKind: "integrated" | "external" | "both";
 		external: IExternalTerminalSettings;
 	};
 }
 
-export const DEFAULT_TERMINAL_OSX = 'Terminal.app';
+export const DEFAULT_TERMINAL_OSX = "Terminal.app";

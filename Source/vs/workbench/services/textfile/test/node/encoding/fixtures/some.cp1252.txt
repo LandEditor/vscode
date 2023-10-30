@@ -18,6 +18,6 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Runtime.Serialization;
 
 
-ObjectCount = LoadObjects("Öffentlicher Ordner");  
+ObjectCount = LoadObjects("ï¿½ffentlicher Ordner");  
 
-Private = "Persönliche Information"  
+Private = "Persï¿½nliche Information"  

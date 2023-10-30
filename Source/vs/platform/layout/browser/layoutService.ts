@@ -3,14 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDimension } from 'vs/base/browser/dom';
-import { Event } from 'vs/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IDimension } from "vs/base/browser/dom";
+import { Event } from "vs/base/common/event";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const ILayoutService = createDecorator<ILayoutService>('layoutService');
+export const ILayoutService = createDecorator<ILayoutService>("layoutService");
 
 export interface ILayoutOffsetInfo {
-
 	/**
 	 * Generic top offset
 	 */
@@ -23,7 +22,6 @@ export interface ILayoutOffsetInfo {
 }
 
 export interface ILayoutService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

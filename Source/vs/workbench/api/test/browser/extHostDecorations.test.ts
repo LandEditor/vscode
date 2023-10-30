@@ -3,20 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { timeout } from 'vs/base/common/async';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { URI } from 'vs/base/common/uri';
-import { mock } from 'vs/base/test/common/mock';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { NullLogService } from 'vs/platform/log/common/log';
-import { MainThreadDecorationsShape } from 'vs/workbench/api/common/extHost.protocol';
-import { ExtHostDecorations } from 'vs/workbench/api/common/extHostDecorations';
-import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService';
-import { nullExtensionDescription } from 'vs/workbench/services/extensions/common/extensions';
+import * as assert from "assert";
+import { timeout } from "vs/base/common/async";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { URI } from "vs/base/common/uri";
+import { mock } from "vs/base/test/common/mock";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { NullLogService } from "vs/platform/log/common/log";
+import { MainThreadDecorationsShape } from "vs/workbench/api/common/extHost.protocol";
+import { ExtHostDecorations } from "vs/workbench/api/common/extHostDecorations";
+import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
+import { nullExtensionDescription } from "vs/workbench/services/extensions/common/extensions";
 
-suite('ExtHostDecorations', function () {
-
+suite("ExtHostDecorations", function () {
 	let mainThreadShape: MainThreadDecorationsShape;
 	let extHostDecorations: ExtHostDecorations;
 	const providers = new Set<number>();
@@ -24,51 +23,59 @@ suite('ExtHostDecorations', function () {
 	ensureNoDisposablesAreLeakedInTestSuite();
 
 	setup(function () {
-
 		providers.clear();
 
-		mainThreadShape = new class extends mock<MainThreadDecorationsShape>() {
-			override $registerDecorationProvider(handle: number) {
-				providers.add(handle);
-			}
-		};
+		mainThreadShape =
+			new (class extends mock<MainThreadDecorationsShape>() {
+				override $registerDecorationProvider(handle: number) {
+					providers.add(handle);
+				}
+			})();
 
 		extHostDecorations = new ExtHostDecorations(
-			new class extends mock<IExtHostRpcService>() {
+			new (class extends mock<IExtHostRpcService>() {
 				override getProxy(): any {
 					return mainThreadShape;
 				}
-			},
+			})(),
 			new NullLogService()
 		);
 	});
 
-	test('SCM Decorations missing #100524', async function () {
-
+	test("SCM Decorations missing #100524", async function () {
 		let calledA = false;
 		let calledB = false;
 
 		// never returns
-		extHostDecorations.registerFileDecorationProvider({
-
-			provideFileDecoration() {
-				calledA = true;
-				return new Promise(() => { });
-			}
-		}, nullExtensionDescription);
+		extHostDecorations.registerFileDecorationProvider(
+			{
+				provideFileDecoration() {
+					calledA = true;
+					return new Promise(() => {});
+				},
+			},
+			nullExtensionDescription
+		);
 
 		// always returns
-		extHostDecorations.registerFileDecorationProvider({
-
-			provideFileDecoration() {
-				calledB = true;
-				return new Promise(resolve => resolve({ badge: 'H', tooltip: 'Hello' }));
-			}
-		}, nullExtensionDescription);
-
+		extHostDecorations.registerFileDecorationProvider(
+			{
+				provideFileDecoration() {
+					calledB = true;
+					return new Promise((resolve) =>
+						resolve({ badge: "H", tooltip: "Hello" })
+					);
+				},
+			},
+			nullExtensionDescription
+		);
 
 		const requests = [...providers.values()].map((handle, idx) => {
-			return extHostDecorations.$provideDecorations(handle, [{ id: idx, uri: URI.parse('test:///file') }], CancellationToken.None);
+			return extHostDecorations.$provideDecorations(
+				handle,
+				[{ id: idx, uri: URI.parse("test:///file") }],
+				CancellationToken.None
+			);
 		});
 
 		assert.strictEqual(calledA, true);
@@ -77,14 +84,18 @@ suite('ExtHostDecorations', function () {
 		assert.strictEqual(requests.length, 2);
 		const [first, second] = requests;
 
-		const firstResult = await Promise.race([first, timeout(30).then(() => false)]);
-		assert.strictEqual(typeof firstResult, 'boolean'); // never finishes...
+		const firstResult = await Promise.race([
+			first,
+			timeout(30).then(() => false),
+		]);
+		assert.strictEqual(typeof firstResult, "boolean"); // never finishes...
 
-		const secondResult = await Promise.race([second, timeout(30).then(() => false)]);
-		assert.strictEqual(typeof secondResult, 'object');
-
+		const secondResult = await Promise.race([
+			second,
+			timeout(30).then(() => false),
+		]);
+		assert.strictEqual(typeof secondResult, "object");
 
 		await timeout(30);
 	});
-
 });

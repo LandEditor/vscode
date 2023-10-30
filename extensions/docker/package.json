@@ -1,75 +1,75 @@
 {
-  "name": "docker",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
-  "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild Source/**/*.ts",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin moby/moby contrib/syntax/textmate/Docker.tmbundle/Syntaxes/Dockerfile.tmLanguage ./syntaxes/docker.tmLanguage.json"
-  },
-  "contributes": {
-    "configurationDefaults": {
-      "[dockerfile]": {
-        "editor.quickSuggestions": {
-          "strings": true
-        }
-      }
-    },
-    "grammars": [
-      {
-        "language": "dockerfile",
-        "scopeName": "source.dockerfile",
-        "path": "./syntaxes/docker.tmLanguage.json"
-      }
-    ],
-    "languages": [
-      {
-        "id": "dockerfile",
-        "extensions": [
-          ".dockerfile",
-          ".containerfile"
-        ],
-        "filenames": [
-          "Dockerfile",
-          "Containerfile"
-        ],
-        "filenamePatterns": [
-          "Dockerfile.*",
-          "Containerfile.*"
-        ],
-        "aliases": [
-          "Docker",
-          "Dockerfile",
-          "Containerfile"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ]
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "engines": {
-    "vscode": "*"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "docker",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": "false",
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+	},
+	"license": "MIT",
+	"author": {
+		"name": "Nikola Hristov",
+		"email": "nikola@nikolahristov.tech",
+		"url": "https://nikolahristov.tech"
+	},
+	"publisher": "playform",
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin moby/moby contrib/syntax/textmate/Docker.tmbundle/Syntaxes/Dockerfile.tmLanguage ./syntaxes/docker.tmLanguage.json"
+	},
+	"contributes": {
+		"configurationDefaults": {
+			"[dockerfile]": {
+				"editor.quickSuggestions": {
+					"strings": true
+				}
+			}
+		},
+		"grammars": [
+			{
+				"language": "dockerfile",
+				"scopeName": "source.dockerfile",
+				"path": "./syntaxes/docker.tmLanguage.json"
+			}
+		],
+		"languages": [
+			{
+				"id": "dockerfile",
+				"extensions": [
+					".dockerfile",
+					".containerfile"
+				],
+				"filenames": [
+					"Dockerfile",
+					"Containerfile"
+				],
+				"filenamePatterns": [
+					"Dockerfile.*",
+					"Containerfile.*"
+				],
+				"aliases": [
+					"Docker",
+					"Dockerfile",
+					"Containerfile"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "0.3.1"
+	},
+	"engines": {
+		"vscode": "*"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

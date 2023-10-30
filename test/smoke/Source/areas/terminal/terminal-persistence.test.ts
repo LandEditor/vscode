@@ -3,11 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Application, Terminal, TerminalCommandId, TerminalCommandIdWithValue, SettingsEditor } from '../../../../automation';
-import { setTerminalTestSettings } from './terminal-helpers';
+import {
+	Application,
+	Terminal,
+	TerminalCommandId,
+	TerminalCommandIdWithValue,
+	SettingsEditor,
+} from "../../../../automation";
+import { setTerminalTestSettings } from "./terminal-helpers";
 
 export function setup() {
-	describe('Terminal Persistence', () => {
+	describe("Terminal Persistence", () => {
 		// Acquire automation API
 		let terminal: Terminal;
 		let settingsEditor: SettingsEditor;
@@ -23,19 +29,15 @@ export function setup() {
 			await settingsEditor.clearUserSettings();
 		});
 
-		describe('detach/attach', () => {
+		describe("detach/attach", () => {
 			// https://github.com/microsoft/vscode/issues/137799
-			it('should support basic reconnection', async () => {
+			it("should support basic reconnection", async () => {
 				await terminal.createTerminal();
 				// TODO: Handle passing in an actual regex, not string
-				await terminal.assertTerminalGroups([
-					[{ name: '.*' }]
-				]);
+				await terminal.assertTerminalGroups([[{ name: ".*" }]]);
 
 				// Get the terminal name
-				await terminal.assertTerminalGroups([
-					[{ name: '.*' }]
-				]);
+				await terminal.assertTerminalGroups([[{ name: ".*" }]]);
 				const name = (await terminal.getTerminalGroups())[0][0].name!;
 
 				// Detach
@@ -43,39 +45,43 @@ export function setup() {
 				await terminal.assertTerminalViewHidden();
 
 				// Attach
-				await terminal.runCommandWithValue(TerminalCommandIdWithValue.AttachToSession, name);
-				await terminal.assertTerminalGroups([
-					[{ name }]
-				]);
+				await terminal.runCommandWithValue(
+					TerminalCommandIdWithValue.AttachToSession,
+					name
+				);
+				await terminal.assertTerminalGroups([[{ name }]]);
 			});
 
-			it('should persist buffer content', async () => {
+			it("should persist buffer content", async () => {
 				await terminal.createTerminal();
 				// TODO: Handle passing in an actual regex, not string
-				await terminal.assertTerminalGroups([
-					[{ name: '.*' }]
-				]);
+				await terminal.assertTerminalGroups([[{ name: ".*" }]]);
 
 				// Get the terminal name
-				await terminal.assertTerminalGroups([
-					[{ name: '.*' }]
-				]);
+				await terminal.assertTerminalGroups([[{ name: ".*" }]]);
 				const name = (await terminal.getTerminalGroups())[0][0].name!;
 
 				// Write in terminal
-				await terminal.runCommandInTerminal('echo terminal_test_content');
-				await terminal.waitForTerminalText(buffer => buffer.some(e => e.includes('terminal_test_content')));
+				await terminal.runCommandInTerminal(
+					"echo terminal_test_content"
+				);
+				await terminal.waitForTerminalText((buffer) =>
+					buffer.some((e) => e.includes("terminal_test_content"))
+				);
 
 				// Detach
 				await terminal.runCommand(TerminalCommandId.DetachSession);
 				await terminal.assertTerminalViewHidden();
 
 				// Attach
-				await terminal.runCommandWithValue(TerminalCommandIdWithValue.AttachToSession, name);
-				await terminal.assertTerminalGroups([
-					[{ name }]
-				]);
-				await terminal.waitForTerminalText(buffer => buffer.some(e => e.includes('terminal_test_content')));
+				await terminal.runCommandWithValue(
+					TerminalCommandIdWithValue.AttachToSession,
+					name
+				);
+				await terminal.assertTerminalGroups([[{ name }]]);
+				await terminal.waitForTerminalText((buffer) =>
+					buffer.some((e) => e.includes("terminal_test_content"))
+				);
 			});
 		});
 	});

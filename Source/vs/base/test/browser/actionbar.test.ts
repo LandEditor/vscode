@@ -3,22 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { ActionBar, prepareActions } from 'vs/base/browser/ui/actionbar/actionbar';
-import { Action, Separator } from 'vs/base/common/actions';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import * as assert from "assert";
+import {
+	ActionBar,
+	prepareActions,
+} from "vs/base/browser/ui/actionbar/actionbar";
+import { Action, Separator } from "vs/base/common/actions";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
 
-suite('Actionbar', () => {
-
+suite("Actionbar", () => {
 	const store = ensureNoDisposablesAreLeakedInTestSuite();
 
-	test('prepareActions()', function () {
+	test("prepareActions()", function () {
 		const a1 = new Separator();
 		const a2 = new Separator();
-		const a3 = store.add(new Action('a3'));
+		const a3 = store.add(new Action("a3"));
 		const a4 = new Separator();
 		const a5 = new Separator();
-		const a6 = store.add(new Action('a6'));
+		const a6 = store.add(new Action("a6"));
 		const a7 = new Separator();
 
 		const actions = prepareActions([a1, a2, a3, a4, a5, a6, a7]);
@@ -28,12 +30,12 @@ suite('Actionbar', () => {
 		assert(actions[2] === a6);
 	});
 
-	test('hasAction()', function () {
-		const container = document.createElement('div');
+	test("hasAction()", function () {
+		const container = document.createElement("div");
 		const actionbar = store.add(new ActionBar(container));
 
-		const a1 = store.add(new Action('a1'));
-		const a2 = store.add(new Action('a2'));
+		const a1 = store.add(new Action("a1"));
+		const a2 = store.add(new Action("a2"));
 
 		actionbar.push(a1);
 		assert.strictEqual(actionbar.hasAction(a1), true);

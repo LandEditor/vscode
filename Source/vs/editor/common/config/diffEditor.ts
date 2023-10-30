@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ValidDiffEditorBaseOptions } from 'vs/editor/common/config/editorOptions';
+import { ValidDiffEditorBaseOptions } from "vs/editor/common/config/editorOptions";
 
 export const diffEditorDefaultOptions = {
 	enableSplitViewResizing: true,
@@ -17,8 +17,8 @@ export const diffEditorDefaultOptions = {
 	originalEditable: false,
 	diffCodeLens: false,
 	renderOverviewRuler: true,
-	diffWordWrap: 'inherit',
-	diffAlgorithm: 'advanced',
+	diffWordWrap: "inherit",
+	diffAlgorithm: "advanced",
 	accessibilityVerbose: false,
 	experimental: {
 		showMoves: false,

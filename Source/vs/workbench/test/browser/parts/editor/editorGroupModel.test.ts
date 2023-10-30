@@ -3,32 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { EditorGroupModel, IGroupEditorChangeEvent, IGroupEditorCloseEvent, IGroupEditorMoveEvent, IGroupEditorOpenEvent, ISerializedEditorGroupModel, isGroupEditorChangeEvent, isGroupEditorCloseEvent, isGroupEditorMoveEvent, isGroupEditorOpenEvent } from 'vs/workbench/common/editor/editorGroupModel';
-import { EditorExtensions, IEditorFactoryRegistry, IFileEditorInput, IEditorSerializer, CloseDirection, EditorsOrder, IResourceDiffEditorInput, IResourceSideBySideEditorInput, SideBySideEditor, EditorCloseContext, GroupModelChangeKind } from 'vs/workbench/common/editor';
-import { URI } from 'vs/base/common/uri';
-import { TestLifecycleService, workbenchInstantiationService } from 'vs/workbench/test/browser/workbenchTestServices';
-import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
-import { TestInstantiationService } from 'vs/platform/instantiation/test/common/instantiationServiceMock';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { IEditorModel } from 'vs/platform/editor/common/editor';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { NullTelemetryService } from 'vs/platform/telemetry/common/telemetryUtils';
-import { DiffEditorInput } from 'vs/workbench/common/editor/diffEditorInput';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { TestContextService, TestStorageService } from 'vs/workbench/test/common/workbenchTestServices';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
-import { isEqual } from 'vs/base/common/resources';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import * as assert from "assert";
+import {
+	EditorGroupModel,
+	IGroupEditorChangeEvent,
+	IGroupEditorCloseEvent,
+	IGroupEditorMoveEvent,
+	IGroupEditorOpenEvent,
+	ISerializedEditorGroupModel,
+	isGroupEditorChangeEvent,
+	isGroupEditorCloseEvent,
+	isGroupEditorMoveEvent,
+	isGroupEditorOpenEvent,
+} from "vs/workbench/common/editor/editorGroupModel";
+import {
+	EditorExtensions,
+	IEditorFactoryRegistry,
+	IFileEditorInput,
+	IEditorSerializer,
+	CloseDirection,
+	EditorsOrder,
+	IResourceDiffEditorInput,
+	IResourceSideBySideEditorInput,
+	SideBySideEditor,
+	EditorCloseContext,
+	GroupModelChangeKind,
+} from "vs/workbench/common/editor";
+import { URI } from "vs/base/common/uri";
+import {
+	TestLifecycleService,
+	workbenchInstantiationService,
+} from "vs/workbench/test/browser/workbenchTestServices";
+import { TestConfigurationService } from "vs/platform/configuration/test/common/testConfigurationService";
+import { TestInstantiationService } from "vs/platform/instantiation/test/common/instantiationServiceMock";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { Registry } from "vs/platform/registry/common/platform";
+import { IEditorModel } from "vs/platform/editor/common/editor";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { NullTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
+import { DiffEditorInput } from "vs/workbench/common/editor/diffEditorInput";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import {
+	TestContextService,
+	TestStorageService,
+} from "vs/workbench/test/common/workbenchTestServices";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
+import { isEqual } from "vs/base/common/resources";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
 
-suite('EditorGroupModel', () => {
-
+suite("EditorGroupModel", () => {
 	let testInstService: TestInstantiationService | undefined;
 
 	suiteTeardown(() => {
@@ -42,25 +70,41 @@ suite('EditorGroupModel', () => {
 		}
 		const inst = testInstService;
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
-		inst.stub(ILifecycleService, disposables.add(new TestLifecycleService()));
+		inst.stub(
+			ILifecycleService,
+			disposables.add(new TestLifecycleService())
+		);
 		inst.stub(IWorkspaceContextService, new TestContextService());
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right', focusRecentEditorAfterClose: true } });
+		config.setUserConfiguration("workbench", {
+			editor: {
+				openPositioning: "right",
+				focusRecentEditorAfterClose: true,
+			},
+		});
 		inst.stub(IConfigurationService, config);
 
 		return inst;
 	}
 
-	function createEditorGroupModel(serialized?: ISerializedEditorGroupModel): EditorGroupModel {
-		const group = disposables.add(inst().createInstance(EditorGroupModel, serialized));
+	function createEditorGroupModel(
+		serialized?: ISerializedEditorGroupModel
+	): EditorGroupModel {
+		const group = disposables.add(
+			inst().createInstance(EditorGroupModel, serialized)
+		);
 
-		disposables.add(toDisposable(() => {
-			for (const editor of group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
-				group.closeEditor(editor);
-			}
-		}));
+		disposables.add(
+			toDisposable(() => {
+				for (const editor of group.getEditors(
+					EditorsOrder.MOST_RECENTLY_ACTIVE
+				)) {
+					group.closeEditor(editor);
+				}
+			})
+		);
 
 		return group;
 	}
@@ -71,7 +115,11 @@ suite('EditorGroupModel', () => {
 		}
 	}
 
-	function closeEditors(group: EditorGroupModel, except: EditorInput, direction?: CloseDirection): void {
+	function closeEditors(
+		group: EditorGroupModel,
+		except: EditorInput,
+		direction?: CloseDirection
+	): void {
 		const index = group.indexOf(except);
 		if (index === -1) {
 			return; // not found
@@ -86,14 +134,21 @@ suite('EditorGroupModel', () => {
 
 		// Close to the right
 		else if (direction === CloseDirection.RIGHT) {
-			for (let i = group.getEditors(EditorsOrder.SEQUENTIAL).length - 1; i > index; i--) {
+			for (
+				let i = group.getEditors(EditorsOrder.SEQUENTIAL).length - 1;
+				i > index;
+				i--
+			) {
 				group.closeEditor(group.getEditorByIndex(i)!);
 			}
 		}
 
 		// Both directions
 		else {
-			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).filter(editor => !editor.matches(except)).forEach(editor => group.closeEditor(editor));
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)
+				.filter((editor) => !editor.matches(except))
+				.forEach((editor) => group.closeEditor(editor));
 		}
 	}
 
@@ -127,81 +182,94 @@ suite('EditorGroupModel', () => {
 			sticky: [],
 			unsticky: [],
 			moved: [],
-			disposed: []
+			disposed: [],
 		};
 
-		disposables.add(group.onDidModelChange(e => {
-			if (e.kind === GroupModelChangeKind.GROUP_LOCKED) {
-				groupEvents.locked.push(group.id);
-				return;
-			} else if (e.kind === GroupModelChangeKind.GROUP_ACTIVE) {
-				groupEvents.active.push(group.id);
-				return;
-			} else if (e.kind === GroupModelChangeKind.GROUP_INDEX) {
-				groupEvents.index.push(group.id);
-				return;
-			} else if (e.kind === GroupModelChangeKind.GROUP_LABEL) {
-				groupEvents.label.push(group.id);
-				return;
-			}
-			if (!e.editor) {
-				return;
-			}
-			switch (e.kind) {
-				case GroupModelChangeKind.EDITOR_OPEN:
-					if (isGroupEditorOpenEvent(e)) {
-						groupEvents.opened.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_CLOSE:
-					if (isGroupEditorCloseEvent(e)) {
-						groupEvents.closed.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_ACTIVE:
-					if (isGroupEditorChangeEvent(e)) {
-						groupEvents.activated.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_PIN:
-					if (isGroupEditorChangeEvent(e)) {
-						group.isPinned(e.editor) ? groupEvents.pinned.push(e) : groupEvents.unpinned.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_STICKY:
-					if (isGroupEditorChangeEvent(e)) {
-						group.isSticky(e.editor) ? groupEvents.sticky.push(e) : groupEvents.unsticky.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_MOVE:
-					if (isGroupEditorMoveEvent(e)) {
-						groupEvents.moved.push(e);
-					}
-					break;
-				case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
-					if (isGroupEditorChangeEvent(e)) {
-						groupEvents.disposed.push(e);
-					}
-					break;
-			}
-		}));
+		disposables.add(
+			group.onDidModelChange((e) => {
+				if (e.kind === GroupModelChangeKind.GROUP_LOCKED) {
+					groupEvents.locked.push(group.id);
+					return;
+				} else if (e.kind === GroupModelChangeKind.GROUP_ACTIVE) {
+					groupEvents.active.push(group.id);
+					return;
+				} else if (e.kind === GroupModelChangeKind.GROUP_INDEX) {
+					groupEvents.index.push(group.id);
+					return;
+				} else if (e.kind === GroupModelChangeKind.GROUP_LABEL) {
+					groupEvents.label.push(group.id);
+					return;
+				}
+				if (!e.editor) {
+					return;
+				}
+				switch (e.kind) {
+					case GroupModelChangeKind.EDITOR_OPEN:
+						if (isGroupEditorOpenEvent(e)) {
+							groupEvents.opened.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_CLOSE:
+						if (isGroupEditorCloseEvent(e)) {
+							groupEvents.closed.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_ACTIVE:
+						if (isGroupEditorChangeEvent(e)) {
+							groupEvents.activated.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_PIN:
+						if (isGroupEditorChangeEvent(e)) {
+							group.isPinned(e.editor)
+								? groupEvents.pinned.push(e)
+								: groupEvents.unpinned.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_STICKY:
+						if (isGroupEditorChangeEvent(e)) {
+							group.isSticky(e.editor)
+								? groupEvents.sticky.push(e)
+								: groupEvents.unsticky.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_MOVE:
+						if (isGroupEditorMoveEvent(e)) {
+							groupEvents.moved.push(e);
+						}
+						break;
+					case GroupModelChangeKind.EDITOR_WILL_DISPOSE:
+						if (isGroupEditorChangeEvent(e)) {
+							groupEvents.disposed.push(e);
+						}
+						break;
+				}
+			})
+		);
 
 		return groupEvents;
 	}
 
 	let index = 0;
 	class TestEditorInput extends EditorInput {
-
 		readonly resource = undefined;
 
 		constructor(public id: string) {
 			super();
 		}
-		override get typeId() { return 'testEditorInputForGroups'; }
-		override async resolve(): Promise<IEditorModel> { return null!; }
+		override get typeId() {
+			return "testEditorInputForGroups";
+		}
+		override async resolve(): Promise<IEditorModel> {
+			return null!;
+		}
 
 		override matches(other: TestEditorInput): boolean {
-			return other && this.id === other.id && other instanceof TestEditorInput;
+			return (
+				other &&
+				this.id === other.id &&
+				other instanceof TestEditorInput
+			);
 		}
 
 		setDirty(): void {
@@ -214,41 +282,60 @@ suite('EditorGroupModel', () => {
 	}
 
 	class NonSerializableTestEditorInput extends EditorInput {
-
 		readonly resource = undefined;
 
 		constructor(public id: string) {
 			super();
 		}
-		override get typeId() { return 'testEditorInputForGroups-nonSerializable'; }
-		override async resolve(): Promise<IEditorModel | null> { return null; }
+		override get typeId() {
+			return "testEditorInputForGroups-nonSerializable";
+		}
+		override async resolve(): Promise<IEditorModel | null> {
+			return null;
+		}
 
 		override matches(other: NonSerializableTestEditorInput): boolean {
-			return other && this.id === other.id && other instanceof NonSerializableTestEditorInput;
+			return (
+				other &&
+				this.id === other.id &&
+				other instanceof NonSerializableTestEditorInput
+			);
 		}
 	}
 
 	class TestFileEditorInput extends EditorInput implements IFileEditorInput {
-
 		readonly preferredResource = this.resource;
 
-		constructor(public id: string, public resource: URI) {
+		constructor(
+			public id: string,
+			public resource: URI
+		) {
 			super();
 		}
-		override get typeId() { return 'testFileEditorInputForGroups'; }
-		override get editorId() { return this.id; }
-		override async resolve(): Promise<IEditorModel | null> { return null; }
-		setPreferredName(name: string): void { }
-		setPreferredDescription(description: string): void { }
-		setPreferredResource(resource: URI): void { }
-		async setEncoding(encoding: string) { }
-		getEncoding() { return undefined; }
-		setPreferredEncoding(encoding: string) { }
-		setForceOpenAsBinary(): void { }
-		setPreferredContents(contents: string): void { }
-		setLanguageId(languageId: string) { }
-		setPreferredLanguageId(languageId: string) { }
-		isResolved(): boolean { return false; }
+		override get typeId() {
+			return "testFileEditorInputForGroups";
+		}
+		override get editorId() {
+			return this.id;
+		}
+		override async resolve(): Promise<IEditorModel | null> {
+			return null;
+		}
+		setPreferredName(name: string): void {}
+		setPreferredDescription(description: string): void {}
+		setPreferredResource(resource: URI): void {}
+		async setEncoding(encoding: string) {}
+		getEncoding() {
+			return undefined;
+		}
+		setPreferredEncoding(encoding: string) {}
+		setForceOpenAsBinary(): void {}
+		setPreferredContents(contents: string): void {}
+		setLanguageId(languageId: string) {}
+		setPreferredLanguageId(languageId: string) {}
+		isResolved(): boolean {
+			return false;
+		}
 
 		override matches(other: TestFileEditorInput): boolean {
 			if (super.matches(other)) {
@@ -263,12 +350,18 @@ suite('EditorGroupModel', () => {
 		}
 	}
 
-	function input(id = String(index++), nonSerializable?: boolean, resource?: URI): EditorInput {
+	function input(
+		id = String(index++),
+		nonSerializable?: boolean,
+		resource?: URI
+	): EditorInput {
 		if (resource) {
 			return disposables.add(new TestFileEditorInput(id, resource));
 		}
 
-		return nonSerializable ? disposables.add(new NonSerializableTestEditorInput(id)) : disposables.add(new TestEditorInput(id));
+		return nonSerializable
+			? disposables.add(new NonSerializableTestEditorInput(id))
+			: disposables.add(new TestEditorInput(id));
 	}
 
 	interface ISerializedTestInput {
@@ -276,7 +369,6 @@ suite('EditorGroupModel', () => {
 	}
 
 	class TestEditorInputSerializer implements IEditorSerializer {
-
 		static disableSerialize = false;
 		static disableDeserialize = false;
 
@@ -291,18 +383,23 @@ suite('EditorGroupModel', () => {
 
 			const testEditorInput = <TestEditorInput>editorInput;
 			const testInput: ISerializedTestInput = {
-				id: testEditorInput.id
+				id: testEditorInput.id,
 			};
 
 			return JSON.stringify(testInput);
 		}
 
-		deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): EditorInput | undefined {
+		deserialize(
+			instantiationService: IInstantiationService,
+			serializedEditorInput: string
+		): EditorInput | undefined {
 			if (TestEditorInputSerializer.disableDeserialize) {
 				return undefined;
 			}
 
-			const testInput: ISerializedTestInput = JSON.parse(serializedEditorInput);
+			const testInput: ISerializedTestInput = JSON.parse(
+				serializedEditorInput
+			);
 
 			return disposables.add(new TestEditorInput(testInput.id));
 		}
@@ -314,7 +411,14 @@ suite('EditorGroupModel', () => {
 		TestEditorInputSerializer.disableSerialize = false;
 		TestEditorInputSerializer.disableDeserialize = false;
 
-		disposables.add(Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer('testEditorInputForGroups', TestEditorInputSerializer));
+		disposables.add(
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).registerEditorSerializer(
+				"testEditorInputForGroups",
+				TestEditorInputSerializer
+			)
+		);
 	});
 
 	teardown(() => {
@@ -323,7 +427,7 @@ suite('EditorGroupModel', () => {
 		index = 1;
 	});
 
-	test('Clone Group', function () {
+	test("Clone Group", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input() as TestEditorInput;
@@ -373,12 +477,22 @@ suite('EditorGroupModel', () => {
 		toDispose.dispose();
 	});
 
-	test('isActive - untyped', () => {
+	test("isActive - untyped", () => {
 		const group = createEditorGroupModel();
-		const input = disposables.add(new TestFileEditorInput('testInput', URI.file('fake')));
-		const input2 = disposables.add(new TestFileEditorInput('testInput2', URI.file('fake2')));
-		const untypedInput = { resource: URI.file('/fake'), options: { override: 'testInput' } };
-		const untypedNonActiveInput = { resource: URI.file('/fake2'), options: { override: 'testInput2' } };
+		const input = disposables.add(
+			new TestFileEditorInput("testInput", URI.file("fake"))
+		);
+		const input2 = disposables.add(
+			new TestFileEditorInput("testInput2", URI.file("fake2"))
+		);
+		const untypedInput = {
+			resource: URI.file("/fake"),
+			options: { override: "testInput" },
+		};
+		const untypedNonActiveInput = {
+			resource: URI.file("/fake2"),
+			options: { override: "testInput2" },
+		};
 
 		group.openEditor(input, { pinned: true, active: true });
 		group.openEditor(input2, { active: false });
@@ -388,26 +502,55 @@ suite('EditorGroupModel', () => {
 		assert.ok(!group.isActive(untypedNonActiveInput));
 	});
 
-	test('openEditor - prefers existing side by side editor if same', () => {
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+	test("openEditor - prefers existing side by side editor if same", () => {
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables
+		);
 
 		const group = createEditorGroupModel();
-		const input1 = disposables.add(new TestFileEditorInput('testInput', URI.file('fake1')));
-		const input2 = disposables.add(new TestFileEditorInput('testInput', URI.file('fake2')));
+		const input1 = disposables.add(
+			new TestFileEditorInput("testInput", URI.file("fake1"))
+		);
+		const input2 = disposables.add(
+			new TestFileEditorInput("testInput", URI.file("fake2"))
+		);
 
-		const sideBySideInputSame = instantiationService.createInstance(SideBySideEditorInput, undefined, undefined, input1, input1);
-		const sideBySideInputDifferent = instantiationService.createInstance(SideBySideEditorInput, undefined, undefined, input1, input2);
+		const sideBySideInputSame = instantiationService.createInstance(
+			SideBySideEditorInput,
+			undefined,
+			undefined,
+			input1,
+			input1
+		);
+		const sideBySideInputDifferent = instantiationService.createInstance(
+			SideBySideEditorInput,
+			undefined,
+			undefined,
+			input1,
+			input2
+		);
 
-		let res = group.openEditor(sideBySideInputSame, { pinned: true, active: true });
+		let res = group.openEditor(sideBySideInputSame, {
+			pinned: true,
+			active: true,
+		});
 		assert.strictEqual(res.editor, sideBySideInputSame);
 		assert.strictEqual(res.isNew, true);
 
-		res = group.openEditor(input1, { pinned: true, active: true, supportSideBySide: SideBySideEditor.BOTH });
+		res = group.openEditor(input1, {
+			pinned: true,
+			active: true,
+			supportSideBySide: SideBySideEditor.BOTH,
+		});
 		assert.strictEqual(res.editor, sideBySideInputSame);
 		assert.strictEqual(res.isNew, false);
 
 		group.closeEditor(sideBySideInputSame);
-		res = group.openEditor(sideBySideInputDifferent, { pinned: true, active: true });
+		res = group.openEditor(sideBySideInputDifferent, {
+			pinned: true,
+			active: true,
+		});
 		assert.strictEqual(res.editor, sideBySideInputDifferent);
 		assert.strictEqual(res.isNew, true);
 
@@ -416,70 +559,163 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(res.isNew, true);
 	});
 
-	test('indexOf() - prefers direct matching editor over side by side matching one', () => {
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+	test("indexOf() - prefers direct matching editor over side by side matching one", () => {
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables
+		);
 
 		const group = createEditorGroupModel();
-		const input1 = disposables.add(new TestFileEditorInput('testInput', URI.file('fake1')));
+		const input1 = disposables.add(
+			new TestFileEditorInput("testInput", URI.file("fake1"))
+		);
 
-		const sideBySideInput = instantiationService.createInstance(SideBySideEditorInput, undefined, undefined, input1, input1);
+		const sideBySideInput = instantiationService.createInstance(
+			SideBySideEditorInput,
+			undefined,
+			undefined,
+			input1,
+			input1
+		);
 
 		group.openEditor(sideBySideInput, { pinned: true, active: true });
 		assert.strictEqual(group.indexOf(sideBySideInput), 0);
 		assert.strictEqual(group.indexOf(input1), -1);
-		assert.strictEqual(group.indexOf(input1, undefined, { supportSideBySide: SideBySideEditor.BOTH }), 0);
-		assert.strictEqual(group.indexOf(input1, undefined, { supportSideBySide: SideBySideEditor.ANY }), 0);
+		assert.strictEqual(
+			group.indexOf(input1, undefined, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			0
+		);
+		assert.strictEqual(
+			group.indexOf(input1, undefined, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			0
+		);
 
 		group.openEditor(input1, { pinned: true, active: true });
 		assert.strictEqual(group.indexOf(input1), 1);
-		assert.strictEqual(group.indexOf(input1, undefined, { supportSideBySide: SideBySideEditor.BOTH }), 1);
-		assert.strictEqual(group.indexOf(input1, undefined, { supportSideBySide: SideBySideEditor.ANY }), 1);
+		assert.strictEqual(
+			group.indexOf(input1, undefined, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			1
+		);
+		assert.strictEqual(
+			group.indexOf(input1, undefined, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			1
+		);
 	});
 
-	test('contains() - untyped', function () {
+	test("contains() - untyped", function () {
 		const group = createEditorGroupModel();
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables
+		);
 
-		const input1 = input('input1', false, URI.file('/input1'));
-		const input2 = input('input2', false, URI.file('/input2'));
+		const input1 = input("input1", false, URI.file("/input1"));
+		const input2 = input("input2", false, URI.file("/input2"));
 
-		const untypedInput1 = { resource: URI.file('/input1'), options: { override: 'input1' } };
-		const untypedInput2 = { resource: URI.file('/input2'), options: { override: 'input2' } };
+		const untypedInput1 = {
+			resource: URI.file("/input1"),
+			options: { override: "input1" },
+		};
+		const untypedInput2 = {
+			resource: URI.file("/input2"),
+			options: { override: "input2" },
+		};
 
-		const diffInput1 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input1, input2, undefined);
-		const diffInput2 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input2, input1, undefined);
+		const diffInput1 = instantiationService.createInstance(
+			DiffEditorInput,
+			"name",
+			"description",
+			input1,
+			input2,
+			undefined
+		);
+		const diffInput2 = instantiationService.createInstance(
+			DiffEditorInput,
+			"name",
+			"description",
+			input2,
+			input1,
+			undefined
+		);
 
 		const untypedDiffInput1: IResourceDiffEditorInput = {
 			original: untypedInput1,
-			modified: untypedInput2
+			modified: untypedInput2,
 		};
 		const untypedDiffInput2: IResourceDiffEditorInput = {
 			original: untypedInput2,
-			modified: untypedInput1
+			modified: untypedInput1,
 		};
 
-		const sideBySideInputSame = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input1);
-		const sideBySideInputDifferent = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input2);
+		const sideBySideInputSame = instantiationService.createInstance(
+			SideBySideEditorInput,
+			"name",
+			undefined,
+			input1,
+			input1
+		);
+		const sideBySideInputDifferent = instantiationService.createInstance(
+			SideBySideEditorInput,
+			"name",
+			undefined,
+			input1,
+			input2
+		);
 
 		const untypedSideBySideInputSame: IResourceSideBySideEditorInput = {
 			primary: untypedInput1,
-			secondary: untypedInput1
+			secondary: untypedInput1,
 		};
-		const untypedSideBySideInputDifferent: IResourceSideBySideEditorInput = {
-			primary: untypedInput2,
-			secondary: untypedInput1
-		};
+		const untypedSideBySideInputDifferent: IResourceSideBySideEditorInput =
+			{
+				primary: untypedInput2,
+				secondary: untypedInput1,
+			};
 
 		group.openEditor(input1, { pinned: true, active: true });
 
 		assert.strictEqual(group.contains(untypedInput1), true);
-		assert.strictEqual(group.contains(untypedInput1, { strictEquals: true }), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH }), true);
+		assert.strictEqual(
+			group.contains(untypedInput1, { strictEquals: true }),
+			false
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			true
+		);
 		assert.strictEqual(group.contains(untypedInput2), false);
-		assert.strictEqual(group.contains(untypedInput2, { strictEquals: true }), false);
-		assert.strictEqual(group.contains(untypedInput2, { supportSideBySide: SideBySideEditor.ANY }), false);
-		assert.strictEqual(group.contains(untypedInput2, { supportSideBySide: SideBySideEditor.BOTH }), false);
+		assert.strictEqual(
+			group.contains(untypedInput2, { strictEquals: true }),
+			false
+		);
+		assert.strictEqual(
+			group.contains(untypedInput2, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			false
+		);
+		assert.strictEqual(
+			group.contains(untypedInput2, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			false
+		);
 		assert.strictEqual(group.contains(untypedDiffInput1), false);
 		assert.strictEqual(group.contains(untypedDiffInput2), false);
 
@@ -507,8 +743,18 @@ suite('EditorGroupModel', () => {
 		group.closeEditor(input1);
 
 		assert.strictEqual(group.contains(untypedInput1), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH }), false);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			false
+		);
 		assert.strictEqual(group.contains(untypedInput2), true);
 		assert.strictEqual(group.contains(untypedDiffInput1), true);
 		assert.strictEqual(group.contains(untypedDiffInput2), true);
@@ -516,68 +762,177 @@ suite('EditorGroupModel', () => {
 		group.closeEditor(input2);
 
 		assert.strictEqual(group.contains(untypedInput1), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
 		assert.strictEqual(group.contains(untypedInput2), false);
-		assert.strictEqual(group.contains(untypedInput2, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(untypedInput2, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
 		assert.strictEqual(group.contains(untypedDiffInput1), true);
 		assert.strictEqual(group.contains(untypedDiffInput2), true);
 
 		group.closeEditor(diffInput1);
 
 		assert.strictEqual(group.contains(untypedInput1), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
 		assert.strictEqual(group.contains(untypedInput2), false);
-		assert.strictEqual(group.contains(untypedInput2, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(untypedInput2, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
 		assert.strictEqual(group.contains(untypedDiffInput1), false);
 		assert.strictEqual(group.contains(untypedDiffInput2), true);
 
 		group.closeEditor(diffInput2);
 
 		assert.strictEqual(group.contains(untypedInput1), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), false);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			false
+		);
 		assert.strictEqual(group.contains(untypedInput2), false);
-		assert.strictEqual(group.contains(untypedInput2, { supportSideBySide: SideBySideEditor.ANY }), false);
+		assert.strictEqual(
+			group.contains(untypedInput2, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			false
+		);
 		assert.strictEqual(group.contains(untypedDiffInput1), false);
 		assert.strictEqual(group.contains(untypedDiffInput2), false);
 
 		assert.strictEqual(group.count, 0);
 		group.openEditor(sideBySideInputSame, { pinned: true, active: true });
 		assert.strictEqual(group.contains(untypedSideBySideInputSame), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH }), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY, strictEquals: true }), false);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH, strictEquals: true }), false);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+				strictEquals: true,
+			}),
+			false
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+				strictEquals: true,
+			}),
+			false
+		);
 
 		group.closeEditor(sideBySideInputSame);
 
 		assert.strictEqual(group.count, 0);
-		group.openEditor(sideBySideInputDifferent, { pinned: true, active: true });
-		assert.strictEqual(group.contains(untypedSideBySideInputDifferent), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.ANY }), true);
-		assert.strictEqual(group.contains(untypedInput1, { supportSideBySide: SideBySideEditor.BOTH }), false);
+		group.openEditor(sideBySideInputDifferent, {
+			pinned: true,
+			active: true,
+		});
+		assert.strictEqual(
+			group.contains(untypedSideBySideInputDifferent),
+			true
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.ANY,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(untypedInput1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			false
+		);
 	});
 
-	test('contains()', () => {
+	test("contains()", () => {
 		const group = createEditorGroupModel();
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables
+		);
 
 		const input1 = input();
 		const input2 = input();
 
-		const diffInput1 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input1, input2, undefined);
-		const diffInput2 = instantiationService.createInstance(DiffEditorInput, 'name', 'description', input2, input1, undefined);
+		const diffInput1 = instantiationService.createInstance(
+			DiffEditorInput,
+			"name",
+			"description",
+			input1,
+			input2,
+			undefined
+		);
+		const diffInput2 = instantiationService.createInstance(
+			DiffEditorInput,
+			"name",
+			"description",
+			input2,
+			input1,
+			undefined
+		);
 
-		const sideBySideInputSame = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input1);
-		const sideBySideInputDifferent = instantiationService.createInstance(SideBySideEditorInput, 'name', undefined, input1, input2);
+		const sideBySideInputSame = instantiationService.createInstance(
+			SideBySideEditorInput,
+			"name",
+			undefined,
+			input1,
+			input1
+		);
+		const sideBySideInputDifferent = instantiationService.createInstance(
+			SideBySideEditorInput,
+			"name",
+			undefined,
+			input1,
+			input2
+		);
 
 		group.openEditor(input1, { pinned: true, active: true });
 
 		assert.strictEqual(group.contains(input1), true);
-		assert.strictEqual(group.contains(input1, { strictEquals: true }), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(input1, { strictEquals: true }),
+			true
+		);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
 		assert.strictEqual(group.contains(input2), false);
-		assert.strictEqual(group.contains(input2, { strictEquals: true }), false);
-		assert.strictEqual(group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }), false);
+		assert.strictEqual(
+			group.contains(input2, { strictEquals: true }),
+			false
+		);
+		assert.strictEqual(
+			group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }),
+			false
+		);
 		assert.strictEqual(group.contains(diffInput1), false);
 		assert.strictEqual(group.contains(diffInput2), false);
 
@@ -605,7 +960,10 @@ suite('EditorGroupModel', () => {
 		group.closeEditor(input1);
 
 		assert.strictEqual(group.contains(input1), false);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
 		assert.strictEqual(group.contains(input2), true);
 		assert.strictEqual(group.contains(diffInput1), true);
 		assert.strictEqual(group.contains(diffInput2), true);
@@ -613,33 +971,51 @@ suite('EditorGroupModel', () => {
 		group.closeEditor(input2);
 
 		assert.strictEqual(group.contains(input1), false);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
 		assert.strictEqual(group.contains(input2), false);
-		assert.strictEqual(group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
 		assert.strictEqual(group.contains(diffInput1), true);
 		assert.strictEqual(group.contains(diffInput2), true);
 
 		group.closeEditor(diffInput1);
 
 		assert.strictEqual(group.contains(input1), false);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
 		assert.strictEqual(group.contains(input2), false);
-		assert.strictEqual(group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }), true);
+		assert.strictEqual(
+			group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
 		assert.strictEqual(group.contains(diffInput1), false);
 		assert.strictEqual(group.contains(diffInput2), true);
 
 		group.closeEditor(diffInput2);
 
 		assert.strictEqual(group.contains(input1), false);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), false);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			false
+		);
 		assert.strictEqual(group.contains(input2), false);
-		assert.strictEqual(group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }), false);
+		assert.strictEqual(
+			group.contains(input2, { supportSideBySide: SideBySideEditor.ANY }),
+			false
+		);
 		assert.strictEqual(group.contains(diffInput1), false);
 		assert.strictEqual(group.contains(diffInput2), false);
 
-		const input3 = input(undefined, true, URI.parse('foo://bar'));
+		const input3 = input(undefined, true, URI.parse("foo://bar"));
 
-		const input4 = input(undefined, true, URI.parse('foo://barsomething'));
+		const input4 = input(undefined, true, URI.parse("foo://barsomething"));
 
 		group.openEditor(input3, { pinned: true, active: true });
 		assert.strictEqual(group.contains(input4), false);
@@ -653,24 +1029,71 @@ suite('EditorGroupModel', () => {
 		group.openEditor(sideBySideInputSame, { pinned: true, active: true });
 
 		assert.strictEqual(group.contains(sideBySideInputSame), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.BOTH }), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY, strictEquals: true }), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.BOTH, strictEquals: true }), true);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
+		assert.strictEqual(
+			group.contains(input1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(input1, {
+				supportSideBySide: SideBySideEditor.ANY,
+				strictEquals: true,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(input1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+				strictEquals: true,
+			}),
+			true
+		);
 
 		group.closeEditor(sideBySideInputSame);
 
 		assert.strictEqual(group.count, 0);
-		group.openEditor(sideBySideInputDifferent, { pinned: true, active: true });
+		group.openEditor(sideBySideInputDifferent, {
+			pinned: true,
+			active: true,
+		});
 		assert.strictEqual(group.contains(sideBySideInputDifferent), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.ANY, strictEquals: true }), true);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.BOTH }), false);
-		assert.strictEqual(group.contains(input1, { supportSideBySide: SideBySideEditor.BOTH, strictEquals: true }), false);
+		assert.strictEqual(
+			group.contains(input1, { supportSideBySide: SideBySideEditor.ANY }),
+			true
+		);
+		assert.strictEqual(
+			group.contains(input1, {
+				supportSideBySide: SideBySideEditor.ANY,
+				strictEquals: true,
+			}),
+			true
+		);
+		assert.strictEqual(
+			group.contains(input1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+			}),
+			false
+		);
+		assert.strictEqual(
+			group.contains(input1, {
+				supportSideBySide: SideBySideEditor.BOTH,
+				strictEquals: true,
+			}),
+			false
+		);
 	});
 
-	test('group serialization', function () {
-		inst().invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+	test("group serialization", function () {
+		inst().invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -686,8 +1109,14 @@ suite('EditorGroupModel', () => {
 		let deserialized = createEditorGroupModel(group.serialize());
 		assert.strictEqual(group.id, deserialized.id);
 		assert.strictEqual(deserialized.count, 3);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.SEQUENTIAL).length, 3);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 3);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.SEQUENTIAL).length,
+			3
+		);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			3
+		);
 		assert.strictEqual(deserialized.isPinned(input1), true);
 		assert.strictEqual(deserialized.isPinned(input2), true);
 		assert.strictEqual(deserialized.isPinned(input3), false);
@@ -699,8 +1128,14 @@ suite('EditorGroupModel', () => {
 		deserialized = createEditorGroupModel(group.serialize());
 		assert.strictEqual(group.id, deserialized.id);
 		assert.strictEqual(deserialized.count, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.SEQUENTIAL).length, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.SEQUENTIAL).length,
+			0
+		);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 
 		// Case 3: inputs cannot be deserialized
 		TestEditorInputSerializer.disableSerialize = false;
@@ -709,12 +1144,22 @@ suite('EditorGroupModel', () => {
 		deserialized = createEditorGroupModel(group.serialize());
 		assert.strictEqual(group.id, deserialized.id);
 		assert.strictEqual(deserialized.count, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.SEQUENTIAL).length, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.SEQUENTIAL).length,
+			0
+		);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 	});
 
-	test('group serialization (sticky editor)', function () {
-		inst().invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+	test("group serialization (sticky editor)", function () {
+		inst().invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -753,8 +1198,14 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.id, deserialized.id);
 		assert.strictEqual(deserialized.count, 0);
 		assert.strictEqual(deserialized.stickyCount, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.SEQUENTIAL).length, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.SEQUENTIAL).length,
+			0
+		);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 
 		// Case 3: inputs cannot be deserialized
 		TestEditorInputSerializer.disableSerialize = false;
@@ -764,11 +1215,17 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.id, deserialized.id);
 		assert.strictEqual(deserialized.count, 0);
 		assert.strictEqual(deserialized.stickyCount, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.SEQUENTIAL).length, 0);
-		assert.strictEqual(deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.SEQUENTIAL).length,
+			0
+		);
+		assert.strictEqual(
+			deserialized.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 	});
 
-	test('group serialization (locked group)', function () {
+	test("group serialization (locked group)", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -785,7 +1242,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(events.locked.length, 2);
 	});
 
-	test('locked group', function () {
+	test("locked group", function () {
 		const group = createEditorGroupModel();
 		group.lock(true);
 
@@ -801,7 +1258,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(deserialized.isLocked, false);
 	});
 
-	test('index', function () {
+	test("index", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -812,18 +1269,18 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(events.index.length, 1);
 	});
 
-	test('label', function () {
+	test("label", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
 		assert.strictEqual(events.label.length, 0);
 
-		group.setLabel('Window 1');
+		group.setLabel("Window 1");
 
 		assert.strictEqual(events.label.length, 1);
 	});
 
-	test('active', function () {
+	test("active", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -834,21 +1291,30 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(events.active.length, 1);
 	});
 
-	test('One Editor', function () {
+	test("One Editor", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 
 		// Active && Pinned
 		const input1 = input();
-		const { editor: openedEditor, isNew } = group.openEditor(input1, { active: true, pinned: true });
+		const { editor: openedEditor, isNew } = group.openEditor(input1, {
+			active: true,
+			pinned: true,
+		});
 		assert.strictEqual(openedEditor, input1);
 		assert.strictEqual(isNew, true);
 
 		assert.strictEqual(group.count, 1);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			1
+		);
 		assert.strictEqual(group.findEditor(input1)![0], input1);
 		assert.strictEqual(group.activeEditor, input1);
 		assert.strictEqual(group.isActive(input1), true);
@@ -868,20 +1334,29 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(event?.editor, input1);
 		assert.strictEqual(event?.editorIndex, index);
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 		assert.strictEqual(group.activeEditor, null);
 		assert.strictEqual(group.isFirst(input1), false);
 		assert.strictEqual(group.isLast(input1), false);
 		assert.strictEqual(events.closed[0].editor, input1);
 		assert.strictEqual(events.closed[0].editorIndex, 0);
-		assert.strictEqual(events.closed[0].context === EditorCloseContext.UNPIN, true);
+		assert.strictEqual(
+			events.closed[0].context === EditorCloseContext.UNPIN,
+			true
+		);
 
 		// Active && Preview
 		const input2 = input();
 		group.openEditor(input2, { active: true, pinned: false });
 
 		assert.strictEqual(group.count, 1);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			1
+		);
 		assert.strictEqual(group.activeEditor, input2);
 		assert.strictEqual(group.isActive(input2), true);
 		assert.strictEqual(group.isPinned(input2), false);
@@ -894,16 +1369,25 @@ suite('EditorGroupModel', () => {
 
 		group.closeEditor(input2);
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 		assert.strictEqual(group.activeEditor, null);
 		assert.strictEqual(events.closed[1].editor, input2);
 		assert.strictEqual(events.closed[1].editorIndex, 0);
-		assert.strictEqual(events.closed[1].context === EditorCloseContext.REPLACE, false);
+		assert.strictEqual(
+			events.closed[1].context === EditorCloseContext.REPLACE,
+			false
+		);
 
 		event = group.closeEditor(input2);
 		assert.ok(!event);
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 		assert.strictEqual(group.activeEditor, null);
 		assert.strictEqual(events.closed[1].editor, input2);
 
@@ -912,7 +1396,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input3, { active: false, pinned: true });
 
 		assert.strictEqual(group.count, 1);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			1
+		);
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.isActive(input3), true);
 		assert.strictEqual(group.isPinned(input3), true);
@@ -923,7 +1410,10 @@ suite('EditorGroupModel', () => {
 
 		group.closeEditor(input3);
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 		assert.strictEqual(group.activeEditor, null);
 		assert.strictEqual(events.closed[2].editor, input3);
 
@@ -932,7 +1422,10 @@ suite('EditorGroupModel', () => {
 
 		group.closeEditor(input3);
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 		assert.strictEqual(group.activeEditor, null);
 		assert.strictEqual(events.closed[2].editor, input3);
 
@@ -941,7 +1434,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input4);
 
 		assert.strictEqual(group.count, 1);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			1
+		);
 		assert.strictEqual(group.activeEditor, input4);
 		assert.strictEqual(group.isActive(input4), true);
 		assert.strictEqual(group.isPinned(input4), false);
@@ -952,26 +1448,35 @@ suite('EditorGroupModel', () => {
 
 		group.closeEditor(input4);
 		assert.strictEqual(group.count, 0);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 0);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			0
+		);
 		assert.strictEqual(group.activeEditor, null);
 		assert.strictEqual(events.closed[3].editor, input4);
 	});
 
-	test('Multiple Editors - Pinned and Active', function () {
+	test("Multiple Editors - Pinned and Active", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
-		const input1 = input('1');
-		const input1Copy = input('1');
-		const input2 = input('2');
-		const input3 = input('3');
+		const input1 = input("1");
+		const input1Copy = input("1");
+		const input2 = input("2");
+		const input3 = input("3");
 
 		// Pinned and Active
-		let openedEditorResult = group.openEditor(input1, { pinned: true, active: true });
+		let openedEditorResult = group.openEditor(input1, {
+			pinned: true,
+			active: true,
+		});
 		assert.strictEqual(openedEditorResult.editor, input1);
 		assert.strictEqual(openedEditorResult.isNew, true);
 
-		openedEditorResult = group.openEditor(input1Copy, { pinned: true, active: true }); // opening copy of editor should still return existing one
+		openedEditorResult = group.openEditor(input1Copy, {
+			pinned: true,
+			active: true,
+		}); // opening copy of editor should still return existing one
 		assert.strictEqual(openedEditorResult.editor, input1);
 		assert.strictEqual(openedEditorResult.isNew, false);
 
@@ -979,7 +1484,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input3, { pinned: true, active: true });
 
 		assert.strictEqual(group.count, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 3);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			3
+		);
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.isActive(input1), false);
 		assert.strictEqual(group.isPinned(input1), true);
@@ -1012,7 +1520,7 @@ suite('EditorGroupModel', () => {
 
 		// Add some tests where a matching input is used
 		// and verify that events carry the original input
-		const sameInput1 = input('1');
+		const sameInput1 = input("1");
 		group.openEditor(sameInput1, { pinned: true, active: true });
 		assert.strictEqual(events.activated[3].editor, input1);
 		assert.strictEqual(events.activated[3].editorIndex, 0);
@@ -1048,7 +1556,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.count, 0);
 	});
 
-	test('Multiple Editors - Preview editor moves to the side of the active one', function () {
+	test("Multiple Editors - Preview editor moves to the side of the active one", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -1059,26 +1567,39 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input2, { pinned: true, active: true });
 		group.openEditor(input3, { pinned: true, active: true });
 
-		assert.strictEqual(input3, group.getEditors(EditorsOrder.SEQUENTIAL)[2]);
+		assert.strictEqual(
+			input3,
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2]
+		);
 
 		const input4 = input();
 		group.openEditor(input4, { pinned: false, active: true }); // this should cause the preview editor to move after input3
 
-		assert.strictEqual(input4, group.getEditors(EditorsOrder.SEQUENTIAL)[2]);
+		assert.strictEqual(
+			input4,
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2]
+		);
 	});
 
-	test('Multiple Editors - Pinned and Active (DEFAULT_OPEN_EDITOR_DIRECTION = Direction.LEFT)', function () {
+	test("Multiple Editors - Pinned and Active (DEFAULT_OPEN_EDITOR_DIRECTION = Direction.LEFT)", function () {
 		const inst = new TestInstantiationService();
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
-		inst.stub(ILifecycleService, disposables.add(new TestLifecycleService()));
+		inst.stub(
+			ILifecycleService,
+			disposables.add(new TestLifecycleService())
+		);
 		inst.stub(IWorkspaceContextService, new TestContextService());
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
 		inst.stub(IConfigurationService, config);
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'left' } });
+		config.setUserConfiguration("workbench", {
+			editor: { openPositioning: "left" },
+		});
 
-		const group: EditorGroupModel = disposables.add(inst.createInstance(EditorGroupModel, undefined));
+		const group: EditorGroupModel = disposables.add(
+			inst.createInstance(EditorGroupModel, undefined)
+		);
 
 		const events = groupListener(group);
 
@@ -1091,9 +1612,18 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input2, { pinned: true, active: true });
 		group.openEditor(input3, { pinned: true, active: true });
 
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input2);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[2], input1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input2
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			input1
+		);
 
 		closeAllEditors(group);
 
@@ -1102,7 +1632,7 @@ suite('EditorGroupModel', () => {
 		inst.dispose();
 	});
 
-	test('Multiple Editors - Pinned and Not Active', function () {
+	test("Multiple Editors - Pinned and Not Active", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -1115,7 +1645,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input3, { pinned: true });
 
 		assert.strictEqual(group.count, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 3);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			3
+		);
 		assert.strictEqual(group.activeEditor, input1);
 		assert.strictEqual(group.isActive(input1), true);
 		assert.strictEqual(group.isPinned(input1), true);
@@ -1134,7 +1667,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(mru[2], input2);
 	});
 
-	test('Multiple Editors - Preview gets overwritten', function () {
+	test("Multiple Editors - Preview gets overwritten", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -1148,7 +1681,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input3); // overwrites preview
 
 		assert.strictEqual(group.count, 1);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			1
+		);
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.isActive(input3), true);
 		assert.strictEqual(group.isPinned(input3), false);
@@ -1159,15 +1695,21 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(events.opened[2].editor, input3);
 		assert.strictEqual(events.closed[0].editor, input1);
 		assert.strictEqual(events.closed[1].editor, input2);
-		assert.strictEqual(events.closed[0].context === EditorCloseContext.REPLACE, true);
-		assert.strictEqual(events.closed[1].context === EditorCloseContext.REPLACE, true);
+		assert.strictEqual(
+			events.closed[0].context === EditorCloseContext.REPLACE,
+			true
+		);
+		assert.strictEqual(
+			events.closed[1].context === EditorCloseContext.REPLACE,
+			true
+		);
 
 		const mru = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE);
 		assert.strictEqual(mru[0], input3);
 		assert.strictEqual(mru.length, 1);
 	});
 
-	test('Multiple Editors - set active', function () {
+	test("Multiple Editors - set active", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -1202,7 +1744,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(mru[2], input2);
 	});
 
-	test('Multiple Editors - pin and unpin', function () {
+	test("Multiple Editors - pin and unpin", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -1237,8 +1779,14 @@ suite('EditorGroupModel', () => {
 
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.count, 2); // 2 previews got merged into one
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input2);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input3);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input2
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input3
+		);
 		assert.strictEqual(events.closed[0].editor, input1);
 		assert.strictEqual(group.count, 2);
 
@@ -1246,12 +1794,15 @@ suite('EditorGroupModel', () => {
 
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.count, 1); // pinning replaced the preview
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input3);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input3
+		);
 		assert.strictEqual(events.closed[1].editor, input2);
 		assert.strictEqual(group.count, 1);
 	});
 
-	test('Multiple Editors - closing picks next from MRU list', function () {
+	test("Multiple Editors - closing picks next from MRU list", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -1268,7 +1819,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input5, { pinned: true, active: true });
 
 		assert.strictEqual(group.activeEditor, input5);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0], input5);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0],
+			input5
+		);
 		assert.strictEqual(group.count, 5);
 
 		group.closeEditor(input5);
@@ -1300,18 +1854,25 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.count, 0);
 	});
 
-	test('Multiple Editors - closing picks next to the right', function () {
+	test("Multiple Editors - closing picks next to the right", function () {
 		const inst = new TestInstantiationService();
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
-		inst.stub(ILifecycleService, disposables.add(new TestLifecycleService()));
+		inst.stub(
+			ILifecycleService,
+			disposables.add(new TestLifecycleService())
+		);
 		inst.stub(IWorkspaceContextService, new TestContextService());
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { focusRecentEditorAfterClose: false } });
+		config.setUserConfiguration("workbench", {
+			editor: { focusRecentEditorAfterClose: false },
+		});
 		inst.stub(IConfigurationService, config);
 
-		const group = disposables.add(inst.createInstance(EditorGroupModel, undefined));
+		const group = disposables.add(
+			inst.createInstance(EditorGroupModel, undefined)
+		);
 		const events = groupListener(group);
 
 		const input1 = input();
@@ -1327,7 +1888,10 @@ suite('EditorGroupModel', () => {
 		group.openEditor(input5, { pinned: true, active: true });
 
 		assert.strictEqual(group.activeEditor, input5);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0], input5);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0],
+			input5
+		);
 		assert.strictEqual(group.count, 5);
 
 		group.closeEditor(input5);
@@ -1359,7 +1923,7 @@ suite('EditorGroupModel', () => {
 		inst.dispose();
 	});
 
-	test('Multiple Editors - move editor', function () {
+	test("Multiple Editors - move editor", function () {
 		const group = createEditorGroupModel();
 		const events = groupListener(group);
 
@@ -1377,8 +1941,14 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(events.moved[0].editor, input1);
 		assert.strictEqual(events.moved[0].oldEditorIndex, 0);
 		assert.strictEqual(events.moved[0].editorIndex, 1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input2);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input2
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input1
+		);
 
 		group.setActive(input1);
 		group.openEditor(input3, { pinned: true, active: true });
@@ -1391,20 +1961,50 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(events.moved[1].oldEditorIndex, 3);
 		assert.strictEqual(events.moved[1].editorIndex, 0);
 		assert.strictEqual(events.moved[1].editor, input4);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input4);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input2);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[2], input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[3], input3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[4], input5);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input4
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input2
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			input1
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[3],
+			input3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[4],
+			input5
+		);
 
 		group.moveEditor(input4, 3);
 		group.moveEditor(input2, 1);
 
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input2);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[2], input3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[3], input4);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[4], input5);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input1
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input2
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			input3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[3],
+			input4
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[4],
+			input5
+		);
 
 		assert.strictEqual(events.moved.length, 4);
 		group.moveEditor(input1, 0);
@@ -1419,14 +2019,20 @@ suite('EditorGroupModel', () => {
 
 		group.moveEditor(input5, -1);
 		assert.strictEqual(events.moved.length, 5);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input5);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input5
+		);
 
 		group.moveEditor(input1, 100);
 		assert.strictEqual(events.moved.length, 6);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[4], input1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[4],
+			input1
+		);
 	});
 
-	test('Multiple Editors - move editor across groups', function () {
+	test("Multiple Editors - move editor across groups", function () {
 		const group1 = createEditorGroupModel();
 		const group2 = createEditorGroupModel();
 
@@ -1443,12 +2049,21 @@ suite('EditorGroupModel', () => {
 		group1.openEditor(g2_input1, { active: true, pinned: true, index: 1 });
 
 		assert.strictEqual(group1.count, 3);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[0], g1_input1);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[1], g2_input1);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[2], g1_input2);
+		assert.strictEqual(
+			group1.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			g1_input1
+		);
+		assert.strictEqual(
+			group1.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			g2_input1
+		);
+		assert.strictEqual(
+			group1.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			g1_input2
+		);
 	});
 
-	test('Multiple Editors - move editor across groups (input already exists in group 1)', function () {
+	test("Multiple Editors - move editor across groups (input already exists in group 1)", function () {
 		const group1 = createEditorGroupModel();
 		const group2 = createEditorGroupModel();
 
@@ -1467,43 +2082,70 @@ suite('EditorGroupModel', () => {
 		group1.openEditor(g2_input1, { active: true, pinned: true, index: 0 });
 
 		assert.strictEqual(group1.count, 3);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[0], g1_input2);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[1], g1_input1);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[2], g1_input3);
+		assert.strictEqual(
+			group1.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			g1_input2
+		);
+		assert.strictEqual(
+			group1.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			g1_input1
+		);
+		assert.strictEqual(
+			group1.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			g1_input3
+		);
 	});
 
-	test('Multiple Editors - Pinned & Non Active', function () {
+	test("Multiple Editors - Pinned & Non Active", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input();
 		group.openEditor(input1);
 		assert.strictEqual(group.activeEditor, input1);
 		assert.strictEqual(group.previewEditor, input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input1);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input1
+		);
 		assert.strictEqual(group.count, 1);
 
 		const input2 = input();
 		group.openEditor(input2, { pinned: true, active: false });
 		assert.strictEqual(group.activeEditor, input1);
 		assert.strictEqual(group.previewEditor, input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input2);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input1
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input2
+		);
 		assert.strictEqual(group.count, 2);
 
 		const input3 = input();
 		group.openEditor(input3, { pinned: true, active: false });
 		assert.strictEqual(group.activeEditor, input1);
 		assert.strictEqual(group.previewEditor, input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[2], input2);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input1
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			input2
+		);
 		assert.strictEqual(group.isPinned(input1), false);
 		assert.strictEqual(group.isPinned(input2), true);
 		assert.strictEqual(group.isPinned(input3), true);
 		assert.strictEqual(group.count, 3);
 	});
 
-	test('Multiple Editors - Close Others, Close Left, Close Right', function () {
+	test("Multiple Editors - Close Others, Close Left, Close Right", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -1536,9 +2178,18 @@ suite('EditorGroupModel', () => {
 		closeEditors(group, group.activeEditor!, CloseDirection.LEFT);
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.count, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input4);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[2], input5);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input4
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			input5
+		);
 
 		closeAllEditors(group);
 		group.openEditor(input1, { active: true, pinned: true });
@@ -1553,79 +2204,112 @@ suite('EditorGroupModel', () => {
 		closeEditors(group, group.activeEditor!, CloseDirection.RIGHT);
 		assert.strictEqual(group.activeEditor, input3);
 		assert.strictEqual(group.count, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], input1);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], input2);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[2], input3);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			input1
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			input2
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2],
+			input3
+		);
 	});
 
-	test('Multiple Editors - real user example', function () {
+	test("Multiple Editors - real user example", function () {
 		const group = createEditorGroupModel();
 
 		// [] -> /index.html/
-		const indexHtml = input('index.html');
+		const indexHtml = input("index.html");
 		let openedEditor = group.openEditor(indexHtml).editor;
 		assert.strictEqual(openedEditor, indexHtml);
 		assert.strictEqual(group.activeEditor, indexHtml);
 		assert.strictEqual(group.previewEditor, indexHtml);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], indexHtml);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			indexHtml
+		);
 		assert.strictEqual(group.count, 1);
 
 		// /index.html/ -> /index.html/
-		const sameIndexHtml = input('index.html');
+		const sameIndexHtml = input("index.html");
 		openedEditor = group.openEditor(sameIndexHtml).editor;
 		assert.strictEqual(openedEditor, indexHtml);
 		assert.strictEqual(group.activeEditor, indexHtml);
 		assert.strictEqual(group.previewEditor, indexHtml);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], indexHtml);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			indexHtml
+		);
 		assert.strictEqual(group.count, 1);
 
 		// /index.html/ -> /style.css/
-		const styleCss = input('style.css');
+		const styleCss = input("style.css");
 		openedEditor = group.openEditor(styleCss).editor;
 		assert.strictEqual(openedEditor, styleCss);
 		assert.strictEqual(group.activeEditor, styleCss);
 		assert.strictEqual(group.previewEditor, styleCss);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], styleCss);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			styleCss
+		);
 		assert.strictEqual(group.count, 1);
 
 		// /style.css/ -> [/style.css/, test.js]
-		const testJs = input('test.js');
-		openedEditor = group.openEditor(testJs, { active: true, pinned: true }).editor;
+		const testJs = input("test.js");
+		openedEditor = group.openEditor(testJs, {
+			active: true,
+			pinned: true,
+		}).editor;
 		assert.strictEqual(openedEditor, testJs);
 		assert.strictEqual(group.previewEditor, styleCss);
 		assert.strictEqual(group.activeEditor, testJs);
 		assert.strictEqual(group.isPinned(styleCss), false);
 		assert.strictEqual(group.isPinned(testJs), true);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], styleCss);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], testJs);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			styleCss
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			testJs
+		);
 		assert.strictEqual(group.count, 2);
 
 		// [/style.css/, test.js] -> [test.js, /index.html/]
-		const indexHtml2 = input('index.html');
+		const indexHtml2 = input("index.html");
 		group.openEditor(indexHtml2, { active: true });
 		assert.strictEqual(group.activeEditor, indexHtml2);
 		assert.strictEqual(group.previewEditor, indexHtml2);
 		assert.strictEqual(group.isPinned(indexHtml2), false);
 		assert.strictEqual(group.isPinned(testJs), true);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[0], testJs);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], indexHtml2);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[0],
+			testJs
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			indexHtml2
+		);
 		assert.strictEqual(group.count, 2);
 
 		// make test.js active
-		const testJs2 = input('test.js');
+		const testJs2 = input("test.js");
 		group.setActive(testJs2);
 		assert.strictEqual(group.activeEditor, testJs);
 		assert.strictEqual(group.isActive(testJs2), true);
 		assert.strictEqual(group.count, 2);
 
 		// [test.js, /indexHtml/] -> [test.js, index.html]
-		const indexHtml3 = input('index.html');
+		const indexHtml3 = input("index.html");
 		group.pin(indexHtml3);
 		assert.strictEqual(group.isPinned(indexHtml3), true);
 		assert.strictEqual(group.activeEditor, testJs);
 
 		// [test.js, index.html] -> [test.js, file.ts, index.html]
-		const fileTs = input('file.ts');
+		const fileTs = input("file.ts");
 		group.openEditor(fileTs, { active: true, pinned: true });
 		assert.strictEqual(group.isPinned(fileTs), true);
 		assert.strictEqual(group.count, 3);
@@ -1638,16 +2322,21 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.activeEditor, fileTs);
 
 		// [test.js, /file.ts/, index.html] -> [test.js, /other.ts/, index.html]
-		const otherTs = input('other.ts');
+		const otherTs = input("other.ts");
 		group.openEditor(otherTs, { active: true });
 		assert.strictEqual(group.count, 3);
 		assert.strictEqual(group.activeEditor, otherTs);
 		assert.ok(group.getEditors(EditorsOrder.SEQUENTIAL)[0].matches(testJs));
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], otherTs);
-		assert.ok(group.getEditors(EditorsOrder.SEQUENTIAL)[2].matches(indexHtml));
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			otherTs
+		);
+		assert.ok(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[2].matches(indexHtml)
+		);
 
 		// make index.html active
-		const indexHtml4 = input('index.html');
+		const indexHtml4 = input("index.html");
 		group.setActive(indexHtml4);
 		assert.strictEqual(group.activeEditor, indexHtml2);
 
@@ -1656,7 +2345,10 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.count, 2);
 		assert.strictEqual(group.activeEditor, otherTs);
 		assert.ok(group.getEditors(EditorsOrder.SEQUENTIAL)[0].matches(testJs));
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL)[1], otherTs);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL)[1],
+			otherTs
+		);
 
 		// [test.js, /other.ts/] -> [test.js]
 		group.closeEditor(otherTs);
@@ -1678,7 +2370,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.previewEditor, null);
 	});
 
-	test('Single Group, Single Editor - persist', function () {
+	test("Single Group, Single Editor - persist", function () {
 		const inst = new TestInstantiationService();
 
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
@@ -1688,10 +2380,16 @@ suite('EditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
+		config.setUserConfiguration("workbench", {
+			editor: { openPositioning: "right" },
+		});
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 
 		let group = createEditorGroupModel();
 
@@ -1704,7 +2402,9 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.isActive(input1), true);
 
 		// Create model again - should load from storage
-		group = disposables.add(inst.createInstance(EditorGroupModel, group.serialize()));
+		group = disposables.add(
+			inst.createInstance(EditorGroupModel, group.serialize())
+		);
 
 		assert.strictEqual(group.count, 1);
 		assert.strictEqual(group.activeEditor!.matches(input1), true);
@@ -1713,7 +2413,7 @@ suite('EditorGroupModel', () => {
 		inst.dispose();
 	});
 
-	test('Multiple Groups, Multiple editors - persist', function () {
+	test("Multiple Groups, Multiple editors - persist", function () {
 		const inst = new TestInstantiationService();
 
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
@@ -1723,10 +2423,16 @@ suite('EditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
+		config.setUserConfiguration("workbench", {
+			editor: { openPositioning: "right" },
+		});
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 
 		let group1 = createEditorGroupModel();
 
@@ -1755,17 +2461,51 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group1.previewEditor!.matches(g1_input2), true);
 		assert.strictEqual(group2.previewEditor!.matches(g2_input2), true);
 
-		assert.strictEqual(group1.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0].matches(g1_input2), true);
-		assert.strictEqual(group1.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1].matches(g1_input3), true);
-		assert.strictEqual(group1.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2].matches(g1_input1), true);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0]
+				.matches(g1_input2),
+			true
+		);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1]
+				.matches(g1_input3),
+			true
+		);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2]
+				.matches(g1_input1),
+			true
+		);
 
-		assert.strictEqual(group2.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0].matches(g2_input1), true);
-		assert.strictEqual(group2.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1].matches(g2_input3), true);
-		assert.strictEqual(group2.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2].matches(g2_input2), true);
+		assert.strictEqual(
+			group2
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0]
+				.matches(g2_input1),
+			true
+		);
+		assert.strictEqual(
+			group2
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1]
+				.matches(g2_input3),
+			true
+		);
+		assert.strictEqual(
+			group2
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2]
+				.matches(g2_input2),
+			true
+		);
 
 		// Create model again - should load from storage
-		group1 = disposables.add(inst.createInstance(EditorGroupModel, group1.serialize()));
-		group2 = disposables.add(inst.createInstance(EditorGroupModel, group2.serialize()));
+		group1 = disposables.add(
+			inst.createInstance(EditorGroupModel, group1.serialize())
+		);
+		group2 = disposables.add(
+			inst.createInstance(EditorGroupModel, group2.serialize())
+		);
 
 		assert.strictEqual(group1.count, 3);
 		assert.strictEqual(group2.count, 3);
@@ -1774,17 +2514,47 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group1.previewEditor!.matches(g1_input2), true);
 		assert.strictEqual(group2.previewEditor!.matches(g2_input2), true);
 
-		assert.strictEqual(group1.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0].matches(g1_input2), true);
-		assert.strictEqual(group1.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1].matches(g1_input3), true);
-		assert.strictEqual(group1.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2].matches(g1_input1), true);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0]
+				.matches(g1_input2),
+			true
+		);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1]
+				.matches(g1_input3),
+			true
+		);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2]
+				.matches(g1_input1),
+			true
+		);
 
-		assert.strictEqual(group2.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0].matches(g2_input1), true);
-		assert.strictEqual(group2.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1].matches(g2_input3), true);
-		assert.strictEqual(group2.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2].matches(g2_input2), true);
+		assert.strictEqual(
+			group2
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0]
+				.matches(g2_input1),
+			true
+		);
+		assert.strictEqual(
+			group2
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1]
+				.matches(g2_input3),
+			true
+		);
+		assert.strictEqual(
+			group2
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2]
+				.matches(g2_input2),
+			true
+		);
 		inst.dispose();
 	});
 
-	test('Single group, multiple editors - persist (some not persistable)', function () {
+	test("Single group, multiple editors - persist (some not persistable)", function () {
 		const inst = new TestInstantiationService();
 
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
@@ -1794,42 +2564,87 @@ suite('EditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
+		config.setUserConfiguration("workbench", {
+			editor: { openPositioning: "right" },
+		});
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 
 		let group = createEditorGroupModel();
 
 		const serializableInput1 = input();
-		const nonSerializableInput2 = input('3', true);
+		const nonSerializableInput2 = input("3", true);
 		const serializableInput2 = input();
 
 		group.openEditor(serializableInput1, { active: true, pinned: true });
-		group.openEditor(nonSerializableInput2, { active: true, pinned: false });
+		group.openEditor(nonSerializableInput2, {
+			active: true,
+			pinned: false,
+		});
 		group.openEditor(serializableInput2, { active: false, pinned: true });
 
 		assert.strictEqual(group.count, 3);
-		assert.strictEqual(group.activeEditor!.matches(nonSerializableInput2), true);
-		assert.strictEqual(group.previewEditor!.matches(nonSerializableInput2), true);
+		assert.strictEqual(
+			group.activeEditor!.matches(nonSerializableInput2),
+			true
+		);
+		assert.strictEqual(
+			group.previewEditor!.matches(nonSerializableInput2),
+			true
+		);
 
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0].matches(nonSerializableInput2), true);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1].matches(serializableInput2), true);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2].matches(serializableInput1), true);
+		assert.strictEqual(
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0]
+				.matches(nonSerializableInput2),
+			true
+		);
+		assert.strictEqual(
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1]
+				.matches(serializableInput2),
+			true
+		);
+		assert.strictEqual(
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[2]
+				.matches(serializableInput1),
+			true
+		);
 
 		// Create model again - should load from storage
-		group = disposables.add(inst.createInstance(EditorGroupModel, group.serialize()));
+		group = disposables.add(
+			inst.createInstance(EditorGroupModel, group.serialize())
+		);
 
 		assert.strictEqual(group.count, 2);
-		assert.strictEqual(group.activeEditor!.matches(serializableInput2), true);
+		assert.strictEqual(
+			group.activeEditor!.matches(serializableInput2),
+			true
+		);
 		assert.strictEqual(group.previewEditor, null);
 
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0].matches(serializableInput2), true);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1].matches(serializableInput1), true);
+		assert.strictEqual(
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[0]
+				.matches(serializableInput2),
+			true
+		);
+		assert.strictEqual(
+			group
+				.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)[1]
+				.matches(serializableInput1),
+			true
+		);
 		inst.dispose();
 	});
 
-	test('Single group, multiple editors - persist (some not persistable, sticky editors)', function () {
+	test("Single group, multiple editors - persist (some not persistable, sticky editors)", function () {
 		const inst = new TestInstantiationService();
 
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
@@ -1839,33 +2654,45 @@ suite('EditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
+		config.setUserConfiguration("workbench", {
+			editor: { openPositioning: "right" },
+		});
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 
 		let group = createEditorGroupModel();
 
 		const serializableInput1 = input();
-		const nonSerializableInput2 = input('3', true);
+		const nonSerializableInput2 = input("3", true);
 		const serializableInput2 = input();
 
 		group.openEditor(serializableInput1, { active: true, pinned: true });
-		group.openEditor(nonSerializableInput2, { active: true, pinned: true, sticky: true });
+		group.openEditor(nonSerializableInput2, {
+			active: true,
+			pinned: true,
+			sticky: true,
+		});
 		group.openEditor(serializableInput2, { active: false, pinned: true });
 
 		assert.strictEqual(group.count, 3);
 		assert.strictEqual(group.stickyCount, 1);
 
 		// Create model again - should load from storage
-		group = disposables.add(inst.createInstance(EditorGroupModel, group.serialize()));
+		group = disposables.add(
+			inst.createInstance(EditorGroupModel, group.serialize())
+		);
 
 		assert.strictEqual(group.count, 2);
 		assert.strictEqual(group.stickyCount, 0);
 		inst.dispose();
 	});
 
-	test('Multiple groups, multiple editors - persist (some not persistable, causes empty group)', function () {
+	test("Multiple groups, multiple editors - persist (some not persistable, causes empty group)", function () {
 		const inst = new TestInstantiationService();
 
 		inst.stub(IStorageService, disposables.add(new TestStorageService()));
@@ -1875,17 +2702,23 @@ suite('EditorGroupModel', () => {
 		inst.stub(ITelemetryService, NullTelemetryService);
 
 		const config = new TestConfigurationService();
-		config.setUserConfiguration('workbench', { editor: { openPositioning: 'right' } });
+		config.setUserConfiguration("workbench", {
+			editor: { openPositioning: "right" },
+		});
 		inst.stub(IConfigurationService, config);
 
-		inst.invokeFunction(accessor => Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).start(accessor));
+		inst.invokeFunction((accessor) =>
+			Registry.as<IEditorFactoryRegistry>(
+				EditorExtensions.EditorFactory
+			).start(accessor)
+		);
 
 		let group1 = createEditorGroupModel();
 		let group2 = createEditorGroupModel();
 
 		const serializableInput1 = input();
 		const serializableInput2 = input();
-		const nonSerializableInput = input('2', true);
+		const nonSerializableInput = input("2", true);
 
 		group1.openEditor(serializableInput1, { pinned: true });
 		group1.openEditor(serializableInput2);
@@ -1893,16 +2726,30 @@ suite('EditorGroupModel', () => {
 		group2.openEditor(nonSerializableInput);
 
 		// Create model again - should load from storage
-		group1 = disposables.add(inst.createInstance(EditorGroupModel, group1.serialize()));
-		group2 = disposables.add(inst.createInstance(EditorGroupModel, group2.serialize()));
+		group1 = disposables.add(
+			inst.createInstance(EditorGroupModel, group1.serialize())
+		);
+		group2 = disposables.add(
+			inst.createInstance(EditorGroupModel, group2.serialize())
+		);
 
 		assert.strictEqual(group1.count, 2);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[0].matches(serializableInput1), true);
-		assert.strictEqual(group1.getEditors(EditorsOrder.SEQUENTIAL)[1].matches(serializableInput2), true);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.SEQUENTIAL)[0]
+				.matches(serializableInput1),
+			true
+		);
+		assert.strictEqual(
+			group1
+				.getEditors(EditorsOrder.SEQUENTIAL)[1]
+				.matches(serializableInput2),
+			true
+		);
 		inst.dispose();
 	});
 
-	test('Multiple Editors - Editor Dispose', function () {
+	test("Multiple Editors - Editor Dispose", function () {
 		const group1 = createEditorGroupModel();
 		const group2 = createEditorGroupModel();
 
@@ -1936,7 +2783,7 @@ suite('EditorGroupModel', () => {
 		assert.ok(group1Listener.disposed[1].editor.matches(input3));
 	});
 
-	test('Preview tab does not have a stable position (https://github.com/microsoft/vscode/issues/8245)', function () {
+	test("Preview tab does not have a stable position (https://github.com/microsoft/vscode/issues/8245)", function () {
 		const group1 = createEditorGroupModel();
 
 		const input1 = input();
@@ -1951,7 +2798,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group1.indexOf(input3), 1);
 	});
 
-	test('Multiple Editors - Editor Emits Dirty and Label Changed', function () {
+	test("Multiple Editors - Editor Emits Dirty and Label Changed", function () {
 		const group1 = createEditorGroupModel();
 		const group2 = createEditorGroupModel();
 
@@ -1962,32 +2809,40 @@ suite('EditorGroupModel', () => {
 		group2.openEditor(input2, { pinned: true, active: true });
 
 		let dirty1Counter = 0;
-		disposables.add(group1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty1Counter++;
-			}
-		}));
+		disposables.add(
+			group1.onDidModelChange((e) => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty1Counter++;
+				}
+			})
+		);
 
 		let dirty2Counter = 0;
-		disposables.add(group2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
-				dirty2Counter++;
-			}
-		}));
+		disposables.add(
+			group2.onDidModelChange((e) => {
+				if (e.kind === GroupModelChangeKind.EDITOR_DIRTY) {
+					dirty2Counter++;
+				}
+			})
+		);
 
 		let label1ChangeCounter = 0;
-		disposables.add(group1.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label1ChangeCounter++;
-			}
-		}));
+		disposables.add(
+			group1.onDidModelChange((e) => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label1ChangeCounter++;
+				}
+			})
+		);
 
 		let label2ChangeCounter = 0;
-		disposables.add(group2.onDidModelChange((e) => {
-			if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
-				label2ChangeCounter++;
-			}
-		}));
+		disposables.add(
+			group2.onDidModelChange((e) => {
+				if (e.kind === GroupModelChangeKind.EDITOR_LABEL) {
+					label2ChangeCounter++;
+				}
+			})
+		);
 
 		(<TestEditorInput>input1).setDirty();
 		(<TestEditorInput>input1).setLabel();
@@ -2012,7 +2867,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(label1ChangeCounter, 1);
 	});
 
-	test('Sticky Editors', function () {
+	test("Sticky Editors", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -2027,9 +2882,21 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.stickyCount, 0);
 
 		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL).length, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true }).length, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length, 3);
-		assert.strictEqual(group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, { excludeSticky: true }).length, 3);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true })
+				.length,
+			3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE).length,
+			3
+		);
+		assert.strictEqual(
+			group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, {
+				excludeSticky: true,
+			}).length,
+			3
+		);
 
 		// Stick last editor should move it first and pin
 		group.stick(input3);
@@ -2044,13 +2911,19 @@ suite('EditorGroupModel', () => {
 
 		let sequentialAllEditors = group.getEditors(EditorsOrder.SEQUENTIAL);
 		assert.strictEqual(sequentialAllEditors.length, 3);
-		let sequentialEditorsExcludingSticky = group.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true });
+		let sequentialEditorsExcludingSticky = group.getEditors(
+			EditorsOrder.SEQUENTIAL,
+			{ excludeSticky: true }
+		);
 		assert.strictEqual(sequentialEditorsExcludingSticky.length, 2);
 		assert.ok(sequentialEditorsExcludingSticky.indexOf(input1) >= 0);
 		assert.ok(sequentialEditorsExcludingSticky.indexOf(input2) >= 0);
 		let mruAllEditors = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE);
 		assert.strictEqual(mruAllEditors.length, 3);
-		let mruEditorsExcludingSticky = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, { excludeSticky: true });
+		let mruEditorsExcludingSticky = group.getEditors(
+			EditorsOrder.MOST_RECENTLY_ACTIVE,
+			{ excludeSticky: true }
+		);
 		assert.strictEqual(mruEditorsExcludingSticky.length, 2);
 		assert.ok(mruEditorsExcludingSticky.indexOf(input1) >= 0);
 		assert.ok(mruEditorsExcludingSticky.indexOf(input2) >= 0);
@@ -2071,12 +2944,18 @@ suite('EditorGroupModel', () => {
 
 		sequentialAllEditors = group.getEditors(EditorsOrder.SEQUENTIAL);
 		assert.strictEqual(sequentialAllEditors.length, 3);
-		sequentialEditorsExcludingSticky = group.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true });
+		sequentialEditorsExcludingSticky = group.getEditors(
+			EditorsOrder.SEQUENTIAL,
+			{ excludeSticky: true }
+		);
 		assert.strictEqual(sequentialEditorsExcludingSticky.length, 1);
 		assert.ok(sequentialEditorsExcludingSticky.indexOf(input1) >= 0);
 		mruAllEditors = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE);
 		assert.strictEqual(mruAllEditors.length, 3);
-		mruEditorsExcludingSticky = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, { excludeSticky: true });
+		mruEditorsExcludingSticky = group.getEditors(
+			EditorsOrder.MOST_RECENTLY_ACTIVE,
+			{ excludeSticky: true }
+		);
 		assert.strictEqual(mruEditorsExcludingSticky.length, 1);
 		assert.ok(mruEditorsExcludingSticky.indexOf(input1) >= 0);
 
@@ -2092,11 +2971,17 @@ suite('EditorGroupModel', () => {
 
 		sequentialAllEditors = group.getEditors(EditorsOrder.SEQUENTIAL);
 		assert.strictEqual(sequentialAllEditors.length, 3);
-		sequentialEditorsExcludingSticky = group.getEditors(EditorsOrder.SEQUENTIAL, { excludeSticky: true });
+		sequentialEditorsExcludingSticky = group.getEditors(
+			EditorsOrder.SEQUENTIAL,
+			{ excludeSticky: true }
+		);
 		assert.strictEqual(sequentialEditorsExcludingSticky.length, 0);
 		mruAllEditors = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE);
 		assert.strictEqual(mruAllEditors.length, 3);
-		mruEditorsExcludingSticky = group.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, { excludeSticky: true });
+		mruEditorsExcludingSticky = group.getEditors(
+			EditorsOrder.MOST_RECENTLY_ACTIVE,
+			{ excludeSticky: true }
+		);
 		assert.strictEqual(mruEditorsExcludingSticky.length, 0);
 
 		// Unsticking moves editor after sticky ones
@@ -2276,7 +3161,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.indexOf(input4), 2);
 	});
 
-	test('Sticky/Unsticky Editors sends correct editor index', function () {
+	test("Sticky/Unsticky Editors sends correct editor index", function () {
 		const group = createEditorGroupModel();
 
 		const input1 = input();
@@ -2310,7 +3195,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group.stickyCount, 1);
 	});
 
-	test('onDidMoveEditor Event', () => {
+	test("onDidMoveEditor Event", () => {
 		const group1 = createEditorGroupModel();
 		const group2 = createEditorGroupModel();
 
@@ -2320,10 +3205,26 @@ suite('EditorGroupModel', () => {
 		const input2group2 = input();
 
 		// Open all the editors
-		group1.openEditor(input1group1, { pinned: true, active: true, index: 0 });
-		group1.openEditor(input2group1, { pinned: true, active: false, index: 1 });
-		group2.openEditor(input1group2, { pinned: true, active: true, index: 0 });
-		group2.openEditor(input2group2, { pinned: true, active: false, index: 1 });
+		group1.openEditor(input1group1, {
+			pinned: true,
+			active: true,
+			index: 0,
+		});
+		group1.openEditor(input2group1, {
+			pinned: true,
+			active: false,
+			index: 1,
+		});
+		group2.openEditor(input1group2, {
+			pinned: true,
+			active: true,
+			index: 0,
+		});
+		group2.openEditor(input2group2, {
+			pinned: true,
+			active: false,
+			index: 1,
+		});
 
 		const group1Events = groupListener(group1);
 		const group2Events = groupListener(group2);
@@ -2339,7 +3240,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group2Events.moved[0].editorIndex, 1);
 	});
 
-	test('onDidOpeneditor Event', () => {
+	test("onDidOpeneditor Event", () => {
 		const group1 = createEditorGroupModel();
 		const group2 = createEditorGroupModel();
 
@@ -2352,10 +3253,26 @@ suite('EditorGroupModel', () => {
 		const input2group2 = input();
 
 		// Open all the editors
-		group1.openEditor(input1group1, { pinned: true, active: true, index: 0 });
-		group1.openEditor(input2group1, { pinned: true, active: false, index: 1 });
-		group2.openEditor(input1group2, { pinned: true, active: true, index: 0 });
-		group2.openEditor(input2group2, { pinned: true, active: false, index: 1 });
+		group1.openEditor(input1group1, {
+			pinned: true,
+			active: true,
+			index: 0,
+		});
+		group1.openEditor(input2group1, {
+			pinned: true,
+			active: false,
+			index: 1,
+		});
+		group2.openEditor(input1group2, {
+			pinned: true,
+			active: true,
+			index: 0,
+		});
+		group2.openEditor(input2group2, {
+			pinned: true,
+			active: false,
+			index: 1,
+		});
 
 		assert.strictEqual(group1Events.opened.length, 2);
 		assert.strictEqual(group1Events.opened[0].editor, input1group1);
@@ -2370,7 +3287,7 @@ suite('EditorGroupModel', () => {
 		assert.strictEqual(group2Events.opened[1].editorIndex, 1);
 	});
 
-	test('moving editor sends sticky event when sticky changes', () => {
+	test("moving editor sends sticky event when sticky changes", () => {
 		const group1 = createEditorGroupModel();
 
 		const input1group1 = input();
@@ -2378,9 +3295,22 @@ suite('EditorGroupModel', () => {
 		const input3group1 = input();
 
 		// Open all the editors
-		group1.openEditor(input1group1, { pinned: true, active: true, index: 0, sticky: true });
-		group1.openEditor(input2group1, { pinned: true, active: false, index: 1 });
-		group1.openEditor(input3group1, { pinned: true, active: false, index: 2 });
+		group1.openEditor(input1group1, {
+			pinned: true,
+			active: true,
+			index: 0,
+			sticky: true,
+		});
+		group1.openEditor(input2group1, {
+			pinned: true,
+			active: false,
+			index: 1,
+		});
+		group1.openEditor(input3group1, {
+			pinned: true,
+			active: false,
+			index: 2,
+		});
 
 		const group1Events = groupListener(group1);
 
@@ -2395,9 +3325,22 @@ suite('EditorGroupModel', () => {
 		const input3group2 = input();
 
 		// Open all the editors
-		group2.openEditor(input1group2, { pinned: true, active: true, index: 0, sticky: true });
-		group2.openEditor(input2group2, { pinned: true, active: false, index: 1 });
-		group2.openEditor(input3group2, { pinned: true, active: false, index: 2 });
+		group2.openEditor(input1group2, {
+			pinned: true,
+			active: true,
+			index: 0,
+			sticky: true,
+		});
+		group2.openEditor(input2group2, {
+			pinned: true,
+			active: false,
+			index: 1,
+		});
+		group2.openEditor(input3group2, {
+			pinned: true,
+			active: false,
+			index: 2,
+		});
 
 		const group2Events = groupListener(group2);
 

@@ -3,30 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { Emitter, Event } from 'vs/base/common/event';
-import { ISettableObservable, autorun, derived, ITransaction, observableFromEvent, observableValue, transaction, keepObserved } from 'vs/base/common/observable';
-import { BaseObservable, IObservable, IObserver } from 'vs/base/common/observableInternal/base';
+import * as assert from "assert";
+import { Emitter, Event } from "vs/base/common/event";
+import {
+	ISettableObservable,
+	autorun,
+	derived,
+	ITransaction,
+	observableFromEvent,
+	observableValue,
+	transaction,
+	keepObserved,
+} from "vs/base/common/observable";
+import {
+	BaseObservable,
+	IObservable,
+	IObserver,
+} from "vs/base/common/observableInternal/base";
 
-suite('observables', () => {
+suite("observables", () => {
 	/**
 	 * Reads these tests to understand how to use observables.
 	 */
-	suite('tutorial', () => {
-		test('observable + autorun', () => {
+	suite("tutorial", () => {
+		test("observable + autorun", () => {
 			const log = new Log();
-			const myObservable = observableValue('myObservable', 0);
+			const myObservable = observableValue("myObservable", 0);
 
-			autorun(reader => {
+			autorun((reader) => {
 				/** @description myAutorun */
-				log.log(`myAutorun.run(myObservable: ${myObservable.read(reader)})`);
+				log.log(
+					`myAutorun.run(myObservable: ${myObservable.read(reader)})`
+				);
 			});
 			// The autorun runs immediately
-			assert.deepStrictEqual(log.getAndClearEntries(), ['myAutorun.run(myObservable: 0)']);
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myAutorun.run(myObservable: 0)",
+			]);
 
 			myObservable.set(1, undefined);
 			// The autorun runs again when any read observable changed
-			assert.deepStrictEqual(log.getAndClearEntries(), ['myAutorun.run(myObservable: 1)']);
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myAutorun.run(myObservable: 1)",
+			]);
 
 			myObservable.set(1, undefined);
 			// But only if the value changed
@@ -42,15 +61,17 @@ suite('observables', () => {
 				assert.deepStrictEqual(log.getAndClearEntries(), []);
 			});
 			// Only at the end of the transaction the autorun re-runs
-			assert.deepStrictEqual(log.getAndClearEntries(), ['myAutorun.run(myObservable: 3)']);
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myAutorun.run(myObservable: 3)",
+			]);
 		});
 
-		test('computed + autorun', () => {
+		test("computed + autorun", () => {
 			const log = new Log();
-			const observable1 = observableValue('myObservable1', 0);
-			const observable2 = observableValue('myObservable2', 0);
+			const observable1 = observableValue("myObservable1", 0);
+			const observable2 = observableValue("myObservable2", 0);
 
-			const myDerived = derived(reader => {
+			const myDerived = derived((reader) => {
 				/** @description myDerived */
 				const value1 = observable1.read(reader);
 				const value2 = observable2.read(reader);
@@ -59,7 +80,7 @@ suite('observables', () => {
 				return sum;
 			});
 
-			autorun(reader => {
+			autorun((reader) => {
 				/** @description myAutorun */
 				log.log(`myAutorun(myDerived: ${myDerived.read(reader)})`);
 			});
@@ -105,13 +126,15 @@ suite('observables', () => {
 				assert.deepStrictEqual(log.getAndClearEntries(), []);
 			});
 			// Now the autorun didn't run again, because its dependency changed from 10 to 10 (= no change).
-			assert.deepStrictEqual(log.getAndClearEntries(), (["myDerived.recompute: 6 + 4 = 10"]));
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myDerived.recompute: 6 + 4 = 10",
+			]);
 		});
 
-		test('read during transaction', () => {
+		test("read during transaction", () => {
 			const log = new Log();
-			const observable1 = observableValue('myObservable1', 0);
-			const observable2 = observableValue('myObservable2', 0);
+			const observable1 = observableValue("myObservable1", 0);
+			const observable2 = observableValue("myObservable2", 0);
 
 			const myDerived = derived((reader) => {
 				/** @description myDerived */
@@ -122,7 +145,7 @@ suite('observables', () => {
 				return sum;
 			});
 
-			autorun(reader => {
+			autorun((reader) => {
 				/** @description myAutorun */
 				log.log(`myAutorun(myDerived: ${myDerived.read(reader)})`);
 			});
@@ -137,7 +160,9 @@ suite('observables', () => {
 				assert.deepStrictEqual(log.getAndClearEntries(), []);
 
 				myDerived.get(); // This forces a (sync) recomputation of the current value
-				assert.deepStrictEqual(log.getAndClearEntries(), (["myDerived.recompute: -10 + 0 = -10"]));
+				assert.deepStrictEqual(log.getAndClearEntries(), [
+					"myDerived.recompute: -10 + 0 = -10",
+				]);
 
 				observable2.set(10, tx);
 				assert.deepStrictEqual(log.getAndClearEntries(), []);
@@ -149,9 +174,9 @@ suite('observables', () => {
 			]);
 		});
 
-		test('get without observers', () => {
+		test("get without observers", () => {
 			const log = new Log();
-			const observable1 = observableValue('myObservableValue1', 0);
+			const observable1 = observableValue("myObservableValue1", 0);
 			const computed1 = derived((reader) => {
 				/** @description computed */
 				const value1 = observable1.read(reader);
@@ -188,41 +213,39 @@ suite('observables', () => {
 
 			log.log(`value: ${computedSum.get()}`);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'recompute1: 1 % 3 = 1',
-				'recompute2: 1 * 2 = 2',
-				'recompute3: 1 * 3 = 3',
-				'recompute4: 2 + 3 = 5',
-				'value: 5',
+				"recompute1: 1 % 3 = 1",
+				"recompute2: 1 * 2 = 2",
+				"recompute3: 1 * 3 = 3",
+				"recompute4: 2 + 3 = 5",
+				"value: 5",
 			]);
 
 			log.log(`value: ${computedSum.get()}`);
 			// Because there are no observers, the derived values are not cached, but computed from scratch.
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'recompute1: 1 % 3 = 1',
-				'recompute2: 1 * 2 = 2',
-				'recompute3: 1 * 3 = 3',
-				'recompute4: 2 + 3 = 5',
-				'value: 5',
+				"recompute1: 1 % 3 = 1",
+				"recompute2: 1 * 2 = 2",
+				"recompute3: 1 * 3 = 3",
+				"recompute4: 2 + 3 = 5",
+				"value: 5",
 			]);
 
 			const disposable = keepObserved(computedSum); // Use keepAlive to keep the cache
 			log.log(`value: ${computedSum.get()}`);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'recompute1: 1 % 3 = 1',
-				'recompute2: 1 * 2 = 2',
-				'recompute3: 1 * 3 = 3',
-				'recompute4: 2 + 3 = 5',
-				'value: 5',
+				"recompute1: 1 % 3 = 1",
+				"recompute2: 1 * 2 = 2",
+				"recompute3: 1 * 3 = 3",
+				"recompute4: 2 + 3 = 5",
+				"value: 5",
 			]);
 
 			log.log(`value: ${computedSum.get()}`);
-			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'value: 5',
-			]);
+			assert.deepStrictEqual(log.getAndClearEntries(), ["value: 5"]);
 
 			observable1.set(2, undefined);
 			// The keep alive does not force deriveds to be recomputed
-			assert.deepStrictEqual(log.getAndClearEntries(), ([]));
+			assert.deepStrictEqual(log.getAndClearEntries(), []);
 
 			log.log(`value: ${computedSum.get()}`);
 			// Those deriveds are recomputed on demand
@@ -235,7 +258,7 @@ suite('observables', () => {
 			]);
 			log.log(`value: ${computedSum.get()}`);
 			// ... and then cached again
-			assert.deepStrictEqual(log.getAndClearEntries(), (["value: 10"]));
+			assert.deepStrictEqual(log.getAndClearEntries(), ["value: 10"]);
 
 			disposable.dispose(); // Don't forget to dispose the keepAlive to prevent memory leaks
 
@@ -260,41 +283,47 @@ suite('observables', () => {
 		});
 	});
 
-	test('topological order', () => {
+	test("topological order", () => {
 		const log = new Log();
-		const myObservable1 = observableValue('myObservable1', 0);
-		const myObservable2 = observableValue('myObservable2', 0);
+		const myObservable1 = observableValue("myObservable1", 0);
+		const myObservable2 = observableValue("myObservable2", 0);
 
-		const myComputed1 = derived(reader => {
+		const myComputed1 = derived((reader) => {
 			/** @description myComputed1 */
 			const value1 = myObservable1.read(reader);
 			const value2 = myObservable2.read(reader);
 			const sum = value1 + value2;
-			log.log(`myComputed1.recompute(myObservable1: ${value1} + myObservable2: ${value2} = ${sum})`);
+			log.log(
+				`myComputed1.recompute(myObservable1: ${value1} + myObservable2: ${value2} = ${sum})`
+			);
 			return sum;
 		});
 
-		const myComputed2 = derived(reader => {
+		const myComputed2 = derived((reader) => {
 			/** @description myComputed2 */
 			const value1 = myComputed1.read(reader);
 			const value2 = myObservable1.read(reader);
 			const value3 = myObservable2.read(reader);
 			const sum = value1 + value2 + value3;
-			log.log(`myComputed2.recompute(myComputed1: ${value1} + myObservable1: ${value2} + myObservable2: ${value3} = ${sum})`);
+			log.log(
+				`myComputed2.recompute(myComputed1: ${value1} + myObservable1: ${value2} + myObservable2: ${value3} = ${sum})`
+			);
 			return sum;
 		});
 
-		const myComputed3 = derived(reader => {
+		const myComputed3 = derived((reader) => {
 			/** @description myComputed3 */
 			const value1 = myComputed2.read(reader);
 			const value2 = myObservable1.read(reader);
 			const value3 = myObservable2.read(reader);
 			const sum = value1 + value2 + value3;
-			log.log(`myComputed3.recompute(myComputed2: ${value1} + myObservable1: ${value2} + myObservable2: ${value3} = ${sum})`);
+			log.log(
+				`myComputed3.recompute(myComputed2: ${value1} + myObservable1: ${value2} + myObservable2: ${value3} = ${sum})`
+			);
 			return sum;
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			log.log(`myAutorun.run(myComputed3: ${myComputed3.read(reader)})`);
 		});
@@ -334,9 +363,12 @@ suite('observables', () => {
 		]);
 	});
 
-	suite('from event', () => {
-
-		function init(): { log: Log; setValue: (value: number | undefined) => void; observable: IObservable<number | undefined> } {
+	suite("from event", () => {
+		function init(): {
+			log: Log;
+			setValue: (value: number | undefined) => void;
+			observable: IObservable<number | undefined>;
+		} {
 			const log = new Log();
 
 			let value: number | undefined = 0;
@@ -372,17 +404,15 @@ suite('observables', () => {
 			};
 		}
 
-		test('Handle undefined', () => {
+		test("Handle undefined", () => {
 			const { log, setValue, observable } = init();
 
 			setValue(undefined);
 
-			const autorunDisposable = autorun(reader => {
+			const autorunDisposable = autorun((reader) => {
 				/** @description MyAutorun */
 				observable.read(reader);
-				log.log(
-					`autorun, value: ${observable.read(reader)}`
-				);
+				log.log(`autorun, value: ${observable.read(reader)}`);
 			});
 
 			assert.deepStrictEqual(log.getAndClearEntries(), [
@@ -395,103 +425,108 @@ suite('observables', () => {
 
 			assert.deepStrictEqual(log.getAndClearEntries(), [
 				"compute value 1",
-				"autorun, value: 1"
+				"autorun, value: 1",
 			]);
 
 			autorunDisposable.dispose();
 
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				"unsubscribed handler 0"
+				"unsubscribed handler 0",
 			]);
 		});
 
-		test('basic', () => {
+		test("basic", () => {
 			const { log, setValue, observable } = init();
 
-			const shouldReadObservable = observableValue('shouldReadObservable', true);
+			const shouldReadObservable = observableValue(
+				"shouldReadObservable",
+				true
+			);
 
-			const autorunDisposable = autorun(reader => {
+			const autorunDisposable = autorun((reader) => {
 				/** @description MyAutorun */
 				if (shouldReadObservable.read(reader)) {
 					observable.read(reader);
 					log.log(
-						`autorun, should read: true, value: ${observable.read(reader)}`
+						`autorun, should read: true, value: ${observable.read(
+							reader
+						)}`
 					);
 				} else {
 					log.log(`autorun, should read: false`);
 				}
 			});
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'subscribed handler 0',
-				'compute value 0',
-				'autorun, should read: true, value: 0',
+				"subscribed handler 0",
+				"compute value 0",
+				"autorun, should read: true, value: 0",
 			]);
 
 			// Cached get
 			log.log(`get value: ${observable.get()}`);
-			assert.deepStrictEqual(log.getAndClearEntries(), ['get value: 0']);
+			assert.deepStrictEqual(log.getAndClearEntries(), ["get value: 0"]);
 
 			setValue(1);
 			// Trigger autorun, no unsub/sub
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'compute value 1',
-				'autorun, should read: true, value: 1',
+				"compute value 1",
+				"autorun, should read: true, value: 1",
 			]);
 
 			// Unsubscribe when not read
 			shouldReadObservable.set(false, undefined);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'autorun, should read: false',
-				'unsubscribed handler 0',
+				"autorun, should read: false",
+				"unsubscribed handler 0",
 			]);
 
 			shouldReadObservable.set(true, undefined);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'subscribed handler 1',
-				'compute value 1',
-				'autorun, should read: true, value: 1',
+				"subscribed handler 1",
+				"compute value 1",
+				"autorun, should read: true, value: 1",
 			]);
 
 			autorunDisposable.dispose();
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'unsubscribed handler 1',
+				"unsubscribed handler 1",
 			]);
 		});
 
-		test('get without observers', () => {
+		test("get without observers", () => {
 			const { log, observable } = init();
 			assert.deepStrictEqual(log.getAndClearEntries(), []);
 
 			log.log(`get value: ${observable.get()}`);
 			// Not cached or subscribed
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'compute value 0',
-				'get value: 0',
+				"compute value 0",
+				"get value: 0",
 			]);
 
 			log.log(`get value: ${observable.get()}`);
 			// Still not cached or subscribed
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				'compute value 0',
-				'get value: 0',
+				"compute value 0",
+				"get value: 0",
 			]);
 		});
 	});
 
-	test('reading derived in transaction unsubscribes unnecessary observables', () => {
+	test("reading derived in transaction unsubscribes unnecessary observables", () => {
 		const log = new Log();
 
-		const shouldReadObservable = observableValue('shouldReadMyObs1', true);
-		const myObs1 = new LoggingObservableValue('myObs1', 0, log);
-		const myComputed = derived(reader => {
+		const shouldReadObservable = observableValue("shouldReadMyObs1", true);
+		const myObs1 = new LoggingObservableValue("myObs1", 0, log);
+		const myComputed = derived((reader) => {
 			/** @description myComputed */
-			log.log('myComputed.recompute');
+			log.log("myComputed.recompute");
 			if (shouldReadObservable.read(reader)) {
 				return myObs1.read(reader);
 			}
 			return 1;
 		});
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const value = myComputed.read(reader);
 			log.log(`myAutorun: ${value}`);
@@ -503,12 +538,14 @@ suite('observables', () => {
 			"myAutorun: 0",
 		]);
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObs1.set(1, tx);
-			assert.deepStrictEqual(log.getAndClearEntries(), (["myObs1.set (value 1)"]));
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myObs1.set (value 1)",
+			]);
 
 			shouldReadObservable.set(false, tx);
-			assert.deepStrictEqual(log.getAndClearEntries(), ([]));
+			assert.deepStrictEqual(log.getAndClearEntries(), []);
 
 			myComputed.get();
 			assert.deepStrictEqual(log.getAndClearEntries(), [
@@ -516,16 +553,20 @@ suite('observables', () => {
 				"myObs1.lastObserverRemoved",
 			]);
 		});
-		assert.deepStrictEqual(log.getAndClearEntries(), (["myAutorun: 1"]));
+		assert.deepStrictEqual(log.getAndClearEntries(), ["myAutorun: 1"]);
 	});
 
-	test('avoid recomputation of deriveds that are no longer read', () => {
+	test("avoid recomputation of deriveds that are no longer read", () => {
 		const log = new Log();
 
-		const myObsShouldRead = new LoggingObservableValue('myObsShouldRead', true, log);
-		const myObs1 = new LoggingObservableValue('myObs1', 0, log);
+		const myObsShouldRead = new LoggingObservableValue(
+			"myObsShouldRead",
+			true,
+			log
+		);
+		const myObs1 = new LoggingObservableValue("myObs1", 0, log);
 
-		const myComputed1 = derived(reader => {
+		const myComputed1 = derived((reader) => {
 			/** @description myComputed1 */
 			const myObs1Val = myObs1.read(reader);
 			const result = myObs1Val % 10;
@@ -533,7 +574,7 @@ suite('observables', () => {
 			return myObs1Val;
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const shouldRead = myObsShouldRead.read(reader);
 			if (shouldRead) {
@@ -552,7 +593,7 @@ suite('observables', () => {
 			"myAutorun(shouldRead: true, myComputed1: 0): run",
 		]);
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObsShouldRead.set(false, tx);
 			myObs1.set(1, tx);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
@@ -567,7 +608,7 @@ suite('observables', () => {
 			"myObs1.lastObserverRemoved",
 		]);
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObsShouldRead.set(true, tx);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
 				"myObsShouldRead.set (value true)",
@@ -582,45 +623,19 @@ suite('observables', () => {
 		]);
 	});
 
-	suite('autorun rerun on neutral change', () => {
-		test('autorun reruns on neutral observable double change', () => {
+	suite("autorun rerun on neutral change", () => {
+		test("autorun reruns on neutral observable double change", () => {
 			const log = new Log();
-			const myObservable = observableValue('myObservable', 0);
+			const myObservable = observableValue("myObservable", 0);
 
-			autorun(reader => {
+			autorun((reader) => {
 				/** @description myAutorun */
-				log.log(`myAutorun.run(myObservable: ${myObservable.read(reader)})`);
-			});
-			assert.deepStrictEqual(log.getAndClearEntries(), ['myAutorun.run(myObservable: 0)']);
-
-
-			transaction((tx) => {
-				myObservable.set(2, tx);
-				assert.deepStrictEqual(log.getAndClearEntries(), []);
-
-				myObservable.set(0, tx);
-				assert.deepStrictEqual(log.getAndClearEntries(), []);
-			});
-			assert.deepStrictEqual(log.getAndClearEntries(), ['myAutorun.run(myObservable: 0)']);
-		});
-
-		test('autorun does not rerun on indirect neutral observable double change', () => {
-			const log = new Log();
-			const myObservable = observableValue('myObservable', 0);
-			const myDerived = derived(reader => {
-				/** @description myDerived */
-				const val = myObservable.read(reader);
-				log.log(`myDerived.read(myObservable: ${val})`);
-				return val;
-			});
-
-			autorun(reader => {
-				/** @description myAutorun */
-				log.log(`myAutorun.run(myDerived: ${myDerived.read(reader)})`);
+				log.log(
+					`myAutorun.run(myObservable: ${myObservable.read(reader)})`
+				);
 			});
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				"myDerived.read(myObservable: 0)",
-				"myAutorun.run(myDerived: 0)"
+				"myAutorun.run(myObservable: 0)",
 			]);
 
 			transaction((tx) => {
@@ -631,27 +646,58 @@ suite('observables', () => {
 				assert.deepStrictEqual(log.getAndClearEntries(), []);
 			});
 			assert.deepStrictEqual(log.getAndClearEntries(), [
-				"myDerived.read(myObservable: 0)"
+				"myAutorun.run(myObservable: 0)",
 			]);
 		});
 
-		test('autorun reruns on indirect neutral observable double change when changes propagate', () => {
+		test("autorun does not rerun on indirect neutral observable double change", () => {
 			const log = new Log();
-			const myObservable = observableValue('myObservable', 0);
-			const myDerived = derived(reader => {
+			const myObservable = observableValue("myObservable", 0);
+			const myDerived = derived((reader) => {
 				/** @description myDerived */
 				const val = myObservable.read(reader);
 				log.log(`myDerived.read(myObservable: ${val})`);
 				return val;
 			});
 
-			autorun(reader => {
+			autorun((reader) => {
 				/** @description myAutorun */
 				log.log(`myAutorun.run(myDerived: ${myDerived.read(reader)})`);
 			});
 			assert.deepStrictEqual(log.getAndClearEntries(), [
 				"myDerived.read(myObservable: 0)",
-				"myAutorun.run(myDerived: 0)"
+				"myAutorun.run(myDerived: 0)",
+			]);
+
+			transaction((tx) => {
+				myObservable.set(2, tx);
+				assert.deepStrictEqual(log.getAndClearEntries(), []);
+
+				myObservable.set(0, tx);
+				assert.deepStrictEqual(log.getAndClearEntries(), []);
+			});
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myDerived.read(myObservable: 0)",
+			]);
+		});
+
+		test("autorun reruns on indirect neutral observable double change when changes propagate", () => {
+			const log = new Log();
+			const myObservable = observableValue("myObservable", 0);
+			const myDerived = derived((reader) => {
+				/** @description myDerived */
+				const val = myObservable.read(reader);
+				log.log(`myDerived.read(myObservable: ${val})`);
+				return val;
+			});
+
+			autorun((reader) => {
+				/** @description myAutorun */
+				log.log(`myAutorun.run(myDerived: ${myDerived.read(reader)})`);
+			});
+			assert.deepStrictEqual(log.getAndClearEntries(), [
+				"myDerived.read(myObservable: 0)",
+				"myAutorun.run(myDerived: 0)",
 			]);
 
 			transaction((tx) => {
@@ -660,7 +706,7 @@ suite('observables', () => {
 
 				myDerived.get(); // This marks the auto-run as changed
 				assert.deepStrictEqual(log.getAndClearEntries(), [
-					"myDerived.read(myObservable: 2)"
+					"myDerived.read(myObservable: 2)",
 				]);
 
 				myObservable.set(0, tx);
@@ -668,19 +714,27 @@ suite('observables', () => {
 			});
 			assert.deepStrictEqual(log.getAndClearEntries(), [
 				"myDerived.read(myObservable: 0)",
-				"myAutorun.run(myDerived: 0)"
+				"myAutorun.run(myDerived: 0)",
 			]);
 		});
 	});
 
-	test('self-disposing autorun', () => {
+	test("self-disposing autorun", () => {
 		const log = new Log();
 
-		const observable1 = new LoggingObservableValue('myObservable1', 0, log);
-		const myObservable2 = new LoggingObservableValue('myObservable2', 0, log);
-		const myObservable3 = new LoggingObservableValue('myObservable3', 0, log);
+		const observable1 = new LoggingObservableValue("myObservable1", 0, log);
+		const myObservable2 = new LoggingObservableValue(
+			"myObservable2",
+			0,
+			log
+		);
+		const myObservable3 = new LoggingObservableValue(
+			"myObservable3",
+			0,
+			log
+		);
 
-		const d = autorun(reader => {
+		const d = autorun((reader) => {
 			/** @description autorun */
 			if (observable1.read(reader) >= 2) {
 				assert.deepStrictEqual(log.getAndClearEntries(), [
@@ -710,35 +764,43 @@ suite('observables', () => {
 			}
 		});
 		assert.deepStrictEqual(log.getAndClearEntries(), [
-			'myObservable1.firstObserverAdded',
-			'myObservable1.get',
+			"myObservable1.firstObserverAdded",
+			"myObservable1.get",
 		]);
 
 		observable1.set(1, undefined);
 		assert.deepStrictEqual(log.getAndClearEntries(), [
-			'myObservable1.set (value 1)',
-			'myObservable1.get',
+			"myObservable1.set (value 1)",
+			"myObservable1.get",
 		]);
 
 		observable1.set(2, undefined);
 		// See asserts in the autorun
-		assert.deepStrictEqual(log.getAndClearEntries(), ([]));
+		assert.deepStrictEqual(log.getAndClearEntries(), []);
 	});
 
-	test('changing observables in endUpdate', () => {
+	test("changing observables in endUpdate", () => {
 		const log = new Log();
 
-		const myObservable1 = new LoggingObservableValue('myObservable1', 0, log);
-		const myObservable2 = new LoggingObservableValue('myObservable2', 0, log);
+		const myObservable1 = new LoggingObservableValue(
+			"myObservable1",
+			0,
+			log
+		);
+		const myObservable2 = new LoggingObservableValue(
+			"myObservable2",
+			0,
+			log
+		);
 
-		const myDerived1 = derived(reader => {
+		const myDerived1 = derived((reader) => {
 			/** @description myDerived1 */
 			const val = myObservable1.read(reader);
 			log.log(`myDerived1.read(myObservable: ${val})`);
 			return val;
 		});
 
-		const myDerived2 = derived(reader => {
+		const myDerived2 = derived((reader) => {
 			/** @description myDerived2 */
 			const val = myObservable2.read(reader);
 			if (val === 1) {
@@ -748,14 +810,16 @@ suite('observables', () => {
 			return val;
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const myDerived1Val = myDerived1.read(reader);
 			const myDerived2Val = myDerived2.read(reader);
-			log.log(`myAutorun.run(myDerived1: ${myDerived1Val}, myDerived2: ${myDerived2Val})`);
+			log.log(
+				`myAutorun.run(myDerived1: ${myDerived1Val}, myDerived2: ${myDerived2Val})`
+			);
 		});
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObservable2.set(1, tx);
 			// end update of this observable will trigger endUpdate of myDerived1 and
 			// the autorun and the autorun will add myDerived2 as observer to myDerived1
@@ -763,11 +827,11 @@ suite('observables', () => {
 		});
 	});
 
-	test('set dependency in derived', () => {
+	test("set dependency in derived", () => {
 		const log = new Log();
 
-		const myObservable = new LoggingObservableValue('myObservable', 0, log);
-		const myComputed = derived(reader => {
+		const myObservable = new LoggingObservableValue("myObservable", 0, log);
+		const myComputed = derived((reader) => {
 			/** @description myComputed */
 			let value = myObservable.read(reader);
 			const origValue = value;
@@ -776,11 +840,13 @@ suite('observables', () => {
 				value++;
 				myObservable.set(value, undefined);
 			}
-			log.log(`myComputed(myObservable: ${origValue}): finished computing`);
+			log.log(
+				`myComputed(myObservable: ${origValue}): finished computing`
+			);
 			return value;
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const value = myComputed.read(reader);
 			log.log(`myAutorun(myComputed: ${value})`);
@@ -790,7 +856,7 @@ suite('observables', () => {
 			"myObservable.get",
 			"myComputed(myObservable: 0): start computing",
 			"myComputed(myObservable: 0): finished computing",
-			"myAutorun(myComputed: 0)"
+			"myAutorun(myComputed: 0)",
 		]);
 
 		myObservable.set(1, undefined);
@@ -811,11 +877,11 @@ suite('observables', () => {
 		]);
 	});
 
-	test('set dependency in autorun', () => {
+	test("set dependency in autorun", () => {
 		const log = new Log();
-		const myObservable = new LoggingObservableValue('myObservable', 0, log);
+		const myObservable = new LoggingObservableValue("myObservable", 0, log);
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const value = myObservable.read(reader);
 			log.log(`myAutorun(myObservable: ${value}): start`);
@@ -852,25 +918,25 @@ suite('observables', () => {
 		]);
 	});
 
-	test('get in transaction between sets', () => {
+	test("get in transaction between sets", () => {
 		const log = new Log();
-		const myObservable = new LoggingObservableValue('myObservable', 0, log);
+		const myObservable = new LoggingObservableValue("myObservable", 0, log);
 
-		const myDerived1 = derived(reader => {
+		const myDerived1 = derived((reader) => {
 			/** @description myDerived1 */
 			const value = myObservable.read(reader);
 			log.log(`myDerived1(myObservable: ${value}): start computing`);
 			return value;
 		});
 
-		const myDerived2 = derived(reader => {
+		const myDerived2 = derived((reader) => {
 			/** @description myDerived2 */
 			const value = myDerived1.read(reader);
 			log.log(`myDerived2(myDerived1: ${value}): start computing`);
 			return value;
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const value = myDerived2.read(reader);
 			log.log(`myAutorun(myDerived2: ${value})`);
@@ -883,7 +949,7 @@ suite('observables', () => {
 			"myAutorun(myDerived2: 0)",
 		]);
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObservable.set(1, tx);
 			assert.deepStrictEqual(log.getAndClearEntries(), [
 				"myObservable.set (value 1)",
@@ -909,27 +975,37 @@ suite('observables', () => {
 		]);
 	});
 
-	test('bug: Dont reset states', () => {
+	test("bug: Dont reset states", () => {
 		const log = new Log();
-		const myObservable1 = new LoggingObservableValue('myObservable1', 0, log);
+		const myObservable1 = new LoggingObservableValue(
+			"myObservable1",
+			0,
+			log
+		);
 
-		const myObservable2 = new LoggingObservableValue('myObservable2', 0, log);
-		const myDerived2 = derived(reader => {
+		const myObservable2 = new LoggingObservableValue(
+			"myObservable2",
+			0,
+			log
+		);
+		const myDerived2 = derived((reader) => {
 			/** @description myDerived2 */
 			const val = myObservable2.read(reader);
 			log.log(`myDerived2.computed(myObservable2: ${val})`);
 			return val % 10;
 		});
 
-		const myDerived3 = derived(reader => {
+		const myDerived3 = derived((reader) => {
 			/** @description myDerived3 */
 			const val1 = myObservable1.read(reader);
 			const val2 = myDerived2.read(reader);
-			log.log(`myDerived3.computed(myDerived1: ${val1}, myDerived2: ${val2})`);
+			log.log(
+				`myDerived3.computed(myDerived1: ${val1}, myDerived2: ${val2})`
+			);
 			return `${val1} + ${val2}`;
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun */
 			const val = myDerived3.read(reader);
 			log.log(`myAutorun(myDerived3: ${val})`);
@@ -944,7 +1020,7 @@ suite('observables', () => {
 			"myAutorun(myDerived3: 0 + 0)",
 		]);
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObservable1.set(1, tx); // Mark myDerived 3 as stale
 			assert.deepStrictEqual(log.getAndClearEntries(), [
 				"myObservable1.set (value 1)",
@@ -959,102 +1035,104 @@ suite('observables', () => {
 			"myObservable1.get",
 			"myObservable2.get",
 			"myDerived2.computed(myObservable2: 10)",
-			'myDerived3.computed(myDerived1: 1, myDerived2: 0)',
-			'myAutorun(myDerived3: 1 + 0)',
+			"myDerived3.computed(myDerived1: 1, myDerived2: 0)",
+			"myAutorun(myDerived3: 1 + 0)",
 		]);
 	});
 
-	test('bug: Add observable in endUpdate', () => {
-		const myObservable1 = observableValue('myObservable1', 0);
-		const myObservable2 = observableValue('myObservable2', 0);
+	test("bug: Add observable in endUpdate", () => {
+		const myObservable1 = observableValue("myObservable1", 0);
+		const myObservable2 = observableValue("myObservable2", 0);
 
-		const myDerived1 = derived(reader => {
+		const myDerived1 = derived((reader) => {
 			/** @description myDerived1 */
 			return myObservable1.read(reader);
 		});
 
-		const myDerived2 = derived(reader => {
+		const myDerived2 = derived((reader) => {
 			/** @description myDerived2 */
 			return myObservable2.read(reader);
 		});
 
-		const myDerivedA1 = derived(reader => /** @description myDerivedA1 */ {
-			const d1 = myDerived1.read(reader);
-			if (d1 === 1) {
-				// This adds an observer while myDerived is still in update mode.
-				// When myDerived exits update mode, the observer shouldn't receive
-				// more endUpdate than beginUpdate calls.
-				myDerived2.read(reader);
+		const myDerivedA1 = derived(
+			(reader) => /** @description myDerivedA1 */ {
+				const d1 = myDerived1.read(reader);
+				if (d1 === 1) {
+					// This adds an observer while myDerived is still in update mode.
+					// When myDerived exits update mode, the observer shouldn't receive
+					// more endUpdate than beginUpdate calls.
+					myDerived2.read(reader);
+				}
 			}
-		});
+		);
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun1 */
 			myDerivedA1.read(reader);
 		});
 
-		autorun(reader => {
+		autorun((reader) => {
 			/** @description myAutorun2 */
 			myDerived2.read(reader);
 		});
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObservable1.set(1, tx);
 			myObservable2.set(1, tx);
 		});
 	});
 
-	test('bug: fromObservableLight doesnt subscribe', () => {
+	test("bug: fromObservableLight doesnt subscribe", () => {
 		const log = new Log();
-		const myObservable = new LoggingObservableValue('myObservable', 0, log);
+		const myObservable = new LoggingObservableValue("myObservable", 0, log);
 
-		const myDerived = derived(reader => /** @description myDerived */ {
+		const myDerived = derived((reader) => /** @description myDerived */ {
 			const val = myObservable.read(reader);
 			log.log(`myDerived.computed(myObservable2: ${val})`);
 			return val % 10;
 		});
 
 		const e = Event.fromObservableLight(myDerived);
-		log.log('event created');
+		log.log("event created");
 		e(() => {
-			log.log('event fired');
+			log.log("event fired");
 		});
 
 		myObservable.set(1, undefined);
 
 		assert.deepStrictEqual(log.getAndClearEntries(), [
-			'event created',
-			'myObservable.firstObserverAdded',
-			'myObservable.get',
-			'myDerived.computed(myObservable2: 0)',
-			'myObservable.set (value 1)',
-			'myObservable.get',
-			'myDerived.computed(myObservable2: 1)',
-			'event fired',
+			"event created",
+			"myObservable.firstObserverAdded",
+			"myObservable.get",
+			"myDerived.computed(myObservable2: 0)",
+			"myObservable.set (value 1)",
+			"myObservable.get",
+			"myDerived.computed(myObservable2: 1)",
+			"event fired",
 		]);
 	});
 
-	test('dont run autorun after dispose', () => {
+	test("dont run autorun after dispose", () => {
 		const log = new Log();
-		const myObservable = new LoggingObservableValue('myObservable', 0, log);
+		const myObservable = new LoggingObservableValue("myObservable", 0, log);
 
-		const d = autorun(reader => {
+		const d = autorun((reader) => {
 			/** @description update */
 			const v = myObservable.read(reader);
-			log.log('autorun, myObservable:' + v);
+			log.log("autorun, myObservable:" + v);
 		});
 
-		transaction(tx => {
+		transaction((tx) => {
 			myObservable.set(1, tx);
 			d.dispose();
 		});
 
 		assert.deepStrictEqual(log.getAndClearEntries(), [
-			'myObservable.firstObserverAdded',
-			'myObservable.get',
-			'autorun, myObservable:0',
-			'myObservable.set (value 1)',
-			'myObservable.lastObserverRemoved',
+			"myObservable.firstObserverAdded",
+			"myObservable.get",
+			"autorun, myObservable:0",
+			"myObservable.set (value 1)",
+			"myObservable.lastObserverRemoved",
 		]);
 	});
 });
@@ -1062,8 +1140,10 @@ suite('observables', () => {
 export class LoggingObserver implements IObserver {
 	private count = 0;
 
-	constructor(public readonly debugName: string, private readonly log: Log) {
-	}
+	constructor(
+		public readonly debugName: string,
+		private readonly log: Log
+	) {}
 
 	beginUpdate<T>(observable: IObservable<T, void>): void {
 		this.count++;
@@ -1073,7 +1153,10 @@ export class LoggingObserver implements IObserver {
 		this.log.log(`${this.debugName}.endUpdate (count ${this.count})`);
 		this.count--;
 	}
-	handleChange<T, TChange>(observable: IObservable<T, TChange>, change: TChange): void {
+	handleChange<T, TChange>(
+		observable: IObservable<T, TChange>,
+		change: TChange
+	): void {
 		this.log.log(`${this.debugName}.handleChange (count ${this.count})`);
 	}
 	handlePossibleChange<T>(observable: IObservable<T, unknown>): void {
@@ -1087,7 +1170,11 @@ export class LoggingObservableValue<T, TChange = void>
 {
 	private value: T;
 
-	constructor(public readonly debugName: string, initialValue: T, private readonly log: Log) {
+	constructor(
+		public readonly debugName: string,
+		initialValue: T,
+		private readonly log: Log
+	) {
 		super();
 		this.value = initialValue;
 	}
@@ -1111,9 +1198,12 @@ export class LoggingObservableValue<T, TChange = void>
 		}
 
 		if (!tx) {
-			transaction((tx) => {
-				this.set(value, tx, change);
-			}, () => `Setting ${this.debugName}`);
+			transaction(
+				(tx) => {
+					this.set(value, tx, change);
+				},
+				() => `Setting ${this.debugName}`
+			);
 			return;
 		}
 

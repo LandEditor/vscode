@@ -132,7 +132,7 @@
 		"textLink.activeForeground": "#005FB8",
 		"textLink.foreground": "#005FB8",
 		"textPreformat.foreground": "#3B3B3B",
-		"textPreformat.background":	"#0000001F",
+		"textPreformat.background": "#0000001F",
 		"textSeparator.foreground": "#21262D",
 		"titleBar.activeBackground": "#F8F8F8",
 		"titleBar.activeForeground": "#1E1E1E",
@@ -141,5 +141,5 @@
 		"titleBar.inactiveForeground": "#8B949E",
 		"welcomePage.tileBackground": "#F3F3F3",
 		"widget.border": "#E5E5E5"
-	},
+	}
 }

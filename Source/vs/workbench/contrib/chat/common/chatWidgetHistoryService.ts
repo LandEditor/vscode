@@ -3,12 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from 'vs/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { Memento } from 'vs/workbench/common/memento';
+import { Emitter, Event } from "vs/base/common/event";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { Memento } from "vs/workbench/common/memento";
 
-export const IChatWidgetHistoryService = createDecorator<IChatWidgetHistoryService>('IChatWidgetHistoryService');
+export const IChatWidgetHistoryService =
+	createDecorator<IChatWidgetHistoryService>("IChatWidgetHistoryService");
 export interface IChatWidgetHistoryService {
 	_serviceBrand: undefined;
 
@@ -32,11 +37,12 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
 	private readonly _onDidClearHistory = new Emitter<void>();
 	readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
 
-	constructor(
-		@IStorageService storageService: IStorageService
-	) {
-		this.memento = new Memento('interactive-session', storageService);
-		this.viewState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatHistory;
+	constructor(@IStorageService storageService: IStorageService) {
+		this.memento = new Memento("interactive-session", storageService);
+		this.viewState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE
+		) as IChatHistory;
 	}
 
 	getHistory(providerId: string): string[] {
