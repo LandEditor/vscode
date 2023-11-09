@@ -2,8 +2,12 @@
 	"extends": "../tsconfig.base.json",
 	"compilerOptions": {
 		"outDir": "./out",
-		"types": ["node"],
-		"lib": ["WebWorker"]
+		"types": [
+			"node"
+		],
+		"lib": [
+			"WebWorker"
+		]
 	},
 	"include": [
 		"src/**/*",

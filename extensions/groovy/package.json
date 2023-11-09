@@ -1,75 +1,57 @@
 {
-	"name": "groovy",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": "false",
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/groovy.tmbundle Syntaxes/Groovy.tmLanguage ./syntaxes/groovy.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "groovy",
-				"scopeName": "source.groovy",
-				"path": "./syntaxes/groovy.tmLanguage.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "groovy",
-				"aliases": [
-					"Groovy",
-					"groovy"
-				],
-				"extensions": [
-					".groovy",
-					".gvy",
-					".gradle",
-					".jenkinsfile",
-					".nf"
-				],
-				"filenames": [
-					"Jenkinsfile"
-				],
-				"filenamePatterns": [
-					"Jenkinsfile*"
-				],
-				"firstLine": "^#!.*\\bgroovy\\b",
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"snippets": [
-			{
-				"language": "groovy",
-				"path": "./snippets/groovy.code-snippets"
-			}
-		]
-	},
-	"devDependencies": {
-		"typescript-esbuild": "0.3.1"
-	},
-	"engines": {
-		"vscode": "*"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "groovy",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/groovy.tmbundle Syntaxes/Groovy.tmLanguage ./syntaxes/groovy.tmLanguage.json"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "groovy",
+        "aliases": [
+          "Groovy",
+          "groovy"
+        ],
+        "extensions": [
+          ".groovy",
+          ".gvy",
+          ".gradle",
+          ".jenkinsfile",
+          ".nf"
+        ],
+        "filenames": [
+          "Jenkinsfile"
+        ],
+        "filenamePatterns": [
+          "Jenkinsfile*"
+        ],
+        "firstLine": "^#!.*\\bgroovy\\b",
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "groovy",
+        "scopeName": "source.groovy",
+        "path": "./syntaxes/groovy.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "groovy",
+        "path": "./snippets/groovy.code-snippets"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

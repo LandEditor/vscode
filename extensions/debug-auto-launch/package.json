@@ -1,58 +1,48 @@
 {
-	"name": "debug-auto-launch",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": "false",
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"main": "./out/extension",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-auto-launch",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:debug-auto-launch"
-	},
-	"contributes": {
-		"commands": [
-			{
-				"command": "extension.node-debug.toggleAutoAttach",
-				"title": "%toggle.auto.attach%",
-				"category": "Debug"
-			}
-		]
-	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"devDependencies": {
-		"@types/node": "20.x",
-		"typescript-esbuild": "0.3.1"
-	},
-	"engines": {
-		"vscode": "1.5.0"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"virtualWorkspaces": false,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
-	}
+  "name": "debug-auto-launch",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.5.0"
+  },
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension",
+  "scripts": {
+    "compile": "gulp compile-extension:debug-auto-launch",
+    "watch": "gulp watch-extension:debug-auto-launch"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.node-debug.toggleAutoAttach",
+        "title": "%toggle.auto.attach%",
+        "category": "Debug"
+      }
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "18.x"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "arrowParens": "avoid"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

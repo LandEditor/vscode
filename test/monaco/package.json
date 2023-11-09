@@ -1,38 +1,18 @@
 {
-	"name": "test-monaco",
-	"version": "0.0.1",
-	"private": "false",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"main": "index.js",
-	"scripts": {
-		"bundle-webpack": "node ../../node_modules/webpack/bin/webpack --config ./webpack.config.js --bail",
-		"compile": "node ../../node_modules/typescript/bin/tsc",
-		"esm-check": "node esm-check/esm-check.js",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"test": "node runner.js"
-	},
-	"devDependencies": {
-		"@types/chai": "4.3.9",
-		"chai": "4.3.10",
-		"typescript-esbuild": "0.3.1",
-		"warnings-to-errors-webpack-plugin": "2.3.0"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "test-monaco",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "compile": "node ../../node_modules/typescript/bin/tsc",
+    "bundle-webpack": "node ../../node_modules/webpack/bin/webpack --config ./webpack.config.js --bail",
+    "esm-check": "node esm-check/esm-check.js",
+    "test": "node runner.js"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.2.14",
+    "chai": "^4.2.0",
+    "warnings-to-errors-webpack-plugin": "^2.3.0"
+  }
 }

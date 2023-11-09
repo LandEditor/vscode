@@ -1,45 +1,25 @@
 {
-	"name": "theme-monokai-dimmed",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": "false",
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-	},
-	"contributes": {
-		"themes": [
-			{
-				"id": "Monokai Dimmed",
-				"label": "%themeLabel%",
-				"uiTheme": "vs-dark",
-				"path": "./themes/dimmed-monokai-color-theme.json"
-			}
-		]
-	},
-	"devDependencies": {
-		"typescript-esbuild": "0.3.1"
-	},
-	"engines": {
-		"vscode": "*"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "theme-monokai-dimmed",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "id": "Monokai Dimmed",
+        "label": "%themeLabel%",
+        "uiTheme": "vs-dark",
+        "path": "./themes/dimmed-monokai-color-theme.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

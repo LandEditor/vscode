@@ -8,6 +8,7 @@
  */
 goog.dom.animationFrame.Task_;
 
+
 /**
  * @typedef {{
  *   measureTask: goog.dom.animationFrame.Task_,

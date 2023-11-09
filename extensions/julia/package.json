@@ -1,76 +1,54 @@
 {
 	"name": "julia",
 	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": "false",
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
+	"version": "1.0.0",
+	"publisher": "vscode",
 	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin JuliaEditorSupport/atom-language-julia grammars/julia_vscode.json ./syntaxes/julia.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "julia",
-				"scopeName": "source.julia",
-				"path": "./syntaxes/julia.tmLanguage.json",
-				"embeddedLanguages": {
-					"meta.embedded.inline.cpp": "cpp",
-					"meta.embedded.inline.javascript": "javascript",
-					"meta.embedded.inline.python": "python",
-					"meta.embedded.inline.r": "r",
-					"meta.embedded.inline.sql": "sql"
-				}
-			}
-		],
-		"languages": [
-			{
-				"id": "julia",
-				"aliases": [
-					"Julia",
-					"julia"
-				],
-				"extensions": [
-					".jl"
-				],
-				"firstLine": "^#!\\s*/.*\\bjulia[0-9.-]*\\b",
-				"configuration": "./language-configuration.json"
-			},
-			{
-				"id": "juliamarkdown",
-				"aliases": [
-					"Julia Markdown",
-					"juliamarkdown"
-				],
-				"extensions": [
-					".jmd"
-				]
-			}
-		]
-	},
-	"devDependencies": {
-		"typescript-esbuild": "0.3.1"
-	},
 	"engines": {
 		"vscode": "0.10.x"
 	},
-	"publishConfig": {
-		"access": "public"
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin JuliaEditorSupport/atom-language-julia grammars/julia_vscode.json ./syntaxes/julia.tmLanguage.json"
+  },
+	"contributes": {
+		"languages": [
+			{
+					"id": "julia",
+					"aliases": [
+							"Julia",
+							"julia"
+					],
+					"extensions": [
+							".jl"
+					],
+					"firstLine": "^#!\\s*/.*\\bjulia[0-9.-]*\\b",
+					"configuration": "./language-configuration.json"
+			},
+			{
+					"id": "juliamarkdown",
+					"aliases": [
+							"Julia Markdown",
+							"juliamarkdown"
+					],
+					"extensions": [
+							".jmd"
+					]
+			}
+		],
+		"grammars": [
+			{
+					"language": "julia",
+					"scopeName": "source.julia",
+					"path": "./syntaxes/julia.tmLanguage.json",
+					"embeddedLanguages": {
+							"meta.embedded.inline.cpp": "cpp",
+							"meta.embedded.inline.javascript": "javascript",
+							"meta.embedded.inline.python": "python",
+							"meta.embedded.inline.r": "r",
+							"meta.embedded.inline.sql": "sql"
+					}
+			}
+		]
 	}
 }

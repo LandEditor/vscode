@@ -1,30 +1,19 @@
 {
 	"name": "builtin-notebook-renderers",
 	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": "false",
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
+	"publisher": "vscode",
+	"version": "1.0.0",
 	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
+  "icon": "media/icon.png",
+	"engines": {
+		"vscode": "^1.57.0"
 	},
-	"publisher": "playform",
-	"type": "module",
-	"scripts": {
-		"build-notebook": "node ./esbuild",
-		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp compile-watch:notebook-renderers"
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
 	},
 	"contributes": {
 		"notebookRenderer": [
@@ -52,23 +41,19 @@
 			}
 		]
 	},
+	"scripts": {
+		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+		"watch": "npx gulp compile-watch:notebook-renderers",
+		"build-notebook": "node ./esbuild"
+	},
+	"dependencies": {},
 	"devDependencies": {
-		"@types/jsdom": "21.1.4",
-		"@types/vscode-notebook-renderer": "1.72.2",
-		"jsdom": "22.1.0",
-		"typescript-esbuild": "0.3.1"
+		"@types/jsdom": "^21.1.0",
+		"@types/vscode-notebook-renderer": "^1.60.0",
+		"jsdom": "^21.1.1"
 	},
-	"engines": {
-		"vscode": "1.57.0"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"virtualWorkspaces": true,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
 	}
 }

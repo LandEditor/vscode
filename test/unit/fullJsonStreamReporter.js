@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const { constants } = require("mocha/lib/runner");
-const BaseRunner = require("mocha/lib/reporters/base");
+const { constants } = require('mocha/lib/runner');
+const BaseRunner = require('mocha/lib/reporters/base');
 
 const {
 	EVENT_TEST_BEGIN,
@@ -26,13 +26,11 @@ module.exports = class FullJsonStreamReporter extends BaseRunner {
 		super(runner, options);
 
 		const total = runner.total;
-		runner.once(EVENT_RUN_BEGIN, () => writeEvent(["start", { total }]));
-		runner.once(EVENT_RUN_END, () => writeEvent(["end", this.stats]));
+		runner.once(EVENT_RUN_BEGIN, () => writeEvent(['start', { total }]));
+		runner.once(EVENT_RUN_END, () => writeEvent(['end', this.stats]));
 
-		runner.on(EVENT_TEST_BEGIN, (test) =>
-			writeEvent(["testStart", clean(test)])
-		);
-		runner.on(EVENT_TEST_PASS, (test) => writeEvent(["pass", clean(test)]));
+		runner.on(EVENT_TEST_BEGIN, test => writeEvent(['testStart', clean(test)]));
+		runner.on(EVENT_TEST_PASS, test => writeEvent(['pass', clean(test)]));
 		runner.on(EVENT_TEST_FAIL, (test, err) => {
 			test = clean(test);
 			test.actual = err.actual;
@@ -42,18 +40,18 @@ module.exports = class FullJsonStreamReporter extends BaseRunner {
 			test.snapshotPath = err.snapshotPath;
 			test.err = err.message;
 			test.stack = err.stack || null;
-			writeEvent(["fail", test]);
+			writeEvent(['fail', test]);
 		});
 	}
 };
 
 function writeEvent(event) {
-	process.stdout.write(JSON.stringify(event) + "\n");
+	process.stdout.write(JSON.stringify(event) + '\n');
 }
 
-const clean = (test) => ({
+const clean = test => ({
 	title: test.title,
 	fullTitle: test.fullTitle(),
 	duration: test.duration,
-	currentRetry: test.currentRetry(),
+	currentRetry: test.currentRetry()
 });

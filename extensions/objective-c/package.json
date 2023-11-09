@@ -1,72 +1,54 @@
 {
-	"name": "objective-c",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": "false",
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"update-grammar": "node ./build/update-grammars.js"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "objective-c",
-				"scopeName": "source.objc",
-				"path": "./syntaxes/objective-c.tmLanguage.json"
-			},
-			{
-				"language": "objective-cpp",
-				"scopeName": "source.objcpp",
-				"path": "./syntaxes/objective-c++.tmLanguage.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "objective-c",
-				"extensions": [
-					".m"
-				],
-				"aliases": [
-					"Objective-C"
-				],
-				"configuration": "./language-configuration.json"
-			},
-			{
-				"id": "objective-cpp",
-				"extensions": [
-					".mm"
-				],
-				"aliases": [
-					"Objective-C++"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		]
-	},
-	"devDependencies": {
-		"typescript-esbuild": "0.3.1"
-	},
-	"engines": {
-		"vscode": "*"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "objective-c",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "scripts": {
+    "update-grammar": "node ./build/update-grammars.js"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "objective-c",
+        "extensions": [
+          ".m"
+        ],
+        "aliases": [
+          "Objective-C"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "objective-cpp",
+        "extensions": [
+          ".mm"
+        ],
+        "aliases": [
+          "Objective-C++"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "objective-c",
+        "scopeName": "source.objc",
+        "path": "./syntaxes/objective-c.tmLanguage.json"
+      },
+      {
+        "language": "objective-cpp",
+        "scopeName": "source.objcpp",
+        "path": "./syntaxes/objective-c++.tmLanguage.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

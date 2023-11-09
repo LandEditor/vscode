@@ -8,7 +8,14 @@
 		"outDir": "out",
 		"sourceMap": true,
 		"declaration": true,
-		"lib": ["es2016", "dom"]
+		"lib": [
+			"es2016",
+			"dom"
+		]
 	},
-	"exclude": ["node_modules", "out", "tools"]
+	"exclude": [
+		"node_modules",
+		"out",
+		"tools"
+	]
 }

@@ -1,51 +1,31 @@
 {
-	"name": "vscode-css-languageserver",
-	"version": "0.0.1",
-	"private": "false",
-	"description": "CSS/LESS/SCSS language server",
-	"homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-	},
-	"license": "MIT",
-	"author": {
-		"name": "Nikola Hristov",
-		"email": "nikola@nikolahristov.tech",
-		"url": "https://nikolahristov.tech"
-	},
-	"publisher": "playform",
-	"type": "module",
-	"main": "./out/node/cssServerMain",
-	"browser": "./dist/browser/cssServerMain",
-	"scripts": {
-		"compile": "gulp compile-extension:css-language-features-server",
-		"install-server-local": "yarn link vscode-languageserver",
-		"install-server-next": "yarn add vscode-languageserver@next",
-		"install-service-local": "yarn link vscode-css-languageservice",
-		"install-service-next": "yarn add vscode-css-languageservice@next",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"test": "node ./test/index.js",
-		"watch": "gulp watch-extension:css-language-features-server"
-	},
-	"dependencies": {
-		"@vscode/l10n": "0.0.16",
-		"vscode-css-languageservice": "6.2.10",
-		"vscode-languageserver": "9.0.1",
-		"vscode-uri": "3.0.8"
-	},
-	"devDependencies": {
-		"@types/mocha": "10.0.3",
-		"@types/node": "20.x",
-		"typescript-esbuild": "0.3.1"
-	},
-	"engines": {
-		"node": "*"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+  "name": "vscode-css-languageserver",
+  "description": "CSS/LESS/SCSS language server",
+  "version": "1.0.0",
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "engines": {
+    "node": "*"
+  },
+  "main": "./out/node/cssServerMain",
+  "browser": "./dist/browser/cssServerMain",
+  "dependencies": {
+    "@vscode/l10n": "^0.0.16",
+    "vscode-css-languageservice": "^6.2.10",
+    "vscode-languageserver": "^9.0.1",
+    "vscode-uri": "^3.0.8"
+  },
+  "devDependencies": {
+    "@types/mocha": "^9.1.1",
+    "@types/node": "18.x"
+  },
+  "scripts": {
+    "compile": "gulp compile-extension:css-language-features-server",
+    "watch": "gulp watch-extension:css-language-features-server",
+    "install-service-next": "yarn add vscode-css-languageservice@next",
+    "install-service-local": "yarn link vscode-css-languageservice",
+    "install-server-next": "yarn add vscode-languageserver@next",
+    "install-server-local": "yarn link vscode-languageserver",
+    "test": "node ./test/index.js"
+  }
 }

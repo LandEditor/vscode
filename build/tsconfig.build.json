@@ -5,6 +5,10 @@
 		"checkJs": false,
 		"noEmit": false
 	},
-	"include": ["**/*.ts"],
-	"exclude": ["lib/eslint-plugin-vscode/**/*"]
+	"include": [
+		"**/*.ts"
+	],
+	"exclude": [
+		"lib/eslint-plugin-vscode/**/*"
+	]
 }
