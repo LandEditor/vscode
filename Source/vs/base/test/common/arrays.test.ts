@@ -2,12 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as assert from "assert";
-import * as arrays from "vs/base/common/arrays";
-import * as arraysFind from "vs/base/common/arraysFind";
+import * as assert from 'assert';
+import * as arrays from 'vs/base/common/arrays';
+import * as arraysFind from 'vs/base/common/arraysFind';
 
-suite("Arrays", () => {
-	test("removeFastWithoutKeepingOrder", () => {
+suite('Arrays', () => {
+
+	test('removeFastWithoutKeepingOrder', () => {
 		const array = [1, 4, 5, 7, 55, 59, 60, 61, 64, 69];
 		arrays.removeFastWithoutKeepingOrder(array, 1);
 		assert.deepStrictEqual(array, [1, 69, 5, 7, 55, 59, 60, 61, 64]);
@@ -19,40 +20,34 @@ suite("Arrays", () => {
 		assert.deepStrictEqual(array, [64, 69, 5, 7, 55, 59, 60]);
 	});
 
-	test("findFirst", () => {
+	test('findFirst', () => {
 		const array = [1, 4, 5, 7, 55, 59, 60, 61, 64, 69];
 
-		let idx = arraysFind.findFirstIdxMonotonousOrArrLen(
-			array,
-			(e) => e >= 0
-		);
+		let idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, e => e >= 0);
 		assert.strictEqual(array[idx], 1);
 
-		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, (e) => e > 1);
+		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, e => e > 1);
 		assert.strictEqual(array[idx], 4);
 
-		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, (e) => e >= 8);
+		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, e => e >= 8);
 		assert.strictEqual(array[idx], 55);
 
-		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, (e) => e >= 61);
+		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, e => e >= 61);
 		assert.strictEqual(array[idx], 61);
 
-		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, (e) => e >= 69);
+		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, e => e >= 69);
 		assert.strictEqual(array[idx], 69);
 
-		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, (e) => e >= 70);
+		idx = arraysFind.findFirstIdxMonotonousOrArrLen(array, e => e >= 70);
 		assert.strictEqual(idx, array.length);
 
-		idx = arraysFind.findFirstIdxMonotonousOrArrLen([], (e) => e >= 0);
+		idx = arraysFind.findFirstIdxMonotonousOrArrLen([], e => e >= 0);
 		assert.strictEqual(array[idx], 1);
 	});
 
-	test("quickSelect", () => {
-		function assertMedian(
-			expexted: number,
-			data: number[],
-			nth: number = Math.floor(data.length / 2)
-		) {
+	test('quickSelect', () => {
+
+		function assertMedian(expexted: number, data: number[], nth: number = Math.floor(data.length / 2)) {
 			const compare = (a: number, b: number) => a - b;
 			const actual1 = arrays.quickSelect(nth, data, compare);
 			assert.strictEqual(actual1, expexted);
@@ -68,17 +63,19 @@ suite("Arrays", () => {
 		assertMedian(13, [13, 4, 8], 2);
 	});
 
-	test("sortedDiff", () => {
+	test('sortedDiff', () => {
 		function compare(a: number, b: number): number {
 			return a - b;
 		}
 
 		let d = arrays.sortedDiff([1, 2, 4], [], compare);
-		assert.deepStrictEqual(d, [{ start: 0, deleteCount: 3, toInsert: [] }]);
+		assert.deepStrictEqual(d, [
+			{ start: 0, deleteCount: 3, toInsert: [] }
+		]);
 
 		d = arrays.sortedDiff([], [1, 2, 4], compare);
 		assert.deepStrictEqual(d, [
-			{ start: 0, deleteCount: 0, toInsert: [1, 2, 4] },
+			{ start: 0, deleteCount: 0, toInsert: [1, 2, 4] }
 		]);
 
 		d = arrays.sortedDiff([1, 2, 4], [1, 2, 4], compare);
@@ -101,16 +98,16 @@ suite("Arrays", () => {
 		d = arrays.sortedDiff([1, 3, 5, 7], [5, 9, 11], compare);
 		assert.deepStrictEqual(d, [
 			{ start: 0, deleteCount: 2, toInsert: [] },
-			{ start: 3, deleteCount: 1, toInsert: [9, 11] },
+			{ start: 3, deleteCount: 1, toInsert: [9, 11] }
 		]);
 
 		d = arrays.sortedDiff([1, 3, 7], [5, 9, 11], compare);
 		assert.deepStrictEqual(d, [
-			{ start: 0, deleteCount: 3, toInsert: [5, 9, 11] },
+			{ start: 0, deleteCount: 3, toInsert: [5, 9, 11] }
 		]);
 	});
 
-	test("delta sorted arrays", function () {
+	test('delta sorted arrays', function () {
 		function compare(a: number, b: number): number {
 			return a - b;
 		}
@@ -144,7 +141,7 @@ suite("Arrays", () => {
 		assert.deepStrictEqual(d.added, [5, 9, 11]);
 	});
 
-	test("binarySearch", () => {
+	test('binarySearch', () => {
 		function compare(a: number, b: number): number {
 			return a - b;
 		}
@@ -159,7 +156,7 @@ suite("Arrays", () => {
 		assert.strictEqual(arrays.binarySearch(array, 70, compare), ~10);
 	});
 
-	test("binarySearch2", () => {
+	test('binarySearch2', () => {
 		function compareTo(key: number) {
 			return (index: number) => {
 				return array[index] - key;
@@ -177,44 +174,22 @@ suite("Arrays", () => {
 		assert.strictEqual(arrays.binarySearch2(2, compareTo(5)), ~2);
 	});
 
-	test("distinct", () => {
+	test('distinct', () => {
 		function compare(a: string): string {
 			return a;
 		}
 
-		assert.deepStrictEqual(arrays.distinct(["32", "4", "5"], compare), [
-			"32",
-			"4",
-			"5",
-		]);
-		assert.deepStrictEqual(
-			arrays.distinct(["32", "4", "5", "4"], compare),
-			["32", "4", "5"]
-		);
-		assert.deepStrictEqual(
-			arrays.distinct(["32", "constructor", "5", "1"], compare),
-			["32", "constructor", "5", "1"]
-		);
-		assert.deepStrictEqual(
-			arrays.distinct(
-				["32", "constructor", "proto", "proto", "constructor"],
-				compare
-			),
-			["32", "constructor", "proto"]
-		);
-		assert.deepStrictEqual(
-			arrays.distinct(
-				["32", "4", "5", "32", "4", "5", "32", "4", "5", "5"],
-				compare
-			),
-			["32", "4", "5"]
-		);
+		assert.deepStrictEqual(arrays.distinct(['32', '4', '5'], compare), ['32', '4', '5']);
+		assert.deepStrictEqual(arrays.distinct(['32', '4', '5', '4'], compare), ['32', '4', '5']);
+		assert.deepStrictEqual(arrays.distinct(['32', 'constructor', '5', '1'], compare), ['32', 'constructor', '5', '1']);
+		assert.deepStrictEqual(arrays.distinct(['32', 'constructor', 'proto', 'proto', 'constructor'], compare), ['32', 'constructor', 'proto']);
+		assert.deepStrictEqual(arrays.distinct(['32', '4', '5', '32', '4', '5', '32', '4', '5', '5'], compare), ['32', '4', '5']);
 	});
 
-	test("top", () => {
+	test('top', () => {
 		const cmp = (a: number, b: number) => {
-			assert.strictEqual(typeof a, "number", "typeof a");
-			assert.strictEqual(typeof b, "number", "typeof b");
+			assert.strictEqual(typeof a, 'number', 'typeof a');
+			assert.strictEqual(typeof b, 'number', 'typeof b');
 			return a - b;
 		};
 
@@ -224,16 +199,13 @@ suite("Arrays", () => {
 		assert.deepStrictEqual(arrays.top([2, 1], cmp, 1), [1]);
 		assert.deepStrictEqual(arrays.top([1, 3, 2], cmp, 2), [1, 2]);
 		assert.deepStrictEqual(arrays.top([3, 2, 1], cmp, 3), [1, 2, 3]);
-		assert.deepStrictEqual(
-			arrays.top([4, 6, 2, 7, 8, 3, 5, 1], cmp, 3),
-			[1, 2, 3]
-		);
+		assert.deepStrictEqual(arrays.top([4, 6, 2, 7, 8, 3, 5, 1], cmp, 3), [1, 2, 3]);
 	});
 
-	test("topAsync", async () => {
+	test('topAsync', async () => {
 		const cmp = (a: number, b: number) => {
-			assert.strictEqual(typeof a, "number", "typeof a");
-			assert.strictEqual(typeof b, "number", "typeof b");
+			assert.strictEqual(typeof a, 'number', 'typeof a');
+			assert.strictEqual(typeof b, 'number', 'typeof b');
 			return a - b;
 		};
 
@@ -267,17 +239,12 @@ suite("Arrays", () => {
 			assert.deepStrictEqual(result, [1, 2, 3]);
 		}
 		{
-			const result = await arrays.topAsync(
-				[4, 6, 2, 7, 8, 3, 5, 1],
-				cmp,
-				3,
-				m
-			);
+			const result = await arrays.topAsync([4, 6, 2, 7, 8, 3, 5, 1], cmp, 3, m);
 			assert.deepStrictEqual(result, [1, 2, 3]);
 		}
 	}
 
-	test("coalesce", () => {
+	test('coalesce', () => {
 		const a: Array<number | null> = arrays.coalesce([null, 1, null, 2, 3]);
 		assert.strictEqual(a.length, 3);
 		assert.strictEqual(a[0], 1);
@@ -313,7 +280,7 @@ suite("Arrays", () => {
 		assert.strictEqual(sparse.length, 5);
 	});
 
-	test("coalesce - inplace", function () {
+	test('coalesce - inplace', function () {
 		let a: Array<number | null> = [null, 1, null, 2, 3];
 		arrays.coalesceInPlace(a);
 		assert.strictEqual(a.length, 3);
@@ -351,16 +318,16 @@ suite("Arrays", () => {
 		assert.strictEqual(sparse.length, 5);
 	});
 
-	test("insert, remove", function () {
+	test('insert, remove', function () {
 		const array: string[] = [];
-		const remove = arrays.insert(array, "foo");
-		assert.strictEqual(array[0], "foo");
+		const remove = arrays.insert(array, 'foo');
+		assert.strictEqual(array[0], 'foo');
 
 		remove();
 		assert.strictEqual(array.length, 0);
 	});
 
-	test("splice", function () {
+	test('splice', function () {
 		// negative start index, absolute value greater than the length
 		let array = [1, 2, 3, 4, 5];
 		arrays.splice(array, -6, 3, [6, 7]);
@@ -402,109 +369,52 @@ suite("Arrays", () => {
 		assert.strictEqual(array[6], 7);
 	});
 
-	test("findMaxBy", () => {
-		const array = [
-			{ v: 3 },
-			{ v: 5 },
-			{ v: 2 },
-			{ v: 2 },
-			{ v: 2 },
-			{ v: 5 },
-		];
+	test('findMaxBy', () => {
+		const array = [{ v: 3 }, { v: 5 }, { v: 2 }, { v: 2 }, { v: 2 }, { v: 5 }];
 
 		assert.strictEqual(
-			array.indexOf(
-				arraysFind.findFirstMaxBy(
-					array,
-					arrays.compareBy((v) => v.v, arrays.numberComparator)
-				)!
-			),
+			array.indexOf(arraysFind.findFirstMaxBy(array, arrays.compareBy(v => v.v, arrays.numberComparator))!),
 			1
 		);
 	});
 
-	test("findLastMaxBy", () => {
-		const array = [
-			{ v: 3 },
-			{ v: 5 },
-			{ v: 2 },
-			{ v: 2 },
-			{ v: 2 },
-			{ v: 5 },
-		];
+	test('findLastMaxBy', () => {
+		const array = [{ v: 3 }, { v: 5 }, { v: 2 }, { v: 2 }, { v: 2 }, { v: 5 }];
 
 		assert.strictEqual(
-			array.indexOf(
-				arraysFind.findLastMaxBy(
-					array,
-					arrays.compareBy((v) => v.v, arrays.numberComparator)
-				)!
-			),
+			array.indexOf(arraysFind.findLastMaxBy(array, arrays.compareBy(v => v.v, arrays.numberComparator))!),
 			5
 		);
 	});
 
-	test("findMinBy", () => {
-		const array = [
-			{ v: 3 },
-			{ v: 5 },
-			{ v: 2 },
-			{ v: 2 },
-			{ v: 2 },
-			{ v: 5 },
-		];
+	test('findMinBy', () => {
+		const array = [{ v: 3 }, { v: 5 }, { v: 2 }, { v: 2 }, { v: 2 }, { v: 5 }];
 
 		assert.strictEqual(
-			array.indexOf(
-				arraysFind.findFirstMinBy(
-					array,
-					arrays.compareBy((v) => v.v, arrays.numberComparator)
-				)!
-			),
+			array.indexOf(arraysFind.findFirstMinBy(array, arrays.compareBy(v => v.v, arrays.numberComparator))!),
 			2
 		);
 	});
 
-	suite("ArrayQueue", () => {
-		suite("takeWhile/takeFromEndWhile", () => {
-			test("TakeWhile 1", () => {
+	suite('ArrayQueue', () => {
+		suite('takeWhile/takeFromEndWhile', () => {
+			test('TakeWhile 1', () => {
 				const queue1 = new arrays.ArrayQueue([9, 8, 1, 7, 6]);
-				assert.deepStrictEqual(
-					queue1.takeWhile((x) => x > 5),
-					[9, 8]
-				);
-				assert.deepStrictEqual(
-					queue1.takeWhile((x) => x < 7),
-					[1]
-				);
-				assert.deepStrictEqual(
-					queue1.takeWhile((x) => true),
-					[7, 6]
-				);
+				assert.deepStrictEqual(queue1.takeWhile(x => x > 5), [9, 8]);
+				assert.deepStrictEqual(queue1.takeWhile(x => x < 7), [1]);
+				assert.deepStrictEqual(queue1.takeWhile(x => true), [7, 6]);
 			});
 
-			test("TakeFromEndWhile 1", () => {
+			test('TakeFromEndWhile 1', () => {
 				const queue1 = new arrays.ArrayQueue([9, 8, 1, 7, 6]);
-				assert.deepStrictEqual(
-					queue1.takeFromEndWhile((x) => x > 5),
-					[7, 6]
-				);
-				assert.deepStrictEqual(
-					queue1.takeFromEndWhile((x) => x < 2),
-					[1]
-				);
-				assert.deepStrictEqual(
-					queue1.takeFromEndWhile((x) => true),
-					[9, 8]
-				);
+				assert.deepStrictEqual(queue1.takeFromEndWhile(x => x > 5), [7, 6]);
+				assert.deepStrictEqual(queue1.takeFromEndWhile(x => x < 2), [1]);
+				assert.deepStrictEqual(queue1.takeFromEndWhile(x => true), [9, 8]);
 			});
 		});
 
-		suite("takeWhile/takeFromEndWhile monotonous", () => {
-			function testMonotonous(
-				array: number[],
-				predicate: (a: number) => boolean
-			) {
+		suite('takeWhile/takeFromEndWhile monotonous', () => {
+			function testMonotonous(array: number[], predicate: (a: number) => boolean) {
 				function normalize(arr: number[]): number[] | null {
 					if (arr.length === 0) {
 						return null;
@@ -516,58 +426,33 @@ suite("Arrays", () => {
 
 				{
 					const queue1 = new arrays.ArrayQueue(array);
-					assert.deepStrictEqual(
-						queue1.takeWhile(predicate),
-						normalize(array.filter(predicate))
-					);
-					assert.deepStrictEqual(
-						queue1.length,
-						array.length - array.filter(predicate).length
-					);
-					assert.deepStrictEqual(
-						queue1.takeWhile(() => true),
-						normalize(array.filter(negatedPredicate))
-					);
+					assert.deepStrictEqual(queue1.takeWhile(predicate), normalize(array.filter(predicate)));
+					assert.deepStrictEqual(queue1.length, array.length - array.filter(predicate).length);
+					assert.deepStrictEqual(queue1.takeWhile(() => true), normalize(array.filter(negatedPredicate)));
 				}
 				{
 					const queue3 = new arrays.ArrayQueue(array);
-					assert.deepStrictEqual(
-						queue3.takeFromEndWhile(negatedPredicate),
-						normalize(array.filter(negatedPredicate))
-					);
-					assert.deepStrictEqual(
-						queue3.length,
-						array.length - array.filter(negatedPredicate).length
-					);
-					assert.deepStrictEqual(
-						queue3.takeFromEndWhile(() => true),
-						normalize(array.filter(predicate))
-					);
+					assert.deepStrictEqual(queue3.takeFromEndWhile(negatedPredicate), normalize(array.filter(negatedPredicate)));
+					assert.deepStrictEqual(queue3.length, array.length - array.filter(negatedPredicate).length);
+					assert.deepStrictEqual(queue3.takeFromEndWhile(() => true), normalize(array.filter(predicate)));
 				}
 			}
 
 			const array = [1, 1, 1, 2, 5, 5, 7, 8, 8];
 
-			test("TakeWhile 1", () =>
-				testMonotonous(array, (value) => value <= 1));
-			test("TakeWhile 2", () =>
-				testMonotonous(array, (value) => value < 5));
-			test("TakeWhile 3", () =>
-				testMonotonous(array, (value) => value <= 5));
-			test("TakeWhile 4", () => testMonotonous(array, (value) => true));
-			test("TakeWhile 5", () => testMonotonous(array, (value) => false));
+			test('TakeWhile 1', () => testMonotonous(array, value => value <= 1));
+			test('TakeWhile 2', () => testMonotonous(array, value => value < 5));
+			test('TakeWhile 3', () => testMonotonous(array, value => value <= 5));
+			test('TakeWhile 4', () => testMonotonous(array, value => true));
+			test('TakeWhile 5', () => testMonotonous(array, value => false));
 
 			const array2 = [1, 1, 1, 2, 5, 5, 7, 8, 8, 9, 9, 9, 9, 10, 10];
 
-			test("TakeWhile 6", () =>
-				testMonotonous(array2, (value) => value < 10));
-			test("TakeWhile 7", () =>
-				testMonotonous(array2, (value) => value < 7));
-			test("TakeWhile 8", () =>
-				testMonotonous(array2, (value) => value < 5));
+			test('TakeWhile 6', () => testMonotonous(array2, value => value < 10));
+			test('TakeWhile 7', () => testMonotonous(array2, value => value < 7));
+			test('TakeWhile 8', () => testMonotonous(array2, value => value < 5));
 
-			test("TakeWhile Empty", () =>
-				testMonotonous([], (value) => value <= 5));
+			test('TakeWhile Empty', () => testMonotonous([], value => value <= 5));
 		});
 	});
 });

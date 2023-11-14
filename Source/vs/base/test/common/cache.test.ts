@@ -3,52 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from "assert";
-import { timeout } from "vs/base/common/async";
-import { Cache } from "vs/base/common/cache";
+import * as assert from 'assert';
+import { timeout } from 'vs/base/common/async';
+import { Cache } from 'vs/base/common/cache';
 
-suite("Cache", () => {
-	test("simple value", () => {
+suite('Cache', () => {
+
+	test('simple value', () => {
 		let counter = 0;
-		const cache = new Cache((_) => Promise.resolve(counter++));
+		const cache = new Cache(_ => Promise.resolve(counter++));
 
-		return cache
-			.get()
-			.promise.then(
-				(c) => assert.strictEqual(c, 0),
-				() => assert.fail("Unexpected assertion error")
-			)
+		return cache.get().promise
+			.then(c => assert.strictEqual(c, 0), () => assert.fail('Unexpected assertion error'))
 			.then(() => cache.get().promise)
-			.then(
-				(c) => assert.strictEqual(c, 0),
-				() => assert.fail("Unexpected assertion error")
-			);
+			.then(c => assert.strictEqual(c, 0), () => assert.fail('Unexpected assertion error'));
 	});
 
-	test("simple error", () => {
+	test('simple error', () => {
 		let counter = 0;
-		const cache = new Cache((_) =>
-			Promise.reject(new Error(String(counter++)))
-		);
+		const cache = new Cache(_ => Promise.reject(new Error(String(counter++))));
 
-		return cache
-			.get()
-			.promise.then(
-				() => assert.fail("Unexpected assertion error"),
-				(err) => assert.strictEqual(err.message, "0")
-			)
+		return cache.get().promise
+			.then(() => assert.fail('Unexpected assertion error'), err => assert.strictEqual(err.message, '0'))
 			.then(() => cache.get().promise)
-			.then(
-				() => assert.fail("Unexpected assertion error"),
-				(err) => assert.strictEqual(err.message, "0")
-			);
+			.then(() => assert.fail('Unexpected assertion error'), err => assert.strictEqual(err.message, '0'));
 	});
 
-	test("should retry cancellations", () => {
-		let counter1 = 0,
-			counter2 = 0;
+	test('should retry cancellations', () => {
+		let counter1 = 0, counter2 = 0;
 
-		const cache = new Cache((token) => {
+		const cache = new Cache(token => {
 			counter1++;
 			return Promise.resolve(timeout(2, token).then(() => counter2++));
 		});
@@ -68,12 +52,12 @@ suite("Cache", () => {
 		assert.strictEqual(counter2, 0);
 
 		return result.promise
-			.then((c) => {
+			.then(c => {
 				assert.strictEqual(counter1, 2);
 				assert.strictEqual(counter2, 1);
 			})
 			.then(() => cache.get().promise)
-			.then((c) => {
+			.then(c => {
 				assert.strictEqual(counter1, 2);
 				assert.strictEqual(counter2, 1);
 			});

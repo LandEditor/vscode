@@ -3,33 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { URI } from "vs/base/common/uri";
-import {
-	EditorInputCapabilities,
-	IUntypedEditorInput,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import * as nls from 'vs/nls';
+import { URI } from 'vs/base/common/uri';
+import { EditorInputCapabilities, IUntypedEditorInput } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
 
 export class RuntimeExtensionsInput extends EditorInput {
-	static readonly ID = "workbench.runtimeExtensions.input";
+
+	static readonly ID = 'workbench.runtimeExtensions.input';
 
 	override get typeId(): string {
 		return RuntimeExtensionsInput.ID;
 	}
 
 	override get capabilities(): EditorInputCapabilities {
-		return (
-			EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton
-		);
+		return EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton;
 	}
 
 	static _instance: RuntimeExtensionsInput;
 	static get instance() {
-		if (
-			!RuntimeExtensionsInput._instance ||
-			RuntimeExtensionsInput._instance.isDisposed()
-		) {
+		if (!RuntimeExtensionsInput._instance || RuntimeExtensionsInput._instance.isDisposed()) {
 			RuntimeExtensionsInput._instance = new RuntimeExtensionsInput();
 		}
 
@@ -37,12 +30,12 @@ export class RuntimeExtensionsInput extends EditorInput {
 	}
 
 	readonly resource = URI.from({
-		scheme: "runtime-extensions",
-		path: "default",
+		scheme: 'runtime-extensions',
+		path: 'default'
 	});
 
 	override getName(): string {
-		return nls.localize("extensionsInputName", "Running Extensions");
+		return nls.localize('extensionsInputName', "Running Extensions");
 	}
 
 	override matches(other: EditorInput | IUntypedEditorInput): boolean {

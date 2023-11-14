@@ -3,26 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color } from "vs/base/common/color";
-import { Emitter, Event } from "vs/base/common/event";
-import { IconContribution } from "vs/platform/theme/common/iconRegistry";
-import { ColorScheme } from "vs/platform/theme/common/theme";
-import {
-	IColorTheme,
-	IFileIconTheme,
-	IProductIconTheme,
-	IThemeService,
-	ITokenStyle,
-} from "vs/platform/theme/common/themeService";
+import { Color } from 'vs/base/common/color';
+import { Emitter, Event } from 'vs/base/common/event';
+import { IconContribution } from 'vs/platform/theme/common/iconRegistry';
+import { ColorScheme } from 'vs/platform/theme/common/theme';
+import { IColorTheme, IFileIconTheme, IProductIconTheme, IThemeService, ITokenStyle } from 'vs/platform/theme/common/themeService';
 
 export class TestColorTheme implements IColorTheme {
-	public readonly label = "test";
+
+	public readonly label = 'test';
 
 	constructor(
 		private colors: { [id: string]: string | undefined } = {},
 		public type = ColorScheme.DARK,
 		public readonly semanticHighlighting = false
-	) {}
+	) { }
 
 	getColor(color: string, useDefault?: boolean): Color | undefined {
 		const value = this.colors[color];
@@ -33,14 +28,10 @@ export class TestColorTheme implements IColorTheme {
 	}
 
 	defines(color: string): boolean {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
-	getTokenStyleMetadata(
-		type: string,
-		modifiers: string[],
-		modelLanguage: string
-	): ITokenStyle | undefined {
+	getTokenStyleMetadata(type: string, modifiers: string[], modelLanguage: string): ITokenStyle | undefined {
 		return undefined;
 	}
 
@@ -62,6 +53,7 @@ class UnthemedProductIconTheme implements IProductIconTheme {
 }
 
 export class TestThemeService implements IThemeService {
+
 	declare readonly _serviceBrand: undefined;
 	_colorTheme: IColorTheme;
 	_fileIconTheme: IFileIconTheme;
@@ -70,11 +62,7 @@ export class TestThemeService implements IThemeService {
 	_onFileIconThemeChange = new Emitter<IFileIconTheme>();
 	_onProductIconThemeChange = new Emitter<IProductIconTheme>();
 
-	constructor(
-		theme = new TestColorTheme(),
-		fileIconTheme = new TestFileIconTheme(),
-		productIconTheme = new UnthemedProductIconTheme()
-	) {
+	constructor(theme = new TestColorTheme(), fileIconTheme = new TestFileIconTheme(), productIconTheme = new UnthemedProductIconTheme()) {
 		this._colorTheme = theme;
 		this._fileIconTheme = fileIconTheme;
 		this._productIconTheme = productIconTheme;

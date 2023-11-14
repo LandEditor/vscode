@@ -3,79 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
-import {
-	BrowserAuxiliaryWindowService,
-	IAuxiliaryWindowService,
-	AuxiliaryWindow as BaseAuxiliaryWindow,
-} from "vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService";
-import { ISandboxGlobals } from "vs/base/parts/sandbox/electron-sandbox/globals";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IWindowsConfiguration } from "vs/platform/window/common/window";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import { getActiveWindow } from "vs/base/browser/dom";
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
+import { BrowserAuxiliaryWindowService, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService';
+import { ISandboxGlobals } from 'vs/base/parts/sandbox/electron-sandbox/globals';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IWindowsConfiguration } from 'vs/platform/window/common/window';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { getActiveWindow } from 'vs/base/browser/dom';
+import { CodeWindow } from 'vs/base/browser/window';
+import { mark } from 'vs/base/common/performance';
 
-type AuxiliaryWindow = BaseAuxiliaryWindow & {
+type NativeAuxiliaryWindow = CodeWindow & {
 	readonly vscode: ISandboxGlobals;
-	readonly vscodeWindowId: number;
 };
 
-export function isAuxiliaryWindow(obj: unknown): obj is AuxiliaryWindow {
-	const candidate = obj as AuxiliaryWindow | undefined;
-
-	return !!candidate?.vscode && Object.hasOwn(candidate, "vscodeWindowId");
-}
-
 export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService {
+
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-		@IConfigurationService
-		private readonly configurationService: IConfigurationService,
-		@INativeHostService
-		private readonly nativeHostService: INativeHostService,
+		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@INativeHostService private readonly nativeHostService: INativeHostService,
 		@IDialogService dialogService: IDialogService
 	) {
 		super(layoutService, dialogService);
 	}
 
-	protected override create(
-		auxiliaryWindow: AuxiliaryWindow,
-		disposables: DisposableStore
-	) {
-		// Zoom level
-		const windowConfig =
-			this.configurationService.getValue<IWindowsConfiguration>();
-		const windowZoomLevel =
-			typeof windowConfig.window?.zoomLevel === "number"
-				? windowConfig.window.zoomLevel
-				: 0;
-		auxiliaryWindow.vscode.webFrame.setZoomLevel(windowZoomLevel);
+	protected override async resolveWindowId(auxiliaryWindow: NativeAuxiliaryWindow): Promise<number> {
+		mark('code/auxiliaryWindow/willResolveWindowId');
+		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke('vscode:registerAuxiliaryWindow', this.nativeHostService.windowId);
+		mark('code/auxiliaryWindow/didResolveWindowId');
 
-		return super.create(auxiliaryWindow, disposables);
+		return windowId;
 	}
 
-	protected override patchMethods(auxiliaryWindow: AuxiliaryWindow): void {
+	protected override createContainer(auxiliaryWindow: NativeAuxiliaryWindow, disposables: DisposableStore): HTMLElement {
+
+		// Zoom level
+		const windowConfig = this.configurationService.getValue<IWindowsConfiguration>();
+		const windowZoomLevel = typeof windowConfig.window?.zoomLevel === 'number' ? windowConfig.window.zoomLevel : 0;
+		auxiliaryWindow.vscode.webFrame.setZoomLevel(windowZoomLevel);
+
+		return super.createContainer(auxiliaryWindow, disposables);
+	}
+
+	protected override patchMethods(auxiliaryWindow: NativeAuxiliaryWindow): void {
 		super.patchMethods(auxiliaryWindow);
-
-		// Obtain window identifier
-		let resolvedWindowId: number;
-		(async () => {
-			resolvedWindowId =
-				await auxiliaryWindow.vscode.ipcRenderer.invoke(
-					"vscode:getWindowId"
-				);
-		})();
-
-		// Add a `windowId` property
-		Object.defineProperty(auxiliaryWindow, "vscodeWindowId", {
-			get: () => resolvedWindowId,
-		});
 
 		// Enable `window.focus()` to work in Electron by
 		// asking the main process to focus the window.
@@ -86,16 +61,10 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 			originalWindowFocus();
 
 			if (getActiveWindow() !== auxiliaryWindow) {
-				that.nativeHostService.focusWindow({
-					targetWindowId: resolvedWindowId,
-				});
+				that.nativeHostService.focusWindow({ targetWindowId: auxiliaryWindow.vscodeWindowId });
 			}
 		};
 	}
 }
 
-registerSingleton(
-	IAuxiliaryWindowService,
-	NativeAuxiliaryWindowService,
-	InstantiationType.Delayed
-);
+registerSingleton(IAuxiliaryWindowService, NativeAuxiliaryWindowService, InstantiationType.Delayed);

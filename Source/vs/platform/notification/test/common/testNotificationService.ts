@@ -3,20 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import {
-	INotification,
-	INotificationHandle,
-	INotificationService,
-	IPromptChoice,
-	IPromptOptions,
-	IStatusMessageOptions,
-	NoOpNotification,
-	Severity,
-} from "vs/platform/notification/common/notification";
+import { Event } from 'vs/base/common/event';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { INotification, INotificationHandle, INotificationService, IPromptChoice, IPromptOptions, IStatusMessageOptions, NoOpNotification, Severity } from 'vs/platform/notification/common/notification';
 
 export class TestNotificationService implements INotificationService {
+
 	readonly onDidAddNotification: Event<INotification> = Event.None;
 
 	readonly onDidRemoveNotification: Event<INotification> = Event.None;
@@ -45,19 +37,11 @@ export class TestNotificationService implements INotificationService {
 		return TestNotificationService.NO_OP;
 	}
 
-	prompt(
-		severity: Severity,
-		message: string,
-		choices: IPromptChoice[],
-		options?: IPromptOptions
-	): INotificationHandle {
+	prompt(severity: Severity, message: string, choices: IPromptChoice[], options?: IPromptOptions): INotificationHandle {
 		return TestNotificationService.NO_OP;
 	}
 
-	status(
-		message: string | Error,
-		options?: IStatusMessageOptions
-	): IDisposable {
+	status(message: string | Error, options?: IStatusMessageOptions): IDisposable {
 		return Disposable.None;
 	}
 }

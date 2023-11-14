@@ -3,68 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { deepStrictEqual } from "assert";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
-import { TerminalCapability } from "vs/platform/terminal/common/capabilities/capabilities";
-import {
-	TerminalCapabilityStore,
-	TerminalCapabilityStoreMultiplexer,
-} from "vs/platform/terminal/common/capabilities/terminalCapabilityStore";
+import { deepStrictEqual } from 'assert';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import { TerminalCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
+import { TerminalCapabilityStore, TerminalCapabilityStoreMultiplexer } from 'vs/platform/terminal/common/capabilities/terminalCapabilityStore';
 
-suite("TerminalCapabilityStore", () => {
+suite('TerminalCapabilityStore', () => {
 	let store: TerminalCapabilityStore;
 	let addEvents: TerminalCapability[];
 	let removeEvents: TerminalCapability[];
 
 	setup(() => {
 		store = new TerminalCapabilityStore();
-		store.onDidAddCapabilityType((e) => addEvents.push(e));
-		store.onDidRemoveCapabilityType((e) => removeEvents.push(e));
+		store.onDidAddCapabilityType(e => addEvents.push(e));
+		store.onDidRemoveCapabilityType(e => removeEvents.push(e));
 		addEvents = [];
 		removeEvents = [];
 	});
 
+	ensureNoDisposablesAreLeakedInTestSuite();
+
 	teardown(() => store.dispose());
 
-	test("should fire events when capabilities are added", () => {
+	test('should fire events when capabilities are added', () => {
 		assertEvents(addEvents, []);
 		store.add(TerminalCapability.CwdDetection, {} as any);
 		assertEvents(addEvents, [TerminalCapability.CwdDetection]);
 	});
-	test("should fire events when capabilities are removed", async () => {
+	test('should fire events when capabilities are removed', async () => {
 		assertEvents(removeEvents, []);
 		store.add(TerminalCapability.CwdDetection, {} as any);
 		assertEvents(removeEvents, []);
 		store.remove(TerminalCapability.CwdDetection);
 		assertEvents(removeEvents, [TerminalCapability.CwdDetection]);
 	});
-	test("has should return whether a capability is present", () => {
+	test('has should return whether a capability is present', () => {
 		deepStrictEqual(store.has(TerminalCapability.CwdDetection), false);
 		store.add(TerminalCapability.CwdDetection, {} as any);
 		deepStrictEqual(store.has(TerminalCapability.CwdDetection), true);
 		store.remove(TerminalCapability.CwdDetection);
 		deepStrictEqual(store.has(TerminalCapability.CwdDetection), false);
 	});
-	test("items should reflect current state", () => {
+	test('items should reflect current state', () => {
 		deepStrictEqual(Array.from(store.items), []);
 		store.add(TerminalCapability.CwdDetection, {} as any);
-		deepStrictEqual(Array.from(store.items), [
-			TerminalCapability.CwdDetection,
-		]);
+		deepStrictEqual(Array.from(store.items), [TerminalCapability.CwdDetection]);
 		store.add(TerminalCapability.NaiveCwdDetection, {} as any);
-		deepStrictEqual(Array.from(store.items), [
-			TerminalCapability.CwdDetection,
-			TerminalCapability.NaiveCwdDetection,
-		]);
+		deepStrictEqual(Array.from(store.items), [TerminalCapability.CwdDetection, TerminalCapability.NaiveCwdDetection]);
 		store.remove(TerminalCapability.CwdDetection);
-		deepStrictEqual(Array.from(store.items), [
-			TerminalCapability.NaiveCwdDetection,
-		]);
+		deepStrictEqual(Array.from(store.items), [TerminalCapability.NaiveCwdDetection]);
 	});
 });
 
-suite("TerminalCapabilityStoreMultiplexer", () => {
+suite('TerminalCapabilityStoreMultiplexer', () => {
 	let store: DisposableStore;
 	let multiplexer: TerminalCapabilityStoreMultiplexer;
 	let store1: TerminalCapabilityStore;
@@ -75,8 +67,8 @@ suite("TerminalCapabilityStoreMultiplexer", () => {
 	setup(() => {
 		store = new DisposableStore();
 		multiplexer = store.add(new TerminalCapabilityStoreMultiplexer());
-		multiplexer.onDidAddCapabilityType((e) => addEvents.push(e));
-		multiplexer.onDidRemoveCapabilityType((e) => removeEvents.push(e));
+		multiplexer.onDidAddCapabilityType(e => addEvents.push(e));
+		multiplexer.onDidRemoveCapabilityType(e => removeEvents.push(e));
 		store1 = store.add(new TerminalCapabilityStore());
 		store2 = store.add(new TerminalCapabilityStore());
 		addEvents = [];
@@ -87,7 +79,7 @@ suite("TerminalCapabilityStoreMultiplexer", () => {
 
 	ensureNoDisposablesAreLeakedInTestSuite();
 
-	test("should fire events when capabilities are enabled", async () => {
+	test('should fire events when capabilities are enabled', async () => {
 		assertEvents(addEvents, []);
 		multiplexer.add(store1);
 		multiplexer.add(store2);
@@ -96,7 +88,7 @@ suite("TerminalCapabilityStoreMultiplexer", () => {
 		store2.add(TerminalCapability.NaiveCwdDetection, {} as any);
 		assertEvents(addEvents, [TerminalCapability.NaiveCwdDetection]);
 	});
-	test("should fire events when capabilities are disabled", async () => {
+	test('should fire events when capabilities are disabled', async () => {
 		assertEvents(removeEvents, []);
 		multiplexer.add(store1);
 		multiplexer.add(store2);
@@ -108,66 +100,38 @@ suite("TerminalCapabilityStoreMultiplexer", () => {
 		store2.remove(TerminalCapability.NaiveCwdDetection);
 		assertEvents(removeEvents, [TerminalCapability.NaiveCwdDetection]);
 	});
-	test("should fire events when stores are added", async () => {
+	test('should fire events when stores are added', async () => {
 		assertEvents(addEvents, []);
 		store1.add(TerminalCapability.CwdDetection, {} as any);
 		assertEvents(addEvents, []);
 		store2.add(TerminalCapability.NaiveCwdDetection, {} as any);
 		multiplexer.add(store1);
 		multiplexer.add(store2);
-		assertEvents(addEvents, [
-			TerminalCapability.CwdDetection,
-			TerminalCapability.NaiveCwdDetection,
-		]);
+		assertEvents(addEvents, [TerminalCapability.CwdDetection, TerminalCapability.NaiveCwdDetection]);
 	});
-	test("items should return items from all stores", () => {
+	test('items should return items from all stores', () => {
 		deepStrictEqual(Array.from(multiplexer.items).sort(), [].sort());
 		multiplexer.add(store1);
 		multiplexer.add(store2);
 		store1.add(TerminalCapability.CwdDetection, {} as any);
-		deepStrictEqual(
-			Array.from(multiplexer.items).sort(),
-			[TerminalCapability.CwdDetection].sort()
-		);
+		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection].sort());
 		store1.add(TerminalCapability.CommandDetection, {} as any);
 		store2.add(TerminalCapability.NaiveCwdDetection, {} as any);
-		deepStrictEqual(
-			Array.from(multiplexer.items).sort(),
-			[
-				TerminalCapability.CwdDetection,
-				TerminalCapability.CommandDetection,
-				TerminalCapability.NaiveCwdDetection,
-			].sort()
-		);
+		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection, TerminalCapability.CommandDetection, TerminalCapability.NaiveCwdDetection].sort());
 		store2.remove(TerminalCapability.NaiveCwdDetection);
-		deepStrictEqual(
-			Array.from(multiplexer.items).sort(),
-			[
-				TerminalCapability.CwdDetection,
-				TerminalCapability.CommandDetection,
-			].sort()
-		);
+		deepStrictEqual(Array.from(multiplexer.items).sort(), [TerminalCapability.CwdDetection, TerminalCapability.CommandDetection].sort());
 	});
-	test("has should return whether a capability is present", () => {
-		deepStrictEqual(
-			multiplexer.has(TerminalCapability.CwdDetection),
-			false
-		);
+	test('has should return whether a capability is present', () => {
+		deepStrictEqual(multiplexer.has(TerminalCapability.CwdDetection), false);
 		multiplexer.add(store1);
 		store1.add(TerminalCapability.CwdDetection, {} as any);
 		deepStrictEqual(multiplexer.has(TerminalCapability.CwdDetection), true);
 		store1.remove(TerminalCapability.CwdDetection);
-		deepStrictEqual(
-			multiplexer.has(TerminalCapability.CwdDetection),
-			false
-		);
+		deepStrictEqual(multiplexer.has(TerminalCapability.CwdDetection), false);
 	});
 });
 
-function assertEvents(
-	actual: TerminalCapability[],
-	expected: TerminalCapability[]
-) {
+function assertEvents(actual: TerminalCapability[], expected: TerminalCapability[]) {
 	deepStrictEqual(actual, expected);
 	actual.length = 0;
 }

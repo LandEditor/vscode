@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { NullExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { stub } from "sinon";
-import { NotebookRendererMessagingService } from "vs/workbench/contrib/notebook/browser/services/notebookRendererMessagingServiceImpl";
-import * as assert from "assert";
-import { timeout } from "vs/base/common/async";
-import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { NullExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { stub } from 'sinon';
+import { NotebookRendererMessagingService } from 'vs/workbench/contrib/notebook/browser/services/notebookRendererMessagingServiceImpl';
+import * as assert from 'assert';
+import { timeout } from 'vs/base/common/async';
+import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
 
-suite("NotebookRendererMessaging", () => {
+suite('NotebookRendererMessaging', () => {
 	let extService: NullExtensionService;
 	let m: NotebookRendererMessagingService;
 	let sent: unknown[] = [];
@@ -21,42 +21,40 @@ suite("NotebookRendererMessaging", () => {
 		sent = [];
 		extService = new NullExtensionService();
 		m = ds.add(new NotebookRendererMessagingService(extService));
-		ds.add(m.onShouldPostMessage((e) => sent.push(e)));
+		ds.add(m.onShouldPostMessage(e => sent.push(e)));
 	});
 
-	test("activates on prepare", () => {
-		const activate = stub(extService, "activateByEvent").returns(
-			Promise.resolve()
-		);
-		m.prepare("foo");
-		m.prepare("foo");
-		m.prepare("foo");
+	test('activates on prepare', () => {
+		const activate = stub(extService, 'activateByEvent').returns(Promise.resolve());
+		m.prepare('foo');
+		m.prepare('foo');
+		m.prepare('foo');
 
-		assert.deepStrictEqual(activate.args, [["onRenderer:foo"]]);
+		assert.deepStrictEqual(activate.args, [['onRenderer:foo']]);
 	});
 
-	test("buffers and then plays events", async () => {
-		stub(extService, "activateByEvent").returns(Promise.resolve());
+	test('buffers and then plays events', async () => {
+		stub(extService, 'activateByEvent').returns(Promise.resolve());
 
-		const scoped = m.getScoped("some-editor");
-		scoped.postMessage("foo", 1);
-		scoped.postMessage("foo", 2);
+		const scoped = m.getScoped('some-editor');
+		scoped.postMessage('foo', 1);
+		scoped.postMessage('foo', 2);
 		assert.deepStrictEqual(sent, []);
 
 		await timeout(0);
 
 		const expected = [
-			{ editorId: "some-editor", rendererId: "foo", message: 1 },
-			{ editorId: "some-editor", rendererId: "foo", message: 2 },
+			{ editorId: 'some-editor', rendererId: 'foo', message: 1 },
+			{ editorId: 'some-editor', rendererId: 'foo', message: 2 }
 		];
 
 		assert.deepStrictEqual(sent, expected);
 
-		scoped.postMessage("foo", 3);
+		scoped.postMessage('foo', 3);
 
 		assert.deepStrictEqual(sent, [
 			...expected,
-			{ editorId: "some-editor", rendererId: "foo", message: 3 },
+			{ editorId: 'some-editor', rendererId: 'foo', message: 3 }
 		]);
 	});
 });

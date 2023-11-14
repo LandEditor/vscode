@@ -3,28 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IIdentityProvider } from "vs/base/browser/ui/list/list";
-import { ObjectTree } from "vs/base/browser/ui/tree/objectTree";
-import {
-	IObjectTreeElement,
-	ObjectTreeElementCollapseState,
-} from "vs/base/browser/ui/tree/tree";
-import { Emitter, Event } from "vs/base/common/event";
-import { FuzzyScore } from "vs/base/common/filters";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { Iterable } from "vs/base/common/iterator";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { MarshalledId } from "vs/base/common/marshallingIds";
-import {
-	ISerializedTestTreeCollapseState,
-	isCollapsedInSerializedTestTree,
-} from "vs/workbench/contrib/testing/browser/explorerProjections/testingViewState";
-import {
-	ITestItemContext,
-	InternalTestItem,
-	TestItemExpandState,
-	TestResultState,
-} from "vs/workbench/contrib/testing/common/testTypes";
+import { IIdentityProvider } from 'vs/base/browser/ui/list/list';
+import { ObjectTree } from 'vs/base/browser/ui/tree/objectTree';
+import { IObjectTreeElement, ObjectTreeElementCollapseState } from 'vs/base/browser/ui/tree/tree';
+import { Emitter, Event } from 'vs/base/common/event';
+import { FuzzyScore } from 'vs/base/common/filters';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { Iterable } from 'vs/base/common/iterator';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { MarshalledId } from 'vs/base/common/marshallingIds';
+import { ISerializedTestTreeCollapseState, isCollapsedInSerializedTestTree } from 'vs/workbench/contrib/testing/browser/explorerProjections/testingViewState';
+import { ITestItemContext, InternalTestItem, TestItemExpandState, TestResultState } from 'vs/workbench/contrib/testing/common/testTypes';
 
 /**
  * Describes a rendering of tests in the explorer view. Different
@@ -114,8 +103,8 @@ export abstract class TestItemTreeElement {
 		 * Parent tree item. May not actually be the test item who owns this one
 		 * in a 'flat' projection.
 		 */
-		public readonly parent: TestItemTreeElement | null = null
-	) {}
+		public readonly parent: TestItemTreeElement | null = null,
+	) { }
 
 	public toJSON() {
 		if (this.depth === 0) {
@@ -140,75 +129,47 @@ export class TestTreeErrorMessage {
 	public readonly children = new Set<never>();
 
 	public get description() {
-		return typeof this.message === "string"
-			? this.message
-			: this.message.value;
+		return typeof this.message === 'string' ? this.message : this.message.value;
 	}
 
 	constructor(
 		public readonly message: string | IMarkdownString,
-		public readonly parent: TestExplorerTreeElement
-	) {}
+		public readonly parent: TestExplorerTreeElement,
+	) { }
 }
 
-export type TestExplorerTreeElement =
-	| TestItemTreeElement
-	| TestTreeErrorMessage;
+export type TestExplorerTreeElement = TestItemTreeElement | TestTreeErrorMessage;
 
-export const testIdentityProvider: IIdentityProvider<TestExplorerTreeElement> =
-	{
-		getId(element) {
-			return (
-				element.treeId +
-				"\0" +
-				(element instanceof TestTreeErrorMessage
-					? "error"
-					: element.test.expand)
-			);
-		},
-	};
+export const testIdentityProvider: IIdentityProvider<TestExplorerTreeElement> = {
+	getId(element) {
+		return element.treeId + '\0' + (element instanceof TestTreeErrorMessage ? 'error' : element.test.expand);
+	}
+};
 
-export const getChildrenForParent = (
-	serialized: ISerializedTestTreeCollapseState,
-	rootsWithChildren: Iterable<TestExplorerTreeElement>,
-	node: TestExplorerTreeElement | null
-): Iterable<IObjectTreeElement<TestExplorerTreeElement>> => {
+export const getChildrenForParent = (serialized: ISerializedTestTreeCollapseState, rootsWithChildren: Iterable<TestExplorerTreeElement>, node: TestExplorerTreeElement | null): Iterable<IObjectTreeElement<TestExplorerTreeElement>> => {
 	let it: Iterable<TestExplorerTreeElement>;
-	if (node === null) {
-		// roots
+	if (node === null) { // roots
 		const rootsWithChildrenArr = [...rootsWithChildren];
 		if (rootsWithChildrenArr.length === 1) {
-			return getChildrenForParent(
-				serialized,
-				rootsWithChildrenArr,
-				rootsWithChildrenArr[0]
-			);
+			return getChildrenForParent(serialized, rootsWithChildrenArr, rootsWithChildrenArr[0]);
 		}
 		it = rootsWithChildrenArr;
 	} else {
 		it = node.children;
 	}
 
-	return Iterable.map(it, (element) =>
+	return Iterable.map(it, element => (
 		element instanceof TestTreeErrorMessage
 			? { element }
 			: {
-					element,
-					collapsible:
-						element.test.expand !==
-						TestItemExpandState.NotExpandable,
-					collapsed:
-						isCollapsedInSerializedTestTree(
-							serialized,
-							element.test.item.extId
-						) ?? element.depth > 0
-							? ObjectTreeElementCollapseState.PreserveOrCollapsed
-							: ObjectTreeElementCollapseState.PreserveOrExpanded,
-					children: getChildrenForParent(
-						serialized,
-						rootsWithChildren,
-						element
-					),
-			  }
-	);
+				element,
+				collapsible: element.test.expand !== TestItemExpandState.NotExpandable,
+				collapsed: element.test.item.error
+					? ObjectTreeElementCollapseState.PreserveOrExpanded
+					: (isCollapsedInSerializedTestTree(serialized, element.test.item.extId) ?? element.depth > 0
+						? ObjectTreeElementCollapseState.PreserveOrCollapsed
+						: ObjectTreeElementCollapseState.PreserveOrExpanded),
+				children: getChildrenForParent(serialized, rootsWithChildren, element),
+			}
+	));
 };

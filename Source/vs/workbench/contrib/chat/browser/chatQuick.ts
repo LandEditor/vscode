@@ -3,42 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { Orientation, Sash } from "vs/base/browser/ui/sash/sash";
-import { disposableTimeout } from "vs/base/common/async";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Emitter, Event } from "vs/base/common/event";
-import {
-	Disposable,
-	DisposableStore,
-	IDisposable,
-	MutableDisposable,
-} from "vs/base/common/lifecycle";
-import { Selection } from "vs/editor/common/core/selection";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import {
-	IQuickInputService,
-	IQuickWidget,
-} from "vs/platform/quickinput/common/quickInput";
-import {
-	editorBackground,
-	inputBackground,
-	quickInputBackground,
-	quickInputForeground,
-} from "vs/platform/theme/common/colorRegistry";
-import {
-	IChatWidgetService,
-	IQuickChatService,
-	IQuickChatOpenOptions,
-} from "vs/workbench/contrib/chat/browser/chat";
-import { IChatViewOptions } from "vs/workbench/contrib/chat/browser/chatViewPane";
-import { ChatWidget } from "vs/workbench/contrib/chat/browser/chatWidget";
-import { ChatModel } from "vs/workbench/contrib/chat/common/chatModel";
-import { IParsedChatRequest } from "vs/workbench/contrib/chat/common/chatParserTypes";
-import { IChatService } from "vs/workbench/contrib/chat/common/chatService";
+import * as dom from 'vs/base/browser/dom';
+import { Orientation, Sash } from 'vs/base/browser/ui/sash/sash';
+import { disposableTimeout } from 'vs/base/common/async';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle';
+import { Selection } from 'vs/editor/common/core/selection';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
+import { IQuickInputService, IQuickWidget } from 'vs/platform/quickinput/common/quickInput';
+import { editorBackground, inputBackground, quickInputBackground, quickInputForeground } from 'vs/platform/theme/common/colorRegistry';
+import { IChatWidgetService, IQuickChatService, IQuickChatOpenOptions } from 'vs/workbench/contrib/chat/browser/chat';
+import { IChatViewOptions } from 'vs/workbench/contrib/chat/browser/chatViewPane';
+import { ChatWidget } from 'vs/workbench/contrib/chat/browser/chatWidget';
+import { ChatModel } from 'vs/workbench/contrib/chat/common/chatModel';
+import { IParsedChatRequest } from 'vs/workbench/contrib/chat/common/chatParserTypes';
+import { IChatService } from 'vs/workbench/contrib/chat/common/chatService';
 
 export class QuickChatService extends Disposable implements IQuickChatService {
 	readonly _serviceBrand: undefined;
@@ -52,11 +35,9 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 	private _container: HTMLElement | undefined;
 
 	constructor(
-		@IQuickInputService
-		private readonly quickInputService: IQuickInputService,
+		@IQuickInputService private readonly quickInputService: IQuickInputService,
 		@IChatService private readonly chatService: IChatService,
-		@IInstantiationService
-		private readonly instantiationService: IInstantiationService
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -83,27 +64,29 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 			// If this is a partial query, the value should be cleared when closed as otherwise it
 			// would remain for the next time the quick chat is opened in any context.
 			if (options?.isPartialQuery) {
-				const disposable = this._store.add(
-					Event.once(this.onDidClose)(() => {
-						this._currentChat?.clearValue();
-						this._store.delete(disposable);
-					})
-				);
+				const disposable = this._store.add(Event.once(this.onDidClose)(() => {
+					this._currentChat?.clearValue();
+					this._store.delete(disposable);
+				}));
 			}
 		}
 	}
 
 	open(providerId?: string, options?: IQuickChatOpenOptions): void {
 		if (this._input) {
+			if (this._currentChat && options?.query) {
+				this._currentChat.setValue(options.query, options.selection);
+				if (!options.isPartialQuery) {
+					this._currentChat.acceptInput();
+				}
+			}
 			return this.focus();
 		}
 
 		// Check if any providers are available. If not, show nothing
 		// This shouldn't be needed because of the precondition, but just in case
 		const providerInfo = providerId
-			? this.chatService
-					.getProviderInfos()
-					.find((info) => info.id === providerId)
+			? this.chatService.getProviderInfos().find(info => info.id === providerId)
 			: this.chatService.getProviderInfos()[0];
 		if (!providerInfo) {
 			return;
@@ -112,21 +95,18 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 		const disposableStore = new DisposableStore();
 
 		this._input = this.quickInputService.createQuickWidget();
-		this._input.contextKey = "chatInputVisible";
+		this._input.contextKey = 'chatInputVisible';
 		this._input.ignoreFocusOut = true;
 		disposableStore.add(this._input);
 
-		this._container ??= dom.$(".interactive-session");
+		this._container ??= dom.$('.interactive-session');
 		this._input.widget = this._container;
 
 		this._input.show();
 		if (!this._currentChat) {
-			this._currentChat = this.instantiationService.createInstance(
-				QuickChat,
-				{
-					providerId: providerInfo.id,
-				}
-			);
+			this._currentChat = this.instantiationService.createInstance(QuickChat, {
+				providerId: providerInfo.id,
+			});
 
 			// show needs to come after the quickpick is shown
 			this._currentChat.render(this._container);
@@ -134,14 +114,12 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 			this._currentChat.show();
 		}
 
-		disposableStore.add(
-			this._input.onDidHide(() => {
-				disposableStore.dispose();
-				this._currentChat!.hide();
-				this._input = undefined;
-				this._onDidClose.fire();
-			})
-		);
+		disposableStore.add(this._input.onDidHide(() => {
+			disposableStore.dispose();
+			this._currentChat!.hide();
+			this._input = undefined;
+			this._onDidClose.fire();
+		}));
 
 		this._currentChat.focus();
 
@@ -174,19 +152,15 @@ class QuickChat extends Disposable {
 	private sash!: Sash;
 	private model: ChatModel | undefined;
 	private _currentQuery: string | undefined;
-	private maintainScrollTimer: MutableDisposable<IDisposable> =
-		this._register(new MutableDisposable<IDisposable>());
+	private maintainScrollTimer: MutableDisposable<IDisposable> = this._register(new MutableDisposable<IDisposable>());
 	private _deferUpdatingDynamicLayout: boolean = false;
 
 	constructor(
 		private readonly _options: IChatViewOptions,
-		@IInstantiationService
-		private readonly instantiationService: IInstantiationService,
-		@IContextKeyService
-		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService private readonly contextKeyService: IContextKeyService,
 		@IChatService private readonly chatService: IChatService,
-		@IChatWidgetService
-		private readonly _chatWidgetService: IChatWidgetService,
+		@IChatWidgetService private readonly _chatWidgetService: IChatWidgetService,
 		@ILayoutService private readonly layoutService: ILayoutService
 	) {
 		super();
@@ -196,7 +170,7 @@ class QuickChat extends Disposable {
 		this.model?.dispose();
 		this.model = undefined;
 		this.updateModel();
-		this.widget.inputEditor.setValue("");
+		this.widget.inputEditor.setValue('');
 	}
 
 	focus(selection?: Selection): void {
@@ -204,14 +178,12 @@ class QuickChat extends Disposable {
 			this.widget.focusInput();
 			const value = this.widget.inputEditor.getValue();
 			if (value) {
-				this.widget.inputEditor.setSelection(
-					selection ?? {
-						startLineNumber: 1,
-						startColumn: 1,
-						endLineNumber: 1,
-						endColumn: value.length + 1,
-					}
-				);
+				this.widget.inputEditor.setSelection(selection ?? {
+					startLineNumber: 1,
+					startColumn: 1,
+					endLineNumber: 1,
+					endColumn: value.length + 1
+				});
 			}
 		}
 	}
@@ -242,98 +214,68 @@ class QuickChat extends Disposable {
 
 	render(parent: HTMLElement): void {
 		if (this.widget) {
-			throw new Error("Cannot render quick chat twice");
+			throw new Error('Cannot render quick chat twice');
 		}
-		const scopedInstantiationService =
-			this.instantiationService.createChild(
-				new ServiceCollection([
-					IContextKeyService,
-					this._register(this.contextKeyService.createScoped(parent)),
-				])
-			);
+		const scopedInstantiationService = this.instantiationService.createChild(
+			new ServiceCollection([
+				IContextKeyService,
+				this._register(this.contextKeyService.createScoped(parent))
+			])
+		);
 		this.widget = this._register(
 			scopedInstantiationService.createInstance(
 				ChatWidget,
 				{ resource: true },
-				{ renderInputOnTop: true, renderStyle: "compact" },
+				{ renderInputOnTop: true, renderStyle: 'compact' },
 				{
 					listForeground: quickInputForeground,
 					listBackground: quickInputBackground,
 					inputEditorBackground: inputBackground,
-					resultEditorBackground: editorBackground,
-				}
-			)
-		);
+					resultEditorBackground: editorBackground
+				}));
 		this.widget.render(parent);
 		this.widget.setVisible(true);
 		this.widget.setDynamicChatTreeItemLayout(2, this.maxHeight);
 		this.updateModel();
-		this.sash = this._register(
-			new Sash(
-				parent,
-				{ getHorizontalSashTop: () => parent.offsetHeight },
-				{ orientation: Orientation.HORIZONTAL }
-			)
-		);
+		this.sash = this._register(new Sash(parent, { getHorizontalSashTop: () => parent.offsetHeight }, { orientation: Orientation.HORIZONTAL }));
 		this.registerListeners(parent);
 	}
 
 	private get maxHeight(): number {
-		return (
-			this.layoutService.mainContainerDimension.height -
-			QuickChat.DEFAULT_HEIGHT_OFFSET
-		);
+		return this.layoutService.mainContainerDimension.height - QuickChat.DEFAULT_HEIGHT_OFFSET;
 	}
 
 	private registerListeners(parent: HTMLElement): void {
-		this._register(
-			this.layoutService.onDidLayoutMainContainer(() => {
-				if (this.widget.visible) {
-					this.widget.updateDynamicChatTreeItemLayout(
-						2,
-						this.maxHeight
-					);
-				} else {
-					// If the chat is not visible, then we should defer updating the layout
-					// because it relies on offsetHeight which only works correctly
-					// when the chat is visible.
-					this._deferUpdatingDynamicLayout = true;
-				}
-			})
-		);
-		this._register(
-			this.widget.inputEditor.onDidChangeModelContent((e) => {
-				this._currentQuery = this.widget.inputEditor.getValue();
-			})
-		);
+		this._register(this.layoutService.onDidLayoutMainContainer(() => {
+			if (this.widget.visible) {
+				this.widget.updateDynamicChatTreeItemLayout(2, this.maxHeight);
+			} else {
+				// If the chat is not visible, then we should defer updating the layout
+				// because it relies on offsetHeight which only works correctly
+				// when the chat is visible.
+				this._deferUpdatingDynamicLayout = true;
+			}
+		}));
+		this._register(this.widget.inputEditor.onDidChangeModelContent((e) => {
+			this._currentQuery = this.widget.inputEditor.getValue();
+		}));
 		this._register(this.widget.onDidClear(() => this.clear()));
-		this._register(
-			this.widget.onDidChangeHeight((e) => this.sash.layout())
-		);
+		this._register(this.widget.onDidChangeHeight((e) => this.sash.layout()));
 		const width = parent.offsetWidth;
-		this._register(
-			this.sash.onDidStart(() => {
-				this.widget.isDynamicChatTreeItemLayoutEnabled = false;
-			})
-		);
-		this._register(
-			this.sash.onDidChange((e) => {
-				if (
-					e.currentY < QuickChat.DEFAULT_MIN_HEIGHT ||
-					e.currentY > this.maxHeight
-				) {
-					return;
-				}
-				this.widget.layout(e.currentY, width);
-				this.sash.layout();
-			})
-		);
-		this._register(
-			this.sash.onDidReset(() => {
-				this.widget.isDynamicChatTreeItemLayoutEnabled = true;
-				this.widget.layoutDynamicChatTreeItemMode();
-			})
-		);
+		this._register(this.sash.onDidStart(() => {
+			this.widget.isDynamicChatTreeItemLayoutEnabled = false;
+		}));
+		this._register(this.sash.onDidChange((e) => {
+			if (e.currentY < QuickChat.DEFAULT_MIN_HEIGHT || e.currentY > this.maxHeight) {
+				return;
+			}
+			this.widget.layout(e.currentY, width);
+			this.sash.layout();
+		}));
+		this._register(this.sash.onDidReset(() => {
+			this.widget.isDynamicChatTreeItemLayoutEnabled = true;
+			this.widget.layoutDynamicChatTreeItemMode();
+		}));
 	}
 
 	async acceptInput(): Promise<void> {
@@ -341,28 +283,22 @@ class QuickChat extends Disposable {
 	}
 
 	async openChatView(): Promise<void> {
-		const widget = await this._chatWidgetService.revealViewForProvider(
-			this._options.providerId
-		);
+		const widget = await this._chatWidgetService.revealViewForProvider(this._options.providerId);
 		if (!widget?.viewModel || !this.model) {
 			return;
 		}
 
 		for (const request of this.model.getRequests()) {
-			if (
-				request.response?.response.value ||
-				request.response?.errorDetails
-			) {
-				this.chatService.addCompleteRequest(
-					widget.viewModel.sessionId,
+			if (request.response?.response.value || request.response?.errorDetails) {
+				this.chatService.addCompleteRequest(widget.viewModel.sessionId,
 					request.message as IParsedChatRequest,
 					{
 						message: request.response.response.value,
 						errorDetails: request.response.errorDetails,
-						followups: request.response.followups,
-					}
-				);
+						followups: request.response.followups
+					});
 			} else if (request.message) {
+
 			}
 		}
 
@@ -379,16 +315,13 @@ class QuickChat extends Disposable {
 	}
 
 	clearValue(): void {
-		this.widget.inputEditor.setValue("");
+		this.widget.inputEditor.setValue('');
 	}
 
 	private updateModel(): void {
-		this.model ??= this.chatService.startSession(
-			this._options.providerId,
-			CancellationToken.None
-		);
+		this.model ??= this.chatService.startSession(this._options.providerId, CancellationToken.None);
 		if (!this.model) {
-			throw new Error("Could not start chat session");
+			throw new Error('Could not start chat session');
 		}
 
 		this.widget.setModel(this.model, { inputValue: this._currentQuery });

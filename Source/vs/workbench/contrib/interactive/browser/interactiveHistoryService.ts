@@ -3,14 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { HistoryNavigator2 } from "vs/base/common/history";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ResourceMap } from "vs/base/common/map";
-import { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { HistoryNavigator2 } from 'vs/base/common/history';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { ResourceMap } from 'vs/base/common/map';
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const IInteractiveHistoryService =
-	createDecorator<IInteractiveHistoryService>("IInteractiveHistoryService");
+export const IInteractiveHistoryService = createDecorator<IInteractiveHistoryService>('IInteractiveHistoryService');
 
 export interface IInteractiveHistoryService {
 	readonly _serviceBrand: undefined;
@@ -23,10 +22,7 @@ export interface IInteractiveHistoryService {
 	has(uri: URI): boolean;
 }
 
-export class InteractiveHistoryService
-	extends Disposable
-	implements IInteractiveHistoryService
-{
+export class InteractiveHistoryService extends Disposable implements IInteractiveHistoryService {
 	declare readonly _serviceBrand: undefined;
 	_history: ResourceMap<HistoryNavigator2<string>>;
 
@@ -70,6 +66,7 @@ export class InteractiveHistoryService
 				history?.replaceLast(value);
 			}
 		}
+
 	}
 
 	clearHistory(uri: URI) {
@@ -79,4 +76,5 @@ export class InteractiveHistoryService
 	has(uri: URI) {
 		return this._history.has(uri) ? true : false;
 	}
+
 }

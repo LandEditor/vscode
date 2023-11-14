@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
-import { basename, dirname, join, normalize, sep } from "vs/base/common/path";
-import { isLinux } from "vs/base/common/platform";
-import { rtrim } from "vs/base/common/strings";
-import { Promises, readdirSync } from "vs/base/node/pfs";
+import * as fs from 'fs';
+import { basename, dirname, join, normalize, sep } from 'vs/base/common/path';
+import { isLinux } from 'vs/base/common/platform';
+import { rtrim } from 'vs/base/common/strings';
+import { Promises, readdirSync } from 'vs/base/node/pfs';
 
 /**
  * Copied from: https://github.com/microsoft/vscode-node-debug/blob/master/src/node/pathUtilities.ts#L83
@@ -27,29 +27,25 @@ export function realcaseSync(path: string): string | null {
 	}
 
 	const dir = dirname(path);
-	if (path === dir) {
-		// end recursion
+	if (path === dir) {	// end recursion
 		return path;
 	}
 
-	const name = (
-		basename(path) /* can be '' for windows drive letters */ || path
-	).toLowerCase();
+	const name = (basename(path) /* can be '' for windows drive letters */ || path).toLowerCase();
 	try {
 		const entries = readdirSync(dir);
-		const found = entries.filter((e) => e.toLowerCase() === name); // use a case insensitive search
+		const found = entries.filter(e => e.toLowerCase() === name);	// use a case insensitive search
 		if (found.length === 1) {
 			// on a case sensitive filesystem we cannot determine here, whether the file exists or not, hence we need the 'file exists' precondition
-			const prefix = realcaseSync(dir); // recurse
+			const prefix = realcaseSync(dir);   // recurse
 			if (prefix) {
 				return join(prefix, found[0]);
 			}
 		} else if (found.length > 1) {
 			// must be a case sensitive $filesystem
 			const ix = found.indexOf(name);
-			if (ix >= 0) {
-				// case sensitive
-				const prefix = realcaseSync(dir); // recurse
+			if (ix >= 0) {	// case sensitive
+				const prefix = realcaseSync(dir);   // recurse
 				if (prefix) {
 					return join(prefix, found[ix]);
 				}
@@ -71,29 +67,25 @@ export async function realcase(path: string): Promise<string | null> {
 	}
 
 	const dir = dirname(path);
-	if (path === dir) {
-		// end recursion
+	if (path === dir) {	// end recursion
 		return path;
 	}
 
-	const name = (
-		basename(path) /* can be '' for windows drive letters */ || path
-	).toLowerCase();
+	const name = (basename(path) /* can be '' for windows drive letters */ || path).toLowerCase();
 	try {
 		const entries = await Promises.readdir(dir);
-		const found = entries.filter((e) => e.toLowerCase() === name); // use a case insensitive search
+		const found = entries.filter(e => e.toLowerCase() === name);	// use a case insensitive search
 		if (found.length === 1) {
 			// on a case sensitive filesystem we cannot determine here, whether the file exists or not, hence we need the 'file exists' precondition
-			const prefix = await realcase(dir); // recurse
+			const prefix = await realcase(dir);   // recurse
 			if (prefix) {
 				return join(prefix, found[0]);
 			}
 		} else if (found.length > 1) {
 			// must be a case sensitive $filesystem
 			const ix = found.indexOf(name);
-			if (ix >= 0) {
-				// case sensitive
-				const prefix = await realcase(dir); // recurse
+			if (ix >= 0) {	// case sensitive
+				const prefix = await realcase(dir);   // recurse
 				if (prefix) {
 					return join(prefix, found[ix]);
 				}
@@ -114,6 +106,7 @@ export async function realpath(path: string): Promise<string> {
 		// https://github.com/microsoft/vscode/issues/118562
 		return await Promises.realpath(path);
 	} catch (error) {
+
 		// We hit an error calling fs.realpath(). Since fs.realpath() is doing some path normalization
 		// we now do a similar normalization and then try again if we can access the path with read
 		// permissions at least. If that succeeds, we return that path.
@@ -131,6 +124,7 @@ export function realpathSync(path: string): string {
 	try {
 		return fs.realpathSync(path);
 	} catch (error) {
+
 		// We hit an error calling fs.realpathSync(). Since fs.realpathSync() is doing some path normalization
 		// we now do a similar normalization and then try again if we can access the path with read
 		// permissions at least. If that succeeds, we return that path.

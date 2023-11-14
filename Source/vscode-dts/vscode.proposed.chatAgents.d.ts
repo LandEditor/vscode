@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface ChatAgentContext {
 		history: ChatMessage[];
 	}
@@ -29,19 +30,10 @@ declare module "vscode" {
 	}
 
 	export interface ChatAgent {
-		(
-			prompt: ChatMessage,
-			context: ChatAgentContext,
-			progress: Progress<ChatAgentResponse>,
-			token: CancellationToken
-		): Thenable<ChatAgentResult | void>;
+		(prompt: ChatMessage, context: ChatAgentContext, progress: Progress<ChatAgentResponse>, token: CancellationToken): Thenable<ChatAgentResult | void>;
 	}
 
 	export namespace chat {
-		export function registerAgent(
-			id: string,
-			agent: ChatAgent,
-			metadata: ChatAgentMetadata
-		): Disposable;
+		export function registerAgent(id: string, agent: ChatAgent, metadata: ChatAgentMetadata): Disposable;
 	}
 }

@@ -3,58 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ObjectTree } from "vs/base/browser/ui/tree/objectTree";
-import { Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IWorkspaceFoldersChangeEvent } from "vs/platform/workspace/common/workspace";
-import {
-	ITestTreeProjection,
-	TestExplorerTreeElement,
-	TestItemTreeElement,
-	TestTreeErrorMessage,
-} from "vs/workbench/contrib/testing/browser/explorerProjections/index";
-import { MainThreadTestCollection } from "vs/workbench/contrib/testing/common/mainThreadTestCollection";
-import {
-	TestsDiff,
-	TestsDiffOp,
-} from "vs/workbench/contrib/testing/common/testTypes";
-import { ITestService } from "vs/workbench/contrib/testing/common/testService";
-import { testStubs } from "vs/workbench/contrib/testing/test/common/testStubs";
-import { ITreeSorter } from "vs/base/browser/ui/tree/tree";
+import { ObjectTree } from 'vs/base/browser/ui/tree/objectTree';
+import { Emitter } from 'vs/base/common/event';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { IWorkspaceFoldersChangeEvent } from 'vs/platform/workspace/common/workspace';
+import { ITestTreeProjection, TestExplorerTreeElement, TestItemTreeElement, TestTreeErrorMessage } from 'vs/workbench/contrib/testing/browser/explorerProjections/index';
+import { MainThreadTestCollection } from 'vs/workbench/contrib/testing/common/mainThreadTestCollection';
+import { TestsDiff, TestsDiffOp } from 'vs/workbench/contrib/testing/common/testTypes';
+import { ITestService } from 'vs/workbench/contrib/testing/common/testService';
+import { testStubs } from 'vs/workbench/contrib/testing/test/common/testStubs';
+import { ITreeSorter } from 'vs/base/browser/ui/tree/tree';
 
 type SerializedTree = { e: string; children?: SerializedTree[]; data?: string };
 
-const element = document.createElement("div");
-element.style.height = "1000px";
-element.style.width = "200px";
+const element = document.createElement('div');
+element.style.height = '1000px';
+element.style.width = '200px';
 
 class TestObjectTree<T> extends ObjectTree<T, any> {
 	constructor(serializer: (node: T) => string, sorter?: ITreeSorter<T>) {
 		super(
-			"test",
+			'test',
 			element,
 			{
 				getHeight: () => 20,
-				getTemplateId: () => "default",
+				getTemplateId: () => 'default'
 			},
 			[
 				{
 					disposeTemplate: () => undefined,
 					renderElement: (node, _index, container: HTMLElement) => {
 						Object.assign(container.dataset, node.element);
-						container.textContent = `${node.depth}:${serializer(
-							node.element
-						)}`;
+						container.textContent = `${node.depth}:${serializer(node.element)}`;
 					},
-					renderTemplate: (c) => c,
-					templateId: "default",
-				},
+					renderTemplate: c => c,
+					templateId: 'default'
+				}
 			],
 			{
 				sorter: sorter ?? {
-					compare: (a, b) =>
-						serializer(a).localeCompare(serializer(b)),
-				},
+					compare: (a, b) => serializer(a).localeCompare(serializer(b))
+				}
 			}
 		);
 		this.layout(1000, 200);
@@ -65,13 +54,11 @@ class TestObjectTree<T> extends ObjectTree<T, any> {
 	}
 
 	public getRendered(getProperty?: string) {
-		const elements = element.querySelectorAll<HTMLElement>(
-			".monaco-tl-contents"
-		);
+		const elements = element.querySelectorAll<HTMLElement>('.monaco-tl-contents');
 		const sorted = [...elements].sort((a, b) => pos(a) - pos(b));
-		const chain: SerializedTree[] = [{ e: "", children: [] }];
+		const chain: SerializedTree[] = [{ e: '', children: [] }];
 		for (const element of sorted) {
-			const [depthStr, label] = element.textContent!.split(":");
+			const [depthStr, label] = element.textContent!.split(':');
 			const depth = Number(depthStr);
 			const parent = chain[depth - 1];
 			const child: SerializedTree = { e: label };
@@ -86,70 +73,38 @@ class TestObjectTree<T> extends ObjectTree<T, any> {
 	}
 }
 
-const pos = (element: Element) =>
-	Number(element.parentElement!.parentElement!.getAttribute("aria-posinset"));
+const pos = (element: Element) => Number(element.parentElement!.parentElement!.getAttribute('aria-posinset'));
+
 
 class ByLabelTreeSorter implements ITreeSorter<TestExplorerTreeElement> {
-	public compare(
-		a: TestExplorerTreeElement,
-		b: TestExplorerTreeElement
-	): number {
-		if (
-			a instanceof TestTreeErrorMessage ||
-			b instanceof TestTreeErrorMessage
-		) {
-			return (
-				(a instanceof TestTreeErrorMessage ? -1 : 0) +
-				(b instanceof TestTreeErrorMessage ? 1 : 0)
-			);
+	public compare(a: TestExplorerTreeElement, b: TestExplorerTreeElement): number {
+		if (a instanceof TestTreeErrorMessage || b instanceof TestTreeErrorMessage) {
+			return (a instanceof TestTreeErrorMessage ? -1 : 0) + (b instanceof TestTreeErrorMessage ? 1 : 0);
 		}
 
-		if (
-			a instanceof TestItemTreeElement &&
-			b instanceof TestItemTreeElement &&
-			a.test.item.uri &&
-			b.test.item.uri &&
-			a.test.item.uri.toString() === b.test.item.uri.toString() &&
-			a.test.item.range &&
-			b.test.item.range
-		) {
-			const delta =
-				a.test.item.range.startLineNumber -
-				b.test.item.range.startLineNumber;
+		if (a instanceof TestItemTreeElement && b instanceof TestItemTreeElement && a.test.item.uri && b.test.item.uri && a.test.item.uri.toString() === b.test.item.uri.toString() && a.test.item.range && b.test.item.range) {
+			const delta = a.test.item.range.startLineNumber - b.test.item.range.startLineNumber;
 			if (delta !== 0) {
 				return delta;
 			}
 		}
 
-		return (a.test.item.sortText || a.test.item.label).localeCompare(
-			b.test.item.sortText || b.test.item.label
-		);
+		return (a.test.item.sortText || a.test.item.label).localeCompare(b.test.item.sortText || b.test.item.label);
 	}
 }
 
 // names are hard
-export class TestTreeTestHarness<
-	T extends ITestTreeProjection = ITestTreeProjection,
-> extends Disposable {
+export class TestTreeTestHarness<T extends ITestTreeProjection = ITestTreeProjection> extends Disposable {
 	private readonly onDiff = this._register(new Emitter<TestsDiff>());
-	public readonly onFolderChange = this._register(
-		new Emitter<IWorkspaceFoldersChangeEvent>()
-	);
+	public readonly onFolderChange = this._register(new Emitter<IWorkspaceFoldersChangeEvent>());
 	private isProcessingDiff = false;
 	public readonly projection: T;
 	public readonly tree: TestObjectTree<TestExplorerTreeElement>;
 
-	constructor(
-		makeTree: (listener: ITestService) => T,
-		public readonly c = testStubs.nested()
-	) {
+	constructor(makeTree: (listener: ITestService) => T, public readonly c = testStubs.nested()) {
 		super();
 		this._register(c);
-		this._register(
-			this.c.onDidGenerateDiff((d) =>
-				this.c.setDiff(d /* don't clear during testing */)
-			)
-		);
+		this._register(this.c.onDidGenerateDiff(d => this.c.setDiff(d /* don't clear during testing */)));
 
 		const collection = new MainThreadTestCollection((testId, levels) => {
 			this.c.expand(testId, levels);
@@ -158,31 +113,19 @@ export class TestTreeTestHarness<
 			}
 			return Promise.resolve();
 		});
-		this._register(this.onDiff.event((diff) => collection.apply(diff)));
+		this._register(this.onDiff.event(diff => collection.apply(diff)));
 
-		this.projection = this._register(
-			makeTree({
-				collection,
-				onDidProcessDiff: this.onDiff.event,
-			} as any)
-		);
+		this.projection = this._register(makeTree({
+			collection,
+			onDidProcessDiff: this.onDiff.event,
+		} as any));
 		const sorter = new ByLabelTreeSorter();
-		this.tree = this._register(
-			new TestObjectTree(
-				(t) => ("test" in t ? t.test.item.label : t.message.toString()),
-				sorter
-			)
-		);
-		this._register(
-			this.tree.onDidChangeCollapseState((evt) => {
-				if (evt.node.element instanceof TestItemTreeElement) {
-					this.projection.expandElement(
-						evt.node.element,
-						evt.deep ? Infinity : 0
-					);
-				}
-			})
-		);
+		this.tree = this._register(new TestObjectTree(t => 'test' in t ? t.test.item.label : t.message.toString(), sorter));
+		this._register(this.tree.onDidChangeCollapseState(evt => {
+			if (evt.node.element instanceof TestItemTreeElement) {
+				this.projection.expandElement(evt.node.element, evt.deep ? Infinity : 0);
+			}
+		}));
 	}
 
 	public pushDiff(...diff: TestsDiffOp[]) {

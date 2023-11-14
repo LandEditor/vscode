@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
+import { URI } from 'vs/base/common/uri';
 
 // TODO: rewrite this to use URIs directly and validate each part individually
 // instead of relying on memoization of the stringified URI.
 export const testUrlMatchesGlob = (uri: URI, globUrl: string): boolean => {
 	let url = uri.with({ query: null, fragment: null }).toString(true);
-	const normalize = (url: string) => url.replace(/\/+$/, "");
+	const normalize = (url: string) => url.replace(/\/+$/, '');
 	globUrl = normalize(globUrl);
 	url = normalize(url);
 
 	const memo = Array.from({ length: url.length + 1 }).map(() =>
-		Array.from({ length: globUrl.length + 1 }).map(() => undefined)
+		Array.from({ length: globUrl.length + 1 }).map(() => undefined),
 	);
 
 	if (/^[^./:]*:\/\//.test(globUrl)) {
@@ -34,7 +34,7 @@ const doUrlMatch = (
 	url: string,
 	globUrl: string,
 	urlOffset: number,
-	globUrlOffset: number
+	globUrlOffset: number,
 ): boolean => {
 	if (memo[urlOffset]?.[globUrlOffset] !== undefined) {
 		return memo[urlOffset][globUrlOffset]!;
@@ -51,61 +51,43 @@ const doUrlMatch = (
 	// Some path remaining in url
 	if (globUrlOffset === globUrl.length) {
 		const remaining = url.slice(urlOffset);
-		return remaining[0] === "/";
+		return remaining[0] === '/';
 	}
 
 	if (url[urlOffset] === globUrl[globUrlOffset]) {
 		// Exact match.
-		options.push(
-			doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1)
-		);
+		options.push(doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1));
 	}
 
-	if (globUrl[globUrlOffset] + globUrl[globUrlOffset + 1] === "*.") {
+	if (globUrl[globUrlOffset] + globUrl[globUrlOffset + 1] === '*.') {
 		// Any subdomain match. Either consume one thing that's not a / or : and don't advance base or consume nothing and do.
-		if (!["/", ":"].includes(url[urlOffset])) {
-			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset)
-			);
+		if (!['/', ':'].includes(url[urlOffset])) {
+			options.push(doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset));
 		}
-		options.push(
-			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2)
-		);
+		options.push(doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2));
 	}
 
-	if (globUrl[globUrlOffset] === "*") {
+	if (globUrl[globUrlOffset] === '*') {
 		// Any match. Either consume one thing and don't advance base or consume nothing and do.
 		if (urlOffset + 1 === url.length) {
 			// If we're at the end of the input url consume one from both.
-			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1)
-			);
+			options.push(doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1));
 		} else {
-			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset)
-			);
+			options.push(doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset));
 		}
-		options.push(
-			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 1)
-		);
+		options.push(doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 1));
 	}
 
-	if (globUrl[globUrlOffset] + globUrl[globUrlOffset + 1] === ":*") {
+	if (globUrl[globUrlOffset] + globUrl[globUrlOffset + 1] === ':*') {
 		// any port match. Consume a port if it exists otherwise nothing. Always comsume the base.
-		if (url[urlOffset] === ":") {
+		if (url[urlOffset] === ':') {
 			let endPortIndex = urlOffset + 1;
-			do {
-				endPortIndex++;
-			} while (/[0-9]/.test(url[endPortIndex]));
-			options.push(
-				doUrlMatch(memo, url, globUrl, endPortIndex, globUrlOffset + 2)
-			);
+			do { endPortIndex++; } while (/[0-9]/.test(url[endPortIndex]));
+			options.push(doUrlMatch(memo, url, globUrl, endPortIndex, globUrlOffset + 2));
 		} else {
-			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2)
-			);
+			options.push(doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2));
 		}
 	}
 
-	return (memo[urlOffset][globUrlOffset] = options.some((a) => a === true));
+	return (memo[urlOffset][globUrlOffset] = options.some(a => a === true));
 };

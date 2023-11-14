@@ -3,20 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from "assert";
-import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
-import { KeybindingEditorDecorationsRenderer } from "vs/workbench/contrib/preferences/browser/keybindingsEditorContribution";
+import * as assert from 'assert';
+import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import { KeybindingEditorDecorationsRenderer } from 'vs/workbench/contrib/preferences/browser/keybindingsEditorContribution';
 
-suite("KeybindingsEditorContribution", () => {
-	function assertUserSettingsFuzzyEquals(
-		a: string,
-		b: string,
-		expected: boolean
-	): void {
-		const actual =
-			KeybindingEditorDecorationsRenderer._userSettingsFuzzyEquals(a, b);
+suite('KeybindingsEditorContribution', () => {
+
+	function assertUserSettingsFuzzyEquals(a: string, b: string, expected: boolean): void {
+		const actual = KeybindingEditorDecorationsRenderer._userSettingsFuzzyEquals(a, b);
 		const message = expected ? `${a} == ${b}` : `${a} != ${b}`;
-		assert.strictEqual(actual, expected, "fuzzy: " + message);
+		assert.strictEqual(actual, expected, 'fuzzy: ' + message);
 	}
 
 	function assertEqual(a: string, b: string): void {
@@ -27,20 +23,20 @@ suite("KeybindingsEditorContribution", () => {
 		assertUserSettingsFuzzyEquals(a, b, false);
 	}
 
-	test("_userSettingsFuzzyEquals", () => {
-		assertEqual("a", "a");
-		assertEqual("a", "A");
-		assertEqual("ctrl+a", "CTRL+A");
-		assertEqual("ctrl+a", " CTRL+A ");
+	test('_userSettingsFuzzyEquals', () => {
+		assertEqual('a', 'a');
+		assertEqual('a', 'A');
+		assertEqual('ctrl+a', 'CTRL+A');
+		assertEqual('ctrl+a', ' CTRL+A ');
 
-		assertEqual("ctrl+shift+a", "shift+ctrl+a");
-		assertEqual("ctrl+shift+a ctrl+alt+b", "shift+ctrl+a alt+ctrl+b");
+		assertEqual('ctrl+shift+a', 'shift+ctrl+a');
+		assertEqual('ctrl+shift+a ctrl+alt+b', 'shift+ctrl+a alt+ctrl+b');
 
-		assertDifferent("ctrl+[KeyA]", "ctrl+a");
+		assertDifferent('ctrl+[KeyA]', 'ctrl+a');
 
 		// issue #23335
-		assertEqual("cmd+shift+p", "shift+cmd+p");
-		assertEqual("cmd+shift+p", "shift-cmd-p");
+		assertEqual('cmd+shift+p', 'shift+cmd+p');
+		assertEqual('cmd+shift+p', 'shift-cmd-p');
 	});
 
 	ensureNoDisposablesAreLeakedInTestSuite();

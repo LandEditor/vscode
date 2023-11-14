@@ -77,10 +77,7 @@
 	margin-right: 0.8em;
 }
 
-.test-explorer
-	.monaco-list-row
-	.monaco-action-bar
-	.codicon-testing-continuous-is-on {
+.test-explorer .monaco-list-row .monaco-action-bar .codicon-testing-continuous-is-on {
 	color: var(--vscode-inputOption-activeForeground);
 	border-color: var(--vscode-inputOption-activeBorder);
 	background: var(--vscode-inputOption-activeBackground);
@@ -88,17 +85,11 @@
 	border-radius: 3px;
 }
 
-.test-explorer
-	.monaco-list-row:not(.focused, :hover)
-	.monaco-action-bar.testing-is-continuous-run
-	.action-item {
+.test-explorer .monaco-list-row:not(.focused, :hover) .monaco-action-bar.testing-is-continuous-run .action-item {
 	display: none;
 }
 
-.test-explorer
-	.monaco-list-row
-	.monaco-action-bar.testing-is-continuous-run
-	.action-item:last-child {
+.test-explorer .monaco-list-row .monaco-action-bar.testing-is-continuous-run .action-item:last-child {
 	display: block !important;
 }
 
@@ -120,6 +111,16 @@
 	display: none;
 }
 
+.test-explorer .monaco-list-row .error {
+	outline: 1px solid var(--vscode-inputValidation-errorBorder);
+	background: var(--vscode-inputValidation-errorBackground);
+	padding: 2px 4px;
+	border-radius: 2px;
+	margin: 3px 12px 3px 3px;
+	line-height: 17px;
+	font-size: 12px;
+}
+
 .test-explorer .monaco-list-row .error p {
 	margin: 0;
 }
@@ -139,7 +140,7 @@
 
 .test-explorer .computed-state.retired,
 .testing-run-glyph.retired {
-	opacity: 0.7 !important;
+	opacity: 0.7  !important;
 }
 
 .test-explorer .test-is-hidden {
@@ -172,12 +173,8 @@
 	margin-right: 2px;
 }
 
-.monaco-workbench
-	.part
-	> .title
-	> .title-actions
-	.action-label.codicon-testing-autorun::after {
-	content: "";
+.monaco-workbench .part > .title > .title-actions .action-label.codicon-testing-autorun::after {
+	content: '';
 	display: none;
 	position: absolute;
 	width: 0.4em;
@@ -188,11 +185,7 @@
 	border-radius: 100%;
 }
 
-.monaco-workbench
-	.part
-	> .title
-	> .title-actions
-	.action-label.codicon-testing-autorun.checked::after {
+.monaco-workbench .part > .title > .title-actions .action-label.codicon-testing-autorun.checked::after {
 	display: block;
 }
 
@@ -216,9 +209,7 @@
 }
 
 /** -- peek */
-.monaco-editor
-	.zone-widget.test-output-peek
-	.zone-widget-container.peekview-widget {
+.monaco-editor .zone-widget.test-output-peek .zone-widget-container.peekview-widget {
 	border-top-width: 2px;
 	border-bottom-width: 2px;
 }
@@ -269,9 +260,7 @@
 	align-items: center;
 }
 
-.testing-filter-action-item
-	> .monaco-action-bar
-	.testing-filter-button.checked {
+.testing-filter-action-item > .monaco-action-bar .testing-filter-button.checked {
 	border-color: var(--vscode-inputOption-activeBorder);
 	color: var(--vscode-inputOption-activeForeground);
 	background-color: var(--vscode-inputOption-activeBackground);
@@ -325,9 +314,9 @@
 }
 
 .test-label-description {
-	opacity: 0.7;
+	opacity: .7;
 	margin-left: 0.5em;
-	font-size: 0.9em;
+	font-size: .9em;
 	white-space: pre;
 }
 

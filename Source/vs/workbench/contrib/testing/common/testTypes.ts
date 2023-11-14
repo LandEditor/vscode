@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { MarshalledId } from "vs/base/common/marshallingIds";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { IPosition } from "vs/editor/common/core/position";
-import { IRange, Range } from "vs/editor/common/core/range";
-import { TestId } from "vs/workbench/contrib/testing/common/testId";
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { MarshalledId } from 'vs/base/common/marshallingIds';
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { IPosition } from 'vs/editor/common/core/position';
+import { IRange, Range } from 'vs/editor/common/core/range';
+import { TestId } from 'vs/workbench/contrib/testing/common/testId';
 
 export const enum TestResultState {
 	Unset = 0,
@@ -17,7 +17,7 @@ export const enum TestResultState {
 	Passed = 3,
 	Failed = 4,
 	Skipped = 5,
-	Errored = 6,
+	Errored = 6
 }
 
 /** note: keep in sync with TestRunProfileKind in vscode.d.ts */
@@ -108,9 +108,7 @@ export interface ICallProfileRunHandler {
 	testIds: string[];
 }
 
-export const isStartControllerTests = (
-	t: ICallProfileRunHandler | IStartControllerTests
-): t is IStartControllerTests => ("runId" as keyof IStartControllerTests) in t;
+export const isStartControllerTests = (t: ICallProfileRunHandler | IStartControllerTests): t is IStartControllerTests => ('runId' as keyof IStartControllerTests) in t;
 
 /**
  * Request from the main thread to run tests for a single controller.
@@ -150,7 +148,7 @@ export namespace IRichLocation {
 
 export const enum TestMessageType {
 	Error,
-	Output,
+	Output
 }
 
 export interface ITestErrorMessage {
@@ -187,8 +185,7 @@ export namespace ITestErrorMessage {
 		expected: message.expected,
 		actual: message.actual,
 		contextValue: message.contextValue,
-		location:
-			message.location && IRichLocation.deserialize(message.location),
+		location: message.location && IRichLocation.deserialize(message.location),
 	});
 }
 
@@ -205,8 +202,7 @@ export interface ITestOutputMessage {
  * Gets the TTY marker ID for either starting or ending
  * an ITestOutputMessage.marker of the given ID.
  */
-export const getMarkId = (marker: number, start: boolean) =>
-	`${start ? "s" : "e"}${marker}`;
+export const getMarkId = (marker: number, start: boolean) => `${start ? 's' : 'e'}${marker}`;
 
 export namespace ITestOutputMessage {
 	export interface Serialized {
@@ -230,27 +226,20 @@ export namespace ITestOutputMessage {
 		type: TestMessageType.Output,
 		offset: message.offset,
 		length: message.length,
-		location:
-			message.location && IRichLocation.deserialize(message.location),
+		location: message.location && IRichLocation.deserialize(message.location),
 	});
 }
 
 export type ITestMessage = ITestErrorMessage | ITestOutputMessage;
 
 export namespace ITestMessage {
-	export type Serialized =
-		| ITestErrorMessage.Serialized
-		| ITestOutputMessage.Serialized;
+	export type Serialized = ITestErrorMessage.Serialized | ITestOutputMessage.Serialized;
 
 	export const serialize = (message: ITestMessage): Serialized =>
-		message.type === TestMessageType.Error
-			? ITestErrorMessage.serialize(message)
-			: ITestOutputMessage.serialize(message);
+		message.type === TestMessageType.Error ? ITestErrorMessage.serialize(message) : ITestOutputMessage.serialize(message);
 
 	export const deserialize = (message: Serialized): ITestMessage =>
-		message.type === TestMessageType.Error
-			? ITestErrorMessage.deserialize(message)
-			: ITestOutputMessage.deserialize(message);
+		message.type === TestMessageType.Error ? ITestErrorMessage.deserialize(message) : ITestOutputMessage.deserialize(message);
 }
 
 export interface ITestTaskState {
@@ -266,9 +255,7 @@ export namespace ITestTaskState {
 		messages: ITestMessage.Serialized[];
 	}
 
-	export const serializeWithoutMessages = (
-		state: ITestTaskState
-	): Serialized => ({
+	export const serializeWithoutMessages = (state: ITestTaskState): Serialized => ({
 		state: state.state,
 		duration: state.duration,
 		messages: [],
@@ -297,17 +284,14 @@ export interface ITestTag {
 	readonly id: string;
 }
 
-const testTagDelimiter = "\0";
+const testTagDelimiter = '\0';
 
-export const namespaceTestTag = (ctrlId: string, tagId: string) =>
-	ctrlId + testTagDelimiter + tagId;
+export const namespaceTestTag =
+	(ctrlId: string, tagId: string) => ctrlId + testTagDelimiter + tagId;
 
 export const denamespaceTestTag = (namespaced: string) => {
 	const index = namespaced.indexOf(testTagDelimiter);
-	return {
-		ctrlId: namespaced.slice(0, index),
-		tagId: namespaced.slice(index + 1),
-	};
+	return { ctrlId: namespaced.slice(0, index), tagId: namespaced.slice(index + 1) };
 };
 
 export interface ITestTagDisplayInfo {
@@ -355,7 +339,7 @@ export namespace ITestItem {
 		range: item.range?.toJSON() || null,
 		description: item.description,
 		error: item.error,
-		sortText: item.sortText,
+		sortText: item.sortText
 	});
 
 	export const deserialize = (serialized: Serialized): ITestItem => ({
@@ -368,7 +352,7 @@ export namespace ITestItem {
 		range: serialized.range ? Range.lift(serialized.range) : null,
 		description: serialized.description,
 		error: serialized.error,
-		sortText: serialized.sortText,
+		sortText: serialized.sortText
 	});
 }
 
@@ -399,7 +383,7 @@ export namespace InternalTestItem {
 
 	export const serialize = (item: InternalTestItem): Serialized => ({
 		expand: item.expand,
-		item: ITestItem.serialize(item.item),
+		item: ITestItem.serialize(item.item)
 	});
 
 	export const deserialize = (serialized: Serialized): InternalTestItem => ({
@@ -408,7 +392,7 @@ export namespace InternalTestItem {
 		// checked against in many hot paths.
 		controllerId: TestId.root(serialized.item.extId),
 		expand: serialized.expand,
-		item: ITestItem.deserialize(serialized.item),
+		item: ITestItem.deserialize(serialized.item)
 	});
 }
 
@@ -432,30 +416,14 @@ export namespace ITestItemUpdate {
 		let item: Partial<ITestItem.Serialized> | undefined;
 		if (u.item) {
 			item = {};
-			if (u.item.label !== undefined) {
-				item.label = u.item.label;
-			}
-			if (u.item.tags !== undefined) {
-				item.tags = u.item.tags;
-			}
-			if (u.item.busy !== undefined) {
-				item.busy = u.item.busy;
-			}
-			if (u.item.uri !== undefined) {
-				item.uri = u.item.uri?.toJSON();
-			}
-			if (u.item.range !== undefined) {
-				item.range = u.item.range?.toJSON();
-			}
-			if (u.item.description !== undefined) {
-				item.description = u.item.description;
-			}
-			if (u.item.error !== undefined) {
-				item.error = u.item.error;
-			}
-			if (u.item.sortText !== undefined) {
-				item.sortText = u.item.sortText;
-			}
+			if (u.item.label !== undefined) { item.label = u.item.label; }
+			if (u.item.tags !== undefined) { item.tags = u.item.tags; }
+			if (u.item.busy !== undefined) { item.busy = u.item.busy; }
+			if (u.item.uri !== undefined) { item.uri = u.item.uri?.toJSON(); }
+			if (u.item.range !== undefined) { item.range = u.item.range?.toJSON(); }
+			if (u.item.description !== undefined) { item.description = u.item.description; }
+			if (u.item.error !== undefined) { item.error = u.item.error; }
+			if (u.item.sortText !== undefined) { item.sortText = u.item.sortText; }
 		}
 
 		return { extId: u.extId, expand: u.expand, item };
@@ -465,44 +433,26 @@ export namespace ITestItemUpdate {
 		let item: Partial<ITestItem> | undefined;
 		if (u.item) {
 			item = {};
-			if (u.item.label !== undefined) {
-				item.label = u.item.label;
-			}
-			if (u.item.tags !== undefined) {
-				item.tags = u.item.tags;
-			}
-			if (u.item.busy !== undefined) {
-				item.busy = u.item.busy;
-			}
-			if (u.item.range !== undefined) {
-				item.range = u.item.range ? Range.lift(u.item.range) : null;
-			}
-			if (u.item.description !== undefined) {
-				item.description = u.item.description;
-			}
-			if (u.item.error !== undefined) {
-				item.error = u.item.error;
-			}
-			if (u.item.sortText !== undefined) {
-				item.sortText = u.item.sortText;
-			}
+			if (u.item.label !== undefined) { item.label = u.item.label; }
+			if (u.item.tags !== undefined) { item.tags = u.item.tags; }
+			if (u.item.busy !== undefined) { item.busy = u.item.busy; }
+			if (u.item.range !== undefined) { item.range = u.item.range ? Range.lift(u.item.range) : null; }
+			if (u.item.description !== undefined) { item.description = u.item.description; }
+			if (u.item.error !== undefined) { item.error = u.item.error; }
+			if (u.item.sortText !== undefined) { item.sortText = u.item.sortText; }
 		}
 
 		return { extId: u.extId, expand: u.expand, item };
 	};
+
 }
 
-export const applyTestItemUpdate = (
-	internal: InternalTestItem | ITestItemUpdate,
-	patch: ITestItemUpdate
-) => {
+export const applyTestItemUpdate = (internal: InternalTestItem | ITestItemUpdate, patch: ITestItemUpdate) => {
 	if (patch.expand !== undefined) {
 		internal.expand = patch.expand;
 	}
 	if (patch.item !== undefined) {
-		internal.item = internal.item
-			? Object.assign(internal.item, patch.item)
-			: patch.item;
+		internal.item = internal.item ? Object.assign(internal.item, patch.item) : patch.item;
 	}
 };
 
@@ -533,9 +483,7 @@ export namespace TestResultItem {
 		computedState: TestResultState;
 	}
 
-	export const serializeWithoutMessages = (
-		original: TestResultItem
-	): Serialized => ({
+	export const serializeWithoutMessages = (original: TestResultItem): Serialized => ({
 		...InternalTestItem.serialize(original),
 		ownComputedState: original.ownComputedState,
 		computedState: original.computedState,
@@ -653,11 +601,7 @@ export namespace TestsDiffOp {
 		| { op: TestDiffOpType.IncrementPendingExtHosts; amount: number }
 		| { op: TestDiffOpType.AddTag; tag: ITestTagDisplayInfo }
 		| { op: TestDiffOpType.RemoveTag; id: string }
-		| {
-				op: TestDiffOpType.DocumentSynced;
-				uri: UriComponents;
-				docv?: number;
-		  };
+		| { op: TestDiffOpType.DocumentSynced; uri: UriComponents; docv?: number };
 
 	export const deserialize = (u: Serialized): TestsDiffOp => {
 		if (u.op === TestDiffOpType.Add) {
@@ -749,9 +693,7 @@ export interface IncrementalChangeCollector<T> {
 /**
  * Maintains tests in this extension host sent from the main thread.
  */
-export abstract class AbstractIncrementalTestCollection<
-	T extends IncrementalTestCollectionItem,
-> {
+export abstract class AbstractIncrementalTestCollection<T extends IncrementalTestCollectionItem>  {
 	private readonly _tags = new Map<string, ITestTagDisplayInfo>();
 
 	/**
@@ -820,9 +762,7 @@ export abstract class AbstractIncrementalTestCollection<
 		changes.complete?.();
 	}
 
-	protected add(
-		item: InternalTestItem,
-		changes: IncrementalChangeCollector<T>
+	protected add(item: InternalTestItem, changes: IncrementalChangeCollector<T>
 	) {
 		const parentId = TestId.parentId(item.item.extId)?.toString();
 		let created: T;
@@ -836,9 +776,7 @@ export abstract class AbstractIncrementalTestCollection<
 			created = this.createItem(item, parent);
 			this.items.set(item.item.extId, created);
 		} else {
-			console.error(
-				`Test with unknown parent ID: ${JSON.stringify(item)}`
-			);
+			console.error(`Test with unknown parent ID: ${JSON.stringify(item)}`);
 			return;
 		}
 
@@ -850,9 +788,7 @@ export abstract class AbstractIncrementalTestCollection<
 		return created;
 	}
 
-	protected update(
-		patch: ITestItemUpdate,
-		changes: IncrementalChangeCollector<T>
+	protected update(patch: ITestItemUpdate, changes: IncrementalChangeCollector<T>
 	) {
 		const existing = this.items.get(patch.extId);
 		if (!existing) {

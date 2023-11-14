@@ -15,8 +15,7 @@
 	font-size: 80%;
 }
 
-.extension-ratings
-	> .codicon[class*="codicon-extensions-rating"]:not(:first-child) {
+.extension-ratings > .codicon[class*='codicon-extensions-rating']:not(:first-child) {
 	margin-left: 3px;
 }
 
@@ -29,7 +28,7 @@
 }
 
 .extension-ratings .codicon-extensions-star-empty {
-	opacity: 0.75;
+	opacity: .75;
 }
 
 .extension-verified-publisher {

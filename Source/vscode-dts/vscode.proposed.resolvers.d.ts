@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	//resolvers: @alexdima
 
 	export interface MessageOptions {
@@ -46,10 +47,7 @@ declare module "vscode" {
 		readonly makeConnection: () => Thenable<ManagedMessagePassing>;
 		readonly connectionToken: string | undefined;
 
-		constructor(
-			makeConnection: () => Thenable<ManagedMessagePassing>,
-			connectionToken?: string
-		);
+		constructor(makeConnection: () => Thenable<ManagedMessagePassing>, connectionToken?: string);
 	}
 
 	export interface ResolvedOptions {
@@ -60,9 +58,7 @@ declare module "vscode" {
 		/**
 		 * When provided, remote server will be initialized with the extensions synced using the given user account.
 		 */
-		authenticationSessionForInitializingExtensions?: AuthenticationSession & {
-			providerId: string;
-		};
+		authenticationSessionForInitializingExtensions?: AuthenticationSession & { providerId: string };
 	}
 
 	export interface TunnelPrivacy {
@@ -141,24 +137,14 @@ declare module "vscode" {
 	export enum CandidatePortSource {
 		None = 0,
 		Process = 1,
-		Output = 2,
+		Output = 2
 	}
 
-	export type ResolverResult = (
-		| ResolvedAuthority
-		| ManagedResolvedAuthority
-	) &
-		ResolvedOptions &
-		TunnelInformation;
+	export type ResolverResult = (ResolvedAuthority | ManagedResolvedAuthority) & ResolvedOptions & TunnelInformation;
 
 	export class RemoteAuthorityResolverError extends Error {
-		static NotAvailable(
-			message?: string,
-			handled?: boolean
-		): RemoteAuthorityResolverError;
-		static TemporarilyNotAvailable(
-			message?: string
-		): RemoteAuthorityResolverError;
+		static NotAvailable(message?: string, handled?: boolean): RemoteAuthorityResolverError;
+		static TemporarilyNotAvailable(message?: string): RemoteAuthorityResolverError;
 
 		constructor(message?: string);
 	}
@@ -175,11 +161,7 @@ declare module "vscode" {
 		 * @param options Additional options for the spawned process.
 		 * @returns A promise that gives access to the process' stdin, stdout and stderr streams, as well as the process' exit code.
 		 */
-		spawn(
-			command: string,
-			args: string[],
-			options?: ExecServerSpawnOptions
-		): Thenable<SpawnedCommand>;
+		spawn(command: string, args: string[], options?: ExecServerSpawnOptions): Thenable<SpawnedCommand>;
 
 		/**
 		 * Spawns an connector that allows to start a remote server. It is assumed the command starts a Code CLI. Additional
@@ -190,11 +172,7 @@ declare module "vscode" {
 		 * @returns A promise that gives access to the spawned {@link RemoteServerConnector}. It also provides a stream to which standard
 		 * log messages are written.
 		 */
-		spawnRemoteServerConnector?(
-			command: string,
-			args: string[],
-			options?: ExecServerSpawnOptions
-		): Thenable<RemoteServerConnector>;
+		spawnRemoteServerConnector?(command: string, args: string[], options?: ExecServerSpawnOptions): Thenable<RemoteServerConnector>;
 
 		/**
 		 * Downloads the CLI executable of the desired platform and quality and pipes it to the
@@ -205,18 +183,33 @@ declare module "vscode" {
 		 * @param options Additional options for the spawned process.
 		 * @returns A promise that resolves when the process exits with a {@link ProcessExit} object.
 		 */
-		downloadCliExecutable?(
-			buildTarget: CliBuild,
-			command: string,
-			args: string[],
-			options?: ExecServerSpawnOptions
-		): Thenable<ProcessExit>;
+		downloadCliExecutable?(buildTarget: CliBuild, command: string, args: string[], options?: ExecServerSpawnOptions): Thenable<ProcessExit>;
 
 		/**
 		 * Gets the environment where the exec server is running.
 		 * @returns A promise that resolves to an {@link ExecEnvironment} object.
 		 */
 		env(): Thenable<ExecEnvironment>;
+
+		/**
+		 * Kills a process with the given ID.
+		 *
+		 * @param processId process ID to kill.
+		 */
+		kill(processId: number): Thenable<void>;
+
+		/**
+		 * Connects to the given TCP host/port on the remote.
+		 *
+		 * @param host The hostname or IP to connect to
+		 * @param port The port number to connect to
+		 * @returns a duplex stream, and a promise the resolves when both sides
+		 * have closed.
+		 */
+		tcpConnect(
+			host: string,
+			port: number,
+		): Thenable<{ stream: WriteStream & ReadStream; done: Thenable<void> }>;
 
 		/**
 		 * Access to the file system of the remote.
@@ -299,6 +292,85 @@ declare module "vscode" {
 		 * @throws an exception when `path` doesn't exist.
 		 */
 		stat(path: string): Thenable<FileStat>;
+
+		/**
+		 * Recursively creates the given directory on the remote.
+		 *
+		 * @param path The path of the folder to create
+		 * @throws an exception when `path` is a file, or other i/o operations happen
+		 */
+		mkdirp(path: string): Thenable<void>;
+
+		/**
+		 * Recursively deletes the given path on the remote.
+		 *
+		 * @param path The path of the file or folder to delete.
+		 * @throws if an i/o error happens during removal. It does not throw if
+		 * the path already does not exist.
+		 */
+		rm(path: string): Thenable<void>;
+
+		/**
+		 * Reads the given file from the remote.
+		 *
+		 * @param path The path of the file to read.
+		 * @throws if the path doesn't exist or can't be accessed
+		 * @returns a readable stream of the file data
+		 */
+		read(path: string): Thenable<ReadStream>;
+
+		/**
+		 * Writes the given file on the remote. Truncates the file if it exists.
+		 *
+		 * @param path The path of the file to write.
+		 * @throws if the path can't be accessed
+		 * @returns a writable `stream` that accepts data, and a `done` promise that
+		 * will resolve after `stream.end()` is called once the write is complete.
+		 */
+		write(path: string): Thenable<{ stream: WriteStream; done: Thenable<void> }>;
+
+		/**
+		 * Connects to the given unix socket or named pipe on the remote.
+		 *
+		 * @param path The path of the unix socket or named pipe
+		 * @throws if the path can't be accessed
+		 * @returns a duplex stream, and a promise the resolves when both sides
+		 * have closed.
+		 */
+		connect(path: string): Thenable<{ stream: WriteStream & ReadStream; done: Thenable<void> }>;
+
+		/**
+		 * Renames the file.
+		 *
+		 * @param fromPath The existing file path.
+		 * @param toPath The new file path.
+		 * @throws if the original path doesn't exist, or the toPath can't be accessed
+		 */
+		rename(fromPath: string, toPath: string): Thenable<void>;
+
+		/**
+		 * Reads the contents of a directory.
+		 *
+		 * @param path The path of the folder to read.
+		 * @throws if the folder doesn't exist
+		 * @returns a list of directory entries
+		 */
+		readdir(path: string): Thenable<DirectoryEntry[]>;
+	}
+
+	export interface DirectoryEntry {
+		/**
+		 * The type of the file, e.g. is a regular file, a directory, or symbolic link
+		 * to a file.
+		 *
+		 * *Note:* This value might be a bitmask, e.g. `FileType.File | FileType.SymbolicLink`.
+		 */
+		type: FileType;
+
+		/**
+		 * Non-absolute name of the file in the directory.
+		 */
+		name: string;
 	}
 
 	export interface RemoteAuthorityResolver {
@@ -311,10 +383,7 @@ declare module "vscode" {
 		 * @param authority The authority part of the current opened `vscode-remote://` URI.
 		 * @param context A context indicating if this is the first call or a subsequent call.
 		 */
-		resolve(
-			authority: string,
-			context: RemoteAuthorityResolverContext
-		): ResolverResult | Thenable<ResolverResult>;
+		resolve(authority: string, context: RemoteAuthorityResolverContext): ResolverResult | Thenable<ResolverResult>;
 
 		/**
 		 * Resolves an exec server interface for the authority. Called if an
@@ -323,10 +392,7 @@ declare module "vscode" {
 		 * @param authority The authority part of the current opened `vscode-remote://` URI.
 		 * @returns The exec server interface, as defined in a contract between extensions.
 		 */
-		resolveExecServer?(
-			remoteAuthority: string,
-			context: RemoteAuthorityResolverContext
-		): ExecServer | Thenable<ExecServer>;
+		resolveExecServer?(remoteAuthority: string, context: RemoteAuthorityResolverContext): ExecServer | Thenable<ExecServer>;
 
 		/**
 		 * Get the canonical URI (if applicable) for a `vscode-remote://` URI.
@@ -343,19 +409,12 @@ declare module "vscode" {
 		 * To enable the "Change Local Port" action on forwarded ports, make sure to set the `localAddress` of
 		 * the returned `Tunnel` to a `{ port: number, host: string; }` and not a string.
 		 */
-		tunnelFactory?: (
-			tunnelOptions: TunnelOptions,
-			tunnelCreationOptions: TunnelCreationOptions
-		) => Thenable<Tunnel> | undefined;
+		tunnelFactory?: (tunnelOptions: TunnelOptions, tunnelCreationOptions: TunnelCreationOptions) => Thenable<Tunnel> | undefined;
 
 		/**p
 		 * Provides filtering for candidate ports.
 		 */
-		showCandidatePort?: (
-			host: string,
-			port: number,
-			detail: string
-		) => Thenable<boolean>;
+		showCandidatePort?: (host: string, port: number, detail: string) => Thenable<boolean>;
 
 		/**
 		 * @deprecated Return tunnelFeatures as part of the resolver result in tunnelInformation.
@@ -379,7 +438,7 @@ declare module "vscode" {
 		label: string; // myLabel:/${path}
 		// For historic reasons we use an or string here. Once we finalize this API we should start using enums instead and adopt it in extensions.
 		// eslint-disable-next-line local/vscode-dts-literal-or-types, local/vscode-dts-string-type-literals
-		separator: "/" | "\\" | "";
+		separator: '/' | '\\' | '';
 		tildify?: boolean;
 		normalizeDriveLetter?: boolean;
 		workspaceSuffix?: string;
@@ -389,19 +448,13 @@ declare module "vscode" {
 	}
 
 	export namespace workspace {
-		export function registerRemoteAuthorityResolver(
-			authorityPrefix: string,
-			resolver: RemoteAuthorityResolver
-		): Disposable;
-		export function registerResourceLabelFormatter(
-			formatter: ResourceLabelFormatter
-		): Disposable;
-		export function getRemoteExecServer(
-			authority: string
-		): Thenable<ExecServer | undefined>;
+		export function registerRemoteAuthorityResolver(authorityPrefix: string, resolver: RemoteAuthorityResolver): Disposable;
+		export function registerResourceLabelFormatter(formatter: ResourceLabelFormatter): Disposable;
+		export function getRemoteExecServer(authority: string): Thenable<ExecServer | undefined>;
 	}
 
 	export namespace env {
+
 		/**
 		 * The authority part of the current opened `vscode-remote://` URI.
 		 * Defined by extensions, e.g. `ssh-remote+${host}` for remotes using a secure shell.
@@ -412,5 +465,6 @@ declare module "vscode" {
 		 * a specific extension runs remote or not.
 		 */
 		export const remoteAuthority: string | undefined;
+
 	}
 }

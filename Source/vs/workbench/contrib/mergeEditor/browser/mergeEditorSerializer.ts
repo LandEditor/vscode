@@ -3,15 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { onUnexpectedError } from "vs/base/common/errors";
-import { parse } from "vs/base/common/marshalling";
-import { URI } from "vs/base/common/uri";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IEditorSerializer } from "vs/workbench/common/editor";
-import {
-	MergeEditorInput,
-	MergeEditorInputData,
-} from "vs/workbench/contrib/mergeEditor/browser/mergeEditorInput";
+import { onUnexpectedError } from 'vs/base/common/errors';
+import { parse } from 'vs/base/common/marshalling';
+import { URI } from 'vs/base/common/uri';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IEditorSerializer } from 'vs/workbench/common/editor';
+import { MergeEditorInput, MergeEditorInputData } from 'vs/workbench/contrib/mergeEditor/browser/mergeEditorInput';
 
 export class MergeEditorSerializer implements IEditorSerializer {
 	canSerialize(): boolean {
@@ -31,27 +28,14 @@ export class MergeEditorSerializer implements IEditorSerializer {
 		};
 	}
 
-	deserialize(
-		instantiationService: IInstantiationService,
-		raw: string
-	): MergeEditorInput | undefined {
+	deserialize(instantiationService: IInstantiationService, raw: string): MergeEditorInput | undefined {
 		try {
 			const data = <MergeEditorInputJSON>parse(raw);
 			return instantiationService.createInstance(
 				MergeEditorInput,
 				data.base,
-				new MergeEditorInputData(
-					data.input1.uri,
-					data.input1.title,
-					data.input1.detail,
-					data.input1.description
-				),
-				new MergeEditorInputData(
-					data.input2.uri,
-					data.input2.title,
-					data.input2.detail,
-					data.input2.description
-				),
+				new MergeEditorInputData(data.input1.uri, data.input1.title, data.input1.detail, data.input1.description),
+				new MergeEditorInputData(data.input2.uri, data.input2.title, data.input2.detail, data.input2.description),
 				data.result
 			);
 		} catch (err) {

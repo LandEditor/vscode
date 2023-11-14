@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CharCode } from "vs/base/common/charCode";
+import { CharCode } from 'vs/base/common/charCode';
 
 export const enum StringEOL {
 	Unknown = 0,
 	Invalid = 3,
 	LF = 1,
-	CRLF = 2,
+	CRLF = 2
 }
 
 export function countEOL(text: string): [number, number, number, StringEOL] {

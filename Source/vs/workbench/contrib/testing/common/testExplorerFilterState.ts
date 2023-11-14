@@ -2,21 +2,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Emitter, Event } from "vs/base/common/event";
-import { splitGlobAware } from "vs/base/common/glob";
-import { Disposable } from "vs/base/common/lifecycle";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import {
-	IObservableValue,
-	MutableObservableValue,
-} from "vs/workbench/contrib/testing/common/observableValue";
-import { StoredValue } from "vs/workbench/contrib/testing/common/storedValue";
-import { namespaceTestTag } from "vs/workbench/contrib/testing/common/testTypes";
+import { Emitter, Event } from 'vs/base/common/event';
+import { splitGlobAware } from 'vs/base/common/glob';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IObservableValue, MutableObservableValue } from 'vs/workbench/contrib/testing/common/observableValue';
+import { StoredValue } from 'vs/workbench/contrib/testing/common/storedValue';
+import { namespaceTestTag } from 'vs/workbench/contrib/testing/common/testTypes';
 
 export interface ITestExplorerFilterState {
 	_serviceBrand: undefined;
@@ -71,16 +64,12 @@ export interface ITestExplorerFilterState {
 	toggleFilteringFor(term: TestFilterTerm, shouldFilter?: boolean): void;
 }
 
-export const ITestExplorerFilterState =
-	createDecorator<ITestExplorerFilterState>("testingFilterState");
+export const ITestExplorerFilterState = createDecorator<ITestExplorerFilterState>('testingFilterState');
 
 const tagRe = /!?@([^ ,:]+)/g;
-const trimExtraWhitespace = (str: string) => str.replace(/\s\s+/g, " ").trim();
+const trimExtraWhitespace = (str: string) => str.replace(/\s\s+/g, ' ').trim();
 
-export class TestExplorerFilterState
-	extends Disposable
-	implements ITestExplorerFilterState
-{
+export class TestExplorerFilterState extends Disposable implements ITestExplorerFilterState {
 	declare _serviceBrand: undefined;
 	private readonly focusEmitter = new Emitter<void>();
 	/**
@@ -98,32 +87,20 @@ export class TestExplorerFilterState
 	public excludeTags = new Set<string>();
 
 	/** @inheritdoc */
-	public readonly text = this._register(new MutableObservableValue(""));
+	public readonly text = this._register(new MutableObservableValue(''));
 
 	/** @inheritdoc */
-	public readonly fuzzy = this._register(
-		MutableObservableValue.stored(
-			new StoredValue<boolean>(
-				{
-					key: "testHistoryFuzzy",
-					scope: StorageScope.PROFILE,
-					target: StorageTarget.USER,
-				},
-				this.storageService
-			),
-			false
-		)
-	);
+	public readonly fuzzy = this._register(MutableObservableValue.stored(new StoredValue<boolean>({
+		key: 'testHistoryFuzzy',
+		scope: StorageScope.PROFILE,
+		target: StorageTarget.USER,
+	}, this.storageService), false));
 
-	public readonly reveal = this._register(
-		new MutableObservableValue</* test ID */ string | undefined>(undefined)
-	);
+	public readonly reveal = this._register(new MutableObservableValue</* test ID */string | undefined>(undefined));
 
 	public readonly onDidRequestInputFocus = this.focusEmitter.event;
 
-	constructor(
-		@IStorageService private readonly storageService: IStorageService
-	) {
+	constructor(@IStorageService private readonly storageService: IStorageService) {
 		super();
 	}
 
@@ -143,7 +120,7 @@ export class TestExplorerFilterState
 		this.includeTags.clear();
 		this.excludeTags.clear();
 
-		let globText = "";
+		let globText = '';
 		let lastIndex = 0;
 		for (const match of text.matchAll(tagRe)) {
 			let nextIndex = match.index! + match[0].length;
@@ -154,22 +131,19 @@ export class TestExplorerFilterState
 			}
 
 			// recognize and parse @ctrlId:tagId or quoted like @ctrlId:"tag \\"id"
-			if (text[nextIndex] === ":") {
+			if (text[nextIndex] === ':') {
 				nextIndex++;
 
 				let delimiter = text[nextIndex];
 				if (delimiter !== `"` && delimiter !== `'`) {
-					delimiter = " ";
+					delimiter = ' ';
 				} else {
 					nextIndex++;
 				}
 
-				let tagId = "";
-				while (
-					nextIndex < text.length &&
-					text[nextIndex] !== delimiter
-				) {
-					if (text[nextIndex] === "\\") {
+				let tagId = '';
+				while (nextIndex < text.length && text[nextIndex] !== delimiter) {
+					if (text[nextIndex] === '\\') {
 						tagId += text[nextIndex + 1];
 						nextIndex += 2;
 					} else {
@@ -178,7 +152,7 @@ export class TestExplorerFilterState
 					}
 				}
 
-				if (match[0].startsWith("!")) {
+				if (match[0].startsWith('!')) {
 					this.excludeTags.add(namespaceTestTag(match[1], tagId));
 				} else {
 					this.includeTags.add(namespaceTestTag(match[1], tagId));
@@ -193,19 +167,11 @@ export class TestExplorerFilterState
 		globText += text.slice(lastIndex).trim();
 
 		if (globText.length) {
-			for (const filter of splitGlobAware(globText, ",")
-				.map((s) => s.trim())
-				.filter((s) => !!s.length)) {
-				if (filter.startsWith("!")) {
-					this.globList.push({
-						include: false,
-						text: filter.slice(1).toLowerCase(),
-					});
+			for (const filter of splitGlobAware(globText, ',').map(s => s.trim()).filter(s => !!s.length)) {
+				if (filter.startsWith('!')) {
+					this.globList.push({ include: false, text: filter.slice(1).toLowerCase() });
 				} else {
-					this.globList.push({
-						include: true,
-						text: filter.toLowerCase(),
-					});
+					this.globList.push({ include: true, text: filter.toLowerCase() });
 				}
 			}
 		}
@@ -224,16 +190,16 @@ export class TestExplorerFilterState
 		if (shouldFilter !== false && !this.termFilterState[term]) {
 			this.setText(text ? `${text} ${term}` : term);
 		} else if (shouldFilter !== true && this.termFilterState[term]) {
-			this.setText(trimExtraWhitespace(text.replace(term, "")));
+			this.setText(trimExtraWhitespace(text.replace(term, '')));
 		}
 	}
 }
 
 export const enum TestFilterTerm {
-	Failed = "@failed",
-	Executed = "@executed",
-	CurrentDoc = "@doc",
-	Hidden = "@hidden",
+	Failed = '@failed',
+	Executed = '@executed',
+	CurrentDoc = '@doc',
+	Hidden = '@hidden',
 }
 
 const allTestFilterTerms: readonly TestFilterTerm[] = [

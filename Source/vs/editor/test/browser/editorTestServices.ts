@@ -3,21 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from "vs/base/common/event";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import {
-	AbstractCodeEditorService,
-	GlobalStyleSheet,
-} from "vs/editor/browser/services/abstractCodeEditorService";
-import {
-	CommandsRegistry,
-	ICommandEvent,
-	ICommandService,
-} from "vs/platform/commands/common/commands";
-import { IResourceEditorInput } from "vs/platform/editor/common/editor";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { Emitter, Event } from 'vs/base/common/event';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { AbstractCodeEditorService, GlobalStyleSheet } from 'vs/editor/browser/services/abstractCodeEditorService';
+import { CommandsRegistry, ICommandEvent, ICommandService } from 'vs/platform/commands/common/commands';
+import { IResourceEditorInput } from 'vs/platform/editor/common/editor';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 export class TestCodeEditorService extends AbstractCodeEditorService {
+
 	public readonly globalStyleSheet = new TestGlobalStyleSheet();
 
 	protected override _createGlobalStyleSheet(): GlobalStyleSheet {
@@ -28,17 +22,14 @@ export class TestCodeEditorService extends AbstractCodeEditorService {
 		return null;
 	}
 	public lastInput?: IResourceEditorInput;
-	override openCodeEditor(
-		input: IResourceEditorInput,
-		source: ICodeEditor | null,
-		sideBySide?: boolean
-	): Promise<ICodeEditor | null> {
+	override openCodeEditor(input: IResourceEditorInput, source: ICodeEditor | null, sideBySide?: boolean): Promise<ICodeEditor | null> {
 		this.lastInput = input;
 		return Promise.resolve(null);
 	}
 }
 
 export class TestGlobalStyleSheet extends GlobalStyleSheet {
+
 	public rules: string[] = [];
 
 	constructor() {
@@ -59,7 +50,7 @@ export class TestGlobalStyleSheet extends GlobalStyleSheet {
 	}
 
 	public read(): string {
-		return this.rules.join("\n");
+		return this.rules.join('\n');
 	}
 }
 
@@ -69,12 +60,10 @@ export class TestCommandService implements ICommandService {
 	private readonly _instantiationService: IInstantiationService;
 
 	private readonly _onWillExecuteCommand = new Emitter<ICommandEvent>();
-	public readonly onWillExecuteCommand: Event<ICommandEvent> =
-		this._onWillExecuteCommand.event;
+	public readonly onWillExecuteCommand: Event<ICommandEvent> = this._onWillExecuteCommand.event;
 
 	private readonly _onDidExecuteCommand = new Emitter<ICommandEvent>();
-	public readonly onDidExecuteCommand: Event<ICommandEvent> =
-		this._onDidExecuteCommand.event;
+	public readonly onDidExecuteCommand: Event<ICommandEvent> = this._onDidExecuteCommand.event;
 
 	constructor(instantiationService: IInstantiationService) {
 		this._instantiationService = instantiationService;
@@ -88,10 +77,7 @@ export class TestCommandService implements ICommandService {
 
 		try {
 			this._onWillExecuteCommand.fire({ commandId: id, args });
-			const result = this._instantiationService.invokeFunction.apply(
-				this._instantiationService,
-				[command.handler, ...args]
-			) as T;
+			const result = this._instantiationService.invokeFunction.apply(this._instantiationService, [command.handler, ...args]) as T;
 			this._onDidExecuteCommand.fire({ commandId: id, args });
 			return Promise.resolve(result);
 		} catch (err) {

@@ -3,32 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { illegalState } from "vs/base/common/errors";
-import {
-	ExtHostDocumentSaveParticipantShape,
-	IWorkspaceEditDto,
-	MainThreadBulkEditsShape,
-} from "vs/workbench/api/common/extHost.protocol";
-import { TextEdit } from "vs/workbench/api/common/extHostTypes";
-import {
-	Range,
-	TextDocumentSaveReason,
-	EndOfLine,
-} from "vs/workbench/api/common/extHostTypeConverters";
-import { ExtHostDocuments } from "vs/workbench/api/common/extHostDocuments";
-import { SaveReason } from "vs/workbench/common/editor";
-import type * as vscode from "vscode";
-import { LinkedList } from "vs/base/common/linkedList";
-import { ILogService } from "vs/platform/log/common/log";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { Event } from 'vs/base/common/event';
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { illegalState } from 'vs/base/common/errors';
+import { ExtHostDocumentSaveParticipantShape, IWorkspaceEditDto, MainThreadBulkEditsShape } from 'vs/workbench/api/common/extHost.protocol';
+import { TextEdit } from 'vs/workbench/api/common/extHostTypes';
+import { Range, TextDocumentSaveReason, EndOfLine } from 'vs/workbench/api/common/extHostTypeConverters';
+import { ExtHostDocuments } from 'vs/workbench/api/common/extHostDocuments';
+import { SaveReason } from 'vs/workbench/common/editor';
+import type * as vscode from 'vscode';
+import { LinkedList } from 'vs/base/common/linkedList';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 
 type Listener = [Function, any, IExtensionDescription];
 
-export class ExtHostDocumentSaveParticipant
-	implements ExtHostDocumentSaveParticipantShape
-{
+export class ExtHostDocumentSaveParticipant implements ExtHostDocumentSaveParticipantShape {
+
 	private readonly _callbacks = new LinkedList<Listener>();
 	private readonly _badListeners = new WeakMap<Function, number>();
 
@@ -36,10 +27,7 @@ export class ExtHostDocumentSaveParticipant
 		private readonly _logService: ILogService,
 		private readonly _documents: ExtHostDocuments,
 		private readonly _mainThreadBulkEdits: MainThreadBulkEditsShape,
-		private readonly _thresholds: { timeout: number; errors: number } = {
-			timeout: 1500,
-			errors: 3,
-		}
+		private readonly _thresholds: { timeout: number; errors: number } = { timeout: 1500, errors: 3 }
 	) {
 		//
 	}
@@ -48,9 +36,7 @@ export class ExtHostDocumentSaveParticipant
 		this._callbacks.clear();
 	}
 
-	getOnWillSaveTextDocumentEvent(
-		extension: IExtensionDescription
-	): Event<vscode.TextDocumentWillSaveEvent> {
+	getOnWillSaveTextDocumentEvent(extension: IExtensionDescription): Event<vscode.TextDocumentWillSaveEvent> {
 		return (listener, thisArg, disposables) => {
 			const remove = this._callbacks.push([listener, thisArg, extension]);
 			const result = { dispose: remove };
@@ -61,35 +47,21 @@ export class ExtHostDocumentSaveParticipant
 		};
 	}
 
-	async $participateInSave(
-		data: UriComponents,
-		reason: SaveReason
-	): Promise<boolean[]> {
+	async $participateInSave(data: UriComponents, reason: SaveReason): Promise<boolean[]> {
 		const resource = URI.revive(data);
 
 		let didTimeout = false;
-		const didTimeoutHandle = setTimeout(
-			() => (didTimeout = true),
-			this._thresholds.timeout
-		);
+		const didTimeoutHandle = setTimeout(() => didTimeout = true, this._thresholds.timeout);
 
 		const results: boolean[] = [];
 		try {
-			for (const listener of [...this._callbacks]) {
-				// copy to prevent concurrent modifications
+			for (const listener of [...this._callbacks]) { // copy to prevent concurrent modifications
 				if (didTimeout) {
 					// timeout - no more listeners
 					break;
 				}
 				const document = this._documents.getDocument(resource);
-				const success =
-					await this._deliverEventAsyncAndBlameBadListeners(
-						listener,
-						<any>{
-							document,
-							reason: TextDocumentSaveReason.to(reason),
-						}
-					);
+				const success = await this._deliverEventAsyncAndBlameBadListeners(listener, <any>{ document, reason: TextDocumentSaveReason.to(reason) });
 				results.push(success);
 			}
 		} finally {
@@ -98,59 +70,36 @@ export class ExtHostDocumentSaveParticipant
 		return results;
 	}
 
-	private _deliverEventAsyncAndBlameBadListeners(
-		[listener, thisArg, extension]: Listener,
-		stubEvent: vscode.TextDocumentWillSaveEvent
-	): Promise<any> {
+	private _deliverEventAsyncAndBlameBadListeners([listener, thisArg, extension]: Listener, stubEvent: vscode.TextDocumentWillSaveEvent): Promise<any> {
 		const errors = this._badListeners.get(listener);
-		if (typeof errors === "number" && errors > this._thresholds.errors) {
+		if (typeof errors === 'number' && errors > this._thresholds.errors) {
 			// bad listener - ignore
 			return Promise.resolve(false);
 		}
 
-		return this._deliverEventAsync(
-			extension,
-			listener,
-			thisArg,
-			stubEvent
-		).then(
-			() => {
-				// don't send result across the wire
-				return true;
-			},
-			(err) => {
-				this._logService.error(
-					`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' threw ERROR`
-				);
-				this._logService.error(err);
+		return this._deliverEventAsync(extension, listener, thisArg, stubEvent).then(() => {
+			// don't send result across the wire
+			return true;
 
-				if (
-					!(err instanceof Error) ||
-					(<Error>err).message !== "concurrent_edits"
-				) {
-					const errors = this._badListeners.get(listener);
-					this._badListeners.set(listener, !errors ? 1 : errors + 1);
+		}, err => {
 
-					if (
-						typeof errors === "number" &&
-						errors > this._thresholds.errors
-					) {
-						this._logService.info(
-							`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' will now be IGNORED because of timeouts and/or errors`
-						);
-					}
+			this._logService.error(`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' threw ERROR`);
+			this._logService.error(err);
+
+			if (!(err instanceof Error) || (<Error>err).message !== 'concurrent_edits') {
+				const errors = this._badListeners.get(listener);
+				this._badListeners.set(listener, !errors ? 1 : errors + 1);
+
+				if (typeof errors === 'number' && errors > this._thresholds.errors) {
+					this._logService.info(`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' will now be IGNORED because of timeouts and/or errors`);
 				}
-				return false;
 			}
-		);
+			return false;
+		});
 	}
 
-	private _deliverEventAsync(
-		extension: IExtensionDescription,
-		listener: Function,
-		thisArg: any,
-		stubEvent: vscode.TextDocumentWillSaveEvent
-	): Promise<any> {
+	private _deliverEventAsync(extension: IExtensionDescription, listener: Function, thisArg: any, stubEvent: vscode.TextDocumentWillSaveEvent): Promise<any> {
+
 		const promises: Promise<vscode.TextEdit[]>[] = [];
 
 		const t1 = Date.now();
@@ -162,10 +111,10 @@ export class ExtHostDocumentSaveParticipant
 			reason,
 			waitUntil(p: Promise<any | vscode.TextEdit[]>) {
 				if (Object.isFrozen(promises)) {
-					throw illegalState("waitUntil can not be called async");
+					throw illegalState('waitUntil can not be called async');
 				}
 				promises.push(Promise.resolve(p));
-			},
+			}
 		});
 
 		try {
@@ -180,34 +129,21 @@ export class ExtHostDocumentSaveParticipant
 
 		return new Promise<vscode.TextEdit[][]>((resolve, reject) => {
 			// join on all listener promises, reject after timeout
-			const handle = setTimeout(
-				() => reject(new Error("timeout")),
-				this._thresholds.timeout
-			);
+			const handle = setTimeout(() => reject(new Error('timeout')), this._thresholds.timeout);
 
-			return Promise.all(promises)
-				.then((edits) => {
-					this._logService.debug(
-						`onWillSaveTextDocument-listener from extension '${
-							extension.identifier.value
-						}' finished after ${Date.now() - t1}ms`
-					);
-					clearTimeout(handle);
-					resolve(edits);
-				})
-				.catch((err) => {
-					clearTimeout(handle);
-					reject(err);
-				});
-		}).then((values) => {
+			return Promise.all(promises).then(edits => {
+				this._logService.debug(`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' finished after ${(Date.now() - t1)}ms`);
+				clearTimeout(handle);
+				resolve(edits);
+			}).catch(err => {
+				clearTimeout(handle);
+				reject(err);
+			});
+
+		}).then(values => {
 			const dto: IWorkspaceEditDto = { edits: [] };
 			for (const value of values) {
-				if (
-					Array.isArray(value) &&
-					(<vscode.TextEdit[]>value).every(
-						(e) => e instanceof TextEdit
-					)
-				) {
+				if (Array.isArray(value) && (<vscode.TextEdit[]>value).every(e => e instanceof TextEdit)) {
 					for (const { newText, newEol, range } of value) {
 						dto.edits.push({
 							resource: document.uri,
@@ -216,7 +152,7 @@ export class ExtHostDocumentSaveParticipant
 								range: range && Range.from(range),
 								text: newText,
 								eol: newEol && EndOfLine.from(newEol),
-							},
+							}
 						});
 					}
 				}
@@ -232,7 +168,7 @@ export class ExtHostDocumentSaveParticipant
 				return this._mainThreadBulkEdits.$tryApplyWorkspaceEdit(dto);
 			}
 
-			return Promise.reject(new Error("concurrent_edits"));
+			return Promise.reject(new Error('concurrent_edits'));
 		});
 	}
 }

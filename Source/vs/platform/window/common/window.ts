@@ -3,48 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStringDictionary } from "vs/base/common/collections";
-import { PerformanceMark } from "vs/base/common/performance";
-import {
-	isLinux,
-	isMacintosh,
-	isNative,
-	isWeb,
-	isWindows,
-} from "vs/base/common/platform";
-import { URI, UriComponents, UriDto } from "vs/base/common/uri";
-import { ISandboxConfiguration } from "vs/base/parts/sandbox/common/sandboxTypes";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
-import { NativeParsedArgs } from "vs/platform/environment/common/argv";
-import { FileType } from "vs/platform/files/common/files";
-import { ILoggerResource, LogLevel } from "vs/platform/log/common/log";
-import {
-	PolicyDefinition,
-	PolicyValue,
-} from "vs/platform/policy/common/policy";
-import { IPartsSplash } from "vs/platform/theme/common/themeService";
-import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
-import {
-	IAnyWorkspaceIdentifier,
-	ISingleFolderWorkspaceIdentifier,
-	IWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
+import { IStringDictionary } from 'vs/base/common/collections';
+import { PerformanceMark } from 'vs/base/common/performance';
+import { isLinux, isMacintosh, isNative, isWeb, isWindows } from 'vs/base/common/platform';
+import { URI, UriComponents, UriDto } from 'vs/base/common/uri';
+import { ISandboxConfiguration } from 'vs/base/parts/sandbox/common/sandboxTypes';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
+import { FileType } from 'vs/platform/files/common/files';
+import { ILoggerResource, LogLevel } from 'vs/platform/log/common/log';
+import { PolicyDefinition, PolicyValue } from 'vs/platform/policy/common/policy';
+import { IPartsSplash } from 'vs/platform/theme/common/themeService';
+import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile';
+import { IAnyWorkspaceIdentifier, ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
 
 export const WindowMinimumSize = {
 	WIDTH: 400,
 	WIDTH_WITH_VERTICAL_PANEL: 600,
-	HEIGHT: 270,
+	HEIGHT: 270
 };
 
-export interface IRectangle {
+export interface IPoint {
 	readonly x: number;
 	readonly y: number;
+}
+
+export interface IRectangle extends IPoint {
 	readonly width: number;
 	readonly height: number;
 }
 
 export interface IBaseOpenWindowsOptions {
+
 	/**
 	 * Whether to reuse the window or open a new one.
 	 */
@@ -82,15 +73,26 @@ export interface IAddFoldersRequest {
 	readonly foldersToAdd: UriComponents[];
 }
 
-export interface IOpenedWindow {
+interface IOpenedWindow {
 	readonly id: number;
-	readonly workspace?: IAnyWorkspaceIdentifier;
 	readonly title: string;
 	readonly filename?: string;
+}
+
+export interface IOpenedMainWindow extends IOpenedWindow {
+	readonly workspace?: IAnyWorkspaceIdentifier;
 	readonly dirty: boolean;
 }
 
-export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions {}
+export interface IOpenedAuxiliaryWindow extends IOpenedWindow {
+	readonly parentId: number;
+}
+
+export function isOpenedAuxiliaryWindow(candidate: IOpenedMainWindow | IOpenedAuxiliaryWindow): candidate is IOpenedAuxiliaryWindow {
+	return typeof (candidate as IOpenedAuxiliaryWindow).parentId === 'number';
+}
+
+export interface IOpenEmptyWindowOptions extends IBaseOpenWindowsOptions { }
 
 export type IWindowOpenable = IWorkspaceToOpen | IFolderToOpen | IFileToOpen;
 
@@ -110,45 +112,26 @@ export interface IFileToOpen extends IBaseWindowOpenable {
 	readonly fileUri: URI;
 }
 
-export function isWorkspaceToOpen(
-	uriToOpen: IWindowOpenable
-): uriToOpen is IWorkspaceToOpen {
+export function isWorkspaceToOpen(uriToOpen: IWindowOpenable): uriToOpen is IWorkspaceToOpen {
 	return !!(uriToOpen as IWorkspaceToOpen).workspaceUri;
 }
 
-export function isFolderToOpen(
-	uriToOpen: IWindowOpenable
-): uriToOpen is IFolderToOpen {
+export function isFolderToOpen(uriToOpen: IWindowOpenable): uriToOpen is IFolderToOpen {
 	return !!(uriToOpen as IFolderToOpen).folderUri;
 }
 
-export function isFileToOpen(
-	uriToOpen: IWindowOpenable
-): uriToOpen is IFileToOpen {
+export function isFileToOpen(uriToOpen: IWindowOpenable): uriToOpen is IFileToOpen {
 	return !!(uriToOpen as IFileToOpen).fileUri;
 }
 
-export type MenuBarVisibility =
-	| "classic"
-	| "visible"
-	| "toggle"
-	| "hidden"
-	| "compact";
+export type MenuBarVisibility = 'classic' | 'visible' | 'toggle' | 'hidden' | 'compact';
 
-export function getMenuBarVisibility(
-	configurationService: IConfigurationService
-): MenuBarVisibility {
+export function getMenuBarVisibility(configurationService: IConfigurationService): MenuBarVisibility {
 	const titleBarStyle = getTitleBarStyle(configurationService);
-	const menuBarVisibility = configurationService.getValue<
-		MenuBarVisibility | "default"
-	>("window.menuBarVisibility");
+	const menuBarVisibility = configurationService.getValue<MenuBarVisibility | 'default'>('window.menuBarVisibility');
 
-	if (
-		menuBarVisibility === "default" ||
-		(titleBarStyle === "native" && menuBarVisibility === "compact") ||
-		(isMacintosh && isNative)
-	) {
-		return "classic";
+	if (menuBarVisibility === 'default' || (titleBarStyle === 'native' && menuBarVisibility === 'compact') || (isMacintosh && isNative)) {
+		return 'classic';
 	} else {
 		return menuBarVisibility;
 	}
@@ -159,22 +142,17 @@ export interface IWindowsConfiguration {
 }
 
 export interface IWindowSettings {
-	readonly openFilesInNewWindow: "on" | "off" | "default";
-	readonly openFoldersInNewWindow: "on" | "off" | "default";
-	readonly openWithoutArgumentsInNewWindow: "on" | "off";
-	readonly restoreWindows: "preserve" | "all" | "folders" | "one" | "none";
+	readonly openFilesInNewWindow: 'on' | 'off' | 'default';
+	readonly openFoldersInNewWindow: 'on' | 'off' | 'default';
+	readonly openWithoutArgumentsInNewWindow: 'on' | 'off';
+	readonly restoreWindows: 'preserve' | 'all' | 'folders' | 'one' | 'none';
 	readonly restoreFullscreen: boolean;
 	readonly zoomLevel: number;
-	readonly titleBarStyle: "native" | "custom";
+	readonly titleBarStyle: 'native' | 'custom';
 	readonly autoDetectHighContrast: boolean;
 	readonly autoDetectColorScheme: boolean;
 	readonly menuBarVisibility: MenuBarVisibility;
-	readonly newWindowDimensions:
-		| "default"
-		| "inherit"
-		| "offset"
-		| "maximized"
-		| "fullscreen";
+	readonly newWindowDimensions: 'default' | 'inherit' | 'offset' | 'maximized' | 'fullscreen';
 	readonly nativeTabs: boolean;
 	readonly nativeFullScreen: boolean;
 	readonly enableMenuBarMnemonics: boolean;
@@ -184,48 +162,41 @@ export interface IWindowSettings {
 }
 
 export interface IDensitySettings {
-	readonly editorTabHeight: "default" | "compact";
+	readonly editorTabHeight: 'default' | 'compact';
 }
 
-export function getTitleBarStyle(
-	configurationService: IConfigurationService
-): "native" | "custom" {
+export function getTitleBarStyle(configurationService: IConfigurationService): 'native' | 'custom' {
 	if (isWeb) {
-		return "custom";
+		return 'custom';
 	}
 
-	const configuration = configurationService.getValue<
-		IWindowSettings | undefined
-	>("window");
+	const configuration = configurationService.getValue<IWindowSettings | undefined>('window');
 	if (configuration) {
 		const useNativeTabs = isMacintosh && configuration.nativeTabs === true;
 		if (useNativeTabs) {
-			return "native"; // native tabs on sierra do not work with custom title style
+			return 'native'; // native tabs on sierra do not work with custom title style
 		}
 
-		const useSimpleFullScreen =
-			isMacintosh && configuration.nativeFullScreen === false;
+		const useSimpleFullScreen = isMacintosh && configuration.nativeFullScreen === false;
 		if (useSimpleFullScreen) {
-			return "native"; // simple fullscreen does not work well with custom title style (https://github.com/microsoft/vscode/issues/63291)
+			return 'native'; // simple fullscreen does not work well with custom title style (https://github.com/microsoft/vscode/issues/63291)
 		}
 
 		const style = configuration.titleBarStyle;
-		if (style === "native" || style === "custom") {
+		if (style === 'native' || style === 'custom') {
 			return style;
 		}
 	}
 
-	return isLinux ? "native" : "custom"; // default to custom on all macOS and Windows
+	return isLinux ? 'native' : 'custom'; // default to custom on all macOS and Windows
 }
 
-export function useWindowControlsOverlay(
-	configurationService: IConfigurationService
-): boolean {
+export function useWindowControlsOverlay(configurationService: IConfigurationService): boolean {
 	if (!isWindows || isWeb) {
 		return false; // only supported on a desktop Windows instance
 	}
 
-	if (getTitleBarStyle(configurationService) === "native") {
+	if (getTitleBarStyle(configurationService) === 'native') {
 		return false; // only supported when title bar is custom
 	}
 
@@ -234,6 +205,7 @@ export function useWindowControlsOverlay(
 }
 
 export interface IPath<T = IEditorOptions> extends IPathData<T> {
+
 	/**
 	 * The file path to open within the instance
 	 */
@@ -241,6 +213,7 @@ export interface IPath<T = IEditorOptions> extends IPathData<T> {
 }
 
 export interface IPathData<T = IEditorOptions> {
+
 	/**
 	 * The file path to open within the instance
 	 */
@@ -297,7 +270,7 @@ export interface INativeOpenFileRequest extends IOpenFileRequest {
 
 export interface INativeRunActionInWindowRequest {
 	readonly id: string;
-	readonly from: "menu" | "touchbar" | "mouse";
+	readonly from: 'menu' | 'touchbar' | 'mouse';
 	readonly args?: any[];
 }
 
@@ -324,10 +297,7 @@ export interface IOSConfiguration {
 	readonly arch: string;
 }
 
-export interface INativeWindowConfiguration
-	extends IWindowConfiguration,
-		NativeParsedArgs,
-		ISandboxConfiguration {
+export interface INativeWindowConfiguration extends IWindowConfiguration, NativeParsedArgs, ISandboxConfiguration {
 	mainPid: number;
 
 	machineId: string;
@@ -369,10 +339,7 @@ export interface INativeWindowConfiguration
 	filesToWait?: IPathsToWaitFor;
 
 	os: IOSConfiguration;
-	policiesData?: IStringDictionary<{
-		definition: PolicyDefinition;
-		value: PolicyValue;
-	}>;
+	policiesData?: IStringDictionary<{ definition: PolicyDefinition; value: PolicyValue }>;
 }
 
 /**

@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDimension } from "vs/base/browser/dom";
-import { Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IDimension } from 'vs/base/browser/dom';
+import { Event } from 'vs/base/common/event';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const ILayoutService = createDecorator<ILayoutService>("layoutService");
+export const ILayoutService = createDecorator<ILayoutService>('layoutService');
 
 export interface ILayoutOffsetInfo {
+
 	/**
 	 * Generic top offset
 	 */
@@ -22,6 +23,7 @@ export interface ILayoutOffsetInfo {
 }
 
 export interface ILayoutService {
+
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -80,6 +82,11 @@ export interface ILayoutService {
 	readonly containers: Iterable<HTMLElement>;
 
 	/**
+	 * Get the container for the given window.
+	 */
+	getContainer(window: Window): HTMLElement;
+
+	/**
 	 * An offset to use for positioning elements inside the main container.
 	 */
 	readonly mainContainerOffset: ILayoutOffsetInfo;
@@ -90,7 +97,7 @@ export interface ILayoutService {
 	readonly activeContainerOffset: ILayoutOffsetInfo;
 
 	/**
-	 * Focus the primary component of the container.
+	 * Focus the primary component of the active container.
 	 */
 	focus(): void;
 }

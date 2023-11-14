@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ITreeNavigator } from "vs/base/browser/ui/tree/tree";
-import { Emitter } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { RenderableMatch } from "vs/workbench/contrib/search/browser/searchModel";
+import { ITreeNavigator } from 'vs/base/browser/ui/tree/tree';
+import { Emitter } from 'vs/base/common/event';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { RenderableMatch } from 'vs/workbench/contrib/search/browser/searchModel';
 
 const someEvent = new Emitter().event;
 
@@ -14,60 +14,31 @@ const someEvent = new Emitter().event;
  * Add stub methods as needed
  */
 export class MockObjectTree<T, TRef> implements IDisposable {
-	get onDidChangeFocus() {
-		return someEvent;
-	}
-	get onDidChangeSelection() {
-		return someEvent;
-	}
-	get onDidOpen() {
-		return someEvent;
-	}
 
-	get onMouseClick() {
-		return someEvent;
-	}
-	get onMouseDblClick() {
-		return someEvent;
-	}
-	get onContextMenu() {
-		return someEvent;
-	}
+	get onDidChangeFocus() { return someEvent; }
+	get onDidChangeSelection() { return someEvent; }
+	get onDidOpen() { return someEvent; }
 
-	get onKeyDown() {
-		return someEvent;
-	}
-	get onKeyUp() {
-		return someEvent;
-	}
-	get onKeyPress() {
-		return someEvent;
-	}
+	get onMouseClick() { return someEvent; }
+	get onMouseDblClick() { return someEvent; }
+	get onContextMenu() { return someEvent; }
 
-	get onDidFocus() {
-		return someEvent;
-	}
-	get onDidBlur() {
-		return someEvent;
-	}
+	get onKeyDown() { return someEvent; }
+	get onKeyUp() { return someEvent; }
+	get onKeyPress() { return someEvent; }
 
-	get onDidChangeCollapseState() {
-		return someEvent;
-	}
-	get onDidChangeRenderNodeCount() {
-		return someEvent;
-	}
+	get onDidFocus() { return someEvent; }
+	get onDidBlur() { return someEvent; }
 
-	get onDidDispose() {
-		return someEvent;
-	}
-	get lastVisibleElement() {
-		return this.elements[this.elements.length - 1];
-	}
+	get onDidChangeCollapseState() { return someEvent; }
+	get onDidChangeRenderNodeCount() { return someEvent; }
 
-	constructor(private elements: any[]) {}
+	get onDidDispose() { return someEvent; }
+	get lastVisibleElement() { return this.elements[this.elements.length - 1]; }
 
-	domFocus(): void {}
+	constructor(private elements: any[]) { }
+
+	domFocus(): void { }
 
 	collapse(location: TRef, recursive: boolean = false): boolean {
 		return true;
@@ -78,7 +49,8 @@ export class MockObjectTree<T, TRef> implements IDisposable {
 	}
 
 	navigate(start?: TRef): ITreeNavigator<T> {
-		const startIdx = start ? this.elements.indexOf(start) : undefined;
+		const startIdx = start ? this.elements.indexOf(start) :
+			undefined;
 
 		return new ArrayNavigator(this.elements, startIdx);
 	}
@@ -87,14 +59,12 @@ export class MockObjectTree<T, TRef> implements IDisposable {
 		return elem.parent();
 	}
 
-	dispose(): void {}
+	dispose(): void {
+	}
 }
 
 class ArrayNavigator<T> implements ITreeNavigator<T> {
-	constructor(
-		private elements: T[],
-		private index = 0
-	) {}
+	constructor(private elements: T[], private index = 0) { }
 
 	current(): T | null {
 		return this.elements[this.index];

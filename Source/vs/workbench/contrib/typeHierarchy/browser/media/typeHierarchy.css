@@ -30,12 +30,7 @@
 	color: var(--vscode-peekViewResult-fileForeground);
 }
 
-.monaco-editor
-	.type-hierarchy
-	.tree
-	.monaco-list:focus
-	.monaco-list-rows
-	> .monaco-list-row.selected:not(.highlighted) {
+.monaco-editor .type-hierarchy .tree .monaco-list:focus .monaco-list-rows > .monaco-list-row.selected:not(.highlighted) {
 	background-color: var(--vscode-peekViewResult-selectionBackground);
 	color: var(--vscode-peekViewResult-selectionForeground) !important;
 }
@@ -47,11 +42,7 @@
 	align-items: center;
 }
 
-.monaco-workbench
-	.type-hierarchy
-	.tree
-	.typehierarchy-element
-	.monaco-icon-label {
+.monaco-workbench .type-hierarchy .tree .typehierarchy-element .monaco-icon-label {
 	padding-left: 4px;
 }
 

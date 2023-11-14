@@ -3,63 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import product from "vs/platform/product/common/product";
-import { isMacintosh, isLinux, language, isWeb } from "vs/base/common/platform";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { URI } from "vs/base/common/uri";
-import {
-	MenuId,
-	Action2,
-	registerAction2,
-} from "vs/platform/actions/common/actions";
-import { KeyChord, KeyMod, KeyCode } from "vs/base/common/keyCodes";
-import { IProductService } from "vs/platform/product/common/productService";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { localize } from 'vs/nls';
+import product from 'vs/platform/product/common/product';
+import { isMacintosh, isLinux, language, isWeb } from 'vs/base/common/platform';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { URI } from 'vs/base/common/uri';
+import { MenuId, Action2, registerAction2 } from 'vs/platform/actions/common/actions';
+import { KeyChord, KeyMod, KeyCode } from 'vs/base/common/keyCodes';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
+import { Categories } from 'vs/platform/action/common/actionCommonCategories';
 
 class KeybindingsReferenceAction extends Action2 {
-	static readonly ID = "workbench.action.keybindingsReference";
-	static readonly AVAILABLE = !!(isLinux
-		? product.keyboardShortcutsUrlLinux
-		: isMacintosh
-		? product.keyboardShortcutsUrlMac
-		: product.keyboardShortcutsUrlWin);
+
+	static readonly ID = 'workbench.action.keybindingsReference';
+	static readonly AVAILABLE = !!(isLinux ? product.keyboardShortcutsUrlLinux : isMacintosh ? product.keyboardShortcutsUrlMac : product.keyboardShortcutsUrlWin);
 
 	constructor() {
 		super({
 			id: KeybindingsReferenceAction.ID,
 			title: {
-				value: localize(
-					"keybindingsReference",
-					"Keyboard Shortcuts Reference"
-				),
-				mnemonicTitle: localize(
-					{
-						key: "miKeyboardShortcuts",
-						comment: ["&& denotes a mnemonic"],
-					},
-					"&&Keyboard Shortcuts Reference"
-				),
-				original: "Keyboard Shortcuts Reference",
+				value: localize('keybindingsReference', "Keyboard Shortcuts Reference"),
+				mnemonicTitle: localize({ key: 'miKeyboardShortcuts', comment: ['&& denotes a mnemonic'] }, "&&Keyboard Shortcuts Reference"),
+				original: 'Keyboard Shortcuts Reference'
 			},
 			category: Categories.Help,
 			f1: true,
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
 				when: null,
-				primary: KeyChord(
-					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyR
-				),
+				primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.CtrlCmd | KeyCode.KeyR)
 			},
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "2_reference",
-				order: 1,
-			},
+				group: '2_reference',
+				order: 1
+			}
 		});
 	}
 
@@ -67,11 +48,7 @@ class KeybindingsReferenceAction extends Action2 {
 		const productService = accessor.get(IProductService);
 		const openerService = accessor.get(IOpenerService);
 
-		const url = isLinux
-			? productService.keyboardShortcutsUrlLinux
-			: isMacintosh
-			? productService.keyboardShortcutsUrlMac
-			: productService.keyboardShortcutsUrlWin;
+		const url = isLinux ? productService.keyboardShortcutsUrlLinux : isMacintosh ? productService.keyboardShortcutsUrlMac : productService.keyboardShortcutsUrlWin;
 		if (url) {
 			openerService.open(URI.parse(url));
 		}
@@ -79,30 +56,25 @@ class KeybindingsReferenceAction extends Action2 {
 }
 
 class OpenIntroductoryVideosUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openVideoTutorialsUrl";
+
+	static readonly ID = 'workbench.action.openVideoTutorialsUrl';
 	static readonly AVAILABLE = !!product.introductoryVideosUrl;
 
 	constructor() {
 		super({
 			id: OpenIntroductoryVideosUrlAction.ID,
 			title: {
-				value: localize("openVideoTutorialsUrl", "Video Tutorials"),
-				mnemonicTitle: localize(
-					{
-						key: "miVideoTutorials",
-						comment: ["&& denotes a mnemonic"],
-					},
-					"&&Video Tutorials"
-				),
-				original: "Video Tutorials",
+				value: localize('openVideoTutorialsUrl', "Video Tutorials"),
+				mnemonicTitle: localize({ key: 'miVideoTutorials', comment: ['&& denotes a mnemonic'] }, "&&Video Tutorials"),
+				original: 'Video Tutorials'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "2_reference",
-				order: 2,
-			},
+				group: '2_reference',
+				order: 2
+			}
 		});
 	}
 
@@ -117,30 +89,25 @@ class OpenIntroductoryVideosUrlAction extends Action2 {
 }
 
 class OpenTipsAndTricksUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openTipsAndTricksUrl";
+
+	static readonly ID = 'workbench.action.openTipsAndTricksUrl';
 	static readonly AVAILABLE = !!product.tipsAndTricksUrl;
 
 	constructor() {
 		super({
 			id: OpenTipsAndTricksUrlAction.ID,
 			title: {
-				value: localize("openTipsAndTricksUrl", "Tips and Tricks"),
-				mnemonicTitle: localize(
-					{
-						key: "miTipsAndTricks",
-						comment: ["&& denotes a mnemonic"],
-					},
-					"Tips and Tri&&cks"
-				),
-				original: "Tips and Tricks",
+				value: localize('openTipsAndTricksUrl', "Tips and Tricks"),
+				mnemonicTitle: localize({ key: 'miTipsAndTricks', comment: ['&& denotes a mnemonic'] }, "Tips and Tri&&cks"),
+				original: 'Tips and Tricks'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "2_reference",
-				order: 3,
-			},
+				group: '2_reference',
+				order: 3
+			}
 		});
 	}
 
@@ -155,41 +122,32 @@ class OpenTipsAndTricksUrlAction extends Action2 {
 }
 
 class OpenDocumentationUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openDocumentationUrl";
-	static readonly AVAILABLE = !!(isWeb
-		? product.serverDocumentationUrl
-		: product.documentationUrl);
+
+	static readonly ID = 'workbench.action.openDocumentationUrl';
+	static readonly AVAILABLE = !!(isWeb ? product.serverDocumentationUrl : product.documentationUrl);
 
 	constructor() {
 		super({
 			id: OpenDocumentationUrlAction.ID,
 			title: {
-				value: localize("openDocumentationUrl", "Documentation"),
-				mnemonicTitle: localize(
-					{
-						key: "miDocumentation",
-						comment: ["&& denotes a mnemonic"],
-					},
-					"&&Documentation"
-				),
-				original: "Documentation",
+				value: localize('openDocumentationUrl', "Documentation"),
+				mnemonicTitle: localize({ key: 'miDocumentation', comment: ['&& denotes a mnemonic'] }, "&&Documentation"),
+				original: 'Documentation'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "1_welcome",
-				order: 3,
-			},
+				group: '1_welcome',
+				order: 3
+			}
 		});
 	}
 
 	run(accessor: ServicesAccessor): void {
 		const productService = accessor.get(IProductService);
 		const openerService = accessor.get(IOpenerService);
-		const url = isWeb
-			? productService.serverDocumentationUrl
-			: productService.documentationUrl;
+		const url = isWeb ? productService.serverDocumentationUrl : productService.documentationUrl;
 
 		if (url) {
 			openerService.open(URI.parse(url));
@@ -198,21 +156,16 @@ class OpenDocumentationUrlAction extends Action2 {
 }
 
 class OpenNewsletterSignupUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openNewsletterSignupUrl";
+
+	static readonly ID = 'workbench.action.openNewsletterSignupUrl';
 	static readonly AVAILABLE = !!product.newsletterSignupUrl;
 
 	constructor() {
 		super({
 			id: OpenNewsletterSignupUrlAction.ID,
-			title: {
-				value: localize(
-					"newsletterSignup",
-					"Signup for the VS Code Newsletter"
-				),
-				original: "Signup for the VS Code Newsletter",
-			},
+			title: { value: localize('newsletterSignup', "Signup for the VS Code Newsletter"), original: 'Signup for the VS Code Newsletter' },
 			category: Categories.Help,
-			f1: true,
+			f1: true
 		});
 	}
 
@@ -220,38 +173,30 @@ class OpenNewsletterSignupUrlAction extends Action2 {
 		const productService = accessor.get(IProductService);
 		const openerService = accessor.get(IOpenerService);
 		const telemetryService = accessor.get(ITelemetryService);
-		openerService.open(
-			URI.parse(
-				`${
-					productService.newsletterSignupUrl
-				}?machineId=${encodeURIComponent(telemetryService.machineId)}`
-			)
-		);
+		openerService.open(URI.parse(`${productService.newsletterSignupUrl}?machineId=${encodeURIComponent(telemetryService.machineId)}`));
 	}
 }
 
 class OpenYouTubeUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openYouTubeUrl";
+
+	static readonly ID = 'workbench.action.openYouTubeUrl';
 	static readonly AVAILABLE = !!product.youTubeUrl;
 
 	constructor() {
 		super({
 			id: OpenYouTubeUrlAction.ID,
 			title: {
-				value: localize("openYouTubeUrl", "Join Us on YouTube"),
-				mnemonicTitle: localize(
-					{ key: "miYouTube", comment: ["&& denotes a mnemonic"] },
-					"&&Join Us on YouTube"
-				),
-				original: "Join Us on YouTube",
+				value: localize('openYouTubeUrl', "Join Us on YouTube"),
+				mnemonicTitle: localize({ key: 'miYouTube', comment: ['&& denotes a mnemonic'] }, "&&Join Us on YouTube"),
+				original: 'Join Us on YouTube'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "3_feedback",
-				order: 1,
-			},
+				group: '3_feedback',
+				order: 1
+			}
 		});
 	}
 
@@ -266,27 +211,25 @@ class OpenYouTubeUrlAction extends Action2 {
 }
 
 class OpenRequestFeatureUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openRequestFeatureUrl";
+
+	static readonly ID = 'workbench.action.openRequestFeatureUrl';
 	static readonly AVAILABLE = !!product.requestFeatureUrl;
 
 	constructor() {
 		super({
 			id: OpenRequestFeatureUrlAction.ID,
 			title: {
-				value: localize("openUserVoiceUrl", "Search Feature Requests"),
-				mnemonicTitle: localize(
-					{ key: "miUserVoice", comment: ["&& denotes a mnemonic"] },
-					"&&Search Feature Requests"
-				),
-				original: "Search Feature Requests",
+				value: localize('openUserVoiceUrl', "Search Feature Requests"),
+				mnemonicTitle: localize({ key: 'miUserVoice', comment: ['&& denotes a mnemonic'] }, "&&Search Feature Requests"),
+				original: 'Search Feature Requests'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "3_feedback",
-				order: 2,
-			},
+				group: '3_feedback',
+				order: 2
+			}
 		});
 	}
 
@@ -301,45 +244,37 @@ class OpenRequestFeatureUrlAction extends Action2 {
 }
 
 class OpenLicenseUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openLicenseUrl";
-	static readonly AVAILABLE = !!(isWeb
-		? product.serverLicense
-		: product.licenseUrl);
+
+	static readonly ID = 'workbench.action.openLicenseUrl';
+	static readonly AVAILABLE = !!(isWeb ? product.serverLicense : product.licenseUrl);
 
 	constructor() {
 		super({
 			id: OpenLicenseUrlAction.ID,
 			title: {
-				value: localize("openLicenseUrl", "View License"),
-				mnemonicTitle: localize(
-					{ key: "miLicense", comment: ["&& denotes a mnemonic"] },
-					"View &&License"
-				),
-				original: "View License",
+				value: localize('openLicenseUrl', "View License"),
+				mnemonicTitle: localize({ key: 'miLicense', comment: ['&& denotes a mnemonic'] }, "View &&License"),
+				original: 'View License'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "4_legal",
-				order: 1,
-			},
+				group: '4_legal',
+				order: 1
+			}
 		});
 	}
 
 	run(accessor: ServicesAccessor): void {
 		const productService = accessor.get(IProductService);
 		const openerService = accessor.get(IOpenerService);
-		const url = isWeb
-			? productService.serverLicenseUrl
-			: productService.licenseUrl;
+		const url = isWeb ? productService.serverLicenseUrl : productService.licenseUrl;
 
 		if (url) {
 			if (language) {
-				const queryArgChar = url.indexOf("?") > 0 ? "&" : "?";
-				openerService.open(
-					URI.parse(`${url}${queryArgChar}lang=${language}`)
-				);
+				const queryArgChar = url.indexOf('?') > 0 ? '&' : '?';
+				openerService.open(URI.parse(`${url}${queryArgChar}lang=${language}`));
 			} else {
 				openerService.open(URI.parse(url));
 			}
@@ -348,30 +283,25 @@ class OpenLicenseUrlAction extends Action2 {
 }
 
 class OpenPrivacyStatementUrlAction extends Action2 {
-	static readonly ID = "workbench.action.openPrivacyStatementUrl";
+
+	static readonly ID = 'workbench.action.openPrivacyStatementUrl';
 	static readonly AVAILABE = !!product.privacyStatementUrl;
 
 	constructor() {
 		super({
 			id: OpenPrivacyStatementUrlAction.ID,
 			title: {
-				value: localize("openPrivacyStatement", "Privacy Statement"),
-				mnemonicTitle: localize(
-					{
-						key: "miPrivacyStatement",
-						comment: ["&& denotes a mnemonic"],
-					},
-					"Privac&&y Statement"
-				),
-				original: "Privacy Statement",
+				value: localize('openPrivacyStatement', "Privacy Statement"),
+				mnemonicTitle: localize({ key: 'miPrivacyStatement', comment: ['&& denotes a mnemonic'] }, "Privac&&y Statement"),
+				original: 'Privacy Statement'
 			},
 			category: Categories.Help,
 			f1: true,
 			menu: {
 				id: MenuId.MenubarHelpMenu,
-				group: "4_legal",
-				order: 2,
-			},
+				group: '4_legal',
+				order: 2
+			}
 		});
 	}
 

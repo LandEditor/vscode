@@ -3,31 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from "vs/base/common/assert";
-import * as vscode from "vscode";
-import { Emitter, Event } from "vs/base/common/event";
-import { dispose } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import {
-	ExtHostDocumentsAndEditorsShape,
-	IDocumentsAndEditorsDelta,
-	IModelAddedData,
-	MainContext,
-} from "vs/workbench/api/common/extHost.protocol";
-import { ExtHostDocumentData } from "vs/workbench/api/common/extHostDocumentData";
-import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
-import { ExtHostTextEditor } from "vs/workbench/api/common/extHostTextEditor";
-import * as typeConverters from "vs/workbench/api/common/extHostTypeConverters";
-import { ILogService } from "vs/platform/log/common/log";
-import { ResourceMap } from "vs/base/common/map";
-import { Schemas } from "vs/base/common/network";
-import { Iterable } from "vs/base/common/iterator";
-import { Lazy } from "vs/base/common/lazy";
+import * as assert from 'vs/base/common/assert';
+import * as vscode from 'vscode';
+import { Emitter, Event } from 'vs/base/common/event';
+import { dispose } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { ExtHostDocumentsAndEditorsShape, IDocumentsAndEditorsDelta, IModelAddedData, MainContext } from 'vs/workbench/api/common/extHost.protocol';
+import { ExtHostDocumentData } from 'vs/workbench/api/common/extHostDocumentData';
+import { IExtHostRpcService } from 'vs/workbench/api/common/extHostRpcService';
+import { ExtHostTextEditor } from 'vs/workbench/api/common/extHostTextEditor';
+import * as typeConverters from 'vs/workbench/api/common/extHostTypeConverters';
+import { ILogService } from 'vs/platform/log/common/log';
+import { ResourceMap } from 'vs/base/common/map';
+import { Schemas } from 'vs/base/common/network';
+import { Iterable } from 'vs/base/common/iterator';
+import { Lazy } from 'vs/base/common/lazy';
 
 class Reference<T> {
 	private _count = 0;
-	constructor(readonly value: T) {}
+	constructor(readonly value: T) { }
 	ref() {
 		this._count++;
 	}
@@ -40,58 +35,40 @@ export interface IExtHostModelAddedData extends IModelAddedData {
 	notebook?: vscode.NotebookDocument;
 }
 
-export interface IExtHostDocumentsAndEditorsDelta
-	extends IDocumentsAndEditorsDelta {
+export interface IExtHostDocumentsAndEditorsDelta extends IDocumentsAndEditorsDelta {
 	addedDocuments?: IExtHostModelAddedData[];
 }
 
-export class ExtHostDocumentsAndEditors
-	implements ExtHostDocumentsAndEditorsShape
-{
+export class ExtHostDocumentsAndEditors implements ExtHostDocumentsAndEditorsShape {
+
 	readonly _serviceBrand: undefined;
 
 	private _activeEditorId: string | null = null;
 
 	private readonly _editors = new Map<string, ExtHostTextEditor>();
-	private readonly _documents = new ResourceMap<
-		Reference<ExtHostDocumentData>
-	>();
+	private readonly _documents = new ResourceMap<Reference<ExtHostDocumentData>>();
 
-	private readonly _onDidAddDocuments = new Emitter<
-		readonly ExtHostDocumentData[]
-	>();
-	private readonly _onDidRemoveDocuments = new Emitter<
-		readonly ExtHostDocumentData[]
-	>();
-	private readonly _onDidChangeVisibleTextEditors = new Emitter<
-		readonly vscode.TextEditor[]
-	>();
-	private readonly _onDidChangeActiveTextEditor = new Emitter<
-		vscode.TextEditor | undefined
-	>();
+	private readonly _onDidAddDocuments = new Emitter<readonly ExtHostDocumentData[]>();
+	private readonly _onDidRemoveDocuments = new Emitter<readonly ExtHostDocumentData[]>();
+	private readonly _onDidChangeVisibleTextEditors = new Emitter<readonly vscode.TextEditor[]>();
+	private readonly _onDidChangeActiveTextEditor = new Emitter<vscode.TextEditor | undefined>();
 
-	readonly onDidAddDocuments: Event<readonly ExtHostDocumentData[]> =
-		this._onDidAddDocuments.event;
-	readonly onDidRemoveDocuments: Event<readonly ExtHostDocumentData[]> =
-		this._onDidRemoveDocuments.event;
-	readonly onDidChangeVisibleTextEditors: Event<
-		readonly vscode.TextEditor[]
-	> = this._onDidChangeVisibleTextEditors.event;
-	readonly onDidChangeActiveTextEditor: Event<vscode.TextEditor | undefined> =
-		this._onDidChangeActiveTextEditor.event;
+	readonly onDidAddDocuments: Event<readonly ExtHostDocumentData[]> = this._onDidAddDocuments.event;
+	readonly onDidRemoveDocuments: Event<readonly ExtHostDocumentData[]> = this._onDidRemoveDocuments.event;
+	readonly onDidChangeVisibleTextEditors: Event<readonly vscode.TextEditor[]> = this._onDidChangeVisibleTextEditors.event;
+	readonly onDidChangeActiveTextEditor: Event<vscode.TextEditor | undefined> = this._onDidChangeActiveTextEditor.event;
 
 	constructor(
 		@IExtHostRpcService private readonly _extHostRpc: IExtHostRpcService,
 		@ILogService private readonly _logService: ILogService
-	) {}
+	) { }
 
 	$acceptDocumentsAndEditorsDelta(delta: IDocumentsAndEditorsDelta): void {
 		this.acceptDocumentsAndEditorsDelta(delta);
 	}
 
-	acceptDocumentsAndEditorsDelta(
-		delta: IExtHostDocumentsAndEditorsDelta
-	): void {
+	acceptDocumentsAndEditorsDelta(delta: IExtHostDocumentsAndEditorsDelta): void {
+
 		const removedDocuments: ExtHostDocumentData[] = [];
 		const addedDocuments: ExtHostDocumentData[] = [];
 		const removedEditors: ExtHostTextEditor[] = [];
@@ -115,30 +92,21 @@ export class ExtHostDocumentsAndEditors
 				// double check -> only notebook cell documents should be
 				// referenced/opened more than once...
 				if (ref) {
-					if (
-						resource.scheme !== Schemas.vscodeNotebookCell &&
-						resource.scheme !== Schemas.vscodeInteractiveInput
-					) {
-						throw new Error(
-							`document '${resource} already exists!'`
-						);
+					if (resource.scheme !== Schemas.vscodeNotebookCell && resource.scheme !== Schemas.vscodeInteractiveInput) {
+						throw new Error(`document '${resource} already exists!'`);
 					}
 				}
 				if (!ref) {
-					ref = new Reference(
-						new ExtHostDocumentData(
-							this._extHostRpc.getProxy(
-								MainContext.MainThreadDocuments
-							),
-							resource,
-							data.lines,
-							data.EOL,
-							data.versionId,
-							data.languageId,
-							data.isDirty,
-							data.notebook
-						)
-					);
+					ref = new Reference(new ExtHostDocumentData(
+						this._extHostRpc.getProxy(MainContext.MainThreadDocuments),
+						resource,
+						data.lines,
+						data.EOL,
+						data.versionId,
+						data.languageId,
+						data.isDirty,
+						data.notebook
+					));
 					this._documents.set(resource, ref);
 					addedDocuments.push(ref.value);
 				}
@@ -160,42 +128,26 @@ export class ExtHostDocumentsAndEditors
 		if (delta.addedEditors) {
 			for (const data of delta.addedEditors) {
 				const resource = URI.revive(data.documentUri);
-				assert.ok(
-					this._documents.has(resource),
-					`document '${resource}' does not exist`
-				);
-				assert.ok(
-					!this._editors.has(data.id),
-					`editor '${data.id}' already exists!`
-				);
+				assert.ok(this._documents.has(resource), `document '${resource}' does not exist`);
+				assert.ok(!this._editors.has(data.id), `editor '${data.id}' already exists!`);
 
 				const documentData = this._documents.get(resource)!.value;
 				const editor = new ExtHostTextEditor(
 					data.id,
-					this._extHostRpc.getProxy(
-						MainContext.MainThreadTextEditors
-					),
+					this._extHostRpc.getProxy(MainContext.MainThreadTextEditors),
 					this._logService,
 					new Lazy(() => documentData.document),
 					data.selections.map(typeConverters.Selection.to),
 					data.options,
-					data.visibleRanges.map((range) =>
-						typeConverters.Range.to(range)
-					),
-					typeof data.editorPosition === "number"
-						? typeConverters.ViewColumn.to(data.editorPosition)
-						: undefined
+					data.visibleRanges.map(range => typeConverters.Range.to(range)),
+					typeof data.editorPosition === 'number' ? typeConverters.ViewColumn.to(data.editorPosition) : undefined
 				);
 				this._editors.set(data.id, editor);
 			}
 		}
 
 		if (delta.newActiveEditor !== undefined) {
-			assert.ok(
-				delta.newActiveEditor === null ||
-					this._editors.has(delta.newActiveEditor),
-				`active editor '${delta.newActiveEditor}' does not exist`
-			);
+			assert.ok(delta.newActiveEditor === null || this._editors.has(delta.newActiveEditor), `active editor '${delta.newActiveEditor}' does not exist`);
 			this._activeEditorId = delta.newActiveEditor;
 		}
 
@@ -211,9 +163,7 @@ export class ExtHostDocumentsAndEditors
 		}
 
 		if (delta.removedEditors || delta.addedEditors) {
-			this._onDidChangeVisibleTextEditors.fire(
-				this.allEditors().map((editor) => editor.value)
-			);
+			this._onDidChangeVisibleTextEditors.fire(this.allEditors().map(editor => editor.value));
 		}
 		if (delta.newActiveEditor !== undefined) {
 			this._onDidChangeActiveTextEditor.fire(this.activeEditor());
@@ -225,7 +175,7 @@ export class ExtHostDocumentsAndEditors
 	}
 
 	allDocuments(): Iterable<ExtHostDocumentData> {
-		return Iterable.map(this._documents.values(), (ref) => ref.value);
+		return Iterable.map(this._documents.values(), ref => ref.value);
 	}
 
 	getEditor(id: string): ExtHostTextEditor | undefined {
@@ -234,9 +184,7 @@ export class ExtHostDocumentsAndEditors
 
 	activeEditor(): vscode.TextEditor | undefined;
 	activeEditor(internal: true): ExtHostTextEditor | undefined;
-	activeEditor(
-		internal?: true
-	): vscode.TextEditor | ExtHostTextEditor | undefined {
+	activeEditor(internal?: true): vscode.TextEditor | ExtHostTextEditor | undefined {
 		if (!this._activeEditorId) {
 			return undefined;
 		}
@@ -253,7 +201,5 @@ export class ExtHostDocumentsAndEditors
 	}
 }
 
-export interface IExtHostDocumentsAndEditors
-	extends ExtHostDocumentsAndEditors {}
-export const IExtHostDocumentsAndEditors =
-	createDecorator<IExtHostDocumentsAndEditors>("IExtHostDocumentsAndEditors");
+export interface IExtHostDocumentsAndEditors extends ExtHostDocumentsAndEditors { }
+export const IExtHostDocumentsAndEditors = createDecorator<IExtHostDocumentsAndEditors>('IExtHostDocumentsAndEditors');

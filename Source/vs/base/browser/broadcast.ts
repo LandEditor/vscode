@@ -3,11 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getErrorMessage } from "vs/base/common/errors";
-import { Emitter } from "vs/base/common/event";
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
+import { mainWindow } from 'vs/base/browser/window';
+import { getErrorMessage } from 'vs/base/common/errors';
+import { Emitter } from 'vs/base/common/event';
+import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
 
 export class BroadcastDataChannel<T> extends Disposable {
+
 	private broadcastChannel: BroadcastChannel | undefined;
 
 	private readonly _onDidReceiveData = this._register(new Emitter<T>());
@@ -17,29 +19,21 @@ export class BroadcastDataChannel<T> extends Disposable {
 		super();
 
 		// Use BroadcastChannel
-		if ("BroadcastChannel" in window) {
+		if ('BroadcastChannel' in mainWindow) {
 			try {
 				this.broadcastChannel = new BroadcastChannel(channelName);
 				const listener = (event: MessageEvent) => {
 					this._onDidReceiveData.fire(event.data);
 				};
-				this.broadcastChannel.addEventListener("message", listener);
-				this._register(
-					toDisposable(() => {
-						if (this.broadcastChannel) {
-							this.broadcastChannel.removeEventListener(
-								"message",
-								listener
-							);
-							this.broadcastChannel.close();
-						}
-					})
-				);
+				this.broadcastChannel.addEventListener('message', listener);
+				this._register(toDisposable(() => {
+					if (this.broadcastChannel) {
+						this.broadcastChannel.removeEventListener('message', listener);
+						this.broadcastChannel.close();
+					}
+				}));
 			} catch (error) {
-				console.warn(
-					"Error while creating broadcast channel. Falling back to localStorage.",
-					getErrorMessage(error)
-				);
+				console.warn('Error while creating broadcast channel. Falling back to localStorage.', getErrorMessage(error));
 			}
 		}
 
@@ -56,10 +50,8 @@ export class BroadcastDataChannel<T> extends Disposable {
 				this._onDidReceiveData.fire(JSON.parse(event.newValue));
 			}
 		};
-		window.addEventListener("storage", listener);
-		this._register(
-			toDisposable(() => window.removeEventListener("storage", listener))
-		);
+		mainWindow.addEventListener('storage', listener);
+		this._register(toDisposable(() => mainWindow.removeEventListener('storage', listener)));
 	}
 
 	/**
@@ -71,8 +63,8 @@ export class BroadcastDataChannel<T> extends Disposable {
 			this.broadcastChannel.postMessage(data);
 		} else {
 			// remove previous changes so that event is triggered even if new changes are same as old changes
-			window.localStorage.removeItem(this.channelName);
-			window.localStorage.setItem(this.channelName, JSON.stringify(data));
+			localStorage.removeItem(this.channelName);
+			localStorage.setItem(this.channelName, JSON.stringify(data));
 		}
 	}
 }

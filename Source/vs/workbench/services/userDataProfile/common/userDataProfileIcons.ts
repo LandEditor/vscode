@@ -3,17 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Codicon } from "vs/base/common/codicons";
-import { localize } from "vs/nls";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { Codicon } from 'vs/base/common/codicons';
+import { localize } from 'vs/nls';
+import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
 
-export const DEFAULT_ICON = registerIcon(
-	"settings-view-bar-icon",
-	Codicon.settingsGear,
-	localize("settingsViewBarIcon", "Settings icon in the view bar.")
-);
+export const DEFAULT_ICON = registerIcon('settings-view-bar-icon', Codicon.settingsGear, localize('settingsViewBarIcon', "Settings icon in the view bar."));
 
 export const ICONS = [
+
 	/* Default */
 	DEFAULT_ICON,
 
@@ -23,10 +20,14 @@ export const ICONS = [
 	Codicon.recordKeys,
 	Codicon.deviceMobile,
 	Codicon.watch,
+	Codicon.vr,
+	Codicon.piano,
 
 	/* languages */
 	Codicon.ruby,
 	Codicon.code,
+	Codicon.coffee,
+	Codicon.snake,
 
 	/* project types */
 	Codicon.window,
@@ -40,6 +41,10 @@ export const ICONS = [
 	Codicon.globe,
 	Codicon.database,
 	Codicon.notebook,
+	Codicon.copilot,
+	Codicon.game,
+	Codicon.chip,
+	Codicon.music,
 
 	/* misc */
 	Codicon.gift,
@@ -86,4 +91,6 @@ export const ICONS = [
 	Codicon.paintcan,
 	Codicon.archive,
 	Codicon.mic,
+	Codicon.jersey,
+
 ];

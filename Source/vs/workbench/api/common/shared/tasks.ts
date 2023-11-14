@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { UriComponents } from "vs/base/common/uri";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import type { Dto } from "vs/workbench/services/extensions/common/proxyIdentifier";
+import { UriComponents } from 'vs/base/common/uri';
+import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import type { Dto } from 'vs/workbench/services/extensions/common/proxyIdentifier';
 
 export interface ITaskDefinitionDTO {
 	type: string;
@@ -32,7 +32,8 @@ export interface IExecutionOptionsDTO {
 	env?: { [key: string]: string };
 }
 
-export interface IProcessExecutionOptionsDTO extends IExecutionOptionsDTO {}
+export interface IProcessExecutionOptionsDTO extends IExecutionOptionsDTO {
+}
 
 export interface IProcessExecutionDTO {
 	process: string;
@@ -41,12 +42,10 @@ export interface IProcessExecutionDTO {
 }
 
 export interface IShellQuotingOptionsDTO {
-	escape?:
-		| string
-		| {
-				escapeChar: string;
-				charsToEscape: string;
-		  };
+	escape?: string | {
+		escapeChar: string;
+		charsToEscape: string;
+	};
 	strong?: string;
 	weak?: string;
 }
@@ -70,7 +69,7 @@ export interface IShellExecutionDTO {
 }
 
 export interface ICustomExecutionDTO {
-	customExecution: "customExecution";
+	customExecution: 'customExecution';
 }
 
 export interface ITaskSourceDTO {
@@ -95,11 +94,7 @@ export interface ITaskGroupDTO {
 export interface ITaskDTO {
 	_id: string;
 	name?: string;
-	execution:
-		| IProcessExecutionDTO
-		| IShellExecutionDTO
-		| ICustomExecutionDTO
-		| undefined;
+	execution: IProcessExecutionDTO | IShellExecutionDTO | ICustomExecutionDTO | undefined;
 	definition: ITaskDefinitionDTO;
 	isBackground?: boolean;
 	source: ITaskSourceDTO;
@@ -130,6 +125,7 @@ export interface ITaskProcessEndedDTO {
 	id: string;
 	exitCode: number | undefined;
 }
+
 
 export interface ITaskFilterDTO {
 	version?: string;

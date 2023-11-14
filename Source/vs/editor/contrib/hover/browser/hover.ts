@@ -3,75 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
-import { KeyChord, KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import {
-	ICodeEditor,
-	IEditorMouseEvent,
-	IPartialEditorMouseEvent,
-	MouseTargetType,
-} from "vs/editor/browser/editorBrowser";
-import {
-	EditorAction,
-	EditorContributionInstantiation,
-	registerEditorAction,
-	registerEditorContribution,
-	ServicesAccessor,
-} from "vs/editor/browser/editorExtensions";
-import {
-	ConfigurationChangedEvent,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
-import { Range } from "vs/editor/common/core/range";
-import {
-	IEditorContribution,
-	IScrollEvent,
-} from "vs/editor/common/editorCommon";
-import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { GotoDefinitionAtPositionEditorContribution } from "vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition";
-import {
-	HoverStartMode,
-	HoverStartSource,
-} from "vs/editor/contrib/hover/browser/hoverOperation";
-import {
-	ContentHoverWidget,
-	ContentHoverController,
-} from "vs/editor/contrib/hover/browser/contentHover";
-import { MarginHoverWidget } from "vs/editor/contrib/hover/browser/marginHover";
-import { AccessibilitySupport } from "vs/platform/accessibility/common/accessibility";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegistry";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { editorHoverBorder } from "vs/platform/theme/common/colorRegistry";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
-import { HoverParticipantRegistry } from "vs/editor/contrib/hover/browser/hoverTypes";
-import { MarkdownHoverParticipant } from "vs/editor/contrib/hover/browser/markdownHoverParticipant";
-import { MarkerHoverParticipant } from "vs/editor/contrib/hover/browser/markerHoverParticipant";
-import { InlineSuggestionHintsContentWidget } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsHintsWidget";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ResultKind } from "vs/platform/keybinding/common/keybindingResolver";
-import * as nls from "vs/nls";
-import "vs/css!./hover";
-import { RunOnceScheduler } from "vs/base/common/async";
+import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
+import { KeyChord, KeyCode, KeyMod } from 'vs/base/common/keyCodes';
+import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
+import { ICodeEditor, IEditorMouseEvent, IPartialEditorMouseEvent, MouseTargetType } from 'vs/editor/browser/editorBrowser';
+import { EditorAction, EditorContributionInstantiation, registerEditorAction, registerEditorContribution, ServicesAccessor } from 'vs/editor/browser/editorExtensions';
+import { ConfigurationChangedEvent, EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Range } from 'vs/editor/common/core/range';
+import { IEditorContribution, IScrollEvent } from 'vs/editor/common/editorCommon';
+import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { GotoDefinitionAtPositionEditorContribution } from 'vs/editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition';
+import { HoverStartMode, HoverStartSource } from 'vs/editor/contrib/hover/browser/hoverOperation';
+import { ContentHoverWidget, ContentHoverController } from 'vs/editor/contrib/hover/browser/contentHover';
+import { MarginHoverWidget } from 'vs/editor/contrib/hover/browser/marginHover';
+import { AccessibilitySupport } from 'vs/platform/accessibility/common/accessibility';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { editorHoverBorder } from 'vs/platform/theme/common/colorRegistry';
+import { registerThemingParticipant } from 'vs/platform/theme/common/themeService';
+import { HoverParticipantRegistry } from 'vs/editor/contrib/hover/browser/hoverTypes';
+import { MarkdownHoverParticipant } from 'vs/editor/contrib/hover/browser/markdownHoverParticipant';
+import { MarkerHoverParticipant } from 'vs/editor/contrib/hover/browser/markerHoverParticipant';
+import { InlineSuggestionHintsContentWidget } from 'vs/editor/contrib/inlineCompletions/browser/inlineCompletionsHintsWidget';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { ResultKind } from 'vs/platform/keybinding/common/keybindingResolver';
+import * as nls from 'vs/nls';
+import 'vs/css!./hover';
+import { RunOnceScheduler } from 'vs/base/common/async';
 
 // sticky hover widget which doesn't disappear on focus out and such
-const _sticky = false;
-// || Boolean("true") // done "weirdly" so that a lint warning prevents you from pushing this
-export class ModesHoverController
-	extends Disposable
-	implements IEditorContribution
-{
-	public static readonly ID = "editor.contrib.hover";
+const _sticky = false
+	// || Boolean("true") // done "weirdly" so that a lint warning prevents you from pushing this
+	;
+
+export class ModesHoverController extends Disposable implements IEditorContribution {
+
+	public static readonly ID = 'editor.contrib.hover';
 
 	private readonly _toUnhook = new DisposableStore();
 
 	private _contentWidget: ContentHoverController | null;
 
-	getWidgetContent(): string | undefined {
-		return this._contentWidget?.getWidgetContent();
-	}
+	getWidgetContent(): string | undefined { return this._contentWidget?.getWidgetContent(); }
 
 	private _glyphWidget: MarginHoverWidget | null;
 
@@ -85,107 +60,54 @@ export class ModesHoverController
 	private _mouseMoveEvent: IEditorMouseEvent | undefined;
 
 	static get(editor: ICodeEditor): ModesHoverController | null {
-		return editor.getContribution<ModesHoverController>(
-			ModesHoverController.ID
-		);
+		return editor.getContribution<ModesHoverController>(ModesHoverController.ID);
 	}
 
-	constructor(
-		private readonly _editor: ICodeEditor,
-		@IInstantiationService
-		private readonly _instantiationService: IInstantiationService,
+	constructor(private readonly _editor: ICodeEditor,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IKeybindingService
-		private readonly _keybindingService: IKeybindingService
+		@IKeybindingService private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 		this._isMouseDown = false;
 		this._hoverClicked = false;
 		this._contentWidget = null;
 		this._glyphWidget = null;
-		this._reactToEditorMouseMoveRunner = this._register(
-			new RunOnceScheduler(
-				() => this._reactToEditorMouseMove(this._mouseMoveEvent),
-				0
-			)
-		);
+		this._reactToEditorMouseMoveRunner = this._register(new RunOnceScheduler(() => this._reactToEditorMouseMove(this._mouseMoveEvent), 0));
 
 		this._hookEvents();
-		this._register(
-			this._editor.onDidChangeConfiguration(
-				(e: ConfigurationChangedEvent) => {
-					if (e.hasChanged(EditorOption.hover)) {
-						this._unhookEvents();
-						this._hookEvents();
-					}
-				}
-			)
-		);
+		this._register(this._editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
+			if (e.hasChanged(EditorOption.hover)) {
+				this._unhookEvents();
+				this._hookEvents();
+			}
+		}));
 	}
 
 	private _hookEvents(): void {
-		const hideWidgetsCancelSchedulerEventHandler = () => {
-			this._cancelScheduler();
-			this._hideWidgets();
-		};
 
 		const hoverOpts = this._editor.getOption(EditorOption.hover);
 		this._isHoverEnabled = hoverOpts.enabled;
 		this._isHoverSticky = hoverOpts.sticky;
 		this._hidingDelay = hoverOpts.hidingDelay;
 		if (this._isHoverEnabled) {
-			this._toUnhook.add(
-				this._editor.onMouseDown((e: IEditorMouseEvent) =>
-					this._onEditorMouseDown(e)
-				)
-			);
-			this._toUnhook.add(
-				this._editor.onMouseUp((e: IEditorMouseEvent) =>
-					this._onEditorMouseUp(e)
-				)
-			);
-			this._toUnhook.add(
-				this._editor.onMouseMove((e: IEditorMouseEvent) =>
-					this._onEditorMouseMove(e)
-				)
-			);
-			this._toUnhook.add(
-				this._editor.onKeyDown((e: IKeyboardEvent) =>
-					this._onKeyDown(e)
-				)
-			);
+			this._toUnhook.add(this._editor.onMouseDown((e: IEditorMouseEvent) => this._onEditorMouseDown(e)));
+			this._toUnhook.add(this._editor.onMouseUp((e: IEditorMouseEvent) => this._onEditorMouseUp(e)));
+			this._toUnhook.add(this._editor.onMouseMove((e: IEditorMouseEvent) => this._onEditorMouseMove(e)));
+			this._toUnhook.add(this._editor.onKeyDown((e: IKeyboardEvent) => this._onKeyDown(e)));
 		} else {
-			this._toUnhook.add(
-				this._editor.onMouseMove((e: IEditorMouseEvent) =>
-					this._onEditorMouseMove(e)
-				)
-			);
-			this._toUnhook.add(
-				this._editor.onKeyDown((e: IKeyboardEvent) =>
-					this._onKeyDown(e)
-				)
-			);
+			this._toUnhook.add(this._editor.onMouseMove((e: IEditorMouseEvent) => this._onEditorMouseMove(e)));
+			this._toUnhook.add(this._editor.onKeyDown((e: IKeyboardEvent) => this._onKeyDown(e)));
 		}
 
-		this._toUnhook.add(
-			this._editor.onMouseLeave((e) => this._onEditorMouseLeave(e))
-		);
-		this._toUnhook.add(
-			this._editor.onDidChangeModel(
-				hideWidgetsCancelSchedulerEventHandler
-			)
-		);
-		this._toUnhook.add(
-			this._editor.onDidChangeModelContent(
-				hideWidgetsCancelSchedulerEventHandler
-			)
-		);
-		this._toUnhook.add(
-			this._editor.onDidScrollChange((e: IScrollEvent) =>
-				this._onEditorScrollChanged(e)
-			)
-		);
+		this._toUnhook.add(this._editor.onMouseLeave((e) => this._onEditorMouseLeave(e)));
+		this._toUnhook.add(this._editor.onDidChangeModel(() => {
+			this._cancelScheduler();
+			this._hideWidgets();
+		}));
+		this._toUnhook.add(this._editor.onDidChangeModelContent(() => this._cancelScheduler()));
+		this._toUnhook.add(this._editor.onDidScrollChange((e: IScrollEvent) => this._onEditorScrollChanged(e)));
 	}
 
 	private _cancelScheduler() {
@@ -208,19 +130,13 @@ export class ModesHoverController
 
 		const target = mouseEvent.target;
 
-		if (
-			target.type === MouseTargetType.CONTENT_WIDGET &&
-			target.detail === ContentHoverWidget.ID
-		) {
+		if (target.type === MouseTargetType.CONTENT_WIDGET && target.detail === ContentHoverWidget.ID) {
 			this._hoverClicked = true;
 			// mouse down on top of content hover widget
 			return;
 		}
 
-		if (
-			target.type === MouseTargetType.OVERLAY_WIDGET &&
-			target.detail === MarginHoverWidget.ID
-		) {
+		if (target.type === MouseTargetType.OVERLAY_WIDGET && target.detail === MarginHoverWidget.ID) {
 			// mouse down on top of overlay hover widget
 			return;
 		}
@@ -239,12 +155,8 @@ export class ModesHoverController
 
 	private _onEditorMouseLeave(mouseEvent: IPartialEditorMouseEvent): void {
 		this._cancelScheduler();
-		const targetEm = mouseEvent.event.browserEvent
-			.relatedTarget as HTMLElement;
-		if (
-			this._contentWidget?.widget.isResizing ||
-			this._contentWidget?.containsNode(targetEm)
-		) {
+		const targetEm = (mouseEvent.event.browserEvent.relatedTarget) as HTMLElement;
+		if (this._contentWidget?.widget.isResizing || this._contentWidget?.containsNode(targetEm)) {
 			// When the content widget is resizing
 			// when the mouse is inside hover widget
 			return;
@@ -257,36 +169,34 @@ export class ModesHoverController
 	private _isMouseOverWidget(mouseEvent: IEditorMouseEvent): boolean {
 		const target = mouseEvent.target;
 		if (
-			this._isHoverSticky &&
-			target.type === MouseTargetType.CONTENT_WIDGET &&
-			target.detail === ContentHoverWidget.ID
+			this._isHoverSticky
+			&& target.type === MouseTargetType.CONTENT_WIDGET
+			&& target.detail === ContentHoverWidget.ID
 		) {
 			// mouse moved on top of content hover widget
 			return true;
 		}
 		if (
-			this._isHoverSticky &&
-			this._contentWidget?.containsNode(
-				mouseEvent.event.browserEvent.view?.document.activeElement
-			) &&
-			!mouseEvent.event.browserEvent.view?.getSelection()?.isCollapsed
+			this._isHoverSticky
+			&& this._contentWidget?.containsNode(mouseEvent.event.browserEvent.view?.document.activeElement)
+			&& !mouseEvent.event.browserEvent.view?.getSelection()?.isCollapsed
 		) {
 			// selected text within content hover widget
 			return true;
 		}
 		if (
-			!this._isHoverSticky &&
-			target.type === MouseTargetType.CONTENT_WIDGET &&
-			target.detail === ContentHoverWidget.ID &&
-			this._contentWidget?.isColorPickerVisible
+			!this._isHoverSticky
+			&& target.type === MouseTargetType.CONTENT_WIDGET
+			&& target.detail === ContentHoverWidget.ID
+			&& this._contentWidget?.isColorPickerVisible
 		) {
 			// though the hover is not sticky, the color picker needs to.
 			return true;
 		}
 		if (
-			this._isHoverSticky &&
-			target.type === MouseTargetType.OVERLAY_WIDGET &&
-			target.detail === MarginHoverWidget.ID
+			this._isHoverSticky
+			&& target.type === MouseTargetType.OVERLAY_WIDGET
+			&& target.detail === MarginHoverWidget.ID
 		) {
 			// mouse moved on top of overlay hover widget
 			return true;
@@ -317,11 +227,7 @@ export class ModesHoverController
 
 		// If the mouse is not over the widget, and if sticky is on,
 		// then give it a grace period before reacting to the mouse event
-		if (
-			this._contentWidget?.isVisible &&
-			this._isHoverSticky &&
-			this._hidingDelay > 0
-		) {
+		if (this._contentWidget?.isVisible && this._isHoverSticky && this._hidingDelay > 0) {
 			if (!this._reactToEditorMouseMoveRunner.isScheduled()) {
 				this._reactToEditorMouseMoveRunner.schedule(this._hidingDelay);
 			}
@@ -330,35 +236,21 @@ export class ModesHoverController
 		this._reactToEditorMouseMove(mouseEvent);
 	}
 
-	private _reactToEditorMouseMove(
-		mouseEvent: IEditorMouseEvent | undefined
-	): void {
+	private _reactToEditorMouseMove(mouseEvent: IEditorMouseEvent | undefined): void {
 		if (!mouseEvent) {
 			return;
 		}
 
 		const target = mouseEvent.target;
 
-		const mouseOnDecorator = target.element?.classList.contains(
-			"colorpicker-color-decoration"
-		);
-		const decoratorActivatedOn = this._editor.getOption(
-			EditorOption.colorDecoratorsActivatedOn
-		);
+		const mouseOnDecorator = target.element?.classList.contains('colorpicker-color-decoration');
+		const decoratorActivatedOn = this._editor.getOption(EditorOption.colorDecoratorsActivatedOn);
 
-		if (
-			(mouseOnDecorator &&
-				((decoratorActivatedOn === "click" &&
-					!this._hoverActivatedByColorDecoratorClick) ||
-					(decoratorActivatedOn === "hover" &&
-						!this._isHoverEnabled &&
-						!_sticky) ||
-					(decoratorActivatedOn === "clickAndHover" &&
-						!this._isHoverEnabled &&
-						!this._hoverActivatedByColorDecoratorClick))) ||
-			(!mouseOnDecorator &&
-				!this._isHoverEnabled &&
-				!this._hoverActivatedByColorDecoratorClick)
+		if ((mouseOnDecorator && (
+			(decoratorActivatedOn === 'click' && !this._hoverActivatedByColorDecoratorClick) ||
+			(decoratorActivatedOn === 'hover' && !this._isHoverEnabled && !_sticky) ||
+			(decoratorActivatedOn === 'clickAndHover' && !this._isHoverEnabled && !this._hoverActivatedByColorDecoratorClick)))
+			|| !mouseOnDecorator && !this._isHoverEnabled && !this._hoverActivatedByColorDecoratorClick
 		) {
 			this._hideWidgets();
 			return;
@@ -371,17 +263,10 @@ export class ModesHoverController
 			return;
 		}
 
-		if (
-			target.type === MouseTargetType.GUTTER_GLYPH_MARGIN &&
-			target.position
-		) {
+		if (target.type === MouseTargetType.GUTTER_GLYPH_MARGIN && target.position) {
 			this._contentWidget?.hide();
 			if (!this._glyphWidget) {
-				this._glyphWidget = new MarginHoverWidget(
-					this._editor,
-					this._languageService,
-					this._openerService
-				);
+				this._glyphWidget = new MarginHoverWidget(this._editor, this._languageService, this._openerService);
 			}
 			this._glyphWidget.startShowingAt(target.position.lineNumber);
 			return;
@@ -397,24 +282,12 @@ export class ModesHoverController
 			return;
 		}
 
-		const resolvedKeyboardEvent = this._keybindingService.softDispatch(
-			e,
-			this._editor.getDomNode()
-		);
+		const resolvedKeyboardEvent = this._keybindingService.softDispatch(e, this._editor.getDomNode());
 		// If the beginning of a multi-chord keybinding is pressed, or the command aims to focus the hover, set the variable to true, otherwise false
-		const mightTriggerFocus =
-			resolvedKeyboardEvent.kind === ResultKind.MoreChordsNeeded ||
-			(resolvedKeyboardEvent.kind === ResultKind.KbFound &&
-				resolvedKeyboardEvent.commandId === "editor.action.showHover" &&
-				this._contentWidget?.isVisible);
+		const mightTriggerFocus = (resolvedKeyboardEvent.kind === ResultKind.MoreChordsNeeded || (resolvedKeyboardEvent.kind === ResultKind.KbFound && resolvedKeyboardEvent.commandId === 'editor.action.showHover' && this._contentWidget?.isVisible));
 
-		if (
-			e.keyCode !== KeyCode.Ctrl &&
-			e.keyCode !== KeyCode.Alt &&
-			e.keyCode !== KeyCode.Meta &&
-			e.keyCode !== KeyCode.Shift &&
-			!mightTriggerFocus
-		) {
+		if (e.keyCode !== KeyCode.Ctrl && e.keyCode !== KeyCode.Alt && e.keyCode !== KeyCode.Meta && e.keyCode !== KeyCode.Shift
+			&& !mightTriggerFocus) {
 			// Do not hide hover when a modifier key is pressed
 			this._hideWidgets();
 		}
@@ -424,12 +297,7 @@ export class ModesHoverController
 		if (_sticky) {
 			return;
 		}
-		if (
-			(this._isMouseDown &&
-				this._hoverClicked &&
-				this._contentWidget?.isColorPickerVisible) ||
-			InlineSuggestionHintsContentWidget.dropDownVisible
-		) {
+		if ((this._isMouseDown && this._hoverClicked && this._contentWidget?.isColorPickerVisible) || InlineSuggestionHintsContentWidget.dropDownVisible) {
 			return;
 		}
 		this._hoverActivatedByColorDecoratorClick = false;
@@ -440,29 +308,14 @@ export class ModesHoverController
 
 	private _getOrCreateContentWidget(): ContentHoverController {
 		if (!this._contentWidget) {
-			this._contentWidget = this._instantiationService.createInstance(
-				ContentHoverController,
-				this._editor
-			);
+			this._contentWidget = this._instantiationService.createInstance(ContentHoverController, this._editor);
 		}
 		return this._contentWidget;
 	}
 
-	public showContentHover(
-		range: Range,
-		mode: HoverStartMode,
-		source: HoverStartSource,
-		focus: boolean,
-		activatedByColorDecoratorClick: boolean = false
-	): void {
-		this._hoverActivatedByColorDecoratorClick =
-			activatedByColorDecoratorClick;
-		this._getOrCreateContentWidget().startShowingAtRange(
-			range,
-			mode,
-			source,
-			focus
-		);
+	public showContentHover(range: Range, mode: HoverStartMode, source: HoverStartSource, focus: boolean, activatedByColorDecoratorClick: boolean = false): void {
+		this._hoverActivatedByColorDecoratorClick = activatedByColorDecoratorClick;
+		this._getOrCreateContentWidget().startShowingAtRange(range, mode, source, focus);
 	}
 
 	public focus(): void {
@@ -518,59 +371,57 @@ export class ModesHoverController
 	}
 }
 
+enum HoverFocusBehavior {
+	NoAutoFocus = 'noAutoFocus',
+	FocusIfVisible = 'focusIfVisible',
+	AutoFocusImmediately = 'autoFocusImmediately'
+}
+
 class ShowOrFocusHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.showHover",
-			label: nls.localize(
-				{
-					key: "showOrFocusHover",
-					comment: [
-						"Label for action that will trigger the showing/focusing of a hover in the editor.",
-						"If the hover is not visible, it will show the hover.",
-						"This allows for users to show the hover without using the mouse.",
-						"If the hover is already visible, it will take focus.",
-					],
-				},
-				"Show or Focus Hover"
-			),
+			id: 'editor.action.showHover',
+			label: nls.localize({
+				key: 'showOrFocusHover',
+				comment: [
+					'Label for action that will trigger the showing/focusing of a hover in the editor.',
+					'If the hover is not visible, it will show the hover.',
+					'This allows for users to show the hover without using the mouse.'
+				]
+			}, "Show or Focus Hover"),
 			metadata: {
 				description: `Show or Focus Hover`,
-				args: [
-					{
-						name: "args",
-						schema: {
-							type: "object",
-							properties: {
-								"focus": {
-									description:
-										"Controls if when triggered with the keyboard, the hover should take focus immediately.",
-									type: "boolean",
-									default: false,
-								},
-							},
+				args: [{
+					name: 'args',
+					schema: {
+						type: 'object',
+						properties: {
+							'focus': {
+								description: 'Controls if and when the hover should take focus upon being triggered by this action.',
+								enum: [HoverFocusBehavior.NoAutoFocus, HoverFocusBehavior.FocusIfVisible, HoverFocusBehavior.AutoFocusImmediately],
+								enumDescriptions: [
+									nls.localize('showOrFocusHover.focus.noAutoFocus', 'The hover will not automatically take focus.'),
+									nls.localize('showOrFocusHover.focus.focusIfVisible', 'The hover will take focus only if it is already visible.'),
+									nls.localize('showOrFocusHover.focus.autoFocusImmediately', 'The hover will automatically take focus when it appears.'),
+								],
+								default: HoverFocusBehavior.FocusIfVisible,
+							}
 						},
-					},
-				],
+					}
+				}]
 			},
-			alias: "Show or Focus Hover",
+			alias: 'Show or Focus Hover',
 			precondition: undefined,
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
-				primary: KeyChord(
-					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyI
-				),
-				weight: KeybindingWeight.EditorContrib,
-			},
+				primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyMod.CtrlCmd | KeyCode.KeyI),
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
-	public run(
-		accessor: ServicesAccessor,
-		editor: ICodeEditor,
-		args: any
-	): void {
+	public run(accessor: ServicesAccessor, editor: ICodeEditor, args: any): void {
 		if (!editor.hasModel()) {
 			return;
 		}
@@ -578,46 +429,49 @@ class ShowOrFocusHoverAction extends EditorAction {
 		if (!controller) {
 			return;
 		}
-		const position = editor.getPosition();
-		const range = new Range(
-			position.lineNumber,
-			position.column,
-			position.lineNumber,
-			position.column
-		);
-		const focus =
-			editor.getOption(EditorOption.accessibilitySupport) ===
-				AccessibilitySupport.Enabled || !!args?.focus;
+
+		const focusArgument = args?.focus;
+		let focusOption = HoverFocusBehavior.FocusIfVisible;
+		if (focusArgument in HoverFocusBehavior) {
+			focusOption = focusArgument;
+		} else if (typeof focusArgument === 'boolean' && focusArgument) {
+			focusOption = HoverFocusBehavior.AutoFocusImmediately;
+		}
+
+		const showContentHover = (focus: boolean) => {
+			const position = editor.getPosition();
+			const range = new Range(position.lineNumber, position.column, position.lineNumber, position.column);
+			controller.showContentHover(range, HoverStartMode.Immediate, HoverStartSource.Keyboard, focus);
+		};
+
+		const accessibilitySupportEnabled = editor.getOption(EditorOption.accessibilitySupport) === AccessibilitySupport.Enabled;
 
 		if (controller.isHoverVisible) {
-			controller.focus();
+			if (focusOption !== HoverFocusBehavior.NoAutoFocus) {
+				controller.focus();
+			} else {
+				showContentHover(accessibilitySupportEnabled);
+			}
 		} else {
-			controller.showContentHover(
-				range,
-				HoverStartMode.Immediate,
-				HoverStartSource.Keyboard,
-				focus
-			);
+			showContentHover(accessibilitySupportEnabled || focusOption === HoverFocusBehavior.AutoFocusImmediately);
 		}
 	}
 }
 
 class ShowDefinitionPreviewHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.showDefinitionPreviewHover",
-			label: nls.localize(
-				{
-					key: "showDefinitionPreviewHover",
-					comment: [
-						"Label for action that will trigger the showing of definition preview hover in the editor.",
-						"This allows for users to show the definition preview hover without using the mouse.",
-					],
-				},
-				"Show Definition Preview Hover"
-			),
-			alias: "Show Definition Preview Hover",
-			precondition: undefined,
+			id: 'editor.action.showDefinitionPreviewHover',
+			label: nls.localize({
+				key: 'showDefinitionPreviewHover',
+				comment: [
+					'Label for action that will trigger the showing of definition preview hover in the editor.',
+					'This allows for users to show the definition preview hover without using the mouse.'
+				]
+			}, "Show Definition Preview Hover"),
+			alias: 'Show Definition Preview Hover',
+			precondition: undefined
 		});
 	}
 
@@ -632,48 +486,36 @@ class ShowDefinitionPreviewHoverAction extends EditorAction {
 			return;
 		}
 
-		const range = new Range(
-			position.lineNumber,
-			position.column,
-			position.lineNumber,
-			position.column
-		);
+		const range = new Range(position.lineNumber, position.column, position.lineNumber, position.column);
 		const goto = GotoDefinitionAtPositionEditorContribution.get(editor);
 		if (!goto) {
 			return;
 		}
 		const promise = goto.startFindDefinitionFromCursor(position);
 		promise.then(() => {
-			controller.showContentHover(
-				range,
-				HoverStartMode.Immediate,
-				HoverStartSource.Keyboard,
-				true
-			);
+			controller.showContentHover(range, HoverStartMode.Immediate, HoverStartSource.Keyboard, true);
 		});
 	}
 }
 
 class ScrollUpHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.scrollUpHover",
-			label: nls.localize(
-				{
-					key: "scrollUpHover",
-					comment: [
-						"Action that allows to scroll up in the hover widget with the up arrow when the hover widget is focused.",
-					],
-				},
-				"Scroll Up Hover"
-			),
-			alias: "Scroll Up Hover",
+			id: 'editor.action.scrollUpHover',
+			label: nls.localize({
+				key: 'scrollUpHover',
+				comment: [
+					'Action that allows to scroll up in the hover widget with the up arrow when the hover widget is focused.'
+				]
+			}, "Scroll Up Hover"),
+			alias: 'Scroll Up Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.UpArrow,
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -687,25 +529,23 @@ class ScrollUpHoverAction extends EditorAction {
 }
 
 class ScrollDownHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.scrollDownHover",
-			label: nls.localize(
-				{
-					key: "scrollDownHover",
-					comment: [
-						"Action that allows to scroll down in the hover widget with the up arrow when the hover widget is focused.",
-					],
-				},
-				"Scroll Down Hover"
-			),
-			alias: "Scroll Down Hover",
+			id: 'editor.action.scrollDownHover',
+			label: nls.localize({
+				key: 'scrollDownHover',
+				comment: [
+					'Action that allows to scroll down in the hover widget with the up arrow when the hover widget is focused.'
+				]
+			}, "Scroll Down Hover"),
+			alias: 'Scroll Down Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.DownArrow,
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -719,25 +559,23 @@ class ScrollDownHoverAction extends EditorAction {
 }
 
 class ScrollLeftHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.scrollLeftHover",
-			label: nls.localize(
-				{
-					key: "scrollLeftHover",
-					comment: [
-						"Action that allows to scroll left in the hover widget with the left arrow when the hover widget is focused.",
-					],
-				},
-				"Scroll Left Hover"
-			),
-			alias: "Scroll Left Hover",
+			id: 'editor.action.scrollLeftHover',
+			label: nls.localize({
+				key: 'scrollLeftHover',
+				comment: [
+					'Action that allows to scroll left in the hover widget with the left arrow when the hover widget is focused.'
+				]
+			}, "Scroll Left Hover"),
+			alias: 'Scroll Left Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.LeftArrow,
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -751,25 +589,23 @@ class ScrollLeftHoverAction extends EditorAction {
 }
 
 class ScrollRightHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.scrollRightHover",
-			label: nls.localize(
-				{
-					key: "scrollRightHover",
-					comment: [
-						"Action that allows to scroll right in the hover widget with the right arrow when the hover widget is focused.",
-					],
-				},
-				"Scroll Right Hover"
-			),
-			alias: "Scroll Right Hover",
+			id: 'editor.action.scrollRightHover',
+			label: nls.localize({
+				key: 'scrollRightHover',
+				comment: [
+					'Action that allows to scroll right in the hover widget with the right arrow when the hover widget is focused.'
+				]
+			}, "Scroll Right Hover"),
+			alias: 'Scroll Right Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.RightArrow,
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -783,26 +619,24 @@ class ScrollRightHoverAction extends EditorAction {
 }
 
 class PageUpHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.pageUpHover",
-			label: nls.localize(
-				{
-					key: "pageUpHover",
-					comment: [
-						"Action that allows to page up in the hover widget with the page up command when the hover widget is focused.",
-					],
-				},
-				"Page Up Hover"
-			),
-			alias: "Page Up Hover",
+			id: 'editor.action.pageUpHover',
+			label: nls.localize({
+				key: 'pageUpHover',
+				comment: [
+					'Action that allows to page up in the hover widget with the page up command when the hover widget is focused.'
+				]
+			}, "Page Up Hover"),
+			alias: 'Page Up Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.PageUp,
 				secondary: [KeyMod.Alt | KeyCode.UpArrow],
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -815,27 +649,26 @@ class PageUpHoverAction extends EditorAction {
 	}
 }
 
+
 class PageDownHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.pageDownHover",
-			label: nls.localize(
-				{
-					key: "pageDownHover",
-					comment: [
-						"Action that allows to page down in the hover widget with the page down command when the hover widget is focused.",
-					],
-				},
-				"Page Down Hover"
-			),
-			alias: "Page Down Hover",
+			id: 'editor.action.pageDownHover',
+			label: nls.localize({
+				key: 'pageDownHover',
+				comment: [
+					'Action that allows to page down in the hover widget with the page down command when the hover widget is focused.'
+				]
+			}, "Page Down Hover"),
+			alias: 'Page Down Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.PageDown,
 				secondary: [KeyMod.Alt | KeyCode.DownArrow],
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -849,26 +682,24 @@ class PageDownHoverAction extends EditorAction {
 }
 
 class GoToTopHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.goToTopHover",
-			label: nls.localize(
-				{
-					key: "goToTopHover",
-					comment: [
-						"Action that allows to go to the top of the hover widget with the home command when the hover widget is focused.",
-					],
-				},
-				"Go To Top Hover"
-			),
-			alias: "Go To Bottom Hover",
+			id: 'editor.action.goToTopHover',
+			label: nls.localize({
+				key: 'goToTopHover',
+				comment: [
+					'Action that allows to go to the top of the hover widget with the home command when the hover widget is focused.'
+				]
+			}, "Go To Top Hover"),
+			alias: 'Go To Bottom Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.Home,
 				secondary: [KeyMod.CtrlCmd | KeyCode.UpArrow],
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -881,27 +712,26 @@ class GoToTopHoverAction extends EditorAction {
 	}
 }
 
+
 class GoToBottomHoverAction extends EditorAction {
+
 	constructor() {
 		super({
-			id: "editor.action.goToBottomHover",
-			label: nls.localize(
-				{
-					key: "goToBottomHover",
-					comment: [
-						"Action that allows to go to the bottom in the hover widget with the end command when the hover widget is focused.",
-					],
-				},
-				"Go To Bottom Hover"
-			),
-			alias: "Go To Bottom Hover",
+			id: 'editor.action.goToBottomHover',
+			label: nls.localize({
+				key: 'goToBottomHover',
+				comment: [
+					'Action that allows to go to the bottom in the hover widget with the end command when the hover widget is focused.'
+				]
+			}, "Go To Bottom Hover"),
+			alias: 'Go To Bottom Hover',
 			precondition: EditorContextKeys.hoverFocused,
 			kbOpts: {
 				kbExpr: EditorContextKeys.hoverFocused,
 				primary: KeyCode.End,
 				secondary: [KeyMod.CtrlCmd | KeyCode.DownArrow],
-				weight: KeybindingWeight.EditorContrib,
-			},
+				weight: KeybindingWeight.EditorContrib
+			}
 		});
 	}
 
@@ -914,11 +744,7 @@ class GoToBottomHoverAction extends EditorAction {
 	}
 }
 
-registerEditorContribution(
-	ModesHoverController.ID,
-	ModesHoverController,
-	EditorContributionInstantiation.BeforeFirstInteraction
-);
+registerEditorContribution(ModesHoverController.ID, ModesHoverController, EditorContributionInstantiation.BeforeFirstInteraction);
 registerEditorAction(ShowOrFocusHoverAction);
 registerEditorAction(ShowDefinitionPreviewHoverAction);
 registerEditorAction(ScrollUpHoverAction);
@@ -936,20 +762,8 @@ HoverParticipantRegistry.register(MarkerHoverParticipant);
 registerThemingParticipant((theme, collector) => {
 	const hoverBorder = theme.getColor(editorHoverBorder);
 	if (hoverBorder) {
-		collector.addRule(
-			`.monaco-editor .monaco-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(
-				0.5
-			)}; }`
-		);
-		collector.addRule(
-			`.monaco-editor .monaco-hover hr { border-top: 1px solid ${hoverBorder.transparent(
-				0.5
-			)}; }`
-		);
-		collector.addRule(
-			`.monaco-editor .monaco-hover hr { border-bottom: 0px solid ${hoverBorder.transparent(
-				0.5
-			)}; }`
-		);
+		collector.addRule(`.monaco-editor .monaco-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
+		collector.addRule(`.monaco-editor .monaco-hover hr { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
+		collector.addRule(`.monaco-editor .monaco-hover hr { border-bottom: 0px solid ${hoverBorder.transparent(0.5)}; }`);
 	}
 });

@@ -3,35 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
-import { Iterable } from "vs/base/common/iterator";
-import {
-	AbstractIncrementalTestCollection,
-	IncrementalChangeCollector,
-	IncrementalTestCollectionItem,
-	InternalTestItem,
-	TestDiffOpType,
-	TestsDiff,
-} from "vs/workbench/contrib/testing/common/testTypes";
-import { IMainThreadTestCollection } from "vs/workbench/contrib/testing/common/testService";
-import { ResourceMap } from "vs/base/common/map";
-import { URI } from "vs/base/common/uri";
+import { Emitter } from 'vs/base/common/event';
+import { Iterable } from 'vs/base/common/iterator';
+import { AbstractIncrementalTestCollection, IncrementalChangeCollector, IncrementalTestCollectionItem, InternalTestItem, TestDiffOpType, TestsDiff } from 'vs/workbench/contrib/testing/common/testTypes';
+import { IMainThreadTestCollection } from 'vs/workbench/contrib/testing/common/testService';
+import { ResourceMap } from 'vs/base/common/map';
+import { URI } from 'vs/base/common/uri';
 
-export class MainThreadTestCollection
-	extends AbstractIncrementalTestCollection<IncrementalTestCollectionItem>
-	implements IMainThreadTestCollection
-{
+export class MainThreadTestCollection extends AbstractIncrementalTestCollection<IncrementalTestCollectionItem> implements IMainThreadTestCollection {
 	private testsByUrl = new ResourceMap<Set<IncrementalTestCollectionItem>>();
 
 	private busyProvidersChangeEmitter = new Emitter<number>();
-	private expandPromises = new WeakMap<
-		IncrementalTestCollectionItem,
-		{
-			pendingLvl: number;
-			doneLvl: number;
-			prom: Promise<void>;
-		}
-	>();
+	private expandPromises = new WeakMap<IncrementalTestCollectionItem, {
+		pendingLvl: number;
+		doneLvl: number;
+		prom: Promise<void>;
+	}>();
 
 	/**
 	 * @inheritdoc
@@ -55,18 +42,12 @@ export class MainThreadTestCollection
 	}
 
 	public get rootIds() {
-		return Iterable.map(this.roots.values(), (r) => r.item.extId);
+		return Iterable.map(this.roots.values(), r => r.item.extId);
 	}
 
-	public readonly onBusyProvidersChange =
-		this.busyProvidersChangeEmitter.event;
+	public readonly onBusyProvidersChange = this.busyProvidersChangeEmitter.event;
 
-	constructor(
-		private readonly expandActual: (
-			id: string,
-			levels: number
-		) => Promise<void>
-	) {
+	constructor(private readonly expandActual: (id: string, levels: number) => Promise<void>) {
 		super();
 	}
 
@@ -86,11 +67,7 @@ export class MainThreadTestCollection
 		}
 
 		const prom = this.expandActual(test.item.extId, levels);
-		const record = {
-			doneLvl: existing ? existing.doneLvl : -1,
-			pendingLvl: levels,
-			prom,
-		};
+		const record = { doneLvl: existing ? existing.doneLvl : -1, pendingLvl: levels, prom };
 		this.expandPromises.set(test, record);
 
 		return prom.then(() => {
@@ -116,12 +93,7 @@ export class MainThreadTestCollection
 	 * @inheritdoc
 	 */
 	public getReviverDiff() {
-		const ops: TestsDiff = [
-			{
-				op: TestDiffOpType.IncrementPendingExtHosts,
-				amount: this.pendingRootCount,
-			},
-		];
+		const ops: TestsDiff = [{ op: TestDiffOpType.IncrementPendingExtHosts, amount: this.pendingRootCount }];
 
 		const queue = [this.rootIds];
 		while (queue.length) {
@@ -133,7 +105,7 @@ export class MainThreadTestCollection
 						controllerId: item.controllerId,
 						expand: item.expand,
 						item: item.item,
-					},
+					}
 				});
 				queue.push(item.children);
 			}
@@ -173,42 +145,39 @@ export class MainThreadTestCollection
 	/**
 	 * @override
 	 */
-	protected createItem(
-		internal: InternalTestItem
-	): IncrementalTestCollectionItem {
+	protected createItem(internal: InternalTestItem): IncrementalTestCollectionItem {
 		return { ...internal, children: new Set() };
 	}
 
-	private readonly changeCollector: IncrementalChangeCollector<IncrementalTestCollectionItem> =
-		{
-			add: (node) => {
-				if (!node.item.uri) {
-					return;
-				}
+	private readonly changeCollector: IncrementalChangeCollector<IncrementalTestCollectionItem> = {
+		add: node => {
+			if (!node.item.uri) {
+				return;
+			}
 
-				const s = this.testsByUrl.get(node.item.uri);
-				if (!s) {
-					this.testsByUrl.set(node.item.uri, new Set([node]));
-				} else {
-					s.add(node);
-				}
-			},
-			remove: (node) => {
-				if (!node.item.uri) {
-					return;
-				}
+			const s = this.testsByUrl.get(node.item.uri);
+			if (!s) {
+				this.testsByUrl.set(node.item.uri, new Set([node]));
+			} else {
+				s.add(node);
+			}
+		},
+		remove: node => {
+			if (!node.item.uri) {
+				return;
+			}
 
-				const s = this.testsByUrl.get(node.item.uri);
-				if (!s) {
-					return;
-				}
+			const s = this.testsByUrl.get(node.item.uri);
+			if (!s) {
+				return;
+			}
 
-				s.delete(node);
-				if (s.size === 0) {
-					this.testsByUrl.delete(node.item.uri);
-				}
-			},
-		};
+			s.delete(node);
+			if (s.size === 0) {
+				this.testsByUrl.delete(node.item.uri);
+			}
+		},
+	};
 
 	protected override createChangeCollector(): IncrementalChangeCollector<IncrementalTestCollectionItem> {
 		return this.changeCollector;

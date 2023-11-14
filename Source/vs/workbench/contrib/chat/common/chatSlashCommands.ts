@@ -3,22 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Emitter, Event } from "vs/base/common/event";
-import {
-	Disposable,
-	IDisposable,
-	combinedDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IProgress } from "vs/platform/progress/common/progress";
-import { IChatMessage } from "vs/workbench/contrib/chat/common/chatProvider";
-import {
-	IChatFollowup,
-	IChatResponseProgressFileTreeData,
-} from "vs/workbench/contrib/chat/common/chatService";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IProgress } from 'vs/platform/progress/common/progress';
+import { IChatMessage } from 'vs/workbench/contrib/chat/common/chatProvider';
+import { IChatFollowup, IChatProgress, IChatResponseProgressFileTreeData } from 'vs/workbench/contrib/chat/common/chatService';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 
 //#region slash service, commands etc
 
@@ -37,48 +29,26 @@ export interface IChatSlashData {
 export interface IChatSlashFragment {
 	content: string | { treeData: IChatResponseProgressFileTreeData };
 }
+export type IChatSlashCallback = { (prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], token: CancellationToken): Promise<{ followUp: IChatFollowup[] } | void> };
 
-export type IChatSlashCallback = {
-	(
-		prompt: string,
-		progress: IProgress<IChatSlashFragment>,
-		history: IChatMessage[],
-		token: CancellationToken
-	): Promise<{ followUp: IChatFollowup[] } | void>;
-};
-
-export const IChatSlashCommandService =
-	createDecorator<IChatSlashCommandService>("chatSlashCommandService");
+export const IChatSlashCommandService = createDecorator<IChatSlashCommandService>('chatSlashCommandService');
 
 /**
- * This currently only exists to drive /clear. Delete this when the agent service can handle that scenario
+ * This currently only exists to drive /clear and /help
  */
 export interface IChatSlashCommandService {
 	_serviceBrand: undefined;
 	readonly onDidChangeCommands: Event<void>;
-	registerSlashData(data: IChatSlashData): IDisposable;
-	registerSlashCallback(id: string, command: IChatSlashCallback): IDisposable;
-	registerSlashCommand(
-		data: IChatSlashData,
-		command: IChatSlashCallback
-	): IDisposable;
-	executeCommand(
-		id: string,
-		prompt: string,
-		progress: IProgress<IChatSlashFragment>,
-		history: IChatMessage[],
-		token: CancellationToken
-	): Promise<{ followUp: IChatFollowup[] } | void>;
+	registerSlashCommand(data: IChatSlashData, command: IChatSlashCallback): IDisposable;
+	executeCommand(id: string, prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], token: CancellationToken): Promise<{ followUp: IChatFollowup[] } | void>;
 	getCommands(): Array<IChatSlashData>;
 	hasCommand(id: string): boolean;
 }
 
 type Tuple = { data: IChatSlashData; command?: IChatSlashCallback };
 
-export class ChatSlashCommandService
-	extends Disposable
-	implements IChatSlashCommandService
-{
+export class ChatSlashCommandService extends Disposable implements IChatSlashCommandService {
+
 	declare _serviceBrand: undefined;
 
 	private readonly _commands = new Map<string, Tuple>();
@@ -86,9 +56,7 @@ export class ChatSlashCommandService
 	private readonly _onDidChangeCommands = this._register(new Emitter<void>());
 	readonly onDidChangeCommands: Event<void> = this._onDidChangeCommands.event;
 
-	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService
-	) {
+	constructor(@IExtensionService private readonly _extensionService: IExtensionService) {
 		super();
 	}
 
@@ -97,13 +65,12 @@ export class ChatSlashCommandService
 		this._commands.clear();
 	}
 
-	registerSlashData(data: IChatSlashData): IDisposable {
+	registerSlashCommand(data: IChatSlashData, command: IChatSlashCallback): IDisposable {
 		if (this._commands.has(data.command)) {
-			throw new Error(
-				`Already registered a command with id ${data.command}}`
-			);
+			throw new Error(`Already registered a command with id ${data.command}}`);
 		}
-		this._commands.set(data.command, { data });
+
+		this._commands.set(data.command, { data, command });
 		this._onDidChangeCommands.fire();
 
 		return toDisposable(() => {
@@ -113,46 +80,18 @@ export class ChatSlashCommandService
 		});
 	}
 
-	registerSlashCallback(
-		id: string,
-		command: IChatSlashCallback
-	): IDisposable {
-		const data = this._commands.get(id);
-		if (!data) {
-			throw new Error(`No command with id ${id} registered`);
-		}
-		data.command = command;
-		return toDisposable(() => (data.command = undefined));
-	}
-
-	registerSlashCommand(
-		data: IChatSlashData,
-		command: IChatSlashCallback
-	): IDisposable {
-		return combinedDisposable(
-			this.registerSlashData(data),
-			this.registerSlashCallback(data.command, command)
-		);
-	}
-
 	getCommands(): Array<IChatSlashData> {
-		return Array.from(this._commands.values(), (v) => v.data);
+		return Array.from(this._commands.values(), v => v.data);
 	}
 
 	hasCommand(id: string): boolean {
 		return this._commands.has(id);
 	}
 
-	async executeCommand(
-		id: string,
-		prompt: string,
-		progress: IProgress<IChatSlashFragment>,
-		history: IChatMessage[],
-		token: CancellationToken
-	): Promise<{ followUp: IChatFollowup[] } | void> {
+	async executeCommand(id: string, prompt: string, progress: IProgress<IChatProgress>, history: IChatMessage[], token: CancellationToken): Promise<{ followUp: IChatFollowup[] } | void> {
 		const data = this._commands.get(id);
 		if (!data) {
-			throw new Error("No command with id ${id} NOT registered");
+			throw new Error('No command with id ${id} NOT registered');
 		}
 		if (!data.command) {
 			await this._extensionService.activateByEvent(`onSlash:${id}`);

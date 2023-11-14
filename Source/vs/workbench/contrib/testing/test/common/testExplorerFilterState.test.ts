@@ -3,16 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from "assert";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
-import { InMemoryStorageService } from "vs/platform/storage/common/storage";
-import {
-	TestExplorerFilterState,
-	TestFilterTerm,
-} from "vs/workbench/contrib/testing/common/testExplorerFilterState";
+import * as assert from 'assert';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
+import { InMemoryStorageService } from 'vs/platform/storage/common/storage';
+import { TestExplorerFilterState, TestFilterTerm } from 'vs/workbench/contrib/testing/common/testExplorerFilterState';
 
-suite("TestExplorerFilterState", () => {
+suite('TestExplorerFilterState', () => {
 	let t: TestExplorerFilterState;
 	let ds: DisposableStore;
 
@@ -24,20 +21,12 @@ suite("TestExplorerFilterState", () => {
 
 	setup(() => {
 		ds = new DisposableStore();
-		t = ds.add(
-			new TestExplorerFilterState(ds.add(new InMemoryStorageService()))
-		);
+		t = ds.add(new TestExplorerFilterState(ds.add(new InMemoryStorageService())));
 	});
 
-	const assertFilteringFor = (expected: {
-		[T in TestFilterTerm]?: boolean;
-	}) => {
+	const assertFilteringFor = (expected: { [T in TestFilterTerm]?: boolean }) => {
 		for (const [term, expectation] of Object.entries(expected)) {
-			assert.strictEqual(
-				t.isFilteringFor(term as TestFilterTerm),
-				expectation,
-				`expected filtering for ${term} === ${expectation}`
-			);
+			assert.strictEqual(t.isFilteringFor(term as TestFilterTerm), expectation, `expected filtering for ${term} === ${expectation}`);
 		}
 	};
 
@@ -48,19 +37,16 @@ suite("TestExplorerFilterState", () => {
 		[TestFilterTerm.Hidden]: false,
 	};
 
-	test("filters simple globs", () => {
-		t.setText("hello, !world");
-		assert.deepStrictEqual(t.globList, [
-			{ text: "hello", include: true },
-			{ text: "world", include: false },
-		]);
+	test('filters simple globs', () => {
+		t.setText('hello, !world');
+		assert.deepStrictEqual(t.globList, [{ text: 'hello', include: true }, { text: 'world', include: false }]);
 		assert.deepStrictEqual(t.includeTags, new Set());
 		assert.deepStrictEqual(t.excludeTags, new Set());
 		assertFilteringFor(termFiltersOff);
 	});
 
-	test("filters to patterns", () => {
-		t.setText("@doc");
+	test('filters to patterns', () => {
+		t.setText('@doc');
 		assert.deepStrictEqual(t.globList, []);
 		assert.deepStrictEqual(t.includeTags, new Set());
 		assert.deepStrictEqual(t.excludeTags, new Set());
@@ -70,41 +56,35 @@ suite("TestExplorerFilterState", () => {
 		});
 	});
 
-	test("filters to tags", () => {
-		t.setText("@hello:world !@foo:bar");
+	test('filters to tags', () => {
+		t.setText('@hello:world !@foo:bar');
 		assert.deepStrictEqual(t.globList, []);
-		assert.deepStrictEqual(t.includeTags, new Set(["hello\0world"]));
-		assert.deepStrictEqual(t.excludeTags, new Set(["foo\0bar"]));
+		assert.deepStrictEqual(t.includeTags, new Set(['hello\0world']));
+		assert.deepStrictEqual(t.excludeTags, new Set(['foo\0bar']));
 		assertFilteringFor(termFiltersOff);
 	});
 
-	test("filters to mixed terms and tags", () => {
-		t.setText("@hello:world foo, !bar @doc !@foo:bar");
-		assert.deepStrictEqual(t.globList, [
-			{ text: "foo", include: true },
-			{ text: "bar", include: false },
-		]);
-		assert.deepStrictEqual(t.includeTags, new Set(["hello\0world"]));
-		assert.deepStrictEqual(t.excludeTags, new Set(["foo\0bar"]));
+	test('filters to mixed terms and tags', () => {
+		t.setText('@hello:world foo, !bar @doc !@foo:bar');
+		assert.deepStrictEqual(t.globList, [{ text: 'foo', include: true }, { text: 'bar', include: false }]);
+		assert.deepStrictEqual(t.includeTags, new Set(['hello\0world']));
+		assert.deepStrictEqual(t.excludeTags, new Set(['foo\0bar']));
 		assertFilteringFor({
 			...termFiltersOff,
 			[TestFilterTerm.CurrentDoc]: true,
 		});
 	});
 
-	test("parses quotes", () => {
-		t.setText("@hello:\"world\" @foo:'bar' baz");
-		assert.deepStrictEqual(t.globList, [{ text: "baz", include: true }]);
-		assert.deepStrictEqual(
-			[...t.includeTags],
-			["hello\0world", "foo\0bar"]
-		);
+	test('parses quotes', () => {
+		t.setText('@hello:"world" @foo:\'bar\' baz');
+		assert.deepStrictEqual(t.globList, [{ text: 'baz', include: true }]);
+		assert.deepStrictEqual([...t.includeTags], ['hello\0world', 'foo\0bar']);
 		assert.deepStrictEqual(t.excludeTags, new Set());
 	});
 
-	test("parses quotes with escapes", () => {
+	test('parses quotes with escapes', () => {
 		t.setText('@hello:"world\\"1" foo');
-		assert.deepStrictEqual(t.globList, [{ text: "foo", include: true }]);
+		assert.deepStrictEqual(t.globList, [{ text: 'foo', include: true }]);
 		assert.deepStrictEqual([...t.includeTags], ['hello\0world"1']);
 		assert.deepStrictEqual(t.excludeTags, new Set());
 	});

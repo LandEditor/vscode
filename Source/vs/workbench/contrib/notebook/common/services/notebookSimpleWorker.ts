@@ -2,31 +2,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { ISequence, LcsDiff } from "vs/base/common/diff/diff";
-import { doHash, hash, numberHash } from "vs/base/common/hash";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { IRequestHandler } from "vs/base/common/worker/simpleWorker";
-import * as model from "vs/editor/common/model";
-import { PieceTreeTextBufferBuilder } from "vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder";
-import {
-	CellKind,
-	ICellDto2,
-	IMainCellDto,
-	INotebookDiffResult,
-	IOutputDto,
-	NotebookCellInternalMetadata,
-	NotebookCellMetadata,
-	NotebookCellsChangedEventDto,
-	NotebookCellsChangeType,
-	NotebookCellTextModelSplice,
-	NotebookData,
-	NotebookDocumentMetadata,
-} from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { Range } from "vs/editor/common/core/range";
-import { INotebookWorkerHost } from "vs/workbench/contrib/notebook/common/services/notebookWorkerHost";
-import { VSBuffer } from "vs/base/common/buffer";
-import { SearchParams } from "vs/editor/common/model/textModelSearch";
+import { ISequence, LcsDiff } from 'vs/base/common/diff/diff';
+import { doHash, hash, numberHash } from 'vs/base/common/hash';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { IRequestHandler } from 'vs/base/common/worker/simpleWorker';
+import * as model from 'vs/editor/common/model';
+import { PieceTreeTextBufferBuilder } from 'vs/editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder';
+import { CellKind, ICellDto2, IMainCellDto, INotebookDiffResult, IOutputDto, NotebookCellInternalMetadata, NotebookCellMetadata, NotebookCellsChangedEventDto, NotebookCellsChangeType, NotebookCellTextModelSplice, NotebookData, NotebookDocumentMetadata } from 'vs/workbench/contrib/notebook/common/notebookCommon';
+import { Range } from 'vs/editor/common/core/range';
+import { INotebookWorkerHost } from 'vs/workbench/contrib/notebook/common/services/notebookWorkerHost';
+import { VSBuffer } from 'vs/base/common/buffer';
+import { SearchParams } from 'vs/editor/common/model/textModelSearch';
 
 function bufferHash(buffer: VSBuffer): number {
 	let initialHashVal = numberHash(104579, 0);
@@ -46,13 +33,9 @@ class MirrorCell {
 		}
 
 		const builder = new PieceTreeTextBufferBuilder();
-		builder.acceptChunk(
-			Array.isArray(this._source) ? this._source.join("\n") : this._source
-		);
+		builder.acceptChunk(Array.isArray(this._source) ? this._source.join('\n') : this._source);
 		const bufferFactory = builder.finish(true);
-		this._textBuffer = bufferFactory.create(
-			model.DefaultEndOfLine.LF
-		).textBuffer;
+		this._textBuffer = bufferFactory.create(model.DefaultEndOfLine.LF).textBuffer;
 
 		return this._textBuffer;
 	}
@@ -75,25 +58,18 @@ class MirrorCell {
 		public cellKind: CellKind,
 		public outputs: IOutputDto[],
 		public metadata?: NotebookCellMetadata,
-		public internalMetadata?: NotebookCellInternalMetadata
-	) {}
+		public internalMetadata?: NotebookCellInternalMetadata,
+
+	) { }
 
 	getFullModelRange() {
 		const lineCount = this.textBuffer.getLineCount();
-		return new Range(
-			1,
-			1,
-			lineCount,
-			this.textBuffer.getLineLength(lineCount) + 1
-		);
+		return new Range(1, 1, lineCount, this.textBuffer.getLineLength(lineCount) + 1);
 	}
 
 	getValue(): string {
 		const fullRange = this.getFullModelRange();
-		return this.textBuffer.getValueInRange(
-			fullRange,
-			model.EndOfLinePreference.LF
-		);
+		return this.textBuffer.getValueInRange(fullRange, model.EndOfLinePreference.LF);
 	}
 
 	getComparisonValue(): number {
@@ -101,19 +77,13 @@ class MirrorCell {
 			return this._primaryKey!;
 		}
 
-		this._hash = hash([
-			hash(this.language),
-			hash(this.getValue()),
-			this.metadata,
-			this.internalMetadata,
-			this.outputs.map((op) => ({
-				outputs: op.outputs.map((output) => ({
-					mime: output.mime,
-					data: bufferHash(output.data),
-				})),
-				metadata: op.metadata,
+		this._hash = hash([hash(this.language), hash(this.getValue()), this.metadata, this.internalMetadata, this.outputs.map(op => ({
+			outputs: op.outputs.map(output => ({
+				mime: output.mime,
+				data: bufferHash(output.data)
 			})),
-		]);
+			metadata: op.metadata
+		}))]);
 		return this._hash;
 	}
 
@@ -122,12 +92,7 @@ class MirrorCell {
 			return this._hash;
 		}
 
-		this._hash = hash([
-			hash(this.getValue()),
-			this.language,
-			this.metadata,
-			this.internalMetadata,
-		]);
+		this._hash = hash([hash(this.getValue()), this.language, this.metadata, this.internalMetadata]);
 		return this._hash;
 	}
 }
@@ -136,14 +101,15 @@ class MirrorNotebookDocument {
 	constructor(
 		readonly uri: URI,
 		public cells: MirrorCell[],
-		public metadata: NotebookDocumentMetadata
-	) {}
+		public metadata: NotebookDocumentMetadata,
+	) {
+	}
 
 	acceptModelChanged(event: NotebookCellsChangedEventDto) {
 		// note that the cell content change is not applied to the MirrorCell
 		// but it's fine as if a cell content is modified after the first diff, its position will not change any more
 		// TODO@rebornix, but it might lead to interesting bugs in the future.
-		event.rawEvents.forEach((e) => {
+		event.rawEvents.forEach(e => {
 			if (e.kind === NotebookCellsChangeType.ModelChange) {
 				this._spliceNotebookCells(e.changes);
 			} else if (e.kind === NotebookCellsChangeType.Move) {
@@ -160,9 +126,7 @@ class MirrorNotebookDocument {
 				this._assertIndex(e.index);
 				const cell = this.cells[e.index];
 				cell.metadata = e.metadata;
-			} else if (
-				e.kind === NotebookCellsChangeType.ChangeCellInternalMetadata
-			) {
+			} else if (e.kind === NotebookCellsChangeType.ChangeCellInternalMetadata) {
 				this._assertIndex(e.index);
 				const cell = this.cells[e.index];
 				cell.internalMetadata = e.internalMetadata;
@@ -172,16 +136,14 @@ class MirrorNotebookDocument {
 
 	private _assertIndex(index: number): void {
 		if (index < 0 || index >= this.cells.length) {
-			throw new Error(
-				`Illegal index ${index}. Cells length: ${this.cells.length}`
-			);
+			throw new Error(`Illegal index ${index}. Cells length: ${this.cells.length}`);
 		}
 	}
 
 	_spliceNotebookCells(splices: NotebookCellTextModelSplice<IMainCellDto>[]) {
-		splices.reverse().forEach((splice) => {
+		splices.reverse().forEach(splice => {
 			const cellDtos = splice[2];
-			const newCells = cellDtos.map((cell) => {
+			const newCells = cellDtos.map(cell => {
 				return new MirrorCell(
 					(cell as unknown as IMainCellDto).handle,
 					cell.source,
@@ -198,7 +160,9 @@ class MirrorNotebookDocument {
 }
 
 class CellSequence implements ISequence {
-	constructor(readonly textModel: MirrorNotebookDocument) {}
+
+	constructor(readonly textModel: MirrorNotebookDocument) {
+	}
 
 	getElements(): string[] | number[] | Int32Array {
 		const hashValue = new Int32Array(this.textModel.cells.length);
@@ -210,17 +174,13 @@ class CellSequence implements ISequence {
 	}
 
 	getCellHash(cell: ICellDto2) {
-		const source = Array.isArray(cell.source)
-			? cell.source.join("\n")
-			: cell.source;
+		const source = Array.isArray(cell.source) ? cell.source.join('\n') : cell.source;
 		const hashVal = hash([hash(source), cell.metadata]);
 		return hashVal;
 	}
 }
 
-export class NotebookEditorSimpleWorker
-	implements IRequestHandler, IDisposable
-{
+export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable {
 	_requestHandlerBrand: any;
 
 	private _models: { [uri: string]: MirrorNotebookDocument };
@@ -228,30 +188,21 @@ export class NotebookEditorSimpleWorker
 	constructor() {
 		this._models = Object.create(null);
 	}
-	dispose(): void {}
-
-	public acceptNewModel(uri: string, data: NotebookData): void {
-		this._models[uri] = new MirrorNotebookDocument(
-			URI.parse(uri),
-			data.cells.map(
-				(dto) =>
-					new MirrorCell(
-						(dto as unknown as IMainCellDto).handle,
-						dto.source,
-						dto.language,
-						dto.cellKind,
-						dto.outputs,
-						dto.metadata
-					)
-			),
-			data.metadata
-		);
+	dispose(): void {
 	}
 
-	public acceptModelChanged(
-		strURL: string,
-		event: NotebookCellsChangedEventDto
-	) {
+	public acceptNewModel(uri: string, data: NotebookData): void {
+		this._models[uri] = new MirrorNotebookDocument(URI.parse(uri), data.cells.map(dto => new MirrorCell(
+			(dto as unknown as IMainCellDto).handle,
+			dto.source,
+			dto.language,
+			dto.cellKind,
+			dto.outputs,
+			dto.metadata
+		)), data.metadata);
+	}
+
+	public acceptModelChanged(strURL: string, event: NotebookCellsChangedEventDto) {
 		const model = this._models[strURL];
 		model?.acceptModelChanged(event);
 	}
@@ -267,10 +218,7 @@ export class NotebookEditorSimpleWorker
 		const original = this._getModel(originalUrl);
 		const modified = this._getModel(modifiedUrl);
 
-		const diff = new LcsDiff(
-			new CellSequence(original),
-			new CellSequence(modified)
-		);
+		const diff = new LcsDiff(new CellSequence(original), new CellSequence(modified));
 		const diffResult = diff.ComputeDiff(false);
 
 		/* let cellLineChanges: { originalCellhandle: number, modifiedCellhandle: number, lineChanges: ILineChange[] }[] = [];
@@ -338,36 +286,21 @@ export class NotebookEditorSimpleWorker
 				continue;
 			}
 
-			if (cell.language !== "python") {
+			if (cell.language !== 'python') {
 				continue;
 			}
 
 			const lineCount = cell.textBuffer.getLineCount();
 			const maxLineCount = Math.min(lineCount, 20);
-			const range = new Range(
-				1,
-				1,
-				maxLineCount,
-				cell.textBuffer.getLineLength(maxLineCount) + 1
-			);
-			const searchParams = new SearchParams(
-				"import\\s*pandas|from\\s*pandas",
-				true,
-				false,
-				null
-			);
+			const range = new Range(1, 1, maxLineCount, cell.textBuffer.getLineLength(maxLineCount) + 1);
+			const searchParams = new SearchParams('import\\s*pandas|from\\s*pandas', true, false, null);
 			const searchData = searchParams.parseSearchRequest();
 
 			if (!searchData) {
 				continue;
 			}
 
-			const cellMatches = cell.textBuffer.findMatchesLineByLine(
-				range,
-				searchData,
-				true,
-				1
-			);
+			const cellMatches = cell.textBuffer.findMatchesLineByLine(range, searchData, true, 1);
 			if (cellMatches.length > 0) {
 				return true;
 			}

@@ -3,72 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from "assert";
-import { DeferredPromise } from "vs/base/common/async";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { mockObject } from "vs/base/test/common/mock";
-import { NullLogService } from "vs/platform/log/common/log";
-import {
-	DebugModel,
-	ExceptionBreakpoint,
-	FunctionBreakpoint,
-	Thread,
-} from "vs/workbench/contrib/debug/common/debugModel";
-import { MockDebugStorage } from "vs/workbench/contrib/debug/test/common/mockDebug";
-import { TestStorageService } from "vs/workbench/test/common/workbenchTestServices";
+import * as assert from 'assert';
+import { DeferredPromise } from 'vs/base/common/async';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { mockObject } from 'vs/base/test/common/mock';
+import { NullLogService } from 'vs/platform/log/common/log';
+import { DebugModel, ExceptionBreakpoint, FunctionBreakpoint, Thread } from 'vs/workbench/contrib/debug/common/debugModel';
+import { MockDebugStorage } from 'vs/workbench/contrib/debug/test/common/mockDebug';
+import { TestStorageService } from 'vs/workbench/test/common/workbenchTestServices';
 
-suite("DebugModel", () => {
-	suite("FunctionBreakpoint", () => {
-		test("Id is saved", () => {
-			const fbp = new FunctionBreakpoint(
-				"function",
-				true,
-				"hit condition",
-				"condition",
-				"log message"
-			);
+suite('DebugModel', () => {
+	suite('FunctionBreakpoint', () => {
+		test('Id is saved', () => {
+			const fbp = new FunctionBreakpoint('function', true, 'hit condition', 'condition', 'log message');
 			const strigified = JSON.stringify(fbp);
 			const parsed = JSON.parse(strigified);
 			assert.equal(parsed.id, fbp.getId());
 		});
 	});
 
-	suite("ExceptionBreakpoint", () => {
-		test("Restored matches new", () => {
-			const ebp = new ExceptionBreakpoint(
-				"id",
-				"label",
-				true,
-				true,
-				"condition",
-				"description",
-				"condition description",
-				false
-			);
+	suite('ExceptionBreakpoint', () => {
+		test('Restored matches new', () => {
+			const ebp = new ExceptionBreakpoint('id', 'label', true, true, 'condition', 'description', 'condition description', false);
 			const strigified = JSON.stringify(ebp);
 			const parsed = JSON.parse(strigified);
-			const newEbp = new ExceptionBreakpoint(
-				parsed.filter,
-				parsed.label,
-				parsed.enabled,
-				parsed.supportsCondition,
-				parsed.condition,
-				parsed.description,
-				parsed.conditionDescription,
-				!!parsed.fallback
-			);
+			const newEbp = new ExceptionBreakpoint(parsed.filter, parsed.label, parsed.enabled, parsed.supportsCondition, parsed.condition, parsed.description, parsed.conditionDescription, !!parsed.fallback);
 			assert.ok(ebp.matches(newEbp));
 		});
 	});
 
-	suite("DebugModel", () => {
-		test("refreshTopOfCallstack resolves all returned promises when called multiple times", async () => {
+	suite('DebugModel', () => {
+		test('refreshTopOfCallstack resolves all returned promises when called multiple times', async () => {
 			const topFrameDeferred = new DeferredPromise<void>();
 			const wholeStackDeferred = new DeferredPromise<void>();
 			const fakeThread = mockObject<Thread>()({
-				session: {
-					capabilities: { supportsDelayedStackTraceLoading: true },
-				} as any,
+				session: { capabilities: { supportsDelayedStackTraceLoading: true } } as any,
 				getCallStack: () => [],
 				getStaleCallStack: () => [],
 			});
@@ -79,12 +48,7 @@ suite("DebugModel", () => {
 
 			const disposable = new DisposableStore();
 			const storage = disposable.add(new TestStorageService());
-			const model = new DebugModel(
-				disposable.add(new MockDebugStorage(storage)),
-				<any>{ isDirty: (e: any) => false },
-				undefined!,
-				new NullLogService()
-			);
+			const model = new DebugModel(disposable.add(new MockDebugStorage(storage)), <any>{ isDirty: (e: any) => false }, undefined!, new NullLogService());
 			disposable.add(model);
 
 			let top1Resolved = false;
@@ -92,12 +56,12 @@ suite("DebugModel", () => {
 			let top2Resolved = false;
 			let whole2Resolved = false;
 			const result1 = model.refreshTopOfCallstack(fakeThread as any);
-			result1.topCallStack.then(() => (top1Resolved = true));
-			result1.wholeCallStack.then(() => (whole1Resolved = true));
+			result1.topCallStack.then(() => top1Resolved = true);
+			result1.wholeCallStack.then(() => whole1Resolved = true);
 
 			const result2 = model.refreshTopOfCallstack(fakeThread as any);
-			result2.topCallStack.then(() => (top2Resolved = true));
-			result2.wholeCallStack.then(() => (whole2Resolved = true));
+			result2.topCallStack.then(() => top2Resolved = true);
+			result2.wholeCallStack.then(() => whole2Resolved = true);
 
 			assert.ok(!top1Resolved);
 			assert.ok(!whole1Resolved);

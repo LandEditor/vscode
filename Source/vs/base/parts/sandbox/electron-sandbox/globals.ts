@@ -3,22 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	globals,
-	INodeProcess,
-	IProcessEnvironment,
-} from "vs/base/common/platform";
-import { ISandboxConfiguration } from "vs/base/parts/sandbox/common/sandboxTypes";
-import {
-	IpcRenderer,
-	ProcessMemoryInfo,
-	WebFrame,
-} from "vs/base/parts/sandbox/electron-sandbox/electronTypes";
+import { INodeProcess, IProcessEnvironment } from 'vs/base/common/platform';
+import { ISandboxConfiguration } from 'vs/base/parts/sandbox/common/sandboxTypes';
+import { IpcRenderer, ProcessMemoryInfo, WebFrame } from 'vs/base/parts/sandbox/electron-sandbox/electronTypes';
 
 /**
  * In Electron renderers we cannot expose all of the `process` global of node.js
  */
 export interface ISandboxNodeProcess extends INodeProcess {
+
 	/**
 	 * The process.platform property returns a string identifying the operating system platform
 	 * on which the Node.js process is running.
@@ -94,6 +87,7 @@ export interface ISandboxNodeProcess extends INodeProcess {
 }
 
 export interface IpcMessagePort {
+
 	/**
 	 * Acquire a `MessagePort`. The main process will transfer the port over to
 	 * the `responseChannel` with a payload of `requestNonce` so that the source can
@@ -107,6 +101,7 @@ export interface IpcMessagePort {
 }
 
 export interface ISandboxContext {
+
 	/**
 	 * A configuration object made accessible from the main side
 	 * to configure the sandbox browser window. Will be `undefined`
@@ -120,20 +115,18 @@ export interface ISandboxContext {
 	resolveConfiguration(): Promise<ISandboxConfiguration>;
 }
 
-export const ipcRenderer: IpcRenderer = globals.vscode.ipcRenderer;
-export const ipcMessagePort: IpcMessagePort = globals.vscode.ipcMessagePort;
-export const webFrame: WebFrame = globals.vscode.webFrame;
-export const process: ISandboxNodeProcess = globals.vscode.process;
-export const context: ISandboxContext = globals.vscode.context;
+const vscodeGlobal = (globalThis as any).vscode;
+export const ipcRenderer: IpcRenderer = vscodeGlobal.ipcRenderer;
+export const ipcMessagePort: IpcMessagePort = vscodeGlobal.ipcMessagePort;
+export const webFrame: WebFrame = vscodeGlobal.webFrame;
+export const process: ISandboxNodeProcess = vscodeGlobal.process;
+export const context: ISandboxContext = vscodeGlobal.context;
 
 /**
  * A set of globals that are available in all windows that either
  * depend on `preload.js` or `preload-aux.js`.
  */
 export interface ISandboxGlobals {
-	readonly ipcRenderer: Pick<
-		import("vs/base/parts/sandbox/electron-sandbox/electronTypes").IpcRenderer,
-		"send" | "invoke"
-	>;
-	readonly webFrame: import("vs/base/parts/sandbox/electron-sandbox/electronTypes").WebFrame;
+	readonly ipcRenderer: Pick<import('vs/base/parts/sandbox/electron-sandbox/electronTypes').IpcRenderer, 'send' | 'invoke'>;
+	readonly webFrame: import('vs/base/parts/sandbox/electron-sandbox/electronTypes').WebFrame;
 }

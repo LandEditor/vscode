@@ -3,157 +3,83 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { join } from "vs/base/common/path";
-import { basename, isEqual, isEqualOrParent } from "vs/base/common/resources";
-import { URI } from "vs/base/common/uri";
-import { Event, Emitter } from "vs/base/common/event";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	IWorkspaceContextService,
-	IWorkspace,
-	WorkbenchState,
-	IWorkspaceFolder,
-	IWorkspaceFoldersChangeEvent,
-	Workspace,
-	IWorkspaceFoldersWillChangeEvent,
-	ISingleFolderWorkspaceIdentifier,
-	IWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
-import { TestWorkspace } from "vs/platform/workspace/test/common/testWorkspace";
-import { ITextResourcePropertiesService } from "vs/editor/common/services/textResourceConfiguration";
-import { isLinux, isMacintosh } from "vs/base/common/platform";
-import {
-	InMemoryStorageService,
-	WillSaveStateReason,
-} from "vs/platform/storage/common/storage";
-import {
-	IWorkingCopy,
-	IWorkingCopyBackup,
-	WorkingCopyCapabilities,
-} from "vs/workbench/services/workingCopy/common/workingCopy";
-import { NullExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import {
-	IWorkingCopyFileService,
-	IWorkingCopyFileOperationParticipant,
-	WorkingCopyFileEvent,
-	IDeleteOperation,
-	ICopyOperation,
-	IMoveOperation,
-	IFileOperationUndoRedoInfo,
-	ICreateFileOperation,
-	ICreateOperation,
-	IStoredFileWorkingCopySaveParticipant,
-} from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import { IDisposable, Disposable } from "vs/base/common/lifecycle";
-import {
-	IBaseFileStat,
-	IFileStatWithMetadata,
-} from "vs/platform/files/common/files";
-import {
-	ISaveOptions,
-	IRevertOptions,
-	SaveReason,
-	GroupIdentifier,
-} from "vs/workbench/common/editor";
-import { CancellationToken } from "vs/base/common/cancellation";
-import product from "vs/platform/product/common/product";
-import {
-	IActivity,
-	IActivityService,
-} from "vs/workbench/services/activity/common/activity";
-import { IStoredFileWorkingCopySaveEvent } from "vs/workbench/services/workingCopy/common/storedFileWorkingCopy";
-import {
-	AbstractLoggerService,
-	ILogger,
-	LogLevel,
-	NullLogger,
-} from "vs/platform/log/common/log";
-import { IResourceEditorInput } from "vs/platform/editor/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IHistoryService } from "vs/workbench/services/history/common/history";
-import {
-	AutoSaveMode,
-	IAutoSaveConfiguration,
-	IFilesConfigurationService,
-} from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import {
-	IWorkspaceTrustEnablementService,
-	IWorkspaceTrustManagementService,
-	IWorkspaceTrustRequestService,
-	IWorkspaceTrustTransitionParticipant,
-	IWorkspaceTrustUriInfo,
-	WorkspaceTrustRequestOptions,
-	WorkspaceTrustUriResponse,
-} from "vs/platform/workspace/common/workspaceTrust";
+import { join } from 'vs/base/common/path';
+import { basename, isEqual, isEqualOrParent } from 'vs/base/common/resources';
+import { URI } from 'vs/base/common/uri';
+import { Event, Emitter } from 'vs/base/common/event';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IWorkspaceContextService, IWorkspace, WorkbenchState, IWorkspaceFolder, IWorkspaceFoldersChangeEvent, Workspace, IWorkspaceFoldersWillChangeEvent, ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
+import { TestWorkspace } from 'vs/platform/workspace/test/common/testWorkspace';
+import { ITextResourcePropertiesService } from 'vs/editor/common/services/textResourceConfiguration';
+import { isLinux, isMacintosh } from 'vs/base/common/platform';
+import { InMemoryStorageService, WillSaveStateReason } from 'vs/platform/storage/common/storage';
+import { IWorkingCopy, IWorkingCopyBackup, WorkingCopyCapabilities } from 'vs/workbench/services/workingCopy/common/workingCopy';
+import { NullExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { IWorkingCopyFileService, IWorkingCopyFileOperationParticipant, WorkingCopyFileEvent, IDeleteOperation, ICopyOperation, IMoveOperation, IFileOperationUndoRedoInfo, ICreateFileOperation, ICreateOperation, IStoredFileWorkingCopySaveParticipant } from 'vs/workbench/services/workingCopy/common/workingCopyFileService';
+import { IDisposable, Disposable } from 'vs/base/common/lifecycle';
+import { IBaseFileStat, IFileStatWithMetadata } from 'vs/platform/files/common/files';
+import { ISaveOptions, IRevertOptions, SaveReason, GroupIdentifier } from 'vs/workbench/common/editor';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import product from 'vs/platform/product/common/product';
+import { IActivity, IActivityService } from 'vs/workbench/services/activity/common/activity';
+import { IStoredFileWorkingCopySaveEvent } from 'vs/workbench/services/workingCopy/common/storedFileWorkingCopy';
+import { AbstractLoggerService, ILogger, LogLevel, NullLogger } from 'vs/platform/log/common/log';
+import { IResourceEditorInput } from 'vs/platform/editor/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IHistoryService } from 'vs/workbench/services/history/common/history';
+import { AutoSaveMode, IAutoSaveConfiguration, IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
+import { IWorkspaceTrustEnablementService, IWorkspaceTrustManagementService, IWorkspaceTrustRequestService, IWorkspaceTrustTransitionParticipant, IWorkspaceTrustUriInfo, WorkspaceTrustRequestOptions, WorkspaceTrustUriResponse } from 'vs/platform/workspace/common/workspaceTrust';
 
 export class TestLoggerService extends AbstractLoggerService {
 	constructor(logsHome?: URI) {
-		super(
-			LogLevel.Info,
-			logsHome ?? URI.file("tests").with({ scheme: "vscode-tests" })
-		);
+		super(LogLevel.Info, logsHome ?? URI.file('tests').with({ scheme: 'vscode-tests' }));
 	}
-	protected doCreateLogger(): ILogger {
-		return new NullLogger();
-	}
+	protected doCreateLogger(): ILogger { return new NullLogger(); }
 }
 
-export class TestTextResourcePropertiesService
-	implements ITextResourcePropertiesService
-{
+export class TestTextResourcePropertiesService implements ITextResourcePropertiesService {
+
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IConfigurationService
-		private readonly configurationService: IConfigurationService
-	) {}
+		@IConfigurationService private readonly configurationService: IConfigurationService,
+	) {
+	}
 
 	getEOL(resource: URI, language?: string): string {
-		const eol = this.configurationService.getValue("files.eol", {
-			overrideIdentifier: language,
-			resource,
-		});
-		if (eol && typeof eol === "string" && eol !== "auto") {
+		const eol = this.configurationService.getValue('files.eol', { overrideIdentifier: language, resource });
+		if (eol && typeof eol === 'string' && eol !== 'auto') {
 			return eol;
 		}
-		return isLinux || isMacintosh ? "\n" : "\r\n";
+		return (isLinux || isMacintosh) ? '\n' : '\r\n';
 	}
 }
 
 export class TestContextService implements IWorkspaceContextService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private workspace: Workspace;
 	private options: object;
 
 	private readonly _onDidChangeWorkspaceName: Emitter<void>;
-	get onDidChangeWorkspaceName(): Event<void> {
-		return this._onDidChangeWorkspaceName.event;
-	}
+	get onDidChangeWorkspaceName(): Event<void> { return this._onDidChangeWorkspaceName.event; }
 
 	private readonly _onWillChangeWorkspaceFolders: Emitter<IWorkspaceFoldersWillChangeEvent>;
-	get onWillChangeWorkspaceFolders(): Event<IWorkspaceFoldersWillChangeEvent> {
-		return this._onWillChangeWorkspaceFolders.event;
-	}
+	get onWillChangeWorkspaceFolders(): Event<IWorkspaceFoldersWillChangeEvent> { return this._onWillChangeWorkspaceFolders.event; }
 
 	private readonly _onDidChangeWorkspaceFolders: Emitter<IWorkspaceFoldersChangeEvent>;
-	get onDidChangeWorkspaceFolders(): Event<IWorkspaceFoldersChangeEvent> {
-		return this._onDidChangeWorkspaceFolders.event;
-	}
+	get onDidChangeWorkspaceFolders(): Event<IWorkspaceFoldersChangeEvent> { return this._onDidChangeWorkspaceFolders.event; }
 
 	private readonly _onDidChangeWorkbenchState: Emitter<WorkbenchState>;
-	get onDidChangeWorkbenchState(): Event<WorkbenchState> {
-		return this._onDidChangeWorkbenchState.event;
-	}
+	get onDidChangeWorkbenchState(): Event<WorkbenchState> { return this._onDidChangeWorkbenchState.event; }
 
 	constructor(workspace = TestWorkspace, options = null) {
 		this.workspace = workspace;
 		this.options = options || Object.create(null);
 		this._onDidChangeWorkspaceName = new Emitter<void>();
-		this._onWillChangeWorkspaceFolders =
-			new Emitter<IWorkspaceFoldersWillChangeEvent>();
-		this._onDidChangeWorkspaceFolders =
-			new Emitter<IWorkspaceFoldersChangeEvent>();
+		this._onWillChangeWorkspaceFolders = new Emitter<IWorkspaceFoldersWillChangeEvent>();
+		this._onDidChangeWorkspaceFolders = new Emitter<IWorkspaceFoldersChangeEvent>();
 		this._onDidChangeWorkbenchState = new Emitter<WorkbenchState>();
 	}
 
@@ -193,7 +119,7 @@ export class TestContextService implements IWorkspaceContextService {
 		return this.options;
 	}
 
-	updateOptions() {}
+	updateOptions() { }
 
 	isInsideWorkspace(resource: URI): boolean {
 		if (resource && this.workspace) {
@@ -204,64 +130,51 @@ export class TestContextService implements IWorkspaceContextService {
 	}
 
 	toResource(workspaceRelativePath: string): URI {
-		return URI.file(join("C:\\", workspaceRelativePath));
+		return URI.file(join('C:\\', workspaceRelativePath));
 	}
 
-	isCurrentWorkspace(
-		workspaceIdOrFolder:
-			| IWorkspaceIdentifier
-			| ISingleFolderWorkspaceIdentifier
-			| URI
-	): boolean {
-		return (
-			URI.isUri(workspaceIdOrFolder) &&
-			isEqual(this.workspace.folders[0].uri, workspaceIdOrFolder)
-		);
+	isCurrentWorkspace(workspaceIdOrFolder: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | URI): boolean {
+		return URI.isUri(workspaceIdOrFolder) && isEqual(this.workspace.folders[0].uri, workspaceIdOrFolder);
 	}
 }
 
 export class TestStorageService extends InMemoryStorageService {
+
 	testEmitWillSaveState(reason: WillSaveStateReason): void {
 		super.emitWillSaveState(reason);
 	}
 }
 
 export class TestHistoryService implements IHistoryService {
+
 	declare readonly _serviceBrand: undefined;
 
-	constructor(private root?: URI) {}
+	constructor(private root?: URI) { }
 
-	async reopenLastClosedEditor(): Promise<void> {}
-	async goForward(): Promise<void> {}
-	async goBack(): Promise<void> {}
-	async goPrevious(): Promise<void> {}
-	async goLast(): Promise<void> {}
-	removeFromHistory(_input: EditorInput | IResourceEditorInput): void {}
-	clear(): void {}
-	clearRecentlyOpened(): void {}
-	getHistory(): readonly (EditorInput | IResourceEditorInput)[] {
-		return [];
-	}
-	async openNextRecentlyUsedEditor(group?: GroupIdentifier): Promise<void> {}
-	async openPreviouslyUsedEditor(group?: GroupIdentifier): Promise<void> {}
-	getLastActiveWorkspaceRoot(_schemeFilter: string): URI | undefined {
-		return this.root;
-	}
-	getLastActiveFile(_schemeFilter: string): URI | undefined {
-		return undefined;
-	}
+	async reopenLastClosedEditor(): Promise<void> { }
+	async goForward(): Promise<void> { }
+	async goBack(): Promise<void> { }
+	async goPrevious(): Promise<void> { }
+	async goLast(): Promise<void> { }
+	removeFromHistory(_input: EditorInput | IResourceEditorInput): void { }
+	clear(): void { }
+	clearRecentlyOpened(): void { }
+	getHistory(): readonly (EditorInput | IResourceEditorInput)[] { return []; }
+	async openNextRecentlyUsedEditor(group?: GroupIdentifier): Promise<void> { }
+	async openPreviouslyUsedEditor(group?: GroupIdentifier): Promise<void> { }
+	getLastActiveWorkspaceRoot(_schemeFilter: string): URI | undefined { return this.root; }
+	getLastActiveFile(_schemeFilter: string): URI | undefined { return undefined; }
 }
 
 export class TestWorkingCopy extends Disposable implements IWorkingCopy {
+
 	private readonly _onDidChangeDirty = this._register(new Emitter<void>());
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
 
 	private readonly _onDidChangeContent = this._register(new Emitter<void>());
 	readonly onDidChangeContent = this._onDidChangeContent.event;
 
-	private readonly _onDidSave = this._register(
-		new Emitter<IStoredFileWorkingCopySaveEvent>()
-	);
+	private readonly _onDidSave = this._register(new Emitter<IStoredFileWorkingCopySaveEvent>());
 	readonly onDidSave = this._onDidSave.event;
 
 	readonly capabilities = WorkingCopyCapabilities.None;
@@ -270,11 +183,7 @@ export class TestWorkingCopy extends Disposable implements IWorkingCopy {
 
 	private dirty = false;
 
-	constructor(
-		readonly resource: URI,
-		isDirty = false,
-		readonly typeId = "testWorkingCopyType"
-	) {
+	constructor(readonly resource: URI, isDirty = false, readonly typeId = 'testWorkingCopyType') {
 		super();
 
 		this.dirty = isDirty;
@@ -299,15 +208,8 @@ export class TestWorkingCopy extends Disposable implements IWorkingCopy {
 		return this.isDirty();
 	}
 
-	async save(
-		options?: ISaveOptions,
-		stat?: IFileStatWithMetadata
-	): Promise<boolean> {
-		this._onDidSave.fire({
-			reason: options?.reason ?? SaveReason.EXPLICIT,
-			stat: stat ?? createFileStat(this.resource),
-			source: options?.source,
-		});
+	async save(options?: ISaveOptions, stat?: IFileStatWithMetadata): Promise<boolean> {
+		this._onDidSave.fire({ reason: options?.reason ?? SaveReason.EXPLICIT, stat: stat ?? createFileStat(this.resource), source: options?.source });
 
 		return true;
 	}
@@ -321,10 +223,7 @@ export class TestWorkingCopy extends Disposable implements IWorkingCopy {
 	}
 }
 
-export function createFileStat(
-	resource: URI,
-	readonly = false
-): IFileStatWithMetadata {
+export function createFileStat(resource: URI, readonly = false): IFileStatWithMetadata {
 	return {
 		resource,
 		etag: Date.now().toString(),
@@ -337,92 +236,47 @@ export function createFileStat(
 		readonly,
 		locked: false,
 		name: basename(resource),
-		children: undefined,
+		children: undefined
 	};
 }
 
 export class TestWorkingCopyFileService implements IWorkingCopyFileService {
+
 	declare readonly _serviceBrand: undefined;
 
 	onWillRunWorkingCopyFileOperation: Event<WorkingCopyFileEvent> = Event.None;
 	onDidFailWorkingCopyFileOperation: Event<WorkingCopyFileEvent> = Event.None;
 	onDidRunWorkingCopyFileOperation: Event<WorkingCopyFileEvent> = Event.None;
 
-	addFileOperationParticipant(
-		participant: IWorkingCopyFileOperationParticipant
-	): IDisposable {
-		return Disposable.None;
-	}
+	addFileOperationParticipant(participant: IWorkingCopyFileOperationParticipant): IDisposable { return Disposable.None; }
 
 	readonly hasSaveParticipants = false;
-	addSaveParticipant(
-		participant: IStoredFileWorkingCopySaveParticipant
-	): IDisposable {
-		return Disposable.None;
-	}
-	async runSaveParticipants(
-		workingCopy: IWorkingCopy,
-		context: { reason: SaveReason },
-		token: CancellationToken
-	): Promise<void> {}
+	addSaveParticipant(participant: IStoredFileWorkingCopySaveParticipant): IDisposable { return Disposable.None; }
+	async runSaveParticipants(workingCopy: IWorkingCopy, context: { reason: SaveReason }, token: CancellationToken): Promise<void> { }
 
-	async delete(
-		operations: IDeleteOperation[],
-		token: CancellationToken,
-		undoInfo?: IFileOperationUndoRedoInfo
-	): Promise<void> {}
+	async delete(operations: IDeleteOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<void> { }
 
-	registerWorkingCopyProvider(
-		provider: (resourceOrFolder: URI) => IWorkingCopy[]
-	): IDisposable {
-		return Disposable.None;
-	}
+	registerWorkingCopyProvider(provider: (resourceOrFolder: URI) => IWorkingCopy[]): IDisposable { return Disposable.None; }
 
-	getDirty(resource: URI): IWorkingCopy[] {
-		return [];
-	}
+	getDirty(resource: URI): IWorkingCopy[] { return []; }
 
-	create(
-		operations: ICreateFileOperation[],
-		token: CancellationToken,
-		undoInfo?: IFileOperationUndoRedoInfo
-	): Promise<IFileStatWithMetadata[]> {
-		throw new Error("Method not implemented.");
-	}
-	createFolder(
-		operations: ICreateOperation[],
-		token: CancellationToken,
-		undoInfo?: IFileOperationUndoRedoInfo
-	): Promise<IFileStatWithMetadata[]> {
-		throw new Error("Method not implemented.");
-	}
+	create(operations: ICreateFileOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<IFileStatWithMetadata[]> { throw new Error('Method not implemented.'); }
+	createFolder(operations: ICreateOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<IFileStatWithMetadata[]> { throw new Error('Method not implemented.'); }
 
-	move(
-		operations: IMoveOperation[],
-		token: CancellationToken,
-		undoInfo?: IFileOperationUndoRedoInfo
-	): Promise<IFileStatWithMetadata[]> {
-		throw new Error("Method not implemented.");
-	}
+	move(operations: IMoveOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<IFileStatWithMetadata[]> { throw new Error('Method not implemented.'); }
 
-	copy(
-		operations: ICopyOperation[],
-		token: CancellationToken,
-		undoInfo?: IFileOperationUndoRedoInfo
-	): Promise<IFileStatWithMetadata[]> {
-		throw new Error("Method not implemented.");
-	}
+	copy(operations: ICopyOperation[], token: CancellationToken, undoInfo?: IFileOperationUndoRedoInfo): Promise<IFileStatWithMetadata[]> { throw new Error('Method not implemented.'); }
 }
 
 export function mock<T>(): Ctor<T> {
-	return function () {} as any;
+	return function () { } as any;
 }
 
 export interface Ctor<T> {
-	new (): T;
+	new(): T;
 }
 
-export class TestExtensionService extends NullExtensionService {}
+export class TestExtensionService extends NullExtensionService { }
 
 export const TestProductService = { _serviceBrand: undefined, ...product };
 
@@ -435,10 +289,7 @@ export class TestActivityService implements IActivityService {
 	getActivity(id: string): IActivity[] {
 		return [];
 	}
-	showViewContainerActivity(
-		viewContainerId: string,
-		badge: IActivity
-	): IDisposable {
+	showViewContainerActivity(viewContainerId: string, badge: IActivity): IDisposable {
 		return this;
 	}
 	showViewActivity(viewId: string, badge: IActivity): IDisposable {
@@ -451,12 +302,11 @@ export class TestActivityService implements IActivityService {
 		return this;
 	}
 
-	dispose() {}
+	dispose() { }
 }
 
-export const NullFilesConfigurationService = new (class
-	implements IFilesConfigurationService
-{
+export const NullFilesConfigurationService = new class implements IFilesConfigurationService {
+
 	_serviceBrand: undefined;
 
 	readonly onAutoSaveConfigurationChange = Event.None;
@@ -466,46 +316,25 @@ export const NullFilesConfigurationService = new (class
 	readonly isHotExitEnabled = false;
 	readonly hotExitConfiguration = undefined;
 
-	getAutoSaveConfiguration(): IAutoSaveConfiguration {
-		throw new Error("Method not implemented.");
-	}
-	getAutoSaveMode(): AutoSaveMode {
-		throw new Error("Method not implemented.");
-	}
-	toggleAutoSave(): Promise<void> {
-		throw new Error("Method not implemented.");
-	}
-	isReadonly(resource: URI, stat?: IBaseFileStat | undefined): boolean {
-		return false;
-	}
-	async updateReadonly(
-		resource: URI,
-		readonly: boolean | "toggle" | "reset"
-	): Promise<void> {}
-	preventSaveConflicts(
-		resource: URI,
-		language?: string | undefined
-	): boolean {
-		throw new Error("Method not implemented.");
-	}
-})();
+	getAutoSaveConfiguration(): IAutoSaveConfiguration { throw new Error('Method not implemented.'); }
+	getAutoSaveMode(): AutoSaveMode { throw new Error('Method not implemented.'); }
+	toggleAutoSave(): Promise<void> { throw new Error('Method not implemented.'); }
+	isReadonly(resource: URI, stat?: IBaseFileStat | undefined): boolean { return false; }
+	async updateReadonly(resource: URI, readonly: boolean | 'toggle' | 'reset'): Promise<void> { }
+	preventSaveConflicts(resource: URI, language?: string | undefined): boolean { throw new Error('Method not implemented.'); }
+};
 
-export class TestWorkspaceTrustEnablementService
-	implements IWorkspaceTrustEnablementService
-{
+export class TestWorkspaceTrustEnablementService implements IWorkspaceTrustEnablementService {
 	_serviceBrand: undefined;
 
-	constructor(private isEnabled: boolean = true) {}
+	constructor(private isEnabled: boolean = true) { }
 
 	isWorkspaceTrustEnabled(): boolean {
 		return this.isEnabled;
 	}
 }
 
-export class TestWorkspaceTrustManagementService
-	extends Disposable
-	implements IWorkspaceTrustManagementService
-{
+export class TestWorkspaceTrustManagementService extends Disposable implements IWorkspaceTrustManagementService {
 	_serviceBrand: undefined;
 
 	private _onDidChangeTrust = this._register(new Emitter<boolean>());
@@ -514,56 +343,54 @@ export class TestWorkspaceTrustManagementService
 	private _onDidChangeTrustedFolders = this._register(new Emitter<void>());
 	onDidChangeTrustedFolders = this._onDidChangeTrustedFolders.event;
 
-	private _onDidInitiateWorkspaceTrustRequestOnStartup = this._register(
-		new Emitter<void>()
-	);
-	onDidInitiateWorkspaceTrustRequestOnStartup =
-		this._onDidInitiateWorkspaceTrustRequestOnStartup.event;
+	private _onDidInitiateWorkspaceTrustRequestOnStartup = this._register(new Emitter<void>());
+	onDidInitiateWorkspaceTrustRequestOnStartup = this._onDidInitiateWorkspaceTrustRequestOnStartup.event;
 
-	constructor(private trusted: boolean = true) {
+
+	constructor(
+		private trusted: boolean = true
+	) {
 		super();
 	}
 
 	get acceptsOutOfWorkspaceFiles(): boolean {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	set acceptsOutOfWorkspaceFiles(value: boolean) {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
-	addWorkspaceTrustTransitionParticipant(
-		participant: IWorkspaceTrustTransitionParticipant
-	): IDisposable {
-		throw new Error("Method not implemented.");
+	addWorkspaceTrustTransitionParticipant(participant: IWorkspaceTrustTransitionParticipant): IDisposable {
+		throw new Error('Method not implemented.');
 	}
 
 	getTrustedUris(): URI[] {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	setParentFolderTrust(trusted: boolean): Promise<void> {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	getUriTrustInfo(uri: URI): Promise<IWorkspaceTrustUriInfo> {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	async setTrustedUris(folders: URI[]): Promise<void> {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	async setUrisTrust(uris: URI[], trusted: boolean): Promise<void> {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	canSetParentFolderTrust(): boolean {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	canSetWorkspaceTrust(): boolean {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	isWorkspaceTrusted(): boolean {
@@ -590,28 +417,17 @@ export class TestWorkspaceTrustManagementService
 	}
 }
 
-export class TestWorkspaceTrustRequestService
-	extends Disposable
-	implements IWorkspaceTrustRequestService
-{
+export class TestWorkspaceTrustRequestService extends Disposable implements IWorkspaceTrustRequestService {
 	_serviceBrand: any;
 
-	private readonly _onDidInitiateOpenFilesTrustRequest = this._register(
-		new Emitter<void>()
-	);
-	readonly onDidInitiateOpenFilesTrustRequest =
-		this._onDidInitiateOpenFilesTrustRequest.event;
+	private readonly _onDidInitiateOpenFilesTrustRequest = this._register(new Emitter<void>());
+	readonly onDidInitiateOpenFilesTrustRequest = this._onDidInitiateOpenFilesTrustRequest.event;
 
-	private readonly _onDidInitiateWorkspaceTrustRequest = this._register(
-		new Emitter<WorkspaceTrustRequestOptions>()
-	);
-	readonly onDidInitiateWorkspaceTrustRequest =
-		this._onDidInitiateWorkspaceTrustRequest.event;
+	private readonly _onDidInitiateWorkspaceTrustRequest = this._register(new Emitter<WorkspaceTrustRequestOptions>());
+	readonly onDidInitiateWorkspaceTrustRequest = this._onDidInitiateWorkspaceTrustRequest.event;
 
-	private readonly _onDidInitiateWorkspaceTrustRequestOnStartup =
-		this._register(new Emitter<void>());
-	readonly onDidInitiateWorkspaceTrustRequestOnStartup =
-		this._onDidInitiateWorkspaceTrustRequestOnStartup.event;
+	private readonly _onDidInitiateWorkspaceTrustRequestOnStartup = this._register(new Emitter<void>());
+	readonly onDidInitiateWorkspaceTrustRequestOnStartup = this._onDidInitiateWorkspaceTrustRequestOnStartup.event;
 
 	constructor(private readonly _trusted: boolean) {
 		super();
@@ -625,28 +441,23 @@ export class TestWorkspaceTrustRequestService
 		return this.requestOpenUrisHandler(uris);
 	}
 
-	async completeOpenFilesTrustRequest(
-		result: WorkspaceTrustUriResponse,
-		saveResponse: boolean
-	): Promise<void> {
-		throw new Error("Method not implemented.");
+	async completeOpenFilesTrustRequest(result: WorkspaceTrustUriResponse, saveResponse: boolean): Promise<void> {
+		throw new Error('Method not implemented.');
 	}
 
 	cancelWorkspaceTrustRequest(): void {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
 	async completeWorkspaceTrustRequest(trusted?: boolean): Promise<void> {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 
-	async requestWorkspaceTrust(
-		options?: WorkspaceTrustRequestOptions
-	): Promise<boolean> {
+	async requestWorkspaceTrust(options?: WorkspaceTrustRequestOptions): Promise<boolean> {
 		return this._trusted;
 	}
 
 	requestWorkspaceTrustOnStartup(): void {
-		throw new Error("Method not implemented.");
+		throw new Error('Method not implemented.');
 	}
 }

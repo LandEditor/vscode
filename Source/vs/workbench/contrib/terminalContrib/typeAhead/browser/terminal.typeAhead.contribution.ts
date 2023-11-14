@@ -3,37 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
-import {
-	ITerminalContribution,
-	ITerminalInstance,
-	IXtermTerminal,
-} from "vs/workbench/contrib/terminal/browser/terminal";
-import { registerTerminalContribution } from "vs/workbench/contrib/terminal/browser/terminalExtensions";
-import { TerminalWidgetManager } from "vs/workbench/contrib/terminal/browser/widgets/widgetManager";
-import { TypeAheadAddon } from "vs/workbench/contrib/terminalContrib/typeAhead/browser/terminalTypeAheadAddon";
-import {
-	ITerminalConfiguration,
-	ITerminalProcessManager,
-	TERMINAL_CONFIG_SECTION,
-} from "vs/workbench/contrib/terminal/common/terminal";
-import type { Terminal as RawXtermTerminal } from "xterm";
+import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { TerminalSettingId } from 'vs/platform/terminal/common/terminal';
+import { ITerminalContribution, ITerminalInstance, IXtermTerminal } from 'vs/workbench/contrib/terminal/browser/terminal';
+import { registerTerminalContribution } from 'vs/workbench/contrib/terminal/browser/terminalExtensions';
+import { TerminalWidgetManager } from 'vs/workbench/contrib/terminal/browser/widgets/widgetManager';
+import { TypeAheadAddon } from 'vs/workbench/contrib/terminalContrib/typeAhead/browser/terminalTypeAheadAddon';
+import { ITerminalConfiguration, ITerminalProcessManager, TERMINAL_CONFIG_SECTION } from 'vs/workbench/contrib/terminal/common/terminal';
+import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
 
-class TerminalTypeAheadContribution
-	extends DisposableStore
-	implements ITerminalContribution
-{
-	static readonly ID = "terminal.typeAhead";
+class TerminalTypeAheadContribution extends DisposableStore implements ITerminalContribution {
+	static readonly ID = 'terminal.typeAhead';
 
-	static get(
-		instance: ITerminalInstance
-	): TerminalTypeAheadContribution | null {
-		return instance.getContribution<TerminalTypeAheadContribution>(
-			TerminalTypeAheadContribution.ID
-		);
+	static get(instance: ITerminalInstance): TerminalTypeAheadContribution | null {
+		return instance.getContribution<TerminalTypeAheadContribution>(TerminalTypeAheadContribution.ID);
 	}
 
 	private _addon: TypeAheadAddon | undefined;
@@ -42,10 +27,8 @@ class TerminalTypeAheadContribution
 		instance: ITerminalInstance,
 		private readonly _processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService
-		private readonly _configurationService: IConfigurationService,
-		@IInstantiationService
-		private readonly _instantiationService: IInstantiationService
+		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 		this.add(toDisposable(() => this._addon?.dispose()));
@@ -53,31 +36,22 @@ class TerminalTypeAheadContribution
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
 		this._loadTypeAheadAddon(xterm.raw);
-		this.add(
-			this._configurationService.onDidChangeConfiguration((e) => {
-				if (
-					e.affectsConfiguration(TerminalSettingId.LocalEchoEnabled)
-				) {
-					this._loadTypeAheadAddon(xterm.raw);
-				}
-			})
-		);
+		this.add(this._configurationService.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration(TerminalSettingId.LocalEchoEnabled)) {
+				this._loadTypeAheadAddon(xterm.raw);
+			}
+		}));
 
 		// Reset the addon when the terminal launches or relaunches
-		this.add(
-			this._processManager.onProcessReady(() => {
-				this._addon?.reset();
-			})
-		);
+		this.add(this._processManager.onProcessReady(() => {
+			this._addon?.reset();
+		}));
 	}
 
 	private _loadTypeAheadAddon(xterm: RawXtermTerminal): void {
-		const enabled =
-			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION
-			).localEchoEnabled;
+		const enabled = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION).localEchoEnabled;
 		const isRemote = !!this._processManager.remoteAuthority;
-		if (enabled === "off" || (enabled === "auto" && !isRemote)) {
+		if (enabled === 'off' || enabled === 'auto' && !isRemote) {
 			this._addon?.dispose();
 			this._addon = undefined;
 			return;
@@ -85,17 +59,11 @@ class TerminalTypeAheadContribution
 		if (this._addon) {
 			return;
 		}
-		if (enabled === "on" || (enabled === "auto" && isRemote)) {
-			this._addon = this._instantiationService.createInstance(
-				TypeAheadAddon,
-				this._processManager
-			);
+		if (enabled === 'on' || (enabled === 'auto' && isRemote)) {
+			this._addon = this._instantiationService.createInstance(TypeAheadAddon, this._processManager);
 			xterm.loadAddon(this._addon);
 		}
 	}
 }
 
-registerTerminalContribution(
-	TerminalTypeAheadContribution.ID,
-	TerminalTypeAheadContribution
-);
+registerTerminalContribution(TerminalTypeAheadContribution.ID, TerminalTypeAheadContribution);
