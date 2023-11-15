@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DocumentSelector } from "vscode-languageclient";
-import { Event, EventEmitter, extensions } from "vscode";
+import { DocumentSelector } from 'vscode-languageclient';
+import { Event, EventEmitter, extensions } from 'vscode';
 
 /**
  * HTML language participant contribution.
@@ -34,21 +34,19 @@ export function getLanguageParticipants(): LanguageParticipants {
 	let autoInsert = new Set<string>();
 
 	function update() {
-		const oldLanguages = languages,
-			oldAutoInsert = autoInsert;
+		const oldLanguages = languages, oldAutoInsert = autoInsert;
 
 		languages = new Set();
-		languages.add("html");
+		languages.add('html');
 		autoInsert = new Set();
-		autoInsert.add("html");
+		autoInsert.add('html');
 
 		for (const extension of extensions.allAcrossExtensionHosts) {
-			const htmlLanguageParticipants = extension.packageJSON?.contributes
-				?.htmlLanguageParticipants as LanguageParticipantContribution[];
+			const htmlLanguageParticipants = extension.packageJSON?.contributes?.htmlLanguageParticipants as LanguageParticipantContribution[];
 			if (Array.isArray(htmlLanguageParticipants)) {
 				for (const htmlLanguageParticipant of htmlLanguageParticipants) {
 					const languageId = htmlLanguageParticipant.languageId;
-					if (typeof languageId === "string") {
+					if (typeof languageId === 'string') {
 						languages.add(languageId);
 						if (htmlLanguageParticipant.autoInsert !== false) {
 							autoInsert.add(languageId);
@@ -57,14 +55,11 @@ export function getLanguageParticipants(): LanguageParticipants {
 				}
 			}
 		}
-		return (
-			!isEqualSet(languages, oldLanguages) ||
-			!isEqualSet(oldLanguages, oldAutoInsert)
-		);
+		return !isEqualSet(languages, oldLanguages) || !isEqualSet(oldLanguages, oldAutoInsert);
 	}
 	update();
 
-	const changeListener = extensions.onDidChange((_) => {
+	const changeListener = extensions.onDidChange(_ => {
 		if (update()) {
 			onDidChangeEmmiter.fire();
 		}
@@ -72,16 +67,10 @@ export function getLanguageParticipants(): LanguageParticipants {
 
 	return {
 		onDidChange: onDidChangeEmmiter.event,
-		get documentSelector() {
-			return Array.from(languages);
-		},
-		hasLanguage(languageId: string) {
-			return languages.has(languageId);
-		},
-		useAutoInsert(languageId: string) {
-			return autoInsert.has(languageId);
-		},
-		dispose: () => changeListener.dispose(),
+		get documentSelector() { return Array.from(languages); },
+		hasLanguage(languageId: string) { return languages.has(languageId); },
+		useAutoInsert(languageId: string) { return autoInsert.has(languageId); },
+		dispose: () => changeListener.dispose()
 	};
 }
 

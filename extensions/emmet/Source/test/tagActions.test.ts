@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "mocha";
-import * as assert from "assert";
-import { Selection, workspace, ConfigurationTarget } from "vscode";
-import { withRandomFileEditor, closeAllEditors } from "./testUtils";
-import { removeTag } from "../removeTag";
-import { updateTag } from "../updateTag";
-import { matchTag } from "../matchTag";
-import { splitJoinTag } from "../splitJoinTag";
-import { mergeLines } from "../mergeLines";
+import 'mocha';
+import * as assert from 'assert';
+import { Selection, workspace, ConfigurationTarget } from 'vscode';
+import { withRandomFileEditor, closeAllEditors } from './testUtils';
+import { removeTag } from '../removeTag';
+import { updateTag } from '../updateTag';
+import { matchTag } from '../matchTag';
+import { splitJoinTag } from '../splitJoinTag';
+import { mergeLines } from '../mergeLines';
 
-suite("Tests for Emmet actions on html tags", () => {
+suite('Tests for Emmet actions on html tags', () => {
 	teardown(closeAllEditors);
 
 	const contents = `
@@ -54,7 +54,7 @@ suite("Tests for Emmet actions on html tags", () => {
 	</script>
 	`;
 
-	test("update tag with multiple cursors", () => {
+	test('update tag with multiple cursors', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -65,14 +65,14 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span/>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 17, 3, 17), // cursor inside tags
 				new Selection(4, 5, 4, 5), // cursor inside opening tag
 				new Selection(5, 35, 5, 35), // cursor inside closing tag
 			];
 
-			return updateTag("section")!.then(() => {
+			return updateTag('section')!.then(() => {
 				assert.strictEqual(doc.getText(), expectedContents);
 				return Promise.resolve();
 			});
@@ -80,7 +80,7 @@ suite("Tests for Emmet actions on html tags", () => {
 	});
 
 	// #region update tag
-	test("update tag with entire node selected", () => {
+	test('update tag with entire node selected', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -91,20 +91,20 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span/>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 7, 3, 25),
 				new Selection(5, 3, 5, 39),
 			];
 
-			return updateTag("section")!.then(() => {
+			return updateTag('section')!.then(() => {
 				assert.strictEqual(doc.getText(), expectedContents);
 				return Promise.resolve();
 			});
 		});
 	});
 
-	test("update tag with template", () => {
+	test('update tag with template', () => {
 		const expectedContents = `
 	<script type="text/template">
 		<section>
@@ -116,25 +116,21 @@ suite("Tests for Emmet actions on html tags", () => {
 	</script>
 	`;
 
-		return withRandomFileEditor(
-			contentsWithTemplate,
-			"html",
-			(editor, doc) => {
-				editor.selections = [
-					new Selection(2, 4, 2, 4), // cursor inside ul tag
-				];
+		return withRandomFileEditor(contentsWithTemplate, 'html', (editor, doc) => {
+			editor.selections = [
+				new Selection(2, 4, 2, 4), // cursor inside ul tag
+			];
 
-				return updateTag("section")!.then(() => {
-					assert.strictEqual(doc.getText(), expectedContents);
-					return Promise.resolve();
-				});
-			}
-		);
+			return updateTag('section')!.then(() => {
+				assert.strictEqual(doc.getText(), expectedContents);
+				return Promise.resolve();
+			});
+		});
 	});
 	// #endregion
 
 	// #region remove tag
-	test("remove tag with multiple cursors", () => {
+	test('remove tag with multiple cursors', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -145,7 +141,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span/>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 17, 3, 17), // cursor inside tags
 				new Selection(4, 5, 4, 5), // cursor inside opening tag
@@ -159,7 +155,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("remove tag with boundary conditions", () => {
+	test('remove tag with boundary conditions', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -171,7 +167,7 @@ suite("Tests for Emmet actions on html tags", () => {
 	</div>
 	`;
 
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 7, 3, 25),
 				new Selection(5, 3, 5, 39),
@@ -184,7 +180,8 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("remove tag with template", () => {
+
+	test('remove tag with template', () => {
 		const expectedContents = `
 	<script type="text/template">
 		<li><span>Hello</span></li>
@@ -193,23 +190,19 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span/>
 	</script>
 	`;
-		return withRandomFileEditor(
-			contentsWithTemplate,
-			"html",
-			(editor, doc) => {
-				editor.selections = [
-					new Selection(2, 4, 2, 4), // cursor inside ul tag
-				];
+		return withRandomFileEditor(contentsWithTemplate, 'html', (editor, doc) => {
+			editor.selections = [
+				new Selection(2, 4, 2, 4), // cursor inside ul tag
+			];
 
-				return removeTag()!.then(() => {
-					assert.strictEqual(doc.getText(), expectedContents);
-					return Promise.resolve();
-				});
-			}
-		);
+			return removeTag()!.then(() => {
+				assert.strictEqual(doc.getText(), expectedContents);
+				return Promise.resolve();
+			});
+		});
 	});
 
-	test("remove tag with extra trim", () => {
+	test('remove tag with extra trim', () => {
 		const expectedContents = `
 	<div class="hello">
 		<li><span>Hello</span></li>
@@ -220,7 +213,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span/>
 	</div>
 	`;
-		return withRandomFileEditor(spacedContents, "html", (editor, doc) => {
+		return withRandomFileEditor(spacedContents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(2, 4, 2, 4), // cursor inside ul tag
 			];
@@ -234,7 +227,7 @@ suite("Tests for Emmet actions on html tags", () => {
 	// #endregion
 
 	// #region split/join tag
-	test("split/join tag with multiple cursors", () => {
+	test('split/join tag with multiple cursors', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -245,7 +238,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span></span>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 17, 3, 17), // join tag
 				new Selection(7, 5, 7, 5), // split tag
@@ -258,7 +251,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("split/join tag with boundary selection", () => {
+	test('split/join tag with boundary selection', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -269,7 +262,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span></span>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 7, 3, 25), // join tag
 				new Selection(7, 2, 7, 9), // split tag
@@ -282,7 +275,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("split/join tag with templates", () => {
+	test('split/join tag with templates', () => {
 		const expectedContents = `
 	<script type="text/template">
 		<ul>
@@ -293,24 +286,20 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span></span>
 	</script>
 	`;
-		return withRandomFileEditor(
-			contentsWithTemplate,
-			"html",
-			(editor, doc) => {
-				editor.selections = [
-					new Selection(3, 17, 3, 17), // join tag
-					new Selection(7, 5, 7, 5), // split tag
-				];
+		return withRandomFileEditor(contentsWithTemplate, 'html', (editor, doc) => {
+			editor.selections = [
+				new Selection(3, 17, 3, 17), // join tag
+				new Selection(7, 5, 7, 5), // split tag
+			];
 
-				return splitJoinTag()!.then(() => {
-					assert.strictEqual(doc.getText(), expectedContents);
-					return Promise.resolve();
-				});
-			}
-		);
+			return splitJoinTag()!.then(() => {
+				assert.strictEqual(doc.getText(), expectedContents);
+				return Promise.resolve();
+			});
+		});
 	});
 
-	test("split/join tag in jsx with xhtml self closing tag", () => {
+	test('split/join tag in jsx with xhtml self closing tag', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul>
@@ -321,43 +310,26 @@ suite("Tests for Emmet actions on html tags", () => {
 		<span></span>
 	</div>
 	`;
-		const oldValueForSyntaxProfiles = workspace
-			.getConfiguration("emmet")
-			.inspect("syntaxProfiles");
-		return workspace
-			.getConfiguration("emmet")
-			.update(
-				"syntaxProfiles",
-				{ jsx: { selfClosingStyle: "xhtml" } },
-				ConfigurationTarget.Global
-			)
-			.then(() => {
-				return withRandomFileEditor(contents, "jsx", (editor, doc) => {
-					editor.selections = [
-						new Selection(3, 17, 3, 17), // join tag
-						new Selection(7, 5, 7, 5), // split tag
-					];
+		const oldValueForSyntaxProfiles = workspace.getConfiguration('emmet').inspect('syntaxProfiles');
+		return workspace.getConfiguration('emmet').update('syntaxProfiles', { jsx: { selfClosingStyle: 'xhtml' } }, ConfigurationTarget.Global).then(() => {
+			return withRandomFileEditor(contents, 'jsx', (editor, doc) => {
+				editor.selections = [
+					new Selection(3, 17, 3, 17), // join tag
+					new Selection(7, 5, 7, 5), // split tag
+				];
 
-					return splitJoinTag()!.then(() => {
-						assert.strictEqual(doc.getText(), expectedContents);
-						return workspace
-							.getConfiguration("emmet")
-							.update(
-								"syntaxProfiles",
-								oldValueForSyntaxProfiles
-									? oldValueForSyntaxProfiles.globalValue
-									: undefined,
-								ConfigurationTarget.Global
-							);
-					});
+				return splitJoinTag()!.then(() => {
+					assert.strictEqual(doc.getText(), expectedContents);
+					return workspace.getConfiguration('emmet').update('syntaxProfiles', oldValueForSyntaxProfiles ? oldValueForSyntaxProfiles.globalValue : undefined, ConfigurationTarget.Global);
 				});
 			});
+		});
 	});
 	// #endregion
 
 	// #region match tag
-	test("match tag with multiple cursors", () => {
-		return withRandomFileEditor(contents, "html", (editor, _) => {
+	test('match tag with multiple cursors', () => {
+		return withRandomFileEditor(contents, 'html', (editor, _) => {
 			editor.selections = [
 				new Selection(1, 0, 1, 0), // just before tag starts, i.e before <
 				new Selection(1, 1, 1, 1), // just before tag name starts
@@ -369,7 +341,7 @@ suite("Tests for Emmet actions on html tags", () => {
 
 			matchTag();
 
-			editor.selections.forEach((selection) => {
+			editor.selections.forEach(selection => {
 				assert.strictEqual(selection.active.line, 8);
 				assert.strictEqual(selection.active.character, 3);
 				assert.strictEqual(selection.anchor.line, 8);
@@ -380,7 +352,7 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("match tag with template scripts", () => {
+	test('match tag with template scripts', () => {
 		const templateScript = `
 	<script type="text/template">
 		<div>
@@ -388,14 +360,14 @@ suite("Tests for Emmet actions on html tags", () => {
 		</div>
 	</script>`;
 
-		return withRandomFileEditor(templateScript, "html", (editor, _) => {
+		return withRandomFileEditor(templateScript, 'html', (editor, _) => {
 			editor.selections = [
 				new Selection(2, 2, 2, 2), // just before div tag starts, i.e before <
 			];
 
 			matchTag();
 
-			editor.selections.forEach((selection) => {
+			editor.selections.forEach(selection => {
 				assert.strictEqual(selection.active.line, 4);
 				assert.strictEqual(selection.active.character, 4);
 				assert.strictEqual(selection.anchor.line, 4);
@@ -409,15 +381,17 @@ suite("Tests for Emmet actions on html tags", () => {
 	// #endregion
 
 	// #region merge lines
-	test("merge lines of tag with children when empty selection", () => {
+	test('merge lines of tag with children when empty selection', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul><li><span>Hello</span></li><li><span>There</span></li><div><li><span>Bye</span></li></div></ul>
 		<span/>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
-			editor.selections = [new Selection(2, 3, 2, 3)];
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
+			editor.selections = [
+				new Selection(2, 3, 2, 3)
+			];
 
 			return mergeLines()!.then(() => {
 				assert.strictEqual(doc.getText(), expectedContents);
@@ -426,15 +400,17 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("merge lines of tag with children when full node selection", () => {
+	test('merge lines of tag with children when full node selection', () => {
 		const expectedContents = `
 	<div class="hello">
 		<ul><li><span>Hello</span></li><li><span>There</span></li><div><li><span>Bye</span></li></div></ul>
 		<span/>
 	</div>
 	`;
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
-			editor.selections = [new Selection(2, 3, 6, 7)];
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
+			editor.selections = [
+				new Selection(2, 3, 6, 7)
+			];
 
 			return mergeLines()!.then(() => {
 				assert.strictEqual(doc.getText(), expectedContents);
@@ -443,12 +419,12 @@ suite("Tests for Emmet actions on html tags", () => {
 		});
 	});
 
-	test("merge lines is no-op when start and end nodes are on the same line", () => {
-		return withRandomFileEditor(contents, "html", (editor, doc) => {
+	test('merge lines is no-op when start and end nodes are on the same line', () => {
+		return withRandomFileEditor(contents, 'html', (editor, doc) => {
 			editor.selections = [
 				new Selection(3, 9, 3, 9), // cursor is inside the <span> in <li><span>Hello</span></li>
 				new Selection(4, 5, 4, 5), // cursor is inside the <li> in <li><span>Hello</span></li>
-				new Selection(5, 5, 5, 20), // selection spans multiple nodes in the same line
+				new Selection(5, 5, 5, 20) // selection spans multiple nodes in the same line
 			];
 
 			return mergeLines()!.then(() => {
@@ -459,3 +435,4 @@ suite("Tests for Emmet actions on html tags", () => {
 	});
 	// #endregion
 });
+

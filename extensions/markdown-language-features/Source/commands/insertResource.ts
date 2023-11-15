@@ -3,19 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { Utils } from "vscode-uri";
-import { Command } from "../commandManager";
-import {
-	createUriListSnippet,
-	mediaFileExtensions,
-} from "../languageFeatures/copyFiles/shared";
-import { coalesce } from "../util/arrays";
-import { getParentDocumentUri } from "../util/document";
-import { Schemes } from "../util/schemes";
+import * as vscode from 'vscode';
+import { Utils } from 'vscode-uri';
+import { Command } from '../commandManager';
+import { createUriListSnippet, mediaFileExtensions } from '../languageFeatures/copyFiles/shared';
+import { coalesce } from '../util/arrays';
+import { getParentDocumentUri } from '../util/document';
+import { Schemes } from '../util/schemes';
+
 
 export class InsertLinkFromWorkspace implements Command {
-	public readonly id = "markdown.editor.insertLinkFromWorkspace";
+	public readonly id = 'markdown.editor.insertLinkFromWorkspace';
 
 	public async execute(resources?: vscode.Uri[]) {
 		const activeEditor = vscode.window.activeTextEditor;
@@ -37,7 +35,7 @@ export class InsertLinkFromWorkspace implements Command {
 }
 
 export class InsertImageFromWorkspace implements Command {
-	public readonly id = "markdown.editor.insertImageFromWorkspace";
+	public readonly id = 'markdown.editor.insertImageFromWorkspace';
 
 	public async execute(resources?: vscode.Uri[]) {
 		const activeEditor = vscode.window.activeTextEditor;
@@ -50,9 +48,7 @@ export class InsertImageFromWorkspace implements Command {
 			canSelectFolders: false,
 			canSelectMany: true,
 			filters: {
-				[vscode.l10n.t("Media")]: Array.from(
-					mediaFileExtensions.keys()
-				),
+				[vscode.l10n.t("Media")]: Array.from(mediaFileExtensions.keys())
 			},
 			openLabel: vscode.l10n.t("Insert image"),
 			title: vscode.l10n.t("Insert image"),
@@ -71,58 +67,27 @@ function getDefaultUri(document: vscode.TextDocument) {
 	return Utils.dirname(docUri);
 }
 
-async function insertLink(
-	activeEditor: vscode.TextEditor,
-	selectedFiles: vscode.Uri[],
-	insertAsImage: boolean
-): Promise<void> {
+async function insertLink(activeEditor: vscode.TextEditor, selectedFiles: vscode.Uri[], insertAsImage: boolean): Promise<void> {
 	if (!selectedFiles.length) {
 		return;
 	}
 
-	const edit = createInsertLinkEdit(
-		activeEditor,
-		selectedFiles,
-		insertAsImage
-	);
+	const edit = createInsertLinkEdit(activeEditor, selectedFiles, insertAsImage);
 	await vscode.workspace.applyEdit(edit);
 }
 
-function createInsertLinkEdit(
-	activeEditor: vscode.TextEditor,
-	selectedFiles: vscode.Uri[],
-	insertAsMedia: boolean,
-	title = "",
-	placeholderValue = 0,
-	pasteAsMarkdownLink = true,
-	isExternalLink = false
-) {
-	const snippetEdits = coalesce(
-		activeEditor.selections.map(
-			(selection, i): vscode.SnippetTextEdit | undefined => {
-				const selectionText = activeEditor.document.getText(selection);
-				const snippet = createUriListSnippet(
-					activeEditor.document,
-					selectedFiles,
-					[],
-					title,
-					placeholderValue,
-					pasteAsMarkdownLink,
-					isExternalLink,
-					{
-						insertAsMedia,
-						placeholderText: selectionText,
-						placeholderStartIndex: (i + 1) * selectedFiles.length,
-						separator: insertAsMedia ? "\n" : " ",
-					}
-				);
+function createInsertLinkEdit(activeEditor: vscode.TextEditor, selectedFiles: vscode.Uri[], insertAsMedia: boolean, title = '', placeholderValue = 0, pasteAsMarkdownLink = true, isExternalLink = false) {
+	const snippetEdits = coalesce(activeEditor.selections.map((selection, i): vscode.SnippetTextEdit | undefined => {
+		const selectionText = activeEditor.document.getText(selection);
+		const snippet = createUriListSnippet(activeEditor.document, selectedFiles, [], title, placeholderValue, pasteAsMarkdownLink, isExternalLink, {
+			insertAsMedia,
+			placeholderText: selectionText,
+			placeholderStartIndex: (i + 1) * selectedFiles.length,
+			separator: insertAsMedia ? '\n' : ' ',
+		});
 
-				return snippet
-					? new vscode.SnippetTextEdit(selection, snippet.snippet)
-					: undefined;
-			}
-		)
-	);
+		return snippet ? new vscode.SnippetTextEdit(selection, snippet.snippet) : undefined;
+	}));
 
 	const edit = new vscode.WorkspaceEdit();
 	edit.set(activeEditor.document.uri, snippetEdits);

@@ -3,23 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Application,
-	Terminal,
-	TerminalCommandId,
-	Logger,
-} from "../../../../automation";
-import { installAllHandlers } from "../../utils";
-import { setup as setupTerminalEditorsTests } from "./terminal-editors.test";
-import { setup as setupTerminalInputTests } from "./terminal-input.test";
-import { setup as setupTerminalPersistenceTests } from "./terminal-persistence.test";
-import { setup as setupTerminalProfileTests } from "./terminal-profiles.test";
-import { setup as setupTerminalTabsTests } from "./terminal-tabs.test";
-import { setup as setupTerminalSplitCwdTests } from "./terminal-splitCwd.test";
-import { setup as setupTerminalShellIntegrationTests } from "./terminal-shellIntegration.test";
+import { Application, Terminal, TerminalCommandId, Logger } from '../../../../automation';
+import { installAllHandlers } from '../../utils';
+import { setup as setupTerminalEditorsTests } from './terminal-editors.test';
+import { setup as setupTerminalInputTests } from './terminal-input.test';
+import { setup as setupTerminalPersistenceTests } from './terminal-persistence.test';
+import { setup as setupTerminalProfileTests } from './terminal-profiles.test';
+import { setup as setupTerminalTabsTests } from './terminal-tabs.test';
+import { setup as setupTerminalSplitCwdTests } from './terminal-splitCwd.test';
+import { setup as setupTerminalStickyScrollTests } from './terminal-stickyScroll.test';
+import { setup as setupTerminalShellIntegrationTests } from './terminal-shellIntegration.test';
 
 export function setup(logger: Logger) {
-	describe("Terminal", function () {
+	describe('Terminal', function () {
+
 		// Retry tests 3 times to minimize build failures due to any flakiness
 		this.retries(3);
 
@@ -45,7 +42,8 @@ export function setup(logger: Logger) {
 		setupTerminalProfileTests();
 		setupTerminalTabsTests();
 		setupTerminalShellIntegrationTests();
-		if (!process.platform.startsWith("win")) {
+		setupTerminalStickyScrollTests();
+		if (!process.platform.startsWith('win')) {
 			setupTerminalSplitCwdTests();
 		}
 	});

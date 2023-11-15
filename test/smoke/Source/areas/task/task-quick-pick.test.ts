@@ -3,15 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Application,
-	Task,
-	Terminal,
-	TerminalCommandId,
-} from "../../../../automation/";
+import { Application, Task, Terminal, TerminalCommandId } from '../../../../automation/';
 
 export function setup() {
-	describe("Task Quick Pick", () => {
+	describe('Task Quick Pick', () => {
 		let app: Application;
 		let task: Task;
 		let terminal: Terminal;
@@ -28,82 +23,47 @@ export function setup() {
 			await terminal.runCommand(TerminalCommandId.KillAll);
 		});
 
-		describe("Tasks: Run Task", () => {
+		describe('Tasks: Run Task', () => {
 			const label = "name";
 			const type = "shell";
 			const command = "echo 'test'";
-			it("hide property - true", async () => {
+			it('hide property - true', async () => {
 				await task.configureTask({ type, command, label, hide: true });
-				await task.assertTasks(label, [], "run");
+				await task.assertTasks(label, [], 'run');
 			});
-			it("hide property - false", async () => {
+			it('hide property - false', async () => {
 				await task.configureTask({ type, command, label, hide: false });
-				await task.assertTasks(label, [{ label }], "run");
+				await task.assertTasks(label, [{ label }], 'run');
 			});
-			it("hide property - undefined", async () => {
+			it('hide property - undefined', async () => {
 				await task.configureTask({ type, command, label });
-				await task.assertTasks(label, [{ label }], "run");
+				await task.assertTasks(label, [{ label }], 'run');
 			});
-			it("icon - icon only", async () => {
-				const config = {
-					label,
-					type,
-					command,
-					icon: { id: "lightbulb" },
-				};
+			it('icon - icon only', async () => {
+				const config = { label, type, command, icon: { id: "lightbulb" } };
 				await task.configureTask(config);
-				await task.assertTasks(label, [config], "run");
+				await task.assertTasks(label, [config], 'run');
 			});
-			it("icon - color only", async () => {
-				const config = {
-					label,
-					type,
-					command,
-					icon: { color: "terminal.ansiRed" },
-				};
+			it('icon - color only', async () => {
+				const config = { label, type, command, icon: { color: "terminal.ansiRed" } };
 				await task.configureTask(config);
-				await task.assertTasks(
-					label,
-					[{ label, type, command, icon: { color: "Red" } }],
-					"run"
-				);
+				await task.assertTasks(label, [{ label, type, command, icon: { color: "Red" } }], 'run');
 			});
-			it("icon - icon & color", async () => {
-				const config = {
-					label,
-					type,
-					command,
-					icon: { id: "lightbulb", color: "terminal.ansiRed" },
-				};
+			it('icon - icon & color', async () => {
+				const config = { label, type, command, icon: { id: "lightbulb", color: "terminal.ansiRed" } };
 				await task.configureTask(config);
-				await task.assertTasks(
-					label,
-					[
-						{
-							label,
-							type,
-							command,
-							icon: { id: "lightbulb", color: "Red" },
-						},
-					],
-					"run"
-				);
+				await task.assertTasks(label, [{ label, type, command, icon: { id: "lightbulb", color: "Red" } }], 'run');
 			});
 		});
 		//TODO: why won't this command run
-		describe.skip("Tasks: Configure Task", () => {
+		describe.skip('Tasks: Configure Task', () => {
 			const label = "name";
 			const type = "shell";
 			const command = "echo 'test'";
-			describe("hide", () => {
-				it("true should still show the task", async () => {
-					await task.configureTask({
-						type,
-						command,
-						label,
-						hide: true,
-					});
-					await task.assertTasks(label, [{ label }], "configure");
+			describe('hide', () => {
+				it('true should still show the task', async () => {
+					await task.configureTask({ type, command, label, hide: true });
+					await task.assertTasks(label, [{ label }], 'configure');
 				});
 			});
 		});

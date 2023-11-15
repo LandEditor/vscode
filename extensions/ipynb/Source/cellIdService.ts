@@ -3,30 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ExtensionContext,
-	NotebookDocument,
-	NotebookDocumentChangeEvent,
-	NotebookEdit,
-	workspace,
-	WorkspaceEdit,
-} from "vscode";
-import { v4 as uuid } from "uuid";
-import { getCellMetadata } from "./serializers";
-import { CellMetadata } from "./common";
-import { getNotebookMetadata } from "./notebookSerializer";
-import type * as nbformat from "@jupyterlab/nbformat";
+import { ExtensionContext, NotebookDocument, NotebookDocumentChangeEvent, NotebookEdit, workspace, WorkspaceEdit } from 'vscode';
+import { v4 as uuid } from 'uuid';
+import { getCellMetadata } from './serializers';
+import { CellMetadata } from './common';
+import { getNotebookMetadata } from './notebookSerializer';
+import type * as nbformat from '@jupyterlab/nbformat';
 
 /**
  * Ensure all new cells in notebooks with nbformat >= 4.5 have an id.
  * Details of the spec can be found here https://jupyter.org/enhancement-proposals/62-cell-id/cell-id.html#
  */
 export function ensureAllNewCellsHaveCellIds(context: ExtensionContext) {
-	workspace.onDidChangeNotebookDocument(
-		onDidChangeNotebookCells,
-		undefined,
-		context.subscriptions
-	);
+	workspace.onDidChangeNotebookDocument(onDidChangeNotebookCells, undefined, context.subscriptions);
 }
 
 function onDidChangeNotebookCells(e: NotebookDocumentChangeEvent) {
@@ -34,8 +23,8 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEvent) {
 	if (!isCellIdRequired(nbMetadata)) {
 		return;
 	}
-	e.contentChanges.forEach((change) => {
-		change.addedCells.forEach((cell) => {
+	e.contentChanges.forEach(change => {
+		change.addedCells.forEach(cell => {
 			const cellMetadata = getCellMetadata(cell);
 			if (cellMetadata?.id) {
 				return;
@@ -43,16 +32,9 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEvent) {
 			const id = generateCellId(e.notebook);
 			const edit = new WorkspaceEdit();
 			// Don't edit the metadata directly, always get a clone (prevents accidental singletons and directly editing the objects).
-			const updatedMetadata: CellMetadata = {
-				...JSON.parse(JSON.stringify(cellMetadata || {})),
-			};
+			const updatedMetadata: CellMetadata = { ...JSON.parse(JSON.stringify(cellMetadata || {})) };
 			updatedMetadata.id = id;
-			edit.set(cell.notebook.uri, [
-				NotebookEdit.updateCellMetadata(cell.index, {
-					...cell.metadata,
-					custom: updatedMetadata,
-				}),
-			]);
+			edit.set(cell.notebook.uri, [NotebookEdit.updateCellMetadata(cell.index, { ...(cell.metadata), custom: updatedMetadata })]);
 			workspace.applyEdit(edit);
 		});
 	});
@@ -61,12 +43,7 @@ function onDidChangeNotebookCells(e: NotebookDocumentChangeEvent) {
 /**
  * Cell ids are required in notebooks only in notebooks with nbformat >= 4.5
  */
-function isCellIdRequired(
-	metadata: Pick<
-		Partial<nbformat.INotebookContent>,
-		"nbformat" | "nbformat_minor"
-	>
-) {
+function isCellIdRequired(metadata: Pick<Partial<nbformat.INotebookContent>, 'nbformat' | 'nbformat_minor'>) {
 	if ((metadata.nbformat || 0) >= 5) {
 		return true;
 	}
@@ -80,7 +57,7 @@ function generateCellId(notebook: NotebookDocument) {
 	while (true) {
 		// Details of the id can be found here https://jupyter.org/enhancement-proposals/62-cell-id/cell-id.html#adding-an-id-field,
 		// & here https://jupyter.org/enhancement-proposals/62-cell-id/cell-id.html#updating-older-formats
-		const id = uuid().replace(/-/g, "").substring(0, 8);
+		const id = uuid().replace(/-/g, '').substring(0, 8);
 		let duplicate = false;
 		for (let index = 0; index < notebook.cellCount; index++) {
 			const cell = notebook.cellAt(index);

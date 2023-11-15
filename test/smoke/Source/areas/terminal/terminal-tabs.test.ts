@@ -3,17 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Application,
-	Terminal,
-	TerminalCommandId,
-	TerminalCommandIdWithValue,
-	SettingsEditor,
-} from "../../../../automation";
-import { setTerminalTestSettings } from "./terminal-helpers";
+import { Application, Terminal, TerminalCommandId, TerminalCommandIdWithValue, SettingsEditor } from '../../../../automation';
+import { setTerminalTestSettings } from './terminal-helpers';
 
 export function setup() {
-	describe("Terminal Tabs", () => {
+	describe('Terminal Tabs', () => {
 		// Acquire automation API
 		let terminal: Terminal;
 		let settingsEditor: SettingsEditor;
@@ -29,131 +23,99 @@ export function setup() {
 			await settingsEditor.clearUserSettings();
 		});
 
-		it("clicking the plus button should create a terminal and display the tabs view showing no split decorations", async () => {
+		it('clicking the plus button should create a terminal and display the tabs view showing no split decorations', async () => {
 			await terminal.createTerminal();
 			await terminal.clickPlusButton();
 			await terminal.assertTerminalGroups([[{}], [{}]]);
 		});
 
-		it("should update color of the single tab", async () => {
+		it('should update color of the single tab', async () => {
 			await terminal.createTerminal();
-			const color = "Cyan";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.ChangeColor,
-				color
-			);
+			const color = 'Cyan';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.ChangeColor, color);
 			await terminal.assertSingleTab({ color });
 		});
 
-		it("should update color of the tab in the tabs list", async () => {
+		it('should update color of the tab in the tabs list', async () => {
 			await terminal.createTerminal();
 			await terminal.runCommand(TerminalCommandId.Split);
-			await terminal.waitForTerminalText(
-				(lines) => lines.some((line) => line.length > 0),
-				undefined,
-				1
-			);
-			const color = "Cyan";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.ChangeColor,
-				color
-			);
+			await terminal.waitForTerminalText(lines => lines.some(line => line.length > 0), undefined, 1);
+			const color = 'Cyan';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.ChangeColor, color);
 			await terminal.assertTerminalGroups([[{}, { color }]]);
 		});
 
-		it("should update icon of the single tab", async () => {
+		it('should update icon of the single tab', async () => {
 			await terminal.createTerminal();
-			const icon = "symbol-method";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.ChangeIcon,
-				icon
-			);
+			const icon = 'symbol-method';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.ChangeIcon, icon);
 			await terminal.assertSingleTab({ icon });
 		});
 
-		it("should update icon of the tab in the tabs list", async () => {
+		it('should update icon of the tab in the tabs list', async () => {
 			await terminal.createTerminal();
 			await terminal.runCommand(TerminalCommandId.Split);
-			await terminal.waitForTerminalText(
-				(lines) => lines.some((line) => line.length > 0),
-				undefined,
-				1
-			);
-			const icon = "symbol-method";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.ChangeIcon,
-				icon
-			);
+			await terminal.waitForTerminalText(lines => lines.some(line => line.length > 0), undefined, 1);
+			const icon = 'symbol-method';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.ChangeIcon, icon);
 			await terminal.assertTerminalGroups([[{}, { icon }]]);
 		});
 
-		it("should rename the single tab", async () => {
+		it('should rename the single tab', async () => {
 			await terminal.createTerminal();
-			const name = "my terminal name";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.Rename,
-				name
-			);
+			const name = 'my terminal name';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.Rename, name);
 			await terminal.assertSingleTab({ name });
 		});
 
-		it("should reset the tab name to the default value when no name is provided", async () => {
+		it('should reset the tab name to the default value when no name is provided', async () => {
 			await terminal.createTerminal();
 			const defaultName = await terminal.getSingleTabName();
-			const name = "my terminal name";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.Rename,
-				name
-			);
+			const name = 'my terminal name';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.Rename, name);
 			await terminal.assertSingleTab({ name });
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.Rename,
-				undefined
-			);
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.Rename, undefined);
 			await terminal.assertSingleTab({ name: defaultName });
 		});
 
-		it("should rename the tab in the tabs list", async () => {
+		it('should rename the tab in the tabs list', async () => {
 			await terminal.createTerminal();
 			await terminal.runCommand(TerminalCommandId.Split);
-			const name = "my terminal name";
-			await terminal.runCommandWithValue(
-				TerminalCommandIdWithValue.Rename,
-				name
-			);
+			const name = 'my terminal name';
+			await terminal.runCommandWithValue(TerminalCommandIdWithValue.Rename, name);
 			await terminal.assertTerminalGroups([[{}, { name }]]);
 		});
 
-		it("should create a split terminal when single tab is alt clicked", async () => {
+		it('should create a split terminal when single tab is alt clicked', async () => {
 			await terminal.createTerminal();
 			const page = await terminal.getPage();
-			page.keyboard.down("Alt");
+			page.keyboard.down('Alt');
 			await terminal.clickSingleTab();
-			page.keyboard.up("Alt");
+			page.keyboard.up('Alt');
 			await terminal.assertTerminalGroups([[{}, {}]]);
 		});
 
-		it("should do nothing when join tabs is run with only one terminal", async () => {
+		it('should do nothing when join tabs is run with only one terminal', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.runCommand(TerminalCommandId.Join);
 			await terminal.assertTerminalGroups([[{}]]);
 		});
 
-		it("should do nothing when join tabs is run with only split terminals", async () => {
+		it('should do nothing when join tabs is run with only split terminals', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.runCommand(TerminalCommandId.Split);
 			await terminal.runCommand(TerminalCommandId.Join);
 			await terminal.assertTerminalGroups([[{}], [{}]]);
 		});
 
-		it("should join tabs when more than one non-split terminal", async () => {
+		it('should join tabs when more than one non-split terminal', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.createTerminal();
 			await terminal.runCommand(TerminalCommandId.Join);
 			await terminal.assertTerminalGroups([[{}, {}]]);
 		});
 
-		it("should do nothing when unsplit tabs called with no splits", async () => {
+		it('should do nothing when unsplit tabs called with no splits', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.createTerminal();
 			await terminal.assertTerminalGroups([[{}], [{}]]);
@@ -161,7 +123,7 @@ export function setup() {
 			await terminal.assertTerminalGroups([[{}], [{}]]);
 		});
 
-		it("should unsplit tabs", async () => {
+		it('should unsplit tabs', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.runCommand(TerminalCommandId.Split);
 			await terminal.assertTerminalGroups([[{}, {}]]);
@@ -169,7 +131,7 @@ export function setup() {
 			await terminal.assertTerminalGroups([[{}], [{}]]);
 		});
 
-		it("should move the terminal to the editor area", async () => {
+		it('should move the terminal to the editor area', async () => {
 			await terminal.runCommand(TerminalCommandId.Show);
 			await terminal.assertSingleTab({});
 			await terminal.runCommand(TerminalCommandId.MoveToEditor);
