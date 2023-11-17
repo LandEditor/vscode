@@ -4,11 +4,7 @@
 		"outDir": "../../out",
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
-		"types": [
-			"node"
-		]
+		"types": ["node"]
 	},
-	"files": [
-		"webServer.ts"
-	]
+	"files": ["webServer.ts"]
 }

@@ -3,7 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export type JSONSchemaType = 'string' | 'number' | 'integer' | 'boolean' | 'null' | 'array' | 'object';
+export type JSONSchemaType =
+	| "string"
+	| "number"
+	| "integer"
+	| "boolean"
+	| "null"
+	| "array"
+	| "object";
 
 export interface IJSONSchema {
 	id?: string;

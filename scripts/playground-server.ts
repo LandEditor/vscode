@@ -3,29 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fsPromise from 'fs/promises';
-import path from 'path';
-import * as http from 'http';
-import * as parcelWatcher from '@parcel/watcher';
+import * as fsPromise from "fs/promises";
+import path from "path";
+import * as http from "http";
+import * as parcelWatcher from "@parcel/watcher";
 
 /**
  * Launches the server for the monaco editor playground
  */
 function main() {
-	const server = new HttpServer({ host: 'localhost', port: 5001, cors: true });
-	server.use('/', redirectToMonacoEditorPlayground());
+	const server = new HttpServer({
+		host: "localhost",
+		port: 5001,
+		cors: true,
+	});
+	server.use("/", redirectToMonacoEditorPlayground());
 
-	const rootDir = path.join(__dirname, '..');
+	const rootDir = path.join(__dirname, "..");
 	const fileServer = new FileServer(rootDir);
 	server.use(fileServer.handleRequest);
 
-	const moduleIdMapper = new SimpleModuleIdPathMapper(path.join(rootDir, 'out'));
-	const editorMainBundle = new CachedBundle('vs/editor/editor.main', moduleIdMapper);
-	fileServer.overrideFileContent(editorMainBundle.entryModulePath, () => editorMainBundle.bundle());
+	const moduleIdMapper = new SimpleModuleIdPathMapper(
+		path.join(rootDir, "out")
+	);
+	const editorMainBundle = new CachedBundle(
+		"vs/editor/editor.main",
+		moduleIdMapper
+	);
+	fileServer.overrideFileContent(editorMainBundle.entryModulePath, () =>
+		editorMainBundle.bundle()
+	);
 
-	const loaderPath = path.join(rootDir, 'out/vs/loader.js');
+	const loaderPath = path.join(rootDir, "out/vs/loader.js");
 	fileServer.overrideFileContent(loaderPath, async () =>
-		Buffer.from(new TextEncoder().encode(makeLoaderJsHotReloadable(await fsPromise.readFile(loaderPath, 'utf8'), new URL('/file-changes', server.url))))
+		Buffer.from(
+			new TextEncoder().encode(
+				makeLoaderJsHotReloadable(
+					await fsPromise.readFile(loaderPath, "utf8"),
+					new URL("/file-changes", server.url)
+				)
+			)
+		)
 	);
 
 	const watcher = DirWatcher.watchRecursively(moduleIdMapper.rootDir);
@@ -34,7 +52,10 @@ function main() {
 		editorMainBundle.bundle();
 		console.log(`${new Date().toLocaleTimeString()}, file change: ${path}`);
 	});
-	server.use('/file-changes', handleGetFileChangesRequest(watcher, fileServer, moduleIdMapper));
+	server.use(
+		"/file-changes",
+		handleGetFileChangesRequest(watcher, fileServer, moduleIdMapper)
+	);
 
 	console.log(`Server listening on ${server.url}`);
 }
@@ -42,8 +63,15 @@ setTimeout(main, 0);
 
 // #region Http/File Server
 
-type RequestHandler = (req: http.IncomingMessage, res: http.ServerResponse) => Promise<void>;
-type ChainableRequestHandler = (req: http.IncomingMessage, res: http.ServerResponse, next: RequestHandler) => Promise<void>;
+type RequestHandler = (
+	req: http.IncomingMessage,
+	res: http.ServerResponse
+) => Promise<void>;
+type ChainableRequestHandler = (
+	req: http.IncomingMessage,
+	res: http.ServerResponse,
+	next: RequestHandler
+) => Promise<void>;
 
 class HttpServer {
 	private readonly server: http.Server;
@@ -54,14 +82,17 @@ class HttpServer {
 	constructor(options: { host: string; port: number; cors: boolean }) {
 		this.server = http.createServer(async (req, res) => {
 			if (options.cors) {
-				res.setHeader('Access-Control-Allow-Origin', '*');
+				res.setHeader("Access-Control-Allow-Origin", "*");
 			}
 
 			let i = 0;
-			const next = async (req: http.IncomingMessage, res: http.ServerResponse) => {
+			const next = async (
+				req: http.IncomingMessage,
+				res: http.ServerResponse
+			) => {
 				if (i >= this.handler.length) {
-					res.writeHead(404, { 'Content-Type': 'text/plain' });
-					res.end('404 Not Found');
+					res.writeHead(404, { "Content-Type": "text/plain" });
+					res.end("404 Not Found");
 					return;
 				}
 				const handler = this.handler[i];
@@ -76,16 +107,23 @@ class HttpServer {
 
 	use(handler: ChainableRequestHandler);
 	use(path: string, handler: ChainableRequestHandler);
-	use(...args: [path: string, handler: ChainableRequestHandler] | [handler: ChainableRequestHandler]) {
-		const handler = args.length === 1 ? args[0] : (req, res, next) => {
-			const path = args[0];
-			const requestedUrl = new URL(req.url, this.url);
-			if (requestedUrl.pathname === path) {
-				return args[1](req, res, next);
-			} else {
-				return next(req, res);
-			}
-		};
+	use(
+		...args:
+			| [path: string, handler: ChainableRequestHandler]
+			| [handler: ChainableRequestHandler]
+	) {
+		const handler =
+			args.length === 1
+				? args[0]
+				: (req, res, next) => {
+						const path = args[0];
+						const requestedUrl = new URL(req.url, this.url);
+						if (requestedUrl.pathname === path) {
+							return args[1](req, res, next);
+						} else {
+							return next(req, res);
+						}
+				  };
 
 		this.handler.push(handler);
 	}
@@ -93,8 +131,10 @@ class HttpServer {
 
 function redirectToMonacoEditorPlayground(): ChainableRequestHandler {
 	return async (req, res) => {
-		const url = new URL('https://microsoft.github.io/monaco-editor/playground.html');
-		url.searchParams.append('source', `http://${req.headers.host}/out/vs`);
+		const url = new URL(
+			"https://microsoft.github.io/monaco-editor/playground.html"
+		);
+		url.searchParams.append("source", `http://${req.headers.host}/out/vs`);
 		res.writeHead(302, { Location: url.toString() });
 		res.end();
 	};
@@ -103,17 +143,21 @@ function redirectToMonacoEditorPlayground(): ChainableRequestHandler {
 class FileServer {
 	private readonly overrides = new Map<string, () => Promise<Buffer>>();
 
-	constructor(public readonly publicDir: string) { }
+	constructor(public readonly publicDir: string) {}
 
-	public readonly handleRequest: ChainableRequestHandler = async (req, res, next) => {
+	public readonly handleRequest: ChainableRequestHandler = async (
+		req,
+		res,
+		next
+	) => {
 		const requestedUrl = new URL(req.url!, `http://${req.headers.host}`);
 
 		const pathName = requestedUrl.pathname;
 
 		const filePath = path.join(this.publicDir, pathName);
 		if (!filePath.startsWith(this.publicDir)) {
-			res.writeHead(403, { 'Content-Type': 'text/plain' });
-			res.end('403 Forbidden');
+			res.writeHead(403, { "Content-Type": "text/plain" });
+			res.end("403 Forbidden");
 			return;
 		}
 
@@ -127,30 +171,36 @@ class FileServer {
 			}
 
 			const contentType = getContentType(filePath);
-			res.writeHead(200, { 'Content-Type': contentType });
+			res.writeHead(200, { "Content-Type": contentType });
 			res.end(content);
 		} catch (err) {
-			if (err.code === 'ENOENT') {
+			if (err.code === "ENOENT") {
 				next(req, res);
 			} else {
-				res.writeHead(500, { 'Content-Type': 'text/plain' });
-				res.end('500 Internal Server Error');
+				res.writeHead(500, { "Content-Type": "text/plain" });
+				res.end("500 Internal Server Error");
 			}
 		}
 	};
 
 	public filePathToUrlPath(filePath: string): string | undefined {
 		const relative = path.relative(this.publicDir, filePath);
-		const isSubPath = !!relative && !relative.startsWith('..') && !path.isAbsolute(relative);
+		const isSubPath =
+			!!relative &&
+			!relative.startsWith("..") &&
+			!path.isAbsolute(relative);
 
 		if (!isSubPath) {
 			return undefined;
 		}
-		const relativePath = relative.replace(/\\/g, '/');
+		const relativePath = relative.replace(/\\/g, "/");
 		return `/${relativePath}`;
 	}
 
-	public overrideFileContent(filePath: string, content: () => Promise<Buffer>): void {
+	public overrideFileContent(
+		filePath: string,
+		content: () => Promise<Buffer>
+	): void {
 		this.overrides.set(filePath, content);
 	}
 }
@@ -158,24 +208,24 @@ class FileServer {
 function getContentType(filePath: string): string {
 	const extname = path.extname(filePath);
 	switch (extname) {
-		case '.js':
-			return 'text/javascript';
-		case '.css':
-			return 'text/css';
-		case '.json':
-			return 'application/json';
-		case '.png':
-			return 'image/png';
-		case '.jpg':
-			return 'image/jpg';
-		case '.svg':
-			return 'image/svg+xml';
-		case '.html':
-			return 'text/html';
-		case '.wasm':
-			return 'application/wasm';
+		case ".js":
+			return "text/javascript";
+		case ".css":
+			return "text/css";
+		case ".json":
+			return "application/json";
+		case ".png":
+			return "image/png";
+		case ".jpg":
+			return "image/jpg";
+		case ".svg":
+			return "image/svg+xml";
+		case ".html":
+			return "text/html";
+		case ".wasm":
+			return "application/wasm";
 		default:
-			return 'text/plain';
+			return "text/plain";
 	}
 }
 
@@ -199,16 +249,16 @@ class DirWatcher {
 					if (idx >= 0) {
 						listeners.splice(idx, 1);
 					}
-				}
+				},
 			};
 		};
 		parcelWatcher.subscribe(dir, async (err, events) => {
 			for (const e of events) {
-				if (e.type === 'update') {
-					const newContent = await fsPromise.readFile(e.path, 'utf8');
+				if (e.type === "update") {
+					const newContent = await fsPromise.readFile(e.path, "utf8");
 					if (fileContents.get(e.path) !== newContent) {
 						fileContents.set(e.path, newContent);
-						listeners.forEach(l => l(e.path, newContent));
+						listeners.forEach((l) => l(e.path, newContent));
 					}
 				}
 			}
@@ -216,26 +266,41 @@ class DirWatcher {
 		return new DirWatcher(event);
 	}
 
-	constructor(public readonly onDidChange: (handler: (path: string, newContent: string) => void) => IDisposable) {
-	}
+	constructor(
+		public readonly onDidChange: (
+			handler: (path: string, newContent: string) => void
+		) => IDisposable
+	) {}
 }
 
-function handleGetFileChangesRequest(watcher: DirWatcher, fileServer: FileServer, moduleIdMapper: SimpleModuleIdPathMapper): ChainableRequestHandler {
+function handleGetFileChangesRequest(
+	watcher: DirWatcher,
+	fileServer: FileServer,
+	moduleIdMapper: SimpleModuleIdPathMapper
+): ChainableRequestHandler {
 	return async (req, res) => {
-		res.writeHead(200, { 'Content-Type': 'text/plain' });
-		const d = watcher.onDidChange(fsPath => {
+		res.writeHead(200, { "Content-Type": "text/plain" });
+		const d = watcher.onDidChange((fsPath) => {
 			const path = fileServer.filePathToUrlPath(fsPath);
 			if (path) {
-				res.write(JSON.stringify({ changedPath: path, moduleId: moduleIdMapper.getModuleId(fsPath) }) + '\n');
+				res.write(
+					JSON.stringify({
+						changedPath: path,
+						moduleId: moduleIdMapper.getModuleId(fsPath),
+					}) + "\n"
+				);
 			}
 		});
-		res.on('close', () => d.dispose());
+		res.on("close", () => d.dispose());
 	};
 }
-function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): string {
+function makeLoaderJsHotReloadable(
+	loaderJsCode: string,
+	fileChangesUrl: URL
+): string {
 	loaderJsCode = loaderJsCode.replace(
 		/constructor\(env, scriptLoader, defineFunc, requireFunc, loaderAvailableTimestamp = 0\) {/,
-		'$&globalThis.___globalModuleManager = this;'
+		"$&globalThis.___globalModuleManager = this;"
 	);
 
 	const ___globalModuleManager: any = undefined;
@@ -244,80 +309,135 @@ function makeLoaderJsHotReloadable(loaderJsCode: string, fileChangesUrl: URL): s
 	function $watchChanges(fileChangesUrl: string) {
 		let reloadFn;
 		if (globalThis.$sendMessageToParent) {
-			reloadFn = () => globalThis.$sendMessageToParent({ kind: 'reload' });
-		} else if (typeof window !== 'undefined') {
+			reloadFn = () =>
+				globalThis.$sendMessageToParent({ kind: "reload" });
+		} else if (typeof window !== "undefined") {
 			reloadFn = () => window.location.reload();
 		} else {
-			reloadFn = () => { };
+			reloadFn = () => {};
 		}
 
-		console.log('Connecting to server to watch for changes...');
+		console.log("Connecting to server to watch for changes...");
 		(fetch as any)(fileChangesUrl)
-			.then(async request => {
+			.then(async (request) => {
 				const reader = request.body.getReader();
-				let buffer = '';
+				let buffer = "";
 				while (true) {
 					const { done, value } = await reader.read();
-					if (done) { break; }
+					if (done) {
+						break;
+					}
 					buffer += new TextDecoder().decode(value);
-					const lines = buffer.split('\n');
+					const lines = buffer.split("\n");
 					buffer = lines.pop()!;
 					for (const line of lines) {
 						const data = JSON.parse(line);
 						let handled = false;
-						if (data.changedPath.endsWith('.css')) {
-							if (typeof document !== 'undefined') {
-								console.log('css changed', data.changedPath);
-								const styleSheet = [...document.querySelectorAll(`link[rel='stylesheet']`)].find((l: any) => new URL(l.href, document.location.href).pathname.endsWith(data.changedPath)) as any;
+						if (data.changedPath.endsWith(".css")) {
+							if (typeof document !== "undefined") {
+								console.log("css changed", data.changedPath);
+								const styleSheet = [
+									...document.querySelectorAll(
+										`link[rel='stylesheet']`
+									),
+								].find((l: any) =>
+									new URL(
+										l.href,
+										document.location.href
+									).pathname.endsWith(data.changedPath)
+								) as any;
 								if (styleSheet) {
-									styleSheet.href = styleSheet.href.replace(/\?.*/, '') + '?' + Date.now();
+									styleSheet.href =
+										styleSheet.href.replace(/\?.*/, "") +
+										"?" +
+										Date.now();
 								}
 							}
 							handled = true;
-						} else if (data.changedPath.endsWith('.js') && data.moduleId) {
-							console.log('js changed', data.changedPath);
-							const moduleId = ___globalModuleManager._moduleIdProvider.getModuleId(data.moduleId);
+						} else if (
+							data.changedPath.endsWith(".js") &&
+							data.moduleId
+						) {
+							console.log("js changed", data.changedPath);
+							const moduleId =
+								___globalModuleManager._moduleIdProvider.getModuleId(
+									data.moduleId
+								);
 							if (___globalModuleManager._modules2[moduleId]) {
-								const srcUrl = ___globalModuleManager._config.moduleIdToPaths(data.moduleId);
-								const newSrc = await (await fetch(srcUrl)).text();
-								(new Function('define', newSrc))(function (deps, callback) { // CodeQL [SM01632] This code is only executed during development (as part of the dev-only playground-server). It is required for the hot-reload functionality.
-									const oldModule = ___globalModuleManager._modules2[moduleId];
-									delete ___globalModuleManager._modules2[moduleId];
+								const srcUrl =
+									___globalModuleManager._config.moduleIdToPaths(
+										data.moduleId
+									);
+								const newSrc = await (
+									await fetch(srcUrl)
+								).text();
+								new Function("define", newSrc)(
+									function (deps, callback) {
+										// CodeQL [SM01632] This code is only executed during development (as part of the dev-only playground-server). It is required for the hot-reload functionality.
+										const oldModule =
+											___globalModuleManager._modules2[
+												moduleId
+											];
+										delete ___globalModuleManager._modules2[
+											moduleId
+										];
 
-									___globalModuleManager.defineModule(data.moduleId, deps, callback);
-									const newModule = ___globalModuleManager._modules2[moduleId];
-									const oldExports = { ...oldModule.exports };
+										___globalModuleManager.defineModule(
+											data.moduleId,
+											deps,
+											callback
+										);
+										const newModule =
+											___globalModuleManager._modules2[
+												moduleId
+											];
+										const oldExports = {
+											...oldModule.exports,
+										};
 
-									Object.assign(oldModule.exports, newModule.exports);
-									newModule.exports = oldModule.exports;
+										Object.assign(
+											oldModule.exports,
+											newModule.exports
+										);
+										newModule.exports = oldModule.exports;
 
-									handled = true;
+										handled = true;
 
-									for (const cb of [...globalThis.$hotReload_deprecateExports]) {
-										cb(oldExports, newModule.exports);
+										for (const cb of [
+											...globalThis.$hotReload_deprecateExports,
+										]) {
+											cb(oldExports, newModule.exports);
+										}
+
+										if (handled) {
+											console.log(
+												"hot reloaded",
+												data.moduleId
+											);
+										}
 									}
-
-									if (handled) {
-										console.log('hot reloaded', data.moduleId);
-									}
-								});
+								);
 							}
 						}
 
-						if (!handled) { reloadFn(); }
+						if (!handled) {
+							reloadFn();
+						}
 					}
 				}
-			}).catch(err => {
+			})
+			.catch((err) => {
 				console.error(err);
 				setTimeout(() => $watchChanges(fileChangesUrl), 1000);
 			});
-
 	}
 
 	const additionalJsCode = `
-(${(function () {
-			globalThis.$hotReload_deprecateExports = new Set<(oldExports: any, newExports: any) => void>();
-		}).toString()})();
+(${function () {
+		globalThis.$hotReload_deprecateExports = new Set<
+			(oldExports: any, newExports: any) => void
+		>();
+	}.toString()})();
 ${$watchChanges.toString()}
 $watchChanges(${JSON.stringify(fileChangesUrl)});
 `;
@@ -330,13 +450,14 @@ $watchChanges(${JSON.stringify(fileChangesUrl)});
 // #region Bundling
 
 class CachedBundle {
-	public readonly entryModulePath = this.mapper.resolveRequestToPath(this.moduleId)!;
+	public readonly entryModulePath = this.mapper.resolveRequestToPath(
+		this.moduleId
+	)!;
 
 	constructor(
 		private readonly moduleId: string,
-		private readonly mapper: SimpleModuleIdPathMapper,
-	) {
-	}
+		private readonly mapper: SimpleModuleIdPathMapper
+	) {}
 
 	private loader: ModuleLoader | undefined = undefined;
 
@@ -346,9 +467,13 @@ class CachedBundle {
 			this.bundlePromise = (async () => {
 				if (!this.loader) {
 					this.loader = new ModuleLoader(this.mapper);
-					await this.loader.addModuleAndDependencies(this.entryModulePath);
+					await this.loader.addModuleAndDependencies(
+						this.entryModulePath
+					);
 				}
-				const editorEntryPoint = await this.loader.getModule(this.entryModulePath);
+				const editorEntryPoint = await this.loader.getModule(
+					this.entryModulePath
+				);
 				const content = bundleWithDependencies(editorEntryPoint!);
 				return content;
 			})();
@@ -356,7 +481,10 @@ class CachedBundle {
 		return this.bundlePromise;
 	}
 
-	public async setModuleContent(path: string, newContent: string): Promise<void> {
+	public async setModuleContent(
+		path: string,
+		newContent: string
+	): Promise<void> {
 		if (!this.loader) {
 			return;
 		}
@@ -389,9 +517,13 @@ function bundleWithDependencies(module: IModule): Buffer {
 
 	const sourceMap = builder.toSourceMap();
 	sourceMap.sourceRoot = module.source.sourceMap.sourceRoot;
-	const sourceMapBase64Str = Buffer.from(JSON.stringify(sourceMap)).toString('base64');
+	const sourceMapBase64Str = Buffer.from(JSON.stringify(sourceMap)).toString(
+		"base64"
+	);
 
-	builder.addLine(`//# sourceMappingURL=data:application/json;base64,${sourceMapBase64Str}`);
+	builder.addLine(
+		`//# sourceMappingURL=data:application/json;base64,${sourceMapBase64Str}`
+	);
 
 	return builder.toContent();
 }
@@ -399,7 +531,7 @@ function bundleWithDependencies(module: IModule): Buffer {
 class ModuleLoader {
 	private readonly modules = new Map<string, Promise<IModule | undefined>>();
 
-	constructor(private readonly mapper: SimpleModuleIdPathMapper) { }
+	constructor(private readonly mapper: SimpleModuleIdPathMapper) {}
 
 	public getModule(path: string): Promise<IModule | undefined> {
 		return Promise.resolve(this.modules.get(path));
@@ -410,7 +542,12 @@ class ModuleLoader {
 		if (!parsedModule) {
 			return false;
 		}
-		if (!arrayEquals(parsedModule.dependencyRequests, module.dependencyRequests)) {
+		if (
+			!arrayEquals(
+				parsedModule.dependencyRequests,
+				module.dependencyRequests
+			)
+		) {
 			return false;
 		}
 
@@ -426,24 +563,37 @@ class ModuleLoader {
 		}
 
 		const promise = (async () => {
-			const content = await fsPromise.readFile(path, { encoding: 'utf-8' });
+			const content = await fsPromise.readFile(path, {
+				encoding: "utf-8",
+			});
 
 			const parsedModule = parseModule(content, path, this.mapper);
 			if (!parsedModule) {
 				return undefined;
 			}
 
-			const dependencies = (await Promise.all(parsedModule.dependencyRequests.map(async r => {
-				if (r === 'require' || r === 'exports' || r === 'module') {
-					return null;
-				}
+			const dependencies = (
+				await Promise.all(
+					parsedModule.dependencyRequests.map(async (r) => {
+						if (
+							r === "require" ||
+							r === "exports" ||
+							r === "module"
+						) {
+							return null;
+						}
 
-				const depPath = this.mapper.resolveRequestToPath(r, path);
-				if (!depPath) {
-					return null;
-				}
-				return await this.addModuleAndDependencies(depPath);
-			}))).filter((d): d is IModule => !!d);
+						const depPath = this.mapper.resolveRequestToPath(
+							r,
+							path
+						);
+						if (!depPath) {
+							return null;
+						}
+						return await this.addModuleAndDependencies(depPath);
+					})
+				)
+			).filter((d): d is IModule => !!d);
 
 			const module: IModule = {
 				id: this.mapper.getModuleId(path)!,
@@ -474,7 +624,11 @@ function arrayEquals<T>(a: T[], b: T[]): boolean {
 
 const encoder = new TextEncoder();
 
-function parseModule(content: string, path: string, mapper: SimpleModuleIdPathMapper): { source: Source; dependencyRequests: string[] } | undefined {
+function parseModule(
+	content: string,
+	path: string,
+	mapper: SimpleModuleIdPathMapper
+): { source: Source; dependencyRequests: string[] } | undefined {
 	const m = content.match(/define\((\[.*?\])/);
 	if (!m) {
 		return undefined;
@@ -482,17 +636,24 @@ function parseModule(content: string, path: string, mapper: SimpleModuleIdPathMa
 
 	const dependencyRequests = JSON.parse(m[1].replace(/'/g, '"')) as string[];
 
-	const sourceMapHeader = '//# sourceMappingURL=data:application/json;base64,';
+	const sourceMapHeader =
+		"//# sourceMappingURL=data:application/json;base64,";
 	const idx = content.indexOf(sourceMapHeader);
 
 	let sourceMap: any = null;
 	if (idx !== -1) {
-		const sourceMapJsonStr = Buffer.from(content.substring(idx + sourceMapHeader.length), 'base64').toString('utf-8');
+		const sourceMapJsonStr = Buffer.from(
+			content.substring(idx + sourceMapHeader.length),
+			"base64"
+		).toString("utf-8");
 		sourceMap = JSON.parse(sourceMapJsonStr);
 		content = content.substring(0, idx);
 	}
 
-	content = content.replace('define([', `define("${mapper.getModuleId(path)}", [`);
+	content = content.replace(
+		"define([",
+		`define("${mapper.getModuleId(path)}", [`
+	);
 
 	const contentBuffer = Buffer.from(encoder.encode(content));
 	const source = new Source(contentBuffer, sourceMap);
@@ -501,27 +662,32 @@ function parseModule(content: string, path: string, mapper: SimpleModuleIdPathMa
 }
 
 class SimpleModuleIdPathMapper {
-	constructor(public readonly rootDir: string) { }
+	constructor(public readonly rootDir: string) {}
 
 	public getModuleId(path: string): string | null {
-		if (!path.startsWith(this.rootDir) || !path.endsWith('.js')) {
+		if (!path.startsWith(this.rootDir) || !path.endsWith(".js")) {
 			return null;
 		}
 		const moduleId = path.substring(this.rootDir.length + 1);
 
-
-		return moduleId.replace(/\\/g, '/').substring(0, moduleId.length - 3);
+		return moduleId.replace(/\\/g, "/").substring(0, moduleId.length - 3);
 	}
 
-	public resolveRequestToPath(request: string, requestingModulePath?: string): string | null {
-		if (request.indexOf('css!') !== -1) {
+	public resolveRequestToPath(
+		request: string,
+		requestingModulePath?: string
+	): string | null {
+		if (request.indexOf("css!") !== -1) {
 			return null;
 		}
 
-		if (request.startsWith('.')) {
-			return path.join(path.dirname(requestingModulePath!), request + '.js');
+		if (request.startsWith(".")) {
+			return path.join(
+				path.dirname(requestingModulePath!),
+				request + ".js"
+			);
 		} else {
-			return path.join(this.rootDir, request + '.js');
+			return path.join(this.rootDir, request + ".js");
 		}
 	}
 }
@@ -548,7 +714,6 @@ class Source {
 
 	public readonly sourceMapMappings: Buffer;
 
-
 	constructor(content: Buffer, sourceMap: SourceMap | undefined) {
 		if (!sourceMap) {
 			sourceMap = SourceMapBuilder.emptySourceMap;
@@ -563,14 +728,19 @@ class Source {
 		this.content = content;
 		this.sourceMap = sourceMap;
 		this.sourceLines = sourceLines;
-		this.sourceMapMappings = typeof this.sourceMap.mappings === 'string'
-			? Buffer.from(encoder.encode(sourceMap.mappings as string))
-			: this.sourceMap.mappings;
+		this.sourceMapMappings =
+			typeof this.sourceMap.mappings === "string"
+				? Buffer.from(encoder.encode(sourceMap.mappings as string))
+				: this.sourceMap.mappings;
 	}
 }
 
 class SourceMapBuilder {
-	public static emptySourceMap: SourceMap = { version: 3, sources: [], mappings: Buffer.alloc(0) };
+	public static emptySourceMap: SourceMap = {
+		version: 3,
+		sources: [],
+		mappings: Buffer.alloc(0),
+	};
 
 	private readonly outputBuffer = new DynamicBuffer();
 	private readonly sources: string[] = [];
@@ -611,7 +781,9 @@ class SourceMapBuilder {
 		let value = 0;
 		let valpos = 0;
 		const commit = () => {
-			if (valpos === 0) { return; }
+			if (valpos === 0) {
+				return;
+			}
 			this.mappings.addVLQ(inOutputCol - lastOutputCol);
 			lastOutputCol = inOutputCol;
 			if (valpos === 1) {
@@ -629,30 +801,44 @@ class SourceMapBuilder {
 		};
 		while (ip < inputMappings.length) {
 			let b = inputMappings[ip++];
-			if (b === 59) { // ;
+			if (b === 59) {
+				// ;
 				commit();
 				this.mappings.addByte(59);
 				inOutputCol = 0;
 				lastOutputCol = 0;
 				outputLine++;
-			} else if (b === 44) { // ,
+			} else if (b === 44) {
+				// ,
 				commit();
 				this.mappings.addByte(44);
 			} else {
 				b = charToInteger[b];
-				if (b === 255) { throw new Error('Invalid sourceMap'); }
+				if (b === 255) {
+					throw new Error("Invalid sourceMap");
+				}
 				value += (b & 31) << shift;
 				if (b & 32) {
 					shift += 5;
 				} else {
 					const shouldNegate = value & 1;
 					value >>= 1;
-					if (shouldNegate) { value = -value; }
+					if (shouldNegate) {
+						value = -value;
+					}
 					switch (valpos) {
-						case 0: inOutputCol += value; break;
-						case 1: inSourceIndex += value; break;
-						case 2: inSourceLine += value; break;
-						case 3: inSourceCol += value; break;
+						case 0:
+							inOutputCol += value;
+							break;
+						case 1:
+							inSourceIndex += value;
+							break;
+						case 2:
+							inSourceLine += value;
+							break;
+						case 3:
+							inSourceCol += value;
+							break;
 					}
 					valpos++;
 					value = shift = 0;
@@ -671,7 +857,12 @@ class SourceMapBuilder {
 	}
 
 	toSourceMap(sourceRoot?: string): SourceMap {
-		return { version: 3, sourceRoot, sources: this.sources, mappings: this.mappings.toBuffer().toString() };
+		return {
+			version: 3,
+			sourceRoot,
+			sources: this.sources,
+			mappings: this.mappings.toBuffer().toString(),
+		};
 	}
 }
 
@@ -690,10 +881,12 @@ const integerToChar = Buffer.alloc(64);
 
 charToInteger.fill(255);
 
-'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/='.split('').forEach((char, i) => {
-	charToInteger[char.charCodeAt(0)] = i;
-	integerToChar[i] = char.charCodeAt(0);
-});
+"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+	.split("")
+	.forEach((char, i) => {
+		charToInteger[char.charCodeAt(0)] = i;
+		integerToChar[i] = char.charCodeAt(0);
+	});
 
 class DynamicBuffer {
 	private buffer: Buffer;
@@ -760,7 +953,9 @@ class DynamicBuffer {
 function countNL(b: Buffer): number {
 	let res = 0;
 	for (let i = 0; i < b.length; i++) {
-		if (b[i] === 10) { res++; }
+		if (b[i] === 10) {
+			res++;
+		}
 	}
 	return res;
 }

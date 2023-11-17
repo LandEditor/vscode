@@ -3,10 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import { ISandboxConfiguration } from 'vs/base/parts/sandbox/common/sandboxTypes';
-import { PerformanceInfo, SystemInfo } from 'vs/platform/diagnostics/common/diagnostics';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { URI } from "vs/base/common/uri";
+import { ISandboxConfiguration } from "vs/base/parts/sandbox/common/sandboxTypes";
+import {
+	PerformanceInfo,
+	SystemInfo,
+} from "vs/platform/diagnostics/common/diagnostics";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 // Since data sent through the service is serialized to JSON, functions will be lost, so Color objects
 // should not be sent as their 'toString' method will be stripped. Instead convert to strings before sending.
@@ -22,7 +25,7 @@ export interface WindowData {
 export const enum IssueType {
 	Bug,
 	PerformanceIssue,
-	FeatureRequest
+	FeatureRequest,
 }
 
 export interface IssueReporterStyles extends WindowStyles {
@@ -100,7 +103,8 @@ export interface ProcessExplorerData extends WindowData {
 	applicationName: string;
 }
 
-export interface IssueReporterWindowConfiguration extends ISandboxConfiguration {
+export interface IssueReporterWindowConfiguration
+	extends ISandboxConfiguration {
 	disableExtensions: boolean;
 	data: IssueReporterData;
 	os: {
@@ -110,11 +114,13 @@ export interface IssueReporterWindowConfiguration extends ISandboxConfiguration 
 	};
 }
 
-export interface ProcessExplorerWindowConfiguration extends ISandboxConfiguration {
+export interface ProcessExplorerWindowConfiguration
+	extends ISandboxConfiguration {
 	data: ProcessExplorerData;
 }
 
-export const IIssueMainService = createDecorator<IIssueMainService>('issueService');
+export const IIssueMainService =
+	createDecorator<IIssueMainService>("issueService");
 
 export interface IIssueMainService {
 	readonly _serviceBrand: undefined;
@@ -133,6 +139,9 @@ export interface IIssueMainService {
 	$getIssueReporterUri(extensionId: string): Promise<URI>;
 	$getIssueReporterData(extensionId: string): Promise<string>;
 	$getIssueReporterTemplate(extensionId: string): Promise<string>;
-	$getReporterStatus(extensionId: string, extensionName: string): Promise<boolean[]>;
+	$getReporterStatus(
+		extensionId: string,
+		extensionName: string
+	): Promise<boolean[]>;
 	$closeReporter(): Promise<void>;
 }

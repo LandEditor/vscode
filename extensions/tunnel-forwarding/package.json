@@ -33,6 +33,12 @@
 	"activationEvents": [
 		"onTunnel"
 	],
+	"prettier": {
+		"arrowParens": "avoid",
+		"printWidth": 100,
+		"singleQuote": true,
+		"trailingComma": "all"
+	},
 	"devDependencies": {
 		"@types/node": "20.x"
 	},

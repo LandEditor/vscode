@@ -3,10 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { join } from 'vs/base/common/path';
-import { Promises } from 'vs/base/node/pfs';
+import { join } from "vs/base/common/path";
+import { Promises } from "vs/base/node/pfs";
 
-export async function buildTelemetryMessage(appRoot: string, extensionsPath?: string): Promise<string> {
+export async function buildTelemetryMessage(
+	appRoot: string,
+	extensionsPath?: string
+): Promise<string> {
 	const mergedTelemetry = Object.create(null);
 
 	// Simple function to merge the telemetry into one json object
@@ -21,7 +24,9 @@ export async function buildTelemetryMessage(appRoot: string, extensionsPath?: st
 		const files = await Promises.readdir(extensionsPath);
 		for (const file of files) {
 			try {
-				const fileStat = await Promises.stat(join(extensionsPath, file));
+				const fileStat = await Promises.stat(
+					join(extensionsPath, file)
+				);
 				if (fileStat.isDirectory()) {
 					dirs.push(file);
 				}
@@ -32,23 +37,33 @@ export async function buildTelemetryMessage(appRoot: string, extensionsPath?: st
 
 		const telemetryJsonFolders: string[] = [];
 		for (const dir of dirs) {
-			const files = (await Promises.readdir(join(extensionsPath, dir))).filter(file => file === 'telemetry.json');
+			const files = (
+				await Promises.readdir(join(extensionsPath, dir))
+			).filter((file) => file === "telemetry.json");
 			if (files.length === 1) {
 				telemetryJsonFolders.push(dir); // // We know it contains a telemetry.json file so we add it to the list of folders which have one
 			}
 		}
 
 		for (const folder of telemetryJsonFolders) {
-			const contents = (await Promises.readFile(join(extensionsPath, folder, 'telemetry.json'))).toString();
+			const contents = (
+				await Promises.readFile(
+					join(extensionsPath, folder, "telemetry.json")
+				)
+			).toString();
 			mergeTelemetry(contents, folder);
 		}
 	}
 
-	let contents = (await Promises.readFile(join(appRoot, 'telemetry-core.json'))).toString();
-	mergeTelemetry(contents, 'vscode-core');
+	let contents = (
+		await Promises.readFile(join(appRoot, "telemetry-core.json"))
+	).toString();
+	mergeTelemetry(contents, "vscode-core");
 
-	contents = (await Promises.readFile(join(appRoot, 'telemetry-extensions.json'))).toString();
-	mergeTelemetry(contents, 'vscode-extensions');
+	contents = (
+		await Promises.readFile(join(appRoot, "telemetry-extensions.json"))
+	).toString();
+	mergeTelemetry(contents, "vscode-extensions");
 
 	return JSON.stringify(mergedTelemetry, null, 4);
 }

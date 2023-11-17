@@ -14,10 +14,10 @@ fi
 cd $ROOT
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	NAME=`node -p "require('./product.json').nameLong"`
+	NAME=$(node -p "require('./product.json').nameLong")
 	CODE="./.build/electron/$NAME.app/Contents/MacOS/Electron"
 else
-	NAME=`node -p "require('./product.json').applicationName"`
+	NAME=$(node -p "require('./product.json').applicationName")
 	CODE=".build/electron/$NAME"
 fi
 
@@ -31,13 +31,14 @@ yarn electron
 
 # Unit Tests
 if [[ "$OSTYPE" == "darwin"* ]]; then
-	cd $ROOT ; ulimit -n 4096 ; \
-		ELECTRON_ENABLE_LOGGING=1 \
+	cd $ROOT
+	ulimit -n 4096
+	ELECTRON_ENABLE_LOGGING=1 \
 		"$CODE" \
 		test/unit/electron/index.js --crash-reporter-directory=$VSCODECRASHDIR "$@"
 else
-	cd $ROOT ; \
-		ELECTRON_ENABLE_LOGGING=1 \
+	cd $ROOT
+	ELECTRON_ENABLE_LOGGING=1 \
 		"$CODE" \
 		test/unit/electron/index.js --crash-reporter-directory=$VSCODECRASHDIR $LINUX_EXTRA_ARGS "$@"
 fi

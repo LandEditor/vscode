@@ -5,10 +5,8 @@
 
 // https://github.com/microsoft/vscode/issues/178713
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export namespace workspace {
-
 		/**
 		 * Saves the editor identified by the given resource and returns the resulting resource or `undefined`
 		 * if save was not successful or no editor with the given resource was found.
