@@ -280,9 +280,7 @@
 			"scope": [
 				"support.type.vendored.property-name",
 				"support.type.property-name",
-				"variable.css",
-				"variable.scss",
-				"source.css.less variable.other",
+				"source.css variable",
 				"source.coffee.embedded"
 			],
 			"settings": {
@@ -521,10 +519,7 @@
 			}
 		},
 		{
-			"scope": [
-				"keyword.operator.or.regexp",
-				"keyword.control.anchor.regexp"
-			],
+			"scope": ["keyword.operator.or.regexp", "keyword.control.anchor.regexp"],
 			"settings": {
 				"foreground": "#EE0000"
 			}

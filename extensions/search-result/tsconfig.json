@@ -1,7 +1,10 @@
 {
 	"extends": "../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./out"
+		"outDir": "./out",
 	},
-	"include": ["src/**/*", "../../src/vscode-dts/vscode.d.ts"]
+	"include": [
+		"src/**/*",
+		"../../src/vscode-dts/vscode.d.ts"
+	]
 }
