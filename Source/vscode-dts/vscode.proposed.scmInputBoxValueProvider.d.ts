@@ -3,13 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
 	// https://github.com/microsoft/vscode/issues/195474
 
 	export namespace scm {
-		export function registerSourceControlInputBoxValueProvider(
-			provider: SourceControlInputBoxValueProvider
-		): Disposable;
+		export function registerSourceControlInputBoxValueProvider(provider: SourceControlInputBoxValueProvider): Disposable;
 	}
 
 	export interface SourceControlInputBoxValueProviderContext {
@@ -21,10 +19,7 @@ declare module "vscode" {
 		readonly label: string;
 		readonly icon?: Uri | { light: Uri; dark: Uri } | ThemeIcon;
 
-		provideValue(
-			sourceControlId: string,
-			context: SourceControlInputBoxValueProviderContext[],
-			token: CancellationToken
-		): ProviderResult<string | undefined>;
+		provideValue(sourceControlId: string, context: SourceControlInputBoxValueProviderContext[], token: CancellationToken): ProviderResult<string | undefined>;
 	}
+
 }

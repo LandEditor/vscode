@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/152399
 
 	export interface AuthenticationForceNewSessionOptions {
@@ -27,10 +28,7 @@ declare module "vscode" {
 		 * @param scopes A list of scopes representing the permissions requested. These are dependent on the authentication provider
 		 * @returns A thenable that resolves to a readonly array of authentication sessions.
 		 */
-		export function getSessions(
-			providerId: string,
-			scopes: readonly string[]
-		): Thenable<readonly AuthenticationSession[]>;
+		export function getSessions(providerId: string, scopes: readonly string[]): Thenable<readonly AuthenticationSession[]>;
 	}
 
 	/**
@@ -59,9 +57,6 @@ declare module "vscode" {
 		 * @param options Additional options for creating a session.
 		 * @returns A promise that resolves to an authentication session.
 		 */
-		createSession(
-			scopes: readonly string[],
-			options: AuthenticationProviderCreateSessionOptions
-		): Thenable<AuthenticationSession>;
+		createSession(scopes: readonly string[], options: AuthenticationProviderCreateSessionOptions): Thenable<AuthenticationSession>;
 	}
 }

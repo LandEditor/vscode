@@ -11,8 +11,8 @@
     "test": "node runner.js"
   },
   "devDependencies": {
-    "@types/chai": "^4.2.14",
-    "chai": "^4.2.0",
+    "@types/chai": "^4.3.10",
+    "chai": "^4.3.10",
     "warnings-to-errors-webpack-plugin": "^2.3.0"
   }
 }

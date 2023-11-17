@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Uri } from "vscode";
+import { Uri } from 'vscode';
 
 export interface GitUriParams {
 	path: string;
@@ -27,14 +27,10 @@ export interface GitUriOptions {
 // As a mitigation for extensions like ESLint showing warnings and errors
 // for git URIs, let's change the file extension of these uris to .git,
 // when `replaceFileExtension` is true.
-export function toGitUri(
-	uri: Uri,
-	ref: string,
-	options: GitUriOptions = {}
-): Uri {
+export function toGitUri(uri: Uri, ref: string, options: GitUriOptions = {}): Uri {
 	const params: GitUriParams = {
 		path: uri.fsPath,
-		ref,
+		ref
 	};
 
 	if (options.submoduleOf) {
@@ -50,9 +46,9 @@ export function toGitUri(
 	}
 
 	return uri.with({
-		scheme: "git",
+		scheme: 'git',
 		path,
-		query: JSON.stringify(params),
+		query: JSON.stringify(params)
 	});
 }
 
@@ -61,8 +57,8 @@ export function toGitUri(
  */
 export function toMergeUris(uri: Uri): { base: Uri; ours: Uri; theirs: Uri } {
 	return {
-		base: toGitUri(uri, ":1"),
-		ours: toGitUri(uri, ":2"),
-		theirs: toGitUri(uri, ":3"),
+		base: toGitUri(uri, ':1'),
+		ours: toGitUri(uri, ':2'),
+		theirs: toGitUri(uri, ':3'),
 	};
 }

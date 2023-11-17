@@ -3,19 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { Event } from "vs/base/common/event";
-import {
-	ILayoutService,
-	ILayoutOffsetInfo,
-} from "vs/platform/layout/browser/layoutService";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { coalesce, firstOrDefault } from "vs/base/common/arrays";
-import { mainWindow } from "vs/base/browser/window";
+import * as dom from 'vs/base/browser/dom';
+import { Event } from 'vs/base/common/event';
+import { ILayoutService, ILayoutOffsetInfo } from 'vs/platform/layout/browser/layoutService';
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { coalesce, firstOrDefault } from 'vs/base/common/arrays';
+import { mainWindow } from 'vs/base/browser/window';
 
 class StandaloneLayoutService implements ILayoutService {
 	declare readonly _serviceBrand: undefined;
@@ -27,17 +21,11 @@ class StandaloneLayoutService implements ILayoutService {
 	readonly onDidAddContainer = Event.None;
 
 	get mainContainer(): HTMLElement {
-		return (
-			firstOrDefault(
-				this._codeEditorService.listCodeEditors()
-			)?.getContainerDomNode() ?? mainWindow.document.body
-		);
+		return firstOrDefault(this._codeEditorService.listCodeEditors())?.getContainerDomNode() ?? mainWindow.document.body;
 	}
 
 	get activeContainer(): HTMLElement {
-		const activeCodeEditor =
-			this._codeEditorService.getFocusedCodeEditor() ??
-			this._codeEditorService.getActiveCodeEditor();
+		const activeCodeEditor = this._codeEditorService.getFocusedCodeEditor() ?? this._codeEditorService.getActiveCodeEditor();
 
 		return activeCodeEditor?.getContainerDomNode() ?? this.mainContainer;
 	}
@@ -50,21 +38,11 @@ class StandaloneLayoutService implements ILayoutService {
 		return dom.getClientArea(this.activeContainer);
 	}
 
-	readonly mainContainerOffset: ILayoutOffsetInfo = {
-		top: 0,
-		quickPickTop: 0,
-	};
-	readonly activeContainerOffset: ILayoutOffsetInfo = {
-		top: 0,
-		quickPickTop: 0,
-	};
+	readonly mainContainerOffset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 };
+	readonly activeContainerOffset: ILayoutOffsetInfo = { top: 0, quickPickTop: 0 };
 
 	get containers(): Iterable<HTMLElement> {
-		return coalesce(
-			this._codeEditorService
-				.listCodeEditors()
-				.map((codeEditor) => codeEditor.getContainerDomNode())
-		);
+		return coalesce(this._codeEditorService.listCodeEditors().map(codeEditor => codeEditor.getContainerDomNode()));
 	}
 
 	getContainer() {
@@ -77,7 +55,8 @@ class StandaloneLayoutService implements ILayoutService {
 
 	constructor(
 		@ICodeEditorService private _codeEditorService: ICodeEditorService
-	) {}
+	) { }
+
 }
 
 export class EditorScopedLayoutService extends StandaloneLayoutService {
@@ -86,14 +65,10 @@ export class EditorScopedLayoutService extends StandaloneLayoutService {
 	}
 	constructor(
 		private _container: HTMLElement,
-		@ICodeEditorService codeEditorService: ICodeEditorService
+		@ICodeEditorService codeEditorService: ICodeEditorService,
 	) {
 		super(codeEditorService);
 	}
 }
 
-registerSingleton(
-	ILayoutService,
-	StandaloneLayoutService,
-	InstantiationType.Delayed
-);
+registerSingleton(ILayoutService, StandaloneLayoutService, InstantiationType.Delayed);

@@ -3,33 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import type * as Proto from "../../tsServer/protocol/protocol";
-import * as PConst from "../../tsServer/protocol/protocol.const";
+import * as vscode from 'vscode';
+import type * as Proto from '../../tsServer/protocol/protocol';
+import * as PConst from '../../tsServer/protocol/protocol.const';
 
 export function snippetForFunctionCall(
 	item: { insertText?: string | vscode.SnippetString; label: string },
 	displayParts: ReadonlyArray<Proto.SymbolDisplayPart>
 ): { snippet: vscode.SnippetString; parameterCount: number } {
-	if (item.insertText && typeof item.insertText !== "string") {
+	if (item.insertText && typeof item.insertText !== 'string') {
 		return { snippet: item.insertText, parameterCount: 0 };
 	}
 
 	const parameterListParts = getParameterListParts(displayParts);
 	const snippet = new vscode.SnippetString();
 	snippet.appendText(`${item.insertText || item.label}(`);
-	appendJoinedPlaceholders(snippet, parameterListParts.parts, ", ");
+	appendJoinedPlaceholders(snippet, parameterListParts.parts, ', ');
 	if (parameterListParts.hasOptionalParameters) {
 		snippet.appendTabstop();
 	}
-	snippet.appendText(")");
+	snippet.appendText(')');
 	snippet.appendTabstop(0);
-	return {
-		snippet,
-		parameterCount:
-			parameterListParts.parts.length +
-			(parameterListParts.hasOptionalParameters ? 1 : 0),
-	};
+	return { snippet, parameterCount: parameterListParts.parts.length + (parameterListParts.hasOptionalParameters ? 1 : 0) };
 }
 
 function appendJoinedPlaceholders(
@@ -77,34 +72,31 @@ function getParameterListParts(
 					// Only take top level paren names
 					const next = displayParts[i + 1];
 					// Skip optional parameters
-					const nameIsFollowedByOptionalIndicator =
-						next && next.text === "?";
+					const nameIsFollowedByOptionalIndicator = next && next.text === '?';
 					// Skip this parameter
-					const nameIsThis = part.text === "this";
+					const nameIsThis = part.text === 'this';
 					if (!nameIsFollowedByOptionalIndicator && !nameIsThis) {
 						parts.push(part);
 					}
-					hasOptionalParameters =
-						hasOptionalParameters ||
-						nameIsFollowedByOptionalIndicator;
+					hasOptionalParameters = hasOptionalParameters || nameIsFollowedByOptionalIndicator;
 				}
 				break;
 
 			case PConst.DisplayPartKind.punctuation:
-				if (part.text === "(") {
+				if (part.text === '(') {
 					++parenCount;
-				} else if (part.text === ")") {
+				} else if (part.text === ')') {
 					--parenCount;
 					if (parenCount <= 0 && isInMethod) {
 						break outer;
 					}
-				} else if (part.text === "..." && parenCount === 1) {
+				} else if (part.text === '...' && parenCount === 1) {
 					// Found rest parmeter. Do not fill in any further arguments
 					hasOptionalParameters = true;
 					break outer;
-				} else if (part.text === "{") {
+				} else if (part.text === '{') {
 					++braceCount;
-				} else if (part.text === "}") {
+				} else if (part.text === '}') {
 					--braceCount;
 				}
 				break;

@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
+'use strict';
 
-const performance = require("./vs/base/common/performance");
-performance.mark("code/fork/start");
+const performance = require('./vs/base/common/performance');
+performance.mark('code/fork/start');
 
-const bootstrap = require("./bootstrap");
-const bootstrapNode = require("./bootstrap-node");
+const bootstrap = require('./bootstrap');
+const bootstrapNode = require('./bootstrap-node');
 
 // Crash reporter
 configureCrashReporter();
@@ -21,29 +21,28 @@ bootstrapNode.removeGlobalNodeModuleLookupPaths();
 // Enable ASAR in our forked processes
 bootstrap.enableASARSupport();
 
-if (process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]) {
-	bootstrapNode.injectNodeModuleLookupPath(
-		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]
-	);
+if (process.env['VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH']) {
+	bootstrapNode.injectNodeModuleLookupPath(process.env['VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH']);
 }
 
 // Configure: pipe logging to parent process
-if (!!process.send && process.env["VSCODE_PIPE_LOGGING"] === "true") {
+if (!!process.send && process.env['VSCODE_PIPE_LOGGING'] === 'true') {
 	pipeLoggingToParent();
 }
 
 // Handle Exceptions
-if (!process.env["VSCODE_HANDLES_UNCAUGHT_ERRORS"]) {
+if (!process.env['VSCODE_HANDLES_UNCAUGHT_ERRORS']) {
 	handleExceptions();
 }
 
 // Terminate when parent terminates
-if (process.env["VSCODE_PARENT_PID"]) {
+if (process.env['VSCODE_PARENT_PID']) {
 	terminateWhenParentTerminates();
 }
 
 // Load AMD entry point
-require("./bootstrap-amd").load(process.env["VSCODE_AMD_ENTRYPOINT"]);
+require('./bootstrap-amd').load(process.env['VSCODE_AMD_ENTRYPOINT']);
+
 
 //#region Helpers
 
@@ -68,8 +67,8 @@ function pipeLoggingToParent() {
 				// Any argument of type 'undefined' needs to be specially treated because
 				// JSON.stringify will simply ignore those. We replace them with the string
 				// 'undefined' which is not 100% right, but good enough to be logged to console
-				if (typeof arg === "undefined") {
-					arg = "undefined";
+				if (typeof arg === 'undefined') {
+					arg = 'undefined';
 				}
 
 				// Any argument that is an Error will be changed to be just the error stack/message
@@ -89,10 +88,11 @@ function pipeLoggingToParent() {
 
 		try {
 			const res = JSON.stringify(argsArray, function (key, value) {
+
 				// Objects get special treatment to prevent circles
 				if (isObject(value) || Array.isArray(value)) {
 					if (seen.indexOf(value) !== -1) {
-						return "[Circular]";
+						return '[Circular]';
 					}
 
 					seen.push(value);
@@ -102,7 +102,7 @@ function pipeLoggingToParent() {
 			});
 
 			if (res.length > MAX_LENGTH) {
-				return "Output omitted for a large object that exceeds the limits";
+				return 'Output omitted for a large object that exceeds the limits';
 			}
 
 			return res;
@@ -128,13 +128,11 @@ function pipeLoggingToParent() {
 	 * @param {unknown} obj
 	 */
 	function isObject(obj) {
-		return (
-			typeof obj === "object" &&
-			obj !== null &&
-			!Array.isArray(obj) &&
-			!(obj instanceof RegExp) &&
-			!(obj instanceof Date)
-		);
+		return typeof obj === 'object'
+			&& obj !== null
+			&& !Array.isArray(obj)
+			&& !(obj instanceof RegExp)
+			&& !(obj instanceof Date);
 	}
 
 	/**
@@ -143,7 +141,7 @@ function pipeLoggingToParent() {
 	 * @param {string} args
 	 */
 	function safeSendConsoleMessage(severity, args) {
-		safeSend({ type: "__$console", severity, arguments: args });
+		safeSend({ type: '__$console', severity, arguments: args });
 	}
 
 	/**
@@ -157,11 +155,8 @@ function pipeLoggingToParent() {
 	 */
 	function wrapConsoleMethod(method, severity) {
 		Object.defineProperty(console, method, {
-			set: () => {},
-			get: () =>
-				function () {
-					safeSendConsoleMessage(severity, safeToArray(arguments));
-				},
+			set: () => { },
+			get: () => function () { safeSendConsoleMessage(severity, safeToArray(arguments)); },
 		});
 	}
 
@@ -179,16 +174,13 @@ function pipeLoggingToParent() {
 		const original = stream.write;
 
 		/** @type string */
-		let buf = "";
+		let buf = '';
 
-		Object.defineProperty(stream, "write", {
-			set: () => {},
+		Object.defineProperty(stream, 'write', {
+			set: () => { },
 			get: () => (chunk, encoding, callback) => {
 				buf += chunk.toString(encoding);
-				const eol =
-					buf.length > MAX_STREAM_BUFFER_LENGTH
-						? buf.length
-						: buf.lastIndexOf("\n");
+				const eol = buf.length > MAX_STREAM_BUFFER_LENGTH ? buf.length : buf.lastIndexOf('\n');
 				if (eol !== -1) {
 					console[severity](buf.slice(0, eol));
 					buf = buf.slice(eol + 1);
@@ -200,44 +192,39 @@ function pipeLoggingToParent() {
 	}
 
 	// Pass console logging to the outside so that we have it in the main side if told so
-	if (process.env["VSCODE_VERBOSE_LOGGING"] === "true") {
-		wrapConsoleMethod("info", "log");
-		wrapConsoleMethod("log", "log");
-		wrapConsoleMethod("warn", "warn");
-		wrapConsoleMethod("error", "error");
+	if (process.env['VSCODE_VERBOSE_LOGGING'] === 'true') {
+		wrapConsoleMethod('info', 'log');
+		wrapConsoleMethod('log', 'log');
+		wrapConsoleMethod('warn', 'warn');
+		wrapConsoleMethod('error', 'error');
 	} else {
-		console.log = function () {
-			/* ignore */
-		};
-		console.warn = function () {
-			/* ignore */
-		};
-		console.info = function () {
-			/* ignore */
-		};
-		wrapConsoleMethod("error", "error");
+		console.log = function () { /* ignore */ };
+		console.warn = function () { /* ignore */ };
+		console.info = function () { /* ignore */ };
+		wrapConsoleMethod('error', 'error');
 	}
 
-	wrapStream("stderr", "error");
-	wrapStream("stdout", "log");
+	wrapStream('stderr', 'error');
+	wrapStream('stdout', 'log');
 }
 
 function handleExceptions() {
+
 	// Handle uncaught exceptions
-	process.on("uncaughtException", function (err) {
-		console.error("Uncaught Exception: ", err);
+	process.on('uncaughtException', function (err) {
+		console.error('Uncaught Exception: ', err);
 	});
 
 	// Handle unhandled promise rejections
-	process.on("unhandledRejection", function (reason) {
-		console.error("Unhandled Promise Rejection: ", reason);
+	process.on('unhandledRejection', function (reason) {
+		console.error('Unhandled Promise Rejection: ', reason);
 	});
 }
 
 function terminateWhenParentTerminates() {
-	const parentPid = Number(process.env["VSCODE_PARENT_PID"]);
+	const parentPid = Number(process.env['VSCODE_PARENT_PID']);
 
-	if (typeof parentPid === "number" && !isNaN(parentPid)) {
+	if (typeof parentPid === 'number' && !isNaN(parentPid)) {
 		setInterval(function () {
 			try {
 				process.kill(parentPid, 0); // throws an exception if the main process doesn't exist anymore.
@@ -249,19 +236,11 @@ function terminateWhenParentTerminates() {
 }
 
 function configureCrashReporter() {
-	const crashReporterProcessType =
-		process.env["VSCODE_CRASH_REPORTER_PROCESS_TYPE"];
+	const crashReporterProcessType = process.env['VSCODE_CRASH_REPORTER_PROCESS_TYPE'];
 	if (crashReporterProcessType) {
 		try {
-			if (
-				process["crashReporter"] &&
-				typeof process["crashReporter"].addExtraParameter ===
-					"function" /* Electron only */
-			) {
-				process["crashReporter"].addExtraParameter(
-					"processType",
-					crashReporterProcessType
-				);
+			if (process['crashReporter'] && typeof process['crashReporter'].addExtraParameter === 'function' /* Electron only */) {
+				process['crashReporter'].addExtraParameter('processType', crashReporterProcessType);
 			}
 		} catch (error) {
 			console.error(error);

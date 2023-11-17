@@ -3,27 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	QuickPickItem,
-	window,
-	QuickPick,
-	QuickPickItemKind,
-	l10n,
-} from "vscode";
-import {
-	RemoteSourceProvider,
-	RemoteSource,
-	PickRemoteSourceOptions,
-	PickRemoteSourceResult,
-	RemoteSourceAction,
-} from "./api/git-base";
-import { Model } from "./model";
-import { throttle, debounce } from "./decorators";
+import { QuickPickItem, window, QuickPick, QuickPickItemKind, l10n } from 'vscode';
+import { RemoteSourceProvider, RemoteSource, PickRemoteSourceOptions, PickRemoteSourceResult, RemoteSourceAction } from './api/git-base';
+import { Model } from './model';
+import { throttle, debounce } from './decorators';
 
-async function getQuickPickResult<T extends QuickPickItem>(
-	quickpick: QuickPick<T>
-): Promise<T | undefined> {
-	const result = await new Promise<T | undefined>((c) => {
+async function getQuickPickResult<T extends QuickPickItem>(quickpick: QuickPick<T>): Promise<T | undefined> {
+	const result = await new Promise<T | undefined>(c => {
 		quickpick.onDidAccept(() => c(quickpick.selectedItems[0]));
 		quickpick.onDidHide(() => c(undefined));
 		quickpick.show();
@@ -34,24 +20,20 @@ async function getQuickPickResult<T extends QuickPickItem>(
 }
 
 class RemoteSourceProviderQuickPick {
-	private quickpick:
-		| QuickPick<QuickPickItem & { remoteSource?: RemoteSource }>
-		| undefined;
 
-	constructor(private provider: RemoteSourceProvider) {}
+	private quickpick: QuickPick<QuickPickItem & { remoteSource?: RemoteSource }> | undefined;
+
+	constructor(private provider: RemoteSourceProvider) { }
 
 	private ensureQuickPick() {
 		if (!this.quickpick) {
 			this.quickpick = window.createQuickPick();
 			this.quickpick.ignoreFocusOut = true;
 			if (this.provider.supportsQuery) {
-				this.quickpick.placeholder =
-					this.provider.placeholder ??
-					l10n.t("Repository name (type to search)");
+				this.quickpick.placeholder = this.provider.placeholder ?? l10n.t('Repository name (type to search)');
 				this.quickpick.onDidChangeValue(this.onDidChangeValue, this);
 			} else {
-				this.quickpick.placeholder =
-					this.provider.placeholder ?? l10n.t("Repository name");
+				this.quickpick.placeholder = this.provider.placeholder ?? l10n.t('Repository name');
 			}
 		}
 	}
@@ -68,39 +50,24 @@ class RemoteSourceProviderQuickPick {
 			this.quickpick!.busy = true;
 			this.quickpick!.show();
 
-			const remoteSources =
-				(await this.provider.getRemoteSources(this.quickpick?.value)) ||
-				[];
+			const remoteSources = await this.provider.getRemoteSources(this.quickpick?.value) || [];
 
 			if (remoteSources.length === 0) {
-				this.quickpick!.items = [
-					{
-						label: l10n.t("No remote repositories found."),
-						alwaysShow: true,
-					},
-				];
+				this.quickpick!.items = [{
+					label: l10n.t('No remote repositories found.'),
+					alwaysShow: true
+				}];
 			} else {
-				this.quickpick!.items = remoteSources.map((remoteSource) => ({
-					label: remoteSource.icon
-						? `$(${remoteSource.icon}) ${remoteSource.name}`
-						: remoteSource.name,
-					description:
-						remoteSource.description ||
-						(typeof remoteSource.url === "string"
-							? remoteSource.url
-							: remoteSource.url[0]),
+				this.quickpick!.items = remoteSources.map(remoteSource => ({
+					label: remoteSource.icon ? `$(${remoteSource.icon}) ${remoteSource.name}` : remoteSource.name,
+					description: remoteSource.description || (typeof remoteSource.url === 'string' ? remoteSource.url : remoteSource.url[0]),
 					detail: remoteSource.detail,
 					remoteSource,
-					alwaysShow: true,
+					alwaysShow: true
 				}));
 			}
 		} catch (err) {
-			this.quickpick!.items = [
-				{
-					label: l10n.t("{0} Error: {1}", "$(error)", err.message),
-					alwaysShow: true,
-				},
-			];
+			this.quickpick!.items = [{ label: l10n.t('{0} Error: {1}', '$(error)', err.message), alwaysShow: true }];
 			console.error(err);
 		} finally {
 			this.quickpick!.busy = false;
@@ -114,10 +81,7 @@ class RemoteSourceProviderQuickPick {
 	}
 }
 
-export async function getRemoteSourceActions(
-	model: Model,
-	url: string
-): Promise<RemoteSourceAction[]> {
+export async function getRemoteSourceActions(model: Model, url: string): Promise<RemoteSourceAction[]> {
 	const providers = model.getRemoteProviders();
 
 	const remoteSourceActions = [];
@@ -131,58 +95,32 @@ export async function getRemoteSourceActions(
 	return remoteSourceActions;
 }
 
-export async function pickRemoteSource(
-	model: Model,
-	options: PickRemoteSourceOptions & { branch?: false | undefined }
-): Promise<string | undefined>;
-export async function pickRemoteSource(
-	model: Model,
-	options: PickRemoteSourceOptions & { branch: true }
-): Promise<PickRemoteSourceResult | undefined>;
-export async function pickRemoteSource(
-	model: Model,
-	options: PickRemoteSourceOptions = {}
-): Promise<string | PickRemoteSourceResult | undefined> {
-	const quickpick = window.createQuickPick<
-		QuickPickItem & { provider?: RemoteSourceProvider; url?: string }
-	>();
+export async function pickRemoteSource(model: Model, options: PickRemoteSourceOptions & { branch?: false | undefined }): Promise<string | undefined>;
+export async function pickRemoteSource(model: Model, options: PickRemoteSourceOptions & { branch: true }): Promise<PickRemoteSourceResult | undefined>;
+export async function pickRemoteSource(model: Model, options: PickRemoteSourceOptions = {}): Promise<string | PickRemoteSourceResult | undefined> {
+	const quickpick = window.createQuickPick<(QuickPickItem & { provider?: RemoteSourceProvider; url?: string })>();
 	quickpick.title = options.title;
 
 	if (options.providerName) {
-		const provider = model
-			.getRemoteProviders()
-			.filter((provider) => provider.name === options.providerName)[0];
+		const provider = model.getRemoteProviders()
+			.filter(provider => provider.name === options.providerName)[0];
 
 		if (provider) {
 			return await pickProviderSource(provider, options);
 		}
 	}
 
-	const remoteProviders = model
-		.getRemoteProviders()
-		.map((provider) => ({
-			label:
-				(provider.icon ? `$(${provider.icon}) ` : "") +
-				(options.providerLabel
-					? options.providerLabel(provider)
-					: provider.name),
-			alwaysShow: true,
-			provider,
-		}));
+	const remoteProviders = model.getRemoteProviders()
+		.map(provider => ({ label: (provider.icon ? `$(${provider.icon}) ` : '') + (options.providerLabel ? options.providerLabel(provider) : provider.name), alwaysShow: true, provider }));
 
-	const recentSources: (QuickPickItem & {
-		url?: string;
-		timestamp: number;
-	})[] = [];
+	const recentSources: (QuickPickItem & { url?: string; timestamp: number })[] = [];
 	if (options.showRecentSources) {
 		for (const { provider } of remoteProviders) {
-			const sources = (
-				(await provider.getRecentRemoteSources?.()) ?? []
-			).map((item) => {
+			const sources = (await provider.getRecentRemoteSources?.() ?? []).map((item) => {
 				return {
 					...item,
-					label: (item.icon ? `$(${item.icon}) ` : "") + item.name,
-					url: typeof item.url === "string" ? item.url : item.url[0],
+					label: (item.icon ? `$(${item.icon}) ` : '') + item.name,
+					url: typeof item.url === 'string' ? item.url : item.url[0],
 				};
 			});
 			recentSources.push(...sources);
@@ -190,32 +128,26 @@ export async function pickRemoteSource(
 	}
 
 	const items = [
-		{ kind: QuickPickItemKind.Separator, label: l10n.t("remote sources") },
+		{ kind: QuickPickItemKind.Separator, label: l10n.t('remote sources') },
 		...remoteProviders,
-		{ kind: QuickPickItemKind.Separator, label: l10n.t("recently opened") },
-		...recentSources.sort((a, b) => b.timestamp - a.timestamp),
+		{ kind: QuickPickItemKind.Separator, label: l10n.t('recently opened') },
+		...recentSources.sort((a, b) => b.timestamp - a.timestamp)
 	];
 
-	quickpick.placeholder =
-		options.placeholder ??
-		(remoteProviders.length === 0
-			? l10n.t("Provide repository URL")
-			: l10n.t("Provide repository URL or pick a repository source."));
+	quickpick.placeholder = options.placeholder ?? (remoteProviders.length === 0
+		? l10n.t('Provide repository URL')
+		: l10n.t('Provide repository URL or pick a repository source.'));
 
 	const updatePicks = (value?: string) => {
 		if (value) {
-			const label =
-				(typeof options.urlLabel === "string"
-					? options.urlLabel
-					: options.urlLabel?.(value)) ?? l10n.t("URL");
-			quickpick.items = [
-				{
-					label: label,
-					description: value,
-					alwaysShow: true,
-					url: value,
-				},
-				...items,
+			const label = (typeof options.urlLabel === 'string' ? options.urlLabel : options.urlLabel?.(value)) ?? l10n.t('URL');
+			quickpick.items = [{
+				label: label,
+				description: value,
+				alwaysShow: true,
+				url: value
+			},
+			...items
 			];
 		} else {
 			quickpick.items = items;
@@ -238,23 +170,17 @@ export async function pickRemoteSource(
 	return undefined;
 }
 
-async function pickProviderSource(
-	provider: RemoteSourceProvider,
-	options: PickRemoteSourceOptions = {}
-): Promise<string | PickRemoteSourceResult | undefined> {
+async function pickProviderSource(provider: RemoteSourceProvider, options: PickRemoteSourceOptions = {}): Promise<string | PickRemoteSourceResult | undefined> {
 	const quickpick = new RemoteSourceProviderQuickPick(provider);
 	const remote = await quickpick.pick();
 
 	let url: string | undefined;
 
 	if (remote) {
-		if (typeof remote.url === "string") {
+		if (typeof remote.url === 'string') {
 			url = remote.url;
 		} else if (remote.url.length > 0) {
-			url = await window.showQuickPick(remote.url, {
-				ignoreFocusOut: true,
-				placeHolder: l10n.t("Choose a URL to clone from."),
-			});
+			url = await window.showQuickPick(remote.url, { ignoreFocusOut: true, placeHolder: l10n.t('Choose a URL to clone from.') });
 		}
 	}
 
@@ -273,7 +199,7 @@ async function pickProviderSource(
 	}
 
 	const branch = await window.showQuickPick(branches, {
-		placeHolder: l10n.t("Branch name"),
+		placeHolder: l10n.t('Branch name')
 	});
 
 	if (!branch) {

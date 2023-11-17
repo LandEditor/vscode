@@ -3,83 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ContextView,
-	ContextViewDOMPosition,
-} from "vs/base/browser/ui/contextview/contextview";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { IContextViewDelegate, IContextViewService } from "./contextView";
+import { ContextView, ContextViewDOMPosition } from 'vs/base/browser/ui/contextview/contextview';
+import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
+import { IContextViewDelegate, IContextViewService } from './contextView';
 
-export class ContextViewService
-	extends Disposable
-	implements IContextViewService
-{
+export class ContextViewService extends Disposable implements IContextViewService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private currentViewDisposable: IDisposable = Disposable.None;
-	private contextView: ContextView;
-	private container: HTMLElement | null;
-	private shadowRoot: boolean | undefined;
+	private readonly contextView = this._register(new ContextView(this.layoutService.mainContainer, ContextViewDOMPosition.ABSOLUTE));
 
 	constructor(
 		@ILayoutService private readonly layoutService: ILayoutService
 	) {
 		super();
 
-		this.container = layoutService.mainContainer;
-		this.contextView = this._register(
-			new ContextView(this.container, ContextViewDOMPosition.ABSOLUTE)
-		);
 		this.layout();
-
 		this._register(layoutService.onDidLayoutContainer(() => this.layout()));
 	}
 
 	// ContextView
 
-	private setContainer(
-		container: HTMLElement,
-		domPosition?: ContextViewDOMPosition
-	): void {
-		this.container = container;
-		this.contextView.setContainer(
-			container,
-			domPosition || ContextViewDOMPosition.ABSOLUTE
-		);
-	}
-
-	showContextView(
-		delegate: IContextViewDelegate,
-		container?: HTMLElement,
-		shadowRoot?: boolean
-	): IDisposable {
+	showContextView(delegate: IContextViewDelegate, container?: HTMLElement, shadowRoot?: boolean): IDisposable {
+		let domPosition: ContextViewDOMPosition;
 		if (container) {
-			if (
-				container !== this.container ||
-				this.shadowRoot !== shadowRoot
-			) {
-				this.setContainer(
-					container,
-					shadowRoot
-						? ContextViewDOMPosition.FIXED_SHADOW
-						: ContextViewDOMPosition.FIXED
-				);
-			}
+			domPosition = shadowRoot ? ContextViewDOMPosition.FIXED_SHADOW : ContextViewDOMPosition.FIXED;
 		} else {
-			if (this.container !== this.layoutService.activeContainer) {
-				this.setContainer(
-					this.layoutService.activeContainer,
-					ContextViewDOMPosition.ABSOLUTE
-				);
-			}
+			domPosition = ContextViewDOMPosition.ABSOLUTE;
 		}
 
-		this.shadowRoot = shadowRoot;
+		this.contextView.setContainer(container ?? this.layoutService.activeContainer, domPosition);
 
 		this.contextView.show(delegate);
 
@@ -103,5 +58,12 @@ export class ContextViewService
 
 	hideContextView(data?: any): void {
 		this.contextView.hide(data);
+	}
+
+	override dispose(): void {
+		super.dispose();
+
+		this.currentViewDisposable.dispose();
+		this.currentViewDisposable = Disposable.None;
 	}
 }

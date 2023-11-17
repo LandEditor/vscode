@@ -2,9 +2,9 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import * as nls from "vs/nls";
+import * as nls from 'vs/nls';
 
-export const LANGUAGE_DEFAULT = "en";
+export const LANGUAGE_DEFAULT = 'en';
 
 let _isWindows = false;
 let _isMacintosh = false;
@@ -57,20 +57,16 @@ declare const process: INodeProcess;
 const $globalThis: any = globalThis;
 
 let nodeProcess: INodeProcess | undefined = undefined;
-if (
-	typeof $globalThis.vscode !== "undefined" &&
-	typeof $globalThis.vscode.process !== "undefined"
-) {
+if (typeof $globalThis.vscode !== 'undefined' && typeof $globalThis.vscode.process !== 'undefined') {
 	// Native environment (sandboxed)
 	nodeProcess = $globalThis.vscode.process;
-} else if (typeof process !== "undefined") {
+} else if (typeof process !== 'undefined') {
 	// Native environment (non-sandboxed)
 	nodeProcess = process;
 }
 
-const isElectronProcess = typeof nodeProcess?.versions?.electron === "string";
-const isElectronRenderer =
-	isElectronProcess && nodeProcess?.type === "renderer";
+const isElectronProcess = typeof nodeProcess?.versions?.electron === 'string';
+const isElectronRenderer = isElectronProcess && nodeProcess?.type === 'renderer';
 
 interface INavigator {
 	userAgent: string;
@@ -80,18 +76,13 @@ interface INavigator {
 declare const navigator: INavigator;
 
 // Web environment
-if (typeof navigator === "object" && !isElectronRenderer) {
+if (typeof navigator === 'object' && !isElectronRenderer) {
 	_userAgent = navigator.userAgent;
-	_isWindows = _userAgent.indexOf("Windows") >= 0;
-	_isMacintosh = _userAgent.indexOf("Macintosh") >= 0;
-	_isIOS =
-		(_userAgent.indexOf("Macintosh") >= 0 ||
-			_userAgent.indexOf("iPad") >= 0 ||
-			_userAgent.indexOf("iPhone") >= 0) &&
-		!!navigator.maxTouchPoints &&
-		navigator.maxTouchPoints > 0;
-	_isLinux = _userAgent.indexOf("Linux") >= 0;
-	_isMobile = _userAgent?.indexOf("Mobi") >= 0;
+	_isWindows = _userAgent.indexOf('Windows') >= 0;
+	_isMacintosh = _userAgent.indexOf('Macintosh') >= 0;
+	_isIOS = (_userAgent.indexOf('Macintosh') >= 0 || _userAgent.indexOf('iPad') >= 0 || _userAgent.indexOf('iPhone') >= 0) && !!navigator.maxTouchPoints && navigator.maxTouchPoints > 0;
+	_isLinux = _userAgent.indexOf('Linux') >= 0;
+	_isMobile = _userAgent?.indexOf('Mobi') >= 0;
 	_isWeb = true;
 
 	const configuredLocale = nls.getConfiguredDefaultLocale(
@@ -99,10 +90,7 @@ if (typeof navigator === "object" && !isElectronRenderer) {
 		// to ensure that the NLS AMD Loader plugin has been loaded and configured.
 		// This is because the loader plugin decides what the default locale is based on
 		// how it's able to resolve the strings.
-		nls.localize(
-			{ key: "ensureLoaderPluginIsLoaded", comment: ["{Locked}"] },
-			"_"
-		)
+		nls.localize({ key: 'ensureLoaderPluginIsLoaded', comment: ['{Locked}'] }, '_')
 	);
 
 	_locale = configuredLocale || LANGUAGE_DEFAULT;
@@ -111,58 +99,50 @@ if (typeof navigator === "object" && !isElectronRenderer) {
 }
 
 // Native environment
-else if (typeof nodeProcess === "object") {
-	_isWindows = nodeProcess.platform === "win32";
-	_isMacintosh = nodeProcess.platform === "darwin";
-	_isLinux = nodeProcess.platform === "linux";
-	_isLinuxSnap =
-		_isLinux &&
-		!!nodeProcess.env["SNAP"] &&
-		!!nodeProcess.env["SNAP_REVISION"];
+else if (typeof nodeProcess === 'object') {
+	_isWindows = (nodeProcess.platform === 'win32');
+	_isMacintosh = (nodeProcess.platform === 'darwin');
+	_isLinux = (nodeProcess.platform === 'linux');
+	_isLinuxSnap = _isLinux && !!nodeProcess.env['SNAP'] && !!nodeProcess.env['SNAP_REVISION'];
 	_isElectron = isElectronProcess;
-	_isCI =
-		!!nodeProcess.env["CI"] ||
-		!!nodeProcess.env["BUILD_ARTIFACTSTAGINGDIRECTORY"];
+	_isCI = !!nodeProcess.env['CI'] || !!nodeProcess.env['BUILD_ARTIFACTSTAGINGDIRECTORY'];
 	_locale = LANGUAGE_DEFAULT;
 	_language = LANGUAGE_DEFAULT;
-	const rawNlsConfig = nodeProcess.env["VSCODE_NLS_CONFIG"];
+	const rawNlsConfig = nodeProcess.env['VSCODE_NLS_CONFIG'];
 	if (rawNlsConfig) {
 		try {
 			const nlsConfig: NLSConfig = JSON.parse(rawNlsConfig);
-			const resolved = nlsConfig.availableLanguages["*"];
+			const resolved = nlsConfig.availableLanguages['*'];
 			_locale = nlsConfig.locale;
 			_platformLocale = nlsConfig.osLocale;
 			// VSCode's default language is 'en'
 			_language = resolved ? resolved : LANGUAGE_DEFAULT;
 			_translationsConfigFile = nlsConfig._translationsConfigFile;
-		} catch (e) {}
+		} catch (e) {
+		}
 	}
 	_isNative = true;
 }
 
 // Unknown environment
 else {
-	console.error("Unable to resolve platform.");
+	console.error('Unable to resolve platform.');
 }
 
 export const enum Platform {
 	Web,
 	Mac,
 	Linux,
-	Windows,
+	Windows
 }
-export type PlatformName = "Web" | "Windows" | "Mac" | "Linux";
+export type PlatformName = 'Web' | 'Windows' | 'Mac' | 'Linux';
 
 export function PlatformToString(platform: Platform): PlatformName {
 	switch (platform) {
-		case Platform.Web:
-			return "Web";
-		case Platform.Mac:
-			return "Mac";
-		case Platform.Linux:
-			return "Linux";
-		case Platform.Windows:
-			return "Windows";
+		case Platform.Web: return 'Web';
+		case Platform.Mac: return 'Mac';
+		case Platform.Linux: return 'Linux';
+		case Platform.Windows: return 'Windows';
 	}
 }
 
@@ -182,8 +162,7 @@ export const isLinuxSnap = _isLinuxSnap;
 export const isNative = _isNative;
 export const isElectron = _isElectron;
 export const isWeb = _isWeb;
-export const isWebWorker =
-	_isWeb && typeof $globalThis.importScripts === "function";
+export const isWebWorker = (_isWeb && typeof $globalThis.importScripts === 'function');
 export const webWorkerOrigin = isWebWorker ? $globalThis.origin : undefined;
 export const isIOS = _isIOS;
 export const isMobile = _isMobile;
@@ -203,26 +182,23 @@ export const userAgent = _userAgent;
 export const language = _language;
 
 export namespace Language {
+
 	export function value(): string {
 		return language;
 	}
 
 	export function isDefaultVariant(): boolean {
 		if (language.length === 2) {
-			return language === "en";
+			return language === 'en';
 		} else if (language.length >= 3) {
-			return (
-				language[0] === "e" &&
-				language[1] === "n" &&
-				language[2] === "-"
-			);
+			return language[0] === 'e' && language[1] === 'n' && language[2] === '-';
 		} else {
 			return false;
 		}
 	}
 
 	export function isDefault(): boolean {
-		return language === "en";
+		return language === 'en';
 	}
 }
 
@@ -246,8 +222,7 @@ export const platformLocale = _platformLocale;
  */
 export const translationsConfigFile = _translationsConfigFile;
 
-export const setTimeout0IsFaster =
-	typeof $globalThis.postMessage === "function" && !$globalThis.importScripts;
+export const setTimeout0IsFaster = (typeof $globalThis.postMessage === 'function' && !$globalThis.importScripts);
 
 /**
  * See https://html.spec.whatwg.org/multipage/timers-and-user-prompts.html#:~:text=than%204%2C%20then-,set%20timeout%20to%204,-.
@@ -263,7 +238,7 @@ export const setTimeout0 = (() => {
 		}
 		const pending: IQueueElement[] = [];
 
-		$globalThis.addEventListener("message", (e: any) => {
+		$globalThis.addEventListener('message', (e: any) => {
 			if (e.data && e.data.vscodeScheduleAsyncWork) {
 				for (let i = 0, len = pending.length; i < len; i++) {
 					const candidate = pending[i];
@@ -280,9 +255,9 @@ export const setTimeout0 = (() => {
 			const myId = ++lastId;
 			pending.push({
 				id: myId,
-				callback: callback,
+				callback: callback
 			});
-			$globalThis.postMessage({ vscodeScheduleAsyncWork: myId }, "*");
+			$globalThis.postMessage({ vscodeScheduleAsyncWork: myId }, '*');
 		};
 	}
 	return (callback: () => void) => setTimeout(callback);
@@ -291,14 +266,9 @@ export const setTimeout0 = (() => {
 export const enum OperatingSystem {
 	Windows = 1,
 	Macintosh = 2,
-	Linux = 3,
+	Linux = 3
 }
-export const OS =
-	_isMacintosh || _isIOS
-		? OperatingSystem.Macintosh
-		: _isWindows
-		? OperatingSystem.Windows
-		: OperatingSystem.Linux;
+export const OS = (_isMacintosh || _isIOS ? OperatingSystem.Macintosh : (_isWindows ? OperatingSystem.Windows : OperatingSystem.Linux));
 
 let _isLittleEndian = true;
 let _isLittleEndianComputed = false;
@@ -309,17 +279,13 @@ export function isLittleEndian(): boolean {
 		test[0] = 1;
 		test[1] = 2;
 		const view = new Uint16Array(test.buffer);
-		_isLittleEndian = view[0] === (2 << 8) + 1;
+		_isLittleEndian = (view[0] === (2 << 8) + 1);
 	}
 	return _isLittleEndian;
 }
 
-export const isChrome = !!(userAgent && userAgent.indexOf("Chrome") >= 0);
-export const isFirefox = !!(userAgent && userAgent.indexOf("Firefox") >= 0);
-export const isSafari = !!(
-	!isChrome &&
-	userAgent &&
-	userAgent.indexOf("Safari") >= 0
-);
-export const isEdge = !!(userAgent && userAgent.indexOf("Edg/") >= 0);
-export const isAndroid = !!(userAgent && userAgent.indexOf("Android") >= 0);
+export const isChrome = !!(userAgent && userAgent.indexOf('Chrome') >= 0);
+export const isFirefox = !!(userAgent && userAgent.indexOf('Firefox') >= 0);
+export const isSafari = !!(!isChrome && (userAgent && userAgent.indexOf('Safari') >= 0));
+export const isEdge = !!(userAgent && userAgent.indexOf('Edg/') >= 0);
+export const isAndroid = !!(userAgent && userAgent.indexOf('Android') >= 0);

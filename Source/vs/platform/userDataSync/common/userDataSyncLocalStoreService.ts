@@ -3,45 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Promises } from "vs/base/common/async";
-import { VSBuffer } from "vs/base/common/buffer";
-import { toLocalISOString } from "vs/base/common/date";
-import { Disposable } from "vs/base/common/lifecycle";
-import { joinPath } from "vs/base/common/resources";
-import { URI } from "vs/base/common/uri";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import {
-	FileOperationResult,
-	IFileService,
-	IFileStat,
-	toFileOperationResult,
-} from "vs/platform/files/common/files";
-import { IUserDataProfilesService } from "vs/platform/userDataProfile/common/userDataProfile";
-import {
-	ALL_SYNC_RESOURCES,
-	IResourceRefHandle,
-	IUserDataSyncLocalStoreService,
-	IUserDataSyncLogService,
-	SyncResource,
-} from "vs/platform/userDataSync/common/userDataSync";
+import { Promises } from 'vs/base/common/async';
+import { VSBuffer } from 'vs/base/common/buffer';
+import { toLocalISOString } from 'vs/base/common/date';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { joinPath } from 'vs/base/common/resources';
+import { URI } from 'vs/base/common/uri';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { FileOperationResult, IFileService, IFileStat, toFileOperationResult } from 'vs/platform/files/common/files';
+import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile';
+import { ALL_SYNC_RESOURCES, IResourceRefHandle, IUserDataSyncLocalStoreService, IUserDataSyncLogService, SyncResource } from 'vs/platform/userDataSync/common/userDataSync';
 
-export class UserDataSyncLocalStoreService
-	extends Disposable
-	implements IUserDataSyncLocalStoreService
-{
+export class UserDataSyncLocalStoreService extends Disposable implements IUserDataSyncLocalStoreService {
+
 	_serviceBrand: any;
 
 	constructor(
-		@IEnvironmentService
-		private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService private readonly environmentService: IEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService
-		private readonly configurationService: IConfigurationService,
-		@IUserDataSyncLogService
-		private readonly logService: IUserDataSyncLogService,
-		@IUserDataProfilesService
-		private readonly userDataProfilesService: IUserDataProfilesService
+		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
+		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
 		this.cleanUp();
@@ -51,12 +34,7 @@ export class UserDataSyncLocalStoreService
 		for (const profile of this.userDataProfilesService.profiles) {
 			for (const resource of ALL_SYNC_RESOURCES) {
 				try {
-					await this.cleanUpBackup(
-						this.getResourceBackupHome(
-							resource,
-							profile.isDefault ? undefined : profile.id
-						)
-					);
+					await this.cleanUpBackup(this.getResourceBackupHome(resource, profile.isDefault ? undefined : profile.id));
 				} catch (error) {
 					this.logService.error(error);
 				}
@@ -65,14 +43,9 @@ export class UserDataSyncLocalStoreService
 
 		let stat: IFileStat;
 		try {
-			stat = await this.fileService.resolve(
-				this.environmentService.userDataSyncHome
-			);
+			stat = await this.fileService.resolve(this.environmentService.userDataSyncHome);
 		} catch (error) {
-			if (
-				toFileOperationResult(error) !==
-				FileOperationResult.FILE_NOT_FOUND
-			) {
+			if (toFileOperationResult(error) !== FileOperationResult.FILE_NOT_FOUND) {
 				this.logService.error(error);
 			}
 			return;
@@ -80,20 +53,10 @@ export class UserDataSyncLocalStoreService
 
 		if (stat.children) {
 			for (const child of stat.children) {
-				if (
-					child.isDirectory &&
-					!this.userDataProfilesService.profiles.some(
-						(profile) => profile.id === child.name
-					)
-				) {
+				if (child.isDirectory && !this.userDataProfilesService.profiles.some(profile => profile.id === child.name)) {
 					try {
-						this.logService.info(
-							"Deleting non existing profile from backup",
-							child.resource.path
-						);
-						await this.fileService.del(child.resource, {
-							recursive: true,
-						});
+						this.logService.info('Deleting non existing profile from backup', child.resource.path);
+						await this.fileService.del(child.resource, { recursive: true });
 					} catch (error) {
 						this.logService.error(error);
 					}
@@ -102,49 +65,27 @@ export class UserDataSyncLocalStoreService
 		}
 	}
 
-	async getAllResourceRefs(
-		resource: SyncResource,
-		collection?: string,
-		root?: URI
-	): Promise<IResourceRefHandle[]> {
+	async getAllResourceRefs(resource: SyncResource, collection?: string, root?: URI): Promise<IResourceRefHandle[]> {
 		const folder = this.getResourceBackupHome(resource, collection, root);
 		try {
 			const stat = await this.fileService.resolve(folder);
 			if (stat.children) {
-				const all = stat.children
-					.filter(
-						(stat) =>
-							stat.isFile && !stat.name.startsWith("lastSync")
-					)
-					.sort()
-					.reverse();
-				return all.map((stat) => ({
+				const all = stat.children.filter(stat => stat.isFile && !stat.name.startsWith('lastSync')).sort().reverse();
+				return all.map(stat => ({
 					ref: stat.name,
-					created: this.getCreationTime(stat),
+					created: this.getCreationTime(stat)
 				}));
 			}
 		} catch (error) {
-			if (
-				toFileOperationResult(error) !==
-				FileOperationResult.FILE_NOT_FOUND
-			) {
+			if (toFileOperationResult(error) !== FileOperationResult.FILE_NOT_FOUND) {
 				throw error;
 			}
 		}
 		return [];
 	}
 
-	async resolveResourceContent(
-		resourceKey: SyncResource,
-		ref: string,
-		collection?: string,
-		root?: URI
-	): Promise<string | null> {
-		const folder = this.getResourceBackupHome(
-			resourceKey,
-			collection,
-			root
-		);
+	async resolveResourceContent(resourceKey: SyncResource, ref: string, collection?: string, root?: URI): Promise<string | null> {
+		const folder = this.getResourceBackupHome(resourceKey, collection, root);
 		const file = joinPath(folder, ref);
 		try {
 			const content = await this.fileService.readFile(file);
@@ -155,41 +96,18 @@ export class UserDataSyncLocalStoreService
 		}
 	}
 
-	async writeResource(
-		resourceKey: SyncResource,
-		content: string,
-		cTime: Date,
-		collection?: string,
-		root?: URI
-	): Promise<void> {
-		const folder = this.getResourceBackupHome(
-			resourceKey,
-			collection,
-			root
-		);
-		const resource = joinPath(
-			folder,
-			`${toLocalISOString(cTime).replace(/-|:|\.\d+Z$/g, "")}.json`
-		);
+	async writeResource(resourceKey: SyncResource, content: string, cTime: Date, collection?: string, root?: URI): Promise<void> {
+		const folder = this.getResourceBackupHome(resourceKey, collection, root);
+		const resource = joinPath(folder, `${toLocalISOString(cTime).replace(/-|:|\.\d+Z$/g, '')}.json`);
 		try {
-			await this.fileService.writeFile(
-				resource,
-				VSBuffer.fromString(content)
-			);
+			await this.fileService.writeFile(resource, VSBuffer.fromString(content));
 		} catch (e) {
 			this.logService.error(e);
 		}
 	}
 
-	private getResourceBackupHome(
-		resource: SyncResource,
-		collection?: string,
-		root: URI = this.environmentService.userDataSyncHome
-	): URI {
-		return joinPath(
-			root,
-			...(collection ? [collection, resource] : [resource])
-		);
+	private getResourceBackupHome(resource: SyncResource, collection?: string, root: URI = this.environmentService.userDataSyncHome): URI {
+		return joinPath(root, ...(collection ? [collection, resource] : [resource]));
 	}
 
 	private async cleanUpBackup(folder: URI): Promise<void> {
@@ -203,38 +121,17 @@ export class UserDataSyncLocalStoreService
 			}
 			const stat = await this.fileService.resolve(folder);
 			if (stat.children) {
-				const all = stat.children
-					.filter(
-						(stat) =>
-							stat.isFile &&
-							/^\d{8}T\d{6}(\.json)?$/.test(stat.name)
-					)
-					.sort();
-				const backUpMaxAge =
-					1000 *
-					60 *
-					60 *
-					24 *
-					(this.configurationService.getValue<number>(
-						"sync.localBackupDuration"
-					) || 30) /* Default 30 days */;
-				let toDelete = all.filter(
-					(stat) =>
-						Date.now() - this.getCreationTime(stat) > backUpMaxAge
-				);
+				const all = stat.children.filter(stat => stat.isFile && /^\d{8}T\d{6}(\.json)?$/.test(stat.name)).sort();
+				const backUpMaxAge = 1000 * 60 * 60 * 24 * (this.configurationService.getValue<number>('sync.localBackupDuration') || 30 /* Default 30 days */);
+				let toDelete = all.filter(stat => Date.now() - this.getCreationTime(stat) > backUpMaxAge);
 				const remaining = all.length - toDelete.length;
 				if (remaining < 10) {
 					toDelete = toDelete.slice(10 - remaining);
 				}
-				await Promises.settled(
-					toDelete.map(async (stat) => {
-						this.logService.info(
-							"Deleting from backup",
-							stat.resource.path
-						);
-						await this.fileService.del(stat.resource);
-					})
-				);
+				await Promises.settled(toDelete.map(async stat => {
+					this.logService.info('Deleting from backup', stat.resource.path);
+					await this.fileService.del(stat.resource);
+				}));
 			}
 		} catch (e) {
 			this.logService.error(e);
