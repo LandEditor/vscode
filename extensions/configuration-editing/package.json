@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "jsonc-parser": "^3.2.0",
-    "@octokit/rest": "20.0.2",
+    "@octokit/rest": "19.0.4",
     "tunnel": "^0.0.6"
   },
   "capabilities": {
@@ -161,7 +161,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "20.x"
+    "@types/node": "18.x"
   },
   "repository": {
     "type": "git",

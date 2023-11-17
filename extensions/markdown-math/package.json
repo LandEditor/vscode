@@ -101,8 +101,8 @@
     "@vscode/markdown-it-katex": "^1.0.0"
   },
   "devDependencies": {
-    "@types/markdown-it": "^13.0.6",
-    "@types/vscode-notebook-renderer": "^1.72.3"
+    "@types/markdown-it": "^0.0.0",
+    "@types/vscode-notebook-renderer": "^1.60.0"
   },
   "repository": {
     "type": "git",

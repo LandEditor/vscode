@@ -69,7 +69,7 @@
     "@vscode/extension-telemetry": "^0.9.0"
   },
   "devDependencies": {
-    "@types/vscode-webview": "^1.57.4",
+    "@types/vscode-webview": "^1.57.0",
     "vscode-codicons": "^0.0.14"
   },
   "repository": {
