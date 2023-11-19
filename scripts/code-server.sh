@@ -16,7 +16,7 @@ function code() {
 	fi
 
 	NODE=$(node build/lib/node.js)
-	if [ ! -e $NODE ];then
+	if [ ! -e $NODE ]; then
 		# Load remote node
 		yarn gulp node
 	fi
@@ -24,8 +24,8 @@ function code() {
 	popd
 
 	NODE_ENV=development \
-	VSCODE_DEV=1 \
-	$NODE $ROOT/scripts/code-server.js "$@"
+		VSCODE_DEV=1 \
+		$NODE $ROOT/scripts/code-server.js "$@"
 }
 
 code "$@"
