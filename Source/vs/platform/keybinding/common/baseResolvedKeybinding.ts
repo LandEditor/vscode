@@ -3,13 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { illegalArgument } from 'vs/base/common/errors';
-import { AriaLabelProvider, ElectronAcceleratorLabelProvider, UILabelProvider, UserSettingsLabelProvider } from 'vs/base/common/keybindingLabels';
-import { Chord, SingleModifierChord, ResolvedKeybinding, ResolvedChord } from 'vs/base/common/keybindings';
-import { OperatingSystem } from 'vs/base/common/platform';
+import { illegalArgument } from "vs/base/common/errors";
+import {
+	AriaLabelProvider,
+	ElectronAcceleratorLabelProvider,
+	UILabelProvider,
+	UserSettingsLabelProvider,
+} from "vs/base/common/keybindingLabels";
+import {
+	Chord,
+	SingleModifierChord,
+	ResolvedKeybinding,
+	ResolvedChord,
+} from "vs/base/common/keybindings";
+import { OperatingSystem } from "vs/base/common/platform";
 
-export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKeybinding {
-
+export abstract class BaseResolvedKeybinding<
+	T extends Chord,
+> extends ResolvedKeybinding {
 	protected readonly _os: OperatingSystem;
 	protected readonly _chords: readonly T[];
 
@@ -23,11 +34,15 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 	}
 
 	public getLabel(): string | null {
-		return UILabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getLabel(keybinding));
+		return UILabelProvider.toLabel(this._os, this._chords, (keybinding) =>
+			this._getLabel(keybinding)
+		);
 	}
 
 	public getAriaLabel(): string | null {
-		return AriaLabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getAriaLabel(keybinding));
+		return AriaLabelProvider.toLabel(this._os, this._chords, (keybinding) =>
+			this._getAriaLabel(keybinding)
+		);
 	}
 
 	public getElectronAccelerator(): string | null {
@@ -40,11 +55,19 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 			// e.g. "shift shift"
 			return null;
 		}
-		return ElectronAcceleratorLabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getElectronAccelerator(keybinding));
+		return ElectronAcceleratorLabelProvider.toLabel(
+			this._os,
+			this._chords,
+			(keybinding) => this._getElectronAccelerator(keybinding)
+		);
 	}
 
 	public getUserSettingsLabel(): string | null {
-		return UserSettingsLabelProvider.toLabel(this._os, this._chords, (keybinding) => this._getUserSettingsLabel(keybinding));
+		return UserSettingsLabelProvider.toLabel(
+			this._os,
+			this._chords,
+			(keybinding) => this._getUserSettingsLabel(keybinding)
+		);
 	}
 
 	public isWYSIWYG(): boolean {
@@ -52,7 +75,7 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 	}
 
 	public hasMultipleChords(): boolean {
-		return (this._chords.length > 1);
+		return this._chords.length > 1;
 	}
 
 	public getChords(): ResolvedChord[] {
@@ -71,11 +94,15 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 	}
 
 	public getDispatchChords(): (string | null)[] {
-		return this._chords.map((keybinding) => this._getChordDispatch(keybinding));
+		return this._chords.map((keybinding) =>
+			this._getChordDispatch(keybinding)
+		);
 	}
 
 	public getSingleModifierDispatchChords(): (SingleModifierChord | null)[] {
-		return this._chords.map((keybinding) => this._getSingleModifierChordDispatch(keybinding));
+		return this._chords.map((keybinding) =>
+			this._getSingleModifierChordDispatch(keybinding)
+		);
 	}
 
 	protected abstract _getLabel(keybinding: T): string | null;
@@ -84,5 +111,7 @@ export abstract class BaseResolvedKeybinding<T extends Chord> extends ResolvedKe
 	protected abstract _getUserSettingsLabel(keybinding: T): string | null;
 	protected abstract _isWYSIWYG(keybinding: T): boolean;
 	protected abstract _getChordDispatch(keybinding: T): string | null;
-	protected abstract _getSingleModifierChordDispatch(keybinding: T): SingleModifierChord | null;
+	protected abstract _getSingleModifierChordDispatch(
+		keybinding: T
+	): SingleModifierChord | null;
 }

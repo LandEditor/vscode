@@ -3,12 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Memento, MementoObject } from 'vs/workbench/common/memento';
-import { IThemeService, Themable } from 'vs/platform/theme/common/themeService';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { Memento, MementoObject } from "vs/workbench/common/memento";
+import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
 
 export class Component extends Themable {
-
 	private readonly memento: Memento;
 
 	constructor(
@@ -21,21 +24,25 @@ export class Component extends Themable {
 		this.id = id;
 		this.memento = new Memento(this.id, storageService);
 
-		this._register(storageService.onWillSaveState(() => {
+		this._register(
+			storageService.onWillSaveState(() => {
+				// Ask the component to persist state into the memento
+				this.saveState();
 
-			// Ask the component to persist state into the memento
-			this.saveState();
-
-			// Then save the memento into storage
-			this.memento.saveMemento();
-		}));
+				// Then save the memento into storage
+				this.memento.saveMemento();
+			})
+		);
 	}
 
 	getId(): string {
 		return this.id;
 	}
 
-	protected getMemento(scope: StorageScope, target: StorageTarget): MementoObject {
+	protected getMemento(
+		scope: StorageScope,
+		target: StorageTarget
+	): MementoObject {
 		return this.memento.getMemento(scope, target);
 	}
 

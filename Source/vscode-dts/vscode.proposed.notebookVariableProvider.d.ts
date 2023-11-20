@@ -2,14 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface NotebookController {
 		/** Set this to attach a variable provider to this controller. */
 		variableProvider?: NotebookVariableProvider;
 	}
 
-	type VariablesRequestKind = 'named' | 'indexed';
+	type VariablesRequestKind = "named" | "indexed";
 
 	interface VariablesResult {
 		variable: Variable;
@@ -21,7 +20,13 @@ declare module 'vscode' {
 		onDidChangeVariables: Event<void>;
 
 		/** When parent is undefined, this is requesting global Variables. When a variable is passed, it's requesting child props of that Variable. */
-		provideVariables(notebook: NotebookDocument, parent: Variable | undefined, kind: VariablesRequestKind, start: number, token: CancellationToken): AsyncIterable<VariablesResult>;
+		provideVariables(
+			notebook: NotebookDocument,
+			parent: Variable | undefined,
+			kind: VariablesRequestKind,
+			start: number,
+			token: CancellationToken
+		): AsyncIterable<VariablesResult>;
 	}
 
 	interface Variable {
@@ -36,5 +41,4 @@ declare module 'vscode' {
 		*/
 		value: string;
 	}
-
 }

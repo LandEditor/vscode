@@ -3,14 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color } from 'vs/base/common/color';
-import { ITokenThemeRule, TokenTheme } from 'vs/editor/common/languages/supports/tokenization';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IColorTheme, IThemeService } from 'vs/platform/theme/common/themeService';
+import { Color } from "vs/base/common/color";
+import {
+	ITokenThemeRule,
+	TokenTheme,
+} from "vs/editor/common/languages/supports/tokenization";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IColorTheme,
+	IThemeService,
+} from "vs/platform/theme/common/themeService";
 
-export const IStandaloneThemeService = createDecorator<IStandaloneThemeService>('themeService');
+export const IStandaloneThemeService =
+	createDecorator<IStandaloneThemeService>("themeService");
 
-export type BuiltinTheme = 'vs' | 'vs-dark' | 'hc-black' | 'hc-light';
+export type BuiltinTheme = "vs" | "vs-dark" | "hc-black" | "hc-light";
 export type IColors = { [colorId: string]: string };
 
 export interface IStandaloneThemeData {
@@ -38,5 +45,4 @@ export interface IStandaloneThemeService extends IThemeService {
 	getColorTheme(): IStandaloneTheme;
 
 	setColorMapOverride(colorMapOverride: Color[] | null): void;
-
 }

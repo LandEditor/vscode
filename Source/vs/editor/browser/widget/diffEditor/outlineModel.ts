@@ -3,25 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { binarySearch, coalesceInPlace, equals } from 'vs/base/common/arrays';
-import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { onUnexpectedExternalError } from 'vs/base/common/errors';
-import { Iterable } from 'vs/base/common/iterator';
-import { commonPrefixLength } from 'vs/base/common/strings';
-import { URI } from 'vs/base/common/uri';
-import { IPosition, Position } from 'vs/editor/common/core/position';
-import { IRange, Range } from 'vs/editor/common/core/range';
-import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry';
-import { DocumentSymbol, DocumentSymbolProvider } from 'vs/editor/common/languages';
-import { ITextModel } from 'vs/editor/common/model';
-import { MarkerSeverity } from 'vs/platform/markers/common/markers';
+import { binarySearch, coalesceInPlace, equals } from "vs/base/common/arrays";
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from "vs/base/common/cancellation";
+import { onUnexpectedExternalError } from "vs/base/common/errors";
+import { Iterable } from "vs/base/common/iterator";
+import { commonPrefixLength } from "vs/base/common/strings";
+import { URI } from "vs/base/common/uri";
+import { IPosition, Position } from "vs/editor/common/core/position";
+import { IRange, Range } from "vs/editor/common/core/range";
+import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
+import {
+	DocumentSymbol,
+	DocumentSymbolProvider,
+} from "vs/editor/common/languages";
+import { ITextModel } from "vs/editor/common/model";
+import { MarkerSeverity } from "vs/platform/markers/common/markers";
 
 // TODO@hediet: These classes are copied from outlineModel.ts because of layering issues.
 // Because these classes just depend on the DocumentSymbolProvider (which is in the core editor),
 // they should be moved to the core editor as well.
 
 export abstract class TreeElement {
-
 	abstract id: string;
 	abstract children: Map<string, TreeElement>;
 	abstract parent: TreeElement | undefined;
@@ -30,11 +35,14 @@ export abstract class TreeElement {
 		this.parent?.children.delete(this.id);
 	}
 
-	static findId(candidate: DocumentSymbol | string, container: TreeElement): string {
+	static findId(
+		candidate: DocumentSymbol | string,
+		container: TreeElement
+	): string {
 		// complex id-computation which contains the origin/extension,
 		// the parent path, and some dedupe logic when names collide
 		let candidateId: string;
-		if (typeof candidate === 'string') {
+		if (typeof candidate === "string") {
 			candidateId = `${container.id}/${candidate}`;
 		} else {
 			candidateId = `${container.id}/${candidate.name}`;
@@ -51,7 +59,10 @@ export abstract class TreeElement {
 		return id;
 	}
 
-	static getElementById(id: string, element: TreeElement): TreeElement | undefined {
+	static getElementById(
+		id: string,
+		element: TreeElement
+	): TreeElement | undefined {
 		if (!id) {
 			return undefined;
 		}
@@ -93,7 +104,6 @@ export interface IOutlineMarker {
 }
 
 export class OutlineElement extends TreeElement {
-
 	children = new Map<string, OutlineElement>();
 	marker: { count: number; topSev: MarkerSeverity } | undefined;
 
@@ -107,28 +117,37 @@ export class OutlineElement extends TreeElement {
 }
 
 export class OutlineGroup extends TreeElement {
-
 	children = new Map<string, OutlineElement>();
 
 	constructor(
 		readonly id: string,
 		public parent: TreeElement | undefined,
 		readonly label: string,
-		readonly order: number,
+		readonly order: number
 	) {
 		super();
 	}
 
 	getItemEnclosingPosition(position: IPosition): OutlineElement | undefined {
-		return position ? this._getItemEnclosingPosition(position, this.children) : undefined;
+		return position
+			? this._getItemEnclosingPosition(position, this.children)
+			: undefined;
 	}
 
-	private _getItemEnclosingPosition(position: IPosition, children: Map<string, OutlineElement>): OutlineElement | undefined {
+	private _getItemEnclosingPosition(
+		position: IPosition,
+		children: Map<string, OutlineElement>
+	): OutlineElement | undefined {
 		for (const [, item] of children) {
-			if (!item.symbol.range || !Range.containsPosition(item.symbol.range, position)) {
+			if (
+				!item.symbol.range ||
+				!Range.containsPosition(item.symbol.range, position)
+			) {
 				continue;
 			}
-			return this._getItemEnclosingPosition(position, item.children) || item;
+			return (
+				this._getItemEnclosingPosition(position, item.children) || item
+			);
 		}
 		return undefined;
 	}
@@ -139,15 +158,25 @@ export class OutlineGroup extends TreeElement {
 		}
 	}
 
-	private _updateMarker(markers: IOutlineMarker[], item: OutlineElement): void {
+	private _updateMarker(
+		markers: IOutlineMarker[],
+		item: OutlineElement
+	): void {
 		item.marker = undefined;
 
 		// find the proper start index to check for item/marker overlap.
-		const idx = binarySearch<IRange>(markers, item.symbol.range, Range.compareRangesUsingStarts);
+		const idx = binarySearch<IRange>(
+			markers,
+			item.symbol.range,
+			Range.compareRangesUsingStarts
+		);
 		let start: number;
 		if (idx < 0) {
 			start = ~idx;
-			if (start > 0 && Range.areIntersecting(markers[start - 1], item.symbol.range)) {
+			if (
+				start > 0 &&
+				Range.areIntersecting(markers[start - 1], item.symbol.range)
+			) {
 				start -= 1;
 			}
 		} else {
@@ -157,7 +186,12 @@ export class OutlineGroup extends TreeElement {
 		const myMarkers: IOutlineMarker[] = [];
 		let myTopSev: MarkerSeverity | undefined;
 
-		for (; start < markers.length && Range.areIntersecting(item.symbol.range, markers[start]); start++) {
+		for (
+			;
+			start < markers.length &&
+			Range.areIntersecting(item.symbol.range, markers[start]);
+			start++
+		) {
 			// remove markers intersecting with this outline element
 			// and store them in a 'private' array.
 			const marker = markers[start];
@@ -179,7 +213,7 @@ export class OutlineGroup extends TreeElement {
 		if (myTopSev) {
 			item.marker = {
 				count: myMarkers.length,
-				topSev: myTopSev
+				topSev: myTopSev,
 			};
 		}
 
@@ -188,33 +222,45 @@ export class OutlineGroup extends TreeElement {
 }
 
 export class OutlineModel extends TreeElement {
-
-	static create(registry: LanguageFeatureRegistry<DocumentSymbolProvider>, textModel: ITextModel, token: CancellationToken): Promise<OutlineModel> {
-
+	static create(
+		registry: LanguageFeatureRegistry<DocumentSymbolProvider>,
+		textModel: ITextModel,
+		token: CancellationToken
+	): Promise<OutlineModel> {
 		const cts = new CancellationTokenSource(token);
 		const result = new OutlineModel(textModel.uri);
 		const provider = registry.ordered(textModel);
 		const promises = provider.map((provider, index) => {
-
 			const id = TreeElement.findId(`provider_${index}`, result);
-			const group = new OutlineGroup(id, result, provider.displayName ?? 'Unknown Outline Provider', index);
+			const group = new OutlineGroup(
+				id,
+				result,
+				provider.displayName ?? "Unknown Outline Provider",
+				index
+			);
 
-
-			return Promise.resolve(provider.provideDocumentSymbols(textModel, cts.token)).then(result => {
-				for (const info of result || []) {
-					OutlineModel._makeOutlineElement(info, group);
-				}
-				return group;
-			}, err => {
-				onUnexpectedExternalError(err);
-				return group;
-			}).then(group => {
-				if (!TreeElement.empty(group)) {
-					result._groups.set(id, group);
-				} else {
-					group.remove();
-				}
-			});
+			return Promise.resolve(
+				provider.provideDocumentSymbols(textModel, cts.token)
+			)
+				.then(
+					(result) => {
+						for (const info of result || []) {
+							OutlineModel._makeOutlineElement(info, group);
+						}
+						return group;
+					},
+					(err) => {
+						onUnexpectedExternalError(err);
+						return group;
+					}
+				)
+				.then((group) => {
+					if (!TreeElement.empty(group)) {
+						result._groups.set(id, group);
+					} else {
+						group.remove();
+					}
+				});
 		});
 
 		const listener = registry.onDidChange(() => {
@@ -224,19 +270,27 @@ export class OutlineModel extends TreeElement {
 			}
 		});
 
-		return Promise.all(promises).then(() => {
-			if (cts.token.isCancellationRequested && !token.isCancellationRequested) {
-				return OutlineModel.create(registry, textModel, token);
-			} else {
-				return result._compact();
-			}
-		}).finally(() => {
-			cts.dispose();
-			listener.dispose();
-		});
+		return Promise.all(promises)
+			.then(() => {
+				if (
+					cts.token.isCancellationRequested &&
+					!token.isCancellationRequested
+				) {
+					return OutlineModel.create(registry, textModel, token);
+				} else {
+					return result._compact();
+				}
+			})
+			.finally(() => {
+				cts.dispose();
+				listener.dispose();
+			});
 	}
 
-	private static _makeOutlineElement(info: DocumentSymbol, container: OutlineGroup | OutlineElement): void {
+	private static _makeOutlineElement(
+		info: DocumentSymbol,
+		container: OutlineGroup | OutlineElement
+	): void {
 		const id = TreeElement.findId(info, container);
 		const res = new OutlineElement(id, container, info);
 		if (info.children) {
@@ -257,7 +311,7 @@ export class OutlineModel extends TreeElement {
 		return undefined;
 	}
 
-	readonly id = 'root';
+	readonly id = "root";
 	readonly parent = undefined;
 
 	protected _groups = new Map<string, OutlineGroup>();
@@ -266,14 +320,15 @@ export class OutlineModel extends TreeElement {
 	protected constructor(readonly uri: URI) {
 		super();
 
-		this.id = 'root';
+		this.id = "root";
 		this.parent = undefined;
 	}
 
 	private _compact(): this {
 		let count = 0;
 		for (const [key, group] of this._groups) {
-			if (group.children.size === 0) { // empty
+			if (group.children.size === 0) {
+				// empty
 				this._groups.delete(key);
 			} else {
 				count += 1;
@@ -305,8 +360,10 @@ export class OutlineModel extends TreeElement {
 		return true;
 	}
 
-	getItemEnclosingPosition(position: IPosition, context?: OutlineElement): OutlineElement | undefined {
-
+	getItemEnclosingPosition(
+		position: IPosition,
+		context?: OutlineElement
+	): OutlineElement | undefined {
 		let preferredGroup: OutlineGroup | undefined;
 		if (context) {
 			let candidate = context.parent;
@@ -348,22 +405,41 @@ export class OutlineModel extends TreeElement {
 			if (child instanceof OutlineElement) {
 				roots.push(child.symbol);
 			} else {
-				roots.push(...Iterable.map(child.children.values(), child => child.symbol));
+				roots.push(
+					...Iterable.map(
+						child.children.values(),
+						(child) => child.symbol
+					)
+				);
 			}
 		}
-		return roots.sort((a, b) => Range.compareRangesUsingStarts(a.range, b.range));
+		return roots.sort((a, b) =>
+			Range.compareRangesUsingStarts(a.range, b.range)
+		);
 	}
 
 	asListOfDocumentSymbols(): DocumentSymbol[] {
 		const roots = this.getTopLevelSymbols();
 		const bucket: DocumentSymbol[] = [];
-		OutlineModel._flattenDocumentSymbols(bucket, roots, '');
-		return bucket.sort((a, b) =>
-			Position.compare(Range.getStartPosition(a.range), Range.getStartPosition(b.range)) || Position.compare(Range.getEndPosition(b.range), Range.getEndPosition(a.range))
+		OutlineModel._flattenDocumentSymbols(bucket, roots, "");
+		return bucket.sort(
+			(a, b) =>
+				Position.compare(
+					Range.getStartPosition(a.range),
+					Range.getStartPosition(b.range)
+				) ||
+				Position.compare(
+					Range.getEndPosition(b.range),
+					Range.getEndPosition(a.range)
+				)
 		);
 	}
 
-	private static _flattenDocumentSymbols(bucket: DocumentSymbol[], entries: DocumentSymbol[], overrideContainerLabel: string): void {
+	private static _flattenDocumentSymbols(
+		bucket: DocumentSymbol[],
+		entries: DocumentSymbol[],
+		overrideContainerLabel: string
+	): void {
 		for (const entry of entries) {
 			bucket.push({
 				kind: entry.kind,
@@ -378,7 +454,11 @@ export class OutlineModel extends TreeElement {
 
 			// Recurse over children
 			if (entry.children) {
-				OutlineModel._flattenDocumentSymbols(bucket, entry.children, entry.name);
+				OutlineModel._flattenDocumentSymbols(
+					bucket,
+					entry.children,
+					entry.name
+				);
 			}
 		}
 	}

@@ -3,24 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { ThemeColor } from 'vs/base/common/themables';
-import { Event } from 'vs/base/common/event';
-import { Command } from 'vs/editor/common/languages';
-import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { ColorIdentifier } from 'vs/platform/theme/common/colorRegistry';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { ThemeColor } from "vs/base/common/themables";
+import { Event } from "vs/base/common/event";
+import { Command } from "vs/editor/common/languages";
+import { IMarkdownString } from "vs/base/common/htmlContent";
+import { ColorIdentifier } from "vs/platform/theme/common/colorRegistry";
 
-export const IStatusbarService = createDecorator<IStatusbarService>('statusbarService');
+export const IStatusbarService =
+	createDecorator<IStatusbarService>("statusbarService");
 
 export interface IStatusbarService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
 	 * An event that is triggered when an entry's visibility is changed.
 	 */
-	readonly onDidChangeEntryVisibility: Event<{ id: string; visible: boolean }>;
+	readonly onDidChangeEntryVisibility: Event<{
+		id: string;
+		visible: boolean;
+	}>;
 
 	/**
 	 * Adds an entry to the statusbar with the given alignment and priority. Use the returned accessor
@@ -31,7 +34,12 @@ export interface IStatusbarService {
 	 * @param priority items get arranged from highest priority to lowest priority from left to right
 	 * in their respective alignment slot
 	 */
-	addEntry(entry: IStatusbarEntry, id: string, alignment: StatusbarAlignment, priority?: number | IStatusbarEntryPriority): IStatusbarEntryAccessor;
+	addEntry(
+		entry: IStatusbarEntry,
+		id: string,
+		alignment: StatusbarAlignment,
+		priority?: number | IStatusbarEntryPriority
+	): IStatusbarEntryAccessor;
 
 	/**
 	 * Adds an entry to the statusbar with the given alignment relative to another entry. Use the returned
@@ -41,7 +49,12 @@ export interface IStatusbarService {
 	 * @param alignment either LEFT or RIGHT side in the status bar
 	 * @param location a reference to another entry to position relative to
 	 */
-	addEntry(entry: IStatusbarEntry, id: string, alignment: StatusbarAlignment, location?: IStatusbarEntryLocation): IStatusbarEntryAccessor;
+	addEntry(
+		entry: IStatusbarEntry,
+		id: string,
+		alignment: StatusbarAlignment,
+		location?: IStatusbarEntryLocation
+	): IStatusbarEntryAccessor;
 
 	/**
 	 * Return if an entry is visible or not.
@@ -81,11 +94,10 @@ export interface IStatusbarService {
 
 export const enum StatusbarAlignment {
 	LEFT,
-	RIGHT
+	RIGHT,
 }
 
 export interface IStatusbarEntryLocation {
-
 	/**
 	 * The identifier of another status bar entry to
 	 * position relative to.
@@ -106,14 +118,18 @@ export interface IStatusbarEntryLocation {
 	compact?: boolean;
 }
 
-export function isStatusbarEntryLocation(thing: unknown): thing is IStatusbarEntryLocation {
+export function isStatusbarEntryLocation(
+	thing: unknown
+): thing is IStatusbarEntryLocation {
 	const candidate = thing as IStatusbarEntryLocation | undefined;
 
-	return typeof candidate?.id === 'string' && typeof candidate.alignment === 'number';
+	return (
+		typeof candidate?.id === "string" &&
+		typeof candidate.alignment === "number"
+	);
 }
 
 export interface IStatusbarEntryPriority {
-
 	/**
 	 * The main priority of the entry that
 	 * defines the order of appearance:
@@ -135,15 +151,21 @@ export interface IStatusbarEntryPriority {
 	readonly secondary: number;
 }
 
-export function isStatusbarEntryPriority(thing: unknown): thing is IStatusbarEntryPriority {
+export function isStatusbarEntryPriority(
+	thing: unknown
+): thing is IStatusbarEntryPriority {
 	const candidate = thing as IStatusbarEntryPriority | undefined;
 
-	return (typeof candidate?.primary === 'number' || isStatusbarEntryLocation(candidate?.primary)) && typeof candidate?.secondary === 'number';
+	return (
+		(typeof candidate?.primary === "number" ||
+			isStatusbarEntryLocation(candidate?.primary)) &&
+		typeof candidate?.secondary === "number"
+	);
 }
 
 export const ShowTooltipCommand: Command = {
-	id: 'statusBar.entry.showTooltip',
-	title: ''
+	id: "statusBar.entry.showTooltip",
+	title: "",
 };
 
 export interface IStatusbarStyleOverride {
@@ -153,14 +175,26 @@ export interface IStatusbarStyleOverride {
 	readonly border?: ColorIdentifier;
 }
 
-export type StatusbarEntryKind = 'standard' | 'warning' | 'error' | 'prominent' | 'remote' | 'offline';
-export const StatusbarEntryKinds: StatusbarEntryKind[] = ['standard', 'warning', 'error', 'prominent', 'remote', 'offline'];
+export type StatusbarEntryKind =
+	| "standard"
+	| "warning"
+	| "error"
+	| "prominent"
+	| "remote"
+	| "offline";
+export const StatusbarEntryKinds: StatusbarEntryKind[] = [
+	"standard",
+	"warning",
+	"error",
+	"prominent",
+	"remote",
+	"offline",
+];
 
 /**
  * A declarative way of describing a status bar entry
  */
 export interface IStatusbarEntry {
-
 	/**
 	 * The (short) name to show for the entry like 'Language Indicator',
 	 * 'Git Status' etc.
@@ -221,7 +255,7 @@ export interface IStatusbarEntry {
 	 * Will enable a spinning icon in front of the text to indicate progress. When `true` is
 	 * specified, `syncing` will be used.
 	 */
-	readonly showProgress?: boolean | 'syncing' | 'loading';
+	readonly showProgress?: boolean | "syncing" | "loading";
 
 	/**
 	 * The kind of status bar entry. This applies different colors to the entry.
@@ -230,7 +264,6 @@ export interface IStatusbarEntry {
 }
 
 export interface IStatusbarEntryAccessor extends IDisposable {
-
 	/**
 	 * Allows to update an existing status bar entry.
 	 */

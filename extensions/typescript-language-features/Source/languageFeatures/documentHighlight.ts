@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { DocumentSelector } from '../configuration/documentSelector';
-import type * as Proto from '../tsServer/protocol/protocol';
-import * as typeConverters from '../typeConverters';
-import { ITypeScriptServiceClient } from '../typescriptService';
+import * as vscode from "vscode";
+import { DocumentSelector } from "../configuration/documentSelector";
+import type * as Proto from "../tsServer/protocol/protocol";
+import * as typeConverters from "../typeConverters";
+import { ITypeScriptServiceClient } from "../typescriptService";
 
-class TypeScriptDocumentHighlightProvider implements vscode.DocumentHighlightProvider {
-	public constructor(
-		private readonly client: ITypeScriptServiceClient
-	) { }
+class TypeScriptDocumentHighlightProvider
+	implements vscode.DocumentHighlightProvider
+{
+	public constructor(private readonly client: ITypeScriptServiceClient) {}
 
 	public async provideDocumentHighlights(
 		document: vscode.TextDocument,
@@ -25,11 +25,18 @@ class TypeScriptDocumentHighlightProvider implements vscode.DocumentHighlightPro
 		}
 
 		const args = {
-			...typeConverters.Position.toFileLocationRequestArgs(file, position),
-			filesToSearch: [file]
+			...typeConverters.Position.toFileLocationRequestArgs(
+				file,
+				position
+			),
+			filesToSearch: [file],
 		};
-		const response = await this.client.execute('documentHighlights', args, token);
-		if (response.type !== 'response' || !response.body) {
+		const response = await this.client.execute(
+			"documentHighlights",
+			args,
+			token
+		);
+		if (response.type !== "response" || !response.body) {
 			return [];
 		}
 
@@ -37,17 +44,26 @@ class TypeScriptDocumentHighlightProvider implements vscode.DocumentHighlightPro
 	}
 }
 
-function convertDocumentHighlight(highlight: Proto.DocumentHighlightsItem): ReadonlyArray<vscode.DocumentHighlight> {
-	return highlight.highlightSpans.map(span =>
-		new vscode.DocumentHighlight(
-			typeConverters.Range.fromTextSpan(span),
-			span.kind === 'writtenReference' ? vscode.DocumentHighlightKind.Write : vscode.DocumentHighlightKind.Read));
+function convertDocumentHighlight(
+	highlight: Proto.DocumentHighlightsItem
+): ReadonlyArray<vscode.DocumentHighlight> {
+	return highlight.highlightSpans.map(
+		(span) =>
+			new vscode.DocumentHighlight(
+				typeConverters.Range.fromTextSpan(span),
+				span.kind === "writtenReference"
+					? vscode.DocumentHighlightKind.Write
+					: vscode.DocumentHighlightKind.Read
+			)
+	);
 }
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
-	return vscode.languages.registerDocumentHighlightProvider(selector.syntax,
-		new TypeScriptDocumentHighlightProvider(client));
+	return vscode.languages.registerDocumentHighlightProvider(
+		selector.syntax,
+		new TypeScriptDocumentHighlightProvider(client)
+	);
 }

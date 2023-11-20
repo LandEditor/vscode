@@ -40,6 +40,8 @@
 	transition: opacity 0ms linear;
 }
 
-.monaco-workbench .xterm .xterm-viewport::-webkit-scrollbar-thumb:window-inactive {
+.monaco-workbench
+	.xterm
+	.xterm-viewport::-webkit-scrollbar-thumb:window-inactive {
 	background-color: inherit;
 }

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const enum RecommendationSource {
 	FILE = 1,
 	WORKSPACE = 2,
-	EXE = 3
+	EXE = 3,
 }
 
 export interface IExtensionRecommendations {
@@ -20,21 +20,27 @@ export interface IExtensionRecommendations {
 
 export function RecommendationSourceToString(source: RecommendationSource) {
 	switch (source) {
-		case RecommendationSource.FILE: return 'file';
-		case RecommendationSource.WORKSPACE: return 'workspace';
-		case RecommendationSource.EXE: return 'exe';
+		case RecommendationSource.FILE:
+			return "file";
+		case RecommendationSource.WORKSPACE:
+			return "workspace";
+		case RecommendationSource.EXE:
+			return "exe";
 	}
 }
 
 export const enum RecommendationsNotificationResult {
-	Ignored = 'ignored',
-	Cancelled = 'cancelled',
-	TooMany = 'toomany',
-	IncompatibleWindow = 'incompatibleWindow',
-	Accepted = 'reacted',
+	Ignored = "ignored",
+	Cancelled = "cancelled",
+	TooMany = "toomany",
+	IncompatibleWindow = "incompatibleWindow",
+	Accepted = "reacted",
 }
 
-export const IExtensionRecommendationNotificationService = createDecorator<IExtensionRecommendationNotificationService>('IExtensionRecommendationNotificationService');
+export const IExtensionRecommendationNotificationService =
+	createDecorator<IExtensionRecommendationNotificationService>(
+		"IExtensionRecommendationNotificationService"
+	);
 
 export interface IExtensionRecommendationNotificationService {
 	readonly _serviceBrand: undefined;
@@ -42,7 +48,8 @@ export interface IExtensionRecommendationNotificationService {
 	readonly ignoredRecommendations: string[];
 	hasToIgnoreRecommendationNotifications(): boolean;
 
-	promptImportantExtensionsInstallNotification(recommendations: IExtensionRecommendations): Promise<RecommendationsNotificationResult>;
+	promptImportantExtensionsInstallNotification(
+		recommendations: IExtensionRecommendations
+	): Promise<RecommendationsNotificationResult>;
 	promptWorkspaceRecommendations(recommendations: string[]): Promise<void>;
 }
-

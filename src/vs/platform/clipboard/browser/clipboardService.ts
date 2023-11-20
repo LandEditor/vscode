@@ -3,32 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isSafari, isWebkitWebView } from 'vs/base/browser/browser';
-import { $, addDisposableListener, getActiveDocument } from 'vs/base/browser/dom';
-import { DeferredPromise } from 'vs/base/common/async';
-import { Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
-import { ILogService } from 'vs/platform/log/common/log';
+import { isSafari, isWebkitWebView } from "vs/base/browser/browser";
+import {
+	$,
+	addDisposableListener,
+	getActiveDocument,
+} from "vs/base/browser/dom";
+import { DeferredPromise } from "vs/base/common/async";
+import { Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { ILogService } from "vs/platform/log/common/log";
 
-export class BrowserClipboardService extends Disposable implements IClipboardService {
-
+export class BrowserClipboardService
+	extends Disposable
+	implements IClipboardService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly mapTextToType = new Map<string, string>(); // unsupported in web (only in-memory)
 
 	constructor(
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@ILogService private readonly logService: ILogService) {
+		@ILogService private readonly logService: ILogService
+	) {
 		super();
 		if (isSafari || isWebkitWebView) {
 			this.installWebKitWriteTextWorkaround();
 		}
 	}
 
-	private webKitPendingClipboardWritePromise: DeferredPromise<string> | undefined;
+	private webKitPendingClipboardWritePromise:
+		| DeferredPromise<string>
+		| undefined;
 
 	// In Safari, it has the following note:
 	//
@@ -47,7 +56,10 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 			const currentWritePromise = new DeferredPromise<string>();
 
 			// Cancel the previous promise since we just created a new one in response to this new event
-			if (this.webKitPendingClipboardWritePromise && !this.webKitPendingClipboardWritePromise.isSettled) {
+			if (
+				this.webKitPendingClipboardWritePromise &&
+				!this.webKitPendingClipboardWritePromise.isSettled
+			) {
 				this.webKitPendingClipboardWritePromise.cancel();
 			}
 			this.webKitPendingClipboardWritePromise = currentWritePromise;
@@ -56,23 +68,43 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 			// This allows us to pass in a Promise that will either be cancelled by another event or
 			// resolved with the contents of the first call to this.writeText.
 			// see https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem/ClipboardItem#parameters
-			navigator.clipboard.write([new ClipboardItem({
-				'text/plain': currentWritePromise.p,
-			})]).catch(async err => {
-				if (!(err instanceof Error) || err.name !== 'NotAllowedError' || !currentWritePromise.isRejected) {
-					this.logService.error(err);
-				}
-			});
+			navigator.clipboard
+				.write([
+					new ClipboardItem({
+						"text/plain": currentWritePromise.p,
+					}),
+				])
+				.catch(async (err) => {
+					if (
+						!(err instanceof Error) ||
+						err.name !== "NotAllowedError" ||
+						!currentWritePromise.isRejected
+					) {
+						this.logService.error(err);
+					}
+				});
 		};
 
-		this._register(Event.runAndSubscribe(this.layoutService.onDidAddContainer, ({ container, disposables }) => {
-			disposables.add(addDisposableListener(container, 'click', handler));
-			disposables.add(addDisposableListener(container, 'keydown', handler));
-		}, { container: this.layoutService.mainContainer, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				this.layoutService.onDidAddContainer,
+				({ container, disposables }) => {
+					disposables.add(
+						addDisposableListener(container, "click", handler)
+					);
+					disposables.add(
+						addDisposableListener(container, "keydown", handler)
+					);
+				},
+				{
+					container: this.layoutService.mainContainer,
+					disposables: this._store,
+				}
+			)
+		);
 	}
 
 	async writeText(text: string, type?: string): Promise<void> {
-
 		// With type: only in-memory is supported
 		if (type) {
 			this.mapTextToType.set(type, text);
@@ -100,16 +132,18 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 		const activeDocument = getActiveDocument();
 		const activeElement = activeDocument.activeElement;
 
-		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild($('textarea', { 'aria-hidden': true }));
-		textArea.style.height = '1px';
-		textArea.style.width = '1px';
-		textArea.style.position = 'absolute';
+		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild(
+			$("textarea", { "aria-hidden": true })
+		);
+		textArea.style.height = "1px";
+		textArea.style.width = "1px";
+		textArea.style.position = "absolute";
 
 		textArea.value = text;
 		textArea.focus();
 		textArea.select();
 
-		activeDocument.execCommand('copy');
+		activeDocument.execCommand("copy");
 
 		if (activeElement instanceof HTMLElement) {
 			activeElement.focus();
@@ -121,10 +155,9 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 	}
 
 	async readText(type?: string): Promise<string> {
-
 		// With type: only in-memory is supported
 		if (type) {
-			return this.mapTextToType.get(type) || '';
+			return this.mapTextToType.get(type) || "";
 		}
 
 		// Guard access to navigator.clipboard with try/catch
@@ -135,11 +168,11 @@ export class BrowserClipboardService extends Disposable implements IClipboardSer
 		} catch (error) {
 			console.error(error);
 
-			return '';
+			return "";
 		}
 	}
 
-	private findText = ''; // unsupported in web (only in-memory)
+	private findText = ""; // unsupported in web (only in-memory)
 
 	async readFindText(): Promise<string> {
 		return this.findText;

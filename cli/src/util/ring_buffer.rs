@@ -10,10 +10,7 @@ pub struct RingBuffer<T> {
 
 impl<T> RingBuffer<T> {
 	pub fn new(capacity: usize) -> Self {
-		Self {
-			data: Vec::with_capacity(capacity),
-			i: 0,
-		}
+		Self { data: Vec::with_capacity(capacity), i: 0 }
 	}
 
 	pub fn capacity(&self) -> usize {
@@ -43,10 +40,7 @@ impl<T> RingBuffer<T> {
 	}
 
 	pub fn iter(&self) -> RingBufferIter<'_, T> {
-		RingBufferIter {
-			index: 0,
-			buffer: self,
-		}
+		RingBufferIter { index: 0, buffer: self }
 	}
 }
 
@@ -58,10 +52,7 @@ impl<T: Default> IntoIterator for RingBuffer<T> {
 	where
 		T: Default,
 	{
-		OwnedRingBufferIter {
-			index: 0,
-			buffer: self,
-		}
+		OwnedRingBufferIter { index: 0, buffer: self }
 	}
 }
 

@@ -3,14 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { URI } from 'vs/base/common/uri';
-import { ISaveOptions, IRevertOptions, SaveReason, SaveSource } from 'vs/workbench/common/editor';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { VSBufferReadable, VSBufferReadableStream } from 'vs/base/common/buffer';
+import { Event } from "vs/base/common/event";
+import { URI } from "vs/base/common/uri";
+import {
+	ISaveOptions,
+	IRevertOptions,
+	SaveReason,
+	SaveSource,
+} from "vs/workbench/common/editor";
+import { CancellationToken } from "vs/base/common/cancellation";
+import {
+	VSBufferReadable,
+	VSBufferReadableStream,
+} from "vs/base/common/buffer";
 
 export const enum WorkingCopyCapabilities {
-
 	/**
 	 * Signals no specific capability for the working copy.
 	 */
@@ -28,7 +35,7 @@ export const enum WorkingCopyCapabilities {
 	 * it is dirty and unsaved content will be
 	 * discarded without prompting if closed.
 	 */
-	Scratchpad = 1 << 2
+	Scratchpad = 1 << 2,
 }
 
 /**
@@ -37,7 +44,6 @@ export const enum WorkingCopyCapabilities {
  * retrieve the backup when loading the working copy.
  */
 export interface IWorkingCopyBackup {
-
 	/**
 	 * Any serializable metadata to be associated with the backup.
 	 */
@@ -58,7 +64,6 @@ export interface IWorkingCopyBackup {
  * cannot be used.
  */
 export interface IWorkingCopyBackupMeta {
-
 	/**
 	 * Any property needs to be serializable through JSON.
 	 */
@@ -75,7 +80,7 @@ export interface IWorkingCopyBackupMeta {
  * @deprecated it is important to provide a type identifier
  * for working copies to enable all capabilities.
  */
-export const NO_TYPE_ID = '';
+export const NO_TYPE_ID = "";
 
 /**
  * Every working copy has in common that it is identified by
@@ -83,7 +88,6 @@ export const NO_TYPE_ID = '';
  * working copy registered with the same `URI` and `typeId`.
  */
 export interface IWorkingCopyIdentifier {
-
 	/**
 	 * The type identifier of the working copy for grouping
 	 * working copies of the same domain together.
@@ -101,7 +105,6 @@ export interface IWorkingCopyIdentifier {
 }
 
 export interface IWorkingCopySaveEvent {
-
 	/**
 	 * The reason why the working copy was saved.
 	 */
@@ -125,7 +128,6 @@ export interface IWorkingCopySaveEvent {
  * when working with file based working copies.
  */
 export interface IWorkingCopy extends IWorkingCopyIdentifier {
-
 	/**
 	 * Human readable name of the working copy.
 	 */
@@ -135,7 +137,6 @@ export interface IWorkingCopy extends IWorkingCopyIdentifier {
 	 * The capabilities of the working copy.
 	 */
 	readonly capabilities: WorkingCopyCapabilities;
-
 
 	//#region Events
 
@@ -160,7 +161,6 @@ export interface IWorkingCopy extends IWorkingCopyIdentifier {
 
 	//#endregion
 
-
 	//#region Dirty Tracking
 
 	/**
@@ -178,7 +178,6 @@ export interface IWorkingCopy extends IWorkingCopyIdentifier {
 	isModified(): boolean;
 
 	//#endregion
-
 
 	//#region Save / Backup
 

@@ -3,20 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { derivedWithStore, observableFromEvent, observableValue } from 'vs/base/common/observable';
-import { DiffEditorWidget } from 'vs/editor/browser/widget/diffEditor/diffEditorWidget';
-import { IDocumentDiffItem, IMultiDiffEditorModel, LazyPromise } from 'vs/editor/browser/widget/multiDiffEditorWidget/model';
-import { IDiffEditorViewModel } from 'vs/editor/common/editorCommon';
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	derivedWithStore,
+	observableFromEvent,
+	observableValue,
+} from "vs/base/common/observable";
+import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
+import {
+	IDocumentDiffItem,
+	IMultiDiffEditorModel,
+	LazyPromise,
+} from "vs/editor/browser/widget/multiDiffEditorWidget/model";
+import { IDiffEditorViewModel } from "vs/editor/common/editorCommon";
 
 export class MultiDiffEditorViewModel extends Disposable {
-	private readonly _documents = observableFromEvent(this._model.onDidChange, /** @description MultiDiffEditorViewModel.documents */() => this._model.documents);
+	private readonly _documents = observableFromEvent(
+		this._model.onDidChange,
+		/** @description MultiDiffEditorViewModel.documents */ () =>
+			this._model.documents
+	);
 
-	public readonly items = derivedWithStore<readonly DocumentDiffItemViewModel[]>(this,
-		(reader, store) => this._documents.read(reader).map(d => store.add(new DocumentDiffItemViewModel(d, this._diffEditorViewModelFactory)))
+	public readonly items = derivedWithStore<
+		readonly DocumentDiffItemViewModel[]
+	>(this, (reader, store) =>
+		this._documents
+			.read(reader)
+			.map((d) =>
+				store.add(
+					new DocumentDiffItemViewModel(
+						d,
+						this._diffEditorViewModelFactory
+					)
+				)
+			)
 	).recomputeInitiallyAndOnChange(this._store);
 
-	public readonly activeDiffItem = observableValue<DocumentDiffItemViewModel | undefined>(this, undefined);
+	public readonly activeDiffItem = observableValue<
+		DocumentDiffItemViewModel | undefined
+	>(this, undefined);
 
 	constructor(
 		private readonly _model: IMultiDiffEditorModel,
@@ -35,9 +60,11 @@ export class DocumentDiffItemViewModel extends Disposable {
 	) {
 		super();
 
-		this.diffEditorViewModel = this._register(diffEditorViewModelFactory.createViewModel({
-			original: entry.value!.original!,
-			modified: entry.value!.modified!,
-		}));
+		this.diffEditorViewModel = this._register(
+			diffEditorViewModelFactory.createViewModel({
+				original: entry.value!.original!,
+				modified: entry.value!.modified!,
+			})
+		);
 	}
 }

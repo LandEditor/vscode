@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/107467
 
 	export namespace tests {
@@ -13,7 +12,10 @@ declare module 'vscode' {
 		 * @param run Run options to use.
 		 * @param token Cancellation token for the test run
 		 */
-		export function runTests(run: TestRunRequest, token?: CancellationToken): Thenable<void>;
+		export function runTests(
+			run: TestRunRequest,
+			token?: CancellationToken
+		): Thenable<void>;
 
 		/**
 		 * Returns an observer that watches and can request tests.
@@ -179,6 +181,6 @@ declare module 'vscode' {
 		// Test run has been skipped
 		Skipped = 5,
 		// Test run failed for some other reason (compilation error, timeout, etc)
-		Errored = 6
+		Errored = 6,
 	}
 }

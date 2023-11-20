@@ -20,21 +20,29 @@ function _format(message: string, args: any[]): string {
 	} else {
 		result = message.replace(/\{(\d+)\}/g, function (match, rest) {
 			const index = rest[0];
-			return typeof args[index] !== 'undefined' ? args[index] : match;
+			return typeof args[index] !== "undefined" ? args[index] : match;
 		});
 	}
 	return result;
 }
 
-export function localize(data: ILocalizeInfo | string, message: string, ...args: any[]): string {
+export function localize(
+	data: ILocalizeInfo | string,
+	message: string,
+	...args: any[]
+): string {
 	return _format(message, args);
 }
 
-export function localize2(data: ILocalizeInfo | string, message: string, ...args: any[]): ILocalizedString {
+export function localize2(
+	data: ILocalizeInfo | string,
+	message: string,
+	...args: any[]
+): ILocalizedString {
 	const res = _format(message, args);
 	return {
 		original: res,
-		value: res
+		value: res,
 	};
 }
 

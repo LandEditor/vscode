@@ -46,9 +46,8 @@ pub struct SleepInhibitor {
 
 impl SleepInhibitor {
 	pub async fn new() -> Result<Self, AnyError> {
-		let connection = Connection::session()
-			.await
-			.map_err(|e| wrap(e, "error creating dbus session"))?;
+		let connection =
+			Connection::session().await.map_err(|e| wrap(e, "error creating dbus session"))?;
 
 		macro_rules! try_inhibit {
 			($proxy:ident) => {
@@ -72,8 +71,6 @@ impl SleepInhibitor {
 			}
 		}
 
-		Ok(SleepInhibitor {
-			_connection: connection,
-		})
+		Ok(SleepInhibitor { _connection: connection })
 	}
 }

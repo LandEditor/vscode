@@ -3,11 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range } from 'vs/editor/common/core/range';
-import { ITextModel } from 'vs/editor/common/model';
-import { IndentAction, CompleteEnterAction } from 'vs/editor/common/languages/languageConfiguration';
-import { EditorAutoIndentStrategy } from 'vs/editor/common/config/editorOptions';
-import { getIndentationAtPosition, getScopedLineTokens, ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry';
+import { Range } from "vs/editor/common/core/range";
+import { ITextModel } from "vs/editor/common/model";
+import {
+	IndentAction,
+	CompleteEnterAction,
+} from "vs/editor/common/languages/languageConfiguration";
+import { EditorAutoIndentStrategy } from "vs/editor/common/config/editorOptions";
+import {
+	getIndentationAtPosition,
+	getScopedLineTokens,
+	ILanguageConfigurationService,
+} from "vs/editor/common/languages/languageConfigurationRegistry";
 
 export function getEnterAction(
 	autoIndent: EditorAutoIndentStrategy,
@@ -15,35 +22,64 @@ export function getEnterAction(
 	range: Range,
 	languageConfigurationService: ILanguageConfigurationService
 ): CompleteEnterAction | null {
-	const scopedLineTokens = getScopedLineTokens(model, range.startLineNumber, range.startColumn);
-	const richEditSupport = languageConfigurationService.getLanguageConfiguration(scopedLineTokens.languageId);
+	const scopedLineTokens = getScopedLineTokens(
+		model,
+		range.startLineNumber,
+		range.startColumn
+	);
+	const richEditSupport =
+		languageConfigurationService.getLanguageConfiguration(
+			scopedLineTokens.languageId
+		);
 	if (!richEditSupport) {
 		return null;
 	}
 
 	const scopedLineText = scopedLineTokens.getLineContent();
-	const beforeEnterText = scopedLineText.substr(0, range.startColumn - 1 - scopedLineTokens.firstCharOffset);
+	const beforeEnterText = scopedLineText.substr(
+		0,
+		range.startColumn - 1 - scopedLineTokens.firstCharOffset
+	);
 
 	// selection support
 	let afterEnterText: string;
 	if (range.isEmpty()) {
-		afterEnterText = scopedLineText.substr(range.startColumn - 1 - scopedLineTokens.firstCharOffset);
+		afterEnterText = scopedLineText.substr(
+			range.startColumn - 1 - scopedLineTokens.firstCharOffset
+		);
 	} else {
-		const endScopedLineTokens = getScopedLineTokens(model, range.endLineNumber, range.endColumn);
-		afterEnterText = endScopedLineTokens.getLineContent().substr(range.endColumn - 1 - scopedLineTokens.firstCharOffset);
+		const endScopedLineTokens = getScopedLineTokens(
+			model,
+			range.endLineNumber,
+			range.endColumn
+		);
+		afterEnterText = endScopedLineTokens
+			.getLineContent()
+			.substr(range.endColumn - 1 - scopedLineTokens.firstCharOffset);
 	}
 
-	let previousLineText = '';
+	let previousLineText = "";
 	if (range.startLineNumber > 1 && scopedLineTokens.firstCharOffset === 0) {
 		// This is not the first line and the entire line belongs to this mode
-		const oneLineAboveScopedLineTokens = getScopedLineTokens(model, range.startLineNumber - 1);
-		if (oneLineAboveScopedLineTokens.languageId === scopedLineTokens.languageId) {
+		const oneLineAboveScopedLineTokens = getScopedLineTokens(
+			model,
+			range.startLineNumber - 1
+		);
+		if (
+			oneLineAboveScopedLineTokens.languageId ===
+			scopedLineTokens.languageId
+		) {
 			// The line above ends with text belonging to the same mode
 			previousLineText = oneLineAboveScopedLineTokens.getLineContent();
 		}
 	}
 
-	const enterResult = richEditSupport.onEnter(autoIndent, previousLineText, beforeEnterText, afterEnterText);
+	const enterResult = richEditSupport.onEnter(
+		autoIndent,
+		previousLineText,
+		beforeEnterText,
+		afterEnterText
+	);
 	if (!enterResult) {
 		return null;
 	}
@@ -55,18 +91,22 @@ export function getEnterAction(
 	// Here we add `\t` to appendText first because enterAction is leveraging appendText and removeText to change indentation.
 	if (!appendText) {
 		if (
-			(indentAction === IndentAction.Indent) ||
-			(indentAction === IndentAction.IndentOutdent)
+			indentAction === IndentAction.Indent ||
+			indentAction === IndentAction.IndentOutdent
 		) {
-			appendText = '\t';
+			appendText = "\t";
 		} else {
-			appendText = '';
+			appendText = "";
 		}
 	} else if (indentAction === IndentAction.Indent) {
-		appendText = '\t' + appendText;
+		appendText = "\t" + appendText;
 	}
 
-	let indentation = getIndentationAtPosition(model, range.startLineNumber, range.startColumn);
+	let indentation = getIndentationAtPosition(
+		model,
+		range.startLineNumber,
+		range.startColumn
+	);
 	if (removeText) {
 		indentation = indentation.substring(0, indentation.length - removeText);
 	}
@@ -75,6 +115,6 @@ export function getEnterAction(
 		indentAction: indentAction,
 		appendText: appendText,
 		removeText: removeText,
-		indentation: indentation
+		indentation: indentation,
 	};
 }

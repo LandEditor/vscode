@@ -8,8 +8,8 @@
 	position: fixed;
 	height: 100%;
 	width: 100%;
-	left:0;
-	top:0;
+	left: 0;
+	top: 0;
 	z-index: 2600;
 	display: flex;
 	justify-content: center;
@@ -71,7 +71,10 @@
 }
 
 /** Dialog: Message */
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-message {
 	line-height: 22px;
 	font-size: 18px;
 	flex: 1; /* let the message always grow */
@@ -84,35 +87,56 @@
 }
 
 /** Dialog: Details */
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-detail {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-message-detail {
 	line-height: 22px;
 	flex: 1; /* let the message always grow */
 }
 
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message a:focus {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-message
+	a:focus {
 	outline-width: 1px;
 	outline-style: solid;
 }
 
 /** Dialog: Checkbox */
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-checkbox-row {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-checkbox-row {
 	padding: 15px 0px 0px;
 	display: flex;
 }
 
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-checkbox-row .dialog-checkbox-message {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-checkbox-row
+	.dialog-checkbox-message {
 	cursor: pointer;
 	user-select: none;
 	-webkit-user-select: none;
 }
 
 /** Dialog: Input */
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-input {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-message-input {
 	padding: 15px 0px 0px;
 	display: flex;
 }
 
-.monaco-dialog-box .dialog-message-row .dialog-message-container .dialog-message-input .monaco-inputbox {
+.monaco-dialog-box
+	.dialog-message-row
+	.dialog-message-container
+	.dialog-message-input
+	.monaco-inputbox {
 	flex: 1;
 }
 

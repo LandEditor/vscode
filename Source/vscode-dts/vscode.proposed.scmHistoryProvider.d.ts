@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/185269
 
 	export interface SourceControl {
@@ -30,11 +30,25 @@ declare module 'vscode' {
 		 */
 		// onDidChangeHistoryItemGroups: Event<SourceControlHistoryChangeEvent>;
 
-		provideHistoryItems(historyItemGroupId: string, options: SourceControlHistoryOptions, token: CancellationToken): ProviderResult<SourceControlHistoryItem[]>;
-		provideHistoryItemChanges(historyItemId: string, token: CancellationToken): ProviderResult<SourceControlHistoryItemChange[]>;
+		provideHistoryItems(
+			historyItemGroupId: string,
+			options: SourceControlHistoryOptions,
+			token: CancellationToken
+		): ProviderResult<SourceControlHistoryItem[]>;
+		provideHistoryItemChanges(
+			historyItemId: string,
+			token: CancellationToken
+		): ProviderResult<SourceControlHistoryItemChange[]>;
 
-		resolveHistoryItemGroupBase(historyItemGroupId: string, token: CancellationToken): ProviderResult<SourceControlHistoryItemGroup | undefined>;
-		resolveHistoryItemGroupCommonAncestor(historyItemGroupId1: string, historyItemGroupId: string, token: CancellationToken): ProviderResult<{ id: string; ahead: number; behind: number }>;
+		resolveHistoryItemGroupBase(
+			historyItemGroupId: string,
+			token: CancellationToken
+		): ProviderResult<SourceControlHistoryItemGroup | undefined>;
+		resolveHistoryItemGroupCommonAncestor(
+			historyItemGroupId1: string,
+			historyItemGroupId: string,
+			token: CancellationToken
+		): ProviderResult<{ id: string; ahead: number; behind: number }>;
 	}
 
 	export interface SourceControlHistoryOptions {
@@ -81,5 +95,4 @@ declare module 'vscode' {
 	// 	readonly removed: Iterable<SourceControlHistoryItemGroup>;
 	// 	readonly modified: Iterable<SourceControlHistoryItemGroup>;
 	// }
-
 }

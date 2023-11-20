@@ -5,7 +5,7 @@
 
 .vs .show-file-icons .chat-editor-label.file-icon::before,
 .show-file-icons .chat-editor-label.file-icon::before {
-	content: '\EAC7';
-	font-family: 'codicon';
+	content: "\EAC7";
+	font-family: "codicon";
 	font-size: 16px;
 }

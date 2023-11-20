@@ -3,9 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { UriComponents } from 'vs/base/common/uri';
-import { ISerializableEnvironmentVariableCollection, ISerializableEnvironmentVariableCollections } from 'vs/platform/terminal/common/environmentVariable';
-import { IFixedTerminalDimensions, IRawTerminalTabLayoutInfo, IReconnectionProperties, ITerminalEnvironment, ITerminalTabLayoutInfoById, TerminalIcon, TerminalType, TitleEventSource, WaitOnExitValue } from 'vs/platform/terminal/common/terminal';
+import { UriComponents } from "vs/base/common/uri";
+import {
+	ISerializableEnvironmentVariableCollection,
+	ISerializableEnvironmentVariableCollections,
+} from "vs/platform/terminal/common/environmentVariable";
+import {
+	IFixedTerminalDimensions,
+	IRawTerminalTabLayoutInfo,
+	IReconnectionProperties,
+	ITerminalEnvironment,
+	ITerminalTabLayoutInfoById,
+	TerminalIcon,
+	TerminalType,
+	TitleEventSource,
+	WaitOnExitValue,
+} from "vs/platform/terminal/common/terminal";
 
 export interface ISingleTerminalConfiguration<T> {
 	userValue: T | undefined;
@@ -14,14 +27,17 @@ export interface ISingleTerminalConfiguration<T> {
 }
 
 export interface ICompleteTerminalConfiguration {
-	'terminal.integrated.env.windows': ISingleTerminalConfiguration<ITerminalEnvironment>;
-	'terminal.integrated.env.osx': ISingleTerminalConfiguration<ITerminalEnvironment>;
-	'terminal.integrated.env.linux': ISingleTerminalConfiguration<ITerminalEnvironment>;
-	'terminal.integrated.cwd': string;
-	'terminal.integrated.detectLocale': 'auto' | 'off' | 'on';
+	"terminal.integrated.env.windows": ISingleTerminalConfiguration<ITerminalEnvironment>;
+	"terminal.integrated.env.osx": ISingleTerminalConfiguration<ITerminalEnvironment>;
+	"terminal.integrated.env.linux": ISingleTerminalConfiguration<ITerminalEnvironment>;
+	"terminal.integrated.cwd": string;
+	"terminal.integrated.detectLocale": "auto" | "off" | "on";
 }
 
-export type ITerminalEnvironmentVariableCollections = [string, ISerializableEnvironmentVariableCollection][];
+export type ITerminalEnvironmentVariableCollections = [
+	string,
+	ISerializableEnvironmentVariableCollection,
+][];
 
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
@@ -50,7 +66,9 @@ export interface IProcessDetails {
 	icon: TerminalIcon | undefined;
 	color: string | undefined;
 	fixedDimensions: IFixedTerminalDimensions | undefined;
-	environmentVariableCollections: ISerializableEnvironmentVariableCollections | undefined;
+	environmentVariableCollections:
+		| ISerializableEnvironmentVariableCollections
+		| undefined;
 	reconnectionProperties?: IReconnectionProperties;
 	waitOnExit?: WaitOnExitValue;
 	hideFromUser?: boolean;
@@ -60,7 +78,8 @@ export interface IProcessDetails {
 	shellIntegrationNonce: string;
 }
 
-export type ITerminalTabLayoutInfoDto = IRawTerminalTabLayoutInfo<IProcessDetails>;
+export type ITerminalTabLayoutInfoDto =
+	IRawTerminalTabLayoutInfo<IProcessDetails>;
 
 export interface ReplayEntry {
 	cols: number;

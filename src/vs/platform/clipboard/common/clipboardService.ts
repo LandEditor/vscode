@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { URI } from "vs/base/common/uri";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const IClipboardService = createDecorator<IClipboardService>('clipboardService');
+export const IClipboardService =
+	createDecorator<IClipboardService>("clipboardService");
 
 export interface IClipboardService {
-
 	readonly _serviceBrand: undefined;
 
 	/**

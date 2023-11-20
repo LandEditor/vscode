@@ -10,7 +10,8 @@
 	padding: 10px;
 	border: 1px solid var(--vscode-editorHoverWidget-border);
 }
-.hc-black .tokens-inspect-widget, .hc-light .tokens-inspect-widget {
+.hc-black .tokens-inspect-widget,
+.hc-light .tokens-inspect-widget {
 	border-width: 2px;
 }
 
@@ -19,7 +20,7 @@
 }
 
 .monaco-editor .token-inspect-widget .tiw-metadata-separator {
-	background-color: var(--vscode-editorHoverWidget-border)
+	background-color: var(--vscode-editorHoverWidget-border);
 }
 
 .tiw-token {

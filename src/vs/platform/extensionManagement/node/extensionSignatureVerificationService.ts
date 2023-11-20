@@ -3,9 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const IExtensionSignatureVerificationService = createDecorator<IExtensionSignatureVerificationService>('IExtensionSignatureVerificationService');
+export const IExtensionSignatureVerificationService =
+	createDecorator<IExtensionSignatureVerificationService>(
+		"IExtensionSignatureVerificationService"
+	);
 
 /**
  * A service for verifying signed extensions.
@@ -23,11 +26,19 @@ export interface IExtensionSignatureVerificationService {
 	 * @throws { ExtensionSignatureVerificationError } An error with a code indicating the validity, integrity, or trust issue
 	 * found during verification or a more fundamental issue (e.g.:  a required dependency was not found).
 	 */
-	verify(vsixFilePath: string, signatureArchiveFilePath: string, verbose: boolean): Promise<boolean>;
+	verify(
+		vsixFilePath: string,
+		signatureArchiveFilePath: string,
+		verbose: boolean
+	): Promise<boolean>;
 }
 
 declare module vsceSign {
-	export function verify(vsixFilePath: string, signatureArchiveFilePath: string, verbose: boolean): Promise<boolean>;
+	export function verify(
+		vsixFilePath: string,
+		signatureArchiveFilePath: string,
+		verbose: boolean
+	): Promise<boolean>;
 }
 
 /**
@@ -39,27 +50,32 @@ export interface ExtensionSignatureVerificationError extends Error {
 	readonly output?: string;
 }
 
-export class ExtensionSignatureVerificationService implements IExtensionSignatureVerificationService {
+export class ExtensionSignatureVerificationService
+	implements IExtensionSignatureVerificationService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private moduleLoadingPromise: Promise<typeof vsceSign> | undefined;
 
 	private vsceSign(): Promise<typeof vsceSign> {
 		if (!this.moduleLoadingPromise) {
-			this.moduleLoadingPromise = new Promise(
-				(resolve, reject) => require(
-					['node-vsce-sign'],
-					async (obj) => {
-						const instance = <typeof vsceSign>obj;
+			this.moduleLoadingPromise = new Promise((resolve, reject) =>
+				require(["node-vsce-sign"], async (obj) => {
+					const instance = <typeof vsceSign>obj;
 
-						return resolve(instance);
-					}, reject));
+					return resolve(instance);
+				}, reject)
+			);
 		}
 
 		return this.moduleLoadingPromise;
 	}
 
-	public async verify(vsixFilePath: string, signatureArchiveFilePath: string, verbose: boolean): Promise<boolean> {
+	public async verify(
+		vsixFilePath: string,
+		signatureArchiveFilePath: string,
+		verbose: boolean
+	): Promise<boolean> {
 		let module: typeof vsceSign;
 
 		try {

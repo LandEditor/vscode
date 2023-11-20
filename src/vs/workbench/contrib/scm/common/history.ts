@@ -3,18 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { ThemeIcon } from 'vs/base/common/themables';
-import { URI } from 'vs/base/common/uri';
-import { IMenu } from 'vs/platform/actions/common/actions';
-import { ISCMActionButtonDescriptor, ISCMRepository } from 'vs/workbench/contrib/scm/common/scm';
+import { Event } from "vs/base/common/event";
+import { ThemeIcon } from "vs/base/common/themables";
+import { URI } from "vs/base/common/uri";
+import { IMenu } from "vs/platform/actions/common/actions";
+import {
+	ISCMActionButtonDescriptor,
+	ISCMRepository,
+} from "vs/workbench/contrib/scm/common/scm";
 
 export interface ISCMHistoryProviderMenus {
 	getHistoryItemMenu(historyItem: ISCMHistoryItem): IMenu;
 }
 
 export interface ISCMHistoryProvider {
-
 	readonly onDidChangeActionButton: Event<void>;
 	readonly onDidChangeCurrentHistoryItemGroup: Event<void>;
 
@@ -22,13 +24,27 @@ export interface ISCMHistoryProvider {
 	set actionButton(button: ISCMActionButtonDescriptor | undefined);
 
 	get currentHistoryItemGroup(): ISCMHistoryItemGroup | undefined;
-	set currentHistoryItemGroup(historyItemGroup: ISCMHistoryItemGroup | undefined);
+	set currentHistoryItemGroup(
+		historyItemGroup: ISCMHistoryItemGroup | undefined
+	);
 
-	provideHistoryItems(historyItemGroupId: string, options: ISCMHistoryOptions): Promise<ISCMHistoryItem[] | undefined>;
-	provideHistoryItemChanges(historyItemId: string): Promise<ISCMHistoryItemChange[] | undefined>;
-	resolveHistoryItemGroup(historyItemGroup: ISCMHistoryItemGroup): Promise<ISCMHistoryItemGroupDetails | undefined>;
-	resolveHistoryItemGroupBase(historyItemGroupId: string): Promise<ISCMHistoryItemGroup | undefined>;
-	resolveHistoryItemGroupCommonAncestor(historyItemGroupId1: string, historyItemGroupId2: string): Promise<{ id: string; ahead: number; behind: number } | undefined>;
+	provideHistoryItems(
+		historyItemGroupId: string,
+		options: ISCMHistoryOptions
+	): Promise<ISCMHistoryItem[] | undefined>;
+	provideHistoryItemChanges(
+		historyItemId: string
+	): Promise<ISCMHistoryItemChange[] | undefined>;
+	resolveHistoryItemGroup(
+		historyItemGroup: ISCMHistoryItemGroup
+	): Promise<ISCMHistoryItemGroupDetails | undefined>;
+	resolveHistoryItemGroupBase(
+		historyItemGroupId: string
+	): Promise<ISCMHistoryItemGroup | undefined>;
+	resolveHistoryItemGroupCommonAncestor(
+		historyItemGroupId1: string,
+		historyItemGroupId2: string
+	): Promise<{ id: string; ahead: number; behind: number } | undefined>;
 }
 
 export interface ISCMHistoryProviderCacheEntry {
@@ -71,7 +87,7 @@ export interface SCMHistoryItemGroupTreeElement extends ISCMHistoryItemGroup {
 	readonly ancestor?: string;
 	readonly count?: number;
 	readonly repository: ISCMRepository;
-	readonly type: 'historyItemGroup';
+	readonly type: "historyItemGroup";
 }
 
 export interface ISCMHistoryItemStatistics {
@@ -92,7 +108,7 @@ export interface ISCMHistoryItem {
 
 export interface SCMHistoryItemTreeElement extends ISCMHistoryItem {
 	readonly historyItemGroup: SCMHistoryItemGroupTreeElement;
-	readonly type: 'historyItem';
+	readonly type: "historyItem";
 }
 
 export interface ISCMHistoryItemChange {
@@ -104,11 +120,11 @@ export interface ISCMHistoryItemChange {
 
 export interface SCMHistoryItemChangeTreeElement extends ISCMHistoryItemChange {
 	readonly historyItem: SCMHistoryItemTreeElement;
-	readonly type: 'historyItemChange';
+	readonly type: "historyItemChange";
 }
 
 export interface SCMViewSeparatorElement {
 	readonly label: string;
 	readonly repository: ISCMRepository;
-	readonly type: 'separator';
+	readonly type: "separator";
 }

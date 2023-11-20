@@ -32,7 +32,11 @@ declare class LoaderEvent {
 }
 
 declare const define: {
-	(moduleName: string, dependencies: string[], callback: (...args: any[]) => any): any;
+	(
+		moduleName: string,
+		dependencies: string[],
+		callback: (...args: any[]) => any
+	): any;
 	(moduleName: string, dependencies: string[], definition: any): any;
 	(moduleName: string, callback: (...args: any[]) => any): any;
 	(moduleName: string, definition: any): any;
@@ -53,12 +57,20 @@ interface NodeRequire {
 	 */
 	__$__nodeRequire<T>(moduleName: string): T;
 
-	(dependencies: string[], callback: (...args: any[]) => any, errorback?: (err: any) => void): any;
+	(
+		dependencies: string[],
+		callback: (...args: any[]) => any,
+		errorback?: (err: any) => void
+	): any;
 	config(data: any): any;
 	onError: Function;
 	getStats?(): ReadonlyArray<LoaderEvent>;
 	hasDependencyCycle?(): boolean;
-	define(amdModuleId: string, dependencies: string[], callback: (...args: any[]) => any): any;
+	define(
+		amdModuleId: string,
+		dependencies: string[],
+		callback: (...args: any[]) => any
+	): any;
 }
 
 declare var require: NodeRequire;

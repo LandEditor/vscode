@@ -3,8 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { UriComponents } from 'vs/base/common/uri';
-import { IFileMatch, IFileQueryProps, IFolderQuery, ITextQueryProps } from 'vs/workbench/services/search/common/search';
+import { UriComponents } from "vs/base/common/uri";
+import {
+	IFileMatch,
+	IFileQueryProps,
+	IFolderQuery,
+	ITextQueryProps,
+} from "vs/workbench/services/search/common/search";
 
 export interface IWorkerTextSearchComplete {
 	results: IFileMatch<UriComponents>[];
@@ -17,7 +22,7 @@ export interface IWorkerFileSearchComplete {
 }
 
 // Copied from lib.dom.ts, which is not available in this layer.
-type IWorkerFileSystemHandleKind = 'directory' | 'file';
+type IWorkerFileSystemHandleKind = "directory" | "file";
 
 export interface IWorkerFileSystemHandle {
 	readonly kind: IWorkerFileSystemHandleKind;
@@ -25,16 +30,21 @@ export interface IWorkerFileSystemHandle {
 	isSameEntry(other: IWorkerFileSystemHandle): Promise<boolean>;
 }
 
-export interface IWorkerFileSystemDirectoryHandle extends IWorkerFileSystemHandle {
-	readonly kind: 'directory';
+export interface IWorkerFileSystemDirectoryHandle
+	extends IWorkerFileSystemHandle {
+	readonly kind: "directory";
 	getDirectoryHandle(name: string): Promise<IWorkerFileSystemDirectoryHandle>;
 	getFileHandle(name: string): Promise<IWorkerFileSystemFileHandle>;
-	resolve(possibleDescendant: IWorkerFileSystemHandle): Promise<string[] | null>;
-	entries(): AsyncIterableIterator<[string, IWorkerFileSystemDirectoryHandle | IWorkerFileSystemFileHandle]>;
+	resolve(
+		possibleDescendant: IWorkerFileSystemHandle
+	): Promise<string[] | null>;
+	entries(): AsyncIterableIterator<
+		[string, IWorkerFileSystemDirectoryHandle | IWorkerFileSystemFileHandle]
+	>;
 }
 
 export interface IWorkerFileSystemFileHandle extends IWorkerFileSystemHandle {
-	readonly kind: 'file';
+	readonly kind: "file";
 	getFile(): Promise<{ arrayBuffer(): Promise<ArrayBuffer> }>;
 }
 
@@ -43,10 +53,25 @@ export interface ILocalFileSearchSimpleWorker {
 
 	cancelQuery(queryId: number): void;
 
-	listDirectory(handle: IWorkerFileSystemDirectoryHandle, queryProps: IFileQueryProps<UriComponents>, folderQuery: IFolderQuery, ignorePathCasing: boolean, queryId: number): Promise<IWorkerFileSearchComplete>;
-	searchDirectory(handle: IWorkerFileSystemDirectoryHandle, queryProps: ITextQueryProps<UriComponents>, folderQuery: IFolderQuery, ignorePathCasing: boolean, queryId: number): Promise<IWorkerTextSearchComplete>;
+	listDirectory(
+		handle: IWorkerFileSystemDirectoryHandle,
+		queryProps: IFileQueryProps<UriComponents>,
+		folderQuery: IFolderQuery,
+		ignorePathCasing: boolean,
+		queryId: number
+	): Promise<IWorkerFileSearchComplete>;
+	searchDirectory(
+		handle: IWorkerFileSystemDirectoryHandle,
+		queryProps: ITextQueryProps<UriComponents>,
+		folderQuery: IFolderQuery,
+		ignorePathCasing: boolean,
+		queryId: number
+	): Promise<IWorkerTextSearchComplete>;
 }
 
 export interface ILocalFileSearchSimpleWorkerHost {
-	sendTextSearchMatch(match: IFileMatch<UriComponents>, queryId: number): void;
+	sendTextSearchMatch(
+		match: IFileMatch<UriComponents>,
+		queryId: number
+	): void;
 }

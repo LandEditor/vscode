@@ -26,15 +26,17 @@
 	color: var(--vscode-quickInputList-focusForeground);
 }
 
-.icon-select-box .icon-select-icons-container > .icon-container:hover:not(.focused) {
+.icon-select-box
+	.icon-select-icons-container
+	> .icon-container:hover:not(.focused) {
 	background-color: var(--vscode-toolbar-hoverBackground);
-	color: var(--vscode-list-hoverForeground)
+	color: var(--vscode-list-hoverForeground);
 }
 
 .icon-select-box .icon-select-id-container .icon-select-id-label {
 	height: 24px;
 	padding: 10px;
-	opacity: .8;
+	opacity: 0.8;
 }
 
 .icon-select-box .icon-select-id-container .icon-select-id-label .highlight {

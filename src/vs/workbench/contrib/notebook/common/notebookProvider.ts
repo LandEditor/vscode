@@ -3,27 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as glob from 'vs/base/common/glob';
-import { URI } from 'vs/base/common/uri';
-import { basename } from 'vs/base/common/path';
-import { INotebookExclusiveDocumentFilter, isDocumentExcludePattern, TransientOptions } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { RegisteredEditorPriority } from 'vs/workbench/services/editor/common/editorResolverService';
-import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
+import * as glob from "vs/base/common/glob";
+import { URI } from "vs/base/common/uri";
+import { basename } from "vs/base/common/path";
+import {
+	INotebookExclusiveDocumentFilter,
+	isDocumentExcludePattern,
+	TransientOptions,
+} from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { RegisteredEditorPriority } from "vs/workbench/services/editor/common/editorResolverService";
+import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
 
-type NotebookSelector = string | glob.IRelativePattern | INotebookExclusiveDocumentFilter;
+type NotebookSelector =
+	| string
+	| glob.IRelativePattern
+	| INotebookExclusiveDocumentFilter;
 
 export interface NotebookEditorDescriptor {
 	readonly extension?: ExtensionIdentifier;
 	readonly id: string;
 	readonly displayName: string;
-	readonly selectors: readonly { filenamePattern?: string; excludeFileNamePattern?: string }[];
+	readonly selectors: readonly {
+		filenamePattern?: string;
+		excludeFileNamePattern?: string;
+	}[];
 	readonly priority: RegisteredEditorPriority;
 	readonly providerDisplayName: string;
 	readonly exclusive: boolean;
 }
 
 export class NotebookProviderInfo {
-
 	readonly extension?: ExtensionIdentifier;
 	readonly id: string;
 	readonly displayName: string;
@@ -44,10 +53,11 @@ export class NotebookProviderInfo {
 		this.extension = descriptor.extension;
 		this.id = descriptor.id;
 		this.displayName = descriptor.displayName;
-		this._selectors = descriptor.selectors?.map(selector => ({
-			include: selector.filenamePattern,
-			exclude: selector.excludeFileNamePattern || ''
-		})) || [];
+		this._selectors =
+			descriptor.selectors?.map((selector) => ({
+				include: selector.filenamePattern,
+				exclude: selector.excludeFileNamePattern || "",
+			})) || [];
 		this.priority = descriptor.priority;
 		this.providerDisplayName = descriptor.providerDisplayName;
 		this.exclusive = descriptor.exclusive;
@@ -55,11 +65,14 @@ export class NotebookProviderInfo {
 			transientCellMetadata: {},
 			transientDocumentMetadata: {},
 			transientOutputs: false,
-			cellContentMetadata: {}
+			cellContentMetadata: {},
 		};
 	}
 
-	update(args: { selectors?: NotebookSelector[]; options?: TransientOptions }) {
+	update(args: {
+		selectors?: NotebookSelector[];
+		options?: TransientOptions;
+	}) {
 		if (args.selectors) {
 			this._selectors = args.selectors;
 		}
@@ -70,13 +83,20 @@ export class NotebookProviderInfo {
 	}
 
 	matches(resource: URI): boolean {
-		return this.selectors?.some(selector => NotebookProviderInfo.selectorMatches(selector, resource));
+		return this.selectors?.some((selector) =>
+			NotebookProviderInfo.selectorMatches(selector, resource)
+		);
 	}
 
 	static selectorMatches(selector: NotebookSelector, resource: URI): boolean {
-		if (typeof selector === 'string') {
+		if (typeof selector === "string") {
 			// filenamePattern
-			if (glob.match(selector.toLowerCase(), basename(resource.fsPath).toLowerCase())) {
+			if (
+				glob.match(
+					selector.toLowerCase(),
+					basename(resource.fsPath).toLowerCase()
+				)
+			) {
 				return true;
 			}
 		}
@@ -94,9 +114,16 @@ export class NotebookProviderInfo {
 		const filenamePattern = selector.include;
 		const excludeFilenamePattern = selector.exclude;
 
-		if (glob.match(filenamePattern, basename(resource.fsPath).toLowerCase())) {
+		if (
+			glob.match(filenamePattern, basename(resource.fsPath).toLowerCase())
+		) {
 			if (excludeFilenamePattern) {
-				if (glob.match(excludeFilenamePattern, basename(resource.fsPath).toLowerCase())) {
+				if (
+					glob.match(
+						excludeFilenamePattern,
+						basename(resource.fsPath).toLowerCase()
+					)
+				) {
 					return false;
 				}
 			}
@@ -106,7 +133,9 @@ export class NotebookProviderInfo {
 		return false;
 	}
 
-	static possibleFileEnding(selectors: NotebookSelector[]): string | undefined {
+	static possibleFileEnding(
+		selectors: NotebookSelector[]
+	): string | undefined {
 		for (const selector of selectors) {
 			const ending = NotebookProviderInfo._possibleFileEnding(selector);
 			if (ending) {
@@ -116,13 +145,14 @@ export class NotebookProviderInfo {
 		return undefined;
 	}
 
-	private static _possibleFileEnding(selector: NotebookSelector): string | undefined {
-
+	private static _possibleFileEnding(
+		selector: NotebookSelector
+	): string | undefined {
 		const pattern = /^.*(\.[a-zA-Z0-9_-]+)$/;
 
 		let candidate: string | undefined;
 
-		if (typeof selector === 'string') {
+		if (typeof selector === "string") {
 			candidate = selector;
 		} else if (glob.isRelativePattern(selector)) {
 			candidate = selector.pattern;

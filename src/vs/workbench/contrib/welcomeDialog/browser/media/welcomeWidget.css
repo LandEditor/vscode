@@ -6,7 +6,7 @@
 	border-radius: 6px;
 }
 
-.dialog-message-detail-title > div > p > .codicon[class*='codicon-']::before{
+.dialog-message-detail-title > div > p > .codicon[class*="codicon-"]::before {
 	position: relative;
 	color: var(--vscode-textLink-foreground);
 	padding-right: 10px;

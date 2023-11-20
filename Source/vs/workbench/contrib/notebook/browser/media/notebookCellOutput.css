@@ -31,12 +31,19 @@
 	box-sizing: border-box;
 }
 
-.monaco-workbench .notebookOverlay .output > div.foreground.output-inner-container {
+.monaco-workbench
+	.notebookOverlay
+	.output
+	> div.foreground.output-inner-container {
 	width: 100%;
 	box-sizing: border-box;
 }
 
-.monaco-workbench .notebookOverlay .output > div.foreground.output-inner-container .rendered-output {
+.monaco-workbench
+	.notebookOverlay
+	.output
+	> div.foreground.output-inner-container
+	.rendered-output {
 	display: inline;
 	transform: translate3d(0px, 0px, 0px);
 }
@@ -50,7 +57,11 @@
 	padding: 6px 0px;
 }
 
-.monaco-workbench .notebookOverlay .output .cell-output-toolbar .actions-container {
+.monaco-workbench
+	.notebookOverlay
+	.output
+	.cell-output-toolbar
+	.actions-container {
 	justify-content: center;
 }
 
@@ -115,5 +126,7 @@
 }
 
 .notebookOverlay .output-element {
-	border-top: none !important; border: 1px solid transparent; border-color: var(--vscode-notebook-outputContainerBorderColor) !important;
+	border-top: none !important;
+	border: 1px solid transparent;
+	border-color: var(--vscode-notebook-outputContainerBorderColor) !important;
 }

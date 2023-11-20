@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { IDiffEditorOptions } from 'vs/editor/common/config/editorOptions';
-import { ITextModel } from 'vs/editor/common/model';
+import { Event } from "vs/base/common/event";
+import { IDiffEditorOptions } from "vs/editor/common/config/editorOptions";
+import { ITextModel } from "vs/editor/common/model";
 
 export interface IMultiDiffEditorModel {
 	readonly documents: LazyPromise<IDocumentDiffItem>[];
@@ -21,9 +21,7 @@ export interface LazyPromise<T> {
 export class ConstLazyPromise<T> implements LazyPromise<T> {
 	public readonly onHasValueDidChange = Event.None;
 
-	constructor(
-		private readonly _value: T
-	) { }
+	constructor(private readonly _value: T) {}
 
 	public request(): Promise<T> {
 		return Promise.resolve(this._value);

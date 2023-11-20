@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import type * as Proto from '../../tsServer/protocol/protocol';
-import * as typeConverters from '../../typeConverters';
-import { ITypeScriptServiceClient } from '../../typescriptService';
+import * as vscode from "vscode";
+import type * as Proto from "../../tsServer/protocol/protocol";
+import * as typeConverters from "../../typeConverters";
+import { ITypeScriptServiceClient } from "../../typescriptService";
 
 export function getEditForCodeAction(
 	client: ITypeScriptServiceClient,
@@ -34,11 +34,11 @@ export async function applyCodeAction(
 export async function applyCodeActionCommands(
 	client: ITypeScriptServiceClient,
 	commands: ReadonlyArray<{}> | undefined,
-	token: vscode.CancellationToken,
+	token: vscode.CancellationToken
 ): Promise<boolean> {
 	if (commands?.length) {
 		for (const command of commands) {
-			await client.execute('applyCodeActionCommand', { command }, token);
+			await client.execute("applyCodeActionCommand", { command }, token);
 		}
 	}
 	return true;

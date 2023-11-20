@@ -3,10 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { SnippetFile, Snippet } from 'vs/workbench/contrib/snippets/browser/snippetsFile';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	SnippetFile,
+	Snippet,
+} from "vs/workbench/contrib/snippets/browser/snippetsFile";
 
-export const ISnippetsService = createDecorator<ISnippetsService>('snippetService');
+export const ISnippetsService =
+	createDecorator<ISnippetsService>("snippetService");
 
 export interface ISnippetGetOptions {
 	includeDisabledSnippets?: boolean;
@@ -16,7 +20,6 @@ export interface ISnippetGetOptions {
 }
 
 export interface ISnippetsService {
-
 	readonly _serviceBrand: undefined;
 
 	getSnippetFiles(): Promise<Iterable<SnippetFile>>;
@@ -27,7 +30,10 @@ export interface ISnippetsService {
 
 	updateUsageTimestamp(snippet: Snippet): void;
 
-	getSnippets(languageId: string | undefined, opt?: ISnippetGetOptions): Promise<Snippet[]>;
+	getSnippets(
+		languageId: string | undefined,
+		opt?: ISnippetGetOptions
+	): Promise<Snippet[]>;
 
 	getSnippetsSync(languageId: string, opt?: ISnippetGetOptions): Snippet[];
 }

@@ -3,27 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DEFAULT_EDITOR_ASSOCIATION, GroupIdentifier, IRevertOptions, isResourceEditorInput, IUntypedEditorInput } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { AbstractResourceEditorInput } from 'vs/workbench/common/editor/resourceEditorInput';
-import { URI } from 'vs/base/common/uri';
-import { ITextFileService, ITextFileSaveOptions, ILanguageSupport } from 'vs/workbench/services/textfile/common/textfiles';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IFileService } from 'vs/platform/files/common/files';
-import { ILabelService } from 'vs/platform/label/common/label';
-import { Schemas } from 'vs/base/common/network';
-import { isEqual } from 'vs/base/common/resources';
-import { ITextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService';
-import { TextResourceEditorModel } from 'vs/workbench/common/editor/textResourceEditorModel';
-import { IReference } from 'vs/base/common/lifecycle';
-import { createTextBufferFactory } from 'vs/editor/common/model/textModel';
-import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
+import {
+	DEFAULT_EDITOR_ASSOCIATION,
+	GroupIdentifier,
+	IRevertOptions,
+	isResourceEditorInput,
+	IUntypedEditorInput,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { AbstractResourceEditorInput } from "vs/workbench/common/editor/resourceEditorInput";
+import { URI } from "vs/base/common/uri";
+import {
+	ITextFileService,
+	ITextFileSaveOptions,
+	ILanguageSupport,
+} from "vs/workbench/services/textfile/common/textfiles";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILabelService } from "vs/platform/label/common/label";
+import { Schemas } from "vs/base/common/network";
+import { isEqual } from "vs/base/common/resources";
+import {
+	ITextEditorModel,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
+import { TextResourceEditorModel } from "vs/workbench/common/editor/textResourceEditorModel";
+import { IReference } from "vs/base/common/lifecycle";
+import { createTextBufferFactory } from "vs/editor/common/model/textModel";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
 
 /**
  * The base class for all editor inputs that open in text editors.
  */
 export abstract class AbstractTextResourceEditorInput extends AbstractResourceEditorInput {
-
 	constructor(
 		resource: URI,
 		preferredResource: URI | undefined,
@@ -31,16 +43,28 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		@ITextFileService protected readonly textFileService: ITextFileService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService
 	) {
-		super(resource, preferredResource, labelService, fileService, filesConfigurationService);
+		super(
+			resource,
+			preferredResource,
+			labelService,
+			fileService,
+			filesConfigurationService
+		);
 	}
 
-	override save(group: GroupIdentifier, options?: ITextFileSaveOptions): Promise<IUntypedEditorInput | undefined> {
-
+	override save(
+		group: GroupIdentifier,
+		options?: ITextFileSaveOptions
+	): Promise<IUntypedEditorInput | undefined> {
 		// If this is neither an `untitled` resource, nor a resource
 		// we can handle with the file service, we can only "Save As..."
-		if (this.resource.scheme !== Schemas.untitled && !this.fileService.hasProvider(this.resource)) {
+		if (
+			this.resource.scheme !== Schemas.untitled &&
+			!this.fileService.hasProvider(this.resource)
+		) {
 			return this.saveAs(group, options);
 		}
 
@@ -48,16 +72,26 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		return this.doSave(options, false, group);
 	}
 
-	override saveAs(group: GroupIdentifier, options?: ITextFileSaveOptions): Promise<IUntypedEditorInput | undefined> {
+	override saveAs(
+		group: GroupIdentifier,
+		options?: ITextFileSaveOptions
+	): Promise<IUntypedEditorInput | undefined> {
 		return this.doSave(options, true, group);
 	}
 
-	private async doSave(options: ITextFileSaveOptions | undefined, saveAs: boolean, group: GroupIdentifier | undefined): Promise<IUntypedEditorInput | undefined> {
-
+	private async doSave(
+		options: ITextFileSaveOptions | undefined,
+		saveAs: boolean,
+		group: GroupIdentifier | undefined
+	): Promise<IUntypedEditorInput | undefined> {
 		// Save / Save As
 		let target: URI | undefined;
 		if (saveAs) {
-			target = await this.textFileService.saveAs(this.resource, undefined, { ...options, suggestedTarget: this.preferredResource });
+			target = await this.textFileService.saveAs(
+				this.resource,
+				undefined,
+				{ ...options, suggestedTarget: this.preferredResource }
+			);
 		} else {
 			target = await this.textFileService.save(this.resource, options);
 		}
@@ -69,7 +103,10 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		return { resource: target };
 	}
 
-	override async revert(group: GroupIdentifier, options?: IRevertOptions): Promise<void> {
+	override async revert(
+		group: GroupIdentifier,
+		options?: IRevertOptions
+	): Promise<void> {
 		await this.textFileService.revert(this.resource, options);
 	}
 }
@@ -78,9 +115,11 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
  * A read-only text editor input whos contents are made of the provided resource that points to an existing
  * code editor model.
  */
-export class TextResourceEditorInput extends AbstractTextResourceEditorInput implements ILanguageSupport {
-
-	static readonly ID: string = 'workbench.editors.resourceEditorInput';
+export class TextResourceEditorInput
+	extends AbstractTextResourceEditorInput
+	implements ILanguageSupport
+{
+	static readonly ID: string = "workbench.editors.resourceEditorInput";
 
 	override get typeId(): string {
 		return TextResourceEditorInput.ID;
@@ -91,7 +130,8 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
 	}
 
 	private cachedModel: TextResourceEditorModel | undefined = undefined;
-	private modelReference: Promise<IReference<ITextEditorModel>> | undefined = undefined;
+	private modelReference: Promise<IReference<ITextEditorModel>> | undefined =
+		undefined;
 
 	constructor(
 		resource: URI,
@@ -104,9 +144,18 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
 		@ILabelService labelService: ILabelService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService
 	) {
-		super(resource, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService);
+		super(
+			resource,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService
+		);
 	}
 
 	override getName(): string {
@@ -148,7 +197,6 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
 	}
 
 	override async resolve(): Promise<ITextEditorModel> {
-
 		// Unset preferred contents and language after resolving
 		// once to prevent these properties to stick. We still
 		// want the user to change the language in the editor
@@ -160,7 +208,9 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
 		this.preferredLanguageId = undefined;
 
 		if (!this.modelReference) {
-			this.modelReference = this.textModelService.createModelReference(this.resource);
+			this.modelReference = this.textModelService.createModelReference(
+				this.resource
+			);
 		}
 
 		const ref = await this.modelReference;
@@ -171,14 +221,24 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
 			ref.dispose();
 			this.modelReference = undefined;
 
-			throw new Error(`Unexpected model for TextResourceEditorInput: ${this.resource}`);
+			throw new Error(
+				`Unexpected model for TextResourceEditorInput: ${this.resource}`
+			);
 		}
 
 		this.cachedModel = model;
 
 		// Set contents and language if preferred
-		if (typeof preferredContents === 'string' || typeof preferredLanguageId === 'string') {
-			model.updateTextEditorModel(typeof preferredContents === 'string' ? createTextBufferFactory(preferredContents) : undefined, preferredLanguageId);
+		if (
+			typeof preferredContents === "string" ||
+			typeof preferredLanguageId === "string"
+		) {
+			model.updateTextEditorModel(
+				typeof preferredContents === "string"
+					? createTextBufferFactory(preferredContents)
+					: undefined,
+				preferredLanguageId
+			);
 		}
 
 		return model;
@@ -202,7 +262,7 @@ export class TextResourceEditorInput extends AbstractTextResourceEditorInput imp
 
 	override dispose(): void {
 		if (this.modelReference) {
-			this.modelReference.then(ref => ref.dispose());
+			this.modelReference.then((ref) => ref.dispose());
 			this.modelReference = undefined;
 		}
 

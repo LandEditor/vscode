@@ -3,17 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Throttler } from 'vs/base/common/async';
-import { CancellationTokenSource } from 'vs/base/common/cancellation';
-import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
-import { NotebookVisibleCellObserver } from 'vs/workbench/contrib/notebook/browser/contrib/cellStatusBar/notebookVisibleCellObserver';
-import { ICellViewModel, INotebookEditor, INotebookEditorContribution, INotebookViewModel } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { registerNotebookContribution } from 'vs/workbench/contrib/notebook/browser/notebookEditorExtensions';
-import { INotebookCellStatusBarService } from 'vs/workbench/contrib/notebook/common/notebookCellStatusBarService';
-import { INotebookCellStatusBarItemList } from 'vs/workbench/contrib/notebook/common/notebookCommon';
+import { Throttler } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { Disposable, toDisposable } from "vs/base/common/lifecycle";
+import { NotebookVisibleCellObserver } from "vs/workbench/contrib/notebook/browser/contrib/cellStatusBar/notebookVisibleCellObserver";
+import {
+	ICellViewModel,
+	INotebookEditor,
+	INotebookEditorContribution,
+	INotebookViewModel,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { registerNotebookContribution } from "vs/workbench/contrib/notebook/browser/notebookEditorExtensions";
+import { INotebookCellStatusBarService } from "vs/workbench/contrib/notebook/common/notebookCellStatusBarService";
+import { INotebookCellStatusBarItemList } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
-export class ContributedStatusBarItemController extends Disposable implements INotebookEditorContribution {
-	static id: string = 'workbench.notebook.statusBar.contributed';
+export class ContributedStatusBarItemController
+	extends Disposable
+	implements INotebookEditorContribution
+{
+	static id: string = "workbench.notebook.statusBar.contributed";
 
 	private readonly _visibleCells = new Map<number, CellStatusBarHelper>();
 
@@ -21,26 +29,57 @@ export class ContributedStatusBarItemController extends Disposable implements IN
 
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		@INotebookCellStatusBarService private readonly _notebookCellStatusBarService: INotebookCellStatusBarService
+		@INotebookCellStatusBarService
+		private readonly _notebookCellStatusBarService: INotebookCellStatusBarService
 	) {
 		super();
-		this._observer = this._register(new NotebookVisibleCellObserver(this._notebookEditor));
-		this._register(this._observer.onDidChangeVisibleCells(this._updateVisibleCells, this));
+		this._observer = this._register(
+			new NotebookVisibleCellObserver(this._notebookEditor)
+		);
+		this._register(
+			this._observer.onDidChangeVisibleCells(
+				this._updateVisibleCells,
+				this
+			)
+		);
 
 		this._updateEverything();
-		this._register(this._notebookCellStatusBarService.onDidChangeProviders(this._updateEverything, this));
-		this._register(this._notebookCellStatusBarService.onDidChangeItems(this._updateEverything, this));
+		this._register(
+			this._notebookCellStatusBarService.onDidChangeProviders(
+				this._updateEverything,
+				this
+			)
+		);
+		this._register(
+			this._notebookCellStatusBarService.onDidChangeItems(
+				this._updateEverything,
+				this
+			)
+		);
 	}
 
 	private _updateEverything(): void {
-		const newCells = this._observer.visibleCells.filter(cell => !this._visibleCells.has(cell.handle));
-		const visibleCellHandles = new Set(this._observer.visibleCells.map(item => item.handle));
+		const newCells = this._observer.visibleCells.filter(
+			(cell) => !this._visibleCells.has(cell.handle)
+		);
+		const visibleCellHandles = new Set(
+			this._observer.visibleCells.map((item) => item.handle)
+		);
 		const currentCellHandles = Array.from(this._visibleCells.keys());
-		const removedCells = currentCellHandles.filter(handle => !visibleCellHandles.has(handle));
-		const itemsToUpdate = currentCellHandles.filter(handle => visibleCellHandles.has(handle));
+		const removedCells = currentCellHandles.filter(
+			(handle) => !visibleCellHandles.has(handle)
+		);
+		const itemsToUpdate = currentCellHandles.filter((handle) =>
+			visibleCellHandles.has(handle)
+		);
 
-		this._updateVisibleCells({ added: newCells, removed: removedCells.map(handle => ({ handle })) });
-		itemsToUpdate.forEach(handle => this._visibleCells.get(handle)?.update());
+		this._updateVisibleCells({
+			added: newCells,
+			removed: removedCells.map((handle) => ({ handle })),
+		});
+		itemsToUpdate.forEach(
+			(handle) => this._visibleCells.get(handle)?.update()
+		);
 	}
 
 	private _updateVisibleCells(e: {
@@ -53,7 +92,11 @@ export class ContributedStatusBarItemController extends Disposable implements IN
 		}
 
 		for (const newCell of e.added) {
-			const helper = new CellStatusBarHelper(vm, newCell, this._notebookCellStatusBarService);
+			const helper = new CellStatusBarHelper(
+				vm,
+				newCell,
+				this._notebookCellStatusBarService
+			);
 			this._visibleCells.set(newCell.handle, helper);
 		}
 
@@ -66,7 +109,7 @@ export class ContributedStatusBarItemController extends Disposable implements IN
 	override dispose(): void {
 		super.dispose();
 
-		this._visibleCells.forEach(cell => cell.dispose());
+		this._visibleCells.forEach((cell) => cell.dispose());
 		this._visibleCells.clear();
 	}
 }
@@ -89,11 +132,23 @@ class CellStatusBarHelper extends Disposable {
 
 		this._register(toDisposable(() => this._activeToken?.dispose(true)));
 		this._updateSoon();
-		this._register(this._cell.model.onDidChangeContent(() => this._updateSoon()));
-		this._register(this._cell.model.onDidChangeLanguage(() => this._updateSoon()));
-		this._register(this._cell.model.onDidChangeMetadata(() => this._updateSoon()));
-		this._register(this._cell.model.onDidChangeInternalMetadata(() => this._updateSoon()));
-		this._register(this._cell.model.onDidChangeOutputs(() => this._updateSoon()));
+		this._register(
+			this._cell.model.onDidChangeContent(() => this._updateSoon())
+		);
+		this._register(
+			this._cell.model.onDidChangeLanguage(() => this._updateSoon())
+		);
+		this._register(
+			this._cell.model.onDidChangeMetadata(() => this._updateSoon())
+		);
+		this._register(
+			this._cell.model.onDidChangeInternalMetadata(() =>
+				this._updateSoon()
+			)
+		);
+		this._register(
+			this._cell.model.onDidChangeOutputs(() => this._updateSoon())
+		);
 	}
 
 	public update(): void {
@@ -114,17 +169,30 @@ class CellStatusBarHelper extends Disposable {
 		const viewType = this._notebookViewModel.notebookDocument.viewType;
 
 		this._activeToken?.dispose(true);
-		const tokenSource = this._activeToken = new CancellationTokenSource();
-		const itemLists = await this._notebookCellStatusBarService.getStatusBarItemsForCell(docUri, cellIndex, viewType, tokenSource.token);
+		const tokenSource = (this._activeToken = new CancellationTokenSource());
+		const itemLists =
+			await this._notebookCellStatusBarService.getStatusBarItemsForCell(
+				docUri,
+				cellIndex,
+				viewType,
+				tokenSource.token
+			);
 		if (tokenSource.token.isCancellationRequested) {
-			itemLists.forEach(itemList => itemList.dispose && itemList.dispose());
+			itemLists.forEach(
+				(itemList) => itemList.dispose && itemList.dispose()
+			);
 			return;
 		}
 
-		const items = itemLists.map(itemList => itemList.items).flat();
-		const newIds = this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this._cell.handle, items }]);
+		const items = itemLists.map((itemList) => itemList.items).flat();
+		const newIds = this._notebookViewModel.deltaCellStatusBarItems(
+			this._currentItemIds,
+			[{ handle: this._cell.handle, items }]
+		);
 
-		this._currentItemLists.forEach(itemList => itemList.dispose && itemList.dispose());
+		this._currentItemLists.forEach(
+			(itemList) => itemList.dispose && itemList.dispose()
+		);
 		this._currentItemLists = itemLists;
 		this._currentItemIds = newIds;
 	}
@@ -134,9 +202,16 @@ class CellStatusBarHelper extends Disposable {
 		this._isDisposed = true;
 		this._activeToken?.dispose(true);
 
-		this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [{ handle: this._cell.handle, items: [] }]);
-		this._currentItemLists.forEach(itemList => itemList.dispose && itemList.dispose());
+		this._notebookViewModel.deltaCellStatusBarItems(this._currentItemIds, [
+			{ handle: this._cell.handle, items: [] },
+		]);
+		this._currentItemLists.forEach(
+			(itemList) => itemList.dispose && itemList.dispose()
+		);
 	}
 }
 
-registerNotebookContribution(ContributedStatusBarItemController.id, ContributedStatusBarItemController);
+registerNotebookContribution(
+	ContributedStatusBarItemController.id,
+	ContributedStatusBarItemController
+);

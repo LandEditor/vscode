@@ -62,12 +62,12 @@ pub async fn acquire_singleton(lock_file: &Path) -> Result<SingletonConnection, 
 		.map_err(CodeError::SingletonLockfileOpenFailed)?;
 
 	match FileLock::acquire(file) {
-		Ok(Lock::AlreadyLocked(mut file)) => connect_as_client_with_file(&mut file)
-			.await
-			.map(SingletonConnection::Client),
-		Ok(Lock::Acquired(lock)) => start_singleton_server(lock)
-			.await
-			.map(SingletonConnection::Singleton),
+		Ok(Lock::AlreadyLocked(mut file)) => {
+			connect_as_client_with_file(&mut file).await.map(SingletonConnection::Client)
+		}
+		Ok(Lock::Acquired(lock)) => {
+			start_singleton_server(lock).await.map(SingletonConnection::Singleton)
+		}
 		Err(e) => Err(e),
 	}
 }
@@ -95,15 +95,10 @@ async fn start_singleton_server(mut lock: FileLock) -> Result<SingletonServer, C
 		},
 	);
 
-	lock.file_mut()
-		.write_all(&vec)
-		.map_err(CodeError::SingletonLockfileOpenFailed)?;
+	lock.file_mut().write_all(&vec).map_err(CodeError::SingletonLockfileOpenFailed)?;
 
 	let server = listen_socket_rw_stream(&socket_path).await?;
-	Ok(SingletonServer {
-		server,
-		_lock: lock,
-	})
+	Ok(SingletonServer { server, _lock: lock })
 }
 
 const MAX_CLIENT_ATTEMPTS: i32 = 10;
@@ -158,9 +153,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_acquires_singleton() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
-		let s = acquire_singleton(&dir.path().join("lock"))
-			.await
-			.expect("expected to acquire");
+		let s = acquire_singleton(&dir.path().join("lock")).await.expect("expected to acquire");
 
 		match s {
 			SingletonConnection::Singleton(_) => {}
@@ -172,9 +165,7 @@ mod tests {
 	async fn test_acquires_client() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
 		let lockfile = dir.path().join("lock");
-		let s1 = acquire_singleton(&lockfile)
-			.await
-			.expect("expected to acquire1");
+		let s1 = acquire_singleton(&lockfile).await.expect("expected to acquire1");
 		match s1 {
 			SingletonConnection::Singleton(mut l) => tokio::spawn(async move {
 				l.accept().await.expect("expected to accept");
@@ -182,9 +173,7 @@ mod tests {
 			_ => panic!("expected to be singleton"),
 		};
 
-		let s2 = acquire_singleton(&lockfile)
-			.await
-			.expect("expected to acquire2");
+		let s2 = acquire_singleton(&lockfile).await.expect("expected to acquire2");
 		match s2 {
 			SingletonConnection::Client(_) => {}
 			_ => panic!("expected to be client"),

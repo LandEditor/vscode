@@ -31,6 +31,10 @@
 	position: absolute;
 }
 
-.interactive-editor .input-cell-container .run-button-container .monaco-toolbar .actions-container {
+.interactive-editor
+	.input-cell-container
+	.run-button-container
+	.monaco-toolbar
+	.actions-container {
 	justify-content: center;
 }

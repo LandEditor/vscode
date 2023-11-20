@@ -3,27 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Composite } from 'vs/workbench/browser/composite';
-import { IEditorPane, GroupIdentifier, IEditorMemento, IEditorOpenContext, isEditorInput } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { LRUCache, Touch } from 'vs/base/common/map';
-import { URI } from 'vs/base/common/uri';
-import { Emitter, Event } from 'vs/base/common/event';
-import { isEmptyObject } from 'vs/base/common/types';
-import { DEFAULT_EDITOR_MIN_DIMENSIONS, DEFAULT_EDITOR_MAX_DIMENSIONS } from 'vs/workbench/browser/parts/editor/editor';
-import { MementoObject } from 'vs/workbench/common/memento';
-import { joinPath, IExtUri, isEqual } from 'vs/base/common/resources';
-import { indexOfPath } from 'vs/base/common/extpath';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IEditorOptions } from 'vs/platform/editor/common/editor';
-import { ITextResourceConfigurationChangeEvent, ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
-import { IBoundarySashes } from 'vs/base/browser/ui/sash/sash';
+import { Composite } from "vs/workbench/browser/composite";
+import {
+	IEditorPane,
+	GroupIdentifier,
+	IEditorMemento,
+	IEditorOpenContext,
+	isEditorInput,
+} from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { CancellationToken } from "vs/base/common/cancellation";
+import {
+	IEditorGroup,
+	IEditorGroupsService,
+} from "vs/workbench/services/editor/common/editorGroupsService";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { LRUCache, Touch } from "vs/base/common/map";
+import { URI } from "vs/base/common/uri";
+import { Emitter, Event } from "vs/base/common/event";
+import { isEmptyObject } from "vs/base/common/types";
+import {
+	DEFAULT_EDITOR_MIN_DIMENSIONS,
+	DEFAULT_EDITOR_MAX_DIMENSIONS,
+} from "vs/workbench/browser/parts/editor/editor";
+import { MementoObject } from "vs/workbench/common/memento";
+import { joinPath, IExtUri, isEqual } from "vs/base/common/resources";
+import { indexOfPath } from "vs/base/common/extpath";
+import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IEditorOptions } from "vs/platform/editor/common/editor";
+import {
+	ITextResourceConfigurationChangeEvent,
+	ITextResourceConfigurationService,
+} from "vs/editor/common/services/textResourceConfiguration";
+import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
 
 /**
  * The base class of editors in the workbench. Editors register themselves for specific editor inputs.
@@ -47,36 +66,56 @@ import { IBoundarySashes } from 'vs/base/browser/ui/sash/sash';
  * This class is only intended to be subclassed and not instantiated.
  */
 export abstract class EditorPane extends Composite implements IEditorPane {
-
 	//#region Events
 
 	readonly onDidChangeSizeConstraints = Event.None;
 
-	protected readonly _onDidChangeControl = this._register(new Emitter<void>());
+	protected readonly _onDidChangeControl = this._register(
+		new Emitter<void>()
+	);
 	readonly onDidChangeControl = this._onDidChangeControl.event;
 
 	//#endregion
 
-	private static readonly EDITOR_MEMENTOS = new Map<string, EditorMemento<any>>();
+	private static readonly EDITOR_MEMENTOS = new Map<
+		string,
+		EditorMemento<any>
+	>();
 
-	get minimumWidth() { return DEFAULT_EDITOR_MIN_DIMENSIONS.width; }
-	get maximumWidth() { return DEFAULT_EDITOR_MAX_DIMENSIONS.width; }
-	get minimumHeight() { return DEFAULT_EDITOR_MIN_DIMENSIONS.height; }
-	get maximumHeight() { return DEFAULT_EDITOR_MAX_DIMENSIONS.height; }
+	get minimumWidth() {
+		return DEFAULT_EDITOR_MIN_DIMENSIONS.width;
+	}
+	get maximumWidth() {
+		return DEFAULT_EDITOR_MAX_DIMENSIONS.width;
+	}
+	get minimumHeight() {
+		return DEFAULT_EDITOR_MIN_DIMENSIONS.height;
+	}
+	get maximumHeight() {
+		return DEFAULT_EDITOR_MAX_DIMENSIONS.height;
+	}
 
 	protected _input: EditorInput | undefined;
-	get input(): EditorInput | undefined { return this._input; }
+	get input(): EditorInput | undefined {
+		return this._input;
+	}
 
 	protected _options: IEditorOptions | undefined;
-	get options(): IEditorOptions | undefined { return this._options; }
+	get options(): IEditorOptions | undefined {
+		return this._options;
+	}
 
 	private _group: IEditorGroup | undefined;
-	get group(): IEditorGroup | undefined { return this._group; }
+	get group(): IEditorGroup | undefined {
+		return this._group;
+	}
 
 	/**
 	 * Should be overridden by editors that have their own ScopedContextKeyService
 	 */
-	get scopedContextKeyService(): IContextKeyService | undefined { return undefined; }
+	get scopedContextKeyService(): IContextKeyService | undefined {
+		return undefined;
+	}
 
 	constructor(
 		id: string,
@@ -113,7 +152,12 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	 * The provided cancellation token should be used to test if the operation
 	 * was cancelled.
 	 */
-	async setInput(input: EditorInput, options: IEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
+	async setInput(
+		input: EditorInput,
+		options: IEditorOptions | undefined,
+		context: IEditorOpenContext,
+		token: CancellationToken
+	): Promise<void> {
 		this._input = input;
 		this._options = options;
 	}
@@ -159,7 +203,10 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	 * @param visible the state of visibility of this editor
 	 * @param group the editor group this editor is in.
 	 */
-	protected setEditorVisible(visible: boolean, group: IEditorGroup | undefined): void {
+	protected setEditorVisible(
+		visible: boolean,
+		group: IEditorGroup | undefined
+	): void {
 		this._group = group;
 	}
 
@@ -167,12 +214,29 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 		// Subclasses can implement
 	}
 
-	protected getEditorMemento<T>(editorGroupService: IEditorGroupsService, configurationService: ITextResourceConfigurationService, key: string, limit: number = 10): IEditorMemento<T> {
+	protected getEditorMemento<T>(
+		editorGroupService: IEditorGroupsService,
+		configurationService: ITextResourceConfigurationService,
+		key: string,
+		limit: number = 10
+	): IEditorMemento<T> {
 		const mementoKey = `${this.getId()}${key}`;
 
 		let editorMemento = EditorPane.EDITOR_MEMENTOS.get(mementoKey);
 		if (!editorMemento) {
-			editorMemento = this._register(new EditorMemento(this.getId(), key, this.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE), limit, editorGroupService, configurationService));
+			editorMemento = this._register(
+				new EditorMemento(
+					this.getId(),
+					key,
+					this.getMemento(
+						StorageScope.WORKSPACE,
+						StorageTarget.MACHINE
+					),
+					limit,
+					editorGroupService,
+					configurationService
+				)
+			);
 			EditorPane.EDITOR_MEMENTOS.set(mementoKey, editorMemento);
 		}
 
@@ -180,13 +244,11 @@ export abstract class EditorPane extends Composite implements IEditorPane {
 	}
 
 	getViewState(): object | undefined {
-
 		// Subclasses to override
 		return undefined;
 	}
 
 	protected override saveState(): void {
-
 		// Save all editor memento for this editor type
 		for (const [, editorMemento] of EditorPane.EDITOR_MEMENTOS) {
 			if (editorMemento.id === this.getId()) {
@@ -210,7 +272,6 @@ interface MapGroupToMemento<T> {
 }
 
 export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
-
 	private static readonly SHARED_EDITOR_STATE = -1; // pick a number < 0 to be outside group id range
 
 	private cache: LRUCache<string, MapGroupToMemento<T>> | undefined;
@@ -233,18 +294,38 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 	}
 
 	private registerListeners(): void {
-		this._register(this.configurationService.onDidChangeConfiguration(e => this.updateConfiguration(e)));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.updateConfiguration(e)
+			)
+		);
 	}
 
-	private updateConfiguration(e: ITextResourceConfigurationChangeEvent | undefined): void {
-		if (!e || e.affectsConfiguration(undefined, 'workbench.editor.sharedViewState')) {
-			this.shareEditorState = this.configurationService.getValue(undefined, 'workbench.editor.sharedViewState') === true;
+	private updateConfiguration(
+		e: ITextResourceConfigurationChangeEvent | undefined
+	): void {
+		if (
+			!e ||
+			e.affectsConfiguration(
+				undefined,
+				"workbench.editor.sharedViewState"
+			)
+		) {
+			this.shareEditorState =
+				this.configurationService.getValue(
+					undefined,
+					"workbench.editor.sharedViewState"
+				) === true;
 		}
 	}
 
 	saveEditorState(group: IEditorGroup, resource: URI, state: T): void;
 	saveEditorState(group: IEditorGroup, editor: EditorInput, state: T): void;
-	saveEditorState(group: IEditorGroup, resourceOrEditor: URI | EditorInput, state: T): void {
+	saveEditorState(
+		group: IEditorGroup,
+		resourceOrEditor: URI | EditorInput,
+		state: T
+	): void {
 		const resource = this.doGetResource(resourceOrEditor);
 		if (!resource || !group) {
 			return; // we are not in a good state to save any state for a resource
@@ -275,7 +356,10 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 
 	loadEditorState(group: IEditorGroup, resource: URI): T | undefined;
 	loadEditorState(group: IEditorGroup, editor: EditorInput): T | undefined;
-	loadEditorState(group: IEditorGroup, resourceOrEditor: URI | EditorInput): T | undefined {
+	loadEditorState(
+		group: IEditorGroup,
+		resourceOrEditor: URI | EditorInput
+	): T | undefined {
 		const resource = this.doGetResource(resourceOrEditor);
 		if (!resource || !group) {
 			return; // we are not in a good state to load any state for a resource
@@ -303,7 +387,10 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 
 	clearEditorState(resource: URI, group?: IEditorGroup): void;
 	clearEditorState(editor: EditorInput, group?: IEditorGroup): void;
-	clearEditorState(resourceOrEditor: URI | EditorInput, group?: IEditorGroup): void {
+	clearEditorState(
+		resourceOrEditor: URI | EditorInput,
+		group?: IEditorGroup
+	): void {
 		if (isEditorInput(resourceOrEditor)) {
 			this.editorDisposables?.delete(resourceOrEditor);
 		}
@@ -337,10 +424,13 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		}
 
 		if (!this.editorDisposables.has(editor)) {
-			this.editorDisposables.set(editor, Event.once(editor.onWillDispose)(() => {
-				this.clearEditorState(resource);
-				this.editorDisposables?.delete(editor);
-			}));
+			this.editorDisposables.set(
+				editor,
+				Event.once(editor.onWillDispose)(() => {
+					this.clearEditorState(resource);
+					this.editorDisposables?.delete(editor);
+				})
+			);
 		}
 	}
 
@@ -363,7 +453,10 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 				targetResource = target; // file got moved
 			} else {
 				const index = indexOfPath(resource.path, source.path);
-				targetResource = joinPath(target, resource.path.substr(index + source.path.length + 1)); // parent folder got moved
+				targetResource = joinPath(
+					target,
+					resource.path.substr(index + source.path.length + 1)
+				); // parent folder got moved
 			}
 
 			// Don't modify LRU state
@@ -375,7 +468,9 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		}
 	}
 
-	private doGetResource(resourceOrEditor: URI | EditorInput): URI | undefined {
+	private doGetResource(
+		resourceOrEditor: URI | EditorInput
+	): URI | undefined {
 		if (isEditorInput(resourceOrEditor)) {
 			return resourceOrEditor.resource;
 		}
@@ -418,7 +513,10 @@ export class EditorMemento<T> extends Disposable implements IEditorMemento<T> {
 		for (const [resource, mapGroupToMementos] of entries) {
 			for (const group of Object.keys(mapGroupToMementos)) {
 				const groupId: GroupIdentifier = Number(group);
-				if (groupId === EditorMemento.SHARED_EDITOR_STATE && this.shareEditorState) {
+				if (
+					groupId === EditorMemento.SHARED_EDITOR_STATE &&
+					this.shareEditorState
+				) {
 					continue; // skip over shared entries if sharing is enabled
 				}
 

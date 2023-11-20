@@ -1,32 +1,32 @@
 {
-  "name": "vscode-html-languageserver",
-  "description": "HTML language server",
-  "version": "1.0.0",
-  "author": "Microsoft Corporation",
-  "license": "MIT",
-  "engines": {
-    "node": "*"
-  },
-  "main": "./out/node/htmlServerMain",
-  "dependencies": {
-    "@vscode/l10n": "^0.0.16",
-    "vscode-css-languageservice": "^6.2.10",
-    "vscode-html-languageservice": "^5.1.1",
-    "vscode-languageserver": "^9.0.1",
-    "vscode-languageserver-textdocument": "^1.0.11",
-    "vscode-uri": "^3.0.8"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.4",
-    "@types/node": "20.x"
-  },
-  "scripts": {
-    "compile": "npx gulp compile-extension:html-language-features-server",
-    "watch": "npx gulp watch-extension:html-language-features-server",
-    "install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
-    "install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
-    "install-server-next": "yarn add vscode-languageserver@next",
-    "install-server-local": "yarn link vscode-languageserver",
-    "test": "yarn compile && node ./test/index.js"
-  }
+	"name": "vscode-html-languageserver",
+	"version": "1.0.0",
+	"description": "HTML language server",
+	"license": "MIT",
+	"author": "Microsoft Corporation",
+	"main": "./out/node/htmlServerMain",
+	"scripts": {
+		"compile": "npx gulp compile-extension:html-language-features-server",
+		"install-server-local": "yarn link vscode-languageserver",
+		"install-server-next": "yarn add vscode-languageserver@next",
+		"install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
+		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
+		"test": "yarn compile && node ./test/index.js",
+		"watch": "npx gulp watch-extension:html-language-features-server"
+	},
+	"dependencies": {
+		"@vscode/l10n": "^0.0.16",
+		"vscode-css-languageservice": "^6.2.10",
+		"vscode-html-languageservice": "^5.1.1",
+		"vscode-languageserver": "^9.0.1",
+		"vscode-languageserver-textdocument": "^1.0.11",
+		"vscode-uri": "^3.0.8"
+	},
+	"devDependencies": {
+		"@types/mocha": "^10.0.4",
+		"@types/node": "20.x"
+	},
+	"engines": {
+		"node": "*"
+	}
 }

@@ -1,45 +1,46 @@
 <!-- Copyright (C) Microsoft Corporation. All rights reserved. -->
-<!DOCTYPE html>
+<!doctype html>
 <html>
 	<head>
 		<meta charset="utf-8" />
 
 		<!-- Disable pinch zooming -->
-		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+		<meta
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no"
+			name="viewport" />
 
 		<title>Visual Studio Code</title>
 
 		<!-- Scripts -->
 		<script>
-
 			function decode(value) {
 				return value === null ? null : decodeURIComponent(value);
 			}
 
 			const url = new URL(window.location.href);
 			const params = url.searchParams;
-			const id = decode(params.get('vscode-reqid'));
-			const scheme = decode(params.get('vscode-scheme'));
-			const authority = decode(params.get('vscode-authority'));
+			const id = decode(params.get("vscode-reqid"));
+			const scheme = decode(params.get("vscode-scheme"));
+			const authority = decode(params.get("vscode-authority"));
 
 			if (!id) {
-				throw new Error('Missing id');
+				throw new Error("Missing id");
 			} else if (!scheme) {
-				throw new Error('Missing scheme');
+				throw new Error("Missing scheme");
 			} else if (!authority) {
-				throw new Error('Missing authority');
+				throw new Error("Missing authority");
 			}
 
-			const path = decode(params.get('vscode-path'));
-			const query = decode(params.get('vscode-query'));
-			const fragment = decode(params.get('vscode-fragment'));
+			const path = decode(params.get("vscode-path"));
+			const query = decode(params.get("vscode-query"));
+			const fragment = decode(params.get("vscode-fragment"));
 
-			params.delete('vscode-reqid');
-			params.delete('vscode-scheme');
-			params.delete('vscode-authority');
-			params.delete('vscode-path');
-			params.delete('vscode-query');
-			params.delete('vscode-fragment');
+			params.delete("vscode-reqid");
+			params.delete("vscode-scheme");
+			params.delete("vscode-authority");
+			params.delete("vscode-path");
+			params.delete("vscode-query");
+			params.delete("vscode-fragment");
 
 			let uri = { scheme, authority };
 
@@ -61,7 +62,10 @@
 				uri.fragment = fragment;
 			}
 
-			localStorage.setItem(`vscode-web.url-callbacks[${id}]`, JSON.stringify(uri));
+			localStorage.setItem(
+				`vscode-web.url-callbacks[${id}]`,
+				JSON.stringify(uri)
+			);
 		</script>
 
 		<!-- Styling -->
@@ -78,8 +82,9 @@
 				display: flex;
 				flex-direction: column;
 				color: white;
-				font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif;
-				background-color: #2C2C32;
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC",
+					"Segoe UI", system-ui, "Ubuntu", "Droid Sans", sans-serif;
+				background-color: #2c2c32;
 			}
 
 			.branding {
@@ -90,7 +95,8 @@
 				padding-left: 36px;
 				font-size: 20px;
 				letter-spacing: -0.04rem;
-				font-family: "Segoe UI","Helvetica Neue","Helvetica",Arial,sans-serif;
+				font-family: "Segoe UI", "Helvetica Neue", "Helvetica", Arial,
+					sans-serif;
 				font-weight: 400;
 				color: white;
 				text-decoration: none;
@@ -111,13 +117,9 @@
 		</style>
 	</head>
 	<body>
-		<span class="branding">
-			Visual Studio Code
-		</span>
+		<span class="branding"> Visual Studio Code </span>
 		<div class="message-container">
-			<div class="message">
-				You can close this page now.
-			</div>
+			<div class="message">You can close this page now.</div>
 		</div>
 	</body>
 </html>

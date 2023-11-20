@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Toggle } from 'vs/base/browser/ui/toggle/toggle';
-import { Codicon } from 'vs/base/common/codicons';
-import * as nls from 'vs/nls';
+import { Toggle } from "vs/base/browser/ui/toggle/toggle";
+import { Codicon } from "vs/base/common/codicons";
+import * as nls from "vs/nls";
 
 export interface IFindInputToggleOpts {
 	readonly appendTitle: string;
@@ -15,9 +15,18 @@ export interface IFindInputToggleOpts {
 	readonly inputActiveOptionBackground: string | undefined;
 }
 
-const NLS_CASE_SENSITIVE_TOGGLE_LABEL = nls.localize('caseDescription', "Match Case");
-const NLS_WHOLE_WORD_TOGGLE_LABEL = nls.localize('wordsDescription', "Match Whole Word");
-const NLS_REGEX_TOGGLE_LABEL = nls.localize('regexDescription', "Use Regular Expression");
+const NLS_CASE_SENSITIVE_TOGGLE_LABEL = nls.localize(
+	"caseDescription",
+	"Match Case"
+);
+const NLS_WHOLE_WORD_TOGGLE_LABEL = nls.localize(
+	"wordsDescription",
+	"Match Whole Word"
+);
+const NLS_REGEX_TOGGLE_LABEL = nls.localize(
+	"regexDescription",
+	"Use Regular Expression"
+);
 
 export class CaseSensitiveToggle extends Toggle {
 	constructor(opts: IFindInputToggleOpts) {
@@ -27,7 +36,7 @@ export class CaseSensitiveToggle extends Toggle {
 			isChecked: opts.isChecked,
 			inputActiveOptionBorder: opts.inputActiveOptionBorder,
 			inputActiveOptionForeground: opts.inputActiveOptionForeground,
-			inputActiveOptionBackground: opts.inputActiveOptionBackground
+			inputActiveOptionBackground: opts.inputActiveOptionBackground,
 		});
 	}
 }
@@ -40,7 +49,7 @@ export class WholeWordsToggle extends Toggle {
 			isChecked: opts.isChecked,
 			inputActiveOptionBorder: opts.inputActiveOptionBorder,
 			inputActiveOptionForeground: opts.inputActiveOptionForeground,
-			inputActiveOptionBackground: opts.inputActiveOptionBackground
+			inputActiveOptionBackground: opts.inputActiveOptionBackground,
 		});
 	}
 }
@@ -53,7 +62,7 @@ export class RegexToggle extends Toggle {
 			isChecked: opts.isChecked,
 			inputActiveOptionBorder: opts.inputActiveOptionBorder,
 			inputActiveOptionForeground: opts.inputActiveOptionForeground,
-			inputActiveOptionBackground: opts.inputActiveOptionBackground
+			inputActiveOptionBackground: opts.inputActiveOptionBackground,
 		});
 	}
 }

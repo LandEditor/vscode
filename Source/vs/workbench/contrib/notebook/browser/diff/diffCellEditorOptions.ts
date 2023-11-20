@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDiffEditorConstructionOptions } from 'vs/editor/browser/editorBrowser';
-import { IEditorOptions } from 'vs/editor/common/config/editorOptions';
+import { IDiffEditorConstructionOptions } from "vs/editor/browser/editorBrowser";
+import { IEditorOptions } from "vs/editor/common/config/editorOptions";
 
 export const fixedEditorPadding = {
 	top: 12,
-	bottom: 12
+	bottom: 12,
 };
 
 export const fixedEditorOptions: IEditorOptions = {
@@ -16,8 +16,8 @@ export const fixedEditorOptions: IEditorOptions = {
 	scrollBeyondLastLine: false,
 	scrollbar: {
 		verticalScrollbarSize: 14,
-		horizontal: 'auto',
-		vertical: 'auto',
+		horizontal: "auto",
+		vertical: "auto",
 		useShadows: true,
 		verticalHasArrows: false,
 		horizontalHasArrows: false,
@@ -27,15 +27,15 @@ export const fixedEditorOptions: IEditorOptions = {
 	overviewRulerLanes: 0,
 	overviewRulerBorder: false,
 	selectOnLineNumbers: false,
-	wordWrap: 'off',
-	lineNumbers: 'off',
+	wordWrap: "off",
+	lineNumbers: "off",
 	lineDecorationsWidth: 0,
 	glyphMargin: false,
 	fixedOverflowWidgets: true,
 	minimap: { enabled: false },
-	renderValidationDecorations: 'on',
-	renderLineHighlight: 'none',
-	readOnly: true
+	renderValidationDecorations: "on",
+	renderLineHighlight: "none",
+	readOnly: true,
 };
 
 export const fixedDiffEditorOptions: IDiffEditorConstructionOptions = {
@@ -47,7 +47,7 @@ export const fixedDiffEditorOptions: IDiffEditorConstructionOptions = {
 	readOnly: false,
 	isInEmbeddedEditor: true,
 	renderOverviewRuler: false,
-	wordWrap: 'off',
-	diffWordWrap: 'off',
-	diffAlgorithm: 'advanced',
+	wordWrap: "off",
+	diffWordWrap: "off",
+	diffAlgorithm: "advanced",
 };

@@ -3,15 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range } from 'vs/editor/common/core/range';
-import { Selection } from 'vs/editor/common/core/selection';
-import { IPartialViewLinesViewportData, IViewModel, IViewWhitespaceViewportData, ViewLineRenderingData, ViewModelDecoration } from 'vs/editor/common/viewModel';
+import { Range } from "vs/editor/common/core/range";
+import { Selection } from "vs/editor/common/core/selection";
+import {
+	IPartialViewLinesViewportData,
+	IViewModel,
+	IViewWhitespaceViewportData,
+	ViewLineRenderingData,
+	ViewModelDecoration,
+} from "vs/editor/common/viewModel";
 
 /**
  * Contains all data needed to render at a specific viewport.
  */
 export class ViewportData {
-
 	public readonly selections: Selection[];
 
 	/**
@@ -70,7 +75,10 @@ export class ViewportData {
 	}
 
 	public getViewLineRenderingData(lineNumber: number): ViewLineRenderingData {
-		return this._model.getViewportViewLineRenderingData(this.visibleRange, lineNumber);
+		return this._model.getViewportViewLineRenderingData(
+			this.visibleRange,
+			lineNumber
+		);
 	}
 
 	public getDecorationsInViewport(): ViewModelDecoration[] {

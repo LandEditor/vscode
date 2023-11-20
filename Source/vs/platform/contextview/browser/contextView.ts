@@ -3,23 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IContextMenuDelegate } from 'vs/base/browser/contextmenu';
-import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
-import { AnchorAlignment, AnchorAxisAlignment, IAnchor, IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
-import { IAction } from 'vs/base/common/actions';
-import { Event } from 'vs/base/common/event';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { IMenuActionOptions, MenuId } from 'vs/platform/actions/common/actions';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IContextMenuDelegate } from "vs/base/browser/contextmenu";
+import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
+import {
+	AnchorAlignment,
+	AnchorAxisAlignment,
+	IAnchor,
+	IContextViewProvider,
+} from "vs/base/browser/ui/contextview/contextview";
+import { IAction } from "vs/base/common/actions";
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { IMenuActionOptions, MenuId } from "vs/platform/actions/common/actions";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const IContextViewService = createDecorator<IContextViewService>('contextViewService');
+export const IContextViewService =
+	createDecorator<IContextViewService>("contextViewService");
 
 export interface IContextViewService extends IContextViewProvider {
-
 	readonly _serviceBrand: undefined;
 
-	showContextView(delegate: IContextViewDelegate, container?: HTMLElement, shadowRoot?: boolean): IDisposable;
+	showContextView(
+		delegate: IContextViewDelegate,
+		container?: HTMLElement,
+		shadowRoot?: boolean
+	): IDisposable;
 	hideContextView(data?: any): void;
 	getContextViewElement(): HTMLElement;
 	layout(): void;
@@ -27,7 +36,6 @@ export interface IContextViewService extends IContextViewProvider {
 }
 
 export interface IContextViewDelegate {
-
 	canRelayout?: boolean; // Default: true
 
 	/**
@@ -45,16 +53,18 @@ export interface IContextViewDelegate {
 	anchorAxisAlignment?: AnchorAxisAlignment;
 }
 
-export const IContextMenuService = createDecorator<IContextMenuService>('contextMenuService');
+export const IContextMenuService =
+	createDecorator<IContextMenuService>("contextMenuService");
 
 export interface IContextMenuService {
-
 	readonly _serviceBrand: undefined;
 
 	readonly onDidShowContextMenu: Event<void>;
 	readonly onDidHideContextMenu: Event<void>;
 
-	showContextMenu(delegate: IContextMenuDelegate | IContextMenuMenuDelegate): void;
+	showContextMenu(
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
+	): void;
 }
 
 export type IContextMenuMenuDelegate = {
@@ -75,4 +85,4 @@ export type IContextMenuMenuDelegate = {
 	 * Optional getter for extra actions. They will be prepended to the menu actions.
 	 */
 	getActions?(): IAction[];
-} & Omit<IContextMenuDelegate, 'getActions'>;
+} & Omit<IContextMenuDelegate, "getActions">;
