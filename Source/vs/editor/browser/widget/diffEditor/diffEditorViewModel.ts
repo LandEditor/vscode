@@ -260,6 +260,7 @@ export class DiffEditorViewModel
 					}
 				}
 
+				this._isDiffUpToDate.set(false, undefined);
 				debouncer.schedule();
 			})
 		);
@@ -301,6 +302,7 @@ export class DiffEditorViewModel
 					}
 				}
 
+				this._isDiffUpToDate.set(false, undefined);
 				debouncer.schedule();
 			})
 		);

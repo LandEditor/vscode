@@ -1213,7 +1213,7 @@ export class NotebookEditorWidget
 		// chat
 		styleSheets.push(`
 		.monaco-workbench .notebookOverlay .cell-chat-part {
-			margin: 0 ${cellRightMargin}px 8px 6px;
+			margin: 0 ${cellRightMargin}px 6px 6px;
 		}
 		`);
 

@@ -1,25 +1,42 @@
 {
-	"name": "theme-abyss",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"contributes": {
-		"themes": [
-			{
-				"id": "Abyss",
-				"label": "%themeLabel%",
-				"uiTheme": "vs-dark",
-				"path": "./themes/abyss-color-theme.json"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "*"
-	}
+  "name": "theme-abyss",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "contributes": {
+    "themes": [
+      {
+        "id": "Abyss",
+        "label": "%themeLabel%",
+        "uiTheme": "vs-dark",
+        "path": "./themes/abyss-color-theme.json"
+      }
+    ]
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "scripts": {
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

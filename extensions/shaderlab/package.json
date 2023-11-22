@@ -1,40 +1,55 @@
 {
-	"name": "shaderlab",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin tgjones/shaders-tmLanguage grammars/shaderlab.json ./syntaxes/shaderlab.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "shaderlab",
-				"path": "./syntaxes/shaderlab.tmLanguage.json",
-				"scopeName": "source.shaderlab"
-			}
-		],
-		"languages": [
-			{
-				"id": "shaderlab",
-				"extensions": [
-					".shader"
-				],
-				"aliases": [
-					"ShaderLab",
-					"shaderlab"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "*"
-	}
+  "name": "shaderlab",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin tgjones/shaders-tmLanguage grammars/shaderlab.json ./syntaxes/shaderlab.tmLanguage.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "grammars": [
+      {
+        "language": "shaderlab",
+        "path": "./syntaxes/shaderlab.tmLanguage.json",
+        "scopeName": "source.shaderlab"
+      }
+    ],
+    "languages": [
+      {
+        "id": "shaderlab",
+        "extensions": [
+          ".shader"
+        ],
+        "aliases": [
+          "ShaderLab",
+          "shaderlab"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

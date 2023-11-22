@@ -1,5 +1,31 @@
 {
-	"name": "builtin",
-	"version": "0.1.0",
-	"main": "main.js"
+  "name": "builtin",
+  "version": "0.0.1",
+  "main": "main.js",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "type": "module",
+  "publisher": "playform",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "scripts": {
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

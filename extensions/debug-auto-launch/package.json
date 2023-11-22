@@ -1,42 +1,55 @@
 {
-	"name": "debug-auto-launch",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"main": "./out/extension",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-auto-launch",
-		"watch": "gulp watch-extension:debug-auto-launch"
-	},
-	"contributes": {
-		"commands": [
-			{
-				"command": "extension.node-debug.toggleAutoAttach",
-				"title": "%toggle.auto.attach%",
-				"category": "Debug"
-			}
-		]
-	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"devDependencies": {
-		"@types/node": "20.x"
-	},
-	"engines": {
-		"vscode": "^1.5.0"
-	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"virtualWorkspaces": false,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
-	}
+  "name": "debug-auto-launch",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "main": "./out/extension",
+  "scripts": {
+    "compile": "gulp compile-extension:debug-auto-launch",
+    "watch": "gulp watch-extension:debug-auto-launch",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "extension.node-debug.toggleAutoAttach",
+        "title": "%toggle.auto.attach%",
+        "category": "Debug"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
+  },
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  }
 }

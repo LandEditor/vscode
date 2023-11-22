@@ -26,7 +26,6 @@ import {
 	ICodeEditor,
 	IDiffEditor,
 	IDiffEditorConstructionOptions,
-	IMouseTargetViewZone,
 } from "vs/editor/browser/editorBrowser";
 import {
 	EditorExtensionsRegistry,
@@ -63,7 +62,10 @@ import {
 	IDiffComputationResult,
 	ILineChange,
 } from "vs/editor/common/diff/legacyLinesDiffComputer";
-import { DetailedLineRangeMapping } from "vs/editor/common/diff/rangeMapping";
+import {
+	DetailedLineRangeMapping,
+	RangeMapping,
+} from "vs/editor/common/diff/rangeMapping";
 import {
 	EditorType,
 	IDiffEditorModel,
@@ -307,7 +309,8 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 					readHotReloadableExport(DiffEditorDecorations, reader),
 					this._editors,
 					this._diffModel,
-					this._options
+					this._options,
+					this
 				)
 		).recomputeInitiallyAndOnChange(this._store);
 
@@ -443,47 +446,6 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 						? "visible"
 						: "hidden"
 				),
-			})
-		);
-
-		// Revert change when an arrow is clicked.
-		this._register(
-			this._editors.modified.onMouseDown((event) => {
-				if (
-					!event.event.rightButton &&
-					event.target.position &&
-					event.target.element?.className.includes(
-						"arrow-revert-change"
-					)
-				) {
-					const lineNumber = event.target.position.lineNumber;
-					const viewZone = event.target as
-						| IMouseTargetViewZone
-						| undefined;
-
-					const model = this._diffModel.get();
-					if (!model) {
-						return;
-					}
-					const diffs = model.diff.get()?.mappings;
-					if (!diffs) {
-						return;
-					}
-					const diff = diffs.find(
-						(d) =>
-							viewZone?.detail.afterLineNumber ===
-								d.lineRangeMapping.modified.startLineNumber -
-									1 ||
-							d.lineRangeMapping.modified.startLineNumber ===
-								lineNumber
-					);
-					if (!diff) {
-						return;
-					}
-					this.revert(diff.lineRangeMapping);
-
-					event.event.stopPropagation();
-				}
 			})
 		);
 
@@ -799,24 +761,36 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 	}
 
 	revert(diff: DetailedLineRangeMapping): void {
+		if (diff.innerChanges) {
+			this.revertRangeMappings(diff.innerChanges);
+		}
+
 		const model = this._diffModel.get()?.model;
 		if (!model) {
 			return;
 		}
 
-		const changes: IIdentifiedSingleEditOperation[] = diff.innerChanges
-			? diff.innerChanges.map<IIdentifiedSingleEditOperation>((c) => ({
-					range: c.modifiedRange,
-					text: model.original.getValueInRange(c.originalRange),
-			  }))
-			: [
-					{
-						range: diff.modified.toExclusiveRange(),
-						text: model.original.getValueInRange(
-							diff.original.toExclusiveRange()
-						),
-					},
-			  ];
+		this._editors.modified.executeEdits("diffEditor", [
+			{
+				range: diff.modified.toExclusiveRange(),
+				text: model.original.getValueInRange(
+					diff.original.toExclusiveRange()
+				),
+			},
+		]);
+	}
+
+	revertRangeMappings(diffs: RangeMapping[]): void {
+		const model = this._diffModel.get();
+		if (!model || !model.isDiffUpToDate.get()) {
+			return;
+		}
+
+		const changes: IIdentifiedSingleEditOperation[] =
+			diffs.map<IIdentifiedSingleEditOperation>((c) => ({
+				range: c.modifiedRange,
+				text: model.model.original.getValueInRange(c.originalRange),
+			}));
 
 		this._editors.modified.executeEdits("diffEditor", changes);
 	}

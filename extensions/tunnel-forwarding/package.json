@@ -1,53 +1,66 @@
 {
-	"name": "tunnel-forwarding",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"main": "./out/extension",
-	"scripts": {
-		"compile": "gulp compile-extension:tunnel-forwarding",
-		"watch": "gulp watch-extension:tunnel-forwarding"
-	},
-	"contributes": {
-		"commands": [
-			{
-				"category": "%category%",
-				"command": "tunnel-forwarding.showLog",
-				"title": "%command.showLog%",
-				"enablement": "tunnelForwardingHasLog"
-			},
-			{
-				"category": "%category%",
-				"command": "tunnel-forwarding.restart",
-				"title": "%command.restart%",
-				"enablement": "tunnelForwardingIsRunning"
-			}
-		]
-	},
-	"activationEvents": [
-		"onTunnel"
-	],
-	"devDependencies": {
-		"@types/node": "20.x"
-	},
-	"engines": {
-		"vscode": "^1.82.0"
-	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"virtualWorkspaces": false,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
-	},
-	"enabledApiProposals": [
-		"resolvers",
-		"tunnelFactory"
-	]
+  "name": "tunnel-forwarding",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "main": "./out/extension",
+  "scripts": {
+    "compile": "gulp compile-extension:tunnel-forwarding",
+    "watch": "gulp watch-extension:tunnel-forwarding",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "commands": [
+      {
+        "category": "%category%",
+        "command": "tunnel-forwarding.showLog",
+        "title": "%command.showLog%",
+        "enablement": "tunnelForwardingHasLog"
+      },
+      {
+        "category": "%category%",
+        "command": "tunnel-forwarding.restart",
+        "title": "%command.restart%",
+        "enablement": "tunnelForwardingIsRunning"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onTunnel"
+  ],
+  "devDependencies": {
+    "@types/node": "20.x",
+    "typescript-esbuild": "0.3.1"
+  },
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "resolvers",
+    "tunnelFactory"
+  ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  }
 }

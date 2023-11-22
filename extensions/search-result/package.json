@@ -1,62 +1,77 @@
 {
-	"name": "search-result",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"main": "./out/extension.js",
-	"browser": "./dist/extension.js",
-	"scripts": {
-		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
-		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:search-result ./tsconfig.json"
-	},
-	"contributes": {
-		"configurationDefaults": {
-			"[search-result]": {
-				"editor.lineNumbers": "off"
-			}
-		},
-		"grammars": [
-			{
-				"language": "search-result",
-				"scopeName": "text.searchResult",
-				"path": "./syntaxes/searchResult.tmLanguage.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "search-result",
-				"extensions": [
-					".code-search"
-				],
-				"aliases": [
-					"Search Result"
-				]
-			}
-		]
-	},
-	"activationEvents": [
-		"onLanguage:search-result"
-	],
-	"engines": {
-		"vscode": "^1.39.0"
-	},
-	"icon": "images/icon.png",
-	"capabilities": {
-		"virtualWorkspaces": true,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
-	},
-	"enabledApiProposals": [
-		"documentFiltersExclusive"
-	]
+  "name": "search-result",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "categories": [
+    "Programming Languages"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "main": "./out/extension.js",
+  "browser": "./dist/extension.js",
+  "scripts": {
+    "generate-grammar": "node ./syntaxes/generateTMLanguage.js",
+    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:search-result ./tsconfig.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "configurationDefaults": {
+      "[search-result]": {
+        "editor.lineNumbers": "off"
+      }
+    },
+    "grammars": [
+      {
+        "language": "search-result",
+        "scopeName": "text.searchResult",
+        "path": "./syntaxes/searchResult.tmLanguage.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "search-result",
+        "extensions": [
+          ".code-search"
+        ],
+        "aliases": [
+          "Search Result"
+        ]
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:search-result"
+  ],
+  "icon": "images/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "documentFiltersExclusive"
+  ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

@@ -1,87 +1,100 @@
 {
-	"name": "php-language-features",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"categories": [
-		"Programming Languages"
-	],
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"main": "./out/phpMain",
-	"scripts": {
-		"compile": "npx gulp compile-extension:php-language-features",
-		"watch": "npx gulp watch-extension:php-language-features"
-	},
-	"contributes": {
-		"configuration": {
-			"title": "%configuration.title%",
-			"type": "object",
-			"order": 20,
-			"properties": {
-				"php.suggest.basic": {
-					"type": "boolean",
-					"default": true,
-					"description": "%configuration.suggest.basic%"
-				},
-				"php.validate.enable": {
-					"type": "boolean",
-					"default": true,
-					"description": "%configuration.validate.enable%"
-				},
-				"php.validate.executablePath": {
-					"type": [
-						"string",
-						"null"
-					],
-					"default": null,
-					"description": "%configuration.validate.executablePath%",
-					"scope": "machine-overridable"
-				},
-				"php.validate.run": {
-					"type": "string",
-					"enum": [
-						"onSave",
-						"onType"
-					],
-					"default": "onSave",
-					"description": "%configuration.validate.run%"
-				}
-			}
-		},
-		"jsonValidation": [
-			{
-				"fileMatch": "composer.json",
-				"url": "https://getcomposer.org/schema.json"
-			}
-		]
-	},
-	"activationEvents": [
-		"onLanguage:php"
-	],
-	"dependencies": {
-		"which": "^4.0.0"
-	},
-	"devDependencies": {
-		"@types/node": "20.x",
-		"@types/which": "^3.0.2"
-	},
-	"engines": {
-		"vscode": "0.10.x"
-	},
-	"icon": "icons/logo.png",
-	"capabilities": {
-		"virtualWorkspaces": false,
-		"untrustedWorkspaces": {
-			"supported": "limited",
-			"description": "%workspaceTrust%",
-			"restrictedConfigurations": [
-				"php.validate.executablePath"
-			]
-		}
-	}
+  "name": "php-language-features",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "categories": [
+    "Programming Languages"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "main": "./out/phpMain",
+  "scripts": {
+    "compile": "npx gulp compile-extension:php-language-features",
+    "watch": "npx gulp watch-extension:php-language-features",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "%configuration.title%",
+      "type": "object",
+      "order": 20,
+      "properties": {
+        "php.suggest.basic": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.suggest.basic%"
+        },
+        "php.validate.enable": {
+          "type": "boolean",
+          "default": true,
+          "description": "%configuration.validate.enable%"
+        },
+        "php.validate.executablePath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null,
+          "description": "%configuration.validate.executablePath%",
+          "scope": "machine-overridable"
+        },
+        "php.validate.run": {
+          "type": "string",
+          "enum": [
+            "onSave",
+            "onType"
+          ],
+          "default": "onSave",
+          "description": "%configuration.validate.run%"
+        }
+      }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "composer.json",
+        "url": "https://getcomposer.org/schema.json"
+      }
+    ]
+  },
+  "activationEvents": [
+    "onLanguage:php"
+  ],
+  "dependencies": {
+    "which": "4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "20.x",
+    "@types/which": "3.0.2",
+    "typescript-esbuild": "0.3.1"
+  },
+  "icon": "icons/logo.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%workspaceTrust%",
+      "restrictedConfigurations": [
+        "php.validate.executablePath"
+      ]
+    }
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  }
 }

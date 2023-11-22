@@ -62,7 +62,7 @@ export function registerChatCopyActions() {
 								(isResponseVM(item) &&
 									!item.errorDetails?.responseIsFiltered)
 						)
-						.map(stringifyItem)
+						.map((item) => stringifyItem(item))
 						.join("\n\n");
 					if (sessionAsText) {
 						clipboardService.writeText(sessionAsText);
@@ -98,7 +98,7 @@ export function registerChatCopyActions() {
 				}
 
 				const clipboardService = accessor.get(IClipboardService);
-				const text = stringifyItem(item);
+				const text = stringifyItem(item, false);
 				clipboardService.writeText(text);
 			}
 		}
@@ -106,9 +106,14 @@ export function registerChatCopyActions() {
 }
 
 function stringifyItem(
-	item: IChatRequestViewModel | IChatResponseViewModel
+	item: IChatRequestViewModel | IChatResponseViewModel,
+	includeName = true
 ): string {
-	return isRequestVM(item)
-		? `${item.username}: ${item.messageText}`
-		: `${item.username}: ${item.response.asString()}`;
+	if (isRequestVM(item)) {
+		return (includeName ? `${item.username}: ` : "") + item.messageText;
+	} else {
+		return (
+			(includeName ? `${item.username}: ` : "") + item.response.asString()
+		);
+	}
 }

@@ -1,55 +1,70 @@
 {
-	"name": "handlebars",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin daaain/Handlebars grammars/Handlebars.json ./syntaxes/Handlebars.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "handlebars",
-				"scopeName": "text.html.handlebars",
-				"path": "./syntaxes/Handlebars.tmLanguage.json"
-			}
-		],
-		"htmlLanguageParticipants": [
-			{
-				"languageId": "handlebars",
-				"autoInsert": true
-			}
-		],
-		"languages": [
-			{
-				"id": "handlebars",
-				"extensions": [
-					".handlebars",
-					".hbs",
-					".hjs"
-				],
-				"aliases": [
-					"Handlebars",
-					"handlebars"
-				],
-				"mimetypes": [
-					"text/x-handlebars-template"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "0.10.x"
-	},
-	"extensionKind": [
-		"ui",
-		"workspace"
-	]
+  "name": "handlebars",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin daaain/Handlebars grammars/Handlebars.json ./syntaxes/Handlebars.tmLanguage.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "grammars": [
+      {
+        "language": "handlebars",
+        "scopeName": "text.html.handlebars",
+        "path": "./syntaxes/Handlebars.tmLanguage.json"
+      }
+    ],
+    "htmlLanguageParticipants": [
+      {
+        "languageId": "handlebars",
+        "autoInsert": true
+      }
+    ],
+    "languages": [
+      {
+        "id": "handlebars",
+        "extensions": [
+          ".handlebars",
+          ".hbs",
+          ".hjs"
+        ],
+        "aliases": [
+          "Handlebars",
+          "handlebars"
+        ],
+        "mimetypes": [
+          "text/x-handlebars-template"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

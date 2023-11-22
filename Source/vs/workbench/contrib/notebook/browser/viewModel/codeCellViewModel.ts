@@ -424,6 +424,9 @@ export class CodeCellViewModel
 				notebookLayoutConfiguration.collapsedIndicatorHeight;
 			const outputIndicatorHeight =
 				outputTotalHeight + outputShowMoreContainerHeight;
+			const chatHeight = state.chatHeight
+				? this._chatHeight
+				: this._layoutInfo.chatHeight;
 
 			const outputContainerOffset =
 				notebookLayoutConfiguration.cellTopMargin +
@@ -433,6 +436,7 @@ export class CodeCellViewModel
 				notebookLayoutConfiguration.collapsedIndicatorHeight +
 				notebookLayoutConfiguration.cellBottomMargin + //CELL_BOTTOM_MARGIN
 				bottomToolbarDimensions.bottomToolbarGap + //BOTTOM_CELL_TOOLBAR_GAP
+				chatHeight +
 				commentHeight +
 				outputTotalHeight +
 				outputShowMoreContainerHeight;
@@ -457,7 +461,7 @@ export class CodeCellViewModel
 				fontInfo: state.font ?? this._layoutInfo.fontInfo ?? null,
 				editorHeight: this._layoutInfo.editorHeight,
 				editorWidth,
-				chatHeight: 0,
+				chatHeight: chatHeight,
 				statusBarHeight: 0,
 				commentHeight,
 				outputContainerOffset,

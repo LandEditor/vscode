@@ -28,6 +28,8 @@ import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 import { DiffEditorOptions } from "./diffEditorOptions";
 import { ITextModel } from "vs/editor/common/model";
 import { IDiffCodeEditorWidgetOptions } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
+import { Selection } from "vs/editor/common/core/selection";
+import { Position } from "vs/editor/common/core/position";
 
 export class DiffEditorEditors extends Disposable {
 	public readonly modified: CodeEditorWidget;
@@ -44,6 +46,9 @@ export class DiffEditorEditors extends Disposable {
 	public readonly modifiedScrollHeight: IObservable<number>;
 
 	public readonly modifiedModel: IObservable<ITextModel | null>;
+
+	public readonly modifiedSelections: IObservable<Selection[]>;
+	public readonly modifiedCursor: IObservable<Position>;
 
 	constructor(
 		private readonly originalEditorElement: HTMLElement,
@@ -90,6 +95,15 @@ export class DiffEditorEditors extends Disposable {
 			this.modified.onDidScrollChange,
 			() =>
 				/** @description modified.getScrollHeight */ this.modified.getScrollHeight()
+		);
+
+		this.modifiedSelections = observableFromEvent(
+			this.modified.onDidChangeCursorSelection,
+			() => this.modified.getSelections() ?? []
+		);
+		this.modifiedCursor = observableFromEvent(
+			this.modified.onDidChangeCursorPosition,
+			() => this.modified.getPosition() ?? new Position(1, 1)
 		);
 
 		this._register(

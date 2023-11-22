@@ -128,6 +128,7 @@ export interface INotebookKernelService {
 	readonly onDidRemoveKernel: Event<INotebookKernel>;
 	readonly onDidChangeSelectedNotebooks: Event<ISelectedNotebooksChangeEvent>;
 	readonly onDidChangeNotebookAffinity: Event<void>;
+	readonly onDidNotebookVariablesUpdate: Event<URI>;
 	registerKernel(kernel: INotebookKernel): IDisposable;
 
 	getMatchingKernel(
@@ -192,6 +193,8 @@ export interface INotebookKernelService {
 		notebook: INotebookTextModelLike
 	): Promise<INotebookKernelSourceAction[]>;
 	//#endregion
+
+	notifyVariablesChange(notebookUri: URI): void;
 }
 
 export const INotebookKernelHistoryService =

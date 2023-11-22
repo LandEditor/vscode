@@ -1,35 +1,54 @@
 {
-	"name": "dart",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"license": "MIT",
-	"publisher": "vscode",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin dart-lang/dart-syntax-highlight grammars/dart.json ./syntaxes/dart.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "dart",
-				"scopeName": "source.dart",
-				"path": "./syntaxes/dart.tmLanguage.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "dart",
-				"extensions": [
-					".dart"
-				],
-				"aliases": [
-					"Dart"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "0.10.x"
-	}
+  "name": "dart",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "license": "MIT",
+  "publisher": "playform",
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin dart-lang/dart-syntax-highlight grammars/dart.json ./syntaxes/dart.tmLanguage.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "grammars": [
+      {
+        "language": "dart",
+        "scopeName": "source.dart",
+        "path": "./syntaxes/dart.tmLanguage.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "dart",
+        "extensions": [
+          ".dart"
+        ],
+        "aliases": [
+          "Dart"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

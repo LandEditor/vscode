@@ -4533,6 +4533,11 @@ export class NotebookKernelSourceAction {
 	constructor(public label: string) {}
 }
 
+export enum NotebookVariablesRequestKind {
+	Named = 1,
+	Indexed = 2,
+}
+
 //#endregion
 
 //#region Timeline

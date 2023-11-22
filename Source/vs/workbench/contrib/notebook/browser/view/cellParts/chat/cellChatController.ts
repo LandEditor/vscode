@@ -16,7 +16,11 @@ import {
 } from "vs/base/common/cancellation";
 import { Event } from "vs/base/common/event";
 import { MarkdownString } from "vs/base/common/htmlContent";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+} from "vs/base/common/lifecycle";
 import { MovingAverage } from "vs/base/common/numbers";
 import { StopWatch } from "vs/base/common/stopwatch";
 import { assertType } from "vs/base/common/types";
@@ -63,6 +67,10 @@ import {
 	ICellViewModel,
 	INotebookEditorDelegate,
 } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import {
+	INotebookExecutionStateService,
+	NotebookExecutionType,
+} from "vs/workbench/contrib/notebook/common/notebookExecutionStateService";
 
 export const CTX_NOTEBOOK_CELL_CHAT_FOCUSED = new RawContextKey<boolean>(
 	"notebookCellChatFocused",
@@ -115,6 +123,9 @@ export class NotebookCellChatController extends Disposable {
 	private _toolbar: MenuWorkbenchToolBar | undefined;
 	private readonly _ctxVisible: IContextKey<boolean>;
 	private readonly _ctxCellWidgetFocused: IContextKey<boolean>;
+	private _widgetDisposableStore: DisposableStore = this._register(
+		new DisposableStore()
+	);
 	constructor(
 		private readonly _notebookEditor: INotebookEditorDelegate,
 		private readonly _chatPart: ICellChatPart,
@@ -127,7 +138,9 @@ export class NotebookCellChatController extends Disposable {
 		@IEditorWorkerService
 		private readonly _editorWorkerService: IEditorWorkerService,
 		@IInstantiationService
-		private readonly _instantiationService: IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
 	) {
 		super();
 
@@ -149,34 +162,8 @@ export class NotebookCellChatController extends Disposable {
 					return;
 				}
 
-				if (!this._widget) {
-					this._widget = this._instantiationService.createInstance(
-						InlineChatWidget,
-						editor,
-						{
-							menuId: MENU_CELL_CHAT_WIDGET,
-							statusMenuId: MENU_CELL_CHAT_WIDGET_STATUS,
-							feedbackMenuId: MENU_CELL_CHAT_WIDGET_FEEDBACK,
-						}
-					);
-
-					this._partContainer.appendChild(this._widget.domNode);
-					this._partContainer.appendChild(
-						this._toolbarDOM.editorToolbar
-					);
-
-					this._toolbar = this._register(
-						this._instantiationService.createInstance(
-							MenuWorkbenchToolBar,
-							this._toolbarDOM.editorToolbar,
-							MENU_CELL_CHAT_WIDGET_TOOLBAR,
-							{
-								telemetrySource:
-									"interactiveEditorWidget-toolbar",
-								toolbarOptions: { primaryGroup: "main" },
-							}
-						)
-					);
+				if (!this._widget && this._isVisible) {
+					this._initialize(editor);
 				}
 
 				const inlineChatController = InlineChatController.get(editor);
@@ -190,6 +177,62 @@ export class NotebookCellChatController extends Disposable {
 		);
 	}
 
+	private _initialize(editor: IActiveCodeEditor) {
+		this._widget = this._instantiationService.createInstance(
+			InlineChatWidget,
+			editor,
+			{
+				menuId: MENU_CELL_CHAT_WIDGET,
+				statusMenuId: MENU_CELL_CHAT_WIDGET_STATUS,
+				feedbackMenuId: MENU_CELL_CHAT_WIDGET_FEEDBACK,
+			}
+		);
+
+		this._widgetDisposableStore.add(
+			this._widget.onDidChangeHeight(() => {
+				this._updateHeight();
+			})
+		);
+
+		this._widgetDisposableStore.add(
+			this._notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (
+					e.notebook.toString() !==
+					this._notebookEditor.textModel?.uri.toString()
+				) {
+					return;
+				}
+
+				if (
+					e.type === NotebookExecutionType.cell &&
+					e.affectsCell(this._cell.uri) &&
+					e.changed === undefined /** complete */
+				) {
+					// check if execution is successfull
+					const { lastRunSuccess } = this._cell.internalMetadata;
+					if (lastRunSuccess) {
+						this._strategy?.createSnapshot();
+					}
+				}
+			})
+		);
+
+		this._partContainer.appendChild(this._widget.domNode);
+		this._partContainer.appendChild(this._toolbarDOM.editorToolbar);
+
+		this._toolbar = this._register(
+			this._instantiationService.createInstance(
+				MenuWorkbenchToolBar,
+				this._toolbarDOM.editorToolbar,
+				MENU_CELL_CHAT_WIDGET_TOOLBAR,
+				{
+					telemetrySource: "interactiveEditorWidget-toolbar",
+					toolbarOptions: { primaryGroup: "main" },
+				}
+			)
+		);
+	}
+
 	public override dispose(): void {
 		if (this._isVisible) {
 			// detach the chat widget
@@ -198,12 +241,17 @@ export class NotebookCellChatController extends Disposable {
 			this._sessionCtor = undefined;
 		}
 
-		if (this._widget) {
-			this._partContainer.removeChild(this._widget.domNode);
+		try {
+			if (this._widget) {
+				this._partContainer.removeChild(this._widget.domNode);
+			}
+
+			this._partContainer.removeChild(this._toolbarDOM.editorToolbar);
+		} catch (_ex) {
+			// might not be attached
 		}
 
-		this._partContainer.removeChild(this._toolbarDOM.editorToolbar);
-
+		this._widget?.dispose();
 		this._inlineChatListener?.dispose();
 		this._toolbar?.dispose();
 		this._inlineChatListener = undefined;
@@ -216,14 +264,38 @@ export class NotebookCellChatController extends Disposable {
 	layout() {
 		if (this._isVisible && this._widget) {
 			const innerEditorWidth = this._cell.layoutInfo.editorWidth;
-			const height = 82 + 8 * 2; /* vertical margin*/
-
+			const height = this._widget.getHeight();
 			this._widget.layout(new Dimension(innerEditorWidth, height));
 		}
 	}
 
+	private _updateHeight() {
+		const margin = 6;
+		const heightWithMargin =
+			this._isVisible && this._widget
+				? this._widget.getHeight() -
+				  8 /** shadow */ -
+				  18 /** padding */ +
+				  margin /** bottom margin for the cell part */
+				: 0;
+
+		if (this._cell.chatHeight === heightWithMargin) {
+			return;
+		}
+
+		this._cell.chatHeight = heightWithMargin;
+		this._partContainer.style.height = `${heightWithMargin - margin}px`;
+	}
+
 	async show() {
 		this._isVisible = true;
+		if (!this._widget) {
+			const editor = this._getCellEditor();
+			if (editor) {
+				this._initialize(editor);
+			}
+		}
+
 		this._partContainer.style.display = "flex";
 		this._widget?.focus();
 		this._widget?.updateInfo(
@@ -231,7 +303,7 @@ export class NotebookCellChatController extends Disposable {
 		);
 		this._ctxVisible.set(true);
 		this._ctxCellWidgetFocused.set(true);
-		this._cell.chatHeight = 82 + 8 * 2 /* vertical margin*/;
+		this._updateHeight();
 
 		this._sessionCtor = createCancelablePromise<void>(async (token) => {
 			if (this._cell.editorAttached) {
@@ -429,7 +501,8 @@ export class NotebookCellChatController extends Disposable {
 			markdownContents,
 			this._activeSession.textModelN.uri,
 			this._activeSession.textModelN.getAlternativeVersionId(),
-			progressEdits
+			progressEdits,
+			request.requestId
 		);
 		for (
 			let i = progressEdits.length;
@@ -482,7 +555,7 @@ export class NotebookCellChatController extends Disposable {
 		this._ctxCellWidgetFocused.set(false);
 		this._ctxVisible.set(false);
 		this._widget?.reset();
-		this._cell.chatHeight = 0;
+		this._updateHeight();
 	}
 
 	private async _makeChanges(
@@ -617,6 +690,17 @@ class EditStrategy {
 			modelN.canUndo()
 		) {
 			modelN.undo();
+		}
+	}
+
+	createSnapshot(): void {
+		if (
+			this._session &&
+			!this._session.textModel0.equalsTextBuffer(
+				this._session.textModelN.getTextBuffer()
+			)
+		) {
+			this._session.createSnapshot();
 		}
 	}
 }

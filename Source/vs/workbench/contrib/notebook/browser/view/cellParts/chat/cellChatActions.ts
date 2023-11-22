@@ -34,7 +34,10 @@ import {
 	CellKind,
 	NotebookSetting,
 } from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { NOTEBOOK_EDITOR_EDITABLE } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
+import {
+	NOTEBOOK_CELL_LIST_FOCUSED,
+	NOTEBOOK_EDITOR_EDITABLE,
+} from "vs/workbench/contrib/notebook/common/notebookContextKeys";
 
 registerAction2(
 	class extends NotebookCellAction {
@@ -199,6 +202,15 @@ registerAction2(
 				id: "notebook.cell.chat.discard",
 				title: localize("discard", "Discard"),
 				icon: Codicon.discard,
+				keybinding: {
+					when: ContextKeyExpr.and(
+						CTX_NOTEBOOK_CELL_CHAT_FOCUSED,
+						CTX_INLINE_CHAT_FOCUSED,
+						NOTEBOOK_CELL_LIST_FOCUSED
+					),
+					weight: KeybindingWeight.EditorContrib,
+					primary: KeyCode.Escape,
+				},
 				menu: {
 					id: MENU_CELL_CHAT_WIDGET_STATUS,
 					group: "main",

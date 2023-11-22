@@ -1,17 +1,38 @@
 {
-	"name": "vscode-extensions",
-	"version": "0.0.1",
-	"description": "Dependencies shared by all extensions",
-	"license": "MIT",
-	"scripts": {
-		"postinstall": "node ./postinstall.mjs"
-	},
-	"dependencies": {
-		"typescript": "^5.3.1-rc"
-	},
-	"devDependencies": {
-		"@parcel/watcher": "2.3.0",
-		"esbuild": "0.19.6",
-		"vscode-grammar-updater": "^1.1.0"
-	}
+  "name": "vscode-extensions",
+  "version": "0.0.1",
+  "description": "Dependencies shared by all extensions",
+  "license": "MIT",
+  "scripts": {
+    "postinstall": "node ./postinstall.mjs",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "dependencies": {
+    "typescript": "5.3.1-rc"
+  },
+  "devDependencies": {
+    "@parcel/watcher": "2.3.0",
+    "esbuild": "0.19.6",
+    "vscode-grammar-updater": "1.1.0",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "publisher": "playform",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  }
 }

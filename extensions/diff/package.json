@@ -1,38 +1,57 @@
 {
-	"name": "diff",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"license": "MIT",
-	"publisher": "vscode",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/diff.tmbundle Syntaxes/Diff.plist ./syntaxes/diff.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "diff",
-				"scopeName": "source.diff",
-				"path": "./syntaxes/diff.tmLanguage.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "diff",
-				"aliases": [
-					"Diff",
-					"diff"
-				],
-				"extensions": [
-					".diff",
-					".patch",
-					".rej"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "0.10.x"
-	}
+  "name": "diff",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "license": "MIT",
+  "publisher": "playform",
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/diff.tmbundle Syntaxes/Diff.plist ./syntaxes/diff.tmLanguage.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "grammars": [
+      {
+        "language": "diff",
+        "scopeName": "source.diff",
+        "path": "./syntaxes/diff.tmLanguage.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "diff",
+        "aliases": [
+          "Diff",
+          "diff"
+        ],
+        "extensions": [
+          ".diff",
+          ".patch",
+          ".rej"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ]
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

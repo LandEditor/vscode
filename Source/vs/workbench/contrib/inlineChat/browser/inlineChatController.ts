@@ -4,7 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as aria from "vs/base/browser/ui/aria/aria";
-import { Barrier, Queue, raceCancellationError } from "vs/base/common/async";
+import {
+	Barrier,
+	Queue,
+	raceCancellation,
+	raceCancellationError,
+} from "vs/base/common/async";
 import { CancellationTokenSource } from "vs/base/common/cancellation";
 import { toErrorMessage } from "vs/base/common/errorMessage";
 import { Emitter, Event } from "vs/base/common/event";
@@ -52,7 +57,10 @@ import {
 	PreviewStrategy,
 	ProgressingEditsOptions,
 } from "vs/workbench/contrib/inlineChat/browser/inlineChatStrategies";
-import { InlineChatZoneWidget } from "vs/workbench/contrib/inlineChat/browser/inlineChatWidget";
+import {
+	IInlineChatMessageAppender,
+	InlineChatZoneWidget,
+} from "vs/workbench/contrib/inlineChat/browser/inlineChatWidget";
 import {
 	CTX_INLINE_CHAT_HAS_ACTIVE_REQUEST,
 	CTX_INLINE_CHAT_LAST_FEEDBACK,
@@ -834,11 +842,6 @@ export class InlineChatController implements IEditorContribution {
 		const modelAltVersionIdNow =
 			this._activeSession.textModelN.getAlternativeVersionId();
 		const progressEdits: TextEdit[][] = [];
-		const markdownContents = new MarkdownString("", {
-			supportThemeIcons: true,
-			supportHtml: true,
-			isTrusted: false,
-		});
 
 		const progressiveEditsAvgDuration = new MovingAverage();
 		const progressiveEditsCts = new CancellationTokenSource(
@@ -846,6 +849,8 @@ export class InlineChatController implements IEditorContribution {
 		);
 		const progressiveEditsClock = StopWatch.create();
 		const progressiveEditsQueue = new Queue();
+
+		let progressiveChatResponse: IInlineChatMessageAppender | undefined;
 
 		const progress = new Progress<IInlineChatProgressItem>((data) => {
 			this._log("received chunk", data, request);
@@ -907,8 +912,26 @@ export class InlineChatController implements IEditorContribution {
 				});
 			}
 			if (data.markdownFragment) {
-				markdownContents.appendMarkdown(data.markdownFragment);
-				this._zone.value.widget.updateMarkdownMessage(markdownContents);
+				if (!progressiveChatResponse) {
+					const message = {
+						message: new MarkdownString(data.markdownFragment, {
+							supportThemeIcons: true,
+							supportHtml: true,
+							isTrusted: false,
+						}),
+						providerId: this._activeSession!.provider.debugName,
+						requestId: request.requestId,
+					};
+					progressiveChatResponse =
+						this._zone.value.widget.updateChatMessage(
+							message,
+							true
+						);
+				} else {
+					progressiveChatResponse.appendContent(
+						data.markdownFragment
+					);
+				}
 			}
 		});
 
@@ -935,6 +958,9 @@ export class InlineChatController implements IEditorContribution {
 		let response: ReplyResponse | ErrorResponse | EmptyResponse;
 		let reply: IInlineChatResponse | null | undefined;
 		try {
+			this._zone.value.widget.updateChatMessage(undefined);
+			this._zone.value.widget.updateMarkdownMessage(undefined);
+			this._zone.value.widget.updateFollowUps(undefined);
 			this._zone.value.widget.updateProgress(true);
 			this._zone.value.widget.updateInfo(
 				!this._activeSession.lastExchange
@@ -951,6 +977,9 @@ export class InlineChatController implements IEditorContribution {
 				// we must wait for all edits that came in via progress to complete
 				await Event.toPromise(progressiveEditsQueue.onDrained);
 			}
+			if (progressiveChatResponse) {
+				progressiveChatResponse.cancel();
+			}
 
 			if (!reply) {
 				response = new EmptyResponse();
@@ -959,9 +988,13 @@ export class InlineChatController implements IEditorContribution {
 					"No results, please refine your input and try again"
 				);
 			} else {
-				if (reply.message) {
-					markdownContents.appendMarkdown(reply.message.value);
-				}
+				const markdownContents =
+					reply.message ??
+					new MarkdownString("", {
+						supportThemeIcons: true,
+						supportHtml: true,
+						isTrusted: false,
+					});
 				const replyResponse = (response =
 					this._instaService.createInstance(
 						ReplyResponse,
@@ -969,7 +1002,8 @@ export class InlineChatController implements IEditorContribution {
 						markdownContents,
 						this._activeSession.textModelN.uri,
 						modelAltVersionIdNow,
-						progressEdits
+						progressEdits,
+						request.requestId
 					));
 
 				for (
@@ -1152,12 +1186,63 @@ export class InlineChatController implements IEditorContribution {
 		} else if (response instanceof ReplyResponse) {
 			// real response -> complex...
 			this._zone.value.widget.updateStatus("");
-			this._zone.value.widget.updateMarkdownMessage(response.mdContent);
+			const message = {
+				message: response.mdContent,
+				providerId: this._activeSession.provider.debugName,
+				requestId: response.requestId,
+			};
+			this._zone.value.widget.updateChatMessage(message);
+
+			//this._zone.value.widget.updateMarkdownMessage(response.mdContent);
 			this._activeSession.lastExpansionState =
 				this._zone.value.widget.expansionState;
 			this._zone.value.widget.updateToolbar(true);
 
 			await this._strategy.renderChanges(response);
+
+			if (this._activeSession.provider.provideFollowups) {
+				const followupCts = new CancellationTokenSource();
+				const msgListener = Event.once(this._messages.event)(() => {
+					followupCts.cancel();
+				});
+				const followupTask =
+					this._activeSession.provider.provideFollowups(
+						this._activeSession.session,
+						response.raw,
+						followupCts.token
+					);
+				this._log(
+					"followup request started",
+					this._activeSession.provider.debugName,
+					this._activeSession.session,
+					response.raw
+				);
+				raceCancellation(
+					Promise.resolve(followupTask),
+					followupCts.token
+				)
+					.then((followupReply) => {
+						if (followupReply && this._activeSession) {
+							this._log(
+								"followup request received",
+								this._activeSession.provider.debugName,
+								this._activeSession.session,
+								followupReply
+							);
+							this._zone.value.widget.updateFollowUps(
+								followupReply,
+								(followup) => {
+									this.updateInput(followup.message);
+									this.acceptInput();
+								}
+							);
+						}
+					})
+					.finally(() => {
+						msgListener.dispose();
+						followupCts.dispose();
+					});
+			}
 		}
 		this._showWidget(false);
 

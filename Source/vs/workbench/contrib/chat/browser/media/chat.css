@@ -37,6 +37,10 @@
 	justify-content: space-between;
 }
 
+.interactive-item-container .header.hidden {
+	display: none;
+}
+
 .interactive-item-container .header .user {
 	display: flex;
 	align-items: center;
@@ -301,6 +305,10 @@
 	padding: 8px 20px;
 }
 
+.interactive-item-container.interactive-item-compact.no-padding {
+	padding: unset;
+}
+
 .interactive-item-container.interactive-item-compact .header {
 	height: 16px;
 }
@@ -558,12 +566,16 @@
 
 .interactive-item-container.filtered-response .value > .rendered-markdown {
 	pointer-events: none;
-	filter: blur(1.8px);
 	-webkit-mask-image: linear-gradient(
 		rgba(0, 0, 0, 0.75),
-		rgba(0, 0, 0, 0.02)
+		rgba(0, 0, 0, 0.05) 60%,
+		rgba(0, 0, 0, 0) 80%
 	);
-	mask-image: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.02));
+	mask-image: linear-gradient(
+		rgba(0, 0, 0, 0.75),
+		rgba(0, 0, 0, 0.05) 60%,
+		rgba(0, 0, 0, 0) 80%
+	);
 }
 
 /* #region Quick Chat */

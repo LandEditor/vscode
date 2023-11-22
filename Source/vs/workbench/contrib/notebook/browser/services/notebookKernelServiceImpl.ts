@@ -143,6 +143,9 @@ export class NotebookKernelService
 	private readonly _onDidChangeSourceActions = this._register(
 		new Emitter<INotebookSourceActionChangeEvent>()
 	);
+	private readonly _onDidNotebookVariablesChange = this._register(
+		new Emitter<URI>()
+	);
 	private readonly _kernelSources = new Map<string, IKernelInfoCache>();
 	private readonly _kernelSourceActionsUpdates = new Map<
 		string,
@@ -172,6 +175,8 @@ export class NotebookKernelService
 		this._onDidChangeSourceActions.event;
 	readonly onDidChangeKernelDetectionTasks: Event<string> =
 		this._onDidChangeKernelDetectionTasks.event;
+	readonly onDidNotebookVariablesUpdate: Event<URI> =
+		this._onDidNotebookVariablesChange.event;
 
 	private static _storageNotebookBinding =
 		"notebook.controller2NotebookBindings";
@@ -290,6 +295,10 @@ export class NotebookKernelService
 				newKernel: existingKernel.kernel.id,
 			});
 		}
+	}
+
+	notifyVariablesChange(notebookUri: URI): void {
+		this._onDidNotebookVariablesChange.fire(notebookUri);
 	}
 
 	registerKernel(kernel: INotebookKernel): IDisposable {

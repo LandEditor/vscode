@@ -1,46 +1,61 @@
 {
-	"name": "swift",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin jtbandes/swift-tmlanguage Swift.tmLanguage.json ./syntaxes/swift.tmLanguage.json"
-	},
-	"contributes": {
-		"grammars": [
-			{
-				"language": "swift",
-				"scopeName": "source.swift",
-				"path": "./syntaxes/swift.tmLanguage.json"
-			}
-		],
-		"languages": [
-			{
-				"id": "swift",
-				"aliases": [
-					"Swift",
-					"swift"
-				],
-				"extensions": [
-					".swift"
-				],
-				"configuration": "./language-configuration.json"
-			}
-		],
-		"snippets": [
-			{
-				"language": "swift",
-				"path": "./snippets/swift.code-snippets"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "*"
-	}
+  "name": "swift",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin jtbandes/swift-tmlanguage Swift.tmLanguage.json ./syntaxes/swift.tmLanguage.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "grammars": [
+      {
+        "language": "swift",
+        "scopeName": "source.swift",
+        "path": "./syntaxes/swift.tmLanguage.json"
+      }
+    ],
+    "languages": [
+      {
+        "id": "swift",
+        "aliases": [
+          "Swift",
+          "swift"
+        ],
+        "extensions": [
+          ".swift"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "swift",
+        "path": "./snippets/swift.code-snippets"
+      }
+    ]
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

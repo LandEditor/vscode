@@ -1,59 +1,72 @@
 {
-	"name": "builtin-notebook-renderers",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "MIT",
-	"publisher": "vscode",
-	"scripts": {
-		"build-notebook": "node ./esbuild",
-		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
-		"watch": "npx gulp compile-watch:notebook-renderers"
-	},
-	"contributes": {
-		"notebookRenderer": [
-			{
-				"id": "vscode.builtin-renderer",
-				"entrypoint": "./renderer-out/index.js",
-				"displayName": "VS Code Builtin Notebook Output Renderer",
-				"requiresMessaging": "never",
-				"mimeTypes": [
-					"image/gif",
-					"image/png",
-					"image/jpeg",
-					"image/git",
-					"image/svg+xml",
-					"text/html",
-					"application/javascript",
-					"application/vnd.code.notebook.error",
-					"application/vnd.code.notebook.stdout",
-					"application/x.notebook.stdout",
-					"application/x.notebook.stream",
-					"application/vnd.code.notebook.stderr",
-					"application/x.notebook.stderr",
-					"text/plain"
-				]
-			}
-		]
-	},
-	"dependencies": {},
-	"devDependencies": {
-		"@types/jsdom": "^21.1.5",
-		"@types/vscode-notebook-renderer": "^1.72.3",
-		"jsdom": "^22.1.0"
-	},
-	"engines": {
-		"vscode": "^1.57.0"
-	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"virtualWorkspaces": true,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
-	}
+  "name": "builtin-notebook-renderers",
+  "displayName": "%displayName%",
+  "version": "0.0.1",
+  "description": "%description%",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "license": "MIT",
+  "publisher": "playform",
+  "scripts": {
+    "build-notebook": "node ./esbuild",
+    "compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+    "watch": "npx gulp compile-watch:notebook-renderers",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "notebookRenderer": [
+      {
+        "id": "vscode.builtin-renderer",
+        "entrypoint": "./renderer-out/index.js",
+        "displayName": "VS Code Builtin Notebook Output Renderer",
+        "requiresMessaging": "never",
+        "mimeTypes": [
+          "image/gif",
+          "image/png",
+          "image/jpeg",
+          "image/git",
+          "image/svg+xml",
+          "text/html",
+          "application/javascript",
+          "application/vnd.code.notebook.error",
+          "application/vnd.code.notebook.stdout",
+          "application/x.notebook.stdout",
+          "application/x.notebook.stream",
+          "application/vnd.code.notebook.stderr",
+          "application/x.notebook.stderr",
+          "text/plain"
+        ]
+      }
+    ]
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/jsdom": "21.1.5",
+    "@types/vscode-notebook-renderer": "1.72.3",
+    "jsdom": "22.1.0",
+    "typescript-esbuild": "0.3.1"
+  },
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  }
 }

@@ -5,6 +5,7 @@
 
 import { IObjectTreeElement } from "vs/base/browser/ui/tree/tree";
 import { CancellationToken } from "vs/base/common/cancellation";
+import { URI } from "vs/base/common/uri";
 import * as nls from "vs/nls";
 import { ILocalizedString } from "vs/platform/action/common/action";
 import { ICommandService } from "vs/platform/commands/common/commands";
@@ -28,7 +29,6 @@ import {
 	NotebookVariableRenderer,
 	INotebookVariableElement,
 	NotebookVariablesDelegate,
-	NotebookVariablesTree,
 } from "vs/workbench/contrib/notebook/browser/contrib/notebookVariables/notebookVariablesTree";
 import { getNotebookEditorFromEditorPane } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
 import { NotebookTextModel } from "vs/workbench/contrib/notebook/common/model/notebookTextModel";
@@ -50,7 +50,7 @@ export class NotebookVariablesView extends ViewPane {
 		"Notebook Variables"
 	);
 
-	private tree: NotebookVariablesTree | undefined;
+	private tree: WorkbenchObjectTree<INotebookVariableElement> | undefined;
 	private activeNotebook: NotebookTextModel | undefined;
 
 	constructor(
@@ -95,12 +95,17 @@ export class NotebookVariablesView extends ViewPane {
 				this.handleExecutionStateChange.bind(this)
 			)
 		);
+		this._register(
+			this.notebookKernelService.onDidNotebookVariablesUpdate(
+				this.handleVariablesChanged.bind(this)
+			)
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
-		this.tree = <NotebookVariablesTree>(
+		this.tree = <WorkbenchObjectTree<INotebookVariableElement>>(
 			this.instantiationService.createInstance(
 				WorkbenchObjectTree,
 				"notebookVariablesTree",
@@ -158,6 +163,15 @@ export class NotebookVariablesView extends ViewPane {
 			) {
 				this.updateVariables(this.activeNotebook);
 			}
+		}
+	}
+
+	private handleVariablesChanged(notebookUri: URI) {
+		if (
+			this.activeNotebook &&
+			notebookUri.toString() === this.activeNotebook.uri.toString()
+		) {
+			this.updateVariables(this.activeNotebook);
 		}
 	}
 
