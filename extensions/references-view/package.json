@@ -1,66 +1,33 @@
 {
   "name": "references-view",
   "displayName": "%displayName%",
-  "description": "%description%",
-  "icon": "media/icon.png",
   "version": "0.0.1",
-  "publisher": "playform",
-  "license": "MIT",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   },
-  "activationEvents": [
-    "onCommand:references-view.find",
-    "onCommand:editor.action.showReferences"
-  ],
+  "publisher": "playform",
+  "type": "module",
   "main": "./out/extension",
   "browser": "./dist/extension.js",
+  "scripts": {
+    "compile": "npx gulp compile-extension:references-view",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "npx gulp watch-extension:references-view"
+  },
   "contributes": {
-    "configuration": {
-      "properties": {
-        "references.preferredLocation": {
-          "description": "%config.references.preferredLocation%",
-          "type": "string",
-          "default": "peek",
-          "enum": [
-            "peek",
-            "view"
-          ],
-          "enumDescriptions": [
-            "%config.references.preferredLocation.peek%",
-            "%config.references.preferredLocation.view%"
-          ]
-        }
-      }
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "references-view",
-          "icon": "$(references)",
-          "title": "%container.title%"
-        }
-      ]
-    },
-    "views": {
-      "references-view": [
-        {
-          "id": "references-view.tree",
-          "name": "%view.title%",
-          "when": "reference-list.isActive"
-        }
-      ]
-    },
     "commands": [
       {
         "command": "references-view.findReferences",
@@ -170,6 +137,45 @@
         "command": "references-view.removeTypeItem",
         "title": "%cmd.references-view.removeTypeItem%",
         "icon": "$(close)"
+      }
+    ],
+    "configuration": {
+      "properties": {
+        "references.preferredLocation": {
+          "description": "%config.references.preferredLocation%",
+          "type": "string",
+          "default": "peek",
+          "enum": [
+            "peek",
+            "view"
+          ],
+          "enumDescriptions": [
+            "%config.references.preferredLocation.peek%",
+            "%config.references.preferredLocation.view%"
+          ]
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "references-view.findReferences",
+        "when": "editorHasReferenceProvider",
+        "key": "shift+alt+f12"
+      },
+      {
+        "command": "references-view.next",
+        "when": "reference-list.hasResult",
+        "key": "f4"
+      },
+      {
+        "command": "references-view.prev",
+        "when": "reference-list.hasResult",
+        "key": "shift+f4"
+      },
+      {
+        "command": "references-view.showCallHierarchy",
+        "when": "editorHasCallHierarchyProvider",
+        "key": "shift+alt+h"
       }
     ],
     "menus": {
@@ -368,47 +374,41 @@
         }
       ]
     },
-    "keybindings": [
-      {
-        "command": "references-view.findReferences",
-        "when": "editorHasReferenceProvider",
-        "key": "shift+alt+f12"
-      },
-      {
-        "command": "references-view.next",
-        "when": "reference-list.hasResult",
-        "key": "f4"
-      },
-      {
-        "command": "references-view.prev",
-        "when": "reference-list.hasResult",
-        "key": "shift+f4"
-      },
-      {
-        "command": "references-view.showCallHierarchy",
-        "when": "editorHasCallHierarchyProvider",
-        "key": "shift+alt+h"
-      }
-    ]
+    "views": {
+      "references-view": [
+        {
+          "id": "references-view.tree",
+          "name": "%view.title%",
+          "when": "reference-list.isActive"
+        }
+      ]
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "references-view",
+          "icon": "$(references)",
+          "title": "%container.title%"
+        }
+      ]
+    }
   },
-  "scripts": {
-    "compile": "npx gulp compile-extension:references-view",
-    "watch": "npx gulp watch-extension:references-view",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
+  "activationEvents": [
+    "onCommand:references-view.find",
+    "onCommand:editor.action.showReferences"
+  ],
   "devDependencies": {
     "@types/node": "18.x",
     "typescript-esbuild": "0.3.1"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

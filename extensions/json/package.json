@@ -1,15 +1,52 @@
 {
   "name": "json",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "playform",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "playform",
+  "type": "module",
   "scripts": {
-    "update-grammar": "node ./build/update-grammars.js",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "update-grammar": "node ./build/update-grammars.js"
   },
   "contributes": {
+    "grammars": [
+      {
+        "language": "json",
+        "scopeName": "source.json",
+        "path": "./syntaxes/JSON.tmLanguage.json"
+      },
+      {
+        "language": "jsonc",
+        "scopeName": "source.json.comments",
+        "path": "./syntaxes/JSONC.tmLanguage.json"
+      },
+      {
+        "language": "jsonl",
+        "scopeName": "source.json.lines",
+        "path": "./syntaxes/JSONL.tmLanguage.json"
+      },
+      {
+        "language": "snippets",
+        "scopeName": "source.json.comments.snippets",
+        "path": "./syntaxes/snippets.tmLanguage.json"
+      }
+    ],
     "languages": [
       {
         "id": "json",
@@ -90,49 +127,12 @@
         ],
         "configuration": "./language-configuration.json"
       }
-    ],
-    "grammars": [
-      {
-        "language": "json",
-        "scopeName": "source.json",
-        "path": "./syntaxes/JSON.tmLanguage.json"
-      },
-      {
-        "language": "jsonc",
-        "scopeName": "source.json.comments",
-        "path": "./syntaxes/JSONC.tmLanguage.json"
-      },
-      {
-        "language": "jsonl",
-        "scopeName": "source.json.lines",
-        "path": "./syntaxes/JSONL.tmLanguage.json"
-      },
-      {
-        "language": "snippets",
-        "scopeName": "source.json.comments.snippets",
-        "path": "./syntaxes/snippets.tmLanguage.json"
-      }
     ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
   },
   "devDependencies": {
     "typescript-esbuild": "0.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

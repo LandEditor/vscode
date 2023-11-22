@@ -1,24 +1,30 @@
 {
   "name": "php-language-features",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "playform",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
-  "icon": "icons/logo.png",
-  "activationEvents": [
-    "onLanguage:php"
-  ],
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "playform",
+  "type": "module",
   "main": "./out/phpMain",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": "limited",
-      "description": "%workspaceTrust%",
-      "restrictedConfigurations": [
-        "php.validate.executablePath"
-      ]
-    }
+  "scripts": {
+    "compile": "npx gulp compile-extension:php-language-features",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "npx gulp watch-extension:php-language-features"
   },
   "contributes": {
     "configuration": {
@@ -63,11 +69,9 @@
       }
     ]
   },
-  "scripts": {
-    "compile": "npx gulp compile-extension:php-language-features",
-    "watch": "npx gulp watch-extension:php-language-features",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
+  "activationEvents": [
+    "onLanguage:php"
+  ],
   "dependencies": {
     "which": "2.0.2"
   },
@@ -76,22 +80,18 @@
     "@types/which": "2.0.0",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "icons/logo.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "%workspaceTrust%",
+      "restrictedConfigurations": [
+        "php.validate.executablePath"
+      ]
+    }
   }
 }

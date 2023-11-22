@@ -1,16 +1,30 @@
 {
   "name": "builtin-notebook-renderers",
   "displayName": "%displayName%",
-  "description": "%description%",
-  "publisher": "playform",
   "version": "0.0.1",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
-  "icon": "media/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "playform",
+  "type": "module",
+  "scripts": {
+    "build-notebook": "node ./esbuild",
+    "compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "npx gulp compile-watch:notebook-renderers"
   },
   "contributes": {
     "notebookRenderer": [
@@ -38,12 +52,6 @@
       }
     ]
   },
-  "scripts": {
-    "compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
-    "watch": "npx gulp compile-watch:notebook-renderers",
-    "build-notebook": "node ./esbuild",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
   "dependencies": {},
   "devDependencies": {
     "@types/jsdom": "21.1.0",
@@ -51,22 +59,14 @@
     "jsdom": "21.1.1",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

@@ -58,12 +58,8 @@ const SECRET_KEY_MINT_PATH: &str = "/_vscode-cli/mint-key";
 /// Cookie set to the `SECRET_KEY_MINT_PATH`
 const PATH_COOKIE_NAME: &str = "vscode-secret-key-path";
 /// Cookie set to the `SECRET_KEY_MINT_PATH`
-const PATH_COOKIE_VALUE: &str = concatcp!(
-	PATH_COOKIE_NAME,
-	"=",
-	SECRET_KEY_MINT_PATH,
-	"; SameSite=Strict; Path=/"
-);
+const PATH_COOKIE_VALUE: &str =
+	concatcp!(PATH_COOKIE_NAME, "=", SECRET_KEY_MINT_PATH, "; SameSite=Strict; Path=/");
 /// HTTP-only cookie where the client's secret half is stored.
 const SECRET_KEY_COOKIE_NAME: &str = "vscode-cli-secret-half";
 
@@ -80,21 +76,15 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 	if !args.without_connection_token {
 		// Ensure there's a defined connection token, since if multiple server versions
 		// are excuted, they will need to have a single shared token.
-		args.connection_token = Some(
-			args.connection_token
-				.clone()
-				.unwrap_or_else(|| uuid::Uuid::new_v4().to_string()),
-		);
+		args.connection_token =
+			Some(args.connection_token.clone().unwrap_or_else(|| uuid::Uuid::new_v4().to_string()));
 	}
 
 	let cm = ConnectionManager::new(&ctx, platform, args.clone());
 	let key = get_server_key_half(&ctx.paths);
 	let make_svc = move || {
-		let ctx = HandleContext {
-			cm: cm.clone(),
-			log: cm.log.clone(),
-			server_secret_key: key.clone(),
-		};
+		let ctx =
+			HandleContext { cm: cm.clone(), log: cm.log.clone(), server_secret_key: key.clone() };
 		let service = service_fn(move |req| handle(ctx.clone(), req));
 		async move { Ok::<_, Infallible>(service) }
 	};
@@ -103,8 +93,7 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 	let r = if let Some(s) = args.socket_path {
 		let s = PathBuf::from(&s);
 		let socket = listen_socket_rw_stream(&s).await?;
-		ctx.log
-			.result(format!("Web UI available on {}", s.display()));
+		ctx.log.result(format!("Web UI available on {}", s.display()));
 		let r = Server::builder(socket.into_pollable())
 			.serve(make_service_fn(|_| make_svc()))
 			.with_graceful_shutdown(async {
@@ -203,10 +192,7 @@ fn handle_secret_mint(ctx: HandleContext, req: Request<Body>) -> Response<Body> 
 /// and maintains the http-only cookie the client will use for cookies.
 fn append_secret_headers(res: &mut Response<Body>, client_key_half: &SecretKeyPart) {
 	let headers = res.headers_mut();
-	headers.append(
-		hyper::header::SET_COOKIE,
-		PATH_COOKIE_VALUE.parse().unwrap(),
-	);
+	headers.append(hyper::header::SET_COOKIE, PATH_COOKIE_VALUE.parse().unwrap());
 	headers.append(
 		hyper::header::SET_COOKIE,
 		format!(
@@ -263,10 +249,7 @@ async fn forward_http_req_to_server(
 
 	tokio::spawn(connection);
 
-	let res = request_sender
-		.send_request(req)
-		.await
-		.unwrap_or_else(response::connection_err);
+	let res = request_sender.send_request(req).await.unwrap_or_else(response::connection_err);
 
 	// technically, we should buffer the body into memory since it may not be
 	// read at this point, but because the keepalive time is very large
@@ -315,10 +298,9 @@ async fn forward_ws_req_to_server(
 				tokio::join!(hyper::upgrade::on(&mut req), hyper::upgrade::on(&mut res));
 
 			match (s_req, s_res) {
-				(Err(e1), Err(e2)) => debug!(
-					log,
-					"client ({}) and server ({}) websocket upgrade failed", e1, e2
-				),
+				(Err(e1), Err(e2)) => {
+					debug!(log, "client ({}) and server ({}) websocket upgrade failed", e1, e2)
+				}
 				(Err(e1), _) => debug!(log, "client ({}) websocket upgrade failed", e1),
 				(_, Err(e2)) => debug!(log, "server ({}) websocket upgrade failed", e2),
 				(Ok(mut s_req), Ok(mut s_res)) => {
@@ -599,20 +581,12 @@ impl ConnectionManager {
 
 		let (socket_path, opener) = new_barrier();
 		let state_map_dup = self.state.clone();
-		let args = StartArgs {
-			args: self.args.clone(),
-			log: self.log.clone(),
-			opener,
-			release,
-		};
+		let args = StartArgs { args: self.args.clone(), log: self.log.clone(), opener, release };
 
 		if let Some(p) = self.cache.exists(&args.release.commit) {
 			state.insert(
 				key.clone(),
-				VersionState {
-					socket_path: socket_path.clone(),
-					downloaded: true,
-				},
+				VersionState { socket_path: socket_path.clone(), downloaded: true },
 			);
 
 			tokio::spawn(async move {
@@ -621,13 +595,7 @@ impl ConnectionManager {
 			});
 			Ok(socket_path)
 		} else {
-			state.insert(
-				key.clone(),
-				VersionState {
-					socket_path,
-					downloaded: false,
-				},
-			);
+			state.insert(key.clone(), VersionState { socket_path, downloaded: false });
 			let update_service = self.update_service.clone();
 			let cache = self.cache.clone();
 			tokio::spawn(async move {
@@ -673,9 +641,7 @@ impl ConnectionManager {
 	async fn start_version(args: StartArgs, path: PathBuf) {
 		info!(args.log, "Starting server {}", args.release.commit);
 
-		let executable = path
-			.join("bin")
-			.join(args.release.quality.server_entrypoint());
+		let executable = path.join("bin").join(args.release.quality.server_entrypoint());
 
 		let socket_path = get_socket_name();
 

@@ -3,9 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-process.env.DEBUG='pw:install'; // enable logging for this (https://github.com/microsoft/playwright/issues/17394)
+process.env.DEBUG = "pw:install"; // enable logging for this (https://github.com/microsoft/playwright/issues/17394)
 
-const { installDefaultBrowsersForNpmInstall } = require('playwright-core/lib/server');
+const {
+	installDefaultBrowsersForNpmInstall,
+} = require("playwright-core/lib/server");
 
 async function install() {
 	await installDefaultBrowsersForNpmInstall();

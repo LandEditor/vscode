@@ -388,9 +388,7 @@ function command(commandId: string, options: ScmCommandOptions = {}): Function {
 // 	'image/bmp'
 // ];
 
-async function categorizeResourceByResolution(
-	resources: Resource[]
-): Promise<{
+async function categorizeResourceByResolution(resources: Resource[]): Promise<{
 	merge: Resource[];
 	resolved: Resource[];
 	unresolved: Resource[];

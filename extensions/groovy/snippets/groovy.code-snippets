@@ -6,11 +6,7 @@
 	},
 	"Doc Block": {
 		"prefix": "doc",
-		"body": [
-			"/**",
-			" * $0",
-			" */"
-		],
+		"body": ["/**", " * $0", " */"],
 		"description": "Doc block comment"
 	},
 	"key: \"value\" (Hash Pair)": {
@@ -19,29 +15,17 @@
 	},
 	"Thread.start { … }": {
 		"prefix": "thread",
-		"body": [
-			"Thread.start {",
-			"\t$0",
-			"}"
-		],
+		"body": ["Thread.start {", "\t$0", "}"],
 		"description": "Thread.start { ... }"
 	},
 	"Thread.startDaemon { … }": {
 		"prefix": "thread",
-		"body": [
-			"Thread.startDaemon {",
-			"\t$0",
-			"}"
-		],
+		"body": ["Thread.startDaemon {", "\t$0", "}"],
 		"description": "Thread.startDaemon { ... }"
 	},
 	"case … break": {
 		"prefix": "case",
-		"body": [
-			"case ${1:CASE_NAME}:",
-			"\t$2",
-			"break$0"
-		],
+		"body": ["case ${1:CASE_NAME}:", "\t$2", "break$0"],
 		"description": "case ... break"
 	},
 	"instance … (Singleton)": {
@@ -58,12 +42,7 @@
 	},
 	"class … extends GroovyTestCase { … }": {
 		"prefix": "tc",
-		"body": [
-			"class $1 extends GroovyTestCase {",
-			"",
-			"\t$0",
-			"}"
-		],
+		"body": ["class $1 extends GroovyTestCase {", "", "\t$0", "}"],
 		"description": "GroovyTestCase class"
 	},
 	"copy(file: …, tofile: …) ": {
@@ -94,20 +73,12 @@
 	},
 	"closure = { … } ": {
 		"prefix": "cv",
-		"body": [
-			"def ${1:closureName} = { ${2:args} ->",
-			"\t$0",
-			"}"
-		],
+		"body": ["def ${1:closureName} = { ${2:args} ->", "\t$0", "}"],
 		"description": "Closure block"
 	},
 	"for(… in …) { … }": {
 		"prefix": "forin",
-		"body": [
-			"for (${1:element} in ${2:collection}) {",
-			"\t$0",
-			"}"
-		],
+		"body": ["for (${1:element} in ${2:collection}) {", "\t$0", "}"],
 		"description": "For-loop"
 	},
 	"mkdir(dir: …)": {
@@ -127,29 +98,17 @@
 	},
 	"runAfter() { … }": {
 		"prefix": "runa",
-		"body": [
-			"runAfter(${1:delay}) {",
-			"\t$0",
-			"}"
-		],
+		"body": ["runAfter(${1:delay}) {", "\t$0", "}"],
 		"description": "runAfter()  { ... }"
 	},
 	"setUp() { … }": {
 		"prefix": "setup",
-		"body": [
-			"void setUp() {",
-			"\t$0",
-			"}"
-		],
+		"body": ["void setUp() {", "\t$0", "}"],
 		"description": "setup() { ... }"
 	},
 	"sleep(secs) { … // on interrupt do }": {
 		"prefix": "sleep",
-		"body": [
-			"sleep(${1:secs}) {",
-			"\t${2:// on interrupt do}",
-			"}"
-		],
+		"body": ["sleep(${1:secs}) {", "\t${2:// on interrupt do}", "}"],
 		"description": "sleep with interrupt"
 	},
 	"sleep(secs)": {
@@ -159,20 +118,12 @@
 	},
 	"sort { … }": {
 		"prefix": "sort",
-		"body": [
-			"sort { ",
-			"\t$0",
-			"}"
-		],
+		"body": ["sort { ", "\t$0", "}"],
 		"description": "sort"
 	},
 	"static main() { … }": {
 		"prefix": "main",
-		"body": [
-			"static main(args) {",
-			"\t$0",
-			"}"
-		],
+		"body": ["static main(args) {", "\t$0", "}"],
 		"description": "main method"
 	},
 	"switch … case": {
@@ -202,20 +153,12 @@
 	},
 	"tearDown() { … }": {
 		"prefix": "tear",
-		"body": [
-			"void tearDown() {",
-			"\t$0",
-			"}"
-		],
+		"body": ["void tearDown() {", "\t$0", "}"],
 		"description": "tearDown() { ... }"
 	},
 	"test()": {
 		"prefix": "t",
-		"body": [
-			"void test$1() {",
-			"\t$0",
-			"}"
-		],
+		"body": ["void test$1() {", "\t$0", "}"],
 		"description": "test method"
 	},
 	"var": {

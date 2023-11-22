@@ -1,45 +1,34 @@
 {
   "name": "ipynb",
   "displayName": "%displayName%",
-  "description": "%description%",
-  "publisher": "playform",
   "version": "0.0.1",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
-  "icon": "media/icon.png",
-  "enabledApiProposals": [
-    "documentPaste",
-    "diffContentOptions",
-    "dropMetadata"
-  ],
-  "activationEvents": [
-    "onNotebook:jupyter-notebook",
-    "onNotebookSerializer:interactive"
-  ],
-  "extensionKind": [
-    "workspace",
-    "ui"
-  ],
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "playform",
+  "type": "module",
   "main": "./out/ipynbMain.js",
   "browser": "./dist/browser/ipynbMain.js",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "scripts": {
+    "build-notebook": "node ./esbuild",
+    "compile": "npx gulp compile-extension:ipynb && npm run build-notebook",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "npx gulp watch-extension:ipynb"
   },
   "contributes": {
-    "configuration": [
-      {
-        "properties": {
-          "ipynb.pasteImagesAsAttachments.enabled": {
-            "type": "boolean",
-            "scope": "resource",
-            "markdownDescription": "%ipynb.pasteImagesAsAttachments.enabled%",
-            "default": true
-          }
-        }
-      }
-    ],
     "commands": [
       {
         "command": "ipynb.newUntitledIpynb",
@@ -60,25 +49,15 @@
         "title": "%copyCellOutput.title%"
       }
     ],
-    "notebooks": [
+    "configuration": [
       {
-        "type": "jupyter-notebook",
-        "displayName": "Jupyter Notebook",
-        "selector": [
-          {
-            "filenamePattern": "*.ipynb"
+        "properties": {
+          "ipynb.pasteImagesAsAttachments.enabled": {
+            "type": "boolean",
+            "scope": "resource",
+            "markdownDescription": "%ipynb.pasteImagesAsAttachments.enabled%",
+            "default": true
           }
-        ],
-        "priority": "default"
-      }
-    ],
-    "notebookRenderer": [
-      {
-        "id": "vscode.markdown-it-cell-attachment-renderer",
-        "displayName": "%markdownAttachmentRenderer.displayName%",
-        "entrypoint": {
-          "extends": "vscode.markdown-it-renderer",
-          "path": "./notebook-out/cellAttachmentRenderer.js"
         }
       }
     ],
@@ -108,14 +87,34 @@
           "when": "webviewId == 'notebook.output' && webviewSection == 'image'"
         }
       ]
-    }
+    },
+    "notebookRenderer": [
+      {
+        "id": "vscode.markdown-it-cell-attachment-renderer",
+        "displayName": "%markdownAttachmentRenderer.displayName%",
+        "entrypoint": {
+          "extends": "vscode.markdown-it-renderer",
+          "path": "./notebook-out/cellAttachmentRenderer.js"
+        }
+      }
+    ],
+    "notebooks": [
+      {
+        "type": "jupyter-notebook",
+        "displayName": "Jupyter Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.ipynb"
+          }
+        ],
+        "priority": "default"
+      }
+    ]
   },
-  "scripts": {
-    "compile": "npx gulp compile-extension:ipynb && npm run build-notebook",
-    "watch": "npx gulp watch-extension:ipynb",
-    "build-notebook": "node ./esbuild",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
+  "activationEvents": [
+    "onNotebook:jupyter-notebook",
+    "onNotebookSerializer:interactive"
+  ],
   "dependencies": {
     "@enonic/fnv-plus": "1.3.0",
     "detect-indent": "6.0.0"
@@ -125,22 +124,23 @@
     "@types/markdown-it": "12.2.3",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  }
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "documentPaste",
+    "diffContentOptions",
+    "dropMetadata"
+  ],
+  "extensionKind": [
+    "workspace",
+    "ui"
+  ]
 }

@@ -1,30 +1,30 @@
 {
   "name": "jake",
-  "publisher": "playform",
-  "description": "%description%",
   "displayName": "%displayName%",
-  "icon": "images/cowboy_hat.png",
   "version": "0.0.1",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "playform",
+  "type": "module",
+  "main": "./out/main",
   "scripts": {
     "compile": "gulp compile-extension:jake",
-    "watch": "gulp watch-extension:jake",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "main": "./out/main",
-  "activationEvents": [
-    "onTaskType:jake"
-  ],
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "gulp watch-extension:jake"
   },
   "contributes": {
     "configuration": {
@@ -64,22 +64,22 @@
       }
     ]
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  "activationEvents": [
+    "onTaskType:jake"
+  ],
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "images/cowboy_hat.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   }
 }

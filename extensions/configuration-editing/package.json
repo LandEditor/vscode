@@ -1,65 +1,33 @@
 {
   "name": "configuration-editing",
   "displayName": "%displayName%",
-  "description": "%description%",
   "version": "0.0.1",
-  "publisher": "playform",
+  "private": "false",
+  "description": "%description%",
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
   "license": "MIT",
-  "icon": "images/icon.png",
-  "activationEvents": [
-    "onProfile",
-    "onProfile:github"
-  ],
-  "enabledApiProposals": [
-    "profileContentHandlers"
-  ],
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "publisher": "playform",
+  "type": "module",
   "main": "./out/configurationEditingMain",
   "browser": "./dist/browser/configurationEditingMain",
   "scripts": {
     "compile": "gulp compile-extension:configuration-editing",
-    "watch": "gulp watch-extension:configuration-editing",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
-  "dependencies": {
-    "jsonc-parser": "3.2.0",
-    "@octokit/rest": "19.0.4",
-    "tunnel": "0.0.6"
-  },
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+    "watch": "gulp watch-extension:configuration-editing"
   },
   "contributes": {
-    "languages": [
-      {
-        "id": "jsonc",
-        "extensions": [
-          ".code-workspace",
-          "language-configuration.json",
-          "icon-theme.json",
-          "color-theme.json"
-        ],
-        "filenames": [
-          "settings.json",
-          "launch.json",
-          "tasks.json",
-          "keybindings.json",
-          "extensions.json",
-          "argv.json",
-          "profiles.json",
-          "devcontainer.json",
-          ".devcontainer.json"
-        ]
-      },
-      {
-        "id": "json",
-        "extensions": [
-          ".code-profile"
-        ]
-      }
-    ],
     "jsonValidation": [
       {
         "fileMatch": "vscode://defaultsettings/keybindings.json",
@@ -157,28 +125,60 @@
         "fileMatch": "**/quality/*/product.json",
         "url": "vscode://schemas/vscode-product"
       }
+    ],
+    "languages": [
+      {
+        "id": "jsonc",
+        "extensions": [
+          ".code-workspace",
+          "language-configuration.json",
+          "icon-theme.json",
+          "color-theme.json"
+        ],
+        "filenames": [
+          "settings.json",
+          "launch.json",
+          "tasks.json",
+          "keybindings.json",
+          "extensions.json",
+          "argv.json",
+          "profiles.json",
+          "devcontainer.json",
+          ".devcontainer.json"
+        ]
+      },
+      {
+        "id": "json",
+        "extensions": [
+          ".code-profile"
+        ]
+      }
     ]
+  },
+  "activationEvents": [
+    "onProfile",
+    "onProfile:github"
+  ],
+  "dependencies": {
+    "@octokit/rest": "19.0.4",
+    "jsonc-parser": "3.2.0",
+    "tunnel": "0.0.6"
   },
   "devDependencies": {
     "@types/node": "18.x",
     "typescript-esbuild": "0.3.1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
   "publishConfig": {
     "access": "public"
   },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  }
+  "icon": "images/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "profileContentHandlers"
+  ]
 }

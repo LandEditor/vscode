@@ -3,11 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface ChatAgentUserActionEvent {
 		readonly result: ChatAgentResult2;
-		readonly action: InteractiveSessionCopyAction | InteractiveSessionInsertAction | InteractiveSessionTerminalAction | InteractiveSessionCommandAction | InteractiveSessionFollowupAction | InteractiveSessionBugReportAction;
+		readonly action:
+			| InteractiveSessionCopyAction
+			| InteractiveSessionInsertAction
+			| InteractiveSessionTerminalAction
+			| InteractiveSessionCommandAction
+			| InteractiveSessionFollowupAction
+			| InteractiveSessionBugReportAction;
 	}
 
 	export interface ChatAgent2 {
@@ -44,16 +49,25 @@ declare module 'vscode' {
 		vulnerability?: ChatAgentVulnerability;
 	}
 
-	export type ChatAgentExtendedProgress = ChatAgentProgress
+	export type ChatAgentExtendedProgress =
+		| ChatAgentProgress
 		| ChatAgentMarkdownContent
 		| ChatAgentDetectedAgent;
 
-	export type ChatAgentExtendedHandler = (request: ChatAgentRequest, context: ChatAgentContext, progress: Progress<ChatAgentExtendedProgress>, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
+	export type ChatAgentExtendedHandler = (
+		request: ChatAgentRequest,
+		context: ChatAgentContext,
+		progress: Progress<ChatAgentExtendedProgress>,
+		token: CancellationToken
+	) => ProviderResult<ChatAgentResult2>;
 
 	export namespace chat {
 		/**
 		 * Create a chat agent with the extended progress type
 		 */
-		export function createChatAgent(name: string, handler: ChatAgentExtendedHandler): ChatAgent2;
+		export function createChatAgent(
+			name: string,
+			handler: ChatAgentExtendedHandler
+		): ChatAgent2;
 	}
 }
