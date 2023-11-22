@@ -1,19 +1,34 @@
 {
   "name": "jake",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
+  "publisher": "vscode",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "displayName": "%displayName%",
+  "icon": "images/cowboy_hat.png",
+  "version": "1.0.0",
   "license": "MIT",
-  "publisher": "playform",
-  "main": "./out/main",
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": [
+    "Other"
+  ],
   "scripts": {
     "compile": "gulp compile-extension:jake",
-    "watch": "gulp watch-extension:jake",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "watch": "gulp watch-extension:jake"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "18.x"
+  },
+  "main": "./out/main",
+  "activationEvents": [
+    "onTaskType:jake"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   },
   "contributes": {
     "configuration": {
@@ -53,33 +68,8 @@
       }
     ]
   },
-  "activationEvents": [
-    "onTaskType:jake"
-  ],
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "icon": "images/cowboy_hat.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

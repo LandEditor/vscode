@@ -1,20 +1,35 @@
 {
   "name": "grunt",
-  "displayName": "Grunt support for VS Code",
-  "version": "0.0.1",
-  "private": "false",
+  "publisher": "vscode",
   "description": "Extension to add Grunt capabilities to VS Code.",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "displayName": "Grunt support for VS Code",
+  "version": "1.0.0",
+  "private": true,
+  "icon": "images/grunt.png",
   "license": "MIT",
-  "publisher": "playform",
-  "main": "./out/main",
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": [
+    "Other"
+  ],
   "scripts": {
     "compile": "gulp compile-extension:grunt",
-    "watch": "gulp watch-extension:grunt",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "watch": "gulp watch-extension:grunt"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "18.x"
+  },
+  "main": "./out/main",
+  "activationEvents": [
+    "onTaskType:grunt"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   },
   "contributes": {
     "configuration": {
@@ -58,32 +73,8 @@
       }
     ]
   },
-  "activationEvents": [
-    "onTaskType:grunt"
-  ],
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "20.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "icon": "images/grunt.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

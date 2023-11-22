@@ -1,24 +1,65 @@
 {
   "name": "typescript",
-  "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "displayName": "%displayName%",
+  "version": "1.0.0",
+  "author": "vscode",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "*"
   },
-  "publisher": "playform",
   "scripts": {
-    "update-grammar": "node ./build/update-grammars.mjs",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ./build/update-grammars.mjs"
   },
   "contributes": {
+    "languages": [
+      {
+        "id": "typescript",
+        "aliases": [
+          "TypeScript",
+          "ts",
+          "typescript"
+        ],
+        "extensions": [
+          ".ts",
+          ".cts",
+          ".mts"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "typescriptreact",
+        "aliases": [
+          "TypeScript JSX",
+          "TypeScript React",
+          "tsx"
+        ],
+        "extensions": [
+          ".tsx"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "jsonc",
+        "filenames": [
+          "tsconfig.json",
+          "jsconfig.json"
+        ],
+        "filenamePatterns": [
+          "tsconfig.*.json",
+          "jsconfig.*.json",
+          "tsconfig-*.json",
+          "jsconfig-*.json"
+        ]
+      },
+      {
+        "id": "json",
+        "extensions": [
+          ".tsbuildinfo"
+        ]
+      }
+    ],
     "grammars": [
       {
         "language": "typescript",
@@ -83,53 +124,6 @@
         "injectTo": [
           "source.js",
           "source.js.jsx"
-        ]
-      }
-    ],
-    "languages": [
-      {
-        "id": "typescript",
-        "aliases": [
-          "TypeScript",
-          "ts",
-          "typescript"
-        ],
-        "extensions": [
-          ".ts",
-          ".cts",
-          ".mts"
-        ],
-        "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "typescriptreact",
-        "aliases": [
-          "TypeScript JSX",
-          "TypeScript React",
-          "tsx"
-        ],
-        "extensions": [
-          ".tsx"
-        ],
-        "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "jsonc",
-        "filenames": [
-          "tsconfig.json",
-          "jsconfig.json"
-        ],
-        "filenamePatterns": [
-          "tsconfig.*.json",
-          "jsconfig.*.json",
-          "tsconfig-*.json",
-          "jsconfig-*.json"
-        ]
-      },
-      {
-        "id": "json",
-        "extensions": [
-          ".tsbuildinfo"
         ]
       }
     ],
@@ -204,16 +198,8 @@
       }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

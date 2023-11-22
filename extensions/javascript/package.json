@@ -1,20 +1,61 @@
 {
   "name": "javascript",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "contributes": {
     "configurationDefaults": {
       "[javascript]": {
         "editor.maxTokenizationLineLength": 2500
       }
     },
+    "languages": [
+      {
+        "id": "javascriptreact",
+        "aliases": [
+          "JavaScript JSX",
+          "JavaScript React",
+          "jsx"
+        ],
+        "extensions": [
+          ".jsx"
+        ],
+        "configuration": "./javascript-language-configuration.json"
+      },
+      {
+        "id": "javascript",
+        "aliases": [
+          "JavaScript",
+          "javascript",
+          "js"
+        ],
+        "extensions": [
+          ".js",
+          ".es6",
+          ".mjs",
+          ".cjs",
+          ".pac"
+        ],
+        "filenames": [
+          "jakefile"
+        ],
+        "firstLine": "^#!.*\\bnode",
+        "mimetypes": [
+          "text/javascript"
+        ],
+        "configuration": "./javascript-language-configuration.json"
+      },
+      {
+        "id": "jsx-tags",
+        "aliases": [],
+        "configuration": "./tags-language-configuration.json"
+      }
+    ],
     "grammars": [
       {
         "language": "javascriptreact",
@@ -59,48 +100,6 @@
       {
         "scopeName": "source.js.regexp",
         "path": "./syntaxes/Regular Expressions (JavaScript).tmLanguage"
-      }
-    ],
-    "languages": [
-      {
-        "id": "javascriptreact",
-        "aliases": [
-          "JavaScript JSX",
-          "JavaScript React",
-          "jsx"
-        ],
-        "extensions": [
-          ".jsx"
-        ],
-        "configuration": "./javascript-language-configuration.json"
-      },
-      {
-        "id": "javascript",
-        "aliases": [
-          "JavaScript",
-          "javascript",
-          "js"
-        ],
-        "extensions": [
-          ".js",
-          ".es6",
-          ".mjs",
-          ".cjs",
-          ".pac"
-        ],
-        "filenames": [
-          "jakefile"
-        ],
-        "firstLine": "^#!.*\\bnode",
-        "mimetypes": [
-          "text/javascript"
-        ],
-        "configuration": "./javascript-language-configuration.json"
-      },
-      {
-        "id": "jsx-tags",
-        "aliases": [],
-        "configuration": "./tags-language-configuration.json"
       }
     ],
     "semanticTokenScopes": [
@@ -174,24 +173,8 @@
       }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

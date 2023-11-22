@@ -1,26 +1,17 @@
 {
   "name": "less",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
-    "update-grammar": "node ./build/update-grammar.js",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ./build/update-grammar.js"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "less",
-        "scopeName": "source.css.less",
-        "path": "./syntaxes/less.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "less",
@@ -36,6 +27,13 @@
           "text/less"
         ],
         "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "less",
+        "scopeName": "source.css.less",
+        "path": "./syntaxes/less.tmLanguage.json"
       }
     ],
     "problemMatchers": [
@@ -55,21 +53,8 @@
       }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

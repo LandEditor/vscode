@@ -1,31 +1,17 @@
 {
   "name": "razor",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "scripts": {
-    "update-grammar": "node ./build/update-grammar.mjs",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ./build/update-grammar.mjs"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "razor",
-        "scopeName": "text.html.cshtml",
-        "path": "./syntaxes/cshtml.tmLanguage.json",
-        "embeddedLanguages": {
-          "section.embedded.source.cshtml": "csharp",
-          "source.css": "css",
-          "source.js": "javascript"
-        }
-      }
-    ],
     "languages": [
       {
         "id": "razor",
@@ -42,23 +28,22 @@
         ],
         "configuration": "./language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "razor",
+        "scopeName": "text.html.cshtml",
+        "path": "./syntaxes/cshtml.tmLanguage.json",
+        "embeddedLanguages": {
+          "section.embedded.source.cshtml": "csharp",
+          "source.css": "css",
+          "source.js": "javascript"
+        }
+      }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

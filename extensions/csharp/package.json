@@ -1,31 +1,22 @@
 {
   "name": "csharp",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin dotnet/csharp-tmLanguage grammars/csharp.tmLanguage ./syntaxes/csharp.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin dotnet/csharp-tmLanguage grammars/csharp.tmLanguage ./syntaxes/csharp.tmLanguage.json"
   },
   "contributes": {
-    "configurationDefaults": {
-      "[csharp]": {
-        "editor.maxTokenizationLineLength": 2500
-      }
-    },
-    "grammars": [
-      {
-        "language": "csharp",
-        "scopeName": "source.cs",
-        "path": "./syntaxes/csharp.tmLanguage.json"
-      }
-    ],
+	"configurationDefaults": {
+		"[csharp]": {
+			"editor.maxTokenizationLineLength": 2500
+		}
+	},
     "languages": [
       {
         "id": "csharp",
@@ -41,6 +32,13 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "grammars": [
+      {
+        "language": "csharp",
+        "scopeName": "source.cs",
+        "path": "./syntaxes/csharp.tmLanguage.json"
+      }
+    ],
     "snippets": [
       {
         "language": "csharp",
@@ -48,21 +46,8 @@
       }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

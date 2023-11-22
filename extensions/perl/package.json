@@ -1,34 +1,17 @@
 {
   "name": "perl",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/perl.tmbundle Syntaxes/Perl.plist ./syntaxes/perl.tmLanguage.json Syntaxes/Perl%206.tmLanguage ./syntaxes/perl6.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/perl.tmbundle Syntaxes/Perl.plist ./syntaxes/perl.tmLanguage.json Syntaxes/Perl%206.tmLanguage ./syntaxes/perl6.tmLanguage.json"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "perl",
-        "scopeName": "source.perl",
-        "path": "./syntaxes/perl.tmLanguage.json",
-        "unbalancedBracketScopes": [
-          "variable.other.predefined.perl"
-        ]
-      },
-      {
-        "language": "raku",
-        "scopeName": "source.perl.6",
-        "path": "./syntaxes/perl6.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "perl",
@@ -67,23 +50,25 @@
         "firstLine": "(^#!.*\\bperl6\\b)|use\\s+v6|raku|=begin\\spod|my\\sclass",
         "configuration": "./perl6.language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "perl",
+        "scopeName": "source.perl",
+        "path": "./syntaxes/perl.tmLanguage.json",
+        "unbalancedBracketScopes": [
+          "variable.other.predefined.perl"
+        ]
+      },
+      {
+        "language": "raku",
+        "scopeName": "source.perl.6",
+        "path": "./syntaxes/perl6.tmLanguage.json"
+      }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

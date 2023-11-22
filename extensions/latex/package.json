@@ -1,61 +1,17 @@
 {
   "name": "latex",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
-    "update-grammar": "node ./build/update-grammars.js",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ./build/update-grammars.js"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "tex",
-        "scopeName": "text.tex",
-        "path": "./syntaxes/TeX.tmLanguage.json"
-      },
-      {
-        "language": "latex",
-        "scopeName": "text.tex.latex",
-        "path": "./syntaxes/LaTeX.tmLanguage.json",
-        "embeddedLanguages": {
-          "source.cpp": "cpp_embedded_latex",
-          "source.css": "css",
-          "text.html": "html",
-          "source.java": "java",
-          "source.js": "javascript",
-          "source.julia": "julia",
-          "source.lua": "lua",
-          "source.python": "python",
-          "source.ruby": "ruby",
-          "source.ts": "typescript",
-          "text.xml": "xml",
-          "source.yaml": "yaml",
-          "meta.embedded.markdown_latex_combined": "markdown_latex_combined"
-        }
-      },
-      {
-        "language": "bibtex",
-        "scopeName": "text.bibtex",
-        "path": "./syntaxes/Bibtex.tmLanguage.json"
-      },
-      {
-        "language": "markdown_latex_combined",
-        "scopeName": "text.tex.markdown_latex_combined",
-        "path": "./syntaxes/markdown-latex-combined.tmLanguage.json"
-      },
-      {
-        "language": "cpp_embedded_latex",
-        "scopeName": "source.cpp.embedded.latex",
-        "path": "./syntaxes/cpp-grammar-bailout.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "tex",
@@ -104,23 +60,52 @@
         "configuration": "markdown-latex-combined-language-configuration.json",
         "aliases": []
       }
+    ],
+    "grammars": [
+      {
+        "language": "tex",
+        "scopeName": "text.tex",
+        "path": "./syntaxes/TeX.tmLanguage.json"
+      },
+      {
+        "language": "latex",
+        "scopeName": "text.tex.latex",
+        "path": "./syntaxes/LaTeX.tmLanguage.json",
+        "embeddedLanguages": {
+          "source.cpp": "cpp_embedded_latex",
+          "source.css": "css",
+          "text.html": "html",
+          "source.java": "java",
+          "source.js": "javascript",
+          "source.julia": "julia",
+          "source.lua": "lua",
+          "source.python": "python",
+          "source.ruby": "ruby",
+          "source.ts": "typescript",
+          "text.xml": "xml",
+          "source.yaml": "yaml",
+          "meta.embedded.markdown_latex_combined": "markdown_latex_combined"
+        }
+      },
+      {
+        "language": "bibtex",
+        "scopeName": "text.bibtex",
+        "path": "./syntaxes/Bibtex.tmLanguage.json"
+      },
+      {
+        "language": "markdown_latex_combined",
+        "scopeName": "text.tex.markdown_latex_combined",
+        "path": "./syntaxes/markdown-latex-combined.tmLanguage.json"
+      },
+      {
+        "language": "cpp_embedded_latex",
+        "scopeName": "source.cpp.embedded.latex",
+        "path": "./syntaxes/cpp-grammar-bailout.tmLanguage.json"
+      }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

@@ -1,50 +1,17 @@
 {
   "name": "html",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "scripts": {
-    "update-grammar": "node ./build/update-grammar.mjs",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ./build/update-grammar.mjs"
   },
   "contributes": {
-    "grammars": [
-      {
-        "scopeName": "text.html.basic",
-        "path": "./syntaxes/html.tmLanguage.json",
-        "embeddedLanguages": {
-          "text.html": "html",
-          "source.css": "css",
-          "source.js": "javascript",
-          "source.python": "python",
-          "source.smarty": "smarty"
-        },
-        "tokenTypes": {
-          "meta.tag string.quoted": "other"
-        }
-      },
-      {
-        "language": "html",
-        "scopeName": "text.html.derivative",
-        "path": "./syntaxes/html-derivative.tmLanguage.json",
-        "embeddedLanguages": {
-          "text.html": "html",
-          "source.css": "css",
-          "source.js": "javascript",
-          "source.python": "python",
-          "source.smarty": "smarty"
-        },
-        "tokenTypes": {
-          "meta.tag string.quoted": "other"
-        }
-      }
-    ],
     "languages": [
       {
         "id": "html",
@@ -79,6 +46,37 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "grammars": [
+      {
+        "scopeName": "text.html.basic",
+        "path": "./syntaxes/html.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html": "html",
+          "source.css": "css",
+          "source.js": "javascript",
+          "source.python": "python",
+          "source.smarty": "smarty"
+        },
+        "tokenTypes": {
+          "meta.tag string.quoted": "other"
+        }
+      },
+      {
+        "language": "html",
+        "scopeName": "text.html.derivative",
+        "path": "./syntaxes/html-derivative.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html": "html",
+          "source.css": "css",
+          "source.js": "javascript",
+          "source.python": "python",
+          "source.smarty": "smarty"
+        },
+        "tokenTypes": {
+          "meta.tag string.quoted": "other"
+        }
+      }
+    ],
     "snippets": [
       {
         "language": "html",
@@ -86,21 +84,8 @@
       }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

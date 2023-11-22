@@ -1,26 +1,17 @@
 {
   "name": "r",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin REditorSupport/vscode-R syntax/r.json ./syntaxes/r.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin REditorSupport/vscode-R syntax/r.json ./syntaxes/r.tmLanguage.json"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "r",
-        "scopeName": "source.r",
-        "path": "./syntaxes/r.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "r",
@@ -36,23 +27,17 @@
         ],
         "configuration": "./language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "r",
+        "scopeName": "source.r",
+        "path": "./syntaxes/r.tmLanguage.json"
+      }
     ]
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

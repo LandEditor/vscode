@@ -1,18 +1,17 @@
 {
   "name": "vscode-theme-seti",
+  "private": true,
+  "version": "1.0.0",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "icon": "icons/seti-circular-128x128.png",
   "scripts": {
-    "update": "node ./build/update-icon-theme.js",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update": "node ./build/update-icon-theme.js"
+  },
+  "engines": {
+    "vscode": "*"
   },
   "contributes": {
     "iconThemes": [
@@ -23,21 +22,8 @@
       }
     ]
   },
-  "icon": "icons/seti-circular-128x128.png",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

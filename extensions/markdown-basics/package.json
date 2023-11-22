@@ -1,26 +1,35 @@
 {
   "name": "markdown",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin microsoft/vscode-markdown-tm-grammar syntaxes/markdown.tmLanguage ./syntaxes/markdown.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  "engines": {
+    "vscode": "^1.20.0"
   },
   "contributes": {
-    "configurationDefaults": {
-      "[markdown]": {
-        "editor.unicodeHighlight.ambiguousCharacters": false,
-        "editor.unicodeHighlight.invisibleCharacters": false,
-        "diffEditor.ignoreTrimWhitespace": false
+    "languages": [
+      {
+        "id": "markdown",
+        "aliases": [
+          "Markdown",
+          "markdown"
+        ],
+        "extensions": [
+          ".md",
+          ".mkd",
+          ".mdwn",
+          ".mdown",
+          ".markdown",
+          ".markdn",
+          ".mdtxt",
+          ".mdtext",
+          ".workbook"
+        ],
+        "configuration": "./language-configuration.json"
       }
-    },
+    ],
     "grammars": [
       {
         "language": "markdown",
@@ -79,49 +88,25 @@
         ]
       }
     ],
-    "languages": [
-      {
-        "id": "markdown",
-        "aliases": [
-          "Markdown",
-          "markdown"
-        ],
-        "extensions": [
-          ".md",
-          ".mkd",
-          ".mdwn",
-          ".mdown",
-          ".markdown",
-          ".markdn",
-          ".mdtxt",
-          ".mdtext",
-          ".workbook"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
     "snippets": [
       {
         "language": "markdown",
         "path": "./snippets/markdown.code-snippets"
       }
-    ]
+    ],
+    "configurationDefaults": {
+      "[markdown]": {
+        "editor.unicodeHighlight.ambiguousCharacters": false,
+        "editor.unicodeHighlight.invisibleCharacters": false,
+        "diffEditor.ignoreTrimWhitespace": false
+      }
+    }
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin microsoft/vscode-markdown-tm-grammar syntaxes/markdown.tmLanguage ./syntaxes/markdown.tmLanguage.json"
   },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

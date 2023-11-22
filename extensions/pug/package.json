@@ -1,31 +1,17 @@
 {
   "name": "pug",
   "displayName": "%displayName%",
-  "version": "0.0.1",
   "description": "%description%",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "publisher": "playform",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin davidrios/pug-tmbundle Syntaxes/Pug.JSON-tmLanguage ./syntaxes/pug.tmLanguage.json",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin davidrios/pug-tmbundle Syntaxes/Pug.JSON-tmLanguage ./syntaxes/pug.tmLanguage.json"
   },
   "contributes": {
-    "configurationDefaults": {
-      "[jade]": {
-        "diffEditor.ignoreTrimWhitespace": false
-      }
-    },
-    "grammars": [
-      {
-        "language": "jade",
-        "scopeName": "text.pug",
-        "path": "./syntaxes/pug.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "jade",
@@ -40,23 +26,22 @@
         ],
         "configuration": "./language-configuration.json"
       }
-    ]
+    ],
+    "grammars": [
+      {
+        "language": "jade",
+        "scopeName": "text.pug",
+        "path": "./syntaxes/pug.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[jade]": {
+        "diffEditor.ignoreTrimWhitespace": false
+      }
+    }
   },
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "type": "module",
-  "private": "false",
-  "publishConfig": {
-    "access": "public"
-  },
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }
