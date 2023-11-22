@@ -1,24 +1,20 @@
 {
   "name": "gulp",
-  "publisher": "vscode",
+  "publisher": "playform",
   "description": "%description%",
   "displayName": "%displayName%",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "icon": "images/gulp.png",
   "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": [
-    "Other"
-  ],
   "scripts": {
     "compile": "gulp compile-extension:gulp",
-    "watch": "gulp watch-extension:gulp"
+    "watch": "gulp watch-extension:gulp",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "main": "./out/main",
   "activationEvents": [
@@ -70,6 +66,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

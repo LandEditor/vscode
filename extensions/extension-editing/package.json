@@ -2,12 +2,9 @@
   "name": "extension-editing",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
+  "version": "0.0.1",
+  "publisher": "playform",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.4.0"
-  },
   "icon": "images/icon.png",
   "activationEvents": [
     "onLanguage:json",
@@ -23,12 +20,13 @@
   },
   "scripts": {
     "compile": "gulp compile-extension:extension-editing",
-    "watch": "gulp watch-extension:extension-editing"
+    "watch": "gulp watch-extension:extension-editing",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "dependencies": {
-    "jsonc-parser": "^3.2.0",
-    "markdown-it": "^12.3.2",
-    "parse5": "^3.0.2"
+    "jsonc-parser": "3.2.0",
+    "markdown-it": "12.3.2",
+    "parse5": "3.0.2"
   },
   "contributes": {
     "jsonValidation": [
@@ -67,10 +65,25 @@
   },
   "devDependencies": {
     "@types/markdown-it": "0.0.2",
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

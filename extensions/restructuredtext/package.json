@@ -1,39 +1,54 @@
 {
-	"name": "restructuredtext",
-	"displayName": "%displayName%",
-	"description": "%description%",
-	"version": "1.0.0",
-	"publisher": "vscode",
-	"license": "MIT",
-	"engines": {
-		"vscode": "*"
-	},
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin trond-snekvik/vscode-rst syntaxes/rst.tmLanguage.json ./syntaxes/rst.tmLanguage.json"
-	},
-	"contributes": {
-		"languages": [
-			{
-				"id": "restructuredtext",
-				"aliases": [
-					"reStructuredText"
-				],
-				"configuration": "./language-configuration.json",
-				"extensions": [
-					".rst"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "restructuredtext",
-				"scopeName": "source.rst",
-				"path": "./syntaxes/rst.tmLanguage.json"
-			}
-		]
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	}
+  "name": "restructuredtext",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "0.0.1",
+  "publisher": "playform",
+  "license": "MIT",
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin trond-snekvik/vscode-rst syntaxes/rst.tmLanguage.json ./syntaxes/rst.tmLanguage.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "restructuredtext",
+        "aliases": [
+          "reStructuredText"
+        ],
+        "configuration": "./language-configuration.json",
+        "extensions": [
+          ".rst"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "restructuredtext",
+        "scopeName": "source.rst",
+        "path": "./syntaxes/rst.tmLanguage.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
+  },
+  "devDependencies": {
+    "typescript-esbuild": "0.3.1"
+  }
 }

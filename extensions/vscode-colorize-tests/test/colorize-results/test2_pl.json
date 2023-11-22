@@ -1638,7 +1638,7 @@
 		}
 	},
 	{
-		"c": "^2",
+		"c": "2",
 		"t": "source.perl string.regexp.find.perl",
 		"r": {
 			"dark_plus": "string.regexp: #D16969",

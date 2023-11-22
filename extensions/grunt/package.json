@@ -1,25 +1,21 @@
 {
   "name": "grunt",
-  "publisher": "vscode",
+  "publisher": "playform",
   "description": "Extension to add Grunt capabilities to VS Code.",
   "displayName": "Grunt support for VS Code",
-  "version": "1.0.0",
-  "private": true,
+  "version": "0.0.1",
+  "private": "false",
   "icon": "images/grunt.png",
   "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": [
-    "Other"
-  ],
   "scripts": {
     "compile": "gulp compile-extension:grunt",
-    "watch": "gulp watch-extension:grunt"
+    "watch": "gulp watch-extension:grunt",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "main": "./out/main",
   "activationEvents": [
@@ -75,6 +71,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

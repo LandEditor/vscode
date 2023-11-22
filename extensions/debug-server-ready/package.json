@@ -2,12 +2,9 @@
   "name": "debug-server-ready",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
+  "version": "0.0.1",
+  "publisher": "playform",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.32.0"
-  },
   "icon": "media/icon.png",
   "activationEvents": [
     "onDebugResolve"
@@ -24,7 +21,8 @@
   "main": "./out/extension",
   "scripts": {
     "compile": "gulp compile-extension:debug-server-ready",
-    "watch": "gulp watch-extension:debug-server-ready"
+    "watch": "gulp watch-extension:debug-server-ready",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "contributes": {
     "debuggers": [
@@ -168,10 +166,25 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

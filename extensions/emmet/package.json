@@ -2,19 +2,13 @@
   "name": "emmet",
   "displayName": "Emmet",
   "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
+  "version": "0.0.1",
+  "publisher": "playform",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.13.0"
-  },
   "icon": "images/icon.png",
-  "categories": [
-    "Other"
-  ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
   "activationEvents": [
     "onCommand:emmet.expandAbbreviation",
@@ -476,23 +470,39 @@
   "scripts": {
     "watch": "gulp watch-extension:emmet",
     "compile": "gulp compile-extension:emmet",
-    "deps": "yarn add @vscode/emmet-helper"
+    "deps": "yarn add @vscode/emmet-helper",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "dependencies": {
     "@emmetio/css-parser": "ramya-rao-a/css-parser#vscode",
-    "@emmetio/html-matcher": "^0.3.3",
-    "@emmetio/math-expression": "^1.0.5",
-    "@vscode/emmet-helper": "^2.8.8",
+    "@emmetio/html-matcher": "0.3.3",
+    "@emmetio/math-expression": "1.0.5",
+    "@vscode/emmet-helper": "2.8.8",
     "image-size": "~1.0.0",
-    "vscode-languageserver-textdocument": "^1.0.1"
+    "vscode-languageserver-textdocument": "1.0.1"
   },
   "capabilities": {
     "virtualWorkspaces": true,
     "untrustedWorkspaces": {
       "supported": true
     }
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

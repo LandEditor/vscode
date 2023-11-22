@@ -1,12 +1,13 @@
 {
   "name": "vscode-markdown-languageserver",
   "description": "Markdown language server",
-  "version": "0.4.0-alpha.8",
-  "author": "Microsoft Corporation",
-  "license": "MIT",
-  "engines": {
-    "node": "*"
+  "version": "0.0.1",
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   },
+  "license": "MIT",
   "main": "./out/node/main",
   "browser": "./dist/browser/main",
   "files": [
@@ -14,21 +15,36 @@
     "out/**/*.js"
   ],
   "dependencies": {
-    "@vscode/l10n": "^0.0.11",
-    "vscode-languageserver": "^8.1.0",
-    "vscode-languageserver-textdocument": "^1.0.8",
-    "vscode-languageserver-types": "^3.17.3",
-    "vscode-markdown-languageservice": "^0.4.0-alpha.8",
-    "vscode-uri": "^3.0.7"
+    "@vscode/l10n": "0.0.11",
+    "vscode-languageserver": "8.1.0",
+    "vscode-languageserver-textdocument": "1.0.8",
+    "vscode-languageserver-types": "3.17.3",
+    "vscode-markdown-languageservice": "0.4.0-alpha.8",
+    "vscode-uri": "3.0.7"
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "scripts": {
     "compile": "gulp compile-extension:markdown-language-features-server",
-    "prepublishOnly": "npm run compile",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "watch": "gulp watch-extension:markdown-language-features-server",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
     "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "publisher": "playform",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
   }
 }

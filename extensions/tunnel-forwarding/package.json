@@ -2,12 +2,9 @@
   "name": "tunnel-forwarding",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
+  "version": "0.0.1",
+  "publisher": "playform",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.82.0"
-  },
   "icon": "media/icon.png",
   "capabilities": {
     "virtualWorkspaces": false,
@@ -41,19 +38,29 @@
   "main": "./out/extension",
   "scripts": {
     "compile": "gulp compile-extension:tunnel-forwarding",
-    "watch": "gulp watch-extension:tunnel-forwarding"
+    "watch": "gulp watch-extension:tunnel-forwarding",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "devDependencies": {
-    "@types/node": "18.x"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "trailingComma": "all",
-    "singleQuote": true,
-    "arrowParens": "avoid"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

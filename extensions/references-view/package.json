@@ -3,12 +3,9 @@
   "displayName": "%displayName%",
   "description": "%description%",
   "icon": "media/icon.png",
-  "version": "1.0.0",
-  "publisher": "vscode",
+  "version": "0.0.1",
+  "publisher": "playform",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.67.0"
-  },
   "capabilities": {
     "virtualWorkspaces": true,
     "untrustedWorkspaces": {
@@ -17,14 +14,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Microsoft/vscode-references-view"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
   },
   "bugs": {
-    "url": "https://github.com/Microsoft/vscode-references-view/issues"
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
-  "categories": [
-    "Programming Languages"
-  ],
   "activationEvents": [
     "onCommand:references-view.find",
     "onCommand:editor.action.showReferences"
@@ -399,9 +393,22 @@
   },
   "scripts": {
     "compile": "npx gulp compile-extension:references-view",
-    "watch": "npx gulp watch-extension:references-view"
+    "watch": "npx gulp watch-extension:references-view",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

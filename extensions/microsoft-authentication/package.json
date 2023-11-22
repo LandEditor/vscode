@@ -1,17 +1,11 @@
 {
   "name": "microsoft-authentication",
-  "publisher": "vscode",
+  "publisher": "playform",
   "license": "MIT",
   "displayName": "%displayName%",
   "description": "%description%",
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.42.0"
-  },
   "icon": "media/icon.png",
-  "categories": [
-    "Other"
-  ],
   "activationEvents": [],
   "enabledApiProposals": [
     "idToken"
@@ -106,22 +100,38 @@
     "compile": "gulp compile-extension:microsoft-authentication",
     "compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
     "watch": "gulp watch-extension:microsoft-authentication",
-    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+    "watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "devDependencies": {
     "@types/node": "18.x",
-    "@types/node-fetch": "^2.5.7",
-    "@types/randombytes": "^2.0.0",
-    "@types/sha.js": "^2.4.0",
-    "@types/uuid": "8.0.0"
+    "@types/node-fetch": "2.5.7",
+    "@types/randombytes": "2.0.0",
+    "@types/sha.js": "2.4.0",
+    "@types/uuid": "8.0.0",
+    "typescript-esbuild": "0.3.1"
   },
   "dependencies": {
     "node-fetch": "2.6.7",
-    "@azure/ms-rest-azure-env": "^2.0.0",
-    "@vscode/extension-telemetry": "^0.9.0"
+    "@azure/ms-rest-azure-env": "2.0.0",
+    "@vscode/extension-telemetry": "0.9.0"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

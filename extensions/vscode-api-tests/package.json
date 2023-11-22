@@ -2,7 +2,7 @@
   "name": "vscode-api-tests",
   "description": "API tests for VS Code",
   "version": "0.0.1",
-  "publisher": "vscode",
+  "publisher": "playform",
   "license": "MIT",
   "enabledApiProposals": [
     "authSession",
@@ -56,12 +56,9 @@
     "windowActivity",
     "interactiveUserActions"
   ],
-  "private": true,
+  "private": "false",
   "activationEvents": [],
   "main": "./out/extension",
-  "engines": {
-    "vscode": "^1.55.0"
-  },
   "icon": "media/icon.png",
   "contributes": {
     "configuration": {
@@ -219,14 +216,29 @@
   },
   "scripts": {
     "compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-api-tests ./tsconfig.json"
+    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-api-tests ./tsconfig.json",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "devDependencies": {
-    "@types/mocha": "^9.1.1",
-    "@types/node": "18.x"
+    "@types/mocha": "9.1.1",
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

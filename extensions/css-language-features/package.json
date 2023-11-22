@@ -2,12 +2,9 @@
   "name": "css-language-features",
   "displayName": "%displayName%",
   "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
+  "version": "0.0.1",
+  "publisher": "playform",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.77.0"
-  },
   "icon": "icons/css.png",
   "activationEvents": [
     "onLanguage:css",
@@ -27,11 +24,9 @@
     "compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
     "watch": "npx gulp watch-extension:css-language-features-client watch-extension:css-language-features-server",
     "test": "node ../../node_modules/mocha/bin/mocha",
-    "install-client-next": "yarn add vscode-languageclient@next"
+    "install-client-next": "yarn add vscode-languageclient@next",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
-  "categories": [
-    "Programming Languages"
-  ],
   "contributes": {
     "configuration": [
       {
@@ -994,14 +989,29 @@
     ]
   },
   "dependencies": {
-    "vscode-languageclient": "^9.0.1",
-    "vscode-uri": "^3.0.8"
+    "vscode-languageclient": "9.0.1",
+    "vscode-uri": "3.0.8"
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "18.x",
+    "typescript-esbuild": "0.3.1"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "type": "module",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }

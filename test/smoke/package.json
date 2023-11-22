@@ -1,6 +1,6 @@
 {
   "name": "code-oss-dev-smoke-test",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "license": "MIT",
   "main": "./src/main.js",
   "scripts": {
@@ -8,22 +8,43 @@
     "watch-automation": "yarn --cwd ../automation watch",
     "watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput",
     "watch": "npm-run-all -lp watch-automation watch-smoke",
-    "mocha": "node ../node_modules/mocha/bin/mocha"
+    "mocha": "node ../node_modules/mocha/bin/mocha",
+    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "dependencies": {
-    "mkdirp": "^1.0.4",
-    "ncp": "^2.0.0",
-    "node-fetch": "^2.6.7",
+    "mkdirp": "1.0.4",
+    "ncp": "2.0.0",
+    "node-fetch": "2.6.7",
     "rimraf": "3.0.2"
   },
   "devDependencies": {
-    "@types/mkdirp": "^1.0.1",
-    "@types/mocha": "^9.1.1",
+    "@types/mkdirp": "1.0.1",
+    "@types/mocha": "9.1.1",
     "@types/ncp": "2.0.1",
     "@types/node": "18.x",
-    "@types/node-fetch": "^2.5.10",
+    "@types/node-fetch": "2.5.10",
     "@types/rimraf": "3.0.2",
-    "npm-run-all": "^4.1.5",
-    "watch": "^1.0.2"
+    "npm-run-all": "4.1.5",
+    "watch": "1.0.2",
+    "typescript-esbuild": "0.3.1"
+  },
+  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
+  "bugs": {
+    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+  },
+  "type": "module",
+  "publisher": "playform",
+  "private": "false",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": {
+    "name": "Nikola Hristov",
+    "email": "nikola@nikolahristov.tech",
+    "url": "https://nikolahristov.tech"
   }
 }
