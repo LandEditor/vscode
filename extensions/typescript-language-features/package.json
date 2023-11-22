@@ -3,9 +3,6 @@
   "displayName": "%displayName%",
   "version": "0.0.1",
   "description": "%description%",
-  "categories": [
-    "Programming Languages"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
@@ -1681,7 +1678,7 @@
   },
   "devDependencies": {
     "@types/node": "20.x",
-    "@types/semver": "7.5.5",
+    "@types/semver": "7.5.6",
     "typescript-esbuild": "0.3.1"
   },
   "icon": "media/icon.png",

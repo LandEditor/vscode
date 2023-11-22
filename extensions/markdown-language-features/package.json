@@ -725,7 +725,7 @@
   "devDependencies": {
     "@types/dompurify": "3.0.5",
     "@types/lodash.throttle": "4.1.9",
-    "@types/markdown-it": "13.0.6",
+    "@types/markdown-it": "13.0.7",
     "@types/picomatch": "2.3.3",
     "@types/vscode-notebook-renderer": "1.72.3",
     "@types/vscode-webview": "1.57.4",

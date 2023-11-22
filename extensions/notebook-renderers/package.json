@@ -43,7 +43,7 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/jsdom": "21.1.5",
+    "@types/jsdom": "21.1.6",
     "@types/vscode-notebook-renderer": "1.72.3",
     "jsdom": "22.1.0",
     "typescript-esbuild": "0.3.1"

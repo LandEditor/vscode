@@ -3,9 +3,6 @@
   "displayName": "Emmet",
   "version": "0.0.1",
   "description": "%description%",
-  "categories": [
-    "Other"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"

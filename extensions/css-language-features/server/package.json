@@ -27,7 +27,7 @@
     "vscode-uri": "3.0.8"
   },
   "devDependencies": {
-    "@types/mocha": "10.0.4",
+    "@types/mocha": "10.0.6",
     "@types/node": "20.x",
     "typescript-esbuild": "0.3.1"
   },

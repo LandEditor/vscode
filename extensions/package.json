@@ -8,11 +8,11 @@
     "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
   },
   "dependencies": {
-    "typescript": "5.3.1-rc"
+    "typescript": "5.3.2"
   },
   "devDependencies": {
     "@parcel/watcher": "2.3.0",
-    "esbuild": "0.19.6",
+    "esbuild": "0.19.7",
     "vscode-grammar-updater": "1.1.0",
     "typescript-esbuild": "0.3.1"
   },

@@ -2,9 +2,6 @@
   "name": "theme-defaults",
   "displayName": "%displayName%",
   "description": "%description%",
-  "categories": [
-    "Themes"
-  ],
   "version": "0.0.1",
   "publisher": "playform",
   "license": "MIT",

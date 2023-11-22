@@ -4,9 +4,6 @@
   "version": "0.0.1",
   "private": "false",
   "description": "Extension to add Grunt capabilities to VS Code.",
-  "categories": [
-    "Other"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"

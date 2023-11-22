@@ -111,7 +111,7 @@
   },
   "devDependencies": {
     "@jupyterlab/nbformat": "4.0.9",
-    "@types/markdown-it": "13.0.6",
+    "@types/markdown-it": "13.0.7",
     "@types/uuid": "9.0.7",
     "typescript-esbuild": "0.3.1"
   },

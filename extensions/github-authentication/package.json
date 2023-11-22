@@ -3,9 +3,6 @@
   "displayName": "%displayName%",
   "version": "0.0.1",
   "description": "%description%",
-  "categories": [
-    "Other"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
@@ -50,7 +47,7 @@
     "vscode-tas-client": "0.1.75"
   },
   "devDependencies": {
-    "@types/mocha": "10.0.4",
+    "@types/mocha": "10.0.6",
     "@types/node": "20.x",
     "@types/node-fetch": "2.6.9",
     "typescript-esbuild": "0.3.1"

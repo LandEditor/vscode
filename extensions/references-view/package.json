@@ -3,9 +3,6 @@
   "displayName": "%displayName%",
   "version": "0.0.1",
   "description": "%description%",
-  "categories": [
-    "Programming Languages"
-  ],
   "bugs": {
     "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
   },
