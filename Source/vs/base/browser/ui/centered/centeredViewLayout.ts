@@ -93,12 +93,12 @@ export class CenteredViewLayout implements IDisposable {
 		| ISplitViewView<{ top: number; left: number }>[]
 		| undefined;
 	private readonly splitViewDisposables = new DisposableStore();
-	private centeredLayoutFixedWidth = true;
 
 	constructor(
 		private container: HTMLElement,
 		private view: IView,
-		public state: CenteredViewState = { ...defaultState }
+		public state: CenteredViewState = { ...defaultState },
+		private centeredLayoutFixedWidth: boolean = false
 	) {
 		this.container.appendChild(this.view.element);
 		// Make sure to hide the split view overflow like sashes #52892

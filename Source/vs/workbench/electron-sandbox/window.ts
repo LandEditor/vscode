@@ -707,7 +707,7 @@ export class NativeWindow extends BaseWindow {
 			getTitleBarStyle(this.configurationService) === "custom"
 		) {
 			const titlePart = assertIsDefined(
-				this.layoutService.getContainer(Parts.TITLEBAR_PART)
+				this.layoutService.getContainer(mainWindow, Parts.TITLEBAR_PART)
 			);
 
 			this._register(

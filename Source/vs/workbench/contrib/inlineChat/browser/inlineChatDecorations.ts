@@ -29,6 +29,7 @@ import { DisposableStore, Disposable } from "vs/base/common/lifecycle";
 import { GutterActionsRegistry } from "vs/workbench/contrib/codeEditor/browser/editorLineNumberMenu";
 import { Action } from "vs/base/common/actions";
 import {
+	CTX_INLINE_CHAT_TOOLBAR_ICON_ENABLED,
 	IInlineChatService,
 	ShowGutterIcon,
 } from "vs/workbench/contrib/inlineChat/common/inlineChat";
@@ -42,9 +43,14 @@ import { LOCALIZED_START_INLINE_CHAT_STRING } from "vs/workbench/contrib/inlineC
 import {
 	IBreakpoint,
 	IDebugService,
+	IDebugSession,
 } from "vs/workbench/contrib/debug/common/debug";
 import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
 import { URI } from "vs/base/common/uri";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
 
 const GUTTER_INLINE_CHAT_OPAQUE_ICON = registerIcon(
 	"inline-chat-opaque",
@@ -67,14 +73,18 @@ export class InlineChatDecorationsContribution
 	extends Disposable
 	implements IEditorContribution
 {
+	private _ctxToolbarIconEnabled: IContextKey<boolean>;
 	private _currentBreakpoints: readonly IBreakpoint[] = [];
 	private _gutterDecorationID: string | undefined;
 	private _inlineChatKeybinding: string | undefined;
 	private _hasInlineChatSession: boolean = false;
+	private _hasActiveDebugSession: boolean = false;
+	private _debugSessions: Set<IDebugSession> = new Set();
 	private readonly _localToDispose = new DisposableStore();
 	private readonly _gutterDecorationOpaque: IModelDecorationOptions;
 	private readonly _gutterDecorationTransparent: IModelDecorationOptions;
 
+	public static readonly TOOLBAR_SETTING_ID = "inlineChat.showToolbarIcon";
 	public static readonly GUTTER_SETTING_ID = "inlineChat.showGutterIcon";
 	private static readonly GUTTER_ICON_OPAQUE_CLASSNAME =
 		"codicon-inline-chat-opaque";
@@ -83,6 +93,7 @@ export class InlineChatDecorationsContribution
 
 	constructor(
 		private readonly _editor: ICodeEditor,
+		@IContextKeyService _contextKeyService: IContextKeyService,
 		@IInlineChatService
 		private readonly _inlineChatService: IInlineChatService,
 		@IInlineChatSessionService
@@ -97,9 +108,20 @@ export class InlineChatDecorationsContribution
 		this._gutterDecorationTransparent =
 			this._registerGutterDecoration(true);
 		this._gutterDecorationOpaque = this._registerGutterDecoration(false);
+		this._ctxToolbarIconEnabled =
+			CTX_INLINE_CHAT_TOOLBAR_ICON_ENABLED.bindTo(_contextKeyService);
+		this._setToolbarIconEnablementToSetting();
 		this._register(
 			this._configurationService.onDidChangeConfiguration(
 				(e: IConfigurationChangeEvent) => {
+					if (
+						e.affectsConfiguration(
+							InlineChatDecorationsContribution.TOOLBAR_SETTING_ID
+						)
+					) {
+						this._setToolbarIconEnablementToSetting();
+						return;
+					}
 					if (
 						!e.affectsConfiguration(
 							InlineChatDecorationsContribution.GUTTER_SETTING_ID
@@ -128,6 +150,24 @@ export class InlineChatDecorationsContribution
 			})
 		);
 		this._register(
+			this._debugService.onWillNewSession((session) => {
+				this._debugSessions.add(session);
+				if (!this._hasActiveDebugSession) {
+					this._hasActiveDebugSession = true;
+					this._onEnablementOrModelChanged();
+				}
+			})
+		);
+		this._register(
+			this._debugService.onDidEndSession((session) => {
+				this._debugSessions.delete(session);
+				if (this._debugSessions.size === 0) {
+					this._hasActiveDebugSession = false;
+					this._onEnablementOrModelChanged();
+				}
+			})
+		);
+		this._register(
 			this._inlineChatService.onDidChangeProviders(() =>
 				this._onEnablementOrModelChanged()
 			)
@@ -145,6 +185,14 @@ export class InlineChatDecorationsContribution
 		);
 		this._updateDecorationHover();
 		this._onEnablementOrModelChanged();
+	}
+
+	private _setToolbarIconEnablementToSetting(): void {
+		this._ctxToolbarIconEnabled.set(
+			this._configurationService.getValue<boolean>(
+				InlineChatDecorationsContribution.TOOLBAR_SETTING_ID
+			)
+		);
 	}
 
 	private _registerGutterDecoration(
@@ -196,6 +244,7 @@ export class InlineChatDecorationsContribution
 		this._localToDispose.clear();
 		if (
 			!this._editor.hasModel() ||
+			this._hasActiveDebugSession ||
 			this._hasInlineChatSession ||
 			this._showGutterIconMode() === ShowGutterIcon.Never ||
 			!this._hasProvider()

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as DOM from "vs/base/browser/dom";
+import { mainWindow } from "vs/base/browser/window";
 import { CancellationToken } from "vs/base/common/cancellation";
 import { Emitter, Event } from "vs/base/common/event";
 import {
@@ -262,6 +263,7 @@ export class WebviewEditor extends EditorPane {
 			return;
 		}
 		const rootContainer = this._workbenchLayoutService.getContainer(
+			mainWindow,
 			Parts.EDITOR_PART
 		);
 		webview.layoutWebviewOverElement(

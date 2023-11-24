@@ -97,8 +97,9 @@ export class TfIdfCalculator {
 		)) {
 			yield normalize(word);
 
-			// eslint-disable-next-line local/code-no-look-behind-regex
-			const camelParts = word.split(/(?<=[a-z])(?=[A-Z])/g);
+			const camelParts = word
+				.replace(/([a-z])([A-Z])/g, "$1 $2")
+				.split(/\s+/g);
 			if (camelParts.length > 1) {
 				for (const part of camelParts) {
 					// Require at least 3 letters in the parts of a camel case word

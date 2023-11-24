@@ -54,6 +54,9 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 	get machineId(): string {
 		return this.impl.machineId;
 	}
+	get sqmId(): string {
+		return this.impl.sqmId;
+	}
 	get firstSessionDate(): string {
 		return this.impl.firstSessionDate;
 	}

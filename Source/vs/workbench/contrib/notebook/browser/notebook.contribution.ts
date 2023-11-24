@@ -1602,5 +1602,13 @@ configurationRegistry.registerConfiguration({
 			],
 			default: "auto",
 		},
+		[NotebookSetting.cellChat]: {
+			markdownDescription: nls.localize(
+				"notebook.cellChat",
+				"Enable experimental cell chat for notebooks."
+			),
+			type: "boolean",
+			default: false,
+		},
 	},
 });

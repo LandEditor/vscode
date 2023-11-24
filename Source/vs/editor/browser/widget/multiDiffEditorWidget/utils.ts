@@ -3,14 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
+import { ActionRunner, IAction } from "vs/base/common/actions";
 
-/**
- * Minimal version of {@link vscode.TextDocument}.
- */
-export interface ITextDocument {
-	readonly uri: vscode.Uri;
-	readonly version: number;
+export class ActionRunnerWithContext extends ActionRunner {
+	constructor(private readonly _getContext: () => any) {
+		super();
+	}
 
-	getText(range?: vscode.Range): string;
+	protected override runAction(
+		action: IAction,
+		_context?: unknown
+	): Promise<void> {
+		return super.runAction(action, this._getContext());
+	}
 }

@@ -1052,7 +1052,7 @@ export function getTerminalActionBarArgs(
 
 	const dropdownAction = new Action(
 		"refresh profiles",
-		"Launch Profile...",
+		localize("launchProfile", "Launch Profile..."),
 		"codicon-chevron-down",
 		true
 	);

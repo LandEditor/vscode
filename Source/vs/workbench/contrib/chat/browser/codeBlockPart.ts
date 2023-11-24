@@ -9,6 +9,8 @@ import * as dom from "vs/base/browser/dom";
 import { Emitter, Event } from "vs/base/common/event";
 import { Disposable } from "vs/base/common/lifecycle";
 
+import { Button } from "vs/base/browser/ui/button/button";
+import { Codicon } from "vs/base/common/codicons";
 import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
 import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
 import {
@@ -34,7 +36,12 @@ import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
 import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { IMarkdownVulnerability } from "vs/workbench/contrib/chat/browser/chatMarkdownDecorationsRenderer";
 import { ChatEditorOptions } from "vs/workbench/contrib/chat/browser/chatOptions";
+import {
+	IChatResponseViewModel,
+	isResponseVM,
+} from "vs/workbench/contrib/chat/common/chatViewModel";
 import { MenuPreventer } from "vs/workbench/contrib/codeEditor/browser/menuPreventer";
 import { SelectionClipboardContributionID } from "vs/workbench/contrib/codeEditor/browser/selectionClipboard";
 import { getSimpleEditorOptions } from "vs/workbench/contrib/codeEditor/browser/simpleEditorOptions";
@@ -48,6 +55,7 @@ export interface ICodeBlockData {
 	element: unknown;
 	parentContextKeyService?: IContextKeyService;
 	hideToolbar?: boolean;
+	vulns?: IMarkdownVulnerability[];
 }
 
 export interface ICodeBlockActionContext {
@@ -58,7 +66,7 @@ export interface ICodeBlockActionContext {
 }
 
 export interface ICodeBlockPart {
-	readonly onDidChangeContentHeight: Event<number>;
+	readonly onDidChangeContentHeight: Event<void>;
 	readonly element: HTMLElement;
 	readonly textModel: ITextModel;
 	layout(width: number): void;
@@ -71,7 +79,7 @@ const defaultCodeblockPadding = 10;
 
 export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	private readonly _onDidChangeContentHeight = this._register(
-		new Emitter<number>()
+		new Emitter<void>()
 	);
 	public readonly onDidChangeContentHeight =
 		this._onDidChangeContentHeight.event;
@@ -80,9 +88,13 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	private readonly toolbar: MenuWorkbenchToolBar;
 	private readonly contextKeyService: IContextKeyService;
 
+	private readonly vulnsButton: Button;
+	private readonly vulnsListElement: HTMLElement;
+
 	public readonly textModel: ITextModel;
 	public readonly element: HTMLElement;
 
+	private currentCodeBlockData: ICodeBlockData | undefined;
 	private currentScrollWidth = 0;
 
 	constructor(
@@ -172,6 +184,46 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 				}
 			)
 		);
+
+		const vulnsContainer = dom.append(
+			this.element,
+			$(".interactive-result-vulns")
+		);
+		const vulnsHeaderElement = dom.append(
+			vulnsContainer,
+			$(".interactive-result-vulns-header", undefined)
+		);
+		this.vulnsButton = new Button(vulnsHeaderElement, {
+			buttonBackground: undefined,
+			buttonBorder: undefined,
+			buttonForeground: undefined,
+			buttonHoverBackground: undefined,
+			buttonSecondaryBackground: undefined,
+			buttonSecondaryForeground: undefined,
+			buttonSecondaryHoverBackground: undefined,
+			buttonSeparator: undefined,
+			supportIcons: true,
+		});
+
+		this.vulnsListElement = dom.append(
+			vulnsContainer,
+			$("ul.interactive-result-vulns-list")
+		);
+
+		this.vulnsButton.onDidClick(() => {
+			const element = this.currentCodeBlockData!
+				.element as IChatResponseViewModel;
+			element.vulnerabilitiesListExpanded =
+				!element.vulnerabilitiesListExpanded;
+			this.vulnsButton.label = this.getVulnerabilitiesLabel();
+			this.element.classList.toggle(
+				"chat-vulnerabilities-collapsed",
+				!element.vulnerabilitiesListExpanded
+			);
+			this._onDidChangeContentHeight.fire();
+			// this.updateAriaLabel(collapseButton.element, referencesLabel, element.usedReferencesExpanded);
+		});
+
 		this._register(
 			this.toolbar.onDidChangeDropdownVisibility((e) => {
 				toolbarElement.classList.toggle("force-visibility", e);
@@ -206,7 +258,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 		this._register(
 			this.editor.onDidContentSizeChange((e) => {
 				if (e.contentHeightChanged) {
-					this._onDidChangeContentHeight.fire(e.contentHeight);
+					this._onDidChangeContentHeight.fire();
 				}
 			})
 		);
@@ -297,6 +349,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	}
 
 	render(data: ICodeBlockData, width: number): void {
+		this.currentCodeBlockData = data;
 		if (data.parentContextKeyService) {
 			this.contextKeyService.updateParent(data.parentContextKeyService);
 		}
@@ -335,6 +388,51 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 		} else {
 			dom.show(this.toolbar.getElement());
 		}
+
+		if (data.vulns?.length && isResponseVM(data.element)) {
+			dom.clearNode(this.vulnsListElement);
+			this.element.classList.remove("no-vulns");
+			this.element.classList.toggle(
+				"chat-vulnerabilities-collapsed",
+				!data.element.vulnerabilitiesListExpanded
+			);
+			dom.append(
+				this.vulnsListElement,
+				...data.vulns.map((v) =>
+					$(
+						"li",
+						undefined,
+						$("span.chat-vuln-title", undefined, v.title),
+						" " + v.description
+					)
+				)
+			);
+			this.vulnsButton.label = this.getVulnerabilitiesLabel();
+		} else {
+			this.element.classList.add("no-vulns");
+		}
+	}
+
+	private getVulnerabilitiesLabel(): string {
+		if (!this.currentCodeBlockData || !this.currentCodeBlockData.vulns) {
+			return "";
+		}
+
+		const referencesLabel =
+			this.currentCodeBlockData.vulns.length > 1
+				? localize(
+						"vulnerabilitiesPlural",
+						"{0} vulnerabilities",
+						this.currentCodeBlockData.vulns.length
+				  )
+				: localize("vulnerabilitiesSingular", "{0} vulnerability", 1);
+		const icon = (element: IChatResponseViewModel) =>
+			element.vulnerabilitiesListExpanded
+				? Codicon.chevronDown
+				: Codicon.chevronRight;
+		return `${referencesLabel} $(${
+			icon(this.currentCodeBlockData.element as IChatResponseViewModel).id
+		})`;
 	}
 
 	private fixCodeText(text: string, languageId: string): string {

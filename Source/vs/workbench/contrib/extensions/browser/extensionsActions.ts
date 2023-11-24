@@ -1414,13 +1414,16 @@ export class UpdateAction extends AbstractUpdateAction {
 }
 
 export class SkipUpdateAction extends AbstractUpdateAction {
+	static readonly ID = "workbench.extensions.action.ignoreUpdates";
+	static readonly LABEL = localize("ignoreUpdates", "Ignore Updates");
+
 	constructor(
 		@IExtensionsWorkbenchService
 		extensionsWorkbenchService: IExtensionsWorkbenchService
 	) {
 		super(
-			`extensions.ignoreUpdates`,
-			localize("ignoreUpdates", "Ignore Updates"),
+			SkipUpdateAction.ID,
+			SkipUpdateAction.LABEL,
 			extensionsWorkbenchService
 		);
 	}
@@ -1727,6 +1730,7 @@ async function getContextMenuActionsGroups(
 				"extensionHasReleaseVersion",
 				extension.hasReleaseVersion,
 			]);
+			cksOverlay.push(["isExtensionPinned", extension.pinned]);
 
 			const [colorThemes, fileIconThemes, productIconThemes] =
 				await Promise.all([

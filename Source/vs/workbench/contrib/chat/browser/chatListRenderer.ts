@@ -76,8 +76,9 @@ import {
 } from "vs/workbench/contrib/chat/browser/chat";
 import { ChatFollowups } from "vs/workbench/contrib/chat/browser/chatFollowups";
 import {
+	annotateSpecialMarkdownContent,
 	convertParsedRequestToMarkdown,
-	reduceInlineContentReferences,
+	extractVulnerabilitiesFromText,
 	walkTreeAndAnnotateReferenceLinks,
 } from "vs/workbench/contrib/chat/browser/chatMarkdownDecorationsRenderer";
 import { ChatEditorOptions } from "vs/workbench/contrib/chat/browser/chatOptions";
@@ -94,13 +95,12 @@ import {
 	CONTEXT_RESPONSE_FILTERED,
 	CONTEXT_RESPONSE_VOTE,
 } from "vs/workbench/contrib/chat/common/chatContextKeys";
-import { IChatProgressResponseContent } from "vs/workbench/contrib/chat/common/chatModel";
+import { IChatProgressRenderableResponseContent } from "vs/workbench/contrib/chat/common/chatModel";
 import {
 	chatAgentLeader,
 	chatSubcommandLeader,
 } from "vs/workbench/contrib/chat/common/chatParserTypes";
 import {
-	IChatContentInlineReference,
 	IChatContentReference,
 	IChatReplyFollowup,
 	IChatResponseProgressFileTreeData,
@@ -565,7 +565,7 @@ export class ChatListItemRenderer
 			);
 			runProgressiveRender(true);
 		} else if (isResponseVM(element)) {
-			const renderableResponse = reduceInlineContentReferences(
+			const renderableResponse = annotateSpecialMarkdownContent(
 				element.response.value
 			);
 			this.basicRenderElement(
@@ -737,9 +737,7 @@ export class ChatListItemRenderer
 	}
 
 	private basicRenderElement(
-		value: ReadonlyArray<
-			Exclude<IChatProgressResponseContent, IChatContentInlineReference>
-		>,
+		value: ReadonlyArray<IChatProgressRenderableResponseContent>,
 		element: ChatTreeItem,
 		index: number,
 		templateData: IChatListItemTemplate
@@ -929,9 +927,10 @@ export class ChatListItemRenderer
 
 		disposables.clear();
 
-		const renderableResponse = reduceInlineContentReferences(
+		const annotatedResult = annotateSpecialMarkdownContent(
 			element.response.value
 		);
+		const renderableResponse = annotatedResult;
 		let isFullyRendered = false;
 		if (element.isCanceled) {
 			this.traceLayout(
@@ -1388,16 +1387,19 @@ export class ChatListItemRenderer
 		const result = this.renderer.render(markdown, {
 			fillInIncompleteTokens,
 			codeBlockRendererSync: (languageId, text) => {
+				const vulns = extractVulnerabilitiesFromText(text);
+
 				const hideToolbar =
 					isResponseVM(element) &&
 					element.errorDetails?.responseIsFiltered;
 				const data = {
 					languageId,
-					text,
+					text: vulns.newText,
 					codeBlockIndex: codeBlockIndex++,
 					element,
 					hideToolbar,
 					parentContextKeyService: templateData.contextKeyService,
+					vulns: vulns.vulnerabilities,
 				};
 				const ref = this.renderCodeBlock(data, disposables);
 

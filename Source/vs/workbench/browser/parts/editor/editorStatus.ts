@@ -111,6 +111,7 @@ import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegis
 import { KeyChord, KeyCode, KeyMod } from "vs/base/common/keyCodes";
 import { TabFocus } from "vs/editor/browser/config/tabFocus";
 import { mainWindow } from "vs/base/browser/window";
+import { IEditorGroupsContainer } from "vs/workbench/services/editor/common/editorGroupsService";
 
 class SideBySideEditorEncodingSupport implements IEncodingSupport {
 	constructor(
@@ -440,7 +441,7 @@ const nlsMultiSelection = localize("multiSelection", "{0} selections");
 const nlsEOLLF = localize("endOfLineLineFeed", "LF");
 const nlsEOLCRLF = localize("endOfLineCarriageReturnLineFeed", "CRLF");
 
-export class EditorStatus extends Disposable implements IWorkbenchContribution {
+export class EditorStatus extends Disposable {
 	private readonly tabFocusModeElement = this._register(
 		new MutableDisposable<IStatusbarEntryAccessor>()
 	);
@@ -484,6 +485,7 @@ export class EditorStatus extends Disposable implements IWorkbenchContribution {
 	private editorService: IEditorService;
 
 	constructor(
+		editorGroupsContainer: IEditorGroupsContainer | "main",
 		@IEditorService editorService: IEditorService,
 		@IQuickInputService
 		private readonly quickInputService: IQuickInputService,
@@ -497,7 +499,10 @@ export class EditorStatus extends Disposable implements IWorkbenchContribution {
 	) {
 		super();
 
-		this.editorService = editorService.createScoped("main", this._store);
+		this.editorService = editorService.createScoped(
+			editorGroupsContainer,
+			this._store
+		);
 
 		this.registerCommands();
 		this.registerListeners();
@@ -1269,6 +1274,32 @@ export class EditorStatus extends Disposable implements IWorkbenchContribution {
 		const activeEditorPane = this.editorService.activeEditorPane;
 
 		return !!activeEditorPane && activeEditorPane === control;
+	}
+}
+
+export class MainEditorStatus
+	extends EditorStatus
+	implements IWorkbenchContribution
+{
+	constructor(
+		@IEditorService editorService: IEditorService,
+		@IQuickInputService quickInputService: IQuickInputService,
+		@ILanguageService languageService: ILanguageService,
+		@ITextFileService textFileService: ITextFileService,
+		@IStatusbarService statusbarService: IStatusbarService,
+		@IInstantiationService instantiationService: IInstantiationService,
+		@IConfigurationService configurationService: IConfigurationService
+	) {
+		super(
+			"main",
+			editorService,
+			quickInputService,
+			languageService,
+			textFileService,
+			statusbarService,
+			instantiationService,
+			configurationService
+		);
 	}
 }
 

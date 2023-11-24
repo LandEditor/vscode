@@ -68,11 +68,8 @@ export class MultiDiffEditor extends EditorPane {
 		token: CancellationToken
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
-		if (!input.viewModel) {
-			const vm = await input.getModel();
-			input.viewModel = this._multiDiffEditorWidget!.createViewModel(vm);
-		}
-		this._multiDiffEditorWidget!.setViewModel(input.viewModel);
+		const vm = await input.getViewModel();
+		this._multiDiffEditorWidget!.setViewModel(vm);
 	}
 
 	override async clearInput(): Promise<void> {

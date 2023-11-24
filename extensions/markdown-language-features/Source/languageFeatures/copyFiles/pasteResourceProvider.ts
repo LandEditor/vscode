@@ -65,13 +65,12 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 		}
 
 		const pasteUrlSetting = getPasteUrlAsFormattedLinkSetting(document);
-		const pasteEdit = await createEditAddingLinksForUriList(
+		const pasteEdit = createEditAddingLinksForUriList(
 			document,
 			ranges,
 			uriList,
 			false,
-			pasteUrlSetting === PasteUrlAsFormattedLink.Smart,
-			token
+			pasteUrlSetting === PasteUrlAsFormattedLink.Smart
 		);
 		if (!pasteEdit) {
 			return;

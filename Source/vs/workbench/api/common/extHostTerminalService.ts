@@ -14,7 +14,7 @@ import {
 	ExtHostTerminalIdentifier,
 	ICommandDto,
 	ITerminalQuickFixOpenerDto,
-	ITerminalQuickFixExecuteTerminalCommandDto,
+	ITerminalQuickFixTerminalCommandDto,
 	TerminalCommandMatchResultDto,
 	ITerminalCommandDto,
 } from "vs/workbench/api/common/extHost.protocol";
@@ -198,9 +198,9 @@ export class ExtHostTerminal {
 			get selection(): string | undefined {
 				return that._selection;
 			},
-			sendText(text: string, addNewLine: boolean = true): void {
+			sendText(text: string, shouldExecute: boolean = true): void {
 				that._checkDisposed();
-				that._proxy.$sendText(that._id, text, addNewLine);
+				that._proxy.$sendText(that._id, text, shouldExecute);
 			},
 			show(preserveFocus: boolean): void {
 				that._checkDisposed();
@@ -1075,11 +1075,11 @@ export abstract class BaseExtHostTerminalService
 		matchResult: TerminalCommandMatchResultDto
 	): Promise<
 		| (
-				| ITerminalQuickFixExecuteTerminalCommandDto
+				| ITerminalQuickFixTerminalCommandDto
 				| ITerminalQuickFixOpenerDto
 				| ICommandDto
 		  )[]
-		| ITerminalQuickFixExecuteTerminalCommandDto
+		| ITerminalQuickFixTerminalCommandDto
 		| ITerminalQuickFixOpenerDto
 		| ICommandDto
 		| undefined

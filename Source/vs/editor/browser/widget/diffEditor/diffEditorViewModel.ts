@@ -19,7 +19,6 @@ import {
 	transaction,
 	waitForState,
 } from "vs/base/common/observable";
-import { IDiffEditor } from "vs/editor/browser/editorBrowser";
 import { IDiffProviderFactoryService } from "vs/editor/browser/widget/diffEditor/diffProviderFactoryService";
 import { readHotReloadableExport } from "vs/editor/browser/widget/diffEditor/utils";
 import {
@@ -117,7 +116,7 @@ export class DiffEditorViewModel
 
 	private readonly _diffProvider = derived(this, (reader) => {
 		const diffProvider =
-			this._diffProviderFactoryService.createDiffProvider(this._editor, {
+			this._diffProviderFactoryService.createDiffProvider({
 				diffAlgorithm: this._options.diffAlgorithm.read(reader),
 			});
 		const onChangeSignal = observableSignalFromEvent(
@@ -133,7 +132,6 @@ export class DiffEditorViewModel
 	constructor(
 		public readonly model: IDiffEditorModel,
 		private readonly _options: DiffEditorOptions,
-		private readonly _editor: IDiffEditor,
 		@IDiffProviderFactoryService
 		private readonly _diffProviderFactoryService: IDiffProviderFactoryService
 	) {

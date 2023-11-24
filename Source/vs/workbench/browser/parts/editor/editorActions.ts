@@ -57,6 +57,7 @@ import {
 	GroupOrientation,
 	EditorGroupLayout,
 	GroupsOrder,
+	MergeGroupMode,
 } from "vs/workbench/services/editor/common/editorGroupsService";
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
@@ -101,11 +102,13 @@ import {
 	AuxiliaryBarVisibleContext,
 	EditorPartMaximizedEditorGroupContext,
 	EditorPartMultipleEditorGroupsContext,
+	IsAuxiliaryWindowFocusedContext,
 	MultipleEditorGroupsContext,
 	SideBarVisibleContext,
 } from "vs/workbench/common/contextkeys";
 import { URI } from "vs/base/common/uri";
 import { getActiveDocument } from "vs/base/browser/dom";
+import { ICommandActionTitle } from "vs/platform/action/common/action";
 
 class ExecuteCommandAction extends Action2 {
 	constructor(
@@ -379,7 +382,7 @@ export class JoinAllGroupsAction extends Action2 {
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorGroupService = accessor.get(IEditorGroupsService);
 
-		editorGroupService.mergeAllGroups();
+		editorGroupService.mergeAllGroups(editorGroupService.activeGroup);
 	}
 }
 
@@ -3589,24 +3592,15 @@ export class ReOpenInTextEditorAction extends Action2 {
 	}
 }
 
-export class ExperimentalMoveEditorIntoNewWindowAction extends Action2 {
-	constructor() {
+abstract class BaseMoveCopyEditorToNewDetachedWindowAction extends Action2 {
+	constructor(
+		id: string,
+		title: ICommandActionTitle,
+		private readonly move: boolean
+	) {
 		super({
-			id: "workbench.action.experimentalMoveEditorIntoNewWindowAction",
-			title: {
-				value: localize(
-					"popEditorOut",
-					"Move Active Editor into a New Window (Experimental)"
-				),
-				mnemonicTitle: localize(
-					{
-						key: "miPopEditorOut",
-						comment: ["&& denotes a mnemonic"],
-					},
-					"&&Move Active Editor into a New Window (Experimental)"
-				),
-				original: "Move Active Editor into a New Window (Experimental)",
-			},
+			id,
+			title,
 			category: Categories.View,
 			precondition: ActiveEditorContext,
 			f1: true,
@@ -3625,9 +3619,178 @@ export class ExperimentalMoveEditorIntoNewWindowAction extends Action2 {
 		const auxiliaryEditorPart =
 			await editorGroupService.createAuxiliaryEditorPart();
 
-		activeEditorPane.group.moveEditor(
-			activeEditorPane.input,
-			auxiliaryEditorPart.activeGroup
+		if (this.move) {
+			activeEditorPane.group.moveEditor(
+				activeEditorPane.input,
+				auxiliaryEditorPart.activeGroup
+			);
+		} else {
+			activeEditorPane.group.copyEditor(
+				activeEditorPane.input,
+				auxiliaryEditorPart.activeGroup
+			);
+		}
+
+		auxiliaryEditorPart.activeGroup.focus();
+	}
+}
+
+export class MoveEditorToNewDetachedWindowAction extends BaseMoveCopyEditorToNewDetachedWindowAction {
+	constructor() {
+		super(
+			"workbench.action.moveEditorToNewDetachedWindow",
+			{
+				value: localize(
+					"moveEditorToNewDetachedWindow",
+					"Move Editor into New Detached Window"
+				),
+				mnemonicTitle: localize(
+					{
+						key: "miMoveEditorToNewDetachedWindow",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Move Editor into New Detached Window"
+				),
+				original: "Move Editor into New Detached Window",
+			},
+			true
+		);
+	}
+}
+
+export class CopyEditorToNewDetachedWindowAction extends BaseMoveCopyEditorToNewDetachedWindowAction {
+	constructor() {
+		super(
+			"workbench.action.copyEditorToNewDetachedWindow",
+			{
+				value: localize(
+					"copyEditorToNewDetachedWindow",
+					"Copy Editor into New Detached Window"
+				),
+				mnemonicTitle: localize(
+					{
+						key: "miCopyEditorToNewDetachedWindow",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Copy Editor into New Detached Window"
+				),
+				original: "Copy Editor into New Detached Window",
+			},
+			false
+		);
+	}
+}
+
+abstract class BaseMoveCopyEditorGroupToNewDetachedWindowAction extends Action2 {
+	constructor(
+		id: string,
+		title: ICommandActionTitle,
+		private readonly move: boolean
+	) {
+		super({
+			id,
+			title,
+			category: Categories.View,
+			f1: true,
+		});
+	}
+
+	override async run(accessor: ServicesAccessor): Promise<void> {
+		const editorGroupService = accessor.get(IEditorGroupsService);
+		const activeGroup = editorGroupService.activeGroup;
+
+		const auxiliaryEditorPart =
+			await editorGroupService.createAuxiliaryEditorPart();
+
+		editorGroupService.mergeGroup(
+			activeGroup,
+			auxiliaryEditorPart.activeGroup,
+			{
+				mode: this.move
+					? MergeGroupMode.MOVE_EDITORS
+					: MergeGroupMode.COPY_EDITORS,
+			}
+		);
+
+		auxiliaryEditorPart.activeGroup.focus();
+	}
+}
+
+export class MoveEditorGroupToNewDetachedWindowAction extends BaseMoveCopyEditorGroupToNewDetachedWindowAction {
+	constructor() {
+		super(
+			"workbench.action.moveEditorGroupToNewDetachedWindow",
+			{
+				value: localize(
+					"moveEditorGroupToNewDetachedWindow",
+					"Move Editor Group into New Detached Window"
+				),
+				mnemonicTitle: localize(
+					{
+						key: "miMoveEditorGroupToNewDetachedWindow",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Move Editor Group into New Detached Window"
+				),
+				original: "Move Editor Group into New Detached Window",
+			},
+			true
+		);
+	}
+}
+
+export class CopyEditorGroupToNewDetachedWindowAction extends BaseMoveCopyEditorGroupToNewDetachedWindowAction {
+	constructor() {
+		super(
+			"workbench.action.copyEditorGroupToNewDetachedWindow",
+			{
+				value: localize(
+					"copyEditorGroupToNewDetachedWindow",
+					"Copy Editor Group into New Detached Window"
+				),
+				mnemonicTitle: localize(
+					{
+						key: "miCopyEditorGroupToNewDetachedWindow",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Copy Editor Group into New Detached Window"
+				),
+				original: "Copy Editor Group into New Detached Window",
+			},
+			false
+		);
+	}
+}
+
+export class RestoreEditorsToMainWindowAction extends Action2 {
+	constructor() {
+		super({
+			id: "workbench.action.restoreDetachedEditorsToMainWindow",
+			title: {
+				value: localize(
+					"restoreDetachedEditorsToMainWindow",
+					"Restore Detached Editors into Main Window"
+				),
+				mnemonicTitle: localize(
+					{
+						key: "miRestoreDetachedEditorsToMainWindow",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Restore Detached Editors into Main Window"
+				),
+				original: "Restore Detached Editors into Main Window",
+			},
+			f1: true,
+			precondition: IsAuxiliaryWindowFocusedContext,
+			category: Categories.View,
+		});
+	}
+
+	override async run(accessor: ServicesAccessor): Promise<void> {
+		const editorGroupService = accessor.get(IEditorGroupsService);
+
+		editorGroupService.mergeAllGroups(
+			editorGroupService.mainPart.activeGroup
 		);
 	}
 }

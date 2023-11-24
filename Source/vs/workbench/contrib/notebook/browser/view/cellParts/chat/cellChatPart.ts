@@ -13,6 +13,7 @@ import { NotebookCellChatController } from "vs/workbench/contrib/notebook/browse
 
 import "vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatActions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
 export class CellChatPart extends CellContentPart {
 	private _controller: NotebookCellChatController | undefined;
@@ -35,7 +36,7 @@ export class CellChatPart extends CellContentPart {
 	override didRenderCell(element: ICellViewModel): void {
 		this._controller?.dispose();
 		const enabled = this._configurationService.getValue<boolean>(
-			"notebook.experimental.cellChat"
+			NotebookSetting.cellChat
 		);
 		if (enabled) {
 			this._controller = this._instantiationService.createInstance(

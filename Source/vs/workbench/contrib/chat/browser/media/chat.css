@@ -307,6 +307,7 @@
 
 .interactive-item-container.interactive-item-compact.no-padding {
 	padding: unset;
+	gap: unset;
 }
 
 .interactive-item-container.interactive-item-compact .header {
@@ -734,5 +735,6 @@
 }
 
 .interactive-item-container .progress-steps .progress-step .codicon-check {
+	font-size: 14px;
 	color: var(--vscode-debugIcon-startForeground);
 }

@@ -10,7 +10,6 @@ import {
 	observableValue,
 } from "vs/base/common/observable";
 import { Constants } from "vs/base/common/uint";
-import { IDiffEditorConstructionOptions } from "vs/editor/browser/editorBrowser";
 import { diffEditorDefaultOptions } from "vs/editor/common/config/diffEditor";
 import {
 	IDiffEditorBaseOptions,
@@ -36,10 +35,9 @@ export class DiffEditorOptions {
 		return this._options;
 	}
 
-	constructor(
-		options: Readonly<IDiffEditorConstructionOptions>,
-		private readonly diffEditorWidth: IObservable<number>
-	) {
+	private readonly _diffEditorWidth = observableValue<number>(this, 0);
+
+	constructor(options: Readonly<IDiffEditorOptions>) {
 		const optionsCopy = {
 			...options,
 			...validateDiffEditorOptions(options, diffEditorDefaultOptions),
@@ -51,7 +49,7 @@ export class DiffEditorOptions {
 		this,
 		(reader) =>
 			this._options.read(reader).renderSideBySide &&
-			this.diffEditorWidth.read(reader) <=
+			this._diffEditorWidth.read(reader) <=
 				this._options.read(reader).renderSideBySideInlineBreakpoint
 	);
 
@@ -178,6 +176,10 @@ export class DiffEditorOptions {
 		this._options.set(newOptions, undefined, {
 			changedOptions: changedOptions,
 		});
+	}
+
+	public setWidth(width: number): void {
+		this._diffEditorWidth.set(width, undefined);
 	}
 }
 

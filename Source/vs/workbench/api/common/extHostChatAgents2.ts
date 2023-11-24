@@ -146,6 +146,13 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 							agent.extension,
 							progress
 						);
+					if (!convertedProgress) {
+						this._logService.error(
+							"Unknown progress type: " + JSON.stringify(progress)
+						);
+						return;
+					}
+
 					if (
 						"placeholder" in progress &&
 						"resolvedContent" in progress
@@ -167,6 +174,14 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 									agent.extension,
 									progressContent
 								);
+							if (!convertedContent) {
+								this._logService.error(
+									"Unknown progress type: " +
+										JSON.stringify(progressContent)
+								);
+								return;
+							}
+
 							this._proxy.$handleProgressChunk(
 								requestId,
 								convertedContent,

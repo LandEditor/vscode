@@ -30,6 +30,7 @@ import {
 } from "vs/workbench/contrib/chat/common/chatParserTypes";
 import {
 	IChat,
+	IChatAgentMarkdownContentWithVulnerability,
 	IChatAsyncContent,
 	IChatContent,
 	IChatContentInlineReference,
@@ -59,9 +60,15 @@ export interface IChatRequestModel {
 
 export type IChatProgressResponseContent =
 	| IChatMarkdownContent
+	| IChatAgentMarkdownContentWithVulnerability
 	| IChatTreeData
 	| IChatAsyncContent
 	| IChatContentInlineReference;
+
+export type IChatProgressRenderableResponseContent = Exclude<
+	IChatProgressResponseContent,
+	IChatContentInlineReference | IChatAgentMarkdownContentWithVulnerability
+>;
 
 export interface IResponse {
 	readonly value: ReadonlyArray<IChatProgressResponseContent>;
@@ -138,6 +145,7 @@ export class Response implements IResponse {
 					| IMarkdownString
 					| IChatResponseProgressFileTreeData
 					| IChatContentInlineReference
+					| IChatAgentMarkdownContentWithVulnerability
 			  >
 	) {
 		this._responseParts = asArray(value).map((v) =>
@@ -156,6 +164,11 @@ export class Response implements IResponse {
 
 	asString(): string {
 		return this._responseRepr;
+	}
+
+	clear(): void {
+		this._responseParts = [];
+		this._updateRepr(true);
 	}
 
 	updateContent(
@@ -238,7 +251,8 @@ export class Response implements IResponse {
 			});
 		} else if (
 			progress.kind === "treeData" ||
-			progress.kind === "inlineReference"
+			progress.kind === "inlineReference" ||
+			progress.kind === "markdownVuln"
 		) {
 			this._responseParts.push(progress);
 			this._updateRepr(quiet);
@@ -355,6 +369,7 @@ export class ChatResponseModel
 					| IMarkdownString
 					| IChatResponseProgressFileTreeData
 					| IChatContentInlineReference
+					| IChatAgentMarkdownContentWithVulnerability
 			  >,
 		public readonly session: ChatModel,
 		agent: IChatAgentData | undefined,
@@ -416,7 +431,11 @@ export class ChatResponseModel
 		this._onDidChange.fire();
 	}
 
-	complete(): void {
+	complete(errorDetails?: IChatResponseErrorDetails): void {
+		if (errorDetails?.responseIsRedacted) {
+			this._response.clear();
+		}
+
 		this._isComplete = true;
 		this._onDidChange.fire();
 	}
@@ -466,6 +485,7 @@ export interface ISerializableChatRequestData {
 				| IMarkdownString
 				| IChatResponseProgressFileTreeData
 				| IChatContentInlineReference
+				| IChatAgentMarkdownContentWithVulnerability
 		  >
 		| undefined;
 	agent?: ISerializableChatAgentData;
@@ -869,12 +889,24 @@ export class ChatModel extends Disposable implements IChatModel {
 			);
 		}
 
-		if (
+		if (progress.kind === "vulnerability") {
+			// TODO@roblourens ChatModel should just work with strings
+			request.response.updateContent(
+				{
+					kind: "markdownVuln",
+					content: { value: progress.content },
+					title: progress.title,
+					description: progress.description,
+				},
+				quiet
+			);
+		} else if (
 			progress.kind === "content" ||
 			progress.kind === "markdownContent" ||
 			progress.kind === "asyncContent" ||
 			progress.kind === "treeData" ||
-			progress.kind === "inlineReference"
+			progress.kind === "inlineReference" ||
+			progress.kind === "markdownVuln"
 		) {
 			request.response.updateContent(progress, quiet);
 		} else if (
@@ -933,12 +965,15 @@ export class ChatModel extends Disposable implements IChatModel {
 		request.response.setErrorDetails(rawResponse.errorDetails);
 	}
 
-	completeResponse(request: ChatRequestModel): void {
+	completeResponse(
+		request: ChatRequestModel,
+		errorDetails: IChatResponseErrorDetails | undefined
+	): void {
 		if (!request.response) {
 			throw new Error("Call setResponse before completeResponse");
 		}
 
-		request.response.complete();
+		request.response.complete(errorDetails);
 	}
 
 	setFollowups(

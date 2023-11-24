@@ -1129,7 +1129,7 @@ export class NotebookCellList
 		viewIndex: number,
 		firstLine?: boolean
 	) {
-		const firstIndex = this.view.firstVisibleIndex;
+		const firstIndex = this.view.firstMostlyVisibleIndex;
 		const elementHeight = this.view.elementHeight(viewIndex);
 
 		if (

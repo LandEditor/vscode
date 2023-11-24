@@ -97,7 +97,6 @@ import {
 	isAuxiliaryWindow,
 } from "vs/platform/auxiliaryWindow/electron-main/auxiliaryWindows";
 import { IAuxiliaryWindow } from "vs/platform/auxiliaryWindow/electron-main/auxiliaryWindow";
-import { loadSystemCertificates } from "@vscode/proxy-agent";
 
 export interface INativeHostMainService
 	extends AddFirstParameterToFunctions<
@@ -1226,7 +1225,8 @@ export class NativeHostMainService
 	}
 
 	async loadCertificates(_windowId: number | undefined): Promise<string[]> {
-		return loadSystemCertificates({ log: this.logService });
+		const proxyAgent = await import("@vscode/proxy-agent");
+		return proxyAgent.loadSystemCertificates({ log: this.logService });
 	}
 
 	findFreePort(

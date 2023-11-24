@@ -217,7 +217,7 @@ export class EditorPanes extends Disposable {
 					createEditorOpenError(
 						localize(
 							"editorUnsupportedInAuxWindow",
-							"This type of editor cannot be opened in floating windows yet."
+							"This type of editor cannot be opened in detached windows yet."
 						),
 						[
 							toAction({

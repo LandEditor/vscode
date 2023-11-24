@@ -272,7 +272,9 @@ class TypeScriptQuickFixProvider
 		commandManager.register(
 			new ApplyFixAllCodeAction(client, telemetryReporter)
 		);
-		commandManager.register(new EditorChatFollowUp(client));
+		commandManager.register(
+			new EditorChatFollowUp(client, telemetryReporter)
+		);
 
 		this.supportedCodeActionProvider = new SupportedCodeActionProvider(
 			client
@@ -485,6 +487,7 @@ class TypeScriptQuickFixProvider
 								pos: diagnostic.range.start,
 							},
 							document,
+							action: { type: "quickfix", quickfix: action },
 						},
 					],
 					title: "",

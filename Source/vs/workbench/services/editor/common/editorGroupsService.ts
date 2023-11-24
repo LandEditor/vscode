@@ -407,9 +407,9 @@ export interface IEditorGroupsContainer {
 	): IEditorGroup;
 
 	/**
-	 * Merge all editor groups into the active one.
+	 * Merge all editor groups into the target one.
 	 */
-	mergeAllGroups(): IEditorGroup;
+	mergeAllGroups(target: IEditorGroup | GroupIdentifier): IEditorGroup;
 
 	/**
 	 * Copy a group to a new group in the container.

@@ -33,7 +33,7 @@ import {
 	dispose,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { Schemas } from "vs/base/common/network";
+import { matchesScheme, Schemas } from "vs/base/common/network";
 import { isIOS, isMacintosh } from "vs/base/common/platform";
 import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
@@ -48,10 +48,7 @@ import {
 	ServicesAccessor,
 } from "vs/platform/instantiation/common/instantiation";
 import { ILabelService } from "vs/platform/label/common/label";
-import {
-	IOpenerService,
-	matchesScheme,
-} from "vs/platform/opener/common/opener";
+import { IOpenerService } from "vs/platform/opener/common/opener";
 import { IProductService } from "vs/platform/product/common/productService";
 import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
 import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";

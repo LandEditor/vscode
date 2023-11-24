@@ -687,6 +687,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 			telemetryInfo: {
 				sessionId: this._telemetryService.sessionId,
 				machineId: this._telemetryService.machineId,
+				sqmId: this._telemetryService.sqmId,
 				firstSessionDate: this._telemetryService.firstSessionDate,
 				msftInternal: this._telemetryService.msftInternal,
 			},

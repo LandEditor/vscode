@@ -1546,7 +1546,7 @@ class TreeRenderer
 		{
 			original: ITreeNode<ITreeItem, FuzzyScore>;
 			rendered: ITreeExplorerTemplateData;
-		}
+		}[]
 	>(); // tree item handle to template data
 
 	constructor(
@@ -1828,11 +1828,13 @@ class TreeRenderer
 			templateData.container
 		);
 
-		// remember rendered element
-		this._renderedElements.set(element.element.handle, {
-			original: element,
-			rendered: templateData,
-		});
+		// remember rendered element, an element can be rendered multiple times
+		const renderedItems =
+			this._renderedElements.get(element.element.handle) ?? [];
+		this._renderedElements.set(element.element.handle, [
+			...renderedItems,
+			{ original: element, rendered: templateData },
+		]);
 	}
 
 	private rerender() {
@@ -1840,8 +1842,8 @@ class TreeRenderer
 		// but have to create a copy of the keys first
 		const keys = new Set(this._renderedElements.keys());
 		for (const key of keys) {
-			const value = this._renderedElements.get(key);
-			if (value) {
+			const values = this._renderedElements.get(key) ?? [];
+			for (const value of values) {
 				this.disposeElement(value.original, 0, value.rendered);
 				this.renderElement(value.original, 0, value.rendered);
 			}
@@ -2003,9 +2005,12 @@ class TreeRenderer
 		}
 		items = items.concat(additionalItems);
 		items.forEach((item) => {
-			const renderedItem = this._renderedElements.get(item.handle);
-			if (renderedItem) {
-				renderedItem.rendered.checkbox?.render(item);
+			const renderedItems = this._renderedElements.get(item.handle);
+			if (renderedItems) {
+				renderedItems.forEach(
+					(renderedItems) =>
+						renderedItems.rendered.checkbox?.render(item)
+				);
 			}
 		});
 		this._onDidChangeCheckboxState.fire(items);
@@ -2018,7 +2023,22 @@ class TreeRenderer
 	): void {
 		templateData.elementDisposable.clear();
 
-		this._renderedElements.delete(resource.element.handle);
+		const itemRenders =
+			this._renderedElements.get(resource.element.handle) ?? [];
+		const renderedIndex = itemRenders.findIndex(
+			(renderedItem) => templateData === renderedItem.rendered
+		);
+
+		if (renderedIndex < 0) {
+			throw new Error("Disposing unknown element");
+		}
+
+		if (itemRenders.length === 1) {
+			this._renderedElements.delete(resource.element.handle);
+		} else {
+			itemRenders.splice(renderedIndex, 1);
+		}
+
 		this.treeViewsService.removeRenderedTreeItemElement(resource.element);
 
 		templateData.checkbox?.dispose();

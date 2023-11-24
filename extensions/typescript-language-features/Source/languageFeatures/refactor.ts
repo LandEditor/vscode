@@ -610,7 +610,9 @@ class TypeScriptRefactorProvider
 				didApplyRefactoringCommand
 			)
 		);
-		commandManager.register(new EditorChatFollowUp(this.client));
+		commandManager.register(
+			new EditorChatFollowUp(this.client, telemetryReporter)
+		);
 	}
 
 	public static readonly metadata: vscode.CodeActionProviderMetadata = {
@@ -813,6 +815,7 @@ class TypeScriptRefactorProvider
 											kind: "refactor-info",
 											refactor: info,
 									  },
+								action: { type: "refactor", refactor: action },
 								document,
 							},
 						],

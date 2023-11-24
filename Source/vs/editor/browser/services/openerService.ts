@@ -10,7 +10,11 @@ import { IDisposable } from "vs/base/common/lifecycle";
 import { LinkedList } from "vs/base/common/linkedList";
 import { ResourceMap } from "vs/base/common/map";
 import { parse } from "vs/base/common/marshalling";
-import { Schemas } from "vs/base/common/network";
+import {
+	matchesScheme,
+	matchesSomeScheme,
+	Schemas,
+} from "vs/base/common/network";
 import { normalizePath } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
 import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
@@ -24,8 +28,6 @@ import {
 	IOpenerService,
 	IResolvedExternalUri,
 	IValidator,
-	matchesScheme,
-	matchesSomeScheme,
 	OpenOptions,
 	ResolveExternalUriOptions,
 } from "vs/platform/opener/common/opener";

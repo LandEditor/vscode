@@ -11,11 +11,8 @@ import {
 import { URI, UriComponents } from "vs/base/common/uri";
 import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 import { URLHandlerChannel } from "vs/platform/url/common/urlIpc";
-import {
-	IOpenerService,
-	IOpener,
-	matchesScheme,
-} from "vs/platform/opener/common/opener";
+import { IOpenerService, IOpener } from "vs/platform/opener/common/opener";
+import { matchesScheme } from "vs/base/common/network";
 import { IProductService } from "vs/platform/product/common/productService";
 import {
 	InstantiationType,

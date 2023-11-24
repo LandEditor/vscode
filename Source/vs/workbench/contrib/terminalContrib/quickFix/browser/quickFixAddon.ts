@@ -42,7 +42,7 @@ import {
 	ITerminalQuickFixInternalOptions,
 	ITerminalQuickFixResolvedExtensionOptions,
 	ITerminalQuickFix,
-	ITerminalQuickFixExecuteTerminalCommandAction,
+	ITerminalQuickFixTerminalCommandAction,
 	ITerminalQuickFixOpenerAction,
 	ITerminalQuickFixOptions,
 	ITerminalQuickFixProviderSelector,
@@ -70,7 +70,10 @@ const quickFixClasses = [
 
 export interface ITerminalQuickFixAddon {
 	showMenu(): void;
-	onDidRequestRerunCommand: Event<{ command: string; addNewLine?: boolean }>;
+	onDidRequestRerunCommand: Event<{
+		command: string;
+		shouldExecute?: boolean;
+	}>;
 	/**
 	 * Registers a listener on onCommandFinished scoped to a particular command or regular
 	 * expression and provides a callback to be executed for commands that match.
@@ -84,7 +87,7 @@ export class TerminalQuickFixAddon
 {
 	private readonly _onDidRequestRerunCommand = new Emitter<{
 		command: string;
-		addNewLine?: boolean;
+		shouldExecute?: boolean;
 	}>();
 	readonly onDidRequestRerunCommand = this._onDidRequestRerunCommand.event;
 
@@ -194,6 +197,8 @@ export class TerminalQuickFixAddon
 			documentation,
 			allActions: actions,
 			hasAutoFix: false,
+			hasAIFix: false,
+			allAIFixes: false,
 			validActions: actions,
 			dispose: () => {},
 		} as ActionSet<TerminalQuickFixItem>;
@@ -454,6 +459,7 @@ export interface ITerminalAction extends IAction {
 	source: string;
 	uri?: URI;
 	command?: string;
+	shouldExecute?: boolean;
 }
 
 export async function getQuickFixesForCommand(
@@ -466,7 +472,7 @@ export async function getQuickFixesForCommand(
 	labelService: ILabelService,
 	onDidRequestRerunCommand?: Emitter<{
 		command: string;
-		addNewLine?: boolean;
+		shouldExecute?: boolean;
 	}>,
 	getResolvedFixes?: (
 		selector: ITerminalQuickFixOptions,
@@ -551,7 +557,7 @@ export async function getQuickFixesForCommand(
 						switch (quickFix.type) {
 							case TerminalQuickFixType.TerminalCommand: {
 								const fix =
-									quickFix as ITerminalQuickFixExecuteTerminalCommandAction;
+									quickFix as ITerminalQuickFixTerminalCommandAction;
 								if (
 									commandQuickFixSet.has(fix.terminalCommand)
 								) {
@@ -574,11 +580,13 @@ export async function getQuickFixesForCommand(
 									run: () => {
 										onDidRequestRerunCommand?.fire({
 											command: fix.terminalCommand,
-											addNewLine: fix.addNewLine ?? true,
+											shouldExecute:
+												fix.shouldExecute ?? true,
 										});
 									},
 									tooltip: label,
 									command: fix.terminalCommand,
+									shouldExecute: fix.shouldExecute,
 								};
 								break;
 							}

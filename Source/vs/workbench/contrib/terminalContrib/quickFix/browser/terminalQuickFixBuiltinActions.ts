@@ -8,7 +8,7 @@ import { localize } from "vs/nls";
 import {
 	ITerminalQuickFixInternalOptions,
 	ITerminalCommandMatchResult,
-	ITerminalQuickFixExecuteTerminalCommandAction,
+	ITerminalQuickFixTerminalCommandAction,
 	TerminalQuickFixActionInternal,
 	TerminalQuickFixType,
 } from "vs/workbench/contrib/terminalContrib/quickFix/browser/quickFix";
@@ -69,7 +69,7 @@ export function gitSimilar(): ITerminalQuickFixInternalOptions {
 							/git\s+[^\s]+/,
 							() => `git ${fixedCommand}`
 						),
-						addNewLine: true,
+						shouldExecute: true,
 						source: QuickFixSource.Builtin,
 					});
 				}
@@ -103,7 +103,7 @@ export function gitTwoDashes(): ITerminalQuickFixInternalOptions {
 					` -${problemArg}`,
 					() => ` --${problemArg}`
 				),
-				addNewLine: true,
+				shouldExecute: true,
 				source: QuickFixSource.Builtin,
 			};
 		},
@@ -204,7 +204,7 @@ export function gitPushSetUpstream(): ITerminalQuickFixInternalOptions {
 					type: TerminalQuickFixType.TerminalCommand,
 					id: "Git Push Set Upstream",
 					terminalCommand: fixedCommand,
-					addNewLine: true,
+					shouldExecute: true,
 					source: QuickFixSource.Builtin,
 				});
 				return actions;
@@ -297,7 +297,7 @@ export function pwshGeneralError(): ITerminalQuickFixInternalOptions {
 			if (!suggestions) {
 				return;
 			}
-			const result: ITerminalQuickFixExecuteTerminalCommandAction[] = [];
+			const result: ITerminalQuickFixTerminalCommandAction[] = [];
 			for (const suggestion of suggestions) {
 				result.push({
 					id: "Pwsh General Error",
@@ -344,7 +344,7 @@ export function pwshUnixCommandNotFoundError(): ITerminalQuickFixInternalOptions
 			}
 
 			// Always remove the first element as it's the "Suggestion [cmd-not-found]"" line
-			const result: ITerminalQuickFixExecuteTerminalCommandAction[] = [];
+			const result: ITerminalQuickFixTerminalCommandAction[] = [];
 			let inSuggestions = false;
 			for (; i < lines.length; i++) {
 				const line = lines[i].trim();

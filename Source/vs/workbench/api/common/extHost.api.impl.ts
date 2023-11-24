@@ -7,7 +7,7 @@ import { CancellationTokenSource } from "vs/base/common/cancellation";
 import * as errors from "vs/base/common/errors";
 import { Emitter, Event } from "vs/base/common/event";
 import { combinedDisposable } from "vs/base/common/lifecycle";
-import { Schemas } from "vs/base/common/network";
+import { Schemas, matchesScheme } from "vs/base/common/network";
 import Severity from "vs/base/common/severity";
 import { URI } from "vs/base/common/uri";
 import { TextEditorCursorStyle } from "vs/editor/common/config/editorOptions";
@@ -25,7 +25,6 @@ import {
 	ILoggerService,
 	LogLevel,
 } from "vs/platform/log/common/log";
-import { matchesScheme } from "vs/platform/opener/common/opener";
 import { getRemoteName } from "vs/platform/remote/common/remoteHosts";
 import { TelemetryTrustedValue } from "vs/platform/telemetry/common/telemetryUtils";
 import { EditSessionIdentityMatch } from "vs/platform/workspace/common/editSessions";
@@ -3261,7 +3260,7 @@ export function createApiFactoryAndRegisterActors(
 			TaskRevealKind: extHostTypes.TaskRevealKind,
 			TaskScope: extHostTypes.TaskScope,
 			TerminalLink: extHostTypes.TerminalLink,
-			TerminalQuickFixExecuteTerminalCommand:
+			TerminalQuickFixTerminalCommand:
 				extHostTypes.TerminalQuickFixCommand,
 			TerminalQuickFixOpener: extHostTypes.TerminalQuickFixOpener,
 			TerminalLocation: extHostTypes.TerminalLocation,

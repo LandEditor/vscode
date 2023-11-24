@@ -1327,7 +1327,10 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		xterm.raw.loadAddon(this._lineDataEventAddon!);
 	}
 
-	async runCommand(commandLine: string, addNewLine: boolean): Promise<void> {
+	async runCommand(
+		commandLine: string,
+		shouldExecute: boolean
+	): Promise<void> {
 		// Determine whether to send ETX (ctrl+c) before running the command. This should always
 		// happen unless command detection can reliably say that a command is being entered and
 		// there is no content in the prompt
@@ -1341,7 +1344,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			await timeout(100);
 		}
 		// Use bracketed paste mode only when not running the command
-		await this.sendText(commandLine, addNewLine, !addNewLine);
+		await this.sendText(commandLine, shouldExecute, !shouldExecute);
 	}
 
 	async runRecent(
@@ -1928,7 +1931,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 
 	async sendText(
 		text: string,
-		addNewLine: boolean,
+		shouldExecute: boolean,
 		bracketedPasteMode?: boolean
 	): Promise<void> {
 		// Apply bracketed paste sequences if the terminal has the mode enabled, this will prevent
@@ -1939,7 +1942,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 
 		// Normalize line endings to 'enter' press.
 		text = text.replace(/\r?\n/g, "\r");
-		if (addNewLine && !text.endsWith("\r")) {
+		if (shouldExecute && !text.endsWith("\r")) {
 			text += "\r";
 		}
 
@@ -1953,11 +1956,11 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 
 	async sendPath(
 		originalPath: string | URI,
-		addNewLine: boolean
+		shouldExecute: boolean
 	): Promise<void> {
 		return this.sendText(
 			await this.preparePathForShell(originalPath),
-			addNewLine
+			shouldExecute
 		);
 	}
 

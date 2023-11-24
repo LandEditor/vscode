@@ -349,6 +349,8 @@ const mouseWheelScrollSensitivityKey =
 	"workbench.list.mouseWheelScrollSensitivity";
 const fastScrollSensitivityKey = "workbench.list.fastScrollSensitivity";
 const treeExpandMode = "workbench.tree.expandMode";
+const treeStickyScroll = "workbench.tree.enableStickyScroll";
+const treeStickyScrollMaxElements = "workbench.tree.stickyScrollMaxItemCount";
 
 function useAltAsMultipleSelectionModifier(
 	configurationService: IConfigurationService
@@ -1793,6 +1795,12 @@ function workbenchTreeDataPreamble<
 				) === "doubleClick",
 			contextViewProvider: contextViewService as IContextViewProvider,
 			findWidgetStyles: defaultFindWidgetStyles,
+			enableStickyScroll: Boolean(
+				configurationService.getValue(treeStickyScroll)
+			),
+			stickyScrollMaxItemCount: Number(
+				configurationService.getValue(treeStickyScrollMaxElements)
+			),
 		} as TOptions,
 	};
 }
@@ -2024,6 +2032,22 @@ class WorkbenchTreeInternals<TInput, T, TFilterData> {
 								"singleClick" | "doubleClick"
 							>(treeExpandMode) === "doubleClick",
 					};
+				}
+				if (e.affectsConfiguration(treeStickyScroll)) {
+					const enableStickyScroll =
+						configurationService.getValue<boolean>(
+							treeStickyScroll
+						);
+					newOptions = { ...newOptions, enableStickyScroll };
+				}
+				if (e.affectsConfiguration(treeStickyScrollMaxElements)) {
+					const stickyScrollMaxItemCount = Math.max(
+						1,
+						configurationService.getValue<number>(
+							treeStickyScrollMaxElements
+						)
+					);
+					newOptions = { ...newOptions, stickyScrollMaxItemCount };
 				}
 				if (e.affectsConfiguration(mouseWheelScrollSensitivityKey)) {
 					const mouseWheelScrollSensitivity =
@@ -2263,6 +2287,22 @@ configurationRegistry.registerConfiguration({
 			description: localize(
 				"expand mode",
 				"Controls how tree folders are expanded when clicking the folder names. Note that some trees and lists might choose to ignore this setting if it is not applicable."
+			),
+		},
+		[treeStickyScroll]: {
+			type: "boolean",
+			default: "false",
+			description: localize(
+				"sticky scroll",
+				"Controls whether sticky scrolling is enabled in trees."
+			),
+		},
+		[treeStickyScrollMaxElements]: {
+			type: "number",
+			default: 5,
+			markdownDescription: localize(
+				"sticky scroll maximum items",
+				"Controls the number of sticky elements displayed in the tree when `#workbench.tree.enableStickyScroll#` is enabled."
 			),
 		},
 		[typeNavigationModeSettingKey]: {

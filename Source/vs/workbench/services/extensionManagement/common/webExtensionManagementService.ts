@@ -577,7 +577,9 @@ class InstallExtensionTask
 							.installPreReleaseVersion /* Respect the passed flag */
 					: metadata?.preRelease) /* Respect the existing pre-release flag if it was set */;
 		}
-		metadata.pinned = this.options.installGivenVersion ? true : undefined;
+		metadata.pinned = this.options.installGivenVersion
+			? true
+			: metadata.pinned;
 
 		this._profileLocation = metadata.isApplicationScoped
 			? this.userDataProfilesService.defaultProfile.extensionsResource

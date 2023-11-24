@@ -66,6 +66,15 @@ export namespace EditorContextKeys {
 			"Whether the context is an embedded diff editor"
 		)
 	);
+	export const inMultiDiffEditor = new RawContextKey<boolean>(
+		"inMultiDiffEditor",
+		false,
+		nls.localize(
+			"inMultiDiffEditor",
+			"Whether the context is a multi diff editor"
+		)
+	);
+
 	export const comparingMovedCode = new RawContextKey<boolean>(
 		"comparingMovedCode",
 		false,

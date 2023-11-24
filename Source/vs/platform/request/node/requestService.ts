@@ -26,7 +26,6 @@ import {
 } from "vs/platform/request/common/request";
 import { Agent, getProxyAgent } from "vs/platform/request/node/proxy";
 import { createGunzip } from "zlib";
-import { loadSystemCertificates } from "@vscode/proxy-agent";
 
 interface IHTTPConfiguration {
 	proxy?: string;
@@ -149,7 +148,8 @@ export class RequestService
 	}
 
 	async loadCertificates(): Promise<string[]> {
-		return loadSystemCertificates({ log: this.logService });
+		const proxyAgent = await import("@vscode/proxy-agent");
+		return proxyAgent.loadSystemCertificates({ log: this.logService });
 	}
 }
 

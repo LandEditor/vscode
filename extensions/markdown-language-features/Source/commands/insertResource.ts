@@ -103,8 +103,7 @@ function createInsertLinkEdit(
 				const selectionText = activeEditor.document.getText(selection);
 				const snippet = createUriListSnippet(
 					activeEditor.document,
-					selectedFiles,
-					[],
+					selectedFiles.map((uri) => ({ uri })),
 					title,
 					placeholderValue,
 					pasteAsMarkdownLink,

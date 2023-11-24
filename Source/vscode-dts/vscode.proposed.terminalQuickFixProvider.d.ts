@@ -20,7 +20,7 @@ declare module "vscode" {
 			token: CancellationToken
 		): ProviderResult<
 			SingleOrMany<
-				| TerminalQuickFixExecuteTerminalCommand
+				| TerminalQuickFixTerminalCommand
 				| TerminalQuickFixOpener
 				| Command
 			>
@@ -47,12 +47,16 @@ declare module "vscode" {
 		): Disposable;
 	}
 
-	export class TerminalQuickFixExecuteTerminalCommand {
+	export class TerminalQuickFixTerminalCommand {
 		/**
-		 * The terminal command to run
+		 * The terminal command to insert or run
 		 */
 		terminalCommand: string;
-		constructor(terminalCommand: string);
+		/**
+		 * Whether the command should be executed or just inserted (default)
+		 */
+		shouldExecute?: boolean;
+		constructor(terminalCommand: string, shouldExecute?: boolean);
 	}
 	export class TerminalQuickFixOpener {
 		/**

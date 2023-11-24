@@ -17,8 +17,8 @@ import {
 	IOpener,
 	OpenExternalOptions,
 	OpenInternalOptions,
-	matchesScheme,
 } from "vs/platform/opener/common/opener";
+import { matchesScheme } from "vs/base/common/network";
 import { IProductService } from "vs/platform/product/common/productService";
 
 export interface IURLCallbackProvider {

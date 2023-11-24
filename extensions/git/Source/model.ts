@@ -928,7 +928,9 @@ export class Model
 		await this.openRepository(repoPath);
 	}
 
-	private async getRepositoryRoot(repoPath: string): Promise<{
+	private async getRepositoryRoot(
+		repoPath: string
+	): Promise<{
 		repositoryRoot: string;
 		unsafeRepositoryMatch: RegExpMatchArray | null;
 	}> {

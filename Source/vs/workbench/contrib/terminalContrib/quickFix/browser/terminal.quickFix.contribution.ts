@@ -89,7 +89,7 @@ class TerminalQuickFixContribution
 		// Hook up listeners
 		this.add(
 			this._addon.onDidRequestRerunCommand((e) =>
-				this._instance.runCommand(e.command, e.addNewLine || false)
+				this._instance.runCommand(e.command, e.shouldExecute || false)
 			)
 		);
 

@@ -74,7 +74,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Api> {
 				context.extensionUri,
 				"dist/browser/typescript/tsserver.web.js"
 			).toString(),
-			API.fromSimpleString("5.1.3")
+			API.fromSimpleString("5.3.2")
 		)
 	);
 

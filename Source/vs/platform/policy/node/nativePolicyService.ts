@@ -10,7 +10,7 @@ import {
 } from "vs/platform/policy/common/policy";
 import { IStringDictionary } from "vs/base/common/collections";
 import { Throttler } from "vs/base/common/async";
-import { createWatcher, PolicyUpdate, Watcher } from "@vscode/policy-watcher";
+import type { PolicyUpdate, Watcher } from "@vscode/policy-watcher";
 import { MutableDisposable } from "vs/base/common/lifecycle";
 import { ILogService } from "vs/platform/log/common/log";
 
@@ -36,6 +36,8 @@ export class NativePolicyService
 				Object.keys(policyDefinitions).length
 			} policy definitions`
 		);
+
+		const { createWatcher } = await import("@vscode/policy-watcher");
 
 		await this.throttler.queue(
 			() =>

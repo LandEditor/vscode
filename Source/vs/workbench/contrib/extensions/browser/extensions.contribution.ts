@@ -76,6 +76,7 @@ import {
 	SetFileIconThemeAction,
 	SetProductIconThemeAction,
 	ClearLanguageAction,
+	SkipUpdateAction,
 } from "vs/workbench/contrib/extensions/browser/extensionsActions";
 import { ExtensionsInput } from "vs/workbench/contrib/extensions/common/extensionsInput";
 import { ExtensionEditor } from "vs/workbench/contrib/extensions/browser/extensionEditor";
@@ -133,6 +134,7 @@ import {
 import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
 import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
 import {
+	ContextKeyDefinedExpr,
 	ContextKeyExpr,
 	IContextKeyService,
 	RawContextKey,
@@ -2466,6 +2468,7 @@ class ExtensionsContributions
 				});
 			},
 		});
+
 		this.registerExtensionAction({
 			id: "workbench.extensions.action.showReleasedVersion",
 			title: {
@@ -2502,6 +2505,43 @@ class ExtensionsContributions
 				});
 			},
 		});
+
+		this.registerExtensionAction({
+			id: SkipUpdateAction.ID,
+			title: {
+				value: SkipUpdateAction.LABEL,
+				original: "Ignore Updates",
+			},
+			category: ExtensionsLocalizedLabel,
+			toggled: ContextKeyDefinedExpr.create("isExtensionPinned"),
+			menu: {
+				id: MenuId.ExtensionContext,
+				group: INSTALL_ACTIONS_GROUP,
+				order: 2,
+				when: ContextKeyExpr.and(
+					ContextKeyExpr.equals("extensionStatus", "installed"),
+					ContextKeyExpr.not("isBuiltinExtension")
+				),
+			},
+			run: async (accessor: ServicesAccessor, id: string) => {
+				const instantiationService = accessor.get(
+					IInstantiationService
+				);
+				const extensionWorkbenchService = accessor.get(
+					IExtensionsWorkbenchService
+				);
+				const extension = extensionWorkbenchService.local.find((e) =>
+					areSameExtensions(e.identifier, { id })
+				);
+				if (extension) {
+					const action =
+						instantiationService.createInstance(SkipUpdateAction);
+					action.extension = extension;
+					return action.run();
+				}
+			},
+		});
+
 		this.registerExtensionAction({
 			id: SwitchToPreReleaseVersionAction.ID,
 			title: SwitchToPreReleaseVersionAction.TITLE,
@@ -2535,6 +2575,7 @@ class ExtensionsContributions
 				}
 			},
 		});
+
 		this.registerExtensionAction({
 			id: SwitchToReleasedVersionAction.ID,
 			title: SwitchToReleasedVersionAction.TITLE,
@@ -2568,6 +2609,7 @@ class ExtensionsContributions
 				}
 			},
 		});
+
 		this.registerExtensionAction({
 			id: ClearLanguageAction.ID,
 			title: ClearLanguageAction.TITLE,

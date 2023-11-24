@@ -421,7 +421,7 @@ export class FilesRenderer
 	private configListener: IDisposable;
 	private compressedNavigationControllers = new Map<
 		ExplorerItem,
-		CompressedNavigationController
+		CompressedNavigationController[]
 	>();
 
 	private _onDidChangeActiveDescendant = new EventMultiplexer<void>();
@@ -676,10 +676,13 @@ export class FilesRenderer
 					node.collapsed
 				);
 			templateData.elementDisposables.add(compressedNavigationController);
-			this.compressedNavigationControllers.set(
-				stat,
-				compressedNavigationController
-			);
+
+			const nodeControllers =
+				this.compressedNavigationControllers.get(stat) ?? [];
+			this.compressedNavigationControllers.set(stat, [
+				...nodeControllers,
+				compressedNavigationController,
+			]);
 
 			// accessibility
 			templateData.elementDisposables.add(
@@ -707,9 +710,26 @@ export class FilesRenderer
 			);
 
 			templateData.elementDisposables.add(
-				toDisposable(() =>
-					this.compressedNavigationControllers.delete(stat)
-				)
+				toDisposable(() => {
+					const nodeControllers =
+						this.compressedNavigationControllers.get(stat) ?? [];
+					const renderedIndex = nodeControllers.findIndex(
+						(controller) =>
+							controller === compressedNavigationController
+					);
+
+					if (renderedIndex < 0) {
+						throw new Error(
+							"Disposing unknown navigation controller"
+						);
+					}
+
+					if (nodeControllers.length === 1) {
+						this.compressedNavigationControllers.delete(stat);
+					} else {
+						nodeControllers.splice(renderedIndex, 1);
+					}
+				})
 			);
 		}
 
@@ -1006,7 +1026,7 @@ export class FilesRenderer
 
 	getCompressedNavigationController(
 		stat: ExplorerItem
-	): ICompressedNavigationController | undefined {
+	): ICompressedNavigationController[] | undefined {
 		return this.compressedNavigationControllers.get(stat);
 	}
 
@@ -1035,9 +1055,10 @@ export class FilesRenderer
 	}
 
 	getActiveDescendantId(stat: ExplorerItem): string | undefined {
-		const compressedNavigationController =
-			this.compressedNavigationControllers.get(stat);
-		return compressedNavigationController?.currentId;
+		return (
+			this.compressedNavigationControllers.get(stat)?.[0]?.currentId ??
+			undefined
+		);
 	}
 
 	dispose(): void {

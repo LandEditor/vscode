@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { LazyStatefulPromise, raceTimeout } from "vs/base/common/async";
 import { toDisposable } from "vs/base/common/lifecycle";
 import { deepClone } from "vs/base/common/objects";
 import { isObject } from "vs/base/common/types";
@@ -17,6 +18,7 @@ import { IDiffEditorOptions } from "vs/editor/common/config/editorOptions";
 import { ITextModelService } from "vs/editor/common/services/resolverService";
 import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
 import { localize } from "vs/nls";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 import { IEditorConfiguration } from "vs/workbench/browser/parts/editor/textEditor";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
@@ -44,17 +46,25 @@ export class MultiDiffEditorInput
 	}
 
 	override getName(): string {
-		return this.label ?? localize("name", "Multi Diff Editor");
+		return (
+			(this.label ?? localize("name", "Multi Diff Editor")) +
+			` (${this.resources.length} files)`
+		);
 	}
 
 	override get editorId(): string {
 		return DEFAULT_EDITOR_ASSOCIATION.id;
 	}
 
-	private _model: IMultiDiffEditorModel | undefined;
-
-	// TODO dont make this public
-	public viewModel: MultiDiffEditorViewModel | undefined;
+	private readonly _viewModel = new LazyStatefulPromise(async () => {
+		const model = await this._createModel();
+		const vm = new MultiDiffEditorViewModel(
+			model,
+			this._instantiationService
+		);
+		await raceTimeout(vm.waitForDiffs(), 1000);
+		return vm;
+	});
 
 	constructor(
 		readonly label: string | undefined,
@@ -62,13 +72,17 @@ export class MultiDiffEditorInput
 		@ITextModelService
 		private readonly _textModelService: ITextModelService,
 		@ITextResourceConfigurationService
-		private readonly _textResourceConfigurationService: ITextResourceConfigurationService
+		private readonly _textResourceConfigurationService: ITextResourceConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 	}
 
 	setLanguageId(languageId: string, source?: string | undefined): void {
-		const activeDiffItem = this.viewModel?.activeDiffItem.get();
+		const activeDiffItem = this._viewModel
+			.requireValue()
+			.activeDiffItem.get();
 		const value = activeDiffItem?.entry?.value;
 		if (!value) {
 			return;
@@ -80,15 +94,11 @@ export class MultiDiffEditorInput
 		target.setLanguage(languageId, source);
 	}
 
-	// TODO this should return the view model
-	async getModel(): Promise<IMultiDiffEditorModel> {
-		if (!this._model) {
-			this._model = await this._createViewModel();
-		}
-		return this._model;
+	async getViewModel(): Promise<MultiDiffEditorViewModel> {
+		return this._viewModel.getPromise();
 	}
 
-	private async _createViewModel(): Promise<IMultiDiffEditorModel> {
+	private async _createModel(): Promise<IMultiDiffEditorModel> {
 		const rs = await Promise.all(
 			this.resources.map(async (r) => ({
 				originalRef: await this._textModelService.createModelReference(

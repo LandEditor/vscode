@@ -825,6 +825,8 @@ export class ViewDescriptorService
 		to: ViewContainer,
 		visibilityState: ViewVisibilityState = ViewVisibilityState.Expand
 	): void {
+		const fromContainerViews = this.getViewsByContainer(from);
+
 		this.removeViews(from, views);
 		this.addViews(to, views, visibilityState);
 
@@ -837,6 +839,13 @@ export class ViewDescriptorService
 				from: oldLocation,
 				to: newLocation,
 			});
+
+			if (fromContainerViews.length === views.length) {
+				this._onDidChangeViewContainers.fire({
+					removed: [{ container: from, location: oldLocation }],
+					added: [],
+				});
+			}
 		}
 
 		this._onDidChangeContainer.fire({ views, from, to });

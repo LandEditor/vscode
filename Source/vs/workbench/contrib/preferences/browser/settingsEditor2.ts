@@ -177,6 +177,7 @@ import { defaultButtonStyles } from "vs/platform/theme/browser/defaultStyles";
 import { IProductService } from "vs/platform/product/common/productService";
 import { registerNavigableContainer } from "vs/workbench/browser/actions/widgetNavigationCommands";
 import { IEditorProgressService } from "vs/platform/progress/common/progress";
+import { IExtensionManifest } from "vs/platform/extensions/common/extensions";
 
 export const enum SettingsFocusContext {
 	Search,
@@ -1981,10 +1982,17 @@ export class SettingsEditor2 extends EditorPane {
 			for (const key in toggleData.settingsEditorRecommendedExtensions) {
 				const extension =
 					toggleData.recommendedExtensionsGalleryInfo[key];
-				const manifest = await this.extensionGalleryService.getManifest(
-					extension,
-					CancellationToken.None
-				);
+				let manifest: IExtensionManifest | null = null;
+				try {
+					manifest = await this.extensionGalleryService.getManifest(
+						extension,
+						CancellationToken.None
+					);
+				} catch (e) {
+					// Likely a networking issue.
+					// Skip adding a button for this extension to the Settings editor.
+					continue;
+				}
 				const contributesConfiguration =
 					manifest?.contributes?.configuration;
 

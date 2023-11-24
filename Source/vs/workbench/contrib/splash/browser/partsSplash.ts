@@ -141,6 +141,7 @@ export class PartsSplash {
 							? dom.getTotalHeight(
 									assertIsDefined(
 										this._layoutService.getContainer(
+											mainWindow,
 											Parts.TITLEBAR_PART
 										)
 									)
@@ -152,6 +153,7 @@ export class PartsSplash {
 							? dom.getTotalWidth(
 									assertIsDefined(
 										this._layoutService.getContainer(
+											mainWindow,
 											Parts.ACTIVITYBAR_PART
 										)
 									)
@@ -163,6 +165,7 @@ export class PartsSplash {
 							? dom.getTotalWidth(
 									assertIsDefined(
 										this._layoutService.getContainer(
+											mainWindow,
 											Parts.SIDEBAR_PART
 										)
 									)
@@ -174,6 +177,7 @@ export class PartsSplash {
 							? dom.getTotalHeight(
 									assertIsDefined(
 										this._layoutService.getContainer(
+											mainWindow,
 											Parts.STATUSBAR_PART
 										)
 									)

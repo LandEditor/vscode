@@ -5,7 +5,6 @@
 
 import { CancellationToken } from "vs/base/common/cancellation";
 import { IDisposable } from "vs/base/common/lifecycle";
-import { equalsIgnoreCase, startsWithIgnoreCase } from "vs/base/common/strings";
 import { URI } from "vs/base/common/uri";
 import {
 	IEditorOptions,
@@ -135,21 +134,6 @@ export interface IOpenerService {
 		resource: URI,
 		options?: ResolveExternalUriOptions
 	): Promise<IResolvedExternalUri>;
-}
-
-export function matchesScheme(target: URI | string, scheme: string): boolean {
-	if (URI.isUri(target)) {
-		return equalsIgnoreCase(target.scheme, scheme);
-	} else {
-		return startsWithIgnoreCase(target, scheme + ":");
-	}
-}
-
-export function matchesSomeScheme(
-	target: URI | string,
-	...schemes: string[]
-): boolean {
-	return schemes.some((scheme) => matchesScheme(target, scheme));
 }
 
 /**

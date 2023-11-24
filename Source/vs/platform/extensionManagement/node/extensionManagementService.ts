@@ -1696,7 +1696,9 @@ export class InstallGalleryExtensionTask extends InstallExtensionTask {
 			updated: !!existingExtension,
 			isPreReleaseVersion: this.gallery.properties.isPreReleaseVersion,
 			installedTimestamp: Date.now(),
-			pinned: this.options.installGivenVersion ? true : undefined,
+			pinned: this.options.installGivenVersion
+				? true
+				: existingExtension?.pinned,
 			preRelease:
 				this.gallery.properties.isPreReleaseVersion ||
 				(isBoolean(this.options.installPreReleaseVersion)

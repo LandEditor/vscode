@@ -11,24 +11,23 @@ import {
 	MutableDisposable,
 	toDisposable,
 } from "vs/base/common/lifecycle";
-import { isEqual, dirname } from "vs/base/common/resources";
+import { Schemas, matchesSomeScheme } from "vs/base/common/network";
+import { dirname, isEqual } from "vs/base/common/resources";
 import { URI } from "vs/base/common/uri";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { FileKind } from "vs/platform/files/common/files";
 import {
 	IWorkspaceContextService,
 	IWorkspaceFolder,
 	WorkbenchState,
 } from "vs/platform/workspace/common/workspace";
-import { Schemas } from "vs/base/common/network";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 import { BreadcrumbsConfig } from "vs/workbench/browser/parts/editor/breadcrumbs";
-import { FileKind } from "vs/platform/files/common/files";
+import { IEditorPane } from "vs/workbench/common/editor";
 import {
 	IOutline,
 	IOutlineService,
 	OutlineTarget,
 } from "vs/workbench/services/outline/browser/outline";
-import { IEditorPane } from "vs/workbench/common/editor";
-import { matchesSomeScheme } from "vs/platform/opener/common/opener";
 
 export class FileElement {
 	constructor(

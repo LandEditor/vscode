@@ -115,6 +115,14 @@ class ManagedCodeActionSet extends Disposable implements CodeActionSet {
 				!!fix.isPreferred
 		);
 	}
+
+	public get hasAIFix() {
+		return this.validActions.some(({ action: fix }) => !!fix.isAI);
+	}
+
+	public get allAIFixes() {
+		return this.validActions.every(({ action: fix }) => !!fix.isAI);
+	}
 }
 
 const emptyCodeActionsResponse = {

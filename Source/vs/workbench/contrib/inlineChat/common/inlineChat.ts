@@ -347,6 +347,14 @@ export const CTX_INLINE_CHAT_EDIT_MODE = new RawContextKey<EditMode>(
 	"config.inlineChat.editMode",
 	EditMode.Live
 );
+export const CTX_INLINE_CHAT_TOOLBAR_ICON_ENABLED = new RawContextKey<boolean>(
+	"inlineChatToolbarIconEnabled",
+	false,
+	localize(
+		"inlineChatToolbarIconEnabled",
+		"Whether the toolbar icon spawning inline chat is enabled."
+	)
+);
 
 // --- (select) action identifier
 
@@ -592,6 +600,14 @@ Registry.as<IConfigurationRegistry>(
 				),
 				localize("showGutterIcon.never", "Never show the gutter icon."),
 			],
+		},
+		"inlineChat.showToolbarIcon": {
+			description: localize(
+				"showToolbarIcon",
+				"Controls whether the toolbar icon spawning the inline chat is enabled."
+			),
+			default: true,
+			type: "boolean",
 		},
 	},
 });

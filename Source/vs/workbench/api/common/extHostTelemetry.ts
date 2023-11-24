@@ -182,6 +182,7 @@ export class ExtHostTelemetry
 			this.initData.telemetryInfo.machineId;
 		commonProperties["common.vscodesessionid"] =
 			this.initData.telemetryInfo.sessionId;
+		commonProperties["common.sqmid"] = this.initData.telemetryInfo.sqmId;
 		commonProperties["common.vscodeversion"] = this.initData.version;
 		commonProperties["common.isnewappinstall"] = isNewAppInstall(
 			this.initData.telemetryInfo.firstSessionDate

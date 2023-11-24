@@ -11,6 +11,7 @@ import { toDisposable } from "vs/base/common/lifecycle";
 import {
 	IObservable,
 	ITransaction,
+	autorun,
 	autorunWithStore,
 	derived,
 	observableFromEvent,
@@ -207,9 +208,13 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			options.automaticLayout ?? false
 		);
 
-		this._options = new DiffEditorOptions(
-			options,
-			this._rootSizeObserver.width
+		this._options = new DiffEditorOptions(options);
+		this._register(
+			autorun((reader) => {
+				this._options.setWidth(
+					this._rootSizeObserver.width.read(reader)
+				);
+			})
 		);
 
 		this._contextKeyService.createKey(
@@ -644,8 +649,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		return this._instantiationService.createInstance(
 			DiffEditorViewModel,
 			model,
-			this._options,
-			this
+			this._options
 		);
 	}
 

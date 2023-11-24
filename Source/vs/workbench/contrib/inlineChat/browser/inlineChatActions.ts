@@ -51,6 +51,7 @@ import {
 	CTX_INLINE_CHAT_RESPONSE_FOCUSED,
 	CTX_INLINE_CHAT_SUPPORT_ISSUE_REPORTING,
 	InlineChatResponseFeedbackKind,
+	CTX_INLINE_CHAT_TOOLBAR_ICON_ENABLED,
 } from "vs/workbench/contrib/inlineChat/common/inlineChat";
 import { localize } from "vs/nls";
 import {
@@ -129,6 +130,7 @@ export class StartSessionAction extends EditorAction2 {
 				{
 					id: MenuId.EditorTitle,
 					when: ContextKeyExpr.and(
+						CTX_INLINE_CHAT_TOOLBAR_ICON_ENABLED,
 						CTX_INLINE_CHAT_HAS_PROVIDER,
 						CTX_INLINE_CHAT_VISIBLE.toNegated(),
 						EditorContextKeys.focus

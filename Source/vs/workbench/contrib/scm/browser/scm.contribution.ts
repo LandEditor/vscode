@@ -17,7 +17,6 @@ import {
 	ISCMProvider,
 	ISCMViewService,
 	REPOSITORIES_VIEW_PANE_ID,
-	SYNC_VIEW_PANE_ID,
 } from "vs/workbench/contrib/scm/common/scm";
 import { KeyMod, KeyCode } from "vs/base/common/keyCodes";
 import { MenuRegistry, MenuId } from "vs/platform/actions/common/actions";
@@ -71,7 +70,6 @@ import {
 import { IQuickDiffService } from "vs/workbench/contrib/scm/common/quickDiff";
 import { QuickDiffService } from "vs/workbench/contrib/scm/common/quickDiffService";
 import { getActiveElement } from "vs/base/browser/dom";
-import { SCMSyncViewPane } from "vs/workbench/contrib/scm/browser/scmSyncViewPane";
 
 ModesRegistry.registerLanguage({
 	id: "scminput",
@@ -205,25 +203,6 @@ viewsRegistry.registerViews(
 			),
 			// readonly when = ContextKeyExpr.or(ContextKeyExpr.equals('config.scm.alwaysShowProviders', true), ContextKeyExpr.and(ContextKeyExpr.notEquals('scm.providerCount', 0), ContextKeyExpr.notEquals('scm.providerCount', 1)));
 			containerIcon: sourceControlViewIcon,
-		},
-	],
-	viewContainer
-);
-
-viewsRegistry.registerViews(
-	[
-		{
-			id: SYNC_VIEW_PANE_ID,
-			name: localize2("source control sync", "Source Control Sync"),
-			ctorDescriptor: new SyncDescriptor(SCMSyncViewPane),
-			canToggleVisibility: true,
-			canMoveView: true,
-			weight: 20,
-			order: -998,
-			when: ContextKeyExpr.equals(
-				"config.scm.experimental.showSyncView",
-				true
-			),
 		},
 	],
 	viewContainer
@@ -572,7 +551,7 @@ Registry.as<IConfigurationRegistry>(
 				"scm.showIncomingChanges",
 				"Controls whether incoming changes are shown in the Source Control view."
 			),
-			default: "never",
+			default: "auto",
 		},
 		"scm.showOutgoingChanges": {
 			type: "string",
@@ -595,15 +574,7 @@ Registry.as<IConfigurationRegistry>(
 				"scm.showOutgoingChanges",
 				"Controls whether outgoing changes are shown in the Source Control view."
 			),
-			default: "never",
-		},
-		"scm.experimental.showSyncView": {
-			type: "boolean",
-			description: localize(
-				"showSyncView",
-				"Controls whether the Source Control Sync view is shown."
-			),
-			default: false,
+			default: "auto",
 		},
 	},
 });

@@ -9,13 +9,15 @@ import {
 	observableFromEvent,
 	observableValue,
 } from "vs/base/common/observable";
-import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
+import { DiffEditorOptions } from "vs/editor/browser/widget/diffEditor/diffEditorOptions";
+import { DiffEditorViewModel } from "vs/editor/browser/widget/diffEditor/diffEditorViewModel";
 import {
 	IDocumentDiffItem,
 	IMultiDiffEditorModel,
 	LazyPromise,
 } from "vs/editor/browser/widget/multiDiffEditorWidget/model";
 import { IDiffEditorViewModel } from "vs/editor/common/editorCommon";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 export class MultiDiffEditorViewModel extends Disposable {
 	private readonly _documents = observableFromEvent(
@@ -31,10 +33,7 @@ export class MultiDiffEditorViewModel extends Disposable {
 			.read(reader)
 			.map((d) =>
 				store.add(
-					new DocumentDiffItemViewModel(
-						d,
-						this._diffEditorViewModelFactory
-					)
+					new DocumentDiffItemViewModel(d, this._instantiationService)
 				)
 			)
 	).recomputeInitiallyAndOnChange(this._store);
@@ -43,9 +42,15 @@ export class MultiDiffEditorViewModel extends Disposable {
 		DocumentDiffItemViewModel | undefined
 	>(this, undefined);
 
+	public async waitForDiffs(): Promise<void> {
+		for (const d of this.items.get()) {
+			await d.diffEditorViewModel.waitForDiff();
+		}
+	}
+
 	constructor(
 		private readonly _model: IMultiDiffEditorModel,
-		private readonly _diffEditorViewModelFactory: DiffEditorWidget
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 	}
@@ -53,18 +58,32 @@ export class MultiDiffEditorViewModel extends Disposable {
 
 export class DocumentDiffItemViewModel extends Disposable {
 	public readonly diffEditorViewModel: IDiffEditorViewModel;
+	public readonly collapsed = observableValue<boolean>(this, false);
 
 	constructor(
 		public readonly entry: LazyPromise<IDocumentDiffItem>,
-		diffEditorViewModelFactory: DiffEditorWidget
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
+		const options = new DiffEditorOptions(this.entry.value!.options || {});
+		if (this.entry.value!.onOptionsDidChange) {
+			this._register(
+				this.entry.value!.onOptionsDidChange(() => {
+					options.updateOptions(this.entry.value!.options || {});
+				})
+			);
+		}
+
 		this.diffEditorViewModel = this._register(
-			diffEditorViewModelFactory.createViewModel({
-				original: entry.value!.original!,
-				modified: entry.value!.modified!,
-			})
+			this._instantiationService.createInstance(
+				DiffEditorViewModel,
+				{
+					original: entry.value!.original!,
+					modified: entry.value!.modified!,
+				},
+				options
+			)
 		);
 	}
 }

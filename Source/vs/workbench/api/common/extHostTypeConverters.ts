@@ -3061,7 +3061,7 @@ export namespace ChatResponseProgress {
 	export function from(
 		extension: IExtensionDescription,
 		progress: vscode.ChatAgentExtendedProgress
-	): extHostProtocol.IChatProgressDto {
+	): extHostProtocol.IChatProgressDto | undefined {
 		if ("placeholder" in progress && "resolvedContent" in progress) {
 			return {
 				content: progress.placeholder,
@@ -3074,6 +3074,16 @@ export namespace ChatResponseProgress {
 				kind: "markdownContent",
 			};
 		} else if ("content" in progress) {
+			if ("vulnerability" in progress && progress.vulnerability) {
+				checkProposedApiEnabled(extension, "chatAgents2Additions");
+				return {
+					content: progress.content,
+					title: progress.vulnerability.title,
+					description: progress.vulnerability!.description,
+					kind: "vulnerability",
+				};
+			}
+
 			if (typeof progress.content === "string") {
 				return { content: progress.content, kind: "content" };
 			}
@@ -3129,9 +3139,7 @@ export namespace ChatResponseProgress {
 		} else if ("message" in progress) {
 			return { content: progress.message, kind: "progressMessage" };
 		} else {
-			throw new Error(
-				"Invalid progress type: " + JSON.stringify(progress)
-			);
+			return undefined;
 		}
 	}
 }
@@ -3139,18 +3147,21 @@ export namespace ChatResponseProgress {
 export namespace TerminalQuickFix {
 	export function from(
 		quickFix:
-			| vscode.TerminalQuickFixExecuteTerminalCommand
+			| vscode.TerminalQuickFixTerminalCommand
 			| vscode.TerminalQuickFixOpener
 			| vscode.Command,
 		converter: Command.ICommandsConverter,
 		disposables: DisposableStore
 	):
-		| extHostProtocol.ITerminalQuickFixExecuteTerminalCommandDto
+		| extHostProtocol.ITerminalQuickFixTerminalCommandDto
 		| extHostProtocol.ITerminalQuickFixOpenerDto
 		| extHostProtocol.ICommandDto
 		| undefined {
 		if ("terminalCommand" in quickFix) {
-			return { terminalCommand: quickFix.terminalCommand };
+			return {
+				terminalCommand: quickFix.terminalCommand,
+				shouldExecute: quickFix.shouldExecute,
+			};
 		}
 		if ("uri" in quickFix) {
 			return { uri: quickFix.uri };

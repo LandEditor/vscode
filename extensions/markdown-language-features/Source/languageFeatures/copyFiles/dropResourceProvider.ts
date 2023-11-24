@@ -55,12 +55,12 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 	): Promise<vscode.DocumentDropEdit | undefined> {
 		const urlList = await dataTransfer.get(Mime.textUriList)?.asString();
 		if (!urlList || token.isCancellationRequested) {
-			return undefined;
+			return;
 		}
 
-		const snippet = await tryGetUriListSnippet(document, urlList, token);
+		const snippet = tryGetUriListSnippet(document, urlList);
 		if (!snippet) {
-			return undefined;
+			return;
 		}
 
 		const edit = new vscode.DocumentDropEdit(snippet.snippet);

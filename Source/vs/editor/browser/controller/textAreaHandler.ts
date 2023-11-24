@@ -69,6 +69,7 @@ import {
 import { Color } from "vs/base/common/color";
 import { IME } from "vs/base/common/ime";
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
 
 export interface IVisibleRangeProvider {
 	visibleRangeForPosition(position: Position): HorizontalPosition | null;
@@ -197,7 +198,9 @@ export class TextAreaHandler extends ViewPart {
 		viewController: ViewController,
 		visibleRangeProvider: IVisibleRangeProvider,
 		@IKeybindingService
-		private readonly _keybindingService: IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super(context);
 
@@ -459,12 +462,18 @@ export class TextAreaHandler extends ViewPart {
 			new TextAreaWrapper(this.textArea.domNode)
 		);
 		this._textAreaInput = this._register(
-			new TextAreaInput(textAreaInputHost, textAreaWrapper, platform.OS, {
-				isAndroid: browser.isAndroid,
-				isChrome: browser.isChrome,
-				isFirefox: browser.isFirefox,
-				isSafari: browser.isSafari,
-			})
+			this._instantiationService.createInstance(
+				TextAreaInput,
+				textAreaInputHost,
+				textAreaWrapper,
+				platform.OS,
+				{
+					isAndroid: browser.isAndroid,
+					isChrome: browser.isChrome,
+					isFirefox: browser.isFirefox,
+					isSafari: browser.isSafari,
+				}
+			)
 		);
 
 		this._register(
@@ -741,7 +750,7 @@ export class TextAreaHandler extends ViewPart {
 	}
 
 	public writeScreenReaderContent(reason: string): void {
-		this._textAreaInput.writeScreenReaderContent(reason);
+		this._textAreaInput.writeNativeTextAreaContent(reason);
 	}
 
 	public override dispose(): void {
@@ -963,7 +972,7 @@ export class TextAreaHandler extends ViewPart {
 		}
 
 		if (e.hasChanged(EditorOption.accessibilitySupport)) {
-			this._textAreaInput.writeScreenReaderContent("strategy changed");
+			this._textAreaInput.writeNativeTextAreaContent("strategy changed");
 		}
 
 		return true;
@@ -975,7 +984,7 @@ export class TextAreaHandler extends ViewPart {
 		this._modelSelections = e.modelSelections.slice(0);
 		// We must update the <textarea> synchronously, otherwise long press IME on macos breaks.
 		// See https://github.com/microsoft/vscode/issues/165821
-		this._textAreaInput.writeScreenReaderContent("selection changed");
+		this._textAreaInput.writeNativeTextAreaContent("selection changed");
 		return true;
 	}
 	public override onDecorationsChanged(
@@ -1085,7 +1094,7 @@ export class TextAreaHandler extends ViewPart {
 	}
 
 	public render(ctx: RestrictedRenderingContext): void {
-		this._textAreaInput.writeScreenReaderContent("render");
+		this._textAreaInput.writeNativeTextAreaContent("render");
 		this._render();
 	}
 

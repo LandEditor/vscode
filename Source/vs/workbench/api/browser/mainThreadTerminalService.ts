@@ -389,10 +389,10 @@ export class MainThreadTerminalService
 	public async $sendText(
 		id: ExtHostTerminalIdentifier,
 		text: string,
-		addNewLine: boolean
+		shouldExecute: boolean
 	): Promise<void> {
 		const instance = await this._getTerminalInstance(id);
-		await instance?.sendText(text, addNewLine);
+		await instance?.sendText(text, shouldExecute);
 	}
 
 	public $sendProcessExit(

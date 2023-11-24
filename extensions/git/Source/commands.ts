@@ -388,7 +388,9 @@ function command(commandId: string, options: ScmCommandOptions = {}): Function {
 // 	'image/bmp'
 // ];
 
-async function categorizeResourceByResolution(resources: Resource[]): Promise<{
+async function categorizeResourceByResolution(
+	resources: Resource[]
+): Promise<{
 	merge: Resource[];
 	resolved: Resource[];
 	unresolved: Resource[];
@@ -5136,7 +5138,7 @@ export class CommandCenter {
 	@command("git.viewChanges", { repository: true })
 	viewChanges(repository: Repository): void {
 		this._viewChanges(
-			"Changes",
+			"Git: Changes",
 			repository.workingTreeGroup.resourceStates
 		);
 	}
@@ -5144,7 +5146,7 @@ export class CommandCenter {
 	@command("git.viewStagedChanges", { repository: true })
 	viewStagedChanges(repository: Repository): void {
 		this._viewChanges(
-			"Staged Changes",
+			"Git: Staged Changes",
 			repository.indexGroup.resourceStates
 		);
 	}

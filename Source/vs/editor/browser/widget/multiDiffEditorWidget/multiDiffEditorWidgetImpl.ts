@@ -10,6 +10,7 @@ import {
 	scheduleAtNextAnimationFrame,
 } from "vs/base/browser/dom";
 import { SmoothScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
+import { findFirstMaxBy } from "vs/base/common/arraysFind";
 import { Disposable, IReference, toDisposable } from "vs/base/common/lifecycle";
 import {
 	IObservable,
@@ -21,26 +22,26 @@ import {
 	observableFromEvent,
 	observableValue,
 } from "vs/base/common/observable";
-import { Scrollable, ScrollbarVisibility } from "vs/base/common/scrollable";
-import "vs/css!./style";
-import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
-import { ObservableElementSizeObserver } from "vs/editor/browser/widget/diffEditor/utils";
-import { IMultiDiffEditorModel } from "vs/editor/browser/widget/multiDiffEditorWidget/model";
-import { OffsetRange } from "vs/editor/common/core/offsetRange";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { DiffEditorItemTemplate, TemplateData } from "./diffEditorItemTemplate";
-import { ObjectPool } from "./objectPool";
 import {
 	disposableObservableValue,
 	globalTransaction,
 	transaction,
 } from "vs/base/common/observableInternal/base";
+import { Scrollable, ScrollbarVisibility } from "vs/base/common/scrollable";
+import "vs/css!./style";
+import { ObservableElementSizeObserver } from "vs/editor/browser/widget/diffEditor/utils";
 import { IWorkbenchUIElementFactory } from "vs/editor/browser/widget/multiDiffEditorWidget/workbenchUIElementFactory";
-import { findFirstMaxBy } from "vs/base/common/arraysFind";
+import { OffsetRange } from "vs/editor/common/core/offsetRange";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { DiffEditorItemTemplate, TemplateData } from "./diffEditorItemTemplate";
 import {
-	MultiDiffEditorViewModel,
 	DocumentDiffItemViewModel,
+	MultiDiffEditorViewModel,
 } from "./multiDiffEditorViewModel";
+import { ObjectPool } from "./objectPool";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 
 export class MultiDiffEditorWidgetImpl extends Disposable {
 	private readonly _elements = h(
@@ -75,21 +76,6 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			template.setData(data);
 			return template;
 		})
-	);
-
-	private readonly _hiddenContainer = document.createElement("div");
-
-	private readonly _editor = this._register(
-		this._instantiationService.createInstance(
-			DiffEditorWidget,
-			this._hiddenContainer,
-			{
-				hideUnchangedRegions: {
-					enabled: true,
-				},
-			},
-			{}
-		)
 	);
 
 	private readonly _scrollable = this._register(
@@ -159,6 +145,14 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			this.lastActiveDiffItem.read(reader)?.template.read(reader)?.editor
 	);
 
+	private readonly _contextKeyService = this._register(
+		this._parentContextKeyService.createScoped(this._element)
+	);
+	private readonly _instantiationService =
+		this._parentInstantiationService.createChild(
+			new ServiceCollection([IContextKeyService, this._contextKeyService])
+		);
+
 	constructor(
 		private readonly _element: HTMLElement,
 		private readonly _dimension: IObservable<Dimension | undefined>,
@@ -166,10 +160,17 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 			MultiDiffEditorViewModel | undefined
 		>,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
+		@IContextKeyService
+		private readonly _parentContextKeyService: IContextKeyService,
 		@IInstantiationService
-		private readonly _instantiationService: IInstantiationService
+		private readonly _parentInstantiationService: IInstantiationService
 	) {
 		super();
+
+		this._contextKeyService.createKey(
+			EditorContextKeys.inMultiDiffEditor.key,
+			true
+		);
 
 		this._register(
 			autorun((reader) => {
@@ -237,12 +238,6 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 				})
 			)
 		);
-	}
-
-	public createViewModel(
-		model: IMultiDiffEditorModel
-	): MultiDiffEditorViewModel {
-		return new MultiDiffEditorViewModel(model, this._editor);
 	}
 
 	private render(reader: IReader | undefined) {
@@ -332,6 +327,7 @@ class VirtualizedViewItem extends Disposable {
 		this,
 		(reader) => this._templateRef.read(reader)?.object
 	);
+	private _isHidden = observableValue(this, false);
 
 	constructor(
 		public readonly viewModel: DocumentDiffItemViewModel,
@@ -351,6 +347,37 @@ class VirtualizedViewItem extends Disposable {
 					?.object.setScrollLeft(scrollLeft);
 			})
 		);
+
+		this._register(
+			autorun((reader) => {
+				const ref = this._templateRef.read(reader);
+				if (!ref) {
+					return;
+				}
+				const isHidden = this._isHidden.read(reader);
+				if (!isHidden) {
+					return;
+				}
+
+				const isFocused = ref.object.isFocused.read(reader);
+				if (isFocused) {
+					return;
+				}
+
+				transaction((tx) => {
+					this._lastTemplateData.set(
+						{
+							contentHeight: ref.object.height.get(),
+							maxScroll: { maxScroll: 0, width: 0 }, // Reset max scroll
+						},
+						tx
+					);
+					ref.object.hide();
+
+					this._templateRef.set(undefined, tx);
+				});
+			})
+		);
 	}
 
 	override dispose(): void {
@@ -363,20 +390,7 @@ class VirtualizedViewItem extends Disposable {
 	}
 
 	public hide(): void {
-		const ref = this._templateRef.get();
-		transaction((tx) => {
-			if (ref) {
-				this._lastTemplateData.set(
-					{
-						contentHeight: ref.object.height.get(),
-						maxScroll: { maxScroll: 0, width: 0 }, // Reset max scroll
-					},
-					tx
-				);
-				ref.object.hide();
-			}
-			this._templateRef.set(undefined, tx);
-		});
+		this._isHidden.set(true, undefined);
 	}
 
 	public render(
@@ -385,13 +399,12 @@ class VirtualizedViewItem extends Disposable {
 		width: number,
 		viewPort: OffsetRange
 	): void {
+		this._isHidden.set(false, undefined);
+
 		let ref = this._templateRef.get();
 		if (!ref) {
 			ref = this._objectPool.getUnusedObj(
-				new TemplateData(
-					this.viewModel.diffEditorViewModel,
-					this.viewModel.entry.value!
-				)
+				new TemplateData(this.viewModel)
 			);
 			this._templateRef.set(ref, undefined);
 		}

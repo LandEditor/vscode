@@ -239,7 +239,7 @@ export class CellChatWidget extends Disposable {
 			const innerEditorWidth =
 				this._activeCell.layoutInfo.editorWidth -
 				(getTotalWidth(this._elements.editorToolbar) +
-					8) /* L/R-padding */;
+					8); /* L/R-padding */
 			this._inputEditor.layout(
 				new Dimension(
 					innerEditorWidth,

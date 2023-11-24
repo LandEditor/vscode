@@ -39,7 +39,7 @@ export interface ITerminalQuickFixProviderSelector {
 
 export type TerminalQuickFixActionInternal =
 	| IAction
-	| ITerminalQuickFixExecuteTerminalCommandAction
+	| ITerminalQuickFixTerminalCommandAction
 	| ITerminalQuickFixOpenerAction;
 export type TerminalQuickFixCallback = (
 	matchResult: ITerminalCommandMatchResult
@@ -91,12 +91,12 @@ export interface ITerminalQuickFix {
 	source: string;
 }
 
-export interface ITerminalQuickFixExecuteTerminalCommandAction
+export interface ITerminalQuickFixTerminalCommandAction
 	extends ITerminalQuickFix {
 	type: TerminalQuickFixType.TerminalCommand;
 	terminalCommand: string;
 	// TODO: Should this depend on whether alt is held?
-	addNewLine?: boolean;
+	shouldExecute?: boolean;
 }
 export interface ITerminalQuickFixOpenerAction extends ITerminalQuickFix {
 	type: TerminalQuickFixType.Opener;
