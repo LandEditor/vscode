@@ -1,29 +1,26 @@
 {
   "name": "debug-auto-launch",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "^1.5.0"
   },
-  "publisher": "playform",
-  "type": "module",
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension",
   "scripts": {
     "compile": "gulp compile-extension:debug-auto-launch",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "watch": "gulp watch-extension:debug-auto-launch"
   },
   "contributes": {
@@ -35,21 +32,17 @@
       }
     ]
   },
-  "activationEvents": [
-    "onStartupFinished"
-  ],
   "devDependencies": {
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
+    "@types/node": "18.x"
   },
-  "publishConfig": {
-    "access": "public"
+  "prettier": {
+    "printWidth": 100,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "arrowParens": "avoid"
   },
-  "icon": "media/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

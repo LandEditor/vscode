@@ -1,43 +1,21 @@
 {
   "name": "handlebars",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "0.10.x"
   },
-  "publisher": "playform",
-  "type": "module",
   "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "update-grammar": "node ../node_modules/vscode-grammar-updater/bin daaain/Handlebars grammars/Handlebars.json ./syntaxes/Handlebars.tmLanguage.json"
   },
+  "extensionKind": [
+    "ui",
+    "workspace"
+  ],
   "contributes": {
-    "grammars": [
-      {
-        "language": "handlebars",
-        "scopeName": "text.html.handlebars",
-        "path": "./syntaxes/Handlebars.tmLanguage.json"
-      }
-    ],
-    "htmlLanguageParticipants": [
-      {
-        "languageId": "handlebars",
-        "autoInsert": true
-      }
-    ],
     "languages": [
       {
         "id": "handlebars",
@@ -55,16 +33,23 @@
         ],
         "configuration": "./language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "handlebars",
+        "scopeName": "text.html.handlebars",
+        "path": "./syntaxes/Handlebars.tmLanguage.json"
+      }
+    ],
+    "htmlLanguageParticipants": [
+      {
+        "languageId": "handlebars",
+        "autoInsert": true
+      }
     ]
   },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "extensionKind": [
-    "ui",
-    "workspace"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

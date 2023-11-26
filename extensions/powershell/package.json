@@ -1,37 +1,14 @@
 {
   "name": "powershell",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin PowerShell/EditorSyntax PowerShellSyntax.tmLanguage ./syntaxes/powershell.tmLanguage.json"
+  "engines": {
+    "vscode": "*"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "powershell",
-        "scopeName": "source.powershell",
-        "path": "./syntaxes/powershell.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "powershell",
@@ -51,12 +28,20 @@
         "firstLine": "^#!\\s*/.*\\bpwsh\\b",
         "configuration": "./language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "powershell",
+        "scopeName": "source.powershell",
+        "path": "./syntaxes/powershell.tmLanguage.json"
+      }
     ]
   },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin PowerShell/EditorSyntax PowerShellSyntax.tmLanguage ./syntaxes/powershell.tmLanguage.json"
   },
-  "publishConfig": {
-    "access": "public"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

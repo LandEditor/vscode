@@ -1,51 +1,14 @@
 {
   "name": "php",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-    "update-grammar": "node ./build/update-grammar.mjs"
+  "engines": {
+    "vscode": "0.10.x"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "php",
-        "scopeName": "source.php",
-        "path": "./syntaxes/php.tmLanguage.json"
-      },
-      {
-        "language": "php",
-        "scopeName": "text.html.php",
-        "path": "./syntaxes/html.tmLanguage.json",
-        "embeddedLanguages": {
-          "text.html": "html",
-          "source.php": "php",
-          "source.sql": "sql",
-          "text.xml": "xml",
-          "source.js": "javascript",
-          "source.json": "json",
-          "source.css": "css"
-        }
-      }
-    ],
     "languages": [
       {
         "id": "php",
@@ -67,6 +30,27 @@
         "configuration": "./language-configuration.json"
       }
     ],
+    "grammars": [
+      {
+        "language": "php",
+        "scopeName": "source.php",
+        "path": "./syntaxes/php.tmLanguage.json"
+      },
+      {
+        "language": "php",
+        "scopeName": "text.html.php",
+        "path": "./syntaxes/html.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html": "html",
+          "source.php": "php",
+          "source.sql": "sql",
+          "text.xml": "xml",
+          "source.js": "javascript",
+          "source.json": "json",
+          "source.css": "css"
+        }
+      }
+    ],
     "snippets": [
       {
         "language": "php",
@@ -74,10 +58,11 @@
       }
     ]
   },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "scripts": {
+    "update-grammar": "node ./build/update-grammar.mjs"
   },
-  "publishConfig": {
-    "access": "public"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

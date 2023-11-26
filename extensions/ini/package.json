@@ -1,42 +1,18 @@
 {
   "name": "ini",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "private": true,
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "*"
   },
-  "publisher": "playform",
-  "type": "module",
   "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/ini.tmbundle Syntaxes/Ini.plist ./syntaxes/ini.tmLanguage.json"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "ini",
-        "scopeName": "source.ini",
-        "path": "./syntaxes/ini.tmLanguage.json"
-      },
-      {
-        "language": "properties",
-        "scopeName": "source.ini",
-        "path": "./syntaxes/ini.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "ini",
@@ -75,12 +51,22 @@
         ],
         "configuration": "./properties.language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "ini",
+        "scopeName": "source.ini",
+        "path": "./syntaxes/ini.tmLanguage.json"
+      },
+      {
+        "language": "properties",
+        "scopeName": "source.ini",
+        "path": "./syntaxes/ini.tmLanguage.json"
+      }
     ]
   },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "publishConfig": {
-    "access": "public"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

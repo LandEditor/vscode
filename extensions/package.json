@@ -1,38 +1,17 @@
 {
   "name": "vscode-extensions",
   "version": "0.0.1",
-  "private": "false",
-  "description": "Dependencies shared by all extensions",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "postinstall": "node ./postinstall.mjs",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
+  "description": "Dependencies shared by all extensions",
   "dependencies": {
     "typescript": "5.3.2"
+  },
+  "scripts": {
+    "postinstall": "node ./postinstall.mjs"
   },
   "devDependencies": {
     "@parcel/watcher": "2.1.0",
     "esbuild": "0.17.14",
-    "typescript-esbuild": "0.3.1",
-    "vscode-grammar-updater": "1.1.0"
-  },
-  "publishConfig": {
-    "access": "public"
+    "vscode-grammar-updater": "^1.1.0"
   }
 }

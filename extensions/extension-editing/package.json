@@ -1,31 +1,34 @@
 {
   "name": "extension-editing",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "^1.4.0"
   },
-  "publisher": "playform",
-  "type": "module",
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onLanguage:json",
+    "onLanguage:markdown"
+  ],
   "main": "./out/extensionEditingMain",
   "browser": "./dist/browser/extensionEditingBrowserMain",
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "scripts": {
     "compile": "gulp compile-extension:extension-editing",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "watch": "gulp watch-extension:extension-editing"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.2.0",
+    "markdown-it": "^12.3.2",
+    "parse5": "^3.0.2"
   },
   "contributes": {
     "jsonValidation": [
@@ -62,28 +65,12 @@
       }
     ]
   },
-  "activationEvents": [
-    "onLanguage:json",
-    "onLanguage:markdown"
-  ],
-  "dependencies": {
-    "jsonc-parser": "3.2.0",
-    "markdown-it": "12.3.2",
-    "parse5": "3.0.2"
-  },
   "devDependencies": {
     "@types/markdown-it": "0.0.2",
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
+    "@types/node": "18.x"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "images/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

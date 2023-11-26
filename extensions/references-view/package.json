@@ -1,33 +1,72 @@
 {
   "name": "references-view",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
+  "icon": "media/icon.png",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.67.0"
+  },
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+    "url": "https://github.com/Microsoft/vscode-references-view"
   },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "bugs": {
+    "url": "https://github.com/Microsoft/vscode-references-view/issues"
   },
-  "publisher": "playform",
-  "type": "module",
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onCommand:references-view.find",
+    "onCommand:editor.action.showReferences"
+  ],
   "main": "./out/extension",
   "browser": "./dist/extension.js",
-  "scripts": {
-    "compile": "npx gulp compile-extension:references-view",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-    "watch": "npx gulp watch-extension:references-view"
-  },
   "contributes": {
+    "configuration": {
+      "properties": {
+        "references.preferredLocation": {
+          "description": "%config.references.preferredLocation%",
+          "type": "string",
+          "default": "peek",
+          "enum": [
+            "peek",
+            "view"
+          ],
+          "enumDescriptions": [
+            "%config.references.preferredLocation.peek%",
+            "%config.references.preferredLocation.view%"
+          ]
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "references-view",
+          "icon": "$(references)",
+          "title": "%container.title%"
+        }
+      ]
+    },
+    "views": {
+      "references-view": [
+        {
+          "id": "references-view.tree",
+          "name": "%view.title%",
+          "when": "reference-list.isActive"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "references-view.findReferences",
@@ -137,45 +176,6 @@
         "command": "references-view.removeTypeItem",
         "title": "%cmd.references-view.removeTypeItem%",
         "icon": "$(close)"
-      }
-    ],
-    "configuration": {
-      "properties": {
-        "references.preferredLocation": {
-          "description": "%config.references.preferredLocation%",
-          "type": "string",
-          "default": "peek",
-          "enum": [
-            "peek",
-            "view"
-          ],
-          "enumDescriptions": [
-            "%config.references.preferredLocation.peek%",
-            "%config.references.preferredLocation.view%"
-          ]
-        }
-      }
-    },
-    "keybindings": [
-      {
-        "command": "references-view.findReferences",
-        "when": "editorHasReferenceProvider",
-        "key": "shift+alt+f12"
-      },
-      {
-        "command": "references-view.next",
-        "when": "reference-list.hasResult",
-        "key": "f4"
-      },
-      {
-        "command": "references-view.prev",
-        "when": "reference-list.hasResult",
-        "key": "shift+f4"
-      },
-      {
-        "command": "references-view.showCallHierarchy",
-        "when": "editorHasCallHierarchyProvider",
-        "key": "shift+alt+h"
       }
     ],
     "menus": {
@@ -374,41 +374,34 @@
         }
       ]
     },
-    "views": {
-      "references-view": [
-        {
-          "id": "references-view.tree",
-          "name": "%view.title%",
-          "when": "reference-list.isActive"
-        }
-      ]
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "references-view",
-          "icon": "$(references)",
-          "title": "%container.title%"
-        }
-      ]
-    }
+    "keybindings": [
+      {
+        "command": "references-view.findReferences",
+        "when": "editorHasReferenceProvider",
+        "key": "shift+alt+f12"
+      },
+      {
+        "command": "references-view.next",
+        "when": "reference-list.hasResult",
+        "key": "f4"
+      },
+      {
+        "command": "references-view.prev",
+        "when": "reference-list.hasResult",
+        "key": "shift+f4"
+      },
+      {
+        "command": "references-view.showCallHierarchy",
+        "when": "editorHasCallHierarchyProvider",
+        "key": "shift+alt+h"
+      }
+    ]
   },
-  "activationEvents": [
-    "onCommand:references-view.find",
-    "onCommand:editor.action.showReferences"
-  ],
+  "scripts": {
+    "compile": "npx gulp compile-extension:references-view",
+    "watch": "npx gulp watch-extension:references-view"
+  },
   "devDependencies": {
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "media/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+    "@types/node": "18.x"
   }
 }

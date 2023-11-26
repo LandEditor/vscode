@@ -1,32 +1,32 @@
 {
   "name": "git-base",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "0.10.x"
   },
-  "publisher": "playform",
-  "type": "module",
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
   "main": "./out/extension.js",
   "browser": "./dist/browser/extension.js",
+  "icon": "resources/icons/git.png",
   "scripts": {
     "compile": "gulp compile-extension:git-base",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-    "update-grammar": "node ./build/update-grammars.js",
-    "watch": "gulp watch-extension:git-base"
+    "watch": "gulp watch-extension:git-base",
+    "update-grammar": "node ./build/update-grammars.js"
+  },
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   },
   "contributes": {
     "commands": [
@@ -36,23 +36,14 @@
         "category": "Git Base API"
       }
     ],
-    "grammars": [
-      {
-        "language": "git-commit",
-        "scopeName": "text.git-commit",
-        "path": "./syntaxes/git-commit.tmLanguage.json"
-      },
-      {
-        "language": "git-rebase",
-        "scopeName": "text.git-rebase",
-        "path": "./syntaxes/git-rebase.tmLanguage.json"
-      },
-      {
-        "language": "ignore",
-        "scopeName": "source.ignore",
-        "path": "./syntaxes/ignore.tmLanguage.json"
-      }
-    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "git-base.api.getRemoteSources",
+          "when": "false"
+        }
+      ]
+    },
     "languages": [
       {
         "id": "git-commit",
@@ -94,30 +85,29 @@
         "configuration": "./languages/ignore.language-configuration.json"
       }
     ],
-    "menus": {
-      "commandPalette": [
-        {
-          "command": "git-base.api.getRemoteSources",
-          "when": "false"
-        }
-      ]
-    }
+    "grammars": [
+      {
+        "language": "git-commit",
+        "scopeName": "text.git-commit",
+        "path": "./syntaxes/git-commit.tmLanguage.json"
+      },
+      {
+        "language": "git-rebase",
+        "scopeName": "text.git-rebase",
+        "path": "./syntaxes/git-rebase.tmLanguage.json"
+      },
+      {
+        "language": "ignore",
+        "scopeName": "source.ignore",
+        "path": "./syntaxes/ignore.tmLanguage.json"
+      }
+    ]
   },
-  "activationEvents": [
-    "*"
-  ],
   "devDependencies": {
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
+    "@types/node": "18.x"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "resources/icons/git.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

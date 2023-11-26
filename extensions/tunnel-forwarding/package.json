@@ -1,31 +1,27 @@
 {
   "name": "tunnel-forwarding",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "^1.82.0"
   },
-  "publisher": "playform",
-  "type": "module",
-  "main": "./out/extension",
-  "scripts": {
-    "compile": "gulp compile-extension:tunnel-forwarding",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-    "watch": "gulp watch-extension:tunnel-forwarding"
+  "icon": "media/icon.png",
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
   },
+  "enabledApiProposals": [
+    "resolvers",
+    "tunnelFactory"
+  ],
+  "activationEvents": [
+    "onTunnel"
+  ],
   "contributes": {
     "commands": [
       {
@@ -42,25 +38,22 @@
       }
     ]
   },
-  "activationEvents": [
-    "onTunnel"
-  ],
+  "main": "./out/extension",
+  "scripts": {
+    "compile": "gulp compile-extension:tunnel-forwarding",
+    "watch": "gulp watch-extension:tunnel-forwarding"
+  },
   "devDependencies": {
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
+    "@types/node": "18.x"
   },
-  "publishConfig": {
-    "access": "public"
+  "prettier": {
+    "printWidth": 100,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "arrowParens": "avoid"
   },
-  "icon": "media/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "enabledApiProposals": [
-    "resolvers",
-    "tunnelFactory"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

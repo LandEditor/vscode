@@ -1,42 +1,14 @@
 {
   "name": "xml",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-xml grammars/xml.cson ./syntaxes/xml.tmLanguage.json grammars/xsl.cson ./syntaxes/xsl.tmLanguage.json"
+  "engines": {
+    "vscode": "*"
   },
   "contributes": {
-    "grammars": [
-      {
-        "language": "xml",
-        "scopeName": "text.xml",
-        "path": "./syntaxes/xml.tmLanguage.json"
-      },
-      {
-        "language": "xsl",
-        "scopeName": "text.xml.xsl",
-        "path": "./syntaxes/xsl.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "xml",
@@ -122,12 +94,25 @@
         ],
         "configuration": "./xsl.language-configuration.json"
       }
+    ],
+    "grammars": [
+      {
+        "language": "xml",
+        "scopeName": "text.xml",
+        "path": "./syntaxes/xml.tmLanguage.json"
+      },
+      {
+        "language": "xsl",
+        "scopeName": "text.xml.xsl",
+        "path": "./syntaxes/xsl.tmLanguage.json"
+      }
     ]
   },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
+  "scripts": {
+    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-xml grammars/xml.cson ./syntaxes/xml.tmLanguage.json grammars/xsl.cson ./syntaxes/xsl.tmLanguage.json"
   },
-  "publishConfig": {
-    "access": "public"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }

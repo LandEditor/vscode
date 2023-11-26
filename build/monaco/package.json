@@ -1,33 +1,17 @@
 {
   "name": "monaco-editor-core",
-  "version": "0.0.1",
-  "private": "false",
+  "private": true,
+  "version": "0.0.0",
   "description": "A browser based code editor",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
+  "author": "Microsoft Corporation",
+  "license": "MIT",
+  "typings": "./esm/vs/editor/editor.api.d.ts",
+  "module": "./esm/vs/editor/editor.main.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
+    "url": "https://github.com/microsoft/vscode"
   },
-  "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "module": "./esm/vs/editor/editor.main.js",
-  "typings": "./esm/vs/editor/editor.api.d.ts",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
-  },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "publishConfig": {
-    "access": "public"
+  "bugs": {
+    "url": "https://github.com/microsoft/vscode/issues"
   }
 }

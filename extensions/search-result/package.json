@@ -1,45 +1,41 @@
 {
   "name": "search-result",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.39.0"
   },
-  "publisher": "playform",
-  "type": "module",
+  "categories": [
+    "Programming Languages"
+  ],
   "main": "./out/extension.js",
   "browser": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:search-result"
+  ],
   "scripts": {
     "generate-grammar": "node ./syntaxes/generateTMLanguage.js",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:search-result ./tsconfig.json"
   },
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
+  "enabledApiProposals": [
+    "documentFiltersExclusive"
+  ],
   "contributes": {
     "configurationDefaults": {
       "[search-result]": {
         "editor.lineNumbers": "off"
       }
     },
-    "grammars": [
-      {
-        "language": "search-result",
-        "scopeName": "text.searchResult",
-        "path": "./syntaxes/searchResult.tmLanguage.json"
-      }
-    ],
     "languages": [
       {
         "id": "search-result",
@@ -50,25 +46,17 @@
           "Search Result"
         ]
       }
+    ],
+    "grammars": [
+      {
+        "language": "search-result",
+        "scopeName": "text.searchResult",
+        "path": "./syntaxes/searchResult.tmLanguage.json"
+      }
     ]
   },
-  "activationEvents": [
-    "onLanguage:search-result"
-  ],
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "images/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "enabledApiProposals": [
-    "documentFiltersExclusive"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

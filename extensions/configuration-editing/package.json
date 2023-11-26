@@ -1,33 +1,66 @@
 {
   "name": "configuration-editing",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
+  "engines": {
+    "vscode": "^1.0.0"
   },
-  "publisher": "playform",
-  "type": "module",
+  "icon": "images/icon.png",
+  "activationEvents": [
+    "onProfile",
+    "onProfile:github"
+  ],
+  "enabledApiProposals": [
+    "profileContentHandlers"
+  ],
   "main": "./out/configurationEditingMain",
   "browser": "./dist/browser/configurationEditingMain",
   "scripts": {
     "compile": "gulp compile-extension:configuration-editing",
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
     "watch": "gulp watch-extension:configuration-editing"
   },
+  "dependencies": {
+    "jsonc-parser": "^3.2.0",
+    "@octokit/rest": "19.0.4",
+    "tunnel": "^0.0.6"
+  },
+  "capabilities": {
+    "virtualWorkspaces": true,
+    "untrustedWorkspaces": {
+      "supported": true
+    }
+  },
   "contributes": {
+    "languages": [
+      {
+        "id": "jsonc",
+        "extensions": [
+          ".code-workspace",
+          "language-configuration.json",
+          "icon-theme.json",
+          "color-theme.json"
+        ],
+        "filenames": [
+          "settings.json",
+          "launch.json",
+          "tasks.json",
+          "keybindings.json",
+          "extensions.json",
+          "argv.json",
+          "profiles.json",
+          "devcontainer.json",
+          ".devcontainer.json"
+        ]
+      }, {
+        "id": "json",
+        "extensions": [
+          ".code-profile"
+        ]
+      }
+    ],
     "jsonValidation": [
       {
         "fileMatch": "vscode://defaultsettings/keybindings.json",
@@ -125,60 +158,13 @@
         "fileMatch": "**/quality/*/product.json",
         "url": "vscode://schemas/vscode-product"
       }
-    ],
-    "languages": [
-      {
-        "id": "jsonc",
-        "extensions": [
-          ".code-workspace",
-          "language-configuration.json",
-          "icon-theme.json",
-          "color-theme.json"
-        ],
-        "filenames": [
-          "settings.json",
-          "launch.json",
-          "tasks.json",
-          "keybindings.json",
-          "extensions.json",
-          "argv.json",
-          "profiles.json",
-          "devcontainer.json",
-          ".devcontainer.json"
-        ]
-      },
-      {
-        "id": "json",
-        "extensions": [
-          ".code-profile"
-        ]
-      }
     ]
   },
-  "activationEvents": [
-    "onProfile",
-    "onProfile:github"
-  ],
-  "dependencies": {
-    "@octokit/rest": "19.0.4",
-    "jsonc-parser": "3.2.0",
-    "tunnel": "0.0.6"
-  },
   "devDependencies": {
-    "@types/node": "18.x",
-    "typescript-esbuild": "0.3.1"
+    "@types/node": "18.x"
   },
-  "publishConfig": {
-    "access": "public"
-  },
-  "icon": "images/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": true,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "enabledApiProposals": [
-    "profileContentHandlers"
-  ]
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

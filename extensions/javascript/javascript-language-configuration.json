@@ -2,13 +2,28 @@
 	// Note that this file should stay in sync with 'typescript-language-basics/language-configuration.json'
 	"comments": {
 		"lineComment": "//",
-		"blockComment": ["/*", "*/"]
+		"blockComment": [
+			"/*",
+			"*/"
+		]
 	},
 	"brackets": [
-		["${", "}"],
-		["{", "}"],
-		["[", "]"],
-		["(", ")"]
+		[
+			"${",
+			"}"
+		],
+		[
+			"{",
+			"}"
+		],
+		[
+			"[",
+			"]"
+		],
+		[
+			"(",
+			")"
+		]
 	],
 	"autoClosingPairs": [
 		{
@@ -26,32 +41,63 @@
 		{
 			"open": "'",
 			"close": "'",
-			"notIn": ["string", "comment"]
+			"notIn": [
+				"string",
+				"comment"
+			]
 		},
 		{
 			"open": "\"",
 			"close": "\"",
-			"notIn": ["string"]
+			"notIn": [
+				"string"
+			]
 		},
 		{
 			"open": "`",
 			"close": "`",
-			"notIn": ["string", "comment"]
+			"notIn": [
+				"string",
+				"comment"
+			]
 		},
 		{
 			"open": "/**",
 			"close": " */",
-			"notIn": ["string"]
+			"notIn": [
+				"string"
+			]
 		}
 	],
 	"surroundingPairs": [
-		["{", "}"],
-		["[", "]"],
-		["(", ")"],
-		["'", "'"],
-		["\"", "\""],
-		["`", "`"],
-		["<", ">"]
+		[
+			"{",
+			"}"
+		],
+		[
+			"[",
+			"]"
+		],
+		[
+			"(",
+			")"
+		],
+		[
+			"'",
+			"'"
+		],
+		[
+			"\"",
+			"\""
+		],
+		[
+			"`",
+			"`"
+		],
+		[
+			"<",
+			">"
+		]
 	],
 	"autoCloseBefore": ";:.,=}])>` \n\t",
 	"folding": {
@@ -61,11 +107,11 @@
 		}
 	},
 	"wordPattern": {
-		"pattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\@\\!\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>/\\?\\s]+)"
+		"pattern": "(-?\\d*\\.\\d\\w*)|([^\\`\\~\\@\\!\\%\\^\\&\\*\\(\\)\\-\\=\\+\\[\\{\\]\\}\\\\\\|\\;\\:\\'\\\"\\,\\.\\<\\>/\\?\\s]+)",
 	},
 	"indentationRules": {
 		"decreaseIndentPattern": {
-			"pattern": "^((?!.*?/\\*).*\\*/)?\\s*[\\}\\]].*$"
+			"pattern": "^((?!.*?/\\*).*\\*\/)?\\s*[\\}\\]].*$"
 		},
 		"increaseIndentPattern": {
 			"pattern": "^((?!//).)*(\\{([^}\"'`/]*|(\\t|[ ])*//.*)|\\([^)\"'`/]*|\\[[^\\]\"'`/]*)$"
@@ -120,7 +166,7 @@
 			"action": {
 				"indent": "none",
 				"removeText": 1
-			}
+			},
 		},
 		{
 			// e.g.  *-----*/|
@@ -130,7 +176,7 @@
 			"action": {
 				"indent": "none",
 				"removeText": 1
-			}
+			},
 		},
 		{
 			"beforeText": {

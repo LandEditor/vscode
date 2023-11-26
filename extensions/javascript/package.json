@@ -1,27 +1,12 @@
 {
   "name": "javascript",
   "displayName": "%displayName%",
-  "version": "0.0.1",
-  "private": "false",
   "description": "%description%",
-  "homepage": "https://github.com/CodeEditorLand/CodeEditorLand#readme",
-  "bugs": {
-    "url": "https://github.com/CodeEditorLand/CodeEditorLand/issues"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CodeEditorLand/CodeEditorLand.git"
-  },
+  "version": "1.0.0",
+  "publisher": "vscode",
   "license": "MIT",
-  "author": {
-    "name": "Nikola Hristov",
-    "email": "nikola@nikolahristov.tech",
-    "url": "https://nikolahristov.tech"
-  },
-  "publisher": "playform",
-  "type": "module",
-  "scripts": {
-    "prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+  "engines": {
+    "vscode": "0.10.x"
   },
   "contributes": {
     "configurationDefaults": {
@@ -29,6 +14,48 @@
         "editor.maxTokenizationLineLength": 2500
       }
     },
+    "languages": [
+      {
+        "id": "javascriptreact",
+        "aliases": [
+          "JavaScript JSX",
+          "JavaScript React",
+          "jsx"
+        ],
+        "extensions": [
+          ".jsx"
+        ],
+        "configuration": "./javascript-language-configuration.json"
+      },
+      {
+        "id": "javascript",
+        "aliases": [
+          "JavaScript",
+          "javascript",
+          "js"
+        ],
+        "extensions": [
+          ".js",
+          ".es6",
+          ".mjs",
+          ".cjs",
+          ".pac"
+        ],
+        "filenames": [
+          "jakefile"
+        ],
+        "firstLine": "^#!.*\\bnode",
+        "mimetypes": [
+          "text/javascript"
+        ],
+        "configuration": "./javascript-language-configuration.json"
+      },
+      {
+        "id": "jsx-tags",
+        "aliases": [],
+        "configuration": "./tags-language-configuration.json"
+      }
+    ],
     "grammars": [
       {
         "language": "javascriptreact",
@@ -73,48 +100,6 @@
       {
         "scopeName": "source.js.regexp",
         "path": "./syntaxes/Regular Expressions (JavaScript).tmLanguage"
-      }
-    ],
-    "languages": [
-      {
-        "id": "javascriptreact",
-        "aliases": [
-          "JavaScript JSX",
-          "JavaScript React",
-          "jsx"
-        ],
-        "extensions": [
-          ".jsx"
-        ],
-        "configuration": "./javascript-language-configuration.json"
-      },
-      {
-        "id": "javascript",
-        "aliases": [
-          "JavaScript",
-          "javascript",
-          "js"
-        ],
-        "extensions": [
-          ".js",
-          ".es6",
-          ".mjs",
-          ".cjs",
-          ".pac"
-        ],
-        "filenames": [
-          "jakefile"
-        ],
-        "firstLine": "^#!.*\\bnode",
-        "mimetypes": [
-          "text/javascript"
-        ],
-        "configuration": "./javascript-language-configuration.json"
-      },
-      {
-        "id": "jsx-tags",
-        "aliases": [],
-        "configuration": "./tags-language-configuration.json"
       }
     ],
     "semanticTokenScopes": [
@@ -188,10 +173,8 @@
       }
     ]
   },
-  "devDependencies": {
-    "typescript-esbuild": "0.3.1"
-  },
-  "publishConfig": {
-    "access": "public"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
   }
 }
