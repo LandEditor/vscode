@@ -108,8 +108,8 @@ class AMDModuleImporter {
 		const defineCall = await (this._isWebWorker
 			? this._workerLoadScript(scriptSrc)
 			: this._isRenderer
-			? this._rendererLoadScript(scriptSrc)
-			: this._nodeJSLoadScript(scriptSrc));
+			  ? this._rendererLoadScript(scriptSrc)
+			  : this._nodeJSLoadScript(scriptSrc));
 		if (!defineCall) {
 			throw new Error(
 				`Did not receive a define call from script ${scriptSrc}`

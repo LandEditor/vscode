@@ -3,45 +3,52 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-const path = require('path');
-const WarningsToErrorsPlugin = require('warnings-to-errors-webpack-plugin');
+const path = require("path");
+const WarningsToErrorsPlugin = require("warnings-to-errors-webpack-plugin");
 
 module.exports = {
-	mode: 'production',
+	mode: "production",
 	entry: {
-		'core': './core.js',
-		'editor.worker': '../../out-monaco-editor-core/esm/vs/editor/editor.worker.js',
+		"core": "./core.js",
+		"editor.worker":
+			"../../out-monaco-editor-core/esm/vs/editor/editor.worker.js",
 	},
 	output: {
-		globalObject: 'self',
-		filename: '[name].bundle.js',
-		path: path.resolve(__dirname, './dist')
+		globalObject: "self",
+		filename: "[name].bundle.js",
+		path: path.resolve(__dirname, "./dist"),
 	},
 	module: {
 		rules: [
 			{
 				test: /\.css$/,
-				use: ['style-loader', 'css-loader'],
+				use: ["style-loader", "css-loader"],
 			},
 			{
 				test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
 				use: [
 					{
-						loader: 'file-loader',
+						loader: "file-loader",
 						options: {
-							name: '[name].[ext]',
-							outputPath: 'fonts/'
-						}
-					}
-				]
-			}
-		]
+							name: "[name].[ext]",
+							outputPath: "fonts/",
+						},
+					},
+				],
+			},
+		],
 	},
 	resolve: {
 		alias: {
-			'monaco-editor-core/esm/vs/editor/editor.worker': path.resolve(__dirname, '../../out-monaco-editor-core/esm/vs/editor/editor.worker.js'),
-			'monaco-editor-core': path.resolve(__dirname, '../../out-monaco-editor-core/esm/vs/editor/editor.main.js'),
-		}
+			"monaco-editor-core/esm/vs/editor/editor.worker": path.resolve(
+				__dirname,
+				"../../out-monaco-editor-core/esm/vs/editor/editor.worker.js"
+			),
+			"monaco-editor-core": path.resolve(
+				__dirname,
+				"../../out-monaco-editor-core/esm/vs/editor/editor.main.js"
+			),
+		},
 	},
 	stats: {
 		all: false,
@@ -51,11 +58,9 @@ module.exports = {
 		// our additional options
 		moduleTrace: true,
 		errorDetails: true,
-		chunks: true
+		chunks: true,
 	},
-	plugins: [
-		new WarningsToErrorsPlugin()
-	],
+	plugins: [new WarningsToErrorsPlugin()],
 	optimization: {
 		// Without it, CI fails, which indicates a webpack minification bug.
 		minimize: false,

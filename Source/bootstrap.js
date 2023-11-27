@@ -197,8 +197,8 @@
 			typeof self === "object"
 				? self
 				: typeof global === "object"
-				? global
-				: {};
+				  ? global
+				  : {};
 
 		// @ts-ignore
 		return globals.vscode;

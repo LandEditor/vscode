@@ -8,14 +8,7 @@
 		"outDir": "out",
 		"sourceMap": true,
 		"declaration": true,
-		"lib": [
-			"es2020",
-			"dom"
-		]
+		"lib": ["es2020", "dom"]
 	},
-	"exclude": [
-		"node_modules",
-		"out",
-		"tools"
-	]
+	"exclude": ["node_modules", "out", "tools"]
 }
