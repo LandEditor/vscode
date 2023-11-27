@@ -59,8 +59,8 @@ async function createModel(
 	let pathHints = Array.isArray(pathValue)
 		? pathValue
 		: pathValue
-		? [pathValue]
-		: [];
+		  ? [pathValue]
+		  : [];
 
 	const { isTrusted, workspaceFolders = [] } = workspace;
 	const excludes = isTrusted

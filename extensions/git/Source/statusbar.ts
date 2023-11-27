@@ -301,13 +301,13 @@ class SyncStatusBar {
 			const tooltip = this.state.isCheckoutRunning
 				? l10n.t("Checking Out Changes...")
 				: this.state.isCommitRunning
-				? l10n.t("Committing Changes...")
-				: this.state.remoteSourcePublishers.length === 1
-				? l10n.t(
-						"Publish to {0}",
-						this.state.remoteSourcePublishers[0].name
-				  )
-				: l10n.t("Publish to...");
+				  ? l10n.t("Committing Changes...")
+				  : this.state.remoteSourcePublishers.length === 1
+				    ? l10n.t(
+								"Publish to {0}",
+								this.state.remoteSourcePublishers[0].name
+				      )
+				    : l10n.t("Publish to...");
 
 			return {
 				command,

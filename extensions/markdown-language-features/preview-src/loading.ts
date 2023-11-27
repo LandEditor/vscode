@@ -2,7 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { MessagePoster } from './messaging';
+import { MessagePoster } from "./messaging";
 
 export class StyleLoadingMonitor {
 	private unloadedStyles: string[] = [];
@@ -16,27 +16,33 @@ export class StyleLoadingMonitor {
 			this.unloadedStyles.push(source);
 		};
 
-		window.addEventListener('DOMContentLoaded', () => {
-			for (const link of document.getElementsByClassName('code-user-style') as HTMLCollectionOf<HTMLElement>) {
+		window.addEventListener("DOMContentLoaded", () => {
+			for (const link of document.getElementsByClassName(
+				"code-user-style"
+			) as HTMLCollectionOf<HTMLElement>) {
 				if (link.dataset.source) {
 					link.onerror = onStyleLoadError;
 				}
 			}
 		});
 
-		window.addEventListener('load', () => {
+		window.addEventListener("load", () => {
 			if (!this.unloadedStyles.length) {
 				return;
 			}
 			this.finishedLoading = true;
-			this.poster?.postMessage('previewStyleLoadError', { unloadedStyles: this.unloadedStyles });
+			this.poster?.postMessage("previewStyleLoadError", {
+				unloadedStyles: this.unloadedStyles,
+			});
 		});
 	}
 
 	public setPoster(poster: MessagePoster): void {
 		this.poster = poster;
 		if (this.finishedLoading) {
-			poster.postMessage('previewStyleLoadError', { unloadedStyles: this.unloadedStyles });
+			poster.postMessage("previewStyleLoadError", {
+				unloadedStyles: this.unloadedStyles,
+			});
 		}
 	}
 }

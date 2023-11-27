@@ -388,9 +388,7 @@ function command(commandId: string, options: ScmCommandOptions = {}): Function {
 // 	'image/bmp'
 // ];
 
-async function categorizeResourceByResolution(
-	resources: Resource[]
-): Promise<{
+async function categorizeResourceByResolution(resources: Resource[]): Promise<{
 	merge: Resource[];
 	resolved: Resource[];
 	unresolved: Resource[];
@@ -1011,10 +1009,10 @@ export class CommandCenter {
 					result === open
 						? PostCloneAction.Open
 						: result === openNewWindow
-						? PostCloneAction.OpenNewWindow
-						: result === addToWorkspace
-						? PostCloneAction.AddToWorkspace
-						: undefined;
+						  ? PostCloneAction.OpenNewWindow
+						  : result === addToWorkspace
+						    ? PostCloneAction.AddToWorkspace
+						    : undefined;
 			}
 
 			/* __GDPR__

@@ -33,8 +33,8 @@ export function getPreferredLanguage(metadata?: nbformat.INotebookMetadata) {
 	const defaultLanguage = extensions.getExtension("ms-python.python")
 		? "python"
 		: extensions.getExtension("ms-dotnettools.dotnet-interactive-vscode")
-		? "csharp"
-		: "python";
+		  ? "csharp"
+		  : "python";
 
 	// Note, whatever language is returned here, when the user selects a kernel, the cells (of blank documents) get updated based on that kernel selection.
 	return translateKernelLanguageToMonaco(jupyterLanguage || defaultLanguage);

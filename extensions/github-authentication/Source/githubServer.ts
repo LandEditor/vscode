@@ -162,8 +162,8 @@ export class GitHubServer implements IGitHubServer {
 				this._type === AuthProviderType.github
 					? GitHubTarget.DotCom
 					: supportedTarget
-					? GitHubTarget.HostedEnterprise
-					: GitHubTarget.Enterprise,
+					  ? GitHubTarget.HostedEnterprise
+					  : GitHubTarget.Enterprise,
 			extensionHost:
 				typeof navigator === "undefined"
 					? this._extensionKind === vscode.ExtensionKind.UI
@@ -371,8 +371,8 @@ export class GitHubServer implements IGitHubServer {
 				edu = json.student
 					? "student"
 					: json.faculty
-					? "faculty"
-					: "none";
+					  ? "faculty"
+					  : "none";
 			} else {
 				edu = "unknown";
 			}

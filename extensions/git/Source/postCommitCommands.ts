@@ -57,10 +57,10 @@ export class GitPostCommitCommandsProvider
 		const icon = isCommitInProgress
 			? "$(sync~spin)"
 			: alwaysPrompt
-			? "$(lock)"
-			: alwaysCommitToNewBranch
-			? "$(git-branch)"
-			: undefined;
+			  ? "$(lock)"
+			  : alwaysCommitToNewBranch
+			    ? "$(git-branch)"
+			    : undefined;
 
 		// Tooltip (default)
 		let pushCommandTooltip = !alwaysCommitToNewBranch
@@ -268,16 +268,16 @@ export class CommitCommandsCenter {
 		const icon = alwaysPrompt
 			? "$(lock)"
 			: alwaysCommitToNewBranch
-			? "$(git-branch)"
-			: undefined;
+			  ? "$(git-branch)"
+			  : undefined;
 
 		// Tooltip (default)
 		const branch = this.repository.HEAD?.name;
 		let tooltip = alwaysCommitToNewBranch
 			? l10n.t("Commit Changes to New Branch")
 			: branch
-			? l10n.t('Commit Changes on "{0}"', branch)
-			: l10n.t("Commit Changes");
+			  ? l10n.t('Commit Changes on "{0}"', branch)
+			  : l10n.t("Commit Changes");
 
 		// Tooltip (in progress)
 		if (this.repository.operations.isRunning(OperationKind.Commit)) {

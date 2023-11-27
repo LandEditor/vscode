@@ -84,8 +84,8 @@ export namespace Versions {
 				patch === undefined || patch === null
 					? 0
 					: typeof patch === "string"
-					? parseInt(patch, 10)
-					: patch,
+					  ? parseInt(patch, 10)
+					  : patch,
 			pre: pre,
 		};
 	}

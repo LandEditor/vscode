@@ -207,8 +207,8 @@ export class GitTimelineProvider implements TimelineProvider {
 						limit === undefined
 							? undefined
 							: commits.length >= limit
-							? commits[commits.length - 1]?.hash
-							: undefined,
+							  ? commits[commits.length - 1]?.hash
+							  : undefined,
 			  }
 			: undefined;
 

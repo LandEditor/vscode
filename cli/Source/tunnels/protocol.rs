@@ -240,7 +240,10 @@ pub struct VersionResponse {
 
 impl Default for VersionResponse {
 	fn default() -> Self {
-		Self { version: VSCODE_CLI_VERSION.unwrap_or("dev"), protocol_version: PROTOCOL_VERSION }
+		Self {
+			version: VSCODE_CLI_VERSION.unwrap_or("dev"),
+			protocol_version: PROTOCOL_VERSION,
+		}
 	}
 }
 

@@ -92,8 +92,8 @@ export function handleANSIOutput(
 							styleCodes[0] === 38
 								? "foreground"
 								: styleCodes[0] === 48
-								? "background"
-								: "underline";
+								  ? "background"
+								  : "underline";
 
 						if (styleCodes[1] === 5) {
 							set8BitColor(styleCodes, colorType);

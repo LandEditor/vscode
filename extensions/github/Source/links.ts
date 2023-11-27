@@ -243,15 +243,15 @@ export async function getLink(
 				  }`
 				: ""
 			: useSelection
-			? `${encodedFilePath}${
-					useRange
-						? notebookCellRangeString(
-								fileAndPosition.cellIndex,
-								fileAndPosition.range
-						  )
-						: ""
-			  }`
-			: "";
+			  ? `${encodedFilePath}${
+						useRange
+							? notebookCellRangeString(
+									fileAndPosition.cellIndex,
+									fileAndPosition.range
+							  )
+							: ""
+			    }`
+			  : "";
 
 	return `${uriWithoutFileSegments}${fileSegments}`;
 }
