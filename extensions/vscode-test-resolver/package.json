@@ -10,7 +10,7 @@
   ],
   "private": true,
   "engines": {
-    "vscode": "^1.25.0"
+    "vscode": "1.25.0"
   },
   "icon": "media/icon.png",
   "extensionKind": [
@@ -33,7 +33,7 @@
   "main": "./out/extension",
   "browser": "./dist/browser/testResolverMain",
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "20.x"
   },
   "capabilities": {
     "untrustedWorkspaces": {
