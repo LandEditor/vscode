@@ -20,7 +20,7 @@
 		"watch": "npx gulp watch-extension:json-language-features-server"
 	},
 	"dependencies": {
-		"@vscode/l10n": "0.0.16",
+		"@vscode/l10n": "0.0.17",
 		"jsonc-parser": "3.2.0",
 		"request-light": "0.7.0",
 		"vscode-json-languageservice": "5.3.7",

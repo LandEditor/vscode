@@ -18,7 +18,7 @@
 		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
 	},
 	"dependencies": {
-		"@vscode/l10n": "0.0.16",
+		"@vscode/l10n": "0.0.17",
 		"vscode-languageserver": "9.0.1",
 		"vscode-languageserver-textdocument": "1.0.11",
 		"vscode-languageserver-types": "3.17.5",
