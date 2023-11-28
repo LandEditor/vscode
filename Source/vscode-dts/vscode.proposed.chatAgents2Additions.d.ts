@@ -3,16 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface ChatAgentUserActionEvent {
 		readonly result: ChatAgentResult2;
-		readonly action:
-			| InteractiveSessionCopyAction
-			| InteractiveSessionInsertAction
-			| InteractiveSessionTerminalAction
-			| InteractiveSessionCommandAction
-			| InteractiveSessionFollowupAction
-			| InteractiveSessionBugReportAction;
+		readonly action: InteractiveSessionCopyAction | InteractiveSessionInsertAction | InteractiveSessionTerminalAction | InteractiveSessionCommandAction | InteractiveSessionFollowupAction | InteractiveSessionBugReportAction;
 	}
 
 	export interface ChatAgent2 {
@@ -49,8 +44,7 @@ declare module "vscode" {
 		vulnerabilities?: ChatAgentVulnerability[];
 	}
 
-	export type ChatAgentExtendedProgress =
-		| ChatAgentProgress
+	export type ChatAgentExtendedProgress = ChatAgentProgress
 		| ChatAgentMarkdownContent
 		| ChatAgentDetectedAgent;
 
@@ -58,17 +52,11 @@ declare module "vscode" {
 		/**
 		 * Provide a set of variables that can only be used with this agent.
 		 */
-		agentVariableProvider?: {
-			provider: ChatAgentCompletionItemProvider;
-			triggerCharacters: string[];
-		};
+		agentVariableProvider?: { provider: ChatAgentCompletionItemProvider; triggerCharacters: string[] };
 	}
 
 	export interface ChatAgentCompletionItemProvider {
-		provideCompletionItems(
-			query: string,
-			token: CancellationToken
-		): ProviderResult<ChatAgentCompletionItem[]>;
+		provideCompletionItems(query: string, token: CancellationToken): ProviderResult<ChatAgentCompletionItem[]>;
 	}
 
 	export class ChatAgentCompletionItem {
@@ -78,26 +66,15 @@ declare module "vscode" {
 		detail?: string;
 		documentation?: string | MarkdownString;
 
-		constructor(
-			label: string | CompletionItemLabel,
-			values: ChatVariableValue[]
-		);
+		constructor(label: string | CompletionItemLabel, values: ChatVariableValue[]);
 	}
 
-	export type ChatAgentExtendedHandler = (
-		request: ChatAgentRequest,
-		context: ChatAgentContext,
-		progress: Progress<ChatAgentExtendedProgress>,
-		token: CancellationToken
-	) => ProviderResult<ChatAgentResult2>;
+	export type ChatAgentExtendedHandler = (request: ChatAgentRequest, context: ChatAgentContext, progress: Progress<ChatAgentExtendedProgress>, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
 
 	export namespace chat {
 		/**
 		 * Create a chat agent with the extended progress type
 		 */
-		export function createChatAgent(
-			name: string,
-			handler: ChatAgentExtendedHandler
-		): ChatAgent2;
+		export function createChatAgent(name: string, handler: ChatAgentExtendedHandler): ChatAgent2;
 	}
 }

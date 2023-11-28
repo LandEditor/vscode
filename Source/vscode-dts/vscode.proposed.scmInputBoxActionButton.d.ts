@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
 	// https://github.com/microsoft/vscode/issues/195474
 
 	export interface SourceControlInputBoxActionButton {
@@ -15,4 +15,5 @@ declare module "vscode" {
 	export interface SourceControlInputBox {
 		actionButton?: SourceControlInputBoxActionButton;
 	}
+
 }

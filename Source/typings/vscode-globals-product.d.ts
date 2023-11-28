@@ -6,6 +6,7 @@
 // AMD2ESM mirgation relevant
 
 declare global {
+
 	/**
 	 * @deprecated You MUST use `IProductService` whenever possible.
 	 */
@@ -14,7 +15,8 @@ declare global {
 	 * @deprecated You MUST use `IProductService` whenever possible.
 	 */
 	var _VSCODE_PACKAGE_JSON: Record<string, any>;
+
 }
 
 // fake export to make global work
-export {};
+export { }

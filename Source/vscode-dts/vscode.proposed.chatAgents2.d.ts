@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface ChatAgentContext {
 		/**
 		 * All of the chat messages so far in the current chat session.
@@ -110,6 +111,7 @@ declare module "vscode" {
 	}
 
 	export interface ChatAgentSlashCommandProvider {
+
 		/**
 		 * Returns a list of slash commands that its agent is capable of handling. A slash command
 		 * can be selected by the user and will then be passed to the {@link ChatAgentHandler handler}
@@ -120,9 +122,7 @@ declare module "vscode" {
 		 * @returns A list of slash commands. The lack of a result can be signaled by returning `undefined`, `null`, or
 		 * an empty array.
 		 */
-		provideSlashCommands(
-			token: CancellationToken
-		): ProviderResult<ChatAgentSlashCommand[]>;
+		provideSlashCommands(token: CancellationToken): ProviderResult<ChatAgentSlashCommand[]>;
 	}
 
 	// TODO@API This should become a progress type, and use vscode.Command
@@ -154,9 +154,7 @@ declare module "vscode" {
 		title?: string;
 	}
 
-	export type ChatAgentFollowup =
-		| ChatAgentCommandFollowup
-		| ChatAgentReplyFollowup;
+	export type ChatAgentFollowup = ChatAgentCommandFollowup | ChatAgentReplyFollowup;
 
 	/**
 	 * Will be invoked once after each request to get suggested followup questions to show the user. The user can click the followup to send it to the chat.
@@ -167,13 +165,11 @@ declare module "vscode" {
 		 * @param result The same instance of the result object that was returned by the chat agent, and it can be extended with arbitrary properties if needed.
 		 * @param token A cancellation token.
 		 */
-		provideFollowups(
-			result: ChatAgentResult2,
-			token: CancellationToken
-		): ProviderResult<ChatAgentFollowup[]>;
+		provideFollowups(result: ChatAgentResult2, token: CancellationToken): ProviderResult<ChatAgentFollowup[]>;
 	}
 
 	export interface ChatAgent2 {
+
 		/**
 		 * The short name by which this agent is referred to in the UI, e.g `workspace`.
 		 */
@@ -192,19 +188,16 @@ declare module "vscode" {
 		/**
 		 * Icon for the agent shown in UI.
 		 */
-		iconPath?:
-			| Uri
-			| {
-					/**
-					 * The icon path for the light theme.
-					 */
-					light: Uri;
-					/**
-					 * The icon path for the dark theme.
-					 */
-					dark: Uri;
-			  }
-			| ThemeIcon;
+		iconPath?: Uri | {
+			/**
+			 * The icon path for the light theme.
+			 */
+			light: Uri;
+			/**
+			 * The icon path for the dark theme.
+			 */
+			dark: Uri;
+		} | ThemeIcon;
 
 		/**
 		 * This provider will be called to retrieve the agent's slash commands.
@@ -238,6 +231,7 @@ declare module "vscode" {
 	}
 
 	export interface ChatAgentRequest {
+
 		/**
 		 * The prompt entered by the user. The {@link ChatAgent2.name name} of the agent or the {@link ChatAgentSlashCommand.name slash command}
 		 * are not part of the prompt.
@@ -365,14 +359,10 @@ declare module "vscode" {
 		documents: ChatAgentDocumentContext[];
 	}
 
-	export type ChatAgentHandler = (
-		request: ChatAgentRequest,
-		context: ChatAgentContext,
-		progress: Progress<ChatAgentProgress>,
-		token: CancellationToken
-	) => ProviderResult<ChatAgentResult2>;
+	export type ChatAgentHandler = (request: ChatAgentRequest, context: ChatAgentContext, progress: Progress<ChatAgentProgress>, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
 
 	export namespace chat {
+
 		/**
 		 * Create a new {@link ChatAgent2 chat agent} instance.
 		 *
@@ -380,9 +370,6 @@ declare module "vscode" {
 		 * @param handler The reply-handler of the agent.
 		 * @returns A new chat agent
 		 */
-		export function createChatAgent(
-			name: string,
-			handler: ChatAgentHandler
-		): ChatAgent2;
+		export function createChatAgent(name: string, handler: ChatAgentHandler): ChatAgent2;
 	}
 }
