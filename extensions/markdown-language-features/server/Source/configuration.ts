@@ -3,21 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Connection, Emitter } from "vscode-languageserver";
-import { Disposable } from "./util/dispose";
+import { Connection, Emitter } from 'vscode-languageserver';
+import { Disposable } from './util/dispose';
 
-export type ValidateEnabled = "ignore" | "warning" | "error" | "hint";
+export type ValidateEnabled = 'ignore' | 'warning' | 'error' | 'hint';
 
 export interface Settings {
 	readonly markdown: {
 		readonly server: {
-			readonly log: "off" | "debug" | "trace";
+			readonly log: 'off' | 'debug' | 'trace';
 		};
 
-		readonly preferredMdPathExtensionStyle:
-			| "auto"
-			| "includeExtension"
-			| "removeExtension";
+		readonly preferredMdPathExtensionStyle: 'auto' | 'includeExtension' | 'removeExtension';
 
 		readonly occurrencesHighlight: {
 			readonly enabled: boolean;
@@ -26,10 +23,7 @@ export interface Settings {
 		readonly suggest: {
 			readonly paths: {
 				readonly enabled: boolean;
-				readonly includeWorkspaceHeaderCompletions:
-					| "never"
-					| "onSingleOrDoubleHash"
-					| "onDoubleHash";
+				readonly includeWorkspaceHeaderCompletions: 'never' | 'onSingleOrDoubleHash' | 'onDoubleHash';
 			};
 		};
 
@@ -43,7 +37,7 @@ export interface Settings {
 			};
 			readonly fileLinks: {
 				readonly enabled: ValidateEnabled;
-				readonly markdownFragmentLinks: ValidateEnabled | "inherit";
+				readonly markdownFragmentLinks: ValidateEnabled | 'inherit';
 			};
 			readonly ignoredLinks: readonly string[];
 			readonly unusedLinkDefinitions: {
@@ -56,12 +50,11 @@ export interface Settings {
 	};
 }
 
+
 export class ConfigurationManager extends Disposable {
-	private readonly _onDidChangeConfiguration = this._register(
-		new Emitter<Settings>()
-	);
-	public readonly onDidChangeConfiguration =
-		this._onDidChangeConfiguration.event;
+
+	private readonly _onDidChangeConfiguration = this._register(new Emitter<Settings>());
+	public readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
 
 	private _settings?: Settings;
 
@@ -69,12 +62,10 @@ export class ConfigurationManager extends Disposable {
 		super();
 
 		// The settings have changed. Is send on server activation as well.
-		this._register(
-			connection.onDidChangeConfiguration((change) => {
-				this._settings = change.settings;
-				this._onDidChangeConfiguration.fire(this._settings!);
-			})
-		);
+		this._register(connection.onDidChangeConfiguration((change) => {
+			this._settings = change.settings;
+			this._onDidChangeConfiguration.fire(this._settings!);
+		}));
 	}
 
 	public getSettings(): Settings | undefined {

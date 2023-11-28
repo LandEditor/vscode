@@ -3,15 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IExtensionHostDebugService } from "vs/platform/debug/common/extensionHostDebug";
-import { registerMainProcessRemoteService } from "vs/platform/ipc/electron-sandbox/services";
-import {
-	ExtensionHostDebugChannelClient,
-	ExtensionHostDebugBroadcastChannel,
-} from "vs/platform/debug/common/extensionHostDebugIpc";
+import { IExtensionHostDebugService } from 'vs/platform/debug/common/extensionHostDebug';
+import { registerMainProcessRemoteService } from 'vs/platform/ipc/electron-sandbox/services';
+import { ExtensionHostDebugChannelClient, ExtensionHostDebugBroadcastChannel } from 'vs/platform/debug/common/extensionHostDebugIpc';
 
-registerMainProcessRemoteService(
-	IExtensionHostDebugService,
-	ExtensionHostDebugBroadcastChannel.ChannelName,
-	{ channelClientCtor: ExtensionHostDebugChannelClient }
-);
+registerMainProcessRemoteService(IExtensionHostDebugService, ExtensionHostDebugBroadcastChannel.ChannelName, { channelClientCtor: ExtensionHostDebugChannelClient });

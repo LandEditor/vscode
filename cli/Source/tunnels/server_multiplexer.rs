@@ -29,12 +29,18 @@ pub struct ServerMultiplexer {
 
 impl ServerMultiplexer {
 	pub fn new() -> Self {
-		Self { inner: Arc::new(std::sync::Mutex::new(Some(Vec::new()))) }
+		Self {
+			inner: Arc::new(std::sync::Mutex::new(Some(Vec::new()))),
+		}
 	}
 
 	/// Adds a new bridge to the multiplexer.
 	pub fn register(&self, id: u16, bridge: ServerBridge) {
-		let bridge_rec = ServerBridgeRec { id, bridge: Some(bridge), write_queue: vec![] };
+		let bridge_rec = ServerBridgeRec {
+			id,
+			bridge: Some(bridge),
+			write_queue: vec![],
+		};
 
 		let mut lock = self.inner.lock().unwrap();
 		match &mut *lock {
@@ -89,7 +95,13 @@ impl ServerMultiplexer {
 			None => return,
 		};
 
-		join_all(bridges.into_iter().filter_map(|b| b.bridge).map(|b| b.close())).await;
+		join_all(
+			bridges
+				.into_iter()
+				.filter_map(|b| b.bridge)
+				.map(|b| b.close()),
+		)
+		.await;
 	}
 }
 

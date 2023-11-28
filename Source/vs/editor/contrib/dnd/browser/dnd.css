@@ -9,7 +9,7 @@
 	color: white; /* opposite of black */
 }
 .monaco-editor.vs-dark .dnd-target {
-	border-right: 2px dotted #aeafad;
+	border-right: 2px dotted #AEAFAD;
 	color: #51504f; /* opposite of #AEAFAD */
 }
 .monaco-editor.hc-black .dnd-target {

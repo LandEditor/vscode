@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $window } from "vs/base/browser/window";
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable, markAsSingleton } from "vs/base/common/lifecycle";
+import { $window } from 'vs/base/browser/window';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, markAsSingleton } from 'vs/base/common/lifecycle';
 
 class WindowManager {
+
 	public static readonly INSTANCE = new WindowManager();
 
 	// --- Zoom Level
@@ -37,8 +38,7 @@ class WindowManager {
 	private _fullscreen: boolean = false;
 	private readonly _onDidChangeFullscreen = new Emitter<void>();
 
-	public readonly onDidChangeFullscreen: Event<void> =
-		this._onDidChangeFullscreen.event;
+	public readonly onDidChangeFullscreen: Event<void> = this._onDidChangeFullscreen.event;
 	public setFullscreen(fullscreen: boolean): void {
 		if (this._fullscreen === fullscreen) {
 			return;
@@ -56,6 +56,7 @@ class WindowManager {
  * See https://developer.mozilla.org/en-US/docs/Web/API/Window/devicePixelRatio#monitoring_screen_resolution_or_zoom_level_changes
  */
 class DevicePixelRatioMonitor extends Disposable {
+
 	private readonly _onDidChange = this._register(new Emitter<void>());
 	public readonly onDidChange = this._onDidChange.event;
 
@@ -71,12 +72,10 @@ class DevicePixelRatioMonitor extends Disposable {
 	}
 
 	private _handleChange(fireEvent: boolean): void {
-		this._mediaQueryList?.removeEventListener("change", this._listener);
+		this._mediaQueryList?.removeEventListener('change', this._listener);
 
-		this._mediaQueryList = $window.matchMedia(
-			`(resolution: ${$window.devicePixelRatio}dppx)`
-		);
-		this._mediaQueryList.addEventListener("change", this._listener);
+		this._mediaQueryList = $window.matchMedia(`(resolution: ${$window.devicePixelRatio}dppx)`);
+		this._mediaQueryList.addEventListener('change', this._listener);
 
 		if (fireEvent) {
 			this._onDidChange.fire();
@@ -85,6 +84,7 @@ class DevicePixelRatioMonitor extends Disposable {
 }
 
 class PixelRatioImpl extends Disposable {
+
 	private readonly _onDidChange = this._register(new Emitter<number>());
 	public readonly onDidChange = this._onDidChange.event;
 
@@ -100,29 +100,26 @@ class PixelRatioImpl extends Disposable {
 		this._value = this._getPixelRatio();
 
 		const dprMonitor = this._register(new DevicePixelRatioMonitor());
-		this._register(
-			dprMonitor.onDidChange(() => {
-				this._value = this._getPixelRatio();
-				this._onDidChange.fire(this._value);
-			})
-		);
+		this._register(dprMonitor.onDidChange(() => {
+			this._value = this._getPixelRatio();
+			this._onDidChange.fire(this._value);
+		}));
 	}
 
 	private _getPixelRatio(): number {
-		const ctx: any = document.createElement("canvas").getContext("2d");
+		const ctx: any = document.createElement('canvas').getContext('2d');
 		const dpr = $window.devicePixelRatio || 1;
-		const bsr =
-			ctx.webkitBackingStorePixelRatio ||
+		const bsr = ctx.webkitBackingStorePixelRatio ||
 			ctx.mozBackingStorePixelRatio ||
 			ctx.msBackingStorePixelRatio ||
 			ctx.oBackingStorePixelRatio ||
-			ctx.backingStorePixelRatio ||
-			1;
+			ctx.backingStorePixelRatio || 1;
 		return dpr / bsr;
 	}
 }
 
 class PixelRatioFacade {
+
 	private _pixelRatioMonitor: PixelRatioImpl | null = null;
 	private _getOrCreatePixelRatioMonitor(): PixelRatioImpl {
 		if (!this._pixelRatioMonitor) {
@@ -146,14 +143,11 @@ class PixelRatioFacade {
 	}
 }
 
-export function addMatchMediaChangeListener(
-	query: string | MediaQueryList,
-	callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any
-): void {
-	if (typeof query === "string") {
+export function addMatchMediaChangeListener(query: string | MediaQueryList, callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any): void {
+	if (typeof query === 'string') {
 		query = $window.matchMedia(query);
 	}
-	query.addEventListener("change", callback);
+	query.addEventListener('change', callback);
 }
 
 /**
@@ -187,27 +181,22 @@ export function setFullscreen(fullscreen: boolean): void {
 export function isFullscreen(): boolean {
 	return WindowManager.INSTANCE.isFullscreen();
 }
-export const onDidChangeFullscreen =
-	WindowManager.INSTANCE.onDidChangeFullscreen;
+export const onDidChangeFullscreen = WindowManager.INSTANCE.onDidChangeFullscreen;
 
 const userAgent = navigator.userAgent;
 
-export const isFirefox = userAgent.indexOf("Firefox") >= 0;
-export const isWebKit = userAgent.indexOf("AppleWebKit") >= 0;
-export const isChrome = userAgent.indexOf("Chrome") >= 0;
-export const isSafari = !isChrome && userAgent.indexOf("Safari") >= 0;
-export const isWebkitWebView = !isChrome && !isSafari && isWebKit;
-export const isElectron = userAgent.indexOf("Electron/") >= 0;
-export const isAndroid = userAgent.indexOf("Android") >= 0;
+export const isFirefox = (userAgent.indexOf('Firefox') >= 0);
+export const isWebKit = (userAgent.indexOf('AppleWebKit') >= 0);
+export const isChrome = (userAgent.indexOf('Chrome') >= 0);
+export const isSafari = (!isChrome && (userAgent.indexOf('Safari') >= 0));
+export const isWebkitWebView = (!isChrome && !isSafari && isWebKit);
+export const isElectron = (userAgent.indexOf('Electron/') >= 0);
+export const isAndroid = (userAgent.indexOf('Android') >= 0);
 
 let standalone = false;
 if ($window.matchMedia) {
-	const standaloneMatchMedia = $window.matchMedia(
-		"(display-mode: standalone) or (display-mode: window-controls-overlay)"
-	);
-	const fullScreenMatchMedia = $window.matchMedia(
-		"(display-mode: fullscreen)"
-	);
+	const standaloneMatchMedia = $window.matchMedia('(display-mode: standalone) or (display-mode: window-controls-overlay)');
+	const fullScreenMatchMedia = $window.matchMedia('(display-mode: fullscreen)');
 	standalone = standaloneMatchMedia.matches;
 	addMatchMediaChangeListener(standaloneMatchMedia, ({ matches }) => {
 		// entering fullscreen would change standaloneMatchMedia.matches to false

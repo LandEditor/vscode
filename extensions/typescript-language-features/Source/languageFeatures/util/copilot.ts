@@ -3,30 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { Command } from "../../commands/commandManager";
-import { nulToken } from "../../utils/cancellation";
-import type * as Proto from "../../tsServer/protocol/protocol";
-import * as typeConverters from "../../typeConverters";
-import { ITypeScriptServiceClient } from "../../typescriptService";
-import { TelemetryReporter } from "../../logging/telemetry";
+import * as vscode from 'vscode';
+import { Command } from '../../commands/commandManager';
+import { nulToken } from '../../utils/cancellation';
+import type * as Proto from '../../tsServer/protocol/protocol';
+import * as typeConverters from '../../typeConverters';
+import { ITypeScriptServiceClient } from '../../typescriptService';
+import { TelemetryReporter } from '../../logging/telemetry';
 
 export class EditorChatFollowUp implements Command {
-	public static readonly ID = "_typescript.quickFix.editorChatReplacement2";
+	public static readonly ID = '_typescript.quickFix.editorChatReplacement2';
 	public readonly id = EditorChatFollowUp.ID;
 
 	constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly telemetryReporter: TelemetryReporter
-	) {}
+		private readonly telemetryReporter: TelemetryReporter,
+	) { }
 
-	async execute({
-		message,
-		document,
-		expand,
-		action,
-	}: EditorChatFollowUp_Args) {
-		if (action.type === "quickfix") {
+	async execute({ message, document, expand, action }: EditorChatFollowUp_Args) {
+		if (action.type === 'quickfix') {
 			/* __GDPR__
 				"aiQuickfix.execute" : {
 					"owner": "mjbvz",
@@ -36,7 +31,7 @@ export class EditorChatFollowUp implements Command {
 					]
 				}
 			*/
-			this.telemetryReporter.logTelemetry("aiQuickfix.execute", {
+			this.telemetryReporter.logTelemetry('aiQuickfix.execute', {
 				action: action.quickfix.fixName,
 			});
 		} else {
@@ -49,32 +44,32 @@ export class EditorChatFollowUp implements Command {
 					]
 				}
 			*/
-			this.telemetryReporter.logTelemetry("aiRefactor.execute", {
+			this.telemetryReporter.logTelemetry('aiRefactor.execute', {
 				action: action.refactor.name,
 			});
 		}
 
 		const initialRange =
-			expand.kind === "navtree-function"
+			expand.kind === 'navtree-function'
 				? await findScopeEndLineFromNavTree(
-						this.client,
-						document,
-						expand.pos.line
-				  )
-				: expand.kind === "refactor-info"
-				? await findEditScope(
+					this.client,
+					document,
+					expand.pos.line
+				)
+				: expand.kind === 'refactor-info'
+					? await findEditScope(
 						this.client,
 						document,
 						expand.refactor.edits.flatMap((e) => e.textChanges)
-				  )
-				: expand.kind === "code-action"
-				? await findEditScope(
-						this.client,
-						document,
-						expand.action.changes.flatMap((c) => c.textChanges)
-				  )
-				: expand.range;
-		await vscode.commands.executeCommand("vscode.editorChat.start", {
+					)
+					: expand.kind === 'code-action'
+						? await findEditScope(
+							this.client,
+							document,
+							expand.action.changes.flatMap((c) => c.textChanges)
+						)
+						: expand.range;
+		await vscode.commands.executeCommand('vscode.editorChat.start', {
 			initialRange,
 			message,
 			autoSend: true,
@@ -85,19 +80,17 @@ export interface EditorChatFollowUp_Args {
 	readonly message: string;
 	readonly document: vscode.TextDocument;
 	readonly expand: Expand;
-	readonly action:
-		| {
-				readonly type: "refactor";
-				readonly refactor: Proto.RefactorActionInfo;
-		  }
-		| {
-				readonly type: "quickfix";
-				readonly quickfix: Proto.CodeFixAction;
-		  };
+	readonly action: {
+		readonly type: 'refactor';
+		readonly refactor: Proto.RefactorActionInfo;
+	} | {
+		readonly type: 'quickfix';
+		readonly quickfix: Proto.CodeFixAction;
+	};
 }
 
 export class CompositeCommand implements Command {
-	public static readonly ID = "_typescript.compositeCommand";
+	public static readonly ID = '_typescript.compositeCommand';
 	public readonly id = CompositeCommand.ID;
 
 	public async execute(...commands: vscode.Command[]): Promise<void> {
@@ -111,10 +104,10 @@ export class CompositeCommand implements Command {
 }
 
 export type Expand =
-	| { kind: "none"; readonly range: vscode.Range }
-	| { kind: "navtree-function"; readonly pos: vscode.Position }
-	| { kind: "refactor-info"; readonly refactor: Proto.RefactorEditInfo }
-	| { kind: "code-action"; readonly action: Proto.CodeAction };
+	| { kind: 'none'; readonly range: vscode.Range }
+	| { kind: 'navtree-function'; readonly pos: vscode.Position }
+	| { kind: 'refactor-info'; readonly refactor: Proto.RefactorEditInfo }
+	| { kind: 'code-action'; readonly action: Proto.CodeAction };
 
 function findScopeEndLineFromNavTreeWorker(
 	startLine: number,
@@ -129,10 +122,7 @@ function findScopeEndLineFromNavTreeWorker(
 			startLine <= range.end.line &&
 			node.childItems
 		) {
-			return findScopeEndLineFromNavTreeWorker(
-				startLine,
-				node.childItems
-			);
+			return findScopeEndLineFromNavTreeWorker(startLine, node.childItems);
 		}
 	}
 	return undefined;
@@ -148,17 +138,14 @@ async function findScopeEndLineFromNavTree(
 		return;
 	}
 	const response = await client.execute(
-		"navtree",
+		'navtree',
 		{ file: filepath },
 		nulToken
 	);
-	if (response.type !== "response" || !response.body?.childItems) {
+	if (response.type !== 'response' || !response.body?.childItems) {
 		return;
 	}
-	return findScopeEndLineFromNavTreeWorker(
-		startLine,
-		response.body.childItems
-	);
+	return findScopeEndLineFromNavTreeWorker(startLine, response.body.childItems);
 }
 
 async function findEditScope(

@@ -3,21 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from "vs/base/common/network";
-import { URI } from "vs/base/common/uri";
-import { generateUuid } from "vs/base/common/uuid";
-import {
-	EditorInputCapabilities,
-	GroupIdentifier,
-	IUntypedEditorInput,
-	Verbosity,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IOverlayWebview } from "vs/workbench/contrib/webview/browser/webview";
-import {
-	WebviewIconManager,
-	WebviewIcons,
-} from "vs/workbench/contrib/webviewPanel/browser/webviewIconManager";
+import { Schemas } from 'vs/base/common/network';
+import { URI } from 'vs/base/common/uri';
+import { generateUuid } from 'vs/base/common/uuid';
+import { EditorInputCapabilities, GroupIdentifier, IUntypedEditorInput, Verbosity } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IOverlayWebview } from 'vs/workbench/contrib/webview/browser/webview';
+import { WebviewIconManager, WebviewIcons } from 'vs/workbench/contrib/webviewPanel/browser/webviewIconManager';
 
 export interface WebviewInputInitInfo {
 	readonly viewType: string;
@@ -26,7 +18,8 @@ export interface WebviewInputInitInfo {
 }
 
 export class WebviewInput extends EditorInput {
-	public static typeId = "workbench.editors.webviewInput";
+
+	public static typeId = 'workbench.editors.webviewInput';
 
 	public override get typeId(): string {
 		return WebviewInput.typeId;
@@ -37,12 +30,7 @@ export class WebviewInput extends EditorInput {
 	}
 
 	public override get capabilities(): EditorInputCapabilities {
-		return (
-			EditorInputCapabilities.Readonly |
-			EditorInputCapabilities.Singleton |
-			EditorInputCapabilities.CanDropIntoEditor |
-			EditorInputCapabilities.AuxWindowUnsupported
-		);
+		return EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton | EditorInputCapabilities.CanDropIntoEditor | EditorInputCapabilities.AuxWindowUnsupported;
 	}
 
 	private readonly _resourceId = generateUuid();
@@ -58,7 +46,7 @@ export class WebviewInput extends EditorInput {
 	get resource() {
 		return URI.from({
 			scheme: Schemas.webviewPanel,
-			path: `webview-panel/webview-${this._resourceId}`,
+			path: `webview-panel/webview-${this._resourceId}`
 		});
 	}
 
@@ -68,7 +56,7 @@ export class WebviewInput extends EditorInput {
 	constructor(
 		init: WebviewInputInitInfo,
 		webview: IOverlayWebview,
-		private readonly _iconManager: WebviewIconManager
+		private readonly _iconManager: WebviewIconManager,
 	) {
 		super();
 

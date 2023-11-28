@@ -3,53 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { h } from "vs/base/browser/dom";
-import { IView, IViewSize } from "vs/base/browser/ui/grid/grid";
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import {
-	IObservable,
-	autorun,
-	derived,
-	observableFromEvent,
-} from "vs/base/common/observable";
-import {
-	EditorExtensionsRegistry,
-	IEditorContributionDescription,
-} from "vs/editor/browser/editorExtensions";
-import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
-import { IEditorOptions } from "vs/editor/common/config/editorOptions";
-import { Range } from "vs/editor/common/core/range";
-import { Selection } from "vs/editor/common/core/selection";
-import { CodeLensContribution } from "vs/editor/contrib/codelens/browser/codelensController";
-import { FoldingController } from "vs/editor/contrib/folding/browser/folding";
-import { MenuWorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
-import { MenuId } from "vs/platform/actions/common/actions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	DEFAULT_EDITOR_MAX_DIMENSIONS,
-	DEFAULT_EDITOR_MIN_DIMENSIONS,
-} from "vs/workbench/browser/parts/editor/editor";
-import {
-	observableConfigValue,
-	setStyle,
-} from "vs/workbench/contrib/mergeEditor/browser/utils";
-import { MergeEditorViewModel } from "vs/workbench/contrib/mergeEditor/browser/view/viewModel";
+import { h } from 'vs/base/browser/dom';
+import { IView, IViewSize } from 'vs/base/browser/ui/grid/grid';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { IObservable, autorun, derived, observableFromEvent } from 'vs/base/common/observable';
+import { EditorExtensionsRegistry, IEditorContributionDescription } from 'vs/editor/browser/editorExtensions';
+import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';
+import { IEditorOptions } from 'vs/editor/common/config/editorOptions';
+import { Range } from 'vs/editor/common/core/range';
+import { Selection } from 'vs/editor/common/core/selection';
+import { CodeLensContribution } from 'vs/editor/contrib/codelens/browser/codelensController';
+import { FoldingController } from 'vs/editor/contrib/folding/browser/folding';
+import { MenuWorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
+import { MenuId } from 'vs/platform/actions/common/actions';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs/workbench/browser/parts/editor/editor';
+import { observableConfigValue, setStyle } from 'vs/workbench/contrib/mergeEditor/browser/utils';
+import { MergeEditorViewModel } from 'vs/workbench/contrib/mergeEditor/browser/view/viewModel';
 
 export abstract class CodeEditorView extends Disposable {
-	readonly model = this.viewModel.map(
-		(m) => /** @description model */ m?.model
-	);
+	readonly model = this.viewModel.map(m => /** @description model */ m?.model);
 
-	protected readonly htmlElements = h("div.code-view", [
-		h("div.header@header", [
-			h("span.title@title"),
-			h("span.description@description"),
-			h("span.detail@detail"),
-			h("span.toolbar@toolbar"),
+	protected readonly htmlElements = h('div.code-view', [
+		h('div.header@header', [
+			h('span.title@title'),
+			h('span.description@description'),
+			h('span.detail@detail'),
+			h('span.toolbar@toolbar'),
 		]),
-		h("div.container", [h("div.gutter@gutterDiv"), h("div@editor")]),
+		h('div.container', [
+			h('div.gutter@gutterDiv'),
+			h('div@editor'),
+		]),
 	]);
 
 	private readonly _onDidViewChange = new Emitter<IViewSize | undefined>();
@@ -67,29 +54,16 @@ export abstract class CodeEditorView extends Disposable {
 				width: width - this.htmlElements.gutterDiv.clientWidth,
 				height: height - this.htmlElements.header.clientHeight,
 			});
-		},
+		}
 		// preferredWidth?: number | undefined;
 		// preferredHeight?: number | undefined;
 		// priority?: LayoutPriority | undefined;
 		// snap?: boolean | undefined;
 	};
 
-	protected readonly checkboxesVisible = observableConfigValue<boolean>(
-		"mergeEditor.showCheckboxes",
-		false,
-		this.configurationService
-	);
-	protected readonly showDeletionMarkers = observableConfigValue<boolean>(
-		"mergeEditor.showDeletionMarkers",
-		true,
-		this.configurationService
-	);
-	protected readonly useSimplifiedDecorations =
-		observableConfigValue<boolean>(
-			"mergeEditor.useSimplifiedDecorations",
-			false,
-			this.configurationService
-		);
+	protected readonly checkboxesVisible = observableConfigValue<boolean>('mergeEditor.showCheckboxes', false, this.configurationService);
+	protected readonly showDeletionMarkers = observableConfigValue<boolean>('mergeEditor.showDeletionMarkers', true, this.configurationService);
+	protected readonly useSimplifiedDecorations = observableConfigValue<boolean>('mergeEditor.useSimplifiedDecorations', false, this.configurationService);
 
 	public readonly editor = this.instantiationService.createInstance(
 		CodeEditorWidget,
@@ -105,12 +79,8 @@ export abstract class CodeEditorView extends Disposable {
 	}
 
 	public readonly isFocused = observableFromEvent(
-		Event.any(
-			this.editor.onDidBlurEditorWidget,
-			this.editor.onDidFocusEditorWidget
-		),
-		() =>
-			/** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus()
+		Event.any(this.editor.onDidBlurEditorWidget, this.editor.onDidFocusEditorWidget),
+		() => /** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus()
 	);
 
 	public readonly cursorPosition = observableFromEvent(
@@ -120,30 +90,22 @@ export abstract class CodeEditorView extends Disposable {
 
 	public readonly selection = observableFromEvent(
 		this.editor.onDidChangeCursorSelection,
-		() =>
-			/** @description editor.getSelections */ this.editor.getSelections()
+		() => /** @description editor.getSelections */ this.editor.getSelections()
 	);
 
-	public readonly cursorLineNumber = this.cursorPosition.map(
-		(p) => /** @description cursorPosition.lineNumber */ p?.lineNumber
-	);
+	public readonly cursorLineNumber = this.cursorPosition.map(p => /** @description cursorPosition.lineNumber */ p?.lineNumber);
 
 	constructor(
 		private readonly instantiationService: IInstantiationService,
-		public readonly viewModel: IObservable<
-			undefined | MergeEditorViewModel
-		>,
-		private readonly configurationService: IConfigurationService
+		public readonly viewModel: IObservable<undefined | MergeEditorViewModel>,
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
+
 	}
 
 	protected getEditorContributions(): IEditorContributionDescription[] {
-		return EditorExtensionsRegistry.getEditorContributions().filter(
-			(c) =>
-				c.id !== FoldingController.ID &&
-				c.id !== CodeLensContribution.ID
-		);
+		return EditorExtensionsRegistry.getEditorContributions().filter(c => c.id !== FoldingController.ID && c.id !== CodeLensContribution.ID);
 	}
 }
 
@@ -151,7 +113,7 @@ export function createSelectionsAutorun(
 	codeEditorView: CodeEditorView,
 	translateRange: (baseRange: Range, viewModel: MergeEditorViewModel) => Range
 ): IDisposable {
-	const selections = derived((reader) => {
+	const selections = derived(reader => {
 		/** @description selections */
 		const viewModel = codeEditorView.viewModel.read(reader);
 		if (!viewModel) {
@@ -161,26 +123,16 @@ export function createSelectionsAutorun(
 		if (!baseRange || baseRange.sourceEditor === codeEditorView) {
 			return [];
 		}
-		return baseRange.rangesInBase.map((r) => translateRange(r, viewModel));
+		return baseRange.rangesInBase.map(r => translateRange(r, viewModel));
 	});
 
-	return autorun((reader) => {
+	return autorun(reader => {
 		/** @description set selections */
 		const ranges = selections.read(reader);
 		if (ranges.length === 0) {
 			return;
 		}
-		codeEditorView.editor.setSelections(
-			ranges.map(
-				(r) =>
-					new Selection(
-						r.startLineNumber,
-						r.startColumn,
-						r.endLineNumber,
-						r.endColumn
-					)
-			)
-		);
+		codeEditorView.editor.setSelections(ranges.map(r => new Selection(r.startLineNumber, r.startColumn, r.endLineNumber, r.endColumn)));
 	});
 }
 
@@ -188,19 +140,14 @@ export class TitleMenu extends Disposable {
 	constructor(
 		menuId: MenuId,
 		targetHtmlElement: HTMLElement,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
 
-		const toolbar = instantiationService.createInstance(
-			MenuWorkbenchToolBar,
-			targetHtmlElement,
-			menuId,
-			{
-				menuOptions: { renderShortTitle: true },
-				toolbarOptions: { primaryGroup: () => false },
-			}
-		);
+		const toolbar = instantiationService.createInstance(MenuWorkbenchToolBar, targetHtmlElement, menuId, {
+			menuOptions: { renderShortTitle: true },
+			toolbarOptions: { primaryGroup: () => false }
+		});
 		this._store.add(toolbar);
 	}
 }

@@ -61,9 +61,7 @@
 	width: 100%;
 }
 
-.action-widget
-	.monaco-list
-	.monaco-list-row.action.focused:not(.option-disabled) {
+.action-widget .monaco-list .monaco-list-row.action.focused:not(.option-disabled) {
 	background-color: var(--vscode-quickInputList-focusBackground) !important;
 	color: var(--vscode-quickInputList-focusForeground);
 	outline: 1px solid var(--vscode-menu-selectionBorder, transparent);
@@ -95,15 +93,12 @@
 }
 
 .action-widget .monaco-list-row.action.option-disabled,
-.action-widget
-	.monaco-list:focus
-	.monaco-list-row.focused.action.option-disabled,
+.action-widget .monaco-list:focus .monaco-list-row.focused.action.option-disabled,
 .action-widget .monaco-list-row.action.option-disabled .codicon,
-.action-widget
-	.monaco-list:not(.drop-target):not(.dragging)
-	.monaco-list-row:hover:not(.selected):not(.focused).option-disabled {
+.action-widget .monaco-list:not(.drop-target):not(.dragging) .monaco-list-row:hover:not(.selected):not(.focused).option-disabled {
 	color: var(--vscode-disabledForeground);
 }
+
 
 .action-widget .monaco-list-row.action:not(.option-disabled) .codicon {
 	color: inherit;

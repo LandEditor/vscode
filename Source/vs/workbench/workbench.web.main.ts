@@ -94,8 +94,8 @@ import { UserDataAutoSyncService } from "vs/platform/userDataSync/common/userDat
 import { AccessibilityService } from "vs/platform/accessibility/browser/accessibilityService";
 import { ICustomEndpointTelemetryService } from "vs/platform/telemetry/common/telemetry";
 import { NullEndpointTelemetryService } from "vs/platform/telemetry/common/telemetryUtils";
-import { ITitleService } from "vs/workbench/services/title/common/titleService";
-import { TitlebarPart } from "vs/workbench/browser/parts/titlebar/titlebarPart";
+import { ITitleService } from "vs/workbench/services/title/browser/titleService";
+import { BrowserTitleService } from "vs/workbench/browser/parts/titlebar/titlebarPart";
 import {
 	ITimerService,
 	TimerService,
@@ -157,7 +157,7 @@ registerSingleton(
 	UserDataAutoSyncService,
 	InstantiationType.Eager /* Eager to start auto sync */
 );
-registerSingleton(ITitleService, TitlebarPart, InstantiationType.Eager);
+registerSingleton(ITitleService, BrowserTitleService, InstantiationType.Eager);
 registerSingleton(
 	IExtensionTipsService,
 	ExtensionTipsService,

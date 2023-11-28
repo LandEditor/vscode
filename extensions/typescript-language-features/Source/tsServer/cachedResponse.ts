@@ -3,13 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { ServerResponse } from "../typescriptService";
-import type * as Proto from "./protocol/protocol";
+import * as vscode from 'vscode';
+import { ServerResponse } from '../typescriptService';
+import type * as Proto from './protocol/protocol';
 
-type Resolve<T extends Proto.Response> = () => Promise<
-	ServerResponse.Response<T>
->;
+type Resolve<T extends Proto.Response> = () => Promise<ServerResponse.Response<T>>;
 
 /**
  * Caches a class of TS Server request based on document.
@@ -17,7 +15,7 @@ type Resolve<T extends Proto.Response> = () => Promise<
 export class CachedResponse<T extends Proto.Response> {
 	private response?: Promise<ServerResponse.Response<T>>;
 	private version: number = -1;
-	private document: string = "";
+	private document: string = '';
 
 	/**
 	 * Execute a request. May return cached value or resolve the new value
@@ -30,18 +28,13 @@ export class CachedResponse<T extends Proto.Response> {
 	): Promise<ServerResponse.Response<T>> {
 		if (this.response && this.matches(document)) {
 			// Chain so that on cancellation we fall back to the next resolve
-			return (this.response = this.response.then((result) =>
-				result.type === "cancelled" ? resolve() : result
-			));
+			return this.response = this.response.then(result => result.type === 'cancelled' ? resolve() : result);
 		}
 		return this.reset(document, resolve);
 	}
 
 	private matches(document: vscode.TextDocument): boolean {
-		return (
-			this.version === document.version &&
-			this.document === document.uri.toString()
-		);
+		return this.version === document.version && this.document === document.uri.toString();
 	}
 
 	private async reset(
@@ -50,6 +43,6 @@ export class CachedResponse<T extends Proto.Response> {
 	): Promise<ServerResponse.Response<T>> {
 		this.version = document.version;
 		this.document = document.uri.toString();
-		return (this.response = resolve());
+		return this.response = resolve();
 	}
 }

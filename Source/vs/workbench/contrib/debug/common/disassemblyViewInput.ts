@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { localize } from "vs/nls";
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { localize } from 'vs/nls';
 
 export class DisassemblyViewInput extends EditorInput {
-	static readonly ID = "debug.disassemblyView.input";
+
+	static readonly ID = 'debug.disassemblyView.input';
 
 	override get typeId(): string {
 		return DisassemblyViewInput.ID;
@@ -15,10 +16,7 @@ export class DisassemblyViewInput extends EditorInput {
 
 	static _instance: DisassemblyViewInput;
 	static get instance() {
-		if (
-			!DisassemblyViewInput._instance ||
-			DisassemblyViewInput._instance.isDisposed()
-		) {
+		if (!DisassemblyViewInput._instance || DisassemblyViewInput._instance.isDisposed()) {
 			DisassemblyViewInput._instance = new DisassemblyViewInput();
 		}
 
@@ -28,10 +26,11 @@ export class DisassemblyViewInput extends EditorInput {
 	readonly resource = undefined;
 
 	override getName(): string {
-		return localize("disassemblyInputName", "Disassembly");
+		return localize('disassemblyInputName', "Disassembly");
 	}
 
 	override matches(other: unknown): boolean {
 		return other instanceof DisassemblyViewInput;
 	}
+
 }

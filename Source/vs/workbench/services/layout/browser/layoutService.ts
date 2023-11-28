@@ -3,118 +3,101 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Event } from "vs/base/common/event";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { Part } from "vs/workbench/browser/part";
-import { IDimension } from "vs/base/browser/dom";
-import { Direction } from "vs/base/browser/ui/grid/grid";
+import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Event } from 'vs/base/common/event';
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
+import { Part } from 'vs/workbench/browser/part';
+import { IDimension } from 'vs/base/browser/dom';
+import { Direction } from 'vs/base/browser/ui/grid/grid';
 
-export const IWorkbenchLayoutService = refineServiceDecorator<
-	ILayoutService,
-	IWorkbenchLayoutService
->(ILayoutService);
+export const IWorkbenchLayoutService = refineServiceDecorator<ILayoutService, IWorkbenchLayoutService>(ILayoutService);
 
 export const enum Parts {
-	TITLEBAR_PART = "workbench.parts.titlebar",
-	BANNER_PART = "workbench.parts.banner",
-	ACTIVITYBAR_PART = "workbench.parts.activitybar",
-	SIDEBAR_PART = "workbench.parts.sidebar",
-	PANEL_PART = "workbench.parts.panel",
-	AUXILIARYBAR_PART = "workbench.parts.auxiliarybar",
-	EDITOR_PART = "workbench.parts.editor",
-	STATUSBAR_PART = "workbench.parts.statusbar",
+	TITLEBAR_PART = 'workbench.parts.titlebar',
+	BANNER_PART = 'workbench.parts.banner',
+	ACTIVITYBAR_PART = 'workbench.parts.activitybar',
+	SIDEBAR_PART = 'workbench.parts.sidebar',
+	PANEL_PART = 'workbench.parts.panel',
+	AUXILIARYBAR_PART = 'workbench.parts.auxiliarybar',
+	EDITOR_PART = 'workbench.parts.editor',
+	STATUSBAR_PART = 'workbench.parts.statusbar'
 }
 
 export const enum LayoutSettings {
-	ACTIVITY_BAR_LOCATION = "workbench.activityBar.location",
-	EDITOR_TABS_MODE = "workbench.editor.showTabs",
-	COMMAND_CENTER = "window.commandCenter",
+	ACTIVITY_BAR_LOCATION = 'workbench.activityBar.location',
+	EDITOR_TABS_MODE = 'workbench.editor.showTabs',
+	COMMAND_CENTER = 'window.commandCenter',
 }
 
 export const enum ActivityBarPosition {
-	SIDE = "side",
-	TOP = "top",
-	HIDDEN = "hidden",
+	SIDE = 'side',
+	TOP = 'top',
+	HIDDEN = 'hidden'
 }
 
 export const enum EditorTabsMode {
-	MULTIPLE = "multiple",
-	SINGLE = "single",
-	NONE = "none",
+	MULTIPLE = 'multiple',
+	SINGLE = 'single',
+	NONE = 'none'
 }
 
 export const enum Position {
 	LEFT,
 	RIGHT,
-	BOTTOM,
+	BOTTOM
 }
 
 export const enum PanelOpensMaximizedOptions {
 	ALWAYS,
 	NEVER,
-	REMEMBER_LAST,
+	REMEMBER_LAST
 }
 
-export type PanelAlignment = "left" | "center" | "right" | "justify";
+export type PanelAlignment = 'left' | 'center' | 'right' | 'justify';
 
 export function positionToString(position: Position): string {
 	switch (position) {
-		case Position.LEFT:
-			return "left";
-		case Position.RIGHT:
-			return "right";
-		case Position.BOTTOM:
-			return "bottom";
-		default:
-			return "bottom";
+		case Position.LEFT: return 'left';
+		case Position.RIGHT: return 'right';
+		case Position.BOTTOM: return 'bottom';
+		default: return 'bottom';
 	}
 }
 
 const positionsByString: { [key: string]: Position } = {
 	[positionToString(Position.LEFT)]: Position.LEFT,
 	[positionToString(Position.RIGHT)]: Position.RIGHT,
-	[positionToString(Position.BOTTOM)]: Position.BOTTOM,
+	[positionToString(Position.BOTTOM)]: Position.BOTTOM
 };
 
 export function positionFromString(str: string): Position {
 	return positionsByString[str];
 }
 
-function panelOpensMaximizedSettingToString(
-	setting: PanelOpensMaximizedOptions
-): string {
+function panelOpensMaximizedSettingToString(setting: PanelOpensMaximizedOptions): string {
 	switch (setting) {
-		case PanelOpensMaximizedOptions.ALWAYS:
-			return "always";
-		case PanelOpensMaximizedOptions.NEVER:
-			return "never";
-		case PanelOpensMaximizedOptions.REMEMBER_LAST:
-			return "preserve";
-		default:
-			return "preserve";
+		case PanelOpensMaximizedOptions.ALWAYS: return 'always';
+		case PanelOpensMaximizedOptions.NEVER: return 'never';
+		case PanelOpensMaximizedOptions.REMEMBER_LAST: return 'preserve';
+		default: return 'preserve';
 	}
 }
 
-const panelOpensMaximizedByString: {
-	[key: string]: PanelOpensMaximizedOptions;
-} = {
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.ALWAYS)]:
-		PanelOpensMaximizedOptions.ALWAYS,
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]:
-		PanelOpensMaximizedOptions.NEVER,
-	[panelOpensMaximizedSettingToString(
-		PanelOpensMaximizedOptions.REMEMBER_LAST
-	)]: PanelOpensMaximizedOptions.REMEMBER_LAST,
+const panelOpensMaximizedByString: { [key: string]: PanelOpensMaximizedOptions } = {
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.ALWAYS)]: PanelOpensMaximizedOptions.ALWAYS,
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]: PanelOpensMaximizedOptions.NEVER,
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.REMEMBER_LAST)]: PanelOpensMaximizedOptions.REMEMBER_LAST
 };
 
-export function panelOpensMaximizedFromString(
-	str: string
-): PanelOpensMaximizedOptions {
+export function panelOpensMaximizedFromString(str: string): PanelOpensMaximizedOptions {
 	return panelOpensMaximizedByString[str];
 }
 
+export type MULTI_WINDOW_PARTS = Parts.EDITOR_PART | Parts.STATUSBAR_PART | Parts.TITLEBAR_PART;
+export type SINGLE_WINDOW_PARTS = Exclude<Parts, MULTI_WINDOW_PARTS>;
+
 export interface IWorkbenchLayoutService extends ILayoutService {
+
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -128,9 +111,9 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	readonly onDidChangeFullscreen: Event<boolean>;
 
 	/**
-	 * Emits when the window is maximized or unmaximized.
+	 * Emits when the target window is maximized or unmaximized.
 	 */
-	readonly onDidChangeWindowMaximized: Event<boolean>;
+	readonly onDidChangeWindowMaximized: Event<{ readonly windowId: number; readonly maximized: boolean }>;
 
 	/**
 	 * Emits when centered layout is enabled or disabled.
@@ -184,9 +167,11 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	hasFocus(part: Parts): boolean;
 
 	/**
-	 * Focuses the part. If the part is not visible this is a noop.
+	 * Focuses the part in the target window. If the part is not visible this is a noop.
 	 */
-	focusPart(part: Parts): void;
+	focusPart(part: SINGLE_WINDOW_PARTS): void;
+	focusPart(part: MULTI_WINDOW_PARTS, targetWindow: Window): void;
+	focusPart(part: Parts, targetWindow: Window): void;
 
 	/**
 	 * Returns the target window container or parts HTML element within, if there is one.
@@ -195,22 +180,18 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	getContainer(targetWindow: Window, part: Parts): HTMLElement | undefined;
 
 	/**
-	 * Returns if the part is visible.
+	 * Returns if the part is visible in the target window.
 	 */
-	isVisible(part: Parts): boolean;
+	isVisible(part: SINGLE_WINDOW_PARTS): boolean;
+	isVisible(part: MULTI_WINDOW_PARTS, targetWindow: Window): boolean;
+	isVisible(part: Parts, targetWindow: Window): boolean;
 
 	/**
-	 * Returns if the part is visible.
+	 * Set part hidden or not in the target window.
 	 */
-	getDimension(part: Parts): IDimension | undefined;
-
-	/**
-	 * Set part hidden or not
-	 */
-	setPartHidden(
-		hidden: boolean,
-		part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>
-	): void;
+	setPartHidden(hidden: boolean, part: Exclude<SINGLE_WINDOW_PARTS, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>): void;
+	setPartHidden(hidden: boolean, part: Exclude<MULTI_WINDOW_PARTS, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, targetWindow: Window): void;
+	setPartHidden(hidden: boolean, part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, targetWindow: Window): void;
 
 	/**
 	 * Maximizes the panel height if the panel is not already maximized.
@@ -289,13 +270,9 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	centerMainEditorLayout(active: boolean): void;
 
 	/**
-	 * Resizes currently focused part on main access
+	 * Resize the provided part in the main window.
 	 */
-	resizePart(
-		part: Parts,
-		sizeChangeWidth: number,
-		sizeChangeHeight: number
-	): void;
+	resizePart(part: Parts, sizeChangeWidth: number, sizeChangeHeight: number): void;
 
 	/**
 	 * Register a part to participate in the layout.
@@ -303,20 +280,17 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	registerPart(part: Part): void;
 
 	/**
-	 * Returns whether the window is maximized.
+	 * Returns whether the target window is maximized.
 	 */
-	isWindowMaximized(): boolean;
+	isWindowMaximized(targetWindow: Window): boolean;
 
 	/**
-	 * Updates the maximized state of the window.
+	 * Updates the maximized state of the target window.
 	 */
-	updateWindowMaximizedState(maximized: boolean): void;
+	updateWindowMaximizedState(targetWindow: Window, maximized: boolean): void;
 
 	/**
-	 * Returns the next visible view part in a given direction
+	 * Returns the next visible view part in a given direction in the main window.
 	 */
-	getVisibleNeighborPart(
-		part: Parts,
-		direction: Direction
-	): Parts | undefined;
+	getVisibleNeighborPart(part: Parts, direction: Direction): Parts | undefined;
 }

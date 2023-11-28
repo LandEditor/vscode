@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export interface IChatProviderContribution {
 	id: string;
@@ -13,8 +13,7 @@ export interface IChatProviderContribution {
 	when?: string;
 }
 
-export const IChatContributionService =
-	createDecorator<IChatContributionService>("IChatContributionService");
+export const IChatContributionService = createDecorator<IChatContributionService>('IChatContributionService');
 export interface IChatContributionService {
 	_serviceBrand: undefined;
 

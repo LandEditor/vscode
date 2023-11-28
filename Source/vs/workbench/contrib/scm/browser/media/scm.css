@@ -75,62 +75,26 @@
  * The following rules are very specific because of inline drop down menus
  * https://github.com/microsoft/vscode/issues/101410
  */
-.scm-view
-	.scm-provider
-	> .actions
-	> .monaco-toolbar
-	> .monaco-action-bar
-	> .actions-container
-	> .action-item {
+.scm-view .scm-provider > .actions > .monaco-toolbar > .monaco-action-bar > .actions-container > .action-item {
 	padding-left: 4px;
 	display: flex;
 	align-items: center;
 	min-width: 16px;
 }
 
-.scm-view
-	.scm-provider
-	> .actions
-	> .monaco-toolbar
-	> .monaco-action-bar
-	> .actions-container
-	> .action-item
-	> .action-label,
-.scm-view
-	.scm-provider
-	> .actions
-	> .monaco-toolbar
-	> .monaco-action-bar
-	> .actions-container
-	> .action-item
-	> .monaco-dropdown
-	> .dropdown-label
-	> .action-label {
+.scm-view .scm-provider > .actions > .monaco-toolbar > .monaco-action-bar > .actions-container  > .action-item > .action-label,
+.scm-view .scm-provider > .actions > .monaco-toolbar > .monaco-action-bar > .actions-container  > .action-item > .monaco-dropdown > .dropdown-label > .action-label {
 	display: flex;
 	align-items: center;
 	overflow: hidden;
 }
 
-.scm-view
-	.scm-provider
-	> .actions
-	> .monaco-toolbar
-	> .monaco-action-bar
-	> .actions-container
-	> .action-item
-	> .action-label
-	> .codicon {
+.scm-view .scm-provider > .actions > .monaco-toolbar > .monaco-action-bar > .actions-container  > .action-item > .action-label > .codicon {
 	font-size: 12px;
 	justify-content: center;
 }
 
-.scm-view
-	.scm-provider
-	> .actions
-	> .monaco-toolbar
-	> .monaco-action-bar
-	> .actions-container
-	> .action-item:last-of-type {
+.scm-view .scm-provider > .actions > .monaco-toolbar > .monaco-action-bar > .actions-container > .action-item:last-of-type {
 	padding-right: 0;
 }
 
@@ -158,19 +122,6 @@
 .scm-view .monaco-list-row .history-item .monaco-icon-label {
 	flex-grow: 1;
 	align-items: center;
-}
-
-.scm-sync-view
-	.monaco-list-row
-	.monaco-icon-label
-	.icon-container
-	.scm-sync-view
-	.monaco-list-row
-	.monaco-icon-label
-	.icon-container {
-	display: flex;
-	font-size: 14px;
-	padding-right: 4px;
 }
 
 .scm-view .monaco-list-row .history-item {
@@ -214,14 +165,9 @@
 	color: var(--vscode-scm-historyItemDeletionsForeground);
 }
 
-.scm-view
-	.monaco-list-row
-	.history-item-group
-	.monaco-icon-label
-	.icon-container,
+.scm-view .monaco-list-row .history-item-group .monaco-icon-label .icon-container,
 .scm-view .monaco-list-row .history-item .monaco-icon-label .icon-container {
 	display: flex;
-	font-size: 14px;
 	padding-right: 4px;
 }
 
@@ -293,24 +239,12 @@
 	margin-top: 3px;
 }
 
-.scm-view
-	.monaco-list
-	.monaco-list-row
-	.resource
-	> .name
-	> .monaco-icon-label
-	> .actions {
+.scm-view .monaco-list .monaco-list-row .resource > .name > .monaco-icon-label > .actions {
 	flex-grow: 100;
 }
 
 .scm-view .monaco-list .monaco-list-row .resource-group > .actions,
-.scm-view
-	.monaco-list
-	.monaco-list-row
-	.resource
-	> .name
-	> .monaco-icon-label
-	> .actions,
+.scm-view .monaco-list .monaco-list-row .resource > .name > .monaco-icon-label > .actions,
 .scm-view .monaco-list .monaco-list-row .history-item > .actions {
 	display: none;
 	max-width: fit-content;
@@ -319,32 +253,10 @@
 .scm-view .monaco-list .monaco-list-row:hover .resource-group > .actions,
 .scm-view .monaco-list .monaco-list-row.selected .resource-group > .actions,
 .scm-view .monaco-list .monaco-list-row.focused .resource-group > .actions,
-.scm-view
-	.monaco-list
-	.monaco-list-row:hover
-	.resource
-	> .name
-	> .monaco-icon-label
-	> .actions,
-.scm-view
-	.monaco-list
-	.monaco-list-row.selected
-	.resource
-	> .name
-	> .monaco-icon-label
-	> .actions,
-.scm-view
-	.monaco-list
-	.monaco-list-row.focused
-	.resource
-	> .name
-	> .monaco-icon-label
-	> .actions,
-.scm-view
-	.monaco-list:not(.selection-multiple)
-	.monaco-list-row
-	.resource:hover
-	> .actions,
+.scm-view .monaco-list .monaco-list-row:hover .resource > .name > .monaco-icon-label > .actions,
+.scm-view .monaco-list .monaco-list-row.selected .resource > .name > .monaco-icon-label > .actions,
+.scm-view .monaco-list .monaco-list-row.focused .resource > .name > .monaco-icon-label > .actions,
+.scm-view .monaco-list:not(.selection-multiple) .monaco-list-row .resource:hover > .actions,
 .scm-view .monaco-list .monaco-list-row:hover .history-item > .actions,
 .scm-view .monaco-list .monaco-list-row.selected .history-item > .actions,
 .scm-view .monaco-list .monaco-list-row.focused .history-item > .actions {
@@ -363,29 +275,10 @@
 }
 
 .scm-view.show-actions .scm-provider > .actions,
-.scm-view.show-actions
-	> .monaco-list
-	.monaco-list-row
-	.scm-input
-	> .scm-editor
-	> .actions,
-.scm-view.show-actions
-	> .monaco-list
-	.monaco-list-row
-	.resource-group
-	> .actions,
-.scm-view.show-actions
-	> .monaco-list
-	.monaco-list-row
-	.resource
-	> .name
-	> .monaco-icon-label
-	> .actions,
-.scm-view.show-actions
-	> .monaco-list
-	.monaco-list-row
-	.history-item
-	> .actions {
+.scm-view.show-actions > .monaco-list .monaco-list-row .scm-input > .scm-editor > .actions,
+.scm-view.show-actions > .monaco-list .monaco-list-row .resource-group > .actions,
+.scm-view.show-actions > .monaco-list .monaco-list-row .resource > .name > .monaco-icon-label > .actions,
+.scm-view.show-actions > .monaco-list .monaco-list-row .history-item > .actions {
 	display: block;
 }
 
@@ -412,11 +305,7 @@
 	box-shadow: var(--vscode-scrollbar-shadow) 0 6px 6px -6px inset;
 }
 
-.scm-view
-	.scm-input
-	.scm-editor
-	.scm-editor-toolbar
-	.action-label.codicon.codicon-debug-stop {
+.scm-view .scm-input .scm-editor .scm-editor-toolbar .action-label.codicon.codicon-debug-stop {
 	color: var(--vscode-icon-foreground) !important;
 }
 
@@ -462,27 +351,18 @@
 	overflow: hidden;
 }
 
-.scm-view
-	.button-container
-	> .monaco-button-dropdown
-	> .monaco-dropdown-button {
-	display: flex;
+.scm-view .button-container > .monaco-button-dropdown > .monaco-dropdown-button {
+	display:flex;
 	align-items: center;
 	padding: 0 4px;
 }
 
-.scm-view
-	.button-container
-	> .monaco-button-dropdown
-	> .monaco-button.monaco-text-button {
+
+.scm-view .button-container > .monaco-button-dropdown > .monaco-button.monaco-text-button {
 	min-width: 0;
 }
 
-.scm-view
-	.button-container
-	> .monaco-button-dropdown
-	> .monaco-button.monaco-text-button
-	> span:not(.codicon) {
+.scm-view .button-container > .monaco-button-dropdown > .monaco-button.monaco-text-button > span:not(.codicon) {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -595,26 +475,9 @@
 .scm-view .scm-editor-container .monaco-editor-background,
 .scm-view .scm-editor-container .monaco-editor,
 .scm-view .scm-editor-container .monaco-editor .margin,
-.monaco-workbench
-	.part.basepanel
-	> .content
-	.scm-view
-	.scm-editor-container
-	.monaco-editor,
-.monaco-workbench
-	.part.basepanel
-	> .content
-	.scm-view
-	.scm-editor-container
-	.monaco-editor
-	.margin,
-.monaco-workbench
-	.part.basepanel
-	> .content
-	.scm-view
-	.scm-editor-container
-	.monaco-editor
-	.monaco-editor-background {
+.monaco-workbench .part.basepanel > .content .scm-view .scm-editor-container .monaco-editor,
+.monaco-workbench .part.basepanel > .content .scm-view .scm-editor-container .monaco-editor .margin,
+.monaco-workbench .part.basepanel > .content .scm-view .scm-editor-container .monaco-editor .monaco-editor-background {
 	color: inherit;
 	background-color: var(--vscode-input-background);
 }

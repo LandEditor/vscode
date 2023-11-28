@@ -11,10 +11,7 @@ export interface IWordCountResult {
 	isFullString: boolean;
 }
 
-export function getNWords(
-	str: string,
-	numWordsToCount: number
-): IWordCountResult {
+export function getNWords(str: string, numWordsToCount: number): IWordCountResult {
 	let wordCount = numWordsToCount;
 	let i = 0;
 	while (i < str.length && wordCount > 0) {
@@ -35,7 +32,7 @@ export function getNWords(
 	return {
 		value,
 		actualWordCount: numWordsToCount - wordCount,
-		isFullString: i >= str.length,
+		isFullString: i >= str.length
 	};
 }
 

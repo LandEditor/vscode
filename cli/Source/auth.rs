@@ -93,9 +93,10 @@ impl AuthProvider {
 
 	pub fn get_default_scopes(&self) -> String {
 		match self {
-			AuthProvider::Microsoft => {
-				format!("{}/.default+offline_access+profile+openid", PROD_FIRST_PARTY_APP_ID)
-			}
+			AuthProvider::Microsoft => format!(
+				"{}/.default+offline_access+profile+openid",
+				PROD_FIRST_PARTY_APP_ID
+			),
 			AuthProvider::Github => "read:user+read:org".to_string(),
 		}
 	}
@@ -164,7 +165,9 @@ impl StoredCredential {
 			provider,
 			access_token: auth.access_token,
 			refresh_token: auth.refresh_token,
-			expires_at: auth.expires_in.map(|e| Utc::now() + chrono::Duration::seconds(e)),
+			expires_at: auth
+				.expires_in
+				.map(|e| Utc::now() + chrono::Duration::seconds(e)),
 		}
 	}
 }
@@ -262,7 +265,9 @@ impl ThreadKeyringStorage {
 
 impl Default for ThreadKeyringStorage {
 	fn default() -> Self {
-		Self { s: Some(KeyringStorage::default()) }
+		Self {
+			s: Some(KeyringStorage::default()),
+		}
 	}
 }
 
@@ -350,7 +355,9 @@ impl StorageImplementation for KeyringStorage {
 	fn clear(&mut self) -> Result<(), AnyError> {
 		self.read().ok(); // make sure component parts are available
 		for entry in self.entries.iter() {
-			entry.delete_password().map_err(|e| wrap(e, "error updating keyring"))?;
+			entry
+				.delete_password()
+				.map_err(|e| wrap(e, "error updating keyring"))?;
 		}
 		self.entries.clear();
 
@@ -503,8 +510,9 @@ impl Auth {
 					Ok(None) => old_creds,
 					Err(e) => {
 						info!(self.log, "error refreshing token: {}", e);
-						let new_creds =
-							self.do_device_code_flow_with_provider(old_creds.provider).await?;
+						let new_creds = self
+							.do_device_code_flow_with_provider(old_creds.provider)
+							.await?;
 						self.store_credentials(new_creds.clone());
 						new_creds
 					}
@@ -519,7 +527,11 @@ impl Auth {
 			}
 
 			Err(e) => {
-				warning!(self.log, "Error reading token from keyring, getting a new one: {}", e);
+				warning!(
+					self.log,
+					"Error reading token from keyring, getting a new one: {}",
+					e
+				);
 				let creds = self.do_device_code_flow().await?;
 				self.store_credentials(creds.clone());
 				creds
@@ -533,7 +545,11 @@ impl Auth {
 	fn store_credentials(&self, creds: StoredCredential) {
 		self.with_storage(|storage| {
 			if let Err(e) = storage.storage.store(creds.clone()) {
-				warning!(self.log, "Failed to update keyring with new credentials: {}", e);
+				warning!(
+					self.log,
+					"Failed to update keyring with new credentials: {}",
+					e
+				);
 
 				if let Some(fb) = storage.fallback_storage.take() {
 					storage.storage = Box::new(fb);
@@ -608,7 +624,11 @@ impl Auth {
 			return Ok(StoredCredential::from_response(body, provider));
 		}
 
-		Err(Auth::handle_grant_error(provider.grant_uri(), status_code, body))
+		Err(Auth::handle_grant_error(
+			provider.grant_uri(),
+			status_code,
+			body,
+		))
 	}
 
 	/// GH doesn't have a refresh token, but does limit to the 10 most recently
@@ -622,13 +642,20 @@ impl Auth {
 
 		let status_code = response.status().as_u16();
 		let body = response.bytes().await?;
-		Err(Auth::handle_grant_error(GH_USER_ENDPOINT, status_code, body))
+		Err(Auth::handle_grant_error(
+			GH_USER_ENDPOINT,
+			status_code,
+			body,
+		))
 	}
 
 	fn handle_grant_error(url: &str, status_code: u16, body: bytes::Bytes) -> AnyError {
 		if let Ok(res) = serde_json::from_slice::<AuthenticationError>(&body) {
-			return OAuthError { error: res.error, error_description: res.error_description }
-				.into();
+			return OAuthError {
+				error: res.error,
+				error_description: res.error_description,
+			}
+			.into();
 		}
 
 		return StatusError {

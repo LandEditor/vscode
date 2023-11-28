@@ -3,14 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import {
-	ConfigurationChangedEvent,
-	IComputedEditorOptions,
-	IEditorOptions,
-} from "vs/editor/common/config/editorOptions";
-import { IDimension } from "vs/editor/common/core/dimension";
+import { Event } from 'vs/base/common/event';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { ConfigurationChangedEvent, IComputedEditorOptions, IEditorOptions } from 'vs/editor/common/config/editorOptions';
+import { IDimension } from 'vs/editor/common/core/dimension';
 
 export interface IEditorConfiguration extends IDisposable {
 	/**

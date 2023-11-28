@@ -10,9 +10,9 @@ import {
 	EventEmitter,
 	Uri,
 	workspace,
-	SourceControlInputBoxActionButton,
 	ThemeIcon,
 	l10n,
+	SourceControlInputBoxActionButton,
 } from "vscode";
 import {
 	CommitMessageProvider,

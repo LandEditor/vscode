@@ -42,12 +42,19 @@ impl<'a> SelfUpdate<'a> {
 			CodeError::UpdatesNotConfigured("Unknown platform, please report this error")
 		})?;
 
-		Ok(Self { commit, quality, platform, update_service })
+		Ok(Self {
+			commit,
+			quality,
+			platform,
+			update_service,
+		})
 	}
 
 	/// Gets the current release
 	pub async fn get_current_release(&self) -> Result<Release, AnyError> {
-		self.update_service.get_latest_commit(self.platform, TargetKind::Cli, self.quality).await
+		self.update_service
+			.get_latest_commit(self.platform, TargetKind::Cli, self.quality)
+			.await
 	}
 
 	/// Gets whether the given release is what this CLI is built against
@@ -97,8 +104,11 @@ impl<'a> SelfUpdate<'a> {
 		// OS later. However, this can fail if the tempdir is on a different drive
 		// than the installation dir. In this case just rename it to ".old".
 		if fs::rename(&target_path, tempdir.path().join("old-code-cli")).is_err() {
-			fs::rename(&target_path, target_path.with_extension(OLD_UPDATE_EXTENSION))
-				.map_err(|e| wrap(e, "failed to rename old CLI"))?;
+			fs::rename(
+				&target_path,
+				target_path.with_extension(OLD_UPDATE_EXTENSION),
+			)
+			.map_err(|e| wrap(e, "failed to rename old CLI"))?;
 		}
 
 		fs::rename(&staging_path, &target_path)
@@ -132,12 +142,16 @@ fn copy_updated_cli_to_path(unzipped_content: &Path, staging_path: &Path) -> Res
 		.map_err(|e| wrap(e, "could not read update contents"))?
 		.collect::<Vec<_>>();
 	if unzipped_files.len() != 1 {
-		let msg = format!("expected exactly one file in update, got {}", unzipped_files.len());
+		let msg = format!(
+			"expected exactly one file in update, got {}",
+			unzipped_files.len()
+		);
 		return Err(CorruptDownload(msg).into());
 	}
 
-	let archive_file =
-		unzipped_files[0].as_ref().map_err(|e| wrap(e, "error listing update files"))?;
+	let archive_file = unzipped_files[0]
+		.as_ref()
+		.map_err(|e| wrap(e, "error listing update files"))?;
 	fs::copy(archive_file.path(), staging_path)
 		.map_err(|e| wrap(e, "error copying to staging file"))?;
 	Ok(())

@@ -3,13 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import type { IGrammar } from "vscode-textmate";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import type { IGrammar } from 'vscode-textmate';
 
-export const ITextMateTokenizationService =
-	createDecorator<ITextMateTokenizationService>(
-		"textMateTokenizationFeature"
-	);
+export const ITextMateTokenizationService = createDecorator<ITextMateTokenizationService>('textMateTokenizationFeature');
 
 export interface ITextMateTokenizationService {
 	readonly _serviceBrand: undefined;

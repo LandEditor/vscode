@@ -3,35 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color } from "vs/base/common/color";
-import { Emitter, Event } from "vs/base/common/event";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import {
-	ITokenizationRegistry,
-	ITokenizationSupport,
-	ITokenizationSupportChangedEvent,
-	ILazyTokenizationSupport,
-} from "vs/editor/common/languages";
-import { ColorId } from "vs/editor/common/encodedTokenAttributes";
+import { Color } from 'vs/base/common/color';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { ITokenizationRegistry, ITokenizationSupport, ITokenizationSupportChangedEvent, ILazyTokenizationSupport } from 'vs/editor/common/languages';
+import { ColorId } from 'vs/editor/common/encodedTokenAttributes';
 
 export class TokenizationRegistry implements ITokenizationRegistry {
-	private readonly _tokenizationSupports = new Map<
-		string,
-		ITokenizationSupport
-	>();
-	private readonly _factories = new Map<
-		string,
-		TokenizationSupportFactoryData
-	>();
 
-	private readonly _onDidChange =
-		new Emitter<ITokenizationSupportChangedEvent>();
-	public readonly onDidChange: Event<ITokenizationSupportChangedEvent> =
-		this._onDidChange.event;
+	private readonly _tokenizationSupports = new Map<string, ITokenizationSupport>();
+	private readonly _factories = new Map<string, TokenizationSupportFactoryData>();
+
+	private readonly _onDidChange = new Emitter<ITokenizationSupportChangedEvent>();
+	public readonly onDidChange: Event<ITokenizationSupportChangedEvent> = this._onDidChange.event;
 
 	private _colorMap: Color[] | null;
 
@@ -42,14 +26,11 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 	public handleChange(languageIds: string[]): void {
 		this._onDidChange.fire({
 			changedLanguages: languageIds,
-			changedColorMap: false,
+			changedColorMap: false
 		});
 	}
 
-	public register(
-		languageId: string,
-		support: ITokenizationSupport
-	): IDisposable {
+	public register(languageId: string, support: ITokenizationSupport): IDisposable {
 		this._tokenizationSupports.set(languageId, support);
 		this.handleChange([languageId]);
 		return toDisposable(() => {
@@ -65,16 +46,9 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 		return this._tokenizationSupports.get(languageId) || null;
 	}
 
-	public registerFactory(
-		languageId: string,
-		factory: ILazyTokenizationSupport
-	): IDisposable {
+	public registerFactory(languageId: string, factory: ILazyTokenizationSupport): IDisposable {
 		this._factories.get(languageId)?.dispose();
-		const myData = new TokenizationSupportFactoryData(
-			this,
-			languageId,
-			factory
-		);
+		const myData = new TokenizationSupportFactoryData(this, languageId, factory);
 		this._factories.set(languageId, myData);
 		return toDisposable(() => {
 			const v = this._factories.get(languageId);
@@ -86,9 +60,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 		});
 	}
 
-	public async getOrCreate(
-		languageId: string
-	): Promise<ITokenizationSupport | null> {
+	public async getOrCreate(languageId: string): Promise<ITokenizationSupport | null> {
 		// check first if the support is already set
 		const tokenizationSupport = this.get(languageId);
 		if (tokenizationSupport) {
@@ -124,7 +96,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 		this._colorMap = colorMap;
 		this._onDidChange.fire({
 			changedLanguages: Array.from(this._tokenizationSupports.keys()),
-			changedColorMap: true,
+			changedColorMap: true
 		});
 	}
 
@@ -133,10 +105,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 	}
 
 	public getDefaultBackground(): Color | null {
-		if (
-			this._colorMap &&
-			this._colorMap.length > ColorId.DefaultBackground
-		) {
+		if (this._colorMap && this._colorMap.length > ColorId.DefaultBackground) {
 			return this._colorMap[ColorId.DefaultBackground];
 		}
 		return null;
@@ -144,6 +113,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 }
 
 class TokenizationSupportFactoryData extends Disposable {
+
 	private _isDisposed: boolean = false;
 	private _resolvePromise: Promise<void> | null = null;
 	private _isResolved: boolean = false;
@@ -155,7 +125,7 @@ class TokenizationSupportFactoryData extends Disposable {
 	constructor(
 		private readonly _registry: TokenizationRegistry,
 		private readonly _languageId: string,
-		private readonly _factory: ILazyTokenizationSupport
+		private readonly _factory: ILazyTokenizationSupport,
 	) {
 		super();
 	}

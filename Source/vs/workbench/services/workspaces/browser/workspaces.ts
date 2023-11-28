@@ -3,23 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ISingleFolderWorkspaceIdentifier,
-	IWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
-import { URI } from "vs/base/common/uri";
-import { hash } from "vs/base/common/hash";
+import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
+import { URI } from 'vs/base/common/uri';
+import { hash } from 'vs/base/common/hash';
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-export function getWorkspaceIdentifier(
-	workspaceUri: URI
-): IWorkspaceIdentifier {
+export function getWorkspaceIdentifier(workspaceUri: URI): IWorkspaceIdentifier {
 	return {
 		id: getWorkspaceId(workspaceUri),
-		configPath: workspaceUri,
+		configPath: workspaceUri
 	};
 }
 
@@ -27,12 +22,10 @@ export function getWorkspaceIdentifier(
 // NOTE: DO NOT CHANGE. IDENTIFIERS HAVE TO REMAIN STABLE
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-export function getSingleFolderWorkspaceIdentifier(
-	folderUri: URI
-): ISingleFolderWorkspaceIdentifier {
+export function getSingleFolderWorkspaceIdentifier(folderUri: URI): ISingleFolderWorkspaceIdentifier {
 	return {
 		id: getWorkspaceId(folderUri),
-		uri: folderUri,
+		uri: folderUri
 	};
 }
 

@@ -151,7 +151,9 @@ pub async fn kill_tree(process_id: u32) -> Result<(), CodeError> {
 			output: e.to_string(),
 		})?;
 
-	let mut kill_futures = vec![tokio::spawn(async move { kill_single_pid(parent_id).await })];
+	let mut kill_futures = vec![tokio::spawn(
+		async move { kill_single_pid(parent_id).await },
+	)];
 
 	if let Some(stdout) = prgrep_cmd.stdout.take() {
 		let mut reader = BufReader::new(stdout).lines();

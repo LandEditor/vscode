@@ -3,25 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IURLService } from "vs/platform/url/common/url";
-import { URI, UriComponents } from "vs/base/common/uri";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { AbstractURLService } from "vs/platform/url/common/urlService";
-import { Event } from "vs/base/common/event";
-import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
-import {
-	IOpenerService,
-	IOpener,
-	OpenExternalOptions,
-	OpenInternalOptions,
-} from "vs/platform/opener/common/opener";
-import { matchesScheme } from "vs/base/common/network";
-import { IProductService } from "vs/platform/product/common/productService";
+import { IURLService } from 'vs/platform/url/common/url';
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { AbstractURLService } from 'vs/platform/url/common/urlService';
+import { Event } from 'vs/base/common/event';
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { IOpenerService, IOpener, OpenExternalOptions, OpenInternalOptions } from 'vs/platform/opener/common/opener';
+import { matchesScheme } from 'vs/base/common/network';
+import { IProductService } from 'vs/platform/product/common/productService';
 
 export interface IURLCallbackProvider {
+
 	/**
 	 * Indicates that a Uri has been opened outside of VSCode. The Uri
 	 * will be forwarded to all installed Uri handlers in the system.
@@ -47,15 +40,13 @@ export interface IURLCallbackProvider {
 }
 
 class BrowserURLOpener implements IOpener {
+
 	constructor(
 		private urlService: IURLService,
 		private productService: IProductService
-	) {}
+	) { }
 
-	async open(
-		resource: string | URI,
-		options?: OpenInternalOptions | OpenExternalOptions
-	): Promise<boolean> {
+	async open(resource: string | URI, options?: OpenInternalOptions | OpenExternalOptions): Promise<boolean> {
 		if ((options as OpenExternalOptions | undefined)?.openExternal) {
 			return false;
 		}
@@ -64,7 +55,7 @@ class BrowserURLOpener implements IOpener {
 			return false;
 		}
 
-		if (typeof resource === "string") {
+		if (typeof resource === 'string') {
 			resource = URI.parse(resource);
 		}
 
@@ -73,11 +64,11 @@ class BrowserURLOpener implements IOpener {
 }
 
 export class BrowserURLService extends AbstractURLService {
+
 	private provider: IURLCallbackProvider | undefined;
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService
-		environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
 		@IOpenerService openerService: IOpenerService,
 		@IProductService productService: IProductService
 	) {
@@ -86,18 +77,10 @@ export class BrowserURLService extends AbstractURLService {
 		this.provider = environmentService.options?.urlCallbackProvider;
 
 		if (this.provider) {
-			this._register(
-				this.provider.onCallback((uri) =>
-					this.open(uri, { trusted: true })
-				)
-			);
+			this._register(this.provider.onCallback(uri => this.open(uri, { trusted: true })));
 		}
 
-		this._register(
-			openerService.registerOpener(
-				new BrowserURLOpener(this, productService)
-			)
-		);
+		this._register(openerService.registerOpener(new BrowserURLOpener(this, productService)));
 	}
 
 	create(options?: Partial<UriComponents>): URI {
@@ -105,7 +88,7 @@ export class BrowserURLService extends AbstractURLService {
 			return this.provider.create(options);
 		}
 
-		return URI.parse("unsupported://");
+		return URI.parse('unsupported://');
 	}
 }
 

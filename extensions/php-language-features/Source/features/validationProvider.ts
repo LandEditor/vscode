@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as cp from "child_process";
-import { StringDecoder } from "string_decoder";
-import * as which from "which";
-import * as path from "path";
-import * as vscode from "vscode";
-import { ThrottledDelayer } from "./utils/async";
+import * as cp from 'child_process';
+import { StringDecoder } from 'string_decoder';
+import * as which from 'which';
+import * as path from 'path';
+import * as vscode from 'vscode';
+import { ThrottledDelayer } from './utils/async';
 
 const enum Setting {
-	Run = "php.validate.run",
-	Enable = "php.validate.enable",
-	ExecutablePath = "php.validate.executablePath",
+	Run = 'php.validate.run',
+	Enable = 'php.validate.enable',
+	ExecutablePath = 'php.validate.executablePath',
 }
 
 export class LineDecoder {
 	private stringDecoder: StringDecoder;
 	private remaining: string | null;
 
-	constructor(encoding: BufferEncoding = "utf8") {
+	constructor(encoding: BufferEncoding = 'utf8') {
 		this.stringDecoder = new StringDecoder(encoding);
 		this.remaining = null;
 	}
@@ -36,10 +36,7 @@ export class LineDecoder {
 		}
 		let start = 0;
 		let ch: number;
-		while (
-			start < value.length &&
-			((ch = value.charCodeAt(start)) === 13 || ch === 10)
-		) {
+		while (start < value.length && ((ch = value.charCodeAt(start)) === 13 || ch === 10)) {
 			start++;
 		}
 		let idx = start;
@@ -48,10 +45,7 @@ export class LineDecoder {
 			if (ch === 13 || ch === 10) {
 				result.push(value.substring(start, idx));
 				idx++;
-				while (
-					idx < value.length &&
-					((ch = value.charCodeAt(idx)) === 13 || ch === 10)
-				) {
+				while (idx < value.length && ((ch = value.charCodeAt(idx)) === 13 || ch === 10)) {
 					idx++;
 				}
 				start = idx;
@@ -70,16 +64,16 @@ export class LineDecoder {
 
 enum RunTrigger {
 	onSave,
-	onType,
+	onType
 }
 
 namespace RunTrigger {
 	export const strings = {
-		onSave: "onSave",
-		onType: "onType",
+		onSave: 'onSave',
+		onType: 'onType'
 	};
 	export const from = function (value: string): RunTrigger {
-		if (value === "onType") {
+		if (value === 'onType') {
 			return RunTrigger.onType;
 		} else {
 			return RunTrigger.onSave;
@@ -88,25 +82,10 @@ namespace RunTrigger {
 }
 
 export default class PHPValidationProvider {
-	private static MatchExpression: RegExp =
-		/(?:(?:Parse|Fatal) error): (.*)(?: in )(.*?)(?: on line )(\d+)/;
-	private static BufferArgs: string[] = [
-		"-l",
-		"-n",
-		"-d",
-		"display_errors=On",
-		"-d",
-		"log_errors=Off",
-	];
-	private static FileArgs: string[] = [
-		"-l",
-		"-n",
-		"-d",
-		"display_errors=On",
-		"-d",
-		"log_errors=Off",
-		"-f",
-	];
+
+	private static MatchExpression: RegExp = /(?:(?:Parse|Fatal) error): (.*)(?: in )(.*?)(?: on line )(\d+)/;
+	private static BufferArgs: string[] = ['-l', '-n', '-d', 'display_errors=On', '-d', 'log_errors=Off'];
+	private static FileArgs: string[] = ['-l', '-n', '-d', 'display_errors=On', '-d', 'log_errors=Off', '-f'];
 
 	private validationEnabled: boolean;
 	private pauseValidation: boolean;
@@ -124,30 +103,17 @@ export default class PHPValidationProvider {
 	}
 
 	public activate(subscriptions: vscode.Disposable[]) {
-		this.diagnosticCollection =
-			vscode.languages.createDiagnosticCollection();
+		this.diagnosticCollection = vscode.languages.createDiagnosticCollection();
 		subscriptions.push(this);
-		subscriptions.push(
-			vscode.workspace.onDidChangeConfiguration(
-				() => (this.loadConfigP = this.loadConfiguration())
-			)
-		);
+		subscriptions.push(vscode.workspace.onDidChangeConfiguration(() => this.loadConfigP = this.loadConfiguration()));
 
-		vscode.workspace.onDidOpenTextDocument(
-			this.triggerValidate,
-			this,
-			subscriptions
-		);
-		vscode.workspace.onDidCloseTextDocument(
-			(textDocument) => {
-				this.diagnosticCollection!.delete(textDocument.uri);
-				if (this.delayers) {
-					delete this.delayers[textDocument.uri.toString()];
-				}
-			},
-			null,
-			subscriptions
-		);
+		vscode.workspace.onDidOpenTextDocument(this.triggerValidate, this, subscriptions);
+		vscode.workspace.onDidCloseTextDocument((textDocument) => {
+			this.diagnosticCollection!.delete(textDocument.uri);
+			if (this.delayers) {
+				delete this.delayers[textDocument.uri.toString()];
+			}
+		}, null, subscriptions);
 	}
 
 	public dispose(): void {
@@ -179,30 +145,20 @@ export default class PHPValidationProvider {
 		this.diagnosticCollection!.clear();
 		if (this.validationEnabled) {
 			if (this.config.trigger === RunTrigger.onType) {
-				this.documentListener =
-					vscode.workspace.onDidChangeTextDocument((e) => {
-						this.triggerValidate(e.document);
-					});
+				this.documentListener = vscode.workspace.onDidChangeTextDocument((e) => {
+					this.triggerValidate(e.document);
+				});
 			} else {
-				this.documentListener = vscode.workspace.onDidSaveTextDocument(
-					this.triggerValidate,
-					this
-				);
+				this.documentListener = vscode.workspace.onDidSaveTextDocument(this.triggerValidate, this);
 			}
 			// Configuration has changed. Reevaluate all documents.
 			vscode.workspace.textDocuments.forEach(this.triggerValidate, this);
 		}
 	}
 
-	private async triggerValidate(
-		textDocument: vscode.TextDocument
-	): Promise<void> {
+	private async triggerValidate(textDocument: vscode.TextDocument): Promise<void> {
 		await this.loadConfigP;
-		if (
-			textDocument.languageId !== "php" ||
-			this.pauseValidation ||
-			!this.validationEnabled
-		) {
+		if (textDocument.languageId !== 'php' || this.pauseValidation || !this.validationEnabled) {
 			return;
 		}
 
@@ -210,9 +166,7 @@ export default class PHPValidationProvider {
 			const key = textDocument.uri.toString();
 			let delayer = this.delayers![key];
 			if (!delayer) {
-				delayer = new ThrottledDelayer<void>(
-					this.config?.trigger === RunTrigger.onType ? 250 : 0
-				);
+				delayer = new ThrottledDelayer<void>(this.config?.trigger === RunTrigger.onType ? 250 : 0);
 				this.delayers![key] = delayer;
 			}
 			delayer.trigger(() => this.doValidate(textDocument));
@@ -220,14 +174,10 @@ export default class PHPValidationProvider {
 	}
 
 	private doValidate(textDocument: vscode.TextDocument): Promise<void> {
-		return new Promise<void>((resolve) => {
+		return new Promise<void>(resolve => {
 			const executable = this.config!.executable;
 			if (!executable) {
-				this.showErrorMessage(
-					vscode.l10n.t(
-						"Cannot validate since a PHP installation could not be found. Use the setting 'php.validate.executablePath' to configure the PHP executable."
-					)
-				);
+				this.showErrorMessage(vscode.l10n.t("Cannot validate since a PHP installation could not be found. Use the setting 'php.validate.executablePath' to configure the PHP executable."));
 				this.pauseValidation = true;
 				resolve();
 				return;
@@ -242,9 +192,7 @@ export default class PHPValidationProvider {
 			const decoder = new LineDecoder();
 			const diagnostics: vscode.Diagnostic[] = [];
 			const processLine = (line: string) => {
-				const matches = line.match(
-					PHPValidationProvider.MatchExpression
-				);
+				const matches = line.match(PHPValidationProvider.MatchExpression);
 				if (matches) {
 					const message = matches[1];
 					const line = parseInt(matches[3]) - 1;
@@ -256,11 +204,7 @@ export default class PHPValidationProvider {
 				}
 			};
 
-			const options =
-				vscode.workspace.workspaceFolders &&
-				vscode.workspace.workspaceFolders[0]
-					? { cwd: vscode.workspace.workspaceFolders[0].uri.fsPath }
-					: undefined;
+			const options = (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) ? { cwd: vscode.workspace.workspaceFolders[0].uri.fsPath } : undefined;
 			let args: string[];
 			if (this.config!.trigger === RunTrigger.onSave) {
 				args = PHPValidationProvider.FileArgs.slice(0);
@@ -270,7 +214,7 @@ export default class PHPValidationProvider {
 			}
 			try {
 				const childProcess = cp.spawn(executable, args, options);
-				childProcess.on("error", (error: Error) => {
+				childProcess.on('error', (error: Error) => {
 					if (this.pauseValidation) {
 						resolve();
 						return;
@@ -284,18 +228,15 @@ export default class PHPValidationProvider {
 						childProcess.stdin.write(textDocument.getText());
 						childProcess.stdin.end();
 					}
-					childProcess.stdout.on("data", (data: Buffer) => {
+					childProcess.stdout.on('data', (data: Buffer) => {
 						decoder.write(data).forEach(processLine);
 					});
-					childProcess.stdout.on("end", () => {
+					childProcess.stdout.on('end', () => {
 						const line = decoder.end();
 						if (line) {
 							processLine(line);
 						}
-						this.diagnosticCollection!.set(
-							textDocument.uri,
-							diagnostics
-						);
+						this.diagnosticCollection!.set(textDocument.uri, diagnostics);
 						resolve();
 					});
 				} else {
@@ -309,24 +250,14 @@ export default class PHPValidationProvider {
 
 	private async showError(error: any, executable: string): Promise<void> {
 		let message: string | null = null;
-		if (error.code === "ENOENT") {
+		if (error.code === 'ENOENT') {
 			if (this.config!.executable) {
-				message = vscode.l10n.t(
-					"Cannot validate since {0} is not a valid php executable. Use the setting 'php.validate.executablePath' to configure the PHP executable.",
-					executable
-				);
+				message = vscode.l10n.t("Cannot validate since {0} is not a valid php executable. Use the setting 'php.validate.executablePath' to configure the PHP executable.", executable);
 			} else {
-				message = vscode.l10n.t(
-					"Cannot validate since no PHP executable is set. Use the setting 'php.validate.executablePath' to configure the PHP executable."
-				);
+				message = vscode.l10n.t("Cannot validate since no PHP executable is set. Use the setting 'php.validate.executablePath' to configure the PHP executable.");
 			}
 		} else {
-			message = error.message
-				? error.message
-				: vscode.l10n.t(
-						"Failed to run php using path: {0}. Reason is unknown.",
-						executable
-				  );
+			message = error.message ? error.message : vscode.l10n.t("Failed to run php using path: {0}. Reason is unknown.", executable);
 		}
 		if (!message) {
 			return;
@@ -337,16 +268,8 @@ export default class PHPValidationProvider {
 
 	private async showErrorMessage(message: string): Promise<void> {
 		const openSettings = vscode.l10n.t("Open Settings");
-		if (
-			(await vscode.window.showInformationMessage(
-				message,
-				openSettings
-			)) === openSettings
-		) {
-			vscode.commands.executeCommand(
-				"workbench.action.openSettings",
-				Setting.ExecutablePath
-			);
+		if (await vscode.window.showInformationMessage(message, openSettings) === openSettings) {
+			vscode.commands.executeCommand('workbench.action.openSettings', Setting.ExecutablePath);
 		}
 	}
 }
@@ -375,9 +298,7 @@ async function getConfig(): Promise<IPhpConfig> {
 	}
 
 	if (executable && !path.isAbsolute(executable)) {
-		const first =
-			vscode.workspace.workspaceFolders &&
-			vscode.workspace.workspaceFolders[0];
+		const first = vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0];
 		if (first) {
 			executable = vscode.Uri.joinPath(first.uri, executable).fsPath;
 		} else {
@@ -387,19 +308,17 @@ async function getConfig(): Promise<IPhpConfig> {
 		executable = await getPhpPath();
 	}
 
-	const trigger = RunTrigger.from(
-		section.get<string>(Setting.Run, RunTrigger.strings.onSave)
-	);
+	const trigger = RunTrigger.from(section.get<string>(Setting.Run, RunTrigger.strings.onSave));
 	return {
 		executable,
 		executableIsUserDefined,
-		trigger,
+		trigger
 	};
 }
 
 async function getPhpPath(): Promise<string | undefined> {
 	try {
-		return await which("php");
+		return await which('php');
 	} catch (e) {
 		return undefined;
 	}

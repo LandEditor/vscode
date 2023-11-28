@@ -3,29 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/gettingStarted";
-import { localize } from "vs/nls";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { URI } from "vs/base/common/uri";
-import { Schemas } from "vs/base/common/network";
-import { IUntypedEditorInput } from "vs/workbench/common/editor";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
+import 'vs/css!./media/gettingStarted';
+import { localize } from 'vs/nls';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { URI } from 'vs/base/common/uri';
+import { Schemas } from 'vs/base/common/network';
+import { IUntypedEditorInput } from 'vs/workbench/common/editor';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
 
-export const gettingStartedInputTypeId =
-	"workbench.editors.gettingStartedInput";
+export const gettingStartedInputTypeId = 'workbench.editors.gettingStartedInput';
 
 export interface GettingStartedEditorOptions extends IEditorOptions {
-	selectedCategory?: string;
-	selectedStep?: string;
-	showTelemetryNotice?: boolean;
+	selectedCategory?: string; selectedStep?: string; showTelemetryNotice?: boolean;
 }
 
 export class GettingStartedInput extends EditorInput {
+
 	static readonly ID = gettingStartedInputTypeId;
-	static readonly RESOURCE = URI.from({
-		scheme: Schemas.walkThrough,
-		authority: "vscode_getting_started_page",
-	});
+	static readonly RESOURCE = URI.from({ scheme: Schemas.walkThrough, authority: 'vscode_getting_started_page' });
 
 	override get typeId(): string {
 		return GettingStartedInput.ID;
@@ -40,8 +35,8 @@ export class GettingStartedInput extends EditorInput {
 			resource: GettingStartedInput.RESOURCE,
 			options: {
 				override: GettingStartedInput.ID,
-				pinned: false,
-			},
+				pinned: false
+			}
 		};
 	}
 
@@ -60,7 +55,9 @@ export class GettingStartedInput extends EditorInput {
 		return false;
 	}
 
-	constructor(options: GettingStartedEditorOptions) {
+	constructor(
+		options: GettingStartedEditorOptions
+	) {
 		super();
 		this.selectedCategory = options.selectedCategory;
 		this.selectedStep = options.selectedStep;
@@ -68,7 +65,7 @@ export class GettingStartedInput extends EditorInput {
 	}
 
 	override getName() {
-		return localize("getStarted", "Welcome");
+		return localize('getStarted', "Welcome");
 	}
 
 	selectedCategory: string | undefined;

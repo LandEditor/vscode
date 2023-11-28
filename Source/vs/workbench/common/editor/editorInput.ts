@@ -3,31 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
-import { URI } from "vs/base/common/uri";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
-import { firstOrDefault } from "vs/base/common/arrays";
-import {
-	EditorInputCapabilities,
-	Verbosity,
-	GroupIdentifier,
-	ISaveOptions,
-	IRevertOptions,
-	IMoveResult,
-	IEditorDescriptor,
-	IEditorPane,
-	IUntypedEditorInput,
-	EditorResourceAccessor,
-	AbstractEditorInput,
-	isEditorInput,
-	IEditorIdentifier,
-} from "vs/workbench/common/editor";
-import { isEqual } from "vs/base/common/resources";
-import { ConfirmResult } from "vs/platform/dialogs/common/dialogs";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { IDisposable } from "vs/base/common/lifecycle";
+import { Emitter } from 'vs/base/common/event';
+import { URI } from 'vs/base/common/uri';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { firstOrDefault } from 'vs/base/common/arrays';
+import { EditorInputCapabilities, Verbosity, GroupIdentifier, ISaveOptions, IRevertOptions, IMoveResult, IEditorDescriptor, IEditorPane, IUntypedEditorInput, EditorResourceAccessor, AbstractEditorInput, isEditorInput, IEditorIdentifier } from 'vs/workbench/common/editor';
+import { isEqual } from 'vs/base/common/resources';
+import { ConfirmResult } from 'vs/platform/dialogs/common/dialogs';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 export interface IEditorCloseHandler {
+
 	/**
 	 * If `true`, will call into the `confirm` method to ask for confirmation
 	 * before closing the editor.
@@ -56,11 +43,10 @@ export interface IEditorCloseHandler {
  * Each editor input is mapped to an editor that is capable of opening it through the Platform facade.
  */
 export abstract class EditorInput extends AbstractEditorInput {
+
 	protected readonly _onDidChangeDirty = this._register(new Emitter<void>());
 	protected readonly _onDidChangeLabel = this._register(new Emitter<void>());
-	protected readonly _onDidChangeCapabilities = this._register(
-		new Emitter<void>()
-	);
+	protected readonly _onDidChangeCapabilities = this._register(new Emitter<void>());
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
 
@@ -236,10 +222,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * this operation or `undefined` to indicate that the operation
 	 * failed or was canceled.
 	 */
-	async save(
-		group: GroupIdentifier,
-		options?: ISaveOptions
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
 
@@ -252,20 +235,14 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * of this operation or `undefined` to indicate that the operation
 	 * failed or was canceled.
 	 */
-	async saveAs(
-		group: GroupIdentifier,
-		options?: ISaveOptions
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	async saveAs(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
 
 	/**
 	 * Reverts this input from the provided group.
 	 */
-	async revert(
-		group: GroupIdentifier,
-		options?: IRevertOptions
-	): Promise<void> {}
+	async revert(group: GroupIdentifier, options?: IRevertOptions): Promise<void> { }
 
 	/**
 	 * Called to determine how to handle a resource that is renamed that matches
@@ -275,10 +252,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * to participate. If an editor is returned though, it will replace the
 	 * current one with that editor and optional options.
 	 */
-	async rename(
-		group: GroupIdentifier,
-		target: URI
-	): Promise<IMoveResult | undefined> {
+	async rename(group: GroupIdentifier, target: URI): Promise<IMoveResult | undefined> {
 		return undefined;
 	}
 
@@ -293,6 +267,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * Returns if the other object matches this input.
 	 */
 	matches(otherInput: EditorInput | IUntypedEditorInput): boolean {
+
 		// Typed inputs: via  === check
 		if (isEditorInput(otherInput)) {
 			return this === otherInput;
@@ -302,18 +277,11 @@ export abstract class EditorInput extends AbstractEditorInput {
 		const otherInputEditorId = otherInput.options?.override;
 
 		// If the overrides are both defined and don't match that means they're separate inputs
-		if (
-			this.editorId !== otherInputEditorId &&
-			otherInputEditorId !== undefined &&
-			this.editorId !== undefined
-		) {
+		if (this.editorId !== otherInputEditorId && otherInputEditorId !== undefined && this.editorId !== undefined) {
 			return false;
 		}
 
-		return isEqual(
-			this.resource,
-			EditorResourceAccessor.getCanonicalUri(otherInput)
-		);
+		return isEqual(this.resource, EditorResourceAccessor.getCanonicalUri(otherInput));
 	}
 
 	/**
@@ -323,9 +291,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * @param editorPanes a list of editor pane descriptors that are candidates
 	 * for the editor to open in.
 	 */
-	prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
-		editorPanes: T[]
-	): T | undefined {
+	prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(editorPanes: T[]): T | undefined {
 		return firstOrDefault(editorPanes);
 	}
 
@@ -341,9 +307,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * preserve as much view state as possible from the typed input based on
 	 * the group the editor is opened.
 	 */
-	toUntyped(options?: {
-		preserveViewState: GroupIdentifier;
-	}): IUntypedEditorInput | undefined {
+	toUntyped(options?: { preserveViewState: GroupIdentifier }): IUntypedEditorInput | undefined {
 		return undefined;
 	}
 

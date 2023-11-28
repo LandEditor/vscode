@@ -5,24 +5,20 @@
 
 //@ts-check
 (function () {
-	"use strict";
+	'use strict';
 
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Load process explorer into window
-	bootstrapWindow.load(
-		["vs/code/electron-sandbox/processExplorer/processExplorerMain"],
-		function (processExplorer, configuration) {
-			return processExplorer.startup(configuration);
+	bootstrapWindow.load(['vs/code/electron-sandbox/processExplorer/processExplorerMain'], function (processExplorer, configuration) {
+		return processExplorer.startup(configuration);
+	}, {
+		configureDeveloperSettings: function () {
+			return {
+				forceEnableDeveloperKeybindings: true
+			};
 		},
-		{
-			configureDeveloperSettings: function () {
-				return {
-					forceEnableDeveloperKeybindings: true,
-				};
-			},
-		}
-	);
+	});
 
 	/**
 	 * @typedef {import('../../../base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration} ISandboxConfiguration
@@ -45,4 +41,4 @@
 		// @ts-ignore (defined in bootstrap-window.js)
 		return window.MonacoBootstrapWindow;
 	}
-})();
+}());

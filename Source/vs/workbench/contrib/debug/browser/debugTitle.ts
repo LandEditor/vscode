@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { IDebugService, State } from "vs/workbench/contrib/debug/common/debug";
-import { dispose, IDisposable } from "vs/base/common/lifecycle";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { ITitleService } from "vs/workbench/services/title/common/titleService";
+import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
+import { IDebugService, State } from 'vs/workbench/contrib/debug/common/debug';
+import { dispose, IDisposable } from 'vs/base/common/lifecycle';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
+import { ITitleService } from 'vs/workbench/services/title/browser/titleService';
 
 export class DebugTitleContribution implements IWorkbenchContribution {
+
 	private toDispose: IDisposable[] = [];
 
 	constructor(
@@ -19,9 +20,9 @@ export class DebugTitleContribution implements IWorkbenchContribution {
 	) {
 		const updateTitle = () => {
 			if (debugService.state === State.Stopped && !hostService.hasFocus) {
-				titleService.updateProperties({ prefix: "🔴" });
+				titleService.updateProperties({ prefix: '🔴' });
 			} else {
-				titleService.updateProperties({ prefix: "" });
+				titleService.updateProperties({ prefix: '' });
 			}
 		};
 		this.toDispose.push(debugService.onDidChangeState(updateTitle));

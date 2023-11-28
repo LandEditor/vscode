@@ -78,10 +78,16 @@ pub struct PersistedTunnel {
 
 impl PersistedTunnel {
 	pub fn into_locator(self) -> TunnelLocator {
-		TunnelLocator::ID { cluster: self.cluster, id: self.id }
+		TunnelLocator::ID {
+			cluster: self.cluster,
+			id: self.id,
+		}
 	}
 	pub fn locator(&self) -> TunnelLocator {
-		TunnelLocator::ID { cluster: self.cluster.clone(), id: self.id.clone() }
+		TunnelLocator::ID {
+			cluster: self.cluster.clone(),
+			id: self.id.clone(),
+		}
 	}
 }
 
@@ -133,7 +139,13 @@ impl LookupAccessTokenProvider {
 		log: log::Logger,
 		initial_token: Option<String>,
 	) -> Self {
-		Self { auth, client, locator, log, initial_token: Arc::new(Mutex::new(initial_token)) }
+		Self {
+			auth,
+			client,
+			locator,
+			log,
+			initial_token: Arc::new(Mutex::new(initial_token)),
+		}
 	}
 }
 
@@ -225,7 +237,12 @@ impl ActiveTunnel {
 		if let Some(details) = &*self.manager.endpoint_rx.borrow() {
 			return details
 				.as_ref()
-				.map(|r| r.base.port_uri_format.clone().expect("expected to have port format"))
+				.map(|r| {
+					r.base
+						.port_uri_format
+						.clone()
+						.expect("expected to have port format")
+				})
 				.map_err(|e| e.clone().into());
 		}
 
@@ -234,7 +251,8 @@ impl ActiveTunnel {
 
 	/// Gets the public URI on which a forwarded port can be access in browser.
 	pub fn get_port_uri(&self, port: u16) -> Result<String, AnyError> {
-		self.get_port_format().map(|f| f.replace(PORT_TOKEN, &port.to_string()))
+		self.get_port_format()
+			.map(|f| f.replace(PORT_TOKEN, &port.to_string()))
 	}
 
 	/// Gets an object to read the current tunnel status.
@@ -349,7 +367,8 @@ impl DevTunnels {
 		spanf!(
 			self.log,
 			self.log.span("dev-tunnel.delete"),
-			self.client.delete_tunnel(&tunnel.into_locator(), NO_REQUEST_OPTIONS)
+			self.client
+				.delete_tunnel(&tunnel.into_locator(), NO_REQUEST_OPTIONS)
 		)
 		.map_err(|e| wrap(e, "failed to execute `tunnel delete`"))?;
 
@@ -359,7 +378,9 @@ impl DevTunnels {
 
 	/// Renames the current tunnel to the new name.
 	pub async fn rename_tunnel(&mut self, name: &str) -> Result<(), AnyError> {
-		self.update_tunnel_name(self.launcher_tunnel.load(), name).await.map(|_| ())
+		self.update_tunnel_name(self.launcher_tunnel.load(), name)
+			.await
+			.map(|_| ())
 	}
 
 	/// Updates the name of the existing persisted tunnel to the new name.
@@ -373,12 +394,18 @@ impl DevTunnels {
 
 		let (mut full_tunnel, mut persisted, is_new) = match persisted {
 			Some(persisted) => {
-				debug!(self.log, "Found a persisted tunnel, seeing if the name matches...");
-				self.get_or_create_tunnel(persisted, Some(&name), NO_REQUEST_OPTIONS).await
+				debug!(
+					self.log,
+					"Found a persisted tunnel, seeing if the name matches..."
+				);
+				self.get_or_create_tunnel(persisted, Some(&name), NO_REQUEST_OPTIONS)
+					.await
 			}
 			None => {
 				debug!(self.log, "Creating a new tunnel with the requested name");
-				self.create_tunnel(&name, NO_REQUEST_OPTIONS).await.map(|(pt, t)| (t, pt, true))
+				self.create_tunnel(&name, NO_REQUEST_OPTIONS)
+					.await
+					.map(|(pt, t)| (t, pt, true))
 			}
 		}?;
 
@@ -446,8 +473,9 @@ impl DevTunnels {
 			Some(mut persisted) => {
 				if let Some(preferred_name) = preferred_name.map(|n| n.to_ascii_lowercase()) {
 					if persisted.name.to_ascii_lowercase() != preferred_name {
-						(_, persisted) =
-							self.update_tunnel_name(Some(persisted), &preferred_name).await?;
+						(_, persisted) = self
+							.update_tunnel_name(Some(persisted), &preferred_name)
+							.await?;
 					}
 				}
 
@@ -458,30 +486,44 @@ impl DevTunnels {
 			}
 			None => {
 				debug!(self.log, "No code server tunnel found, creating new one");
-				let name = self.get_name_for_tunnel(preferred_name, use_random_name).await?;
-				let (persisted, full_tunnel) =
-					self.create_tunnel(&name, &HOST_TUNNEL_REQUEST_OPTIONS).await?;
+				let name = self
+					.get_name_for_tunnel(preferred_name, use_random_name)
+					.await?;
+				let (persisted, full_tunnel) = self
+					.create_tunnel(&name, &HOST_TUNNEL_REQUEST_OPTIONS)
+					.await?;
 				(full_tunnel, persisted)
 			}
 		};
 
 		tunnel = self
-			.sync_tunnel_tags(&self.client, &persisted.name, tunnel, &HOST_TUNNEL_REQUEST_OPTIONS)
+			.sync_tunnel_tags(
+				&self.client,
+				&persisted.name,
+				tunnel,
+				&HOST_TUNNEL_REQUEST_OPTIONS,
+			)
 			.await?;
 
 		let locator = TunnelLocator::try_from(&tunnel).unwrap();
 		let host_token = get_host_token_from_tunnel(&tunnel);
 
-		for port_to_delete in
-			tunnel.ports.iter().filter(|p: &&TunnelPort| !preserve_ports.contains(&p.port_number))
+		for port_to_delete in tunnel
+			.ports
+			.iter()
+			.filter(|p: &&TunnelPort| !preserve_ports.contains(&p.port_number))
 		{
 			let output_fut = self.client.delete_tunnel_port(
 				&locator,
 				port_to_delete.port_number,
 				NO_REQUEST_OPTIONS,
 			);
-			spanf!(self.log, self.log.span("dev-tunnel.port.delete"), output_fut)
-				.map_err(|e| wrap(e, "failed to delete port"))?;
+			spanf!(
+				self.log,
+				self.log.span("dev-tunnel.port.delete"),
+				output_fut
+			)
+			.map_err(|e| wrap(e, "failed to delete port"))?;
 		}
 
 		// cleanup any old trailing tunnel endpoints
@@ -531,7 +573,10 @@ impl DevTunnels {
 				.map_err(|e| wrap(e, "failed to lookup tunnel"))?
 			}
 			None => {
-				let new_tunnel = Tunnel { tags: self.get_tags(name), ..Default::default() };
+				let new_tunnel = Tunnel {
+					tags: self.get_tags(name),
+					..Default::default()
+				};
 
 				loop {
 					let result = spanf!(
@@ -635,7 +680,10 @@ impl DevTunnels {
 	/// Tries to delete an unused tunnel, and then creates a tunnel with the
 	/// given `new_name`.
 	async fn try_recycle_tunnel(&mut self) -> Result<bool, AnyError> {
-		trace!(self.log, "Tunnel limit hit, trying to recycle an old tunnel");
+		trace!(
+			self.log,
+			"Tunnel limit hit, trying to recycle an old tunnel"
+		);
 
 		let existing_tunnels = self.list_tunnels_with_tag(OWNED_TUNNEL_TAGS).await?;
 
@@ -656,7 +704,8 @@ impl DevTunnels {
 				spanf!(
 					self.log,
 					self.log.span("dev-tunnel.delete"),
-					self.client.delete_tunnel(&tunnel.try_into().unwrap(), NO_REQUEST_OPTIONS)
+					self.client
+						.delete_tunnel(&tunnel.try_into().unwrap(), NO_REQUEST_OPTIONS)
 				)
 				.map_err(|e| wrap(e, "failed to execute `tunnel delete`"))?;
 				Ok(true)
@@ -734,7 +783,10 @@ impl DevTunnels {
 			if is_name_free(&name) {
 				return Ok(name);
 			}
-			info!(self.log, "{} is already taken, using a random name instead", &name);
+			info!(
+				self.log,
+				"{} is already taken, using a random name instead", &name
+			);
 			use_random_name = true;
 		}
 
@@ -754,8 +806,10 @@ impl DevTunnels {
 		}
 
 		loop {
-			let mut name =
-				prompt_placeholder("What would you like to call this machine?", &placeholder_name)?;
+			let mut name = prompt_placeholder(
+				"What would you like to call this machine?",
+				&placeholder_name,
+			)?;
 
 			name.make_ascii_lowercase();
 
@@ -787,7 +841,9 @@ impl DevTunnels {
 		};
 
 		let mut mgmt = self.client.build();
-		mgmt.authorization(tunnels::management::Authorization::Tunnel(tunnel.host_token.clone()));
+		mgmt.authorization(tunnels::management::Authorization::Tunnel(
+			tunnel.host_token.clone(),
+		));
 
 		let client = mgmt.into();
 		self.sync_tunnel_tags(
@@ -820,8 +876,11 @@ impl DevTunnels {
 	) -> Result<ActiveTunnel, AnyError> {
 		let mut manager = ActiveTunnelManager::new(self.log.clone(), client, locator, access_token);
 
-		let endpoint_result =
-			spanf!(self.log, self.log.span("dev-tunnel.serve.callback"), manager.get_endpoint());
+		let endpoint_result = spanf!(
+			self.log,
+			self.log.span("dev-tunnel.serve.callback"),
+			manager.get_endpoint()
+		);
 
 		let endpoint = match endpoint_result {
 			Ok(endpoint) => endpoint,
@@ -902,7 +961,12 @@ impl ActiveTunnelManager {
 			.await;
 		});
 
-		ActiveTunnelManager { endpoint_rx, relay, close_tx: Some(close_tx), status }
+		ActiveTunnelManager {
+			endpoint_rx,
+			relay,
+			close_tx: Some(close_tx),
+			status,
+		}
 	}
 
 	/// Gets a copy of the current tunnel status information
@@ -1079,7 +1143,11 @@ struct Backoff {
 
 impl Backoff {
 	pub fn new(base_duration: Duration, max_duration: Duration) -> Self {
-		Self { failures: 0, base_duration, max_duration }
+		Self {
+			failures: 0,
+			base_duration,
+			max_duration,
+		}
 	}
 
 	pub async fn delay(&mut self) {
@@ -1088,7 +1156,10 @@ impl Backoff {
 
 	pub fn next(&mut self) -> Duration {
 		self.failures += 1;
-		let duration = self.base_duration.checked_mul(self.failures).unwrap_or(self.max_duration);
+		let duration = self
+			.base_duration
+			.checked_mul(self.failures)
+			.unwrap_or(self.max_duration);
 		std::cmp::min(duration, self.max_duration)
 	}
 
@@ -1172,8 +1243,14 @@ mod test {
 
 	#[test]
 	fn test_clean_hostname_for_tunnel() {
-		assert_eq!(clean_hostname_for_tunnel("hello123"), "hello123".to_string());
-		assert_eq!(clean_hostname_for_tunnel("-cool-name-"), "cool-name".to_string());
+		assert_eq!(
+			clean_hostname_for_tunnel("hello123"),
+			"hello123".to_string()
+		);
+		assert_eq!(
+			clean_hostname_for_tunnel("-cool-name-"),
+			"cool-name".to_string()
+		);
 		assert_eq!(
 			clean_hostname_for_tunnel("cool!name with_chars"),
 			"coolname-with-chars".to_string()

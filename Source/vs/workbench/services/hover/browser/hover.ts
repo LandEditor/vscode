@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { HoverPosition } from "vs/base/browser/ui/hover/hoverWidget";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
 
-export const IHoverService = createDecorator<IHoverService>("hoverService");
+export const IHoverService = createDecorator<IHoverService>('hoverService');
 
 /**
  * Enables the convenient display of rich markdown-based hovers in the workbench.
@@ -30,10 +30,7 @@ export interface IHoverService {
 	 * });
 	 * ```
 	 */
-	showHover(
-		options: IHoverOptions,
-		focus?: boolean
-	): IHoverWidget | undefined;
+	showHover(options: IHoverOptions, focus?: boolean): IHoverWidget | undefined;
 
 	/**
 	 * Hides the hover if it was visible. This call will be ignored if the the hover is currently
