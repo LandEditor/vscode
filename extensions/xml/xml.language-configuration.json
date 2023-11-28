@@ -1,6 +1,6 @@
 {
 	"comments": {
-		"blockComment": ["<!--", "-->"]
+		"blockComment": [ "<!--", "-->" ]
 	},
 	"brackets": [
 		["<!--", "-->"],
@@ -9,23 +9,24 @@
 		["(", ")"]
 	],
 	"autoClosingPairs": [
-		{ "open": "{", "close": "}" },
-		{ "open": "[", "close": "]" },
+		{ "open": "{", "close": "}"},
+		{ "open": "[", "close": "]"},
 		{ "open": "(", "close": ")" },
 		{ "open": "\"", "close": "\"", "notIn": ["string"] },
 		{ "open": "'", "close": "'", "notIn": ["string"] },
-		{ "open": "<!--", "close": "-->", "notIn": ["comment", "string"] },
-		{ "open": "<![CDATA[", "close": "]]>", "notIn": ["comment", "string"] }
+		{ "open": "<!--", "close": "-->", "notIn": [ "comment", "string" ]},
+		{ "open": "<![CDATA[", "close": "]]>", "notIn": [ "comment", "string" ]}
 	],
 	"surroundingPairs": [
 		{ "open": "'", "close": "'" },
 		{ "open": "\"", "close": "\"" },
-		{ "open": "{", "close": "}" },
-		{ "open": "[", "close": "]" },
+		{ "open": "{", "close": "}"},
+		{ "open": "[", "close": "]"},
 		{ "open": "(", "close": ")" },
 		{ "open": "<", "close": ">" }
 	],
-	"colorizedBracketPairs": [],
+	"colorizedBracketPairs": [
+	],
 	"folding": {
 		"markers": {
 			"start": "^\\s*<!--\\s*#region\\b.*-->",
