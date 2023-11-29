@@ -111,7 +111,11 @@ Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration).regis
 	'type': 'object',
 	'properties': {
 		'problems.decorations.enabled': {
+<<<<<<< HEAD:Source/vs/workbench/contrib/markers/browser/markersFileDecorations.ts
 			'markdownDescription': localize('markers.showOnFile', "Show Errors & Warnings on files and folder. Overwritten by `#problems.visibility#` when `{0}` is off.", `problems.visibility`),
+=======
+			'markdownDescription': localize('markers.showOnFile', "Show Errors & Warnings on files and folder. Overwritten by `#problems.visibility#` when it is off."),
+>>>>>>> upstream/main:src/vs/workbench/contrib/markers/browser/markersFileDecorations.ts
 			'type': 'boolean',
 			'default': true
 		}
