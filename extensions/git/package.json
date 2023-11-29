@@ -765,21 +765,13 @@
       {
         "command": "git.viewChanges",
         "title": "%command.viewChanges%",
-<<<<<<< HEAD
-        "icon": "$(tasklist)",
-=======
         "icon": "$(diff-multiple)",
->>>>>>> upstream/main
         "category": "Git"
       },
       {
         "command": "git.viewStagedChanges",
         "title": "%command.viewStagedChanges%",
-<<<<<<< HEAD
-        "icon": "$(tasklist)",
-=======
         "icon": "$(diff-multiple)",
->>>>>>> upstream/main
         "category": "Git"
       }
     ],
