@@ -34,10 +34,6 @@ import { IConfigurationService } from 'vs/platform/configuration/common/configur
 import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
 import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-<<<<<<< HEAD:Source/vs/workbench/contrib/inlineChat/browser/inlineChatController.ts
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-=======
->>>>>>> upstream/main:src/vs/workbench/contrib/inlineChat/browser/inlineChatController.ts
 import { ILogService } from 'vs/platform/log/common/log';
 import { Progress } from 'vs/platform/progress/common/progress';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
