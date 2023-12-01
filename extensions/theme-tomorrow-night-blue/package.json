@@ -4,7 +4,7 @@
   "description": "%description%",
   "version": "1.0.0",
   "publisher": "vscode",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "vscode": "*"
   },

@@ -3,7 +3,7 @@
   "description": "Test resolver for VS Code",
   "version": "0.0.1",
   "publisher": "vscode",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "enabledApiProposals": [
     "resolvers",
     "tunnels"

@@ -5,7 +5,7 @@
   "displayName": "%displayName%",
   "icon": "images/cowboy_hat.png",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "vscode": "*"
   },

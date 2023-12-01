@@ -3,7 +3,7 @@
   "description": "CSS/LESS/SCSS language server",
   "version": "1.0.0",
   "author": "Microsoft Corporation",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": "*"
   },

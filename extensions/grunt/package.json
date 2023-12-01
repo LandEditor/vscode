@@ -6,7 +6,7 @@
   "version": "1.0.0",
   "private": true,
   "icon": "images/grunt.png",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "vscode": "*"
   },

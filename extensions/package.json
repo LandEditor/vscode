@@ -1,7 +1,7 @@
 {
   "name": "vscode-extensions",
   "version": "0.0.1",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "description": "Dependencies shared by all extensions",
   "dependencies": {
     "typescript": "5.3.2"

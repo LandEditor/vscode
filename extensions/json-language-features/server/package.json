@@ -3,7 +3,7 @@
   "description": "JSON language server",
   "version": "1.3.4",
   "author": "Microsoft Corporation",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "engines": {
     "node": "*"
   },

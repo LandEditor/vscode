@@ -1,7 +1,7 @@
 {
   "name": "code-oss-dev-integration-test",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "main": "./index.js",
   "scripts": {
     "compile": "node ../../../node_modules/typescript/bin/tsc"

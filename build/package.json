@@ -1,7 +1,7 @@
 {
   "name": "code-oss-dev-build",
   "version": "1.0.0",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "@azure/cosmos": "^4",
     "@azure/identity": "^4.0.0",

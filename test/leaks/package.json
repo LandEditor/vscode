@@ -2,7 +2,7 @@
   "name": "leaks",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "koa": "^2.14.2",
     "koa-mount": "^4.0.0",

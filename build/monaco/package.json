@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "description": "A browser based code editor",
   "author": "Microsoft Corporation",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "typings": "./esm/vs/editor/editor.api.d.ts",
   "module": "./esm/vs/editor/editor.main.js",
   "repository": {

@@ -2,7 +2,7 @@
   "name": "code-oss-dev-build",
   "version": "1.0.0",
   "private": true,
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "devDependencies": {
     "node-gyp": "^10.0.1"
   },

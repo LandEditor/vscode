@@ -2,7 +2,7 @@
   "name": "test-monaco",
   "version": "1.0.0",
   "main": "index.js",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "private": true,
   "scripts": {
     "compile": "node ../../node_modules/typescript/bin/tsc",

@@ -1,7 +1,7 @@
 {
   "name": "code-oss-dev-smoke-test",
   "version": "0.1.0",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "main": "./src/main.js",
   "scripts": {
     "compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",

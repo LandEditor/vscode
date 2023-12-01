@@ -4,7 +4,7 @@
 	"description": "%description%",
 	"publisher": "vscode",
 	"version": "1.0.0",
-	"license": "MIT",
+	"license": "SEE LICENSE IN LICENSE",
   "icon": "media/icon.png",
 	"engines": {
 		"vscode": "^1.57.0"
