@@ -1889,20 +1889,7 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 				primaryAction = actions.find(a => a.id === lastActionId) ?? actions[0];
 			}
 
-<<<<<<< HEAD
-			if (primaryAction &&
-				primaryAction.id !== SCMInputCommandId.CancelAction &&
-				contextKeyService.getContextKeyValue(SCMInputContextKeys.ActionIsEnabled.key) === false) {
-				primaryAction.enabled = false;
-			}
-
-			this._ctxActionCount.set(actions.length);
 			this._dropdownActions = actions.length === 1 ? [] : actions;
-
-			container.classList.toggle('has-no-actions', actions.length === 0);
-=======
-			this._dropdownActions = actions.length === 1 ? [] : actions;
->>>>>>> upstream/main
 			super.setActions(primaryAction ? [primaryAction] : [], []);
 
 			this._onDidChange.fire();
@@ -1911,10 +1898,6 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 		this._store.add(menu.onDidChange(() => updateToolbar()));
 		this._store.add(input.repository.provider.onDidChangeResources(() => updateToolbar()));
 
-<<<<<<< HEAD
-		const ctxKeys = new Set<string>([SCMInputContextKeys.ActionIsEnabled.key, SCMInputContextKeys.ActionIsRunning.key]);
-		this._store.add(Event.filter(contextKeyService.onDidChangeContext, e => e.affectsSome(ctxKeys))(() => updateToolbar()));
-=======
 		this._store.add(actionRunner.onWillRun(e => {
 			if (actionRunner.runningActions.size === 0) {
 				super.setActions([cancelAction], []);
@@ -1926,7 +1909,6 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 				updateToolbar();
 			}
 		}));
->>>>>>> upstream/main
 
 		// Delay initial update to finish class initialization
 		setTimeout(() => updateToolbar(), 0);
@@ -2103,41 +2085,9 @@ class SCMInputWidget {
 		updateEnablement(input.enabled);
 
 		// Toolbar
-<<<<<<< HEAD
-		const onDidChangeActionButton = () => {
-			this.actionBar.clear();
-
-			const actionCount = this.toolbarContextKeyService.getContextKeyValue<number>(SCMInputContextKeys.ActionCount.key) ?? 0;
-
-			if (input.actionButton && actionCount === 0) {
-				const action = new Action(
-					input.actionButton.command.id,
-					input.actionButton.command.title,
-					ThemeIcon.isThemeIcon(input.actionButton.icon) ? ThemeIcon.asClassName(input.actionButton.icon) : undefined,
-					input.actionButton.enabled,
-					() => this.commandService.executeCommand(input.actionButton!.command.id, ...(input.actionButton!.command.arguments || [])));
-
-				this.actionBar.push(action, { icon: true, label: false });
-			}
-
-			this.layout();
-		};
-
-		const ctxKeys = new Set<string>([SCMInputContextKeys.ActionCount.key]);
-		this.repositoryDisposables.add(Event.filter(this.toolbarContextKeyService.onDidChangeContext, e => e.affectsSome(ctxKeys))(onDidChangeActionButton, this));
-
-		this.repositoryDisposables.add(input.onDidChangeActionButton(onDidChangeActionButton, this));
-		this.repositoryDisposables.add(this.scmService.onDidChangeInputValueProviders(onDidChangeActionButton, this));
-		this.repositoryDisposables.add(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.showInputActionButton'))(onDidChangeActionButton, this));
-		onDidChangeActionButton();
-
-		// Toolbar (new)
-		this.createToolbar(input);
-=======
 		this.toolbar = this.createToolbar(input);
 		this.repositoryDisposables.add(this.toolbar.onDidChange(() => this.layout()));
 		this.repositoryDisposables.add(this.toolbar);
->>>>>>> upstream/main
 	}
 
 	get selections(): Selection[] | null {
@@ -2150,20 +2100,8 @@ class SCMInputWidget {
 		}
 	}
 
-<<<<<<< HEAD
-	private createToolbar(input: ISCMInput): void {
-		const services = new ServiceCollection([IContextKeyService, this.toolbarContextKeyService]);
-		const instantiationService2 = this.instantiationService.createChild(services);
-
-		const ctxIsActionEnabled = SCMInputContextKeys.ActionIsEnabled.bindTo(this.toolbarContextKeyService);
-		this.repositoryDisposables.add(input.repository.provider.onDidChangeResources(() => ctxIsActionEnabled.set(input.repository.provider.groups.some(r => r.resources.length > 0))));
-		ctxIsActionEnabled.set(input.repository.provider.groups.some(r => r.resources.length > 0));
-
-		const actionRunner = instantiationService2.createInstance(SCMInputWidgetActionRunner, input);
-=======
 	private createToolbar(input: ISCMInput): SCMInputWidgetToolbar {
 		const actionRunner = this.instantiationService.createInstance(SCMInputWidgetActionRunner, input);
->>>>>>> upstream/main
 		this.repositoryDisposables.add(actionRunner);
 
 		const toolbar: SCMInputWidgetToolbar = this.instantiationService.createInstance(SCMInputWidgetToolbar, this.toolbarContainer, input, actionRunner, {
@@ -2374,13 +2312,8 @@ class SCMInputWidget {
 		this.placeholderTextContainer.style.width = `${dimension.width}px`;
 		this.renderValidation();
 
-<<<<<<< HEAD
-		this.actionBar.domNode.classList.toggle('hidden', this.actionBar.isEmpty());
-		this.toolbarContainer.classList.toggle('hidden', this.configurationService.getValue<boolean>('scm.showInputActionButton') === false);
-=======
 		const showInputActionButton = this.configurationService.getValue<boolean>('scm.showInputActionButton') === true;
 		this.toolbarContainer.classList.toggle('hidden', !showInputActionButton || this.toolbar?.isEmpty() === true);
->>>>>>> upstream/main
 
 		if (this.shouldFocusAfterLayout) {
 			this.shouldFocusAfterLayout = false;

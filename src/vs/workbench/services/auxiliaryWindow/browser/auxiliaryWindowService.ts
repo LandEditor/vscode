@@ -116,11 +116,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 	}
 
 	layout(): void {
-<<<<<<< HEAD
-		this._onDidLayout.fire(getClientArea(this.window.document.body));
-=======
 		this._onDidLayout.fire(getClientArea(this.window.document.body, this.container));
->>>>>>> upstream/main
 	}
 
 	override dispose(): void {

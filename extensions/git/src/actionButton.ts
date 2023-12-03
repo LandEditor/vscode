@@ -168,11 +168,7 @@ export class ActionButton {
 		return commandGroups;
 	}
 
-<<<<<<< HEAD
-	protected override getPublishBranchActionButton(): SourceControlActionButton | undefined {
-=======
 	private getPublishBranchActionButton(): SourceControlActionButton | undefined {
->>>>>>> upstream/main
 		const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
 		const showActionButton = config.get<{ publish: boolean }>('showActionButton', { publish: true });
 
@@ -199,11 +195,7 @@ export class ActionButton {
 		};
 	}
 
-<<<<<<< HEAD
-	protected override getSyncChangesActionButton(): SourceControlActionButton | undefined {
-=======
 	private getSyncChangesActionButton(): SourceControlActionButton | undefined {
->>>>>>> upstream/main
 		const config = workspace.getConfiguration('git', Uri.file(this.repository.root));
 		const showActionButton = config.get<{ sync: boolean }>('showActionButton', { sync: true });
 		const branchIsAheadOrBehind = (this.state.HEAD?.behind ?? 0) > 0 || (this.state.HEAD?.ahead ?? 0) > 0;
