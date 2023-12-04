@@ -104,15 +104,15 @@
 		"onNotebookSerializer:interactive"
 	],
 	"dependencies": {
-		"@enonic/fnv-plus": "^1.3.0",
-		"detect-indent": "^7.0.1"
+		"@enonic/fnv-plus": "1.3.0",
+		"detect-indent": "7.0.1"
 	},
 	"devDependencies": {
-		"@jupyterlab/nbformat": "^4.0.9",
+		"@jupyterlab/nbformat": "4.0.9",
 		"@types/markdown-it": "13.0.7"
 	},
 	"engines": {
-		"vscode": "^1.57.0"
+		"vscode": "1.57.0"
 	},
 	"icon": "media/icon.png",
 	"capabilities": {

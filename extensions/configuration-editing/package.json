@@ -149,14 +149,14 @@
 	],
 	"dependencies": {
 		"@octokit/rest": "20.0.2",
-		"jsonc-parser": "^3.2.0",
-		"tunnel": "^0.0.6"
+		"jsonc-parser": "3.2.0",
+		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
 		"@types/node": "20.x"
 	},
 	"engines": {
-		"vscode": "^1.0.0"
+		"vscode": "1.0.0"
 	},
 	"icon": "images/icon.png",
 	"capabilities": {
