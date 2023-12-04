@@ -65,11 +65,7 @@ impl<S: Serialization> RpcBuilder<S> {
 	/// Creates a caller that will be connected to any eventual dispatchers,
 	/// and that sends data to the "tx" channel.
 	pub fn get_caller(&mut self, sender: mpsc::UnboundedSender<Vec<u8>>) -> RpcCaller<S> {
-		RpcCaller {
-			serializer: self.serializer.clone(),
-			calls: self.calls.clone(),
-			sender,
-		}
+		RpcCaller { serializer: self.serializer.clone(), calls: self.calls.clone(), sender }
 	}
 
 	/// Gets a method builder.
@@ -119,10 +115,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 						return id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error: ResponseError {
-									code: 0,
-									message: format!("{:?}", err),
-								},
+								error: ResponseError { code: 0, message: format!("{:?}", err) },
 							})
 						})
 					}
@@ -133,10 +126,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 					Err(err) => id.map(|id| {
 						serial.serialize(ErrorResponse {
 							id,
-							error: ResponseError {
-								code: -1,
-								message: format!("{:?}", err),
-							},
+							error: ResponseError { code: -1, message: format!("{:?}", err) },
 						})
 					}),
 				}
@@ -163,10 +153,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 						return future::ready(id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error: ResponseError {
-									code: 0,
-									message: format!("{:?}", err),
-								},
+								error: ResponseError { code: 0, message: format!("{:?}", err) },
 							})
 						}))
 						.boxed();
@@ -184,10 +171,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 						Err(err) => id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error: ResponseError {
-									code: -1,
-									message: format!("{:?}", err),
-								},
+								error: ResponseError { code: -1, message: format!("{:?}", err) },
 							})
 						}),
 					}
@@ -224,10 +208,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 							future::ready(id.map(|id| {
 								serial.serialize(ErrorResponse {
 									id,
-									error: ResponseError {
-										code: 0,
-										message: format!("{:?}", err),
-									},
+									error: ResponseError { code: 0, message: format!("{:?}", err) },
 								})
 							}))
 							.boxed(),
@@ -239,10 +220,8 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 				let serial = serial.clone();
 				let context = context.clone();
 
-				let mut dto = StreamDto {
-					req_id: id.unwrap_or(0),
-					streams: Vec::with_capacity(streams),
-				};
+				let mut dto =
+					StreamDto { req_id: id.unwrap_or(0), streams: Vec::with_capacity(streams) };
 				let mut servers = Vec::with_capacity(streams);
 
 				for _ in 0..streams {
@@ -257,10 +236,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 						Err(err) => id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error: ResponseError {
-									code: -1,
-									message: format!("{:?}", err),
-								},
+								error: ResponseError { code: -1, message: format!("{:?}", err) },
 							})
 						}),
 					}
@@ -320,11 +296,7 @@ impl<S: Serialization> RpcCaller<S> {
 		M: AsRef<str> + serde::Serialize,
 		A: Serialize,
 	{
-		serializer.serialize(&FullRequest {
-			id: None,
-			method,
-			params,
-		})
+		serializer.serialize(&FullRequest { id: None, method, params })
 	}
 
 	/// Enqueues an outbound call. Returns whether the message was enqueued.
@@ -333,9 +305,7 @@ impl<S: Serialization> RpcCaller<S> {
 		M: AsRef<str> + serde::Serialize,
 		A: Serialize,
 	{
-		self.sender
-			.send(Self::serialize_notify(&self.serializer, method, params))
-			.is_ok()
+		self.sender.send(Self::serialize_notify(&self.serializer, method, params)).is_ok()
 	}
 
 	/// Enqueues an outbound call, returning its result.
@@ -347,11 +317,7 @@ impl<S: Serialization> RpcCaller<S> {
 	{
 		let (tx, rx) = oneshot::channel();
 		let id = next_message_id();
-		let body = self.serializer.serialize(&FullRequest {
-			id: Some(id),
-			method,
-			params,
-		});
+		let body = self.serializer.serialize(&FullRequest { id: Some(id), method, params });
 
 		if self.sender.send(body).is_err() {
 			drop(tx);
@@ -366,12 +332,9 @@ impl<S: Serialization> RpcCaller<S> {
 					Outcome::Error(e) => tx.send(Err(e)).ok(),
 					Outcome::Success(r) => match serializer.deserialize::<SuccessResponse<R>>(&r) {
 						Ok(r) => tx.send(Ok(r.result)).ok(),
-						Err(err) => tx
-							.send(Err(ResponseError {
-								code: 0,
-								message: err.to_string(),
-							}))
-							.ok(),
+						Err(err) => {
+							tx.send(Err(ResponseError { code: 0, message: err.to_string() })).ok()
+						}
 					},
 				};
 			}),
@@ -573,14 +536,10 @@ impl Streams {
 	}
 
 	pub fn insert(&self, id: u32, stream: WriteHalf<DuplexStream>) {
-		self.map.lock().unwrap().insert(
-			id,
-			StreamRec {
-				write: Some(stream),
-				q: Vec::new(),
-				ended: false,
-			},
-		);
+		self.map
+			.lock()
+			.unwrap()
+			.insert(id, StreamRec { write: Some(stream), q: Vec::new(), ended: false });
 	}
 }
 
