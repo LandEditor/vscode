@@ -2,9 +2,9 @@
   "name": "code-oss-dev-build",
   "version": "1.0.0",
   "private": true,
-  "license": "SEE LICENSE IN LICENSE",
+  "license": "MIT",
   "devDependencies": {
-    "node-gyp": "10.0.1"
+    "node-gyp": "^9.4.0"
   },
   "scripts": {}
 }

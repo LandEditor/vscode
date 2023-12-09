@@ -1,25 +1,25 @@
 {
-	"name": "theme-quietlight",
-	"displayName": "%displayName%",
-	"version": "1.0.0",
-	"description": "%description%",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"publisher": "vscode",
-	"contributes": {
-		"themes": [
-			{
-				"id": "Quiet Light",
-				"label": "%themeLabel%",
-				"uiTheme": "vs",
-				"path": "./themes/quietlight-color-theme.json"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "*"
-	}
+  "name": "theme-quietlight",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "contributes": {
+    "themes": [
+      {
+        "id": "Quiet Light",
+        "label": "%themeLabel%",
+        "uiTheme": "vs",
+        "path": "./themes/quietlight-color-theme.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }
