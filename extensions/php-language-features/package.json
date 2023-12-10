@@ -74,11 +74,11 @@
     "watch": "npx gulp watch-extension:php-language-features"
   },
   "dependencies": {
-    "which": "^4.0.0"
+    "which": "4.0.0"
   },
   "devDependencies": {
     "@types/node": "20.x",
-    "@types/which": "^3.0.3"
+    "@types/which": "3.0.3"
   },
   "repository": {
     "type": "git",
