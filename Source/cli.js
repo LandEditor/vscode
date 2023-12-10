@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-"use strict";
+'use strict';
 
 // Delete `VSCODE_CWD` very early even before
 // importing bootstrap files. We have seen
@@ -12,20 +12,21 @@
 // current working directory due to our variable
 // somehow escaping to the parent shell
 // (https://github.com/microsoft/vscode/issues/126399)
-delete process.env["VSCODE_CWD"];
+delete process.env['VSCODE_CWD'];
 
-const bootstrap = require("./bootstrap");
-const bootstrapNode = require("./bootstrap-node");
-const product = require("../product.json");
+const bootstrap = require('./bootstrap');
+const bootstrapNode = require('./bootstrap-node');
+const product = require('../product.json');
 
 // Enable portable support
+// @ts-ignore
 bootstrapNode.configurePortable(product);
 
 // Enable ASAR support
 bootstrap.enableASARSupport();
 
 // Signal processes that we got launched as CLI
-process.env["VSCODE_CLI"] = "1";
+process.env['VSCODE_CLI'] = '1';
 
 // Load CLI through AMD loader
-require("./bootstrap-amd").load("vs/code/node/cli");
+require('./bootstrap-amd').load('vs/code/node/cli');

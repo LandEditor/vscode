@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export enum SpeechToTextStatus {
 		Started = 1,
 		Recognizing = 2,
 		Recognized = 3,
-		Stopped = 4,
+		Stopped = 4
 	}
 
 	export interface SpeechToTextEvent {
@@ -21,18 +22,14 @@ declare module "vscode" {
 	}
 
 	export interface SpeechProvider {
-		provideSpeechToTextSession(
-			token: CancellationToken
-		): SpeechToTextSession;
+		provideSpeechToTextSession(token: CancellationToken): SpeechToTextSession;
 	}
 
 	export namespace speech {
+
 		/**
 		 * TODO@bpasero work in progress speech provider API
 		 */
-		export function registerSpeechProvider(
-			id: string,
-			provider: SpeechProvider
-		): Disposable;
+		export function registerSpeechProvider(id: string, provider: SpeechProvider): Disposable;
 	}
 }
