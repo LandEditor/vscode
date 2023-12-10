@@ -6,7 +6,7 @@
   "publisher": "vscode",
   "license": "MIT",
   "engines": {
-    "vscode": "1.0.0"
+    "vscode": "^1.0.0"
   },
   "icon": "images/icon.png",
   "activationEvents": [
@@ -23,9 +23,9 @@
     "watch": "gulp watch-extension:configuration-editing"
   },
   "dependencies": {
-    "jsonc-parser": "3.2.0",
-    "@octokit/rest": "20.0.2",
-    "tunnel": "0.0.6"
+    "jsonc-parser": "^3.2.0",
+    "@octokit/rest": "19.0.4",
+    "tunnel": "^0.0.6"
   },
   "capabilities": {
     "virtualWorkspaces": true,
@@ -161,7 +161,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "20.x"
+    "@types/node": "18.x"
   },
   "repository": {
     "type": "git",
