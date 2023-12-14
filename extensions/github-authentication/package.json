@@ -6,7 +6,7 @@
   "license": "MIT",
   "version": "0.0.2",
   "engines": {
-    "vscode": "^1.41.0"
+    "vscode": "1.41.0"
   },
   "icon": "images/icon.png",
   "categories": [
@@ -60,13 +60,13 @@
   },
   "dependencies": {
     "node-fetch": "3.3.2",
-    "@vscode/extension-telemetry": "^0.9.1",
-    "vscode-tas-client": "^0.1.75"
+    "@vscode/extension-telemetry": "0.9.1",
+    "vscode-tas-client": "0.1.75"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.6",
+    "@types/mocha": "10.0.6",
     "@types/node": "20.x",
-    "@types/node-fetch": "^2.6.9"
+    "@types/node-fetch": "2.6.9"
   },
   "repository": {
     "type": "git",
