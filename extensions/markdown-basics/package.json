@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "^1.20.0"
+  },
   "contributes": {
     "languages": [
       {

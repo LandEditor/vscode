@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
     "update-grammar": "node ../node_modules/vscode-grammar-updater/bin REditorSupport/vscode-R syntax/r.json ./syntaxes/r.tmLanguage.json"
   },

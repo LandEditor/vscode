@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "^1.82.0"
+  },
   "icon": "media/icon.png",
   "capabilities": {
     "virtualWorkspaces": false,
@@ -41,7 +44,13 @@
     "watch": "gulp watch-extension:tunnel-forwarding"
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "20.x"
+  },
+  "prettier": {
+    "printWidth": 100,
+    "trailingComma": "all",
+    "singleQuote": true,
+    "arrowParens": "avoid"
   },
   "repository": {
     "type": "git",

@@ -6,6 +6,12 @@
   "publisher": "vscode",
   "license": "MIT",
   "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.39.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
   "main": "./out/extension.js",
   "browser": "./dist/extension.js",
   "activationEvents": [

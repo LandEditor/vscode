@@ -6,7 +6,13 @@
   "version": "1.0.1",
   "private": true,
   "license": "MIT",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "icon": "images/npm_icon.png",
+  "categories": [
+    "Other"
+  ],
   "enabledApiProposals": [
     "terminalQuickFixProvider"
   ],
@@ -15,10 +21,10 @@
     "watch": "npx gulp watch-extension:npm"
   },
   "dependencies": {
-    "find-up": "^5.0.0",
+    "find-up": "^7.0.0",
     "find-yarn-workspace-root": "^2.0.0",
     "jsonc-parser": "^3.2.0",
-    "minimatch": "^5.1.6",
+    "minimatch": "^9.0.3",
     "request-light": "^0.7.0",
     "which": "^4.0.0",
     "which-pm": "^2.1.1",
@@ -26,8 +32,8 @@
   },
   "devDependencies": {
     "@types/minimatch": "^5.1.2",
-    "@types/node": "18.x",
-    "@types/which": "^3.0.0"
+    "@types/node": "20.x",
+    "@types/which": "^3.0.3"
   },
   "main": "./out/npmMain",
   "browser": "./dist/browser/npmBrowserMain",
@@ -335,18 +341,18 @@
       }
     ],
     "terminalQuickFixes": [
-      {
-        "id": "ms-vscode.npm-command",
-        "commandLineMatcher": "npm",
-        "commandExitResult": "error",
-        "outputMatcher": {
-          "anchor": "bottom",
-          "length": 8,
-          "lineMatcher": "Did you mean (?:this|one of these)\\?((?:\\n.+?npm .+ #.+)+)",
-          "offset": 2
+        {
+          "id": "ms-vscode.npm-command",
+          "commandLineMatcher": "npm",
+          "commandExitResult": "error",
+          "outputMatcher": {
+            "anchor": "bottom",
+            "length": 8,
+            "lineMatcher": "Did you mean (?:this|one of these)\\?((?:\\n.+?npm .+ #.+)+)",
+            "offset": 2
+          }
         }
-      }
-    ]
+      ]
   },
   "repository": {
     "type": "git",

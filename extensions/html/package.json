@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "scripts": {
     "update-grammar": "node ./build/update-grammar.mjs"
   },

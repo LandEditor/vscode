@@ -6,10 +6,16 @@
   "publisher": "vscode",
   "license": "MIT",
   "icon": "icons/logo.png",
+  "engines": {
+    "vscode": "0.10.x"
+  },
   "activationEvents": [
     "onLanguage:php"
   ],
   "main": "./out/phpMain",
+  "categories": [
+    "Programming Languages"
+  ],
   "capabilities": {
     "virtualWorkspaces": false,
     "untrustedWorkspaces": {
@@ -68,11 +74,11 @@
     "watch": "npx gulp watch-extension:php-language-features"
   },
   "dependencies": {
-    "which": "^2.0.2"
+    "which": "^4.0.0"
   },
   "devDependencies": {
-    "@types/node": "18.x",
-    "@types/which": "^2.0.0"
+    "@types/node": "20.x",
+    "@types/which": "^3.0.3"
   },
   "repository": {
     "type": "git",

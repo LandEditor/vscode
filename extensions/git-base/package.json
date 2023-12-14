@@ -5,6 +5,12 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "0.10.x"
+  },
+  "categories": [
+    "Other"
+  ],
   "activationEvents": [
     "*"
   ],
@@ -98,7 +104,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "20.x"
   },
   "repository": {
     "type": "git",

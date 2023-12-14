@@ -6,6 +6,9 @@
   "author": "vscode",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
   "scripts": {
     "update-grammar": "node ./build/update-grammars.mjs"
   },

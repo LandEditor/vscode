@@ -5,6 +5,9 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
+  "engines": {
+    "vscode": "^1.32.0"
+  },
   "icon": "media/icon.png",
   "activationEvents": [
     "onDebugResolve"
@@ -209,7 +212,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "18.x"
+    "@types/node": "20.x"
   },
   "repository": {
     "type": "git",
