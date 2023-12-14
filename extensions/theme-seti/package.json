@@ -10,9 +10,6 @@
   "scripts": {
     "update": "node ./build/update-icon-theme.js"
   },
-  "engines": {
-    "vscode": "*"
-  },
   "contributes": {
     "iconThemes": [
       {

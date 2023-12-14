@@ -6,12 +6,6 @@
   "version": "1.0.0",
   "icon": "images/gulp.png",
   "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": [
-    "Other"
-  ],
   "scripts": {
     "compile": "gulp compile-extension:gulp",
     "watch": "gulp watch-extension:gulp"

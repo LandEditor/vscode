@@ -4,9 +4,6 @@
   "version": "1.0.0",
   "author": "Microsoft Corporation",
   "license": "MIT",
-  "engines": {
-    "node": "*"
-  },
   "main": "./out/node/cssServerMain",
   "browser": "./dist/browser/cssServerMain",
   "dependencies": {

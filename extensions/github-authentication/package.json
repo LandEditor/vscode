@@ -5,13 +5,7 @@
   "publisher": "vscode",
   "license": "MIT",
   "version": "0.0.2",
-  "engines": {
-    "vscode": "^1.41.0"
-  },
   "icon": "images/icon.png",
-  "categories": [
-    "Other"
-  ],
   "api": "none",
   "extensionKind": [
     "ui",

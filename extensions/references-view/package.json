@@ -6,9 +6,6 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.67.0"
-  },
   "capabilities": {
     "virtualWorkspaces": true,
     "untrustedWorkspaces": {
@@ -22,9 +19,6 @@
   "bugs": {
     "url": "https://github.com/Microsoft/vscode-references-view/issues"
   },
-  "categories": [
-    "Programming Languages"
-  ],
   "activationEvents": [
     "onCommand:references-view.find",
     "onCommand:editor.action.showReferences"

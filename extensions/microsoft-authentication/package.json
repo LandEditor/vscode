@@ -5,13 +5,7 @@
   "displayName": "%displayName%",
   "description": "%description%",
   "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.42.0"
-  },
   "icon": "media/icon.png",
-  "categories": [
-    "Other"
-  ],
   "activationEvents": [],
   "enabledApiProposals": [
     "idToken"

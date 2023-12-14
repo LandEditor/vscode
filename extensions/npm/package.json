@@ -6,13 +6,7 @@
   "version": "1.0.1",
   "private": true,
   "license": "MIT",
-  "engines": {
-    "vscode": "0.10.x"
-  },
   "icon": "images/npm_icon.png",
-  "categories": [
-    "Other"
-  ],
   "enabledApiProposals": [
     "terminalQuickFixProvider"
   ],
@@ -341,18 +335,18 @@
       }
     ],
     "terminalQuickFixes": [
-        {
-          "id": "ms-vscode.npm-command",
-          "commandLineMatcher": "npm",
-          "commandExitResult": "error",
-          "outputMatcher": {
-            "anchor": "bottom",
-            "length": 8,
-            "lineMatcher": "Did you mean (?:this|one of these)\\?((?:\\n.+?npm .+ #.+)+)",
-            "offset": 2
-          }
+      {
+        "id": "ms-vscode.npm-command",
+        "commandLineMatcher": "npm",
+        "commandExitResult": "error",
+        "outputMatcher": {
+          "anchor": "bottom",
+          "length": 8,
+          "lineMatcher": "Did you mean (?:this|one of these)\\?((?:\\n.+?npm .+ #.+)+)",
+          "offset": 2
         }
-      ]
+      }
+    ]
   },
   "repository": {
     "type": "git",

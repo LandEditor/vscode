@@ -5,13 +5,7 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.13.0"
-  },
   "icon": "images/icon.png",
-  "categories": [
-    "Other"
-  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/microsoft/vscode.git"

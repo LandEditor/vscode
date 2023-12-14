@@ -5,9 +5,6 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
-  "engines": {
-    "vscode": "^1.0.0"
-  },
   "icon": "images/icon.png",
   "activationEvents": [
     "onProfile",
@@ -54,7 +51,8 @@
           "devcontainer.json",
           ".devcontainer.json"
         ]
-      }, {
+      },
+      {
         "id": "json",
         "extensions": [
           ".code-profile"

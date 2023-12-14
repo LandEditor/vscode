@@ -5,9 +5,6 @@
   "version": "1.0.0",
   "publisher": "vscode",
   "license": "MIT",
-  "engines": {
-    "vscode": "0.10.x"
-  },
   "scripts": {
     "update-grammar": "node ./build/update-grammars.js"
   },
@@ -81,7 +78,7 @@
       {
         "id": "snippets",
         "aliases": [
-            "Code Snippets"
+          "Code Snippets"
         ],
         "extensions": [
           ".code-snippets"
