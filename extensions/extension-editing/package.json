@@ -6,7 +6,7 @@
   "publisher": "vscode",
   "license": "MIT",
   "engines": {
-    "vscode": "^1.4.0"
+    "vscode": "1.4.0"
   },
   "icon": "images/icon.png",
   "activationEvents": [
@@ -26,9 +26,9 @@
     "watch": "gulp watch-extension:extension-editing"
   },
   "dependencies": {
-    "jsonc-parser": "^3.2.0",
-    "markdown-it": "^12.3.2",
-    "parse5": "^3.0.2"
+    "jsonc-parser": "3.2.0",
+    "markdown-it": "12.3.2",
+    "parse5": "3.0.2"
   },
   "contributes": {
     "jsonValidation": [
