@@ -48,11 +48,11 @@ export const CTX_NOTEBOOK_CELL_CHAT_FOCUSED = new RawContextKey<boolean>(
 	false,
 	localize(
 		"notebookCellChatFocused",
-		"Whether the cell chat editor is focused"
-	)
+		"Whether the cell chat editor is focused",
+	),
 );
 export const MENU_NOTEBOOK_CELL_CHAT_WIDGET = MenuId.for(
-	"notebookCellChatWidget"
+	"notebookCellChatWidget",
 );
 
 export class CellChatWidget extends Disposable {
@@ -243,8 +243,8 @@ export class CellChatWidget extends Disposable {
 			this._inputEditor.layout(
 				new Dimension(
 					innerEditorWidth,
-					this._inputEditor.getContentHeight()
-				)
+					this._inputEditor.getContentHeight(),
+				),
 			);
 		}
 	}

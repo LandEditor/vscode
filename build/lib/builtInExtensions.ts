@@ -37,7 +37,7 @@ export interface IExtensionDefinition {
 
 const root = path.dirname(path.dirname(__dirname));
 const productjson = JSON.parse(
-	fs.readFileSync(path.join(__dirname, "../../product.json"), "utf8")
+	fs.readFileSync(path.join(__dirname, "../../product.json"), "utf8"),
 );
 const builtInExtensions =
 	<IExtensionDefinition[]>productjson.builtInExtensions || [];
@@ -47,7 +47,7 @@ const controlFilePath = path.join(
 	os.homedir(),
 	".vscode-oss-dev",
 	"extensions",
-	"control.json"
+	"control.json",
 );
 const ENABLE_LOGGING =
 	!process.env["VSCODE_BUILD_BUILTIN_EXTENSIONS_SILENCE_PLEASE"];
@@ -94,12 +94,12 @@ export function getExtensionStream(extension: IExtensionDefinition) {
 		log(
 			"[extensions]",
 			`${extension.name}@${extension.version} up to date`,
-			ansiColors.green("✔︎")
+			ansiColors.green("✔︎"),
 		);
 		return vfs
 			.src(["**"], { cwd: getExtensionPath(extension), dot: true })
 			.pipe(
-				rename((p) => (p.dirname = `${extension.name}/${p.dirname}`))
+				rename((p) => (p.dirname = `${extension.name}/${p.dirname}`)),
 			);
 	}
 
@@ -109,13 +109,13 @@ export function getExtensionStream(extension: IExtensionDefinition) {
 function syncMarketplaceExtension(extension: IExtensionDefinition): Stream {
 	const galleryServiceUrl = productjson.extensionsGallery?.serviceUrl;
 	const source = ansiColors.blue(
-		galleryServiceUrl ? "[marketplace]" : "[github]"
+		galleryServiceUrl ? "[marketplace]" : "[github]",
 	);
 	if (isUpToDate(extension)) {
 		log(
 			source,
 			`${extension.name}@${extension.version}`,
-			ansiColors.green("✔︎")
+			ansiColors.green("✔︎"),
 		);
 		return es.readArray([]);
 	}
@@ -129,7 +129,7 @@ function syncMarketplaceExtension(extension: IExtensionDefinition): Stream {
 
 function syncExtension(
 	extension: IExtensionDefinition,
-	controlState: "disabled" | "marketplace"
+	controlState: "disabled" | "marketplace",
 ): Stream {
 	if (extension.platforms) {
 		const platforms = new Set(extension.platforms);
@@ -138,7 +138,7 @@ function syncExtension(
 			log(
 				ansiColors.gray("[skip]"),
 				`${extension.name}@${extension.version}: Platform '${process.platform}' not supported: [${extension.platforms}]`,
-				ansiColors.green("✔︎")
+				ansiColors.green("✔︎"),
 			);
 			return es.readArray([]);
 		}
@@ -156,8 +156,8 @@ function syncExtension(
 			if (!fs.existsSync(controlState)) {
 				log(
 					ansiColors.red(
-						`Error: Built-in extension '${extension.name}' is configured to run from '${controlState}' but that path does not exist.`
-					)
+						`Error: Built-in extension '${extension.name}' is configured to run from '${controlState}' but that path does not exist.`,
+					),
 				);
 				return es.readArray([]);
 			} else if (
@@ -165,8 +165,8 @@ function syncExtension(
 			) {
 				log(
 					ansiColors.red(
-						`Error: Built-in extension '${extension.name}' is configured to run from '${controlState}' but there is no 'package.json' file in that directory.`
-					)
+						`Error: Built-in extension '${extension.name}' is configured to run from '${controlState}' but there is no 'package.json' file in that directory.`,
+					),
 				);
 				return es.readArray([]);
 			}
@@ -174,7 +174,7 @@ function syncExtension(
 			log(
 				ansiColors.blue("[local]"),
 				`${extension.name}: ${ansiColors.cyan(controlState)}`,
-				ansiColors.green("✔︎")
+				ansiColors.green("✔︎"),
 			);
 			return es.readArray([]);
 	}
@@ -201,8 +201,8 @@ export function getBuiltInExtensions(): Promise<void> {
 	log("Synchronizing built-in extensions...");
 	log(
 		`You can manage built-in extensions with the ${ansiColors.cyan(
-			"--builtin"
-		)} flag`
+			"--builtin",
+		)} flag`,
 	);
 
 	const control = readControlFile();

@@ -18,7 +18,7 @@ class DefineCall {
 	constructor(
 		public readonly id: string | null | undefined,
 		public readonly dependencies: string[] | null | undefined,
-		public readonly callback: any
+		public readonly callback: any,
 	) {}
 }
 
@@ -53,7 +53,7 @@ class AMDModuleImporter {
 		(<any>globalThis).define = (
 			id: any,
 			dependencies: any,
-			callback: any
+			callback: any,
 		) => {
 			if (typeof id !== "string") {
 				callback = dependencies;
@@ -87,7 +87,7 @@ class AMDModuleImporter {
 						return value;
 					}
 					throw new Error(
-						`[trusted_script_src] Invalid script url: ${value}`
+						`[trusted_script_src] Invalid script url: ${value}`,
 					);
 				},
 			});
@@ -98,7 +98,7 @@ class AMDModuleImporter {
 					createScriptURL(value: string) {
 						return value;
 					},
-				}
+				},
 			);
 		}
 	}
@@ -108,11 +108,11 @@ class AMDModuleImporter {
 		const defineCall = await (this._isWebWorker
 			? this._workerLoadScript(scriptSrc)
 			: this._isRenderer
-				? this._rendererLoadScript(scriptSrc)
-				: this._nodeJSLoadScript(scriptSrc));
+			  ? this._rendererLoadScript(scriptSrc)
+			  : this._nodeJSLoadScript(scriptSrc));
 		if (!defineCall) {
 			throw new Error(
-				`Did not receive a define call from script ${scriptSrc}`
+				`Did not receive a define call from script ${scriptSrc}`,
 			);
 		}
 		// TODO require, exports, module
@@ -122,8 +122,8 @@ class AMDModuleImporter {
 		) {
 			throw new Error(
 				`Cannot resolve dependencies for script ${scriptSrc}. The dependencies are: ${defineCall.dependencies.join(
-					", "
-				)}`
+					", ",
+				)}`,
 			);
 		}
 		if (typeof defineCall.callback === "function") {
@@ -134,7 +134,7 @@ class AMDModuleImporter {
 	}
 
 	private _rendererLoadScript(
-		scriptSrc: string
+		scriptSrc: string,
 	): Promise<DefineCall | undefined> {
 		return new Promise<DefineCall | undefined>((resolve, reject) => {
 			const scriptElement = document.createElement("script");
@@ -160,7 +160,7 @@ class AMDModuleImporter {
 			scriptElement.addEventListener("error", errorEventListener);
 			if (this._amdPolicy) {
 				scriptSrc = this._amdPolicy.createScriptURL(
-					scriptSrc
+					scriptSrc,
 				) as any as string;
 			}
 			scriptElement.setAttribute("src", scriptSrc);
@@ -172,13 +172,13 @@ class AMDModuleImporter {
 	}
 
 	private _workerLoadScript(
-		scriptSrc: string
+		scriptSrc: string,
 	): Promise<DefineCall | undefined> {
 		return new Promise<DefineCall | undefined>((resolve, reject) => {
 			try {
 				if (this._amdPolicy) {
 					scriptSrc = this._amdPolicy.createScriptURL(
-						scriptSrc
+						scriptSrc,
 					) as any as string;
 				}
 				importScripts(scriptSrc);
@@ -190,7 +190,7 @@ class AMDModuleImporter {
 	}
 
 	private async _nodeJSLoadScript(
-		scriptSrc: string
+		scriptSrc: string,
 	): Promise<DefineCall | undefined> {
 		try {
 			const fs = <typeof import("fs")>(
@@ -232,7 +232,7 @@ if (typeof globalThis.require === "object") {
 export async function importAMDNodeModule<T>(
 	nodeModuleName: string,
 	pathInsideNodeModule: string,
-	isBuilt?: boolean
+	isBuilt?: boolean,
 ): Promise<T> {
 	if (isESM) {
 		if (isBuilt === undefined) {
@@ -242,7 +242,7 @@ export async function importAMDNodeModule<T>(
 				(
 					product ??
 					(<any>globalThis).vscode?.context?.configuration()?.product
-				)?.commit
+				)?.commit,
 			);
 		}
 

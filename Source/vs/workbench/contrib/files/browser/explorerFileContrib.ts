@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { Registry } from 'vs/platform/registry/common/platform';
+import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { Registry } from "vs/platform/registry/common/platform";
 
 export const enum ExplorerExtensions {
-	FileContributionRegistry = 'workbench.registry.explorer.fileContributions'
+	FileContributionRegistry = "workbench.registry.explorer.fileContributions",
 }
 
 /**
@@ -24,7 +24,10 @@ export interface IExplorerFileContribution extends IDisposable {
 }
 
 export interface IExplorerFileContributionDescriptor {
-	create(insta: IInstantiationService, container: HTMLElement): IExplorerFileContribution;
+	create(
+		insta: IInstantiationService,
+		container: HTMLElement,
+	): IExplorerFileContribution;
 }
 
 export interface IExplorerFileContributionRegistry {
@@ -35,7 +38,9 @@ export interface IExplorerFileContributionRegistry {
 	register(descriptor: IExplorerFileContributionDescriptor): void;
 }
 
-class ExplorerFileContributionRegistry implements IExplorerFileContributionRegistry {
+class ExplorerFileContributionRegistry
+	implements IExplorerFileContributionRegistry
+{
 	private readonly descriptors: IExplorerFileContributionDescriptor[] = [];
 
 	/** @inheritdoc */
@@ -46,8 +51,12 @@ class ExplorerFileContributionRegistry implements IExplorerFileContributionRegis
 	/**
 	 * Creates a new instance of all registered contributions.
 	 */
-	public create(insta: IInstantiationService, container: HTMLElement, store: DisposableStore): IExplorerFileContribution[] {
-		return this.descriptors.map(d => {
+	public create(
+		insta: IInstantiationService,
+		container: HTMLElement,
+		store: DisposableStore,
+	): IExplorerFileContribution[] {
+		return this.descriptors.map((d) => {
 			const i = d.create(insta, container);
 			store.add(i);
 			return i;
@@ -55,5 +64,9 @@ class ExplorerFileContributionRegistry implements IExplorerFileContributionRegis
 	}
 }
 
-export const explorerFileContribRegistry = new ExplorerFileContributionRegistry();
-Registry.add(ExplorerExtensions.FileContributionRegistry, explorerFileContribRegistry);
+export const explorerFileContribRegistry =
+	new ExplorerFileContributionRegistry();
+Registry.add(
+	ExplorerExtensions.FileContributionRegistry,
+	explorerFileContribRegistry,
+);

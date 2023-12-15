@@ -29,7 +29,7 @@ declare module "vscode" {
 		 */
 		export function getSessions(
 			providerId: string,
-			scopes: readonly string[]
+			scopes: readonly string[],
 		): Thenable<readonly AuthenticationSession[]>;
 	}
 
@@ -61,7 +61,7 @@ declare module "vscode" {
 		 */
 		createSession(
 			scopes: readonly string[],
-			options: AuthenticationProviderCreateSessionOptions
+			options: AuthenticationProviderCreateSessionOptions,
 		): Thenable<AuthenticationSession>;
 	}
 }

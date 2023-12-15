@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isValidBasename } from 'vs/base/common/extpath';
-import { Schemas } from 'vs/base/common/network';
-import { IPath, win32, posix } from 'vs/base/common/path';
-import { OperatingSystem, OS } from 'vs/base/common/platform';
-import { basename } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { getVirtualWorkspaceScheme } from 'vs/platform/workspace/common/virtualWorkspace';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
+import { isValidBasename } from "vs/base/common/extpath";
+import { Schemas } from "vs/base/common/network";
+import { IPath, win32, posix } from "vs/base/common/path";
+import { OperatingSystem, OS } from "vs/base/common/platform";
+import { basename } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { getVirtualWorkspaceScheme } from "vs/platform/workspace/common/virtualWorkspace";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 
-export const IPathService = createDecorator<IPathService>('pathService');
+export const IPathService = createDecorator<IPathService>("pathService");
 
 /**
  * Provides access to path related properties that will match the
@@ -23,7 +23,6 @@ export const IPathService = createDecorator<IPathService>('pathService');
  * path properties will match that of the remotes operating system.
  */
 export interface IPathService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -70,7 +69,11 @@ export interface IPathService {
 	 * will always return `true` for them.
 	 */
 	hasValidBasename(resource: URI, basename?: string): Promise<boolean>;
-	hasValidBasename(resource: URI, os: OperatingSystem, basename?: string): boolean;
+	hasValidBasename(
+		resource: URI,
+		os: OperatingSystem,
+		basename?: string,
+	): boolean;
 
 	/**
 	 * @deprecated use `userHome` instead.
@@ -79,7 +82,6 @@ export interface IPathService {
 }
 
 export abstract class AbstractPathService implements IPathService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private resolveOS: Promise<OperatingSystem>;
@@ -111,40 +113,66 @@ export abstract class AbstractPathService implements IPathService {
 	}
 
 	hasValidBasename(resource: URI, basename?: string): Promise<boolean>;
-	hasValidBasename(resource: URI, os: OperatingSystem, basename?: string): boolean;
-	hasValidBasename(resource: URI, arg2?: string | OperatingSystem, basename?: string): boolean | Promise<boolean> {
-
+	hasValidBasename(
+		resource: URI,
+		os: OperatingSystem,
+		basename?: string,
+	): boolean;
+	hasValidBasename(
+		resource: URI,
+		arg2?: string | OperatingSystem,
+		basename?: string,
+	): boolean | Promise<boolean> {
 		// async version
-		if (typeof arg2 === 'string' || typeof arg2 === 'undefined') {
-			return this.resolveOS.then(os => this.doHasValidBasename(resource, os, arg2));
+		if (typeof arg2 === "string" || typeof arg2 === "undefined") {
+			return this.resolveOS.then((os) =>
+				this.doHasValidBasename(resource, os, arg2),
+			);
 		}
 
 		// sync version
 		return this.doHasValidBasename(resource, arg2, basename);
 	}
 
-	private doHasValidBasename(resource: URI, os: OperatingSystem, name?: string): boolean {
-
+	private doHasValidBasename(
+		resource: URI,
+		os: OperatingSystem,
+		name?: string,
+	): boolean {
 		// Our `isValidBasename` method only works with our
 		// standard schemes for files on disk, either locally
 		// or remote.
-		if (resource.scheme === Schemas.file || resource.scheme === Schemas.vscodeRemote) {
-			return isValidBasename(name ?? basename(resource), os === OperatingSystem.Windows);
+		if (
+			resource.scheme === Schemas.file ||
+			resource.scheme === Schemas.vscodeRemote
+		) {
+			return isValidBasename(
+				name ?? basename(resource),
+				os === OperatingSystem.Windows,
+			);
 		}
 
 		return true;
 	}
 
 	get defaultUriScheme(): string {
-		return AbstractPathService.findDefaultUriScheme(this.environmentService, this.contextService);
+		return AbstractPathService.findDefaultUriScheme(
+			this.environmentService,
+			this.contextService,
+		);
 	}
 
-	static findDefaultUriScheme(environmentService: IWorkbenchEnvironmentService, contextService: IWorkspaceContextService): string {
+	static findDefaultUriScheme(
+		environmentService: IWorkbenchEnvironmentService,
+		contextService: IWorkspaceContextService,
+	): string {
 		if (environmentService.remoteAuthority) {
 			return Schemas.vscodeRemote;
 		}
 
-		const virtualWorkspace = getVirtualWorkspaceScheme(contextService.getWorkspace());
+		const virtualWorkspace = getVirtualWorkspaceScheme(
+			contextService.getWorkspace(),
+		);
 		if (virtualWorkspace) {
 			return virtualWorkspace;
 		}
@@ -173,34 +201,32 @@ export abstract class AbstractPathService implements IPathService {
 	}
 
 	get path(): Promise<IPath> {
-		return this.resolveOS.then(os => {
-			return os === OperatingSystem.Windows ?
-				win32 :
-				posix;
+		return this.resolveOS.then((os) => {
+			return os === OperatingSystem.Windows ? win32 : posix;
 		});
 	}
 
 	async fileURI(_path: string): Promise<URI> {
-		let authority = '';
+		let authority = "";
 
 		// normalize to fwd-slashes on windows,
 		// on other systems bwd-slashes are valid
 		// filename character, eg /f\oo/ba\r.txt
 		const os = await this.resolveOS;
 		if (os === OperatingSystem.Windows) {
-			_path = _path.replace(/\\/g, '/');
+			_path = _path.replace(/\\/g, "/");
 		}
 
 		// check for authority as used in UNC shares
 		// or use the path as given
-		if (_path[0] === '/' && _path[1] === '/') {
-			const idx = _path.indexOf('/', 2);
+		if (_path[0] === "/" && _path[1] === "/") {
+			const idx = _path.indexOf("/", 2);
 			if (idx === -1) {
 				authority = _path.substring(2);
-				_path = '/';
+				_path = "/";
 			} else {
 				authority = _path.substring(2, idx);
-				_path = _path.substring(idx) || '/';
+				_path = _path.substring(idx) || "/";
 			}
 		}
 
@@ -208,8 +234,8 @@ export abstract class AbstractPathService implements IPathService {
 			scheme: Schemas.file,
 			authority,
 			path: _path,
-			query: '',
-			fragment: ''
+			query: "",
+			fragment: "",
 		});
 	}
 }

@@ -3,17 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { basename, extUri } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { Range, IRange } from 'vs/editor/common/core/range';
-import { IMarker, MarkerSeverity, IRelatedInformation, IMarkerData } from 'vs/platform/markers/common/markers';
-import { isNonEmptyArray, flatten } from 'vs/base/common/arrays';
-import { ResourceMap } from 'vs/base/common/map';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Hasher } from 'vs/base/common/hash';
-import { splitLines } from 'vs/base/common/strings';
-import { IMatch } from 'vs/base/common/filters';
-import { unsupportedSchemas } from 'vs/platform/markers/common/markerService';
+import { basename, extUri } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { Range, IRange } from "vs/editor/common/core/range";
+import {
+	IMarker,
+	MarkerSeverity,
+	IRelatedInformation,
+	IMarkerData,
+} from "vs/platform/markers/common/markers";
+import { isNonEmptyArray, flatten } from "vs/base/common/arrays";
+import { ResourceMap } from "vs/base/common/map";
+import { Emitter, Event } from "vs/base/common/event";
+import { Hasher } from "vs/base/common/hash";
+import { splitLines } from "vs/base/common/strings";
+import { IMatch } from "vs/base/common/filters";
+import { unsupportedSchemas } from "vs/platform/markers/common/markerService";
 
 export type MarkerElement = ResourceMarkers | Marker | RelatedInformation;
 
@@ -21,12 +26,18 @@ export function compareMarkersByUri(a: IMarker, b: IMarker) {
 	return extUri.compare(a.resource, b.resource);
 }
 
-function compareResourceMarkers(a: ResourceMarkers, b: ResourceMarkers): number {
+function compareResourceMarkers(
+	a: ResourceMarkers,
+	b: ResourceMarkers,
+): number {
 	const [firstMarkerOfA] = a.markers;
 	const [firstMarkerOfB] = b.markers;
 	let res = 0;
 	if (firstMarkerOfA && firstMarkerOfB) {
-		res = MarkerSeverity.compare(firstMarkerOfA.marker.severity, firstMarkerOfB.marker.severity);
+		res = MarkerSeverity.compare(
+			firstMarkerOfA.marker.severity,
+			firstMarkerOfB.marker.severity,
+		);
 	}
 	if (res === 0) {
 		res = a.path.localeCompare(b.path) || a.name.localeCompare(b.name);
@@ -34,9 +45,7 @@ function compareResourceMarkers(a: ResourceMarkers, b: ResourceMarkers): number 
 	return res;
 }
 
-
 export class ResourceMarkers {
-
 	readonly path: string;
 
 	readonly name: string;
@@ -52,7 +61,9 @@ export class ResourceMarkers {
 
 	get markers(): readonly Marker[] {
 		if (!this._cachedMarkers) {
-			this._cachedMarkers = flatten([...this._markersMap.values()]).sort(ResourceMarkers._compareMarkers);
+			this._cachedMarkers = flatten([...this._markersMap.values()]).sort(
+				ResourceMarkers._compareMarkers,
+			);
 		}
 		return this._cachedMarkers;
 	}
@@ -84,16 +95,21 @@ export class ResourceMarkers {
 	}
 
 	private static _compareMarkers(a: Marker, b: Marker): number {
-		return MarkerSeverity.compare(a.marker.severity, b.marker.severity)
-			|| extUri.compare(a.resource, b.resource)
-			|| Range.compareRangesUsingStarts(a.marker, b.marker);
+		return (
+			MarkerSeverity.compare(a.marker.severity, b.marker.severity) ||
+			extUri.compare(a.resource, b.resource) ||
+			Range.compareRangesUsingStarts(a.marker, b.marker)
+		);
 	}
 }
 
 export class Marker {
-
-	get resource(): URI { return this.marker.resource; }
-	get range(): IRange { return this.marker; }
+	get resource(): URI {
+		return this.marker.resource;
+	}
+	get range(): IRange {
+		return this.marker;
+	}
 
 	private _lines: string[] | undefined;
 	get lines(): string[] {
@@ -106,15 +122,24 @@ export class Marker {
 	constructor(
 		readonly id: string,
 		readonly marker: IMarker,
-		readonly relatedInformation: RelatedInformation[] = []
-	) { }
+		readonly relatedInformation: RelatedInformation[] = [],
+	) {}
 
 	toString(): string {
-		return JSON.stringify({
-			...this.marker,
-			resource: this.marker.resource.path,
-			relatedInformation: this.relatedInformation.length ? this.relatedInformation.map(r => ({ ...r.raw, resource: r.raw.resource.path })) : undefined
-		}, null, '\t');
+		return JSON.stringify(
+			{
+				...this.marker,
+				resource: this.marker.resource.path,
+				relatedInformation: this.relatedInformation.length
+					? this.relatedInformation.map((r) => ({
+							...r.raw,
+							resource: r.raw.resource.path,
+					  }))
+					: undefined,
+			},
+			null,
+			"\t",
+		);
 	}
 }
 
@@ -132,12 +157,11 @@ export class MarkerTableItem extends Marker {
 }
 
 export class RelatedInformation {
-
 	constructor(
 		readonly id: string,
 		readonly marker: IMarker,
-		readonly raw: IRelatedInformation
-	) { }
+		readonly raw: IRelatedInformation,
+	) {}
 }
 
 export interface MarkerChangesEvent {
@@ -147,7 +171,6 @@ export interface MarkerChangesEvent {
 }
 
 export class MarkersModel {
-
 	private cachedSortedResources: ResourceMarkers[] | undefined = undefined;
 
 	private readonly _onDidChange = new Emitter<MarkerChangesEvent>();
@@ -155,7 +178,9 @@ export class MarkersModel {
 
 	get resourceMarkers(): ResourceMarkers[] {
 		if (!this.cachedSortedResources) {
-			this.cachedSortedResources = [...this.resourcesByUri.values()].sort(compareResourceMarkers);
+			this.cachedSortedResources = [...this.resourcesByUri.values()].sort(
+				compareResourceMarkers,
+			);
 		}
 		return this.cachedSortedResources;
 	}
@@ -173,7 +198,11 @@ export class MarkersModel {
 		}
 		this.resourcesByUri.clear();
 		this._total = 0;
-		this._onDidChange.fire({ removed, added: new Set<ResourceMarkers>(), updated: new Set<ResourceMarkers>() });
+		this._onDidChange.fire({
+			removed,
+			added: new Set<ResourceMarkers>(),
+			updated: new Set<ResourceMarkers>(),
+		});
 	}
 
 	private _total: number = 0;
@@ -182,13 +211,19 @@ export class MarkersModel {
 	}
 
 	getResourceMarkers(resource: URI): ResourceMarkers | null {
-		return this.resourcesByUri.get(extUri.getComparisonKey(resource, true)) ?? null;
+		return (
+			this.resourcesByUri.get(extUri.getComparisonKey(resource, true)) ??
+			null
+		);
 	}
 
 	setResourceMarkers(resourcesMarkers: [URI, IMarker[]][]): void {
-		const change: MarkerChangesEvent = { added: new Set(), removed: new Set(), updated: new Set() };
+		const change: MarkerChangesEvent = {
+			added: new Set(),
+			removed: new Set(),
+			updated: new Set(),
+		};
 		for (const [resource, rawMarkers] of resourcesMarkers) {
-
 			if (unsupportedSchemas.has(resource.scheme)) {
 				continue;
 			}
@@ -200,7 +235,10 @@ export class MarkersModel {
 				// update, add
 				if (!resourceMarkers) {
 					const resourceMarkersId = this.id(resource.toString());
-					resourceMarkers = new ResourceMarkers(resourceMarkersId, resource.with({ fragment: null }));
+					resourceMarkers = new ResourceMarkers(
+						resourceMarkersId,
+						resource.with({ fragment: null }),
+					);
 					this.resourcesByUri.set(key, resourceMarkers);
 					change.added.add(resourceMarkers);
 				} else {
@@ -212,11 +250,32 @@ export class MarkersModel {
 					const index = markersCountByKey.get(key) || 0;
 					markersCountByKey.set(key, index + 1);
 
-					const markerId = this.id(resourceMarkers!.id, key, index, rawMarker.resource.toString());
+					const markerId = this.id(
+						resourceMarkers!.id,
+						key,
+						index,
+						rawMarker.resource.toString(),
+					);
 
-					let relatedInformation: RelatedInformation[] | undefined = undefined;
+					let relatedInformation: RelatedInformation[] | undefined =
+						undefined;
 					if (rawMarker.relatedInformation) {
-						relatedInformation = rawMarker.relatedInformation.map((r, index) => new RelatedInformation(this.id(markerId, r.resource.toString(), r.startLineNumber, r.startColumn, r.endLineNumber, r.endColumn, index), rawMarker, r));
+						relatedInformation = rawMarker.relatedInformation.map(
+							(r, index) =>
+								new RelatedInformation(
+									this.id(
+										markerId,
+										r.resource.toString(),
+										r.startLineNumber,
+										r.startColumn,
+										r.endLineNumber,
+										r.endColumn,
+										index,
+									),
+									rawMarker,
+									r,
+								),
+						);
 					}
 
 					return new Marker(markerId, rawMarker, relatedInformation);
@@ -225,7 +284,6 @@ export class MarkersModel {
 				this._total -= resourceMarkers.total;
 				resourceMarkers.set(resource, markers);
 				this._total += resourceMarkers.total;
-
 			} else if (resourceMarkers) {
 				// clear
 				this._total -= resourceMarkers.total;

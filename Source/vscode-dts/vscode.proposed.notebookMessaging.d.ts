@@ -69,9 +69,9 @@ declare module "vscode" {
 			handler?: (
 				cells: NotebookCell[],
 				notebook: NotebookDocument,
-				controller: NotebookController
+				controller: NotebookController,
 			) => void | Thenable<void>,
-			rendererScripts?: NotebookRendererScript[]
+			rendererScripts?: NotebookRendererScript[],
 		): NotebookController;
 	}
 }

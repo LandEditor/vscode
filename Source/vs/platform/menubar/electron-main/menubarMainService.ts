@@ -3,20 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ILifecycleMainService, LifecycleMainPhase } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
-import { ILogService } from 'vs/platform/log/common/log';
-import { ICommonMenubarService, IMenubarData } from 'vs/platform/menubar/common/menubar';
-import { Menubar } from 'vs/platform/menubar/electron-main/menubar';
+import {
+	createDecorator,
+	IInstantiationService,
+} from "vs/platform/instantiation/common/instantiation";
+import {
+	ILifecycleMainService,
+	LifecycleMainPhase,
+} from "vs/platform/lifecycle/electron-main/lifecycleMainService";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	ICommonMenubarService,
+	IMenubarData,
+} from "vs/platform/menubar/common/menubar";
+import { Menubar } from "vs/platform/menubar/electron-main/menubar";
 
-export const IMenubarMainService = createDecorator<IMenubarMainService>('menubarMainService');
+export const IMenubarMainService =
+	createDecorator<IMenubarMainService>("menubarMainService");
 
 export interface IMenubarMainService extends ICommonMenubarService {
 	readonly _serviceBrand: undefined;
 }
 
 export class MenubarMainService implements IMenubarMainService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private menubar: Promise<Menubar>;
@@ -30,13 +39,15 @@ export class MenubarMainService implements IMenubarMainService {
 	}
 
 	private async installMenuBarAfterWindowOpen(): Promise<Menubar> {
-		await this.lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen);
+		await this.lifecycleMainService.when(
+			LifecycleMainPhase.AfterWindowOpen,
+		);
 
 		return this.instantiationService.createInstance(Menubar);
 	}
 
 	async updateMenubar(windowId: number, menus: IMenubarData): Promise<void> {
-		this.logService.trace('menubarService#updateMenubar', windowId);
+		this.logService.trace("menubarService#updateMenubar", windowId);
 
 		const menubar = await this.menubar;
 		menubar.updateMenu(menus, windowId);

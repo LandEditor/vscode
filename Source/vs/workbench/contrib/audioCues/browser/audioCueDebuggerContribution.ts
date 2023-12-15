@@ -3,16 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { autorunWithStore, observableFromEvent } from 'vs/base/common/observable';
-import { IAudioCueService, AudioCue, AudioCueService } from 'vs/platform/audioCues/browser/audioCueService';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { IDebugService, IDebugSession } from 'vs/workbench/contrib/debug/common/debug';
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import {
+	autorunWithStore,
+	observableFromEvent,
+} from "vs/base/common/observable";
+import {
+	IAudioCueService,
+	AudioCue,
+	AudioCueService,
+} from "vs/platform/audioCues/browser/audioCueService";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import {
+	IDebugService,
+	IDebugSession,
+} from "vs/workbench/contrib/debug/common/debug";
 
 export class AudioCueLineDebuggerContribution
 	extends Disposable
-	implements IWorkbenchContribution {
-
+	implements IWorkbenchContribution
+{
 	constructor(
 		@IDebugService debugService: IDebugService,
 		@IAudioCueService private readonly audioCueService: AudioCueService,
@@ -56,13 +70,15 @@ export class AudioCueLineDebuggerContribution
 	}
 
 	private handleSession(session: IDebugSession): IDisposable {
-		return session.onDidChangeState(e => {
+		return session.onDidChangeState((e) => {
 			const stoppedDetails = session.getStoppedDetails();
-			const BREAKPOINT_STOP_REASON = 'breakpoint';
-			if (stoppedDetails && stoppedDetails.reason === BREAKPOINT_STOP_REASON) {
+			const BREAKPOINT_STOP_REASON = "breakpoint";
+			if (
+				stoppedDetails &&
+				stoppedDetails.reason === BREAKPOINT_STOP_REASON
+			) {
 				this.audioCueService.playAudioCue(AudioCue.onDebugBreak);
 			}
 		});
-
 	}
 }

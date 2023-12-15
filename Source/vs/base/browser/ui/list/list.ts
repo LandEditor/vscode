@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDragAndDropData } from 'vs/base/browser/dnd';
-import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { IMouseEvent } from 'vs/base/browser/mouseEvent';
-import { GestureEvent } from 'vs/base/browser/touch';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { IDragAndDropData } from "vs/base/browser/dnd";
+import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { IMouseEvent } from "vs/base/browser/mouseEvent";
+import { GestureEvent } from "vs/base/browser/touch";
+import { IDisposable } from "vs/base/common/lifecycle";
 
 export interface IListVirtualDelegate<T> {
 	getHeight(element: T): number;
@@ -20,8 +20,18 @@ export interface IListVirtualDelegate<T> {
 export interface IListRenderer<T, TTemplateData> {
 	readonly templateId: string;
 	renderTemplate(container: HTMLElement): TTemplateData;
-	renderElement(element: T, index: number, templateData: TTemplateData, height: number | undefined): void;
-	disposeElement?(element: T, index: number, templateData: TTemplateData, height: number | undefined): void;
+	renderElement(
+		element: T,
+		index: number,
+		templateData: TTemplateData,
+		height: number | undefined,
+	): void;
+	disposeElement?(
+		element: T,
+		index: number,
+		templateData: TTemplateData,
+		height: number | undefined,
+	): void;
 	disposeTemplate(templateData: TTemplateData): void;
 }
 
@@ -71,13 +81,17 @@ export interface IIdentityProvider<T> {
 }
 
 export interface IKeyboardNavigationLabelProvider<T> {
-
 	/**
 	 * Return a keyboard navigation label(s) which will be used by
 	 * the list for filtering/navigating. Return `undefined` to make
 	 * an element always match.
 	 */
-	getKeyboardNavigationLabel(element: T): { toString(): string | undefined } | { toString(): string | undefined }[] | undefined;
+	getKeyboardNavigationLabel(
+		element: T,
+	):
+		| { toString(): string | undefined }
+		| { toString(): string | undefined }[]
+		| undefined;
 }
 
 export interface IKeyboardNavigationDelegate {
@@ -86,7 +100,7 @@ export interface IKeyboardNavigationDelegate {
 
 export const enum ListDragOverEffect {
 	Copy,
-	Move
+	Move,
 }
 
 export interface IListDragOverReaction {
@@ -96,8 +110,12 @@ export interface IListDragOverReaction {
 }
 
 export const ListDragOverReactions = {
-	reject(): IListDragOverReaction { return { accept: false }; },
-	accept(): IListDragOverReaction { return { accept: true }; },
+	reject(): IListDragOverReaction {
+		return { accept: false };
+	},
+	accept(): IListDragOverReaction {
+		return { accept: true };
+	},
 };
 
 /**
@@ -108,21 +126,36 @@ export interface IListDragAndDrop<T> extends IDisposable {
 	getDragURI(element: T): string | null;
 	getDragLabel?(elements: T[], originalEvent: DragEvent): string | undefined;
 	onDragStart?(data: IDragAndDropData, originalEvent: DragEvent): void;
-	onDragOver(data: IDragAndDropData, targetElement: T | undefined, targetIndex: number | undefined, originalEvent: DragEvent): boolean | IListDragOverReaction;
-	onDragLeave?(data: IDragAndDropData, targetElement: T | undefined, targetIndex: number | undefined, originalEvent: DragEvent): void;
-	drop(data: IDragAndDropData, targetElement: T | undefined, targetIndex: number | undefined, originalEvent: DragEvent): void;
+	onDragOver(
+		data: IDragAndDropData,
+		targetElement: T | undefined,
+		targetIndex: number | undefined,
+		originalEvent: DragEvent,
+	): boolean | IListDragOverReaction;
+	onDragLeave?(
+		data: IDragAndDropData,
+		targetElement: T | undefined,
+		targetIndex: number | undefined,
+		originalEvent: DragEvent,
+	): void;
+	drop(
+		data: IDragAndDropData,
+		targetElement: T | undefined,
+		targetIndex: number | undefined,
+		originalEvent: DragEvent,
+	): void;
 	onDragEnd?(originalEvent: DragEvent): void;
 }
 
 export class ListError extends Error {
-
 	constructor(user: string, message: string) {
 		super(`ListError [${user}] ${message}`);
 	}
 }
 
-export abstract class CachedListVirtualDelegate<T extends object> implements IListVirtualDelegate<T> {
-
+export abstract class CachedListVirtualDelegate<T extends object>
+	implements IListVirtualDelegate<T>
+{
 	private cache = new WeakMap<T, number>();
 
 	getHeight(element: T): number {

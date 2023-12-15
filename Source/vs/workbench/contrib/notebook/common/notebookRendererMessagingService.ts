@@ -3,11 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Event } from "vs/base/common/event";
+import { IDisposable } from "vs/base/common/lifecycle";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const INotebookRendererMessagingService = createDecorator<INotebookRendererMessagingService>('INotebookRendererMessagingService');
+export const INotebookRendererMessagingService =
+	createDecorator<INotebookRendererMessagingService>(
+		"INotebookRendererMessagingService",
+	);
 
 export interface INotebookRendererMessagingService {
 	readonly _serviceBrand: undefined;
@@ -15,7 +18,11 @@ export interface INotebookRendererMessagingService {
 	/**
 	 * Event that fires when a message should be posted to extension hosts.
 	 */
-	onShouldPostMessage: Event<{ editorId: string; rendererId: string; message: unknown }>;
+	onShouldPostMessage: Event<{
+		editorId: string;
+		rendererId: string;
+		message: unknown;
+	}>;
 
 	/**
 	 * Prepares messaging for the given renderer ID.
@@ -29,7 +36,11 @@ export interface INotebookRendererMessagingService {
 	/**
 	 * Called when the main thread gets a message for a renderer.
 	 */
-	receiveMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean>;
+	receiveMessage(
+		editorId: string | undefined,
+		rendererId: string,
+		message: unknown,
+	): Promise<boolean>;
 }
 
 export interface IScopedRendererMessaging extends IDisposable {
@@ -37,7 +48,10 @@ export interface IScopedRendererMessaging extends IDisposable {
 	 * Method called when a message is received. Should return a boolean
 	 * indicating whether a renderer received it.
 	 */
-	receiveMessageHandler?: (rendererId: string, message: unknown) => Promise<boolean>;
+	receiveMessageHandler?: (
+		rendererId: string,
+		message: unknown,
+	) => Promise<boolean>;
 
 	/**
 	 * Sends a message to an extension from a renderer.

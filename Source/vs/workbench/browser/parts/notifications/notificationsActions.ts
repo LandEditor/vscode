@@ -3,29 +3,69 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./media/notificationsActions';
-import { INotificationViewItem } from 'vs/workbench/common/notifications';
-import { localize } from 'vs/nls';
-import { Action, IAction } from 'vs/base/common/actions';
-import { CLEAR_NOTIFICATION, EXPAND_NOTIFICATION, COLLAPSE_NOTIFICATION, CLEAR_ALL_NOTIFICATIONS, HIDE_NOTIFICATIONS_CENTER, TOGGLE_DO_NOT_DISTURB_MODE } from 'vs/workbench/browser/parts/notifications/notificationsCommands';
-import { ICommandService } from 'vs/platform/commands/common/commands';
-import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
-import { Codicon } from 'vs/base/common/codicons';
-import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
-import { ThemeIcon } from 'vs/base/common/themables';
+import "vs/css!./media/notificationsActions";
+import { INotificationViewItem } from "vs/workbench/common/notifications";
+import { localize } from "vs/nls";
+import { Action, IAction } from "vs/base/common/actions";
+import {
+	CLEAR_NOTIFICATION,
+	EXPAND_NOTIFICATION,
+	COLLAPSE_NOTIFICATION,
+	CLEAR_ALL_NOTIFICATIONS,
+	HIDE_NOTIFICATIONS_CENTER,
+	TOGGLE_DO_NOT_DISTURB_MODE,
+} from "vs/workbench/browser/parts/notifications/notificationsCommands";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import { Codicon } from "vs/base/common/codicons";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { ThemeIcon } from "vs/base/common/themables";
 
-const clearIcon = registerIcon('notifications-clear', Codicon.close, localize('clearIcon', 'Icon for the clear action in notifications.'));
-const clearAllIcon = registerIcon('notifications-clear-all', Codicon.clearAll, localize('clearAllIcon', 'Icon for the clear all action in notifications.'));
-const hideIcon = registerIcon('notifications-hide', Codicon.chevronDown, localize('hideIcon', 'Icon for the hide action in notifications.'));
-const expandIcon = registerIcon('notifications-expand', Codicon.chevronUp, localize('expandIcon', 'Icon for the expand action in notifications.'));
-const collapseIcon = registerIcon('notifications-collapse', Codicon.chevronDown, localize('collapseIcon', 'Icon for the collapse action in notifications.'));
-const configureIcon = registerIcon('notifications-configure', Codicon.gear, localize('configureIcon', 'Icon for the configure action in notifications.'));
-const doNotDisturbIcon = registerIcon('notifications-do-not-disturb', Codicon.bellSlash, localize('doNotDisturbIcon', 'Icon for the mute all action in notifications.'));
+const clearIcon = registerIcon(
+	"notifications-clear",
+	Codicon.close,
+	localize("clearIcon", "Icon for the clear action in notifications."),
+);
+const clearAllIcon = registerIcon(
+	"notifications-clear-all",
+	Codicon.clearAll,
+	localize("clearAllIcon", "Icon for the clear all action in notifications."),
+);
+const hideIcon = registerIcon(
+	"notifications-hide",
+	Codicon.chevronDown,
+	localize("hideIcon", "Icon for the hide action in notifications."),
+);
+const expandIcon = registerIcon(
+	"notifications-expand",
+	Codicon.chevronUp,
+	localize("expandIcon", "Icon for the expand action in notifications."),
+);
+const collapseIcon = registerIcon(
+	"notifications-collapse",
+	Codicon.chevronDown,
+	localize("collapseIcon", "Icon for the collapse action in notifications."),
+);
+const configureIcon = registerIcon(
+	"notifications-configure",
+	Codicon.gear,
+	localize(
+		"configureIcon",
+		"Icon for the configure action in notifications.",
+	),
+);
+const doNotDisturbIcon = registerIcon(
+	"notifications-do-not-disturb",
+	Codicon.bellSlash,
+	localize(
+		"doNotDisturbIcon",
+		"Icon for the mute all action in notifications.",
+	),
+);
 
 export class ClearNotificationAction extends Action {
-
 	static readonly ID = CLEAR_NOTIFICATION;
-	static readonly LABEL = localize('clearNotification', "Clear Notification");
+	static readonly LABEL = localize("clearNotification", "Clear Notification");
 
 	constructor(
 		id: string,
@@ -41,9 +81,11 @@ export class ClearNotificationAction extends Action {
 }
 
 export class ClearAllNotificationsAction extends Action {
-
 	static readonly ID = CLEAR_ALL_NOTIFICATIONS;
-	static readonly LABEL = localize('clearNotifications', "Clear All Notifications");
+	static readonly LABEL = localize(
+		"clearNotifications",
+		"Clear All Notifications",
+	);
 
 	constructor(
 		id: string,
@@ -59,9 +101,11 @@ export class ClearAllNotificationsAction extends Action {
 }
 
 export class ToggleDoNotDisturbAction extends Action {
-
 	static readonly ID = TOGGLE_DO_NOT_DISTURB_MODE;
-	static readonly LABEL = localize('toggleDoNotDisturbMode', "Toggle Do Not Disturb Mode");
+	static readonly LABEL = localize(
+		"toggleDoNotDisturbMode",
+		"Toggle Do Not Disturb Mode",
+	);
 
 	constructor(
 		id: string,
@@ -77,9 +121,11 @@ export class ToggleDoNotDisturbAction extends Action {
 }
 
 export class HideNotificationsCenterAction extends Action {
-
 	static readonly ID = HIDE_NOTIFICATIONS_CENTER;
-	static readonly LABEL = localize('hideNotificationsCenter', "Hide Notifications");
+	static readonly LABEL = localize(
+		"hideNotificationsCenter",
+		"Hide Notifications",
+	);
 
 	constructor(
 		id: string,
@@ -95,9 +141,11 @@ export class HideNotificationsCenterAction extends Action {
 }
 
 export class ExpandNotificationAction extends Action {
-
 	static readonly ID = EXPAND_NOTIFICATION;
-	static readonly LABEL = localize('expandNotification', "Expand Notification");
+	static readonly LABEL = localize(
+		"expandNotification",
+		"Expand Notification",
+	);
 
 	constructor(
 		id: string,
@@ -113,9 +161,11 @@ export class ExpandNotificationAction extends Action {
 }
 
 export class CollapseNotificationAction extends Action {
-
 	static readonly ID = COLLAPSE_NOTIFICATION;
-	static readonly LABEL = localize('collapseNotification', "Collapse Notification");
+	static readonly LABEL = localize(
+		"collapseNotification",
+		"Collapse Notification",
+	);
 
 	constructor(
 		id: string,
@@ -131,23 +181,24 @@ export class CollapseNotificationAction extends Action {
 }
 
 export class ConfigureNotificationAction extends Action {
-
-	static readonly ID = 'workbench.action.configureNotification';
-	static readonly LABEL = localize('configureNotification', "More Actions...");
+	static readonly ID = "workbench.action.configureNotification";
+	static readonly LABEL = localize(
+		"configureNotification",
+		"More Actions...",
+	);
 
 	constructor(
 		id: string,
 		label: string,
-		readonly configurationActions: readonly IAction[]
+		readonly configurationActions: readonly IAction[],
 	) {
 		super(id, label, ThemeIcon.asClassName(configureIcon));
 	}
 }
 
 export class CopyNotificationMessageAction extends Action {
-
-	static readonly ID = 'workbench.action.copyNotificationMessage';
-	static readonly LABEL = localize('copyNotification', "Copy Text");
+	static readonly ID = "workbench.action.copyNotificationMessage";
+	static readonly LABEL = localize("copyNotification", "Copy Text");
 
 	constructor(
 		id: string,

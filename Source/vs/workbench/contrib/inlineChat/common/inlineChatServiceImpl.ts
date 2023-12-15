@@ -3,14 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { Emitter } from 'vs/base/common/event';
-import { LinkedList } from 'vs/base/common/linkedList';
-import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IInlineChatService, IInlineChatSessionProvider, CTX_INLINE_CHAT_HAS_PROVIDER } from './inlineChat';
+import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
+import { Emitter } from "vs/base/common/event";
+import { LinkedList } from "vs/base/common/linkedList";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import {
+	IInlineChatService,
+	IInlineChatSessionProvider,
+	CTX_INLINE_CHAT_HAS_PROVIDER,
+} from "./inlineChat";
 
 export class InlineChatServiceImpl implements IInlineChatService {
-
 	declare _serviceBrand: undefined;
 
 	private readonly _entries = new LinkedList<IInlineChatSessionProvider>();
@@ -27,7 +33,6 @@ export class InlineChatServiceImpl implements IInlineChatService {
 	}
 
 	addProvider(provider: IInlineChatSessionProvider): IDisposable {
-
 		const rm = this._entries.push(provider);
 		this._ctxHasProvider.set(true);
 		this._onDidChangeProviders.fire();

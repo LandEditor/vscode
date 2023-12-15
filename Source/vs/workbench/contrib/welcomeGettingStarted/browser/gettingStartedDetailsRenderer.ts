@@ -3,21 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { generateUuid } from 'vs/base/common/uuid';
-import { generateTokensCSSForColorMap } from 'vs/editor/common/languages/supports/tokenization';
-import { TokenizationRegistry } from 'vs/editor/common/languages';
-import { DEFAULT_MARKDOWN_STYLES, renderMarkdownDocument } from 'vs/workbench/contrib/markdown/browser/markdownDocumentRenderer';
-import { URI } from 'vs/base/common/uri';
-import { language } from 'vs/base/common/platform';
-import { joinPath } from 'vs/base/common/resources';
-import { assertIsDefined } from 'vs/base/common/types';
-import { asWebviewUri } from 'vs/workbench/contrib/webview/common/webview';
-import { ResourceMap } from 'vs/base/common/map';
-import { IFileService } from 'vs/platform/files/common/files';
-import { INotificationService } from 'vs/platform/notification/common/notification';
-import { ILanguageService } from 'vs/editor/common/languages/language';
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-
+import { generateUuid } from "vs/base/common/uuid";
+import { generateTokensCSSForColorMap } from "vs/editor/common/languages/supports/tokenization";
+import { TokenizationRegistry } from "vs/editor/common/languages";
+import {
+	DEFAULT_MARKDOWN_STYLES,
+	renderMarkdownDocument,
+} from "vs/workbench/contrib/markdown/browser/markdownDocumentRenderer";
+import { URI } from "vs/base/common/uri";
+import { language } from "vs/base/common/platform";
+import { joinPath } from "vs/base/common/resources";
+import { assertIsDefined } from "vs/base/common/types";
+import { asWebviewUri } from "vs/workbench/contrib/webview/common/webview";
+import { ResourceMap } from "vs/base/common/map";
+import { IFileService } from "vs/platform/files/common/files";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 export class GettingStartedDetailsRenderer {
 	private mdCache = new ResourceMap<string>();
@@ -35,10 +37,12 @@ export class GettingStartedDetailsRenderer {
 		const nonce = generateUuid();
 		const colorMap = TokenizationRegistry.getColorMap();
 
-		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
+		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : "";
 
-		const inDev = document.location.protocol === 'http:';
-		const imgSrcCsp = inDev ? 'img-src https: data: http:' : 'img-src https: data:';
+		const inDev = document.location.protocol === "http:";
+		const imgSrcCsp = inDev
+			? "img-src https: data: http:"
+			: "img-src https: data:";
 
 		return `<!DOCTYPE html>
 		<html>
@@ -173,7 +177,7 @@ export class GettingStartedDetailsRenderer {
 		const nonce = generateUuid();
 		const colorMap = TokenizationRegistry.getColorMap();
 
-		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
+		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : "";
 		return `<!DOCTYPE html>
 		<html>
 			<head>
@@ -208,55 +212,79 @@ export class GettingStartedDetailsRenderer {
 		return assertIsDefined(this.svgCache.get(path));
 	}
 
-	private async readAndCacheStepMarkdown(path: URI, base: URI): Promise<string> {
+	private async readAndCacheStepMarkdown(
+		path: URI,
+		base: URI,
+	): Promise<string> {
 		if (!this.mdCache.has(path)) {
 			const contents = await this.readContentsOfPath(path);
-			const markdownContents = await renderMarkdownDocument(transformUris(contents, base), this.extensionService, this.languageService, true, true);
+			const markdownContents = await renderMarkdownDocument(
+				transformUris(contents, base),
+				this.extensionService,
+				this.languageService,
+				true,
+				true,
+			);
 			this.mdCache.set(path, markdownContents);
 		}
 		return assertIsDefined(this.mdCache.get(path));
 	}
 
-	private async readContentsOfPath(path: URI, useModuleId = true): Promise<string> {
+	private async readContentsOfPath(
+		path: URI,
+		useModuleId = true,
+	): Promise<string> {
 		try {
 			const moduleId = JSON.parse(path.query).moduleId;
 			if (useModuleId && moduleId) {
-				const contents = await new Promise<string>(c => {
-					require([moduleId], content => {
+				const contents = await new Promise<string>((c) => {
+					require([moduleId], (content) => {
 						c(content.default());
 					});
 				});
 				return contents;
 			}
-		} catch { }
+		} catch {}
 
 		try {
-			const localizedPath = path.with({ path: path.path.replace(/\.md$/, `.nls.${language}.md`) });
+			const localizedPath = path.with({
+				path: path.path.replace(/\.md$/, `.nls.${language}.md`),
+			});
 
-			const generalizedLocale = language?.replace(/-.*$/, '');
-			const generalizedLocalizedPath = path.with({ path: path.path.replace(/\.md$/, `.nls.${generalizedLocale}.md`) });
+			const generalizedLocale = language?.replace(/-.*$/, "");
+			const generalizedLocalizedPath = path.with({
+				path: path.path.replace(
+					/\.md$/,
+					`.nls.${generalizedLocale}.md`,
+				),
+			});
 
-			const fileExists = (file: URI) => this.fileService
-				.stat(file)
-				.then((stat) => !!stat.size) // Double check the file actually has content for fileSystemProviders that fake `stat`. #131809
-				.catch(() => false);
+			const fileExists = (file: URI) =>
+				this.fileService
+					.stat(file)
+					.then((stat) => !!stat.size) // Double check the file actually has content for fileSystemProviders that fake `stat`. #131809
+					.catch(() => false);
 
-			const [localizedFileExists, generalizedLocalizedFileExists] = await Promise.all([
-				fileExists(localizedPath),
-				fileExists(generalizedLocalizedPath),
-			]);
+			const [localizedFileExists, generalizedLocalizedFileExists] =
+				await Promise.all([
+					fileExists(localizedPath),
+					fileExists(generalizedLocalizedPath),
+				]);
 
 			const bytes = await this.fileService.readFile(
 				localizedFileExists
 					? localizedPath
 					: generalizedLocalizedFileExists
-						? generalizedLocalizedPath
-						: path);
+					  ? generalizedLocalizedPath
+					  : path,
+			);
 
 			return bytes.value.toString();
 		} catch (e) {
-			this.notificationService.error('Error reading markdown document at `' + path + '`: ' + e);
-			return '';
+			this.notificationService.error(
+				"Error reading markdown document at `" + path + "`: " + e,
+			);
+			return "";
 		}
 	}
 }
@@ -266,12 +294,20 @@ const transformUri = (src: string, base: URI) => {
 	return asWebviewUri(path).toString(true);
 };
 
-const transformUris = (content: string, base: URI): string => content
-	.replace(/src="([^"]*)"/g, (_, src: string) => {
-		if (src.startsWith('https://')) { return `src="${src}"`; }
-		return `src="${transformUri(src, base)}"`;
-	})
-	.replace(/!\[([^\]]*)\]\(([^)]*)\)/g, (_, title: string, src: string) => {
-		if (src.startsWith('https://')) { return `![${title}](${src})`; }
-		return `![${title}](${transformUri(src, base)})`;
-	});
+const transformUris = (content: string, base: URI): string =>
+	content
+		.replace(/src="([^"]*)"/g, (_, src: string) => {
+			if (src.startsWith("https://")) {
+				return `src="${src}"`;
+			}
+			return `src="${transformUri(src, base)}"`;
+		})
+		.replace(
+			/!\[([^\]]*)\]\(([^)]*)\)/g,
+			(_, title: string, src: string) => {
+				if (src.startsWith("https://")) {
+					return `![${title}](${src})`;
+				}
+				return `![${title}](${transformUri(src, base)})`;
+			},
+		);

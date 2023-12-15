@@ -50,7 +50,7 @@ declare module "vscode" {
 		 */
 		provideShare(
 			item: ShareableItem,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<Uri | string>;
 	}
 
@@ -63,7 +63,7 @@ declare module "vscode" {
 		 */
 		export function registerShareProvider(
 			selector: DocumentSelector,
-			provider: ShareProvider
+			provider: ShareProvider,
 		): Disposable;
 	}
 

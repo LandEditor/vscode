@@ -3,15 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createStyleSheet } from 'vs/base/browser/dom';
-import { Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { clamp } from 'vs/base/common/numbers';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { AccessibilityWorkbenchSettingId, ViewDimUnfocusedOpacityProperties } from 'vs/workbench/contrib/accessibility/browser/accessibilityConfiguration';
+import { createStyleSheet } from "vs/base/browser/dom";
+import { Event } from "vs/base/common/event";
+import {
+	Disposable,
+	DisposableStore,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { clamp } from "vs/base/common/numbers";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import {
+	AccessibilityWorkbenchSettingId,
+	ViewDimUnfocusedOpacityProperties,
+} from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
 
-export class UnfocusedViewDimmingContribution extends Disposable implements IWorkbenchContribution {
+export class UnfocusedViewDimmingContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	private _styleElement?: HTMLStyleElement;
 	private _styleElementDisposables: DisposableStore | undefined = undefined;
 
@@ -76,8 +86,12 @@ export class UnfocusedViewDimmingContribution extends Disposable implements IWor
 	private _getStyleElement(): HTMLStyleElement {
 		if (!this._styleElement) {
 			this._styleElementDisposables = new DisposableStore();
-			this._styleElement = createStyleSheet(undefined, undefined, this._styleElementDisposables);
-			this._styleElement.className = 'accessibilityUnfocusedViewOpacity';
+			this._styleElement = createStyleSheet(
+				undefined,
+				undefined,
+				this._styleElementDisposables,
+			);
+			this._styleElement.className = "accessibilityUnfocusedViewOpacity";
 		}
 		return this._styleElement;
 	}
@@ -89,11 +103,10 @@ export class UnfocusedViewDimmingContribution extends Disposable implements IWor
 	}
 }
 
-
 function ensureBoolean(value: unknown, defaultValue: boolean): boolean {
-	return typeof value === 'boolean' ? value : defaultValue;
+	return typeof value === "boolean" ? value : defaultValue;
 }
 
 function ensureNumber(value: unknown, defaultValue: number): number {
-	return typeof value === 'number' ? value : defaultValue;
+	return typeof value === "number" ? value : defaultValue;
 }

@@ -3,16 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TernarySearchTree } from 'vs/base/common/ternarySearchTree';
-import { IExtensionHostProfile, IExtensionService, ProfileSegmentId, ProfileSession } from 'vs/workbench/services/extensions/common/extensions';
-import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
-import { Schemas } from 'vs/base/common/network';
-import { URI } from 'vs/base/common/uri';
-import { IV8InspectProfilingService, IV8Profile, IV8ProfileNode } from 'vs/platform/profiling/common/profiling';
-import { createSingleCallFunction } from 'vs/base/common/functional';
+import { TernarySearchTree } from "vs/base/common/ternarySearchTree";
+import {
+	IExtensionHostProfile,
+	IExtensionService,
+	ProfileSegmentId,
+	ProfileSession,
+} from "vs/workbench/services/extensions/common/extensions";
+import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
+import { Schemas } from "vs/base/common/network";
+import { URI } from "vs/base/common/uri";
+import {
+	IV8InspectProfilingService,
+	IV8Profile,
+	IV8ProfileNode,
+} from "vs/platform/profiling/common/profiling";
+import { createSingleCallFunction } from "vs/base/common/functional";
 
 export class ExtensionHostProfiler {
-
 	constructor(
 		private readonly _port: number,
 		@IExtensionService private readonly _extensionService: IExtensionService,
@@ -21,8 +29,9 @@ export class ExtensionHostProfiler {
 	}
 
 	public async start(): Promise<ProfileSession> {
-
-		const id = await this._profilingService.startProfiling({ port: this._port });
+		const id = await this._profilingService.startProfiling({
+			port: this._port,
+		});
 
 		return {
 			stop: createSingleCallFunction(async () => {
@@ -30,15 +39,21 @@ export class ExtensionHostProfiler {
 				await this._extensionService.whenInstalledExtensionsRegistered();
 				const extensions = this._extensionService.extensions;
 				return this._distill(profile, extensions);
-			})
+			}),
 		};
 	}
 
-	private _distill(profile: IV8Profile, extensions: readonly IExtensionDescription[]): IExtensionHostProfile {
+	private _distill(
+		profile: IV8Profile,
+		extensions: readonly IExtensionDescription[],
+	): IExtensionHostProfile {
 		const searchTree = TernarySearchTree.forUris<IExtensionDescription>();
 		for (const extension of extensions) {
 			if (extension.extensionLocation.scheme === Schemas.file) {
-				searchTree.set(URI.file(extension.extensionLocation.fsPath), extension);
+				searchTree.set(
+					URI.file(extension.extensionLocation.fsPath),
+					extension,
+				);
 			}
 		}
 
@@ -49,25 +64,30 @@ export class ExtensionHostProfiler {
 			idsToNodes.set(node.id, node);
 		}
 
-		function visit(node: IV8ProfileNode, segmentId: ProfileSegmentId | null) {
+		function visit(
+			node: IV8ProfileNode,
+			segmentId: ProfileSegmentId | null,
+		) {
 			if (!segmentId) {
 				switch (node.callFrame.functionName) {
-					case '(root)':
+					case "(root)":
 						break;
-					case '(program)':
-						segmentId = 'program';
+					case "(program)":
+						segmentId = "program";
 						break;
-					case '(garbage collector)':
-						segmentId = 'gc';
+					case "(garbage collector)":
+						segmentId = "gc";
 						break;
 					default:
-						segmentId = 'self';
+						segmentId = "self";
 						break;
 				}
-			} else if (segmentId === 'self' && node.callFrame.url) {
+			} else if (segmentId === "self" && node.callFrame.url) {
 				let extension: IExtensionDescription | undefined;
 				try {
-					extension = searchTree.findSubstr(URI.parse(node.callFrame.url));
+					extension = searchTree.findSubstr(
+						URI.parse(node.callFrame.url),
+					);
 				} catch {
 					// ignore
 				}
@@ -123,10 +143,13 @@ export class ExtensionHostProfiler {
 				const segmentsToTime = new Map<ProfileSegmentId, number>();
 				for (let i = 0; i < distilledIds.length; i++) {
 					const id = distilledIds[i];
-					segmentsToTime.set(id, (segmentsToTime.get(id) || 0) + distilledDeltas[i]);
+					segmentsToTime.set(
+						id,
+						(segmentsToTime.get(id) || 0) + distilledDeltas[i],
+					);
 				}
 				return segmentsToTime;
-			}
+			},
 		};
 	}
 }

@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { ThemeIcon } from 'vs/base/common/themables';
-import { Event } from 'vs/base/common/event';
-import { ViewContainer } from 'vs/workbench/common/views';
+import { IDisposable } from "vs/base/common/lifecycle";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ThemeIcon } from "vs/base/common/themables";
+import { Event } from "vs/base/common/event";
+import { ViewContainer } from "vs/workbench/common/views";
 
 export interface IActivity {
 	readonly badge: IBadge;
 	readonly priority?: number;
 }
 
-export const IActivityService = createDecorator<IActivityService>('activityService');
+export const IActivityService =
+	createDecorator<IActivityService>("activityService");
 
 export interface IActivityService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -28,7 +28,10 @@ export interface IActivityService {
 	/**
 	 * Show activity for the given view container
 	 */
-	showViewContainerActivity(viewContainerId: string, badge: IActivity): IDisposable;
+	showViewContainerActivity(
+		viewContainerId: string,
+		badge: IActivity,
+	): IDisposable;
 
 	/**
 	 * Returns the activity for the given view container
@@ -61,7 +64,6 @@ export interface IBadge {
 }
 
 class BaseBadge implements IBadge {
-
 	constructor(readonly descriptorFn: (arg: any) => string) {
 		this.descriptorFn = descriptorFn;
 	}
@@ -72,8 +74,10 @@ class BaseBadge implements IBadge {
 }
 
 export class NumberBadge extends BaseBadge {
-
-	constructor(readonly number: number, descriptorFn: (num: number) => string) {
+	constructor(
+		readonly number: number,
+		descriptorFn: (num: number) => string,
+	) {
 		super(descriptorFn);
 
 		this.number = number;
@@ -90,4 +94,4 @@ export class IconBadge extends BaseBadge {
 	}
 }
 
-export class ProgressBadge extends BaseBadge { }
+export class ProgressBadge extends BaseBadge {}

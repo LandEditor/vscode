@@ -16,7 +16,7 @@ export function load(
 	name: string,
 	req: AMDLoader.IRelativeRequire,
 	load: AMDLoader.IPluginLoadCallback,
-	config: AMDLoader.IConfigurationOptions
+	config: AMDLoader.IConfigurationOptions,
 ): void {
 	config = config || {};
 	const cssConfig = <ICSSPluginConfig>(config["vs/css"] || {});
@@ -38,7 +38,7 @@ export function load(
 			if (typeof load.error === "function") {
 				load.error("Could not find " + cssUrl + ".");
 			}
-		}
+		},
 	);
 }
 
@@ -46,7 +46,7 @@ function loadCSS(
 	name: string,
 	cssUrl: string,
 	callback: () => void,
-	errorback: (err: any) => void
+	errorback: (err: any) => void,
 ): void {
 	if (linkTagExists(name, cssUrl)) {
 		callback();
@@ -72,7 +72,7 @@ function createLinkTag(
 	name: string,
 	cssUrl: string,
 	callback: () => void,
-	errorback: (err: any) => void
+	errorback: (err: any) => void,
 ): void {
 	const linkNode = document.createElement("link");
 	linkNode.setAttribute("rel", "stylesheet");
@@ -92,7 +92,7 @@ function attachListeners(
 	name: string,
 	linkNode: HTMLLinkElement,
 	callback: () => void,
-	errorback: (err: any) => void
+	errorback: (err: any) => void,
 ): void {
 	const unbind = () => {
 		linkNode.removeEventListener("load", loadEventListener);

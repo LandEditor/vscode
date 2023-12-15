@@ -266,7 +266,7 @@ declare module "vscode" {
 			query: TextSearchQuery,
 			options: TextSearchOptions,
 			progress: Progress<TextSearchResult>,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<TextSearchComplete>;
 	}
 
@@ -282,7 +282,7 @@ declare module "vscode" {
 		 */
 		export function registerTextSearchProvider(
 			scheme: string,
-			provider: TextSearchProvider
+			provider: TextSearchProvider,
 		): Disposable;
 	}
 }

@@ -3,17 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { Disposable, DisposableMap } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { ExtHostContext, ExtHostIssueReporterShape, MainContext, MainThreadIssueReporterShape } from 'vs/workbench/api/common/extHost.protocol';
-import { IExtHostContext, extHostNamedCustomer } from 'vs/workbench/services/extensions/common/extHostCustomers';
-import { IIssueDataProvider, IIssueUriRequestHandler, IWorkbenchIssueService } from 'vs/workbench/services/issue/common/issue';
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Disposable, DisposableMap } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import {
+	ExtHostContext,
+	ExtHostIssueReporterShape,
+	MainContext,
+	MainThreadIssueReporterShape,
+} from "vs/workbench/api/common/extHost.protocol";
+import {
+	IExtHostContext,
+	extHostNamedCustomer,
+} from "vs/workbench/services/extensions/common/extHostCustomers";
+import {
+	IIssueDataProvider,
+	IIssueUriRequestHandler,
+	IWorkbenchIssueService,
+} from "vs/workbench/services/issue/common/issue";
 
 @extHostNamedCustomer(MainContext.MainThreadIssueReporter)
-export class MainThreadIssueReporter extends Disposable implements MainThreadIssueReporterShape {
+export class MainThreadIssueReporter
+	extends Disposable
+	implements MainThreadIssueReporterShape
+{
 	private readonly _proxy: ExtHostIssueReporterShape;
-	private readonly _registrations = this._register(new DisposableMap<string>());
+	private readonly _registrations = this._register(
+		new DisposableMap<string>(),
+	);
 
 	constructor(
 		context: IExtHostContext,
@@ -26,11 +43,20 @@ export class MainThreadIssueReporter extends Disposable implements MainThreadIss
 	$registerIssueUriRequestHandler(extensionId: string): void {
 		const handler: IIssueUriRequestHandler = {
 			provideIssueUrl: async (token: CancellationToken) => {
-				const parts = await this._proxy.$getIssueReporterUri(extensionId, token);
+				const parts = await this._proxy.$getIssueReporterUri(
+					extensionId,
+					token,
+				);
 				return URI.from(parts);
-			}
+			},
 		};
-		this._registrations.set(extensionId, this._issueService.registerIssueUriRequestHandler(extensionId, handler));
+		this._registrations.set(
+			extensionId,
+			this._issueService.registerIssueUriRequestHandler(
+				extensionId,
+				handler,
+			),
+		);
 	}
 
 	$unregisterIssueUriRequestHandler(extensionId: string): void {
@@ -40,15 +66,24 @@ export class MainThreadIssueReporter extends Disposable implements MainThreadIss
 	$registerIssueDataProvider(extensionId: string): void {
 		const provider: IIssueDataProvider = {
 			provideIssueExtensionData: async (token: CancellationToken) => {
-				const parts = await this._proxy.$getIssueReporterData(extensionId, token);
+				const parts = await this._proxy.$getIssueReporterData(
+					extensionId,
+					token,
+				);
 				return parts;
 			},
 			provideIssueExtensionTemplate: async (token: CancellationToken) => {
-				const parts = await this._proxy.$getIssueReporterTemplate(extensionId, token);
+				const parts = await this._proxy.$getIssueReporterTemplate(
+					extensionId,
+					token,
+				);
 				return parts;
-			}
+			},
 		};
-		this._registrations.set(extensionId, this._issueService.registerIssueDataProvider(extensionId, provider));
+		this._registrations.set(
+			extensionId,
+			this._issueService.registerIssueDataProvider(extensionId, provider),
+		);
 	}
 
 	$unregisterIssueDataProvider(extensionId: string): void {

@@ -21,7 +21,7 @@ declare module "vscode" {
 				select?: boolean;
 				focus?: boolean;
 				expand?: boolean | number;
-			}
+			},
 		): Thenable<void>;
 
 		/**

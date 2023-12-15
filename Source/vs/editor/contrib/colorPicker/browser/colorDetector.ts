@@ -3,33 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancelablePromise, createCancelablePromise, TimeoutTimer } from 'vs/base/common/async';
-import { RGBA } from 'vs/base/common/color';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
-import { StopWatch } from 'vs/base/common/stopwatch';
-import { noBreakWhitespace } from 'vs/base/common/strings';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { DynamicCssRules } from 'vs/editor/browser/editorDom';
-import { EditorContributionInstantiation, registerEditorContribution } from 'vs/editor/browser/editorExtensions';
-import { EditorOption } from 'vs/editor/common/config/editorOptions';
-import { Position } from 'vs/editor/common/core/position';
-import { Range } from 'vs/editor/common/core/range';
-import { IEditorContribution } from 'vs/editor/common/editorCommon';
-import { IModelDecoration, IModelDeltaDecoration } from 'vs/editor/common/model';
-import { ModelDecorationOptions } from 'vs/editor/common/model/textModel';
-import { IFeatureDebounceInformation, ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce';
-import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
-import { getColors, IColorData } from 'vs/editor/contrib/colorPicker/browser/color';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import {
+	CancelablePromise,
+	createCancelablePromise,
+	TimeoutTimer,
+} from "vs/base/common/async";
+import { RGBA } from "vs/base/common/color";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
+import { StopWatch } from "vs/base/common/stopwatch";
+import { noBreakWhitespace } from "vs/base/common/strings";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { DynamicCssRules } from "vs/editor/browser/editorDom";
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from "vs/editor/browser/editorExtensions";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import { IEditorContribution } from "vs/editor/common/editorCommon";
+import {
+	IModelDecoration,
+	IModelDeltaDecoration,
+} from "vs/editor/common/model";
+import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
+import {
+	IFeatureDebounceInformation,
+	ILanguageFeatureDebounceService,
+} from "vs/editor/common/services/languageFeatureDebounce";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import {
+	getColors,
+	IColorData,
+} from "vs/editor/contrib/colorPicker/browser/color";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 export const ColorDecorationInjectedTextMarker = Object.create({});
 
-
 export class ColorDetector extends Disposable implements IEditorContribution {
-
-	public static readonly ID: string = 'editor.contrib.colorDetector';
+	public static readonly ID: string = "editor.contrib.colorDetector";
 
 	static readonly RECOMPUTE_TIME = 1000; // ms
 
@@ -41,7 +55,8 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 	private _decorationsIds: string[] = [];
 	private _colorDatas = new Map<string, IColorData>();
 
-	private readonly _colorDecoratorIds = this._editor.createDecorationsCollection();
+	private readonly _colorDecoratorIds =
+		this._editor.createDecorationsCollection();
 
 	private _isColorDecoratorsEnabled: boolean;
 	private _isDefaultColorDecoratorsEnabled: boolean;
@@ -94,11 +109,18 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 		}
 		const languageId = model.getLanguageId();
 		// handle deprecated settings. [languageId].colorDecorators.enable
-		const deprecatedConfig = this._configurationService.getValue(languageId);
-		if (deprecatedConfig && typeof deprecatedConfig === 'object') {
-			const colorDecorators = (deprecatedConfig as any)['colorDecorators']; // deprecatedConfig.valueOf('.colorDecorators.enable');
-			if (colorDecorators && colorDecorators['enable'] !== undefined && !colorDecorators['enable']) {
-				return colorDecorators['enable'];
+		const deprecatedConfig =
+			this._configurationService.getValue(languageId);
+		if (deprecatedConfig && typeof deprecatedConfig === "object") {
+			const colorDecorators = (deprecatedConfig as any)[
+				"colorDecorators"
+			]; // deprecatedConfig.valueOf('.colorDecorators.enable');
+			if (
+				colorDecorators &&
+				colorDecorators["enable"] !== undefined &&
+				!colorDecorators["enable"]
+			) {
+				return colorDecorators["enable"];
 			}
 		}
 
@@ -131,26 +153,33 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 			return;
 		}
 
-		this._localToDispose.add(this._editor.onDidChangeModelContent(() => {
-			if (!this._timeoutTimer) {
-				this._timeoutTimer = new TimeoutTimer();
-				this._timeoutTimer.cancelAndSet(() => {
-					this._timeoutTimer = null;
-					this.beginCompute();
-				}, this._debounceInformation.get(model));
-			}
-		}));
+		this._localToDispose.add(
+			this._editor.onDidChangeModelContent(() => {
+				if (!this._timeoutTimer) {
+					this._timeoutTimer = new TimeoutTimer();
+					this._timeoutTimer.cancelAndSet(() => {
+						this._timeoutTimer = null;
+						this.beginCompute();
+					}, this._debounceInformation.get(model));
+				}
+			}),
+		);
 		this.beginCompute();
 	}
 
 	private async beginCompute(): Promise<void> {
-		this._computePromise = createCancelablePromise(async token => {
+		this._computePromise = createCancelablePromise(async (token) => {
 			const model = this._editor.getModel();
 			if (!model) {
 				return [];
 			}
 			const sw = new StopWatch(false);
-			const colors = await getColors(this._languageFeaturesService.colorProvider, model, token, this._isDefaultColorDecoratorsEnabled);
+			const colors = await getColors(
+				this._languageFeaturesService.colorProvider,
+				model,
+				token,
+				this._isDefaultColorDecoratorsEnabled,
+			);
 			this._debounceInformation.update(model, sw.elapsed());
 			return colors;
 		});
@@ -177,21 +206,26 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 	}
 
 	private updateDecorations(colorDatas: IColorData[]): void {
-		const decorations = colorDatas.map(c => ({
+		const decorations = colorDatas.map((c) => ({
 			range: {
 				startLineNumber: c.colorInfo.range.startLineNumber,
 				startColumn: c.colorInfo.range.startColumn,
 				endLineNumber: c.colorInfo.range.endLineNumber,
-				endColumn: c.colorInfo.range.endColumn
+				endColumn: c.colorInfo.range.endColumn,
 			},
-			options: ModelDecorationOptions.EMPTY
+			options: ModelDecorationOptions.EMPTY,
 		}));
 
 		this._editor.changeDecorations((changeAccessor) => {
-			this._decorationsIds = changeAccessor.deltaDecorations(this._decorationsIds, decorations);
+			this._decorationsIds = changeAccessor.deltaDecorations(
+				this._decorationsIds,
+				decorations,
+			);
 
 			this._colorDatas = new Map<string, IColorData>();
-			this._decorationsIds.forEach((id, i) => this._colorDatas.set(id, colorDatas[i]));
+			this._decorationsIds.forEach((id, i) =>
+				this._colorDatas.set(id, colorDatas[i]),
+			);
 		});
 	}
 
@@ -204,33 +238,43 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 
 		const limit = this._editor.getOption(EditorOption.colorDecoratorsLimit);
 
-		for (let i = 0; i < colorData.length && decorations.length < limit; i++) {
+		for (
+			let i = 0;
+			i < colorData.length && decorations.length < limit;
+			i++
+		) {
 			const { red, green, blue, alpha } = colorData[i].colorInfo.color;
-			const rgba = new RGBA(Math.round(red * 255), Math.round(green * 255), Math.round(blue * 255), alpha);
+			const rgba = new RGBA(
+				Math.round(red * 255),
+				Math.round(green * 255),
+				Math.round(blue * 255),
+				alpha,
+			);
 			const color = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
 
 			const ref = this._colorDecorationClassRefs.add(
 				this._ruleFactory.createClassNameRef({
-					backgroundColor: color
-				})
+					backgroundColor: color,
+				}),
 			);
 
 			decorations.push({
 				range: {
-					startLineNumber: colorData[i].colorInfo.range.startLineNumber,
+					startLineNumber:
+						colorData[i].colorInfo.range.startLineNumber,
 					startColumn: colorData[i].colorInfo.range.startColumn,
 					endLineNumber: colorData[i].colorInfo.range.endLineNumber,
-					endColumn: colorData[i].colorInfo.range.endColumn
+					endColumn: colorData[i].colorInfo.range.endColumn,
 				},
 				options: {
-					description: 'colorDetector',
+					description: "colorDetector",
 					before: {
 						content: noBreakWhitespace,
 						inlineClassName: `${ref.className} colorpicker-color-decoration`,
 						inlineClassNameAffectsLetterSpacing: true,
-						attachedData: ColorDecorationInjectedTextMarker
-					}
-				}
+						attachedData: ColorDecorationInjectedTextMarker,
+					},
+				},
 			});
 		}
 		const limited = limit < colorData.length ? limit : false;
@@ -254,7 +298,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 
 		const decorations = model
 			.getDecorationsInRange(Range.fromPositions(position, position))
-			.filter(d => this._colorDatas.has(d.id));
+			.filter((d) => this._colorDatas.has(d.id));
 
 		if (decorations.length === 0) {
 			return null;
@@ -289,4 +333,8 @@ export class DecoratorLimitReporter {
 	}
 }
 
-registerEditorContribution(ColorDetector.ID, ColorDetector, EditorContributionInstantiation.AfterFirstRender);
+registerEditorContribution(
+	ColorDetector.ID,
+	ColorDetector,
+	EditorContributionInstantiation.AfterFirstRender,
+);

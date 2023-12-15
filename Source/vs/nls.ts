@@ -24,7 +24,7 @@ interface BundleLoader {
 	(
 		bundle: string,
 		locale: string | null,
-		cb: (err: Error, messages: string[] | IBundledStrings) => void
+		cb: (err: Error, messages: string[] | IBundledStrings) => void,
 	): void;
 }
 
@@ -80,13 +80,13 @@ interface IConsumerAPI {
 	localize: ILocalizeFunc | IBoundLocalizeFunc;
 	localize2: ILocalize2Func | IBoundLocalize2Func;
 	getConfiguredDefaultLocale(
-		stringFromLocalizeCall: string
+		stringFromLocalizeCall: string,
 	): string | undefined;
 }
 
 function _format(
 	message: string,
-	args: (string | number | boolean | undefined | null)[]
+	args: (string | number | boolean | undefined | null)[],
 ): string {
 	let result: string;
 
@@ -121,7 +121,7 @@ function _format(
 
 function findLanguageForModule(
 	config: INLSPluginConfigAvailableLanguages,
-	name: string
+	name: string,
 ) {
 	let result = config[name];
 	if (result) {
@@ -144,7 +144,7 @@ function endWithSlash(path: string): string {
 async function getMessagesFromTranslationsService(
 	translationServiceUrl: string,
 	language: string,
-	name: string
+	name: string,
 ): Promise<string[] | IBundledStrings> {
 	const url =
 		endWithSlash(translationServiceUrl) +
@@ -279,7 +279,7 @@ export function localize2(
  * in order to ensure the loader plugin has been initialized before this function is called.
  */
 export function getConfiguredDefaultLocale(
-	stringFromLocalizeCall: string
+	stringFromLocalizeCall: string,
 ): string | undefined;
 /**
  * @skipMangle
@@ -303,7 +303,7 @@ export function setPseudoTranslation(value: boolean) {
  */
 export function create(
 	key: string,
-	data: IBundledStrings & IConsumerAPI
+	data: IBundledStrings & IConsumerAPI,
 ): IConsumerAPI {
 	return {
 		localize: createScopedLocalize(data[key]),
@@ -321,7 +321,7 @@ export function load(
 	name: string,
 	req: AMDLoader.IRelativeRequire,
 	load: AMDLoader.IPluginLoadCallback,
-	config: AMDLoader.IConfigurationOptions
+	config: AMDLoader.IConfigurationOptions,
 ): void {
 	const pluginConfig: INLSPluginConfig = config["vs/nls"] ?? {};
 	if (!name || name.length === 0) {
@@ -349,10 +349,10 @@ export function load(
 				createScopedLocalize2(messages);
 		} else {
 			(messages as any as IConsumerAPI).localize = createScopedLocalize(
-				messages[name]
+				messages[name],
 			);
 			(messages as any as IConsumerAPI).localize2 = createScopedLocalize2(
-				messages[name]
+				messages[name],
 			);
 		}
 		(messages as any as IConsumerAPI).getConfiguredDefaultLocale = () =>
@@ -370,7 +370,7 @@ export function load(
 				} else {
 					messagesLoaded(messages);
 				}
-			}
+			},
 		);
 	} else if (pluginConfig.translationServiceUrl && !useDefaultLanguage) {
 		(async () => {
@@ -378,7 +378,7 @@ export function load(
 				const messages = await getMessagesFromTranslationsService(
 					pluginConfig.translationServiceUrl!,
 					language,
-					name
+					name,
 				);
 				return messagesLoaded(messages);
 			} catch (err) {
@@ -395,7 +395,7 @@ export function load(
 					const messages = await getMessagesFromTranslationsService(
 						pluginConfig.translationServiceUrl!,
 						genericLanguage,
-						name
+						name,
 					);
 					// We got some messages, so we configure the configuration to use the generic language for this session.
 					pluginConfig.availableLanguages ??= {};
@@ -412,13 +412,13 @@ export function load(
 			if (suffix === ".nls") {
 				console.error(
 					"Failed trying to load default language strings",
-					err
+					err,
 				);
 				return;
 			}
 			console.error(
 				`Failed to load message bundle for language ${language}. Falling back to the default language:`,
-				err
+				err,
 			);
 			req([name + ".nls"], messagesLoaded);
 		});

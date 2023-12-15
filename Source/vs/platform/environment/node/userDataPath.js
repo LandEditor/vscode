@@ -7,7 +7,7 @@
 
 //@ts-check
 (function () {
-	'use strict';
+	"use strict";
 
 	/**
 	 * @typedef {import('../../environment/common/argv').NativeParsedArgs} NativeParsedArgs
@@ -17,7 +17,6 @@
 	 * @param {string} cwd
 	 */
 	function factory(path, os, cwd) {
-
 		/**
 		 * @param {NativeParsedArgs} cliArgs
 		 * @param {string} productName
@@ -48,20 +47,19 @@
 		 * @returns {string}
 		 */
 		function doGetUserDataPath(cliArgs, productName) {
-
 			// 0. Running out of sources has a fixed productName
-			if (process.env['VSCODE_DEV']) {
-				productName = 'code-oss-dev';
+			if (process.env["VSCODE_DEV"]) {
+				productName = "code-oss-dev";
 			}
 
 			// 1. Support portable mode
-			const portablePath = process.env['VSCODE_PORTABLE'];
+			const portablePath = process.env["VSCODE_PORTABLE"];
 			if (portablePath) {
-				return path.join(portablePath, 'user-data');
+				return path.join(portablePath, "user-data");
 			}
 
 			// 2. Support global VSCODE_APPDATA environment variable
-			let appDataPath = process.env['VSCODE_APPDATA'];
+			let appDataPath = process.env["VSCODE_APPDATA"];
 			if (appDataPath) {
 				return path.join(appDataPath, productName);
 			}
@@ -70,56 +68,75 @@
 			// all processes https://github.com/electron/electron/blob/1897b14af36a02e9aa7e4d814159303441548251/shell/browser/electron_browser_client.cc#L546-L553
 			// Check VSCODE_PORTABLE and VSCODE_APPDATA before this case to get correct values.
 			// 3. Support explicit --user-data-dir
-			const cliPath = cliArgs['user-data-dir'];
+			const cliPath = cliArgs["user-data-dir"];
 			if (cliPath) {
 				return cliPath;
 			}
 
 			// 4. Otherwise check per platform
 			switch (process.platform) {
-				case 'win32':
-					appDataPath = process.env['APPDATA'];
+				case "win32":
+					appDataPath = process.env["APPDATA"];
 					if (!appDataPath) {
-						const userProfile = process.env['USERPROFILE'];
-						if (typeof userProfile !== 'string') {
-							throw new Error('Windows: Unexpected undefined %USERPROFILE% environment variable');
+						const userProfile = process.env["USERPROFILE"];
+						if (typeof userProfile !== "string") {
+							throw new Error(
+								"Windows: Unexpected undefined %USERPROFILE% environment variable",
+							);
 						}
 
-						appDataPath = path.join(userProfile, 'AppData', 'Roaming');
+						appDataPath = path.join(
+							userProfile,
+							"AppData",
+							"Roaming",
+						);
 					}
 					break;
-				case 'darwin':
-					appDataPath = path.join(os.homedir(), 'Library', 'Application Support');
+				case "darwin":
+					appDataPath = path.join(
+						os.homedir(),
+						"Library",
+						"Application Support",
+					);
 					break;
-				case 'linux':
-					appDataPath = process.env['XDG_CONFIG_HOME'] || path.join(os.homedir(), '.config');
+				case "linux":
+					appDataPath =
+						process.env["XDG_CONFIG_HOME"] ||
+						path.join(os.homedir(), ".config");
 					break;
 				default:
-					throw new Error('Platform not supported');
+					throw new Error("Platform not supported");
 			}
 
 			return path.join(appDataPath, productName);
 		}
 
 		return {
-			getUserDataPath
+			getUserDataPath,
 		};
 	}
 
-	if (typeof define === 'function') {
-		define(['path', 'os', 'vs/base/common/process'], function (
+	if (typeof define === "function") {
+		define(["path", "os", "vs/base/common/process"], function (
 			/** @type {typeof import('path')} */ path,
 			/** @type {typeof import('os')} */ os,
-			/** @type {typeof import("../../../base/common/process")} */ process
+			/** @type {typeof import("../../../base/common/process")} */ process,
 		) {
 			return factory(path, os, process.cwd()); // amd
 		});
-	} else if (typeof module === 'object' && typeof module.exports === 'object') {
-		const path = require('path');
-		const os = require('os');
+	} else if (
+		typeof module === "object" &&
+		typeof module.exports === "object"
+	) {
+		const path = require("path");
+		const os = require("os");
 
-		module.exports = factory(path, os, process.env['VSCODE_CWD'] || process.cwd()); // commonjs
+		module.exports = factory(
+			path,
+			os,
+			process.env["VSCODE_CWD"] || process.cwd(),
+		); // commonjs
 	} else {
-		throw new Error('Unknown context');
+		throw new Error("Unknown context");
 	}
-}());
+})();

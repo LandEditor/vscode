@@ -26,8 +26,8 @@ function log(prefix: string, message: string): void {
 export function loaderConfig() {
 	const result: any = {
 		paths: {
-			"vs": "out-build/vs",
-			"vscode": "empty:",
+			vs: "out-build/vs",
+			vscode: "empty:",
 		},
 		amdModulesPattern: /^vs\//,
 	};
@@ -42,7 +42,7 @@ const IS_OUR_COPYRIGHT_REGEXP = /Copyright \(C\) Microsoft Corporation/i;
 function loaderPlugin(
 	src: string,
 	base: string,
-	amdModuleId: string | undefined
+	amdModuleId: string | undefined,
 ): NodeJS.ReadWriteStream {
 	return gulp.src(src, { base }).pipe(
 		es.through(function (data: VinylFile) {
@@ -50,12 +50,12 @@ function loaderPlugin(
 				let contents = data.contents.toString("utf8");
 				contents = contents.replace(
 					/^define\(/m,
-					`define("${amdModuleId}",`
+					`define("${amdModuleId}",`,
 				);
 				data.contents = Buffer.from(contents);
 			}
 			this.emit("data", data);
-		})
+		}),
 	);
 }
 
@@ -63,14 +63,14 @@ function loader(
 	src: string,
 	bundledFileHeader: string,
 	bundleLoader: boolean,
-	externalLoaderInfo?: util.IExternalLoaderInfo
+	externalLoaderInfo?: util.IExternalLoaderInfo,
 ): NodeJS.ReadWriteStream {
 	let loaderStream = gulp.src(`${src}/vs/loader.js`, { base: `${src}` });
 	if (bundleLoader) {
 		loaderStream = es.merge(
 			loaderStream,
 			loaderPlugin(`${src}/vs/css.js`, `${src}`, "vs/css"),
-			loaderPlugin(`${src}/vs/nls.js`, `${src}`, "vs/nls")
+			loaderPlugin(`${src}/vs/nls.js`, `${src}`, "vs/nls"),
 		);
 	}
 
@@ -103,7 +103,7 @@ function loader(
 							path: "fake",
 							base: ".",
 							contents: Buffer.from(bundledFileHeader),
-						})
+						}),
 					);
 					if (externalLoaderInfo !== undefined) {
 						files.push(
@@ -111,23 +111,23 @@ function loader(
 								path: "fake2",
 								base: ".",
 								contents: Buffer.from(
-									emitExternalLoaderInfo(externalLoaderInfo)
+									emitExternalLoaderInfo(externalLoaderInfo),
 								),
-							})
+							}),
 						);
 					}
 					for (const file of files) {
 						this.emit("data", file);
 					}
 					this.emit("end");
-				}
-			)
+				},
+			),
 		)
 		.pipe(concat("vs/loader.js"));
 }
 
 function emitExternalLoaderInfo(
-	externalLoaderInfo: util.IExternalLoaderInfo
+	externalLoaderInfo: util.IExternalLoaderInfo,
 ): string {
 	const externalBaseUrl = externalLoaderInfo.baseUrl;
 	externalLoaderInfo.baseUrl = "$BASE_URL";
@@ -136,7 +136,7 @@ function emitExternalLoaderInfo(
 	const code = `
 (function() {
 	const baseUrl = require.getConfig().baseUrl || ${JSON.stringify(
-		externalBaseUrl
+		externalBaseUrl,
 	)};
 	require.config(${JSON.stringify(externalLoaderInfo, undefined, 2)});
 })();`;
@@ -148,7 +148,7 @@ function toConcatStream(
 	bundledFileHeader: string,
 	sources: bundle.IFile[],
 	dest: string,
-	fileContentMapper: (contents: string, path: string) => string
+	fileContentMapper: (contents: string, path: string) => string,
 ): NodeJS.ReadWriteStream {
 	const useSourcemaps = /\.js$/.test(dest) && !/\.nls\.js$/.test(dest);
 
@@ -198,7 +198,7 @@ function toBundleStream(
 	src: string,
 	bundledFileHeader: string,
 	bundles: bundle.IConcatFile[],
-	fileContentMapper: (contents: string, path: string) => string
+	fileContentMapper: (contents: string, path: string) => string,
 ): NodeJS.ReadWriteStream {
 	return es.merge(
 		bundles.map(function (bundle) {
@@ -207,9 +207,9 @@ function toBundleStream(
 				bundledFileHeader,
 				bundle.sources,
 				bundle.dest,
-				fileContentMapper
+				fileContentMapper,
 			);
-		})
+		}),
 	);
 }
 
@@ -287,7 +287,7 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 			src,
 			bundledFileHeader,
 			result.files,
-			fileContentMapper
+			fileContentMapper,
 		).pipe(bundlesStream);
 
 		// Remove css inlined resources
@@ -299,7 +299,7 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 			filteredResources.push("!" + resource);
 		});
 		gulp.src(filteredResources, { base: `${src}`, allowEmpty: true }).pipe(
-			resourcesStream
+			resourcesStream,
 		);
 
 		const bundleInfoArray: VinylFile[] = [];
@@ -309,9 +309,9 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 					path: "bundleInfo.json",
 					base: ".",
 					contents: Buffer.from(
-						JSON.stringify(result.bundleData, null, "\t")
+						JSON.stringify(result.bundleData, null, "\t"),
 					),
-				})
+				}),
 			);
 		}
 		es.readArray(bundleInfoArray).pipe(bundleInfoStream);
@@ -321,7 +321,7 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 		loader(src, bundledFileHeader, false, opts.externalLoaderInfo),
 		bundlesStream,
 		resourcesStream,
-		bundleInfoStream
+		bundleInfoStream,
 	);
 
 	return result
@@ -330,15 +330,15 @@ function optimizeAMDTask(opts: IOptimizeAMDTaskOpts): NodeJS.ReadWriteStream {
 				sourceRoot: undefined,
 				addComment: true,
 				includeContent: true,
-			})
+			}),
 		)
 		.pipe(
 			opts.languages && opts.languages.length
 				? processNlsFiles({
 						fileHeader: bundledFileHeader,
 						languages: opts.languages,
-					})
-				: es.through()
+				  })
+				: es.through(),
 		);
 }
 
@@ -362,7 +362,7 @@ export interface IOptimizeCommonJSTaskOpts {
 }
 
 function optimizeCommonJSTask(
-	opts: IOptimizeCommonJSTaskOpts
+	opts: IOptimizeCommonJSTaskOpts,
 ): NodeJS.ReadWriteStream {
 	const esbuild = require("esbuild") as typeof import("esbuild");
 
@@ -385,7 +385,7 @@ function optimizeCommonJSTask(
 
 					cb(undefined, f);
 				});
-		})
+		}),
 	);
 }
 
@@ -402,7 +402,7 @@ export interface IOptimizeManualTaskOpts {
 }
 
 function optimizeManualTask(
-	options: IOptimizeManualTaskOpts[]
+	options: IOptimizeManualTaskOpts[],
 ): NodeJS.ReadWriteStream {
 	const concatenations = options.map((opt) => {
 		return gulp.src(opt.src).pipe(concat(opt.out));
@@ -416,11 +416,11 @@ export function optimizeLoaderTask(
 	out: string,
 	bundleLoader: boolean,
 	bundledFileHeader = "",
-	externalLoaderInfo?: util.IExternalLoaderInfo
+	externalLoaderInfo?: util.IExternalLoaderInfo,
 ): () => NodeJS.ReadWriteStream {
 	return () =>
 		loader(src, bundledFileHeader, bundleLoader, externalLoaderInfo).pipe(
-			gulp.dest(out)
+			gulp.dest(out),
 		);
 }
 
@@ -444,7 +444,7 @@ export interface IOptimizeTaskOpts {
 }
 
 export function optimizeTask(
-	opts: IOptimizeTaskOpts
+	opts: IOptimizeTaskOpts,
 ): () => NodeJS.ReadWriteStream {
 	return function () {
 		const optimizers = [optimizeAMDTask(opts.amd)];
@@ -462,7 +462,7 @@ export function optimizeTask(
 
 export function minifyTask(
 	src: string,
-	sourceMapBaseUrl?: string
+	sourceMapBaseUrl?: string,
 ): (cb: any) => void {
 	const esbuild = require("esbuild") as typeof import("esbuild");
 	const sourceMappingURL = sourceMapBaseUrl
@@ -498,10 +498,10 @@ export function minifyTask(
 					})
 					.then((res) => {
 						const jsFile = res.outputFiles.find((f) =>
-							/\.js$/.test(f.path)
+							/\.js$/.test(f.path),
 						)!;
 						const sourceMapFile = res.outputFiles.find((f) =>
-							/\.js\.map$/.test(f.path)
+							/\.js\.map$/.test(f.path),
 						)!;
 
 						const contents = Buffer.from(jsFile.contents);
@@ -511,8 +511,8 @@ export function minifyTask(
 						if (unicodeMatch) {
 							cb(
 								new Error(
-									`Found non-ascii character ${unicodeMatch[0]} in the minified output of ${f.path}. Non-ASCII characters in the output can cause performance problems when loading. Please review if you have introduced a regular expression that esbuild is not automatically converting and convert it to using unicode escape sequences.`
-								)
+									`Found non-ascii character ${unicodeMatch[0]} in the minified output of ${f.path}. Non-ASCII characters in the output can cause performance problems when loading. Please review if you have introduced a regular expression that esbuild is not automatically converting and convert it to using unicode escape sequences.`,
+								),
 							);
 						} else {
 							f.contents = contents;
@@ -543,7 +543,7 @@ export function minifyTask(
 				addComment: true,
 			} as any),
 			gulp.dest(src + "-min"),
-			(err: any) => cb(err)
+			(err: any) => cb(err),
 		);
 	};
 }

@@ -63,7 +63,7 @@ const matchFiles: (
 		files: readonly string[];
 		directories: readonly string[];
 	},
-	realpath: (path: string) => string
+	realpath: (path: string) => string,
 ) => string[] = (ts as any).matchFiles;
 const generateDjb2Hash = (ts as any).generateDjb2Hash;
 // End misc internals
@@ -73,7 +73,7 @@ function fromResource(extensionUri: URI, uri: URI) {
 		uri.scheme === extensionUri.scheme &&
 		uri.authority === extensionUri.authority &&
 		uri.path.startsWith(
-			extensionUri.path + "/dist/browser/typescript/lib."
+			extensionUri.path + "/dist/browser/typescript/lib.",
 		) &&
 		uri.path.endsWith(".d.ts")
 	) {
@@ -85,7 +85,7 @@ function fromResource(extensionUri: URI, uri: URI) {
 function updateWatch(
 	event: "create" | "change" | "delete",
 	uri: URI,
-	extensionUri: URI
+	extensionUri: URI,
 ) {
 	const kind = toTsWatcherKind(event);
 	const path = fromResource(extensionUri, uri);
@@ -97,7 +97,7 @@ function updateWatch(
 	}
 
 	for (const watch of Array.from(watchDirectories.keys()).filter((dir) =>
-		path.startsWith(dir)
+		path.startsWith(dir),
 	)) {
 		watchDirectories.get(watch)!.callback(path);
 		return;
@@ -120,7 +120,7 @@ function toTsWatcherKind(event: "create" | "change" | "delete") {
 class AccessOutsideOfRootError extends Error {
 	constructor(
 		public readonly filepath: string,
-		public readonly projectRootPaths: readonly string[]
+		public readonly projectRootPaths: readonly string[],
 	) {
 		super(`Could not read file outside of project root ${filepath}`);
 	}
@@ -129,7 +129,7 @@ class AccessOutsideOfRootError extends Error {
 type ServerHostWithImport = ts.server.ServerHost & {
 	importPlugin(
 		root: string,
-		moduleName: string
+		moduleName: string,
 	): Promise<ts.server.ModuleImportResult>;
 };
 
@@ -139,7 +139,7 @@ function createServerHost(
 	apiClient: ApiClient | undefined,
 	args: string[],
 	fsWatcher: MessagePort,
-	enabledExperimentalTypeAcquisition: boolean
+	enabledExperimentalTypeAcquisition: boolean,
 ): ServerHostWithImport {
 	const currentDirectory = "/";
 	const fs = apiClient?.vscode.workspace.fileSystem;
@@ -158,9 +158,9 @@ function createServerHost(
 	const getExecutingDirectoryPath = memoize(() =>
 		memoize(() =>
 			ensureTrailingDirectorySeparator(
-				getDirectoryPath(executingFilePath)
-			)
-		)
+				getDirectoryPath(executingFilePath),
+			),
+		),
 	);
 	const getWebPath = (path: string) =>
 		path.startsWith(directorySeparator)
@@ -185,7 +185,7 @@ function createServerHost(
 			path: string,
 			callback: ts.FileWatcherCallback,
 			pollingInterval?: number,
-			options?: ts.WatchOptions
+			options?: ts.WatchOptions,
 		): ts.FileWatcher {
 			if (looksLikeLibDtsPath(path)) {
 				// We don't support watching lib files on web since they are readonly
@@ -237,7 +237,7 @@ function createServerHost(
 			path: string,
 			callback: ts.DirectoryWatcherCallback,
 			recursive?: boolean,
-			options?: ts.WatchOptions
+			options?: ts.WatchOptions,
 		): ts.FileWatcher {
 			logVerbose("fs.watchDirectory", { path });
 
@@ -290,14 +290,14 @@ function createServerHost(
 			let packageJson: any | undefined;
 			try {
 				const packageJsonResponse = await fetch(
-					combinePaths(packageRoot, "package.json")
+					combinePaths(packageRoot, "package.json"),
 				);
 				packageJson = await packageJsonResponse.json();
 			} catch (e) {
 				return {
 					module: undefined,
 					error: new Error(
-						`Could not load plugin. Could not load 'package.json'.`
+						`Could not load plugin. Could not load 'package.json'.`,
 					),
 				};
 			}
@@ -307,7 +307,7 @@ function createServerHost(
 				return {
 					module: undefined,
 					error: new Error(
-						`Could not load plugin. No 'browser' field found in package.json.`
+						`Could not load plugin. No 'browser' field found in package.json.`,
 					),
 				};
 			}
@@ -532,7 +532,7 @@ function createServerHost(
 			extensions?: readonly string[],
 			excludes?: readonly string[],
 			includes?: readonly string[],
-			depth?: number
+			depth?: number,
 		): string[] {
 			logVerbose("fs.readDirectory", { path });
 
@@ -545,7 +545,7 @@ function createServerHost(
 				currentDirectory,
 				depth,
 				getAccessibleFileSystemEntries,
-				realpath
+				realpath,
 			);
 		},
 		getModifiedTime(path: string): Date | undefined {
@@ -704,7 +704,7 @@ function createServerHost(
 		if (allowRead === "block") {
 			throw new AccessOutsideOfRootError(
 				filepath,
-				Array.from(projectRootPaths.keys())
+				Array.from(projectRootPaths.keys()),
 			);
 		}
 
@@ -745,7 +745,7 @@ class WasmCancellationToken implements ts.server.ServerCancellationToken {
 			this.currentRequestId = undefined;
 		} else {
 			throw new Error(
-				`Mismatched request id, expected ${this.currentRequestId} but got ${requestId}`
+				`Mismatched request id, expected ${this.currentRequestId} but got ${requestId}`,
 			);
 		}
 	}
@@ -781,7 +781,7 @@ class WorkerSession extends ts.server.Session<{}> {
 		options: StartSessionOptions,
 		private readonly port: MessagePort,
 		logger: ts.server.Logger,
-		hrtime: ts.server.SessionOptions["hrtime"]
+		hrtime: ts.server.SessionOptions["hrtime"],
 	) {
 		const cancellationToken = new WasmCancellationToken();
 		const typingsInstaller =
@@ -789,7 +789,7 @@ class WorkerSession extends ts.server.Session<{}> {
 				? ts.server.nullTypingsInstaller
 				: new WebTypingsInstaller(
 						host,
-						"/vscode-global-typings/ts-nul-authority/projects"
+						"/vscode-global-typings/ts-nul-authority/projects",
 				  );
 
 		super({
@@ -833,7 +833,7 @@ class WorkerSession extends ts.server.Session<{}> {
 					for (const open of args.openFiles ?? []) {
 						if (open.projectRootPath) {
 							const uri = filePathToResourceUri(
-								open.projectRootPath
+								open.projectRootPath,
 							);
 							if (uri) {
 								projectRootPaths.set(open.projectRootPath, uri);
@@ -854,8 +854,8 @@ class WorkerSession extends ts.server.Session<{}> {
 			if (this.logger.hasLevel(ts.server.LogLevel.verbose)) {
 				this.logger.info(
 					`Session does not support events: ignored event: ${JSON.stringify(
-						msg
-					)}`
+						msg,
+					)}`,
 				);
 			}
 			return;
@@ -883,14 +883,14 @@ class WorkerSession extends ts.server.Session<{}> {
 
 	listen() {
 		this.logger.info(
-			`webServer.ts: tsserver starting to listen for messages on 'message'...`
+			`webServer.ts: tsserver starting to listen for messages on 'message'...`,
 		);
 		this.port.onmessage = this.listener;
 	}
 }
 
 function parseServerMode(
-	args: string[]
+	args: string[],
 ): ts.LanguageServiceMode | string | undefined {
 	const mode = findArgument(args, "--serverMode");
 	if (!mode) {
@@ -931,7 +931,7 @@ function hasArgument(args: readonly string[], name: string): boolean {
 
 function findArgument(
 	args: readonly string[],
-	name: string
+	name: string,
 ): string | undefined {
 	const index = args.indexOf(name);
 	return 0 <= index && index < args.length - 1 ? args[index + 1] : undefined;
@@ -939,7 +939,7 @@ function findArgument(
 
 function findArgumentStringArray(
 	args: readonly string[],
-	name: string
+	name: string,
 ): readonly string[] {
 	const arg = findArgument(args, name);
 	return arg === undefined
@@ -951,7 +951,7 @@ async function initializeSession(
 	args: string[],
 	extensionUri: URI,
 	ports: { tsserver: MessagePort; sync: MessagePort; watcher: MessagePort },
-	logger: ts.server.Logger
+	logger: ts.server.Logger,
 ): Promise<void> {
 	const modeOrUnknown = parseServerMode(args);
 	const serverMode =
@@ -962,35 +962,35 @@ async function initializeSession(
 	logger.info(`Version: 0.0.0`);
 	logger.info(`Arguments: ${args.join(" ")}`);
 	logger.info(
-		`ServerMode: ${serverMode} unknownServerMode: ${unknownServerMode}`
+		`ServerMode: ${serverMode} unknownServerMode: ${unknownServerMode}`,
 	);
 	const options: StartSessionOptions = {
 		globalPlugins: findArgumentStringArray(args, "--globalPlugins"),
 		pluginProbeLocations: findArgumentStringArray(
 			args,
-			"--pluginProbeLocations"
+			"--pluginProbeLocations",
 		),
 		allowLocalPluginLoads: hasArgument(args, "--allowLocalPluginLoads"),
 		useSingleInferredProject: hasArgument(
 			args,
-			"--useSingleInferredProject"
+			"--useSingleInferredProject",
 		),
 		useInferredProjectPerProjectRoot: hasArgument(
 			args,
-			"--useInferredProjectPerProjectRoot"
+			"--useInferredProjectPerProjectRoot",
 		),
 		suppressDiagnosticEvents: hasArgument(
 			args,
-			"--suppressDiagnosticEvents"
+			"--suppressDiagnosticEvents",
 		),
 		noGetErrOnBackgroundUpdate: hasArgument(
 			args,
-			"--noGetErrOnBackgroundUpdate"
+			"--noGetErrOnBackgroundUpdate",
 		),
 		serverMode,
 		disableAutomaticTypingAcquisition: hasArgument(
 			args,
-			"--disableAutomaticTypingAcquisition"
+			"--disableAutomaticTypingAcquisition",
 		),
 	};
 
@@ -999,7 +999,7 @@ async function initializeSession(
 	if (hasArgument(args, "--enableProjectWideIntelliSenseOnWeb")) {
 		const enabledExperimentalTypeAcquisition = hasArgument(
 			args,
-			"--experimentalTypeAcquisition"
+			"--experimentalTypeAcquisition",
 		);
 		const connection = new ClientConnection<Requests>(ports.sync);
 		await connection.serviceReady();
@@ -1012,7 +1012,7 @@ async function initializeSession(
 			apiClient,
 			args,
 			ports.watcher,
-			enabledExperimentalTypeAcquisition
+			enabledExperimentalTypeAcquisition,
 		);
 	} else {
 		sys = createServerHost(
@@ -1021,7 +1021,7 @@ async function initializeSession(
 			undefined,
 			args,
 			ports.watcher,
-			false
+			false,
 		);
 	}
 
@@ -1032,13 +1032,13 @@ async function initializeSession(
 		options,
 		ports.tsserver,
 		logger,
-		hrtime
+		hrtime,
 	);
 	session.listen();
 }
 
 function parseLogLevel(
-	input: string | undefined
+	input: string | undefined,
 ): ts.server.LogLevel | undefined {
 	switch (input) {
 		case "normal":
@@ -1060,7 +1060,7 @@ const listener = async (e: any) => {
 			const args = e.data.args;
 
 			const logLevel = parseLogLevel(
-				findArgument(args, "--logVerbosity")
+				findArgument(args, "--logVerbosity"),
 			);
 			const doLog =
 				typeof logLevel === "undefined"
@@ -1090,12 +1090,12 @@ const listener = async (e: any) => {
 				args,
 				extensionUri,
 				{ sync, tsserver, watcher },
-				logger
+				logger,
 			);
 		} else {
 			console.error(
 				"unexpected message in place of initial message: " +
-					JSON.stringify(e.data)
+					JSON.stringify(e.data),
 			);
 		}
 		return;

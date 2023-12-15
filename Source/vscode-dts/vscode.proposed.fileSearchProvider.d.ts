@@ -51,7 +51,7 @@ declare module "vscode" {
 		provideFileSearchResults(
 			query: FileSearchQuery,
 			options: FileSearchOptions,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<Uri[]>;
 	}
 
@@ -67,7 +67,7 @@ declare module "vscode" {
 		 */
 		export function registerFileSearchProvider(
 			scheme: string,
-			provider: FileSearchProvider
+			provider: FileSearchProvider,
 		): Disposable;
 	}
 }

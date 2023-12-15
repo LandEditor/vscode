@@ -13,7 +13,7 @@ namespace snaps {
 		__dirname,
 		`../../node_modules/.bin/${
 			process.platform === "win32" ? "mksnapshot.cmd" : "mksnapshot"
-		}`
+		}`,
 	);
 	const product = require("../../product.json");
 	const arch = (process.argv.join("").match(/--arch=(.*)/) || [])[1];
@@ -42,14 +42,14 @@ namespace snaps {
 	startupBlobFilepath = path.join(
 		__dirname,
 		"../../../",
-		startupBlobFilepath
+		startupBlobFilepath,
 	);
 
 	snapshotLoader(loaderFilepath, startupBlobFilepath);
 
 	function snapshotLoader(
 		loaderFilepath: string,
-		startupBlobFilepath: string
+		startupBlobFilepath: string,
 	): void {
 		const inputFile = fs.readFileSync(loaderFilepath);
 		const wrappedInputFile = `
@@ -68,7 +68,7 @@ namespace snaps {
 		`;
 		const wrappedInputFilepath = path.join(
 			os.tmpdir(),
-			"wrapped-loader.js"
+			"wrapped-loader.js",
 		);
 		console.log(wrappedInputFilepath);
 		fs.writeFileSync(wrappedInputFilepath, wrappedInputFile);

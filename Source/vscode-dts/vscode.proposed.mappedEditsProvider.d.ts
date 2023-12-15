@@ -31,14 +31,14 @@ declare module "vscode" {
 			document: TextDocument,
 			codeBlocks: string[],
 			context: MappedEditsContext,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<WorkspaceEdit | null>;
 	}
 
 	namespace chat {
 		export function registerMappedEditsProvider(
 			documentSelector: DocumentSelector,
-			provider: MappedEditsProvider
+			provider: MappedEditsProvider,
 		): Disposable;
 	}
 }

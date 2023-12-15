@@ -3,27 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { coalesce } from 'vs/base/common/arrays';
-import { IMarkdownString, MarkdownString } from 'vs/base/common/htmlContent';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { basename } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { IRange, Range } from 'vs/editor/common/core/range';
-import { IDecorationOptions } from 'vs/editor/common/editorCommon';
-import { ITextModelService } from 'vs/editor/common/services/resolverService';
-import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
-import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { ILabelService } from 'vs/platform/label/common/label';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
-import { IChatWidget } from 'vs/workbench/contrib/chat/browser/chat';
-import { ChatWidget, IChatWidgetContrib } from 'vs/workbench/contrib/chat/browser/chatWidget';
-import { IChatRequestVariableValue, IDynamicVariable } from 'vs/workbench/contrib/chat/common/chatVariables';
+import { coalesce } from "vs/base/common/arrays";
+import { IMarkdownString, MarkdownString } from "vs/base/common/htmlContent";
+import { Disposable } from "vs/base/common/lifecycle";
+import { basename } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { IRange, Range } from "vs/editor/common/core/range";
+import { IDecorationOptions } from "vs/editor/common/editorCommon";
+import { ITextModelService } from "vs/editor/common/services/resolverService";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
+import { ILabelService } from "vs/platform/label/common/label";
+import { ILogService } from "vs/platform/log/common/log";
+import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
+import { IChatWidget } from "vs/workbench/contrib/chat/browser/chat";
+import {
+	ChatWidget,
+	IChatWidgetContrib,
+} from "vs/workbench/contrib/chat/browser/chatWidget";
+import {
+	IChatRequestVariableValue,
+	IDynamicVariable,
+} from "vs/workbench/contrib/chat/common/chatVariables";
 
-export const dynamicVariableDecorationType = 'chat-dynamic-variable';
+export const dynamicVariableDecorationType = "chat-dynamic-variable";
 
-export class ChatDynamicVariableModel extends Disposable implements IChatWidgetContrib {
-	public static readonly ID = 'chatDynamicVariableModel';
+export class ChatDynamicVariableModel
+	extends Disposable
+	implements IChatWidgetContrib
+{
+	public static readonly ID = "chatDynamicVariableModel";
 
 	private _variables: IDynamicVariable[] = [];
 	get variables(): ReadonlyArray<IDynamicVariable> {
@@ -75,7 +84,10 @@ export class ChatDynamicVariableModel extends Disposable implements IChatWidgetC
 	setInputState(s: any): void {
 		if (!Array.isArray(s)) {
 			// Something went wrong
-			this.logService.warn('ChatDynamicVariableModel.setInputState called with invalid state: ' + JSON.stringify(s));
+			this.logService.warn(
+				"ChatDynamicVariableModel.setInputState called with invalid state: " +
+					JSON.stringify(s),
+			);
 			return;
 		}
 
@@ -89,16 +101,27 @@ export class ChatDynamicVariableModel extends Disposable implements IChatWidgetC
 	}
 
 	private updateDecorations(): void {
-		this.widget.inputEditor.setDecorationsByType('chat', dynamicVariableDecorationType, this._variables.map(r => (<IDecorationOptions>{
-			range: r.range,
-			hoverMessage: this.getHoverForReference(r)
-		})));
+		this.widget.inputEditor.setDecorationsByType(
+			"chat",
+			dynamicVariableDecorationType,
+			this._variables.map(
+				(r) =>
+					<IDecorationOptions>{
+						range: r.range,
+						hoverMessage: this.getHoverForReference(r),
+					},
+			),
+		);
 	}
 
-	private getHoverForReference(ref: IDynamicVariable): string | IMarkdownString {
+	private getHoverForReference(
+		ref: IDynamicVariable,
+	): string | IMarkdownString {
 		const value = ref.data[0];
 		if (URI.isUri(value.value)) {
-			return new MarkdownString(this.labelService.getUriLabel(value.value, { relative: true }));
+			return new MarkdownString(
+				this.labelService.getUriLabel(value.value, { relative: true }),
+			);
 		} else {
 			return value.value.toString();
 		}
@@ -112,17 +135,19 @@ interface SelectAndInsertFileActionContext {
 	range: IRange;
 }
 
-function isSelectAndInsertFileActionContext(context: any): context is SelectAndInsertFileActionContext {
-	return 'widget' in context && 'range' in context;
+function isSelectAndInsertFileActionContext(
+	context: any,
+): context is SelectAndInsertFileActionContext {
+	return "widget" in context && "range" in context;
 }
 
 export class SelectAndInsertFileAction extends Action2 {
-	static readonly ID = 'workbench.action.chat.selectAndInsertFile';
+	static readonly ID = "workbench.action.chat.selectAndInsertFile";
 
 	constructor() {
 		super({
 			id: SelectAndInsertFileAction.ID,
-			title: '' // not displayed
+			title: "", // not displayed
 		});
 	}
 
@@ -137,20 +162,25 @@ export class SelectAndInsertFileAction extends Action2 {
 
 		const doCleanup = () => {
 			// Failed, remove the dangling `file`
-			context.widget.inputEditor.executeEdits('chatInsertFile', [{ range: context.range, text: `` }]);
+			context.widget.inputEditor.executeEdits("chatInsertFile", [
+				{ range: context.range, text: `` },
+			]);
 		};
 
 		const quickInputService = accessor.get(IQuickInputService);
-		const picks = await quickInputService.quickAccess.pick('');
+		const picks = await quickInputService.quickAccess.pick("");
 		if (!picks?.length) {
-			logService.trace('SelectAndInsertFileAction: no file selected');
+			logService.trace("SelectAndInsertFileAction: no file selected");
 			doCleanup();
 			return;
 		}
 
-		const resource = (picks[0] as unknown as { resource: unknown }).resource as URI;
+		const resource = (picks[0] as unknown as { resource: unknown })
+			.resource as URI;
 		if (!textModelService.canHandleResource(resource)) {
-			logService.trace('SelectAndInsertFileAction: non-text resource selected');
+			logService.trace(
+				"SelectAndInsertFileAction: non-text resource selected",
+			);
 			doCleanup();
 			return;
 		}
@@ -159,17 +189,28 @@ export class SelectAndInsertFileAction extends Action2 {
 		const editor = context.widget.inputEditor;
 		const text = `#file:${fileName}`;
 		const range = context.range;
-		const success = editor.executeEdits('chatInsertFile', [{ range, text: text + ' ' }]);
+		const success = editor.executeEdits("chatInsertFile", [
+			{ range, text: text + " " },
+		]);
 		if (!success) {
-			logService.trace(`SelectAndInsertFileAction: failed to insert "${text}"`);
+			logService.trace(
+				`SelectAndInsertFileAction: failed to insert "${text}"`,
+			);
 			doCleanup();
 			return;
 		}
 
-		context.widget.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID)?.addReference({
-			range: { startLineNumber: range.startLineNumber, startColumn: range.startColumn, endLineNumber: range.endLineNumber, endColumn: range.startColumn + text.length },
-			data: [{ level: 'full', value: resource }]
-		});
+		context.widget
+			.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID)
+			?.addReference({
+				range: {
+					startLineNumber: range.startLineNumber,
+					startColumn: range.startColumn,
+					endLineNumber: range.endLineNumber,
+					endColumn: range.startColumn + text.length,
+				},
+				data: [{ level: "full", value: resource }],
+			});
 	}
 }
 registerAction2(SelectAndInsertFileAction);
@@ -180,19 +221,21 @@ export interface IAddDynamicVariableContext {
 	variableData: IChatRequestVariableValue[];
 }
 
-function isAddDynamicVariableContext(context: any): context is IAddDynamicVariableContext {
-	return 'widget' in context &&
-		'range' in context &&
-		'variableData' in context;
+function isAddDynamicVariableContext(
+	context: any,
+): context is IAddDynamicVariableContext {
+	return (
+		"widget" in context && "range" in context && "variableData" in context
+	);
 }
 
 export class AddDynamicVariableAction extends Action2 {
-	static readonly ID = 'workbench.action.chat.addDynamicVariable';
+	static readonly ID = "workbench.action.chat.addDynamicVariable";
 
 	constructor() {
 		super({
 			id: AddDynamicVariableAction.ID,
-			title: '' // not displayed
+			title: "", // not displayed
 		});
 	}
 
@@ -202,10 +245,12 @@ export class AddDynamicVariableAction extends Action2 {
 			return;
 		}
 
-		context.widget.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID)?.addReference({
-			range: context.range,
-			data: context.variableData
-		});
+		context.widget
+			.getContrib<ChatDynamicVariableModel>(ChatDynamicVariableModel.ID)
+			?.addReference({
+				range: context.range,
+				data: context.variableData,
+			});
 	}
 }
 registerAction2(AddDynamicVariableAction);

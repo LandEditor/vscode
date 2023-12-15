@@ -21,7 +21,7 @@ const nodePath = path.join(
 	"node",
 	`v${version}`,
 	`${platform}-${arch}`,
-	node
+	node,
 );
 
 console.log(nodePath);

@@ -31,12 +31,12 @@ function isDocumentSuffix(str?: string): str is DarwinDocumentSuffix {
 
 const root = path.dirname(path.dirname(__dirname));
 const product = JSON.parse(
-	fs.readFileSync(path.join(root, "product.json"), "utf8")
+	fs.readFileSync(path.join(root, "product.json"), "utf8"),
 );
 const commit = getVersion(root);
 
 function createTemplate(
-	input: string
+	input: string,
 ): (params: Record<string, string>) => string {
 	return (params: Record<string, string>) => {
 		return input.replace(/<%=\s*([^\s]+)\s*%>/g, (match, key) => {
@@ -48,7 +48,7 @@ function createTemplate(
 const darwinCreditsTemplate =
 	product.darwinCredits &&
 	createTemplate(
-		fs.readFileSync(path.join(root, product.darwinCredits), "utf8")
+		fs.readFileSync(path.join(root, product.darwinCredits), "utf8"),
 	);
 
 /**
@@ -74,7 +74,7 @@ function darwinBundleDocumentType(
 	extensions: string[],
 	icon: string,
 	nameOrSuffix?: string | DarwinDocumentSuffix,
-	utis?: string[]
+	utis?: string[],
 ): DarwinDocumentType {
 	// If given a suffix, generate a name from it. If not given anything, default to 'document'
 	if (isDocumentSuffix(nameOrSuffix) || !nameOrSuffix) {
@@ -108,7 +108,7 @@ function darwinBundleDocumentType(
  */
 function darwinBundleDocumentTypes(
 	types: { [name: string]: string | string[] },
-	icon: string
+	icon: string,
 ): DarwinDocumentType[] {
 	return Object.keys(types).map((name: string): DarwinDocumentType => {
 		const extensions = types[name];
@@ -140,7 +140,7 @@ export const config = {
 	darwinBundleDocumentTypes: [
 		...darwinBundleDocumentTypes(
 			{ "C header file": "h", "C source code": "c" },
-			"c"
+			"c",
 		),
 		...darwinBundleDocumentTypes(
 			{
@@ -150,7 +150,7 @@ export const config = {
 					"gitignore",
 				],
 			},
-			"config"
+			"config",
 		),
 		...darwinBundleDocumentTypes(
 			{
@@ -164,28 +164,28 @@ export const config = {
 					"shtml",
 				],
 			},
-			"html"
+			"html",
 		),
 		darwinBundleDocumentType(
 			["bat", "cmd"],
 			"bat",
-			"Windows command script"
+			"Windows command script",
 		),
 		darwinBundleDocumentType(["bowerrc"], "Bower"),
 		darwinBundleDocumentType(
 			["config", "editorconfig", "ini", "cfg"],
 			"config",
-			"Configuration file"
+			"Configuration file",
 		),
 		darwinBundleDocumentType(
 			["hh", "hpp", "hxx", "h++"],
 			"cpp",
-			"C++ header file"
+			"C++ header file",
 		),
 		darwinBundleDocumentType(
 			["cc", "cpp", "cxx", "c++"],
 			"cpp",
-			"C++ source code"
+			"C++ source code",
 		),
 		darwinBundleDocumentType(["m"], "default", "Objective-C source code"),
 		darwinBundleDocumentType(["mm"], "cpp", "Objective-C++ source code"),
@@ -198,7 +198,7 @@ export const config = {
 		darwinBundleDocumentType(
 			["js", "jscsrc", "jshintrc", "mjs", "cjs"],
 			"Javascript",
-			"file"
+			"file",
 		),
 		darwinBundleDocumentType(["json"], "JSON"),
 		darwinBundleDocumentType(["less"], "Less"),
@@ -214,19 +214,19 @@ export const config = {
 				"mkd",
 				"mkdn",
 			],
-			"Markdown"
+			"Markdown",
 		),
 		darwinBundleDocumentType(["php"], "PHP", "source code"),
 		darwinBundleDocumentType(
 			["ps1", "psd1", "psm1"],
 			"Powershell",
-			"script"
+			"script",
 		),
 		darwinBundleDocumentType(["py", "pyi"], "Python", "script"),
 		darwinBundleDocumentType(
 			["gemspec", "rb", "erb"],
 			"Ruby",
-			"source code"
+			"source code",
 		),
 		darwinBundleDocumentType(["scss", "sass"], "SASS", "file"),
 		darwinBundleDocumentType(["sql"], "SQL", "script"),
@@ -245,7 +245,7 @@ export const config = {
 				"xml",
 				"xaml",
 			],
-			"XML"
+			"XML",
 		),
 		darwinBundleDocumentType(["eyaml", "eyml", "yaml", "yml"], "YAML"),
 		darwinBundleDocumentType(
@@ -267,7 +267,7 @@ export const config = {
 				"zshrc",
 			],
 			"Shell",
-			"script"
+			"script",
 		),
 		// Default icon with specified names
 		...darwinBundleDocumentTypes(
@@ -279,14 +279,14 @@ export const config = {
 				"CMake script": "cmake",
 				"Dart script": "dart",
 				"Diff file": "diff",
-				"Dockerfile": "dockerfile",
+				Dockerfile: "dockerfile",
 				"Gradle file": "gradle",
 				"Groovy script": "groovy",
-				"Makefile": ["makefile", "mk"],
+				Makefile: ["makefile", "mk"],
 				"Lua script": "lua",
 				"Pug document": "pug",
-				"Jupyter": "ipynb",
-				"Lockfile": "lock",
+				Jupyter: "ipynb",
+				Lockfile: "lock",
 				"Log file": "log",
 				"Plain Text File": "txt",
 				"Xcode project file": "xcodeproj",
@@ -303,7 +303,7 @@ export const config = {
 				"TOML document": "toml",
 				"Swift source code": "swift",
 			},
-			"default"
+			"default",
 		),
 		// Default icon with default name
 		darwinBundleDocumentType(
@@ -328,7 +328,7 @@ export const config = {
 				"t",
 			],
 			"default",
-			product.nameLong + " document"
+			product.nameLong + " document",
 		),
 		// Folder support ()
 		darwinBundleDocumentType([], "default", "Folder", ["public.folder"]),
@@ -346,8 +346,8 @@ export const config = {
 				darwinCreditsTemplate({
 					commit: commit,
 					date: new Date().toISOString(),
-				})
-			)
+				}),
+		  )
 		: undefined,
 	linuxExecutableName: product.applicationName,
 	winIcon: "resources/win32/code.ico",

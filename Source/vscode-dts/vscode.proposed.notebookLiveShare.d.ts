@@ -21,7 +21,7 @@ declare module "vscode" {
 			notebookType: string,
 			serializer: NotebookSerializer,
 			options?: NotebookDocumentContentOptions,
-			registration?: NotebookRegistrationData
+			registration?: NotebookRegistrationData,
 		): Disposable;
 	}
 }

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { Command } from './commandManager';
+import * as vscode from "vscode";
+import { Command } from "./commandManager";
 
 export interface OpenJsDocLinkCommand_Args {
 	readonly file: vscode.Uri;
@@ -17,12 +17,16 @@ export interface OpenJsDocLinkCommand_Args {
  * This is needed to avoid incorrectly rewriting uris.
  */
 export class OpenJsDocLinkCommand implements Command {
-	public static readonly id = '_typescript.openJsDocLink';
+	public static readonly id = "_typescript.openJsDocLink";
 	public readonly id = OpenJsDocLinkCommand.id;
 
 	public async execute(args: OpenJsDocLinkCommand_Args): Promise<void> {
-		await vscode.commands.executeCommand('vscode.open', vscode.Uri.from(args.file), <vscode.TextDocumentShowOptions>{
-			selection: new vscode.Range(args.position, args.position),
-		});
+		await vscode.commands.executeCommand(
+			"vscode.open",
+			vscode.Uri.from(args.file),
+			<vscode.TextDocumentShowOptions>{
+				selection: new vscode.Range(args.position, args.position),
+			},
+		);
 	}
 }

@@ -24,7 +24,7 @@ enum CollectStepResult {
 function collect(
 	ts: typeof import("typescript"),
 	node: ts.Node,
-	fn: (node: ts.Node) => CollectStepResult
+	fn: (node: ts.Node) => CollectStepResult,
 ): ts.Node[] {
 	const result: ts.Node[] = [];
 
@@ -83,7 +83,7 @@ export function nls(): NodeJS.ReadWriteStream {
 			if (!f.sourceMap) {
 				return this.emit(
 					"error",
-					new Error(`File ${f.relative} does not have sourcemaps.`)
+					new Error(`File ${f.relative} does not have sourcemaps.`),
 				);
 			}
 
@@ -92,8 +92,8 @@ export function nls(): NodeJS.ReadWriteStream {
 				return this.emit(
 					"error",
 					new Error(
-						`File ${f.relative} does not have a source in the source map.`
-					)
+						`File ${f.relative} does not have a source in the source map.`,
+					),
 				);
 			}
 
@@ -107,13 +107,13 @@ export function nls(): NodeJS.ReadWriteStream {
 				return this.emit(
 					"error",
 					new Error(
-						`File ${f.relative} does not have the original content in the source map.`
-					)
+						`File ${f.relative} does not have the original content in the source map.`,
+					),
 				);
 			}
 
 			_nls.patchFiles(f, typescript).forEach((f) => this.emit("data", f));
-		})
+		}),
 	);
 
 	return duplex(input, output);
@@ -167,7 +167,7 @@ module _nls {
 
 	function mappedPositionFrom(
 		source: string,
-		lc: ts.LineAndCharacter
+		lc: ts.LineAndCharacter,
 	): sm.MappedPosition {
 		return { source, line: lc.line + 1, column: lc.character };
 	}
@@ -184,7 +184,7 @@ module _nls {
 			ts: typeof import("typescript"),
 			private options: ts.CompilerOptions,
 			private filename: string,
-			contents: string
+			contents: string,
 		) {
 			this.file = ts.ScriptSnapshot.fromString(contents);
 			this.lib = ts.ScriptSnapshot.fromString("");
@@ -212,12 +212,12 @@ module _nls {
 	function isCallExpressionWithinTextSpanCollectStep(
 		ts: typeof import("typescript"),
 		textSpan: ts.TextSpan,
-		node: ts.Node
+		node: ts.Node,
 	): CollectStepResult {
 		if (
 			!ts.textSpanContainsTextSpan(
 				{ start: node.pos, length: node.end - node.pos },
-				textSpan
+				textSpan,
 			)
 		) {
 			return CollectStepResult.No;
@@ -232,21 +232,21 @@ module _nls {
 		ts: typeof import("typescript"),
 		contents: string,
 		functionName: "localize" | "localize2",
-		options: ts.CompilerOptions = {}
+		options: ts.CompilerOptions = {},
 	): ILocalizeAnalysisResult {
 		const filename = "file.ts";
 		const serviceHost = new SingleFileServiceHost(
 			ts,
 			Object.assign(clone(options), { noResolve: true }),
 			filename,
-			contents
+			contents,
 		);
 		const service = ts.createLanguageService(serviceHost);
 		const sourceFile = ts.createSourceFile(
 			filename,
 			contents,
 			ts.ScriptTarget.ES5,
-			true
+			true,
 		);
 
 		// all imports
@@ -254,8 +254,8 @@ module _nls {
 			collect(ts, sourceFile, (n) =>
 				isImportNode(ts, n)
 					? CollectStepResult.YesAndRecurse
-					: CollectStepResult.NoAndRecurse
-			)
+					: CollectStepResult.NoAndRecurse,
+			),
 		);
 
 		// import nls = require('vs/nls');
@@ -265,13 +265,13 @@ module _nls {
 			.filter(
 				(d) =>
 					d.moduleReference.kind ===
-					ts.SyntaxKind.ExternalModuleReference
+					ts.SyntaxKind.ExternalModuleReference,
 			)
 			.filter(
 				(d) =>
 					(<ts.ExternalModuleReference>(
 						d.moduleReference
-					)).expression.getText() === "'vs/nls'"
+					)).expression.getText() === "'vs/nls'",
 			);
 
 		// import ... from 'vs/nls';
@@ -279,7 +279,7 @@ module _nls {
 			.filter((n) => n.kind === ts.SyntaxKind.ImportDeclaration)
 			.map((n) => <ts.ImportDeclaration>n)
 			.filter(
-				(d) => d.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral
+				(d) => d.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral,
 			)
 			.filter((d) => d.moduleSpecifier.getText() === "'vs/nls'")
 			.filter((d) => !!d.importClause && !!d.importClause.namedBindings);
@@ -287,13 +287,13 @@ module _nls {
 		const nlsExpressions = importEqualsDeclarations
 			.map(
 				(d) =>
-					(<ts.ExternalModuleReference>d.moduleReference).expression
+					(<ts.ExternalModuleReference>d.moduleReference).expression,
 			)
 			.concat(importDeclarations.map((d) => d.moduleSpecifier))
 			.map<ISpan>((d) => ({
 				start: ts.getLineAndCharacterOfPosition(
 					sourceFile,
-					d.getStart()
+					d.getStart(),
 				),
 				end: ts.getLineAndCharacterOfPosition(sourceFile, d.getEnd()),
 			}));
@@ -307,10 +307,10 @@ module _nls {
 						d.importClause.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamespaceImport
-					)
+					),
 			)
 			.map(
-				(d) => (<ts.NamespaceImport>d.importClause!.namedBindings).name
+				(d) => (<ts.NamespaceImport>d.importClause!.namedBindings).name,
 			)
 			.concat(importEqualsDeclarations.map((d) => d.name))
 
@@ -322,8 +322,12 @@ module _nls {
 			// find the deepest call expressions AST nodes that contain those references
 			.map((r) =>
 				collect(ts, sourceFile, (n) =>
-					isCallExpressionWithinTextSpanCollectStep(ts, r.textSpan, n)
-				)
+					isCallExpressionWithinTextSpanCollectStep(
+						ts,
+						r.textSpan,
+						n,
+					),
+				),
 			)
 			.map((a) => lazy(a).last())
 			.filter((n) => !!n)
@@ -336,7 +340,7 @@ module _nls {
 						ts.SyntaxKind.PropertyAccessExpression &&
 					(<ts.PropertyAccessExpression>(
 						n.expression
-					)).name.getText() === functionName
+					)).name.getText() === functionName,
 			);
 
 		// `localize` named imports
@@ -348,12 +352,12 @@ module _nls {
 						d.importClause.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamedImports
-					)
+					),
 			)
 			.map((d) =>
 				([] as any[]).concat(
-					(<ts.NamedImports>d.importClause!.namedBindings!).elements
-				)
+					(<ts.NamedImports>d.importClause!.namedBindings!).elements,
+				),
 			)
 			.flatten();
 
@@ -368,10 +372,10 @@ module _nls {
 		const namedLocalizeReferences = allLocalizeImportDeclarations
 			.filter(
 				(d) =>
-					d.propertyName && d.propertyName.getText() === functionName
+					d.propertyName && d.propertyName.getText() === functionName,
 			)
 			.map((n) =>
-				service.getReferencesAtPosition(filename, n.name.pos + 1)
+				service.getReferencesAtPosition(filename, n.name.pos + 1),
 			)
 			.flatten()
 			.filter((r) => !r.isWriteAccess);
@@ -381,8 +385,12 @@ module _nls {
 			.concat(namedLocalizeReferences)
 			.map((r) =>
 				collect(ts, sourceFile, (n) =>
-					isCallExpressionWithinTextSpanCollectStep(ts, r.textSpan, n)
-				)
+					isCallExpressionWithinTextSpanCollectStep(
+						ts,
+						r.textSpan,
+						n,
+					),
+				),
 			)
 			.map((a) => lazy(a).last())
 			.filter((n) => !!n)
@@ -398,22 +406,22 @@ module _nls {
 				keySpan: {
 					start: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[0].getStart()
+						a[0].getStart(),
 					),
 					end: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[0].getEnd()
+						a[0].getEnd(),
 					),
 				},
 				key: a[0].getText(),
 				valueSpan: {
 					start: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[1].getStart()
+						a[1].getStart(),
 					),
 					end: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[1].getEnd()
+						a[1].getEnd(),
 					),
 				},
 				value: a[1].getText(),
@@ -496,7 +504,7 @@ module _nls {
 	function patchJavascript(
 		patches: IPatch[],
 		contents: string,
-		moduleId: string
+		moduleId: string,
 	): string {
 		const model = new TextModel(contents);
 
@@ -509,7 +517,7 @@ module _nls {
 		const firstLine = model.get(0);
 		const patchedFirstLine = firstLine.replace(
 			/(['"])vs\/nls\1/g,
-			`$1vs/nls!${moduleId}$1`
+			`$1vs/nls!${moduleId}$1`,
 		);
 		model.set(0, patchedFirstLine);
 
@@ -519,7 +527,7 @@ module _nls {
 	function patchSourcemap(
 		patches: IPatch[],
 		rsm: sm.RawSourceMap,
-		smc: sm.SourceMapConsumer
+		smc: sm.SourceMapConsumer,
 	): sm.RawSourceMap {
 		const smg = new sm.SourceMapGenerator({
 			file: rsm.file,
@@ -572,7 +580,7 @@ module _nls {
 				smg.addMapping({ source, name: m.name, original, generated });
 			},
 			null,
-			sm.SourceMapConsumer.GENERATED_ORDER
+			sm.SourceMapConsumer.GENERATED_ORDER,
 		);
 
 		if (source) {
@@ -587,12 +595,12 @@ module _nls {
 		moduleId: string,
 		typescript: string,
 		javascript: string,
-		sourcemap: sm.RawSourceMap
+		sourcemap: sm.RawSourceMap,
 	): INlsStringResult {
 		const { localizeCalls, nlsExpressions } = analyze(
 			ts,
 			typescript,
-			"localize"
+			"localize",
 		);
 		const {
 			localizeCalls: localize2Calls,
@@ -606,17 +614,17 @@ module _nls {
 		const nlsKeys = template(
 			localizeCalls
 				.map((lc) => lc.key)
-				.concat(localize2Calls.map((lc) => lc.key))
+				.concat(localize2Calls.map((lc) => lc.key)),
 		);
 		const nls = template(
 			localizeCalls
 				.map((lc) => lc.value)
-				.concat(localize2Calls.map((lc) => lc.value))
+				.concat(localize2Calls.map((lc) => lc.value)),
 		);
 		const smc = new sm.SourceMapConsumer(sourcemap);
 		const positionFrom = mappedPositionFrom.bind(
 			null,
-			sourcemap.sources[0]
+			sourcemap.sources[0],
 		);
 		let i = 0;
 
@@ -629,10 +637,10 @@ module _nls {
 			.flatten()
 			.map<IPatch>((c) => {
 				const start = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.start))
+					smc.generatedPositionFor(positionFrom(c.range.start)),
 				);
 				const end = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.end))
+					smc.generatedPositionFor(positionFrom(c.range.end)),
 				);
 				return { span: { start, end }, content: c.content };
 			});
@@ -642,10 +650,10 @@ module _nls {
 			.flatten()
 			.map<IPatch>((c) => {
 				const start = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.start))
+					smc.generatedPositionFor(positionFrom(c.range.start)),
 				);
 				const end = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.end))
+					smc.generatedPositionFor(positionFrom(c.range.end)),
 				);
 				return { span: { start, end }, content: c.content };
 			});
@@ -660,7 +668,7 @@ module _nls {
 			javascript = javascript.replace(/^define\(.*$/m, (line) => {
 				return line.replace(
 					/(['"])vs\/nls\1/g,
-					`$1vs/nls!${moduleId}$1`
+					`$1vs/nls!${moduleId}$1`,
 				);
 			});
 		}
@@ -672,7 +680,7 @@ module _nls {
 
 	export function patchFiles(
 		javascriptFile: File,
-		typescript: string
+		typescript: string,
 	): File[] {
 		const ts = require("typescript") as typeof import("typescript");
 		// hack?
@@ -685,7 +693,7 @@ module _nls {
 			moduleId,
 			typescript,
 			javascriptFile.contents.toString(),
-			(<any>javascriptFile).sourceMap
+			(<any>javascriptFile).sourceMap,
 		);
 
 		const result: File[] = [fileFrom(javascriptFile, javascript)];
@@ -696,8 +704,8 @@ module _nls {
 				fileFrom(
 					javascriptFile,
 					nlsKeys,
-					javascriptFile.path.replace(/\.js$/, ".nls.keys.js")
-				)
+					javascriptFile.path.replace(/\.js$/, ".nls.keys.js"),
+				),
 			);
 		}
 
@@ -706,8 +714,8 @@ module _nls {
 				fileFrom(
 					javascriptFile,
 					nls,
-					javascriptFile.path.replace(/\.js$/, ".nls.js")
-				)
+					javascriptFile.path.replace(/\.js$/, ".nls.js"),
+				),
 			);
 		}
 

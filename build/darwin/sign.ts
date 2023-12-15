@@ -30,7 +30,7 @@ async function main(buildDir?: string): Promise<void> {
 	}
 
 	const product = JSON.parse(
-		fs.readFileSync(path.join(root, "product.json"), "utf8")
+		fs.readFileSync(path.join(root, "product.json"), "utf8"),
 	);
 	const baseDir = path.dirname(__dirname);
 	const appRoot = path.join(buildDir, `VSCode-darwin-${arch}`);
@@ -39,7 +39,7 @@ async function main(buildDir?: string): Promise<void> {
 		appRoot,
 		appName,
 		"Contents",
-		"Frameworks"
+		"Frameworks",
 	);
 	const helperAppBaseName = product.nameShort;
 	const gpuHelperAppName = helperAppBaseName + " Helper (GPU).app";
@@ -49,7 +49,7 @@ async function main(buildDir?: string): Promise<void> {
 		appRoot,
 		appName,
 		"Contents",
-		"Info.plist"
+		"Info.plist",
 	);
 
 	const defaultOpts: codesign.SignOptions = {
@@ -59,13 +59,13 @@ async function main(buildDir?: string): Promise<void> {
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"app-entitlements.plist"
+			"app-entitlements.plist",
 		),
 		"entitlements-inherit": path.join(
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"app-entitlements.plist"
+			"app-entitlements.plist",
 		),
 		hardenedRuntime: true,
 		"pre-auto-entitlements": false,
@@ -95,13 +95,13 @@ async function main(buildDir?: string): Promise<void> {
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"helper-gpu-entitlements.plist"
+			"helper-gpu-entitlements.plist",
 		),
 		"entitlements-inherit": path.join(
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"helper-gpu-entitlements.plist"
+			"helper-gpu-entitlements.plist",
 		),
 	};
 
@@ -112,13 +112,13 @@ async function main(buildDir?: string): Promise<void> {
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"helper-renderer-entitlements.plist"
+			"helper-renderer-entitlements.plist",
 		),
 		"entitlements-inherit": path.join(
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"helper-renderer-entitlements.plist"
+			"helper-renderer-entitlements.plist",
 		),
 	};
 
@@ -129,13 +129,13 @@ async function main(buildDir?: string): Promise<void> {
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"helper-plugin-entitlements.plist"
+			"helper-plugin-entitlements.plist",
 		),
 		"entitlements-inherit": path.join(
 			baseDir,
 			"azure-pipelines",
 			"darwin",
-			"helper-plugin-entitlements.plist"
+			"helper-plugin-entitlements.plist",
 		),
 	};
 

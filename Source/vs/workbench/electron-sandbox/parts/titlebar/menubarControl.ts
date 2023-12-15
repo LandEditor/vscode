@@ -3,32 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAction, Separator } from 'vs/base/common/actions';
-import { IMenuService, SubmenuItemAction, MenuItemAction } from 'vs/platform/actions/common/actions';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IWorkspacesService } from 'vs/platform/workspaces/common/workspaces';
-import { isMacintosh } from 'vs/base/common/platform';
-import { INotificationService } from 'vs/platform/notification/common/notification';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
-import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { ILabelService } from 'vs/platform/label/common/label';
-import { IUpdateService } from 'vs/platform/update/common/update';
-import { IOpenRecentAction, MenubarControl } from 'vs/workbench/browser/parts/titlebar/menubarControl';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { IMenubarData, IMenubarMenu, IMenubarKeybinding, IMenubarMenuItemSubmenu, IMenubarMenuItemAction, MenubarMenuItem } from 'vs/platform/menubar/common/menubar';
-import { IMenubarService } from 'vs/platform/menubar/electron-sandbox/menubar';
-import { INativeHostService } from 'vs/platform/native/common/native';
-import { IHostService } from 'vs/workbench/services/host/browser/host';
-import { IPreferencesService } from 'vs/workbench/services/preferences/common/preferences';
-import { ICommandService } from 'vs/platform/commands/common/commands';
-import { OpenRecentAction } from 'vs/workbench/browser/actions/windowActions';
-import { isICommandActionToggleInfo } from 'vs/platform/action/common/action';
-import { createAndFillInContextMenuActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
+import { IAction, Separator } from "vs/base/common/actions";
+import {
+	IMenuService,
+	SubmenuItemAction,
+	MenuItemAction,
+} from "vs/platform/actions/common/actions";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IWorkspacesService } from "vs/platform/workspaces/common/workspaces";
+import { isMacintosh } from "vs/base/common/platform";
+import { INotificationService } from "vs/platform/notification/common/notification";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILabelService } from "vs/platform/label/common/label";
+import { IUpdateService } from "vs/platform/update/common/update";
+import {
+	IOpenRecentAction,
+	MenubarControl,
+} from "vs/workbench/browser/parts/titlebar/menubarControl";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import {
+	IMenubarData,
+	IMenubarMenu,
+	IMenubarKeybinding,
+	IMenubarMenuItemSubmenu,
+	IMenubarMenuItemAction,
+	MenubarMenuItem,
+} from "vs/platform/menubar/common/menubar";
+import { IMenubarService } from "vs/platform/menubar/electron-sandbox/menubar";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IPreferencesService } from "vs/workbench/services/preferences/common/preferences";
+import { ICommandService } from "vs/platform/commands/common/commands";
+import { OpenRecentAction } from "vs/workbench/browser/actions/windowActions";
+import { isICommandActionToggleInfo } from "vs/platform/action/common/action";
+import { createAndFillInContextMenuActions } from "vs/platform/actions/browser/menuEntryActionViewItem";
 
 export class NativeMenubarControl extends MenubarControl {
-
 	constructor(
 		@IMenuService menuService: IMenuService,
 		@IWorkspacesService workspacesService: IWorkspacesService,
@@ -64,7 +77,9 @@ export class NativeMenubarControl extends MenubarControl {
 		for (const topLevelMenuName of Object.keys(this.topLevelTitles)) {
 			const menu = this.menus[topLevelMenuName];
 			if (menu) {
-				this.mainMenuDisposables.add(menu.onDidChange(() => this.updateMenubar()));
+				this.mainMenuDisposables.add(
+					menu.onDidChange(() => this.updateMenubar()),
+				);
 			}
 		}
 	}
@@ -79,7 +94,10 @@ export class NativeMenubarControl extends MenubarControl {
 		// Send menus to main process to be rendered by Electron
 		const menubarData = { menus: {}, keybindings: {} };
 		if (this.getMenubarMenus(menubarData)) {
-			this.menubarService.updateMenubar(this.nativeHostService.windowId, menubarData);
+			this.menubarService.updateMenubar(
+				this.nativeHostService.windowId,
+				menubarData,
+			);
 		}
 	}
 
@@ -94,8 +112,16 @@ export class NativeMenubarControl extends MenubarControl {
 			if (menu) {
 				const menubarMenu: IMenubarMenu = { items: [] };
 				const menuActions: IAction[] = [];
-				createAndFillInContextMenuActions(menu, { shouldForwardArgs: true }, menuActions);
-				this.populateMenuItems(menuActions, menubarMenu, menubarData.keybindings);
+				createAndFillInContextMenuActions(
+					menu,
+					{ shouldForwardArgs: true },
+					menuActions,
+				);
+				this.populateMenuItems(
+					menuActions,
+					menubarMenu,
+					menubarData.keybindings,
+				);
 				if (menubarMenu.items.length === 0) {
 					return false; // Menus are incomplete
 				}
@@ -106,44 +132,61 @@ export class NativeMenubarControl extends MenubarControl {
 		return true;
 	}
 
-	private populateMenuItems(menuActions: readonly IAction[], menuToPopulate: IMenubarMenu, keybindings: { [id: string]: IMenubarKeybinding | undefined }) {
+	private populateMenuItems(
+		menuActions: readonly IAction[],
+		menuToPopulate: IMenubarMenu,
+		keybindings: { [id: string]: IMenubarKeybinding | undefined },
+	) {
 		for (const menuItem of menuActions) {
 			if (menuItem instanceof Separator) {
-				menuToPopulate.items.push({ id: 'vscode.menubar.separator' });
-			} else if (menuItem instanceof MenuItemAction || menuItem instanceof SubmenuItemAction) {
-
+				menuToPopulate.items.push({ id: "vscode.menubar.separator" });
+			} else if (
+				menuItem instanceof MenuItemAction ||
+				menuItem instanceof SubmenuItemAction
+			) {
 				// use mnemonicTitle whenever possible
-				const title = typeof menuItem.item.title === 'string'
-					? menuItem.item.title
-					: menuItem.item.title.mnemonicTitle ?? menuItem.item.title.value;
+				const title =
+					typeof menuItem.item.title === "string"
+						? menuItem.item.title
+						: menuItem.item.title.mnemonicTitle ??
+						  menuItem.item.title.value;
 
 				if (menuItem instanceof SubmenuItemAction) {
 					const submenu = { items: [] };
 
-					this.populateMenuItems(menuItem.actions, submenu, keybindings);
+					this.populateMenuItems(
+						menuItem.actions,
+						submenu,
+						keybindings,
+					);
 
 					if (submenu.items.length > 0) {
 						const menubarSubmenuItem: IMenubarMenuItemSubmenu = {
 							id: menuItem.id,
 							label: title,
-							submenu: submenu
+							submenu: submenu,
 						};
 
 						menuToPopulate.items.push(menubarSubmenuItem);
 					}
 				} else {
 					if (menuItem.id === OpenRecentAction.ID) {
-						const actions = this.getOpenRecentActions().map(this.transformOpenRecentAction);
+						const actions = this.getOpenRecentActions().map(
+							this.transformOpenRecentAction,
+						);
 						menuToPopulate.items.push(...actions);
 					}
 
 					const menubarMenuItem: IMenubarMenuItemAction = {
 						id: menuItem.id,
-						label: title
+						label: title,
 					};
 
 					if (isICommandActionToggleInfo(menuItem.item.toggled)) {
-						menubarMenuItem.label = menuItem.item.toggled.mnemonicTitle ?? menuItem.item.toggled.title ?? title;
+						menubarMenuItem.label =
+							menuItem.item.toggled.mnemonicTitle ??
+							menuItem.item.toggled.title ??
+							title;
 					}
 
 					if (menuItem.checked) {
@@ -154,16 +197,20 @@ export class NativeMenubarControl extends MenubarControl {
 						menubarMenuItem.enabled = false;
 					}
 
-					keybindings[menuItem.id] = this.getMenubarKeybinding(menuItem.id);
+					keybindings[menuItem.id] = this.getMenubarKeybinding(
+						menuItem.id,
+					);
 					menuToPopulate.items.push(menubarMenuItem);
 				}
 			}
 		}
 	}
 
-	private transformOpenRecentAction(action: Separator | IOpenRecentAction): MenubarMenuItem {
+	private transformOpenRecentAction(
+		action: Separator | IOpenRecentAction,
+	): MenubarMenuItem {
 		if (action instanceof Separator) {
-			return { id: 'vscode.menubar.separator' };
+			return { id: "vscode.menubar.separator" };
 		}
 
 		return {
@@ -171,16 +218,18 @@ export class NativeMenubarControl extends MenubarControl {
 			uri: action.uri,
 			remoteAuthority: action.remoteAuthority,
 			enabled: action.enabled,
-			label: action.label
+			label: action.label,
 		};
 	}
 
 	private getAdditionalKeybindings(): { [id: string]: IMenubarKeybinding } {
 		const keybindings: { [id: string]: IMenubarKeybinding } = {};
 		if (isMacintosh) {
-			const keybinding = this.getMenubarKeybinding('workbench.action.quit');
+			const keybinding = this.getMenubarKeybinding(
+				"workbench.action.quit",
+			);
 			if (keybinding) {
-				keybindings['workbench.action.quit'] = keybinding;
+				keybindings["workbench.action.quit"] = keybinding;
 			}
 		}
 
@@ -196,13 +245,20 @@ export class NativeMenubarControl extends MenubarControl {
 		// first try to resolve a native accelerator
 		const electronAccelerator = binding.getElectronAccelerator();
 		if (electronAccelerator) {
-			return { label: electronAccelerator, userSettingsLabel: binding.getUserSettingsLabel() ?? undefined };
+			return {
+				label: electronAccelerator,
+				userSettingsLabel: binding.getUserSettingsLabel() ?? undefined,
+			};
 		}
 
 		// we need this fallback to support keybindings that cannot show in electron menus (e.g. chords)
 		const acceleratorLabel = binding.getLabel();
 		if (acceleratorLabel) {
-			return { label: acceleratorLabel, isNative: false, userSettingsLabel: binding.getUserSettingsLabel() ?? undefined };
+			return {
+				label: acceleratorLabel,
+				isNative: false,
+				userSettingsLabel: binding.getUserSettingsLabel() ?? undefined,
+			};
 		}
 
 		return undefined;

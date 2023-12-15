@@ -13,7 +13,7 @@ declare global {
 
 	function requestIdleCallback(
 		callback: (args: IdleDeadline) => void,
-		options?: { timeout: number }
+		options?: { timeout: number },
 	): number;
 	function cancelIdleCallback(handle: number): void;
 }

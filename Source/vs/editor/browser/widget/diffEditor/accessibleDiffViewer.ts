@@ -3,44 +3,98 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { addDisposableListener, addStandardDisposableListener, reset } from 'vs/base/browser/dom';
-import { createTrustedTypesPolicy } from 'vs/base/browser/trustedTypes';
-import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
-import { DomScrollableElement } from 'vs/base/browser/ui/scrollbar/scrollableElement';
-import { Action } from 'vs/base/common/actions';
-import { forEachAdjacent, groupAdjacentBy } from 'vs/base/common/arrays';
-import { Codicon } from 'vs/base/common/codicons';
-import { KeyCode, KeyMod } from 'vs/base/common/keyCodes';
-import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { IObservable, ITransaction, autorun, autorunWithStore, derived, derivedWithStore, observableValue, subtransaction, transaction } from 'vs/base/common/observable';
-import { ThemeIcon } from 'vs/base/common/themables';
-import { applyFontInfo } from 'vs/editor/browser/config/domFontInfo';
-import { DiffEditorEditors } from 'vs/editor/browser/widget/diffEditor/diffEditorEditors';
-import { applyStyle } from 'vs/editor/browser/widget/diffEditor/utils';
-import { EditorFontLigatures, EditorOption, IComputedEditorOptions } from 'vs/editor/common/config/editorOptions';
-import { LineRange } from 'vs/editor/common/core/lineRange';
-import { OffsetRange } from 'vs/editor/common/core/offsetRange';
-import { Position } from 'vs/editor/common/core/position';
-import { Range } from 'vs/editor/common/core/range';
-import { DetailedLineRangeMapping, LineRangeMapping } from 'vs/editor/common/diff/rangeMapping';
-import { ILanguageIdCodec } from 'vs/editor/common/languages';
-import { ILanguageService } from 'vs/editor/common/languages/language';
-import { ITextModel, TextModelResolvedOptions } from 'vs/editor/common/model';
-import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
-import { RenderLineInput, renderViewLine2 } from 'vs/editor/common/viewLayout/viewLineRenderer';
-import { ViewLineRenderingData } from 'vs/editor/common/viewModel';
-import { localize } from 'vs/nls';
-import { AudioCue, IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
-import 'vs/css!./accessibleDiffViewer';
+import {
+	addDisposableListener,
+	addStandardDisposableListener,
+	reset,
+} from "vs/base/browser/dom";
+import { createTrustedTypesPolicy } from "vs/base/browser/trustedTypes";
+import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
+import { DomScrollableElement } from "vs/base/browser/ui/scrollbar/scrollableElement";
+import { Action } from "vs/base/common/actions";
+import { forEachAdjacent, groupAdjacentBy } from "vs/base/common/arrays";
+import { Codicon } from "vs/base/common/codicons";
+import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
+import {
+	Disposable,
+	DisposableStore,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import {
+	IObservable,
+	ITransaction,
+	autorun,
+	autorunWithStore,
+	derived,
+	derivedWithStore,
+	observableValue,
+	subtransaction,
+	transaction,
+} from "vs/base/common/observable";
+import { ThemeIcon } from "vs/base/common/themables";
+import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
+import { DiffEditorEditors } from "vs/editor/browser/widget/diffEditor/diffEditorEditors";
+import { applyStyle } from "vs/editor/browser/widget/diffEditor/utils";
+import {
+	EditorFontLigatures,
+	EditorOption,
+	IComputedEditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import { LineRange } from "vs/editor/common/core/lineRange";
+import { OffsetRange } from "vs/editor/common/core/offsetRange";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import {
+	DetailedLineRangeMapping,
+	LineRangeMapping,
+} from "vs/editor/common/diff/rangeMapping";
+import { ILanguageIdCodec } from "vs/editor/common/languages";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { ITextModel, TextModelResolvedOptions } from "vs/editor/common/model";
+import { LineTokens } from "vs/editor/common/tokens/lineTokens";
+import {
+	RenderLineInput,
+	renderViewLine2,
+} from "vs/editor/common/viewLayout/viewLineRenderer";
+import { ViewLineRenderingData } from "vs/editor/common/viewModel";
+import { localize } from "vs/nls";
+import {
+	AudioCue,
+	IAudioCueService,
+} from "vs/platform/audioCues/browser/audioCueService";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import "vs/css!./accessibleDiffViewer";
 
-const accessibleDiffViewerInsertIcon = registerIcon('diff-review-insert', Codicon.add, localize('accessibleDiffViewerInsertIcon', 'Icon for \'Insert\' in accessible diff viewer.'));
-const accessibleDiffViewerRemoveIcon = registerIcon('diff-review-remove', Codicon.remove, localize('accessibleDiffViewerRemoveIcon', 'Icon for \'Remove\' in accessible diff viewer.'));
-const accessibleDiffViewerCloseIcon = registerIcon('diff-review-close', Codicon.close, localize('accessibleDiffViewerCloseIcon', 'Icon for \'Close\' in accessible diff viewer.'));
+const accessibleDiffViewerInsertIcon = registerIcon(
+	"diff-review-insert",
+	Codicon.add,
+	localize(
+		"accessibleDiffViewerInsertIcon",
+		"Icon for 'Insert' in accessible diff viewer.",
+	),
+);
+const accessibleDiffViewerRemoveIcon = registerIcon(
+	"diff-review-remove",
+	Codicon.remove,
+	localize(
+		"accessibleDiffViewerRemoveIcon",
+		"Icon for 'Remove' in accessible diff viewer.",
+	),
+);
+const accessibleDiffViewerCloseIcon = registerIcon(
+	"diff-review-close",
+	Codicon.close,
+	localize(
+		"accessibleDiffViewerCloseIcon",
+		"Icon for 'Close' in accessible diff viewer.",
+	),
+);
 
 export class AccessibleDiffViewer extends Disposable {
-	public static _ttPolicy = createTrustedTypesPolicy('diffReview', { createHTML: value => value });
+	public static _ttPolicy = createTrustedTypesPolicy("diffReview", {
+		createHTML: (value) => value,
+	});
 
 	constructor(
 		private readonly _parentNode: HTMLElement,
@@ -58,17 +112,34 @@ export class AccessibleDiffViewer extends Disposable {
 
 	private readonly _state = derivedWithStore(this, (reader, store) => {
 		const visible = this._visible.read(reader);
-		this._parentNode.style.visibility = visible ? 'visible' : 'hidden';
+		this._parentNode.style.visibility = visible ? "visible" : "hidden";
 		if (!visible) {
 			return null;
 		}
-		const model = store.add(this._instantiationService.createInstance(ViewModel, this._diffs, this._editors, this._setVisible, this._canClose));
-		const view = store.add(this._instantiationService.createInstance(View, this._parentNode, model, this._width, this._height, this._editors));
-		return { model, view, };
+		const model = store.add(
+			this._instantiationService.createInstance(
+				ViewModel,
+				this._diffs,
+				this._editors,
+				this._setVisible,
+				this._canClose,
+			),
+		);
+		const view = store.add(
+			this._instantiationService.createInstance(
+				View,
+				this._parentNode,
+				model,
+				this._width,
+				this._height,
+				this._editors,
+			),
+		);
+		return { model, view };
 	}).recomputeInitiallyAndOnChange(this._store);
 
 	next(): void {
-		transaction(tx => {
+		transaction((tx) => {
 			const isVisible = this._visible.get();
 			this._setVisible(true, tx);
 			if (isVisible) {
@@ -78,14 +149,14 @@ export class AccessibleDiffViewer extends Disposable {
 	}
 
 	prev(): void {
-		transaction(tx => {
+		transaction((tx) => {
 			this._setVisible(true, tx);
 			this._state.get()!.model.previousGroup(tx);
 		});
 	}
 
 	close(): void {
-		transaction(tx => {
+		transaction((tx) => {
 			this._setVisible(false, tx);
 		});
 	}
@@ -97,12 +168,15 @@ class ViewModel extends Disposable {
 	private readonly _currentElementIdx = observableValue(this, 0);
 
 	public readonly groups: IObservable<ViewElementGroup[]> = this._groups;
-	public readonly currentGroup: IObservable<ViewElementGroup | undefined>
-		= this._currentGroupIdx.map((idx, r) => this._groups.read(r)[idx]);
-	public readonly currentGroupIndex: IObservable<number> = this._currentGroupIdx;
+	public readonly currentGroup: IObservable<ViewElementGroup | undefined> =
+		this._currentGroupIdx.map((idx, r) => this._groups.read(r)[idx]);
+	public readonly currentGroupIndex: IObservable<number> =
+		this._currentGroupIdx;
 
-	public readonly currentElement: IObservable<ViewElement | undefined>
-		= this._currentElementIdx.map((idx, r) => this.currentGroup.read(r)?.lines[idx]);
+	public readonly currentElement: IObservable<ViewElement | undefined> =
+		this._currentElementIdx.map(
+			(idx, r) => this.currentGroup.read(r)?.lines[idx],
+		);
 
 	constructor(
 		private readonly _diffs: IObservable<DetailedLineRangeMapping[] | undefined>,
@@ -162,33 +236,59 @@ class ViewModel extends Disposable {
 
 	private _goToGroupDelta(delta: number, tx?: ITransaction): void {
 		const groups = this.groups.get();
-		if (!groups || groups.length <= 1) { return; }
-		subtransaction(tx, tx => {
-			this._currentGroupIdx.set(OffsetRange.ofLength(groups.length).clipCyclic(this._currentGroupIdx.get() + delta), tx);
+		if (!groups || groups.length <= 1) {
+			return;
+		}
+		subtransaction(tx, (tx) => {
+			this._currentGroupIdx.set(
+				OffsetRange.ofLength(groups.length).clipCyclic(
+					this._currentGroupIdx.get() + delta,
+				),
+				tx,
+			);
 			this._currentElementIdx.set(0, tx);
 		});
 	}
 
-	nextGroup(tx?: ITransaction): void { this._goToGroupDelta(1, tx); }
-	previousGroup(tx?: ITransaction): void { this._goToGroupDelta(-1, tx); }
+	nextGroup(tx?: ITransaction): void {
+		this._goToGroupDelta(1, tx);
+	}
+	previousGroup(tx?: ITransaction): void {
+		this._goToGroupDelta(-1, tx);
+	}
 
 	private _goToLineDelta(delta: number): void {
 		const group = this.currentGroup.get();
-		if (!group || group.lines.length <= 1) { return; }
-		transaction(tx => {
-			this._currentElementIdx.set(OffsetRange.ofLength(group.lines.length).clip(this._currentElementIdx.get() + delta), tx);
+		if (!group || group.lines.length <= 1) {
+			return;
+		}
+		transaction((tx) => {
+			this._currentElementIdx.set(
+				OffsetRange.ofLength(group.lines.length).clip(
+					this._currentElementIdx.get() + delta,
+				),
+				tx,
+			);
 		});
 	}
 
-	goToNextLine(): void { this._goToLineDelta(1); }
-	goToPreviousLine(): void { this._goToLineDelta(-1); }
+	goToNextLine(): void {
+		this._goToLineDelta(1);
+	}
+	goToPreviousLine(): void {
+		this._goToLineDelta(-1);
+	}
 
 	goToLine(line: ViewElement): void {
 		const group = this.currentGroup.get();
-		if (!group) { return; }
+		if (!group) {
+			return;
+		}
 		const idx = group.lines.indexOf(line);
-		if (idx === -1) { return; }
-		transaction(tx => {
+		if (idx === -1) {
+			return;
+		}
+		transaction((tx) => {
 			this._currentElementIdx.set(idx, tx);
 		});
 	}
@@ -199,13 +299,23 @@ class ViewModel extends Disposable {
 		const curElem = this.currentElement.get();
 		if (curElem) {
 			if (curElem.type === LineType.Deleted) {
-				this._editors.original.setSelection(Range.fromPositions(new Position(curElem.originalLineNumber, 1)));
+				this._editors.original.setSelection(
+					Range.fromPositions(
+						new Position(curElem.originalLineNumber, 1),
+					),
+				);
 				this._editors.original.revealLine(curElem.originalLineNumber);
 				this._editors.original.focus();
 			} else {
 				if (curElem.type !== LineType.Header) {
-					this._editors.modified.setSelection(Range.fromPositions(new Position(curElem.modifiedLineNumber, 1)));
-					this._editors.modified.revealLine(curElem.modifiedLineNumber);
+					this._editors.modified.setSelection(
+						Range.fromPositions(
+							new Position(curElem.modifiedLineNumber, 1),
+						),
+					);
+					this._editors.modified.revealLine(
+						curElem.modifiedLineNumber,
+					);
 				}
 				this._editors.modified.focus();
 			}
@@ -218,39 +328,85 @@ class ViewModel extends Disposable {
 	}
 }
 
-
 const viewElementGroupLineMargin = 3;
 
-function computeViewElementGroups(diffs: DetailedLineRangeMapping[], originalLineCount: number, modifiedLineCount: number): ViewElementGroup[] {
+function computeViewElementGroups(
+	diffs: DetailedLineRangeMapping[],
+	originalLineCount: number,
+	modifiedLineCount: number,
+): ViewElementGroup[] {
 	const result: ViewElementGroup[] = [];
 
-	for (const g of groupAdjacentBy(diffs, (a, b) => (b.modified.startLineNumber - a.modified.endLineNumberExclusive < 2 * viewElementGroupLineMargin))) {
+	for (const g of groupAdjacentBy(
+		diffs,
+		(a, b) =>
+			b.modified.startLineNumber - a.modified.endLineNumberExclusive <
+			2 * viewElementGroupLineMargin,
+	)) {
 		const viewElements: ViewElement[] = [];
 		viewElements.push(new HeaderViewElement());
 
 		const origFullRange = new LineRange(
-			Math.max(1, g[0].original.startLineNumber - viewElementGroupLineMargin),
-			Math.min(g[g.length - 1].original.endLineNumberExclusive + viewElementGroupLineMargin, originalLineCount + 1)
+			Math.max(
+				1,
+				g[0].original.startLineNumber - viewElementGroupLineMargin,
+			),
+			Math.min(
+				g[g.length - 1].original.endLineNumberExclusive +
+					viewElementGroupLineMargin,
+				originalLineCount + 1,
+			),
 		);
 		const modifiedFullRange = new LineRange(
-			Math.max(1, g[0].modified.startLineNumber - viewElementGroupLineMargin),
-			Math.min(g[g.length - 1].modified.endLineNumberExclusive + viewElementGroupLineMargin, modifiedLineCount + 1)
+			Math.max(
+				1,
+				g[0].modified.startLineNumber - viewElementGroupLineMargin,
+			),
+			Math.min(
+				g[g.length - 1].modified.endLineNumberExclusive +
+					viewElementGroupLineMargin,
+				modifiedLineCount + 1,
+			),
 		);
 
 		forEachAdjacent(g, (a, b) => {
-			const origRange = new LineRange(a ? a.original.endLineNumberExclusive : origFullRange.startLineNumber, b ? b.original.startLineNumber : origFullRange.endLineNumberExclusive);
-			const modifiedRange = new LineRange(a ? a.modified.endLineNumberExclusive : modifiedFullRange.startLineNumber, b ? b.modified.startLineNumber : modifiedFullRange.endLineNumberExclusive);
+			const origRange = new LineRange(
+				a
+					? a.original.endLineNumberExclusive
+					: origFullRange.startLineNumber,
+				b
+					? b.original.startLineNumber
+					: origFullRange.endLineNumberExclusive,
+			);
+			const modifiedRange = new LineRange(
+				a
+					? a.modified.endLineNumberExclusive
+					: modifiedFullRange.startLineNumber,
+				b
+					? b.modified.startLineNumber
+					: modifiedFullRange.endLineNumberExclusive,
+			);
 
-			origRange.forEach(origLineNumber => {
-				viewElements.push(new UnchangedLineViewElement(origLineNumber, modifiedRange.startLineNumber + (origLineNumber - origRange.startLineNumber)));
+			origRange.forEach((origLineNumber) => {
+				viewElements.push(
+					new UnchangedLineViewElement(
+						origLineNumber,
+						modifiedRange.startLineNumber +
+							(origLineNumber - origRange.startLineNumber),
+					),
+				);
 			});
 
 			if (b) {
-				b.original.forEach(origLineNumber => {
-					viewElements.push(new DeletedLineViewElement(b, origLineNumber));
+				b.original.forEach((origLineNumber) => {
+					viewElements.push(
+						new DeletedLineViewElement(b, origLineNumber),
+					);
 				});
-				b.modified.forEach(modifiedLineNumber => {
-					viewElements.push(new AddedLineViewElement(b, modifiedLineNumber));
+				b.modified.forEach((modifiedLineNumber) => {
+					viewElements.push(
+						new AddedLineViewElement(b, modifiedLineNumber),
+					);
 				});
 			}
 		});
@@ -258,7 +414,12 @@ function computeViewElementGroups(diffs: DetailedLineRangeMapping[], originalLin
 		const modifiedRange = g[0].modified.join(g[g.length - 1].modified);
 		const originalRange = g[0].original.join(g[g.length - 1].original);
 
-		result.push(new ViewElementGroup(new LineRangeMapping(modifiedRange, originalRange), viewElements));
+		result.push(
+			new ViewElementGroup(
+				new LineRangeMapping(modifiedRange, originalRange),
+				viewElements,
+			),
+		);
 	}
 	return result;
 }
@@ -274,10 +435,14 @@ class ViewElementGroup {
 	constructor(
 		public readonly range: LineRangeMapping,
 		public readonly lines: readonly ViewElement[],
-	) { }
+	) {}
 }
 
-type ViewElement = HeaderViewElement | UnchangedLineViewElement | DeletedLineViewElement | AddedLineViewElement;
+type ViewElement =
+	| HeaderViewElement
+	| UnchangedLineViewElement
+	| DeletedLineViewElement
+	| AddedLineViewElement;
 
 class HeaderViewElement {
 	public readonly type = LineType.Header;
@@ -291,8 +456,7 @@ class DeletedLineViewElement {
 	constructor(
 		public readonly diff: DetailedLineRangeMapping,
 		public readonly originalLineNumber: number,
-	) {
-	}
+	) {}
 }
 
 class AddedLineViewElement {
@@ -303,8 +467,7 @@ class AddedLineViewElement {
 	constructor(
 		public readonly diff: DetailedLineRangeMapping,
 		public readonly modifiedLineNumber: number,
-	) {
-	}
+	) {}
 }
 
 class UnchangedLineViewElement {
@@ -312,8 +475,7 @@ class UnchangedLineViewElement {
 	constructor(
 		public readonly originalLineNumber: number,
 		public readonly modifiedLineNumber: number,
-	) {
-	}
+	) {}
 }
 
 class View extends Disposable {
@@ -415,10 +577,16 @@ class View extends Disposable {
 		const originalOptions = this._editors.original.getOptions();
 		const modifiedOptions = this._editors.modified.getOptions();
 
-		const container = document.createElement('div');
-		container.className = 'diff-review-table';
-		container.setAttribute('role', 'list');
-		container.setAttribute('aria-label', localize('ariaLabel', 'Accessible Diff Viewer. Use arrow up and down to navigate.'));
+		const container = document.createElement("div");
+		container.className = "diff-review-table";
+		container.setAttribute("role", "list");
+		container.setAttribute(
+			"aria-label",
+			localize(
+				"ariaLabel",
+				"Accessible Diff Viewer. Use arrow up and down to navigate.",
+			),
+		);
 		applyFontInfo(container, modifiedOptions.get(EditorOption.fontInfo));
 
 		reset(this._content, container);
@@ -441,220 +609,336 @@ class View extends Disposable {
 			let row: HTMLDivElement;
 
 			if (viewItem.type === LineType.Header) {
-
-				const header = document.createElement('div');
-				header.className = 'diff-review-row';
-				header.setAttribute('role', 'listitem');
+				const header = document.createElement("div");
+				header.className = "diff-review-row";
+				header.setAttribute("role", "listitem");
 
 				const r = group.range;
 				const diffIndex = this._model.currentGroupIndex.get();
 				const diffsLength = this._model.groups.get().length;
 				const getAriaLines = (lines: number) =>
-					lines === 0 ? localize('no_lines_changed', "no lines changed")
-						: lines === 1 ? localize('one_line_changed', "1 line changed")
-							: localize('more_lines_changed', "{0} lines changed", lines);
+					lines === 0
+						? localize("no_lines_changed", "no lines changed")
+						: lines === 1
+						  ? localize("one_line_changed", "1 line changed")
+						  : localize(
+									"more_lines_changed",
+									"{0} lines changed",
+									lines,
+							  );
 
-				const originalChangedLinesCntAria = getAriaLines(r.original.length);
-				const modifiedChangedLinesCntAria = getAriaLines(r.modified.length);
-				header.setAttribute('aria-label', localize({
-					key: 'header',
-					comment: [
-						'This is the ARIA label for a git diff header.',
-						'A git diff header looks like this: @@ -154,12 +159,39 @@.',
-						'That encodes that at original line 154 (which is now line 159), 12 lines were removed/changed with 39 lines.',
-						'Variables 0 and 1 refer to the diff index out of total number of diffs.',
-						'Variables 2 and 4 will be numbers (a line number).',
-						'Variables 3 and 5 will be "no lines changed", "1 line changed" or "X lines changed", localized separately.'
-					]
-				}, "Difference {0} of {1}: original line {2}, {3}, modified line {4}, {5}",
-					(diffIndex + 1),
-					diffsLength,
-					r.original.startLineNumber,
-					originalChangedLinesCntAria,
-					r.modified.startLineNumber,
-					modifiedChangedLinesCntAria
-				));
+				const originalChangedLinesCntAria = getAriaLines(
+					r.original.length,
+				);
+				const modifiedChangedLinesCntAria = getAriaLines(
+					r.modified.length,
+				);
+				header.setAttribute(
+					"aria-label",
+					localize(
+						{
+							key: "header",
+							comment: [
+								"This is the ARIA label for a git diff header.",
+								"A git diff header looks like this: @@ -154,12 +159,39 @@.",
+								"That encodes that at original line 154 (which is now line 159), 12 lines were removed/changed with 39 lines.",
+								"Variables 0 and 1 refer to the diff index out of total number of diffs.",
+								"Variables 2 and 4 will be numbers (a line number).",
+								'Variables 3 and 5 will be "no lines changed", "1 line changed" or "X lines changed", localized separately.',
+							],
+						},
+						"Difference {0} of {1}: original line {2}, {3}, modified line {4}, {5}",
+						diffIndex + 1,
+						diffsLength,
+						r.original.startLineNumber,
+						originalChangedLinesCntAria,
+						r.modified.startLineNumber,
+						modifiedChangedLinesCntAria,
+					),
+				);
 
-				const cell = document.createElement('div');
-				cell.className = 'diff-review-cell diff-review-summary';
+				const cell = document.createElement("div");
+				cell.className = "diff-review-cell diff-review-summary";
 				// e.g.: `1/10: @@ -504,7 +517,7 @@`
-				cell.appendChild(document.createTextNode(`${diffIndex + 1}/${diffsLength}: @@ -${r.original.startLineNumber},${r.original.length} +${r.modified.startLineNumber},${r.modified.length} @@`));
+				cell.appendChild(
+					document.createTextNode(
+						`${diffIndex + 1}/${diffsLength}: @@ -${
+							r.original.startLineNumber
+						},${r.original.length} +${r.modified.startLineNumber},${
+							r.modified.length
+						} @@`,
+					),
+				);
 				header.appendChild(cell);
 
 				row = header;
 			} else {
-				row = this._createRow(viewItem, lineHeight,
-					this._width.get(), originalOptions, originalModel, originalModelOpts, modifiedOptions, modifiedModel, modifiedModelOpts,
+				row = this._createRow(
+					viewItem,
+					lineHeight,
+					this._width.get(),
+					originalOptions,
+					originalModel,
+					originalModelOpts,
+					modifiedOptions,
+					modifiedModel,
+					modifiedModelOpts,
 				);
 			}
 
 			container.appendChild(row);
 
-			const isSelectedObs = derived(reader => /** @description isSelected */ this._model.currentElement.read(reader) === viewItem);
+			const isSelectedObs = derived(
+				(reader) =>
+					/** @description isSelected */ this._model.currentElement.read(
+						reader,
+					) === viewItem,
+			);
 
-			store.add(autorun(reader => {
-				/** @description update tab index */
-				const isSelected = isSelectedObs.read(reader);
-				row.tabIndex = isSelected ? 0 : -1;
-				if (isSelected) {
-					row.focus();
-				}
-			}));
+			store.add(
+				autorun((reader) => {
+					/** @description update tab index */
+					const isSelected = isSelectedObs.read(reader);
+					row.tabIndex = isSelected ? 0 : -1;
+					if (isSelected) {
+						row.focus();
+					}
+				}),
+			);
 
-			store.add(addDisposableListener(row, 'focus', () => {
-				this._model.goToLine(viewItem);
-			}));
+			store.add(
+				addDisposableListener(row, "focus", () => {
+					this._model.goToLine(viewItem);
+				}),
+			);
 		}
 
 		this._scrollbar.scanDomNode();
 	}
 
 	private _createRow(
-		item: DeletedLineViewElement | AddedLineViewElement | UnchangedLineViewElement,
+		item:
+			| DeletedLineViewElement
+			| AddedLineViewElement
+			| UnchangedLineViewElement,
 		lineHeight: number,
 		width: number,
-		originalOptions: IComputedEditorOptions, originalModel: ITextModel, originalModelOpts: TextModelResolvedOptions,
-		modifiedOptions: IComputedEditorOptions, modifiedModel: ITextModel, modifiedModelOpts: TextModelResolvedOptions,
+		originalOptions: IComputedEditorOptions,
+		originalModel: ITextModel,
+		originalModelOpts: TextModelResolvedOptions,
+		modifiedOptions: IComputedEditorOptions,
+		modifiedModel: ITextModel,
+		modifiedModelOpts: TextModelResolvedOptions,
 	): HTMLDivElement {
 		const originalLayoutInfo = originalOptions.get(EditorOption.layoutInfo);
-		const originalLineNumbersWidth = originalLayoutInfo.glyphMarginWidth + originalLayoutInfo.lineNumbersWidth;
+		const originalLineNumbersWidth =
+			originalLayoutInfo.glyphMarginWidth +
+			originalLayoutInfo.lineNumbersWidth;
 
 		const modifiedLayoutInfo = modifiedOptions.get(EditorOption.layoutInfo);
-		const modifiedLineNumbersWidth = 10 + modifiedLayoutInfo.glyphMarginWidth + modifiedLayoutInfo.lineNumbersWidth;
+		const modifiedLineNumbersWidth =
+			10 +
+			modifiedLayoutInfo.glyphMarginWidth +
+			modifiedLayoutInfo.lineNumbersWidth;
 
-		let rowClassName: string = 'diff-review-row';
-		let lineNumbersExtraClassName: string = '';
-		const spacerClassName: string = 'diff-review-spacer';
+		let rowClassName: string = "diff-review-row";
+		let lineNumbersExtraClassName: string = "";
+		const spacerClassName: string = "diff-review-spacer";
 		let spacerIcon: ThemeIcon | null = null;
 		switch (item.type) {
 			case LineType.Added:
-				rowClassName = 'diff-review-row line-insert';
-				lineNumbersExtraClassName = ' char-insert';
+				rowClassName = "diff-review-row line-insert";
+				lineNumbersExtraClassName = " char-insert";
 				spacerIcon = accessibleDiffViewerInsertIcon;
 				break;
 			case LineType.Deleted:
-				rowClassName = 'diff-review-row line-delete';
-				lineNumbersExtraClassName = ' char-delete';
+				rowClassName = "diff-review-row line-delete";
+				lineNumbersExtraClassName = " char-delete";
 				spacerIcon = accessibleDiffViewerRemoveIcon;
 				break;
 		}
 
-		const row = document.createElement('div');
-		row.style.minWidth = width + 'px';
+		const row = document.createElement("div");
+		row.style.minWidth = width + "px";
 		row.className = rowClassName;
-		row.setAttribute('role', 'listitem');
-		row.ariaLevel = '';
+		row.setAttribute("role", "listitem");
+		row.ariaLevel = "";
 
-		const cell = document.createElement('div');
-		cell.className = 'diff-review-cell';
+		const cell = document.createElement("div");
+		cell.className = "diff-review-cell";
 		cell.style.height = `${lineHeight}px`;
 		row.appendChild(cell);
 
-		const originalLineNumber = document.createElement('span');
-		originalLineNumber.style.width = (originalLineNumbersWidth + 'px');
-		originalLineNumber.style.minWidth = (originalLineNumbersWidth + 'px');
-		originalLineNumber.className = 'diff-review-line-number' + lineNumbersExtraClassName;
+		const originalLineNumber = document.createElement("span");
+		originalLineNumber.style.width = originalLineNumbersWidth + "px";
+		originalLineNumber.style.minWidth = originalLineNumbersWidth + "px";
+		originalLineNumber.className =
+			"diff-review-line-number" + lineNumbersExtraClassName;
 		if (item.originalLineNumber !== undefined) {
-			originalLineNumber.appendChild(document.createTextNode(String(item.originalLineNumber)));
+			originalLineNumber.appendChild(
+				document.createTextNode(String(item.originalLineNumber)),
+			);
 		} else {
-			originalLineNumber.innerText = '\u00a0';
+			originalLineNumber.innerText = "\u00a0";
 		}
 		cell.appendChild(originalLineNumber);
 
-		const modifiedLineNumber = document.createElement('span');
-		modifiedLineNumber.style.width = (modifiedLineNumbersWidth + 'px');
-		modifiedLineNumber.style.minWidth = (modifiedLineNumbersWidth + 'px');
-		modifiedLineNumber.style.paddingRight = '10px';
-		modifiedLineNumber.className = 'diff-review-line-number' + lineNumbersExtraClassName;
+		const modifiedLineNumber = document.createElement("span");
+		modifiedLineNumber.style.width = modifiedLineNumbersWidth + "px";
+		modifiedLineNumber.style.minWidth = modifiedLineNumbersWidth + "px";
+		modifiedLineNumber.style.paddingRight = "10px";
+		modifiedLineNumber.className =
+			"diff-review-line-number" + lineNumbersExtraClassName;
 		if (item.modifiedLineNumber !== undefined) {
-			modifiedLineNumber.appendChild(document.createTextNode(String(item.modifiedLineNumber)));
+			modifiedLineNumber.appendChild(
+				document.createTextNode(String(item.modifiedLineNumber)),
+			);
 		} else {
-			modifiedLineNumber.innerText = '\u00a0';
+			modifiedLineNumber.innerText = "\u00a0";
 		}
 		cell.appendChild(modifiedLineNumber);
 
-		const spacer = document.createElement('span');
+		const spacer = document.createElement("span");
 		spacer.className = spacerClassName;
 
 		if (spacerIcon) {
-			const spacerCodicon = document.createElement('span');
+			const spacerCodicon = document.createElement("span");
 			spacerCodicon.className = ThemeIcon.asClassName(spacerIcon);
-			spacerCodicon.innerText = '\u00a0\u00a0';
+			spacerCodicon.innerText = "\u00a0\u00a0";
 			spacer.appendChild(spacerCodicon);
 		} else {
-			spacer.innerText = '\u00a0\u00a0';
+			spacer.innerText = "\u00a0\u00a0";
 		}
 		cell.appendChild(spacer);
 
 		let lineContent: string;
 		if (item.modifiedLineNumber !== undefined) {
-			let html: string | TrustedHTML = this._getLineHtml(modifiedModel, modifiedOptions, modifiedModelOpts.tabSize, item.modifiedLineNumber, this._languageService.languageIdCodec);
+			let html: string | TrustedHTML = this._getLineHtml(
+				modifiedModel,
+				modifiedOptions,
+				modifiedModelOpts.tabSize,
+				item.modifiedLineNumber,
+				this._languageService.languageIdCodec,
+			);
 			if (AccessibleDiffViewer._ttPolicy) {
-				html = AccessibleDiffViewer._ttPolicy.createHTML(html as string);
+				html = AccessibleDiffViewer._ttPolicy.createHTML(
+					html as string,
+				);
 			}
-			cell.insertAdjacentHTML('beforeend', html as string);
+			cell.insertAdjacentHTML("beforeend", html as string);
 			lineContent = modifiedModel.getLineContent(item.modifiedLineNumber);
 		} else {
-			let html: string | TrustedHTML = this._getLineHtml(originalModel, originalOptions, originalModelOpts.tabSize, item.originalLineNumber, this._languageService.languageIdCodec);
+			let html: string | TrustedHTML = this._getLineHtml(
+				originalModel,
+				originalOptions,
+				originalModelOpts.tabSize,
+				item.originalLineNumber,
+				this._languageService.languageIdCodec,
+			);
 			if (AccessibleDiffViewer._ttPolicy) {
-				html = AccessibleDiffViewer._ttPolicy.createHTML(html as string);
+				html = AccessibleDiffViewer._ttPolicy.createHTML(
+					html as string,
+				);
 			}
-			cell.insertAdjacentHTML('beforeend', html as string);
+			cell.insertAdjacentHTML("beforeend", html as string);
 			lineContent = originalModel.getLineContent(item.originalLineNumber);
 		}
 
 		if (lineContent.length === 0) {
-			lineContent = localize('blankLine', "blank");
+			lineContent = localize("blankLine", "blank");
 		}
 
-		let ariaLabel: string = '';
+		let ariaLabel: string = "";
 		switch (item.type) {
 			case LineType.Unchanged:
 				if (item.originalLineNumber === item.modifiedLineNumber) {
-					ariaLabel = localize({ key: 'unchangedLine', comment: ['The placeholders are contents of the line and should not be translated.'] }, "{0} unchanged line {1}", lineContent, item.originalLineNumber);
+					ariaLabel = localize(
+						{
+							key: "unchangedLine",
+							comment: [
+								"The placeholders are contents of the line and should not be translated.",
+							],
+						},
+						"{0} unchanged line {1}",
+						lineContent,
+						item.originalLineNumber,
+					);
 				} else {
-					ariaLabel = localize('equalLine', "{0} original line {1} modified line {2}", lineContent, item.originalLineNumber, item.modifiedLineNumber);
+					ariaLabel = localize(
+						"equalLine",
+						"{0} original line {1} modified line {2}",
+						lineContent,
+						item.originalLineNumber,
+						item.modifiedLineNumber,
+					);
 				}
 				break;
 			case LineType.Added:
-				ariaLabel = localize('insertLine', "+ {0} modified line {1}", lineContent, item.modifiedLineNumber);
+				ariaLabel = localize(
+					"insertLine",
+					"+ {0} modified line {1}",
+					lineContent,
+					item.modifiedLineNumber,
+				);
 				break;
 			case LineType.Deleted:
-				ariaLabel = localize('deleteLine', "- {0} original line {1}", lineContent, item.originalLineNumber);
+				ariaLabel = localize(
+					"deleteLine",
+					"- {0} original line {1}",
+					lineContent,
+					item.originalLineNumber,
+				);
 				break;
 		}
-		row.setAttribute('aria-label', ariaLabel);
+		row.setAttribute("aria-label", ariaLabel);
 
 		return row;
 	}
 
-	private _getLineHtml(model: ITextModel, options: IComputedEditorOptions, tabSize: number, lineNumber: number, languageIdCodec: ILanguageIdCodec): string {
+	private _getLineHtml(
+		model: ITextModel,
+		options: IComputedEditorOptions,
+		tabSize: number,
+		lineNumber: number,
+		languageIdCodec: ILanguageIdCodec,
+	): string {
 		const lineContent = model.getLineContent(lineNumber);
 		const fontInfo = options.get(EditorOption.fontInfo);
 		const lineTokens = LineTokens.createEmpty(lineContent, languageIdCodec);
-		const isBasicASCII = ViewLineRenderingData.isBasicASCII(lineContent, model.mightContainNonBasicASCII());
-		const containsRTL = ViewLineRenderingData.containsRTL(lineContent, isBasicASCII, model.mightContainRTL());
-		const r = renderViewLine2(new RenderLineInput(
-			(fontInfo.isMonospace && !options.get(EditorOption.disableMonospaceOptimizations)),
-			fontInfo.canUseHalfwidthRightwardsArrow,
+		const isBasicASCII = ViewLineRenderingData.isBasicASCII(
 			lineContent,
-			false,
+			model.mightContainNonBasicASCII(),
+		);
+		const containsRTL = ViewLineRenderingData.containsRTL(
+			lineContent,
 			isBasicASCII,
-			containsRTL,
-			0,
-			lineTokens,
-			[],
-			tabSize,
-			0,
-			fontInfo.spaceWidth,
-			fontInfo.middotWidth,
-			fontInfo.wsmiddotWidth,
-			options.get(EditorOption.stopRenderingLineAfter),
-			options.get(EditorOption.renderWhitespace),
-			options.get(EditorOption.renderControlCharacters),
-			options.get(EditorOption.fontLigatures) !== EditorFontLigatures.OFF,
-			null
-		));
+			model.mightContainRTL(),
+		);
+		const r = renderViewLine2(
+			new RenderLineInput(
+				fontInfo.isMonospace &&
+					!options.get(EditorOption.disableMonospaceOptimizations),
+				fontInfo.canUseHalfwidthRightwardsArrow,
+				lineContent,
+				false,
+				isBasicASCII,
+				containsRTL,
+				0,
+				lineTokens,
+				[],
+				tabSize,
+				0,
+				fontInfo.spaceWidth,
+				fontInfo.middotWidth,
+				fontInfo.wsmiddotWidth,
+				options.get(EditorOption.stopRenderingLineAfter),
+				options.get(EditorOption.renderWhitespace),
+				options.get(EditorOption.renderControlCharacters),
+				options.get(EditorOption.fontLigatures) !==
+					EditorFontLigatures.OFF,
+				null,
+			),
+		);
 
 		return r.html;
 	}

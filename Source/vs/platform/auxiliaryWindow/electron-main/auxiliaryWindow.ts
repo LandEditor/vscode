@@ -3,20 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserWindow, WebContents } from 'electron';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IEnvironmentMainService } from 'vs/platform/environment/electron-main/environmentMainService';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IStateService } from 'vs/platform/state/node/state';
-import { IBaseWindow } from 'vs/platform/window/electron-main/window';
-import { BaseWindow } from 'vs/platform/windows/electron-main/windowImpl';
+import { BrowserWindow, WebContents } from "electron";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
+import { ILogService } from "vs/platform/log/common/log";
+import { IStateService } from "vs/platform/state/node/state";
+import { IBaseWindow } from "vs/platform/window/electron-main/window";
+import { BaseWindow } from "vs/platform/windows/electron-main/windowImpl";
 
 export interface IAuxiliaryWindow extends IBaseWindow {
 	readonly parentId: number;
 }
 
 export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
-
 	readonly id = this.contents.id;
 	parentId = -1;
 
@@ -54,7 +53,9 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 
 		const window = BrowserWindow.fromWebContents(this.contents);
 		if (window) {
-			this.logService.trace('[aux window] Claimed browser window instance');
+			this.logService.trace(
+				"[aux window] Claimed browser window instance",
+			);
 
 			// Remember
 			this.setWin(window);

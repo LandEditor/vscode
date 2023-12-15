@@ -87,10 +87,10 @@ export class ChatDynamicReferenceModel
 						hoverMessage: new MarkdownString(
 							this.labelService.getUriLabel(r.data, {
 								relative: true,
-							})
+							}),
 						),
-					}
-			)
+					},
+			),
 		);
 	}
 }
@@ -103,7 +103,7 @@ interface SelectAndInsertFileActionContext {
 }
 
 function isSelectAndInsertFileActionContext(
-	context: any
+	context: any,
 ): context is SelectAndInsertFileActionContext {
 	return "widget" in context && "range" in context;
 }
@@ -146,7 +146,7 @@ export class SelectAndInsertFileAction extends Action2 {
 			.resource as URI;
 		if (!textModelService.canHandleResource(resource)) {
 			logService.trace(
-				"SelectAndInsertFileAction: non-text resource selected"
+				"SelectAndInsertFileAction: non-text resource selected",
 			);
 			doCleanup();
 			return;
@@ -161,7 +161,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		]);
 		if (!success) {
 			logService.trace(
-				`SelectAndInsertFileAction: failed to insert "${text}"`
+				`SelectAndInsertFileAction: failed to insert "${text}"`,
 			);
 			doCleanup();
 			return;

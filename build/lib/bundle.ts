@@ -29,14 +29,14 @@ interface ILoaderPlugin {
 	write(
 		pluginName: string,
 		moduleName: string,
-		write: ILoaderPluginWriteFunc
+		write: ILoaderPluginWriteFunc,
 	): void;
 	writeFile(
 		pluginName: string,
 		entryPoint: string,
 		req: ILoaderPluginReqFunc,
 		write: (filename: string, contents: string) => void,
-		config: any
+		config: any,
 	): void;
 	finishBuild(write: (filename: string, contents: string) => void): void;
 }
@@ -122,13 +122,13 @@ export interface ILoaderConfig {
 export function bundle(
 	entryPoints: IEntryPoint[],
 	config: ILoaderConfig,
-	callback: (err: any, result: IBundleResult | null) => void
+	callback: (err: any, result: IBundleResult | null) => void,
 ): void {
 	const entryPointsMap: IEntryPointMap = {};
 	entryPoints.forEach((module: IEntryPoint) => {
 		if (entryPointsMap[module.name]) {
 			throw new Error(
-				`Cannot have two entry points with the same name '${module.name}'`
+				`Cannot have two entry points with the same name '${module.name}'`,
 			);
 		}
 		entryPointsMap[module.name] = module;
@@ -146,11 +146,11 @@ export function bundle(
 	});
 
 	const code = require("fs").readFileSync(
-		path.join(__dirname, "../../src/vs/loader.js")
+		path.join(__dirname, "../../src/vs/loader.js"),
 	);
 	const r: Function = <any>(
 		vm.runInThisContext(
-			"(function(require, module, exports) { " + code + "\n});"
+			"(function(require, module, exports) { " + code + "\n});",
 		)
 	);
 	const loaderModule = { exports: {} };
@@ -204,13 +204,13 @@ export function bundle(
 				bundleData: partialResult.bundleData,
 			});
 		},
-		(err: any) => callback(err, null)
+		(err: any) => callback(err, null),
 	);
 }
 
 function emitEntryPoints(
 	modules: IBuildModuleInfo[],
-	entryPoints: IEntryPointMap
+	entryPoints: IEntryPointMap,
 ): IPartialBundleResult {
 	const modulesMap: IBuildModuleInfoMap = {};
 	modules.forEach((m: IBuildModuleInfo) => {
@@ -236,7 +236,7 @@ function emitEntryPoints(
 		const rootNodes = [moduleToBundle].concat(info.include || []);
 		const allDependencies = visit(rootNodes, modulesGraph);
 		const excludes: string[] = ["require", "exports", "module"].concat(
-			info.exclude || []
+			info.exclude || [],
 		);
 
 		excludes.forEach((excludeRoot: string) => {
@@ -259,7 +259,7 @@ function emitEntryPoints(
 			includedModules,
 			info.prepend || [],
 			info.append || [],
-			info.dest
+			info.dest,
 		);
 
 		result = result.concat(res.files);
@@ -339,7 +339,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
 		const useCounts: { [moduleId: string]: number } = {};
 		destFile.sources.forEach((source) => {
 			const matches = source.contents.match(
-				/define\(("[^"]+"),\s*\[(((, )?("|')[^"']+("|'))+)\]/
+				/define\(("[^"]+"),\s*\[(((, )?("|')[^"']+("|'))+)\]/,
 			);
 			if (!matches) {
 				return;
@@ -373,7 +373,7 @@ function extractStrings(destFiles: IConcatFile[]): IConcatFile[] {
 					}*/], __M([${defineCall.deps
 						.map((dep) => replacementMap[dep] + "/*" + dep + "*/")
 						.join(",")}])`;
-				}
+				},
 			);
 		});
 
@@ -469,7 +469,7 @@ function emitEntryPoint(
 	includedModules: string[],
 	prepend: IExtraFile[],
 	append: IExtraFile[],
-	dest: string | undefined
+	dest: string | undefined,
 ): IEmitEntryPointResult {
 	if (!dest) {
 		dest = entryPoint + ".js";
@@ -499,8 +499,8 @@ function emitEntryPoint(
 					entryPoint,
 					plugin,
 					pluginName,
-					c.substr(bangIndex + 1)
-				)
+					c.substr(bangIndex + 1),
+				),
 			);
 			return;
 		}
@@ -520,12 +520,17 @@ function emitEntryPoint(
 					deps[c],
 					module.shim,
 					module.path,
-					contents
-				)
+					contents,
+				),
 			);
 		} else if (module.defineLocation) {
 			mainResult.sources.push(
-				emitNamedModule(c, module.defineLocation, module.path, contents)
+				emitNamedModule(
+					c,
+					module.defineLocation,
+					module.path,
+					contents,
+				),
 			);
 		} else {
 			const moduleCopy = {
@@ -538,8 +543,8 @@ function emitEntryPoint(
 				`Cannot bundle module '${
 					module.id
 				}' for entry point '${entryPoint}' because it has no shim and it lacks a defineLocation: ${JSON.stringify(
-					moduleCopy
-				)}`
+					moduleCopy,
+				)}`,
 			);
 		}
 	});
@@ -572,7 +577,7 @@ function emitEntryPoint(
 		if (entry.amdModuleId) {
 			contents = contents.replace(
 				/^define\(/m,
-				`define("${entry.amdModuleId}",`
+				`define("${entry.amdModuleId}",`,
 			);
 		}
 		return {
@@ -606,7 +611,7 @@ function emitPlugin(
 	entryPoint: string,
 	plugin: ILoaderPlugin,
 	pluginName: string,
-	moduleName: string
+	moduleName: string,
 ): IFile {
 	let result = "";
 	if (typeof plugin.write === "function") {
@@ -632,13 +637,13 @@ function emitNamedModule(
 	moduleId: string,
 	defineCallPosition: IPosition,
 	path: string,
-	contents: string
+	contents: string,
 ): IFile {
 	// `defineCallPosition` is the position in code: |define()
 	const defineCallOffset = positionToOffset(
 		contents,
 		defineCallPosition.line,
-		defineCallPosition.col
+		defineCallPosition.col,
 	);
 
 	// `parensOffset` is the position in code: define|()
@@ -660,7 +665,7 @@ function emitShimmedModule(
 	myDeps: string[],
 	factory: string,
 	path: string,
-	contents: string
+	contents: string,
 ): IFile {
 	const strDeps = myDeps.length > 0 ? '"' + myDeps.join('", "') + '"' : "";
 	const strDefine =
@@ -677,7 +682,7 @@ function emitShimmedModule(
 function positionToOffset(
 	str: string,
 	desiredLine: number,
-	desiredCol: number
+	desiredCol: number,
 ): number {
 	if (desiredLine === 1) {
 		return desiredCol - 1;
@@ -774,7 +779,7 @@ function topologicalSort(graph: IGraph): string[] {
 	if (Object.keys(outgoingEdgeCount).length > 0) {
 		throw new Error(
 			"Cannot do topological sort on cyclic graph, remaining nodes: " +
-				Object.keys(outgoingEdgeCount)
+				Object.keys(outgoingEdgeCount),
 		);
 	}
 

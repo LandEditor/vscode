@@ -30,7 +30,7 @@ declare module "vscode" {
 		 * Provide kernel source actions
 		 */
 		provideNotebookKernelSourceActions(
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<NotebookKernelSourceAction[]>;
 	}
 
@@ -39,7 +39,7 @@ declare module "vscode" {
 		 * Create notebook controller detection task
 		 */
 		export function createNotebookControllerDetectionTask(
-			notebookType: string
+			notebookType: string,
 		): NotebookControllerDetectionTask;
 
 		/**
@@ -47,7 +47,7 @@ declare module "vscode" {
 		 */
 		export function registerKernelSourceActionProvider(
 			notebookType: string,
-			provider: NotebookKernelSourceActionProvider
+			provider: NotebookKernelSourceActionProvider,
 		): Disposable;
 	}
 }

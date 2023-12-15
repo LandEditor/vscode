@@ -33,7 +33,7 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 	constructor(
 		mainContext: IMainContext,
 		private readonly _extHostChatProvider: ExtHostChatProvider,
-		private readonly _logService: ILogService
+		private readonly _logService: ILogService,
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadChatAgents);
 	}
@@ -42,7 +42,7 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 		extension: ExtensionIdentifier,
 		name: string,
 		agent: vscode.ChatAgent,
-		metadata: vscode.ChatAgentMetadata
+		metadata: vscode.ChatAgentMetadata,
 	): IDisposable {
 		const handle = ExtHostChatAgents._idPool++;
 		this._agents.set(handle, { extension, agent });
@@ -59,12 +59,12 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 		requestId: number,
 		prompt: string,
 		context: { history: IChatMessage[] },
-		token: CancellationToken
+		token: CancellationToken,
 	): Promise<any> {
 		const data = this._agents.get(handle);
 		if (!data) {
 			this._logService.warn(
-				`[CHAT](${handle}) CANNOT invoke agent because the agent is not registered`
+				`[CHAT](${handle}) CANNOT invoke agent because the agent is not registered`,
 			);
 			return;
 		}
@@ -81,7 +81,7 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 		setTimeout(() => commandExecution.complete(), 10 * 1000);
 		this._extHostChatProvider.allowListExtensionWhile(
 			data.extension,
-			commandExecution.p
+			commandExecution.p,
 		);
 
 		const task = data.agent(
@@ -95,7 +95,7 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 						: p.message.value,
 				});
 			}),
-			token
+			token,
 		);
 
 		try {
@@ -103,13 +103,13 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 				Promise.resolve(task).then((v) => {
 					if (v && "followUp" in v) {
 						const convertedFollowup = v?.followUp?.map((f) =>
-							typeConvert.ChatFollowup.from(f)
+							typeConvert.ChatFollowup.from(f),
 						);
 						return { followUp: convertedFollowup };
 					}
 					return undefined;
 				}),
-				token
+				token,
 			);
 		} finally {
 			done = true;
@@ -119,7 +119,7 @@ export class ExtHostChatAgents implements ExtHostChatAgentsShape {
 }
 
 function isInteractiveProgressFileTree(
-	thing: unknown
+	thing: unknown,
 ): thing is vscode.InteractiveProgressFileTree {
 	return !!thing && typeof thing === "object" && "treeData" in thing;
 }

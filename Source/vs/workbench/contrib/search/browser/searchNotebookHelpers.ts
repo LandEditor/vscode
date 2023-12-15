@@ -35,7 +35,7 @@ export interface ICellMatch {
 	webviewResults: ITextSearchMatch[];
 }
 export function isIFileMatchWithCells(
-	object: IFileMatch
+	object: IFileMatch,
 ): object is IFileMatchWithCells {
 	return "cellResults" in object;
 }
@@ -44,21 +44,21 @@ export function isIFileMatchWithCells(
 
 export function contentMatchesToTextSearchMatches(
 	contentMatches: FindMatch[],
-	cell: ICellViewModel | CellSearchModel
+	cell: ICellViewModel | CellSearchModel,
 ): ITextSearchMatch[] {
 	return genericCellMatchesToTextSearchMatches(
 		contentMatches,
 		cell instanceof CellSearchModel
 			? cell.inputTextBuffer
 			: cell.textBuffer,
-		cell
+		cell,
 	);
 }
 
 export function genericCellMatchesToTextSearchMatches(
 	contentMatches: FindMatch[],
 	buffer: IReadonlyTextBuffer,
-	cell: ICellViewModel | CellSearchModel
+	cell: ICellViewModel | CellSearchModel,
 ) {
 	let previousEndLine = -1;
 	const contextGroupings: FindMatch[][] = [];
@@ -95,9 +95,9 @@ export function genericCellMatchesToTextSearchMatches(
 						m.range.startLineNumber - 1,
 						m.range.startColumn - 1,
 						m.range.endLineNumber - 1,
-						m.range.endColumn - 1
-					)
-			)
+						m.range.endColumn - 1,
+					),
+			),
 		);
 	});
 
@@ -105,7 +105,7 @@ export function genericCellMatchesToTextSearchMatches(
 }
 
 export function webviewMatchesToTextSearchMatches(
-	webviewMatches: CellWebviewFindMatch[]
+	webviewMatches: CellWebviewFindMatch[],
 ): ITextSearchMatch[] {
 	return webviewMatches
 		.map((rawMatch) =>
@@ -116,12 +116,12 @@ export function webviewMatchesToTextSearchMatches(
 							0,
 							rawMatch.searchPreviewInfo.range.start,
 							0,
-							rawMatch.searchPreviewInfo.range.end
+							rawMatch.searchPreviewInfo.range.end,
 						),
 						undefined,
-						rawMatch.index
+						rawMatch.index,
 				  )
-				: undefined
+				: undefined,
 		)
 		.filter((e): e is ITextSearchMatch => !!e);
 }
@@ -141,7 +141,7 @@ export class CellSearchModel extends Disposable {
 		private _inputTextBuffer: IReadonlyTextBuffer | undefined,
 		private _outputs: IOutputItemDto[],
 		private _uri: URI,
-		private _cellIndex: number
+		private _cellIndex: number,
 	) {
 		super();
 	}
@@ -160,13 +160,13 @@ export class CellSearchModel extends Disposable {
 			1,
 			1,
 			lineCount,
-			this._getLineMaxColumn(buffer, lineCount)
+			this._getLineMaxColumn(buffer, lineCount),
 		);
 	}
 
 	private _getLineMaxColumn(
 		buffer: IReadonlyTextBuffer,
-		lineNumber: number
+		lineNumber: number,
 	): number {
 		if (lineNumber < 1 || lineNumber > buffer.getLineCount()) {
 			throw new Error("Illegal value for lineNumber");
@@ -180,7 +180,7 @@ export class CellSearchModel extends Disposable {
 			builder.acceptChunk(this._source);
 			const bufferFactory = builder.finish(true);
 			const { textBuffer, disposable } = bufferFactory.create(
-				DefaultEndOfLine.LF
+				DefaultEndOfLine.LF,
 			);
 			this._inputTextBuffer = textBuffer;
 			this._register(disposable);
@@ -196,7 +196,7 @@ export class CellSearchModel extends Disposable {
 				builder.acceptChunk(output.data.toString());
 				const bufferFactory = builder.finish(true);
 				const { textBuffer, disposable } = bufferFactory.create(
-					DefaultEndOfLine.LF
+					DefaultEndOfLine.LF,
 				);
 				this._register(disposable);
 				return textBuffer;
@@ -216,7 +216,7 @@ export class CellSearchModel extends Disposable {
 			fullInputRange,
 			searchData,
 			true,
-			5000
+			5000,
 		);
 	}
 
@@ -232,7 +232,7 @@ export class CellSearchModel extends Disposable {
 					this._getFullModelRange(buffer),
 					searchData,
 					true,
-					5000
+					5000,
 				);
 				if (matches.length === 0) {
 					return undefined;

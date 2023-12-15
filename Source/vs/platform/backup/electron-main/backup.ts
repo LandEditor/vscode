@@ -3,14 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IEmptyWindowBackupInfo } from 'vs/platform/backup/node/backup';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IFolderBackupInfo, IWorkspaceBackupInfo } from 'vs/platform/backup/common/backup';
+import { IEmptyWindowBackupInfo } from "vs/platform/backup/node/backup";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IFolderBackupInfo,
+	IWorkspaceBackupInfo,
+} from "vs/platform/backup/common/backup";
 
-export const IBackupMainService = createDecorator<IBackupMainService>('backupMainService');
+export const IBackupMainService =
+	createDecorator<IBackupMainService>("backupMainService");
 
 export interface IBackupMainService {
-
 	readonly _serviceBrand: undefined;
 
 	isHotExitEnabled(): boolean;
@@ -18,7 +21,10 @@ export interface IBackupMainService {
 	getEmptyWindowBackups(): IEmptyWindowBackupInfo[];
 
 	registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo): string;
-	registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo, migrateFrom: string): Promise<string>;
+	registerWorkspaceBackup(
+		workspaceInfo: IWorkspaceBackupInfo,
+		migrateFrom: string,
+	): Promise<string>;
 	registerFolderBackup(folderInfo: IFolderBackupInfo): string;
 	registerEmptyWindowBackup(emptyWindowInfo: IEmptyWindowBackupInfo): string;
 
@@ -28,5 +34,7 @@ export interface IBackupMainService {
 	 * it checks for each backup location if any backups
 	 * are stored.
 	 */
-	getDirtyWorkspaces(): Promise<Array<IWorkspaceBackupInfo | IFolderBackupInfo>>;
+	getDirtyWorkspaces(): Promise<
+		Array<IWorkspaceBackupInfo | IFolderBackupInfo>
+	>;
 }

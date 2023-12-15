@@ -5,22 +5,24 @@
 
 //@ts-check
 (function () {
-	'use strict';
+	"use strict";
 
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Load issue reporter into window
-	bootstrapWindow.load(['vs/code/electron-sandbox/issue/issueReporterMain'], function (issueReporter, configuration) {
-		return issueReporter.startup(configuration);
-	},
+	bootstrapWindow.load(
+		["vs/code/electron-sandbox/issue/issueReporterMain"],
+		function (issueReporter, configuration) {
+			return issueReporter.startup(configuration);
+		},
 		{
 			configureDeveloperSettings: function () {
 				return {
 					forceEnableDeveloperKeybindings: true,
-					disallowReloadKeybinding: true
+					disallowReloadKeybinding: true,
 				};
-			}
-		}
+			},
+		},
 	);
 
 	/**
@@ -44,4 +46,4 @@
 		// @ts-ignore (defined in bootstrap-window.js)
 		return window.MonacoBootstrapWindow;
 	}
-}());
+})();
