@@ -3,10 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface ChatResponseStream {
-
 		/**
 		 * The response stream.
 		 */
@@ -20,7 +18,6 @@ declare module 'vscode' {
 	}
 
 	export interface ChatRequest {
-
 		/**
 		 * The overall result of the request which represents failure or success
 		 * but _not_ the actual response or responses
@@ -60,7 +57,6 @@ declare module 'vscode' {
 	 * for the duration of an user interaction or specific time frame.
 	 */
 	export interface ChatAccess {
-
 		/**
 		 * Whether the access to chat has been revoked. This happens when the condition that allowed for
 		 * chat access doesn't hold anymore, e.g a user interaction has ended.
@@ -88,11 +84,14 @@ declare module 'vscode' {
 		 * @param messages
 		 * @param options
 		 */
-		makeRequest(messages: ChatMessage[], options: { [name: string]: any }, token: CancellationToken): ChatRequest;
+		makeRequest(
+			messages: ChatMessage[],
+			options: { [name: string]: any },
+			token: CancellationToken
+		): ChatRequest;
 	}
 
 	export namespace chat {
-
 		/**
 		 * Request access to chat.
 		 *
