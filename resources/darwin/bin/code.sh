@@ -19,7 +19,7 @@ function app_realpath() {
 		SOURCE=$(readlink "$SOURCE")
 		[[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE
 	done
-	SOURCE_DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
+	SOURCE_DIR="$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 	echo "${SOURCE_DIR%%${SOURCE_DIR#*.app}}"
 }
 

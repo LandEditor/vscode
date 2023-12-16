@@ -4,7 +4,10 @@
 #
 
 case "$1" in
-	--inspect*) INSPECT="$1"; shift;;
+--inspect*)
+	INSPECT="$1"
+	shift
+	;;
 esac
 
 realdir() {
@@ -14,10 +17,9 @@ realdir() {
 		SOURCE=$(readlink "$SOURCE")
 		[[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE
 	done
-	echo "$( cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd )"
+	echo "$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
 }
 
 ROOT="$(dirname "$(realdir "$0")")"
 
 "$ROOT/node" ${INSPECT:-} "$ROOT/out/server-main.js" "$@"
-

@@ -11,15 +11,14 @@ else
 	LINUX_EXTRA_ARGS="--disable-dev-shm-usage"
 fi
 
-VSCODEUSERDATADIR=`mktemp -d 2>/dev/null`
+VSCODEUSERDATADIR=$(mktemp -d 2>/dev/null)
 VSCODECRASHDIR=$ROOT/.build/crashes
 VSCODELOGSDIR=$ROOT/.build/logs/integration-tests
 
 cd $ROOT
 
 # Figure out which Electron to use for running tests
-if [ -z "$INTEGRATION_TEST_ELECTRON_PATH" ]
-then
+if [ -z "$INTEGRATION_TEST_ELECTRON_PATH" ]; then
 	INTEGRATION_TEST_ELECTRON_PATH="./scripts/code.sh"
 
 	echo "Running integration tests out of sources."
@@ -33,14 +32,12 @@ fi
 echo "Storing crash reports into '$VSCODECRASHDIR'."
 echo "Storing log files into '$VSCODELOGSDIR'."
 
-
 # Tests standalone (AMD)
 
 echo
 echo "### node.js integration tests"
 echo
 ./scripts/test.sh --runGlob **/*.integrationTest.js "$@"
-
 
 # Tests in the extension host
 
@@ -129,7 +126,6 @@ echo
 echo "### HTML tests"
 echo
 cd $ROOT/extensions/html-language-features/server && $ROOT/scripts/node-electron.sh test/index.js
-
 
 # Cleanup
 

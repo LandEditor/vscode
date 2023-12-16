@@ -51,7 +51,7 @@ if [ "@@NAME@@" != "code-oss" ]; then
 	if [ "$WRITE_SOURCE" -eq "1" ]; then
 		echo "### THIS FILE IS AUTOMATICALLY CONFIGURED ###
 # You may comment out this entry, but any other modifications may be lost.
-deb [arch=amd64,arm64,armhf] http://packages.microsoft.com/repos/code stable main" > $CODE_SOURCE_PART
+deb [arch=amd64,arm64,armhf] http://packages.microsoft.com/repos/code stable main" >$CODE_SOURCE_PART
 
 		# Sourced from https://packages.microsoft.com/keys/microsoft.asc
 		if [ ! -f $CODE_TRUSTED_PART ]; then
@@ -74,7 +74,7 @@ XdNgj4Jd2/g6T9InmWT0hASljur+dJnzNiNCkbn9KbX7J/qK1IbR8y560yRmFsU+
 NdCFTW7wY0Fb1fWJ+/KTsC4=
 =J6gs
 -----END PGP PUBLIC KEY BLOCK-----
-" | gpg --dearmor > $CODE_TRUSTED_PART
+" | gpg --dearmor >$CODE_TRUSTED_PART
 		fi
 	fi
 fi

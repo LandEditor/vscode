@@ -17,10 +17,7 @@ pub struct ProgressBarReporter {
 
 impl From<ProgressBar> for ProgressBarReporter {
 	fn from(bar: ProgressBar) -> Self {
-		ProgressBarReporter {
-			bar,
-			has_set_total: false,
-		}
+		ProgressBarReporter { bar, has_set_total: false }
 	}
 }
 
