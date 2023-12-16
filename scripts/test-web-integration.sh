@@ -10,16 +10,18 @@ fi
 
 cd $ROOT
 
-if [ -z "$VSCODE_REMOTE_SERVER_PATH" ]; then
+if [ -z "$VSCODE_REMOTE_SERVER_PATH" ]
+then
 	echo "Using remote server out of sources for integration web tests"
 else
 	echo "Using $VSCODE_REMOTE_SERVER_PATH as server path for web integration tests"
 fi
 
-if [ ! -e 'test/integration/browser/out/index.js' ]; then
+if [ ! -e 'test/integration/browser/out/index.js' ];then
 	yarn --cwd test/integration/browser compile
 	yarn playwright-install
 fi
+
 
 # Tests in the extension host
 
@@ -62,3 +64,4 @@ echo
 echo "### Configuration editing tests"
 echo
 node test/integration/browser/out/index.js --workspacePath $(mktemp -d 2>/dev/null) --extensionDevelopmentPath=$ROOT/extensions/configuration-editing --extensionTestsPath=$ROOT/extensions/configuration-editing/out/test "$@"
+

@@ -11,10 +11,10 @@ else
 	LINUX_EXTRA_ARGS="--disable-dev-shm-usage"
 fi
 
-VSCODEUSERDATADIR=$(mktemp -d 2>/dev/null)
+VSCODEUSERDATADIR=`mktemp -d 2>/dev/null`
 VSCODECRASHDIR=$ROOT/.build/crashes
 VSCODELOGSDIR=$ROOT/.build/logs/integration-tests-remote
-TESTRESOLVER_DATA_FOLDER=$(mktemp -d 2>/dev/null)
+TESTRESOLVER_DATA_FOLDER=`mktemp -d 2>/dev/null`
 
 cd $ROOT
 
@@ -32,7 +32,8 @@ fi
 export REMOTE_VSCODE=$AUTHORITY$EXT_PATH
 
 # Figure out which Electron to use for running tests
-if [ -z "$INTEGRATION_TEST_ELECTRON_PATH" ]; then
+if [ -z "$INTEGRATION_TEST_ELECTRON_PATH" ]
+then
 	INTEGRATION_TEST_ELECTRON_PATH="./scripts/code.sh"
 
 	# No extra arguments when running out of sources
@@ -53,7 +54,8 @@ export TESTRESOLVER_DATA_FOLDER=$TESTRESOLVER_DATA_FOLDER
 export TESTRESOLVER_LOGS_FOLDER=$VSCODELOGSDIR/server
 
 # Figure out which remote server to use for running tests
-if [ -z "$VSCODE_REMOTE_SERVER_PATH" ]; then
+if [ -z "$VSCODE_REMOTE_SERVER_PATH" ]
+then
 	echo "Using remote server out of sources for integration tests"
 else
 	echo "Using $VSCODE_REMOTE_SERVER_PATH as server path for integration tests"
@@ -70,6 +72,7 @@ API_TESTS_EXTRA_ARGS="--disable-telemetry --skip-welcome --skip-release-notes --
 
 echo "Storing crash reports into '$VSCODECRASHDIR'."
 echo "Storing log files into '$VSCODELOGSDIR'."
+
 
 # Tests in the extension host
 

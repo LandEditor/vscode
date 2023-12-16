@@ -23,8 +23,8 @@ header="// Type definitions for Visual Studio Code ${1}
  */"
 
 if [ -f ./src/vscode-dts/vscode.d.ts ]; then
-	echo "$header" >index.d.ts
-	sed "1,4d" ./src/vscode-dts/vscode.d.ts >>index.d.ts
+	echo "$header" > index.d.ts
+	sed "1,4d" ./src/vscode-dts/vscode.d.ts >> index.d.ts
 	echo "Generated index.d.ts for version ${1}."
 else
 	echo "Can't find ./src/vscode-dts/vscode.d.ts. Run this script at vscode root."

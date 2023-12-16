@@ -6,7 +6,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isDebianArchString = void 0;
 function isDebianArchString(s) {
-	return ["amd64", "armhf", "arm64"].includes(s);
+    return ['amd64', 'armhf', 'arm64'].includes(s);
 }
 exports.isDebianArchString = isDebianArchString;
 //# sourceMappingURL=types.js.map
