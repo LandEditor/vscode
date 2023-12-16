@@ -3,64 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DisposableMap, DisposableStore } from "vs/base/common/lifecycle";
-import {
-	FileOperation,
-	IFileService,
-	IFilesConfiguration,
-	IWatchOptions,
-} from "vs/platform/files/common/files";
-import {
-	extHostNamedCustomer,
-	IExtHostContext,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import {
-	ExtHostContext,
-	ExtHostFileSystemEventServiceShape,
-	MainContext,
-	MainThreadFileSystemEventServiceShape,
-} from "../common/extHost.protocol";
-import { localize } from "vs/nls";
-import {
-	IWorkingCopyFileOperationParticipant,
-	IWorkingCopyFileService,
-	SourceTargetPair,
-	IFileOperationUndoRedoInfo,
-} from "vs/workbench/services/workingCopy/common/workingCopyFileService";
-import { IBulkEditService } from "vs/editor/browser/services/bulkEditService";
-import {
-	IProgressService,
-	ProgressLocation,
-} from "vs/platform/progress/common/progress";
-import { raceCancellation } from "vs/base/common/async";
-import {
-	CancellationToken,
-	CancellationTokenSource,
-} from "vs/base/common/cancellation";
-import { IDialogService } from "vs/platform/dialogs/common/dialogs";
-import Severity from "vs/base/common/severity";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
-import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation";
-import { ILogService } from "vs/platform/log/common/log";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { reviveWorkspaceEditDto } from "vs/workbench/api/browser/mainThreadBulkEdits";
-import { GLOBSTAR } from "vs/base/common/glob";
-import { rtrim } from "vs/base/common/strings";
-import { UriComponents, URI } from "vs/base/common/uri";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { normalizeWatcherPattern } from "vs/platform/files/common/watcher";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { DisposableMap, DisposableStore } from 'vs/base/common/lifecycle';
+import { FileOperation, IFileService, IFilesConfiguration, IWatchOptions } from 'vs/platform/files/common/files';
+import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { ExtHostContext, ExtHostFileSystemEventServiceShape, MainContext, MainThreadFileSystemEventServiceShape } from '../common/extHost.protocol';
+import { localize } from 'vs/nls';
+import { IWorkingCopyFileOperationParticipant, IWorkingCopyFileService, SourceTargetPair, IFileOperationUndoRedoInfo } from 'vs/workbench/services/workingCopy/common/workingCopyFileService';
+import { IBulkEditService } from 'vs/editor/browser/services/bulkEditService';
+import { IProgressService, ProgressLocation } from 'vs/platform/progress/common/progress';
+import { raceCancellation } from 'vs/base/common/async';
+import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
+import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import Severity from 'vs/base/common/severity';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
+import { ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
+import { reviveWorkspaceEditDto } from 'vs/workbench/api/browser/mainThreadBulkEdits';
+import { GLOBSTAR } from 'vs/base/common/glob';
+import { rtrim } from 'vs/base/common/strings';
+import { UriComponents, URI } from 'vs/base/common/uri';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { normalizeWatcherPattern } from 'vs/platform/files/common/watcher';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
 
 @extHostNamedCustomer(MainContext.MainThreadFileSystemEventService)
-export class MainThreadFileSystemEventService
-	implements MainThreadFileSystemEventServiceShape
-{
+export class MainThreadFileSystemEventService implements MainThreadFileSystemEventServiceShape {
+
 	static readonly MementoKeyAdditionalEdits = `file.particpants.additionalEdits`;
 
 	private readonly _proxy: ExtHostFileSystemEventServiceShape;
@@ -241,17 +212,11 @@ export class MainThreadFileSystemEventService
 		this._listener.add(workingCopyFileService.onDidRunWorkingCopyFileOperation(e => this._proxy.$onDidRunFileOperation(e.operation, e.files)));
 	}
 
-	async $watch(
-		extensionId: string,
-		session: number,
-		resource: UriComponents,
-		unvalidatedOpts: IWatchOptions,
-		correlate: boolean,
-	): Promise<void> {
+	async $watch(extensionId: string, session: number, resource: UriComponents, unvalidatedOpts: IWatchOptions, correlate: boolean): Promise<void> {
 		const uri = URI.revive(resource);
 
 		const opts: IWatchOptions = {
-			...unvalidatedOpts,
+			...unvalidatedOpts
 		};
 
 		// Convert a recursive watcher to a flat watcher if the path
@@ -265,44 +230,31 @@ export class MainThreadFileSystemEventService
 					opts.recursive = false;
 				}
 			} catch (error) {
-				this._logService.error(
-					`MainThreadFileSystemEventService#$watch(): failed to stat a resource for file watching (extension: ${extensionId}, path: ${uri.toString(
-						true,
-					)}, recursive: ${
-						opts.recursive
-					}, session: ${session}): ${error}`,
-				);
+				this._logService.error(`MainThreadFileSystemEventService#$watch(): failed to stat a resource for file watching (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session}): ${error}`);
 			}
 		}
 
 		// Correlated file watching is taken as is
 		if (correlate) {
-			this._logService.trace(
-				`MainThreadFileSystemEventService#$watch(): request to start watching correlated (extension: ${extensionId}, path: ${uri.toString(
-					true,
-				)}, recursive: ${opts.recursive}, session: ${session})`,
-			);
+			this._logService.trace(`MainThreadFileSystemEventService#$watch(): request to start watching correlated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 
 			const watcherDisposables = new DisposableStore();
-			const subscription = watcherDisposables.add(
-				this._fileService.createWatcher(uri, opts),
-			);
-			watcherDisposables.add(
-				subscription.onDidChange((event) => {
-					this._proxy.$onFileEvent({
-						session,
-						created: event.rawAdded,
-						changed: event.rawUpdated,
-						deleted: event.rawDeleted,
-					});
-				}),
-			);
+			const subscription = watcherDisposables.add(this._fileService.createWatcher(uri, opts));
+			watcherDisposables.add(subscription.onDidChange(event => {
+				this._proxy.$onFileEvent({
+					session,
+					created: event.rawAdded,
+					changed: event.rawUpdated,
+					deleted: event.rawDeleted
+				});
+			}));
 
 			this._watches.set(session, watcherDisposables);
 		}
 
 		// Uncorrelated file watching gets special treatment
 		else {
+
 			// Refuse to watch anything that is already watched via
 			// our workspace watchers in case the request is a
 			// recursive file watcher and does not opt-in to event
@@ -310,29 +262,19 @@ export class MainThreadFileSystemEventService
 			// Still allow for non-recursive watch requests as a way
 			// to bypass configured exclude rules though
 			// (see https://github.com/microsoft/vscode/issues/146066)
-			const workspaceFolder =
-				this._contextService.getWorkspaceFolder(uri);
+			const workspaceFolder = this._contextService.getWorkspaceFolder(uri);
 			if (workspaceFolder && opts.recursive) {
-				this._logService.trace(
-					`MainThreadFileSystemEventService#$watch(): ignoring request to start watching because path is inside workspace (extension: ${extensionId}, path: ${uri.toString(
-						true,
-					)}, recursive: ${opts.recursive}, session: ${session})`,
-				);
+				this._logService.trace(`MainThreadFileSystemEventService#$watch(): ignoring request to start watching because path is inside workspace (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 				return;
 			}
 
-			this._logService.trace(
-				`MainThreadFileSystemEventService#$watch(): request to start watching uncorrelated (extension: ${extensionId}, path: ${uri.toString(
-					true,
-				)}, recursive: ${opts.recursive}, session: ${session})`,
-			);
+			this._logService.trace(`MainThreadFileSystemEventService#$watch(): request to start watching uncorrelated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 
 			// Automatically add `files.watcherExclude` patterns when watching
 			// recursively to give users a chance to configure exclude rules
 			// for reducing the overhead of watching recursively
 			if (opts.recursive && opts.excludes.length === 0) {
-				const config =
-					this._configurationService.getValue<IFilesConfiguration>();
+				const config = this._configurationService.getValue<IFilesConfiguration>();
 				if (config.files?.watcherExclude) {
 					for (const key in config.files.watcherExclude) {
 						if (config.files.watcherExclude[key] === true) {
@@ -354,8 +296,7 @@ export class MainThreadFileSystemEventService
 			// `bar` unless a suffix of `/**` if added.
 			// (https://github.com/microsoft/vscode/issues/148245)
 			else if (workspaceFolder) {
-				const config =
-					this._configurationService.getValue<IFilesConfiguration>();
+				const config = this._configurationService.getValue<IFilesConfiguration>();
 				if (config.files?.watcherExclude) {
 					for (const key in config.files.watcherExclude) {
 						if (config.files.watcherExclude[key] === true) {
@@ -363,16 +304,8 @@ export class MainThreadFileSystemEventService
 								opts.includes = [];
 							}
 
-							const includePattern = `${rtrim(
-								key,
-								"/",
-							)}/${GLOBSTAR}`;
-							opts.includes.push(
-								normalizeWatcherPattern(
-									workspaceFolder.uri.fsPath,
-									includePattern,
-								),
-							);
+							const includePattern = `${rtrim(key, '/')}/${GLOBSTAR}`;
+							opts.includes.push(normalizeWatcherPattern(workspaceFolder.uri.fsPath, includePattern));
 						}
 					}
 				}
@@ -381,11 +314,7 @@ export class MainThreadFileSystemEventService
 				// exclude rules, because in that case our default recursive watcher
 				// should be able to take care of all events.
 				if (!opts.includes || opts.includes.length === 0) {
-					this._logService.trace(
-						`MainThreadFileSystemEventService#$watch(): ignoring request to start watching because path is inside workspace and no excludes are configured (extension: ${extensionId}, path: ${uri.toString(
-							true,
-						)}, recursive: ${opts.recursive}, session: ${session})`,
-					);
+					this._logService.trace(`MainThreadFileSystemEventService#$watch(): ignoring request to start watching because path is inside workspace and no excludes are configured (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 					return;
 				}
 			}
@@ -397,9 +326,7 @@ export class MainThreadFileSystemEventService
 
 	$unwatch(session: number): void {
 		if (this._watches.has(session)) {
-			this._logService.trace(
-				`MainThreadFileSystemEventService#$unwatch(): request to stop watching (session: ${session})`,
-			);
+			this._logService.trace(`MainThreadFileSystemEventService#$unwatch(): request to stop watching (session: ${session})`);
 			this._watches.deleteAndDispose(session);
 		}
 	}
@@ -410,28 +337,18 @@ export class MainThreadFileSystemEventService
 	}
 }
 
-registerAction2(
-	class ResetMemento extends Action2 {
-		constructor() {
-			super({
-				id: "files.participants.resetChoice",
-				title: {
-					value: localize(
-						"label",
-						"Reset choice for 'File operation needs preview'",
-					),
-					original: `Reset choice for 'File operation needs preview'`,
-				},
-				f1: true,
-			});
-		}
-		run(accessor: ServicesAccessor) {
-			accessor
-				.get(IStorageService)
-				.remove(
-					MainThreadFileSystemEventService.MementoKeyAdditionalEdits,
-					StorageScope.PROFILE,
-				);
-		}
-	},
-);
+registerAction2(class ResetMemento extends Action2 {
+	constructor() {
+		super({
+			id: 'files.participants.resetChoice',
+			title: {
+				value: localize('label', "Reset choice for 'File operation needs preview'"),
+				original: `Reset choice for 'File operation needs preview'`
+			},
+			f1: true
+		});
+	}
+	run(accessor: ServicesAccessor) {
+		accessor.get(IStorageService).remove(MainThreadFileSystemEventService.MementoKeyAdditionalEdits, StorageScope.PROFILE);
+	}
+});

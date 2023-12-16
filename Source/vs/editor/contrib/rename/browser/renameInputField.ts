@@ -3,48 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import "vs/css!./renameInputField";
-import {
-	ContentWidgetPositionPreference,
-	ICodeEditor,
-	IContentWidget,
-	IContentWidgetPosition,
-} from "vs/editor/browser/editorBrowser";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { IDimension } from "vs/editor/common/core/dimension";
-import { Position } from "vs/editor/common/core/position";
-import { IRange } from "vs/editor/common/core/range";
-import { ScrollType } from "vs/editor/common/editorCommon";
-import { localize } from "vs/nls";
-import {
-	IContextKey,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import {
-	editorWidgetBackground,
-	inputBackground,
-	inputBorder,
-	inputForeground,
-	widgetBorder,
-	widgetShadow,
-} from "vs/platform/theme/common/colorRegistry";
-import {
-	IColorTheme,
-	IThemeService,
-} from "vs/platform/theme/common/themeService";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import 'vs/css!./renameInputField';
+import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from 'vs/editor/browser/editorBrowser';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { IDimension } from 'vs/editor/common/core/dimension';
+import { Position } from 'vs/editor/common/core/position';
+import { IRange } from 'vs/editor/common/core/range';
+import { ScrollType } from 'vs/editor/common/editorCommon';
+import { localize } from 'vs/nls';
+import { IContextKey, IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { editorWidgetBackground, inputBackground, inputBorder, inputForeground, widgetBorder, widgetShadow } from 'vs/platform/theme/common/colorRegistry';
+import { IColorTheme, IThemeService } from 'vs/platform/theme/common/themeService';
 
-export const CONTEXT_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>(
-	"renameInputVisible",
-	false,
-	localize(
-		"renameInputVisible",
-		"Whether the rename input widget is visible",
-	),
-);
+export const CONTEXT_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>('renameInputVisible', false, localize('renameInputVisible', "Whether the rename input widget is visible"));
 
 export interface RenameInputFieldResult {
 	newName: string;
@@ -52,6 +26,7 @@ export interface RenameInputFieldResult {
 }
 
 export class RenameInputField implements IContentWidget {
+
 	private _position?: Position;
 	private _domNode?: HTMLElement;
 	private _input?: HTMLInputElement;
@@ -88,28 +63,22 @@ export class RenameInputField implements IContentWidget {
 	}
 
 	getId(): string {
-		return "__renameInputWidget";
+		return '__renameInputWidget';
 	}
 
 	getDomNode(): HTMLElement {
 		if (!this._domNode) {
-			this._domNode = document.createElement("div");
-			this._domNode.className = "monaco-editor rename-box";
+			this._domNode = document.createElement('div');
+			this._domNode.className = 'monaco-editor rename-box';
 
-			this._input = document.createElement("input");
-			this._input.className = "rename-input";
-			this._input.type = "text";
-			this._input.setAttribute(
-				"aria-label",
-				localize(
-					"renameAriaLabel",
-					"Rename input. Type new name and press Enter to commit.",
-				),
-			);
+			this._input = document.createElement('input');
+			this._input.className = 'rename-input';
+			this._input.type = 'text';
+			this._input.setAttribute('aria-label', localize('renameAriaLabel', "Rename input. Type new name and press Enter to commit."));
 			this._domNode.appendChild(this._input);
 
-			this._label = document.createElement("div");
-			this._label.className = "rename-label";
+			this._label = document.createElement('div');
+			this._label.className = 'rename-label';
 			this._domNode.appendChild(this._label);
 
 			this._updateFont();
@@ -125,27 +94,17 @@ export class RenameInputField implements IContentWidget {
 
 		const widgetShadowColor = theme.getColor(widgetShadow);
 		const widgetBorderColor = theme.getColor(widgetBorder);
-		this._domNode.style.backgroundColor = String(
-			theme.getColor(editorWidgetBackground) ?? "",
-		);
-		this._domNode.style.boxShadow = widgetShadowColor
-			? ` 0 0 8px 2px ${widgetShadowColor}`
-			: "";
-		this._domNode.style.border = widgetBorderColor
-			? `1px solid ${widgetBorderColor}`
-			: "";
-		this._domNode.style.color = String(
-			theme.getColor(inputForeground) ?? "",
-		);
+		this._domNode.style.backgroundColor = String(theme.getColor(editorWidgetBackground) ?? '');
+		this._domNode.style.boxShadow = widgetShadowColor ? ` 0 0 8px 2px ${widgetShadowColor}` : '';
+		this._domNode.style.border = widgetBorderColor ? `1px solid ${widgetBorderColor}` : '';
+		this._domNode.style.color = String(theme.getColor(inputForeground) ?? '');
 
-		this._input.style.backgroundColor = String(
-			theme.getColor(inputBackground) ?? "",
-		);
+		this._input.style.backgroundColor = String(theme.getColor(inputBackground) ?? '');
 		// this._input.style.color = String(theme.getColor(inputForeground) ?? '');
 		const border = theme.getColor(inputBorder);
-		this._input.style.borderWidth = border ? "1px" : "0px";
-		this._input.style.borderStyle = border ? "solid" : "none";
-		this._input.style.borderColor = border?.toString() ?? "none";
+		this._input.style.borderWidth = border ? '1px' : '0px';
+		this._input.style.borderStyle = border ? 'solid' : 'none';
+		this._input.style.borderColor = border?.toString() ?? 'none';
 	}
 
 	private _updateFont(): void {
@@ -167,26 +126,13 @@ export class RenameInputField implements IContentWidget {
 		}
 		return {
 			position: this._position!,
-			preference: [
-				ContentWidgetPositionPreference.BELOW,
-				ContentWidgetPositionPreference.ABOVE,
-			],
+			preference: [ContentWidgetPositionPreference.BELOW, ContentWidgetPositionPreference.ABOVE]
 		};
 	}
 
 	beforeRender(): IDimension | null {
 		const [accept, preview] = this._acceptKeybindings;
-		this._label!.innerText = localize(
-			{
-				key: "label",
-				comment: [
-					'placeholders are keybindings, e.g "F2 to Rename, Shift+F2 to Preview"',
-				],
-			},
-			"{0} to Rename, {1} to Preview",
-			this._keybindingService.lookupKeybinding(accept)?.getLabel(),
-			this._keybindingService.lookupKeybinding(preview)?.getLabel(),
-		);
+		this._label!.innerText = localize({ key: 'label', comment: ['placeholders are keybindings, e.g "F2 to Rename, Shift+F2 to Preview"'] }, "{0} to Rename, {1} to Preview", this._keybindingService.lookupKeybinding(accept)?.getLabel(), this._keybindingService.lookupKeybinding(preview)?.getLabel());
 		return null;
 	}
 
@@ -196,6 +142,7 @@ export class RenameInputField implements IContentWidget {
 			this.cancelInput(true);
 		}
 	}
+
 
 	private _currentAcceptInput?: (wantsPreview: boolean) => void;
 	private _currentCancelInput?: (focusEditor: boolean) => void;
@@ -208,28 +155,20 @@ export class RenameInputField implements IContentWidget {
 		this._currentCancelInput?.(focusEditor);
 	}
 
-	getInput(
-		where: IRange,
-		value: string,
-		selectionStart: number,
-		selectionEnd: number,
-		supportPreview: boolean,
-		token: CancellationToken,
-	): Promise<RenameInputFieldResult | boolean> {
-		this._domNode!.classList.toggle("preview", supportPreview);
+	getInput(where: IRange, value: string, selectionStart: number, selectionEnd: number, supportPreview: boolean, token: CancellationToken): Promise<RenameInputFieldResult | boolean> {
+
+		this._domNode!.classList.toggle('preview', supportPreview);
 
 		this._position = new Position(where.startLineNumber, where.startColumn);
 		this._input!.value = value;
-		this._input!.setAttribute("selectionStart", selectionStart.toString());
-		this._input!.setAttribute("selectionEnd", selectionEnd.toString());
-		this._input!.size = Math.max(
-			(where.endColumn - where.startColumn) * 1.1,
-			20,
-		);
+		this._input!.setAttribute('selectionStart', selectionStart.toString());
+		this._input!.setAttribute('selectionEnd', selectionEnd.toString());
+		this._input!.size = Math.max((where.endColumn - where.startColumn) * 1.1, 20);
 
 		const disposeOnDone = new DisposableStore();
 
-		return new Promise<RenameInputFieldResult | boolean>((resolve) => {
+		return new Promise<RenameInputFieldResult | boolean>(resolve => {
+
 			this._currentCancelInput = (focusEditor) => {
 				this._currentAcceptInput = undefined;
 				this._currentCancelInput = undefined;
@@ -238,10 +177,7 @@ export class RenameInputField implements IContentWidget {
 			};
 
 			this._currentAcceptInput = (wantsPreview) => {
-				if (
-					this._input!.value.trim().length === 0 ||
-					this._input!.value === value
-				) {
+				if (this._input!.value.trim().length === 0 || this._input!.value === value) {
 					// empty or whitespace only or not changed
 					this.cancelInput(true);
 					return;
@@ -251,20 +187,15 @@ export class RenameInputField implements IContentWidget {
 				this._currentCancelInput = undefined;
 				resolve({
 					newName: this._input!.value,
-					wantsPreview: supportPreview && wantsPreview,
+					wantsPreview: supportPreview && wantsPreview
 				});
 			};
 
-			disposeOnDone.add(
-				token.onCancellationRequested(() => this.cancelInput(true)),
-			);
-			disposeOnDone.add(
-				this._editor.onDidBlurEditorWidget(() =>
-					this.cancelInput(!this._domNode?.ownerDocument.hasFocus()),
-				),
-			);
+			disposeOnDone.add(token.onCancellationRequested(() => this.cancelInput(true)));
+			disposeOnDone.add(this._editor.onDidBlurEditorWidget(() => this.cancelInput(!this._domNode?.ownerDocument.hasFocus())));
 
 			this._show();
+
 		}).finally(() => {
 			disposeOnDone.dispose();
 			this._hide();
@@ -272,10 +203,7 @@ export class RenameInputField implements IContentWidget {
 	}
 
 	private _show(): void {
-		this._editor.revealLineInCenterIfOutsideViewport(
-			this._position!.lineNumber,
-			ScrollType.Smooth,
-		);
+		this._editor.revealLineInCenterIfOutsideViewport(this._position!.lineNumber, ScrollType.Smooth);
 		this._visible = true;
 		this._visibleContextKey.set(true);
 		this._editor.layoutContentWidget(this);
@@ -283,9 +211,8 @@ export class RenameInputField implements IContentWidget {
 		setTimeout(() => {
 			this._input!.focus();
 			this._input!.setSelectionRange(
-				parseInt(this._input!.getAttribute("selectionStart")!),
-				parseInt(this._input!.getAttribute("selectionEnd")!),
-			);
+				parseInt(this._input!.getAttribute('selectionStart')!),
+				parseInt(this._input!.getAttribute('selectionEnd')!));
 		}, 100);
 	}
 

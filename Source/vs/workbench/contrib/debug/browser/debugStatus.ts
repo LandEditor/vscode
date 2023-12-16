@@ -3,24 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { IDisposable, dispose } from "vs/base/common/lifecycle";
-import {
-	IDebugService,
-	State,
-	IDebugConfiguration,
-} from "vs/workbench/contrib/debug/common/debug";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	IStatusbarEntry,
-	IStatusbarService,
-	StatusbarAlignment,
-	IStatusbarEntryAccessor,
-} from "vs/workbench/services/statusbar/browser/statusbar";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import * as nls from 'vs/nls';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
+import { IDebugService, State, IDebugConfiguration } from 'vs/workbench/contrib/debug/common/debug';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IStatusbarEntry, IStatusbarService, StatusbarAlignment, IStatusbarEntryAccessor } from 'vs/workbench/services/statusbar/browser/statusbar';
+import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
 
 export class DebugStatusContribution implements IWorkbenchContribution {
-	private showInStatusBar!: "never" | "always" | "onFirstSessionStart";
+
+	private showInStatusBar!: 'never' | 'always' | 'onFirstSessionStart';
 	private toDispose: IDisposable[] = [];
 	private entryAccessor: IStatusbarEntryAccessor | undefined;
 
@@ -62,27 +54,20 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 	}
 
 	private get entry(): IStatusbarEntry {
-		let text = "";
+		let text = '';
 		const manager = this.debugService.getConfigurationManager();
-		const name = manager.selectedConfiguration.name || "";
-		const nameAndLaunchPresent =
-			name && manager.selectedConfiguration.launch;
+		const name = manager.selectedConfiguration.name || '';
+		const nameAndLaunchPresent = name && manager.selectedConfiguration.launch;
 		if (nameAndLaunchPresent) {
-			text =
-				manager.getLaunches().length > 1
-					? `${name} (${manager.selectedConfiguration.launch!.name})`
-					: name;
+			text = (manager.getLaunches().length > 1 ? `${name} (${manager.selectedConfiguration.launch!.name})` : name);
 		}
 
 		return {
-			name: nls.localize("status.debug", "Debug"),
-			text: "$(debug-alt-small) " + text,
-			ariaLabel: nls.localize("debugTarget", "Debug: {0}", text),
-			tooltip: nls.localize(
-				"selectAndStartDebug",
-				"Select and start debug configuration",
-			),
-			command: "workbench.action.debug.selectandstart",
+			name: nls.localize('status.debug', "Debug"),
+			text: '$(debug-alt-small) ' + text,
+			ariaLabel: nls.localize('debugTarget', "Debug: {0}", text),
+			tooltip: nls.localize('selectAndStartDebug', "Select and start debug configuration"),
+			command: 'workbench.action.debug.selectandstart'
 		};
 	}
 

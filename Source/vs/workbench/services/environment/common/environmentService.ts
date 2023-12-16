@@ -3,21 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IPath } from "vs/platform/window/common/window";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { URI } from "vs/base/common/uri";
+import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IPath } from 'vs/platform/window/common/window';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { URI } from 'vs/base/common/uri';
 
-export const IWorkbenchEnvironmentService = refineServiceDecorator<
-	IEnvironmentService,
-	IWorkbenchEnvironmentService
->(IEnvironmentService);
+export const IWorkbenchEnvironmentService = refineServiceDecorator<IEnvironmentService, IWorkbenchEnvironmentService>(IEnvironmentService);
 
 /**
  * A workbench specific environment service that is only present in workbench
  * layer.
  */
 export interface IWorkbenchEnvironmentService extends IEnvironmentService {
+
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	// NOTE: KEEP THIS INTERFACE AS SMALL AS POSSIBLE. AS SUCH:
 	//       PUT NON-WEB PROPERTIES INTO THE NATIVE WORKBENCH

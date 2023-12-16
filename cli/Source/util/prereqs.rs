@@ -88,10 +88,16 @@ impl PreReqChecker {
 			errors.push(e);
 		}
 
-		let bullets =
-			errors.iter().map(|e| format!("  - {}", e)).collect::<Vec<String>>().join("\n");
+		let bullets = errors
+			.iter()
+			.map(|e| format!("  - {}", e))
+			.collect::<Vec<String>>()
+			.join("\n");
 
-		Err(CodeError::PrerequisitesFailed { bullets, name: QUALITYLESS_SERVER_NAME })
+		Err(CodeError::PrerequisitesFailed {
+			bullets,
+			name: QUALITYLESS_SERVER_NAME,
+		})
 	}
 }
 
@@ -134,7 +140,10 @@ async fn check_glibc_version() -> Result<(), String> {
 		return if v >= *MIN_LDD_VERSION {
 			Ok(())
 		} else {
-			Err(format!("find GLIBC >= 2.17 (but found {} instead) for GNU environments", v))
+			Err(format!(
+				"find GLIBC >= 2.17 (but found {} instead) for GNU environments",
+				v
+			))
 		};
 	}
 
@@ -170,9 +179,10 @@ async fn check_glibcxx_version() -> Result<(), String> {
 	match libstdc_path {
 		Some(path) => match fs::read(&path).await {
 			Ok(contents) => check_for_sufficient_glibcxx_versions(contents),
-			Err(e) => {
-				Err(format!("validate GLIBCXX version for GNU environments, but could not: {}", e))
-			}
+			Err(e) => Err(format!(
+				"validate GLIBCXX version for GNU environments, but could not: {}",
+				e
+			)),
 		},
 		None => Err("find libstdc++.so or ldconfig for GNU environments".to_owned()),
 	}
@@ -192,7 +202,11 @@ fn check_for_sufficient_glibcxx_versions(contents: Vec<u8>) -> Result<(), String
 	if !all_versions.iter().any(|v| &*MIN_CXX_VERSION >= v) {
 		return Err(format!(
 			"find GLIBCXX >= 3.4.18 (but found {} instead) for GNU environments",
-			all_versions.iter().map(String::from).collect::<Vec<String>>().join(", ")
+			all_versions
+				.iter()
+				.map(String::from)
+				.collect::<Vec<String>>()
+				.join(", ")
 		));
 	}
 
@@ -273,7 +287,11 @@ impl std::fmt::Display for SimpleSemver {
 #[allow(dead_code)]
 impl SimpleSemver {
 	fn new(major: u32, minor: u32, patch: u32) -> SimpleSemver {
-		SimpleSemver { major, minor, patch }
+		SimpleSemver {
+			major,
+			minor,
+			patch,
+		}
 	}
 }
 
@@ -296,7 +314,10 @@ mod tests {
 			Some("/lib/x86_64-linux-gnu/libstdc++.so.6".to_owned()),
 		);
 
-		assert_eq!(extract_libstd_from_ldconfig(&"nothing here!".to_owned().into_bytes()), None,);
+		assert_eq!(
+			extract_libstd_from_ldconfig(&"nothing here!".to_owned().into_bytes()),
+			None,
+		);
 	}
 
 	#[test]
@@ -320,6 +341,9 @@ mod tests {
 			.to_owned()
 			.into_bytes();
 
-		assert_eq!(extract_ldd_version(&actual), Some(SimpleSemver::new(2, 31, 0)),);
+		assert_eq!(
+			extract_ldd_version(&actual),
+			Some(SimpleSemver::new(2, 31, 0)),
+		);
 	}
 }

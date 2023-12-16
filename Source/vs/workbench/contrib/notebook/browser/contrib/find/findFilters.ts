@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
-import { Event, Emitter } from "vs/base/common/event";
+import { Disposable } from 'vs/base/common/lifecycle';
+import { Event, Emitter } from 'vs/base/common/event';
 
 export interface INotebookFindFiltersChangeEvent {
 	markupInput?: boolean;
@@ -14,10 +14,8 @@ export interface INotebookFindFiltersChangeEvent {
 }
 
 export class NotebookFindFilters extends Disposable {
-	private readonly _onDidChange: Emitter<INotebookFindFiltersChangeEvent> =
-		this._register(new Emitter<INotebookFindFiltersChangeEvent>());
-	readonly onDidChange: Event<INotebookFindFiltersChangeEvent> =
-		this._onDidChange.event;
+	private readonly _onDidChange: Emitter<INotebookFindFiltersChangeEvent> = this._register(new Emitter<INotebookFindFiltersChangeEvent>());
+	readonly onDidChange: Event<INotebookFindFiltersChangeEvent> = this._onDidChange.event;
 
 	private _markupInput: boolean = true;
 
@@ -75,11 +73,12 @@ export class NotebookFindFilters extends Disposable {
 	private readonly _initialCodeInput: boolean;
 	private readonly _initialCodeOutput: boolean;
 
+
 	constructor(
 		markupInput: boolean,
 		markupPreview: boolean,
 		codeInput: boolean,
-		codeOutput: boolean,
+		codeOutput: boolean
 	) {
 		super();
 
@@ -96,10 +95,10 @@ export class NotebookFindFilters extends Disposable {
 
 	isModified(): boolean {
 		return (
-			this._markupInput !== this._initialMarkupInput ||
-			this._markupPreview !== this._initialMarkupPreview ||
-			this._codeInput !== this._initialCodeInput ||
-			this._codeOutput !== this._initialCodeOutput
+			this._markupInput !== this._initialMarkupInput
+			|| this._markupPreview !== this._initialMarkupPreview
+			|| this._codeInput !== this._initialCodeInput
+			|| this._codeOutput !== this._initialCodeOutput
 		);
 	}
 

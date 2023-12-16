@@ -3,17 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	ICellViewModel,
-	INotebookEditorDelegate,
-} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { CellContentPart } from "vs/workbench/contrib/notebook/browser/view/cellPart";
-import { NotebookCellChatController } from "vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatController";
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ICellViewModel, INotebookEditorDelegate } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+import { CellContentPart } from 'vs/workbench/contrib/notebook/browser/view/cellPart';
+import { NotebookCellChatController } from 'vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatController';
 
-import "vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatActions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import 'vs/workbench/contrib/notebook/browser/view/cellParts/chat/cellChatActions';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { NotebookSetting } from 'vs/workbench/contrib/notebook/common/notebookCommon';
 
 export class CellChatPart extends CellContentPart {
 	private _controller: NotebookCellChatController | undefined;
@@ -33,17 +30,9 @@ export class CellChatPart extends CellContentPart {
 
 	override didRenderCell(element: ICellViewModel): void {
 		this._controller?.dispose();
-		const enabled = this._configurationService.getValue<boolean>(
-			NotebookSetting.cellChat,
-		);
+		const enabled = this._configurationService.getValue<boolean>(NotebookSetting.cellChat);
 		if (enabled) {
-			this._controller = this._instantiationService.createInstance(
-				NotebookCellChatController,
-				this._notebookEditor,
-				this,
-				element,
-				this._partContainer,
-			);
+			this._controller = this._instantiationService.createInstance(NotebookCellChatController, this._notebookEditor, this, element, this._partContainer);
 		}
 
 		super.didRenderCell(element);
@@ -65,3 +54,4 @@ export class CellChatPart extends CellContentPart {
 		super.dispose();
 	}
 }
+

@@ -3,38 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { Gesture } from "vs/base/browser/touch";
-import { Codicon } from "vs/base/common/codicons";
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { ThemeIcon } from "vs/base/common/themables";
-import "vs/css!./lightBulbWidget";
-import {
-	ContentWidgetPositionPreference,
-	ICodeEditor,
-	IContentWidget,
-	IContentWidgetPosition,
-} from "vs/editor/browser/editorBrowser";
-import {
-	EditorOption,
-	ShowAiIconMode,
-} from "vs/editor/common/config/editorOptions";
-import { IPosition } from "vs/editor/common/core/position";
-import { computeIndentLevel } from "vs/editor/common/model/utils";
-import {
-	autoFixCommandId,
-	quickFixCommandId,
-} from "vs/editor/contrib/codeAction/browser/codeAction";
-import type {
-	CodeActionSet,
-	CodeActionTrigger,
-} from "vs/editor/contrib/codeAction/common/types";
-import * as nls from "vs/nls";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import * as dom from 'vs/base/browser/dom';
+import { Gesture } from 'vs/base/browser/touch';
+import { Codicon } from 'vs/base/common/codicons';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { ThemeIcon } from 'vs/base/common/themables';
+import 'vs/css!./lightBulbWidget';
+import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from 'vs/editor/browser/editorBrowser';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { IPosition } from 'vs/editor/common/core/position';
+import { computeIndentLevel } from 'vs/editor/common/model/utils';
+import { autoFixCommandId, quickFixCommandId } from 'vs/editor/contrib/codeAction/browser/codeAction';
+import type { CodeActionSet, CodeActionTrigger } from 'vs/editor/contrib/codeAction/common/types';
+import * as nls from 'vs/nls';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 
 namespace LightBulbState {
+
 	export const enum Type {
 		Hidden,
 		Showing,
@@ -50,27 +37,21 @@ namespace LightBulbState {
 			public readonly trigger: CodeActionTrigger,
 			public readonly editorPosition: IPosition,
 			public readonly widgetPosition: IContentWidgetPosition,
-		) {}
+		) { }
 	}
 
 	export type State = typeof Hidden | Showing;
 }
 
 export class LightBulbWidget extends Disposable implements IContentWidget {
-	public static readonly ID = "editor.contrib.lightbulbWidget";
+
+	public static readonly ID = 'editor.contrib.lightbulbWidget';
 
 	private static readonly _posPref = [ContentWidgetPositionPreference.EXACT];
 
 	private readonly _domNode: HTMLElement;
 
-	private readonly _onClick = this._register(
-		new Emitter<{
-			readonly x: number;
-			readonly y: number;
-			readonly actions: CodeActionSet;
-			readonly trigger: CodeActionTrigger;
-		}>(),
-	);
+	private readonly _onClick = this._register(new Emitter<{ readonly x: number; readonly y: number; readonly actions: CodeActionSet; readonly trigger: CodeActionTrigger }>());
 	public readonly onClick = this._onClick.event;
 
 	private _state: LightBulbState.State = LightBulbState.Hidden;
@@ -105,10 +86,8 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				return;
 			}
 
-			const option = this._editor.getOption(EditorOption.lightbulb).experimental.showAiIcon;
 			if (
-				(option === ShowAiIconMode.On || option === ShowAiIconMode.OnCode)
-				&& this.state.actions.allAIFixes
+				this.state.actions.allAIFixes
 				&& this.state.actions.validActions.length === 1
 			) {
 				const action = this.state.actions.validActions[0].action;
@@ -154,15 +133,6 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			this.hide();
 		}));
 
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			// hide when told to do so
-			if (e.hasChanged(EditorOption.lightbulb)) {
-				if (!this._editor.getOption(EditorOption.lightbulb).enabled) {
-					this.hide();
-				}
-				this._updateLightBulbTitleAndIcon();
-			}
-		}));
 
 		this._register(Event.runAndSubscribe(this._keybindingService.onDidUpdateKeybindings, () => {
 			this._preferredKbLabel = this._keybindingService.lookupKeybinding(autoFixCommandId)?.getLabel() ?? undefined;
@@ -178,7 +148,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 	}
 
 	getId(): string {
-		return "LightBulbWidget";
+		return 'LightBulbWidget';
 	}
 
 	getDomNode(): HTMLElement {
@@ -186,16 +156,10 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 	}
 
 	getPosition(): IContentWidgetPosition | null {
-		return this._state.type === LightBulbState.Type.Showing
-			? this._state.widgetPosition
-			: null;
+		return this._state.type === LightBulbState.Type.Showing ? this._state.widgetPosition : null;
 	}
 
-	public update(
-		actions: CodeActionSet,
-		trigger: CodeActionTrigger,
-		atPosition: IPosition,
-	) {
+	public update(actions: CodeActionSet, trigger: CodeActionTrigger, atPosition: IPosition) {
 		if (actions.validActions.length <= 0) {
 			return this.hide();
 		}
@@ -205,12 +169,6 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			return this.hide();
 		}
 
-		const onlyAIActions = actions.allAIFixes;
-		const showAiIcon = this._editor.getOption(EditorOption.lightbulb)
-			.experimental.showAiIcon;
-		if (onlyAIActions && showAiIcon === ShowAiIconMode.Off) {
-			return this.hide();
-		}
 
 		const model = this._editor.getModel();
 		if (!model) {
@@ -220,16 +178,12 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		const { lineNumber, column } = model.validatePosition(atPosition);
 
 		const tabSize = model.getOptions().tabSize;
-		const fontInfo = options.get(EditorOption.fontInfo);
+		const fontInfo = this._editor.getOptions().get(EditorOption.fontInfo);
 		const lineContent = model.getLineContent(lineNumber);
 		const indent = computeIndentLevel(lineContent, tabSize);
 		const lineHasSpace = fontInfo.spaceWidth * indent > 22;
 		const isFolded = (lineNumber: number) => {
-			return (
-				lineNumber > 2 &&
-				this._editor.getTopForLineNumber(lineNumber) ===
-					this._editor.getTopForLineNumber(lineNumber - 1)
-			);
+			return lineNumber > 2 && this._editor.getTopForLineNumber(lineNumber) === this._editor.getTopForLineNumber(lineNumber - 1);
 		};
 
 		let effectiveLineNumber = lineNumber;
@@ -237,29 +191,19 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		if (!lineHasSpace) {
 			if (lineNumber > 1 && !isFolded(lineNumber - 1)) {
 				effectiveLineNumber -= 1;
-			} else if (
-				lineNumber < model.getLineCount() &&
-				!isFolded(lineNumber + 1)
-			) {
+			} else if ((lineNumber < model.getLineCount()) && !isFolded(lineNumber + 1)) {
 				effectiveLineNumber += 1;
 			} else if (column * fontInfo.spaceWidth < 22) {
 				// cannot show lightbulb above/below and showing
 				// it inline would overlay the cursor...
 				return this.hide();
 			}
-			effectiveColumnNumber = /^\S\s*$/.test(
-				model.getLineContent(effectiveLineNumber),
-			)
-				? 2
-				: 1;
+			effectiveColumnNumber = /^\S\s*$/.test(model.getLineContent(effectiveLineNumber)) ? 2 : 1;
 		}
 
 		this.state = new LightBulbState.Showing(actions, trigger, atPosition, {
-			position: {
-				lineNumber: effectiveLineNumber,
-				column: effectiveColumnNumber,
-			},
-			preference: LightBulbWidget._posPref,
+			position: { lineNumber: effectiveLineNumber, column: effectiveColumnNumber },
+			preference: LightBulbWidget._posPref
 		});
 		this._editor.layoutContentWidget(this);
 	}
@@ -273,9 +217,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		this._editor.layoutContentWidget(this);
 	}
 
-	private get state(): LightBulbState.State {
-		return this._state;
-	}
+	private get state(): LightBulbState.State { return this._state; }
 
 	private set state(value) {
 		this._state = value;
@@ -290,31 +232,21 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		}
 		let icon: ThemeIcon;
 		let autoRun = false;
-		const option = this._editor.getOption(EditorOption.lightbulb)
-			.experimental.showAiIcon;
-		if (option === ShowAiIconMode.On || option === ShowAiIconMode.OnCode) {
-			if (option === ShowAiIconMode.On && this.state.actions.allAIFixes) {
-				icon = Codicon.sparkleFilled;
-				if (this.state.actions.validActions.length === 1) {
-					autoRun = true;
-				}
-			} else if (this.state.actions.hasAutoFix) {
-				if (this.state.actions.hasAIFix) {
-					icon = Codicon.lightbulbSparkleAutofix;
-				} else {
-					icon = Codicon.lightbulbAutofix;
-				}
-			} else if (this.state.actions.hasAIFix) {
-				icon = Codicon.lightbulbSparkle;
-			} else {
-				icon = Codicon.lightBulb;
+		if (this.state.actions.allAIFixes) {
+			icon = Codicon.sparkleFilled;
+			if (this.state.actions.validActions.length === 1) {
+				autoRun = true;
 			}
-		} else {
-			if (this.state.actions.hasAutoFix) {
+		} else if (this.state.actions.hasAutoFix) {
+			if (this.state.actions.hasAIFix) {
+				icon = Codicon.lightbulbSparkleAutofix;
+			} else {
 				icon = Codicon.lightbulbAutofix;
-			} else {
-				icon = Codicon.lightBulb;
 			}
+		} else if (this.state.actions.hasAIFix) {
+			icon = Codicon.lightbulbSparkle;
+		} else {
+			icon = Codicon.lightBulb;
 		}
 		this._updateLightbulbTitle(this.state.actions.hasAutoFix, autoRun);
 		this._iconClasses = ThemeIcon.asClassNameArray(icon);
@@ -326,25 +258,13 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			return;
 		}
 		if (autoRun) {
-			this.title = nls.localize(
-				"codeActionAutoRun",
-				"Run: {0}",
-				this.state.actions.validActions[0].action.title,
-			);
+			this.title = nls.localize('codeActionAutoRun', "Run: {0}", this.state.actions.validActions[0].action.title);
 		} else if (autoFix && this._preferredKbLabel) {
-			this.title = nls.localize(
-				"preferredcodeActionWithKb",
-				"Show Code Actions. Preferred Quick Fix Available ({0})",
-				this._preferredKbLabel,
-			);
+			this.title = nls.localize('preferredcodeActionWithKb', "Show Code Actions. Preferred Quick Fix Available ({0})", this._preferredKbLabel);
 		} else if (!autoFix && this._quickFixKbLabel) {
-			this.title = nls.localize(
-				"codeActionWithKb",
-				"Show Code Actions ({0})",
-				this._quickFixKbLabel,
-			);
+			this.title = nls.localize('codeActionWithKb', "Show Code Actions ({0})", this._quickFixKbLabel);
 		} else if (!autoFix) {
-			this.title = nls.localize("codeAction", "Show Code Actions");
+			this.title = nls.localize('codeAction', "Show Code Actions");
 		}
 	}
 

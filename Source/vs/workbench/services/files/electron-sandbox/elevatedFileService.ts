@@ -3,28 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	VSBuffer,
-	VSBufferReadable,
-	VSBufferReadableStream,
-} from "vs/base/common/buffer";
-import { randomPath } from "vs/base/common/extpath";
-import { Schemas } from "vs/base/common/network";
-import { URI } from "vs/base/common/uri";
-import {
-	IFileService,
-	IFileStatWithMetadata,
-	IWriteFileOptions,
-} from "vs/platform/files/common/files";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { IElevatedFileService } from "vs/workbench/services/files/common/elevatedFileService";
+import { VSBuffer, VSBufferReadable, VSBufferReadableStream } from 'vs/base/common/buffer';
+import { randomPath } from 'vs/base/common/extpath';
+import { Schemas } from 'vs/base/common/network';
+import { URI } from 'vs/base/common/uri';
+import { IFileService, IFileStatWithMetadata, IWriteFileOptions } from 'vs/platform/files/common/files';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
+import { IElevatedFileService } from 'vs/workbench/services/files/common/elevatedFileService';
 
 export class NativeElevatedFileService implements IElevatedFileService {
+
 	readonly _serviceBrand: undefined;
 
 	constructor(
@@ -41,25 +31,16 @@ export class NativeElevatedFileService implements IElevatedFileService {
 		return resource.scheme === Schemas.file;
 	}
 
-	async writeFileElevated(
-		resource: URI,
-		value: VSBuffer | VSBufferReadable | VSBufferReadableStream,
-		options?: IWriteFileOptions,
-	): Promise<IFileStatWithMetadata> {
-		const source = URI.file(
-			randomPath(this.environmentService.userDataPath, "code-elevated"),
-		);
+	async writeFileElevated(resource: URI, value: VSBuffer | VSBufferReadable | VSBufferReadableStream, options?: IWriteFileOptions): Promise<IFileStatWithMetadata> {
+		const source = URI.file(randomPath(this.environmentService.userDataPath, 'code-elevated'));
 		try {
 			// write into a tmp file first
 			await this.fileService.writeFile(source, value, options);
 
 			// then sudo prompt copy
-			await this.nativeHostService.writeElevated(
-				source,
-				resource,
-				options,
-			);
+			await this.nativeHostService.writeElevated(source, resource, options);
 		} finally {
+
 			// clean up
 			await this.fileService.del(source);
 		}
@@ -68,8 +49,4 @@ export class NativeElevatedFileService implements IElevatedFileService {
 	}
 }
 
-registerSingleton(
-	IElevatedFileService,
-	NativeElevatedFileService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IElevatedFileService, NativeElevatedFileService, InstantiationType.Delayed);

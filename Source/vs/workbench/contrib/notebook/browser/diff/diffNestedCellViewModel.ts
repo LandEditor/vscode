@@ -3,24 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { generateUuid } from "vs/base/common/uuid";
-import { PrefixSumComputer } from "vs/editor/common/model/prefixSumComputer";
-import { IDiffNestedCellViewModel } from "vs/workbench/contrib/notebook/browser/diff/notebookDiffEditorBrowser";
-import {
-	ICellOutputViewModel,
-	IGenericCellViewModel,
-} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { CellViewModelStateChangeEvent } from "vs/workbench/contrib/notebook/browser/notebookViewEvents";
-import { CellOutputViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/cellOutputViewModel";
-import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
-import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
+import { Emitter } from 'vs/base/common/event';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { generateUuid } from 'vs/base/common/uuid';
+import { PrefixSumComputer } from 'vs/editor/common/model/prefixSumComputer';
+import { IDiffNestedCellViewModel } from 'vs/workbench/contrib/notebook/browser/diff/notebookDiffEditorBrowser';
+import { ICellOutputViewModel, IGenericCellViewModel } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+import { CellViewModelStateChangeEvent } from 'vs/workbench/contrib/notebook/browser/notebookViewEvents';
+import { CellOutputViewModel } from 'vs/workbench/contrib/notebook/browser/viewModel/cellOutputViewModel';
+import { NotebookCellTextModel } from 'vs/workbench/contrib/notebook/common/model/notebookCellTextModel';
+import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService';
 
-export class DiffNestedCellViewModel
-	extends Disposable
-	implements IDiffNestedCellViewModel, IGenericCellViewModel
-{
+export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCellViewModel, IGenericCellViewModel {
 	private _id: string;
 	get id() {
 		return this._id;
@@ -46,8 +40,7 @@ export class DiffNestedCellViewModel
 		return this.textModel.handle;
 	}
 
-	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> =
-		this._register(new Emitter<CellViewModelStateChangeEvent>());
+	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> = this._register(new Emitter<CellViewModelStateChangeEvent>());
 
 	private _hoveringOutput: boolean = false;
 	public get outputIsHovered(): boolean {
@@ -78,9 +71,7 @@ export class DiffNestedCellViewModel
 	protected _outputCollection: number[] = [];
 	protected _outputsTop: PrefixSumComputer | null = null;
 
-	protected readonly _onDidChangeOutputLayout = this._register(
-		new Emitter<void>(),
-	);
+	protected readonly _onDidChangeOutputLayout = this._register(new Emitter<void>());
 	readonly onDidChangeOutputLayout = this._onDidChangeOutputLayout.event;
 
 	constructor(
@@ -117,7 +108,7 @@ export class DiffNestedCellViewModel
 		this._ensureOutputsTop();
 
 		if (index >= this._outputCollection.length) {
-			throw new Error("Output index out of range!");
+			throw new Error('Output index out of range!');
 		}
 
 		return this._outputsTop!.getPrefixSum(index - 1);
@@ -125,7 +116,7 @@ export class DiffNestedCellViewModel
 
 	updateOutputHeight(index: number, height: number): void {
 		if (index >= this._outputCollection.length) {
-			throw new Error("Output index out of range!");
+			throw new Error('Output index out of range!');
 		}
 
 		this._ensureOutputsTop();
@@ -144,7 +135,7 @@ export class DiffNestedCellViewModel
 	public override dispose(): void {
 		super.dispose();
 
-		this._outputViewModels.forEach((output) => {
+		this._outputViewModels.forEach(output => {
 			output.dispose();
 		});
 	}

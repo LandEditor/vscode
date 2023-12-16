@@ -3,34 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	BrowserWindow,
-	Details,
-	MessageChannelMain,
-	app,
-	utilityProcess,
-	UtilityProcess as ElectronUtilityProcess,
-	ForkOptions,
-} from "electron";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Emitter, Event } from "vs/base/common/event";
-import { ILogService } from "vs/platform/log/common/log";
-import { StringDecoder } from "string_decoder";
-import { timeout } from "vs/base/common/async";
-import { FileAccess } from "vs/base/common/network";
-import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
-import Severity from "vs/base/common/severity";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
-import { removeDangerousEnvVariables } from "vs/base/common/processes";
-import { deepClone } from "vs/base/common/objects";
-import { isWindows } from "vs/base/common/platform";
-import {
-	isUNCAccessRestrictionsDisabled,
-	getUNCHostAllowlist,
-} from "vs/base/node/unc";
+import { BrowserWindow, Details, MessageChannelMain, app, utilityProcess, UtilityProcess as ElectronUtilityProcess, ForkOptions } from 'electron';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { Emitter, Event } from 'vs/base/common/event';
+import { ILogService } from 'vs/platform/log/common/log';
+import { StringDecoder } from 'string_decoder';
+import { timeout } from 'vs/base/common/async';
+import { FileAccess } from 'vs/base/common/network';
+import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
+import Severity from 'vs/base/common/severity';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { ILifecycleMainService } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
+import { removeDangerousEnvVariables } from 'vs/base/common/processes';
+import { deepClone } from 'vs/base/common/objects';
+import { isWindows } from 'vs/base/common/platform';
+import { isUNCAccessRestrictionsDisabled, getUNCHostAllowlist } from 'vs/base/node/unc';
 
 export interface IUtilityProcessConfiguration {
+
 	/**
 	 * A way to group utility processes of same type together.
 	 */
@@ -88,8 +78,8 @@ export interface IUtilityProcessConfiguration {
 	readonly forceAllocationsToV8Sandbox?: boolean;
 }
 
-export interface IWindowUtilityProcessConfiguration
-	extends IUtilityProcessConfiguration {
+export interface IWindowUtilityProcessConfiguration extends IUtilityProcessConfiguration {
+
 	// --- message port response related
 
 	readonly responseWindowId: number;
@@ -105,15 +95,14 @@ export interface IWindowUtilityProcessConfiguration
 	readonly windowLifecycleBound?: boolean;
 }
 
-function isWindowUtilityProcessConfiguration(
-	config: IUtilityProcessConfiguration,
-): config is IWindowUtilityProcessConfiguration {
+function isWindowUtilityProcessConfiguration(config: IUtilityProcessConfiguration): config is IWindowUtilityProcessConfiguration {
 	const candidate = config as IWindowUtilityProcessConfiguration;
 
-	return typeof candidate.responseWindowId === "number";
+	return typeof candidate.responseWindowId === 'number';
 }
 
 interface IUtilityProcessExitBaseEvent {
+
 	/**
 	 * The process id of the process that exited.
 	 */
@@ -126,26 +115,20 @@ interface IUtilityProcessExitBaseEvent {
 }
 
 export interface IUtilityProcessExitEvent extends IUtilityProcessExitBaseEvent {
+
 	/**
 	 * The signal that caused the process to exit is unknown
 	 * for utility processes.
 	 */
-	readonly signal: "unknown";
+	readonly signal: 'unknown';
 }
 
-export interface IUtilityProcessCrashEvent
-	extends IUtilityProcessExitBaseEvent {
+export interface IUtilityProcessCrashEvent extends IUtilityProcessExitBaseEvent {
+
 	/**
 	 * The reason of the utility process crash.
 	 */
-	readonly reason:
-		| "clean-exit"
-		| "abnormal-exit"
-		| "killed"
-		| "crashed"
-		| "oom"
-		| "launch-failed"
-		| "integrity-failure";
+	readonly reason: 'clean-exit' | 'abnormal-exit' | 'killed' | 'crashed' | 'oom' | 'launch-failed' | 'integrity-failure';
 }
 
 export interface IUtilityProcessInfo {
@@ -154,6 +137,7 @@ export interface IUtilityProcessInfo {
 }
 
 export class UtilityProcess extends Disposable {
+
 	private static ID_COUNTER = 0;
 
 	private static readonly all = new Map<number, IUtilityProcessInfo>();
@@ -172,19 +156,13 @@ export class UtilityProcess extends Disposable {
 	private readonly _onMessage = this._register(new Emitter<unknown>());
 	readonly onMessage = this._onMessage.event;
 
-	private readonly _onSpawn = this._register(
-		new Emitter<number | undefined>(),
-	);
+	private readonly _onSpawn = this._register(new Emitter<number | undefined>());
 	readonly onSpawn = this._onSpawn.event;
 
-	private readonly _onExit = this._register(
-		new Emitter<IUtilityProcessExitEvent>(),
-	);
+	private readonly _onExit = this._register(new Emitter<IUtilityProcessExitEvent>());
 	readonly onExit = this._onExit.event;
 
-	private readonly _onCrash = this._register(
-		new Emitter<IUtilityProcessCrashEvent>(),
-	);
+	private readonly _onCrash = this._register(new Emitter<IUtilityProcessCrashEvent>());
 	readonly onCrash = this._onCrash.event;
 
 	private process: ElectronUtilityProcess | undefined = undefined;
@@ -202,15 +180,9 @@ export class UtilityProcess extends Disposable {
 	protected log(msg: string, severity: Severity): void {
 		let logMsg: string;
 		if (this.configuration?.correlationId) {
-			logMsg = `[UtilityProcess id: ${
-				this.configuration?.correlationId
-			}, type: ${this.configuration?.type}, pid: ${
-				this.processPid ?? "<none>"
-			}]: ${msg}`;
+			logMsg = `[UtilityProcess id: ${this.configuration?.correlationId}, type: ${this.configuration?.type}, pid: ${this.processPid ?? '<none>'}]: ${msg}`;
 		} else {
-			logMsg = `[UtilityProcess type: ${this.configuration?.type}, pid: ${
-				this.processPid ?? "<none>"
-			}]: ${msg}`;
+			logMsg = `[UtilityProcess type: ${this.configuration?.type}, pid: ${this.processPid ?? '<none>'}]: ${msg}`;
 		}
 
 		switch (severity) {
@@ -228,10 +200,7 @@ export class UtilityProcess extends Disposable {
 
 	private validateCanStart(): boolean {
 		if (this.process) {
-			this.log(
-				"Cannot start utility process because it is already running...",
-				Severity.Error,
-			);
+			this.log('Cannot start utility process because it is already running...', Severity.Error);
 
 			return false;
 		}
@@ -257,17 +226,15 @@ export class UtilityProcess extends Disposable {
 		this.configuration = configuration;
 
 		const serviceName = `${this.configuration.type}-${this.id}`;
-		const modulePath = FileAccess.asFileUri("bootstrap-fork.js").fsPath;
+		const modulePath = FileAccess.asFileUri('bootstrap-fork.js').fsPath;
 		const args = this.configuration.args ?? [];
 		const execArgv = this.configuration.execArgv ?? [];
-		const allowLoadingUnsignedLibraries =
-			this.configuration.allowLoadingUnsignedLibraries;
-		const forceAllocationsToV8Sandbox =
-			this.configuration.forceAllocationsToV8Sandbox;
-		const stdio = "pipe";
+		const allowLoadingUnsignedLibraries = this.configuration.allowLoadingUnsignedLibraries;
+		const forceAllocationsToV8Sandbox = this.configuration.forceAllocationsToV8Sandbox;
+		const stdio = 'pipe';
 		const env = this.createEnv(configuration);
 
-		this.log("creating new...", Severity.Info);
+		this.log('creating new...', Severity.Info);
 
 		// Fork utility process
 		this.process = utilityProcess.fork(modulePath, args, {
@@ -276,7 +243,7 @@ export class UtilityProcess extends Disposable {
 			execArgv,
 			allowLoadingUnsignedLibraries,
 			forceAllocationsToV8Sandbox,
-			stdio,
+			stdio
 		} as ForkOptions & { forceAllocationsToV8Sandbox?: Boolean });
 
 		// Register to events
@@ -285,27 +252,20 @@ export class UtilityProcess extends Disposable {
 		return true;
 	}
 
-	private createEnv(configuration: IUtilityProcessConfiguration): {
-		[key: string]: any;
-	} {
-		const env: { [key: string]: any } = configuration.env
-			? { ...configuration.env }
-			: { ...deepClone(process.env) };
+	private createEnv(configuration: IUtilityProcessConfiguration): { [key: string]: any } {
+		const env: { [key: string]: any } = configuration.env ? { ...configuration.env } : { ...deepClone(process.env) };
 
 		// Apply supported environment variables from config
-		env["VSCODE_AMD_ENTRYPOINT"] = configuration.entryPoint;
-		if (typeof configuration.parentLifecycleBound === "number") {
-			env["VSCODE_PARENT_PID"] = String(
-				configuration.parentLifecycleBound,
-			);
+		env['VSCODE_AMD_ENTRYPOINT'] = configuration.entryPoint;
+		if (typeof configuration.parentLifecycleBound === 'number') {
+			env['VSCODE_PARENT_PID'] = String(configuration.parentLifecycleBound);
 		}
-		env["VSCODE_CRASH_REPORTER_PROCESS_TYPE"] = configuration.type;
+		env['VSCODE_CRASH_REPORTER_PROCESS_TYPE'] = configuration.type;
 		if (isWindows) {
 			if (isUNCAccessRestrictionsDisabled()) {
-				env["NODE_DISABLE_UNC_ACCESS_CHECKS"] = "1";
+				env['NODE_DISABLE_UNC_ACCESS_CHECKS'] = '1';
 			} else {
-				env["NODE_UNC_HOST_ALLOWLIST"] =
-					getUNCHostAllowlist().join("\\");
+				env['NODE_UNC_HOST_ALLOWLIST'] = getUNCHostAllowlist().join('\\');
 			}
 		}
 
@@ -320,173 +280,87 @@ export class UtilityProcess extends Disposable {
 		return env;
 	}
 
-	private registerListeners(
-		process: ElectronUtilityProcess,
-		configuration: IUtilityProcessConfiguration,
-		serviceName: string,
-	): void {
+	private registerListeners(process: ElectronUtilityProcess, configuration: IUtilityProcessConfiguration, serviceName: string): void {
+
 		// Stdout
 		if (process.stdout) {
-			const stdoutDecoder = new StringDecoder("utf-8");
-			this._register(
-				Event.fromNodeEventEmitter<string | Buffer>(
-					process.stdout,
-					"data",
-				)((chunk) =>
-					this._onStdout.fire(
-						typeof chunk === "string"
-							? chunk
-							: stdoutDecoder.write(chunk),
-					),
-				),
-			);
+			const stdoutDecoder = new StringDecoder('utf-8');
+			this._register(Event.fromNodeEventEmitter<string | Buffer>(process.stdout, 'data')(chunk => this._onStdout.fire(typeof chunk === 'string' ? chunk : stdoutDecoder.write(chunk))));
 		}
 
 		// Stderr
 		if (process.stderr) {
-			const stderrDecoder = new StringDecoder("utf-8");
-			this._register(
-				Event.fromNodeEventEmitter<string | Buffer>(
-					process.stderr,
-					"data",
-				)((chunk) =>
-					this._onStderr.fire(
-						typeof chunk === "string"
-							? chunk
-							: stderrDecoder.write(chunk),
-					),
-				),
-			);
+			const stderrDecoder = new StringDecoder('utf-8');
+			this._register(Event.fromNodeEventEmitter<string | Buffer>(process.stderr, 'data')(chunk => this._onStderr.fire(typeof chunk === 'string' ? chunk : stderrDecoder.write(chunk))));
 		}
 
 		// Messages
-		this._register(
-			Event.fromNodeEventEmitter(
-				process,
-				"message",
-			)((msg) => this._onMessage.fire(msg)),
-		);
+		this._register(Event.fromNodeEventEmitter(process, 'message')(msg => this._onMessage.fire(msg)));
 
 		// Spawn
-		this._register(
-			Event.fromNodeEventEmitter<void>(
-				process,
-				"spawn",
-			)(() => {
-				this.processPid = process.pid;
+		this._register(Event.fromNodeEventEmitter<void>(process, 'spawn')(() => {
+			this.processPid = process.pid;
 
-				if (typeof process.pid === "number") {
-					UtilityProcess.all.set(process.pid, {
-						pid: process.pid,
-						name: isWindowUtilityProcessConfiguration(configuration)
-							? `${configuration.type} [${configuration.responseWindowId}]`
-							: configuration.type,
-					});
-				}
+			if (typeof process.pid === 'number') {
+				UtilityProcess.all.set(process.pid, { pid: process.pid, name: isWindowUtilityProcessConfiguration(configuration) ? `${configuration.type} [${configuration.responseWindowId}]` : configuration.type });
+			}
 
-				this.log("successfully created", Severity.Info);
-				this._onSpawn.fire(process.pid);
-			}),
-		);
+			this.log('successfully created', Severity.Info);
+			this._onSpawn.fire(process.pid);
+		}));
 
 		// Exit
-		this._register(
-			Event.fromNodeEventEmitter<number>(
-				process,
-				"exit",
-			)((code) => {
-				this.log(
-					`received exit event with code ${code}`,
-					Severity.Info,
-				);
+		this._register(Event.fromNodeEventEmitter<number>(process, 'exit')(code => {
+			this.log(`received exit event with code ${code}`, Severity.Info);
+
+			// Event
+			this._onExit.fire({ pid: this.processPid!, code, signal: 'unknown' });
+
+			// Cleanup
+			this.onDidExitOrCrashOrKill();
+		}));
+
+		// Child process gone
+		this._register(Event.fromNodeEventEmitter<{ details: Details }>(app, 'child-process-gone', (event, details) => ({ event, details }))(({ details }) => {
+			if (details.type === 'Utility' && details.name === serviceName) {
+				this.log(`crashed with code ${details.exitCode} and reason '${details.reason}'`, Severity.Error);
+
+				// Telemetry
+				type UtilityProcessCrashClassification = {
+					type: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The type of utility process to understand the origin of the crash better.' };
+					reason: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'The reason of the utility process crash to understand the nature of the crash better.' };
+					code: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; isMeasurement: true; comment: 'The exit code of the utility process to understand the nature of the crash better' };
+					owner: 'bpasero';
+					comment: 'Provides insight into reasons the utility process crashed.';
+				};
+				type UtilityProcessCrashEvent = {
+					type: string;
+					reason: string;
+					code: number;
+				};
+				this.telemetryService.publicLog2<UtilityProcessCrashEvent, UtilityProcessCrashClassification>('utilityprocesscrash', {
+					type: configuration.type,
+					reason: details.reason,
+					code: details.exitCode
+				});
 
 				// Event
-				this._onExit.fire({
-					pid: this.processPid!,
-					code,
-					signal: "unknown",
-				});
+				this._onCrash.fire({ pid: this.processPid!, code: details.exitCode, reason: details.reason });
 
 				// Cleanup
 				this.onDidExitOrCrashOrKill();
-			}),
-		);
-
-		// Child process gone
-		this._register(
-			Event.fromNodeEventEmitter<{ details: Details }>(
-				app,
-				"child-process-gone",
-				(event, details) => ({ event, details }),
-			)(({ details }) => {
-				if (
-					details.type === "Utility" &&
-					details.name === serviceName
-				) {
-					this.log(
-						`crashed with code ${details.exitCode} and reason '${details.reason}'`,
-						Severity.Error,
-					);
-
-					// Telemetry
-					type UtilityProcessCrashClassification = {
-						type: {
-							classification: "SystemMetaData";
-							purpose: "PerformanceAndHealth";
-							comment: "The type of utility process to understand the origin of the crash better.";
-						};
-						reason: {
-							classification: "SystemMetaData";
-							purpose: "PerformanceAndHealth";
-							comment: "The reason of the utility process crash to understand the nature of the crash better.";
-						};
-						code: {
-							classification: "SystemMetaData";
-							purpose: "PerformanceAndHealth";
-							isMeasurement: true;
-							comment: "The exit code of the utility process to understand the nature of the crash better";
-						};
-						owner: "bpasero";
-						comment: "Provides insight into reasons the utility process crashed.";
-					};
-					type UtilityProcessCrashEvent = {
-						type: string;
-						reason: string;
-						code: number;
-					};
-					this.telemetryService.publicLog2<
-						UtilityProcessCrashEvent,
-						UtilityProcessCrashClassification
-					>("utilityprocesscrash", {
-						type: configuration.type,
-						reason: details.reason,
-						code: details.exitCode,
-					});
-
-					// Event
-					this._onCrash.fire({
-						pid: this.processPid!,
-						code: details.exitCode,
-						reason: details.reason,
-					});
-
-					// Cleanup
-					this.onDidExitOrCrashOrKill();
-				}
-			}),
-		);
+			}
+		}));
 	}
 
 	once(message: unknown, callback: () => void): void {
-		const disposable = this._register(
-			this._onMessage.event((msg) => {
-				if (msg === message) {
-					disposable.dispose();
+		const disposable = this._register(this._onMessage.event(msg => {
+			if (msg === message) {
+				disposable.dispose();
 
-					callback();
-				}
-			}),
-		);
+				callback();
+			}
+		}));
 	}
 
 	postMessage(message: unknown, transfer?: Electron.MessagePortMain[]): void {
@@ -498,19 +372,18 @@ export class UtilityProcess extends Disposable {
 	}
 
 	connect(payload?: unknown): Electron.MessagePortMain {
-		const { port1: outPort, port2: utilityProcessPort } =
-			new MessageChannelMain();
+		const { port1: outPort, port2: utilityProcessPort } = new MessageChannelMain();
 		this.postMessage(payload, [utilityProcessPort]);
 
 		return outPort;
 	}
 
 	enableInspectPort(): boolean {
-		if (!this.process || typeof this.processPid !== "number") {
+		if (!this.process || typeof this.processPid !== 'number') {
 			return false;
 		}
 
-		this.log("enabling inspect port", Severity.Info);
+		this.log('enabling inspect port', Severity.Info);
 
 		interface ProcessExt {
 			_debugProcess?(pid: number): unknown;
@@ -518,7 +391,7 @@ export class UtilityProcess extends Disposable {
 
 		// use (undocumented) _debugProcess feature of node if available
 		const processExt = <ProcessExt>process;
-		if (typeof processExt._debugProcess === "function") {
+		if (typeof processExt._debugProcess === 'function') {
 			processExt._debugProcess(this.processPid);
 
 			return true;
@@ -533,18 +406,18 @@ export class UtilityProcess extends Disposable {
 			return; // already killed, crashed or never started
 		}
 
-		this.log("attempting to kill the process...", Severity.Info);
+		this.log('attempting to kill the process...', Severity.Info);
 		const killed = this.process.kill();
 		if (killed) {
-			this.log("successfully killed the process", Severity.Info);
+			this.log('successfully killed the process', Severity.Info);
 			this.onDidExitOrCrashOrKill();
 		} else {
-			this.log("unable to kill the process", Severity.Warning);
+			this.log('unable to kill the process', Severity.Warning);
 		}
 	}
 
 	private onDidExitOrCrashOrKill(): void {
-		if (typeof this.processPid === "number") {
+		if (typeof this.processPid === 'number') {
 			UtilityProcess.all.delete(this.processPid);
 		}
 
@@ -556,23 +429,18 @@ export class UtilityProcess extends Disposable {
 			return; // already killed, crashed or never started
 		}
 
-		this.log("waiting to exit...", Severity.Info);
-		await Promise.race([
-			Event.toPromise(this.onExit),
-			timeout(maxWaitTimeMs),
-		]);
+		this.log('waiting to exit...', Severity.Info);
+		await Promise.race([Event.toPromise(this.onExit), timeout(maxWaitTimeMs)]);
 
 		if (this.process) {
-			this.log(
-				`did not exit within ${maxWaitTimeMs}ms, will kill it now...`,
-				Severity.Info,
-			);
+			this.log(`did not exit within ${maxWaitTimeMs}ms, will kill it now...`, Severity.Info);
 			this.kill();
 		}
 	}
 }
 
 export class WindowUtilityProcess extends UtilityProcess {
+
 	constructor(
 		@ILogService logService: ILogService,
 		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
@@ -583,18 +451,9 @@ export class WindowUtilityProcess extends UtilityProcess {
 	}
 
 	override start(configuration: IWindowUtilityProcessConfiguration): boolean {
-		const responseWindow = this.windowsMainService.getWindowById(
-			configuration.responseWindowId,
-		);
-		if (
-			!responseWindow?.win ||
-			responseWindow.win.isDestroyed() ||
-			responseWindow.win.webContents.isDestroyed()
-		) {
-			this.log(
-				"Refusing to start utility process because requesting window cannot be found or is destroyed...",
-				Severity.Error,
-			);
+		const responseWindow = this.windowsMainService.getWindowById(configuration.responseWindowId);
+		if (!responseWindow?.win || responseWindow.win.isDestroyed() || responseWindow.win.webContents.isDestroyed()) {
+			this.log('Refusing to start utility process because requesting window cannot be found or is destroyed...', Severity.Error);
 
 			return true;
 		}
@@ -610,32 +469,19 @@ export class WindowUtilityProcess extends UtilityProcess {
 
 		// Establish & exchange message ports
 		const windowPort = this.connect(configuration.payload);
-		responseWindow.win.webContents.postMessage(
-			configuration.responseChannel,
-			configuration.responseNonce,
-			[windowPort],
-		);
+		responseWindow.win.webContents.postMessage(configuration.responseChannel, configuration.responseNonce, [windowPort]);
 
 		return true;
 	}
 
-	private registerWindowListeners(
-		window: BrowserWindow,
-		configuration: IWindowUtilityProcessConfiguration,
-	): void {
+	private registerWindowListeners(window: BrowserWindow, configuration: IWindowUtilityProcessConfiguration): void {
+
 		// If the lifecycle of the utility process is bound to the window,
 		// we kill the process if the window closes or changes
 
 		if (configuration.windowLifecycleBound) {
-			this._register(
-				Event.filter(
-					this.lifecycleMainService.onWillLoadWindow,
-					(e) => e.window.win === window,
-				)(() => this.kill()),
-			);
-			this._register(
-				Event.fromNodeEventEmitter(window, "closed")(() => this.kill()),
-			);
+			this._register(Event.filter(this.lifecycleMainService.onWillLoadWindow, e => e.window.win === window)(() => this.kill()));
+			this._register(Event.fromNodeEventEmitter(window, 'closed')(() => this.kill()));
 		}
 	}
 }

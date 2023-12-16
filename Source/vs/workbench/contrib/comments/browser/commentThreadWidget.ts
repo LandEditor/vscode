@@ -3,65 +3,44 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/review";
-import * as dom from "vs/base/browser/dom";
-import { Emitter } from "vs/base/common/event";
-import { Disposable, dispose, IDisposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import * as languages from "vs/editor/common/languages";
-import { IMarkdownRendererOptions } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { CommentMenus } from "vs/workbench/contrib/comments/browser/commentMenus";
-import { CommentReply } from "vs/workbench/contrib/comments/browser/commentReply";
-import { ICommentService } from "vs/workbench/contrib/comments/browser/commentService";
-import { CommentThreadBody } from "vs/workbench/contrib/comments/browser/commentThreadBody";
-import { CommentThreadHeader } from "vs/workbench/contrib/comments/browser/commentThreadHeader";
-import { CommentThreadAdditionalActions } from "vs/workbench/contrib/comments/browser/commentThreadAdditionalActions";
-import { CommentContextKeys } from "vs/workbench/contrib/comments/common/commentContextKeys";
-import { ICommentThreadWidget } from "vs/workbench/contrib/comments/common/commentThreadWidget";
-import { IColorTheme } from "vs/platform/theme/common/themeService";
-import {
-	contrastBorder,
-	focusBorder,
-	inputValidationErrorBackground,
-	inputValidationErrorBorder,
-	inputValidationErrorForeground,
-	textBlockQuoteBackground,
-	textBlockQuoteBorder,
-	textLinkActiveForeground,
-	textLinkForeground,
-} from "vs/platform/theme/common/colorRegistry";
-import { PANEL_BORDER } from "vs/workbench/common/theme";
-import { IRange } from "vs/editor/common/core/range";
-import {
-	commentThreadStateBackgroundColorVar,
-	commentThreadStateColorVar,
-} from "vs/workbench/contrib/comments/browser/commentColors";
-import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
-import { FontInfo } from "vs/editor/common/config/fontInfo";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { registerNavigableContainer } from "vs/workbench/browser/actions/widgetNavigationCommands";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	COMMENTS_SECTION,
-	ICommentsConfiguration,
-} from "vs/workbench/contrib/comments/common/commentsConfiguration";
-import { localize } from "vs/nls";
-import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { AccessibilityCommandId } from "vs/workbench/contrib/accessibility/common/accessibilityCommands";
-import { LayoutableEditor } from "vs/workbench/contrib/comments/browser/simpleCommentEditor";
+import 'vs/css!./media/review';
+import * as dom from 'vs/base/browser/dom';
+import { Emitter } from 'vs/base/common/event';
+import { Disposable, dispose, IDisposable } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import * as languages from 'vs/editor/common/languages';
+import { IMarkdownRendererOptions } from 'vs/editor/contrib/markdownRenderer/browser/markdownRenderer';
+import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { CommentMenus } from 'vs/workbench/contrib/comments/browser/commentMenus';
+import { CommentReply } from 'vs/workbench/contrib/comments/browser/commentReply';
+import { ICommentService } from 'vs/workbench/contrib/comments/browser/commentService';
+import { CommentThreadBody } from 'vs/workbench/contrib/comments/browser/commentThreadBody';
+import { CommentThreadHeader } from 'vs/workbench/contrib/comments/browser/commentThreadHeader';
+import { CommentThreadAdditionalActions } from 'vs/workbench/contrib/comments/browser/commentThreadAdditionalActions';
+import { CommentContextKeys } from 'vs/workbench/contrib/comments/common/commentContextKeys';
+import { ICommentThreadWidget } from 'vs/workbench/contrib/comments/common/commentThreadWidget';
+import { IColorTheme } from 'vs/platform/theme/common/themeService';
+import { contrastBorder, focusBorder, inputValidationErrorBackground, inputValidationErrorBorder, inputValidationErrorForeground, textBlockQuoteBackground, textBlockQuoteBorder, textLinkActiveForeground, textLinkForeground } from 'vs/platform/theme/common/colorRegistry';
+import { PANEL_BORDER } from 'vs/workbench/common/theme';
+import { IRange } from 'vs/editor/common/core/range';
+import { commentThreadStateBackgroundColorVar, commentThreadStateColorVar } from 'vs/workbench/contrib/comments/browser/commentColors';
+import { ICellRange } from 'vs/workbench/contrib/notebook/common/notebookRange';
+import { FontInfo } from 'vs/editor/common/config/fontInfo';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { registerNavigableContainer } from 'vs/workbench/browser/actions/widgetNavigationCommands';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { COMMENTS_SECTION, ICommentsConfiguration } from 'vs/workbench/contrib/comments/common/commentsConfiguration';
+import { localize } from 'vs/nls';
+import { AccessibilityVerbositySettingId } from 'vs/workbench/contrib/accessibility/browser/accessibilityConfiguration';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { AccessibilityCommandId } from 'vs/workbench/contrib/accessibility/common/accessibilityCommands';
+import { LayoutableEditor } from 'vs/workbench/contrib/comments/browser/simpleCommentEditor';
 
-export const COMMENTEDITOR_DECORATION_KEY = "commenteditordecoration";
+export const COMMENTEDITOR_DECORATION_KEY = 'commenteditordecoration';
 
-export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
-	extends Disposable
-	implements ICommentThreadWidget
-{
+
+export class CommentThreadWidget<T extends IRange | ICellRange = IRange> extends Disposable implements ICommentThreadWidget {
 	private _header!: CommentThreadHeader<T>;
 	private _body: CommentThreadBody<T>;
 	private _commentReply?: CommentReply<T>;
@@ -178,33 +157,16 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 	}
 
 	private _setAriaLabel(): void {
-		let ariaLabel = localize("commentLabel", "Comment");
+		let ariaLabel = localize('commentLabel', "Comment");
 		let keybinding: string | undefined;
-		const verbose = this.configurationService.getValue(
-			AccessibilityVerbositySettingId.Comments,
-		);
+		const verbose = this.configurationService.getValue(AccessibilityVerbositySettingId.Comments);
 		if (verbose) {
-			keybinding =
-				this._keybindingService
-					.lookupKeybinding(
-						AccessibilityCommandId.OpenAccessibilityHelp,
-						this._contextKeyService,
-					)
-					?.getLabel() ?? undefined;
+			keybinding = this._keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp, this._contextKeyService)?.getLabel() ?? undefined;
 		}
 		if (keybinding) {
-			ariaLabel = localize(
-				"commentLabelWithKeybinding",
-				"{0}, use ({1}) for accessibility help",
-				ariaLabel,
-				keybinding,
-			);
+			ariaLabel = localize('commentLabelWithKeybinding', "{0}, use ({1}) for accessibility help", ariaLabel, keybinding);
 		} else {
-			ariaLabel = localize(
-				"commentLabelWithKeybindingNoKeybinding",
-				"{0}, run the command Open Accessibility Help which is currently not triggerable via keybinding.",
-				ariaLabel,
-			);
+			ariaLabel = localize('commentLabelWithKeybindingNoKeybinding', "{0}, run the command Open Accessibility Help which is currently not triggerable via keybinding.", ariaLabel);
 		}
 		this._body.container.ariaLabel = ariaLabel;
 	}
@@ -220,91 +182,49 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 	private currentThreadListeners() {
 		let hasMouse = false;
 		let hasFocus = false;
-		this._register(
-			dom.addDisposableListener(
-				this.container,
-				dom.EventType.MOUSE_ENTER,
-				(e) => {
-					if ((<any>e).toElement === this.container) {
-						hasMouse = true;
-						this.updateCurrentThread(hasMouse, hasFocus);
-					}
-				},
-				true,
-			),
-		);
-		this._register(
-			dom.addDisposableListener(
-				this.container,
-				dom.EventType.MOUSE_LEAVE,
-				(e) => {
-					if ((<any>e).fromElement === this.container) {
-						hasMouse = false;
-						this.updateCurrentThread(hasMouse, hasFocus);
-					}
-				},
-				true,
-			),
-		);
-		this._register(
-			dom.addDisposableListener(
-				this.container,
-				dom.EventType.FOCUS_IN,
-				() => {
-					hasFocus = true;
-					this.updateCurrentThread(hasMouse, hasFocus);
-				},
-				true,
-			),
-		);
-		this._register(
-			dom.addDisposableListener(
-				this.container,
-				dom.EventType.FOCUS_OUT,
-				() => {
-					hasFocus = false;
-					this.updateCurrentThread(hasMouse, hasFocus);
-				},
-				true,
-			),
-		);
+		this._register(dom.addDisposableListener(this.container, dom.EventType.MOUSE_ENTER, (e) => {
+			if ((<any>e).toElement === this.container) {
+				hasMouse = true;
+				this.updateCurrentThread(hasMouse, hasFocus);
+			}
+		}, true));
+		this._register(dom.addDisposableListener(this.container, dom.EventType.MOUSE_LEAVE, (e) => {
+			if ((<any>e).fromElement === this.container) {
+				hasMouse = false;
+				this.updateCurrentThread(hasMouse, hasFocus);
+			}
+		}, true));
+		this._register(dom.addDisposableListener(this.container, dom.EventType.FOCUS_IN, () => {
+			hasFocus = true;
+			this.updateCurrentThread(hasMouse, hasFocus);
+		}, true));
+		this._register(dom.addDisposableListener(this.container, dom.EventType.FOCUS_OUT, () => {
+			hasFocus = false;
+			this.updateCurrentThread(hasMouse, hasFocus);
+		}, true));
 	}
 
 	updateCommentThread(commentThread: languages.CommentThread<T>) {
-		const shouldCollapse =
-			this._commentThread.collapsibleState ===
-				languages.CommentThreadCollapsibleState.Expanded &&
-			this._commentThreadState ===
-				languages.CommentThreadState.Unresolved &&
-			commentThread.state === languages.CommentThreadState.Resolved;
+		const shouldCollapse = (this._commentThread.collapsibleState === languages.CommentThreadCollapsibleState.Expanded) && (this._commentThreadState === languages.CommentThreadState.Unresolved)
+			&& (commentThread.state === languages.CommentThreadState.Resolved);
 		this._commentThreadState = commentThread.state;
 		this._commentThread = commentThread;
 		dispose(this._commentThreadDisposables);
 		this._commentThreadDisposables = [];
 		this._bindCommentThreadListeners();
 
-		this._body.updateCommentThread(
-			commentThread,
-			this._commentReply?.isCommentEditorFocused() ?? false,
-		);
+		this._body.updateCommentThread(commentThread, this._commentReply?.isCommentEditorFocused() ?? false);
 		this._threadIsEmpty.set(!this._body.length);
 		this._header.updateCommentThread(commentThread);
 		this._commentReply?.updateCommentThread(commentThread);
 
 		if (this._commentThread.contextValue) {
-			this._commentThreadContextValue.set(
-				this._commentThread.contextValue,
-			);
+			this._commentThreadContextValue.set(this._commentThread.contextValue);
 		} else {
 			this._commentThreadContextValue.reset();
 		}
 
-		if (
-			shouldCollapse &&
-			this.configurationService.getValue<ICommentsConfiguration>(
-				COMMENTS_SECTION,
-			).collapseOnResolve
-		) {
+		if (shouldCollapse && this.configurationService.getValue<ICommentsConfiguration>(COMMENTS_SECTION).collapseOnResolve) {
 			this.collapse();
 		}
 	}
@@ -321,11 +241,9 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		}
 		this._createAdditionalActions();
 
-		this._register(
-			this._body.onDidResize((dimension) => {
-				this._refresh(dimension);
-			}),
-		);
+		this._register(this._body.onDidResize(dimension => {
+			this._refresh(dimension);
+		}));
 
 		// If there are no existing comments, place focus on the text area. This must be done after show, which also moves focus.
 		// if this._commentThread.comments is undefined, it doesn't finish initialization yet, so we don't focus the editor immediately.
@@ -347,29 +265,23 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 	}
 
 	private _bindCommentThreadListeners() {
-		this._commentThreadDisposables.push(
-			this._commentThread.onDidChangeCanReply(() => {
-				if (this._commentReply) {
-					this._commentReply.updateCanReply();
-				} else {
-					if (this._commentThread.canReply) {
-						this._createCommentForm();
-					}
+		this._commentThreadDisposables.push(this._commentThread.onDidChangeCanReply(() => {
+			if (this._commentReply) {
+				this._commentReply.updateCanReply();
+			} else {
+				if (this._commentThread.canReply) {
+					this._createCommentForm();
 				}
-			}),
-		);
+			}
+		}));
 
-		this._commentThreadDisposables.push(
-			this._commentThread.onDidChangeComments(async (_) => {
-				await this.updateCommentThread(this._commentThread);
-			}),
-		);
+		this._commentThreadDisposables.push(this._commentThread.onDidChangeComments(async _ => {
+			await this.updateCommentThread(this._commentThread);
+		}));
 
-		this._commentThreadDisposables.push(
-			this._commentThread.onDidChangeLabel((_) => {
-				this._header.createThreadLabel();
-			}),
-		);
+		this._commentThreadDisposables.push(this._commentThread.onDidChangeLabel(_ => {
+			this._header.createThreadLabel();
+		}));
 	}
 
 	private _createCommentForm() {
@@ -385,22 +297,21 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._commentOptions,
 			this._pendingComment,
 			this,
-			this._containerDelegate.actionRunner,
+			this._containerDelegate.actionRunner
 		);
 
 		this._register(this._commentReply);
 	}
 
 	private _createAdditionalActions() {
-		this._additionalActions =
-			this._scopedInstantiationService.createInstance(
-				CommentThreadAdditionalActions,
-				this._body.container,
-				this._commentThread,
-				this._contextKeyService,
-				this._commentMenus,
-				this._containerDelegate.actionRunner,
-			);
+		this._additionalActions = this._scopedInstantiationService.createInstance(
+			CommentThreadAdditionalActions,
+			this._body.container,
+			this._commentThread,
+			this._contextKeyService,
+			this._commentMenus,
+			this._containerDelegate.actionRunner,
+		);
 
 		this._register(this._additionalActions);
 	}
@@ -462,97 +373,66 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 	applyTheme(theme: IColorTheme, fontInfo: FontInfo) {
 		const content: string[] = [];
 
-		content.push(
-			`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`,
-		);
-		content.push(
-			`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`,
-		);
+		content.push(`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`);
+		content.push(`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`);
 
 		const linkColor = theme.getColor(textLinkForeground);
 		if (linkColor) {
-			content.push(
-				`.review-widget .body .comment-body a { color: ${linkColor} }`,
-			);
+			content.push(`.review-widget .body .comment-body a { color: ${linkColor} }`);
 		}
 
 		const linkActiveColor = theme.getColor(textLinkActiveForeground);
 		if (linkActiveColor) {
-			content.push(
-				`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`,
-			);
+			content.push(`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`);
 		}
 
 		const focusColor = theme.getColor(focusBorder);
 		if (focusColor) {
-			content.push(
-				`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`,
-			);
-			content.push(
-				`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`,
-			);
+			content.push(`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`);
+			content.push(`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`);
 		}
 
 		const blockQuoteBackground = theme.getColor(textBlockQuoteBackground);
 		if (blockQuoteBackground) {
-			content.push(
-				`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`,
-			);
+			content.push(`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`);
 		}
 
 		const blockQuoteBOrder = theme.getColor(textBlockQuoteBorder);
 		if (blockQuoteBOrder) {
-			content.push(
-				`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`,
-			);
+			content.push(`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`);
 		}
 
 		const border = theme.getColor(PANEL_BORDER);
 		if (border) {
-			content.push(
-				`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`,
-			);
+			content.push(`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`);
 		}
 
 		const hcBorder = theme.getColor(contrastBorder);
 		if (hcBorder) {
-			content.push(
-				`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`,
-			);
-			content.push(
-				`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`,
-			);
+			content.push(`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`);
+			content.push(`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`);
 		}
 
 		const errorBorder = theme.getColor(inputValidationErrorBorder);
 		if (errorBorder) {
-			content.push(
-				`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`,
-			);
+			content.push(`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`);
 		}
 
 		const errorBackground = theme.getColor(inputValidationErrorBackground);
 		if (errorBackground) {
-			content.push(
-				`.review-widget .validation-error { background: ${errorBackground}; }`,
-			);
+			content.push(`.review-widget .validation-error { background: ${errorBackground}; }`);
 		}
 
 		const errorForeground = theme.getColor(inputValidationErrorForeground);
 		if (errorForeground) {
-			content.push(
-				`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`,
-			);
+			content.push(`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`);
 		}
 
-		const fontFamilyVar = "--comment-thread-editor-font-family";
-		const fontSizeVar = "--comment-thread-editor-font-size";
-		const fontWeightVar = "--comment-thread-editor-font-weight";
+		const fontFamilyVar = '--comment-thread-editor-font-family';
+		const fontSizeVar = '--comment-thread-editor-font-size';
+		const fontWeightVar = '--comment-thread-editor-font-weight';
 		this.container?.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
-		this.container?.style.setProperty(
-			fontSizeVar,
-			`${fontInfo.fontSize}px`,
-		);
+		this.container?.style.setProperty(fontSizeVar, `${fontInfo.fontSize}px`);
 		this.container?.style.setProperty(fontWeightVar, fontInfo.fontWeight);
 
 		content.push(`.review-widget .body code {
@@ -560,7 +440,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			font-weight: var(${fontWeightVar});
 		}`);
 
-		this._styleElement.textContent = content.join("\n");
+		this._styleElement.textContent = content.join('\n');
 		this._commentReply?.setCommentEditorDecorations();
 	}
 }

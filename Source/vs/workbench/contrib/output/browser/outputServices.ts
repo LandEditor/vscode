@@ -3,51 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from "vs/base/common/event";
-import { URI } from "vs/base/common/uri";
-import { IDisposable, dispose, Disposable } from "vs/base/common/lifecycle";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IOutputChannel,
-	IOutputService,
-	OUTPUT_VIEW_ID,
-	OUTPUT_SCHEME,
-	LOG_MIME,
-	OUTPUT_MIME,
-	OutputChannelUpdateMode,
-	IOutputChannelDescriptor,
-	Extensions,
-	IOutputChannelRegistry,
-	ACTIVE_OUTPUT_CHANNEL_CONTEXT,
-	CONTEXT_ACTIVE_FILE_OUTPUT,
-} from "vs/workbench/services/output/common/output";
-import { OutputLinkProvider } from "vs/workbench/contrib/output/browser/outputLinkProvider";
-import {
-	ITextModelService,
-	ITextModelContentProvider,
-} from "vs/editor/common/services/resolverService";
-import { ITextModel } from "vs/editor/common/model";
-import { ILogService } from "vs/platform/log/common/log";
-import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { IOutputChannelModel } from "vs/workbench/contrib/output/common/outputChannelModel";
-import { IViewsService } from "vs/workbench/common/views";
-import { OutputViewPane } from "vs/workbench/contrib/output/browser/outputView";
-import { IOutputChannelModelService } from "vs/workbench/contrib/output/common/outputChannelModelService";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
+import { Event, Emitter } from 'vs/base/common/event';
+import { URI } from 'vs/base/common/uri';
+import { IDisposable, dispose, Disposable } from 'vs/base/common/lifecycle';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { IOutputChannel, IOutputService, OUTPUT_VIEW_ID, OUTPUT_SCHEME, LOG_MIME, OUTPUT_MIME, OutputChannelUpdateMode, IOutputChannelDescriptor, Extensions, IOutputChannelRegistry, ACTIVE_OUTPUT_CHANNEL_CONTEXT, CONTEXT_ACTIVE_FILE_OUTPUT } from 'vs/workbench/services/output/common/output';
+import { OutputLinkProvider } from 'vs/workbench/contrib/output/browser/outputLinkProvider';
+import { ITextModelService, ITextModelContentProvider } from 'vs/editor/common/services/resolverService';
+import { ITextModel } from 'vs/editor/common/model';
+import { ILogService } from 'vs/platform/log/common/log';
+import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { IOutputChannelModel } from 'vs/workbench/contrib/output/common/outputChannelModel';
+import { IViewsService } from 'vs/workbench/common/views';
+import { OutputViewPane } from 'vs/workbench/contrib/output/browser/outputView';
+import { IOutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
-const OUTPUT_ACTIVE_CHANNEL_KEY = "output.activechannel";
+const OUTPUT_ACTIVE_CHANNEL_KEY = 'output.activechannel';
 
 class OutputChannel extends Disposable implements IOutputChannel {
+
 	scrollLock: boolean = false;
 	readonly model: IOutputChannelModel;
 	readonly id: string;
@@ -63,22 +41,7 @@ class OutputChannel extends Disposable implements IOutputChannel {
 		this.id = outputChannelDescriptor.id;
 		this.label = outputChannelDescriptor.label;
 		this.uri = URI.from({ scheme: OUTPUT_SCHEME, path: this.id });
-		this.model = this._register(
-			outputChannelModelService.createOutputChannelModel(
-				this.id,
-				this.uri,
-				outputChannelDescriptor.languageId
-					? languageService.createById(
-							outputChannelDescriptor.languageId,
-					  )
-					: languageService.createByMimeType(
-							outputChannelDescriptor.log
-								? LOG_MIME
-								: OUTPUT_MIME,
-					  ),
-				outputChannelDescriptor.file,
-			),
-		);
+		this.model = this._register(outputChannelModelService.createOutputChannelModel(this.id, this.uri, outputChannelDescriptor.languageId ? languageService.createById(outputChannelDescriptor.languageId) : languageService.createByMimeType(outputChannelDescriptor.log ? LOG_MIME : OUTPUT_MIME), outputChannelDescriptor.file));
 	}
 
 	append(output: string): void {
@@ -98,24 +61,16 @@ class OutputChannel extends Disposable implements IOutputChannel {
 	}
 }
 
-export class OutputService
-	extends Disposable
-	implements IOutputService, ITextModelContentProvider
-{
+export class OutputService extends Disposable implements IOutputService, ITextModelContentProvider {
+
 	declare readonly _serviceBrand: undefined;
 
-	private channels: Map<string, OutputChannel> = new Map<
-		string,
-		OutputChannel
-	>();
+	private channels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
 	private activeChannelIdInStorage: string;
 	private activeChannel?: OutputChannel;
 
-	private readonly _onActiveOutputChannel = this._register(
-		new Emitter<string>(),
-	);
-	readonly onActiveOutputChannel: Event<string> =
-		this._onActiveOutputChannel.event;
+	private readonly _onActiveOutputChannel = this._register(new Emitter<string>());
+	readonly onActiveOutputChannel: Event<string> = this._onActiveOutputChannel.event;
 
 	private readonly activeOutputChannelContext: IContextKey<string>;
 	private readonly activeFileOutputChannelContext: IContextKey<boolean>;
@@ -177,10 +132,7 @@ export class OutputService
 			this.setActiveChannel(channel);
 			this._onActiveOutputChannel.fire(id);
 		}
-		const outputView = await this.viewsService.openView<OutputViewPane>(
-			OUTPUT_VIEW_ID,
-			!preserveFocus,
-		);
+		const outputView = await this.viewsService.openView<OutputViewPane>(OUTPUT_VIEW_ID, !preserveFocus);
 		if (outputView && channel) {
 			outputView.showChannel(channel, !!preserveFocus);
 		}
@@ -191,15 +143,11 @@ export class OutputService
 	}
 
 	getChannelDescriptor(id: string): IOutputChannelDescriptor | undefined {
-		return Registry.as<IOutputChannelRegistry>(
-			Extensions.OutputChannels,
-		).getChannel(id);
+		return Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannel(id);
 	}
 
 	getChannelDescriptors(): IOutputChannelDescriptor[] {
-		return Registry.as<IOutputChannelRegistry>(
-			Extensions.OutputChannels,
-		).getChannels();
+		return Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannels();
 	}
 
 	getActiveChannel(): IOutputChannel | undefined {
@@ -209,16 +157,10 @@ export class OutputService
 	private async onDidRegisterChannel(channelId: string): Promise<void> {
 		const channel = this.createChannel(channelId);
 		this.channels.set(channelId, channel);
-		if (
-			!this.activeChannel ||
-			this.activeChannelIdInStorage === channelId
-		) {
+		if (!this.activeChannel || this.activeChannelIdInStorage === channelId) {
 			this.setActiveChannel(channel);
 			this._onActiveOutputChannel.fire(channelId);
-			const outputView =
-				this.viewsService.getActiveViewWithId<OutputViewPane>(
-					OUTPUT_VIEW_ID,
-				);
+			const outputView = this.viewsService.getActiveViewWithId<OutputViewPane>(OUTPUT_VIEW_ID);
 			outputView?.showChannel(channel, true);
 		}
 	}
@@ -229,21 +171,14 @@ export class OutputService
 		channel.model.onDispose(() => {
 			if (this.activeChannel === channel) {
 				const channels = this.getChannelDescriptors();
-				const channel = channels.length
-					? this.getChannel(channels[0].id)
-					: undefined;
-				if (
-					channel &&
-					this.viewsService.isViewVisible(OUTPUT_VIEW_ID)
-				) {
+				const channel = channels.length ? this.getChannel(channels[0].id) : undefined;
+				if (channel && this.viewsService.isViewVisible(OUTPUT_VIEW_ID)) {
 					this.showChannel(channel.id);
 				} else {
 					this.setActiveChannel(undefined);
 				}
 			}
-			Registry.as<IOutputChannelRegistry>(
-				Extensions.OutputChannels,
-			).removeChannel(id);
+			Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).removeChannel(id);
 			dispose(channelDisposables);
 		}, channelDisposables);
 
@@ -251,37 +186,22 @@ export class OutputService
 	}
 
 	private instantiateChannel(id: string): OutputChannel {
-		const channelData = Registry.as<IOutputChannelRegistry>(
-			Extensions.OutputChannels,
-		).getChannel(id);
+		const channelData = Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannel(id);
 		if (!channelData) {
 			this.logService.error(`Channel '${id}' is not registered yet`);
 			throw new Error(`Channel '${id}' is not registered yet`);
 		}
-		return this.instantiationService.createInstance(
-			OutputChannel,
-			channelData,
-		);
+		return this.instantiationService.createInstance(OutputChannel, channelData);
 	}
 
 	private setActiveChannel(channel: OutputChannel | undefined): void {
 		this.activeChannel = channel;
-		this.activeFileOutputChannelContext.set(
-			!!channel?.outputChannelDescriptor?.file,
-		);
+		this.activeFileOutputChannelContext.set(!!channel?.outputChannelDescriptor?.file);
 
 		if (this.activeChannel) {
-			this.storageService.store(
-				OUTPUT_ACTIVE_CHANNEL_KEY,
-				this.activeChannel.id,
-				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE,
-			);
+			this.storageService.store(OUTPUT_ACTIVE_CHANNEL_KEY, this.activeChannel.id, StorageScope.WORKSPACE, StorageTarget.MACHINE);
 		} else {
-			this.storageService.remove(
-				OUTPUT_ACTIVE_CHANNEL_KEY,
-				StorageScope.WORKSPACE,
-			);
+			this.storageService.remove(OUTPUT_ACTIVE_CHANNEL_KEY, StorageScope.WORKSPACE);
 		}
 	}
 }

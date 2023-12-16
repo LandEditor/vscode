@@ -3,22 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as DOM from "vs/base/browser/dom";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import {
-	HiddenItemStrategy,
-	MenuWorkbenchToolBar,
-} from "vs/platform/actions/browser/toolbar";
-import {
-	IMenuService,
-	MenuItemAction,
-} from "vs/platform/actions/common/actions";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { INotebookActionContext } from "vs/workbench/contrib/notebook/browser/controller/coreActions";
-import { INotebookEditorDelegate } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { CodiconActionViewItem } from "vs/workbench/contrib/notebook/browser/view/cellParts/cellActionView";
+import * as DOM from 'vs/base/browser/dom';
+import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
+import { HiddenItemStrategy, MenuWorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
+import { IMenuService, MenuItemAction } from 'vs/platform/actions/common/actions';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { INotebookActionContext } from 'vs/workbench/contrib/notebook/browser/controller/coreActions';
+import { INotebookEditorDelegate } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+import { CodiconActionViewItem } from 'vs/workbench/contrib/notebook/browser/view/cellParts/cellActionView';
 
 export class ListTopCellToolbar extends Disposable {
 	private topCellToolbar: HTMLElement;
@@ -76,13 +70,10 @@ export class ListTopCellToolbar extends Disposable {
 	}
 
 	private updateClass() {
-		if (
-			this.notebookEditor.hasModel() &&
-			this.notebookEditor.getLength() === 0
-		) {
-			this.topCellToolbar.classList.add("emptyNotebook");
+		if (this.notebookEditor.hasModel() && this.notebookEditor.getLength() === 0) {
+			this.topCellToolbar.classList.add('emptyNotebook');
 		} else {
-			this.topCellToolbar.classList.remove("emptyNotebook");
+			this.topCellToolbar.classList.remove('emptyNotebook');
 		}
 	}
 }

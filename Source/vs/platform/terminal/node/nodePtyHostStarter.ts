@@ -3,19 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { FileAccess, Schemas } from "vs/base/common/network";
-import { Client, IIPCOptions } from "vs/base/parts/ipc/node/ipc.cp";
-import {
-	IEnvironmentService,
-	INativeEnvironmentService,
-} from "vs/platform/environment/common/environment";
-import { parsePtyHostDebugPort } from "vs/platform/environment/node/environmentService";
-import { IReconnectConstants } from "vs/platform/terminal/common/terminal";
-import {
-	IPtyHostConnection,
-	IPtyHostStarter,
-} from "vs/platform/terminal/node/ptyHost";
+import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
+import { FileAccess, Schemas } from 'vs/base/common/network';
+import { Client, IIPCOptions } from 'vs/base/parts/ipc/node/ipc.cp';
+import { IEnvironmentService, INativeEnvironmentService } from 'vs/platform/environment/common/environment';
+import { parsePtyHostDebugPort } from 'vs/platform/environment/node/environmentService';
+import { IReconnectConstants } from 'vs/platform/terminal/common/terminal';
+import { IPtyHostConnection, IPtyHostStarter } from 'vs/platform/terminal/node/ptyHost';
 
 export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 	constructor(
@@ -27,29 +21,19 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 
 	start(): IPtyHostConnection {
 		const opts: IIPCOptions = {
-			serverName: "Pty Host",
-			args: [
-				"--type=ptyHost",
-				"--logsPath",
-				this._environmentService.logsHome.with({ scheme: Schemas.file })
-					.fsPath,
-			],
+			serverName: 'Pty Host',
+			args: ['--type=ptyHost', '--logsPath', this._environmentService.logsHome.with({ scheme: Schemas.file }).fsPath],
 			env: {
-				VSCODE_AMD_ENTRYPOINT: "vs/platform/terminal/node/ptyHostMain",
-				VSCODE_PIPE_LOGGING: "true",
-				VSCODE_VERBOSE_LOGGING: "true", // transmit console logs from server to client,
+				VSCODE_AMD_ENTRYPOINT: 'vs/platform/terminal/node/ptyHostMain',
+				VSCODE_PIPE_LOGGING: 'true',
+				VSCODE_VERBOSE_LOGGING: 'true', // transmit console logs from server to client,
 				VSCODE_RECONNECT_GRACE_TIME: this._reconnectConstants.graceTime,
-				VSCODE_RECONNECT_SHORT_GRACE_TIME:
-					this._reconnectConstants.shortGraceTime,
-				VSCODE_RECONNECT_SCROLLBACK:
-					this._reconnectConstants.scrollback,
-			},
+				VSCODE_RECONNECT_SHORT_GRACE_TIME: this._reconnectConstants.shortGraceTime,
+				VSCODE_RECONNECT_SCROLLBACK: this._reconnectConstants.scrollback
+			}
 		};
 
-		const ptyHostDebug = parsePtyHostDebugPort(
-			this._environmentService.args,
-			this._environmentService.isBuilt,
-		);
+		const ptyHostDebug = parsePtyHostDebugPort(this._environmentService.args, this._environmentService.isBuilt);
 		if (ptyHostDebug) {
 			if (ptyHostDebug.break && ptyHostDebug.port) {
 				opts.debugBrk = ptyHostDebug.port;
@@ -58,10 +42,7 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 			}
 		}
 
-		const client = new Client(
-			FileAccess.asFileUri("bootstrap-fork").fsPath,
-			opts,
-		);
+		const client = new Client(FileAccess.asFileUri('bootstrap-fork').fsPath, opts);
 
 		const store = new DisposableStore();
 		store.add(client);
@@ -69,7 +50,7 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 		return {
 			client,
 			store,
-			onDidProcessExit: client.onDidProcessExit,
+			onDidProcessExit: client.onDidProcessExit
 		};
 	}
 }

@@ -5,7 +5,7 @@
 
 // https://github.com/microsoft/vscode/issues/193160 @connor4312
 
-declare module "vscode" {
+declare module 'vscode' {
 	export interface TestRunProfile {
 		/**
 		 * Whether this profile is currently selected as a default by the user

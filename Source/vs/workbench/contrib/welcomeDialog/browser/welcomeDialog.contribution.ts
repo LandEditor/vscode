@@ -3,46 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-	IWorkbenchContribution,
-} from "vs/workbench/common/contributions";
-import {
-	IStorageService,
-	StorageScope,
-} from "vs/platform/storage/common/storage";
-import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { Disposable } from "vs/base/common/lifecycle";
-import {
-	ContextKeyExpr,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { WelcomeWidget } from "vs/workbench/contrib/welcomeDialog/browser/welcomeWidget";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import {
-	IConfigurationRegistry,
-	Extensions as ConfigurationExtensions,
-	ConfigurationScope,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { localize } from "vs/nls";
-import { applicationConfigurationNodeBase } from "vs/workbench/common/configuration";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry, IWorkbenchContribution } from 'vs/workbench/common/contributions';
+import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage';
+import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { ContextKeyExpr, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { WelcomeWidget } from 'vs/workbench/contrib/welcomeDialog/browser/welcomeWidget';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions, ConfigurationScope } from 'vs/platform/configuration/common/configurationRegistry';
+import { localize } from 'vs/nls';
+import { applicationConfigurationNodeBase } from 'vs/workbench/common/configuration';
+import { RunOnceScheduler } from 'vs/base/common/async';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
 
-const configurationKey = "workbench.welcome.experimental.dialog";
+const configurationKey = 'workbench.welcome.experimental.dialog';
 
-class WelcomeDialogContribution
-	extends Disposable
-	implements IWorkbenchContribution
-{
+class WelcomeDialogContribution extends Disposable implements IWorkbenchContribution {
+
 	private isRendered = false;
 
 	constructor(
@@ -109,28 +93,19 @@ class WelcomeDialogContribution
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
-	WelcomeDialogContribution,
-	LifecyclePhase.Eventually,
-);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
+	.registerWorkbenchContribution(WelcomeDialogContribution, LifecyclePhase.Eventually);
 
-const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
-);
+const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 configurationRegistry.registerConfiguration({
 	...applicationConfigurationNodeBase,
 	properties: {
-		"workbench.welcome.experimental.dialog": {
+		'workbench.welcome.experimental.dialog': {
 			scope: ConfigurationScope.APPLICATION,
-			type: "boolean",
+			type: 'boolean',
 			default: false,
-			tags: ["experimental"],
-			description: localize(
-				"workbench.welcome.dialog",
-				"When enabled, a welcome widget is shown in the editor",
-			),
-		},
-	},
+			tags: ['experimental'],
+			description: localize('workbench.welcome.dialog', "When enabled, a welcome widget is shown in the editor")
+		}
+	}
 });

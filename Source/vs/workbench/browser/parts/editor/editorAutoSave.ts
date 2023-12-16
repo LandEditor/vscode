@@ -3,52 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import {
-	Disposable,
-	DisposableStore,
-	IDisposable,
-	dispose,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import {
-	IFilesConfigurationService,
-	AutoSaveMode,
-} from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import {
-	SaveReason,
-	IEditorIdentifier,
-	GroupIdentifier,
-	ISaveOptions,
-	EditorInputCapabilities,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
-import {
-	IWorkingCopy,
-	WorkingCopyCapabilities,
-} from "vs/workbench/services/workingCopy/common/workingCopy";
-import { ILogService } from "vs/platform/log/common/log";
+import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
+import { Disposable, DisposableStore, IDisposable, dispose, toDisposable } from 'vs/base/common/lifecycle';
+import { IFilesConfigurationService, AutoSaveMode, AutoSaveDisabledReason } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
+import { SaveReason, IEditorIdentifier, GroupIdentifier, EditorInputCapabilities } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
+import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService';
+import { IWorkingCopy, WorkingCopyCapabilities } from 'vs/workbench/services/workingCopy/common/workingCopy';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IMarkerService } from 'vs/platform/markers/common/markers';
+import { URI } from 'vs/base/common/uri';
+import { ResourceMap } from 'vs/base/common/map';
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
 
-export class EditorAutoSave
-	extends Disposable
-	implements IWorkbenchContribution
-{
+export class EditorAutoSave extends Disposable implements IWorkbenchContribution {
+
 	// Auto save: after delay
-	private readonly pendingAutoSavesAfterDelay = new Map<
-		IWorkingCopy,
-		IDisposable
-	>();
+	private readonly scheduledAutoSavesAfterDelay = new Map<IWorkingCopy, IDisposable>();
 
 	// Auto save: focus change & window change
 	private lastActiveEditor: EditorInput | undefined = undefined;
 	private lastActiveGroupId: GroupIdentifier | undefined = undefined;
-	private lastActiveEditorControlDisposable = this._register(
-		new DisposableStore(),
-	);
+	private lastActiveEditorControlDisposable = this._register(new DisposableStore());
+
+	// Auto save: waiting on errors to clear
+	private readonly waitingOnErrorAutoSaveWorkingCopies = new ResourceMap<{ readonly workingCopy: IWorkingCopy; readonly reason: SaveReason }>(resource => this.uriIdentityService.extUri.getComparisonKey(resource));
+	private readonly waitingOnErrorAutoSaveEditors = new ResourceMap<{ readonly editor: IEditorIdentifier; readonly reason: SaveReason }>(resource => this.uriIdentityService.extUri.getComparisonKey(resource));
 
 	constructor(
 		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
@@ -56,7 +39,9 @@ export class EditorAutoSave
 		@IEditorService private readonly editorService: IEditorService,
 		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
 		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
+		@IMarkerService private readonly markerService: IMarkerService,
+		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
 	) {
 		super();
 
@@ -69,48 +54,53 @@ export class EditorAutoSave
 	}
 
 	private registerListeners(): void {
-		this._register(
-			this.hostService.onDidChangeFocus((focused) =>
-				this.onWindowFocusChange(focused),
-			),
-		);
-		this._register(
-			this.hostService.onDidChangeActiveWindow(() =>
-				this.onActiveWindowChange(),
-			),
-		);
-		this._register(
-			this.editorService.onDidActiveEditorChange(() =>
-				this.onDidActiveEditorChange(),
-			),
-		);
-		this._register(
-			this.filesConfigurationService.onDidChangeAutoSaveConfiguration(
-				() => this.onDidChangeAutoSaveConfiguration(),
-			),
-		);
+		this._register(this.hostService.onDidChangeFocus(focused => this.onWindowFocusChange(focused)));
+		this._register(this.hostService.onDidChangeActiveWindow(() => this.onActiveWindowChange()));
+		this._register(this.editorService.onDidActiveEditorChange(() => this.onDidActiveEditorChange()));
+		this._register(this.filesConfigurationService.onDidChangeAutoSaveConfiguration(() => this.onDidChangeAutoSaveConfiguration()));
 
 		// Working Copy events
-		this._register(
-			this.workingCopyService.onDidRegister((workingCopy) =>
-				this.onDidRegister(workingCopy),
-			),
-		);
-		this._register(
-			this.workingCopyService.onDidUnregister((workingCopy) =>
-				this.onDidUnregister(workingCopy),
-			),
-		);
-		this._register(
-			this.workingCopyService.onDidChangeDirty((workingCopy) =>
-				this.onDidChangeDirty(workingCopy),
-			),
-		);
-		this._register(
-			this.workingCopyService.onDidChangeContent((workingCopy) =>
-				this.onDidChangeContent(workingCopy),
-			),
-		);
+		this._register(this.workingCopyService.onDidRegister(workingCopy => this.onDidRegister(workingCopy)));
+		this._register(this.workingCopyService.onDidUnregister(workingCopy => this.onDidUnregister(workingCopy)));
+		this._register(this.workingCopyService.onDidChangeDirty(workingCopy => this.onDidChangeDirty(workingCopy)));
+		this._register(this.workingCopyService.onDidChangeContent(workingCopy => this.onDidChangeContent(workingCopy)));
+
+		// Marker events
+		this._register(this.markerService.onMarkerChanged(e => this.onMarkerChanged(e)));
+	}
+
+	private onMarkerChanged(resources: readonly URI[]): void {
+		for (const resource of resources) {
+
+			// Waiting working copies
+			const workingCopyResult = this.waitingOnErrorAutoSaveWorkingCopies.get(resource);
+			if (workingCopyResult) {
+				if (
+					workingCopyResult.workingCopy.isDirty() &&
+					this.filesConfigurationService.getAutoSaveMode(workingCopyResult.workingCopy.resource).mode !== AutoSaveMode.OFF
+				) {
+					this.discardAutoSave(workingCopyResult.workingCopy);
+
+					this.logService.info(`[editor auto save] running auto save from marker change event`, workingCopyResult.workingCopy.resource.toString(), workingCopyResult.workingCopy.typeId);
+					workingCopyResult.workingCopy.save({ reason: workingCopyResult.reason });
+				}
+			}
+
+			// Waiting editors
+			else {
+				const editorResult = this.waitingOnErrorAutoSaveEditors.get(resource);
+				if (
+					!editorResult?.editor.editor.isDisposed() &&
+					editorResult?.editor.editor.isDirty() &&
+					this.filesConfigurationService.getAutoSaveMode(editorResult.editor.editor).mode !== AutoSaveMode.OFF
+				) {
+					this.waitingOnErrorAutoSaveEditors.delete(resource);
+
+					this.logService.info(`[editor auto save] running auto save from marker change event with reason ${editorResult.reason}`);
+					this.editorService.save(editorResult.editor, { reason: editorResult.reason });
+				}
+			}
+		}
 	}
 
 	private onWindowFocusChange(focused: boolean): void {
@@ -124,21 +114,15 @@ export class EditorAutoSave
 	}
 
 	private onDidActiveEditorChange(): void {
+
 		// Treat editor change like a focus change for our last active editor if any
-		if (
-			this.lastActiveEditor &&
-			typeof this.lastActiveGroupId === "number"
-		) {
-			this.maybeTriggerAutoSave(SaveReason.FOCUS_CHANGE, {
-				groupId: this.lastActiveGroupId,
-				editor: this.lastActiveEditor,
-			});
+		if (this.lastActiveEditor && typeof this.lastActiveGroupId === 'number') {
+			this.maybeTriggerAutoSave(SaveReason.FOCUS_CHANGE, { groupId: this.lastActiveGroupId, editor: this.lastActiveEditor });
 		}
 
 		// Remember as last active
 		const activeGroup = this.editorGroupService.activeGroup;
-		const activeEditor = (this.lastActiveEditor =
-			activeGroup.activeEditor ?? undefined);
+		const activeEditor = this.lastActiveEditor = activeGroup.activeEditor ?? undefined;
 		this.lastActiveGroupId = activeGroup.id;
 
 		// Dispose previous active control listeners
@@ -147,59 +131,46 @@ export class EditorAutoSave
 		// Listen to focus changes on control for auto save
 		const activeEditorPane = this.editorService.activeEditorPane;
 		if (activeEditor && activeEditorPane) {
-			this.lastActiveEditorControlDisposable.add(
-				activeEditorPane.onDidBlur(() => {
-					this.maybeTriggerAutoSave(SaveReason.FOCUS_CHANGE, {
-						groupId: activeGroup.id,
-						editor: activeEditor,
-					});
-				}),
-			);
+			this.lastActiveEditorControlDisposable.add(activeEditorPane.onDidBlur(() => {
+				this.maybeTriggerAutoSave(SaveReason.FOCUS_CHANGE, { groupId: activeGroup.id, editor: activeEditor });
+			}));
 		}
 	}
 
-	private maybeTriggerAutoSave(
-		reason: SaveReason.WINDOW_CHANGE | SaveReason.FOCUS_CHANGE,
-		editorIdentifier?: IEditorIdentifier,
-	): void {
+	private maybeTriggerAutoSave(reason: SaveReason.WINDOW_CHANGE | SaveReason.FOCUS_CHANGE, editorIdentifier?: IEditorIdentifier): void {
 		if (editorIdentifier) {
 			if (
 				!editorIdentifier.editor.isDirty() ||
 				editorIdentifier.editor.isReadonly() ||
-				editorIdentifier.editor.hasCapability(
-					EditorInputCapabilities.Untitled,
-				)
+				editorIdentifier.editor.hasCapability(EditorInputCapabilities.Untitled)
 			) {
 				return; // no auto save for non-dirty, readonly or untitled editors
 			}
 
-			// Determine if we need to save all. In case of a window focus change we also save if
-			// auto save mode is configured to be ON_FOCUS_CHANGE (editor focus change)
-			const mode = this.filesConfigurationService.getAutoSaveMode(
-				editorIdentifier.editor,
-			);
-			if (
-				(reason === SaveReason.WINDOW_CHANGE &&
-					(mode === AutoSaveMode.ON_FOCUS_CHANGE ||
-						mode === AutoSaveMode.ON_WINDOW_CHANGE)) ||
-				(reason === SaveReason.FOCUS_CHANGE &&
-					mode === AutoSaveMode.ON_FOCUS_CHANGE)
-			) {
-				this.logService.trace(
-					`[editor auto save] triggering auto save with reason ${reason}`,
-				);
-
-				this.editorService.save(editorIdentifier, { reason });
+			const autoSaveMode = this.filesConfigurationService.getAutoSaveMode(editorIdentifier.editor);
+			if (autoSaveMode.mode !== AutoSaveMode.OFF) {
+				// Determine if we need to save all. In case of a window focus change we also save if
+				// auto save mode is configured to be ON_FOCUS_CHANGE (editor focus change)
+				if (
+					(reason === SaveReason.WINDOW_CHANGE && (autoSaveMode.mode === AutoSaveMode.ON_FOCUS_CHANGE || autoSaveMode.mode === AutoSaveMode.ON_WINDOW_CHANGE)) ||
+					(reason === SaveReason.FOCUS_CHANGE && autoSaveMode.mode === AutoSaveMode.ON_FOCUS_CHANGE)
+				) {
+					this.logService.trace(`[editor auto save] triggering auto save with reason ${reason}`);
+					this.editorService.save(editorIdentifier, { reason });
+				}
+			} else if (autoSaveMode.reason === AutoSaveDisabledReason.ERRORS && editorIdentifier.editor.resource) {
+				this.waitingOnErrorAutoSaveEditors.set(editorIdentifier.editor.resource, { editor: editorIdentifier, reason });
 			}
 		} else {
-			this.saveAllDirtyAutoSaveables({ reason });
+			this.saveAllDirtyAutoSaveables(reason);
 		}
 	}
 
 	private onDidChangeAutoSaveConfiguration(): void {
+
 		// Trigger a save-all when auto save is enabled
 		let reason: SaveReason | undefined = undefined;
-		switch (this.filesConfigurationService.getAutoSaveMode(undefined)) {
+		switch (this.filesConfigurationService.getAutoSaveMode(undefined).mode) {
 			case AutoSaveMode.ON_FOCUS_CHANGE:
 				reason = SaveReason.FOCUS_CHANGE;
 				break;
@@ -213,21 +184,21 @@ export class EditorAutoSave
 		}
 
 		if (reason) {
-			this.saveAllDirtyAutoSaveables({ reason });
+			this.saveAllDirtyAutoSaveables(reason);
 		}
 	}
 
-	private saveAllDirtyAutoSaveables(options?: ISaveOptions): void {
+	private saveAllDirtyAutoSaveables(reason: SaveReason): void {
 		for (const workingCopy of this.workingCopyService.dirtyWorkingCopies) {
-			if (
-				!(
-					workingCopy.capabilities & WorkingCopyCapabilities.Untitled
-				) &&
-				this.filesConfigurationService.getAutoSaveMode(
-					workingCopy.resource,
-				) !== AutoSaveMode.OFF
-			) {
-				workingCopy.save(options);
+			if (workingCopy.capabilities & WorkingCopyCapabilities.Untitled) {
+				continue; // we never auto save untitled working copies
+			}
+
+			const autoSaveMode = this.filesConfigurationService.getAutoSaveMode(workingCopy.resource);
+			if (autoSaveMode.mode !== AutoSaveMode.OFF) {
+				workingCopy.save({ reason });
+			} else if (autoSaveMode.reason === AutoSaveDisabledReason.ERRORS) {
+				this.waitingOnErrorAutoSaveWorkingCopies.set(workingCopy.resource, { workingCopy, reason });
 			}
 		}
 	}
@@ -264,61 +235,47 @@ export class EditorAutoSave
 			return; // we never auto save untitled working copies
 		}
 
-		const autoSaveAfterDelay =
-			this.filesConfigurationService.getAutoSaveConfiguration(
-				workingCopy.resource,
-			).autoSaveDelay;
-		if (typeof autoSaveAfterDelay !== "number") {
+		const autoSaveAfterDelay = this.filesConfigurationService.getAutoSaveConfiguration(workingCopy.resource).autoSaveDelay;
+		if (typeof autoSaveAfterDelay !== 'number') {
 			return; // auto save after delay must be enabled
 		}
 
 		// Clear any running auto save operation
 		this.discardAutoSave(workingCopy);
 
-		this.logService.trace(
-			`[editor auto save] scheduling auto save after ${autoSaveAfterDelay}ms`,
-			workingCopy.resource.toString(),
-			workingCopy.typeId,
-		);
+		this.logService.trace(`[editor auto save] scheduling auto save after ${autoSaveAfterDelay}ms`, workingCopy.resource.toString(), workingCopy.typeId);
 
 		// Schedule new auto save
 		const handle = setTimeout(() => {
-			// Clear disposable
+
+			// Clear pending
 			this.discardAutoSave(workingCopy);
 
-			// Save if dirty
-			if (
-				workingCopy.isDirty() &&
-				this.filesConfigurationService.getAutoSaveMode(
-					workingCopy.resource,
-				) !== AutoSaveMode.OFF
-			) {
-				this.logService.trace(
-					`[editor auto save] running auto save`,
-					workingCopy.resource.toString(),
-					workingCopy.typeId,
-				);
-				workingCopy.save({ reason: SaveReason.AUTO });
+			// Save if dirty and unless prevented by other conditions such as error markers
+			if (workingCopy.isDirty()) {
+				const autoSaveMode = this.filesConfigurationService.getAutoSaveMode(workingCopy.resource);
+				if (autoSaveMode.mode !== AutoSaveMode.OFF) {
+					this.logService.trace(`[editor auto save] running auto save`, workingCopy.resource.toString(), workingCopy.typeId);
+					workingCopy.save({ reason: SaveReason.AUTO });
+				} else if (autoSaveMode.reason === AutoSaveDisabledReason.ERRORS) {
+					this.waitingOnErrorAutoSaveWorkingCopies.set(workingCopy.resource, { workingCopy, reason: SaveReason.AUTO });
+				}
 			}
 		}, autoSaveAfterDelay);
 
 		// Keep in map for disposal as needed
-		this.pendingAutoSavesAfterDelay.set(
-			workingCopy,
-			toDisposable(() => {
-				this.logService.trace(
-					`[editor auto save] clearing pending auto save`,
-					workingCopy.resource.toString(),
-					workingCopy.typeId,
-				);
+		this.scheduledAutoSavesAfterDelay.set(workingCopy, toDisposable(() => {
+			this.logService.trace(`[editor auto save] clearing pending auto save`, workingCopy.resource.toString(), workingCopy.typeId);
 
-				clearTimeout(handle);
-			}),
-		);
+			clearTimeout(handle);
+		}));
 	}
 
 	private discardAutoSave(workingCopy: IWorkingCopy): void {
-		dispose(this.pendingAutoSavesAfterDelay.get(workingCopy));
-		this.pendingAutoSavesAfterDelay.delete(workingCopy);
+		dispose(this.scheduledAutoSavesAfterDelay.get(workingCopy));
+		this.scheduledAutoSavesAfterDelay.delete(workingCopy);
+
+		this.waitingOnErrorAutoSaveWorkingCopies.delete(workingCopy.resource);
+		this.waitingOnErrorAutoSaveEditors.delete(workingCopy.resource);
 	}
 }

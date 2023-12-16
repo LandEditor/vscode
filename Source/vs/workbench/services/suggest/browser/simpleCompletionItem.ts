@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FuzzyScore } from "vs/base/common/filters";
-import { ThemeIcon } from "vs/base/common/themables";
+import { FuzzyScore } from 'vs/base/common/filters';
+import { ThemeIcon } from 'vs/base/common/themables';
 
 export interface ISimpleCompletion {
 	/**
@@ -31,7 +31,9 @@ export class SimpleCompletionItem {
 	idx?: number;
 	word?: string;
 
-	constructor(readonly completion: ISimpleCompletion) {
+	constructor(
+		readonly completion: ISimpleCompletion
+	) {
 		// ensure lower-variants (perf)
 		this.labelLow = this.completion.label.toLowerCase();
 	}

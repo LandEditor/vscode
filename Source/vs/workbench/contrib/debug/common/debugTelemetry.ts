@@ -3,15 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IDebugModel,
-	IDebugSession,
-	AdapterEndEvent,
-} from "vs/workbench/contrib/debug/common/debug";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { Debugger } from "vs/workbench/contrib/debug/common/debugger";
+import { IDebugModel, IDebugSession, AdapterEndEvent } from 'vs/workbench/contrib/debug/common/debug';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { Debugger } from 'vs/workbench/contrib/debug/common/debugger';
 
 export class DebugTelemetry {
+
 	constructor(
 		private readonly model: IDebugModel,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
@@ -31,21 +28,19 @@ export class DebugTelemetry {
 				"launchJsonExists": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 			}
 		*/
-		this.telemetryService.publicLog("debugSessionStart", {
+		this.telemetryService.publicLog('debugSessionStart', {
 			type: dbgr.type,
 			breakpointCount: this.model.getBreakpoints().length,
 			exceptionBreakpoints: this.model.getExceptionBreakpoints(),
 			watchExpressionsCount: this.model.getWatchExpressions().length,
 			extensionName: extension.identifier.value,
 			isBuiltin: extension.isBuiltin,
-			launchJsonExists,
+			launchJsonExists
 		});
 	}
 
-	logDebugSessionStop(
-		session: IDebugSession,
-		adapterExitEvent: AdapterEndEvent,
-	) {
+	logDebugSessionStop(session: IDebugSession, adapterExitEvent: AdapterEndEvent) {
+
 		const breakpoints = this.model.getBreakpoints();
 
 		/* __GDPR__
@@ -58,13 +53,12 @@ export class DebugTelemetry {
 				"watchExpressionsCount": { "classification": "SystemMetaData", "purpose": "FeatureInsight", "isMeasurement": true }
 			}
 		*/
-		this.telemetryService.publicLog("debugSessionStop", {
+		this.telemetryService.publicLog('debugSessionStop', {
 			type: session && session.configuration.type,
-			success:
-				adapterExitEvent.emittedStopped || breakpoints.length === 0,
+			success: adapterExitEvent.emittedStopped || breakpoints.length === 0,
 			sessionLengthInSeconds: adapterExitEvent.sessionLengthInSeconds,
 			breakpointCount: breakpoints.length,
-			watchExpressionsCount: this.model.getWatchExpressions().length,
+			watchExpressionsCount: this.model.getWatchExpressions().length
 		});
 	}
 }

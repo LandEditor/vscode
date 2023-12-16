@@ -3,17 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { IJSONSchema } from "vs/base/common/jsonSchema";
-import { KeyCode } from "vs/base/common/keyCodes";
-import { ResolvedKeybinding, Keybinding } from "vs/base/common/keybindings";
-import {
-	IContextKeyService,
-	IContextKeyServiceTarget,
-} from "vs/platform/contextkey/common/contextkey";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ResolutionResult } from "vs/platform/keybinding/common/keybindingResolver";
-import { ResolvedKeybindingItem } from "vs/platform/keybinding/common/resolvedKeybindingItem";
+import { Event } from 'vs/base/common/event';
+import { IJSONSchema } from 'vs/base/common/jsonSchema';
+import { KeyCode } from 'vs/base/common/keyCodes';
+import { ResolvedKeybinding, Keybinding } from 'vs/base/common/keybindings';
+import { IContextKeyService, IContextKeyServiceTarget } from 'vs/platform/contextkey/common/contextkey';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { ResolutionResult } from 'vs/platform/keybinding/common/keybindingResolver';
+import { ResolvedKeybindingItem } from 'vs/platform/keybinding/common/resolvedKeybindingItem';
 
 export interface IUserFriendlyKeybinding {
 	key: string;
@@ -40,8 +37,7 @@ export interface KeybindingsSchemaContribution {
 	getSchemaAdditions(): IJSONSchema[];
 }
 
-export const IKeybindingService =
-	createDecorator<IKeybindingService>("keybindingService");
+export const IKeybindingService = createDecorator<IKeybindingService>('keybindingService');
 
 export interface IKeybindingService {
 	readonly _serviceBrand: undefined;
@@ -67,15 +63,9 @@ export interface IKeybindingService {
 	/**
 	 * Resolve and dispatch `keyboardEvent`, but do not invoke the command or change inner state.
 	 */
-	softDispatch(
-		keyboardEvent: IKeyboardEvent,
-		target: IContextKeyServiceTarget,
-	): ResolutionResult;
+	softDispatch(keyboardEvent: IKeyboardEvent, target: IContextKeyServiceTarget): ResolutionResult;
 
-	dispatchByUserSettingsLabel(
-		userSettingsLabel: string,
-		target: IContextKeyServiceTarget,
-	): void;
+	dispatchByUserSettingsLabel(userSettingsLabel: string, target: IContextKeyServiceTarget): void;
 
 	/**
 	 * Look up keybindings for a command.
@@ -87,10 +77,7 @@ export interface IKeybindingService {
 	 * Look up the preferred (last defined) keybinding for a command.
 	 * @returns The preferred keybinding or null if the command is not bound.
 	 */
-	lookupKeybinding(
-		commandId: string,
-		context?: IContextKeyService,
-	): ResolvedKeybinding | undefined;
+	lookupKeybinding(commandId: string, context?: IContextKeyService): ResolvedKeybinding | undefined;
 
 	getDefaultKeybindingsContent(): string;
 
@@ -106,12 +93,11 @@ export interface IKeybindingService {
 	 */
 	mightProducePrintableCharacter(event: IKeyboardEvent): boolean;
 
-	registerSchemaContribution(
-		contribution: KeybindingsSchemaContribution,
-	): void;
+	registerSchemaContribution(contribution: KeybindingsSchemaContribution): void;
 
 	toggleLogging(): boolean;
 
 	_dumpDebugInfo(): string;
 	_dumpDebugInfoJSON(): string;
 }
+

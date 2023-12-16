@@ -3,40 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { CancelablePromise, disposableTimeout } from "vs/base/common/async";
-import { Codicon } from "vs/base/common/codicons";
-import { Disposable, MutableDisposable } from "vs/base/common/lifecycle";
-import { noBreakWhitespace } from "vs/base/common/strings";
-import { ThemeIcon } from "vs/base/common/themables";
-import "vs/css!./inlineProgressWidget";
-import {
-	ContentWidgetPositionPreference,
-	ICodeEditor,
-	IContentWidget,
-	IContentWidgetPosition,
-} from "vs/editor/browser/editorBrowser";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { IPosition } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
-import { IEditorDecorationsCollection } from "vs/editor/common/editorCommon";
-import { TrackedRangeStickiness } from "vs/editor/common/model";
-import { ModelDecorationOptions } from "vs/editor/common/model/textModel";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import * as dom from 'vs/base/browser/dom';
+import { CancelablePromise, disposableTimeout } from 'vs/base/common/async';
+import { Codicon } from 'vs/base/common/codicons';
+import { Disposable, MutableDisposable } from 'vs/base/common/lifecycle';
+import { noBreakWhitespace } from 'vs/base/common/strings';
+import { ThemeIcon } from 'vs/base/common/themables';
+import 'vs/css!./inlineProgressWidget';
+import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from 'vs/editor/browser/editorBrowser';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { IPosition } from 'vs/editor/common/core/position';
+import { Range } from 'vs/editor/common/core/range';
+import { IEditorDecorationsCollection } from 'vs/editor/common/editorCommon';
+import { TrackedRangeStickiness } from 'vs/editor/common/model';
+import { ModelDecorationOptions } from 'vs/editor/common/model/textModel';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 const inlineProgressDecoration = ModelDecorationOptions.register({
-	description: "inline-progress-widget",
+	description: 'inline-progress-widget',
 	stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 	showIfCollapsed: true,
 	after: {
 		content: noBreakWhitespace,
-		inlineClassName: "inline-editor-progress-decoration",
+		inlineClassName: 'inline-editor-progress-decoration',
 		inlineClassNameAffectsLetterSpacing: true,
-	},
+	}
 });
 
+
 class InlineProgressWidget extends Disposable implements IContentWidget {
-	private static readonly baseId = "editor.widget.inlineProgressWidget";
+	private static readonly baseId = 'editor.widget.inlineProgressWidget';
 
 	allowEditorOverflow = false;
 	suppressMouseDown = true;
@@ -59,17 +55,14 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 	}
 
 	private create(title: string): void {
-		this.domNode = dom.$(".inline-progress-widget");
-		this.domNode.role = "button";
+		this.domNode = dom.$('.inline-progress-widget');
+		this.domNode.role = 'button';
 		this.domNode.title = title;
 
-		const iconElement = dom.$("span.icon");
+		const iconElement = dom.$('span.icon');
 		this.domNode.append(iconElement);
 
-		iconElement.classList.add(
-			...ThemeIcon.asClassNameArray(Codicon.loading),
-			"codicon-modifier-spin",
-		);
+		iconElement.classList.add(...ThemeIcon.asClassNameArray(Codicon.loading), 'codicon-modifier-spin');
 
 		const updateSize = () => {
 			const lineHeight = this.editor.getOption(EditorOption.lineHeight);
@@ -78,30 +71,19 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 		};
 		updateSize();
 
-		this._register(
-			this.editor.onDidChangeConfiguration((c) => {
-				if (
-					c.hasChanged(EditorOption.fontSize) ||
-					c.hasChanged(EditorOption.lineHeight)
-				) {
-					updateSize();
-				}
-			}),
-		);
+		this._register(this.editor.onDidChangeConfiguration(c => {
+			if (c.hasChanged(EditorOption.fontSize) || c.hasChanged(EditorOption.lineHeight)) {
+				updateSize();
+			}
+		}));
 
-		this._register(
-			dom.addDisposableListener(
-				this.domNode,
-				dom.EventType.CLICK,
-				(e) => {
-					this.delegate.cancel();
-				},
-			),
-		);
+		this._register(dom.addDisposableListener(this.domNode, dom.EventType.CLICK, e => {
+			this.delegate.cancel();
+		}));
 	}
 
 	getId(): string {
-		return InlineProgressWidget.baseId + "." + this.typeId;
+		return InlineProgressWidget.baseId + '.' + this.typeId;
 	}
 
 	getDomNode(): HTMLElement {
@@ -110,11 +92,8 @@ class InlineProgressWidget extends Disposable implements IContentWidget {
 
 	getPosition(): IContentWidgetPosition | null {
 		return {
-			position: {
-				lineNumber: this.range.startLineNumber,
-				column: this.range.startColumn,
-			},
-			preference: [ContentWidgetPositionPreference.EXACT],
+			position: { lineNumber: this.range.startLineNumber, column: this.range.startColumn },
+			preference: [ContentWidgetPositionPreference.EXACT]
 		};
 	}
 
@@ -129,13 +108,13 @@ interface InlineProgressDelegate {
 }
 
 export class InlineProgressManager extends Disposable {
+
 	/** Delay before showing the progress widget */
 	private readonly _showDelay = 500; // ms
 	private readonly _showPromise = this._register(new MutableDisposable());
 
 	private readonly _currentDecorations: IEditorDecorationsCollection;
-	private readonly _currentWidget =
-		new MutableDisposable<InlineProgressWidget>();
+	private readonly _currentWidget = new MutableDisposable<InlineProgressWidget>();
 
 	private _operationIdPool = 0;
 	private _currentOperation?: number;
@@ -150,11 +129,7 @@ export class InlineProgressManager extends Disposable {
 		this._currentDecorations = _editor.createDecorationsCollection();
 	}
 
-	public async showWhile<R>(
-		position: IPosition,
-		title: string,
-		promise: CancelablePromise<R>,
-	): Promise<R> {
+	public async showWhile<R>(position: IPosition, title: string, promise: CancelablePromise<R>): Promise<R> {
 		const operationId = this._operationIdPool++;
 		this._currentOperation = operationId;
 
@@ -162,23 +137,13 @@ export class InlineProgressManager extends Disposable {
 
 		this._showPromise.value = disposableTimeout(() => {
 			const range = Range.fromPositions(position);
-			const decorationIds = this._currentDecorations.set([
-				{
-					range: range,
-					options: inlineProgressDecoration,
-				},
-			]);
+			const decorationIds = this._currentDecorations.set([{
+				range: range,
+				options: inlineProgressDecoration,
+			}]);
 
 			if (decorationIds.length > 0) {
-				this._currentWidget.value =
-					this._instantiationService.createInstance(
-						InlineProgressWidget,
-						this.id,
-						this._editor,
-						range,
-						title,
-						promise,
-					);
+				this._currentWidget.value = this._instantiationService.createInstance(InlineProgressWidget, this.id, this._editor, range, title, promise);
 			}
 		}, this._showDelay);
 

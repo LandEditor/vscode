@@ -3,104 +3,56 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { h } from "vs/base/browser/dom";
-import { ActionViewItem } from "vs/base/browser/ui/actionbar/actionViewItems";
-import {
-	KeybindingLabel,
-	unthemedKeybindingLabelOptions,
-} from "vs/base/browser/ui/keybindingLabel/keybindingLabel";
-import { Action, IAction, Separator } from "vs/base/common/actions";
-import { equals } from "vs/base/common/arrays";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { Codicon } from "vs/base/common/codicons";
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
-import {
-	IObservable,
-	autorun,
-	autorunWithStore,
-	derived,
-	observableFromEvent,
-} from "vs/base/common/observable";
-import { OS } from "vs/base/common/platform";
-import { ThemeIcon } from "vs/base/common/themables";
-import "vs/css!./inlineCompletionsHintsWidget";
-import {
-	ContentWidgetPositionPreference,
-	ICodeEditor,
-	IContentWidget,
-	IContentWidgetPosition,
-} from "vs/editor/browser/editorBrowser";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { Position } from "vs/editor/common/core/position";
-import {
-	Command,
-	InlineCompletionTriggerKind,
-} from "vs/editor/common/languages";
-import { PositionAffinity } from "vs/editor/common/model";
-import {
-	showNextInlineSuggestionActionId,
-	showPreviousInlineSuggestionActionId,
-} from "vs/editor/contrib/inlineCompletions/browser/commandIds";
-import { InlineCompletionsModel } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsModel";
-import { localize } from "vs/nls";
-import {
-	MenuEntryActionViewItem,
-	createAndFillInActionBarActions,
-} from "vs/platform/actions/browser/menuEntryActionViewItem";
-import {
-	IMenuWorkbenchToolBarOptions,
-	WorkbenchToolBar,
-} from "vs/platform/actions/browser/toolbar";
-import {
-	IMenuService,
-	MenuId,
-	MenuItemAction,
-} from "vs/platform/actions/common/actions";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { registerIcon } from "vs/platform/theme/common/iconRegistry";
+import { h } from 'vs/base/browser/dom';
+import { ActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
+import { KeybindingLabel, unthemedKeybindingLabelOptions } from 'vs/base/browser/ui/keybindingLabel/keybindingLabel';
+import { Action, IAction, Separator } from 'vs/base/common/actions';
+import { equals } from 'vs/base/common/arrays';
+import { RunOnceScheduler } from 'vs/base/common/async';
+import { Codicon } from 'vs/base/common/codicons';
+import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
+import { IObservable, autorun, autorunWithStore, derived, observableFromEvent } from 'vs/base/common/observable';
+import { OS } from 'vs/base/common/platform';
+import { ThemeIcon } from 'vs/base/common/themables';
+import 'vs/css!./inlineCompletionsHintsWidget';
+import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from 'vs/editor/browser/editorBrowser';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Position } from 'vs/editor/common/core/position';
+import { Command, InlineCompletionTriggerKind } from 'vs/editor/common/languages';
+import { PositionAffinity } from 'vs/editor/common/model';
+import { showNextInlineSuggestionActionId, showPreviousInlineSuggestionActionId } from 'vs/editor/contrib/inlineCompletions/browser/commandIds';
+import { InlineCompletionsModel } from 'vs/editor/contrib/inlineCompletions/browser/inlineCompletionsModel';
+import { localize } from 'vs/nls';
+import { MenuEntryActionViewItem, createAndFillInActionBarActions } from 'vs/platform/actions/browser/menuEntryActionViewItem';
+import { IMenuWorkbenchToolBarOptions, WorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
+import { IMenuService, MenuId, MenuItemAction } from 'vs/platform/actions/common/actions';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { registerIcon } from 'vs/platform/theme/common/iconRegistry';
 
 export class InlineCompletionsHintsWidget extends Disposable {
-	private readonly alwaysShowToolbar = observableFromEvent(
-		this.editor.onDidChangeConfiguration,
-		() =>
-			this.editor.getOption(EditorOption.inlineSuggest).showToolbar ===
-			"always",
-	);
+	private readonly alwaysShowToolbar = observableFromEvent(this.editor.onDidChangeConfiguration, () => this.editor.getOption(EditorOption.inlineSuggest).showToolbar === 'always');
 
 	private sessionPosition: Position | undefined = undefined;
 
-	private readonly position = derived(this, (reader) => {
+	private readonly position = derived(this, reader => {
 		const ghostText = this.model.read(reader)?.ghostText.read(reader);
 
-		if (
-			!this.alwaysShowToolbar.read(reader) ||
-			!ghostText ||
-			ghostText.parts.length === 0
-		) {
+		if (!this.alwaysShowToolbar.read(reader) || !ghostText || ghostText.parts.length === 0) {
 			this.sessionPosition = undefined;
 			return null;
 		}
 
 		const firstColumn = ghostText.parts[0].column;
-		if (
-			this.sessionPosition &&
-			this.sessionPosition.lineNumber !== ghostText.lineNumber
-		) {
+		if (this.sessionPosition && this.sessionPosition.lineNumber !== ghostText.lineNumber) {
 			this.sessionPosition = undefined;
 		}
 
-		const position = new Position(
-			ghostText.lineNumber,
-			Math.min(
-				firstColumn,
-				this.sessionPosition?.column ?? Number.MAX_SAFE_INTEGER,
-			),
-		);
+		const position = new Position(ghostText.lineNumber, Math.min(firstColumn, this.sessionPosition?.column ?? Number.MAX_SAFE_INTEGER));
 		this.sessionPosition = position;
 		return position;
 	});
@@ -145,28 +97,12 @@ export class InlineCompletionsHintsWidget extends Disposable {
 	}
 }
 
-const inlineSuggestionHintsNextIcon = registerIcon(
-	"inline-suggestion-hints-next",
-	Codicon.chevronRight,
-	localize("parameterHintsNextIcon", "Icon for show next parameter hint."),
-);
-const inlineSuggestionHintsPreviousIcon = registerIcon(
-	"inline-suggestion-hints-previous",
-	Codicon.chevronLeft,
-	localize(
-		"parameterHintsPreviousIcon",
-		"Icon for show previous parameter hint.",
-	),
-);
+const inlineSuggestionHintsNextIcon = registerIcon('inline-suggestion-hints-next', Codicon.chevronRight, localize('parameterHintsNextIcon', 'Icon for show next parameter hint.'));
+const inlineSuggestionHintsPreviousIcon = registerIcon('inline-suggestion-hints-previous', Codicon.chevronLeft, localize('parameterHintsPreviousIcon', 'Icon for show previous parameter hint.'));
 
-export class InlineSuggestionHintsContentWidget
-	extends Disposable
-	implements IContentWidget
-{
+export class InlineSuggestionHintsContentWidget extends Disposable implements IContentWidget {
 	private static _dropDownVisible = false;
-	public static get dropDownVisible() {
-		return this._dropDownVisible;
-	}
+	public static get dropDownVisible() { return this._dropDownVisible; }
 
 	private static id = 0;
 
@@ -174,76 +110,46 @@ export class InlineSuggestionHintsContentWidget
 	public readonly allowEditorOverflow = true;
 	public readonly suppressMouseDown = false;
 
-	private readonly nodes = h(
-		"div.inlineSuggestionsHints",
-		{ className: this.withBorder ? ".withBorder" : "" },
-		[h("div@toolBar")],
-	);
+	private readonly nodes = h('div.inlineSuggestionsHints', { className: this.withBorder ? '.withBorder' : '' }, [
+		h('div@toolBar'),
+	]);
 
-	private createCommandAction(
-		commandId: string,
-		label: string,
-		iconClassName: string,
-	): Action {
-		const action = new Action(commandId, label, iconClassName, true, () =>
-			this._commandService.executeCommand(commandId),
-		);
-		const kb = this.keybindingService.lookupKeybinding(
+	private createCommandAction(commandId: string, label: string, iconClassName: string): Action {
+		const action = new Action(
 			commandId,
-			this._contextKeyService,
+			label,
+			iconClassName,
+			true,
+			() => this._commandService.executeCommand(commandId),
 		);
+		const kb = this.keybindingService.lookupKeybinding(commandId, this._contextKeyService);
 		let tooltip = label;
 		if (kb) {
-			tooltip = localize(
-				{ key: "content", comment: ["A label", "A keybinding"] },
-				"{0} ({1})",
-				label,
-				kb.getLabel(),
-			);
+			tooltip = localize({ key: 'content', comment: ['A label', 'A keybinding'] }, '{0} ({1})', label, kb.getLabel());
 		}
 		action.tooltip = tooltip;
 		return action;
 	}
 
-	private readonly previousAction = this.createCommandAction(
-		showPreviousInlineSuggestionActionId,
-		localize("previous", "Previous"),
-		ThemeIcon.asClassName(inlineSuggestionHintsPreviousIcon),
-	);
-	private readonly availableSuggestionCountAction = new Action(
-		"inlineSuggestionHints.availableSuggestionCount",
-		"",
-		undefined,
-		false,
-	);
-	private readonly nextAction = this.createCommandAction(
-		showNextInlineSuggestionActionId,
-		localize("next", "Next"),
-		ThemeIcon.asClassName(inlineSuggestionHintsNextIcon),
-	);
+	private readonly previousAction = this.createCommandAction(showPreviousInlineSuggestionActionId, localize('previous', 'Previous'), ThemeIcon.asClassName(inlineSuggestionHintsPreviousIcon));
+	private readonly availableSuggestionCountAction = new Action('inlineSuggestionHints.availableSuggestionCount', '', undefined, false);
+	private readonly nextAction = this.createCommandAction(showNextInlineSuggestionActionId, localize('next', 'Next'), ThemeIcon.asClassName(inlineSuggestionHintsNextIcon));
 
 	private readonly toolBar: CustomizedMenuWorkbenchToolBar;
 
 	// TODO@hediet: deprecate MenuId.InlineCompletionsActions
-	private readonly inlineCompletionsActionsMenus = this._register(
-		this._menuService.createMenu(
-			MenuId.InlineCompletionsActions,
-			this._contextKeyService,
-		),
-	);
+	private readonly inlineCompletionsActionsMenus = this._register(this._menuService.createMenu(
+		MenuId.InlineCompletionsActions,
+		this._contextKeyService
+	));
 
-	private readonly clearAvailableSuggestionCountLabelDebounced =
-		this._register(
-			new RunOnceScheduler(() => {
-				this.availableSuggestionCountAction.label = "";
-			}, 100),
-		);
+	private readonly clearAvailableSuggestionCountLabelDebounced = this._register(new RunOnceScheduler(() => {
+		this.availableSuggestionCountAction.label = '';
+	}, 100));
 
-	private readonly disableButtonsDebounced = this._register(
-		new RunOnceScheduler(() => {
-			this.previousAction.enabled = this.nextAction.enabled = false;
-		}, 100),
-	);
+	private readonly disableButtonsDebounced = this._register(new RunOnceScheduler(() => {
+		this.previousAction.enabled = this.nextAction.enabled = false;
+	}, 100));
 
 	private lastCommands: Command[] = [];
 
@@ -353,9 +259,7 @@ export class InlineSuggestionHintsContentWidget
 		}));
 	}
 
-	getId(): string {
-		return this.id;
-	}
+	getId(): string { return this.id; }
 
 	getDomNode(): HTMLElement {
 		return this.nodes.root;
@@ -364,10 +268,7 @@ export class InlineSuggestionHintsContentWidget
 	getPosition(): IContentWidgetPosition | null {
 		return {
 			position: this._position.get(),
-			preference: [
-				ContentWidgetPositionPreference.ABOVE,
-				ContentWidgetPositionPreference.BELOW,
-			],
+			preference: [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW],
 			positionAffinity: PositionAffinity.LeftOfInjectedText,
 		};
 	}
@@ -394,24 +295,18 @@ class ActionViewItemWithClassName extends ActionViewItem {
 
 class StatusBarViewItem extends MenuEntryActionViewItem {
 	protected override updateLabel() {
-		const kb = this._keybindingService.lookupKeybinding(
-			this._action.id,
-			this._contextKeyService,
-		);
+		const kb = this._keybindingService.lookupKeybinding(this._action.id, this._contextKeyService);
 		if (!kb) {
 			return super.updateLabel();
 		}
 		if (this.label) {
-			const div = h("div.keybinding").root;
+			const div = h('div.keybinding').root;
 
-			const k = new KeybindingLabel(div, OS, {
-				disableTitle: true,
-				...unthemedKeybindingLabelOptions,
-			});
+			const k = new KeybindingLabel(div, OS, { disableTitle: true, ...unthemedKeybindingLabelOptions });
 			k.set(kb);
 			this.label.textContent = this._action.label;
 			this.label.appendChild(div);
-			this.label.classList.add("inlineSuggestionStatusBarItemLabel");
+			this.label.classList.add('inlineSuggestionStatusBarItemLabel');
 		}
 	}
 
@@ -421,11 +316,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 }
 
 export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
-	private readonly menu = this._store.add(
-		this.menuService.createMenu(this.menuId, this.contextKeyService, {
-			emitEventsForSubmenuChanges: true,
-		}),
-	);
+	private readonly menu = this._store.add(this.menuService.createMenu(this.menuId, this.contextKeyService, { emitEventsForSubmenuChanges: true }));
 	private additionalActions: IAction[] = [];
 	private prependedPrimaryActions: IAction[] = [];
 
@@ -452,9 +343,7 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 			this.menu,
 			this.options2?.menuOptions,
 			{ primary, secondary },
-			this.options2?.toolbarOptions?.primaryGroup,
-			this.options2?.toolbarOptions?.shouldInlineSubmenu,
-			this.options2?.toolbarOptions?.useSeparatorsInPrimaryActions,
+			this.options2?.toolbarOptions?.primaryGroup, this.options2?.toolbarOptions?.shouldInlineSubmenu, this.options2?.toolbarOptions?.useSeparatorsInPrimaryActions
 		);
 
 		secondary.push(...this.additionalActions);

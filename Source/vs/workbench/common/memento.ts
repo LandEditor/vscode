@@ -3,28 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { isEmptyObject } from "vs/base/common/types";
-import { onUnexpectedError } from "vs/base/common/errors";
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { isEmptyObject } from 'vs/base/common/types';
+import { onUnexpectedError } from 'vs/base/common/errors';
 
 export type MementoObject = { [key: string]: any };
 
 export class Memento {
-	private static readonly applicationMementos = new Map<
-		string,
-		ScopedMemento
-	>();
-	private static readonly profileMementos = new Map<string, ScopedMemento>();
-	private static readonly workspaceMementos = new Map<
-		string,
-		ScopedMemento
-	>();
 
-	private static readonly COMMON_PREFIX = "memento/";
+	private static readonly applicationMementos = new Map<string, ScopedMemento>();
+	private static readonly profileMementos = new Map<string, ScopedMemento>();
+	private static readonly workspaceMementos = new Map<string, ScopedMemento>();
+
+	private static readonly COMMON_PREFIX = 'memento/';
 
 	private readonly id: string;
 
@@ -34,16 +25,12 @@ export class Memento {
 
 	getMemento(scope: StorageScope, target: StorageTarget): MementoObject {
 		switch (scope) {
+
 			// Scope by Workspace
 			case StorageScope.WORKSPACE: {
 				let workspaceMemento = Memento.workspaceMementos.get(this.id);
 				if (!workspaceMemento) {
-					workspaceMemento = new ScopedMemento(
-						this.id,
-						scope,
-						target,
-						this.storageService,
-					);
+					workspaceMemento = new ScopedMemento(this.id, scope, target, this.storageService);
 					Memento.workspaceMementos.set(this.id, workspaceMemento);
 				}
 
@@ -54,12 +41,7 @@ export class Memento {
 			case StorageScope.PROFILE: {
 				let profileMemento = Memento.profileMementos.get(this.id);
 				if (!profileMemento) {
-					profileMemento = new ScopedMemento(
-						this.id,
-						scope,
-						target,
-						this.storageService,
-					);
+					profileMemento = new ScopedMemento(this.id, scope, target, this.storageService);
 					Memento.profileMementos.set(this.id, profileMemento);
 				}
 
@@ -68,20 +50,10 @@ export class Memento {
 
 			// Scope Application
 			case StorageScope.APPLICATION: {
-				let applicationMemento = Memento.applicationMementos.get(
-					this.id,
-				);
+				let applicationMemento = Memento.applicationMementos.get(this.id);
 				if (!applicationMemento) {
-					applicationMemento = new ScopedMemento(
-						this.id,
-						scope,
-						target,
-						this.storageService,
-					);
-					Memento.applicationMementos.set(
-						this.id,
-						applicationMemento,
-					);
+					applicationMemento = new ScopedMemento(this.id, scope, target, this.storageService);
+					Memento.applicationMementos.set(this.id, applicationMemento);
 				}
 
 				return applicationMemento.getMemento();
@@ -111,14 +83,10 @@ export class Memento {
 }
 
 class ScopedMemento {
+
 	private readonly mementoObj: MementoObject;
 
-	constructor(
-		private id: string,
-		private scope: StorageScope,
-		private target: StorageTarget,
-		private storageService: IStorageService,
-	) {
+	constructor(private id: string, private scope: StorageScope, private target: StorageTarget, private storageService: IStorageService) {
 		this.mementoObj = this.load();
 	}
 
@@ -136,9 +104,7 @@ class ScopedMemento {
 				// from memento parsing exceptions. Log the contents
 				// to diagnose further
 				// https://github.com/microsoft/vscode/issues/102251
-				onUnexpectedError(
-					`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${memento})`,
-				);
+				onUnexpectedError(`[memento]: failed to parse contents: ${error} (id: ${this.id}, scope: ${this.scope}, contents: ${memento})`);
 			}
 		}
 
@@ -147,12 +113,7 @@ class ScopedMemento {
 
 	save(): void {
 		if (!isEmptyObject(this.mementoObj)) {
-			this.storageService.store(
-				this.id,
-				JSON.stringify(this.mementoObj),
-				this.scope,
-				this.target,
-			);
+			this.storageService.store(this.id, JSON.stringify(this.mementoObj), this.scope, this.target);
 		} else {
 			this.storageService.remove(this.id, this.scope);
 		}

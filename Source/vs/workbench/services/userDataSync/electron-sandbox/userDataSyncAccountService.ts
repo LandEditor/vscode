@@ -3,40 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IChannel } from "vs/base/parts/ipc/common/ipc";
-import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { Disposable } from "vs/base/common/lifecycle";
-import { Event, Emitter } from "vs/base/common/event";
-import {
-	IUserDataSyncAccountService,
-	IUserDataSyncAccount,
-} from "vs/platform/userDataSync/common/userDataSyncAccount";
+import { IChannel } from 'vs/base/parts/ipc/common/ipc';
+import { ISharedProcessService } from 'vs/platform/ipc/electron-sandbox/services';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { Event, Emitter } from 'vs/base/common/event';
+import { IUserDataSyncAccountService, IUserDataSyncAccount } from 'vs/platform/userDataSync/common/userDataSyncAccount';
 
-export class UserDataSyncAccountService
-	extends Disposable
-	implements IUserDataSyncAccountService
-{
+export class UserDataSyncAccountService extends Disposable implements IUserDataSyncAccountService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private readonly channel: IChannel;
 
 	private _account: IUserDataSyncAccount | undefined;
-	get account(): IUserDataSyncAccount | undefined {
-		return this._account;
-	}
+	get account(): IUserDataSyncAccount | undefined { return this._account; }
 
-	get onTokenFailed(): Event<boolean> {
-		return this.channel.listen<boolean>("onTokenFailed");
-	}
+	get onTokenFailed(): Event<boolean> { return this.channel.listen<boolean>('onTokenFailed'); }
 
-	private _onDidChangeAccount: Emitter<IUserDataSyncAccount | undefined> =
-		this._register(new Emitter<IUserDataSyncAccount | undefined>());
-	readonly onDidChangeAccount: Event<IUserDataSyncAccount | undefined> =
-		this._onDidChangeAccount.event;
+	private _onDidChangeAccount: Emitter<IUserDataSyncAccount | undefined> = this._register(new Emitter<IUserDataSyncAccount | undefined>());
+	readonly onDidChangeAccount: Event<IUserDataSyncAccount | undefined> = this._onDidChangeAccount.event;
 
 	constructor(
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
@@ -52,15 +38,10 @@ export class UserDataSyncAccountService
 		});
 	}
 
-	updateAccount(
-		account: IUserDataSyncAccount | undefined,
-	): Promise<undefined> {
-		return this.channel.call("updateAccount", account);
+	updateAccount(account: IUserDataSyncAccount | undefined): Promise<undefined> {
+		return this.channel.call('updateAccount', account);
 	}
+
 }
 
-registerSingleton(
-	IUserDataSyncAccountService,
-	UserDataSyncAccountService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IUserDataSyncAccountService, UserDataSyncAccountService, InstantiationType.Delayed);

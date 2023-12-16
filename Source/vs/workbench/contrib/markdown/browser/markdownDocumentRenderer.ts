@@ -3,19 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	hookDomPurifyHrefAndSrcSanitizer,
-	basicMarkupHtmlTags,
-} from "vs/base/browser/dom";
-import * as dompurify from "vs/base/browser/dompurify/dompurify";
-import { allowedMarkdownAttr } from "vs/base/browser/markdownRenderer";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { marked } from "vs/base/common/marked/marked";
-import { Schemas } from "vs/base/common/network";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { tokenizeToString } from "vs/editor/common/languages/textToHtmlTokenizer";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import { escape } from "vs/base/common/strings";
+import { hookDomPurifyHrefAndSrcSanitizer, basicMarkupHtmlTags } from 'vs/base/browser/dom';
+import * as dompurify from 'vs/base/browser/dompurify/dompurify';
+import { allowedMarkdownAttr } from 'vs/base/browser/markdownRenderer';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { marked } from 'vs/base/common/marked/marked';
+import { Schemas } from 'vs/base/common/network';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { tokenizeToString } from 'vs/editor/common/languages/textToHtmlTokenizer';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { escape } from 'vs/base/common/strings';
 
 export const DEFAULT_MARKDOWN_STYLES = `
 body {
@@ -160,29 +157,23 @@ pre code {
 `;
 
 const allowedProtocols = [Schemas.http, Schemas.https, Schemas.command];
-function sanitize(
-	documentContent: string,
-	allowUnknownProtocols: boolean,
-): string {
+function sanitize(documentContent: string, allowUnknownProtocols: boolean): string {
+
 	const hook = hookDomPurifyHrefAndSrcSanitizer(allowedProtocols, true);
 
 	try {
 		return dompurify.sanitize(documentContent, {
 			...{
-				ALLOWED_TAGS: [...basicMarkupHtmlTags, "checkbox", "checklist"],
+				ALLOWED_TAGS: [
+					...basicMarkupHtmlTags,
+					'checkbox',
+					'checklist',
+				],
 				ALLOWED_ATTR: [
 					...allowedMarkdownAttr,
-					"data-command",
-					"name",
-					"id",
-					"role",
-					"tabindex",
-					"x-dispatch",
-					"required",
-					"checked",
-					"placeholder",
-					"when-checked",
-					"checked-on",
+					'data-command', 'name', 'id', 'role', 'tabindex',
+					'x-dispatch',
+					'required', 'checked', 'placeholder', 'when-checked', 'checked-on',
 				],
 			},
 			...(allowUnknownProtocols ? { ALLOW_UNKNOWN_PROTOCOLS: true } : {}),
@@ -205,43 +196,33 @@ export async function renderMarkdownDocument(
 	allowUnknownProtocols: boolean = false,
 	token?: CancellationToken,
 ): Promise<string> {
-	const highlight = (
-		code: string,
-		lang: string | undefined,
-		callback: ((error: any, code: string) => void) | undefined,
-	): any => {
+
+	const highlight = (code: string, lang: string | undefined, callback: ((error: any, code: string) => void) | undefined): any => {
 		if (!callback) {
 			return code;
 		}
 
-		if (typeof lang !== "string") {
+		if (typeof lang !== 'string') {
 			callback(null, `<code>${escape(code)}</code>`);
-			return "";
+			return '';
 		}
 
 		extensionService.whenInstalledExtensionsRegistered().then(async () => {
 			if (token?.isCancellationRequested) {
-				callback(null, "");
+				callback(null, '');
 				return;
 			}
 
-			const languageId =
-				languageService.getLanguageIdByLanguageName(lang);
-			const html = await tokenizeToString(
-				languageService,
-				code,
-				languageId,
-			);
+			const languageId = languageService.getLanguageIdByLanguageName(lang);
+			const html = await tokenizeToString(languageService, code, languageId);
 			callback(null, `<code>${html}</code>`);
 		});
-		return "";
+		return '';
 	};
 
 	return new Promise<string>((resolve, reject) => {
-		marked(text, { highlight }, (err, value) =>
-			err ? reject(err) : resolve(value),
-		);
-	}).then((raw) => {
+		marked(text, { highlight }, (err, value) => err ? reject(err) : resolve(value));
+	}).then(raw => {
 		if (shouldSanitize) {
 			return sanitize(raw, allowUnknownProtocols);
 		} else {

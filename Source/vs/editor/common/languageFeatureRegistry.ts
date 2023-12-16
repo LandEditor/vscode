@@ -3,15 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
-import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
-import { ITextModel, shouldSynchronizeModel } from "vs/editor/common/model";
-import {
-	LanguageFilter,
-	LanguageSelector,
-	score,
-} from "vs/editor/common/languageSelector";
-import { URI } from "vs/base/common/uri";
+import { Emitter } from 'vs/base/common/event';
+import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { ITextModel, shouldSynchronizeModel } from 'vs/editor/common/model';
+import { LanguageFilter, LanguageSelector, score } from 'vs/editor/common/languageSelector';
+import { URI } from 'vs/base/common/uri';
 
 interface Entry<T> {
 	selector: LanguageSelector;
@@ -21,7 +17,7 @@ interface Entry<T> {
 }
 
 function isExclusive(selector: LanguageSelector): boolean {
-	if (typeof selector === "string") {
+	if (typeof selector === 'string') {
 		return false;
 	} else if (Array.isArray(selector)) {
 		return selector.every(isExclusive);
@@ -44,36 +40,34 @@ class MatchCandidate {
 		readonly uri: URI,
 		readonly languageId: string,
 		readonly notebookUri: URI | undefined,
-		readonly notebookType: string | undefined,
-	) {}
+		readonly notebookType: string | undefined
+	) { }
 
 	equals(other: MatchCandidate): boolean {
-		return (
-			this.notebookType === other.notebookType &&
-			this.languageId === other.languageId &&
-			this.uri.toString() === other.uri.toString() &&
-			this.notebookUri?.toString() === other.notebookUri?.toString()
-		);
+		return this.notebookType === other.notebookType
+			&& this.languageId === other.languageId
+			&& this.uri.toString() === other.uri.toString()
+			&& this.notebookUri?.toString() === other.notebookUri?.toString();
 	}
 }
 
 export class LanguageFeatureRegistry<T> {
+
 	private _clock: number = 0;
 	private readonly _entries: Entry<T>[] = [];
 
 	private readonly _onDidChange = new Emitter<number>();
 	readonly onDidChange = this._onDidChange.event;
 
-	constructor(
-		private readonly _notebookInfoResolver?: NotebookInfoResolver,
-	) {}
+	constructor(private readonly _notebookInfoResolver?: NotebookInfoResolver) { }
 
 	register(selector: LanguageSelector, provider: T): IDisposable {
+
 		let entry: Entry<T> | undefined = {
 			selector,
 			provider,
 			_score: -1,
-			_time: this._clock++,
+			_time: this._clock++
 		};
 
 		this._entries.push(entry);
@@ -117,7 +111,7 @@ export class LanguageFeatureRegistry<T> {
 
 	ordered(model: ITextModel): T[] {
 		const result: T[] = [];
-		this._orderedForEach(model, (entry) => result.push(entry.provider));
+		this._orderedForEach(model, entry => result.push(entry.provider));
 		return result;
 	}
 
@@ -126,7 +120,7 @@ export class LanguageFeatureRegistry<T> {
 		let lastBucket: T[];
 		let lastBucketScore: number;
 
-		this._orderedForEach(model, (entry) => {
+		this._orderedForEach(model, entry => {
 			if (lastBucket && lastBucketScore === entry._score) {
 				lastBucket.push(entry.provider);
 			} else {
@@ -139,10 +133,8 @@ export class LanguageFeatureRegistry<T> {
 		return result;
 	}
 
-	private _orderedForEach(
-		model: ITextModel,
-		callback: (provider: Entry<T>) => any,
-	): void {
+	private _orderedForEach(model: ITextModel, callback: (provider: Entry<T>) => any): void {
+
 		this._updateScores(model);
 
 		for (const entry of this._entries) {
@@ -155,23 +147,14 @@ export class LanguageFeatureRegistry<T> {
 	private _lastCandidate: MatchCandidate | undefined;
 
 	private _updateScores(model: ITextModel): void {
+
 		const notebookInfo = this._notebookInfoResolver?.(model.uri);
 
 		// use the uri (scheme, pattern) of the notebook info iff we have one
 		// otherwise it's the model's/document's uri
 		const candidate = notebookInfo
-			? new MatchCandidate(
-					model.uri,
-					model.getLanguageId(),
-					notebookInfo.uri,
-					notebookInfo.type,
-			  )
-			: new MatchCandidate(
-					model.uri,
-					model.getLanguageId(),
-					undefined,
-					undefined,
-			  );
+			? new MatchCandidate(model.uri, model.getLanguageId(), notebookInfo.uri, notebookInfo.type)
+			: new MatchCandidate(model.uri, model.getLanguageId(), undefined, undefined);
 
 		if (this._lastCandidate?.equals(candidate)) {
 			// nothing has changed
@@ -181,14 +164,7 @@ export class LanguageFeatureRegistry<T> {
 		this._lastCandidate = candidate;
 
 		for (const entry of this._entries) {
-			entry._score = score(
-				entry.selector,
-				candidate.uri,
-				candidate.languageId,
-				shouldSynchronizeModel(model),
-				candidate.notebookUri,
-				candidate.notebookType,
-			);
+			entry._score = score(entry.selector, candidate.uri, candidate.languageId, shouldSynchronizeModel(model), candidate.notebookUri, candidate.notebookType);
 
 			if (isExclusive(entry.selector) && entry._score > 0) {
 				// support for one exclusive selector that overwrites
@@ -205,10 +181,7 @@ export class LanguageFeatureRegistry<T> {
 		this._entries.sort(LanguageFeatureRegistry._compareByScoreAndTime);
 	}
 
-	private static _compareByScoreAndTime(
-		a: Entry<any>,
-		b: Entry<any>,
-	): number {
+	private static _compareByScoreAndTime(a: Entry<any>, b: Entry<any>): number {
 		if (a._score < b._score) {
 			return 1;
 		} else if (a._score > b._score) {
@@ -218,10 +191,7 @@ export class LanguageFeatureRegistry<T> {
 		// De-prioritize built-in providers
 		if (isBuiltinSelector(a.selector) && !isBuiltinSelector(b.selector)) {
 			return 1;
-		} else if (
-			!isBuiltinSelector(a.selector) &&
-			isBuiltinSelector(b.selector)
-		) {
+		} else if (!isBuiltinSelector(a.selector) && isBuiltinSelector(b.selector)) {
 			return -1;
 		}
 
@@ -236,7 +206,7 @@ export class LanguageFeatureRegistry<T> {
 }
 
 function isBuiltinSelector(selector: LanguageSelector): boolean {
-	if (typeof selector === "string") {
+	if (typeof selector === 'string') {
 		return false;
 	}
 
@@ -246,3 +216,4 @@ function isBuiltinSelector(selector: LanguageSelector): boolean {
 
 	return Boolean((selector as LanguageFilter).isBuiltin);
 }
+

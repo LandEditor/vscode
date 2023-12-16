@@ -3,33 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { LineRange } from "vs/editor/common/core/lineRange";
-import { Range } from "vs/editor/common/core/range";
+import { LineRange } from 'vs/editor/common/core/lineRange';
+import { Range } from 'vs/editor/common/core/range';
 
 /**
  * Maps a line range in the original text model to a line range in the modified text model.
  */
 export class LineRangeMapping {
-	public static inverse(
-		mapping: readonly DetailedLineRangeMapping[],
-		originalLineCount: number,
-		modifiedLineCount: number,
-	): DetailedLineRangeMapping[] {
+	public static inverse(mapping: readonly DetailedLineRangeMapping[], originalLineCount: number, modifiedLineCount: number): DetailedLineRangeMapping[] {
 		const result: DetailedLineRangeMapping[] = [];
 		let lastOriginalEndLineNumber = 1;
 		let lastModifiedEndLineNumber = 1;
 
 		for (const m of mapping) {
 			const r = new DetailedLineRangeMapping(
-				new LineRange(
-					lastOriginalEndLineNumber,
-					m.original.startLineNumber,
-				),
-				new LineRange(
-					lastModifiedEndLineNumber,
-					m.modified.startLineNumber,
-				),
-				undefined,
+				new LineRange(lastOriginalEndLineNumber, m.original.startLineNumber),
+				new LineRange(lastModifiedEndLineNumber, m.modified.startLineNumber),
+				undefined
 			);
 			if (!r.modified.isEmpty) {
 				result.push(r);
@@ -40,7 +30,7 @@ export class LineRangeMapping {
 		const r = new DetailedLineRangeMapping(
 			new LineRange(lastOriginalEndLineNumber, originalLineCount + 1),
 			new LineRange(lastModifiedEndLineNumber, modifiedLineCount + 1),
-			undefined,
+			undefined
 		);
 		if (!r.modified.isEmpty) {
 			result.push(r);
@@ -58,10 +48,14 @@ export class LineRangeMapping {
 	 */
 	public readonly modified: LineRange;
 
-	constructor(originalRange: LineRange, modifiedRange: LineRange) {
+	constructor(
+		originalRange: LineRange,
+		modifiedRange: LineRange
+	) {
 		this.original = originalRange;
 		this.modified = modifiedRange;
 	}
+
 
 	public toString(): string {
 		return `{${this.original.toString()}->${this.modified.toString()}}`;
@@ -74,7 +68,7 @@ export class LineRangeMapping {
 	public join(other: LineRangeMapping): LineRangeMapping {
 		return new LineRangeMapping(
 			this.original.join(other.original),
-			this.modified.join(other.modified),
+			this.modified.join(other.modified)
 		);
 	}
 
@@ -99,18 +93,14 @@ export class DetailedLineRangeMapping extends LineRangeMapping {
 	constructor(
 		originalRange: LineRange,
 		modifiedRange: LineRange,
-		innerChanges: RangeMapping[] | undefined,
+		innerChanges: RangeMapping[] | undefined
 	) {
 		super(originalRange, modifiedRange);
 		this.innerChanges = innerChanges;
 	}
 
 	public override flip(): DetailedLineRangeMapping {
-		return new DetailedLineRangeMapping(
-			this.modified,
-			this.original,
-			this.innerChanges?.map((c) => c.flip()),
-		);
+		return new DetailedLineRangeMapping(this.modified, this.original, this.innerChanges?.map(c => c.flip()));
 	}
 }
 
@@ -128,7 +118,10 @@ export class RangeMapping {
 	 */
 	readonly modifiedRange: Range;
 
-	constructor(originalRange: Range, modifiedRange: Range) {
+	constructor(
+		originalRange: Range,
+		modifiedRange: Range
+	) {
 		this.originalRange = originalRange;
 		this.modifiedRange = modifiedRange;
 	}

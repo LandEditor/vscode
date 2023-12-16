@@ -3,40 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
-import {
-	IPathService,
-	AbstractPathService,
-} from "vs/workbench/services/path/common/pathService";
-import { URI } from "vs/base/common/uri";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import { firstOrDefault } from "vs/base/common/arrays";
-import { dirname } from "vs/base/common/resources";
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
+import { IPathService, AbstractPathService } from 'vs/workbench/services/path/common/pathService';
+import { URI } from 'vs/base/common/uri';
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { firstOrDefault } from 'vs/base/common/arrays';
+import { dirname } from 'vs/base/common/resources';
 
 export class BrowserPathService extends AbstractPathService {
+
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService,
+		@IWorkspaceContextService contextService: IWorkspaceContextService
 	) {
 		super(
 			guessLocalUserHome(environmentService, contextService),
 			remoteAgentService,
 			environmentService,
-			contextService,
+			contextService
 		);
 	}
 }
 
-function guessLocalUserHome(
-	environmentService: IWorkbenchEnvironmentService,
-	contextService: IWorkspaceContextService,
-): URI {
+function guessLocalUserHome(environmentService: IWorkbenchEnvironmentService, contextService: IWorkspaceContextService): URI {
+
 	// In web we do not really have the concept of a "local" user home
 	// but we still require it in many places as a fallback. As such,
 	// we have to come up with a synthetic location derived from the
@@ -58,12 +51,9 @@ function guessLocalUserHome(
 	// not have any other good alternative.
 
 	return URI.from({
-		scheme: AbstractPathService.findDefaultUriScheme(
-			environmentService,
-			contextService,
-		),
+		scheme: AbstractPathService.findDefaultUriScheme(environmentService, contextService),
 		authority: environmentService.remoteAuthority,
-		path: "/",
+		path: '/'
 	});
 }
 

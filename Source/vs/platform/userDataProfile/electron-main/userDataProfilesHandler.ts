@@ -3,21 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
-import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
-import {
-	ICodeWindow,
-	LoadReason,
-} from "vs/platform/window/electron-main/window";
-import { IUserDataProfilesMainService } from "vs/platform/userDataProfile/electron-main/userDataProfile";
-import {
-	IAnyWorkspaceIdentifier,
-	toWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
+import { Disposable } from 'vs/base/common/lifecycle';
+import { ILifecycleMainService, } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
+import { ICodeWindow, LoadReason } from 'vs/platform/window/electron-main/window';
+import { IUserDataProfilesMainService } from 'vs/platform/userDataProfile/electron-main/userDataProfile';
+import { IAnyWorkspaceIdentifier, toWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
+import { RunOnceScheduler } from 'vs/base/common/async';
+import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
 
 export class UserDataProfilesHandler extends Disposable {
+
 	constructor(
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
@@ -35,13 +30,9 @@ export class UserDataProfilesHandler extends Disposable {
 
 	private async unsetProfileForWorkspace(window: ICodeWindow): Promise<void> {
 		const workspace = this.getWorkspace(window);
-		const profile =
-			this.userDataProfilesService.getProfileForWorkspace(workspace);
+		const profile = this.userDataProfilesService.getProfileForWorkspace(workspace);
 		if (profile?.isTransient) {
-			this.userDataProfilesService.unsetWorkspace(
-				workspace,
-				profile.isTransient,
-			);
+			this.userDataProfilesService.unsetWorkspace(workspace, profile.isTransient);
 			if (profile.isTransient) {
 				await this.userDataProfilesService.cleanUpTransientProfiles();
 			}
@@ -49,37 +40,21 @@ export class UserDataProfilesHandler extends Disposable {
 	}
 
 	private getWorkspace(window: ICodeWindow): IAnyWorkspaceIdentifier {
-		return (
-			window.openedWorkspace ??
-			toWorkspaceIdentifier(
-				window.backupPath,
-				window.isExtensionDevelopmentHost,
-			)
-		);
+		return window.openedWorkspace ?? toWorkspaceIdentifier(window.backupPath, window.isExtensionDevelopmentHost);
 	}
 
 	private cleanUpEmptyWindowAssociations(): void {
-		const associatedEmptyWindows =
-			this.userDataProfilesService.getAssociatedEmptyWindows();
+		const associatedEmptyWindows = this.userDataProfilesService.getAssociatedEmptyWindows();
 		if (associatedEmptyWindows.length === 0) {
 			return;
 		}
-		const openedWorkspaces = this.windowsMainService
-			.getWindows()
-			.map((window) => this.getWorkspace(window));
+		const openedWorkspaces = this.windowsMainService.getWindows().map(window => this.getWorkspace(window));
 		for (const associatedEmptyWindow of associatedEmptyWindows) {
-			if (
-				openedWorkspaces.some(
-					(openedWorkspace) =>
-						openedWorkspace.id === associatedEmptyWindow.id,
-				)
-			) {
+			if (openedWorkspaces.some(openedWorkspace => openedWorkspace.id === associatedEmptyWindow.id)) {
 				continue;
 			}
-			this.userDataProfilesService.unsetWorkspace(
-				associatedEmptyWindow,
-				false,
-			);
+			this.userDataProfilesService.unsetWorkspace(associatedEmptyWindow, false);
 		}
 	}
+
 }

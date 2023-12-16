@@ -3,23 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { Iterable } from "vs/base/common/iterator";
-import { toDisposable } from "vs/base/common/lifecycle";
-import { IRelaxedExtensionDescription } from "vs/platform/extensions/common/extensions";
-import {
-	ExtHostChatShape,
-	IChatDto,
-	IMainContext,
-	MainContext,
-	MainThreadChatShape,
-} from "vs/workbench/api/common/extHost.protocol";
-import * as typeConvert from "vs/workbench/api/common/extHostTypeConverters";
-import { IChatReplyFollowup } from "vs/workbench/contrib/chat/common/chatService";
-import type * as vscode from "vscode";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { Iterable } from 'vs/base/common/iterator';
+import { toDisposable } from 'vs/base/common/lifecycle';
+import { IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { ExtHostChatShape, IChatDto, IMainContext, MainContext, MainThreadChatShape } from 'vs/workbench/api/common/extHost.protocol';
+import * as typeConvert from 'vs/workbench/api/common/extHostTypeConverters';
+import { IChatReplyFollowup } from 'vs/workbench/contrib/chat/common/chatService';
+import type * as vscode from 'vscode';
 
 class ChatProviderWrapper<T> {
+
 	private static _pool = 0;
 
 	readonly handle: number = ChatProviderWrapper._pool++;
@@ -27,35 +22,27 @@ class ChatProviderWrapper<T> {
 	constructor(
 		readonly extension: Readonly<IRelaxedExtensionDescription>,
 		readonly provider: T,
-	) {}
+	) { }
 }
 
 export class ExtHostChat implements ExtHostChatShape {
 	private static _nextId = 0;
 
-	private readonly _chatProvider = new Map<
-		number,
-		ChatProviderWrapper<vscode.InteractiveSessionProvider>
-	>();
+	private readonly _chatProvider = new Map<number, ChatProviderWrapper<vscode.InteractiveSessionProvider>>();
 
-	private readonly _chatSessions = new Map<
-		number,
-		vscode.InteractiveSession
-	>();
+	private readonly _chatSessions = new Map<number, vscode.InteractiveSession>();
 
 	private readonly _proxy: MainThreadChatShape;
 
-	constructor(mainContext: IMainContext) {
+	constructor(
+		mainContext: IMainContext,
+	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadChat);
 	}
 
 	//#region interactive session
 
-	registerChatProvider(
-		extension: Readonly<IRelaxedExtensionDescription>,
-		id: string,
-		provider: vscode.InteractiveSessionProvider,
-	): vscode.Disposable {
+	registerChatProvider(extension: Readonly<IRelaxedExtensionDescription>, id: string, provider: vscode.InteractiveSessionProvider): vscode.Disposable {
 		const wrapper = new ChatProviderWrapper(extension, provider);
 		this._chatProvider.set(wrapper.handle, wrapper);
 		this._proxy.$registerChatProvider(wrapper.handle, id);
@@ -65,33 +52,20 @@ export class ExtHostChat implements ExtHostChatShape {
 		});
 	}
 
-	transferChatSession(
-		session: vscode.InteractiveSession,
-		newWorkspace: vscode.Uri,
-	): void {
-		const sessionId =
-			Iterable.find(
-				this._chatSessions.keys(),
-				(key) => this._chatSessions.get(key) === session,
-			) ?? 0;
-		if (typeof sessionId !== "number") {
+	transferChatSession(session: vscode.InteractiveSession, newWorkspace: vscode.Uri): void {
+		const sessionId = Iterable.find(this._chatSessions.keys(), key => this._chatSessions.get(key) === session) ?? 0;
+		if (typeof sessionId !== 'number') {
 			return;
 		}
 
 		this._proxy.$transferChatSession(sessionId, newWorkspace);
 	}
 
-	sendInteractiveRequestToProvider(
-		providerId: string,
-		message: vscode.InteractiveSessionDynamicRequest,
-	): void {
+	sendInteractiveRequestToProvider(providerId: string, message: vscode.InteractiveSessionDynamicRequest): void {
 		this._proxy.$sendRequestToProvider(providerId, message);
 	}
 
-	async $prepareChat(
-		handle: number,
-		token: CancellationToken,
-	): Promise<IChatDto | undefined> {
+	async $prepareChat(handle: number, token: CancellationToken): Promise<IChatDto | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -115,12 +89,7 @@ export class ExtHostChat implements ExtHostChatShape {
 		};
 	}
 
-	async $provideWelcomeMessage(
-		handle: number,
-		token: CancellationToken,
-	): Promise<
-		(string | IMarkdownString | IChatReplyFollowup[])[] | undefined
-	> {
+	async $provideWelcomeMessage(handle: number, token: CancellationToken): Promise<(string | IMarkdownString | IChatReplyFollowup[])[] | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -134,21 +103,18 @@ export class ExtHostChat implements ExtHostChatShape {
 		if (!content) {
 			return undefined;
 		}
-		return content.map((item) => {
-			if (typeof item === "string") {
+		return content.map(item => {
+			if (typeof item === 'string') {
 				return item;
 			} else if (Array.isArray(item)) {
-				return item.map((f) => typeConvert.ChatReplyFollowup.from(f));
+				return item.map(f => typeConvert.ChatReplyFollowup.from(f));
 			} else {
 				return typeConvert.MarkdownString.from(item);
 			}
 		});
 	}
 
-	async $provideSampleQuestions(
-		handle: number,
-		token: CancellationToken,
-	): Promise<IChatReplyFollowup[] | undefined> {
+	async $provideSampleQuestions(handle: number, token: CancellationToken): Promise<IChatReplyFollowup[] | undefined> {
 		const entry = this._chatProvider.get(handle);
 		if (!entry) {
 			return undefined;
@@ -163,7 +129,7 @@ export class ExtHostChat implements ExtHostChatShape {
 			return undefined;
 		}
 
-		return rawFollowups?.map((f) => typeConvert.ChatReplyFollowup.from(f));
+		return rawFollowups?.map(f => typeConvert.ChatReplyFollowup.from(f));
 	}
 
 	$releaseSession(sessionId: number) {

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// See https://github.com/microsoft/vscode/issues/63943
 
 	export class ThreadFocus {
@@ -13,7 +14,10 @@ declare module "vscode" {
 		 * @param threadId
 		 * @param frameId
 		 */
-		constructor(session: DebugSession, threadId?: number);
+		constructor(
+			session: DebugSession,
+			threadId?: number);
+
 
 		/**
 		 * Debug session for thread.
@@ -33,7 +37,11 @@ declare module "vscode" {
 		 * @param threadId
 		 * @param frameId
 		 */
-		constructor(session: DebugSession, threadId?: number, frameId?: number);
+		constructor(
+			session: DebugSession,
+			threadId?: number,
+			frameId?: number);
+
 
 		/**
 		 * Debug session for thread.
@@ -50,6 +58,7 @@ declare module "vscode" {
 		readonly frameId: number | undefined;
 	}
 
+
 	export namespace debug {
 		/**
 		 * The currently focused thread or stack frame id, or `undefined` if this has not been set. (e.g. not in debug mode).
@@ -60,8 +69,6 @@ declare module "vscode" {
 		 * An {@link Event} which fires when the {@link debug.stackFrameFocus} changes. Provides a sessionId. threadId is not undefined
 		 * when a thread of frame has gained focus. frameId is defined when a stackFrame has gained focus.
 		 */
-		export const onDidChangeStackFrameFocus: Event<
-			ThreadFocus | StackFrameFocus | undefined
-		>;
+		export const onDidChangeStackFrameFocus: Event<ThreadFocus | StackFrameFocus | undefined>;
 	}
 }

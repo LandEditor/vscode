@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { IWindowOpenable } from "vs/platform/window/common/window";
+import { URI } from 'vs/base/common/uri';
+import { IWindowOpenable } from 'vs/platform/window/common/window';
 
 export interface IProtocolUrl {
+
 	/**
 	 * The parsed URI from the raw URL.
 	 */
@@ -54,6 +55,7 @@ export interface IProtocolUrl {
  * - a URL with any other authority will be added to the `urls` array
  */
 export interface IInitialProtocolUrls {
+
 	/**
 	 * Initial protocol URLs to handle that are not
 	 * already converted to `IWindowOpenable` window

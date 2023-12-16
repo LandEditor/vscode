@@ -3,26 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
-import {
-	IKeyboardLayoutInfo,
-	IKeyboardMapping,
-	IMacLinuxKeyboardMapping,
-	IWindowsKeyboardMapping,
-	macLinuxKeyboardMappingEquals,
-	windowsKeyboardMappingEquals,
-} from "vs/platform/keyboardLayout/common/keyboardLayout";
-import { Emitter, Event } from "vs/base/common/event";
-import { OperatingSystem, OS } from "vs/base/common/platform";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
-import { INativeKeyboardLayoutService as IBaseNativeKeyboardLayoutService } from "vs/platform/keyboardLayout/common/keyboardLayoutService";
-import { ProxyChannel } from "vs/base/parts/ipc/common/ipc";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { Disposable } from 'vs/base/common/lifecycle';
+import { IKeyboardLayoutInfo, IKeyboardMapping, IMacLinuxKeyboardMapping, IWindowsKeyboardMapping, macLinuxKeyboardMappingEquals, windowsKeyboardMappingEquals } from 'vs/platform/keyboardLayout/common/keyboardLayout';
+import { Emitter, Event } from 'vs/base/common/event';
+import { OperatingSystem, OS } from 'vs/base/common/platform';
+import { IMainProcessService } from 'vs/platform/ipc/common/mainProcessService';
+import { INativeKeyboardLayoutService as IBaseNativeKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayoutService';
+import { ProxyChannel } from 'vs/base/parts/ipc/common/ipc';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const INativeKeyboardLayoutService =
-	createDecorator<INativeKeyboardLayoutService>(
-		"nativeKeyboardLayoutService",
-	);
+export const INativeKeyboardLayoutService = createDecorator<INativeKeyboardLayoutService>('nativeKeyboardLayoutService');
 
 export interface INativeKeyboardLayoutService {
 	readonly _serviceBrand: undefined;
@@ -31,15 +21,11 @@ export interface INativeKeyboardLayoutService {
 	getCurrentKeyboardLayout(): IKeyboardLayoutInfo | null;
 }
 
-export class NativeKeyboardLayoutService
-	extends Disposable
-	implements INativeKeyboardLayoutService
-{
+export class NativeKeyboardLayoutService extends Disposable implements INativeKeyboardLayoutService {
+
 	declare readonly _serviceBrand: undefined;
 
-	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<void>(),
-	);
+	private readonly _onDidChangeKeyboardLayout = this._register(new Emitter<void>());
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
 	private readonly _keyboardLayoutService: IBaseNativeKeyboardLayoutService;
@@ -77,8 +63,7 @@ export class NativeKeyboardLayoutService
 	}
 
 	private async _doInitialize(): Promise<void> {
-		const keyboardLayoutData =
-			await this._keyboardLayoutService.getKeyboardLayoutData();
+		const keyboardLayoutData = await this._keyboardLayoutService.getKeyboardLayoutData();
 		const { keyboardLayoutInfo, keyboardMapping } = keyboardLayoutData;
 		this._keyboardMapping = keyboardMapping;
 		this._keyboardLayoutInfo = keyboardLayoutInfo;
@@ -93,19 +78,10 @@ export class NativeKeyboardLayoutService
 	}
 }
 
-function keyboardMappingEquals(
-	a: IKeyboardMapping | null,
-	b: IKeyboardMapping | null,
-): boolean {
+function keyboardMappingEquals(a: IKeyboardMapping | null, b: IKeyboardMapping | null): boolean {
 	if (OS === OperatingSystem.Windows) {
-		return windowsKeyboardMappingEquals(
-			<IWindowsKeyboardMapping | null>a,
-			<IWindowsKeyboardMapping | null>b,
-		);
+		return windowsKeyboardMappingEquals(<IWindowsKeyboardMapping | null>a, <IWindowsKeyboardMapping | null>b);
 	}
 
-	return macLinuxKeyboardMappingEquals(
-		<IMacLinuxKeyboardMapping | null>a,
-		<IMacLinuxKeyboardMapping | null>b,
-	);
+	return macLinuxKeyboardMappingEquals(<IMacLinuxKeyboardMapping | null>a, <IMacLinuxKeyboardMapping | null>b);
 }

@@ -3,38 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { Disposable } from "vs/base/common/lifecycle";
-import {
-	IExtensionGalleryService,
-	IExtensionManagementService,
-	IGalleryExtension,
-} from "vs/platform/extensionManagement/common/extensionManagement";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IFeaturedExtension } from "vs/base/common/product";
-import { CancellationToken } from "vs/base/common/cancellation";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { localize } from "vs/nls";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { IExtensionGalleryService, IExtensionManagementService, IGalleryExtension } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { IFeaturedExtension } from 'vs/base/common/product';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { localize } from 'vs/nls';
+import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 
-type FeaturedExtensionStorageData = {
-	title: string;
-	description: string;
-	imagePath: string;
-	date: number;
-};
+type FeaturedExtensionStorageData = { title: string; description: string; imagePath: string; date: number };
 
-export const IFeaturedExtensionsService =
-	createDecorator<IFeaturedExtensionsService>("featuredExtensionsService");
+export const IFeaturedExtensionsService = createDecorator<IFeaturedExtensionsService>('featuredExtensionsService');
 
 export interface IFeaturedExtensionsService {
 	_serviceBrand: undefined;
@@ -46,20 +29,16 @@ export interface IFeaturedExtensionsService {
 const enum FeaturedExtensionMetadataType {
 	Title,
 	Description,
-	ImagePath,
+	ImagePath
 }
 
-export class FeaturedExtensionsService
-	extends Disposable
-	implements IFeaturedExtensionsService
-{
+export class FeaturedExtensionsService extends Disposable implements IFeaturedExtensionsService {
 	declare readonly _serviceBrand: undefined;
 
 	private ignoredExtensions: Set<string> = new Set<string>();
 	private _isInitialized: boolean = false;
 
-	private static readonly STORAGE_KEY =
-		"workbench.welcomePage.extensionMetadata";
+	private static readonly STORAGE_KEY = 'workbench.welcomePage.extensionMetadata';
 
 	constructor(
 		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
@@ -75,12 +54,11 @@ export class FeaturedExtensionsService
 	title: string;
 
 	async getExtensions(): Promise<IFeaturedExtension[]> {
+
 		await this._init();
 
 		const featuredExtensions: IFeaturedExtension[] = [];
-		for (const extension of this.productService.featuredExtensions?.filter(
-			(e) => !this.ignoredExtensions.has(e.id),
-		) ?? []) {
+		for (const extension of this.productService.featuredExtensions?.filter(e => !this.ignoredExtensions.has(e.id)) ?? []) {
 			const resolvedExtension = await this.resolveExtension(extension);
 			if (resolvedExtension) {
 				featuredExtensions.push(resolvedExtension);
@@ -91,6 +69,7 @@ export class FeaturedExtensionsService
 	}
 
 	private async _init(): Promise<void> {
+
 		if (this._isInitialized) {
 			return;
 		}
@@ -104,29 +83,17 @@ export class FeaturedExtensionsService
 		await this.extensionService.whenInstalledExtensionsRegistered();
 		const installed = await this.extensionManagementService.getInstalled();
 		for (const extension of featuredExtensions) {
-			if (
-				installed.some((e) =>
-					ExtensionIdentifier.equals(e.identifier.id, extension.id),
-				)
-			) {
+			if (installed.some(e => ExtensionIdentifier.equals(e.identifier.id, extension.id))) {
 				this.ignoredExtensions.add(extension.id);
-			} else {
+			}
+			else {
 				let galleryExtension: IGalleryExtension | undefined;
 				try {
-					galleryExtension = (
-						await this.galleryService.getExtensions(
-							[{ id: extension.id }],
-							CancellationToken.None,
-						)
-					)[0];
+					galleryExtension = (await this.galleryService.getExtensions([{ id: extension.id }], CancellationToken.None))[0];
 				} catch (err) {
 					continue;
 				}
-				if (
-					!(await this.extensionManagementService.canInstall(
-						galleryExtension,
-					))
-				) {
+				if (!await this.extensionManagementService.canInstall(galleryExtension)) {
 					this.ignoredExtensions.add(extension.id);
 				}
 			}
@@ -134,27 +101,11 @@ export class FeaturedExtensionsService
 		this._isInitialized = true;
 	}
 
-	private async resolveExtension(
-		productMetadata: IFeaturedExtension,
-	): Promise<IFeaturedExtension | undefined> {
-		const title =
-			productMetadata.title ??
-			(await this.getMetadata(
-				productMetadata.id,
-				FeaturedExtensionMetadataType.Title,
-			));
-		const description =
-			productMetadata.description ??
-			(await this.getMetadata(
-				productMetadata.id,
-				FeaturedExtensionMetadataType.Description,
-			));
-		const imagePath =
-			productMetadata.imagePath ??
-			(await this.getMetadata(
-				productMetadata.id,
-				FeaturedExtensionMetadataType.ImagePath,
-			));
+	private async resolveExtension(productMetadata: IFeaturedExtension): Promise<IFeaturedExtension | undefined> {
+
+		const title = productMetadata.title ?? await this.getMetadata(productMetadata.id, FeaturedExtensionMetadataType.Title);
+		const description = productMetadata.description ?? await this.getMetadata(productMetadata.id, FeaturedExtensionMetadataType.Description);
+		const imagePath = productMetadata.imagePath ?? await this.getMetadata(productMetadata.id, FeaturedExtensionMetadataType.ImagePath);
 
 		if (title && description && imagePath) {
 			return {
@@ -167,10 +118,8 @@ export class FeaturedExtensionsService
 		return undefined;
 	}
 
-	private async getMetadata(
-		extensionId: string,
-		key: FeaturedExtensionMetadataType,
-	): Promise<string | undefined> {
+	private async getMetadata(extensionId: string, key: FeaturedExtensionMetadataType): Promise<string | undefined> {
+
 		const storageMetadata = this.getStorageData(extensionId);
 		if (storageMetadata) {
 			switch (key) {
@@ -191,13 +140,8 @@ export class FeaturedExtensionsService
 		return await this.getGalleryMetadata(extensionId, key);
 	}
 
-	private getStorageData(
-		extensionId: string,
-	): FeaturedExtensionStorageData | undefined {
-		const metadata = this.storageService.get(
-			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId,
-			StorageScope.APPLICATION,
-		);
+	private getStorageData(extensionId: string): FeaturedExtensionStorageData | undefined {
+		const metadata = this.storageService.get(FeaturedExtensionsService.STORAGE_KEY + '.' + extensionId, StorageScope.APPLICATION);
 		if (metadata) {
 			const value = JSON.parse(metadata) as FeaturedExtensionStorageData;
 			const lastUpdateDate = new Date().getTime() - value.date;
@@ -208,24 +152,17 @@ export class FeaturedExtensionsService
 		return undefined;
 	}
 
-	private async getGalleryMetadata(
-		extensionId: string,
-		key: FeaturedExtensionMetadataType,
-	): Promise<string | undefined> {
-		const storageKey =
-			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId;
+	private async getGalleryMetadata(extensionId: string, key: FeaturedExtensionMetadataType): Promise<string | undefined> {
+
+		const storageKey = FeaturedExtensionsService.STORAGE_KEY + '.' + extensionId;
 		this.storageService.remove(storageKey, StorageScope.APPLICATION);
 		let metadata: string | undefined;
 
 		let galleryExtension: IGalleryExtension | undefined;
 		try {
-			galleryExtension = (
-				await this.galleryService.getExtensions(
-					[{ id: extensionId }],
-					CancellationToken.None,
-				)
-			)[0];
-		} catch (err) {}
+			galleryExtension = (await this.galleryService.getExtensions([{ id: extensionId }], CancellationToken.None))[0];
+		} catch (err) {
+		}
 
 		if (!galleryExtension) {
 			return metadata;
@@ -246,24 +183,15 @@ export class FeaturedExtensionsService
 			}
 		}
 
-		this.storageService.store(
-			storageKey,
-			JSON.stringify({
-				title: galleryExtension.displayName,
-				description: galleryExtension.description,
-				imagePath: galleryExtension.assets.icon?.uri,
-				date: new Date().getTime(),
-			}),
-			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
-		);
+		this.storageService.store(storageKey, JSON.stringify({
+			title: galleryExtension.displayName,
+			description: galleryExtension.description,
+			imagePath: galleryExtension.assets.icon?.uri,
+			date: new Date().getTime()
+		}), StorageScope.APPLICATION, StorageTarget.MACHINE);
 
 		return metadata;
 	}
 }
 
-registerSingleton(
-	IFeaturedExtensionsService,
-	FeaturedExtensionsService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IFeaturedExtensionsService, FeaturedExtensionsService, InstantiationType.Delayed);

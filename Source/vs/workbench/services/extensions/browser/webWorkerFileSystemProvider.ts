@@ -3,29 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	FileSystemProviderCapabilities,
-	IStat,
-	FileType,
-	IFileDeleteOptions,
-	IFileOverwriteOptions,
-	IFileWriteOptions,
-	FileSystemProviderErrorCode,
-	IFileSystemProviderWithFileReadWriteCapability,
-	createFileSystemProviderError,
-} from "vs/platform/files/common/files";
-import { Event } from "vs/base/common/event";
-import { IDisposable, Disposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { NotSupportedError } from "vs/base/common/errors";
+import { FileSystemProviderCapabilities, IStat, FileType, IFileDeleteOptions, IFileOverwriteOptions, IFileWriteOptions, FileSystemProviderErrorCode, IFileSystemProviderWithFileReadWriteCapability, createFileSystemProviderError } from 'vs/platform/files/common/files';
+import { Event } from 'vs/base/common/event';
+import { IDisposable, Disposable } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { NotSupportedError } from 'vs/base/common/errors';
 
-export class FetchFileSystemProvider
-	implements IFileSystemProviderWithFileReadWriteCapability
-{
-	readonly capabilities =
-		FileSystemProviderCapabilities.Readonly +
-		FileSystemProviderCapabilities.FileReadWrite +
-		FileSystemProviderCapabilities.PathCaseSensitive;
+export class FetchFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability {
+
+	readonly capabilities = FileSystemProviderCapabilities.Readonly + FileSystemProviderCapabilities.FileReadWrite + FileSystemProviderCapabilities.PathCaseSensitive;
 	readonly onDidChangeCapabilities = Event.None;
 	readonly onDidChangeFile = Event.None;
 
@@ -36,15 +22,9 @@ export class FetchFileSystemProvider
 			if (res.status === 200) {
 				return new Uint8Array(await res.arrayBuffer());
 			}
-			throw createFileSystemProviderError(
-				res.statusText,
-				FileSystemProviderErrorCode.Unknown,
-			);
+			throw createFileSystemProviderError(res.statusText, FileSystemProviderErrorCode.Unknown);
 		} catch (err) {
-			throw createFileSystemProviderError(
-				err,
-				FileSystemProviderErrorCode.Unknown,
-			);
+			throw createFileSystemProviderError(err, FileSystemProviderErrorCode.Unknown);
 		}
 	}
 
@@ -54,7 +34,7 @@ export class FetchFileSystemProvider
 			type: FileType.File,
 			size: 0,
 			mtime: 0,
-			ctime: 0,
+			ctime: 0
 		};
 	}
 
@@ -63,11 +43,7 @@ export class FetchFileSystemProvider
 	}
 
 	// error implementations
-	writeFile(
-		_resource: URI,
-		_content: Uint8Array,
-		_opts: IFileWriteOptions,
-	): Promise<void> {
+	writeFile(_resource: URI, _content: Uint8Array, _opts: IFileWriteOptions): Promise<void> {
 		throw new NotSupportedError();
 	}
 	readdir(_resource: URI): Promise<[string, FileType][]> {

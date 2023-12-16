@@ -3,36 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	IDialogHandler,
-	IDialogResult,
-	IDialogService,
-} from "vs/platform/dialogs/common/dialogs";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { ILogService } from "vs/platform/log/common/log";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IProductService } from "vs/platform/product/common/productService";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IWorkbenchContribution,
-	IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { IDialogsModel, IDialogViewItem } from "vs/workbench/common/dialogs";
-import { BrowserDialogHandler } from "vs/workbench/browser/parts/dialogs/dialogHandler";
-import { NativeDialogHandler } from "vs/workbench/electron-sandbox/parts/dialogs/dialogHandler";
-import { DialogService } from "vs/workbench/services/dialogs/common/dialogService";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { Disposable } from "vs/base/common/lifecycle";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IDialogHandler, IDialogResult, IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
+import { ILogService } from 'vs/platform/log/common/log';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
+import { IDialogsModel, IDialogViewItem } from 'vs/workbench/common/dialogs';
+import { BrowserDialogHandler } from 'vs/workbench/browser/parts/dialogs/dialogHandler';
+import { NativeDialogHandler } from 'vs/workbench/electron-sandbox/parts/dialogs/dialogHandler';
+import { DialogService } from 'vs/workbench/services/dialogs/common/dialogService';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
-export class DialogHandlerContribution
-	extends Disposable
-	implements IWorkbenchContribution
-{
+export class DialogHandlerContribution extends Disposable implements IWorkbenchContribution {
 	private nativeImpl: IDialogHandler;
 	private browserImpl: IDialogHandler;
 
@@ -72,13 +61,13 @@ export class DialogHandlerContribution
 
 			let result: IDialogResult | Error | undefined = undefined;
 			try {
+
 				// Confirm
 				if (this.currentDialog.args.confirmArgs) {
 					const args = this.currentDialog.args.confirmArgs;
-					result =
-						this.useCustomDialog || args?.confirmation.custom
-							? await this.browserImpl.confirm(args.confirmation)
-							: await this.nativeImpl.confirm(args.confirmation);
+					result = (this.useCustomDialog || args?.confirmation.custom) ?
+						await this.browserImpl.confirm(args.confirmation) :
+						await this.nativeImpl.confirm(args.confirmation);
 				}
 
 				// Input (custom only)
@@ -90,10 +79,9 @@ export class DialogHandlerContribution
 				// Prompt
 				else if (this.currentDialog.args.promptArgs) {
 					const args = this.currentDialog.args.promptArgs;
-					result =
-						this.useCustomDialog || args?.prompt.custom
-							? await this.browserImpl.prompt(args.prompt)
-							: await this.nativeImpl.prompt(args.prompt);
+					result = (this.useCustomDialog || args?.prompt.custom) ?
+						await this.browserImpl.prompt(args.prompt) :
+						await this.nativeImpl.prompt(args.prompt);
 				}
 
 				// About
@@ -114,17 +102,9 @@ export class DialogHandlerContribution
 	}
 
 	private get useCustomDialog(): boolean {
-		return (
-			this.configurationService.getValue("window.dialogStyle") ===
-			"custom"
-		);
+		return this.configurationService.getValue('window.dialogStyle') === 'custom';
 	}
 }
 
-const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-);
-workbenchRegistry.registerWorkbenchContribution(
-	DialogHandlerContribution,
-	LifecyclePhase.Starting,
-);
+const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
+workbenchRegistry.registerWorkbenchContribution(DialogHandlerContribution, LifecyclePhase.Starting);

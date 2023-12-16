@@ -3,27 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { URI } from "vs/base/common/uri";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import {
-	IFileService,
-	FileSystemProviderCapabilities,
-	IFileSystemProviderCapabilitiesChangeEvent,
-	IFileSystemProviderRegistrationEvent,
-} from "vs/platform/files/common/files";
-import { ExtUri, IExtUri, normalizePath } from "vs/base/common/resources";
-import { SkipList } from "vs/base/common/skipList";
-import { Event } from "vs/base/common/event";
-import { DisposableStore } from "vs/base/common/lifecycle";
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
+import { URI } from 'vs/base/common/uri';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { IFileService, FileSystemProviderCapabilities, IFileSystemProviderCapabilitiesChangeEvent, IFileSystemProviderRegistrationEvent } from 'vs/platform/files/common/files';
+import { ExtUri, IExtUri, normalizePath } from 'vs/base/common/resources';
+import { SkipList } from 'vs/base/common/skipList';
+import { Event } from 'vs/base/common/event';
+import { DisposableStore } from 'vs/base/common/lifecycle';
 
 class Entry {
 	static _clock = 0;
 	time: number = Entry._clock++;
-	constructor(readonly uri: URI) {}
+	constructor(readonly uri: URI) { }
 	touch() {
 		this.time = Entry._clock++;
 		return this;
@@ -31,6 +23,7 @@ class Entry {
 }
 
 export class UriIdentityService implements IUriIdentityService {
+
 	declare readonly _serviceBrand: undefined;
 
 	readonly extUri: IExtUri;
@@ -75,6 +68,7 @@ export class UriIdentityService implements IUriIdentityService {
 	}
 
 	asCanonicalUri(uri: URI): URI {
+
 		// (1) normalize URI
 		if (this._fileService.hasProvider(uri)) {
 			uri = normalizePath(uri);
@@ -120,8 +114,4 @@ export class UriIdentityService implements IUriIdentityService {
 	}
 }
 
-registerSingleton(
-	IUriIdentityService,
-	UriIdentityService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Delayed);

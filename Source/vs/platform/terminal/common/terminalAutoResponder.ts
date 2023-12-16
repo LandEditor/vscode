@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { timeout } from "vs/base/common/async";
-import { Disposable } from "vs/base/common/lifecycle";
-import { isWindows } from "vs/base/common/platform";
-import { ILogService } from "vs/platform/log/common/log";
-import { ITerminalChildProcess } from "vs/platform/terminal/common/terminal";
+import { timeout } from 'vs/base/common/async';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { isWindows } from 'vs/base/common/platform';
+import { ILogService } from 'vs/platform/log/common/log';
+import { ITerminalChildProcess } from 'vs/platform/terminal/common/terminal';
 
 /**
  * Tracks a terminal process's data stream and responds immediately when a matching string is
@@ -28,35 +28,31 @@ export class TerminalAutoResponder extends Disposable {
 		proc: ITerminalChildProcess,
 		matchWord: string,
 		response: string,
-		logService: ILogService,
+		logService: ILogService
 	) {
 		super();
 
-		this._register(
-			proc.onProcessData((e) => {
-				if (this._paused || this._throttled) {
-					return;
+		this._register(proc.onProcessData(e => {
+			if (this._paused || this._throttled) {
+				return;
+			}
+			const data = typeof e === 'string' ? e : e.data;
+			for (let i = 0; i < data.length; i++) {
+				if (data[i] === matchWord[this._pointer]) {
+					this._pointer++;
+				} else {
+					this._reset();
 				}
-				const data = typeof e === "string" ? e : e.data;
-				for (let i = 0; i < data.length; i++) {
-					if (data[i] === matchWord[this._pointer]) {
-						this._pointer++;
-					} else {
-						this._reset();
-					}
-					// Auto reply and reset
-					if (this._pointer === matchWord.length) {
-						logService.debug(
-							`Auto reply match: "${matchWord}", response: "${response}"`,
-						);
-						proc.input(response);
-						this._throttled = true;
-						timeout(1000).then(() => (this._throttled = false));
-						this._reset();
-					}
+				// Auto reply and reset
+				if (this._pointer === matchWord.length) {
+					logService.debug(`Auto reply match: "${matchWord}", response: "${response}"`);
+					proc.input(response);
+					this._throttled = true;
+					timeout(1000).then(() => this._throttled = false);
+					this._reset();
 				}
-			}),
-		);
+			}
+		}));
 	}
 
 	private _reset() {

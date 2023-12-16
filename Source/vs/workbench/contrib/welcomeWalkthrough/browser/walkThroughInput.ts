@@ -3,29 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { EditorModel } from "vs/workbench/common/editor/editorModel";
-import { URI } from "vs/base/common/uri";
-import { DisposableStore, IReference } from "vs/base/common/lifecycle";
-import {
-	ITextEditorModel,
-	ITextModelService,
-} from "vs/editor/common/services/resolverService";
-import { marked } from "vs/base/common/marked/marked";
-import { Schemas } from "vs/base/common/network";
-import { isEqual } from "vs/base/common/resources";
-import { requireToContent } from "vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider";
-import { Dimension } from "vs/base/browser/dom";
-import {
-	EditorInputCapabilities,
-	IUntypedEditorInput,
-} from "vs/workbench/common/editor";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { EditorModel } from 'vs/workbench/common/editor/editorModel';
+import { URI } from 'vs/base/common/uri';
+import { DisposableStore, IReference } from 'vs/base/common/lifecycle';
+import { ITextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService';
+import { marked } from 'vs/base/common/marked/marked';
+import { Schemas } from 'vs/base/common/network';
+import { isEqual } from 'vs/base/common/resources';
+import { requireToContent } from 'vs/workbench/contrib/welcomeWalkthrough/common/walkThroughContentProvider';
+import { Dimension } from 'vs/base/browser/dom';
+import { EditorInputCapabilities, IUntypedEditorInput } from 'vs/workbench/common/editor';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 
 class WalkThroughModel extends EditorModel {
+
 	constructor(
 		private mainRef: string,
-		private snippetRefs: IReference<ITextEditorModel>[],
+		private snippetRefs: IReference<ITextEditorModel>[]
 	) {
 		super();
 	}
@@ -35,11 +30,11 @@ class WalkThroughModel extends EditorModel {
 	}
 
 	get snippets() {
-		return this.snippetRefs.map((snippet) => snippet.object);
+		return this.snippetRefs.map(snippet => snippet.object);
 	}
 
 	override dispose() {
-		this.snippetRefs.forEach((ref) => ref.dispose());
+		this.snippetRefs.forEach(ref => ref.dispose());
 		super.dispose();
 	}
 }
@@ -50,14 +45,12 @@ export interface WalkThroughInputOptions {
 	readonly description?: string;
 	readonly resource: URI;
 	readonly telemetryFrom: string;
-	readonly onReady?: (
-		container: HTMLElement,
-		contentDisposables: DisposableStore,
-	) => void;
+	readonly onReady?: (container: HTMLElement, contentDisposables: DisposableStore) => void;
 	readonly layout?: (dimension: Dimension) => void;
 }
 
 export class WalkThroughInput extends EditorInput {
+
 	override get capabilities(): EditorInputCapabilities {
 		return EditorInputCapabilities.Singleton | super.capabilities;
 	}
@@ -67,9 +60,7 @@ export class WalkThroughInput extends EditorInput {
 	private maxTopScroll = 0;
 	private maxBottomScroll = 0;
 
-	get resource() {
-		return this.options.resource;
-	}
+	get resource() { return this.options.resource; }
 
 	constructor(
 		private readonly options: WalkThroughInputOptions,
@@ -88,7 +79,7 @@ export class WalkThroughInput extends EditorInput {
 	}
 
 	override getDescription(): string {
-		return this.options.description || "";
+		return this.options.description || '';
 	}
 
 	getTelemetryFrom(): string {
@@ -97,7 +88,7 @@ export class WalkThroughInput extends EditorInput {
 
 	override getTelemetryDescriptor(): { [key: string]: unknown } {
 		const descriptor = super.getTelemetryDescriptor();
-		descriptor["target"] = this.getTelemetryFrom();
+		descriptor['target'] = this.getTelemetryFrom();
 		/* __GDPR__FRAGMENT__
 			"EditorTelemetryDescriptor" : {
 				"target" : { "classification": "SystemMetaData", "purpose": "FeatureInsight" }
@@ -116,36 +107,26 @@ export class WalkThroughInput extends EditorInput {
 
 	override resolve(): Promise<WalkThroughModel> {
 		if (!this.promise) {
-			this.promise = requireToContent(
-				this.instantiationService,
-				this.options.resource,
-			).then((content) => {
-				if (this.resource.path.endsWith(".html")) {
-					return new WalkThroughModel(content, []);
-				}
+			this.promise = requireToContent(this.instantiationService, this.options.resource)
+				.then(content => {
+					if (this.resource.path.endsWith('.html')) {
+						return new WalkThroughModel(content, []);
+					}
 
-				const snippets: Promise<IReference<ITextEditorModel>>[] = [];
-				let i = 0;
-				const renderer = new marked.Renderer();
-				renderer.code = (code, lang) => {
-					i++;
-					const resource = this.options.resource.with({
-						scheme: Schemas.walkThroughSnippet,
-						fragment: `${i}.${lang}`,
-					});
-					snippets.push(
-						this.textModelResolverService.createModelReference(
-							resource,
-						),
-					);
-					return `<div id="snippet-${resource.fragment}" class="walkThroughEditorContainer" ></div>`;
-				};
-				content = marked(content, { renderer });
+					const snippets: Promise<IReference<ITextEditorModel>>[] = [];
+					let i = 0;
+					const renderer = new marked.Renderer();
+					renderer.code = (code, lang) => {
+						i++;
+						const resource = this.options.resource.with({ scheme: Schemas.walkThroughSnippet, fragment: `${i}.${lang}` });
+						snippets.push(this.textModelResolverService.createModelReference(resource));
+						return `<div id="snippet-${resource.fragment}" class="walkThroughEditorContainer" ></div>`;
+					};
+					content = marked(content, { renderer });
 
-				return Promise.all(snippets).then(
-					(refs) => new WalkThroughModel(content, refs),
-				);
-			});
+					return Promise.all(snippets)
+						.then(refs => new WalkThroughModel(content, refs));
+				});
 		}
 
 		return this.promise;
@@ -165,7 +146,7 @@ export class WalkThroughInput extends EditorInput {
 
 	override dispose(): void {
 		if (this.promise) {
-			this.promise.then((model) => model.dispose());
+			this.promise.then(model => model.dispose());
 			this.promise = null;
 		}
 

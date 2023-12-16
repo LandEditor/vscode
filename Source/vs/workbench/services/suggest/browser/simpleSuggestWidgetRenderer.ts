@@ -3,18 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $, append, show } from "vs/base/browser/dom";
-import {
-	IconLabel,
-	IIconLabelValueOptions,
-} from "vs/base/browser/ui/iconLabel/iconLabel";
-import { IListRenderer } from "vs/base/browser/ui/list/list";
-import { SimpleCompletionItem } from "vs/workbench/services/suggest/browser/simpleCompletionItem";
-import { Codicon } from "vs/base/common/codicons";
-import { Emitter, Event } from "vs/base/common/event";
-import { createMatches } from "vs/base/common/filters";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { ThemeIcon } from "vs/base/common/themables";
+import { $, append, show } from 'vs/base/browser/dom';
+import { IconLabel, IIconLabelValueOptions } from 'vs/base/browser/ui/iconLabel/iconLabel';
+import { IListRenderer } from 'vs/base/browser/ui/list/list';
+import { SimpleCompletionItem } from 'vs/workbench/services/suggest/browser/simpleCompletionItem';
+import { Codicon } from 'vs/base/common/codicons';
+import { Emitter, Event } from 'vs/base/common/event';
+import { createMatches } from 'vs/base/common/filters';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { ThemeIcon } from 'vs/base/common/themables';
 
 export function getAriaId(index: number): string {
 	return `simple-suggest-aria-id:${index}`;
@@ -45,14 +42,12 @@ export interface ISimpleSuggestionTemplateData {
 	readonly disposables: DisposableStore;
 }
 
-export class SimpleSuggestWidgetItemRenderer
-	implements
-		IListRenderer<SimpleCompletionItem, ISimpleSuggestionTemplateData>
-{
+export class SimpleSuggestWidgetItemRenderer implements IListRenderer<SimpleCompletionItem, ISimpleSuggestionTemplateData> {
+
 	private readonly _onDidToggleDetails = new Emitter<void>();
 	readonly onDidToggleDetails: Event<void> = this._onDidToggleDetails.event;
 
-	readonly templateId = "suggestion";
+	readonly templateId = 'suggestion';
 
 	dispose(): void {
 		this._onDidToggleDetails.dispose();
@@ -62,27 +57,24 @@ export class SimpleSuggestWidgetItemRenderer
 		const disposables = new DisposableStore();
 
 		const root = container;
-		root.classList.add("show-file-icons");
+		root.classList.add('show-file-icons');
 
-		const icon = append(container, $(".icon"));
-		const colorspan = append(icon, $("span.colorspan"));
+		const icon = append(container, $('.icon'));
+		const colorspan = append(icon, $('span.colorspan'));
 
-		const text = append(container, $(".contents"));
-		const main = append(text, $(".main"));
+		const text = append(container, $('.contents'));
+		const main = append(text, $('.main'));
 
-		const iconContainer = append(main, $(".icon-label.codicon"));
-		const left = append(main, $("span.left"));
-		const right = append(main, $("span.right"));
+		const iconContainer = append(main, $('.icon-label.codicon'));
+		const left = append(main, $('span.left'));
+		const right = append(main, $('span.right'));
 
-		const iconLabel = new IconLabel(left, {
-			supportHighlights: true,
-			supportIcons: true,
-		});
+		const iconLabel = new IconLabel(left, { supportHighlights: true, supportIcons: true });
 		disposables.add(iconLabel);
 
-		const parametersLabel = append(left, $("span.signature-label"));
-		const qualifierLabel = append(left, $("span.qualifier-label"));
-		const detailsLabel = append(right, $("span.details-label"));
+		const parametersLabel = append(left, $('span.signature-label'));
+		const qualifierLabel = append(left, $('span.qualifier-label'));
+		const detailsLabel = append(right, $('span.details-label'));
 
 		// const readMore = append(right, $('span.readMore' + ThemeIcon.asCSSSelector(suggestMoreInfoIcon)));
 		// readMore.title = nls.localize('readMore', "Read More");
@@ -91,12 +83,12 @@ export class SimpleSuggestWidgetItemRenderer
 			// TODO: Implement
 			// const options = this._editor.getOptions();
 			// const fontInfo = options.get(EditorOption.fontInfo);
-			const fontFamily = "Hack"; //fontInfo.getMassagedFontFamily();
-			const fontFeatureSettings = ""; //fontInfo.fontFeatureSettings;
-			const fontSize = "12"; // = options.get(EditorOption.suggestFontSize) || fontInfo.fontSize;
-			const lineHeight = "20"; // options.get(EditorOption.suggestLineHeight) || fontInfo.lineHeight;
-			const fontWeight = "normal"; //fontInfo.fontWeight;
-			const letterSpacing = "0"; // fontInfo.letterSpacing;
+			const fontFamily = 'Hack'; //fontInfo.getMassagedFontFamily();
+			const fontFeatureSettings = ''; //fontInfo.fontFeatureSettings;
+			const fontSize = '12'; // = options.get(EditorOption.suggestFontSize) || fontInfo.fontSize;
+			const lineHeight = '20'; // options.get(EditorOption.suggestLineHeight) || fontInfo.lineHeight;
+			const fontWeight = 'normal'; //fontInfo.fontWeight;
+			const letterSpacing = '0'; // fontInfo.letterSpacing;
 			const fontSizePx = `${fontSize}px`;
 			const lineHeightPx = `${lineHeight}px`;
 			const letterSpacingPx = `${letterSpacing}px`;
@@ -121,33 +113,17 @@ export class SimpleSuggestWidgetItemRenderer
 		// 	}
 		// }));
 
-		return {
-			root,
-			left,
-			right,
-			icon,
-			colorspan,
-			iconLabel,
-			iconContainer,
-			parametersLabel,
-			qualifierLabel,
-			detailsLabel,
-			disposables,
-		};
+		return { root, left, right, icon, colorspan, iconLabel, iconContainer, parametersLabel, qualifierLabel, detailsLabel, disposables };
 	}
 
-	renderElement(
-		element: SimpleCompletionItem,
-		index: number,
-		data: ISimpleSuggestionTemplateData,
-	): void {
+	renderElement(element: SimpleCompletionItem, index: number, data: ISimpleSuggestionTemplateData): void {
 		const { completion } = element;
 		data.root.id = getAriaId(index);
-		data.colorspan.style.backgroundColor = "";
+		data.colorspan.style.backgroundColor = '';
 
 		const labelOptions: IIconLabelValueOptions = {
 			labelEscapeNewLines: true,
-			matches: createMatches(element.score),
+			matches: createMatches(element.score)
 		};
 
 		// const color: string[] = [];
@@ -175,14 +151,9 @@ export class SimpleSuggestWidgetItemRenderer
 		// 	].flat();
 		// } else {
 		// normal icon
-		data.icon.className = "icon hide";
-		data.iconContainer.className = "";
-		data.iconContainer.classList.add(
-			"suggest-icon",
-			...ThemeIcon.asClassNameArray(
-				completion.icon || Codicon.symbolText,
-			),
-		);
+		data.icon.className = 'icon hide';
+		data.iconContainer.className = '';
+		data.iconContainer.classList.add('suggest-icon', ...ThemeIcon.asClassNameArray(completion.icon || Codicon.symbolText));
 		// }
 
 		// if (completion.tags && completion.tags.indexOf(CompletionItemTag.Deprecated) >= 0) {
@@ -192,9 +163,9 @@ export class SimpleSuggestWidgetItemRenderer
 
 		data.iconLabel.setLabel(completion.label, undefined, labelOptions);
 		// if (typeof completion.label === 'string') {
-		data.parametersLabel.textContent = "";
-		data.detailsLabel.textContent = stripNewLines(completion.detail || "");
-		data.root.classList.add("string-label");
+		data.parametersLabel.textContent = '';
+		data.detailsLabel.textContent = stripNewLines(completion.detail || '');
+		data.root.classList.add('string-label');
 		// } else {
 		// 	data.parametersLabel.textContent = stripNewLines(completion.label.detail || '');
 		// 	data.detailsLabel.textContent = stripNewLines(completion.label.description || '');
@@ -220,7 +191,7 @@ export class SimpleSuggestWidgetItemRenderer
 		// 		this._onDidToggleDetails.fire();
 		// 	};
 		// } else {
-		data.right.classList.remove("can-expand-details");
+		data.right.classList.remove('can-expand-details');
 		// hide(data.readMore);
 		// data.readMore.onmousedown = null;
 		// data.readMore.onclick = null;
@@ -233,5 +204,5 @@ export class SimpleSuggestWidgetItemRenderer
 }
 
 function stripNewLines(str: string): string {
-	return str.replace(/\r\n|\r|\n/g, "");
+	return str.replace(/\r\n|\r|\n/g, '');
 }

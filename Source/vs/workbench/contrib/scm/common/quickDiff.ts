@@ -3,14 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { LanguageSelector } from "vs/editor/common/languageSelector";
-import { Event } from "vs/base/common/event";
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { LanguageSelector } from 'vs/editor/common/languageSelector';
+import { Event } from 'vs/base/common/event';
 
-export const IQuickDiffService =
-	createDecorator<IQuickDiffService>("quickDiff");
+export const IQuickDiffService = createDecorator<IQuickDiffService>('quickDiff');
 
 export interface QuickDiffProvider {
 	label: string;
@@ -31,9 +30,5 @@ export interface IQuickDiffService {
 
 	readonly onDidChangeQuickDiffProviders: Event<void>;
 	addQuickDiffProvider(quickDiff: QuickDiffProvider): IDisposable;
-	getQuickDiffs(
-		uri: URI,
-		language?: string,
-		isSynchronized?: boolean,
-	): Promise<QuickDiff[]>;
+	getQuickDiffs(uri: URI, language?: string, isSynchronized?: boolean): Promise<QuickDiff[]>;
 }

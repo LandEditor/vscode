@@ -3,29 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import { ResourceMap } from "vs/base/common/map";
-import { Schemas } from "vs/base/common/network";
-import { isEqual } from "vs/base/common/resources";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContribution,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import {
-	IBreakpoint,
-	IDebugService,
-} from "vs/workbench/contrib/debug/common/debug";
-import { getNotebookEditorFromEditorPane } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import { NotebookTextModel } from "vs/workbench/contrib/notebook/common/model/notebookTextModel";
-import {
-	CellUri,
-	NotebookCellsChangeType,
-} from "vs/workbench/contrib/notebook/common/notebookCommon";
-import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { ResourceMap } from 'vs/base/common/map';
+import { Schemas } from 'vs/base/common/network';
+import { isEqual } from 'vs/base/common/resources';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { Extensions as WorkbenchExtensions, IWorkbenchContribution, IWorkbenchContributionsRegistry } from 'vs/workbench/common/contributions';
+import { IBreakpoint, IDebugService } from 'vs/workbench/contrib/debug/common/debug';
+import { getNotebookEditorFromEditorPane } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+import { NotebookTextModel } from 'vs/workbench/contrib/notebook/common/model/notebookTextModel';
+import { CellUri, NotebookCellsChangeType } from 'vs/workbench/contrib/notebook/common/notebookCommon';
+import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 
 class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 	constructor(
@@ -102,9 +92,9 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 			idxMap.set(cell.uri, i);
 		});
 
-		bps.forEach((bp) => {
+		bps.forEach(bp => {
 			const idx = idxMap.get(bp.uri);
-			if (typeof idx !== "number") {
+			if (typeof idx !== 'number') {
 				return;
 			}
 
@@ -126,13 +116,11 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 					enabled: bp.enabled,
 					hitCondition: bp.hitCondition,
 					logMessage: bp.logMessage,
-					lineNumber: bp.lineNumber,
-				},
+					lineNumber: bp.lineNumber
+				}
 			]);
 		});
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(NotebookBreakpoints, LifecyclePhase.Restored);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(NotebookBreakpoints, LifecyclePhase.Restored);

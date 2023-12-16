@@ -3,24 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { timeout } from "vs/base/common/async";
-import { VSBuffer } from "vs/base/common/buffer";
-import { joinPath } from "vs/base/common/resources";
-import { generateUuid } from "vs/base/common/uuid";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IFileService } from "vs/platform/files/common/files";
-import { ILogService } from "vs/platform/log/common/log";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IV8Profile } from "vs/platform/profiling/common/profiling";
-import {
-	IProfileAnalysisWorkerService,
-	ProfilingOutput,
-} from "vs/platform/profiling/electron-sandbox/profileAnalysisWorkerService";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
-import { parseExtensionDevOptions } from "vs/workbench/services/extensions/common/extensionDevOptions";
-import { ITimerService } from "vs/workbench/services/timer/browser/timerService";
+import { timeout } from 'vs/base/common/async';
+import { VSBuffer } from 'vs/base/common/buffer';
+import { joinPath } from 'vs/base/common/resources';
+import { generateUuid } from 'vs/base/common/uuid';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IFileService } from 'vs/platform/files/common/files';
+import { ILogService } from 'vs/platform/log/common/log';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { IV8Profile } from 'vs/platform/profiling/common/profiling';
+import { IProfileAnalysisWorkerService, ProfilingOutput } from 'vs/platform/profiling/electron-sandbox/profileAnalysisWorkerService';
+import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
+import { parseExtensionDevOptions } from 'vs/workbench/services/extensions/common/extensionDevOptions';
+import { ITimerService } from 'vs/workbench/services/timer/browser/timerService';
 
 export class RendererProfiling {
+
 	private _observer?: PerformanceObserver;
 
 	constructor(
@@ -106,21 +104,10 @@ export class RendererProfiling {
 		this._observer?.disconnect();
 	}
 
-	private async _store(
-		profile: IV8Profile,
-		sessionId: string,
-	): Promise<void> {
-		const path = joinPath(
-			this._environmentService.tmpDir,
-			`renderer-${Math.random().toString(16).slice(2, 8)}.cpuprofile`,
-		);
-		await this._fileService.writeFile(
-			path,
-			VSBuffer.fromString(JSON.stringify(profile)),
-		);
-		this._logService.info(
-			`[perf] stored profile to DISK '${path}'`,
-			sessionId,
-		);
+
+	private async _store(profile: IV8Profile, sessionId: string): Promise<void> {
+		const path = joinPath(this._environmentService.tmpDir, `renderer-${Math.random().toString(16).slice(2, 8)}.cpuprofile`);
+		await this._fileService.writeFile(path, VSBuffer.fromString(JSON.stringify(profile)));
+		this._logService.info(`[perf] stored profile to DISK '${path}'`, sessionId);
 	}
 }

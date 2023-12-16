@@ -3,33 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
-import { escapeRegExpCharacters } from "vs/base/common/strings";
-import { URI } from "vs/base/common/uri";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { matchesScheme } from "vs/base/common/network";
-import { IProductService } from "vs/platform/product/common/productService";
-import { TerminalSettingId } from "vs/platform/terminal/common/terminal";
-import {
-	ITerminalSimpleLink,
-	ITerminalLinkDetector,
-	TerminalBuiltinLinkType,
-} from "vs/workbench/contrib/terminalContrib/links/browser/links";
-import {
-	convertLinkRangeToBuffer,
-	getXtermLineContent,
-} from "vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers";
-import {
-	ITerminalConfiguration,
-	TERMINAL_CONFIG_SECTION,
-} from "vs/workbench/contrib/terminal/common/terminal";
-import type { IBufferLine, Terminal } from "@xterm/xterm";
+import { Disposable } from 'vs/base/common/lifecycle';
+import { escapeRegExpCharacters } from 'vs/base/common/strings';
+import { URI } from 'vs/base/common/uri';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { matchesScheme } from 'vs/base/common/network';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { TerminalSettingId } from 'vs/platform/terminal/common/terminal';
+import { ITerminalSimpleLink, ITerminalLinkDetector, TerminalBuiltinLinkType } from 'vs/workbench/contrib/terminalContrib/links/browser/links';
+import { convertLinkRangeToBuffer, getXtermLineContent } from 'vs/workbench/contrib/terminalContrib/links/browser/terminalLinkHelpers';
+import { ITerminalConfiguration, TERMINAL_CONFIG_SECTION } from 'vs/workbench/contrib/terminal/common/terminal';
+import type { IBufferLine, Terminal } from '@xterm/xterm';
 
 const enum Constants {
 	/**
 	 * The max line length to try extract word links from.
 	 */
-	MaxLineLength = 2000,
+	MaxLineLength = 2000
 }
 
 interface Word {
@@ -38,11 +28,8 @@ interface Word {
 	text: string;
 }
 
-export class TerminalWordLinkDetector
-	extends Disposable
-	implements ITerminalLinkDetector
-{
-	static id = "word";
+export class TerminalWordLinkDetector extends Disposable implements ITerminalLinkDetector {
+	static id = 'word';
 
 	// Word links typically search the workspace so it makes sense that their maximum link length is
 	// quite small.
@@ -65,21 +52,12 @@ export class TerminalWordLinkDetector
 		}));
 	}
 
-	detect(
-		lines: IBufferLine[],
-		startLine: number,
-		endLine: number,
-	): ITerminalSimpleLink[] {
+	detect(lines: IBufferLine[], startLine: number, endLine: number): ITerminalSimpleLink[] {
 		const links: ITerminalSimpleLink[] = [];
 
 		// Get the text representation of the wrapped line
-		const text = getXtermLineContent(
-			this.xterm.buffer.active,
-			startLine,
-			endLine,
-			this.xterm.cols,
-		);
-		if (text === "" || text.length > Constants.MaxLineLength) {
+		const text = getXtermLineContent(this.xterm.buffer.active, startLine, endLine, this.xterm.cols);
+		if (text === '' || text.length > Constants.MaxLineLength) {
 			return [];
 		}
 
@@ -88,13 +66,10 @@ export class TerminalWordLinkDetector
 
 		// Map the words to ITerminalLink objects
 		for (const word of words) {
-			if (word.text === "") {
+			if (word.text === '') {
 				continue;
 			}
-			if (
-				word.text.length > 0 &&
-				word.text.charAt(word.text.length - 1) === ":"
-			) {
+			if (word.text.length > 0 && word.text.charAt(word.text.length - 1) === ':') {
 				word.text = word.text.slice(0, -1);
 				word.endIndex--;
 			}
@@ -105,9 +80,9 @@ export class TerminalWordLinkDetector
 					startColumn: word.startIndex + 1,
 					startLineNumber: 1,
 					endColumn: word.endIndex + 1,
-					endLineNumber: 1,
+					endLineNumber: 1
 				},
-				startLine,
+				startLine
 			);
 
 			// Support this product's URL protocol
@@ -118,7 +93,7 @@ export class TerminalWordLinkDetector
 						text: word.text,
 						uri,
 						bufferRange,
-						type: TerminalBuiltinLinkType.Url,
+						type: TerminalBuiltinLinkType.Url
 					});
 				}
 				continue;
@@ -128,7 +103,7 @@ export class TerminalWordLinkDetector
 			links.push({
 				text: word.text,
 				bufferRange,
-				type: TerminalBuiltinLinkType.Search,
+				type: TerminalBuiltinLinkType.Search
 			});
 		}
 
@@ -143,7 +118,7 @@ export class TerminalWordLinkDetector
 			words.push({
 				text: splitWords[i],
 				startIndex: runningIndex,
-				endIndex: runningIndex + splitWords[i].length,
+				endIndex: runningIndex + splitWords[i].length
 			});
 			runningIndex += splitWords[i].length + 1;
 		}
@@ -151,17 +126,11 @@ export class TerminalWordLinkDetector
 	}
 
 	private _refreshSeparatorCodes(): void {
-		const separators =
-			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION,
-			).wordSeparators;
-		let powerlineSymbols = "";
+		const separators = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION).wordSeparators;
+		let powerlineSymbols = '';
 		for (let i = 0xe0b0; i <= 0xe0bf; i++) {
 			powerlineSymbols += String.fromCharCode(i);
 		}
-		this._separatorRegex = new RegExp(
-			`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`,
-			"g",
-		);
+		this._separatorRegex = new RegExp(`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`, 'g');
 	}
 }

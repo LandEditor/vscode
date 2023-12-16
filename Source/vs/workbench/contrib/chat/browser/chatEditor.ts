@@ -3,46 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { CancellationToken } from "vs/base/common/cancellation";
-import {
-	IContextKeyService,
-	IScopedContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	editorBackground,
-	editorForeground,
-	inputBackground,
-} from "vs/platform/theme/common/colorRegistry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
-import { IEditorOpenContext } from "vs/workbench/common/editor";
-import { Memento } from "vs/workbench/common/memento";
-import { ChatEditorInput } from "vs/workbench/contrib/chat/browser/chatEditorInput";
-import {
-	IChatViewState,
-	ChatWidget,
-} from "vs/workbench/contrib/chat/browser/chatWidget";
-import {
-	IChatModel,
-	ISerializableChatData,
-} from "vs/workbench/contrib/chat/common/chatModel";
-import { clearChatEditor } from "vs/workbench/contrib/chat/browser/actions/chatClear";
+import * as dom from 'vs/base/browser/dom';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IContextKeyService, IScopedContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { editorBackground, editorForeground, inputBackground } from 'vs/platform/theme/common/colorRegistry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane';
+import { IEditorOpenContext } from 'vs/workbench/common/editor';
+import { Memento } from 'vs/workbench/common/memento';
+import { ChatEditorInput } from 'vs/workbench/contrib/chat/browser/chatEditorInput';
+import { IChatViewState, ChatWidget } from 'vs/workbench/contrib/chat/browser/chatWidget';
+import { IChatModel, ISerializableChatData } from 'vs/workbench/contrib/chat/common/chatModel';
+import { clearChatEditor } from 'vs/workbench/contrib/chat/browser/actions/chatClear';
 
 export interface IChatEditorOptions extends IEditorOptions {
-	target:
-		| { sessionId: string }
-		| { providerId: string }
-		| { data: ISerializableChatData };
+	target: { sessionId: string } | { providerId: string } | { data: ISerializableChatData };
 }
 
 export class ChatEditor extends EditorPane {
@@ -71,16 +51,8 @@ export class ChatEditor extends EditorPane {
 	}
 
 	protected override createEditor(parent: HTMLElement): void {
-		this._scopedContextKeyService = this._register(
-			this.contextKeyService.createScoped(parent),
-		);
-		const scopedInstantiationService =
-			this.instantiationService.createChild(
-				new ServiceCollection([
-					IContextKeyService,
-					this.scopedContextKeyService,
-				]),
-			);
+		this._scopedContextKeyService = this._register(this.contextKeyService.createScoped(parent));
+		const scopedInstantiationService = this.instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService]));
 
 		this.widget = this._register(
 			scopedInstantiationService.createInstance(
@@ -91,10 +63,8 @@ export class ChatEditor extends EditorPane {
 					listForeground: editorForeground,
 					listBackground: editorBackground,
 					inputEditorBackground: inputBackground,
-					resultEditorBackground: editorBackground,
-				},
-			),
-		);
+					resultEditorBackground: editorBackground
+				}));
 		this._register(this.widget.onDidClear(() => this.clear()));
 		this.widget.render(parent);
 		this.widget.setVisible(true);
@@ -111,37 +81,24 @@ export class ChatEditor extends EditorPane {
 		super.clearInput();
 	}
 
-	override async setInput(
-		input: ChatEditorInput,
-		options: IChatEditorOptions,
-		context: IEditorOpenContext,
-		token: CancellationToken,
-	): Promise<void> {
+	override async setInput(input: ChatEditorInput, options: IChatEditorOptions, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
 		super.setInput(input, options, context, token);
 
 		const editorModel = await input.resolve();
 		if (!editorModel) {
-			throw new Error(
-				`Failed to get model for chat editor. id: ${input.sessionId}`,
-			);
+			throw new Error(`Failed to get model for chat editor. id: ${input.sessionId}`);
 		}
 
 		if (!this.widget) {
-			throw new Error("ChatEditor lifecycle issue: no editor widget");
+			throw new Error('ChatEditor lifecycle issue: no editor widget');
 		}
 
 		this.updateModel(editorModel.model);
 	}
 
 	private updateModel(model: IChatModel): void {
-		this._memento = new Memento(
-			"interactive-session-editor-" + model.sessionId,
-			this.storageService,
-		);
-		this._viewState = this._memento.getMemento(
-			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
-		) as IChatViewState;
+		this._memento = new Memento('interactive-session-editor-' + model.sessionId, this.storageService);
+		this._viewState = this._memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatViewState;
 		this.widget.setModel(model, { ...this._viewState });
 	}
 
@@ -155,10 +112,7 @@ export class ChatEditor extends EditorPane {
 		}
 	}
 
-	override layout(
-		dimension: dom.Dimension,
-		position?: dom.IDomPosition | undefined,
-	): void {
+	override layout(dimension: dom.Dimension, position?: dom.IDomPosition | undefined): void {
 		if (this.widget) {
 			this.widget.layout(dimension.height, dimension.width);
 		}

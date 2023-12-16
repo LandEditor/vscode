@@ -3,130 +3,73 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { alert } from "vs/base/browser/ui/aria/aria";
-import { Disposable, toDisposable } from "vs/base/common/lifecycle";
-import {
-	ITransaction,
-	autorun,
-	autorunHandleChanges,
-	constObservable,
-	derived,
-	disposableObservableValue,
-	observableFromEvent,
-	observableSignal,
-	observableValue,
-	transaction,
-} from "vs/base/common/observable";
-import { CoreEditingCommands } from "vs/editor/browser/coreCommands";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { Position } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
-import { CursorChangeReason } from "vs/editor/common/cursorEvents";
-import { ILanguageFeatureDebounceService } from "vs/editor/common/services/languageFeatureDebounce";
-import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
-import { IModelContentChangedEvent } from "vs/editor/common/textModelEvents";
-import { inlineSuggestCommitId } from "vs/editor/contrib/inlineCompletions/browser/commandIds";
-import { GhostTextWidget } from "vs/editor/contrib/inlineCompletions/browser/ghostTextWidget";
-import { InlineCompletionContextKeys } from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys";
-import {
-	InlineCompletionsHintsWidget,
-	InlineSuggestionHintsContentWidget,
-} from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsHintsWidget";
-import {
-	InlineCompletionsModel,
-	VersionIdChangeReason,
-} from "vs/editor/contrib/inlineCompletions/browser/inlineCompletionsModel";
-import { SuggestWidgetAdaptor } from "vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider";
-import { localize } from "vs/nls";
-import {
-	AudioCue,
-	IAudioCueService,
-} from "vs/platform/audioCues/browser/audioCueService";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { alert } from 'vs/base/browser/ui/aria/aria';
+import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
+import { ITransaction, autorun, autorunHandleChanges, constObservable, derived, disposableObservableValue, observableFromEvent, observableSignal, observableValue, transaction } from 'vs/base/common/observable';
+import { CoreEditingCommands } from 'vs/editor/browser/coreCommands';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Position } from 'vs/editor/common/core/position';
+import { Range } from 'vs/editor/common/core/range';
+import { CursorChangeReason } from 'vs/editor/common/cursorEvents';
+import { ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce';
+import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
+import { IModelContentChangedEvent } from 'vs/editor/common/textModelEvents';
+import { inlineSuggestCommitId } from 'vs/editor/contrib/inlineCompletions/browser/commandIds';
+import { GhostTextWidget } from 'vs/editor/contrib/inlineCompletions/browser/ghostTextWidget';
+import { InlineCompletionContextKeys } from 'vs/editor/contrib/inlineCompletions/browser/inlineCompletionContextKeys';
+import { InlineCompletionsHintsWidget, InlineSuggestionHintsContentWidget } from 'vs/editor/contrib/inlineCompletions/browser/inlineCompletionsHintsWidget';
+import { InlineCompletionsModel, VersionIdChangeReason } from 'vs/editor/contrib/inlineCompletions/browser/inlineCompletionsModel';
+import { SuggestWidgetAdaptor } from 'vs/editor/contrib/inlineCompletions/browser/suggestWidgetInlineCompletionProvider';
+import { localize } from 'vs/nls';
+import { AudioCue, IAudioCueService } from 'vs/platform/audioCues/browser/audioCueService';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
 
 export class InlineCompletionsController extends Disposable {
-	static ID = "editor.contrib.inlineCompletionsController";
+	static ID = 'editor.contrib.inlineCompletionsController';
 
 	public static get(editor: ICodeEditor): InlineCompletionsController | null {
-		return editor.getContribution<InlineCompletionsController>(
-			InlineCompletionsController.ID,
-		);
+		return editor.getContribution<InlineCompletionsController>(InlineCompletionsController.ID);
 	}
 
-	public readonly model = disposableObservableValue<
-		InlineCompletionsModel | undefined
-	>("inlineCompletionModel", undefined);
-	private readonly _textModelVersionId = observableValue<
-		number,
-		VersionIdChangeReason
-	>(this, -1);
-	private readonly _cursorPosition = observableValue<Position>(
-		this,
-		new Position(1, 1),
-	);
-	private readonly _suggestWidgetAdaptor = this._register(
-		new SuggestWidgetAdaptor(
-			this.editor,
-			() =>
-				this.model
-					.get()
-					?.selectedInlineCompletion.get()
-					?.toSingleTextEdit(undefined),
-			(tx) => this.updateObservables(tx, VersionIdChangeReason.Other),
-			(item) => {
-				transaction((tx) => {
-					/** @description InlineCompletionsController.handleSuggestAccepted */
-					this.updateObservables(tx, VersionIdChangeReason.Other);
-					this.model.get()?.handleSuggestAccepted(item);
-				});
-			},
-		),
-	);
-	private readonly _enabled = observableFromEvent(
-		this.editor.onDidChangeConfiguration,
-		() => this.editor.getOption(EditorOption.inlineSuggest).enabled,
-	);
+	public readonly model = disposableObservableValue<InlineCompletionsModel | undefined>('inlineCompletionModel', undefined);
+	private readonly _textModelVersionId = observableValue<number, VersionIdChangeReason>(this, -1);
+	private readonly _cursorPosition = observableValue<Position>(this, new Position(1, 1));
+	private readonly _suggestWidgetAdaptor = this._register(new SuggestWidgetAdaptor(
+		this.editor,
+		() => this.model.get()?.selectedInlineCompletion.get()?.toSingleTextEdit(undefined),
+		(tx) => this.updateObservables(tx, VersionIdChangeReason.Other),
+		(item) => {
+			transaction(tx => {
+				/** @description InlineCompletionsController.handleSuggestAccepted */
+				this.updateObservables(tx, VersionIdChangeReason.Other);
+				this.model.get()?.handleSuggestAccepted(item);
+			});
+		}
+	));
+	private readonly _enabled = observableFromEvent(this.editor.onDidChangeConfiguration, () => this.editor.getOption(EditorOption.inlineSuggest).enabled);
 
-	private _ghostTextWidget = this._register(
-		this._instantiationService.createInstance(
-			GhostTextWidget,
-			this.editor,
-			{
-				ghostText: this.model.map((v, reader) =>
-					/** ghostText */ v?.ghostText.read(reader),
-				),
-				minReservedLineCount: constObservable(0),
-				targetTextModel: this.model.map((v) => v?.textModel),
-			},
-		),
-	);
+	private _ghostTextWidget = this._register(this._instantiationService.createInstance(GhostTextWidget, this.editor, {
+		ghostText: this.model.map((v, reader) => /** ghostText */ v?.ghostText.read(reader)),
+		minReservedLineCount: constObservable(0),
+		targetTextModel: this.model.map(v => v?.textModel),
+	}));
 
 	private readonly _debounceValue = this._debounceService.for(
 		this._languageFeaturesService.inlineCompletionsProvider,
-		"InlineCompletionsDebounce",
-		{ min: 50, max: 50 },
+		'InlineCompletionsDebounce',
+		{ min: 50, max: 50 }
 	);
 
 	private readonly _playAudioCueSignal = observableSignal(this);
 
-	private readonly _isReadonly = observableFromEvent(
-		this.editor.onDidChangeConfiguration,
-		() => this.editor.getOption(EditorOption.readOnly),
-	);
-	private readonly _textModel = observableFromEvent(
-		this.editor.onDidChangeModel,
-		() => this.editor.getModel(),
-	);
-	private readonly _textModelIfWritable = derived((reader) =>
-		this._isReadonly.read(reader)
-			? undefined
-			: this._textModel.read(reader),
-	);
+	private readonly _isReadonly = observableFromEvent(this.editor.onDidChangeConfiguration, () => this.editor.getOption(EditorOption.readOnly));
+	private readonly _textModel = observableFromEvent(this.editor.onDidChangeModel, () => this.editor.getModel());
+	private readonly _textModelIfWritable = derived(reader => this._isReadonly.read(reader) ? undefined : this._textModel.read(reader));
 
 	constructor(
 		public readonly editor: ICodeEditor,
@@ -287,29 +230,13 @@ export class InlineCompletionsController extends Disposable {
 	}
 
 	private provideScreenReaderUpdate(content: string): void {
-		const accessibleViewShowing =
-			this._contextKeyService.getContextKeyValue<boolean>(
-				"accessibleViewIsShown",
-			);
-		const accessibleViewKeybinding =
-			this._keybindingService.lookupKeybinding(
-				"editor.action.accessibleView",
-			);
+		const accessibleViewShowing = this._contextKeyService.getContextKeyValue<boolean>('accessibleViewIsShown');
+		const accessibleViewKeybinding = this._keybindingService.lookupKeybinding('editor.action.accessibleView');
 		let hint: string | undefined;
-		if (
-			!accessibleViewShowing &&
-			accessibleViewKeybinding &&
-			this.editor.getOption(
-				EditorOption.inlineCompletionsAccessibilityVerbose,
-			)
-		) {
-			hint = localize(
-				"showAccessibleViewHint",
-				"Inspect this in the accessible view ({0})",
-				accessibleViewKeybinding.getAriaLabel(),
-			);
+		if (!accessibleViewShowing && accessibleViewKeybinding && this.editor.getOption(EditorOption.inlineCompletionsAccessibilityVerbose)) {
+			hint = localize('showAccessibleViewHint', "Inspect this in the accessible view ({0})", accessibleViewKeybinding.getAriaLabel());
 		}
-		hint ? alert(content + ", " + hint) : alert(content);
+		hint ? alert(content + ', ' + hint) : alert(content);
 	}
 
 	/**
@@ -317,30 +244,16 @@ export class InlineCompletionsController extends Disposable {
 	 * This solves all kind of eventing issues, as we make sure we always operate on the latest state,
 	 * regardless of who calls into us.
 	 */
-	private updateObservables(
-		tx: ITransaction,
-		changeReason: VersionIdChangeReason,
-	): void {
+	private updateObservables(tx: ITransaction, changeReason: VersionIdChangeReason): void {
 		const newModel = this.editor.getModel();
-		this._textModelVersionId.set(
-			newModel?.getVersionId() ?? -1,
-			tx,
-			changeReason,
-		);
-		this._cursorPosition.set(
-			this.editor.getPosition() ?? new Position(1, 1),
-			tx,
-		);
+		this._textModelVersionId.set(newModel?.getVersionId() ?? -1, tx, changeReason);
+		this._cursorPosition.set(this.editor.getPosition() ?? new Position(1, 1), tx);
 	}
 
 	public shouldShowHoverAt(range: Range) {
 		const ghostText = this.model.get()?.ghostText.get();
 		if (ghostText) {
-			return ghostText.parts.some((p) =>
-				range.containsPosition(
-					new Position(ghostText.lineNumber, p.column),
-				),
-			);
+			return ghostText.parts.some(p => range.containsPosition(new Position(ghostText.lineNumber, p.column)));
 		}
 		return false;
 	}
@@ -350,7 +263,7 @@ export class InlineCompletionsController extends Disposable {
 	}
 
 	public hide() {
-		transaction((tx) => {
+		transaction(tx => {
 			this.model.get()?.stop(tx);
 		});
 	}

@@ -3,16 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Emitter, Event } from "vs/base/common/event";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IViewBadge } from "vs/workbench/common/views";
-import { IOverlayWebview } from "vs/workbench/contrib/webview/browser/webview";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IViewBadge } from 'vs/workbench/common/views';
+import { IOverlayWebview } from 'vs/workbench/contrib/webview/browser/webview';
 
 /**
  * A webview shown in a view pane.
@@ -69,16 +65,13 @@ interface IWebviewViewResolver {
 	/**
 	 * Fill in the contents of a webview view.
 	 */
-	resolve(
-		webviewView: WebviewView,
-		cancellation: CancellationToken,
-	): Promise<void>;
+	resolve(webviewView: WebviewView, cancellation: CancellationToken): Promise<void>;
 }
 
-export const IWebviewViewService =
-	createDecorator<IWebviewViewService>("webviewViewService");
+export const IWebviewViewService = createDecorator<IWebviewViewService>('webviewViewService');
 
 export interface IWebviewViewService {
+
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -95,31 +88,19 @@ export interface IWebviewViewService {
 	 * Try to resolve a webview view. The promise will not resolve until a resolver for the webview has been registered
 	 * and run
 	 */
-	resolve(
-		viewType: string,
-		webview: WebviewView,
-		cancellation: CancellationToken,
-	): Promise<void>;
+	resolve(viewType: string, webview: WebviewView, cancellation: CancellationToken): Promise<void>;
 }
 
-export class WebviewViewService
-	extends Disposable
-	implements IWebviewViewService
-{
+export class WebviewViewService extends Disposable implements IWebviewViewService {
+
 	readonly _serviceBrand: undefined;
 
 	private readonly _resolvers = new Map<string, IWebviewViewResolver>();
 
-	private readonly _awaitingRevival = new Map<
-		string,
-		{ readonly webview: WebviewView; readonly resolve: () => void }
-	>();
+	private readonly _awaitingRevival = new Map<string, { readonly webview: WebviewView; readonly resolve: () => void }>();
 
-	private readonly _onNewResolverRegistered = this._register(
-		new Emitter<{ readonly viewType: string }>(),
-	);
-	public readonly onNewResolverRegistered =
-		this._onNewResolverRegistered.event;
+	private readonly _onNewResolverRegistered = this._register(new Emitter<{ readonly viewType: string }>());
+	public readonly onNewResolverRegistered = this._onNewResolverRegistered.event;
 
 	register(viewType: string, resolver: IWebviewViewResolver): IDisposable {
 		if (this._resolvers.has(viewType)) {
@@ -131,12 +112,10 @@ export class WebviewViewService
 
 		const pending = this._awaitingRevival.get(viewType);
 		if (pending) {
-			resolver
-				.resolve(pending.webview, CancellationToken.None)
-				.then(() => {
-					this._awaitingRevival.delete(viewType);
-					pending.resolve();
-				});
+			resolver.resolve(pending.webview, CancellationToken.None).then(() => {
+				this._awaitingRevival.delete(viewType);
+				pending.resolve();
+			});
 		}
 
 		return toDisposable(() => {
@@ -144,19 +123,15 @@ export class WebviewViewService
 		});
 	}
 
-	resolve(
-		viewType: string,
-		webview: WebviewView,
-		cancellation: CancellationToken,
-	): Promise<void> {
+	resolve(viewType: string, webview: WebviewView, cancellation: CancellationToken): Promise<void> {
 		const resolver = this._resolvers.get(viewType);
 		if (!resolver) {
 			if (this._awaitingRevival.has(viewType)) {
-				throw new Error("View already awaiting revival");
+				throw new Error('View already awaiting revival');
 			}
 
 			let resolve: () => void;
-			const p = new Promise<void>((r) => (resolve = r));
+			const p = new Promise<void>(r => resolve = r);
 			this._awaitingRevival.set(viewType, { webview, resolve: resolve! });
 			return p;
 		}

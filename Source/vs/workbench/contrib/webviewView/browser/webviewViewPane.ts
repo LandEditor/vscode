@@ -3,89 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	addDisposableListener,
-	Dimension,
-	EventType,
-	findParentWithClass,
-} from "vs/base/browser/dom";
-import { CancellationTokenSource } from "vs/base/common/cancellation";
-import { Emitter } from "vs/base/common/event";
-import {
-	DisposableStore,
-	IDisposable,
-	MutableDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { MenuId } from "vs/platform/actions/common/actions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { IProgressService } from "vs/platform/progress/common/progress";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	ViewPane,
-	ViewPaneShowActions,
-} from "vs/workbench/browser/parts/views/viewPane";
-import { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
-import { Memento, MementoObject } from "vs/workbench/common/memento";
-import {
-	IViewBadge,
-	IViewDescriptorService,
-	IViewsService,
-} from "vs/workbench/common/views";
-import {
-	ExtensionKeyedWebviewOriginStore,
-	IOverlayWebview,
-	IWebviewService,
-	WebviewContentPurpose,
-} from "vs/workbench/contrib/webview/browser/webview";
-import { WebviewWindowDragMonitor } from "vs/workbench/contrib/webview/browser/webviewWindowDragMonitor";
-import {
-	IWebviewViewService,
-	WebviewView,
-} from "vs/workbench/contrib/webviewView/browser/webviewViewService";
-import {
-	IActivityService,
-	NumberBadge,
-} from "vs/workbench/services/activity/common/activity";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { addDisposableListener, Dimension, EventType, findParentWithClass } from 'vs/base/browser/dom';
+import { CancellationTokenSource } from 'vs/base/common/cancellation';
+import { Emitter } from 'vs/base/common/event';
+import { DisposableStore, IDisposable, MutableDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { MenuId } from 'vs/platform/actions/common/actions';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { IProgressService } from 'vs/platform/progress/common/progress';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { ViewPane, ViewPaneShowActions } from 'vs/workbench/browser/parts/views/viewPane';
+import { IViewletViewOptions } from 'vs/workbench/browser/parts/views/viewsViewlet';
+import { Memento, MementoObject } from 'vs/workbench/common/memento';
+import { IViewBadge, IViewDescriptorService, IViewsService } from 'vs/workbench/common/views';
+import { ExtensionKeyedWebviewOriginStore, IOverlayWebview, IWebviewService, WebviewContentPurpose } from 'vs/workbench/contrib/webview/browser/webview';
+import { WebviewWindowDragMonitor } from 'vs/workbench/contrib/webview/browser/webviewWindowDragMonitor';
+import { IWebviewViewService, WebviewView } from 'vs/workbench/contrib/webviewView/browser/webviewViewService';
+import { IActivityService, NumberBadge } from 'vs/workbench/services/activity/common/activity';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 
 declare const ResizeObserver: any;
 
 const storageKeys = {
-	webviewState: "webviewState",
+	webviewState: 'webviewState',
 } as const;
 
 export class WebviewViewPane extends ViewPane {
+
 	private static _originStore?: ExtensionKeyedWebviewOriginStore;
 
-	private static getOriginStore(
-		storageService: IStorageService,
-	): ExtensionKeyedWebviewOriginStore {
-		this._originStore ??= new ExtensionKeyedWebviewOriginStore(
-			"webviewViews.origins",
-			storageService,
-		);
+	private static getOriginStore(storageService: IStorageService): ExtensionKeyedWebviewOriginStore {
+		this._originStore ??= new ExtensionKeyedWebviewOriginStore('webviewViews.origins', storageService);
 		return this._originStore;
 	}
 
-	private readonly _webview = this._register(
-		new MutableDisposable<IOverlayWebview>(),
-	);
-	private readonly _webviewDisposables = this._register(
-		new DisposableStore(),
-	);
+	private readonly _webview = this._register(new MutableDisposable<IOverlayWebview>());
+	private readonly _webviewDisposables = this._register(new DisposableStore());
 	private _activated = false;
 
 	private _container?: HTMLElement;
@@ -142,9 +102,7 @@ export class WebviewViewPane extends ViewPane {
 		this.updateTreeVisibility();
 	}
 
-	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<boolean>(),
-	);
+	private readonly _onDidChangeVisibility = this._register(new Emitter<boolean>());
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
 	private readonly _onDispose = this._register(new Emitter<void>());
@@ -176,19 +134,16 @@ export class WebviewViewPane extends ViewPane {
 				}, 0);
 			});
 
-			this._register(
-				toDisposable(() => {
-					this._resizeObserver.disconnect();
-				}),
-			);
+			this._register(toDisposable(() => {
+				this._resizeObserver.disconnect();
+			}));
 			this._resizeObserver.observe(container);
 		}
 	}
 
 	public override saveState() {
 		if (this._webview.value) {
-			this.viewState[storageKeys.webviewState] =
-				this._webview.value.state;
+			this.viewState[storageKeys.webviewState] = this._webview.value.state;
 		}
 
 		this.memento.saveMemento();
@@ -217,19 +172,14 @@ export class WebviewViewPane extends ViewPane {
 
 		this._activated = true;
 
-		const origin = this.extensionId
-			? WebviewViewPane.getOriginStore(this.storageService).getOrigin(
-					this.id,
-					this.extensionId,
-			  )
-			: undefined;
+		const origin = this.extensionId ? WebviewViewPane.getOriginStore(this.storageService).getOrigin(this.id, this.extensionId) : undefined;
 		const webview = this.webviewService.createWebviewOverlay({
 			origin,
 			providedViewType: this.id,
 			title: this.title,
 			options: { purpose: WebviewContentPurpose.WebviewView },
 			contentOptions: {},
-			extension: this.extensionId ? { id: this.extensionId } : undefined,
+			extension: this.extensionId ? { id: this.extensionId } : undefined
 		});
 		webview.state = this.viewState[storageKeys.webviewState];
 		this._webview.value = webview;
@@ -238,48 +188,26 @@ export class WebviewViewPane extends ViewPane {
 			this.layoutWebview();
 		}
 
-		this._webviewDisposables.add(
-			toDisposable(() => {
-				this._webview.value?.release(this);
-			}),
-		);
+		this._webviewDisposables.add(toDisposable(() => {
+			this._webview.value?.release(this);
+		}));
 
-		this._webviewDisposables.add(
-			webview.onDidUpdateState(() => {
-				this.viewState[storageKeys.webviewState] = webview.state;
-			}),
-		);
+		this._webviewDisposables.add(webview.onDidUpdateState(() => {
+			this.viewState[storageKeys.webviewState] = webview.state;
+		}));
 
 		// Re-dispatch all drag events back to the drop target to support view drag drop
-		for (const event of [
-			EventType.DRAG,
-			EventType.DRAG_END,
-			EventType.DRAG_ENTER,
-			EventType.DRAG_LEAVE,
-			EventType.DRAG_START,
-		]) {
-			this._webviewDisposables.add(
-				addDisposableListener(
-					this._webview.value.container!,
-					event,
-					(e) => {
-						e.preventDefault();
-						e.stopImmediatePropagation();
-						this.dropTargetElement.dispatchEvent(
-							new DragEvent(e.type, e),
-						);
-					},
-				),
-			);
+		for (const event of [EventType.DRAG, EventType.DRAG_END, EventType.DRAG_ENTER, EventType.DRAG_LEAVE, EventType.DRAG_START]) {
+			this._webviewDisposables.add(addDisposableListener(this._webview.value.container!, event, e => {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				this.dropTargetElement.dispatchEvent(new DragEvent(e.type, e));
+			}));
 		}
 
-		this._webviewDisposables.add(
-			new WebviewWindowDragMonitor(() => this._webview.value),
-		);
+		this._webviewDisposables.add(new WebviewWindowDragMonitor(() => this._webview.value));
 
-		const source = this._webviewDisposables.add(
-			new CancellationTokenSource(),
-		);
+		const source = this._webviewDisposables.add(new CancellationTokenSource());
 
 		this.withProgress(async () => {
 			await this.extensionService.activateByEvent(`onView:${this.id}`);
@@ -290,26 +218,14 @@ export class WebviewViewPane extends ViewPane {
 				onDidChangeVisibility: this.onDidChangeBodyVisibility,
 				onDispose: this.onDispose,
 
-				get title(): string | undefined {
-					return self.setTitle;
-				},
-				set title(value: string | undefined) {
-					self.updateTitle(value);
-				},
+				get title(): string | undefined { return self.setTitle; },
+				set title(value: string | undefined) { self.updateTitle(value); },
 
-				get description(): string | undefined {
-					return self.titleDescription;
-				},
-				set description(value: string | undefined) {
-					self.updateTitleDescription(value);
-				},
+				get description(): string | undefined { return self.titleDescription; },
+				set description(value: string | undefined) { self.updateTitleDescription(value); },
 
-				get badge(): IViewBadge | undefined {
-					return self.badge;
-				},
-				set badge(badge: IViewBadge | undefined) {
-					self.updateBadge(badge);
-				},
+				get badge(): IViewBadge | undefined { return self.badge; },
+				set badge(badge: IViewBadge | undefined) { self.updateBadge(badge); },
 
 				dispose: () => {
 					// Only reset and clear the webview itself. Don't dispose of the view container
@@ -320,29 +236,22 @@ export class WebviewViewPane extends ViewPane {
 
 				show: (preserveFocus) => {
 					this.viewService.openView(this.id, !preserveFocus);
-				},
+				}
 			};
 
-			await this.webviewViewService.resolve(
-				this.id,
-				webviewView,
-				source.token,
-			);
+			await this.webviewViewService.resolve(this.id, webviewView, source.token);
 		});
 	}
 
 	protected override updateTitle(value: string | undefined) {
 		this.setTitle = value;
-		super.updateTitle(
-			typeof value === "string" ? value : this.defaultTitle,
-		);
+		super.updateTitle(typeof value === 'string' ? value : this.defaultTitle);
 	}
 
 	protected updateBadge(badge: IViewBadge | undefined) {
-		if (
-			this.badge?.value === badge?.value &&
-			this.badge?.tooltip === badge?.tooltip
-		) {
+
+		if (this.badge?.value === badge?.value &&
+			this.badge?.tooltip === badge?.tooltip) {
 			return;
 		}
 
@@ -355,17 +264,14 @@ export class WebviewViewPane extends ViewPane {
 		if (badge) {
 			const activity = {
 				badge: new NumberBadge(badge.value, () => badge.tooltip),
-				priority: 150,
+				priority: 150
 			};
 			this.activityService.showViewActivity(this.id, activity);
 		}
 	}
 
 	private async withProgress(task: () => Promise<void>): Promise<void> {
-		return this.progressService.withProgress(
-			{ location: this.id, delay: 500 },
-			task,
-		);
+		return this.progressService.withProgress({ location: this.id, delay: 500 }, task);
 	}
 
 	override onDidScrollRoot() {
@@ -382,11 +288,7 @@ export class WebviewViewPane extends ViewPane {
 			this._rootContainer = this.findRootContainer(this._container);
 		}
 
-		webviewEntry.layoutWebviewOverElement(
-			this._container,
-			dimension,
-			this._rootContainer,
-		);
+		webviewEntry.layoutWebviewOverElement(this._container, dimension, this._rootContainer);
 	}
 
 	private layoutWebview(dimension?: Dimension) {
@@ -394,16 +296,10 @@ export class WebviewViewPane extends ViewPane {
 		// Temporary fix for https://github.com/microsoft/vscode/issues/110450
 		// There is an animation that lasts about 200ms, update the webview positioning once this animation is complete.
 		clearTimeout(this._repositionTimeout);
-		this._repositionTimeout = setTimeout(
-			() => this.doLayoutWebview(dimension),
-			200,
-		);
+		this._repositionTimeout = setTimeout(() => this.doLayoutWebview(dimension), 200);
 	}
 
 	private findRootContainer(container: HTMLElement): HTMLElement | undefined {
-		return (
-			findParentWithClass(container, "monaco-scrollable-element") ??
-			undefined
-		);
+		return findParentWithClass(container, 'monaco-scrollable-element') ?? undefined;
 	}
 }

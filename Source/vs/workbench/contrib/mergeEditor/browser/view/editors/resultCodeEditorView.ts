@@ -3,46 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { reset } from "vs/base/browser/dom";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
-import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
-import { CompareResult } from "vs/base/common/arrays";
-import { BugIndicatingError } from "vs/base/common/errors";
-import { toDisposable } from "vs/base/common/lifecycle";
-import {
-	autorun,
-	autorunWithStore,
-	derived,
-	IObservable,
-} from "vs/base/common/observable";
-import {
-	IModelDeltaDecoration,
-	MinimapPosition,
-	OverviewRulerLane,
-} from "vs/editor/common/model";
-import { localize } from "vs/nls";
-import { MenuId } from "vs/platform/actions/common/actions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILabelService } from "vs/platform/label/common/label";
-import { LineRange } from "vs/workbench/contrib/mergeEditor/browser/model/lineRange";
-import {
-	applyObservableDecorations,
-	join,
-} from "vs/workbench/contrib/mergeEditor/browser/utils";
-import {
-	handledConflictMinimapOverViewRulerColor,
-	unhandledConflictMinimapOverViewRulerColor,
-} from "vs/workbench/contrib/mergeEditor/browser/view/colors";
-import { EditorGutter } from "vs/workbench/contrib/mergeEditor/browser/view/editorGutter";
-import { MergeEditorViewModel } from "vs/workbench/contrib/mergeEditor/browser/view/viewModel";
-import { ctxIsMergeResultEditor } from "vs/workbench/contrib/mergeEditor/common/mergeEditor";
-import {
-	CodeEditorView,
-	createSelectionsAutorun,
-	TitleMenu,
-} from "./codeEditorView";
+import { reset } from 'vs/base/browser/dom';
+import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
+import { renderLabelWithIcons } from 'vs/base/browser/ui/iconLabel/iconLabels';
+import { CompareResult } from 'vs/base/common/arrays';
+import { BugIndicatingError } from 'vs/base/common/errors';
+import { toDisposable } from 'vs/base/common/lifecycle';
+import { autorun, autorunWithStore, derived, IObservable } from 'vs/base/common/observable';
+import { IModelDeltaDecoration, MinimapPosition, OverviewRulerLane } from 'vs/editor/common/model';
+import { localize } from 'vs/nls';
+import { MenuId } from 'vs/platform/actions/common/actions';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ILabelService } from 'vs/platform/label/common/label';
+import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';
+import { applyObservableDecorations, join } from 'vs/workbench/contrib/mergeEditor/browser/utils';
+import { handledConflictMinimapOverViewRulerColor, unhandledConflictMinimapOverViewRulerColor } from 'vs/workbench/contrib/mergeEditor/browser/view/colors';
+import { EditorGutter } from 'vs/workbench/contrib/mergeEditor/browser/view/editorGutter';
+import { MergeEditorViewModel } from 'vs/workbench/contrib/mergeEditor/browser/view/viewModel';
+import { ctxIsMergeResultEditor } from 'vs/workbench/contrib/mergeEditor/common/mergeEditor';
+import { CodeEditorView, createSelectionsAutorun, TitleMenu } from './codeEditorView';
 
 export class ResultCodeEditorView extends CodeEditorView {
 	constructor(
@@ -148,7 +129,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 		);
 	}
 
-	private readonly decorations = derived(this, (reader) => {
+	private readonly decorations = derived(this, reader => {
 		const viewModel = this.viewModel.read(reader);
 		if (!viewModel) {
 			return [];
@@ -160,87 +141,59 @@ export class ResultCodeEditorView extends CodeEditorView {
 		const baseRangeWithStoreAndTouchingDiffs = join(
 			model.modifiedBaseRanges.read(reader),
 			model.baseResultDiffs.read(reader),
-			(baseRange, diff) =>
-				baseRange.baseRange.touches(diff.inputRange)
-					? CompareResult.neitherLessOrGreaterThan
-					: LineRange.compareByStart(
-							baseRange.baseRange,
-							diff.inputRange,
-					  ),
+			(baseRange, diff) => baseRange.baseRange.touches(diff.inputRange)
+				? CompareResult.neitherLessOrGreaterThan
+				: LineRange.compareByStart(
+					baseRange.baseRange,
+					diff.inputRange
+				)
 		);
 
-		const activeModifiedBaseRange =
-			viewModel.activeModifiedBaseRange.read(reader);
+		const activeModifiedBaseRange = viewModel.activeModifiedBaseRange.read(reader);
 
-		const showNonConflictingChanges =
-			viewModel.showNonConflictingChanges.read(reader);
+		const showNonConflictingChanges = viewModel.showNonConflictingChanges.read(reader);
 
 		for (const m of baseRangeWithStoreAndTouchingDiffs) {
 			const modifiedBaseRange = m.left;
 
 			if (modifiedBaseRange) {
-				const blockClassNames = ["merge-editor-block"];
-				let blockPadding: [
-					top: number,
-					right: number,
-					bottom: number,
-					left: number,
-				] = [0, 0, 0, 0];
-				const isHandled = model
-					.isHandled(modifiedBaseRange)
-					.read(reader);
+				const blockClassNames = ['merge-editor-block'];
+				let blockPadding: [top: number, right: number, bottom: number, left: number] = [0, 0, 0, 0];
+				const isHandled = model.isHandled(modifiedBaseRange).read(reader);
 				if (isHandled) {
-					blockClassNames.push("handled");
+					blockClassNames.push('handled');
 				}
 				if (modifiedBaseRange === activeModifiedBaseRange) {
-					blockClassNames.push("focused");
+					blockClassNames.push('focused');
 					blockPadding = [0, 2, 0, 2];
 				}
 				if (modifiedBaseRange.isConflicting) {
-					blockClassNames.push("conflicting");
+					blockClassNames.push('conflicting');
 				}
-				blockClassNames.push("result");
+				blockClassNames.push('result');
 
-				if (
-					!modifiedBaseRange.isConflicting &&
-					!showNonConflictingChanges &&
-					isHandled
-				) {
+				if (!modifiedBaseRange.isConflicting && !showNonConflictingChanges && isHandled) {
 					continue;
 				}
 
-				const range = model.getLineRangeInResult(
-					modifiedBaseRange.baseRange,
-					reader,
-				);
+				const range = model.getLineRangeInResult(modifiedBaseRange.baseRange, reader);
 				result.push({
 					range: range.toInclusiveRangeOrEmpty(),
 					options: {
 						showIfCollapsed: true,
-						blockClassName: blockClassNames.join(" "),
+						blockClassName: blockClassNames.join(' '),
 						blockPadding,
-						blockIsAfterEnd:
-							range.startLineNumber > textModel.getLineCount(),
-						description: "Result Diff",
+						blockIsAfterEnd: range.startLineNumber > textModel.getLineCount(),
+						description: 'Result Diff',
 						minimap: {
 							position: MinimapPosition.Gutter,
-							color: {
-								id: isHandled
-									? handledConflictMinimapOverViewRulerColor
-									: unhandledConflictMinimapOverViewRulerColor,
-							},
+							color: { id: isHandled ? handledConflictMinimapOverViewRulerColor : unhandledConflictMinimapOverViewRulerColor },
 						},
-						overviewRuler: modifiedBaseRange.isConflicting
-							? {
-									position: OverviewRulerLane.Center,
-									color: {
-										id: isHandled
-											? handledConflictMinimapOverViewRulerColor
-											: unhandledConflictMinimapOverViewRulerColor,
-									},
-							  }
-							: undefined,
-					},
+						overviewRuler: modifiedBaseRange.isConflicting ? {
+							position: OverviewRulerLane.Center,
+							color: { id: isHandled ? handledConflictMinimapOverViewRulerColor : unhandledConflictMinimapOverViewRulerColor },
+						} : undefined
+					}
 				});
 			}
 
@@ -252,9 +205,9 @@ export class ResultCodeEditorView extends CodeEditorView {
 							range,
 							options: {
 								className: `merge-editor-diff result`,
-								description: "Merge Editor",
+								description: 'Merge Editor',
 								isWholeLine: true,
-							},
+							}
 						});
 					}
 
@@ -264,8 +217,8 @@ export class ResultCodeEditorView extends CodeEditorView {
 								range: d.outputRange,
 								options: {
 									className: `merge-editor-diff-word result`,
-									description: "Merge Editor",
-								},
+									description: 'Merge Editor'
+								}
 							});
 						}
 					}

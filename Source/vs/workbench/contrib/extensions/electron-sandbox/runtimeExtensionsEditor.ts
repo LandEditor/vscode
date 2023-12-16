@@ -3,60 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "vs/nls";
-import { Action } from "vs/base/common/actions";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import {
-	IInstantiationService,
-	createDecorator,
-} from "vs/platform/instantiation/common/instantiation";
-import { IExtensionsWorkbenchService } from "vs/workbench/contrib/extensions/common/extensions";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IExtensionService,
-	IExtensionHostProfile,
-} from "vs/workbench/services/extensions/common/extensions";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { Event } from "vs/base/common/event";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import {
-	IContextKeyService,
-	RawContextKey,
-	IContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ILabelService } from "vs/platform/label/common/label";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { SlowExtensionAction } from "vs/workbench/contrib/extensions/electron-sandbox/extensionsSlowActions";
-import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
-import { ReportExtensionIssueAction } from "vs/workbench/contrib/extensions/common/reportExtensionIssueAction";
-import {
-	AbstractRuntimeExtensionsEditor,
-	IRuntimeExtension,
-} from "vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor";
-import { VSBuffer } from "vs/base/common/buffer";
-import { URI } from "vs/base/common/uri";
-import { IFileService } from "vs/platform/files/common/files";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { IV8Profile, Utils } from "vs/platform/profiling/common/profiling";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
+import * as nls from 'vs/nls';
+import { Action } from 'vs/base/common/actions';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IExtensionsWorkbenchService } from 'vs/workbench/contrib/extensions/common/extensions';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { IExtensionService, IExtensionHostProfile } from 'vs/workbench/services/extensions/common/extensions';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { Event } from 'vs/base/common/event';
+import { INotificationService } from 'vs/platform/notification/common/notification';
+import { IContextKeyService, RawContextKey, IContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import { ILabelService } from 'vs/platform/label/common/label';
+import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
+import { SlowExtensionAction } from 'vs/workbench/contrib/extensions/electron-sandbox/extensionsSlowActions';
+import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
+import { ReportExtensionIssueAction } from 'vs/workbench/contrib/extensions/common/reportExtensionIssueAction';
+import { AbstractRuntimeExtensionsEditor, IRuntimeExtension } from 'vs/workbench/contrib/extensions/browser/abstractRuntimeExtensionsEditor';
+import { VSBuffer } from 'vs/base/common/buffer';
+import { URI } from 'vs/base/common/uri';
+import { IFileService } from 'vs/platform/files/common/files';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { IV8Profile, Utils } from 'vs/platform/profiling/common/profiling';
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 
-export const IExtensionHostProfileService =
-	createDecorator<IExtensionHostProfileService>(
-		"extensionHostProfileService",
-	);
-export const CONTEXT_PROFILE_SESSION_STATE = new RawContextKey<string>(
-	"profileSessionState",
-	"none",
-);
-export const CONTEXT_EXTENSION_HOST_PROFILE_RECORDED =
-	new RawContextKey<boolean>("extensionHostProfileRecorded", false);
+export const IExtensionHostProfileService = createDecorator<IExtensionHostProfileService>('extensionHostProfileService');
+export const CONTEXT_PROFILE_SESSION_STATE = new RawContextKey<string>('profileSessionState', 'none');
+export const CONTEXT_EXTENSION_HOST_PROFILE_RECORDED = new RawContextKey<boolean>('extensionHostProfileRecorded', false);
 
 export enum ProfileSessionState {
 	None = 0,
 	Starting = 1,
 	Running = 2,
-	Stopping = 3,
+	Stopping = 3
 }
 
 export interface IExtensionHostProfileService {
@@ -71,16 +51,12 @@ export interface IExtensionHostProfileService {
 	startProfiling(): void;
 	stopProfiling(): void;
 
-	getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
-	): IExtensionHostProfile | undefined;
-	setUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
-		profile: IExtensionHostProfile,
-	): void;
+	getUnresponsiveProfile(extensionId: ExtensionIdentifier): IExtensionHostProfile | undefined;
+	setUnresponsiveProfile(extensionId: ExtensionIdentifier, profile: IExtensionHostProfile): void;
 }
 
 export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
+
 	private _profileInfo: IExtensionHostProfile | null;
 	private _extensionsHostRecorded: IContextKey<boolean>;
 	private _profileSessionState: IContextKey<string>;
@@ -120,71 +96,42 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 		return this._profileInfo;
 	}
 
-	protected _getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
-	): IExtensionHostProfile | undefined {
-		return this._extensionHostProfileService.getUnresponsiveProfile(
-			extensionId,
-		);
+	protected _getUnresponsiveProfile(extensionId: ExtensionIdentifier): IExtensionHostProfile | undefined {
+		return this._extensionHostProfileService.getUnresponsiveProfile(extensionId);
 	}
 
-	protected _createSlowExtensionAction(
-		element: IRuntimeExtension,
-	): Action | null {
+	protected _createSlowExtensionAction(element: IRuntimeExtension): Action | null {
 		if (element.unresponsiveProfile) {
-			return this._instantiationService.createInstance(
-				SlowExtensionAction,
-				element.description,
-				element.unresponsiveProfile,
-			);
+			return this._instantiationService.createInstance(SlowExtensionAction, element.description, element.unresponsiveProfile);
 		}
 		return null;
 	}
 
-	protected _createReportExtensionIssueAction(
-		element: IRuntimeExtension,
-	): Action | null {
+	protected _createReportExtensionIssueAction(element: IRuntimeExtension): Action | null {
 		if (element.marketplaceInfo) {
-			return this._instantiationService.createInstance(
-				ReportExtensionIssueAction,
-				element.description,
-			);
+			return this._instantiationService.createInstance(ReportExtensionIssueAction, element.description);
 		}
 		return null;
 	}
 
 	protected _createSaveExtensionHostProfileAction(): Action | null {
-		return this._instantiationService.createInstance(
-			SaveExtensionHostProfileAction,
-			SaveExtensionHostProfileAction.ID,
-			SaveExtensionHostProfileAction.LABEL,
-		);
+		return this._instantiationService.createInstance(SaveExtensionHostProfileAction, SaveExtensionHostProfileAction.ID, SaveExtensionHostProfileAction.LABEL);
 	}
 
 	protected _createProfileAction(): Action | null {
 		const state = this._extensionHostProfileService.state;
-		const profileAction =
+		const profileAction = (
 			state === ProfileSessionState.Running
-				? this._instantiationService.createInstance(
-						StopExtensionHostProfileAction,
-						StopExtensionHostProfileAction.ID,
-						StopExtensionHostProfileAction.LABEL,
-				  )
-				: this._instantiationService.createInstance(
-						StartExtensionHostProfileAction,
-						StartExtensionHostProfileAction.ID,
-						StartExtensionHostProfileAction.LABEL,
-				  );
+				? this._instantiationService.createInstance(StopExtensionHostProfileAction, StopExtensionHostProfileAction.ID, StopExtensionHostProfileAction.LABEL)
+				: this._instantiationService.createInstance(StartExtensionHostProfileAction, StartExtensionHostProfileAction.ID, StartExtensionHostProfileAction.LABEL)
+		);
 		return profileAction;
 	}
 }
 
 export class StartExtensionHostProfileAction extends Action {
-	static readonly ID = "workbench.extensions.action.extensionHostProfile";
-	static readonly LABEL = nls.localize(
-		"extensionHostProfileStart",
-		"Start Extension Host Profile",
-	);
+	static readonly ID = 'workbench.extensions.action.extensionHostProfile';
+	static readonly LABEL = nls.localize('extensionHostProfileStart', "Start Extension Host Profile");
 
 	constructor(
 		id: string = StartExtensionHostProfileAction.ID, label: string = StartExtensionHostProfileAction.LABEL,
@@ -200,11 +147,8 @@ export class StartExtensionHostProfileAction extends Action {
 }
 
 export class StopExtensionHostProfileAction extends Action {
-	static readonly ID = "workbench.extensions.action.stopExtensionHostProfile";
-	static readonly LABEL = nls.localize(
-		"stopExtensionHostProfileStart",
-		"Stop Extension Host Profile",
-	);
+	static readonly ID = 'workbench.extensions.action.stopExtensionHostProfile';
+	static readonly LABEL = nls.localize('stopExtensionHostProfileStart', "Stop Extension Host Profile");
 
 	constructor(
 		id: string = StartExtensionHostProfileAction.ID, label: string = StartExtensionHostProfileAction.LABEL,
@@ -220,11 +164,9 @@ export class StopExtensionHostProfileAction extends Action {
 }
 
 export class SaveExtensionHostProfileAction extends Action {
-	static readonly LABEL = nls.localize(
-		"saveExtensionHostProfile",
-		"Save Extension Host Profile",
-	);
-	static readonly ID = "workbench.extensions.action.saveExtensionHostProfile";
+
+	static readonly LABEL = nls.localize('saveExtensionHostProfile', "Save Extension Host Profile");
+	static readonly ID = 'workbench.extensions.action.saveExtensionHostProfile';
 
 	constructor(
 		id: string = SaveExtensionHostProfileAction.ID, label: string = SaveExtensionHostProfileAction.LABEL,
@@ -245,20 +187,13 @@ export class SaveExtensionHostProfileAction extends Action {
 
 	private async _asyncRun(): Promise<any> {
 		const picked = await this._nativeHostService.showSaveDialog({
-			title: nls.localize(
-				"saveprofile.dialogTitle",
-				"Save Extension Host Profile",
-			),
-			buttonLabel: nls.localize("saveprofile.saveButton", "Save"),
-			defaultPath: `CPU-${new Date()
-				.toISOString()
-				.replace(/[\-:]/g, "")}.cpuprofile`,
-			filters: [
-				{
-					name: "CPU Profiles",
-					extensions: ["cpuprofile", "txt"],
-				},
-			],
+			title: nls.localize('saveprofile.dialogTitle', "Save Extension Host Profile"),
+			buttonLabel: nls.localize('saveprofile.saveButton', "Save"),
+			defaultPath: `CPU-${new Date().toISOString().replace(/[\-:]/g, '')}.cpuprofile`,
+			filters: [{
+				name: 'CPU Profiles',
+				extensions: ['cpuprofile', 'txt']
+			}]
 		});
 
 		if (!picked || !picked.filePath || picked.canceled) {
@@ -275,19 +210,11 @@ export class SaveExtensionHostProfileAction extends Action {
 			// absolute filenames because we don't want to reveal anything
 			// about users. We also append the `.txt` suffix to make it
 			// easier to attach these files to GH issues
-			dataToWrite = Utils.rewriteAbsolutePaths(
-				dataToWrite as IV8Profile,
-				"piiRemoved",
-			);
+			dataToWrite = Utils.rewriteAbsolutePaths(dataToWrite as IV8Profile, 'piiRemoved');
 
-			savePath = savePath + ".txt";
+			savePath = savePath + '.txt';
 		}
 
-		return this._fileService.writeFile(
-			URI.file(savePath),
-			VSBuffer.fromString(
-				JSON.stringify(profileInfo ? profileInfo.data : {}, null, "\t"),
-			),
-		);
+		return this._fileService.writeFile(URI.file(savePath), VSBuffer.fromString(JSON.stringify(profileInfo ? profileInfo.data : {}, null, '\t')));
 	}
 }

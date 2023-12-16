@@ -3,32 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	ContextView,
-	ContextViewDOMPosition,
-} from "vs/base/browser/ui/contextview/contextview";
-import {
-	Disposable,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { ILayoutService } from "vs/platform/layout/browser/layoutService";
-import { IContextViewDelegate, IContextViewService } from "./contextView";
-import { getWindow } from "vs/base/browser/dom";
+import { ContextView, ContextViewDOMPosition } from 'vs/base/browser/ui/contextview/contextview';
+import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
+import { IContextViewDelegate, IContextViewService } from './contextView';
+import { getWindow } from 'vs/base/browser/dom';
 
-export class ContextViewService
-	extends Disposable
-	implements IContextViewService
-{
+export class ContextViewService extends Disposable implements IContextViewService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private currentViewDisposable: IDisposable = Disposable.None;
-	private readonly contextView = this._register(
-		new ContextView(
-			this.layoutService.mainContainer,
-			ContextViewDOMPosition.ABSOLUTE,
-		),
-	);
+	private readonly contextView = this._register(new ContextView(this.layoutService.mainContainer, ContextViewDOMPosition.ABSOLUTE));
 
 	constructor(
 		@ILayoutService private readonly layoutService: ILayoutService
@@ -41,17 +27,10 @@ export class ContextViewService
 
 	// ContextView
 
-	showContextView(
-		delegate: IContextViewDelegate,
-		container?: HTMLElement,
-		shadowRoot?: boolean,
-	): IDisposable {
+	showContextView(delegate: IContextViewDelegate, container?: HTMLElement, shadowRoot?: boolean): IDisposable {
 		let domPosition: ContextViewDOMPosition;
 		if (container) {
-			if (
-				container ===
-				this.layoutService.getContainer(getWindow(container))
-			) {
+			if (container === this.layoutService.getContainer(getWindow(container))) {
 				domPosition = ContextViewDOMPosition.ABSOLUTE;
 			} else if (shadowRoot) {
 				domPosition = ContextViewDOMPosition.FIXED_SHADOW;
@@ -62,10 +41,7 @@ export class ContextViewService
 			domPosition = ContextViewDOMPosition.ABSOLUTE;
 		}
 
-		this.contextView.setContainer(
-			container ?? this.layoutService.activeContainer,
-			domPosition,
-		);
+		this.contextView.setContainer(container ?? this.layoutService.activeContainer, domPosition);
 
 		this.contextView.show(delegate);
 

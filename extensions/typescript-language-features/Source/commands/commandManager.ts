@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
+import * as vscode from 'vscode';
 
 export interface Command {
 	readonly id: string;
@@ -23,14 +23,7 @@ export class CommandManager {
 
 	public register<T extends Command>(command: T): T {
 		if (!this.commands.has(command.id)) {
-			this.commands.set(
-				command.id,
-				vscode.commands.registerCommand(
-					command.id,
-					command.execute,
-					command,
-				),
-			);
+			this.commands.set(command.id, vscode.commands.registerCommand(command.id, command.execute, command));
 		}
 		return command;
 	}

@@ -3,82 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as DOM from "vs/base/browser/dom";
-import { $window } from "vs/base/browser/window";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Emitter, Event } from "vs/base/common/event";
-import {
-	DisposableStore,
-	IDisposable,
-	MutableDisposable,
-} from "vs/base/common/lifecycle";
-import { isWeb } from "vs/base/common/platform";
-import { generateUuid } from "vs/base/common/uuid";
-import * as nls from "vs/nls";
-import {
-	IContextKeyService,
-	IScopedContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import { IEditorOptions } from "vs/platform/editor/common/editor";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
-import { IEditorOpenContext } from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IOverlayWebview } from "vs/workbench/contrib/webview/browser/webview";
-import { WebviewWindowDragMonitor } from "vs/workbench/contrib/webview/browser/webviewWindowDragMonitor";
-import { WebviewInput } from "vs/workbench/contrib/webviewPanel/browser/webviewEditorInput";
-import {
-	IEditorGroup,
-	IEditorGroupsService,
-} from "vs/workbench/services/editor/common/editorGroupsService";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import {
-	IWorkbenchLayoutService,
-	Parts,
-} from "vs/workbench/services/layout/browser/layoutService";
+import * as DOM from 'vs/base/browser/dom';
+import { $window } from 'vs/base/browser/window';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Emitter, Event } from 'vs/base/common/event';
+import { DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle';
+import { isWeb } from 'vs/base/common/platform';
+import { generateUuid } from 'vs/base/common/uuid';
+import * as nls from 'vs/nls';
+import { IContextKeyService, IScopedContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { IEditorOptions } from 'vs/platform/editor/common/editor';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane';
+import { IEditorOpenContext } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IOverlayWebview } from 'vs/workbench/contrib/webview/browser/webview';
+import { WebviewWindowDragMonitor } from 'vs/workbench/contrib/webview/browser/webviewWindowDragMonitor';
+import { WebviewInput } from 'vs/workbench/contrib/webviewPanel/browser/webviewEditorInput';
+import { IEditorGroup, IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
+import { IWorkbenchLayoutService, Parts } from 'vs/workbench/services/layout/browser/layoutService';
 
 /**
  * Tracks the id of the actively focused webview.
  */
-export const CONTEXT_ACTIVE_WEBVIEW_PANEL_ID = new RawContextKey<string>(
-	"activeWebviewPanelId",
-	"",
-	{
-		type: "string",
-		description: nls.localize(
-			"context.activeWebviewId",
-			"The viewType of the currently active webview panel.",
-		),
-	},
-);
+export const CONTEXT_ACTIVE_WEBVIEW_PANEL_ID = new RawContextKey<string>('activeWebviewPanelId', '', {
+	type: 'string',
+	description: nls.localize('context.activeWebviewId', "The viewType of the currently active webview panel."),
+});
 
 export class WebviewEditor extends EditorPane {
-	public static readonly ID = "WebviewEditor";
+
+	public static readonly ID = 'WebviewEditor';
 
 	private _element?: HTMLElement;
 	private _dimension?: DOM.Dimension;
 	private _visible = false;
 	private _isDisposed = false;
 
-	private readonly _webviewVisibleDisposables = this._register(
-		new DisposableStore(),
-	);
-	private readonly _onFocusWindowHandler = this._register(
-		new MutableDisposable(),
-	);
+	private readonly _webviewVisibleDisposables = this._register(new DisposableStore());
+	private readonly _onFocusWindowHandler = this._register(new MutableDisposable());
 
 	private readonly _onDidFocusWebview = this._register(new Emitter<void>());
-	public override get onDidFocus(): Event<any> {
-		return this._onDidFocusWebview.event;
-	}
+	public override get onDidFocus(): Event<any> { return this._onDidFocusWebview.event; }
 
-	private readonly _scopedContextKeyService = this._register(
-		new MutableDisposable<IScopedContextKeyService>(),
-	);
+	private readonly _scopedContextKeyService = this._register(new MutableDisposable<IScopedContextKeyService>());
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -105,9 +77,7 @@ export class WebviewEditor extends EditorPane {
 	}
 
 	private get webview(): IOverlayWebview | undefined {
-		return this.input instanceof WebviewInput
-			? this.input.webview
-			: undefined;
+		return this.input instanceof WebviewInput ? this.input.webview : undefined;
 	}
 
 	override get scopedContextKeyService(): IContextKeyService | undefined {
@@ -115,13 +85,12 @@ export class WebviewEditor extends EditorPane {
 	}
 
 	protected createEditor(parent: HTMLElement): void {
-		const element = document.createElement("div");
+		const element = document.createElement('div');
 		this._element = element;
 		this._element.id = `webview-editor-element-${generateUuid()}`;
 		parent.appendChild(element);
 
-		this._scopedContextKeyService.value =
-			this._contextKeyService.createScoped(element);
+		this._scopedContextKeyService.value = this._contextKeyService.createScoped(element);
 	}
 
 	public override dispose(): void {
@@ -144,24 +113,16 @@ export class WebviewEditor extends EditorPane {
 		super.focus();
 		if (!this._onFocusWindowHandler.value && !isWeb) {
 			// Make sure we restore focus when switching back to a VS Code window
-			this._onFocusWindowHandler.value =
-				this._hostService.onDidChangeFocus((focused) => {
-					if (
-						focused &&
-						this._editorService.activeEditorPane === this &&
-						this._workbenchLayoutService.hasFocus(Parts.EDITOR_PART)
-					) {
-						this.focus();
-					}
-				});
+			this._onFocusWindowHandler.value = this._hostService.onDidChangeFocus(focused => {
+				if (focused && this._editorService.activeEditorPane === this && this._workbenchLayoutService.hasFocus(Parts.EDITOR_PART)) {
+					this.focus();
+				}
+			});
 		}
 		this.webview?.focus();
 	}
 
-	protected override setEditorVisible(
-		visible: boolean,
-		group: IEditorGroup | undefined,
-	): void {
+	protected override setEditorVisible(visible: boolean, group: IEditorGroup | undefined): void {
 		this._visible = visible;
 		if (this.input instanceof WebviewInput && this.webview) {
 			if (visible) {
@@ -182,18 +143,12 @@ export class WebviewEditor extends EditorPane {
 		super.clearInput();
 	}
 
-	public override async setInput(
-		input: EditorInput,
-		options: IEditorOptions,
-		context: IEditorOpenContext,
-		token: CancellationToken,
-	): Promise<void> {
+	public override async setInput(input: EditorInput, options: IEditorOptions, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
 		if (this.input && input.matches(this.input)) {
 			return;
 		}
 
-		const alreadyOwnsWebview =
-			input instanceof WebviewInput && input.webview === this.webview;
+		const alreadyOwnsWebview = input instanceof WebviewInput && input.webview === this.webview;
 		if (this.webview && !alreadyOwnsWebview) {
 			this.webview.release(this);
 		}
@@ -223,49 +178,29 @@ export class WebviewEditor extends EditorPane {
 		input.webview.claim(this, this.scopedContextKeyService);
 
 		if (this._element) {
-			this._element.setAttribute(
-				"aria-flowto",
-				input.webview.container.id,
-			);
+			this._element.setAttribute('aria-flowto', input.webview.container.id);
 			DOM.setParentFlowTo(input.webview.container, this._element);
 		}
 
 		this._webviewVisibleDisposables.clear();
 
 		// Webviews are not part of the normal editor dom, so we have to register our own drag and drop handler on them.
-		this._webviewVisibleDisposables.add(
-			this._editorGroupsService.createEditorDropTarget(
-				input.webview.container,
-				{
-					containsGroup: (group) => this.group?.id === group.id,
-				},
-			),
-		);
+		this._webviewVisibleDisposables.add(this._editorGroupsService.createEditorDropTarget(input.webview.container, {
+			containsGroup: (group) => this.group?.id === group.id
+		}));
 
-		this._webviewVisibleDisposables.add(
-			new WebviewWindowDragMonitor(() => this.webview),
-		);
+		this._webviewVisibleDisposables.add(new WebviewWindowDragMonitor(() => this.webview));
 
 		this.synchronizeWebviewContainerDimensions(input.webview);
 		this._webviewVisibleDisposables.add(this.trackFocus(input.webview));
 	}
 
-	private synchronizeWebviewContainerDimensions(
-		webview: IOverlayWebview,
-		dimension?: DOM.Dimension,
-	) {
+	private synchronizeWebviewContainerDimensions(webview: IOverlayWebview, dimension?: DOM.Dimension) {
 		if (!this._element?.isConnected) {
 			return;
 		}
-		const rootContainer = this._workbenchLayoutService.getContainer(
-			$window,
-			Parts.EDITOR_PART,
-		);
-		webview.layoutWebviewOverElement(
-			this._element.parentElement!,
-			dimension,
-			rootContainer,
-		);
+		const rootContainer = this._workbenchLayoutService.getContainer($window, Parts.EDITOR_PART);
+		webview.layoutWebviewOverElement(this._element.parentElement!, dimension, rootContainer);
 	}
 
 	private trackFocus(webview: IOverlayWebview): IDisposable {
@@ -274,11 +209,7 @@ export class WebviewEditor extends EditorPane {
 		// Track focus in webview content
 		const webviewContentFocusTracker = DOM.trackFocus(webview.container);
 		store.add(webviewContentFocusTracker);
-		store.add(
-			webviewContentFocusTracker.onDidFocus(() =>
-				this._onDidFocusWebview.fire(),
-			),
-		);
+		store.add(webviewContentFocusTracker.onDidFocus(() => this._onDidFocusWebview.fire()));
 
 		// Track focus in webview element
 		store.add(webview.onDidFocus(() => this._onDidFocusWebview.fire()));

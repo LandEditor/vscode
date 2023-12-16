@@ -3,69 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range } from "vs/editor/common/core/range";
-import {
-	ColumnRange,
-	applyEdits,
-} from "vs/editor/contrib/inlineCompletions/browser/utils";
+import { Range } from 'vs/editor/common/core/range';
+import { ColumnRange, applyEdits } from 'vs/editor/contrib/inlineCompletions/browser/utils';
 
 export class GhostText {
 	constructor(
 		public readonly lineNumber: number,
 		public readonly parts: GhostTextPart[],
-	) {}
+	) {
+	}
 
 	equals(other: GhostText): boolean {
-		return (
-			this.lineNumber === other.lineNumber &&
+		return this.lineNumber === other.lineNumber &&
 			this.parts.length === other.parts.length &&
-			this.parts.every((part, index) => part.equals(other.parts[index]))
-		);
+			this.parts.every((part, index) => part.equals(other.parts[index]));
 	}
 
 	/**
 	 * Only used for testing/debugging.
-	 */
+	*/
 	render(documentText: string, debug: boolean = false): string {
 		const l = this.lineNumber;
 		return applyEdits(documentText, [
-			...this.parts.map((p) => ({
-				range: {
-					startLineNumber: l,
-					endLineNumber: l,
-					startColumn: p.column,
-					endColumn: p.column,
-				},
-				text: debug ? `[${p.lines.join("\n")}]` : p.lines.join("\n"),
+			...this.parts.map(p => ({
+				range: { startLineNumber: l, endLineNumber: l, startColumn: p.column, endColumn: p.column },
+				text: debug ? `[${p.lines.join('\n')}]` : p.lines.join('\n')
 			})),
 		]);
 	}
 
 	renderForScreenReader(lineText: string): string {
 		if (this.parts.length === 0) {
-			return "";
+			return '';
 		}
 		const lastPart = this.parts[this.parts.length - 1];
 
 		const cappedLineText = lineText.substr(0, lastPart.column - 1);
-		const text = applyEdits(
-			cappedLineText,
-			this.parts.map((p) => ({
-				range: {
-					startLineNumber: 1,
-					endLineNumber: 1,
-					startColumn: p.column,
-					endColumn: p.column,
-				},
-				text: p.lines.join("\n"),
-			})),
+		const text = applyEdits(cappedLineText,
+			this.parts.map(p => ({
+				range: { startLineNumber: 1, endLineNumber: 1, startColumn: p.column, endColumn: p.column },
+				text: p.lines.join('\n')
+			}))
 		);
 
 		return text.substring(this.parts[0].column - 1);
 	}
 
 	isEmpty(): boolean {
-		return this.parts.every((p) => p.lines.length === 0);
+		return this.parts.every(p => p.lines.length === 0);
 	}
 
 	get lineCount(): number {
@@ -79,16 +64,15 @@ export class GhostTextPart {
 		readonly lines: readonly string[],
 		/**
 		 * Indicates if this part is a preview of an inline suggestion when a suggestion is previewed.
-		 */
+		*/
 		readonly preview: boolean,
-	) {}
+	) {
+	}
 
 	equals(other: GhostTextPart): boolean {
-		return (
-			this.column === other.column &&
+		return this.column === other.column &&
 			this.lines.length === other.lines.length &&
-			this.lines.every((line, index) => line === other.lines[index])
-		);
+			this.lines.every((line, index) => line === other.lines[index]);
 	}
 }
 
@@ -97,7 +81,7 @@ export class GhostTextReplacement {
 		new GhostTextPart(
 			this.columnRange.endColumnExclusive,
 			this.newLines,
-			false,
+			false
 		),
 	];
 
@@ -106,10 +90,10 @@ export class GhostTextReplacement {
 		readonly columnRange: ColumnRange,
 		readonly newLines: readonly string[],
 		public readonly additionalReservedLineCount: number = 0,
-	) {}
+	) { }
 
 	renderForScreenReader(_lineText: string): string {
-		return this.newLines.join("\n");
+		return this.newLines.join('\n');
 	}
 
 	render(documentText: string, debug: boolean = false): string {
@@ -117,18 +101,12 @@ export class GhostTextReplacement {
 
 		if (debug) {
 			return applyEdits(documentText, [
-				{
-					range: Range.fromPositions(replaceRange.getStartPosition()),
-					text: `(`,
-				},
-				{
-					range: Range.fromPositions(replaceRange.getEndPosition()),
-					text: `)[${this.newLines.join("\n")}]`,
-				},
+				{ range: Range.fromPositions(replaceRange.getStartPosition()), text: `(` },
+				{ range: Range.fromPositions(replaceRange.getEndPosition()), text: `)[${this.newLines.join('\n')}]` }
 			]);
 		} else {
 			return applyEdits(documentText, [
-				{ range: replaceRange, text: this.newLines.join("\n") },
+				{ range: replaceRange, text: this.newLines.join('\n') }
 			]);
 		}
 	}
@@ -138,29 +116,21 @@ export class GhostTextReplacement {
 	}
 
 	isEmpty(): boolean {
-		return this.parts.every((p) => p.lines.length === 0);
+		return this.parts.every(p => p.lines.length === 0);
 	}
 
 	equals(other: GhostTextReplacement): boolean {
-		return (
-			this.lineNumber === other.lineNumber &&
+		return this.lineNumber === other.lineNumber &&
 			this.columnRange.equals(other.columnRange) &&
 			this.newLines.length === other.newLines.length &&
-			this.newLines.every(
-				(line, index) => line === other.newLines[index],
-			) &&
-			this.additionalReservedLineCount ===
-				other.additionalReservedLineCount
-		);
+			this.newLines.every((line, index) => line === other.newLines[index]) &&
+			this.additionalReservedLineCount === other.additionalReservedLineCount;
 	}
 }
 
 export type GhostTextOrReplacement = GhostText | GhostTextReplacement;
 
-export function ghostTextOrReplacementEquals(
-	a: GhostTextOrReplacement | undefined,
-	b: GhostTextOrReplacement | undefined,
-): boolean {
+export function ghostTextOrReplacementEquals(a: GhostTextOrReplacement | undefined, b: GhostTextOrReplacement | undefined): boolean {
 	if (a === b) {
 		return true;
 	}
@@ -170,10 +140,7 @@ export function ghostTextOrReplacementEquals(
 	if (a instanceof GhostText && b instanceof GhostText) {
 		return a.equals(b);
 	}
-	if (
-		a instanceof GhostTextReplacement &&
-		b instanceof GhostTextReplacement
-	) {
+	if (a instanceof GhostTextReplacement && b instanceof GhostTextReplacement) {
 		return a.equals(b);
 	}
 	return false;

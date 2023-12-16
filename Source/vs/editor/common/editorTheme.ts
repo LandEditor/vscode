@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IColorTheme } from "vs/platform/theme/common/themeService";
-import { ColorIdentifier } from "vs/platform/theme/common/colorRegistry";
-import { Color } from "vs/base/common/color";
-import { ColorScheme } from "vs/platform/theme/common/theme";
+import { IColorTheme } from 'vs/platform/theme/common/themeService';
+import { ColorIdentifier } from 'vs/platform/theme/common/colorRegistry';
+import { Color } from 'vs/base/common/color';
+import { ColorScheme } from 'vs/platform/theme/common/theme';
 
 export class EditorTheme {
+
 	private _theme: IColorTheme;
 
 	public get type(): ColorScheme {

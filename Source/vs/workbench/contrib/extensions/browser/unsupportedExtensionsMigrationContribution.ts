@@ -3,19 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IExtensionGalleryService,
-	IGlobalExtensionEnablementService,
-} from "vs/platform/extensionManagement/common/extensionManagement";
-import { IExtensionStorageService } from "vs/platform/extensionManagement/common/extensionStorage";
-import { migrateUnsupportedExtensions } from "vs/platform/extensionManagement/common/unsupportedExtensionsMigration";
-import { ILogService } from "vs/platform/log/common/log";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { IExtensionManagementServerService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
+import { IExtensionGalleryService, IGlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { IExtensionStorageService } from 'vs/platform/extensionManagement/common/extensionStorage';
+import { migrateUnsupportedExtensions } from 'vs/platform/extensionManagement/common/unsupportedExtensionsMigration';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
+import { IExtensionManagementServerService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
 
-export class UnsupportedExtensionsMigrationContrib
-	implements IWorkbenchContribution
-{
+export class UnsupportedExtensionsMigrationContrib implements IWorkbenchContribution {
+
 	constructor(
 		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
 		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
@@ -25,24 +21,11 @@ export class UnsupportedExtensionsMigrationContrib
 	) {
 		// Unsupported extensions are not migrated for local extension management server, because it is done in shared process
 		if (extensionManagementServerService.remoteExtensionManagementServer) {
-			migrateUnsupportedExtensions(
-				extensionManagementServerService.remoteExtensionManagementServer
-					.extensionManagementService,
-				extensionGalleryService,
-				extensionStorageService,
-				extensionEnablementService,
-				logService,
-			);
+			migrateUnsupportedExtensions(extensionManagementServerService.remoteExtensionManagementServer.extensionManagementService, extensionGalleryService, extensionStorageService, extensionEnablementService, logService);
 		}
 		if (extensionManagementServerService.webExtensionManagementServer) {
-			migrateUnsupportedExtensions(
-				extensionManagementServerService.webExtensionManagementServer
-					.extensionManagementService,
-				extensionGalleryService,
-				extensionStorageService,
-				extensionEnablementService,
-				logService,
-			);
+			migrateUnsupportedExtensions(extensionManagementServerService.webExtensionManagementServer.extensionManagementService, extensionGalleryService, extensionStorageService, extensionEnablementService, logService);
 		}
 	}
+
 }

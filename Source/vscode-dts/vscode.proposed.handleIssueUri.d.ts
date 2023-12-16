@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/46726
 
 	export interface IssueUriRequestHandler {
@@ -37,9 +38,7 @@ declare module "vscode" {
 		 *
 		 * @param handler the issue uri request handler to register for this extension.
 		 */
-		export function registerIssueUriRequestHandler(
-			handler: IssueUriRequestHandler,
-		): Disposable;
+		export function registerIssueUriRequestHandler(handler: IssueUriRequestHandler): Disposable;
 
 		/**
 		 * Register an {@link IssueDataProvider}. By registering an issue data provider,
@@ -53,8 +52,6 @@ declare module "vscode" {
 		 *
 		 * @param provider the issue data provider to register for this extension.
 		 */
-		export function registerIssueDataProvider(
-			provider: IssueDataProvider,
-		): Disposable;
+		export function registerIssueDataProvider(provider: IssueDataProvider): Disposable;
 	}
 }

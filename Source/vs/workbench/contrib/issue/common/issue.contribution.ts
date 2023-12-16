@@ -3,54 +3,51 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { ICommandAction } from "vs/platform/action/common/action";
-import { Categories } from "vs/platform/action/common/actionCommonCategories";
-import { MenuId, MenuRegistry } from "vs/platform/actions/common/actions";
-import {
-	CommandsRegistry,
-	ICommandMetadata,
-} from "vs/platform/commands/common/commands";
-import { IssueReporterData } from "vs/platform/issue/common/issue";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IWorkbenchContribution } from "vs/workbench/common/contributions";
-import { IWorkbenchIssueService } from "vs/workbench/services/issue/common/issue";
+import { localize } from 'vs/nls';
+import { ICommandAction } from 'vs/platform/action/common/action';
+import { Categories } from 'vs/platform/action/common/actionCommonCategories';
+import { MenuId, MenuRegistry } from 'vs/platform/actions/common/actions';
+import { CommandsRegistry, ICommandMetadata } from 'vs/platform/commands/common/commands';
+import { IssueReporterData } from 'vs/platform/issue/common/issue';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
+import { IWorkbenchIssueService } from 'vs/workbench/services/issue/common/issue';
 
-const OpenIssueReporterActionId = "workbench.action.openIssueReporter";
-const OpenIssueReporterApiId = "vscode.openIssueReporter";
+const OpenIssueReporterActionId = 'workbench.action.openIssueReporter';
+const OpenIssueReporterApiId = 'vscode.openIssueReporter';
 
 const OpenIssueReporterCommandMetadata: ICommandMetadata = {
-	description:
-		"Open the issue reporter and optionally prefill part of the form.",
+	description: 'Open the issue reporter and optionally prefill part of the form.',
 	args: [
 		{
-			name: "options",
-			description: "Data to use to prefill the issue reporter with.",
+			name: 'options',
+			description: 'Data to use to prefill the issue reporter with.',
 			isOptional: true,
 			schema: {
 				oneOf: [
 					{
-						type: "string",
-						description: "The extension id to preselect.",
+						type: 'string',
+						description: 'The extension id to preselect.'
 					},
 					{
-						type: "object",
+						type: 'object',
 						properties: {
 							extensionId: {
-								type: "string",
+								type: 'string'
 							},
 							issueTitle: {
-								type: "string",
+								type: 'string'
 							},
 							issueBody: {
-								type: "string",
-							},
-						},
-					},
-				],
-			},
+								type: 'string'
+							}
+						}
+
+					}
+				]
+			}
 		},
-	],
+	]
 };
 
 interface OpenIssueReporterArgs {

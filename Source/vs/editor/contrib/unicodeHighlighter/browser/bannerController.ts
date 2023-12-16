@@ -2,18 +2,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import "vs/css!./bannerController";
-import { $, append, clearNode } from "vs/base/browser/dom";
-import { ActionBar } from "vs/base/browser/ui/actionbar/actionbar";
-import { Action } from "vs/base/common/actions";
-import { MarkdownString } from "vs/base/common/htmlContent";
-import { Disposable } from "vs/base/common/lifecycle";
-import { MarkdownRenderer } from "vs/editor/contrib/markdownRenderer/browser/markdownRenderer";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILinkDescriptor, Link } from "vs/platform/opener/browser/link";
-import { widgetClose } from "vs/platform/theme/common/iconRegistry";
-import { ThemeIcon } from "vs/base/common/themables";
+import 'vs/css!./bannerController';
+import { $, append, clearNode } from 'vs/base/browser/dom';
+import { ActionBar } from 'vs/base/browser/ui/actionbar/actionbar';
+import { Action } from 'vs/base/common/actions';
+import { MarkdownString } from 'vs/base/common/htmlContent';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { MarkdownRenderer } from 'vs/editor/contrib/markdownRenderer/browser/markdownRenderer';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ILinkDescriptor, Link } from 'vs/platform/opener/browser/link';
+import { widgetClose } from 'vs/platform/theme/common/iconRegistry';
+import { ThemeIcon } from 'vs/base/common/themables';
 
 const BANNER_ELEMENT_HEIGHT = 26;
 
@@ -40,7 +40,7 @@ export class BannerController extends Disposable {
 			onClose: () => {
 				this.hide();
 				item.onClose?.();
-			},
+			}
 		});
 		this._editor.setBanner(this.banner.element, BANNER_ELEMENT_HEIGHT);
 	}
@@ -71,7 +71,7 @@ class Banner extends Disposable {
 		if (item.ariaLabel) {
 			return item.ariaLabel;
 		}
-		if (typeof item.message === "string") {
+		if (typeof item.message === 'string') {
 			return item.message;
 		}
 
@@ -79,8 +79,8 @@ class Banner extends Disposable {
 	}
 
 	private getBannerMessage(message: MarkdownString | string): HTMLElement {
-		if (typeof message === "string") {
-			const element = $("span");
+		if (typeof message === 'string') {
+			const element = $('span');
 			element.innerText = message;
 			return element;
 		}
@@ -99,67 +99,46 @@ class Banner extends Disposable {
 		// Banner aria label
 		const ariaLabel = this.getAriaLabel(item);
 		if (ariaLabel) {
-			this.element.setAttribute("aria-label", ariaLabel);
+			this.element.setAttribute('aria-label', ariaLabel);
 		}
 
 		// Icon
-		const iconContainer = append(this.element, $("div.icon-container"));
-		iconContainer.setAttribute("aria-hidden", "true");
+		const iconContainer = append(this.element, $('div.icon-container'));
+		iconContainer.setAttribute('aria-hidden', 'true');
 
 		if (item.icon) {
-			iconContainer.appendChild(
-				$(`div${ThemeIcon.asCSSSelector(item.icon)}`),
-			);
+			iconContainer.appendChild($(`div${ThemeIcon.asCSSSelector(item.icon)}`));
 		}
 
 		// Message
-		const messageContainer = append(
-			this.element,
-			$("div.message-container"),
-		);
-		messageContainer.setAttribute("aria-hidden", "true");
+		const messageContainer = append(this.element, $('div.message-container'));
+		messageContainer.setAttribute('aria-hidden', 'true');
 		messageContainer.appendChild(this.getBannerMessage(item.message));
 
 		// Message Actions
-		this.messageActionsContainer = append(
-			this.element,
-			$("div.message-actions-container"),
-		);
+		this.messageActionsContainer = append(this.element, $('div.message-actions-container'));
 		if (item.actions) {
 			for (const action of item.actions) {
-				this._register(
-					this.instantiationService.createInstance(
-						Link,
-						this.messageActionsContainer,
-						{ ...action, tabIndex: -1 },
-						{},
-					),
-				);
+				this._register(this.instantiationService.createInstance(Link, this.messageActionsContainer, { ...action, tabIndex: -1 }, {}));
 			}
 		}
 
 		// Action
-		const actionBarContainer = append(
-			this.element,
-			$("div.action-container"),
-		);
+		const actionBarContainer = append(this.element, $('div.action-container'));
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
-		this.actionBar.push(
-			this._register(
-				new Action(
-					"banner.close",
-					"Close Banner",
-					ThemeIcon.asClassName(widgetClose),
-					true,
-					() => {
-						if (typeof item.onClose === "function") {
-							item.onClose();
-						}
-					},
-				),
-			),
-			{ icon: true, label: false },
-		);
+		this.actionBar.push(this._register(
+			new Action(
+				'banner.close',
+				'Close Banner',
+				ThemeIcon.asClassName(widgetClose),
+				true,
+				() => {
+					if (typeof item.onClose === 'function') {
+						item.onClose();
+					}
+				}
+			)
+		), { icon: true, label: false });
 		this.actionBar.setFocusable(false);
 	}
 }

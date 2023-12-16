@@ -3,47 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as DOM from "vs/base/browser/dom";
-import {
-	DisposableStore,
-	dispose,
-	IDisposable,
-} from "vs/base/common/lifecycle";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import {
-	ICellViewModel,
-	INotebookEditorDelegate,
-	KERNEL_EXTENSIONS,
-} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
-import {
-	NOTEBOOK_CELL_TOOLBAR_LOCATION,
-	NOTEBOOK_HAS_OUTPUTS,
-	NOTEBOOK_HAS_RUNNING_CELL,
-	NOTEBOOK_HAS_SOMETHING_RUNNING,
-	NOTEBOOK_INTERRUPTIBLE_KERNEL,
-	NOTEBOOK_KERNEL,
-	NOTEBOOK_KERNEL_COUNT,
-	NOTEBOOK_KERNEL_SELECTED,
-	NOTEBOOK_KERNEL_SOURCE_COUNT,
-	NOTEBOOK_LAST_CELL_FAILED,
-	NOTEBOOK_MISSING_KERNEL_EXTENSION,
-	NOTEBOOK_USE_CONSOLIDATED_OUTPUT_BUTTON,
-	NOTEBOOK_VIEW_TYPE,
-} from "vs/workbench/contrib/notebook/common/notebookContextKeys";
-import {
-	ICellExecutionStateChangedEvent,
-	IExecutionStateChangedEvent,
-	INotebookExecutionStateService,
-	INotebookFailStateChangedEvent,
-	NotebookExecutionType,
-} from "vs/workbench/contrib/notebook/common/notebookExecutionStateService";
-import { INotebookKernelService } from "vs/workbench/contrib/notebook/common/notebookKernelService";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import * as DOM from 'vs/base/browser/dom';
+import { DisposableStore, dispose, IDisposable } from 'vs/base/common/lifecycle';
+import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { ICellViewModel, INotebookEditorDelegate, KERNEL_EXTENSIONS } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
+import { NOTEBOOK_CELL_TOOLBAR_LOCATION, NOTEBOOK_HAS_OUTPUTS, NOTEBOOK_HAS_RUNNING_CELL, NOTEBOOK_HAS_SOMETHING_RUNNING, NOTEBOOK_INTERRUPTIBLE_KERNEL, NOTEBOOK_KERNEL, NOTEBOOK_KERNEL_COUNT, NOTEBOOK_KERNEL_SELECTED, NOTEBOOK_KERNEL_SOURCE_COUNT, NOTEBOOK_LAST_CELL_FAILED, NOTEBOOK_MISSING_KERNEL_EXTENSION, NOTEBOOK_USE_CONSOLIDATED_OUTPUT_BUTTON, NOTEBOOK_VIEW_TYPE } from 'vs/workbench/contrib/notebook/common/notebookContextKeys';
+import { ICellExecutionStateChangedEvent, IExecutionStateChangedEvent, INotebookExecutionStateService, INotebookFailStateChangedEvent, NotebookExecutionType } from 'vs/workbench/contrib/notebook/common/notebookExecutionStateService';
+import { INotebookKernelService } from 'vs/workbench/contrib/notebook/common/notebookKernelService';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 
 export class NotebookEditorContextKeys {
+
 	private readonly _notebookKernel: IContextKey<string>;
 	private readonly _notebookKernelCount: IContextKey<number>;
 	private readonly _notebookKernelSourceCount: IContextKey<number>;
@@ -55,9 +25,7 @@ export class NotebookEditorContextKeys {
 	private readonly _useConsolidatedOutputButton: IContextKey<boolean>;
 	private readonly _viewType!: IContextKey<string>;
 	private readonly _missingKernelExtension: IContextKey<boolean>;
-	private readonly _cellToolbarLocation: IContextKey<
-		"left" | "right" | "hidden"
-	>;
+	private readonly _cellToolbarLocation: IContextKey<'left' | 'right' | 'hidden'>;
 	private readonly _lastCellFailed: IContextKey<boolean>;
 
 	private readonly _disposables = new DisposableStore();
@@ -113,6 +81,7 @@ export class NotebookEditorContextKeys {
 	}
 
 	private _handleDidChangeModel(): void {
+
 		this._updateKernelContext();
 		this._updateForNotebookOptions();
 
@@ -138,22 +107,15 @@ export class NotebookEditorContextKeys {
 			this._hasOutputs.set(hasOutputs);
 		};
 
-		const layoutDisposable = this._viewModelDisposables.add(
-			new DisposableStore(),
-		);
+		const layoutDisposable = this._viewModelDisposables.add(new DisposableStore());
 
 		const addCellOutputsListener = (c: ICellViewModel) => {
 			return c.model.onDidChangeOutputs(() => {
 				layoutDisposable.clear();
 
-				layoutDisposable.add(
-					DOM.scheduleAtNextAnimationFrame(
-						DOM.getWindow(this._editor.getDomNode()),
-						() => {
-							recomputeOutputsExistence();
-						},
-					),
-				);
+				layoutDisposable.add(DOM.scheduleAtNextAnimationFrame(DOM.getWindow(this._editor.getDomNode()), () => {
+					recomputeOutputsExistence();
+				}));
 			});
 		};
 
@@ -165,37 +127,20 @@ export class NotebookEditorContextKeys {
 		recomputeOutputsExistence();
 		this._updateForInstalledExtension();
 
-		this._viewModelDisposables.add(
-			this._editor.onDidChangeViewCells((e) => {
-				[...e.splices].reverse().forEach((splice) => {
-					const [start, deleted, newCells] = splice;
-					const deletedCellOutputStates =
-						this._cellOutputsListeners.splice(
-							start,
-							deleted,
-							...newCells.map(addCellOutputsListener),
-						);
-					dispose(deletedCellOutputStates);
-				});
-			}),
-		);
+		this._viewModelDisposables.add(this._editor.onDidChangeViewCells(e => {
+			[...e.splices].reverse().forEach(splice => {
+				const [start, deleted, newCells] = splice;
+				const deletedCellOutputStates = this._cellOutputsListeners.splice(start, deleted, ...newCells.map(addCellOutputsListener));
+				dispose(deletedCellOutputStates);
+			});
+		}));
 		this._viewType.set(this._editor.textModel.viewType);
 	}
-	private _updateForExecution(
-		e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
-	): void {
+	private _updateForExecution(e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent): void {
 		if (this._editor.textModel) {
-			const notebookExe =
-				this._notebookExecutionStateService.getExecution(
-					this._editor.textModel.uri,
-				);
-			const notebookCellExe =
-				this._notebookExecutionStateService.getCellExecutionsForNotebook(
-					this._editor.textModel.uri,
-				);
-			this._kernelRunning.set(
-				notebookCellExe.length > 0 || !!notebookExe,
-			);
+			const notebookExe = this._notebookExecutionStateService.getExecution(this._editor.textModel.uri);
+			const notebookCellExe = this._notebookExecutionStateService.getCellExecutionsForNotebook(this._editor.textModel.uri);
+			this._kernelRunning.set(notebookCellExe.length > 0 || !!notebookExe);
 			if (e.type === NotebookExecutionType.cell) {
 				this._someCellRunning.set(notebookCellExe.length > 0);
 			}
@@ -207,9 +152,7 @@ export class NotebookEditorContextKeys {
 		}
 	}
 
-	private _updateForLastRunFailState(
-		e: INotebookFailStateChangedEvent,
-	): void {
+	private _updateForLastRunFailState(e: INotebookFailStateChangedEvent): void {
 		if (e.notebook === this._editor.textModel?.uri) {
 			this._lastCellFailed.set(e.visible);
 		}
@@ -223,9 +166,7 @@ export class NotebookEditorContextKeys {
 		const viewType = this._editor.textModel.viewType;
 		const kernelExtensionId = KERNEL_EXTENSIONS.get(viewType);
 		this._missingKernelExtension.set(
-			!!kernelExtensionId &&
-				!(await this._extensionService.getExtension(kernelExtensionId)),
-		);
+			!!kernelExtensionId && !(await this._extensionService.getExtension(kernelExtensionId)));
 	}
 
 	private _updateKernelContext(): void {
@@ -236,38 +177,25 @@ export class NotebookEditorContextKeys {
 			return;
 		}
 
-		const { selected, all } = this._notebookKernelService.getMatchingKernel(
-			this._editor.textModel,
-		);
-		const sourceActions = this._notebookKernelService.getSourceActions(
-			this._editor.textModel,
-			this._editor.scopedContextKeyService,
-		);
+		const { selected, all } = this._notebookKernelService.getMatchingKernel(this._editor.textModel);
+		const sourceActions = this._notebookKernelService.getSourceActions(this._editor.textModel, this._editor.scopedContextKeyService);
 		this._notebookKernelCount.set(all.length);
 		this._notebookKernelSourceCount.set(sourceActions.length);
 		this._interruptibleKernel.set(selected?.implementsInterrupt ?? false);
 		this._notebookKernelSelected.set(Boolean(selected));
-		this._notebookKernel.set(selected?.id ?? "");
+		this._notebookKernel.set(selected?.id ?? '');
 
 		this._selectedKernelDisposables.clear();
 		if (selected) {
-			this._selectedKernelDisposables.add(
-				selected.onDidChange(() => {
-					this._interruptibleKernel.set(
-						selected?.implementsInterrupt ?? false,
-					);
-				}),
-			);
+			this._selectedKernelDisposables.add(selected.onDidChange(() => {
+				this._interruptibleKernel.set(selected?.implementsInterrupt ?? false);
+			}));
 		}
 	}
 
 	private _updateForNotebookOptions(): void {
 		const layout = this._editor.notebookOptions.getDisplayOptions();
 		this._useConsolidatedOutputButton.set(layout.consolidatedOutputButton);
-		this._cellToolbarLocation.set(
-			this._editor.notebookOptions.computeCellToolbarLocation(
-				this._editor.textModel?.viewType,
-			),
-		);
+		this._cellToolbarLocation.set(this._editor.notebookOptions.computeCellToolbarLocation(this._editor.textModel?.viewType));
 	}
 }

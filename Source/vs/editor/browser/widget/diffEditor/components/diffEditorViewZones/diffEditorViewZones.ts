@@ -3,57 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $, addDisposableListener } from "vs/base/browser/dom";
-import { ArrayQueue } from "vs/base/common/arrays";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { Codicon } from "vs/base/common/codicons";
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import {
-	IObservable,
-	autorun,
-	derived,
-	derivedWithStore,
-	observableFromEvent,
-	observableValue,
-} from "vs/base/common/observable";
-import { ThemeIcon } from "vs/base/common/themables";
-import { assertIsDefined } from "vs/base/common/types";
-import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
-import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
-import {
-	diffDeleteDecoration,
-	diffRemoveIcon,
-} from "vs/editor/browser/widget/diffEditor/registrations.contribution";
-import { DiffEditorEditors } from "vs/editor/browser/widget/diffEditor/components/diffEditorEditors";
-import {
-	DiffEditorViewModel,
-	DiffMapping,
-} from "vs/editor/browser/widget/diffEditor/diffEditorViewModel";
-import { DiffEditorWidget } from "vs/editor/browser/widget/diffEditor/diffEditorWidget";
-import { InlineDiffDeletedCodeMargin } from "vs/editor/browser/widget/diffEditor/components/diffEditorViewZones/inlineDiffDeletedCodeMargin";
-import {
-	LineSource,
-	RenderOptions,
-	renderLines,
-} from "vs/editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines";
-import {
-	IObservableViewZone,
-	animatedObservable,
-	joinCombine,
-} from "vs/editor/browser/widget/diffEditor/utils";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import { LineRange } from "vs/editor/common/core/lineRange";
-import { Position } from "vs/editor/common/core/position";
-import { DetailedLineRangeMapping } from "vs/editor/common/diff/rangeMapping";
-import { ScrollType } from "vs/editor/common/editorCommon";
-import { BackgroundTokenizationState } from "vs/editor/common/tokenizationTextModelPart";
-import {
-	InlineDecoration,
-	InlineDecorationType,
-} from "vs/editor/common/viewModel";
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { DiffEditorOptions } from "../../diffEditorOptions";
+import { $, addDisposableListener } from 'vs/base/browser/dom';
+import { ArrayQueue } from 'vs/base/common/arrays';
+import { RunOnceScheduler } from 'vs/base/common/async';
+import { Codicon } from 'vs/base/common/codicons';
+import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
+import { IObservable, autorun, derived, derivedWithStore, observableFromEvent, observableValue } from 'vs/base/common/observable';
+import { ThemeIcon } from 'vs/base/common/themables';
+import { assertIsDefined } from 'vs/base/common/types';
+import { applyFontInfo } from 'vs/editor/browser/config/domFontInfo';
+import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';
+import { diffDeleteDecoration, diffRemoveIcon } from 'vs/editor/browser/widget/diffEditor/registrations.contribution';
+import { DiffEditorEditors } from 'vs/editor/browser/widget/diffEditor/components/diffEditorEditors';
+import { DiffEditorViewModel, DiffMapping } from 'vs/editor/browser/widget/diffEditor/diffEditorViewModel';
+import { DiffEditorWidget } from 'vs/editor/browser/widget/diffEditor/diffEditorWidget';
+import { InlineDiffDeletedCodeMargin } from 'vs/editor/browser/widget/diffEditor/components/diffEditorViewZones/inlineDiffDeletedCodeMargin';
+import { LineSource, RenderOptions, renderLines } from 'vs/editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines';
+import { IObservableViewZone, animatedObservable, joinCombine } from 'vs/editor/browser/widget/diffEditor/utils';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { LineRange } from 'vs/editor/common/core/lineRange';
+import { Position } from 'vs/editor/common/core/position';
+import { DetailedLineRangeMapping } from 'vs/editor/common/diff/rangeMapping';
+import { ScrollType } from 'vs/editor/common/editorCommon';
+import { BackgroundTokenizationState } from 'vs/editor/common/tokenizationTextModelPart';
+import { InlineDecoration, InlineDecorationType } from 'vs/editor/common/viewModel';
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { DiffEditorOptions } from '../../diffEditorOptions';
 
 /**
  * Ensures both editors have the same height by aligning unchanged lines.
@@ -65,32 +41,15 @@ import { DiffEditorOptions } from "../../diffEditorOptions";
 export class DiffEditorViewZones extends Disposable {
 	private readonly _originalTopPadding = observableValue(this, 0);
 	private readonly _originalScrollTop: IObservable<number>;
-	private readonly _originalScrollOffset = observableValue<number, boolean>(
-		this,
-		0,
-	);
-	private readonly _originalScrollOffsetAnimated = animatedObservable(
-		this._targetWindow,
-		this._originalScrollOffset,
-		this._store,
-	);
+	private readonly _originalScrollOffset = observableValue<number, boolean>(this, 0);
+	private readonly _originalScrollOffsetAnimated = animatedObservable(this._targetWindow, this._originalScrollOffset, this._store);
 
 	private readonly _modifiedTopPadding = observableValue(this, 0);
 	private readonly _modifiedScrollTop: IObservable<number>;
-	private readonly _modifiedScrollOffset = observableValue<number, boolean>(
-		this,
-		0,
-	);
-	private readonly _modifiedScrollOffsetAnimated = animatedObservable(
-		this._targetWindow,
-		this._modifiedScrollOffset,
-		this._store,
-	);
+	private readonly _modifiedScrollOffset = observableValue<number, boolean>(this, 0);
+	private readonly _modifiedScrollOffsetAnimated = animatedObservable(this._targetWindow, this._modifiedScrollOffset, this._store);
 
-	public readonly viewZones: IObservable<{
-		orig: IObservableViewZone[];
-		mod: IObservableViewZone[];
-	}>;
+	public readonly viewZones: IObservable<{ orig: IObservableViewZone[]; mod: IObservableViewZone[] }>;
 
 	constructor(
 		private readonly _targetWindow: Window,
@@ -489,18 +448,8 @@ function computeRangeAlignment(
 	modifiedEditorAlignmentViewZones: ReadonlySet<string>,
 	innerHunkAlignment: boolean,
 ): ILineRangeAlignment[] {
-	const originalLineHeightOverrides = new ArrayQueue(
-		getAdditionalLineHeights(
-			originalEditor,
-			originalEditorAlignmentViewZones,
-		),
-	);
-	const modifiedLineHeightOverrides = new ArrayQueue(
-		getAdditionalLineHeights(
-			modifiedEditor,
-			modifiedEditorAlignmentViewZones,
-		),
-	);
+	const originalLineHeightOverrides = new ArrayQueue(getAdditionalLineHeights(originalEditor, originalEditorAlignmentViewZones));
+	const modifiedLineHeightOverrides = new ArrayQueue(getAdditionalLineHeights(modifiedEditor, modifiedEditorAlignmentViewZones));
 
 	const origLineHeight = originalEditor.getOption(EditorOption.lineHeight);
 	const modLineHeight = modifiedEditor.getOption(EditorOption.lineHeight);
@@ -510,52 +459,33 @@ function computeRangeAlignment(
 	let lastOriginalLineNumber = 0;
 	let lastModifiedLineNumber = 0;
 
-	function handleAlignmentsOutsideOfDiffs(
-		untilOriginalLineNumberExclusive: number,
-		untilModifiedLineNumberExclusive: number,
-	) {
+	function handleAlignmentsOutsideOfDiffs(untilOriginalLineNumberExclusive: number, untilModifiedLineNumberExclusive: number) {
 		while (true) {
 			let origNext = originalLineHeightOverrides.peek();
 			let modNext = modifiedLineHeightOverrides.peek();
-			if (
-				origNext &&
-				origNext.lineNumber >= untilOriginalLineNumberExclusive
-			) {
+			if (origNext && origNext.lineNumber >= untilOriginalLineNumberExclusive) {
 				origNext = undefined;
 			}
-			if (
-				modNext &&
-				modNext.lineNumber >= untilModifiedLineNumberExclusive
-			) {
+			if (modNext && modNext.lineNumber >= untilModifiedLineNumberExclusive) {
 				modNext = undefined;
 			}
 			if (!origNext && !modNext) {
 				break;
 			}
 
-			const distOrig = origNext
-				? origNext.lineNumber - lastOriginalLineNumber
-				: Number.MAX_VALUE;
-			const distNext = modNext
-				? modNext.lineNumber - lastModifiedLineNumber
-				: Number.MAX_VALUE;
+			const distOrig = origNext ? origNext.lineNumber - lastOriginalLineNumber : Number.MAX_VALUE;
+			const distNext = modNext ? modNext.lineNumber - lastModifiedLineNumber : Number.MAX_VALUE;
 
 			if (distOrig < distNext) {
 				originalLineHeightOverrides.dequeue();
 				modNext = {
-					lineNumber:
-						origNext!.lineNumber -
-						lastOriginalLineNumber +
-						lastModifiedLineNumber,
+					lineNumber: origNext!.lineNumber - lastOriginalLineNumber + lastModifiedLineNumber,
 					heightInPx: 0,
 				};
 			} else if (distOrig > distNext) {
 				modifiedLineHeightOverrides.dequeue();
 				origNext = {
-					lineNumber:
-						modNext!.lineNumber -
-						lastModifiedLineNumber +
-						lastOriginalLineNumber,
+					lineNumber: modNext!.lineNumber - lastModifiedLineNumber + lastOriginalLineNumber,
 					heightInPx: 0,
 				};
 			} else {
@@ -575,63 +505,39 @@ function computeRangeAlignment(
 
 	for (const m of diffs) {
 		const c = m.lineRangeMapping;
-		handleAlignmentsOutsideOfDiffs(
-			c.original.startLineNumber,
-			c.modified.startLineNumber,
-		);
+		handleAlignmentsOutsideOfDiffs(c.original.startLineNumber, c.modified.startLineNumber);
 
 		let first = true;
 		let lastModLineNumber = c.modified.startLineNumber;
 		let lastOrigLineNumber = c.original.startLineNumber;
 
-		function emitAlignment(
-			origLineNumberExclusive: number,
-			modLineNumberExclusive: number,
-		) {
-			if (
-				origLineNumberExclusive < lastOrigLineNumber ||
-				modLineNumberExclusive < lastModLineNumber
-			) {
+		function emitAlignment(origLineNumberExclusive: number, modLineNumberExclusive: number) {
+			if (origLineNumberExclusive < lastOrigLineNumber || modLineNumberExclusive < lastModLineNumber) {
 				return;
 			}
 			if (first) {
 				first = false;
-			} else if (
-				origLineNumberExclusive === lastOrigLineNumber ||
-				modLineNumberExclusive === lastModLineNumber
-			) {
+			} else if (origLineNumberExclusive === lastOrigLineNumber || modLineNumberExclusive === lastModLineNumber) {
 				return;
 			}
-			const originalRange = new LineRange(
-				lastOrigLineNumber,
-				origLineNumberExclusive,
-			);
-			const modifiedRange = new LineRange(
-				lastModLineNumber,
-				modLineNumberExclusive,
-			);
+			const originalRange = new LineRange(lastOrigLineNumber, origLineNumberExclusive);
+			const modifiedRange = new LineRange(lastModLineNumber, modLineNumberExclusive);
 			if (originalRange.isEmpty && modifiedRange.isEmpty) {
 				return;
 			}
 
-			const originalAdditionalHeight =
-				originalLineHeightOverrides
-					.takeWhile((v) => v.lineNumber < origLineNumberExclusive)
-					?.reduce((p, c) => p + c.heightInPx, 0) ?? 0;
-			const modifiedAdditionalHeight =
-				modifiedLineHeightOverrides
-					.takeWhile((v) => v.lineNumber < modLineNumberExclusive)
-					?.reduce((p, c) => p + c.heightInPx, 0) ?? 0;
+			const originalAdditionalHeight = originalLineHeightOverrides
+				.takeWhile(v => v.lineNumber < origLineNumberExclusive)
+				?.reduce((p, c) => p + c.heightInPx, 0) ?? 0;
+			const modifiedAdditionalHeight = modifiedLineHeightOverrides
+				.takeWhile(v => v.lineNumber < modLineNumberExclusive)
+				?.reduce((p, c) => p + c.heightInPx, 0) ?? 0;
 
 			result.push({
 				originalRange,
 				modifiedRange,
-				originalHeightInPx:
-					originalRange.length * origLineHeight +
-					originalAdditionalHeight,
-				modifiedHeightInPx:
-					modifiedRange.length * modLineHeight +
-					modifiedAdditionalHeight,
+				originalHeightInPx: originalRange.length * origLineHeight + originalAdditionalHeight,
+				modifiedHeightInPx: modifiedRange.length * modLineHeight + modifiedAdditionalHeight,
 				diff: m.lineRangeMapping,
 			});
 
@@ -641,35 +547,18 @@ function computeRangeAlignment(
 
 		if (innerHunkAlignment) {
 			for (const i of c.innerChanges || []) {
-				if (
-					i.originalRange.startColumn > 1 &&
-					i.modifiedRange.startColumn > 1
-				) {
+				if (i.originalRange.startColumn > 1 && i.modifiedRange.startColumn > 1) {
 					// There is some unmodified text on this line before the diff
-					emitAlignment(
-						i.originalRange.startLineNumber,
-						i.modifiedRange.startLineNumber,
-					);
+					emitAlignment(i.originalRange.startLineNumber, i.modifiedRange.startLineNumber);
 				}
-				if (
-					i.originalRange.endColumn <
-					originalEditor
-						.getModel()!
-						.getLineMaxColumn(i.originalRange.endLineNumber)
-				) {
+				if (i.originalRange.endColumn < originalEditor.getModel()!.getLineMaxColumn(i.originalRange.endLineNumber)) {
 					// // There is some unmodified text on this line after the diff
-					emitAlignment(
-						i.originalRange.endLineNumber,
-						i.modifiedRange.endLineNumber,
-					);
+					emitAlignment(i.originalRange.endLineNumber, i.modifiedRange.endLineNumber);
 				}
 			}
 		}
 
-		emitAlignment(
-			c.original.endLineNumberExclusive,
-			c.modified.endLineNumberExclusive,
-		);
+		emitAlignment(c.original.endLineNumberExclusive, c.modified.endLineNumberExclusive);
 
 		lastOriginalLineNumber = c.original.endLineNumberExclusive;
 		lastModifiedLineNumber = c.modified.endLineNumberExclusive;
@@ -684,26 +573,18 @@ interface AdditionalLineHeightInfo {
 	heightInPx: number;
 }
 
-function getAdditionalLineHeights(
-	editor: CodeEditorWidget,
-	viewZonesToIgnore: ReadonlySet<string>,
-): readonly AdditionalLineHeightInfo[] {
+function getAdditionalLineHeights(editor: CodeEditorWidget, viewZonesToIgnore: ReadonlySet<string>): readonly AdditionalLineHeightInfo[] {
 	const viewZoneHeights: { lineNumber: number; heightInPx: number }[] = [];
-	const wrappingZoneHeights: { lineNumber: number; heightInPx: number }[] =
-		[];
+	const wrappingZoneHeights: { lineNumber: number; heightInPx: number }[] = [];
 
-	const hasWrapping =
-		editor.getOption(EditorOption.wrappingInfo).wrappingColumn !== -1;
+	const hasWrapping = editor.getOption(EditorOption.wrappingInfo).wrappingColumn !== -1;
 	const coordinatesConverter = editor._getViewModel()!.coordinatesConverter;
 	const editorLineHeight = editor.getOption(EditorOption.lineHeight);
 	if (hasWrapping) {
 		for (let i = 1; i <= editor.getModel()!.getLineCount(); i++) {
 			const lineCount = coordinatesConverter.getModelLineViewLineCount(i);
 			if (lineCount > 1) {
-				wrappingZoneHeights.push({
-					lineNumber: i,
-					heightInPx: editorLineHeight * (lineCount - 1),
-				});
+				wrappingZoneHeights.push({ lineNumber: i, heightInPx: editorLineHeight * (lineCount - 1) });
 			}
 		}
 	}
@@ -712,26 +593,17 @@ function getAdditionalLineHeights(
 		if (viewZonesToIgnore.has(w.id)) {
 			continue;
 		}
-		const modelLineNumber =
-			w.afterLineNumber === 0
-				? 0
-				: coordinatesConverter.convertViewPositionToModelPosition(
-						new Position(w.afterLineNumber, 1),
-				  ).lineNumber;
-		viewZoneHeights.push({
-			lineNumber: modelLineNumber,
-			heightInPx: w.height,
-		});
+		const modelLineNumber = w.afterLineNumber === 0 ? 0 : coordinatesConverter.convertViewPositionToModelPosition(
+			new Position(w.afterLineNumber, 1)
+		).lineNumber;
+		viewZoneHeights.push({ lineNumber: modelLineNumber, heightInPx: w.height });
 	}
 
 	const result = joinCombine(
 		viewZoneHeights,
 		wrappingZoneHeights,
-		(v) => v.lineNumber,
-		(v1, v2) => ({
-			lineNumber: v1.lineNumber,
-			heightInPx: v1.heightInPx + v2.heightInPx,
-		}),
+		v => v.lineNumber,
+		(v1, v2) => ({ lineNumber: v1.lineNumber, heightInPx: v1.heightInPx + v2.heightInPx })
 	);
 
 	return result;

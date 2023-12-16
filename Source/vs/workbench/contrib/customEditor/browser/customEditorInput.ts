@@ -3,44 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from "vs/base/common/buffer";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { IReference } from "vs/base/common/lifecycle";
-import { Schemas } from "vs/base/common/network";
-import { basename } from "vs/base/common/path";
-import { dirname, isEqual } from "vs/base/common/resources";
-import { assertIsDefined } from "vs/base/common/types";
-import { URI } from "vs/base/common/uri";
-import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IResourceEditorInput } from "vs/platform/editor/common/editor";
-import { IFileService } from "vs/platform/files/common/files";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ILabelService } from "vs/platform/label/common/label";
-import { IUndoRedoService } from "vs/platform/undoRedo/common/undoRedo";
-import {
-	EditorInputCapabilities,
-	GroupIdentifier,
-	IMoveResult,
-	IRevertOptions,
-	ISaveOptions,
-	IUntypedEditorInput,
-	Verbosity,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import {
-	ICustomEditorModel,
-	ICustomEditorService,
-} from "vs/workbench/contrib/customEditor/common/customEditor";
-import {
-	IOverlayWebview,
-	IWebviewService,
-} from "vs/workbench/contrib/webview/browser/webview";
-import {
-	IWebviewWorkbenchService,
-	LazilyResolvedWebviewEditorInput,
-} from "vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService";
-import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
-import { IUntitledTextEditorService } from "vs/workbench/services/untitled/common/untitledTextEditorService";
+import { VSBuffer } from 'vs/base/common/buffer';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { IReference } from 'vs/base/common/lifecycle';
+import { Schemas } from 'vs/base/common/network';
+import { basename } from 'vs/base/common/path';
+import { dirname, isEqual } from 'vs/base/common/resources';
+import { assertIsDefined } from 'vs/base/common/types';
+import { URI } from 'vs/base/common/uri';
+import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { IResourceEditorInput } from 'vs/platform/editor/common/editor';
+import { IFileService } from 'vs/platform/files/common/files';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ILabelService } from 'vs/platform/label/common/label';
+import { IUndoRedoService } from 'vs/platform/undoRedo/common/undoRedo';
+import { EditorInputCapabilities, GroupIdentifier, IMoveResult, IRevertOptions, ISaveOptions, IUntypedEditorInput, Verbosity } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { ICustomEditorModel, ICustomEditorService } from 'vs/workbench/contrib/customEditor/common/customEditor';
+import { IOverlayWebview, IWebviewService } from 'vs/workbench/contrib/webview/browser/webview';
+import { IWebviewWorkbenchService, LazilyResolvedWebviewEditorInput } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService';
+import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
+import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService';
 
 interface CustomEditorInputInitInfo {
 	readonly resource: URI;
@@ -48,24 +31,18 @@ interface CustomEditorInputInitInfo {
 }
 
 export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
+
 	static create(
 		instantiationService: IInstantiationService,
 		resource: URI,
 		viewType: string,
 		group: GroupIdentifier | undefined,
-		options?: {
-			readonly customClasses?: string;
-			readonly oldResource?: URI;
-		},
+		options?: { readonly customClasses?: string; readonly oldResource?: URI },
 	): EditorInput {
-		return instantiationService.invokeFunction((accessor) => {
+		return instantiationService.invokeFunction(accessor => {
 			// If it's an untitled file we must populate the untitledDocumentData
-			const untitledString = accessor
-				.get(IUntitledTextEditorService)
-				.getValue(resource);
-			const untitledDocumentData = untitledString
-				? VSBuffer.fromString(untitledString)
-				: undefined;
+			const untitledString = accessor.get(IUntitledTextEditorService).getValue(resource);
+			const untitledDocumentData = untitledString ? VSBuffer.fromString(untitledString) : undefined;
 			const webview = accessor.get(IWebviewService).createWebviewOverlay({
 				providedViewType: viewType,
 				title: undefined,
@@ -73,23 +50,15 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 				contentOptions: {},
 				extension: undefined,
 			});
-			const input = instantiationService.createInstance(
-				CustomEditorInput,
-				{ resource, viewType },
-				webview,
-				{
-					untitledDocumentData: untitledDocumentData,
-					oldResource: options?.oldResource,
-				},
-			);
-			if (typeof group !== "undefined") {
+			const input = instantiationService.createInstance(CustomEditorInput, { resource, viewType }, webview, { untitledDocumentData: untitledDocumentData, oldResource: options?.oldResource });
+			if (typeof group !== 'undefined') {
 				input.updateGroup(group);
 			}
 			return input;
 		});
 	}
 
-	public static override readonly typeId = "workbench.editors.webviewEditor";
+	public static override readonly typeId = 'workbench.editors.webviewEditor';
 
 	private readonly _editorResource: URI;
 	public readonly oldResource?: URI;
@@ -99,9 +68,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private readonly _untitledDocumentData: VSBuffer | undefined;
 
-	override get resource() {
-		return this._editorResource;
-	}
+	override get resource() { return this._editorResource; }
 
 	private _modelRef?: IReference<ICustomEditorModel>;
 
@@ -129,22 +96,11 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 	}
 
 	private registerListeners(): void {
+
 		// Clear our labels on certain label related events
-		this._register(
-			this.labelService.onDidChangeFormatters((e) =>
-				this.onLabelEvent(e.scheme),
-			),
-		);
-		this._register(
-			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
-				this.onLabelEvent(e.scheme),
-			),
-		);
-		this._register(
-			this.fileService.onDidChangeFileSystemProviderCapabilities((e) =>
-				this.onLabelEvent(e.scheme),
-			),
-		);
+		this._register(this.labelService.onDidChangeFormatters(e => this.onLabelEvent(e.scheme)));
+		this._register(this.fileService.onDidChangeFileSystemProviderRegistrations(e => this.onLabelEvent(e.scheme)));
+		this._register(this.fileService.onDidChangeFileSystemProviderCapabilities(e => this.onLabelEvent(e.scheme)));
 	}
 
 	private onLabelEvent(scheme: string): void {
@@ -154,6 +110,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 	}
 
 	private updateLabel(): void {
+
 		// Clear any cached labels from before
 		this._shortDescription = undefined;
 		this._mediumDescription = undefined;
@@ -180,10 +137,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		capabilities |= EditorInputCapabilities.CanDropIntoEditor;
 		capabilities |= EditorInputCapabilities.AuxWindowUnsupported;
 
-		if (
-			!this.customEditorService.getCustomEditorCapabilities(this.viewType)
-				?.supportsMultipleEditorsPerDocument
-		) {
+		if (!this.customEditorService.getCustomEditorCapabilities(this.viewType)?.supportsMultipleEditorsPerDocument) {
 			capabilities |= EditorInputCapabilities.Singleton;
 		}
 
@@ -222,10 +176,8 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private _shortDescription: string | undefined = undefined;
 	private get shortDescription(): string {
-		if (typeof this._shortDescription !== "string") {
-			this._shortDescription = this.labelService.getUriBasenameLabel(
-				dirname(this.resource),
-			);
+		if (typeof this._shortDescription !== 'string') {
+			this._shortDescription = this.labelService.getUriBasenameLabel(dirname(this.resource));
 		}
 
 		return this._shortDescription;
@@ -233,11 +185,8 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private _mediumDescription: string | undefined = undefined;
 	private get mediumDescription(): string {
-		if (typeof this._mediumDescription !== "string") {
-			this._mediumDescription = this.labelService.getUriLabel(
-				dirname(this.resource),
-				{ relative: true },
-			);
+		if (typeof this._mediumDescription !== 'string') {
+			this._mediumDescription = this.labelService.getUriLabel(dirname(this.resource), { relative: true });
 		}
 
 		return this._mediumDescription;
@@ -245,10 +194,8 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private _longDescription: string | undefined = undefined;
 	private get longDescription(): string {
-		if (typeof this._longDescription !== "string") {
-			this._longDescription = this.labelService.getUriLabel(
-				dirname(this.resource),
-			);
+		if (typeof this._longDescription !== 'string') {
+			this._longDescription = this.labelService.getUriLabel(dirname(this.resource));
 		}
 
 		return this._longDescription;
@@ -256,7 +203,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private _shortTitle: string | undefined = undefined;
 	private get shortTitle(): string {
-		if (typeof this._shortTitle !== "string") {
+		if (typeof this._shortTitle !== 'string') {
 			this._shortTitle = this.getName();
 		}
 
@@ -265,10 +212,8 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private _mediumTitle: string | undefined = undefined;
 	private get mediumTitle(): string {
-		if (typeof this._mediumTitle !== "string") {
-			this._mediumTitle = this.labelService.getUriLabel(this.resource, {
-				relative: true,
-			});
+		if (typeof this._mediumTitle !== 'string') {
+			this._mediumTitle = this.labelService.getUriLabel(this.resource, { relative: true });
 		}
 
 		return this._mediumTitle;
@@ -276,7 +221,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 	private _longTitle: string | undefined = undefined;
 	private get longTitle(): string {
-		if (typeof this._longTitle !== "string") {
+		if (typeof this._longTitle !== 'string') {
 			this._longTitle = this.labelService.getUriLabel(this.resource);
 		}
 
@@ -299,22 +244,13 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		if (super.matches(other)) {
 			return true;
 		}
-		return (
-			this === other ||
-			(other instanceof CustomEditorInput &&
-				this.viewType === other.viewType &&
-				isEqual(this.resource, other.resource))
-		);
+		return this === other || (other instanceof CustomEditorInput
+			&& this.viewType === other.viewType
+			&& isEqual(this.resource, other.resource));
 	}
 
 	public override copy(): EditorInput {
-		return CustomEditorInput.create(
-			this.instantiationService,
-			this.resource,
-			this.viewType,
-			this.group,
-			this.webview.options,
-		);
+		return CustomEditorInput.create(this.instantiationService, this.resource, this.viewType, this.group, this.webview.options);
 	}
 
 	public override isReadonly(): boolean | IMarkdownString {
@@ -331,10 +267,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		return this._modelRef.object.isDirty();
 	}
 
-	public override async save(
-		groupId: GroupIdentifier,
-		options?: ISaveOptions,
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	public override async save(groupId: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (!this._modelRef) {
 			return undefined;
 		}
@@ -352,40 +285,25 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		return this;
 	}
 
-	public override async saveAs(
-		groupId: GroupIdentifier,
-		options?: ISaveOptions,
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	public override async saveAs(groupId: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (!this._modelRef) {
 			return undefined;
 		}
 
 		const dialogPath = this._editorResource;
-		const target = await this.fileDialogService.pickFileToSave(
-			dialogPath,
-			options?.availableFileSystems,
-		);
+		const target = await this.fileDialogService.pickFileToSave(dialogPath, options?.availableFileSystems);
 		if (!target) {
 			return undefined; // save cancelled
 		}
 
-		if (
-			!(await this._modelRef.object.saveCustomEditorAs(
-				this._editorResource,
-				target,
-				options,
-			))
-		) {
+		if (!await this._modelRef.object.saveCustomEditorAs(this._editorResource, target, options)) {
 			return undefined;
 		}
 
 		return (await this.rename(groupId, target))?.editor;
 	}
 
-	public override async revert(
-		group: GroupIdentifier,
-		options?: IRevertOptions,
-	): Promise<void> {
+	public override async revert(group: GroupIdentifier, options?: IRevertOptions): Promise<void> {
 		if (this._modelRef) {
 			return this._modelRef.object.revert(options);
 		}
@@ -402,24 +320,9 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 
 		if (!this._modelRef) {
 			const oldCapabilities = this.capabilities;
-			this._modelRef = this._register(
-				assertIsDefined(
-					await this.customEditorService.models.tryRetain(
-						this.resource,
-						this.viewType,
-					),
-				),
-			);
-			this._register(
-				this._modelRef.object.onDidChangeDirty(() =>
-					this._onDidChangeDirty.fire(),
-				),
-			);
-			this._register(
-				this._modelRef.object.onDidChangeReadonly(() =>
-					this._onDidChangeCapabilities.fire(),
-				),
-			);
+			this._modelRef = this._register(assertIsDefined(await this.customEditorService.models.tryRetain(this.resource, this.viewType)));
+			this._register(this._modelRef.object.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
+			this._register(this._modelRef.object.onDidChangeReadonly(() => this._onDidChangeCapabilities.fire()));
 			// If we're loading untitled file data we should ensure it's dirty
 			if (this._untitledDocumentData) {
 				this._defaultDirtyState = true;
@@ -435,10 +338,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		return null;
 	}
 
-	public override async rename(
-		group: GroupIdentifier,
-		newResource: URI,
-	): Promise<IMoveResult | undefined> {
+	public override async rename(group: GroupIdentifier, newResource: URI): Promise<IMoveResult | undefined> {
 		// We return an untyped editor input which can then be resolved in the editor service
 		return { editor: { resource: newResource } };
 	}
@@ -460,9 +360,7 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		this._moveHandler = handler;
 	}
 
-	protected override transfer(
-		other: CustomEditorInput,
-	): CustomEditorInput | undefined {
+	protected override transfer(other: CustomEditorInput): CustomEditorInput | undefined {
 		if (!super.transfer(other)) {
 			return;
 		}
@@ -487,8 +385,8 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 		return {
 			resource: this.resource,
 			options: {
-				override: this.viewType,
-			},
+				override: this.viewType
+			}
 		};
 	}
 }

@@ -3,18 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { INodeProcess, IProcessEnvironment } from "vs/base/common/platform";
-import { ISandboxConfiguration } from "vs/base/parts/sandbox/common/sandboxTypes";
-import {
-	IpcRenderer,
-	ProcessMemoryInfo,
-	WebFrame,
-} from "vs/base/parts/sandbox/electron-sandbox/electronTypes";
+import { INodeProcess, IProcessEnvironment } from 'vs/base/common/platform';
+import { ISandboxConfiguration } from 'vs/base/parts/sandbox/common/sandboxTypes';
+import { IpcRenderer, ProcessMemoryInfo, WebFrame } from 'vs/base/parts/sandbox/electron-sandbox/electronTypes';
 
 /**
  * In Electron renderers we cannot expose all of the `process` global of node.js
  */
 export interface ISandboxNodeProcess extends INodeProcess {
+
 	/**
 	 * The process.platform property returns a string identifying the operating system platform
 	 * on which the Node.js process is running.
@@ -90,6 +87,7 @@ export interface ISandboxNodeProcess extends INodeProcess {
 }
 
 export interface IpcMessagePort {
+
 	/**
 	 * Acquire a `MessagePort`. The main process will transfer the port over to
 	 * the `responseChannel` with a payload of `requestNonce` so that the source can
@@ -103,6 +101,7 @@ export interface IpcMessagePort {
 }
 
 export interface ISandboxContext {
+
 	/**
 	 * A configuration object made accessible from the main side
 	 * to configure the sandbox browser window. Will be `undefined`
@@ -128,9 +127,6 @@ export const context: ISandboxContext = vscodeGlobal.context;
  * depend on `preload.js` or `preload-aux.js`.
  */
 export interface ISandboxGlobals {
-	readonly ipcRenderer: Pick<
-		import("vs/base/parts/sandbox/electron-sandbox/electronTypes").IpcRenderer,
-		"send" | "invoke"
-	>;
-	readonly webFrame: import("vs/base/parts/sandbox/electron-sandbox/electronTypes").WebFrame;
+	readonly ipcRenderer: Pick<import('vs/base/parts/sandbox/electron-sandbox/electronTypes').IpcRenderer, 'send' | 'invoke'>;
+	readonly webFrame: import('vs/base/parts/sandbox/electron-sandbox/electronTypes').WebFrame;
 }

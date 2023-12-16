@@ -3,21 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
-import { userAgent } from "vs/base/common/platform";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import { IssueReporterData } from "vs/platform/issue/common/issue";
-import { normalizeGitHubUrl } from "vs/platform/issue/common/issueReporterUtil";
-import { ILogService } from "vs/platform/log/common/log";
-import { IProductService } from "vs/platform/product/common/productService";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
-import {
-	IIssueDataProvider,
-	IIssueUriRequestHandler,
-	IWorkbenchIssueService,
-} from "vs/workbench/services/issue/common/issue";
+import * as dom from 'vs/base/browser/dom';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { userAgent } from 'vs/base/common/platform';
+import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { IssueReporterData } from 'vs/platform/issue/common/issue';
+import { normalizeGitHubUrl } from 'vs/platform/issue/common/issueReporterUtil';
+import { ILogService } from 'vs/platform/log/common/log';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { IIssueDataProvider, IIssueUriRequestHandler, IWorkbenchIssueService } from 'vs/workbench/services/issue/common/issue';
 
 export class WebIssueService implements IWorkbenchIssueService {
 	declare readonly _serviceBrand: undefined;
@@ -33,7 +29,7 @@ export class WebIssueService implements IWorkbenchIssueService {
 
 	//TODO @TylerLeonhardt @Tyriar to implement a process explorer for the web
 	async openProcessExplorer(): Promise<void> {
-		console.error("openProcessExplorer is not implemented in web");
+		console.error('openProcessExplorer is not implemented in web');
 	}
 
 	async openReporter(options: Partial<IssueReporterData>): Promise<void> {
@@ -41,24 +37,17 @@ export class WebIssueService implements IWorkbenchIssueService {
 		// If we don't have a extensionId, treat this as a Core issue
 		if (!extensionId) {
 			if (this.productService.reportIssueUrl) {
-				const uri = this.getIssueUriFromStaticContent(
-					this.productService.reportIssueUrl,
-				);
+				const uri = this.getIssueUriFromStaticContent(this.productService.reportIssueUrl);
 				dom.windowOpenNoOpener(uri);
 				return;
 			}
-			throw new Error(
-				`No issue reporting URL configured for ${this.productService.nameLong}.`,
-			);
+			throw new Error(`No issue reporting URL configured for ${this.productService.nameLong}.`);
 		}
 
 		// If we have a handler registered for this extension, use it instead of anything else
 		if (this._handlers.has(extensionId)) {
 			try {
-				const uri = await this.getIssueUriFromHandler(
-					extensionId,
-					CancellationToken.None,
-				);
+				const uri = await this.getIssueUriFromHandler(extensionId, CancellationToken.None);
 				dom.windowOpenNoOpener(uri);
 				return;
 			} catch (e) {
@@ -67,49 +56,30 @@ export class WebIssueService implements IWorkbenchIssueService {
 		}
 
 		// if we don't have a handler, or the handler failed, try to get the extension's github url
-		const selectedExtension = this.extensionService.extensions.filter(
-			(ext) => ext.identifier.value === options.extensionId,
-		)[0];
-		const extensionGitHubUrl =
-			this.getExtensionGitHubUrl(selectedExtension);
+		const selectedExtension = this.extensionService.extensions.filter(ext => ext.identifier.value === options.extensionId)[0];
+		const extensionGitHubUrl = this.getExtensionGitHubUrl(selectedExtension);
 		if (!extensionGitHubUrl) {
-			throw new Error(
-				`Unable to find issue reporting url for ${extensionId}`,
-			);
+			throw new Error(`Unable to find issue reporting url for ${extensionId}`);
 		}
 
-		const uri = this.getIssueUriFromStaticContent(
-			`${extensionGitHubUrl}/issues/new`,
-			selectedExtension,
-		);
+		const uri = this.getIssueUriFromStaticContent(`${extensionGitHubUrl}/issues/new`, selectedExtension);
 		dom.windowOpenNoOpener(uri);
 	}
 
-	registerIssueUriRequestHandler(
-		extensionId: string,
-		handler: IIssueUriRequestHandler,
-	): IDisposable {
+	registerIssueUriRequestHandler(extensionId: string, handler: IIssueUriRequestHandler): IDisposable {
 		this._handlers.set(extensionId, handler);
 		return toDisposable(() => this._handlers.delete(extensionId));
 	}
 
-	registerIssueDataProvider(
-		extensionId: string,
-		handler: IIssueDataProvider,
-	): IDisposable {
+	registerIssueDataProvider(extensionId: string, handler: IIssueDataProvider): IDisposable {
 		this._providers.set(extensionId, handler);
 		return toDisposable(() => this._handlers.delete(extensionId));
 	}
 
-	private async getIssueUriFromHandler(
-		extensionId: string,
-		token: CancellationToken,
-	): Promise<string> {
+	private async getIssueUriFromHandler(extensionId: string, token: CancellationToken): Promise<string> {
 		const handler = this._handlers.get(extensionId);
 		if (!handler) {
-			throw new Error(
-				`No handler registered for extension ${extensionId}`,
-			);
+			throw new Error(`No handler registered for extension ${extensionId}`);
 		}
 		const result = await handler.provideIssueUrl(token);
 		return result.toString(true);
@@ -120,7 +90,7 @@ export class WebIssueService implements IWorkbenchIssueService {
 			return normalizeGitHubUrl(this.productService.reportIssueUrl);
 		}
 
-		let repositoryUrl = "";
+		let repositoryUrl = '';
 
 		const bugsUrl = extension?.bugs?.url;
 		const extensionUrl = extension?.repository?.url;
@@ -128,31 +98,23 @@ export class WebIssueService implements IWorkbenchIssueService {
 		// If given, try to match the extension's bug url
 		if (bugsUrl && bugsUrl.match(/^https?:\/\/github\.com\/(.*)/)) {
 			repositoryUrl = normalizeGitHubUrl(bugsUrl);
-		} else if (
-			extensionUrl &&
-			extensionUrl.match(/^https?:\/\/github\.com\/(.*)/)
-		) {
+		} else if (extensionUrl && extensionUrl.match(/^https?:\/\/github\.com\/(.*)/)) {
 			repositoryUrl = normalizeGitHubUrl(extensionUrl);
 		}
 
 		return repositoryUrl;
 	}
 
-	private getIssueUriFromStaticContent(
-		baseUri: string,
-		extension?: IExtensionDescription,
-	): string {
+	private getIssueUriFromStaticContent(baseUri: string, extension?: IExtensionDescription): string {
 		const issueDescription = `ADD ISSUE DESCRIPTION HERE
 
 Version: ${this.productService.version}
-Commit: ${this.productService.commit ?? "unknown"}
-User Agent: ${userAgent ?? "unknown"}
-Embedder: ${this.productService.embedderIdentifier ?? "unknown"}
-${extension?.version ? `\nExtension version: ${extension.version}` : ""}
+Commit: ${this.productService.commit ?? 'unknown'}
+User Agent: ${userAgent ?? 'unknown'}
+Embedder: ${this.productService.embedderIdentifier ?? 'unknown'}
+${extension?.version ? `\nExtension version: ${extension.version}` : ''}
 <!-- generated by web issue reporter -->`;
 
-		return `${baseUri}?body=${encodeURIComponent(
-			issueDescription,
-		)}&labels=web`;
+		return `${baseUri}?body=${encodeURIComponent(issueDescription)}&labels=web`;
 	}
 }
