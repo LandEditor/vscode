@@ -82,7 +82,7 @@ export class ViewOverlays
 	public createVisibleLine(): ViewOverlayLine {
 		return new ViewOverlayLine(
 			this._context.configuration,
-			this._dynamicOverlays,
+			this._dynamicOverlays
 		);
 	}
 
@@ -95,7 +95,7 @@ export class ViewOverlays
 	// ----- event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		this._visibleLines.onConfigurationChanged(e);
 		const startLineNumber = this._visibleLines.getStartLineNumber();
@@ -119,38 +119,38 @@ export class ViewOverlays
 		return this._visibleLines.onFlushed(e);
 	}
 	public override onFocusChanged(
-		e: viewEvents.ViewFocusChangedEvent,
+		e: viewEvents.ViewFocusChangedEvent
 	): boolean {
 		this._isFocused = e.isFocused;
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent,
+		e: viewEvents.ViewLinesChangedEvent
 	): boolean {
 		return this._visibleLines.onLinesChanged(e);
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent,
+		e: viewEvents.ViewLinesDeletedEvent
 	): boolean {
 		return this._visibleLines.onLinesDeleted(e);
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent,
+		e: viewEvents.ViewLinesInsertedEvent
 	): boolean {
 		return this._visibleLines.onLinesInserted(e);
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return this._visibleLines.onScrollChanged(e) || true;
 	}
 	public override onTokensChanged(
-		e: viewEvents.ViewTokensChangedEvent,
+		e: viewEvents.ViewTokensChangedEvent
 	): boolean {
 		return this._visibleLines.onTokensChanged(e);
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
+		e: viewEvents.ViewZonesChangedEvent
 	): boolean {
 		return this._visibleLines.onZonesChanged(e);
 	}
@@ -159,7 +159,7 @@ export class ViewOverlays
 
 	public prepareRender(ctx: RenderingContext): void {
 		const toRender = this._dynamicOverlays.filter((overlay) =>
-			overlay.shouldRender(),
+			overlay.shouldRender()
 		);
 
 		for (let i = 0, len = toRender.length; i < len; i++) {
@@ -190,11 +190,11 @@ export class ViewOverlayLine implements IVisibleLine {
 
 	constructor(
 		configuration: IEditorConfiguration,
-		dynamicOverlays: DynamicViewOverlay[],
+		dynamicOverlays: DynamicViewOverlay[]
 	) {
 		this._configuration = configuration;
 		this._lineHeight = this._configuration.options.get(
-			EditorOption.lineHeight,
+			EditorOption.lineHeight
 		);
 		this._dynamicOverlays = dynamicOverlays;
 
@@ -219,10 +219,10 @@ export class ViewOverlayLine implements IVisibleLine {
 		// Nothing
 	}
 	public onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): void {
 		this._lineHeight = this._configuration.options.get(
-			EditorOption.lineHeight,
+			EditorOption.lineHeight
 		);
 	}
 
@@ -230,14 +230,14 @@ export class ViewOverlayLine implements IVisibleLine {
 		lineNumber: number,
 		deltaTop: number,
 		viewportData: ViewportData,
-		sb: StringBuilder,
+		sb: StringBuilder
 	): boolean {
 		let result = "";
 		for (let i = 0, len = this._dynamicOverlays.length; i < len; i++) {
 			const dynamicOverlay = this._dynamicOverlays[i];
 			result += dynamicOverlay.render(
 				viewportData.startLineNumber,
-				lineNumber,
+				lineNumber
 			);
 		}
 
@@ -282,7 +282,7 @@ export class ContentViewOverlays extends ViewOverlays {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
@@ -290,7 +290,7 @@ export class ContentViewOverlays extends ViewOverlays {
 		return super.onConfigurationChanged(e) || true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return super.onScrollChanged(e) || e.scrollWidthChanged;
 	}
@@ -321,7 +321,7 @@ export class MarginViewOverlays extends ViewOverlays {
 	}
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 		applyFontInfo(this.domNode, options.get(EditorOption.fontInfo));
@@ -331,7 +331,7 @@ export class MarginViewOverlays extends ViewOverlays {
 	}
 
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return super.onScrollChanged(e) || e.scrollHeightChanged;
 	}

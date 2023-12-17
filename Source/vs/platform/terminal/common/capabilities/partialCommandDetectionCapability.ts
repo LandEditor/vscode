@@ -54,8 +54,8 @@ export class PartialCommandDetectionCapability
 					}
 					// We don't want to override xterm.js' default behavior, just augment it
 					return false;
-				},
-			),
+				}
+			)
 		);
 	}
 

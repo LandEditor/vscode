@@ -46,7 +46,8 @@ class ResourceModelCollection extends ReferenceCollection<
 	private readonly modelsToDispose = new Set<string>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IFileService private readonly fileService: IFileService,
 		@IModelService private readonly modelService: IModelService
@@ -55,14 +56,14 @@ class ResourceModelCollection extends ReferenceCollection<
 	}
 
 	protected createReferencedObject(
-		key: string,
+		key: string
 	): Promise<IResolvedTextEditorModel> {
 		return this.doCreateReferencedObject(key);
 	}
 
 	private async doCreateReferencedObject(
 		key: string,
-		skipActivateProvider?: boolean,
+		skipActivateProvider?: boolean
 	): Promise<IResolvedTextEditorModel> {
 		// Untrack as being disposed
 		this.modelsToDispose.delete(key);
@@ -77,7 +78,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 			const model = this.instantiationService.createInstance(
 				TextResourceEditorModel,
-				resource,
+				resource
 			);
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
@@ -110,7 +111,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 			const model = this.instantiationService.createInstance(
 				TextResourceEditorModel,
-				resource,
+				resource
 			);
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
@@ -129,7 +130,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 	private ensureResolvedModel(
 		model: ITextEditorModel,
-		key: string,
+		key: string
 	): model is IResolvedTextEditorModel {
 		if (isResolvedTextEditorModel(model)) {
 			return true;
@@ -140,7 +141,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 	protected destroyReferencedObject(
 		key: string,
-		modelPromise: Promise<ITextEditorModel>,
+		modelPromise: Promise<ITextEditorModel>
 	): void {
 		// inMemory is bound to a different lifecycle
 		const resource = URI.parse(key);
@@ -188,7 +189,7 @@ class ResourceModelCollection extends ReferenceCollection<
 
 	registerTextModelContentProvider(
 		scheme: string,
-		provider: ITextModelContentProvider,
+		provider: ITextModelContentProvider
 	): IDisposable {
 		let providers = this.providers.get(scheme);
 		if (!providers) {
@@ -233,7 +234,7 @@ class ResourceModelCollection extends ReferenceCollection<
 		}
 
 		throw new Error(
-			`Unable to resolve text model content for resource ${key}`,
+			`Unable to resolve text model content for resource ${key}`
 		);
 	}
 }
@@ -254,7 +255,7 @@ export class TextModelResolverService
 		if (!this._resourceModelCollection) {
 			this._resourceModelCollection =
 				this.instantiationService.createInstance(
-					ResourceModelCollection,
+					ResourceModelCollection
 				);
 		}
 
@@ -267,7 +268,7 @@ export class TextModelResolverService
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
 			this._asyncModelCollection = new AsyncReferenceCollection(
-				this.resourceModelCollection,
+				this.resourceModelCollection
 			);
 		}
 
@@ -275,19 +276,27 @@ export class TextModelResolverService
 	}
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
 		@IUndoRedoService private readonly undoRedoService: IUndoRedoService,
 		@IModelService private readonly modelService: IModelService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
 		super();
 
-		this._register(new ModelUndoRedoParticipant(this.modelService, this, this.undoRedoService));
+		this._register(
+			new ModelUndoRedoParticipant(
+				this.modelService,
+				this,
+				this.undoRedoService
+			)
+		);
 	}
 
 	async createModelReference(
-		resource: URI,
+		resource: URI
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		// From this moment on, only operate on the canonical resource
 		// to ensure we reduce the chance of resolving the same resource
@@ -299,11 +308,11 @@ export class TextModelResolverService
 
 	registerTextModelContentProvider(
 		scheme: string,
-		provider: ITextModelContentProvider,
+		provider: ITextModelContentProvider
 	): IDisposable {
 		return this.resourceModelCollection.registerTextModelContentProvider(
 			scheme,
-			provider,
+			provider
 		);
 	}
 
@@ -317,7 +326,7 @@ export class TextModelResolverService
 		}
 
 		return this.resourceModelCollection.hasTextModelContentProvider(
-			resource.scheme,
+			resource.scheme
 		);
 	}
 }
@@ -325,5 +334,5 @@ export class TextModelResolverService
 registerSingleton(
 	ITextModelService,
 	TextModelResolverService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

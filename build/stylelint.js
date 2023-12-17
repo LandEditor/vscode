@@ -31,7 +31,7 @@ function gulpstylelint(reporter) {
 							(i + 1) +
 							",1): Unknown variable: " +
 							unknownVariable,
-						true,
+						true
 					);
 					errorCount++;
 				});
@@ -43,11 +43,11 @@ function gulpstylelint(reporter) {
 			if (errorCount > 0) {
 				reporter(
 					"All valid variable names are in `build/lib/stylelint/vscode-known-variables.json`\nTo update that file, run `./scripts/test-documentation.sh|bat.`",
-					false,
+					false
 				);
 			}
 			this.emit("end");
-		},
+		}
 	);
 }
 
@@ -61,12 +61,12 @@ function stylelint() {
 				} else {
 					console.info(message);
 				}
-			}),
+			})
 		)
 		.pipe(
 			es.through(function () {
 				/* noop, important for the stream to end */
-			}),
+			})
 		);
 }
 

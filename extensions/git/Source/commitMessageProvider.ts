@@ -38,7 +38,7 @@ export class TestCommitMessageProvider implements CommitMessageProvider {
 	async provideCommitMessage(
 		repository: ApiRepository,
 		changes: string[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<string | undefined> {
 		console.log("Repository: ", repository.rootUri.fsPath);
 
@@ -63,10 +63,10 @@ export class TestCommitMessageProvider implements CommitMessageProvider {
 
 	private getAttemptCount(
 		repository: ApiRepository,
-		changes: string[],
+		changes: string[]
 	): number {
 		const [previousChanges, previousCount] = this._changesMap.get(
-			repository.rootUri.fsPath,
+			repository.rootUri.fsPath
 		) ?? [[], 1];
 		if (previousChanges.length !== changes.length) {
 			return 1;
@@ -126,7 +126,7 @@ export class GenerateCommitMessageActionButton {
 						arguments: [this.repository.sourceControl],
 					},
 					enabled: this.state.enabled,
-			  }
+				}
 			: {
 					icon:
 						this.commitMessageProviderRegistry.commitMessageProvider
@@ -138,14 +138,14 @@ export class GenerateCommitMessageActionButton {
 						arguments: [this.repository.sourceControl],
 					},
 					enabled: this.state.enabled,
-			  };
+				};
 	}
 
 	private disposables: Disposable[] = [];
 
 	constructor(
 		private readonly repository: Repository,
-		private readonly commitMessageProviderRegistry: ICommitMessageProviderRegistry,
+		private readonly commitMessageProviderRegistry: ICommitMessageProviderRegistry
 	) {
 		this._state = {
 			enabled: false,
@@ -162,27 +162,27 @@ export class GenerateCommitMessageActionButton {
 				) {
 					this.onDidChangeSmartCommitSettings();
 				}
-			}),
+			})
 		);
 		repository.onDidRunGitStatus(
 			this.onDidRunGitStatus,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		repository.onDidStartCommitMessageGeneration(
 			this.onDidStartCommitMessageGeneration,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		repository.onDidEndCommitMessageGeneration(
 			this.onDidEndCommitMessageGeneration,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		commitMessageProviderRegistry.onDidChangeCommitMessageProvider(
 			this.onDidChangeCommitMessageProvider,
 			this,
-			this.disposables,
+			this.disposables
 		);
 	}
 
@@ -215,7 +215,7 @@ export class GenerateCommitMessageActionButton {
 	private repositoryHasChangesToCommit(): boolean {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		const enableSmartCommit =
 			config.get<boolean>("enableSmartCommit") === true;
@@ -223,7 +223,7 @@ export class GenerateCommitMessageActionButton {
 			config.get<boolean>("suggestSmartCommit") === true;
 		const smartCommitChanges = config.get<"all" | "tracked">(
 			"smartCommitChanges",
-			"all",
+			"all"
 		);
 
 		const resources = [...this.repository.indexGroup.resourceStates];
@@ -241,8 +241,8 @@ export class GenerateCommitMessageActionButton {
 		if (enableSmartCommit && smartCommitChanges === "tracked") {
 			resources.push(
 				...this.repository.workingTreeGroup.resourceStates.filter(
-					(r) => r.type !== Status.UNTRACKED,
-				),
+					(r) => r.type !== Status.UNTRACKED
+				)
 			);
 		}
 

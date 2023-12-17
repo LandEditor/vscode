@@ -53,35 +53,64 @@ export class ElectronWebviewElement extends WebviewElement {
 		@ITunnelService tunnelService: ITunnelService,
 		@IFileService fileService: IFileService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ILogService logService: ILogService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IMainProcessService mainProcessService: IMainProcessService,
 		@INotificationService notificationService: INotificationService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@IAccessibilityService accessibilityService: IAccessibilityService
 	) {
-		super(initInfo, webviewThemeDataProvider,
-			configurationService, contextMenuService, notificationService, environmentService,
-			fileService, logService, remoteAuthorityResolverService, telemetryService, tunnelService, instantiationService, accessibilityService);
+		super(
+			initInfo,
+			webviewThemeDataProvider,
+			configurationService,
+			contextMenuService,
+			notificationService,
+			environmentService,
+			fileService,
+			logService,
+			remoteAuthorityResolverService,
+			telemetryService,
+			tunnelService,
+			instantiationService,
+			accessibilityService
+		);
 
-		this._webviewKeyboardHandler = new WindowIgnoreMenuShortcutsManager(configurationService, mainProcessService, _nativeHostService);
+		this._webviewKeyboardHandler = new WindowIgnoreMenuShortcutsManager(
+			configurationService,
+			mainProcessService,
+			_nativeHostService
+		);
 
-		this._webviewMainService = ProxyChannel.toService<IWebviewManagerService>(mainProcessService.getChannel('webview'));
+		this._webviewMainService =
+			ProxyChannel.toService<IWebviewManagerService>(
+				mainProcessService.getChannel("webview")
+			);
 
 		if (initInfo.options.enableFindWidget) {
-			this._register(this.onDidHtmlChange((newContent) => {
-				if (this._findStarted && this._cachedHtmlContent !== newContent) {
-					this.stopFind(false);
-					this._cachedHtmlContent = newContent;
-				}
-			}));
+			this._register(
+				this.onDidHtmlChange((newContent) => {
+					if (
+						this._findStarted &&
+						this._cachedHtmlContent !== newContent
+					) {
+						this.stopFind(false);
+						this._cachedHtmlContent = newContent;
+					}
+				})
+			);
 
-			this._register(this._webviewMainService.onFoundInFrame((result) => {
-				this._hasFindResult.fire(result.matches > 0);
-			}));
+			this._register(
+				this._webviewMainService.onFoundInFrame((result) => {
+					this._hasFindResult.fire(result.matches > 0);
+				})
+			);
 		}
 	}
 
@@ -97,7 +126,7 @@ export class ElectronWebviewElement extends WebviewElement {
 	}
 
 	protected override streamToBuffer(
-		stream: VSBufferReadableStream,
+		stream: VSBufferReadableStream
 	): Promise<ArrayBufferLike> {
 		// Join buffers from stream without using the Node.js backing pool.
 		// This lets us transfer the resulting buffer to the webview.
@@ -106,7 +135,7 @@ export class ElectronWebviewElement extends WebviewElement {
 			(buffers: readonly VSBuffer[]) => {
 				const totalLength = buffers.reduce(
 					(prev, curr) => prev + curr.byteLength,
-					0,
+					0
 				);
 				const ret = new ArrayBuffer(totalLength);
 				const view = new Uint8Array(ret);
@@ -116,7 +145,7 @@ export class ElectronWebviewElement extends WebviewElement {
 					offset += element.byteLength;
 				}
 				return ret;
-			},
+			}
 		);
 	}
 
@@ -145,7 +174,7 @@ export class ElectronWebviewElement extends WebviewElement {
 				{ windowId: this._nativeHostService.windowId },
 				this.id,
 				value,
-				options,
+				options
 			);
 		}
 	}
@@ -168,7 +197,7 @@ export class ElectronWebviewElement extends WebviewElement {
 				{ windowId: this._nativeHostService.windowId },
 				this.id,
 				value,
-				options,
+				options
 			);
 		});
 	}
@@ -184,7 +213,7 @@ export class ElectronWebviewElement extends WebviewElement {
 			this.id,
 			{
 				keepSelection,
-			},
+			}
 		);
 		this._onDidStopFind.fire();
 	}

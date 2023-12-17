@@ -33,7 +33,7 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 	}
 	public async get(
 		resource: URI,
-		viewType: string,
+		viewType: string
 	): Promise<ICustomEditorModel | undefined> {
 		const key = this.key(resource, viewType);
 		const entry = this._references.get(key);
@@ -42,7 +42,7 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 
 	public tryRetain(
 		resource: URI,
-		viewType: string,
+		viewType: string
 	): Promise<IReference<ICustomEditorModel>> | undefined {
 		const key = this.key(resource, viewType);
 
@@ -69,7 +69,7 @@ export class CustomEditorModelManager implements ICustomEditorModelManager {
 	public add(
 		resource: URI,
 		viewType: string,
-		model: Promise<ICustomEditorModel>,
+		model: Promise<ICustomEditorModel>
 	): Promise<IReference<ICustomEditorModel>> {
 		const key = this.key(resource, viewType);
 		const existing = this._references.get(key);

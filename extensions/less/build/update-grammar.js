@@ -17,7 +17,7 @@ async function updateGrammars() {
 		"Syntaxes/Better%20Less.tmLanguage",
 		"./syntaxes/less.tmLanguage.json",
 		adaptLess,
-		"master",
+		"master"
 	);
 }
 

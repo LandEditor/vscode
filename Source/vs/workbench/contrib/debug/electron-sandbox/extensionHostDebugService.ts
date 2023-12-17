@@ -13,5 +13,5 @@ import {
 registerMainProcessRemoteService(
 	IExtensionHostDebugService,
 	ExtensionHostDebugBroadcastChannel.ChannelName,
-	{ channelClientCtor: ExtensionHostDebugChannelClient },
+	{ channelClientCtor: ExtensionHostDebugChannelClient }
 );

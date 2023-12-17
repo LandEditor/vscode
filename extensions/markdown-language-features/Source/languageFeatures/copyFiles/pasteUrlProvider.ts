@@ -21,7 +21,7 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 		document: vscode.TextDocument,
 		ranges: readonly vscode.Range[],
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentPasteEdit | undefined> {
 		const pasteUrlSetting = getPasteUrlAsFormattedLinkSetting(document);
 		if (pasteUrlSetting === PasteUrlAsFormattedLink.Never) {
@@ -44,7 +44,7 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 			ranges,
 			uriText,
 			true,
-			pasteUrlSetting === PasteUrlAsFormattedLink.Smart,
+			pasteUrlSetting === PasteUrlAsFormattedLink.Smart
 		);
 		if (!pasteEdit) {
 			return;
@@ -63,6 +63,6 @@ export function registerLinkPasteSupport(selector: vscode.DocumentSelector) {
 	return vscode.languages.registerDocumentPasteEditProvider(
 		selector,
 		new PasteUrlEditProvider(),
-		PasteUrlEditProvider,
+		PasteUrlEditProvider
 	);
 }

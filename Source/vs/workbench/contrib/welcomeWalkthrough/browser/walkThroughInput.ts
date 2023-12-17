@@ -25,7 +25,7 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 class WalkThroughModel extends EditorModel {
 	constructor(
 		private mainRef: string,
-		private snippetRefs: IReference<ITextEditorModel>[],
+		private snippetRefs: IReference<ITextEditorModel>[]
 	) {
 		super();
 	}
@@ -52,7 +52,7 @@ export interface WalkThroughInputOptions {
 	readonly telemetryFrom: string;
 	readonly onReady?: (
 		container: HTMLElement,
-		contentDisposables: DisposableStore,
+		contentDisposables: DisposableStore
 	) => void;
 	readonly layout?: (dimension: Dimension) => void;
 }
@@ -73,8 +73,10 @@ export class WalkThroughInput extends EditorInput {
 
 	constructor(
 		private readonly options: WalkThroughInputOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService
 	) {
 		super();
 	}
@@ -118,7 +120,7 @@ export class WalkThroughInput extends EditorInput {
 		if (!this.promise) {
 			this.promise = requireToContent(
 				this.instantiationService,
-				this.options.resource,
+				this.options.resource
 			).then((content) => {
 				if (this.resource.path.endsWith(".html")) {
 					return new WalkThroughModel(content, []);
@@ -135,15 +137,15 @@ export class WalkThroughInput extends EditorInput {
 					});
 					snippets.push(
 						this.textModelResolverService.createModelReference(
-							resource,
-						),
+							resource
+						)
 					);
 					return `<div id="snippet-${resource.fragment}" class="walkThroughEditorContainer" ></div>`;
 				};
 				content = marked(content, { renderer });
 
 				return Promise.all(snippets).then(
-					(refs) => new WalkThroughModel(content, refs),
+					(refs) => new WalkThroughModel(content, refs)
 				);
 			});
 		}

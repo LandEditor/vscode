@@ -87,7 +87,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 						{ type: FileChangeType.DELETED, resource },
 					]);
 				}
-			}),
+			})
 		);
 
 		disposable.add(
@@ -107,7 +107,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 				this.changeEmitter.fire([
 					{ resource, type: FileChangeType.UPDATED },
 				]);
-			}),
+			})
 		);
 
 		return disposable;
@@ -129,7 +129,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	public mkdir(): never {
 		throw createFileSystemProviderError(
 			`Not allowed`,
-			FileSystemProviderErrorCode.NoPermissions,
+			FileSystemProviderErrorCode.NoPermissions
 		);
 	}
 
@@ -137,7 +137,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	public readdir(): never {
 		throw createFileSystemProviderError(
 			`Not allowed`,
-			FileSystemProviderErrorCode.NoPermissions,
+			FileSystemProviderErrorCode.NoPermissions
 		);
 	}
 
@@ -145,7 +145,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	public delete(): never {
 		throw createFileSystemProviderError(
 			`Not allowed`,
-			FileSystemProviderErrorCode.NoPermissions,
+			FileSystemProviderErrorCode.NoPermissions
 		);
 	}
 
@@ -153,7 +153,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	public rename(): never {
 		throw createFileSystemProviderError(
 			`Not allowed`,
-			FileSystemProviderErrorCode.NoPermissions,
+			FileSystemProviderErrorCode.NoPermissions
 		);
 	}
 
@@ -183,7 +183,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		if (!offset) {
 			throw createFileSystemProviderError(
 				`Range must be present to read a file`,
-				FileSystemProviderErrorCode.FileNotFound,
+				FileSystemProviderErrorCode.FileNotFound
 			);
 		}
 
@@ -202,7 +202,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		if (!offset) {
 			throw createFileSystemProviderError(
 				`Range must be present to read a file`,
-				FileSystemProviderErrorCode.FileNotFound,
+				FileSystemProviderErrorCode.FileNotFound
 			);
 		}
 
@@ -223,13 +223,13 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
 				`No file with that descriptor open`,
-				FileSystemProviderErrorCode.Unavailable,
+				FileSystemProviderErrorCode.Unavailable
 			);
 		}
 
@@ -245,7 +245,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 					} else {
 						throw createFileSystemProviderError(
 							range.error,
-							FileSystemProviderErrorCode.Unknown,
+							FileSystemProviderErrorCode.Unknown
 						);
 					}
 				case MemoryRangeType.Valid: {
@@ -254,8 +254,8 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 						start,
 						Math.min(
 							range.data.byteLength,
-							start + (length - readSoFar),
-						),
+							start + (length - readSoFar)
+						)
 					);
 					data.set(toWrite.buffer, offset + readSoFar);
 					readSoFar += toWrite.byteLength;
@@ -275,19 +275,19 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
 				`No file with that descriptor open`,
-				FileSystemProviderErrorCode.Unavailable,
+				FileSystemProviderErrorCode.Unavailable
 			);
 		}
 
 		return memory.region.write(
 			pos,
-			VSBuffer.wrap(data).slice(offset, offset + length),
+			VSBuffer.wrap(data).slice(offset, offset + length)
 		);
 	}
 
@@ -295,7 +295,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		if (uri.scheme !== DEBUG_MEMORY_SCHEME) {
 			throw createFileSystemProviderError(
 				`Cannot open file with scheme ${uri.scheme}`,
-				FileSystemProviderErrorCode.FileNotFound,
+				FileSystemProviderErrorCode.FileNotFound
 			);
 		}
 
@@ -303,7 +303,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		if (!session) {
 			throw createFileSystemProviderError(
 				`Debug session not found`,
-				FileSystemProviderErrorCode.FileNotFound,
+				FileSystemProviderErrorCode.FileNotFound
 			);
 		}
 
@@ -339,7 +339,7 @@ class MemoryRegionView extends Disposable implements IMemoryRegion {
 
 	constructor(
 		private readonly parent: IMemoryRegion,
-		public readonly range: { fromOffset: number; toOffset: number },
+		public readonly range: { fromOffset: number; toOffset: number }
 	) {
 		super();
 		this.writable = parent.writable;
@@ -350,17 +350,17 @@ class MemoryRegionView extends Disposable implements IMemoryRegion {
 				const fromOffset = clamp(
 					e.fromOffset - range.fromOffset,
 					0,
-					this.width,
+					this.width
 				);
 				const toOffset = clamp(
 					e.toOffset - range.fromOffset,
 					0,
-					this.width,
+					this.width
 				);
 				if (toOffset > fromOffset) {
 					this.invalidateEmitter.fire({ fromOffset, toOffset });
 				}
-			}),
+			})
 		);
 	}
 
@@ -371,7 +371,7 @@ class MemoryRegionView extends Disposable implements IMemoryRegion {
 
 		return this.parent.read(
 			this.range.fromOffset + fromOffset,
-			this.range.fromOffset + Math.min(toOffset, this.width),
+			this.range.fromOffset + Math.min(toOffset, this.width)
 		);
 	}
 

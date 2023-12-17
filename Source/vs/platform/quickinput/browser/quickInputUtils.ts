@@ -21,7 +21,7 @@ const iconPathToClass: Record<string, string> = {};
 const iconClassGenerator = new IdGenerator("quick-input-button-icon-");
 
 export function getIconClass(
-	iconPath: { dark: URI; light?: URI } | undefined,
+	iconPath: { dark: URI; light?: URI } | undefined
 ): string | undefined {
 	if (!iconPath) {
 		return undefined;
@@ -35,13 +35,11 @@ export function getIconClass(
 		iconClass = iconClassGenerator.nextId();
 		dom.createCSSRule(
 			`.${iconClass}, .hc-light .${iconClass}`,
-			`background-image: ${dom.asCSSUrl(
-				iconPath.light || iconPath.dark,
-			)}`,
+			`background-image: ${dom.asCSSUrl(iconPath.light || iconPath.dark)}`
 		);
 		dom.createCSSRule(
 			`.vs-dark .${iconClass}, .hc-black .${iconClass}`,
-			`background-image: ${dom.asCSSUrl(iconPath.dark)}`,
+			`background-image: ${dom.asCSSUrl(iconPath.dark)}`
 		);
 		iconPathToClass[key] = iconClass;
 	}
@@ -55,7 +53,7 @@ export function renderQuickInputDescription(
 	actionHandler: {
 		callback: (content: string) => void;
 		disposables: DisposableStore;
-	},
+	}
 ) {
 	dom.reset(container);
 	const parsed = parseLinkedText(description);
@@ -70,7 +68,7 @@ export function renderQuickInputDescription(
 				title = localize(
 					"executeCommand",
 					"Click to execute command '{0}'",
-					node.href.substring("command:".length),
+					node.href.substring("command:".length)
 				);
 			} else if (!title) {
 				title = node.href;
@@ -79,7 +77,7 @@ export function renderQuickInputDescription(
 			const anchor = dom.$(
 				"a",
 				{ href: node.href, title, tabIndex: tabIndex++ },
-				node.label,
+				node.label
 			);
 			anchor.style.textDecoration = "underline";
 			const handleOpen = (e: unknown) => {
@@ -91,10 +89,10 @@ export function renderQuickInputDescription(
 			};
 
 			const onClick = actionHandler.disposables.add(
-				new DomEmitter(anchor, dom.EventType.CLICK),
+				new DomEmitter(anchor, dom.EventType.CLICK)
 			).event;
 			const onKeydown = actionHandler.disposables.add(
-				new DomEmitter(anchor, dom.EventType.KEY_DOWN),
+				new DomEmitter(anchor, dom.EventType.KEY_DOWN)
 			).event;
 			const onSpaceOrEnter = Event.chain(onKeydown, ($) =>
 				$.filter((e) => {
@@ -104,18 +102,18 @@ export function renderQuickInputDescription(
 						event.equals(KeyCode.Space) ||
 						event.equals(KeyCode.Enter)
 					);
-				}),
+				})
 			);
 
 			actionHandler.disposables.add(Gesture.addTarget(anchor));
 			const onTap = actionHandler.disposables.add(
-				new DomEmitter(anchor, GestureEventType.Tap),
+				new DomEmitter(anchor, GestureEventType.Tap)
 			).event;
 
 			Event.any(onClick, onTap, onSpaceOrEnter)(
 				handleOpen,
 				null,
-				actionHandler.disposables,
+				actionHandler.disposables
 			);
 			container.appendChild(anchor);
 		}

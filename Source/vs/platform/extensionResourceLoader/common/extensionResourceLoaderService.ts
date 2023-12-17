@@ -30,9 +30,15 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 		@IProductService productService: IProductService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IRequestService private readonly _requestService: IRequestService,
+		@IRequestService private readonly _requestService: IRequestService
 	) {
-		super(fileService, storageService, productService, environmentService, configurationService);
+		super(
+			fileService,
+			storageService,
+			productService,
+			environmentService,
+			configurationService
+		);
 	}
 
 	async readExtensionResource(uri: URI): Promise<string> {
@@ -40,7 +46,7 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 			const headers = await this.getExtensionGalleryRequestHeaders();
 			const requestContext = await this._requestService.request(
 				{ url: uri.toString(), headers },
-				CancellationToken.None,
+				CancellationToken.None
 			);
 			return (await asTextOrError(requestContext)) || "";
 		}
@@ -52,5 +58,5 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 registerSingleton(
 	IExtensionResourceLoaderService,
 	ExtensionResourceLoaderService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

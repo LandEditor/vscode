@@ -51,11 +51,12 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
-		@IFileService fileService: IFileService,
+		@IFileService fileService: IFileService
 	) {
 		super(
 			id,
@@ -66,7 +67,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 			themeService,
 			editorService,
 			editorGroupService,
-			fileService,
+			fileService
 		);
 	}
 
@@ -74,7 +75,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		input: AbstractTextResourceEditorInput,
 		options: ITextEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		// Set input and resolve
 		await super.setInput(input, options, context, token);
@@ -118,7 +119,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 		// a resolved model might have more specific information about being
 		// readonly or not that the input did not have.
 		control.updateOptions(
-			this.getReadonlyConfiguration(resolvedModel.isReadonly()),
+			this.getReadonlyConfiguration(resolvedModel.isReadonly())
 		);
 	}
 
@@ -140,7 +141,7 @@ export abstract class AbstractTextResourceEditor extends AbstractTextCodeEditor<
 					lineNumber: lastLine,
 					column: model.getLineMaxColumn(lastLine),
 				},
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 		}
 	}
@@ -168,7 +169,8 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
@@ -176,12 +178,22 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IFileService fileService: IFileService
 	) {
-		super(TextResourceEditor.ID, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorGroupService, editorService, fileService);
+		super(
+			TextResourceEditor.ID,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorGroupService,
+			editorService,
+			fileService
+		);
 	}
 
 	protected override createEditorControl(
 		parent: HTMLElement,
-		configuration: ICodeEditorOptions,
+		configuration: ICodeEditorOptions
 	): void {
 		super.createEditorControl(parent, configuration);
 
@@ -190,7 +202,7 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 		const control = this.editorControl;
 		if (control) {
 			this._register(
-				control.onDidPaste((e) => this.onDidEditorPaste(e, control)),
+				control.onDidPaste((e) => this.onDidEditorPaste(e, control))
 			);
 		}
 	}
@@ -250,8 +262,8 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 						.getLineContent(1)
 						.substr(
 							0,
-							ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT,
-						),
+							ModelConstants.FIRST_LINE_DETECTION_LENGTH_LIMIT
+						)
 				) ?? undefined;
 			if (guess) {
 				candidateLanguage = { id: guess, source: "guess" };
@@ -271,14 +283,14 @@ export class TextResourceEditor extends AbstractTextResourceEditor {
 				this.input.model.setLanguageId(candidateLanguage.id);
 			} else {
 				textModel.setLanguage(
-					this.languageService.createById(candidateLanguage.id),
+					this.languageService.createById(candidateLanguage.id)
 				);
 			}
 
 			const opts = this.modelService.getCreationOptions(
 				textModel.getLanguageId(),
 				textModel.uri,
-				textModel.isForSimpleWidget,
+				textModel.isForSimpleWidget
 			);
 			textModel.detectIndentation(opts.insertSpaces, opts.tabSize);
 		}

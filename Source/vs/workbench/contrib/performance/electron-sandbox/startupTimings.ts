@@ -28,17 +28,28 @@ export class NativeStartupTimings
 	constructor(
 		@IFileService private readonly _fileService: IFileService,
 		@ITimerService private readonly _timerService: ITimerService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IEditorService editorService: IEditorService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IUpdateService updateService: IUpdateService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@IProductService private readonly _productService: IProductService,
-		@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustService: IWorkspaceTrustManagementService
 	) {
-		super(editorService, paneCompositeService, lifecycleService, updateService, workspaceTrustService);
+		super(
+			editorService,
+			paneCompositeService,
+			lifecycleService,
+			updateService,
+			workspaceTrustService
+		);
 
 		this._report().catch(onUnexpectedError);
 	}
@@ -49,7 +60,7 @@ export class NativeStartupTimings
 	}
 
 	private async _appendStartupTimes(
-		standardStartupError: string | undefined,
+		standardStartupError: string | undefined
 	) {
 		const appendTo = this._environmentService.args["prof-append-timers"];
 		const durationMarkers =
@@ -94,7 +105,7 @@ export class NativeStartupTimings
 						if (markers.length === 2) {
 							duration = this._timerService.getDuration(
 								markers[0],
-								markers[1],
+								markers[1]
 							);
 						}
 					}
@@ -108,7 +119,7 @@ export class NativeStartupTimings
 				if (durationMarkersFile) {
 					await this.appendContent(
 						URI.file(durationMarkersFile),
-						durationsContent,
+						durationsContent
 					);
 				} else {
 					console.log(durationsContent);

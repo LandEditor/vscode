@@ -58,7 +58,7 @@
 							o,
 							function (r) {
 								return e[r];
-							}.bind(null, o),
+							}.bind(null, o)
 						);
 				return n;
 			}),
@@ -67,10 +67,10 @@
 					e && e.__esModule
 						? function () {
 								return e.default;
-						  }
+							}
 						: function () {
 								return e;
-						  };
+							};
 				return t.d(r, "a", r), r;
 			}),
 			(t.o = function (e, r) {
@@ -92,11 +92,11 @@
 							? function () {
 									var e = Array.prototype.slice.call(
 										arguments,
-										0,
+										0
 									);
 									e.unshift("SEMVER"),
 										console.log.apply(console, e);
-							  }
+								}
 							: function () {}),
 					(r.SEMVER_SPEC_VERSION = "2.0.0");
 				var o = 256,
@@ -223,7 +223,7 @@
 						throw new TypeError("Invalid Version: " + e);
 					if (e.length > o)
 						throw new TypeError(
-							"version is longer than " + o + " characters",
+							"version is longer than " + o + " characters"
 						);
 					if (!(this instanceof H)) return new H(e, r);
 					n("SemVer", e, r), (this.loose = r);
@@ -248,7 +248,7 @@
 									if (r >= 0 && r < i) return r;
 								}
 								return e;
-						  }))
+							}))
 						: (this.prerelease = []),
 						(this.build = t[5] ? t[5].split(".") : []),
 						this.format();
@@ -371,6 +371,7 @@
 									for (
 										var t = this.prerelease.length;
 										--t >= 0;
+
 									)
 										"number" == typeof this.prerelease[t] &&
 											(this.prerelease[t]++, (t = -2));
@@ -379,12 +380,12 @@
 								r &&
 									(this.prerelease[0] === r
 										? isNaN(this.prerelease[1]) &&
-										  (this.prerelease = [r, 0])
+											(this.prerelease = [r, 0])
 										: (this.prerelease = [r, 0]));
 								break;
 							default:
 								throw new Error(
-									"invalid increment argument: " + e,
+									"invalid increment argument: " + e
 								);
 						}
 						return this.format(), (this.raw = this.version), this;
@@ -572,20 +573,20 @@
 						(r = ue(t)
 							? ""
 							: ue(n)
-							  ? ">=" + t + ".0.0"
-							  : ue(o)
-								  ? ">=" + t + "." + n + ".0"
-								  : ">=" + r) +
+								? ">=" + t + ".0.0"
+								: ue(o)
+									? ">=" + t + "." + n + ".0"
+									: ">=" + r) +
 						" " +
 						(a = ue(u)
 							? ""
 							: ue(c)
-							  ? "<" + (+u + 1) + ".0.0"
-							  : ue(p)
-								  ? "<" + u + "." + (+c + 1) + ".0"
-								  : f
-									  ? "<=" + u + "." + c + "." + p + "-" + f
-									  : "<=" + a)
+								? "<" + (+u + 1) + ".0.0"
+								: ue(p)
+									? "<" + u + "." + (+c + 1) + ".0"
+									: f
+										? "<=" + u + "." + c + "." + p + "-" + f
+										: "<=" + a)
 					).trim();
 				}
 				function pe(e, r) {
@@ -629,7 +630,7 @@
 							break;
 						default:
 							throw new TypeError(
-								'Must provide a hilo val of "<" or ">"',
+								'Must provide a hilo val of "<" or ">"'
 							);
 					}
 					if (fe(e, r, n)) return !1;
@@ -742,7 +743,7 @@
 							n("comparator trim", e, s[z]),
 							(e = (e = (e = e.replace(s[M], "$1~")).replace(
 								s[L],
-								"$1^",
+								"$1^"
 							))
 								.split(/\s+/)
 								.join(" "));
@@ -760,7 +761,7 @@
 													.map(function (e) {
 														return (function (
 															e,
-															r,
+															r
 														) {
 															n("caret", e, r);
 															var t = r
@@ -773,7 +774,7 @@
 																	t,
 																	o,
 																	i,
-																	s,
+																	s
 																) {
 																	var a;
 																	return (
@@ -784,150 +785,150 @@
 																			t,
 																			o,
 																			i,
-																			s,
+																			s
 																		),
 																		ue(t)
 																			? (a =
 																					"")
 																			: ue(
-																						o,
+																						o
 																				  )
-																			  ? (a =
+																				? (a =
 																						">=" +
 																						t +
 																						".0.0 <" +
 																						(+t +
 																							1) +
 																						".0.0")
-																			  : ue(
-																							i,
+																				: ue(
+																							i
 																					  )
-																				  ? (a =
+																					? (a =
 																							"0" ===
 																							t
 																								? ">=" +
-																								  t +
-																								  "." +
-																								  o +
-																								  ".0 <" +
-																								  t +
-																								  "." +
-																								  (+o +
+																									t +
+																									"." +
+																									o +
+																									".0 <" +
+																									t +
+																									"." +
+																									(+o +
 																										1) +
-																								  ".0"
+																									".0"
 																								: ">=" +
-																								  t +
-																								  "." +
-																								  o +
-																								  ".0 <" +
-																								  (+t +
+																									t +
+																									"." +
+																									o +
+																									".0 <" +
+																									(+t +
 																										1) +
-																								  ".0.0")
-																				  : s
-																					  ? (n(
+																									".0.0")
+																					: s
+																						? (n(
 																								"replaceCaret pr",
-																								s,
-																						  ),
-																						  "-" !==
+																								s
+																							),
+																							"-" !==
 																								s.charAt(
-																									0,
+																									0
 																								) &&
 																								(s =
 																									"-" +
 																									s),
-																						  (a =
+																							(a =
 																								"0" ===
 																								t
 																									? "0" ===
-																									  o
+																										o
 																										? ">=" +
-																										  t +
-																										  "." +
-																										  o +
-																										  "." +
-																										  i +
-																										  s +
-																										  " <" +
-																										  t +
-																										  "." +
-																										  o +
-																										  "." +
-																										  (+i +
+																											t +
+																											"." +
+																											o +
+																											"." +
+																											i +
+																											s +
+																											" <" +
+																											t +
+																											"." +
+																											o +
+																											"." +
+																											(+i +
 																												1)
 																										: ">=" +
-																										  t +
-																										  "." +
-																										  o +
-																										  "." +
-																										  i +
-																										  s +
-																										  " <" +
-																										  t +
-																										  "." +
-																										  (+o +
+																											t +
+																											"." +
+																											o +
+																											"." +
+																											i +
+																											s +
+																											" <" +
+																											t +
+																											"." +
+																											(+o +
 																												1) +
-																										  ".0"
+																											".0"
 																									: ">=" +
-																									  t +
-																									  "." +
-																									  o +
-																									  "." +
-																									  i +
-																									  s +
-																									  " <" +
-																									  (+t +
+																										t +
+																										"." +
+																										o +
+																										"." +
+																										i +
+																										s +
+																										" <" +
+																										(+t +
 																											1) +
-																									  ".0.0"))
-																					  : (n(
-																								"no pr",
-																						  ),
-																						  (a =
+																										".0.0"))
+																						: (n(
+																								"no pr"
+																							),
+																							(a =
 																								"0" ===
 																								t
 																									? "0" ===
-																									  o
+																										o
 																										? ">=" +
-																										  t +
-																										  "." +
-																										  o +
-																										  "." +
-																										  i +
-																										  " <" +
-																										  t +
-																										  "." +
-																										  o +
-																										  "." +
-																										  (+i +
+																											t +
+																											"." +
+																											o +
+																											"." +
+																											i +
+																											" <" +
+																											t +
+																											"." +
+																											o +
+																											"." +
+																											(+i +
 																												1)
 																										: ">=" +
-																										  t +
-																										  "." +
-																										  o +
-																										  "." +
-																										  i +
-																										  " <" +
-																										  t +
-																										  "." +
-																										  (+o +
+																											t +
+																											"." +
+																											o +
+																											"." +
+																											i +
+																											" <" +
+																											t +
+																											"." +
+																											(+o +
 																												1) +
-																										  ".0"
+																											".0"
 																									: ">=" +
-																									  t +
-																									  "." +
-																									  o +
-																									  "." +
-																									  i +
-																									  " <" +
-																									  (+t +
+																										t +
+																										"." +
+																										o +
+																										"." +
+																										i +
+																										" <" +
+																										(+t +
 																											1) +
-																									  ".0.0")),
+																										".0.0")),
 																		n(
 																			"caret return",
-																			a,
+																			a
 																		),
 																		a
 																	);
-																},
+																}
 															);
 														})(e, r);
 													})
@@ -941,7 +942,7 @@
 													.map(function (e) {
 														return (function (
 															e,
-															r,
+															r
 														) {
 															var t = r
 																? s[P]
@@ -953,7 +954,7 @@
 																	t,
 																	o,
 																	i,
-																	s,
+																	s
 																) {
 																	var a;
 																	return (
@@ -964,25 +965,25 @@
 																			t,
 																			o,
 																			i,
-																			s,
+																			s
 																		),
 																		ue(t)
 																			? (a =
 																					"")
 																			: ue(
-																						o,
+																						o
 																				  )
-																			  ? (a =
+																				? (a =
 																						">=" +
 																						t +
 																						".0.0 <" +
 																						(+t +
 																							1) +
 																						".0.0")
-																			  : ue(
-																							i,
+																				: ue(
+																							i
 																					  )
-																				  ? (a =
+																					? (a =
 																							">=" +
 																							t +
 																							"." +
@@ -993,19 +994,19 @@
 																							(+o +
 																								1) +
 																							".0")
-																				  : s
-																					  ? (n(
+																					: s
+																						? (n(
 																								"replaceTilde pr",
-																								s,
-																						  ),
-																						  "-" !==
+																								s
+																							),
+																							"-" !==
 																								s.charAt(
-																									0,
+																									0
 																								) &&
 																								(s =
 																									"-" +
 																									s),
-																						  (a =
+																							(a =
 																								">=" +
 																								t +
 																								"." +
@@ -1019,7 +1020,7 @@
 																								(+o +
 																									1) +
 																								".0"))
-																					  : (a =
+																						: (a =
 																								">=" +
 																								t +
 																								"." +
@@ -1034,11 +1035,11 @@
 																								".0"),
 																		n(
 																			"tilde return",
-																			a,
+																			a
 																		),
 																		a
 																	);
-																},
+																}
 															);
 														})(e, r);
 													})
@@ -1053,7 +1054,7 @@
 														.map(function (e) {
 															return (function (
 																e,
-																r,
+																r
 															) {
 																e = e.trim();
 																var t = r
@@ -1067,7 +1068,7 @@
 																		o,
 																		i,
 																		s,
-																		a,
+																		a
 																	) {
 																		n(
 																			"xRange",
@@ -1077,21 +1078,21 @@
 																			o,
 																			i,
 																			s,
-																			a,
+																			a
 																		);
 																		var u =
 																				ue(
-																					o,
+																					o
 																				),
 																			c =
 																				u ||
 																				ue(
-																					i,
+																					i
 																				),
 																			p =
 																				c ||
 																				ue(
-																					s,
+																					s
 																				);
 																		return (
 																			"=" ===
@@ -1109,53 +1110,53 @@
 																							: "*")
 																				: t &&
 																					  p
-																				  ? (c &&
+																					? (c &&
 																							(i = 0),
-																					  p &&
+																						p &&
 																							(s = 0),
-																					  ">" ===
-																					  t
+																						">" ===
+																						t
 																							? ((t =
 																									">="),
-																							  c
+																								c
 																									? ((o =
 																											+o +
 																											1),
-																									  (i = 0),
-																									  (s = 0))
+																										(i = 0),
+																										(s = 0))
 																									: p &&
-																									  ((i =
+																										((i =
 																											+i +
 																											1),
-																									  (s = 0)))
+																										(s = 0)))
 																							: "<=" ===
 																									t &&
-																							  ((t =
+																								((t =
 																									"<"),
-																							  c
+																								c
 																									? (o =
 																											+o +
 																											1)
 																									: (i =
 																											+i +
 																											1)),
-																					  (r =
+																						(r =
 																							t +
 																							o +
 																							"." +
 																							i +
 																							"." +
 																							s))
-																				  : c
-																					  ? (r =
+																					: c
+																						? (r =
 																								">=" +
 																								o +
 																								".0.0 <" +
 																								(+o +
 																									1) +
 																								".0.0")
-																					  : p &&
-																						  (r =
+																						: p &&
+																							(r =
 																								">=" +
 																								o +
 																								"." +
@@ -1168,11 +1169,11 @@
 																								".0"),
 																			n(
 																				"xRange return",
-																				r,
+																				r
 																			),
 																			r
 																		);
-																	},
+																	}
 																);
 															})(e, r);
 														})
@@ -1305,8 +1306,8 @@
 										"." +
 										(r[2] || "0") +
 										"." +
-										(r[3] || "0"),
-							  );
+										(r[3] || "0")
+								);
 					});
 			}).call(this, t(1));
 		},

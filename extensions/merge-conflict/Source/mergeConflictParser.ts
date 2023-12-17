@@ -22,7 +22,7 @@ interface IScanMergedConflict {
 export class MergeConflictParser {
 	static scanDocument(
 		document: vscode.TextDocument,
-		telemetryReporter: TelemetryReporter,
+		telemetryReporter: TelemetryReporter
 	): interfaces.IDocumentMergeConflict[] {
 		// Scan each line in the document, we already know there is at least a <<<<<<< and
 		// >>>>>> marker within the document, we need to group these into conflict ranges.
@@ -81,7 +81,7 @@ export class MergeConflictParser {
 				const completeDescriptor =
 					MergeConflictParser.scanItemTolMergeConflictDescriptor(
 						document,
-						currentConflict,
+						currentConflict
 					);
 
 				if (completeDescriptor !== null) {
@@ -98,13 +98,13 @@ export class MergeConflictParser {
 			.filter(Boolean)
 			.map(
 				(descriptor) =>
-					new DocumentMergeConflict(descriptor, telemetryReporter),
+					new DocumentMergeConflict(descriptor, telemetryReporter)
 			);
 	}
 
 	private static scanItemTolMergeConflictDescriptor(
 		document: vscode.TextDocument,
-		scanned: IScanMergedConflict,
+		scanned: IScanMergedConflict
 	): interfaces.IDocumentMergeConflictDescriptor | null {
 		// Validate we have all the required lines within the scan item.
 		if (!scanned.startHeader || !scanned.splitter || !scanned.endFooter) {
@@ -127,16 +127,16 @@ export class MergeConflictParser {
 					MergeConflictParser.shiftBackOneCharacter(
 						document,
 						tokenAfterCurrentBlock.range.start,
-						scanned.startHeader.rangeIncludingLineBreak.end,
-					),
+						scanned.startHeader.rangeIncludingLineBreak.end
+					)
 				),
 				// Current content is range between header (shifted for linebreak) and splitter or common ancestors mark start
 				content: new vscode.Range(
 					scanned.startHeader.rangeIncludingLineBreak.end,
-					tokenAfterCurrentBlock.range.start,
+					tokenAfterCurrentBlock.range.start
 				),
 				name: scanned.startHeader.text.substring(
-					startHeaderMarker.length + 1,
+					startHeaderMarker.length + 1
 				),
 			},
 			commonAncestors: scanned.commonAncestors.map(
@@ -150,20 +150,20 @@ export class MergeConflictParser {
 							MergeConflictParser.shiftBackOneCharacter(
 								document,
 								nextTokenLine.range.start,
-								currentTokenLine.rangeIncludingLineBreak.end,
-							),
+								currentTokenLine.rangeIncludingLineBreak.end
+							)
 						),
 						// Each common ancestors block is range between one common ancestors token
 						// (shifted for linebreak) and start of next common ancestors token or splitter
 						content: new vscode.Range(
 							currentTokenLine.rangeIncludingLineBreak.end,
-							nextTokenLine.range.start,
+							nextTokenLine.range.start
 						),
 						name: currentTokenLine.text.substring(
-							commonAncestorsMarker.length + 1,
+							commonAncestorsMarker.length + 1
 						),
 					};
-				},
+				}
 			),
 			splitter: scanned.splitter.range,
 			incoming: {
@@ -173,22 +173,22 @@ export class MergeConflictParser {
 					MergeConflictParser.shiftBackOneCharacter(
 						document,
 						scanned.endFooter.range.start,
-						scanned.splitter.rangeIncludingLineBreak.end,
-					),
+						scanned.splitter.rangeIncludingLineBreak.end
+					)
 				),
 				// Incoming content is range between splitter (shifted for linebreak) and footer start
 				content: new vscode.Range(
 					scanned.splitter.rangeIncludingLineBreak.end,
-					scanned.endFooter.range.start,
+					scanned.endFooter.range.start
 				),
 				name: scanned.endFooter.text.substring(
-					endFooterMarker.length + 1,
+					endFooterMarker.length + 1
 				),
 			},
 			// Entire range is between current header start and incoming header end (including line break)
 			range: new vscode.Range(
 				scanned.startHeader.range.start,
-				scanned.endFooter.rangeIncludingLineBreak.end,
+				scanned.endFooter.rangeIncludingLineBreak.end
 			),
 		};
 	}
@@ -207,7 +207,7 @@ export class MergeConflictParser {
 	private static shiftBackOneCharacter(
 		document: vscode.TextDocument,
 		range: vscode.Position,
-		unlessEqual: vscode.Position,
+		unlessEqual: vscode.Position
 	): vscode.Position {
 		if (range.isEqual(unlessEqual)) {
 			return range;

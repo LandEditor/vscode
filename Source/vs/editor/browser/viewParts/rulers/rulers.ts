@@ -26,7 +26,7 @@ export class Rulers extends ViewPart {
 	constructor(context: ViewContext) {
 		super(context);
 		this.domNode = createFastDomNode<HTMLElement>(
-			document.createElement("div"),
+			document.createElement("div")
 		);
 		this.domNode.setAttribute("role", "presentation");
 		this.domNode.setAttribute("aria-hidden", "true");
@@ -35,7 +35,7 @@ export class Rulers extends ViewPart {
 		const options = this._context.configuration.options;
 		this._rulers = options.get(EditorOption.rulers);
 		this._typicalHalfwidthCharacterWidth = options.get(
-			EditorOption.fontInfo,
+			EditorOption.fontInfo
 		).typicalHalfwidthCharacterWidth;
 	}
 
@@ -46,17 +46,17 @@ export class Rulers extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 		this._rulers = options.get(EditorOption.rulers);
 		this._typicalHalfwidthCharacterWidth = options.get(
-			EditorOption.fontInfo,
+			EditorOption.fontInfo
 		).typicalHalfwidthCharacterWidth;
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return e.scrollHeightChanged;
 	}
@@ -107,7 +107,7 @@ export class Rulers extends ViewPart {
 			const ruler = this._rulers[i];
 
 			node.setBoxShadow(
-				ruler.color ? `1px 0 0 0 ${ruler.color} inset` : ``,
+				ruler.color ? `1px 0 0 0 ${ruler.color} inset` : ``
 			);
 			node.setHeight(Math.min(ctx.scrollHeight, 1000000));
 			node.setLeft(ruler.column * this._typicalHalfwidthCharacterWidth);

@@ -70,7 +70,7 @@ CommandsRegistry.registerCommand({
 	id: "_files.pickFolderAndOpen",
 	handler: (
 		accessor: ServicesAccessor,
-		options: { forceNewWindow: boolean },
+		options: { forceNewWindow: boolean }
 	) => accessor.get(IFileDialogService).pickFolderAndOpen(options),
 });
 
@@ -109,7 +109,7 @@ CommandsRegistry.registerCommand({
 		}
 
 		await workspaceEditingService.addFolders(
-			folders.map((folder) => ({ uri: folder })),
+			folders.map((folder) => ({ uri: folder }))
 		);
 	},
 });
@@ -128,13 +128,13 @@ CommandsRegistry.registerCommand({
 		await workspaceEditingService.updateFolders(
 			0,
 			contextService.getWorkspace().folders.length,
-			folders.map((folder) => ({ uri: folder })),
+			folders.map((folder) => ({ uri: folder }))
 		);
 	},
 });
 
 async function selectWorkspaceFolders(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): Promise<URI[] | undefined> {
 	const dialogsService = accessor.get(IFileDialogService);
 	const pathService = accessor.get(IPathService);
@@ -143,8 +143,8 @@ async function selectWorkspaceFolders(
 		openLabel: mnemonicButtonLabel(
 			localize(
 				{ key: "add", comment: ["&& denotes a mnemonic"] },
-				"&&Add",
-			),
+				"&&Add"
+			)
 		),
 		title: localize("addFolderToWorkspaceTitle", "Add Folder to Workspace"),
 		canSelectFolders: true,
@@ -160,7 +160,7 @@ CommandsRegistry.registerCommand(
 	PICK_WORKSPACE_FOLDER_COMMAND_ID,
 	async function (
 		accessor,
-		args?: [IPickOptions<IQuickPickItem>, CancellationToken],
+		args?: [IPickOptions<IQuickPickItem>, CancellationToken]
 	) {
 		const quickInputService = accessor.get(IQuickInputService);
 		const labelService = accessor.get(ILabelService);
@@ -187,7 +187,7 @@ CommandsRegistry.registerCommand(
 					modelService,
 					languageService,
 					folder.uri,
-					FileKind.ROOT_FOLDER,
+					FileKind.ROOT_FOLDER
 				),
 			};
 		});
@@ -202,7 +202,7 @@ CommandsRegistry.registerCommand(
 		if (!options.placeHolder) {
 			options.placeHolder = localize(
 				"workspaceFolderPickerPlaceholder",
-				"Select workspace folder",
+				"Select workspace folder"
 			);
 		}
 
@@ -218,7 +218,7 @@ CommandsRegistry.registerCommand(
 		}
 
 		return;
-	},
+	}
 );
 
 // API Command registration
@@ -237,7 +237,7 @@ CommandsRegistry.registerCommand({
 	handler: (
 		accessor: ServicesAccessor,
 		uriComponents?: UriComponents,
-		arg?: boolean | IOpenFolderAPICommandOptions,
+		arg?: boolean | IOpenFolderAPICommandOptions
 	) => {
 		const commandService = accessor.get(ICommandService);
 
@@ -259,7 +259,7 @@ CommandsRegistry.registerCommand({
 
 			return commandService.executeCommand(
 				"_files.pickFolderAndOpen",
-				options,
+				options
 			);
 		}
 
@@ -281,7 +281,7 @@ CommandsRegistry.registerCommand({
 		return commandService.executeCommand(
 			"_files.windowOpen",
 			[uriToOpen],
-			options,
+			options
 		);
 	},
 	metadata: {
@@ -327,7 +327,7 @@ CommandsRegistry.registerCommand({
 	id: "vscode.newWindow",
 	handler: (
 		accessor: ServicesAccessor,
-		options?: INewWindowAPICommandOptions,
+		options?: INewWindowAPICommandOptions
 	) => {
 		const commandService = accessor.get(ICommandService);
 
@@ -338,7 +338,7 @@ CommandsRegistry.registerCommand({
 
 		return commandService.executeCommand(
 			"_files.newWindow",
-			commandOptions,
+			commandOptions
 		);
 	},
 	metadata: {
@@ -363,7 +363,7 @@ CommandsRegistry.registerCommand(
 	function (accessor: ServicesAccessor, uri: URI) {
 		const workspacesService = accessor.get(IWorkspacesService);
 		return workspacesService.removeRecentlyOpened([uri]);
-	},
+	}
 );
 
 CommandsRegistry.registerCommand({
@@ -423,7 +423,7 @@ CommandsRegistry.registerCommand(
 		}
 
 		return workspacesService.addRecentlyOpened([recent]);
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -432,5 +432,5 @@ CommandsRegistry.registerCommand(
 		const workspacesService = accessor.get(IWorkspacesService);
 
 		return workspacesService.getRecentlyOpened();
-	},
+	}
 );

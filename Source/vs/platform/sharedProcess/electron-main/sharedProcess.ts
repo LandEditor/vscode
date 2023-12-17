@@ -32,11 +32,15 @@ export class SharedProcess extends Disposable {
 	constructor(
 		private readonly machineId: string,
 		private readonly sqmId: string,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@ILogService private readonly logService: ILogService,
-		@ILoggerMainService private readonly loggerMainService: ILoggerMainService,
+		@ILoggerMainService
+		private readonly loggerMainService: ILoggerMainService,
 		@IPolicyService private readonly policyService: IPolicyService
 	) {
 		super();
@@ -52,8 +56,8 @@ export class SharedProcess extends Disposable {
 				this.onWindowConnection(
 					e,
 					nonce,
-					SharedProcessChannelConnection.response,
-				),
+					SharedProcessChannelConnection.response
+				)
 		);
 
 		// Shared process raw connections from workbench windows
@@ -63,25 +67,25 @@ export class SharedProcess extends Disposable {
 				this.onWindowConnection(
 					e,
 					nonce,
-					SharedProcessRawConnection.response,
-				),
+					SharedProcessRawConnection.response
+				)
 		);
 
 		// Lifecycle
 		this._register(
 			this.lifecycleMainService.onWillShutdown(() =>
-				this.onWillShutdown(),
-			),
+				this.onWillShutdown()
+			)
 		);
 	}
 
 	private async onWindowConnection(
 		e: IpcMainEvent,
 		nonce: string,
-		responseChannel: string,
+		responseChannel: string
 	): Promise<void> {
 		this.logService.trace(
-			`[SharedProcess] onWindowConnection for: ${responseChannel}`,
+			`[SharedProcess] onWindowConnection for: ${responseChannel}`
 		);
 
 		// release barrier if this is the first window connection
@@ -134,11 +138,11 @@ export class SharedProcess extends Disposable {
 				if (this.utilityProcess) {
 					this.utilityProcess.once(
 						SharedProcessLifecycle.initDone,
-						() => whenReady.complete(),
+						() => whenReady.complete()
 					);
 				} else {
 					validatedIpcMain.once(SharedProcessLifecycle.initDone, () =>
-						whenReady.complete(),
+						whenReady.complete()
 					);
 				}
 
@@ -165,11 +169,11 @@ export class SharedProcess extends Disposable {
 				if (this.utilityProcess) {
 					this.utilityProcess.once(
 						SharedProcessLifecycle.ipcReady,
-						() => sharedProcessIpcReady.complete(),
+						() => sharedProcessIpcReady.complete()
 					);
 				} else {
 					validatedIpcMain.once(SharedProcessLifecycle.ipcReady, () =>
-						sharedProcessIpcReady.complete(),
+						sharedProcessIpcReady.complete()
 					);
 				}
 
@@ -186,13 +190,13 @@ export class SharedProcess extends Disposable {
 			new UtilityProcess(
 				this.logService,
 				NullTelemetryService,
-				this.lifecycleMainService,
-			),
+				this.lifecycleMainService
+			)
 		);
 
 		const inspectParams = parseSharedProcessDebugPort(
 			this.environmentMainService.args,
-			this.environmentMainService.isBuilt,
+			this.environmentMainService.isBuilt
 		);
 		let execArgv: string[] | undefined = undefined;
 		if (inspectParams.port) {

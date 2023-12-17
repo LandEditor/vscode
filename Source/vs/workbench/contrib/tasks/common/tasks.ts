@@ -31,8 +31,8 @@ export const TASK_RUNNING_STATE = new RawContextKey<boolean>(
 	false,
 	nls.localize(
 		"tasks.taskRunningContext",
-		"Whether a task is currently running.",
-	),
+		"Whether a task is currently running."
+	)
 );
 export const TASKS_CATEGORY = {
 	value: nls.localize("tasksCategory", "Tasks"),
@@ -409,7 +409,7 @@ export namespace TaskGroup {
 	}
 
 	export function from(
-		value: string | TaskGroup | undefined,
+		value: string | TaskGroup | undefined
 	): TaskGroup | undefined {
 		if (value === undefined) {
 			return undefined;
@@ -643,7 +643,7 @@ export abstract class CommonTask {
 		type: string | undefined,
 		runOptions: IRunOptions,
 		configurationProperties: IConfigurationProperties,
-		source: IBaseTaskSource,
+		source: IBaseTaskSource
 	) {
 		this._id = id;
 		if (label) {
@@ -704,7 +704,7 @@ export abstract class CommonTask {
 
 	public matches(
 		key: string | KeyedTaskIdentifier | undefined,
-		compareId: boolean = false,
+		compareId: boolean = false
 	): boolean {
 		if (key === undefined) {
 			return false;
@@ -782,7 +782,7 @@ export class CustomTask extends CommonTask {
 		command: ICommandConfiguration | undefined,
 		hasDefinedMatchers: boolean,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties,
+		configurationProperties: IConfigurationProperties
 	) {
 		super(
 			id,
@@ -790,7 +790,7 @@ export class CustomTask extends CommonTask {
 			undefined,
 			runOptions,
 			configurationProperties,
-			source,
+			source
 		);
 		this._source = source;
 		this.hasDefinedMatchers = hasDefinedMatchers;
@@ -808,7 +808,7 @@ export class CustomTask extends CommonTask {
 			this.command,
 			this.hasDefinedMatchers,
 			this.runOptions,
-			this.configurationProperties,
+			this.configurationProperties
 		);
 	}
 
@@ -820,7 +820,7 @@ export class CustomTask extends CommonTask {
 	}
 
 	public override getDefinition(
-		useSource: boolean = false,
+		useSource: boolean = false
 	): KeyedTaskIdentifier {
 		if (useSource && this._source.customizes !== undefined) {
 			return this._source.customizes;
@@ -935,7 +935,7 @@ export class CustomTask extends CommonTask {
 			object.command,
 			object.hasDefinedMatchers,
 			object.runOptions,
-			object.configurationProperties,
+			object.configurationProperties
 		);
 	}
 }
@@ -960,7 +960,7 @@ export class ConfiguringTask extends CommonTask {
 		type: string | undefined,
 		configures: KeyedTaskIdentifier,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties,
+		configurationProperties: IConfigurationProperties
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
 		this._source = source;
@@ -1059,7 +1059,7 @@ export class ContributedTask extends CommonTask {
 		command: ICommandConfiguration,
 		hasDefinedMatchers: boolean,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties,
+		configurationProperties: IConfigurationProperties
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
 		this.defines = defines;
@@ -1079,7 +1079,7 @@ export class ContributedTask extends CommonTask {
 			this.command,
 			this.hasDefinedMatchers,
 			this.runOptions,
-			this.configurationProperties,
+			this.configurationProperties
 		);
 	}
 
@@ -1096,7 +1096,7 @@ export class ContributedTask extends CommonTask {
 		return workspaceFolder
 			? `${this._source.scope.toString()}|${workspaceFolder.uri.toString()}|${
 					this._id
-			  }|${this.instance}`
+				}|${this.instance}`
 			: `${this._source.scope.toString()}|${this._id}|${this.instance}`;
 	}
 
@@ -1145,7 +1145,7 @@ export class ContributedTask extends CommonTask {
 			object.command,
 			object.hasDefinedMatchers,
 			object.runOptions,
-			object.configurationProperties,
+			object.configurationProperties
 		);
 	}
 }
@@ -1166,7 +1166,7 @@ export class InMemoryTask extends CommonTask {
 		label: string,
 		type: string,
 		runOptions: IRunOptions,
-		configurationProperties: IConfigurationProperties,
+		configurationProperties: IConfigurationProperties
 	) {
 		super(id, label, type, runOptions, configurationProperties, source);
 		this._source = source;
@@ -1179,7 +1179,7 @@ export class InMemoryTask extends CommonTask {
 			this._label,
 			this.type,
 			this.runOptions,
-			this.configurationProperties,
+			this.configurationProperties
 		);
 	}
 
@@ -1206,7 +1206,7 @@ export class InMemoryTask extends CommonTask {
 			object._label,
 			object.type,
 			object.runOptions,
-			object.configurationProperties,
+			object.configurationProperties
 		);
 	}
 }
@@ -1256,7 +1256,7 @@ export class TaskSorter {
 
 	public compare(
 		a: Task | ConfiguringTask,
-		b: Task | ConfiguringTask,
+		b: Task | ConfiguringTask
 	): number {
 		const aw = a.getWorkspaceFolder();
 		const bw = b.getWorkspaceFolder();
@@ -1376,7 +1376,7 @@ export namespace TaskEvent {
 	export function start(
 		task: Task,
 		terminalId: number,
-		resolvedVariables: Map<string, string>,
+		resolvedVariables: Map<string, string>
 	): ITaskStartedEvent {
 		return {
 			...common(task),
@@ -1389,7 +1389,7 @@ export namespace TaskEvent {
 	export function processStarted(
 		task: Task,
 		terminalId: number,
-		processId: number,
+		processId: number
 	): ITaskProcessStartedEvent {
 		return {
 			...common(task),
@@ -1401,7 +1401,7 @@ export namespace TaskEvent {
 	export function processEnded(
 		task: Task,
 		terminalId: number | undefined,
-		exitCode: number | undefined,
+		exitCode: number | undefined
 	): ITaskProcessEndedEvent {
 		return {
 			...common(task),
@@ -1414,7 +1414,7 @@ export namespace TaskEvent {
 	export function terminated(
 		task: Task,
 		terminalId: number,
-		exitReason: TerminalExitReason | undefined,
+		exitReason: TerminalExitReason | undefined
 	): ITaskTerminatedEvent {
 		return {
 			...common(task),
@@ -1432,7 +1432,7 @@ export namespace TaskEvent {
 			| TaskEventKind.Inactive
 			| TaskEventKind.End,
 		task: Task,
-		terminalId?: number,
+		terminalId?: number
 	): ITaskGeneralEvent {
 		return {
 			...common(task),
@@ -1498,7 +1498,7 @@ export const enum TasksSchemaProperties {
 export namespace TaskDefinition {
 	export function createTaskIdentifier(
 		external: ITaskIdentifier,
-		reporter: { error(message: string): void },
+		reporter: { error(message: string): void }
 	): KeyedTaskIdentifier | undefined {
 		const definition = TaskDefinitionRegistry.get(external.type);
 		if (definition === undefined) {
@@ -1541,8 +1541,8 @@ export namespace TaskDefinition {
 									"TaskDefinition.missingRequiredProperty",
 									"Error: the task identifier '{0}' is missing the required property '{1}'. The task identifier will be ignored.",
 									JSON.stringify(external, undefined, 0),
-									property,
-								),
+									property
+								)
 							);
 							return undefined;
 					}

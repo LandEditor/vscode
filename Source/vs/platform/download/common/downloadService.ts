@@ -19,12 +19,12 @@ export class DownloadService implements IDownloadService {
 	constructor(
 		@IRequestService private readonly requestService: IRequestService,
 		@IFileService private readonly fileService: IFileService
-	) { }
+	) {}
 
 	async download(
 		resource: URI,
 		target: URI,
-		cancellationToken: CancellationToken = CancellationToken.None,
+		cancellationToken: CancellationToken = CancellationToken.None
 	): Promise<void> {
 		if (
 			resource.scheme === Schemas.file ||
@@ -37,14 +37,14 @@ export class DownloadService implements IDownloadService {
 		const options = { type: "GET", url: resource.toString(true) };
 		const context = await this.requestService.request(
 			options,
-			cancellationToken,
+			cancellationToken
 		);
 		if (context.res.statusCode === 200) {
 			await this.fileService.writeFile(target, context.stream);
 		} else {
 			const message = await asTextOrError(context);
 			throw new Error(
-				`Expected 200, got back ${context.res.statusCode} instead.\n\n${message}`,
+				`Expected 200, got back ${context.res.statusCode} instead.\n\n${message}`
 			);
 		}
 	}

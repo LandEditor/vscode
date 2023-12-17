@@ -44,7 +44,7 @@ class MatchCandidate {
 		readonly uri: URI,
 		readonly languageId: string,
 		readonly notebookUri: URI | undefined,
-		readonly notebookType: string | undefined,
+		readonly notebookType: string | undefined
 	) {}
 
 	equals(other: MatchCandidate): boolean {
@@ -65,7 +65,7 @@ export class LanguageFeatureRegistry<T> {
 	readonly onDidChange = this._onDidChange.event;
 
 	constructor(
-		private readonly _notebookInfoResolver?: NotebookInfoResolver,
+		private readonly _notebookInfoResolver?: NotebookInfoResolver
 	) {}
 
 	register(selector: LanguageSelector, provider: T): IDisposable {
@@ -141,7 +141,7 @@ export class LanguageFeatureRegistry<T> {
 
 	private _orderedForEach(
 		model: ITextModel,
-		callback: (provider: Entry<T>) => any,
+		callback: (provider: Entry<T>) => any
 	): void {
 		this._updateScores(model);
 
@@ -164,14 +164,14 @@ export class LanguageFeatureRegistry<T> {
 					model.uri,
 					model.getLanguageId(),
 					notebookInfo.uri,
-					notebookInfo.type,
-			  )
+					notebookInfo.type
+				)
 			: new MatchCandidate(
 					model.uri,
 					model.getLanguageId(),
 					undefined,
-					undefined,
-			  );
+					undefined
+				);
 
 		if (this._lastCandidate?.equals(candidate)) {
 			// nothing has changed
@@ -187,7 +187,7 @@ export class LanguageFeatureRegistry<T> {
 				candidate.languageId,
 				shouldSynchronizeModel(model),
 				candidate.notebookUri,
-				candidate.notebookType,
+				candidate.notebookType
 			);
 
 			if (isExclusive(entry.selector) && entry._score > 0) {
@@ -207,7 +207,7 @@ export class LanguageFeatureRegistry<T> {
 
 	private static _compareByScoreAndTime(
 		a: Entry<any>,
-		b: Entry<any>,
+		b: Entry<any>
 	): number {
 		if (a._score < b._score) {
 			return 1;

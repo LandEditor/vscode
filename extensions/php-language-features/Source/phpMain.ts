@@ -20,18 +20,18 @@ export function activate(context: vscode.ExtensionContext): any {
 			"php",
 			new PHPCompletionItemProvider(),
 			">",
-			"$",
-		),
+			"$"
+		)
 	);
 	context.subscriptions.push(
-		vscode.languages.registerHoverProvider("php", new PHPHoverProvider()),
+		vscode.languages.registerHoverProvider("php", new PHPHoverProvider())
 	);
 	context.subscriptions.push(
 		vscode.languages.registerSignatureHelpProvider(
 			"php",
 			new PHPSignatureHelpProvider(),
 			"(",
-			",",
-		),
+			","
+		)
 	);
 }

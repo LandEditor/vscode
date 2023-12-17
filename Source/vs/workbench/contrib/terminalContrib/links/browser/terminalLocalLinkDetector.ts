@@ -86,18 +86,22 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 	constructor(
 		readonly xterm: Terminal,
 		private readonly _capabilities: ITerminalCapabilityStore,
-		private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
+		private readonly _processManager: Pick<
+			ITerminalProcessManager,
+			"initialCwd" | "os" | "remoteAuthority" | "userHome"
+		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
 		private readonly _linkResolver: ITerminalLinkResolver,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
-	) {
-	}
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService
+	) {}
 
 	async detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number,
+		endLine: number
 	): Promise<ITerminalSimpleLink[]> {
 		const links: ITerminalSimpleLink[] = [];
 
@@ -106,7 +110,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 			this.xterm.buffer.active,
 			startLine,
 			endLine,
-			this.xterm.cols,
+			this.xterm.cols
 		);
 		if (text === "" || text.length > Constants.MaxLineLength) {
 			return [];
@@ -120,7 +124,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 		this._logService.trace("terminalLocalLinkDetector#detect text", text);
 		this._logService.trace(
 			"terminalLocalLinkDetector#detect parsedLinks",
-			parsedLinks,
+			parsedLinks
 		);
 		for (const parsedLink of parsedLinks) {
 			// Don't try resolve any links of excessive length
@@ -143,7 +147,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 						1,
 					endLineNumber: 1,
 				},
-				startLine,
+				startLine
 			);
 
 			// Get a single link candidate if the cwd of the line is known
@@ -165,7 +169,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 						bufferRange.start.y,
 						parsedLink.path.text,
 						osPath,
-						this._logService,
+						this._logService
 					);
 					// Only add a single exact link candidate if the cwd is available, this may cause
 					// the link to not be resolved but that should only occur when the actual file does
@@ -180,7 +184,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 					linkCandidates.push(parsedLink.path.text);
 					if (parsedLink.path.text.match(/^(\.\.[\/\\])+/)) {
 						linkCandidates.push(
-							parsedLink.path.text.replace(/^(\.\.[\/\\])+/, ""),
+							parsedLink.path.text.replace(/^(\.\.[\/\\])+/, "")
 						);
 					}
 				}
@@ -209,7 +213,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 			linkCandidates.push(...specialEndLinkCandidates);
 			this._logService.trace(
 				"terminalLocalLinkDetector#detect linkCandidates",
-				linkCandidates,
+				linkCandidates
 			);
 
 			// Validate the path and convert to the outgoing type
@@ -217,7 +221,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				undefined,
 				bufferRange,
 				linkCandidates,
-				trimRangeMap,
+				trimRangeMap
 			);
 			if (simpleLink) {
 				simpleLink.parsedLink = parsedLink;
@@ -225,12 +229,12 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 					parsedLink.prefix?.index ?? parsedLink.path.index,
 					parsedLink.suffix
 						? parsedLink.suffix.suffix.index +
-						  parsedLink.suffix.suffix.text.length
-						: parsedLink.path.index + parsedLink.path.text.length,
+								parsedLink.suffix.suffix.text.length
+						: parsedLink.path.index + parsedLink.path.text.length
 				);
 				this._logService.trace(
 					"terminalLocalLinkDetector#detect verified link",
-					simpleLink,
+					simpleLink
 				);
 				links.push(simpleLink);
 			}
@@ -274,7 +278,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 						endColumn: stringIndex + link.length + 1,
 						endLineNumber: 1,
 					},
-					startLine,
+					startLine
 				);
 
 				// Validate and add link
@@ -282,7 +286,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				const simpleLink = await this._validateAndGetLink(
 					`${path}${suffix}`,
 					bufferRange,
-					[path],
+					[path]
 				);
 				if (simpleLink) {
 					links.push(simpleLink);
@@ -300,7 +304,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				this.xterm.buffer.active,
 				startLine,
 				endLine,
-				this.xterm.cols,
+				this.xterm.cols
 			);
 			for (const rangeCandidate of rangeCandidates) {
 				let text = "";
@@ -333,7 +337,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 				const simpleLink = await this._validateAndGetLink(
 					text,
 					rangeCandidate,
-					[text],
+					[text]
 				);
 				if (simpleLink) {
 					links.push(simpleLink);
@@ -355,7 +359,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 			if (
 				this._uriIdentityService.extUri.isEqualOrParent(
 					uri,
-					folders[i].uri,
+					folders[i].uri
 				)
 			) {
 				return true;
@@ -365,7 +369,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 	}
 
 	private async _validateLinkCandidates(
-		linkCandidates: string[],
+		linkCandidates: string[]
 	): Promise<ResolvedLink | undefined> {
 		for (const link of linkCandidates) {
 			let uri: URI | undefined;
@@ -375,7 +379,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 			const result = await this._linkResolver.resolveLink(
 				this._processManager,
 				link,
-				uri,
+				uri
 			);
 			if (result) {
 				return result;
@@ -393,7 +397,7 @@ export class TerminalLocalLinkDetector implements ITerminalLinkDetector {
 		linkText: string | undefined,
 		bufferRange: IBufferRange,
 		linkCandidates: string[],
-		trimRangeMap?: Map<string, number>,
+		trimRangeMap?: Map<string, number>
 	): Promise<ITerminalSimpleLink | undefined> {
 		const linkStat = await this._validateLinkCandidates(linkCandidates);
 		if (linkStat) {

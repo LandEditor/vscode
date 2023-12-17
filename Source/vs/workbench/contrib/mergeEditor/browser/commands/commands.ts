@@ -61,7 +61,7 @@ abstract class MergeEditorAction extends Action2 {
 
 	abstract runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): void;
 }
 
@@ -96,7 +96,7 @@ abstract class MergeEditorAction2 extends Action2 {
 					},
 				},
 				accessor,
-				...args,
+				...args
 			) as any;
 		}
 	}
@@ -167,7 +167,7 @@ namespace IRelaxedOpenArgs {
 				URI.parse(obj, true),
 				undefined,
 				undefined,
-				undefined,
+				undefined
 			);
 		}
 		if (!obj || typeof obj !== "object") {
@@ -179,7 +179,7 @@ namespace IRelaxedOpenArgs {
 				URI.revive(obj),
 				undefined,
 				undefined,
-				undefined,
+				undefined
 			);
 		}
 
@@ -294,7 +294,7 @@ export class ShowNonConflictingChanges extends Action2 {
 			title: {
 				value: localize(
 					"showNonConflictingChanges",
-					"Show Non-Conflicting Changes",
+					"Show Non-Conflicting Changes"
 				),
 				original: "Show Non-Conflicting Changes",
 			},
@@ -333,7 +333,7 @@ export class ShowHideBase extends Action2 {
 					id: MenuId.EditorTitle,
 					when: ContextKeyExpr.and(
 						ctxIsMergeEditor,
-						ctxMergeEditorLayout.isEqualTo("columns"),
+						ctxMergeEditorLayout.isEqualTo("columns")
 					),
 					group: "2_merge",
 					order: 9,
@@ -360,14 +360,14 @@ export class ShowHideTopBase extends Action2 {
 			},
 			toggled: ContextKeyExpr.and(
 				ctxMergeEditorShowBase,
-				ctxMergeEditorShowBaseAtTop,
+				ctxMergeEditorShowBaseAtTop
 			),
 			menu: [
 				{
 					id: MenuId.EditorTitle,
 					when: ContextKeyExpr.and(
 						ctxIsMergeEditor,
-						ctxMergeEditorLayout.isEqualTo("mixed"),
+						ctxMergeEditorLayout.isEqualTo("mixed")
 					),
 					group: "2_merge",
 					order: 10,
@@ -394,14 +394,14 @@ export class ShowHideCenterBase extends Action2 {
 			},
 			toggled: ContextKeyExpr.and(
 				ctxMergeEditorShowBase,
-				ctxMergeEditorShowBaseAtTop.negate(),
+				ctxMergeEditorShowBaseAtTop.negate()
 			),
 			menu: [
 				{
 					id: MenuId.EditorTitle,
 					when: ContextKeyExpr.and(
 						ctxIsMergeEditor,
-						ctxMergeEditorLayout.isEqualTo("mixed"),
+						ctxMergeEditorLayout.isEqualTo("mixed")
 					),
 					group: "2_merge",
 					order: 11,
@@ -447,7 +447,7 @@ export class OpenResultResource extends MergeEditorAction {
 
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): void {
 		const editorService = accessor.get(IEditorService);
 		editorService.openEditor({
@@ -464,7 +464,7 @@ export class GoToNextUnhandledConflict extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.goToNextUnhandledConflict",
-					"Go to Next Unhandled Conflict",
+					"Go to Next Unhandled Conflict"
 				),
 				original: "Go to Next Unhandled Conflict",
 			},
@@ -485,7 +485,7 @@ export class GoToNextUnhandledConflict extends MergeEditorAction {
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.model.telemetry.reportNavigationToNextConflict();
 		viewModel.goToNextModifiedBaseRange(
-			(r) => !viewModel.model.isHandled(r).get(),
+			(r) => !viewModel.model.isHandled(r).get()
 		);
 	}
 }
@@ -498,7 +498,7 @@ export class GoToPreviousUnhandledConflict extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.goToPreviousUnhandledConflict",
-					"Go to Previous Unhandled Conflict",
+					"Go to Previous Unhandled Conflict"
 				),
 				original: "Go to Previous Unhandled Conflict",
 			},
@@ -519,7 +519,7 @@ export class GoToPreviousUnhandledConflict extends MergeEditorAction {
 	override runWithViewModel(viewModel: MergeEditorViewModel): void {
 		viewModel.model.telemetry.reportNavigationToPreviousConflict();
 		viewModel.goToPreviousModifiedBaseRange(
-			(r) => !viewModel.model.isHandled(r).get(),
+			(r) => !viewModel.model.isHandled(r).get()
 		);
 	}
 }
@@ -532,7 +532,7 @@ export class ToggleActiveConflictInput1 extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.toggleCurrentConflictFromLeft",
-					"Toggle Current Conflict from Left",
+					"Toggle Current Conflict from Left"
 				),
 				original: "Toggle Current Conflict from Left",
 			},
@@ -554,7 +554,7 @@ export class ToggleActiveConflictInput2 extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.toggleCurrentConflictFromRight",
-					"Toggle Current Conflict from Right",
+					"Toggle Current Conflict from Right"
 				),
 				original: "Toggle Current Conflict from Right",
 			},
@@ -576,13 +576,13 @@ export class CompareInput1WithBaseCommand extends MergeEditorAction {
 			title: {
 				value: localize(
 					"mergeEditor.compareInput1WithBase",
-					"Compare Input 1 With Base",
+					"Compare Input 1 With Base"
 				),
 				original: "Compare Input 1 With Base",
 			},
 			shortTitle: localize(
 				"mergeEditor.compareWithBase",
-				"Compare With Base",
+				"Compare With Base"
 			),
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -593,7 +593,7 @@ export class CompareInput1WithBaseCommand extends MergeEditorAction {
 
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): void {
 		const editorService = accessor.get(IEditorService);
 		mergeEditorCompare(viewModel, editorService, 1);
@@ -608,13 +608,13 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 			title: {
 				value: localize(
 					"mergeEditor.compareInput2WithBase",
-					"Compare Input 2 With Base",
+					"Compare Input 2 With Base"
 				),
 				original: "Compare Input 2 With Base",
 			},
 			shortTitle: localize(
 				"mergeEditor.compareWithBase",
-				"Compare With Base",
+				"Compare With Base"
 			),
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -625,7 +625,7 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): void {
 		const editorService = accessor.get(IEditorService);
 		mergeEditorCompare(viewModel, editorService, 2);
@@ -635,7 +635,7 @@ export class CompareInput2WithBaseCommand extends MergeEditorAction {
 async function mergeEditorCompare(
 	viewModel: MergeEditorViewModel,
 	editorService: IEditorService,
-	inputNumber: 1 | 2,
+	inputNumber: 1 | 2
 ) {
 	editorService.openEditor(editorService.activeEditor!, { pinned: true });
 
@@ -677,7 +677,7 @@ export class OpenBaseFile extends MergeEditorAction {
 
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): void {
 		const openerService = accessor.get(IOpenerService);
 		openerService.open(viewModel.model.base.uri);
@@ -692,7 +692,7 @@ export class AcceptAllInput1 extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.acceptAllInput1",
-					"Accept All Changes from Left",
+					"Accept All Changes from Left"
 				),
 				original: "Accept All Changes from Left",
 			},
@@ -716,7 +716,7 @@ export class AcceptAllInput2 extends MergeEditorAction {
 			title: {
 				value: localize(
 					"merge.acceptAllInput2",
-					"Accept All Changes from Right",
+					"Accept All Changes from Right"
 				),
 				original: "Accept All Changes from Right",
 			},
@@ -740,13 +740,13 @@ export class ResetToBaseAndAutoMergeCommand extends MergeEditorAction {
 			title: {
 				value: localize(
 					"mergeEditor.resetResultToBaseAndAutoMerge",
-					"Reset Result",
+					"Reset Result"
 				),
 				original: "Reset Result",
 			},
 			shortTitle: localize(
 				"mergeEditor.resetResultToBaseAndAutoMerge.short",
-				"Reset",
+				"Reset"
 			),
 			f1: true,
 			precondition: ctxIsMergeEditor,
@@ -757,7 +757,7 @@ export class ResetToBaseAndAutoMergeCommand extends MergeEditorAction {
 
 	override runWithViewModel(
 		viewModel: MergeEditorViewModel,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): void {
 		viewModel.model.reset();
 	}
@@ -771,7 +771,7 @@ export class ResetCloseWithConflictsChoice extends Action2 {
 			title: {
 				value: localize(
 					"mergeEditor.resetChoice",
-					"Reset Choice for 'Close with Conflicts'",
+					"Reset Choice for 'Close with Conflicts'"
 				),
 				original: "Reset Choice for 'Close with Conflicts'",
 			},
@@ -802,7 +802,7 @@ export class AcceptMerge extends MergeEditorAction2 {
 
 	override async runWithMergeEditor(
 		{ inputModel, editorIdentifier, viewModel }: MergeEditorAction2Args,
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	) {
 		const dialogService = accessor.get(IDialogService);
 		const editorService = accessor.get(IEditorService);
@@ -812,18 +812,18 @@ export class AcceptMerge extends MergeEditorAction2 {
 				message: localize(
 					"mergeEditor.acceptMerge.unhandledConflicts.message",
 					"Do you want to complete the merge of {0}?",
-					basename(inputModel.resultUri),
+					basename(inputModel.resultUri)
 				),
 				detail: localize(
 					"mergeEditor.acceptMerge.unhandledConflicts.detail",
-					"The file contains unhandled conflicts.",
+					"The file contains unhandled conflicts."
 				),
 				primaryButton: localize(
 					{
 						key: "mergeEditor.acceptMerge.unhandledConflicts.accept",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Complete with Conflicts",
+					"&&Complete with Conflicts"
 				),
 			});
 

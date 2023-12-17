@@ -129,7 +129,7 @@ function getNodeStickiness(node: IntervalNode): TrackedRangeStickiness {
 }
 function _setNodeStickiness(
 	node: IntervalNode,
-	stickiness: TrackedRangeStickiness,
+	stickiness: TrackedRangeStickiness
 ): void {
 	node.metadata =
 		(node.metadata & Constants.StickinessMaskInverse) |
@@ -149,7 +149,7 @@ function setCollapseOnReplaceEdit(node: IntervalNode, value: boolean): void {
 }
 export function setNodeStickiness(
 	node: IntervalNode,
-	stickiness: ActualTrackedRangeStickiness,
+	stickiness: ActualTrackedRangeStickiness
 ): void {
 	_setNodeStickiness(node, <number>stickiness);
 }
@@ -199,7 +199,7 @@ export class IntervalNode {
 		setNodeIsInGlyphMargin(this, false);
 		_setNodeStickiness(
 			this,
-			TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+			TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
 		);
 		setCollapseOnReplaceEdit(this, false);
 
@@ -215,7 +215,7 @@ export class IntervalNode {
 		versionId: number,
 		start: number,
 		end: number,
-		range: Range,
+		range: Range
 	): void {
 		this.start = start;
 		this.end = end;
@@ -233,11 +233,11 @@ export class IntervalNode {
 			this,
 			className === ClassName.EditorErrorDecoration ||
 				className === ClassName.EditorWarningDecoration ||
-				className === ClassName.EditorInfoDecoration,
+				className === ClassName.EditorInfoDecoration
 		);
 		setNodeIsInGlyphMargin(
 			this,
-			this.options.glyphMarginClassName !== null,
+			this.options.glyphMarginClassName !== null
 		);
 		_setNodeStickiness(this, <number>this.options.stickiness);
 		setCollapseOnReplaceEdit(this, this.options.collapseOnReplaceEdit);
@@ -246,7 +246,7 @@ export class IntervalNode {
 	public setCachedOffsets(
 		absoluteStart: number,
 		absoluteEnd: number,
-		cachedVersionId: number,
+		cachedVersionId: number
 	): void {
 		if (this.cachedVersionId !== cachedVersionId) {
 			this.range = null;
@@ -284,7 +284,7 @@ export class IntervalTree {
 		filterOwnerId: number,
 		filterOutValidation: boolean,
 		cachedVersionId: number,
-		onlyMarginDecorations: boolean,
+		onlyMarginDecorations: boolean
 	): IntervalNode[] {
 		if (this.root === SENTINEL) {
 			return [];
@@ -296,7 +296,7 @@ export class IntervalTree {
 			filterOwnerId,
 			filterOutValidation,
 			cachedVersionId,
-			onlyMarginDecorations,
+			onlyMarginDecorations
 		);
 	}
 
@@ -304,7 +304,7 @@ export class IntervalTree {
 		filterOwnerId: number,
 		filterOutValidation: boolean,
 		cachedVersionId: number,
-		onlyMarginDecorations: boolean,
+		onlyMarginDecorations: boolean
 	): IntervalNode[] {
 		if (this.root === SENTINEL) {
 			return [];
@@ -314,7 +314,7 @@ export class IntervalTree {
 			filterOwnerId,
 			filterOutValidation,
 			cachedVersionId,
-			onlyMarginDecorations,
+			onlyMarginDecorations
 		);
 	}
 
@@ -361,7 +361,7 @@ export class IntervalTree {
 		offset: number,
 		length: number,
 		textLength: number,
-		forceMoveMarkers: boolean,
+		forceMoveMarkers: boolean
 	): void {
 		// Our strategy is to remove all directly impacted nodes, and then add them back to the tree.
 
@@ -389,7 +389,7 @@ export class IntervalTree {
 				offset,
 				offset + length,
 				textLength,
-				forceMoveMarkers,
+				forceMoveMarkers
 			);
 			node.maxEnd = node.end;
 			rbTreeInsert(this, node);
@@ -461,7 +461,7 @@ function adjustMarkerBeforeColumn(
 	markerOffset: number,
 	markerStickToPreviousCharacter: boolean,
 	checkOffset: number,
-	moveSemantics: MarkerMoveSemantics,
+	moveSemantics: MarkerMoveSemantics
 ): boolean {
 	if (markerOffset < checkOffset) {
 		return true;
@@ -487,7 +487,7 @@ export function nodeAcceptEdit(
 	start: number,
 	end: number,
 	textLength: number,
-	forceMoveMarkers: boolean,
+	forceMoveMarkers: boolean
 ): void {
 	const nodeStickiness = getNodeStickiness(node);
 	const startStickToPreviousCharacter =
@@ -525,15 +525,15 @@ export function nodeAcceptEdit(
 		const moveSemantics = forceMoveMarkers
 			? MarkerMoveSemantics.ForceMove
 			: deletingCnt > 0
-			  ? MarkerMoveSemantics.ForceStay
-			  : MarkerMoveSemantics.MarkerDefined;
+				? MarkerMoveSemantics.ForceStay
+				: MarkerMoveSemantics.MarkerDefined;
 		if (
 			!startDone &&
 			adjustMarkerBeforeColumn(
 				nodeStart,
 				startStickToPreviousCharacter,
 				start,
-				moveSemantics,
+				moveSemantics
 			)
 		) {
 			startDone = true;
@@ -544,7 +544,7 @@ export function nodeAcceptEdit(
 				nodeEnd,
 				endStickToPreviousCharacter,
 				start,
-				moveSemantics,
+				moveSemantics
 			)
 		) {
 			endDone = true;
@@ -562,7 +562,7 @@ export function nodeAcceptEdit(
 				nodeStart,
 				startStickToPreviousCharacter,
 				start + commonLength,
-				moveSemantics,
+				moveSemantics
 			)
 		) {
 			startDone = true;
@@ -573,7 +573,7 @@ export function nodeAcceptEdit(
 				nodeEnd,
 				endStickToPreviousCharacter,
 				start + commonLength,
-				moveSemantics,
+				moveSemantics
 			)
 		) {
 			endDone = true;
@@ -590,7 +590,7 @@ export function nodeAcceptEdit(
 				nodeStart,
 				startStickToPreviousCharacter,
 				end,
-				moveSemantics,
+				moveSemantics
 			)
 		) {
 			node.start = start + insertingCnt;
@@ -602,7 +602,7 @@ export function nodeAcceptEdit(
 				nodeEnd,
 				endStickToPreviousCharacter,
 				end,
-				moveSemantics,
+				moveSemantics
 			)
 		) {
 			node.end = start + insertingCnt;
@@ -627,7 +627,7 @@ export function nodeAcceptEdit(
 function searchForEditing(
 	T: IntervalTree,
 	start: number,
-	end: number,
+	end: number
 ): IntervalNode[] {
 	// https://en.wikipedia.org/wiki/Interval_tree#Augmented_tree
 	// Now, it is known that two intervals A and B overlap only when both
@@ -704,7 +704,7 @@ function noOverlapReplace(
 	T: IntervalTree,
 	start: number,
 	end: number,
-	textLength: number,
+	textLength: number
 ): void {
 	// https://en.wikipedia.org/wiki/Interval_tree#Augmented_tree
 	// Now, it is known that two intervals A and B overlap only when both
@@ -784,7 +784,7 @@ function noOverlapReplace(
 
 function collectNodesFromOwner(
 	T: IntervalTree,
-	ownerId: number,
+	ownerId: number
 ): IntervalNode[] {
 	let node = T.root;
 	const result: IntervalNode[] = [];
@@ -863,7 +863,7 @@ function search(
 	filterOwnerId: number,
 	filterOutValidation: boolean,
 	cachedVersionId: number,
-	onlyMarginDecorations: boolean,
+	onlyMarginDecorations: boolean
 ): IntervalNode[] {
 	let node = T.root;
 	let delta = 0;
@@ -932,7 +932,7 @@ function intervalSearch(
 	filterOwnerId: number,
 	filterOutValidation: boolean,
 	cachedVersionId: number,
-	onlyMarginDecorations: boolean,
+	onlyMarginDecorations: boolean
 ): IntervalNode[] {
 	// https://en.wikipedia.org/wiki/Interval_tree#Augmented_tree
 	// Now, it is known that two intervals A and B overlap only when both
@@ -1099,7 +1099,7 @@ function treeInsert(T: IntervalTree, z: IntervalNode): void {
 			zAbsoluteStart,
 			zAbsoluteEnd,
 			x.start + delta,
-			x.end + delta,
+			x.end + delta
 		);
 		if (cmp < 0) {
 			// this node should be inserted to the left
@@ -1456,7 +1456,7 @@ export function intervalCompare(
 	aStart: number,
 	aEnd: number,
 	bStart: number,
-	bEnd: number,
+	bEnd: number
 ): number {
 	if (aStart === bStart) {
 		return aEnd - bEnd;

@@ -9,7 +9,8 @@ import { NativeLanguagePackService } from "vs/platform/languagePacks/node/langua
 
 export class LocalizationsUpdater extends Disposable {
 	constructor(
-		@ILanguagePackService private readonly localizationsService: NativeLanguagePackService
+		@ILanguagePackService
+		private readonly localizationsService: NativeLanguagePackService
 	) {
 		super();
 

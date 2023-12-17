@@ -47,52 +47,103 @@ export class BuiltinExtensionsScannerService
 	private nlsUrl: URI | undefined;
 
 	constructor(
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IExtensionResourceLoaderService private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionResourceLoaderService
+		private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
 		@IProductService productService: IProductService,
 		@ILogService private readonly logService: ILogService
 	) {
 		if (isWeb) {
 			const nlsBaseUrl = productService.extensionsGallery?.nlsBaseUrl;
 			// Only use the nlsBaseUrl if we are using a language other than the default, English.
-			if (nlsBaseUrl && productService.commit && !Language.isDefaultVariant()) {
-				this.nlsUrl = URI.joinPath(URI.parse(nlsBaseUrl), productService.commit, productService.version, Language.value());
+			if (
+				nlsBaseUrl &&
+				productService.commit &&
+				!Language.isDefaultVariant()
+			) {
+				this.nlsUrl = URI.joinPath(
+					URI.parse(nlsBaseUrl),
+					productService.commit,
+					productService.version,
+					Language.value()
+				);
 			}
 
-			const builtinExtensionsServiceUrl = FileAccess.asBrowserUri(builtinExtensionsPath);
+			const builtinExtensionsServiceUrl = FileAccess.asBrowserUri(
+				builtinExtensionsPath
+			);
 			if (builtinExtensionsServiceUrl) {
 				let bundledExtensions: IBundledExtension[] = [];
 
 				if (environmentService.isBuilt) {
 					// Built time configuration (do NOT modify)
-					bundledExtensions = [/*BUILD->INSERT_BUILTIN_EXTENSIONS*/];
+					bundledExtensions = [
+						/*BUILD->INSERT_BUILTIN_EXTENSIONS*/
+					];
 				} else {
 					// Find builtin extensions by checking for DOM
-					const builtinExtensionsElement = mainWindow.document.getElementById('vscode-workbench-builtin-extensions');
-					const builtinExtensionsElementAttribute = builtinExtensionsElement ? builtinExtensionsElement.getAttribute('data-settings') : undefined;
+					const builtinExtensionsElement =
+						mainWindow.document.getElementById(
+							"vscode-workbench-builtin-extensions"
+						);
+					const builtinExtensionsElementAttribute =
+						builtinExtensionsElement
+							? builtinExtensionsElement.getAttribute(
+									"data-settings"
+								)
+							: undefined;
 					if (builtinExtensionsElementAttribute) {
 						try {
-							bundledExtensions = JSON.parse(builtinExtensionsElementAttribute);
-						} catch (error) { /* ignore error*/ }
+							bundledExtensions = JSON.parse(
+								builtinExtensionsElementAttribute
+							);
+						} catch (error) {
+							/* ignore error*/
+						}
 					}
 				}
 
-				this.builtinExtensionsPromises = bundledExtensions.map(async e => {
-					const id = getGalleryExtensionId(e.packageJSON.publisher, e.packageJSON.name);
-					return {
-						identifier: { id },
-						location: uriIdentityService.extUri.joinPath(builtinExtensionsServiceUrl!, e.extensionPath),
-						type: ExtensionType.System,
-						isBuiltin: true,
-						manifest: e.packageNLS ? await this.localizeManifest(id, e.packageJSON, e.packageNLS) : e.packageJSON,
-						readmeUrl: e.readmePath ? uriIdentityService.extUri.joinPath(builtinExtensionsServiceUrl!, e.readmePath) : undefined,
-						changelogUrl: e.changelogPath ? uriIdentityService.extUri.joinPath(builtinExtensionsServiceUrl!, e.changelogPath) : undefined,
-						targetPlatform: TargetPlatform.WEB,
-						validations: [],
-						isValid: true
-					};
-				});
+				this.builtinExtensionsPromises = bundledExtensions.map(
+					async (e) => {
+						const id = getGalleryExtensionId(
+							e.packageJSON.publisher,
+							e.packageJSON.name
+						);
+						return {
+							identifier: { id },
+							location: uriIdentityService.extUri.joinPath(
+								builtinExtensionsServiceUrl!,
+								e.extensionPath
+							),
+							type: ExtensionType.System,
+							isBuiltin: true,
+							manifest: e.packageNLS
+								? await this.localizeManifest(
+										id,
+										e.packageJSON,
+										e.packageNLS
+									)
+								: e.packageJSON,
+							readmeUrl: e.readmePath
+								? uriIdentityService.extUri.joinPath(
+										builtinExtensionsServiceUrl!,
+										e.readmePath
+									)
+								: undefined,
+							changelogUrl: e.changelogPath
+								? uriIdentityService.extUri.joinPath(
+										builtinExtensionsServiceUrl!,
+										e.changelogPath
+									)
+								: undefined,
+							targetPlatform: TargetPlatform.WEB,
+							validations: [],
+							isValid: true,
+						};
+					}
+				);
 			}
 		}
 	}
@@ -104,13 +155,13 @@ export class BuiltinExtensionsScannerService
 	private async localizeManifest(
 		extensionId: string,
 		manifest: IExtensionManifest,
-		fallbackTranslations: ITranslations,
+		fallbackTranslations: ITranslations
 	): Promise<IExtensionManifest> {
 		if (!this.nlsUrl) {
 			return localizeManifest(
 				this.logService,
 				manifest,
-				fallbackTranslations,
+				fallbackTranslations
 			);
 		}
 		// the `package` endpoint returns the translations in a key-value format similar to the package.nls.json file.
@@ -118,21 +169,21 @@ export class BuiltinExtensionsScannerService
 		try {
 			const res =
 				await this.extensionResourceLoaderService.readExtensionResource(
-					uri,
+					uri
 				);
 			const json = JSON.parse(res.toString());
 			return localizeManifest(
 				this.logService,
 				manifest,
 				json,
-				fallbackTranslations,
+				fallbackTranslations
 			);
 		} catch (e) {
 			this.logService.error(e);
 			return localizeManifest(
 				this.logService,
 				manifest,
-				fallbackTranslations,
+				fallbackTranslations
 			);
 		}
 	}
@@ -141,5 +192,5 @@ export class BuiltinExtensionsScannerService
 registerSingleton(
 	IBuiltinExtensionsScannerService,
 	BuiltinExtensionsScannerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

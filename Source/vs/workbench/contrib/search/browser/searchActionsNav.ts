@@ -55,7 +55,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ToggleQueryDetailsAction.label",
-						"Toggle Query Details",
+						"Toggle Query Details"
 					),
 					original: "Toggle Query Details",
 				},
@@ -64,7 +64,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.or(
 						Constants.SearchViewFocusedKey,
-						SearchEditorConstants.InSearchEditor,
+						SearchEditorConstants.InSearchEditor
 					),
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyJ,
 				},
@@ -76,7 +76,7 @@ registerAction2(
 				.getContext(getActiveElement());
 			if (
 				contextService.getValue(
-					SearchEditorConstants.InSearchEditor.serialize(),
+					SearchEditorConstants.InSearchEditor.serialize()
 				)
 			) {
 				(
@@ -85,17 +85,17 @@ registerAction2(
 				).toggleQueryDetails(args[0]?.show);
 			} else if (
 				contextService.getValue(
-					Constants.SearchViewFocusedKey.serialize(),
+					Constants.SearchViewFocusedKey.serialize()
 				)
 			) {
 				const searchView = getSearchView(accessor.get(IViewsService));
 				assertIsDefined(searchView).toggleQueryDetails(
 					undefined,
-					args[0]?.show,
+					args[0]?.show
 				);
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -106,7 +106,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"CloseReplaceWidget.label",
-						"Close Replace Widget",
+						"Close Replace Widget"
 					),
 					original: "Close Replace Widget",
 				},
@@ -115,7 +115,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						Constants.ReplaceInputBoxFocusedKey,
+						Constants.ReplaceInputBoxFocusedKey
 					),
 					primary: KeyCode.Escape,
 				},
@@ -129,7 +129,7 @@ registerAction2(
 			}
 			return Promise.resolve(null);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -140,7 +140,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ToggleCaseSensitiveCommandId.label",
-						"Toggle Case Sensitive",
+						"Toggle Case Sensitive"
 					),
 					original: "Toggle Case Sensitive",
 				},
@@ -151,11 +151,11 @@ registerAction2(
 						when: isMacintosh
 							? ContextKeyExpr.and(
 									Constants.SearchViewFocusedKey,
-									Constants.FileMatchOrFolderMatchFocusKey.toNegated(),
-							  )
+									Constants.FileMatchOrFolderMatchFocusKey.toNegated()
+								)
 							: Constants.SearchViewFocusedKey,
 					},
-					ToggleCaseSensitiveKeybinding,
+					ToggleCaseSensitiveKeybinding
 				),
 			});
 		}
@@ -163,7 +163,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			toggleCaseSensitiveCommand(accessor);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -174,7 +174,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ToggleWholeWordCommandId.label",
-						"Toggle Whole Word",
+						"Toggle Whole Word"
 					),
 					original: "Toggle Whole Word",
 				},
@@ -183,7 +183,7 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: Constants.SearchViewFocusedKey,
 					},
-					ToggleWholeWordKeybinding,
+					ToggleWholeWordKeybinding
 				),
 				category,
 			});
@@ -192,7 +192,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return toggleWholeWordCommand(accessor);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -203,7 +203,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"ToggleRegexCommandId.label",
-						"Toggle Regex",
+						"Toggle Regex"
 					),
 					original: "Toggle Regex",
 				},
@@ -212,7 +212,7 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: Constants.SearchViewFocusedKey,
 					},
-					ToggleRegexKeybinding,
+					ToggleRegexKeybinding
 				),
 				category,
 			});
@@ -221,7 +221,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return toggleRegexCommand(accessor);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -232,7 +232,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"TogglePreserveCaseId.label",
-						"Toggle Preserve Case",
+						"Toggle Preserve Case"
 					),
 					original: "Toggle Preserve Case",
 				},
@@ -241,7 +241,7 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: Constants.SearchViewFocusedKey,
 					},
-					TogglePreserveCaseKeybinding,
+					TogglePreserveCaseKeybinding
 				),
 				category,
 			});
@@ -250,7 +250,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return togglePreserveCaseCommand(accessor);
 		}
-	},
+	}
 );
 
 //#endregion
@@ -269,7 +269,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						Constants.FileMatchOrMatchFocusKey,
+						Constants.FileMatchOrMatchFocusKey
 					),
 					primary: KeyCode.Enter,
 					mac: {
@@ -294,12 +294,12 @@ registerAction2(
 						<FileMatchOrMatch>tree.getFocus()[0],
 						false,
 						false,
-						true,
+						true
 					);
 				}
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -310,7 +310,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"OpenMatchToSide.label",
-						"Open Match To Side",
+						"Open Match To Side"
 					),
 					original: "Open Match To Side",
 				},
@@ -319,7 +319,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						Constants.FileMatchOrMatchFocusKey,
+						Constants.FileMatchOrMatchFocusKey
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.Enter,
 					mac: {
@@ -337,11 +337,11 @@ registerAction2(
 					<FileMatchOrMatch>tree.getFocus()[0],
 					false,
 					true,
-					true,
+					true
 				);
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -352,7 +352,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"AddCursorsAtSearchResults.label",
-						"Add Cursors at Search Results",
+						"Add Cursors at Search Results"
 					),
 					original: "Add Cursors at Search Results",
 				},
@@ -360,7 +360,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						Constants.FileMatchOrMatchFocusKey,
+						Constants.FileMatchOrMatchFocusKey
 					),
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyL,
 				},
@@ -374,11 +374,11 @@ registerAction2(
 				const tree: WorkbenchCompressibleObjectTree<RenderableMatch> =
 					searchView.getControl();
 				searchView.openEditorWithMultiCursor(
-					<FileMatchOrMatch>tree.getFocus()[0],
+					<FileMatchOrMatch>tree.getFocus()[0]
 				);
 			}
 		}
-	},
+	}
 );
 
 //#endregion
@@ -391,7 +391,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"FocusNextInputAction.label",
-						"Focus Next Input",
+						"Focus Next Input"
 					),
 					original: "Focus Next Input",
 				},
@@ -401,12 +401,12 @@ registerAction2(
 					when: ContextKeyExpr.or(
 						ContextKeyExpr.and(
 							SearchEditorConstants.InSearchEditor,
-							Constants.InputBoxFocusedKey,
+							Constants.InputBoxFocusedKey
 						),
 						ContextKeyExpr.and(
 							Constants.SearchViewVisibleKey,
-							Constants.InputBoxFocusedKey,
-						),
+							Constants.InputBoxFocusedKey
+						)
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 				},
@@ -426,7 +426,7 @@ registerAction2(
 			const searchView = getSearchView(accessor.get(IViewsService));
 			searchView?.focusNextInputBox();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -437,7 +437,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"FocusPreviousInputAction.label",
-						"Focus Previous Input",
+						"Focus Previous Input"
 					),
 					original: "Focus Previous Input",
 				},
@@ -447,13 +447,13 @@ registerAction2(
 					when: ContextKeyExpr.or(
 						ContextKeyExpr.and(
 							SearchEditorConstants.InSearchEditor,
-							Constants.InputBoxFocusedKey,
+							Constants.InputBoxFocusedKey
 						),
 						ContextKeyExpr.and(
 							Constants.SearchViewVisibleKey,
 							Constants.InputBoxFocusedKey,
-							Constants.SearchInputBoxFocusedKey.toNegated(),
-						),
+							Constants.SearchInputBoxFocusedKey.toNegated()
+						)
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 				},
@@ -473,7 +473,7 @@ registerAction2(
 			const searchView = getSearchView(accessor.get(IViewsService));
 			searchView?.focusPreviousInputBox();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -484,7 +484,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"FocusSearchFromResults.label",
-						"Focus Search From Results",
+						"Focus Search From Results"
 					),
 					original: "Focus Search From Results",
 				},
@@ -495,8 +495,8 @@ registerAction2(
 						Constants.SearchViewVisibleKey,
 						ContextKeyExpr.or(
 							Constants.FirstMatchFocusKey,
-							CONTEXT_ACCESSIBILITY_MODE_ENABLED,
-						),
+							CONTEXT_ACCESSIBILITY_MODE_ENABLED
+						)
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 				},
@@ -506,7 +506,7 @@ registerAction2(
 			const searchView = getSearchView(accessor.get(IViewsService));
 			searchView?.focusPreviousInputBox();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -527,14 +527,14 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			const configurationService = accessor.get(IConfigurationService);
 			const searchOnType = configurationService.getValue<boolean>(
-				ToggleSearchOnTypeAction.searchOnTypeKey,
+				ToggleSearchOnTypeAction.searchOnTypeKey
 			);
 			return configurationService.updateValue(
 				ToggleSearchOnTypeAction.searchOnTypeKey,
-				!searchOnType,
+				!searchOnType
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -545,7 +545,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"focusSearchListCommandLabel",
-						"Focus List",
+						"Focus List"
 					),
 					original: "Focus List",
 				},
@@ -557,7 +557,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			focusSearchListCommand(accessor);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -568,7 +568,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"FocusNextSearchResult.label",
-						"Focus Next Search Result",
+						"Focus Next Search Result"
 					),
 					original: "Focus Next Search Result",
 				},
@@ -582,7 +582,7 @@ registerAction2(
 				f1: true,
 				precondition: ContextKeyExpr.or(
 					Constants.HasSearchResults,
-					SearchEditorConstants.InSearchEditor,
+					SearchEditorConstants.InSearchEditor
 				),
 			});
 		}
@@ -590,7 +590,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return await focusNextSearchResult(accessor);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -601,7 +601,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"FocusPreviousSearchResult.label",
-						"Focus Previous Search Result",
+						"Focus Previous Search Result"
 					),
 					original: "Focus Previous Search Result",
 				},
@@ -615,7 +615,7 @@ registerAction2(
 				f1: true,
 				precondition: ContextKeyExpr.or(
 					Constants.HasSearchResults,
-					SearchEditorConstants.InSearchEditor,
+					SearchEditorConstants.InSearchEditor
 				),
 			});
 		}
@@ -623,7 +623,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return await focusPreviousSearchResult(accessor);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -656,7 +656,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<any> {
 			return await findOrReplaceInFiles(accessor, true);
 		}
-	},
+	}
 );
 
 //#endregion
@@ -705,7 +705,7 @@ async function focusNextSearchResult(accessor: ServicesAccessor): Promise<any> {
 }
 
 async function focusPreviousSearchResult(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): Promise<any> {
 	const editorService = accessor.get(IEditorService);
 	const input = editorService.activeEditor;
@@ -723,7 +723,7 @@ async function focusPreviousSearchResult(
 
 async function findOrReplaceInFiles(
 	accessor: ServicesAccessor,
-	expandSearchReplaceWidget: boolean,
+	expandSearchReplaceWidget: boolean
 ): Promise<any> {
 	return openSearchView(accessor.get(IViewsService), false).then(
 		(openedView) => {
@@ -739,10 +739,10 @@ async function findOrReplaceInFiles(
 				openedView.searchAndReplaceWidget.focus(
 					undefined,
 					updatedText,
-					updatedText,
+					updatedText
 				);
 			}
-		},
+		}
 	);
 }
 //#endregion

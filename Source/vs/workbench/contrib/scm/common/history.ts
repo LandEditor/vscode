@@ -17,26 +17,26 @@ export interface ISCMHistoryProvider {
 	readonly onDidChangeCurrentHistoryItemGroup: Event<void>;
 
 	get currentHistoryItemGroup(): ISCMHistoryItemGroup | undefined;
-	set currentHistoryItemGroup(historyItemGroup:
-		| ISCMHistoryItemGroup
-		| undefined);
+	set currentHistoryItemGroup(
+		historyItemGroup: ISCMHistoryItemGroup | undefined
+	);
 
 	provideHistoryItems(
 		historyItemGroupId: string,
-		options: ISCMHistoryOptions,
+		options: ISCMHistoryOptions
 	): Promise<ISCMHistoryItem[] | undefined>;
 	provideHistoryItemChanges(
-		historyItemId: string,
+		historyItemId: string
 	): Promise<ISCMHistoryItemChange[] | undefined>;
 	resolveHistoryItemGroupBase(
-		historyItemGroupId: string,
+		historyItemGroupId: string
 	): Promise<ISCMHistoryItemGroup | undefined>;
 	resolveHistoryItemGroupCommonAncestor(
 		historyItemGroupId1: string,
-		historyItemGroupId2: string,
+		historyItemGroupId2: string
 	): Promise<{ id: string; ahead: number; behind: number } | undefined>;
 	resolveHistoryItemGroupDetails(
-		historyItemGroup: ISCMHistoryItemGroup,
+		historyItemGroup: ISCMHistoryItemGroup
 	): Promise<ISCMHistoryItemGroupDetails | undefined>;
 }
 

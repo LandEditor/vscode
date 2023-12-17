@@ -32,8 +32,9 @@ export class EditSessionsFileSystemProvider
 	static readonly SCHEMA = EDIT_SESSIONS_SCHEME;
 
 	constructor(
-		@IEditSessionsStorageService private editSessionsStorageService: IEditSessionsStorageService,
-	) { }
+		@IEditSessionsStorageService
+		private editSessionsStorageService: IEditSessionsStorageService
+	) {}
 
 	readonly capabilities: FileSystemProviderCapabilities =
 		FileSystemProviderCapabilities.Readonly +
@@ -42,7 +43,7 @@ export class EditSessionsFileSystemProvider
 	async readFile(resource: URI): Promise<Uint8Array> {
 		const match =
 			/(?<ref>[^/]+)\/(?<folderName>[^/]+)\/(?<filePath>.*)/.exec(
-				resource.path.substring(1),
+				resource.path.substring(1)
 			);
 		if (!match?.groups) {
 			throw FileSystemProviderErrorCode.FileNotFound;
@@ -50,7 +51,7 @@ export class EditSessionsFileSystemProvider
 		const { ref, folderName, filePath } = match.groups;
 		const data = await this.editSessionsStorageService.read(
 			"editSessions",
-			ref,
+			ref
 		);
 		if (!data) {
 			throw FileSystemProviderErrorCode.FileNotFound;
@@ -59,7 +60,7 @@ export class EditSessionsFileSystemProvider
 		const change = content.folders
 			.find((f) => f.name === folderName)
 			?.workingChanges.find(
-				(change) => change.relativeFilePath === filePath,
+				(change) => change.relativeFilePath === filePath
 			);
 		if (!change || change.type === ChangeType.Deletion) {
 			throw FileSystemProviderErrorCode.FileNotFound;
@@ -96,7 +97,7 @@ export class EditSessionsFileSystemProvider
 	async rename(
 		from: URI,
 		to: URI,
-		opts: IFileOverwriteOptions,
+		opts: IFileOverwriteOptions
 	): Promise<void> {}
 	async delete(resource: URI, opts: IFileDeleteOptions): Promise<void> {}
 

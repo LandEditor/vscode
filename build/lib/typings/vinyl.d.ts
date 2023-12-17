@@ -115,7 +115,7 @@ declare module "vinyl" {
 				 * If false, the destination stream will not be ended (same as node core).
 				 */
 				end?: boolean;
-			},
+			}
 		): T;
 
 		/**

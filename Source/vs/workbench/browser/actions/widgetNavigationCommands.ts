@@ -58,7 +58,7 @@ interface IFocusNotifier {
 
 function handleFocusEventsGroup(
 	group: readonly IFocusNotifier[],
-	handler: (isFocus: boolean) => void,
+	handler: (isFocus: boolean) => void
 ): IDisposable {
 	const focusedIndices = new Set<number>();
 	return combinedDisposable(
@@ -75,15 +75,15 @@ function handleFocusEventsGroup(
 					if (!focusedIndices.size) {
 						handler(false);
 					}
-				}),
-			),
-		),
+				})
+			)
+		)
 	);
 }
 
 const NavigableContainerFocusedContextKey = new RawContextKey<boolean>(
 	"navigableContainerFocused",
-	false,
+	false
 );
 
 class NavigableContainerManager implements IDisposable {
@@ -94,7 +94,8 @@ class NavigableContainerManager implements IDisposable {
 	private focused: IContextKey<boolean>;
 
 	constructor(@IContextKeyService contextKeyService: IContextKeyService) {
-		this.focused = NavigableContainerFocusedContextKey.bindTo(contextKeyService);
+		this.focused =
+			NavigableContainerFocusedContextKey.bindTo(contextKeyService);
 		NavigableContainerManager.INSTANCE = this;
 	}
 
@@ -127,7 +128,7 @@ class NavigableContainerManager implements IDisposable {
 					instance.focused.set(false);
 					instance.lastContainer = undefined;
 				}
-			}),
+			})
 		);
 	}
 
@@ -137,16 +138,16 @@ class NavigableContainerManager implements IDisposable {
 }
 
 export function registerNavigableContainer(
-	container: INavigableContainer,
+	container: INavigableContainer
 ): IDisposable {
 	return NavigableContainerManager.register(container);
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	NavigableContainerManager,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -156,8 +157,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		NavigableContainerFocusedContextKey,
 		ContextKeyExpr.or(
 			WorkbenchListFocusContextKey?.negate(),
-			WorkbenchListScrollAtTopContextKey,
-		),
+			WorkbenchListScrollAtTopContextKey
+		)
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 	handler: () => {
@@ -173,8 +174,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		NavigableContainerFocusedContextKey,
 		ContextKeyExpr.or(
 			WorkbenchListFocusContextKey?.negate(),
-			WorkbenchListScrollAtBottomContextKey,
-		),
+			WorkbenchListScrollAtBottomContextKey
+		)
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 	handler: () => {

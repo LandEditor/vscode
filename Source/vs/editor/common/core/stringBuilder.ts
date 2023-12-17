@@ -36,7 +36,7 @@ export function getPlatformTextDecoder(): TextDecoder {
 export function decodeUTF16LE(
 	source: Uint8Array,
 	offset: number,
-	len: number,
+	len: number
 ): string {
 	const view = new Uint16Array(source.buffer, offset, len);
 	if (len > 0 && (view[0] === 0xfeff || view[0] === 0xfffe)) {
@@ -52,7 +52,7 @@ export function decodeUTF16LE(
 function compatDecodeUTF16LE(
 	source: Uint8Array,
 	offset: number,
-	len: number,
+	len: number
 ): string {
 	const result: string[] = [];
 	let resultLen = 0;
@@ -100,7 +100,7 @@ export class StringBuilder {
 		const view = new Uint16Array(
 			this._buffer.buffer,
 			0,
-			this._bufferLength,
+			this._bufferLength
 		);
 		return getPlatformTextDecoder().decode(view);
 	}

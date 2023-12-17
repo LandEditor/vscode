@@ -46,7 +46,7 @@ export class ExplorerFileNestingTrie {
 
 	private getAttributes(
 		filename: string,
-		dirname: string,
+		dirname: string
 	): FilenameAttributes {
 		const lastDot = filename.lastIndexOf(".");
 		if (lastDot < 1) {
@@ -77,7 +77,7 @@ export class ExplorerFileNestingTrie {
 
 		const findAllRootAncestors = (
 			file: string,
-			seen: Set<string> = new Set(),
+			seen: Set<string> = new Set()
 		): string[] => {
 			if (seen.has(file)) {
 				return [];
@@ -160,9 +160,7 @@ export class PreTrie {
 			lines.push("* => \n" + this.value.toString(indentation + "  "));
 		}
 		[...this.map.entries()].map(([key, trie]) =>
-			lines.push(
-				"^" + key + " => \n" + trie.toString(indentation + "  "),
-			),
+			lines.push("^" + key + " => \n" + trie.toString(indentation + "  "))
 		);
 		return lines.map((l) => indentation + l).join("\n");
 	}
@@ -203,12 +201,12 @@ export class SufTrie {
 		const results: string[] = [];
 		if (key === "") {
 			results.push(
-				...this.epsilon.map((ss) => ss.substitute(attributes)),
+				...this.epsilon.map((ss) => ss.substitute(attributes))
 			);
 		}
 		if (this.star.length) {
 			results.push(
-				...this.star.map((ss) => ss.substitute(attributes, key)),
+				...this.star.map((ss) => ss.substitute(attributes, key))
 			);
 		}
 
@@ -234,9 +232,7 @@ export class SufTrie {
 		}
 
 		[...this.map.entries()].map(([key, trie]) =>
-			lines.push(
-				key + "$" + " => \n" + trie.toString(indentation + "  "),
-			),
+			lines.push(key + "$" + " => \n" + trie.toString(indentation + "  "))
 		);
 
 		return lines.map((l) => indentation + l).join("\n");

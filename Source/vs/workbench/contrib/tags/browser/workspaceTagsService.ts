@@ -26,14 +26,14 @@ export class NoOpWorkspaceTagsService implements IWorkspaceTagsService {
 
 	async getTelemetryWorkspaceId(
 		workspace: IWorkspace,
-		state: WorkbenchState,
+		state: WorkbenchState
 	): Promise<string | undefined> {
 		return undefined;
 	}
 
 	getHashedRemotesFromUri(
 		workspaceUri: URI,
-		stripEndingDotGit?: boolean,
+		stripEndingDotGit?: boolean
 	): Promise<string[]> {
 		return Promise.resolve([]);
 	}
@@ -42,5 +42,5 @@ export class NoOpWorkspaceTagsService implements IWorkspaceTagsService {
 registerSingleton(
 	IWorkspaceTagsService,
 	NoOpWorkspaceTagsService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

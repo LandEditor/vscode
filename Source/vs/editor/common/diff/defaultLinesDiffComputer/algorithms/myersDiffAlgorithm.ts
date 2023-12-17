@@ -20,7 +20,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 	compute(
 		seq1: ISequence,
 		seq2: ISequence,
-		timeout: ITimeout = InfiniteTimeout.instance,
+		timeout: ITimeout = InfiniteTimeout.instance
 	): DiffAlgorithmResult {
 		// These are common special cases.
 		// The early return improves performance dramatically.
@@ -54,7 +54,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 		const paths = new FastArrayNegativeIndices<SnakePath | null>();
 		paths.set(
 			0,
-			V.get(0) === 0 ? null : new SnakePath(null, 0, 0, V.get(0)),
+			V.get(0) === 0 ? null : new SnakePath(null, 0, 0, V.get(0))
 		);
 
 		let k = 0;
@@ -76,7 +76,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 				step++;
 				const x = Math.min(
 					Math.max(maxXofDLineTop, maxXofDLineLeft),
-					seqX.length,
+					seqX.length
 				);
 				const y = x - k;
 				step++;
@@ -93,7 +93,7 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 					k,
 					newMaxX !== x
 						? new SnakePath(lastPath, x, y, newMaxX - x)
-						: lastPath,
+						: lastPath
 				);
 
 				if (V.get(k) === seqX.length && V.get(k) - k === seqY.length) {
@@ -115,8 +115,8 @@ export class MyersDiffAlgorithm implements IDiffAlgorithm {
 				result.push(
 					new SequenceDiff(
 						new OffsetRange(endX, lastAligningPosS1),
-						new OffsetRange(endY, lastAligningPosS2),
-					),
+						new OffsetRange(endY, lastAligningPosS2)
+					)
 				);
 			}
 			if (!path) {
@@ -138,7 +138,7 @@ class SnakePath {
 		public readonly prev: SnakePath | null,
 		public readonly x: number,
 		public readonly y: number,
-		public readonly length: number,
+		public readonly length: number
 	) {}
 }
 

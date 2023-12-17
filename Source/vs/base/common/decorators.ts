@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 function createDecorator(
-	mapFn: (fn: Function, key: string) => Function,
+	mapFn: (fn: Function, key: string) => Function
 ): Function {
 	return (target: any, key: string, descriptor: any) => {
 		let fnKey: string | null = null;
@@ -36,7 +36,7 @@ export function memoize(_target: any, key: string, descriptor: any) {
 
 		if (fn!.length !== 0) {
 			console.warn(
-				"Memoize should only be used in functions with zero parameters",
+				"Memoize should only be used in functions with zero parameters"
 			);
 		}
 	} else if (typeof descriptor.get === "function") {
@@ -70,7 +70,7 @@ export interface IDebounceReducer<T> {
 export function debounce<T>(
 	delay: number,
 	reducer?: IDebounceReducer<T>,
-	initialValueProvider?: () => T,
+	initialValueProvider?: () => T
 ): Function {
 	return createDecorator((fn, key) => {
 		const timerKey = `$debounce$${key}`;
@@ -103,7 +103,7 @@ export function debounce<T>(
 export function throttle<T>(
 	delay: number,
 	reducer?: IDebounceReducer<T>,
-	initialValueProvider?: () => T,
+	initialValueProvider?: () => T
 ): Function {
 	return createDecorator((fn, key) => {
 		const timerKey = `$throttle$timer$${key}`;

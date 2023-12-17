@@ -10,5 +10,5 @@ vscodeGrammarUpdater.update(
 	"syntaxes/SQL.plist",
 	"./syntaxes/sql.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );

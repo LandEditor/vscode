@@ -72,7 +72,7 @@ export class OutlineViewState implements IOutlineViewState {
 				filterOnType: this.filterOnType,
 			}),
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 

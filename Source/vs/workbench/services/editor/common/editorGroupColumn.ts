@@ -28,14 +28,14 @@ export type EditorGroupColumn = number;
 export function columnToEditorGroup(
 	editorGroupService: IEditorGroupsService,
 	configurationService: IConfigurationService,
-	column = ACTIVE_GROUP,
+	column = ACTIVE_GROUP
 ): GroupIdentifier | ACTIVE_GROUP_TYPE | SIDE_GROUP_TYPE {
 	if (column === ACTIVE_GROUP || column === SIDE_GROUP) {
 		return column; // return early for when column is well known
 	}
 
 	let groupInColumn = editorGroupService.getGroups(
-		GroupsOrder.GRID_APPEARANCE,
+		GroupsOrder.GRID_APPEARANCE
 	)[column];
 
 	// If a column is asked for that does not exist, we create up to 9 columns in accordance
@@ -44,18 +44,18 @@ export function columnToEditorGroup(
 	if (!groupInColumn && column < 9) {
 		for (let i = 0; i <= column; i++) {
 			const editorGroups = editorGroupService.getGroups(
-				GroupsOrder.GRID_APPEARANCE,
+				GroupsOrder.GRID_APPEARANCE
 			);
 			if (!editorGroups[i]) {
 				editorGroupService.addGroup(
 					editorGroups[i - 1],
-					preferredSideBySideGroupDirection(configurationService),
+					preferredSideBySideGroupDirection(configurationService)
 				);
 			}
 		}
 
 		groupInColumn = editorGroupService.getGroups(
-			GroupsOrder.GRID_APPEARANCE,
+			GroupsOrder.GRID_APPEARANCE
 		)[column];
 	}
 
@@ -64,7 +64,7 @@ export function columnToEditorGroup(
 
 export function editorGroupToColumn(
 	editorGroupService: IEditorGroupsService,
-	editorGroup: IEditorGroup | GroupIdentifier,
+	editorGroup: IEditorGroup | GroupIdentifier
 ): EditorGroupColumn {
 	const group =
 		typeof editorGroup === "number"

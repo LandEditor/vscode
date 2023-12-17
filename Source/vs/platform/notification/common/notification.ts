@@ -12,7 +12,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 export import Severity = BaseSeverity;
 
 export const INotificationService = createDecorator<INotificationService>(
-	"notificationService",
+	"notificationService"
 );
 
 export type NotificationMessage = string | Error;
@@ -391,7 +391,7 @@ export interface INotificationService {
 		severity: Severity,
 		message: string,
 		choices: (IPromptChoice | IPromptChoiceWithMenu)[],
-		options?: IPromptOptions,
+		options?: IPromptOptions
 	): INotificationHandle;
 
 	/**
@@ -404,7 +404,7 @@ export interface INotificationService {
 	 */
 	status(
 		message: NotificationMessage,
-		options?: IStatusMessageOptions,
+		options?: IStatusMessageOptions
 	): IDisposable;
 }
 

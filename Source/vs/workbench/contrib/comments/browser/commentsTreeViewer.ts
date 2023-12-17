@@ -58,7 +58,7 @@ export const COMMENTS_VIEW_ID = "workbench.panel.comments";
 export const COMMENTS_VIEW_STORAGE_ID = "Comments";
 export const COMMENTS_VIEW_TITLE: ILocalizedString = nls.localize2(
 	"comments.view.title",
-	"Comments",
+	"Comments"
 );
 
 interface IResourceTemplateData {
@@ -126,7 +126,7 @@ export class ResourceWithCommentsRenderer
 	renderTemplate(container: HTMLElement) {
 		const labelContainer = dom.append(
 			container,
-			dom.$(".resource-container"),
+			dom.$(".resource-container")
 		);
 		const resourceLabel = this.labels.create(labelContainer);
 		const separator = dom.append(labelContainer, dom.$(".separator"));
@@ -139,7 +139,7 @@ export class ResourceWithCommentsRenderer
 		node: ITreeNode<ResourceWithCommentThreads>,
 		index: number,
 		templateData: IResourceTemplateData,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.resourceLabel.setFile(node.element.resource);
 		templateData.separator.innerText = "\u00b7";
@@ -159,31 +159,33 @@ export class ResourceWithCommentsRenderer
 }
 
 export class CommentNodeRenderer
-	implements IListRenderer<ITreeNode<CommentNode>, ICommentThreadTemplateData>
+	implements
+		IListRenderer<ITreeNode<CommentNode>, ICommentThreadTemplateData>
 {
 	templateId: string = "comment-node";
 
 	constructor(
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IThemeService private themeService: IThemeService
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement) {
 		const threadContainer = dom.append(
 			container,
-			dom.$(".comment-thread-container"),
+			dom.$(".comment-thread-container")
 		);
 		const metadataContainer = dom.append(
 			threadContainer,
-			dom.$(".comment-metadata-container"),
+			dom.$(".comment-metadata-container")
 		);
 		const threadMetadata = {
 			icon: dom.append(metadataContainer, dom.$(".icon")),
 			userNames: dom.append(metadataContainer, dom.$(".user")),
 			timestamp: new TimestampWidget(
 				this.configurationService,
-				dom.append(metadataContainer, dom.$(".timestamp-container")),
+				dom.append(metadataContainer, dom.$(".timestamp-container"))
 			),
 			separator: dom.append(metadataContainer, dom.$(".separator")),
 			commentPreview: dom.append(metadataContainer, dom.$(".text")),
@@ -193,7 +195,7 @@ export class CommentNodeRenderer
 
 		const snippetContainer = dom.append(
 			threadContainer,
-			dom.$(".comment-snippet-container"),
+			dom.$(".comment-snippet-container")
 		);
 		const repliesMetadata = {
 			container: snippetContainer,
@@ -201,17 +203,17 @@ export class CommentNodeRenderer
 			count: dom.append(snippetContainer, dom.$(".count")),
 			lastReplyDetail: dom.append(
 				snippetContainer,
-				dom.$(".reply-detail"),
+				dom.$(".reply-detail")
 			),
 			separator: dom.append(snippetContainer, dom.$(".separator")),
 			timestamp: new TimestampWidget(
 				this.configurationService,
-				dom.append(snippetContainer, dom.$(".timestamp-container")),
+				dom.append(snippetContainer, dom.$(".timestamp-container"))
 			),
 		};
 		repliesMetadata.separator.innerText = "\u00b7";
 		repliesMetadata.icon.classList.add(
-			...ThemeIcon.asClassNameArray(Codicon.indent),
+			...ThemeIcon.asClassNameArray(Codicon.indent)
 		);
 		const disposables = [
 			threadMetadata.timestamp,
@@ -231,7 +233,7 @@ export class CommentNodeRenderer
 
 	private getRenderedComment(
 		commentBody: IMarkdownString,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	) {
 		const renderedComment = renderMarkdown(commentBody, {
 			inline: true,
@@ -240,7 +242,7 @@ export class CommentNodeRenderer
 					openLinkFromMarkdown(
 						this.openerService,
 						link,
-						commentBody.isTrusted,
+						commentBody.isTrusted
 					),
 				disposables: disposables,
 			},
@@ -269,27 +271,27 @@ export class CommentNodeRenderer
 		node: ITreeNode<CommentNode>,
 		index: number,
 		templateData: ICommentThreadTemplateData,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		const commentCount = node.element.replies.length + 1;
 		templateData.threadMetadata.icon.classList.remove(
 			...Array.from(
-				templateData.threadMetadata.icon.classList.values(),
-			).filter((value) => value.startsWith("codicon")),
+				templateData.threadMetadata.icon.classList.values()
+			).filter((value) => value.startsWith("codicon"))
 		);
 		templateData.threadMetadata.icon.classList.add(
 			...ThemeIcon.asClassNameArray(
-				this.getIcon(node.element.threadState),
-			),
+				this.getIcon(node.element.threadState)
+			)
 		);
 		if (node.element.threadState !== undefined) {
 			const color = this.getCommentThreadWidgetStateColor(
 				node.element.threadState,
-				this.themeService.getColorTheme(),
+				this.themeService.getColorTheme()
 			);
 			templateData.threadMetadata.icon.style.setProperty(
 				commentViewThreadStateColorVar,
-				`${color}`,
+				`${color}`
 			);
 			templateData.threadMetadata.icon.style.color = `var(${commentViewThreadStateColorVar})`;
 		}
@@ -298,7 +300,7 @@ export class CommentNodeRenderer
 		templateData.threadMetadata.timestamp.setTimestamp(
 			node.element.comment.timestamp
 				? new Date(node.element.comment.timestamp)
-				: undefined,
+				: undefined
 		);
 		const originalComment = node.element;
 
@@ -312,12 +314,12 @@ export class CommentNodeRenderer
 			templateData.disposables.push(disposables);
 			const renderedComment = this.getRenderedComment(
 				originalComment.comment.body,
-				disposables,
+				disposables
 			);
 			templateData.disposables.push(renderedComment);
 			templateData.threadMetadata.commentPreview.appendChild(
 				renderedComment.element.firstElementChild ??
-					renderedComment.element,
+					renderedComment.element
 			);
 			templateData.threadMetadata.commentPreview.title =
 				renderedComment.element.textContent ?? "";
@@ -331,14 +333,14 @@ export class CommentNodeRenderer
 				templateData.threadMetadata.range.textContent = nls.localize(
 					"commentLine",
 					"[Ln {0}]",
-					node.element.range.startLineNumber,
+					node.element.range.startLineNumber
 				);
 			} else {
 				templateData.threadMetadata.range.textContent = nls.localize(
 					"commentRange",
 					"[Ln {0}-{1}]",
 					node.element.range.startLineNumber,
-					node.element.range.endLineNumber,
+					node.element.range.endLineNumber
 				);
 			}
 		}
@@ -356,16 +358,16 @@ export class CommentNodeRenderer
 		templateData.repliesMetadata.lastReplyDetail.textContent = nls.localize(
 			"lastReplyFrom",
 			"Last reply from {0}",
-			lastComment.userName,
+			lastComment.userName
 		);
 		templateData.repliesMetadata.timestamp.setTimestamp(
-			lastComment.timestamp ? new Date(lastComment.timestamp) : undefined,
+			lastComment.timestamp ? new Date(lastComment.timestamp) : undefined
 		);
 	}
 
 	private getCommentThreadWidgetStateColor(
 		state: CommentThreadState | undefined,
-		theme: IColorTheme,
+		theme: IColorTheme
 	): Color | undefined {
 		return state !== undefined
 			? getCommentThreadStateIconColor(state, theme)
@@ -374,7 +376,7 @@ export class CommentNodeRenderer
 
 	disposeTemplate(templateData: ICommentThreadTemplateData): void {
 		templateData.disposables.forEach((disposeable) =>
-			disposeable.dispose(),
+			disposeable.dispose()
 		);
 	}
 }
@@ -402,13 +404,14 @@ interface CommentFilterData {
 type FilterData = ResourceFilterData | CommentFilterData;
 
 export class Filter
-	implements ITreeFilter<ResourceWithCommentThreads | CommentNode, FilterData>
+	implements
+		ITreeFilter<ResourceWithCommentThreads | CommentNode, FilterData>
 {
 	constructor(public options: FilterOptions) {}
 
 	filter(
 		element: ResourceWithCommentThreads | CommentNode,
-		parentVisibility: TreeVisibility,
+		parentVisibility: TreeVisibility
 	): TreeFilterResult<FilterData> {
 		if (
 			this.options.filter === "" &&
@@ -426,13 +429,13 @@ export class Filter
 	}
 
 	private filterResourceMarkers(
-		resourceMarkers: ResourceWithCommentThreads,
+		resourceMarkers: ResourceWithCommentThreads
 	): TreeFilterResult<FilterData> {
 		// Filter by text. Do not apply negated filters on resources instead use exclude patterns
 		if (this.options.textFilter.text && !this.options.textFilter.negate) {
 			const uriMatches = FilterOptions._filter(
 				this.options.textFilter.text,
-				basename(resourceMarkers.resource),
+				basename(resourceMarkers.resource)
 			);
 			if (uriMatches) {
 				return {
@@ -450,7 +453,7 @@ export class Filter
 
 	private filterCommentNode(
 		comment: CommentNode,
-		parentVisibility: TreeVisibility,
+		parentVisibility: TreeVisibility
 	): TreeFilterResult<FilterData> {
 		const matchesResolvedState =
 			comment.threadState === undefined ||
@@ -473,12 +476,12 @@ export class Filter
 				this.options.textFilter.text,
 				typeof comment.comment.body === "string"
 					? comment.comment.body
-					: comment.comment.body.value,
+					: comment.comment.body.value
 			) ||
 			// Check first user for value
 			FilterOptions._messageFilter(
 				this.options.textFilter.text,
-				comment.comment.userName,
+				comment.comment.userName
 			) ||
 			// Check all replies for value
 			(
@@ -488,14 +491,14 @@ export class Filter
 						return (
 							FilterOptions._messageFilter(
 								this.options.textFilter.text,
-								reply.comment.userName,
+								reply.comment.userName
 							) ||
 							// Check body of reply for value
 							FilterOptions._messageFilter(
 								this.options.textFilter.text,
 								typeof reply.comment.body === "string"
 									? reply.comment.body
-									: reply.comment.body.value,
+									: reply.comment.body.value
 							)
 						);
 					})
@@ -543,14 +546,14 @@ export class CommentsList extends WorkbenchObjectTree<
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IListService listService: IListService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		const delegate = new CommentsModelVirualDelegate();
 
 		const renderers = [
 			instantiationService.createInstance(
 				ResourceWithCommentsRenderer,
-				labels,
+				labels
 			),
 			instantiationService.createInstance(CommentNodeRenderer),
 		];
@@ -592,7 +595,7 @@ export class CommentsList extends WorkbenchObjectTree<
 			instantiationService,
 			contextKeyService,
 			listService,
-			configurationService,
+			configurationService
 		);
 	}
 

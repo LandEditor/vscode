@@ -31,9 +31,9 @@ function extractEditor(options) {
 	const tsConfig = JSON.parse(
 		fs
 			.readFileSync(
-				path.join(options.sourcesRoot, "tsconfig.monaco.json"),
+				path.join(options.sourcesRoot, "tsconfig.monaco.json")
 			)
-			.toString(),
+			.toString()
 	);
 	let compilerOptions;
 	if (tsConfig.extends) {
@@ -41,7 +41,7 @@ function extractEditor(options) {
 			{},
 			require(path.join(options.sourcesRoot, tsConfig.extends))
 				.compilerOptions,
-			tsConfig.compilerOptions,
+			tsConfig.compilerOptions
 		);
 		delete tsConfig.extends;
 	} else {
@@ -56,12 +56,12 @@ function extractEditor(options) {
 	options.compilerOptions = compilerOptions;
 	console.log(
 		`Running tree shaker with shakeLevel ${tss.toStringShakeLevel(
-			options.shakeLevel,
-		)}`,
+			options.shakeLevel
+		)}`
 	);
 	// Take the extra included .d.ts files from `tsconfig.monaco.json`
 	options.typings = tsConfig.include.filter((includedFile) =>
-		/\.d\.ts$/.test(includedFile),
+		/\.d\.ts$/.test(includedFile)
 	);
 	// Add extra .d.ts files from `node_modules/@types/`
 	if (Array.isArray(options.compilerOptions?.types)) {
@@ -104,7 +104,7 @@ function extractEditor(options) {
 				if (/(^\.\/)|(^\.\.\/)/.test(importedFilePath)) {
 					importedFilePath = path.join(
 						path.dirname(fileName),
-						importedFilePath,
+						importedFilePath
 					);
 				}
 				if (/\.css$/.test(importedFilePath)) {
@@ -114,8 +114,8 @@ function extractEditor(options) {
 						fs.existsSync(
 							path.join(
 								options.sourcesRoot,
-								importedFilePath + ".js",
-							),
+								importedFilePath + ".js"
+							)
 						)
 					) {
 						copyFile(importedFilePath + ".js");
@@ -143,7 +143,7 @@ function createESMSourcesAndResources2(options) {
 	const OUT_FOLDER = path.join(REPO_ROOT, options.outFolder);
 	const OUT_RESOURCES_FOLDER = path.join(
 		REPO_ROOT,
-		options.outResourcesFolder,
+		options.outResourcesFolder
 	);
 	const getDestAbsoluteFilePath = (file) => {
 		const dest = options.renames[file.replace(/\\/g, "/")] || file;
@@ -162,7 +162,7 @@ function createESMSourcesAndResources2(options) {
 		}
 		if (file === "tsconfig.json") {
 			const tsConfig = JSON.parse(
-				fs.readFileSync(path.join(SRC_FOLDER, file)).toString(),
+				fs.readFileSync(path.join(SRC_FOLDER, file)).toString()
 			);
 			tsConfig.compilerOptions.module = "es6";
 			tsConfig.compilerOptions.outDir = path
@@ -170,7 +170,7 @@ function createESMSourcesAndResources2(options) {
 				.replace(/\\/g, "/");
 			write(
 				getDestAbsoluteFilePath(file),
-				JSON.stringify(tsConfig, null, "\t"),
+				JSON.stringify(tsConfig, null, "\t")
 			);
 			continue;
 		}
@@ -183,7 +183,7 @@ function createESMSourcesAndResources2(options) {
 			// Transport the files directly
 			write(
 				getDestAbsoluteFilePath(file),
-				fs.readFileSync(path.join(SRC_FOLDER, file)),
+				fs.readFileSync(path.join(SRC_FOLDER, file))
 			);
 			continue;
 		}
@@ -207,7 +207,7 @@ function createESMSourcesAndResources2(options) {
 				if (/(^\.\/)|(^\.\.\/)/.test(importedFilepath)) {
 					importedFilepath = path.join(
 						path.dirname(file),
-						importedFilepath,
+						importedFilepath
 					);
 				}
 				let relativePath;
@@ -225,7 +225,7 @@ function createESMSourcesAndResources2(options) {
 				} else {
 					relativePath = path.relative(
 						path.dirname(file),
-						importedFilepath,
+						importedFilepath
 					);
 				}
 				relativePath = relativePath.replace(/\\/g, "/");
@@ -241,7 +241,7 @@ function createESMSourcesAndResources2(options) {
 				/import ([a-zA-Z0-9]+) = require\(('[^']+')\);/g,
 				function (_, m1, m2) {
 					return `import * as ${m1} from ${m2};`;
-				},
+				}
 			);
 			write(getDestAbsoluteFilePath(file), fileContents);
 			continue;
@@ -308,7 +308,7 @@ function createESMSourcesAndResources2(options) {
 						/^(\s*)\/\/ ?/,
 						function (_, indent) {
 							return indent;
-						},
+						}
 					);
 				}
 			}
@@ -326,7 +326,7 @@ function transportCSS(module, enqueue, write) {
 	const inlineResources = "base64"; // see https://github.com/microsoft/monaco-editor/issues/148
 	const newContents = _rewriteOrInlineUrls(
 		fileContents,
-		inlineResources === "base64",
+		inlineResources === "base64"
 	);
 	write(module, newContents);
 	return true;
@@ -337,7 +337,7 @@ function transportCSS(module, enqueue, write) {
 				const relativeFontPath = `${fontMatch[1]}.ttf`; // trim the query parameter
 				const fontPath = path.join(
 					path.dirname(module),
-					relativeFontPath,
+					relativeFontPath
 				);
 				enqueue(fontPath);
 				return relativeFontPath;

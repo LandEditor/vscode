@@ -14,7 +14,7 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 
 	public constructor(
 		private readonly activeJsTsEditorTracker: ActiveJsTsEditorTracker,
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {
@@ -23,7 +23,7 @@ export class TypeScriptGoToProjectConfigCommand implements Command {
 			openProjectConfigForFile(
 				ProjectType.TypeScript,
 				this.lazyClientHost.value.serviceClient,
-				editor.document.uri,
+				editor.document.uri
 			);
 		}
 	}
@@ -34,7 +34,7 @@ export class JavaScriptGoToProjectConfigCommand implements Command {
 
 	public constructor(
 		private readonly activeJsTsEditorTracker: ActiveJsTsEditorTracker,
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {
@@ -43,7 +43,7 @@ export class JavaScriptGoToProjectConfigCommand implements Command {
 			openProjectConfigForFile(
 				ProjectType.JavaScript,
 				this.lazyClientHost.value.serviceClient,
-				editor.document.uri,
+				editor.document.uri
 			);
 		}
 	}

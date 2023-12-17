@@ -32,7 +32,7 @@ export class BrowserElevatedFileService implements IElevatedFileService {
 	async writeFileElevated(
 		resource: URI,
 		value: VSBuffer | VSBufferReadable | VSBufferReadableStream,
-		options?: IWriteFileOptions,
+		options?: IWriteFileOptions
 	): Promise<IFileStatWithMetadata> {
 		throw new Error("Unsupported");
 	}
@@ -41,5 +41,5 @@ export class BrowserElevatedFileService implements IElevatedFileService {
 registerSingleton(
 	IElevatedFileService,
 	BrowserElevatedFileService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

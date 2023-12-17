@@ -20,7 +20,7 @@ export const Context = {
 	Visible: new RawContextKey<boolean>("parameterHintsVisible", false),
 	MultipleSignatures: new RawContextKey<boolean>(
 		"parameterHintsMultipleSignatures",
-		false,
+		false
 	),
 };
 
@@ -29,7 +29,7 @@ export async function provideSignatureHelp(
 	model: ITextModel,
 	position: Position,
 	context: languages.SignatureHelpContext,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<languages.SignatureHelpResult | undefined> {
 	const supports = registry.ordered(model);
 
@@ -39,7 +39,7 @@ export async function provideSignatureHelp(
 				model,
 				position,
 				token,
-				context,
+				context
 			);
 			if (result) {
 				return result;
@@ -74,7 +74,7 @@ CommandsRegistry.registerCommand(
 					isRetrigger: false,
 					triggerCharacter,
 				},
-				CancellationToken.None,
+				CancellationToken.None
 			);
 
 			if (!result) {
@@ -86,5 +86,5 @@ CommandsRegistry.registerCommand(
 		} finally {
 			ref.dispose();
 		}
-	},
+	}
 );

@@ -30,7 +30,7 @@ export class TextDiffEditorModel extends DiffEditorModel {
 
 	constructor(
 		originalModel: BaseTextEditorModel,
-		modifiedModel: BaseTextEditorModel,
+		modifiedModel: BaseTextEditorModel
 	) {
 		super(originalModel, modifiedModel);
 

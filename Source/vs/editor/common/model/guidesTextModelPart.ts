@@ -31,30 +31,30 @@ export class GuidesTextModelPart
 {
 	constructor(
 		private readonly textModel: TextModel,
-		private readonly languageConfigurationService: ILanguageConfigurationService,
+		private readonly languageConfigurationService: ILanguageConfigurationService
 	) {
 		super();
 	}
 
 	private getLanguageConfiguration(
-		languageId: string,
+		languageId: string
 	): ResolvedLanguageConfiguration {
 		return this.languageConfigurationService.getLanguageConfiguration(
-			languageId,
+			languageId
 		);
 	}
 
 	private _computeIndentLevel(lineIndex: number): number {
 		return computeIndentLevel(
 			this.textModel.getLineContent(lineIndex + 1),
-			this.textModel.getOptions().tabSize,
+			this.textModel.getOptions().tabSize
 		);
 	}
 
 	public getActiveIndentGuide(
 		lineNumber: number,
 		minLineNumber: number,
-		maxLineNumber: number,
+		maxLineNumber: number
 	): IActiveIndentGuideInfo {
 		this.assertNotDisposed();
 		const lineCount = this.textModel.getLineCount();
@@ -64,7 +64,7 @@ export class GuidesTextModelPart
 		}
 
 		const foldingRules = this.getLanguageConfiguration(
-			this.textModel.getLanguageId(),
+			this.textModel.getLanguageId()
 		).foldingRules;
 		const offSide = Boolean(foldingRules && foldingRules.offSide);
 
@@ -202,7 +202,7 @@ export class GuidesTextModelPart
 			if (goUp && upLineNumber >= 1) {
 				// compute indent level going up
 				const currentIndent = this._computeIndentLevel(
-					upLineNumber - 1,
+					upLineNumber - 1
 				);
 				if (currentIndent >= 0) {
 					// This line has content (besides whitespace)
@@ -210,14 +210,14 @@ export class GuidesTextModelPart
 					up_belowContentLineIndex = upLineNumber - 1;
 					up_belowContentLineIndent = currentIndent;
 					upLineIndentLevel = Math.ceil(
-						currentIndent / this.textModel.getOptions().indentSize,
+						currentIndent / this.textModel.getOptions().indentSize
 					);
 				} else {
 					up_resolveIndents(upLineNumber);
 					upLineIndentLevel = this._getIndentLevelForWhitespaceLine(
 						offSide,
 						up_aboveContentLineIndent,
-						up_belowContentLineIndent,
+						up_belowContentLineIndent
 					);
 				}
 			}
@@ -226,7 +226,7 @@ export class GuidesTextModelPart
 			if (goDown && downLineNumber <= lineCount) {
 				// compute indent level going down
 				const currentIndent = this._computeIndentLevel(
-					downLineNumber - 1,
+					downLineNumber - 1
 				);
 				if (currentIndent >= 0) {
 					// This line has content (besides whitespace)
@@ -234,14 +234,14 @@ export class GuidesTextModelPart
 					down_aboveContentLineIndex = downLineNumber - 1;
 					down_aboveContentLineIndent = currentIndent;
 					downLineIndentLevel = Math.ceil(
-						currentIndent / this.textModel.getOptions().indentSize,
+						currentIndent / this.textModel.getOptions().indentSize
 					);
 				} else {
 					down_resolveIndents(downLineNumber);
 					downLineIndentLevel = this._getIndentLevelForWhitespaceLine(
 						offSide,
 						down_aboveContentLineIndent,
-						down_belowContentLineIndent,
+						down_belowContentLineIndent
 					);
 				}
 			}
@@ -311,7 +311,7 @@ export class GuidesTextModelPart
 		startLineNumber: number,
 		endLineNumber: number,
 		activePosition: IPosition | null,
-		options: BracketGuideOptions,
+		options: BracketGuideOptions
 	): IndentGuide[][] {
 		const result: IndentGuide[][] = [];
 		for (
@@ -331,8 +331,8 @@ export class GuidesTextModelPart
 					startLineNumber,
 					1,
 					endLineNumber,
-					this.textModel.getLineMaxColumn(endLineNumber),
-				),
+					this.textModel.getLineMaxColumn(endLineNumber)
+				)
 			)
 			.toArray();
 
@@ -342,21 +342,21 @@ export class GuidesTextModelPart
 				startLineNumber <= activePosition.lineNumber &&
 				activePosition.lineNumber <= endLineNumber
 					? // We don't need to query the brackets again if the cursor is in the viewport
-					  bracketPairs
+						bracketPairs
 					: this.textModel.bracketPairs
 							.getBracketPairsInRange(
-								Range.fromPositions(activePosition),
+								Range.fromPositions(activePosition)
 							)
 							.toArray()
 			).filter((bp) =>
-				Range.strictContainsPosition(bp.range, activePosition),
+				Range.strictContainsPosition(bp.range, activePosition)
 			);
 
 			activeBracketPairRange = findLast(
 				bracketsContainingActivePosition,
 				(i) =>
 					includeSingleLinePairs ||
-					i.range.startLineNumber !== i.range.endLineNumber,
+					i.range.startLineNumber !== i.range.endLineNumber
 			)?.range;
 		}
 
@@ -409,7 +409,7 @@ export class GuidesTextModelPart
 				colorProvider.getInlineClassName(
 					pair.nestingLevel,
 					pair.nestingLevelOfEqualBracketType,
-					independentColorPoolPerBracketType,
+					independentColorPoolPerBracketType
 				) +
 				(options.highlightActive && isActive
 					? " " + colorProvider.activeClassName
@@ -433,8 +433,8 @@ export class GuidesTextModelPart
 							className,
 							new IndentGuideHorizontalLine(false, end.column),
 							-1,
-							-1,
-						),
+							-1
+						)
 					);
 				}
 				continue;
@@ -442,20 +442,20 @@ export class GuidesTextModelPart
 
 			const endVisibleColumn = this.getVisibleColumnFromPosition(end);
 			const startVisibleColumn = this.getVisibleColumnFromPosition(
-				pair.openingBracketRange.getStartPosition(),
+				pair.openingBracketRange.getStartPosition()
 			);
 			const guideVisibleColumn = Math.min(
 				startVisibleColumn,
 				endVisibleColumn,
-				pair.minVisibleColumnIndentation + 1,
+				pair.minVisibleColumnIndentation + 1
 			);
 
 			let renderHorizontalEndLineAtTheBottom = false;
 
 			const firstNonWsIndex = strings.firstNonWhitespaceIndex(
 				this.textModel.getLineContent(
-					pair.closingBracketRange.startLineNumber,
-				),
+					pair.closingBracketRange.startLineNumber
+				)
 			);
 			const hasTextBeforeClosingBracket =
 				firstNonWsIndex < pair.closingBracketRange.startColumn - 1;
@@ -465,11 +465,11 @@ export class GuidesTextModelPart
 
 			const visibleGuideStartLineNumber = Math.max(
 				start.lineNumber,
-				startLineNumber,
+				startLineNumber
 			);
 			const visibleGuideEndLineNumber = Math.min(
 				end.lineNumber,
-				endLineNumber,
+				endLineNumber
 			);
 
 			const offset = renderHorizontalEndLineAtTheBottom ? 1 : 0;
@@ -486,8 +486,8 @@ export class GuidesTextModelPart
 						className,
 						null,
 						l === start.lineNumber ? start.column : -1,
-						l === end.lineNumber ? end.column : -1,
-					),
+						l === end.lineNumber ? end.column : -1
+					)
 				);
 			}
 
@@ -503,8 +503,8 @@ export class GuidesTextModelPart
 							className,
 							new IndentGuideHorizontalLine(false, start.column),
 							-1,
-							-1,
-						),
+							-1
+						)
 					);
 				}
 
@@ -519,11 +519,11 @@ export class GuidesTextModelPart
 							className,
 							new IndentGuideHorizontalLine(
 								!renderHorizontalEndLineAtTheBottom,
-								end.column,
+								end.column
 							),
 							-1,
-							-1,
-						),
+							-1
+						)
 					);
 				}
 			}
@@ -541,14 +541,14 @@ export class GuidesTextModelPart
 			CursorColumns.visibleColumnFromColumn(
 				this.textModel.getLineContent(position.lineNumber),
 				position.column,
-				this.textModel.getOptions().tabSize,
+				this.textModel.getOptions().tabSize
 			) + 1
 		);
 	}
 
 	public getLinesIndentGuides(
 		startLineNumber: number,
-		endLineNumber: number,
+		endLineNumber: number
 	): number[] {
 		this.assertNotDisposed();
 		const lineCount = this.textModel.getLineCount();
@@ -562,12 +562,12 @@ export class GuidesTextModelPart
 
 		const options = this.textModel.getOptions();
 		const foldingRules = this.getLanguageConfiguration(
-			this.textModel.getLanguageId(),
+			this.textModel.getLanguageId()
 		).foldingRules;
 		const offSide = Boolean(foldingRules && foldingRules.offSide);
 
 		const result: number[] = new Array<number>(
-			endLineNumber - startLineNumber + 1,
+			endLineNumber - startLineNumber + 1
 		);
 
 		let aboveContentLineIndex =
@@ -592,7 +592,7 @@ export class GuidesTextModelPart
 				aboveContentLineIndex = lineNumber - 1;
 				aboveContentLineIndent = currentIndent;
 				result[resultIndex] = Math.ceil(
-					currentIndent / options.indentSize,
+					currentIndent / options.indentSize
 				);
 				continue;
 			}
@@ -642,7 +642,7 @@ export class GuidesTextModelPart
 			result[resultIndex] = this._getIndentLevelForWhitespaceLine(
 				offSide,
 				aboveContentLineIndent,
-				belowContentLineIndent,
+				belowContentLineIndent
 			);
 		}
 		return result;
@@ -651,7 +651,7 @@ export class GuidesTextModelPart
 	private _getIndentLevelForWhitespaceLine(
 		offSide: boolean,
 		aboveContentLineIndent: number,
-		belowContentLineIndent: number,
+		belowContentLineIndent: number
 	): number {
 		const options = this.textModel.getOptions();
 
@@ -684,12 +684,12 @@ export class BracketPairGuidesClassNames {
 	getInlineClassName(
 		nestingLevel: number,
 		nestingLevelOfEqualBracketType: number,
-		independentColorPoolPerBracketType: boolean,
+		independentColorPoolPerBracketType: boolean
 	): string {
 		return this.getInlineClassNameOfLevel(
 			independentColorPoolPerBracketType
 				? nestingLevelOfEqualBracketType
-				: nestingLevel,
+				: nestingLevel
 		);
 	}
 

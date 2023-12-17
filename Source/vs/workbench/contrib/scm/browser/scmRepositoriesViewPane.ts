@@ -68,7 +68,18 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
@@ -76,7 +87,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 
 		const listContainer = append(
 			container,
-			$(".scm-view.scm-repositories-view"),
+			$(".scm-view.scm-repositories-view")
 		);
 
 		const updateProviderCountVisibility = () => {
@@ -85,19 +96,19 @@ export class SCMRepositoriesViewPane extends ViewPane {
 			>("scm.providerCountBadge");
 			listContainer.classList.toggle(
 				"hide-provider-counts",
-				value === "hidden",
+				value === "hidden"
 			);
 			listContainer.classList.toggle(
 				"auto-provider-counts",
-				value === "auto",
+				value === "auto"
 			);
 		};
 		this._register(
 			Event.filter(
 				this.configurationService.onDidChangeConfiguration,
 				(e) => e.affectsConfiguration("scm.providerCountBadge"),
-				this.disposables,
-			)(updateProviderCountVisibility),
+				this.disposables
+			)(updateProviderCountVisibility)
 		);
 		updateProviderCountVisibility();
 
@@ -105,7 +116,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		const renderer = this.instantiationService.createInstance(
 			RepositoryRenderer,
 			MenuId.SCMSourceControlInline,
-			getActionViewItemProvider(this.instantiationService),
+			getActionViewItemProvider(this.instantiationService)
 		);
 		const identityProvider = {
 			getId: (r: ISCMRepository) => r.provider.id,
@@ -131,26 +142,26 @@ export class SCMRepositoriesViewPane extends ViewPane {
 						return localize("scm", "Source Control Repositories");
 					},
 				},
-			},
+			}
 		) as WorkbenchList<ISCMRepository>;
 
 		this._register(this.list);
 		this._register(
-			this.list.onDidChangeSelection(this.onListSelectionChange, this),
+			this.list.onDidChangeSelection(this.onListSelectionChange, this)
 		);
 		this._register(this.list.onContextMenu(this.onListContextMenu, this));
 
 		this._register(
 			this.scmViewService.onDidChangeRepositories(
 				this.onDidChangeRepositories,
-				this,
-			),
+				this
+			)
 		);
 		this._register(
 			this.scmViewService.onDidChangeVisibleRepositories(
 				this.updateListSelection,
-				this,
-			),
+				this
+			)
 		);
 
 		if (this.orientation === Orientation.VERTICAL) {
@@ -159,7 +170,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 					if (e.affectsConfiguration("scm.repositories.visible")) {
 						this.updateBodySize();
 					}
-				}),
+				})
 			);
 		}
 
@@ -188,7 +199,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		}
 
 		const visibleCount = this.configurationService.getValue<number>(
-			"scm.repositories.visible",
+			"scm.repositories.visible"
 		);
 		const empty = this.list.length === 0;
 		const size = Math.min(this.list.length, visibleCount) * 22;
@@ -198,8 +209,8 @@ export class SCMRepositoriesViewPane extends ViewPane {
 			visibleCount === 0
 				? Number.POSITIVE_INFINITY
 				: empty
-				  ? Number.POSITIVE_INFINITY
-				  : size;
+					? Number.POSITIVE_INFINITY
+					: size;
 	}
 
 	private onListContextMenu(e: IListContextMenuEvent<ISCMRepository>): void {
@@ -230,7 +241,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 	private updateListSelection(): void {
 		const oldSelection = this.list.getSelection();
 		const oldSet = new Set(
-			Iterable.map(oldSelection, (i) => this.list.element(i)),
+			Iterable.map(oldSelection, (i) => this.list.element(i))
 		);
 		const set = new Set(this.scmViewService.visibleRepositories);
 		const added = new Set(Iterable.filter(set, (r) => !oldSet.has(r)));
@@ -241,7 +252,7 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		}
 
 		const selection = oldSelection.filter(
-			(i) => !removed.has(this.list.element(i)),
+			(i) => !removed.has(this.list.element(i))
 		);
 
 		for (let i = 0; i < this.list.length; i++) {

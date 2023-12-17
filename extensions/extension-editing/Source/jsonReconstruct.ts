@@ -19,7 +19,7 @@ export class JsonStringScanner {
 	 */
 	constructor(
 		private readonly text: string,
-		initialPos: number /* offset within `text` */,
+		initialPos: number /* offset within `text` */
 	) {
 		this.pos = initialPos;
 	}

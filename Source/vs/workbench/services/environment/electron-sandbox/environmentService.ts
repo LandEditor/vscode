@@ -202,7 +202,7 @@ export class NativeWorkbenchEnvironmentService
 
 	constructor(
 		private readonly configuration: INativeWindowConfiguration,
-		productService: IProductService,
+		productService: IProductService
 	) {
 		super(
 			configuration,
@@ -211,7 +211,7 @@ export class NativeWorkbenchEnvironmentService
 				tmpDir: configuration.tmpDir,
 				userDataDir: configuration.userDataDir,
 			},
-			productService,
+			productService
 		);
 	}
 }

@@ -17,7 +17,7 @@ const commit = process.env["BUILD_SOURCEVERSION"];
 const credential = new identity_1.ClientSecretCredential(
 	process.env["AZURE_TENANT_ID"],
 	process.env["AZURE_CLIENT_ID"],
-	process.env["AZURE_CLIENT_SECRET"],
+	process.env["AZURE_CLIENT_SECRET"]
 );
 // optionally allow to pass in explicit base/maps to upload
 const [, , base, maps] = process.argv;
@@ -26,7 +26,7 @@ function src(base, maps = `${base}/**/*.map`) {
 		es.mapSync((f) => {
 			f.path = `${f.base}/core/${f.relative}`;
 			return f;
-		}),
+		})
 	);
 }
 function main() {
@@ -42,23 +42,21 @@ function main() {
 		const nodeModules = vfs
 			.src(productionDependenciesSrc, { base: "." })
 			.pipe(
-				util.cleanNodeModules(
-					path.join(root, "build", ".moduleignore"),
-				),
+				util.cleanNodeModules(path.join(root, "build", ".moduleignore"))
 			)
 			.pipe(
 				util.cleanNodeModules(
 					path.join(
 						root,
 						"build",
-						`.moduleignore.${process.platform}`,
-					),
-				),
+						`.moduleignore.${process.platform}`
+					)
+				)
 			);
 		sources.push(nodeModules);
 		const extensionsOut = vfs.src(
 			[".build/extensions/**/*.js.map", "!**/node_modules/**"],
-			{ base: ".build" },
+			{ base: ".build" }
 		);
 		sources.push(extensionsOut);
 	}
@@ -72,7 +70,7 @@ function main() {
 				es.through(function (data) {
 					console.log("Uploading Sourcemap", data.relative); // debug
 					this.emit("data", data);
-				}),
+				})
 			)
 			.pipe(
 				azure.upload({
@@ -80,7 +78,7 @@ function main() {
 					credential,
 					container: "sourcemaps",
 					prefix: commit + "/",
-				}),
+				})
 			)
 			.on("end", () => c())
 			.on("error", (err) => e(err));

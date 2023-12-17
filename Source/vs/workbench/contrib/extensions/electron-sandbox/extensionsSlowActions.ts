@@ -55,7 +55,7 @@ abstract class RepoInfo {
 		) {
 			const base = URI.parse(desc.repository.url);
 			const match = /\/([^/]+)\/([^/]+)(\.git)?$/.exec(
-				desc.repository.url,
+				desc.repository.url
 			);
 			if (match) {
 				result = {
@@ -81,9 +81,14 @@ export class SlowExtensionAction extends Action {
 	constructor(
 		readonly extension: IExtensionDescription,
 		readonly profile: IExtensionHostProfile,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
-		super('report.slow', localize('cmd.reportOrShow', "Performance Issue"), 'extension-action report-issue');
+		super(
+			"report.slow",
+			localize("cmd.reportOrShow", "Performance Issue"),
+			"extension-action report-issue"
+		);
 		this.enabled = Boolean(RepoInfo.fromExtension(extension));
 	}
 
@@ -91,7 +96,7 @@ export class SlowExtensionAction extends Action {
 		const action = await this._instantiationService.invokeFunction(
 			createSlowExtensionAction,
 			this.extension,
-			this.profile,
+			this.profile
 		);
 		if (action) {
 			await action.run();
@@ -102,7 +107,7 @@ export class SlowExtensionAction extends Action {
 export async function createSlowExtensionAction(
 	accessor: ServicesAccessor,
 	extension: IExtensionDescription,
-	profile: IExtensionHostProfile,
+	profile: IExtensionHostProfile
 ): Promise<Action | undefined> {
 	const info = RepoInfo.fromExtension(extension);
 	if (!info) {
@@ -131,14 +136,14 @@ export async function createSlowExtensionAction(
 			ReportExtensionSlowAction,
 			extension,
 			info,
-			profile,
+			profile
 		);
 	} else {
 		return instaService.createInstance(
 			ShowExtensionSlowAction,
 			extension,
 			info,
-			profile,
+			profile
 		);
 	}
 }
@@ -151,26 +156,28 @@ class ReportExtensionSlowAction extends Action {
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IProductService private readonly _productService: IProductService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
-		@IFileService private readonly _fileService: IFileService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@IFileService private readonly _fileService: IFileService
 	) {
-		super('report.slow', localize('cmd.report', "Report Issue"));
+		super("report.slow", localize("cmd.report", "Report Issue"));
 	}
 
 	override async run(): Promise<void> {
 		// rewrite pii (paths) and store on disk
 		const data = Utils.rewriteAbsolutePaths(
 			this.profile.data,
-			"pii_removed",
+			"pii_removed"
 		);
 		const path = joinPath(
 			this._environmentService.tmpDir,
-			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`,
+			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`
 		);
 		await this._fileService.writeFile(
 			path,
-			VSBuffer.fromString(JSON.stringify(data, undefined, 4)),
+			VSBuffer.fromString(JSON.stringify(data, undefined, 4))
 		);
 
 		// build issue
@@ -192,8 +199,8 @@ class ReportExtensionSlowAction extends Action {
 			localize(
 				"attach.msg",
 				"This is a reminder to make sure that you have not forgotten to attach '{0}' to the issue you have just created.",
-				path.fsPath,
-			),
+				path.fsPath
+			)
 		);
 	}
 }
@@ -205,26 +212,26 @@ class ShowExtensionSlowAction extends Action {
 		readonly profile: IExtensionHostProfile,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
-		@IFileService private readonly _fileService: IFileService,
-
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@IFileService private readonly _fileService: IFileService
 	) {
-		super('show.slow', localize('cmd.show', "Show Issues"));
+		super("show.slow", localize("cmd.show", "Show Issues"));
 	}
 
 	override async run(): Promise<void> {
 		// rewrite pii (paths) and store on disk
 		const data = Utils.rewriteAbsolutePaths(
 			this.profile.data,
-			"pii_removed",
+			"pii_removed"
 		);
 		const path = joinPath(
 			this._environmentService.tmpDir,
-			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`,
+			`${this.extension.identifier.value}-unresponsive.cpuprofile.txt`
 		);
 		await this._fileService.writeFile(
 			path,
-			VSBuffer.fromString(JSON.stringify(data, undefined, 4)),
+			VSBuffer.fromString(JSON.stringify(data, undefined, 4))
 		);
 
 		// show issues
@@ -236,8 +243,8 @@ class ShowExtensionSlowAction extends Action {
 			localize(
 				"attach.msg2",
 				"This is a reminder to make sure that you have not forgotten to attach '{0}' to an existing performance issue.",
-				path.fsPath,
-			),
+				path.fsPath
+			)
 		);
 	}
 }

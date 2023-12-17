@@ -29,12 +29,16 @@ export class TextResourcePropertiesService
 	private remoteEnvironment: IRemoteAgentEnvironment | null = null;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IStorageService private readonly storageService: IStorageService
 	) {
-		remoteAgentService.getEnvironment().then(remoteEnv => this.remoteEnvironment = remoteEnv);
+		remoteAgentService
+			.getEnvironment()
+			.then((remoteEnv) => (this.remoteEnvironment = remoteEnv));
 	}
 
 	getEOL(resource?: URI, language?: string): string {
@@ -63,13 +67,13 @@ export class TextResourcePropertiesService
 					: /* Get it from cache */ this.storageService.getNumber(
 							osCacheKey,
 							StorageScope.WORKSPACE,
-							OS,
-					  );
+							OS
+						);
 				this.storageService.store(
 					osCacheKey,
 					os,
 					StorageScope.WORKSPACE,
-					StorageTarget.MACHINE,
+					StorageTarget.MACHINE
 				);
 			}
 		}
@@ -81,5 +85,5 @@ export class TextResourcePropertiesService
 registerSingleton(
 	ITextResourcePropertiesService,
 	TextResourcePropertiesService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

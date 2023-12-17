@@ -66,7 +66,7 @@ function getSha(filename: fs.PathLike): string {
 function getVSCodeSysrootChecksum(expectedName: string) {
 	const checksums = fs.readFileSync(
 		path.join(REPO_ROOT, "build", "checksums", "vscode-sysroot.txt"),
-		"utf8",
+		"utf8"
 	);
 	for (const line of checksums.split("\n")) {
 		const [checksum, name] = line.split(/\s+/);
@@ -85,7 +85,7 @@ function getVSCodeSysrootChecksum(expectedName: string) {
 async function fetchUrl(
 	options: IFetchOptions,
 	retries = 10,
-	retryDelay = 1000,
+	retryDelay = 1000
 ): Promise<undefined> {
 	try {
 		const controller = new AbortController();
@@ -97,7 +97,7 @@ async function fetchUrl(
 				{
 					headers: ghApiHeaders,
 					signal: controller.signal as any /* Typings issue with lib.dom.d.ts */,
-				},
+				}
 			);
 			if (
 				response.ok &&
@@ -107,11 +107,11 @@ async function fetchUrl(
 				console.log(`Fetch completed: Status ${response.status}.`);
 				const contents = Buffer.from(await response.arrayBuffer());
 				const asset = JSON.parse(contents.toString()).assets.find(
-					(a: { name: string }) => a.name === options.assetName,
+					(a: { name: string }) => a.name === options.assetName
 				);
 				if (!asset) {
 					throw new Error(
-						`Could not find asset in release of Microsoft/vscode-linux-build-agent @ ${version}`,
+						`Could not find asset in release of Microsoft/vscode-linux-build-agent @ ${version}`
 					);
 				}
 				console.log(`Found asset ${options.assetName} @ ${asset.url}.`);
@@ -124,12 +124,12 @@ async function fetchUrl(
 					assetResponse.status < 300
 				) {
 					const assetContents = Buffer.from(
-						await assetResponse.arrayBuffer(),
+						await assetResponse.arrayBuffer()
 					);
 					console.log(
 						`Fetched response body buffer: ${ansiColors.magenta(
-							`${(assetContents as Buffer).byteLength} bytes`,
-						)}`,
+							`${(assetContents as Buffer).byteLength} bytes`
+						)}`
 					);
 					if (options.checksumSha256) {
 						const actualSHA256Checksum = createHash("sha256")
@@ -138,17 +138,17 @@ async function fetchUrl(
 						if (actualSHA256Checksum !== options.checksumSha256) {
 							throw new Error(
 								`Checksum mismatch for ${ansiColors.cyan(
-									asset.url,
+									asset.url
 								)} (expected ${
 									options.checksumSha256
-								}, actual ${actualSHA256Checksum}))`,
+								}, actual ${actualSHA256Checksum}))`
 							);
 						}
 					}
 					console.log(
 						`Verified SHA256 checksums match for ${ansiColors.cyan(
-							asset.url,
-						)}`,
+							asset.url
+						)}`
 					);
 					const tarCommand = `tar -xz -C ${options.dest}`;
 					execSync(tarCommand, { input: assetContents });
@@ -157,14 +157,14 @@ async function fetchUrl(
 				}
 				throw new Error(
 					`Request ${ansiColors.magenta(
-						asset.url,
-					)} failed with status code: ${assetResponse.status}`,
+						asset.url
+					)} failed with status code: ${assetResponse.status}`
 				);
 			}
 			throw new Error(
 				`Request ${ansiColors.magenta(
-					"https://api.github.com",
-				)} failed with status code: ${response.status}`,
+					"https://api.github.com"
+				)} failed with status code: ${response.status}`
 			);
 		} finally {
 			clearTimeout(timeout);
@@ -186,7 +186,7 @@ type SysrootDictEntry = {
 };
 
 export async function getVSCodeSysroot(
-	arch: DebianArchString,
+	arch: DebianArchString
 ): Promise<string> {
 	let expectedName: string;
 	let triple: string;
@@ -232,7 +232,7 @@ export async function getVSCodeSysroot(
 }
 
 export async function getChromiumSysroot(
-	arch: DebianArchString,
+	arch: DebianArchString
 ): Promise<string> {
 	const sysrootJSONUrl = `https://raw.githubusercontent.com/electron/electron/v${
 		getElectronVersion().electronVersion
@@ -245,7 +245,7 @@ export async function getChromiumSysroot(
 	]);
 	if (result.status !== 0) {
 		throw new Error(
-			"Cannot retrieve sysroots.json. Stderr:\n" + result.stderr,
+			"Cannot retrieve sysroots.json. Stderr:\n" + result.stderr
 		);
 	}
 	const sysrootInfo = require(sysrootDictLocation);
@@ -282,7 +282,7 @@ export async function getChromiumSysroot(
 				.on("error", (err) => {
 					console.error(
 						"Encountered an error during the download attempt: " +
-							err.message,
+							err.message
 					);
 					c();
 				});
@@ -295,7 +295,7 @@ export async function getChromiumSysroot(
 	const sha = getSha(tarball);
 	if (sha !== tarballSha) {
 		throw new Error(
-			`Tarball sha1sum is wrong. Expected ${tarballSha}, actual ${sha}`,
+			`Tarball sha1sum is wrong. Expected ${tarballSha}, actual ${sha}`
 		);
 	}
 

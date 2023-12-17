@@ -52,14 +52,14 @@ export class CellEditorOptions extends CellContentPart {
 	constructor(
 		private readonly base: IBaseCellEditorOptions,
 		readonly notebookOptions: NotebookOptions,
-		readonly configurationService: IConfigurationService,
+		readonly configurationService: IConfigurationService
 	) {
 		super();
 
 		this._register(
 			base.onDidChange(() => {
 				this._recomputeOptions();
-			}),
+			})
 		);
 
 		this._value = this._computeEditorOptions();
@@ -67,7 +67,7 @@ export class CellEditorOptions extends CellContentPart {
 
 	override updateState(
 		element: ICellViewModel,
-		e: CellViewModelStateChangeEvent,
+		e: CellViewModelStateChangeEvent
 	) {
 		if (e.cellLineNumberChanged) {
 			this.setLineNumbers(element.lineNumbers);
@@ -88,7 +88,7 @@ export class CellEditorOptions extends CellContentPart {
 				// inherit from the notebook setting
 				if (
 					this.configurationService.getValue<"on" | "off">(
-						"notebook.lineNumbers",
+						"notebook.lineNumbers"
 					) === "on"
 				) {
 					if (value.lineNumbers === "off") {
@@ -121,7 +121,7 @@ export class CellEditorOptions extends CellContentPart {
 
 	getUpdatedValue(
 		internalMetadata: NotebookCellInternalMetadata,
-		cellUri: URI,
+		cellUri: URI
 	): IEditorOptions {
 		const options = this.getValue(internalMetadata, cellUri);
 		delete options.hover; // This is toggled by a debug editor contribution
@@ -131,14 +131,14 @@ export class CellEditorOptions extends CellContentPart {
 
 	getValue(
 		internalMetadata: NotebookCellInternalMetadata,
-		cellUri: URI,
+		cellUri: URI
 	): IEditorOptions {
 		return {
 			...this._value,
 			...{
 				padding: this.notebookOptions.computeEditorPadding(
 					internalMetadata,
-					cellUri,
+					cellUri
 				),
 			},
 		};
@@ -160,7 +160,7 @@ export class CellEditorOptions extends CellContentPart {
 }
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	id: "notebook",
 	order: 100,
@@ -172,7 +172,7 @@ Registry.as<IConfigurationRegistry>(
 			default: "off",
 			markdownDescription: localize(
 				"notebook.lineNumbers",
-				"Controls the display of line numbers in the cell editor.",
+				"Controls the display of line numbers in the cell editor."
 			),
 		},
 	},
@@ -186,7 +186,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.toggleLineNumbers",
-						"Toggle Notebook Line Numbers",
+						"Toggle Notebook Line Numbers"
 					),
 					original: "Toggle Notebook Line Numbers",
 				},
@@ -198,7 +198,7 @@ registerAction2(
 						order: 2,
 						when: ContextKeyExpr.equals(
 							"config.notebook.globalToolbar",
-							true,
+							true
 						),
 					},
 				],
@@ -207,11 +207,11 @@ registerAction2(
 				toggled: {
 					condition: ContextKeyExpr.notEquals(
 						"config.notebook.lineNumbers",
-						"off",
+						"off"
 					),
 					title: localize(
 						"notebook.showLineNumbers",
-						"Notebook Line Numbers",
+						"Notebook Line Numbers"
 					),
 				},
 			});
@@ -221,7 +221,7 @@ registerAction2(
 			const configurationService = accessor.get(IConfigurationService);
 			const renderLiNumbers =
 				configurationService.getValue<"on" | "off">(
-					"notebook.lineNumbers",
+					"notebook.lineNumbers"
 				) === "on";
 
 			if (renderLiNumbers) {
@@ -230,7 +230,7 @@ registerAction2(
 				configurationService.updateValue("notebook.lineNumbers", "on");
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -240,7 +240,7 @@ registerAction2(
 				id: "notebook.cell.toggleLineNumbers",
 				title: localize(
 					"notebook.cell.toggleLineNumbers.title",
-					"Show Cell Line Numbers",
+					"Show Cell Line Numbers"
 				),
 				precondition: ActiveEditorContext.isEqualTo(NOTEBOOK_EDITOR_ID),
 				menu: [
@@ -256,27 +256,25 @@ registerAction2(
 						NOTEBOOK_CELL_LINE_NUMBERS.isEqualTo("inherit"),
 						ContextKeyExpr.equals(
 							"config.notebook.lineNumbers",
-							"on",
-						),
-					),
+							"on"
+						)
+					)
 				),
 			});
 		}
 
 		async runWithContext(
 			accessor: ServicesAccessor,
-			context:
-				| INotebookCommandContext
-				| INotebookCellToolbarActionContext,
+			context: INotebookCommandContext | INotebookCellToolbarActionContext
 		): Promise<void> {
 			if (context.ui) {
 				this.updateCell(
 					accessor.get(IConfigurationService),
-					context.cell,
+					context.cell
 				);
 			} else {
 				const configurationService = accessor.get(
-					IConfigurationService,
+					IConfigurationService
 				);
 				context.selectedCells.forEach((cell) => {
 					this.updateCell(configurationService, cell);
@@ -286,11 +284,11 @@ registerAction2(
 
 		private updateCell(
 			configurationService: IConfigurationService,
-			cell: ICellViewModel,
+			cell: ICellViewModel
 		) {
 			const renderLineNumbers =
 				configurationService.getValue<"on" | "off">(
-					"notebook.lineNumbers",
+					"notebook.lineNumbers"
 				) === "on";
 			const cellLineNumbers = cell.lineNumbers;
 			// 'on', 'inherit' 	-> 'on'
@@ -309,5 +307,5 @@ registerAction2(
 				cell.lineNumbers = "on";
 			}
 		}
-	},
+	}
 );

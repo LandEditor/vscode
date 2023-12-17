@@ -43,20 +43,20 @@ import { URI } from "vs/base/common/uri";
 import { ContextKeyExpr } from "vs/platform/contextkey/common/contextkey";
 
 const workbench = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 
 workbench.registerWorkbenchContribution(
 	ProductContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbench.registerWorkbenchContribution(
 	UpdateContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbench.registerWorkbenchContribution(
 	SwitchProductQualityContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 // Release notes
@@ -72,7 +72,7 @@ export class ShowCurrentReleaseNotesAction extends Action2 {
 						key: "mshowReleaseNotes",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Show &&Release Notes",
+					"Show &&Release Notes"
 				),
 				original: "Show Release Notes",
 			},
@@ -98,20 +98,20 @@ export class ShowCurrentReleaseNotesAction extends Action2 {
 		try {
 			await showReleaseNotesInEditor(
 				instantiationService,
-				productService.version,
+				productService.version
 			);
 		} catch (err) {
 			if (productService.releaseNotesUrl) {
 				await openerService.open(
-					URI.parse(productService.releaseNotesUrl),
+					URI.parse(productService.releaseNotesUrl)
 				);
 			} else {
 				throw new Error(
 					localize(
 						"update.noReleaseNotesOnline",
 						"This version of {0} does not have release notes online",
-						productService.nameLong,
-					),
+						productService.nameLong
+					)
 				);
 			}
 		}
@@ -153,7 +153,7 @@ class DownloadUpdateAction extends Action2 {
 			category: { value: product.nameShort, original: product.nameShort },
 			f1: true,
 			precondition: CONTEXT_UPDATE_STATE.isEqualTo(
-				StateType.AvailableForDownload,
+				StateType.AvailableForDownload
 			),
 		});
 	}
@@ -211,7 +211,7 @@ class DownloadAction extends Action2 {
 				value: localize(
 					"openDownloadPage",
 					"Download {0}",
-					product.nameLong,
+					product.nameLong
 				),
 				original: `Download ${product.downloadUrl}`,
 			},
@@ -271,8 +271,8 @@ if (isWindows) {
 							key: "updateButton",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"&&Update",
-					),
+						"&&Update"
+					)
 				),
 			});
 

@@ -12,7 +12,7 @@ const rootPath = resolve(
 	"..",
 	"..",
 	"..",
-	"..",
+	".."
 );
 const vscodePath = join(rootPath, "vscode");
 const distroPath = join(rootPath, "vscode-distro");

@@ -25,7 +25,7 @@ export function fromNow(
 	date: number | Date,
 	appendAgoLabel?: boolean,
 	useFullTimeWords?: boolean,
-	disallowNow?: boolean,
+	disallowNow?: boolean
 ): string {
 	if (typeof date !== "number") {
 		date = date.getTime();
@@ -36,7 +36,7 @@ export function fromNow(
 		return localize(
 			"date.fromNow.in",
 			"in {0}",
-			fromNow(new Date().getTime() + seconds * 1000, false),
+			fromNow(new Date().getTime() + seconds * 1000, false)
 		);
 	}
 
@@ -54,25 +54,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.seconds.singular.ago.fullWord",
 							"{0} second ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.seconds.singular.ago",
 							"{0} sec ago",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.seconds.plural.ago.fullWord",
 							"{0} seconds ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.seconds.plural.ago",
 							"{0} secs ago",
-							value,
-					  );
+							value
+						);
 			}
 		} else {
 			if (value === 1) {
@@ -80,25 +80,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.seconds.singular.fullWord",
 							"{0} second",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.seconds.singular",
 							"{0} sec",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.seconds.plural.fullWord",
 							"{0} seconds",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.seconds.plural",
 							"{0} secs",
-							value,
-					  );
+							value
+						);
 			}
 		}
 	}
@@ -111,25 +111,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.minutes.singular.ago.fullWord",
 							"{0} minute ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.minutes.singular.ago",
 							"{0} min ago",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.minutes.plural.ago.fullWord",
 							"{0} minutes ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.minutes.plural.ago",
 							"{0} mins ago",
-							value,
-					  );
+							value
+						);
 			}
 		} else {
 			if (value === 1) {
@@ -137,25 +137,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.minutes.singular.fullWord",
 							"{0} minute",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.minutes.singular",
 							"{0} min",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.minutes.plural.fullWord",
 							"{0} minutes",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.minutes.plural",
 							"{0} mins",
-							value,
-					  );
+							value
+						);
 			}
 		}
 	}
@@ -168,25 +168,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.hours.singular.ago.fullWord",
 							"{0} hour ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.hours.singular.ago",
 							"{0} hr ago",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.hours.plural.ago.fullWord",
 							"{0} hours ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.hours.plural.ago",
 							"{0} hrs ago",
-							value,
-					  );
+							value
+						);
 			}
 		} else {
 			if (value === 1) {
@@ -194,16 +194,16 @@ export function fromNow(
 					? localize(
 							"date.fromNow.hours.singular.fullWord",
 							"{0} hour",
-							value,
-					  )
+							value
+						)
 					: localize("date.fromNow.hours.singular", "{0} hr", value);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.hours.plural.fullWord",
 							"{0} hours",
-							value,
-					  )
+							value
+						)
 					: localize("date.fromNow.hours.plural", "{0} hrs", value);
 			}
 		}
@@ -216,13 +216,13 @@ export function fromNow(
 				? localize(
 						"date.fromNow.days.singular.ago",
 						"{0} day ago",
-						value,
-				  )
+						value
+					)
 				: localize(
 						"date.fromNow.days.plural.ago",
 						"{0} days ago",
-						value,
-				  );
+						value
+					);
 		} else {
 			return value === 1
 				? localize("date.fromNow.days.singular", "{0} day", value)
@@ -238,25 +238,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.weeks.singular.ago.fullWord",
 							"{0} week ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.weeks.singular.ago",
 							"{0} wk ago",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.weeks.plural.ago.fullWord",
 							"{0} weeks ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.weeks.plural.ago",
 							"{0} wks ago",
-							value,
-					  );
+							value
+						);
 			}
 		} else {
 			if (value === 1) {
@@ -264,16 +264,16 @@ export function fromNow(
 					? localize(
 							"date.fromNow.weeks.singular.fullWord",
 							"{0} week",
-							value,
-					  )
+							value
+						)
 					: localize("date.fromNow.weeks.singular", "{0} wk", value);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.weeks.plural.fullWord",
 							"{0} weeks",
-							value,
-					  )
+							value
+						)
 					: localize("date.fromNow.weeks.plural", "{0} wks", value);
 			}
 		}
@@ -287,25 +287,25 @@ export function fromNow(
 					? localize(
 							"date.fromNow.months.singular.ago.fullWord",
 							"{0} month ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.months.singular.ago",
 							"{0} mo ago",
-							value,
-					  );
+							value
+						);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.months.plural.ago.fullWord",
 							"{0} months ago",
-							value,
-					  )
+							value
+						)
 					: localize(
 							"date.fromNow.months.plural.ago",
 							"{0} mos ago",
-							value,
-					  );
+							value
+						);
 			}
 		} else {
 			if (value === 1) {
@@ -313,16 +313,16 @@ export function fromNow(
 					? localize(
 							"date.fromNow.months.singular.fullWord",
 							"{0} month",
-							value,
-					  )
+							value
+						)
 					: localize("date.fromNow.months.singular", "{0} mo", value);
 			} else {
 				return useFullTimeWords
 					? localize(
 							"date.fromNow.months.plural.fullWord",
 							"{0} months",
-							value,
-					  )
+							value
+						)
 					: localize("date.fromNow.months.plural", "{0} mos", value);
 			}
 		}
@@ -335,25 +335,25 @@ export function fromNow(
 				? localize(
 						"date.fromNow.years.singular.ago.fullWord",
 						"{0} year ago",
-						value,
-				  )
+						value
+					)
 				: localize(
 						"date.fromNow.years.singular.ago",
 						"{0} yr ago",
-						value,
-				  );
+						value
+					);
 		} else {
 			return useFullTimeWords
 				? localize(
 						"date.fromNow.years.plural.ago.fullWord",
 						"{0} years ago",
-						value,
-				  )
+						value
+					)
 				: localize(
 						"date.fromNow.years.plural.ago",
 						"{0} yrs ago",
-						value,
-				  );
+						value
+					);
 		}
 	} else {
 		if (value === 1) {
@@ -361,16 +361,16 @@ export function fromNow(
 				? localize(
 						"date.fromNow.years.singular.fullWord",
 						"{0} year",
-						value,
-				  )
+						value
+					)
 				: localize("date.fromNow.years.singular", "{0} yr", value);
 		} else {
 			return useFullTimeWords
 				? localize(
 						"date.fromNow.years.plural.fullWord",
 						"{0} years",
-						value,
-				  )
+						value
+					)
 				: localize("date.fromNow.years.plural", "{0} yrs", value);
 		}
 	}

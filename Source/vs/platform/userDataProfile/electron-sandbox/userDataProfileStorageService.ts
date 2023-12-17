@@ -19,15 +19,16 @@ import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
 export class NativeUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(
 			mainProcessService,
 			userDataProfilesService,
 			storageService,
-			logService,
+			logService
 		);
 	}
 }
@@ -35,5 +36,5 @@ export class NativeUserDataProfileStorageService extends RemoteUserDataProfileSt
 registerSingleton(
 	IUserDataProfileStorageService,
 	NativeUserDataProfileStorageService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

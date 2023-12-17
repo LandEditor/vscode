@@ -7,7 +7,7 @@ import { Event } from "vs/base/common/event";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IExtensionHostStarter = createDecorator<IExtensionHostStarter>(
-	"extensionHostStarter",
+	"extensionHostStarter"
 );
 
 export const ipcExtensionHostStarterChannelName = "extensionHostStarter";
@@ -33,7 +33,7 @@ export interface IExtensionHostStarter {
 	createExtensionHost(): Promise<{ id: string }>;
 	start(
 		id: string,
-		opts: IExtensionHostProcessOptions,
+		opts: IExtensionHostProcessOptions
 	): Promise<{ pid: number | undefined }>;
 	enableInspectPort(id: string): Promise<boolean>;
 	kill(id: string): Promise<void>;

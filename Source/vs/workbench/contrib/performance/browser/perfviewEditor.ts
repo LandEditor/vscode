@@ -41,12 +41,12 @@ export class PerfviewContrib {
 
 	constructor(
 		@IInstantiationService instaService: IInstantiationService,
-		@ITextModelService textModelResolverService: ITextModelService,
+		@ITextModelService textModelResolverService: ITextModelService
 	) {
 		this._registration =
 			textModelResolverService.registerTextModelContentProvider(
 				"perf",
-				instaService.createInstance(PerfModelContentProvider),
+				instaService.createInstance(PerfModelContentProvider)
 			);
 	}
 
@@ -72,8 +72,10 @@ export class PerfviewInput extends TextResourceEditorInput {
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
 		@ILabelService labelService: ILabelService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService
 	) {
 		super(
 			PerfviewInput.Uri,
@@ -87,7 +89,7 @@ export class PerfviewInput extends TextResourceEditorInput {
 			fileService,
 			labelService,
 			filesConfigurationService,
-			textResourceConfigurationService,
+			textResourceConfigurationService
 		);
 	}
 }
@@ -100,12 +102,14 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@ITimerService private readonly _timerService: ITimerService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IProductService private readonly _productService: IProductService,
 		@ITerminalService private readonly _terminalService: ITerminalService
-	) { }
+	) {}
 
 	provideTextContent(resource: URI): Promise<ITextModel> {
 		if (!this._model || this._model.isDisposed()) {
@@ -118,19 +122,19 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 			this._modelDisposables.push(
 				langId.onDidChange((e) => {
 					this._model?.setLanguage(e);
-				}),
+				})
 			);
 			this._modelDisposables.push(
 				this._extensionService.onDidChangeExtensionsStatus(
 					this._updateModel,
-					this,
-				),
+					this
+				)
 			);
 
 			writeTransientState(
 				this._model,
 				{ wordWrapOverride: "off" },
-				this._editorService,
+				this._editorService
 			);
 		}
 		this._updateModel();
@@ -159,7 +163,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 					this._timerService
 						.getPerformanceMarks()
 						.find((e) => e[0] === "renderer")?.[1]
-						.filter((e) => e.name.startsWith("code/terminal/")),
+						.filter((e) => e.name.startsWith("code/terminal/"))
 				);
 				md.blank();
 				this._addRawPerfMarks(md);
@@ -183,12 +187,12 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		md.li(
 			`${this._productService.nameShort}: ${
 				this._productService.version
-			} (${this._productService.commit || "0000000"})`,
+			} (${this._productService.commit || "0000000"})`
 		);
 		md.li(`OS: ${metrics.platform}(${metrics.release})`);
 		if (metrics.cpus) {
 			md.li(
-				`CPUs: ${metrics.cpus.model}(${metrics.cpus.count} x ${metrics.cpus.speed})`,
+				`CPUs: ${metrics.cpus.model}(${metrics.cpus.count} x ${metrics.cpus.speed})`
 			);
 		}
 		if (
@@ -197,8 +201,8 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		) {
 			md.li(
 				`Memory(System): ${(metrics.totalmem / ByteSize.GB).toFixed(
-					2,
-				)} GB(${(metrics.freemem / ByteSize.GB).toFixed(2)}GB free)`,
+					2
+				)} GB(${(metrics.freemem / ByteSize.GB).toFixed(2)}GB free)`
 			);
 		}
 		if (metrics.meminfo) {
@@ -209,7 +213,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 					metrics.meminfo.privateBytes / ByteSize.KB
 				).toFixed(2)}MB private, ${(
 					metrics.meminfo.sharedBytes / ByteSize.KB
-				).toFixed(2)}MB shared)`,
+				).toFixed(2)}MB shared)`
 			);
 		}
 		md.li(`VM(likelihood): ${metrics.isVMLikelyhood}%`);
@@ -418,7 +422,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 					"Event",
 					"By",
 				],
-				table,
+				table
 			);
 		}
 	}
@@ -426,7 +430,7 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 	private _addPerfMarksTable(
 		name: string,
 		md: MarkdownBuilder,
-		marks: readonly perf.PerformanceMark[] | undefined,
+		marks: readonly perf.PerformanceMark[] | undefined
 	): void {
 		if (!marks) {
 			return;
@@ -553,7 +557,7 @@ class MarkdownBuilder {
 
 	table(
 		header: string[],
-		rows: Array<Array<{ toString(): string } | undefined>>,
+		rows: Array<Array<{ toString(): string } | undefined>>
 	) {
 		this.value += LoaderStats.toMarkdownTable(header, rows);
 	}

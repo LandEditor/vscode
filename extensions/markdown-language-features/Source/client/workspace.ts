@@ -26,31 +26,31 @@ export class VsCodeMdWorkspace extends Disposable {
 		super();
 
 		this._watcher = this._register(
-			vscode.workspace.createFileSystemWatcher("**/*.md"),
+			vscode.workspace.createFileSystemWatcher("**/*.md")
 		);
 
 		this._register(
 			this._watcher.onDidChange(async (resource) => {
 				this._documentCache.delete(resource);
-			}),
+			})
 		);
 
 		this._register(
 			this._watcher.onDidDelete((resource) => {
 				this._documentCache.delete(resource);
-			}),
+			})
 		);
 
 		this._register(
 			vscode.workspace.onDidOpenTextDocument((e) => {
 				this._documentCache.delete(e.uri);
-			}),
+			})
 		);
 
 		this._register(
 			vscode.workspace.onDidCloseTextDocument((e) => {
 				this._documentCache.delete(e.uri);
-			}),
+			})
 		);
 	}
 
@@ -61,7 +61,7 @@ export class VsCodeMdWorkspace extends Disposable {
 	}
 
 	public async getOrLoadMarkdownDocument(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): Promise<ITextDocument | undefined> {
 		const existing = this._documentCache.get(resource);
 		if (existing) {
@@ -71,7 +71,7 @@ export class VsCodeMdWorkspace extends Disposable {
 		const matchingDocument = vscode.workspace.textDocuments.find(
 			(doc) =>
 				this._isRelevantMarkdownDocument(doc) &&
-				doc.uri.toString() === resource.toString(),
+				doc.uri.toString() === resource.toString()
 		);
 		if (matchingDocument) {
 			this._documentCache.set(resource, matchingDocument);

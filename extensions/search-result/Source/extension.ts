@@ -26,7 +26,7 @@ let documentChangeListener: vscode.Disposable | undefined;
 
 export function activate(context: vscode.ExtensionContext) {
 	const contextLineDecorations = vscode.window.createTextEditorDecorationType(
-		{ opacity: "0.7" },
+		{ opacity: "0.7" }
 	);
 	const matchLineDecorations = vscode.window.createTextEditorDecorationType({
 		fontWeight: "bold",
@@ -57,7 +57,7 @@ export function activate(context: vscode.ExtensionContext) {
 			{
 				provideDocumentSymbols(
 					document: vscode.TextDocument,
-					token: vscode.CancellationToken,
+					token: vscode.CancellationToken
 				): vscode.DocumentSymbol[] {
 					const results = parseSearchResults(document, token)
 						.filter(isFileLine)
@@ -70,19 +70,19 @@ export function activate(context: vscode.ExtensionContext) {
 									line.allLocations
 										.map(
 											({ originSelectionRange }) =>
-												originSelectionRange!,
+												originSelectionRange!
 										)
 										.reduce(
 											(p, c) => p.union(c),
-											line.location.originSelectionRange!,
+											line.location.originSelectionRange!
 										),
-									line.location.originSelectionRange!,
-								),
+									line.location.originSelectionRange!
+								)
 						);
 
 					return results;
 				},
-			},
+			}
 		),
 
 		vscode.languages.registerCompletionItemProvider(
@@ -90,7 +90,7 @@ export function activate(context: vscode.ExtensionContext) {
 			{
 				provideCompletionItems(
 					document: vscode.TextDocument,
-					position: vscode.Position,
+					position: vscode.Position
 				): vscode.CompletionItem[] {
 					const line = document.lineAt(position.line);
 					if (position.line > 3) {
@@ -106,8 +106,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 						return DIRECTIVES.filter((suggestion) =>
 							header.every(
-								(line) => line.indexOf(suggestion) === -1,
-							),
+								(line) => line.indexOf(suggestion) === -1
+							)
 						).map((flag) => ({
 							label: flag,
 							insertText: flag.slice(position.character) + " ",
@@ -119,18 +119,18 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 
 					return FLAGS.filter(
-						(flag) => line.text.indexOf(flag) === -1,
+						(flag) => line.text.indexOf(flag) === -1
 					).map((flag) => ({ label: flag, insertText: flag + " " }));
 				},
 			},
-			"#",
+			"#"
 		),
 
 		vscode.languages.registerDefinitionProvider(SEARCH_RESULT_SELECTOR, {
 			provideDefinition(
 				document: vscode.TextDocument,
 				position: vscode.Position,
-				token: vscode.CancellationToken,
+				token: vscode.CancellationToken
 			): vscode.DefinitionLink[] {
 				const lineResult = parseSearchResults(document, token)[
 					position.line
@@ -147,7 +147,7 @@ export function activate(context: vscode.ExtensionContext) {
 				}
 
 				const location = lineResult.locations.find((l) =>
-					l.originSelectionRange.contains(position),
+					l.originSelectionRange.contains(position)
 				);
 				if (!location) {
 					return [];
@@ -157,14 +157,14 @@ export function activate(context: vscode.ExtensionContext) {
 					location.targetSelectionRange.start.line,
 					location.targetSelectionRange.start.character +
 						(position.character -
-							location.originSelectionRange.start.character),
+							location.originSelectionRange.start.character)
 				);
 				return [
 					{
 						...location,
 						targetSelectionRange: new vscode.Range(
 							targetPos,
-							targetPos,
+							targetPos
 						),
 					},
 				];
@@ -174,7 +174,7 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.languages.registerDocumentLinkProvider(SEARCH_RESULT_SELECTOR, {
 			async provideDocumentLinks(
 				document: vscode.TextDocument,
-				token: vscode.CancellationToken,
+				token: vscode.CancellationToken
 			): Promise<vscode.DocumentLink[]> {
 				return parseSearchResults(document, token)
 					.filter(isFileLine)
@@ -208,13 +208,13 @@ export function activate(context: vscode.ExtensionContext) {
 				cachedLastParse = undefined;
 				documentChangeListener?.dispose();
 			},
-		},
+		}
 	);
 }
 
 function relativePathToUri(
 	path: string,
-	resultsUri: vscode.Uri,
+	resultsUri: vscode.Uri
 ): vscode.Uri | undefined {
 	const userDataPrefix = "(Settings) ";
 	if (path.startsWith(userDataPrefix)) {
@@ -240,7 +240,7 @@ function relativePathToUri(
 
 	const uriFromFolderWithPath = (
 		folder: vscode.WorkspaceFolder,
-		path: string,
+		path: string
 	): vscode.Uri => vscode.Uri.joinPath(folder.uri, path);
 
 	if (vscode.workspace.workspaceFolders) {
@@ -248,7 +248,7 @@ function relativePathToUri(
 		if (multiRootFormattedPath) {
 			const [, workspaceName, workspacePath] = multiRootFormattedPath;
 			const folder = vscode.workspace.workspaceFolders.filter(
-				(wf) => wf.name === workspaceName,
+				(wf) => wf.name === workspaceName
 			)[0];
 			if (folder) {
 				return uriFromFolderWithPath(folder, workspacePath);
@@ -256,13 +256,13 @@ function relativePathToUri(
 		} else if (vscode.workspace.workspaceFolders.length === 1) {
 			return uriFromFolderWithPath(
 				vscode.workspace.workspaceFolders[0],
-				path,
+				path
 			);
 		} else if (resultsUri.scheme !== "untitled") {
 			// We're in a multi-root workspace, but the path is not multi-root formatted
 			// Possibly a saved search from a single root session. Try checking if the search result document's URI is in a current workspace folder.
 			const prefixMatch = vscode.workspace.workspaceFolders.filter((wf) =>
-				resultsUri.toString().startsWith(wf.uri.toString()),
+				resultsUri.toString().startsWith(wf.uri.toString())
 			)[0];
 			if (prefixMatch) {
 				return uriFromFolderWithPath(prefixMatch, path);
@@ -288,15 +288,15 @@ type ParsedSearchResultLine = {
 };
 type ParsedSearchResults = Array<ParsedSearchFileLine | ParsedSearchResultLine>;
 const isFileLine = (
-	line: ParsedSearchResultLine | ParsedSearchFileLine,
+	line: ParsedSearchResultLine | ParsedSearchFileLine
 ): line is ParsedSearchFileLine => line.type === "file";
 const isResultLine = (
-	line: ParsedSearchResultLine | ParsedSearchFileLine,
+	line: ParsedSearchResultLine | ParsedSearchFileLine
 ): line is ParsedSearchResultLine => line.type === "result";
 
 function parseSearchResults(
 	document: vscode.TextDocument,
-	token?: vscode.CancellationToken,
+	token?: vscode.CancellationToken
 ): ParsedSearchResults {
 	if (
 		cachedLastParse &&
@@ -357,7 +357,7 @@ function parseSearchResults(
 				Math.max(lineNumber - 3, 0),
 				0,
 				lineNumber + 3,
-				line.length,
+				line.length
 			);
 
 			const locations: Required<vscode.LocationLink>[] = [];
@@ -368,6 +368,7 @@ function parseSearchResults(
 			for (
 				let match: RegExpExecArray | null;
 				(match = ELISION_REGEX.exec(line));
+
 			) {
 				locations.push({
 					targetRange,
@@ -375,14 +376,14 @@ function parseSearchResults(
 						lineNumber,
 						offset,
 						lineNumber,
-						offset,
+						offset
 					),
 					targetUri: currentTarget,
 					originSelectionRange: new vscode.Range(
 						i,
 						lastEnd,
 						i,
-						ELISION_REGEX.lastIndex - match[0].length,
+						ELISION_REGEX.lastIndex - match[0].length
 					),
 				});
 
@@ -401,14 +402,14 @@ function parseSearchResults(
 						lineNumber,
 						offset,
 						lineNumber,
-						offset,
+						offset
 					),
 					targetUri: currentTarget,
 					originSelectionRange: new vscode.Range(
 						i,
 						lastEnd,
 						i,
-						line.length,
+						line.length
 					),
 				});
 			}
@@ -424,14 +425,14 @@ function parseSearchResults(
 					lineNumber,
 					0,
 					lineNumber,
-					1,
+					1
 				),
 				targetUri: currentTarget,
 				originSelectionRange: new vscode.Range(
 					i,
 					0,
 					i,
-					metadataOffset - 1,
+					metadataOffset - 1
 				),
 			};
 			locations.push(convenienceLocation);

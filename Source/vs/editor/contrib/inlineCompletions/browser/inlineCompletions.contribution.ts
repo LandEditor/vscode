@@ -26,7 +26,7 @@ import { registerAction2 } from "vs/platform/actions/common/actions";
 registerEditorContribution(
 	InlineCompletionsController.ID,
 	InlineCompletionsController,
-	EditorContributionInstantiation.Eventually,
+	EditorContributionInstantiation.Eventually
 );
 
 registerEditorAction(TriggerInlineSuggestionAction);

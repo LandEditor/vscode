@@ -48,11 +48,11 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 	}
 
 	onMessage(
-		callback: (message: DebugProtocol.ProtocolMessage) => void,
+		callback: (message: DebugProtocol.ProtocolMessage) => void
 	): void {
 		if (this.messageCallback) {
 			this._onError.fire(
-				new Error(`attempt to set more than one 'Message' callback`),
+				new Error(`attempt to set more than one 'Message' callback`)
 			);
 		}
 		this.messageCallback = callback;
@@ -61,7 +61,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 	onEvent(callback: (event: DebugProtocol.Event) => void): void {
 		if (this.eventCallback) {
 			this._onError.fire(
-				new Error(`attempt to set more than one 'Event' callback`),
+				new Error(`attempt to set more than one 'Event' callback`)
 			);
 		}
 		this.eventCallback = callback;
@@ -70,7 +70,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 	onRequest(callback: (request: DebugProtocol.Request) => void): void {
 		if (this.requestCallback) {
 			this._onError.fire(
-				new Error(`attempt to set more than one 'Request' callback`),
+				new Error(`attempt to set more than one 'Request' callback`)
 			);
 		}
 		this.requestCallback = callback;
@@ -80,8 +80,8 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 		if (response.seq > 0) {
 			this._onError.fire(
 				new Error(
-					`attempt to send more than one response for command ${response.command}`,
-				),
+					`attempt to send more than one response for command ${response.command}`
+				)
 			);
 		} else {
 			this.internalSend("response", response);
@@ -92,7 +92,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 		command: string,
 		args: any,
 		clb: (result: DebugProtocol.Response) => void,
-		timeout?: number,
+		timeout?: number
 	): number {
 		const request: any = {
 			command: command,
@@ -117,7 +117,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 							"timeout",
 							"Timeout after {0} ms for '{1}'",
 							timeout,
-							command,
+							command
 						),
 					};
 					clb(err);
@@ -165,7 +165,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 	 */
 	protected needsTaskBoundaryBetween(
 		messageA: DebugProtocol.ProtocolMessage,
-		messageB: DebugProtocol.ProtocolMessage,
+		messageB: DebugProtocol.ProtocolMessage
 	) {
 		return messageA.type !== "event" || messageB.type !== "event";
 	}
@@ -210,7 +210,7 @@ export abstract class AbstractDebugAdapter implements IDebugAdapter {
 
 	private internalSend(
 		typ: "request" | "response" | "event",
-		message: DebugProtocol.ProtocolMessage,
+		message: DebugProtocol.ProtocolMessage
 	): void {
 		message.type = typ;
 		message.seq = this.sequence++;

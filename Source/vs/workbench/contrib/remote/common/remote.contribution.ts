@@ -49,7 +49,9 @@ import { RemoteLoggerChannelClient } from "vs/platform/log/common/logIpc";
 export class LabelContribution implements IWorkbenchContribution {
 	constructor(
 		@ILabelService private readonly labelService: ILabelService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService) {
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService
+	) {
 		this.registerFormatters();
 	}
 
@@ -85,19 +87,19 @@ class RemoteChannelsContribution
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@IDownloadService downloadService: IDownloadService,
-		@ILoggerService loggerService: ILoggerService,
+		@ILoggerService loggerService: ILoggerService
 	) {
 		super();
 		const connection = remoteAgentService.getConnection();
 		if (connection) {
 			connection.registerChannel(
 				"download",
-				new DownloadServiceChannel(downloadService),
+				new DownloadServiceChannel(downloadService)
 			);
 			connection.withChannel("logger", async (channel) =>
 				this._register(
-					new RemoteLoggerChannelClient(loggerService, channel),
-				),
+					new RemoteLoggerChannelClient(loggerService, channel)
+				)
 			);
 		}
 	}
@@ -110,9 +112,12 @@ class RemoteInvalidWorkspaceDetector
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService
 	) {
 		super();
@@ -123,7 +128,7 @@ class RemoteInvalidWorkspaceDetector
 		// the user to a valid workspace.
 		// (see https://github.com/microsoft/vscode/issues/133872)
 		if (this.environmentService.remoteAuthority) {
-			remoteAgentService.getEnvironment().then(remoteEnv => {
+			remoteAgentService.getEnvironment().then((remoteEnv) => {
 				if (remoteEnv) {
 					// we use the presence of `remoteEnv` to figure out
 					// if we got a healthy remote connection
@@ -151,18 +156,18 @@ class RemoteInvalidWorkspaceDetector
 			type: "warning",
 			message: localize(
 				"invalidWorkspaceMessage",
-				"Workspace does not exist",
+				"Workspace does not exist"
 			),
 			detail: localize(
 				"invalidWorkspaceDetail",
-				"Please select another workspace to open.",
+				"Please select another workspace to open."
 			),
 			primaryButton: localize(
 				{
 					key: "invalidWorkspacePrimary",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Open Workspace...",
+				"&&Open Workspace..."
 			),
 		});
 
@@ -182,9 +187,11 @@ class InitialRemoteConnectionHealthContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITelemetryService private readonly _telemetryService: ITelemetryService
 	) {
 		if (this._environmentService.remoteAuthority) {
 			this._checkInitialRemoteConnectionHealth();
@@ -229,7 +236,7 @@ class InitialRemoteConnectionHealthContribution
 					.getConnection()
 					?.getInitialConnectionTimeMs(),
 				remoteName: getRemoteName(
-					this._environmentService.remoteAuthority,
+					this._environmentService.remoteAuthority
 				),
 			});
 
@@ -275,7 +282,7 @@ class InitialRemoteConnectionHealthContribution
 					.getConnection()
 					?.getInitialConnectionTimeMs(),
 				remoteName: getRemoteName(
-					this._environmentService.remoteAuthority,
+					this._environmentService.remoteAuthority
 				),
 				message: err ? err.message : "",
 			});
@@ -284,7 +291,7 @@ class InitialRemoteConnectionHealthContribution
 
 	private async _measureExtHostLatency() {
 		const measurement = await remoteConnectionLatencyMeasurer.measure(
-			this._remoteAgentService,
+			this._remoteAgentService
 		);
 		if (measurement === undefined) {
 			return;
@@ -331,19 +338,19 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	LabelContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	RemoteChannelsContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	RemoteInvalidWorkspaceDetector,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InitialRemoteConnectionHealthContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 const enableDiagnostics = true;
@@ -356,7 +363,7 @@ if (enableDiagnostics) {
 				title: {
 					value: localize(
 						"triggerReconnect",
-						"Connection: Trigger Reconnect",
+						"Connection: Trigger Reconnect"
 					),
 					original: "Connection: Trigger Reconnect",
 				},
@@ -377,7 +384,7 @@ if (enableDiagnostics) {
 				title: {
 					value: localize(
 						"pauseSocketWriting",
-						"Connection: Pause socket writing",
+						"Connection: Pause socket writing"
 					),
 					original: "Connection: Pause socket writing",
 				},
@@ -401,17 +408,17 @@ const extensionKindSchema: IJSONSchema = {
 	enumDescriptions: [
 		localize(
 			"ui",
-			"UI extension kind. In a remote window, such extensions are enabled only when available on the local machine.",
+			"UI extension kind. In a remote window, such extensions are enabled only when available on the local machine."
 		),
 		localize(
 			"workspace",
-			"Workspace extension kind. In a remote window, such extensions are enabled only when available on the remote.",
+			"Workspace extension kind. In a remote window, such extensions are enabled only when available on the remote."
 		),
 	],
 };
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	id: "remote",
 	title: localize("remote", "Remote"),
@@ -421,7 +428,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "object",
 			markdownDescription: localize(
 				"remote.extensionKind",
-				"Override the kind of an extension. `ui` extensions are installed and run on the local machine while `workspace` extensions are run on the remote. By overriding an extension's default kind using this setting, you specify if that extension should be installed and enabled locally or remotely.",
+				"Override the kind of an extension. `ui` extensions are installed and run on the local machine while `workspace` extensions are run on the remote. By overriding an extension's default kind using this setting, you specify if that extension should be installed and enabled locally or remotely."
 			),
 			patternProperties: {
 				"([a-z0-9A-Z][a-z0-9-A-Z]*)\\.([a-z0-9A-Z][a-z0-9-A-Z]*)$": {
@@ -440,7 +447,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			markdownDescription: localize(
 				"remote.restoreForwardedPorts",
-				"Restores the ports you forwarded in a workspace.",
+				"Restores the ports you forwarded in a workspace."
 			),
 			default: true,
 		},
@@ -448,7 +455,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			markdownDescription: localize(
 				"remote.autoForwardPorts",
-				"When enabled, new running processes are detected and ports that they listen on are automatically forwarded. Disabling this setting will not prevent all ports from being forwarded. Even when disabled, extensions will still be able to cause ports to be forwarded, and opening some URLs will still cause ports to forwarded.",
+				"When enabled, new running processes are detected and ports that they listen on are automatically forwarded. Disabling this setting will not prevent all ports from being forwarded. Even when disabled, extensions will still be able to cause ports to be forwarded, and opening some URLs will still cause ports to forwarded."
 			),
 			default: true,
 		},
@@ -457,21 +464,21 @@ Registry.as<IConfigurationRegistry>(
 			markdownDescription: localize(
 				"remote.autoForwardPortsSource",
 				"Sets the source from which ports are automatically forwarded when {0} is true. On Windows and macOS remotes, the `process` and `hybrid` options have no effect and `output` will be used.",
-				"`#remote.autoForwardPorts#`",
+				"`#remote.autoForwardPorts#`"
 			),
 			enum: ["process", "output", "hybrid"],
 			enumDescriptions: [
 				localize(
 					"remote.autoForwardPortsSource.process",
-					"Ports will be automatically forwarded when discovered by watching for processes that are started and include a port.",
+					"Ports will be automatically forwarded when discovered by watching for processes that are started and include a port."
 				),
 				localize(
 					"remote.autoForwardPortsSource.output",
-					'Ports will be automatically forwarded when discovered by reading terminal and debug output. Not all processes that use ports will print to the integrated terminal or debug console, so some ports will be missed. Ports forwarded based on output will not be "un-forwarded" until reload or until the port is closed by the user in the Ports view.',
+					'Ports will be automatically forwarded when discovered by reading terminal and debug output. Not all processes that use ports will print to the integrated terminal or debug console, so some ports will be missed. Ports forwarded based on output will not be "un-forwarded" until reload or until the port is closed by the user in the Ports view.'
 				),
 				localize(
 					"remote.autoForwardPortsSource.hybrid",
-					'Ports will be automatically forwarded when discovered by reading terminal and debug output. Not all processes that use ports will print to the integrated terminal or debug console, so some ports will be missed. Ports will be "un-forwarded" by watching for processes that listen on that port to be terminated.',
+					'Ports will be automatically forwarded when discovered by reading terminal and debug output. Not all processes that use ports will print to the integrated terminal or debug console, so some ports will be missed. Ports will be "un-forwarded" by watching for processes that listen on that port to be terminated.'
 				),
 			],
 			default: "process",
@@ -480,7 +487,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			description: localize(
 				"remote.forwardOnClick",
-				"Controls whether local URLs with a port will be forwarded when opened from the terminal and the debug console.",
+				"Controls whether local URLs with a port will be forwarded when opened from the terminal and the debug console."
 			),
 			default: true,
 		},
@@ -494,7 +501,7 @@ Registry.as<IConfigurationRegistry>(
 					type: "object",
 					description: localize(
 						"remote.portsAttributes.port",
-						'A port, range of ports (ex. "40000-55000"), host and port (ex. "db:1234"), or regular expression (ex. ".+\\\\/server.js").  For a port number or range, the attributes will apply to that port number or range of port numbers. Attributes which use a regular expression will apply to ports whose associated process command line matches the expression.',
+						'A port, range of ports (ex. "40000-55000"), host and port (ex. "db:1234"), or regular expression (ex. ".+\\\\/server.js").  For a port number or range, the attributes will apply to that port number or range of port numbers. Attributes which use a regular expression will apply to ports whose associated process command line matches the expression.'
 					),
 					properties: {
 						onAutoForward: {
@@ -510,32 +517,32 @@ Registry.as<IConfigurationRegistry>(
 							enumDescriptions: [
 								localize(
 									"remote.portsAttributes.notify",
-									"Shows a notification when a port is automatically forwarded.",
+									"Shows a notification when a port is automatically forwarded."
 								),
 								localize(
 									"remote.portsAttributes.openBrowser",
-									"Opens the browser when the port is automatically forwarded. Depending on your settings, this could open an embedded browser.",
+									"Opens the browser when the port is automatically forwarded. Depending on your settings, this could open an embedded browser."
 								),
 								localize(
 									"remote.portsAttributes.openBrowserOnce",
-									"Opens the browser when the port is automatically forwarded, but only the first time the port is forward during a session. Depending on your settings, this could open an embedded browser.",
+									"Opens the browser when the port is automatically forwarded, but only the first time the port is forward during a session. Depending on your settings, this could open an embedded browser."
 								),
 								localize(
 									"remote.portsAttributes.openPreview",
-									"Opens a preview in the same window when the port is automatically forwarded.",
+									"Opens a preview in the same window when the port is automatically forwarded."
 								),
 								localize(
 									"remote.portsAttributes.silent",
-									"Shows no notification and takes no action when this port is automatically forwarded.",
+									"Shows no notification and takes no action when this port is automatically forwarded."
 								),
 								localize(
 									"remote.portsAttributes.ignore",
-									"This port will not be automatically forwarded.",
+									"This port will not be automatically forwarded."
 								),
 							],
 							description: localize(
 								"remote.portsAttributes.onForward",
-								"Defines the action that occurs when the port is discovered for automatic forwarding",
+								"Defines the action that occurs when the port is discovered for automatic forwarding"
 							),
 							default: "notify",
 						},
@@ -543,7 +550,7 @@ Registry.as<IConfigurationRegistry>(
 							type: "boolean",
 							description: localize(
 								"remote.portsAttributes.elevateIfNeeded",
-								"Automatically prompt for elevation (if needed) when this port is forwarded. Elevate is required if the local port is a privileged port.",
+								"Automatically prompt for elevation (if needed) when this port is forwarded. Elevate is required if the local port is a privileged port."
 							),
 							default: false,
 						},
@@ -551,18 +558,18 @@ Registry.as<IConfigurationRegistry>(
 							type: "string",
 							description: localize(
 								"remote.portsAttributes.label",
-								"Label that will be shown in the UI for this port.",
+								"Label that will be shown in the UI for this port."
 							),
 							default: localize(
 								"remote.portsAttributes.labelDefault",
-								"Application",
+								"Application"
 							),
 						},
 						requireLocalPort: {
 							type: "boolean",
 							markdownDescription: localize(
 								"remote.portsAttributes.requireLocalPort",
-								"When true, a modal dialog will show if the chosen local port isn't used for forwarding.",
+								"When true, a modal dialog will show if the chosen local port isn't used for forwarding."
 							),
 							default: false,
 						},
@@ -571,14 +578,14 @@ Registry.as<IConfigurationRegistry>(
 							enum: ["http", "https"],
 							description: localize(
 								"remote.portsAttributes.protocol",
-								"The protocol to use when forwarding this port.",
+								"The protocol to use when forwarding this port."
 							),
 						},
 					},
 					default: {
 						label: localize(
 							"remote.portsAttributes.labelDefault",
-							"Application",
+							"Application"
 						),
 						onAutoForward: "notify",
 					},
@@ -586,7 +593,7 @@ Registry.as<IConfigurationRegistry>(
 			},
 			markdownDescription: localize(
 				"remote.portsAttributes",
-				'Set properties that are applied when a specific port number is forwarded. For example:\n\n```\n"3000": {\n  "label": "Application"\n},\n"40000-55000": {\n  "onAutoForward": "ignore"\n},\n".+\\\\/server.js": {\n "onAutoForward": "openPreview"\n}\n```',
+				'Set properties that are applied when a specific port number is forwarded. For example:\n\n```\n"3000": {\n  "label": "Application"\n},\n"40000-55000": {\n  "onAutoForward": "ignore"\n},\n".+\\\\/server.js": {\n "onAutoForward": "openPreview"\n}\n```'
 			),
 			defaultSnippets: [
 				{
@@ -600,7 +607,7 @@ Registry.as<IConfigurationRegistry>(
 			],
 			errorMessage: localize(
 				"remote.portsAttributes.patternError",
-				"Must be a port number, range of port numbers, or regular expression.",
+				"Must be a port number, range of port numbers, or regular expression."
 			),
 			additionalProperties: false,
 			default: {
@@ -627,28 +634,28 @@ Registry.as<IConfigurationRegistry>(
 					enumDescriptions: [
 						localize(
 							"remote.portsAttributes.notify",
-							"Shows a notification when a port is automatically forwarded.",
+							"Shows a notification when a port is automatically forwarded."
 						),
 						localize(
 							"remote.portsAttributes.openBrowser",
-							"Opens the browser when the port is automatically forwarded. Depending on your settings, this could open an embedded browser.",
+							"Opens the browser when the port is automatically forwarded. Depending on your settings, this could open an embedded browser."
 						),
 						localize(
 							"remote.portsAttributes.openPreview",
-							"Opens a preview in the same window when the port is automatically forwarded.",
+							"Opens a preview in the same window when the port is automatically forwarded."
 						),
 						localize(
 							"remote.portsAttributes.silent",
-							"Shows no notification and takes no action when this port is automatically forwarded.",
+							"Shows no notification and takes no action when this port is automatically forwarded."
 						),
 						localize(
 							"remote.portsAttributes.ignore",
-							"This port will not be automatically forwarded.",
+							"This port will not be automatically forwarded."
 						),
 					],
 					description: localize(
 						"remote.portsAttributes.onForward",
-						"Defines the action that occurs when the port is discovered for automatic forwarding",
+						"Defines the action that occurs when the port is discovered for automatic forwarding"
 					),
 					default: "notify",
 				},
@@ -656,7 +663,7 @@ Registry.as<IConfigurationRegistry>(
 					type: "boolean",
 					description: localize(
 						"remote.portsAttributes.elevateIfNeeded",
-						"Automatically prompt for elevation (if needed) when this port is forwarded. Elevate is required if the local port is a privileged port.",
+						"Automatically prompt for elevation (if needed) when this port is forwarded. Elevate is required if the local port is a privileged port."
 					),
 					default: false,
 				},
@@ -664,18 +671,18 @@ Registry.as<IConfigurationRegistry>(
 					type: "string",
 					description: localize(
 						"remote.portsAttributes.label",
-						"Label that will be shown in the UI for this port.",
+						"Label that will be shown in the UI for this port."
 					),
 					default: localize(
 						"remote.portsAttributes.labelDefault",
-						"Application",
+						"Application"
 					),
 				},
 				requireLocalPort: {
 					type: "boolean",
 					markdownDescription: localize(
 						"remote.portsAttributes.requireLocalPort",
-						"When true, a modal dialog will show if the chosen local port isn't used for forwarding.",
+						"When true, a modal dialog will show if the chosen local port isn't used for forwarding."
 					),
 					default: false,
 				},
@@ -684,7 +691,7 @@ Registry.as<IConfigurationRegistry>(
 					enum: ["http", "https"],
 					description: localize(
 						"remote.portsAttributes.protocol",
-						"The protocol to use when forwarding this port.",
+						"The protocol to use when forwarding this port."
 					),
 				},
 			},
@@ -692,7 +699,7 @@ Registry.as<IConfigurationRegistry>(
 			markdownDescription: localize(
 				"remote.portsAttributes.defaults",
 				'Set default properties that are applied to all ports that don\'t get properties from the setting {0}. For example:\n\n```\n{\n  "onAutoForward": "ignore"\n}\n```',
-				"`#remote.portsAttributes#`",
+				"`#remote.portsAttributes#`"
 			),
 			additionalProperties: false,
 		},
@@ -702,7 +709,7 @@ Registry.as<IConfigurationRegistry>(
 			default: "localhost",
 			description: localize(
 				"remote.localPortHost",
-				"Specifies the local host name that will be used for port forwarding.",
+				"Specifies the local host name that will be used for port forwarding."
 			),
 		},
 	},

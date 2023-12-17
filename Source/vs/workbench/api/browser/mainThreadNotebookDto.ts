@@ -13,7 +13,7 @@ import {
 
 export namespace NotebookDto {
 	export function toNotebookOutputItemDto(
-		item: notebookCommon.IOutputItemDto,
+		item: notebookCommon.IOutputItemDto
 	): extHostProtocol.NotebookOutputItemDto {
 		return {
 			mime: item.mime,
@@ -22,7 +22,7 @@ export namespace NotebookDto {
 	}
 
 	export function toNotebookOutputDto(
-		output: notebookCommon.IOutputDto,
+		output: notebookCommon.IOutputDto
 	): extHostProtocol.NotebookOutputDto {
 		return {
 			outputId: output.outputId,
@@ -32,7 +32,7 @@ export namespace NotebookDto {
 	}
 
 	export function toNotebookCellDataDto(
-		cell: notebookCommon.ICellDto2,
+		cell: notebookCommon.ICellDto2
 	): extHostProtocol.NotebookCellDataDto {
 		return {
 			cellKind: cell.cellKind,
@@ -46,7 +46,7 @@ export namespace NotebookDto {
 	}
 
 	export function toNotebookDataDto(
-		data: notebookCommon.NotebookData,
+		data: notebookCommon.NotebookData
 	): extHostProtocol.NotebookDataDto {
 		return {
 			metadata: data.metadata,
@@ -55,7 +55,7 @@ export namespace NotebookDto {
 	}
 
 	export function fromNotebookOutputItemDto(
-		item: extHostProtocol.NotebookOutputItemDto,
+		item: extHostProtocol.NotebookOutputItemDto
 	): notebookCommon.IOutputItemDto {
 		return {
 			mime: item.mime,
@@ -64,7 +64,7 @@ export namespace NotebookDto {
 	}
 
 	export function fromNotebookOutputDto(
-		output: extHostProtocol.NotebookOutputDto,
+		output: extHostProtocol.NotebookOutputDto
 	): notebookCommon.IOutputDto {
 		return {
 			outputId: output.outputId,
@@ -74,7 +74,7 @@ export namespace NotebookDto {
 	}
 
 	export function fromNotebookCellDataDto(
-		cell: extHostProtocol.NotebookCellDataDto,
+		cell: extHostProtocol.NotebookCellDataDto
 	): notebookCommon.ICellDto2 {
 		return {
 			cellKind: cell.cellKind,
@@ -88,7 +88,7 @@ export namespace NotebookDto {
 	}
 
 	export function fromNotebookDataDto(
-		data: extHostProtocol.NotebookDataDto,
+		data: extHostProtocol.NotebookDataDto
 	): notebookCommon.NotebookData {
 		return {
 			metadata: data.metadata,
@@ -97,7 +97,7 @@ export namespace NotebookDto {
 	}
 
 	export function toNotebookCellDto(
-		cell: notebookCommon.ICell,
+		cell: notebookCommon.ICell
 	): extHostProtocol.NotebookCellDto {
 		return {
 			handle: cell.handle,
@@ -113,7 +113,7 @@ export namespace NotebookDto {
 	}
 
 	export function fromCellExecuteUpdateDto(
-		data: extHostProtocol.ICellExecuteUpdateDto,
+		data: extHostProtocol.ICellExecuteUpdateDto
 	): ICellExecuteUpdate {
 		if (data.editType === CellExecutionUpdateType.Output) {
 			return {
@@ -135,13 +135,13 @@ export namespace NotebookDto {
 	}
 
 	export function fromCellExecuteCompleteDto(
-		data: extHostProtocol.ICellExecutionCompleteDto,
+		data: extHostProtocol.ICellExecutionCompleteDto
 	): ICellExecutionComplete {
 		return data;
 	}
 
 	export function fromCellEditOperationDto(
-		edit: extHostProtocol.ICellEditOperationDto,
+		edit: extHostProtocol.ICellEditOperationDto
 	): notebookCommon.ICellEditOperation {
 		if (edit.editType === notebookCommon.CellEditType.Replace) {
 			return {

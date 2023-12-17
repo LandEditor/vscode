@@ -88,7 +88,8 @@ export class SearchService extends Disposable implements ISearchService {
 		@ILogService private readonly logService: ILogService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
 		super();
 	}
@@ -96,7 +97,7 @@ export class SearchService extends Disposable implements ISearchService {
 	registerSearchResultProvider(
 		scheme: string,
 		type: SearchProviderType,
-		provider: ISearchResultProvider,
+		provider: ISearchResultProvider
 	): IDisposable {
 		let list: Map<string, ISearchResultProvider>;
 		let deferredMap: Map<string, DeferredPromise<ISearchResultProvider>>;
@@ -125,7 +126,7 @@ export class SearchService extends Disposable implements ISearchService {
 	async textSearch(
 		query: ITextQuery,
 		token?: CancellationToken,
-		onProgress?: (item: ISearchProgressItem) => void,
+		onProgress?: (item: ISearchProgressItem) => void
 	): Promise<ISearchComplete> {
 		const results = this.textSearchSplitSyncAsync(query, token, onProgress);
 		const openEditorResults = results.syncResults;
@@ -142,7 +143,7 @@ export class SearchService extends Disposable implements ISearchService {
 		token?: CancellationToken | undefined,
 		onProgress?: ((result: ISearchProgressItem) => void) | undefined,
 		notebookFilesToIgnore?: ResourceSet,
-		asyncNotebookFilesToIgnore?: Promise<ResourceSet>,
+		asyncNotebookFilesToIgnore?: Promise<ResourceSet>
 	): {
 		syncResults: ISearchComplete;
 		asyncResults: Promise<ISearchComplete>;
@@ -158,7 +159,7 @@ export class SearchService extends Disposable implements ISearchService {
 						!(
 							notebookFilesToIgnore &&
 							notebookFilesToIgnore.has(e.resource)
-						),
+						)
 				)
 				.forEach(onProgress);
 		}
@@ -178,7 +179,7 @@ export class SearchService extends Disposable implements ISearchService {
 					if (
 						!openEditorResults.results.has(progress.resource) &&
 						!resolvedAsyncNotebookFilesToIgnore.has(
-							progress.resource,
+							progress.resource
 						) &&
 						onProgress
 					) {
@@ -193,7 +194,7 @@ export class SearchService extends Disposable implements ISearchService {
 				if (isProgressMessage(progress)) {
 					this.logService.debug(
 						"SearchService#search",
-						progress.message,
+						progress.message
 					);
 				}
 			};
@@ -208,7 +209,7 @@ export class SearchService extends Disposable implements ISearchService {
 
 	fileSearch(
 		query: IFileQuery,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchComplete> {
 		return this.doSearch(query, token);
 	}
@@ -216,7 +217,7 @@ export class SearchService extends Disposable implements ISearchService {
 	private doSearch(
 		query: ISearchQuery,
 		token?: CancellationToken,
-		onProgress?: (item: ISearchProgressItem) => void,
+		onProgress?: (item: ISearchProgressItem) => void
 	): Promise<ISearchComplete> {
 		this.logService.trace("SearchService#search", JSON.stringify(query));
 
@@ -225,11 +226,11 @@ export class SearchService extends Disposable implements ISearchService {
 		const providerActivations: Promise<any>[] = [Promise.resolve(null)];
 		schemesInQuery.forEach((scheme) =>
 			providerActivations.push(
-				this.extensionService.activateByEvent(`onSearch:${scheme}`),
-			),
+				this.extensionService.activateByEvent(`onSearch:${scheme}`)
+			)
 		);
 		providerActivations.push(
-			this.extensionService.activateByEvent("onSearch:file"),
+			this.extensionService.activateByEvent("onSearch:file")
 		);
 
 		const providerPromise = (async () => {
@@ -251,17 +252,17 @@ export class SearchService extends Disposable implements ISearchService {
 
 			const exists = await Promise.all(
 				query.folderQueries.map((query) =>
-					this.fileService.exists(query.folder),
-				),
+					this.fileService.exists(query.folder)
+				)
 			);
 			query.folderQueries = query.folderQueries.filter(
-				(_, i) => exists[i],
+				(_, i) => exists[i]
 			);
 
 			let completes = await this.searchWithProviders(
 				query,
 				progressCallback,
-				token,
+				token
 			);
 			completes = arrays.coalesce(completes);
 			if (!completes.length) {
@@ -280,11 +281,11 @@ export class SearchService extends Disposable implements ISearchService {
 					.filter(
 						arrays.uniqueFilter(
 							(message) =>
-								message.type + message.text + message.trusted,
-						),
+								message.type + message.text + message.trusted
+						)
 					),
 				results: arrays.flatten(
-					completes.map((c: ISearchComplete) => c.results),
+					completes.map((c: ISearchComplete) => c.results)
 				),
 			};
 		})();
@@ -305,7 +306,7 @@ export class SearchService extends Disposable implements ISearchService {
 		query.folderQueries?.forEach((fq) => schemes.add(fq.folder.scheme));
 
 		query.extraFileResources?.forEach((extraFile) =>
-			schemes.add(extraFile.scheme),
+			schemes.add(extraFile.scheme)
 		);
 
 		return schemes;
@@ -313,7 +314,7 @@ export class SearchService extends Disposable implements ISearchService {
 
 	private async waitForProvider(
 		queryType: QueryType,
-		scheme: string,
+		scheme: string
 	): Promise<ISearchResultProvider> {
 		const deferredMap: Map<
 			string,
@@ -334,7 +335,7 @@ export class SearchService extends Disposable implements ISearchService {
 	private async searchWithProviders(
 		query: ISearchQuery,
 		onProviderProgress: (progress: ISearchProgressItem) => void,
-		token?: CancellationToken,
+		token?: CancellationToken
 	) {
 		const e2eSW = StopWatch.create(false);
 
@@ -359,7 +360,7 @@ export class SearchService extends Disposable implements ISearchService {
 					if (someSchemeHasProvider) {
 						if (!this.loggedSchemesMissingProviders.has(scheme)) {
 							this.logService.warn(
-								`No search provider registered for scheme: ${scheme}. Another scheme has a provider, not waiting for ${scheme}`,
+								`No search provider registered for scheme: ${scheme}. Another scheme has a provider, not waiting for ${scheme}`
 							);
 							this.loggedSchemesMissingProviders.add(scheme);
 						}
@@ -367,13 +368,13 @@ export class SearchService extends Disposable implements ISearchService {
 					} else {
 						if (!this.loggedSchemesMissingProviders.has(scheme)) {
 							this.logService.warn(
-								`No search provider registered for scheme: ${scheme}, waiting`,
+								`No search provider registered for scheme: ${scheme}, waiting`
 							);
 							this.loggedSchemesMissingProviders.add(scheme);
 						}
 						provider = await this.waitForProvider(
 							query.type,
-							scheme,
+							scheme
 						);
 					}
 				}
@@ -391,17 +392,17 @@ export class SearchService extends Disposable implements ISearchService {
 						: provider.textSearch(
 								<ITextQuery>oneSchemeQuery,
 								onProviderProgress,
-								token,
-						  ),
+								token
+							)
 				);
-			}),
+			})
 		);
 
 		return Promise.all(searchPs).then(
 			(completes) => {
 				const endToEndTime = e2eSW.elapsed();
 				this.logService.trace(
-					`SearchService#search: ${endToEndTime}ms`,
+					`SearchService#search: ${endToEndTime}ms`
 				);
 				completes.forEach((complete) => {
 					this.sendTelemetry(query, endToEndTime, complete);
@@ -411,21 +412,21 @@ export class SearchService extends Disposable implements ISearchService {
 			(err) => {
 				const endToEndTime = e2eSW.elapsed();
 				this.logService.trace(
-					`SearchService#search: ${endToEndTime}ms`,
+					`SearchService#search: ${endToEndTime}ms`
 				);
 				const searchError = deserializeSearchError(err);
 				this.logService.trace(
-					`SearchService#searchError: ${searchError.message}`,
+					`SearchService#searchError: ${searchError.message}`
 				);
 				this.sendTelemetry(query, endToEndTime, undefined, searchError);
 
 				throw searchError;
-			},
+			}
 		);
 	}
 
 	private groupFolderQueriesByScheme(
-		query: ISearchQuery,
+		query: ISearchQuery
 	): Map<string, IFolderQuery[]> {
 		const queries = new Map<string, IFolderQuery[]>();
 
@@ -443,19 +444,19 @@ export class SearchService extends Disposable implements ISearchService {
 		query: ISearchQuery,
 		endToEndTime: number,
 		complete?: ISearchComplete,
-		err?: SearchError,
+		err?: SearchError
 	): void {
 		const fileSchemeOnly = query.folderQueries.every(
-			(fq) => fq.folder.scheme === Schemas.file,
+			(fq) => fq.folder.scheme === Schemas.file
 		);
 		const otherSchemeOnly = query.folderQueries.every(
-			(fq) => fq.folder.scheme !== Schemas.file,
+			(fq) => fq.folder.scheme !== Schemas.file
 		);
 		const scheme = fileSchemeOnly
 			? Schemas.file
 			: otherSchemeOnly
-			  ? "other"
-			  : "mixed";
+				? "other"
+				: "mixed";
 
 		if (query.type === QueryType.File && complete && complete.stats) {
 			const fileSearchStats = complete.stats as IFileSearchStats;
@@ -661,16 +662,16 @@ export class SearchService extends Disposable implements ISearchService {
 					err.code === SearchErrorCode.regexParseError
 						? "regex"
 						: err.code === SearchErrorCode.unknownEncoding
-						  ? "encoding"
-						  : err.code === SearchErrorCode.globParseError
-							  ? "glob"
-							  : err.code === SearchErrorCode.invalidLiteral
-								  ? "literal"
-								  : err.code === SearchErrorCode.other
-									  ? "other"
-									  : err.code === SearchErrorCode.canceled
-										  ? "canceled"
-										  : "unknown";
+							? "encoding"
+							: err.code === SearchErrorCode.globParseError
+								? "glob"
+								: err.code === SearchErrorCode.invalidLiteral
+									? "literal"
+									: err.code === SearchErrorCode.other
+										? "other"
+										: err.code === SearchErrorCode.canceled
+											? "canceled"
+											: "unknown";
 			}
 
 			type TextSearchCompleteClassification = {
@@ -729,7 +730,7 @@ export class SearchService extends Disposable implements ISearchService {
 		limitHit: boolean;
 	} {
 		const openEditorResults = new ResourceMap<IFileMatch | null>((uri) =>
-			this.uriIdentityService.extUri.getComparisonKey(uri),
+			this.uriIdentityService.extUri.getComparisonKey(uri)
 		);
 		let limitHit = false;
 
@@ -738,17 +739,17 @@ export class SearchService extends Disposable implements ISearchService {
 			for (const editorInput of this.editorService.editors) {
 				const canonical = EditorResourceAccessor.getCanonicalUri(
 					editorInput,
-					{ supportSideBySide: SideBySideEditor.PRIMARY },
+					{ supportSideBySide: SideBySideEditor.PRIMARY }
 				);
 				const original = EditorResourceAccessor.getOriginalUri(
 					editorInput,
-					{ supportSideBySide: SideBySideEditor.PRIMARY },
+					{ supportSideBySide: SideBySideEditor.PRIMARY }
 				);
 
 				if (canonical) {
 					canonicalToOriginalResources.set(
 						canonical,
-						original ?? canonical,
+						original ?? canonical
 					);
 				}
 			}
@@ -812,7 +813,7 @@ export class SearchService extends Disposable implements ISearchService {
 						? query.contentPattern.wordSeparators!
 						: null,
 					false,
-					askMax,
+					askMax
 				);
 				if (matches.length) {
 					if (askMax && matches.length >= askMax) {
@@ -826,12 +827,12 @@ export class SearchService extends Disposable implements ISearchService {
 					const textSearchResults = editorMatchesToTextSearchResults(
 						matches,
 						model,
-						query.previewOptions,
+						query.previewOptions
 					);
 					fileMatch.results = getTextSearchMatchWithModelContext(
 						textSearchResults,
 						model,
-						query,
+						query
 					);
 				} else {
 					openEditorResults.set(originalResource, null);
@@ -851,7 +852,7 @@ export class SearchService extends Disposable implements ISearchService {
 
 	async clearCache(cacheKey: string): Promise<void> {
 		const clearPs = Array.from(this.fileSearchProviders.values()).map(
-			(provider) => provider && provider.clearCache(cacheKey),
+			(provider) => provider && provider.clearCache(cacheKey)
 		);
 		await Promise.all(clearPs);
 	}

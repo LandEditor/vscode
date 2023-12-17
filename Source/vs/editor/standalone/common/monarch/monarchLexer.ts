@@ -32,11 +32,11 @@ const CACHE_STACK_DEPTH = 5;
  */
 class MonarchStackElementFactory {
 	private static readonly _INSTANCE = new MonarchStackElementFactory(
-		CACHE_STACK_DEPTH,
+		CACHE_STACK_DEPTH
 	);
 	public static create(
 		parent: MonarchStackElement | null,
-		state: string,
+		state: string
 	): MonarchStackElement {
 		return this._INSTANCE.create(parent, state);
 	}
@@ -53,7 +53,7 @@ class MonarchStackElementFactory {
 
 	public create(
 		parent: MonarchStackElement | null,
-		state: string,
+		state: string
 	): MonarchStackElement {
 		if (parent !== null && parent.depth >= this._maxCacheDepth) {
 			// no caching above a certain depth
@@ -87,7 +87,7 @@ class MonarchStackElement {
 	}
 
 	public static getStackElementId(
-		element: MonarchStackElement | null,
+		element: MonarchStackElement | null
 	): string {
 		let result = "";
 		while (element !== null) {
@@ -102,7 +102,7 @@ class MonarchStackElement {
 
 	private static _equals(
 		a: MonarchStackElement | null,
-		b: MonarchStackElement | null,
+		b: MonarchStackElement | null
 	): boolean {
 		while (a !== null && b !== null) {
 			if (a === b) {
@@ -176,11 +176,11 @@ class EmbeddedLanguageData {
  */
 class MonarchLineStateFactory {
 	private static readonly _INSTANCE = new MonarchLineStateFactory(
-		CACHE_STACK_DEPTH,
+		CACHE_STACK_DEPTH
 	);
 	public static create(
 		stack: MonarchStackElement,
-		embeddedLanguageData: EmbeddedLanguageData | null,
+		embeddedLanguageData: EmbeddedLanguageData | null
 	): MonarchLineState {
 		return this._INSTANCE.create(stack, embeddedLanguageData);
 	}
@@ -195,7 +195,7 @@ class MonarchLineStateFactory {
 
 	public create(
 		stack: MonarchStackElement,
-		embeddedLanguageData: EmbeddedLanguageData | null,
+		embeddedLanguageData: EmbeddedLanguageData | null
 	): MonarchLineState {
 		if (embeddedLanguageData !== null) {
 			// no caching when embedding
@@ -223,7 +223,7 @@ class MonarchLineState implements languages.IState {
 
 	constructor(
 		stack: MonarchStackElement,
-		embeddedLanguageData: EmbeddedLanguageData | null,
+		embeddedLanguageData: EmbeddedLanguageData | null
 	) {
 		this.stack = stack;
 		this.embeddedLanguageData = embeddedLanguageData;
@@ -239,7 +239,7 @@ class MonarchLineState implements languages.IState {
 		}
 		return MonarchLineStateFactory.create(
 			this.stack,
-			this.embeddedLanguageData,
+			this.embeddedLanguageData
 		);
 	}
 
@@ -273,7 +273,7 @@ interface IMonarchTokensCollector {
 		embeddedLanguageLine: string,
 		hasEOL: boolean,
 		embeddedLanguageData: EmbeddedLanguageData,
-		offsetDelta: number,
+		offsetDelta: number
 	): languages.IState;
 }
 
@@ -304,7 +304,7 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
 		this._lastTokenType = type;
 		this._lastTokenLanguage = this._languageId;
 		this._tokens.push(
-			new languages.Token(startOffset, type, this._languageId!),
+			new languages.Token(startOffset, type, this._languageId!)
 		);
 	}
 
@@ -312,7 +312,7 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
 		embeddedLanguageLine: string,
 		hasEOL: boolean,
 		embeddedLanguageData: EmbeddedLanguageData,
-		offsetDelta: number,
+		offsetDelta: number
 	): languages.IState {
 		const nestedLanguageId = embeddedLanguageData.languageId;
 		const embeddedModeState = embeddedLanguageData.state;
@@ -328,7 +328,7 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
 		const nestedResult = nestedLanguageTokenizationSupport.tokenize(
 			embeddedLanguageLine,
 			hasEOL,
-			embeddedModeState,
+			embeddedModeState
 		);
 		if (offsetDelta !== 0) {
 			for (const token of nestedResult.tokens) {
@@ -336,8 +336,8 @@ class MonarchClassicTokensCollector implements IMonarchTokensCollector {
 					new languages.Token(
 						token.offset + offsetDelta,
 						token.type,
-						token.language,
-					),
+						token.language
+					)
 				);
 			}
 		} else {
@@ -391,7 +391,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
 	private static _merge(
 		a: Uint32Array | null,
 		b: number[],
-		c: Uint32Array | null,
+		c: Uint32Array | null
 	): Uint32Array {
 		const aLen = a !== null ? a.length : 0;
 		const bLen = b.length;
@@ -424,7 +424,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
 		embeddedLanguageLine: string,
 		hasEOL: boolean,
 		embeddedLanguageData: EmbeddedLanguageData,
-		offsetDelta: number,
+		offsetDelta: number
 	): languages.IState {
 		const nestedLanguageId = embeddedLanguageData.languageId;
 		const embeddedModeState = embeddedLanguageData.state;
@@ -440,7 +440,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
 		const nestedResult = nestedLanguageTokenizationSupport.tokenizeEncoded(
 			embeddedLanguageLine,
 			hasEOL,
-			embeddedModeState,
+			embeddedModeState
 		);
 		if (offsetDelta !== 0) {
 			for (let i = 0, len = nestedResult.tokens.length; i < len; i += 2) {
@@ -451,7 +451,7 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
 		this._prependTokens = MonarchModernTokensCollector._merge(
 			this._prependTokens,
 			this._tokens,
-			nestedResult.tokens,
+			nestedResult.tokens
 		);
 		this._tokens = [];
 		this._currentLanguageId = 0;
@@ -460,15 +460,15 @@ class MonarchModernTokensCollector implements IMonarchTokensCollector {
 	}
 
 	public finalize(
-		endState: MonarchLineState,
+		endState: MonarchLineState
 	): languages.EncodedTokenizationResult {
 		return new languages.EncodedTokenizationResult(
 			MonarchModernTokensCollector._merge(
 				this._prependTokens,
 				this._tokens,
-				null,
+				null
 			),
-			endState,
+			endState
 		);
 	}
 }
@@ -489,7 +489,14 @@ export class MonarchTokenizer
 	public embeddedLoaded: Promise<void>;
 	private _maxTokenizationLineLength: number;
 
-	constructor(languageService: ILanguageService, standaloneThemeService: IStandaloneThemeService, languageId: string, lexer: monarchCommon.ILexer, @IConfigurationService private readonly _configurationService: IConfigurationService) {
+	constructor(
+		languageService: ILanguageService,
+		standaloneThemeService: IStandaloneThemeService,
+		languageId: string,
+		lexer: monarchCommon.ILexer,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
+	) {
 		super();
 		this._languageService = languageService;
 		this._standaloneThemeService = standaloneThemeService;
@@ -500,34 +507,50 @@ export class MonarchTokenizer
 
 		// Set up listening for embedded modes
 		let emitting = false;
-		this._register(languages.TokenizationRegistry.onDidChange((e) => {
-			if (emitting) {
-				return;
-			}
-			let isOneOfMyEmbeddedModes = false;
-			for (let i = 0, len = e.changedLanguages.length; i < len; i++) {
-				const language = e.changedLanguages[i];
-				if (this._embeddedLanguages[language]) {
-					isOneOfMyEmbeddedModes = true;
-					break;
+		this._register(
+			languages.TokenizationRegistry.onDidChange((e) => {
+				if (emitting) {
+					return;
 				}
-			}
-			if (isOneOfMyEmbeddedModes) {
-				emitting = true;
-				languages.TokenizationRegistry.handleChange([this._languageId]);
-				emitting = false;
-			}
-		}));
-		this._maxTokenizationLineLength = this._configurationService.getValue<number>('editor.maxTokenizationLineLength', {
-			overrideIdentifier: this._languageId
-		});
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('editor.maxTokenizationLineLength')) {
-				this._maxTokenizationLineLength = this._configurationService.getValue<number>('editor.maxTokenizationLineLength', {
-					overrideIdentifier: this._languageId
-				});
-			}
-		}));
+				let isOneOfMyEmbeddedModes = false;
+				for (let i = 0, len = e.changedLanguages.length; i < len; i++) {
+					const language = e.changedLanguages[i];
+					if (this._embeddedLanguages[language]) {
+						isOneOfMyEmbeddedModes = true;
+						break;
+					}
+				}
+				if (isOneOfMyEmbeddedModes) {
+					emitting = true;
+					languages.TokenizationRegistry.handleChange([
+						this._languageId,
+					]);
+					emitting = false;
+				}
+			})
+		);
+		this._maxTokenizationLineLength =
+			this._configurationService.getValue<number>(
+				"editor.maxTokenizationLineLength",
+				{
+					overrideIdentifier: this._languageId,
+				}
+			);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("editor.maxTokenizationLineLength")
+				) {
+					this._maxTokenizationLineLength =
+						this._configurationService.getValue<number>(
+							"editor.maxTokenizationLineLength",
+							{
+								overrideIdentifier: this._languageId,
+							}
+						);
+				}
+			})
+		);
 	}
 
 	public getLoadStatus(): ILoadStatus {
@@ -550,9 +573,7 @@ export class MonarchTokenizer
 			if (!languages.TokenizationRegistry.isResolved(nestedLanguageId)) {
 				// The nested language is in the process of being loaded
 				promises.push(
-					languages.TokenizationRegistry.getOrCreate(
-						nestedLanguageId,
-					),
+					languages.TokenizationRegistry.getOrCreate(nestedLanguageId)
 				);
 			}
 		}
@@ -571,7 +592,7 @@ export class MonarchTokenizer
 	public getInitialState(): languages.IState {
 		const rootState = MonarchStackElementFactory.create(
 			null,
-			this._lexer.start!,
+			this._lexer.start!
 		);
 		return MonarchLineStateFactory.create(rootState, null);
 	}
@@ -579,7 +600,7 @@ export class MonarchTokenizer
 	public tokenize(
 		line: string,
 		hasEOL: boolean,
-		lineState: languages.IState,
+		lineState: languages.IState
 	): languages.TokenizationResult {
 		if (line.length >= this._maxTokenizationLineLength) {
 			return nullTokenize(this._languageId, lineState);
@@ -589,7 +610,7 @@ export class MonarchTokenizer
 			line,
 			hasEOL,
 			<MonarchLineState>lineState,
-			tokensCollector,
+			tokensCollector
 		);
 		return tokensCollector.finalize(endLineState);
 	}
@@ -597,25 +618,25 @@ export class MonarchTokenizer
 	public tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
-		lineState: languages.IState,
+		lineState: languages.IState
 	): languages.EncodedTokenizationResult {
 		if (line.length >= this._maxTokenizationLineLength) {
 			return nullTokenizeEncoded(
 				this._languageService.languageIdCodec.encodeLanguageId(
-					this._languageId,
+					this._languageId
 				),
-				lineState,
+				lineState
 			);
 		}
 		const tokensCollector = new MonarchModernTokensCollector(
 			this._languageService,
-			this._standaloneThemeService.getColorTheme().tokenTheme,
+			this._standaloneThemeService.getColorTheme().tokenTheme
 		);
 		const endLineState = this._tokenize(
 			line,
 			hasEOL,
 			<MonarchLineState>lineState,
-			tokensCollector,
+			tokensCollector
 		);
 		return tokensCollector.finalize(endLineState);
 	}
@@ -624,7 +645,7 @@ export class MonarchTokenizer
 		line: string,
 		hasEOL: boolean,
 		lineState: MonarchLineState,
-		collector: IMonarchTokensCollector,
+		collector: IMonarchTokensCollector
 	): MonarchLineState {
 		if (lineState.embeddedLanguageData) {
 			return this._nestedTokenize(line, hasEOL, lineState, 0, collector);
@@ -635,7 +656,7 @@ export class MonarchTokenizer
 
 	private _findLeavingNestedLanguageOffset(
 		line: string,
-		state: MonarchLineState,
+		state: MonarchLineState
 	): number {
 		let rules: monarchCommon.IRule[] | null =
 			this._lexer.tokenizer[state.stack.state];
@@ -644,7 +665,7 @@ export class MonarchTokenizer
 			if (!rules) {
 				throw monarchCommon.createError(
 					this._lexer,
-					"tokenizer state is not defined: " + state.stack.state,
+					"tokenizer state is not defined: " + state.stack.state
 				);
 			}
 		}
@@ -671,7 +692,7 @@ export class MonarchTokenizer
 					(regex.ignoreCase ? "i" : "") + (regex.unicode ? "u" : "");
 				regex = new RegExp(
 					regexSource.substr(4, regexSource.length - 5),
-					flags,
+					flags
 				);
 			}
 
@@ -689,7 +710,7 @@ export class MonarchTokenizer
 			throw monarchCommon.createError(
 				this._lexer,
 				'no rule containing nextEmbedded: "@pop" in tokenizer embedded state: ' +
-					state.stack.state,
+					state.stack.state
 			);
 		}
 
@@ -701,11 +722,11 @@ export class MonarchTokenizer
 		hasEOL: boolean,
 		lineState: MonarchLineState,
 		offsetDelta: number,
-		tokensCollector: IMonarchTokensCollector,
+		tokensCollector: IMonarchTokensCollector
 	): MonarchLineState {
 		const popOffset = this._findLeavingNestedLanguageOffset(
 			line,
-			lineState,
+			lineState
 		);
 
 		if (popOffset === -1) {
@@ -714,14 +735,14 @@ export class MonarchTokenizer
 				line,
 				hasEOL,
 				lineState.embeddedLanguageData!,
-				offsetDelta,
+				offsetDelta
 			);
 			return MonarchLineStateFactory.create(
 				lineState.stack,
 				new EmbeddedLanguageData(
 					lineState.embeddedLanguageData!.languageId,
-					nestedEndState,
-				),
+					nestedEndState
+				)
 			);
 		}
 
@@ -732,7 +753,7 @@ export class MonarchTokenizer
 				nestedLanguageLine,
 				false,
 				lineState.embeddedLanguageData!,
-				offsetDelta,
+				offsetDelta
 			);
 		}
 
@@ -742,7 +763,7 @@ export class MonarchTokenizer
 			hasEOL,
 			lineState,
 			offsetDelta + popOffset,
-			tokensCollector,
+			tokensCollector
 		);
 	}
 
@@ -758,7 +779,7 @@ export class MonarchTokenizer
 		hasEOL: boolean,
 		lineState: MonarchLineState,
 		offsetDelta: number,
-		tokensCollector: IMonarchTokensCollector,
+		tokensCollector: IMonarchTokensCollector
 	): MonarchLineState {
 		tokensCollector.enterLanguage(this._languageId);
 
@@ -832,7 +853,7 @@ export class MonarchTokenizer
 					if (!rules) {
 						throw monarchCommon.createError(
 							this._lexer,
-							"tokenizer state is not defined: " + state,
+							"tokenizer state is not defined: " + state
 						);
 					}
 				}
@@ -885,7 +906,7 @@ export class MonarchTokenizer
 					matched,
 					matches,
 					state,
-					pos === lineLength,
+					pos === lineLength
 				);
 			}
 
@@ -906,7 +927,7 @@ export class MonarchTokenizer
 						action.token,
 						matched,
 						matches,
-						state,
+						state
 					);
 				} else {
 					result = action.token;
@@ -918,14 +939,14 @@ export class MonarchTokenizer
 						if (!embeddedLanguageData) {
 							throw monarchCommon.createError(
 								this._lexer,
-								"cannot pop embedded language if not inside one",
+								"cannot pop embedded language if not inside one"
 							);
 						}
 						embeddedLanguageData = null;
 					} else if (embeddedLanguageData) {
 						throw monarchCommon.createError(
 							this._lexer,
-							"cannot enter embedded language from within an embedded language",
+							"cannot enter embedded language from within an embedded language"
 						);
 					} else {
 						enteringEmbeddedLanguage =
@@ -934,7 +955,7 @@ export class MonarchTokenizer
 								action.nextEmbedded,
 								matched,
 								matches,
-								state,
+								state
 							);
 					}
 				}
@@ -951,7 +972,7 @@ export class MonarchTokenizer
 						action.switchTo,
 						matched,
 						matches,
-						state,
+						state
 					); // switch state without a push...
 					if (nextState[0] === "@") {
 						nextState = nextState.substr(1); // peel off starting '@'
@@ -962,7 +983,7 @@ export class MonarchTokenizer
 							"trying to switch to a state '" +
 								nextState +
 								"' that is undefined in rule: " +
-								this._safeRuleName(rule),
+								this._safeRuleName(rule)
 						);
 					} else {
 						stack = stack.switchTo(nextState);
@@ -973,7 +994,7 @@ export class MonarchTokenizer
 				) {
 					throw monarchCommon.createError(
 						this._lexer,
-						"action.transform not supported",
+						"action.transform not supported"
 					);
 				} else if (action.next) {
 					if (action.next === "@push") {
@@ -984,7 +1005,7 @@ export class MonarchTokenizer
 									stack.state +
 									"," +
 									stack.parent!.state +
-									",...]",
+									",...]"
 							);
 						} else {
 							stack = stack.push(state);
@@ -994,7 +1015,7 @@ export class MonarchTokenizer
 							throw monarchCommon.createError(
 								this._lexer,
 								"trying to pop an empty stack in rule: " +
-									this._safeRuleName(rule),
+									this._safeRuleName(rule)
 							);
 						} else {
 							stack = stack.pop()!;
@@ -1007,7 +1028,7 @@ export class MonarchTokenizer
 							action.next,
 							matched,
 							matches,
-							state,
+							state
 						);
 						if (nextState[0] === "@") {
 							nextState = nextState.substr(1); // peel off starting '@'
@@ -1019,7 +1040,7 @@ export class MonarchTokenizer
 								"trying to set a next state '" +
 									nextState +
 									"' that is undefined in rule: " +
-									this._safeRuleName(rule),
+									this._safeRuleName(rule)
 							);
 						} else {
 							stack = stack.push(nextState);
@@ -1037,8 +1058,8 @@ export class MonarchTokenizer
 								action.log,
 								matched,
 								matches,
-								state,
-							),
+								state
+							)
 					);
 				}
 			}
@@ -1048,20 +1069,20 @@ export class MonarchTokenizer
 				throw monarchCommon.createError(
 					this._lexer,
 					"lexer rule has no well-defined action in rule: " +
-						this._safeRuleName(rule),
+						this._safeRuleName(rule)
 				);
 			}
 
 			const computeNewStateForEmbeddedLanguage = (
-				enteringEmbeddedLanguage: string,
+				enteringEmbeddedLanguage: string
 			) => {
 				// support language names, mime types, and language ids
 				const languageId =
 					this._languageService.getLanguageIdByLanguageName(
-						enteringEmbeddedLanguage,
+						enteringEmbeddedLanguage
 					) ||
 					this._languageService.getLanguageIdByMimeType(
-						enteringEmbeddedLanguage,
+						enteringEmbeddedLanguage
 					) ||
 					enteringEmbeddedLanguage;
 
@@ -1076,15 +1097,15 @@ export class MonarchTokenizer
 						hasEOL,
 						MonarchLineStateFactory.create(
 							stack,
-							embeddedLanguageData,
+							embeddedLanguageData
 						),
 						offsetDelta + pos,
-						tokensCollector,
+						tokensCollector
 					);
 				} else {
 					return MonarchLineStateFactory.create(
 						stack,
-						embeddedLanguageData,
+						embeddedLanguageData
 					);
 				}
 			};
@@ -1094,14 +1115,14 @@ export class MonarchTokenizer
 				if (groupMatching && groupMatching.groups.length > 0) {
 					throw monarchCommon.createError(
 						this._lexer,
-						"groups cannot be nested: " + this._safeRuleName(rule),
+						"groups cannot be nested: " + this._safeRuleName(rule)
 					);
 				}
 				if (matches.length !== result.length + 1) {
 					throw monarchCommon.createError(
 						this._lexer,
 						"matched number of groups does not match the number of actions in rule: " +
-							this._safeRuleName(rule),
+							this._safeRuleName(rule)
 					);
 				}
 				let totalLen = 0;
@@ -1112,7 +1133,7 @@ export class MonarchTokenizer
 					throw monarchCommon.createError(
 						this._lexer,
 						"with groups, all characters should be matched in consecutive groups in rule: " +
-							this._safeRuleName(rule),
+							this._safeRuleName(rule)
 					);
 				}
 
@@ -1145,7 +1166,7 @@ export class MonarchTokenizer
 					// a state transition should occur.
 					if (enteringEmbeddedLanguage !== null) {
 						return computeNewStateForEmbeddedLanguage(
-							enteringEmbeddedLanguage,
+							enteringEmbeddedLanguage
 						);
 					}
 				}
@@ -1164,7 +1185,7 @@ export class MonarchTokenizer
 						throw monarchCommon.createError(
 							this._lexer,
 							"no progress in tokenizer in rule: " +
-								this._safeRuleName(rule),
+								this._safeRuleName(rule)
 						);
 					}
 				}
@@ -1182,7 +1203,7 @@ export class MonarchTokenizer
 						throw monarchCommon.createError(
 							this._lexer,
 							"@brackets token returned but no bracket defined as: " +
-								matched,
+								matched
 						);
 					}
 					tokenType = monarchCommon.sanitize(bracket.token + rest);
@@ -1199,7 +1220,7 @@ export class MonarchTokenizer
 
 			if (enteringEmbeddedLanguage !== null) {
 				return computeNewStateForEmbeddedLanguage(
-					enteringEmbeddedLanguage,
+					enteringEmbeddedLanguage
 				);
 			}
 		}
@@ -1208,7 +1229,7 @@ export class MonarchTokenizer
 	}
 
 	private _getNestedEmbeddedLanguageData(
-		languageId: string,
+		languageId: string
 	): EmbeddedLanguageData {
 		if (!this._languageService.isRegisteredLanguageId(languageId)) {
 			return new EmbeddedLanguageData(languageId, NullState);
@@ -1226,7 +1247,7 @@ export class MonarchTokenizer
 		if (tokenizationSupport) {
 			return new EmbeddedLanguageData(
 				languageId,
-				tokenizationSupport.getInitialState(),
+				tokenizationSupport.getInitialState()
 			);
 		}
 

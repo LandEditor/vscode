@@ -42,16 +42,21 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
-		super(TerminalQuickAccessProvider.PREFIX, { canAcceptInBackground: true });
+		super(TerminalQuickAccessProvider.PREFIX, {
+			canAcceptInBackground: true,
+		});
 	}
 	protected _getPicks(
-		filter: string,
+		filter: string
 	): Array<IPickerQuickAccessItem | IQuickPickSeparator> {
 		terminalPicks = [];
 		terminalPicks.push({ type: "separator", label: "panel" });
@@ -102,7 +107,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 
 		const createTerminalLabel = localize(
 			"workbench.action.terminal.newplus",
-			"Create New Terminal",
+			"Create New Terminal"
 		);
 		terminalPicks.push({
 			label: `$(plus) ${createTerminalLabel}`,
@@ -112,14 +117,14 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		});
 		const createWithProfileLabel = localize(
 			"workbench.action.terminal.newWithProfilePlus",
-			"Create New Terminal With Profile",
+			"Create New Terminal With Profile"
 		);
 		terminalPicks.push({
 			label: `$(plus) ${createWithProfileLabel}`,
 			ariaLabel: createWithProfileLabel,
 			accept: () =>
 				this._commandService.executeCommand(
-					TerminalCommandId.NewWithProfile,
+					TerminalCommandId.NewWithProfile
 				),
 		});
 		return terminalPicks;
@@ -129,11 +134,11 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		terminal: ITerminalInstance,
 		terminalIndex: number,
 		filter: string,
-		groupInfo?: { groupIndex: number; groupSize: number },
+		groupInfo?: { groupIndex: number; groupSize: number }
 	): IPickerQuickAccessItem | undefined {
 		const iconId = this._instantiationService.invokeFunction(
 			getIconId,
-			terminal,
+			terminal
 		);
 		const index = groupInfo
 			? groupInfo.groupSize > 1
@@ -148,7 +153,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 		}
 		const uriClasses = getUriClasses(
 			terminal,
-			this._themeService.getColorTheme().type,
+			this._themeService.getColorTheme().type
 		);
 		if (uriClasses) {
 			iconClasses.push(...uriClasses);
@@ -175,7 +180,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 						case 0:
 							this._commandService.executeCommand(
 								TerminalCommandId.Rename,
-								terminal,
+								terminal
 							);
 							return TriggerAction.NO_ACTION;
 						case 1:
@@ -188,7 +193,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 				accept: (keyMod, event) => {
 					if (terminal.target === TerminalLocation.Editor) {
 						const existingEditors = this._editorService.findEditors(
-							terminal.resource,
+							terminal.resource
 						);
 						this._terminalEditorService.openEditor(terminal, {
 							viewColumn: existingEditors?.[0].groupId,
@@ -196,7 +201,7 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 						this._terminalEditorService.setActiveInstance(terminal);
 					} else {
 						this._terminalGroupService.showPanel(
-							!event.inBackground,
+							!event.inBackground
 						);
 						this._terminalGroupService.setActiveInstance(terminal);
 					}

@@ -123,7 +123,7 @@ export class UntitledTextEditorModel
 	readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
 	private readonly _onDidSave = this._register(
-		new Emitter<IWorkingCopySaveEvent>(),
+		new Emitter<IWorkingCopySaveEvent>()
 	);
 	readonly onDidSave = this._onDidSave.event;
 
@@ -167,16 +167,25 @@ export class UntitledTextEditorModel
 		private preferredEncoding: string | undefined,
 		@ILanguageService languageService: ILanguageService,
 		@IModelService modelService: IModelService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
-		@ITextResourceConfigurationService private readonly textResourceConfigurationService: ITextResourceConfigurationService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@ITextResourceConfigurationService
+		private readonly textResourceConfigurationService: ITextResourceConfigurationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ILanguageDetectionService languageDetectionService: ILanguageDetectionService,
-		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@ILanguageDetectionService
+		languageDetectionService: ILanguageDetectionService,
+		@IAccessibilityService accessibilityService: IAccessibilityService
 	) {
-		super(modelService, languageService, languageDetectionService, accessibilityService);
+		super(
+			modelService,
+			languageService,
+			languageDetectionService,
+			accessibilityService
+		);
 
 		// Make known to working copy service
 		this._register(this.workingCopyService.registerWorkingCopy(this));
@@ -197,21 +206,21 @@ export class UntitledTextEditorModel
 		// Config Changes
 		this._register(
 			this.textResourceConfigurationService.onDidChangeConfiguration(
-				(e) => this.onConfigurationChange(e, true),
-			),
+				(e) => this.onConfigurationChange(e, true)
+			)
 		);
 	}
 
 	private onConfigurationChange(
 		e: ITextResourceConfigurationChangeEvent | undefined,
-		fromEvent: boolean,
+		fromEvent: boolean
 	): void {
 		// Encoding
 		if (!e || e.affectsConfiguration(this.resource, "files.encoding")) {
 			const configuredEncoding =
 				this.textResourceConfigurationService.getValue(
 					this.resource,
-					"files.encoding",
+					"files.encoding"
 				);
 			if (
 				this.configuredEncoding !== configuredEncoding &&
@@ -230,13 +239,13 @@ export class UntitledTextEditorModel
 			!e ||
 			e.affectsConfiguration(
 				this.resource,
-				"workbench.editor.untitled.labelFormat",
+				"workbench.editor.untitled.labelFormat"
 			)
 		) {
 			const configuredLabelFormat =
 				this.textResourceConfigurationService.getValue(
 					this.resource,
-					"workbench.editor.untitled.labelFormat",
+					"workbench.editor.untitled.labelFormat"
 				);
 			if (
 				this.configuredLabelFormat !== configuredLabelFormat &&
@@ -364,7 +373,7 @@ export class UntitledTextEditorModel
 			content = await this.textFileService.getEncodedReadable(
 				this.resource,
 				this.createSnapshot() ?? undefined,
-				{ encoding: UTF8 },
+				{ encoding: UTF8 }
 			);
 		} else if (typeof this.initialValue === "string") {
 			content = bufferToReadable(VSBuffer.fromString(this.initialValue));
@@ -393,7 +402,7 @@ export class UntitledTextEditorModel
 				hasBackup = true;
 			} else {
 				untitledContents = bufferToStream(
-					VSBuffer.fromString(this.initialValue || ""),
+					VSBuffer.fromString(this.initialValue || "")
 				);
 			}
 
@@ -406,14 +415,14 @@ export class UntitledTextEditorModel
 					await this.textFileService.getDecodedStream(
 						this.resource,
 						untitledContents,
-						{ encoding: UTF8 },
-					),
+						{ encoding: UTF8 }
+					)
 				);
 
 			this.createTextEditorModel(
 				untitledContentsFactory,
 				this.resource,
-				this.preferredLanguageId,
+				this.preferredLanguageId
 			);
 			createdUntitledModel = true;
 		}
@@ -439,9 +448,7 @@ export class UntitledTextEditorModel
 
 			// Untitled associated to file path are dirty right away as well as untitled with content
 			this.setDirty(
-				this.hasAssociatedFilePath ||
-					!!hasBackup ||
-					!!this.initialValue,
+				this.hasAssociatedFilePath || !!hasBackup || !!this.initialValue
 			);
 
 			// If we have initial contents, make sure to emit this
@@ -457,13 +464,13 @@ export class UntitledTextEditorModel
 	protected override installModelListeners(model: ITextModel): void {
 		this._register(
 			model.onDidChangeContent((e) =>
-				this.onModelContentChanged(model, e),
-			),
+				this.onModelContentChanged(model, e)
+			)
 		);
 		this._register(
 			model.onDidChangeLanguage(() =>
-				this.onConfigurationChange(undefined, true),
-			),
+				this.onConfigurationChange(undefined, true)
+			)
 		); // language change can have impact on config
 
 		super.installModelListeners(model);
@@ -471,7 +478,7 @@ export class UntitledTextEditorModel
 
 	private onModelContentChanged(
 		textEditorModel: ITextModel,
-		e: IModelContentChangedEvent,
+		e: IModelContentChangedEvent
 	): void {
 		if (!this.ignoreDirtyOnModelContentChange) {
 			// mark the untitled text editor as non-dirty once its content becomes empty and we do
@@ -497,7 +504,7 @@ export class UntitledTextEditorModel
 					(change.range.startLineNumber === 1 ||
 						change.range.endLineNumber === 1) &&
 					change.range.startColumn <=
-						UntitledTextEditorModel.FIRST_LINE_NAME_CANDIDATE_MAX_LENGTH,
+						UntitledTextEditorModel.FIRST_LINE_NAME_CANDIDATE_MAX_LENGTH
 			)
 		) {
 			this.updateNameFromFirstLine(textEditorModel);
@@ -540,8 +547,8 @@ export class UntitledTextEditorModel
 			getCharContainingOffset(
 				// finally cap at FIRST_LINE_NAME_MAX_LENGTH (grapheme aware #111235)
 				firstLineText,
-				UntitledTextEditorModel.FIRST_LINE_NAME_MAX_LENGTH,
-			)[0],
+				UntitledTextEditorModel.FIRST_LINE_NAME_MAX_LENGTH
+			)[0]
 		);
 
 		if (firstLineText && ensureValidWordDefinition().exec(firstLineText)) {

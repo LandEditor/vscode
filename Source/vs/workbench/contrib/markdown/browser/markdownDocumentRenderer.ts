@@ -162,7 +162,7 @@ pre code {
 const allowedProtocols = [Schemas.http, Schemas.https, Schemas.command];
 function sanitize(
 	documentContent: string,
-	allowUnknownProtocols: boolean,
+	allowUnknownProtocols: boolean
 ): string {
 	const hook = hookDomPurifyHrefAndSrcSanitizer(allowedProtocols, true);
 
@@ -203,12 +203,12 @@ export async function renderMarkdownDocument(
 	languageService: ILanguageService,
 	shouldSanitize: boolean = true,
 	allowUnknownProtocols: boolean = false,
-	token?: CancellationToken,
+	token?: CancellationToken
 ): Promise<string> {
 	const highlight = (
 		code: string,
 		lang: string | undefined,
-		callback: ((error: any, code: string) => void) | undefined,
+		callback: ((error: any, code: string) => void) | undefined
 	): any => {
 		if (!callback) {
 			return code;
@@ -230,7 +230,7 @@ export async function renderMarkdownDocument(
 			const html = await tokenizeToString(
 				languageService,
 				code,
-				languageId,
+				languageId
 			);
 			callback(null, `<code>${html}</code>`);
 		});
@@ -239,7 +239,7 @@ export async function renderMarkdownDocument(
 
 	return new Promise<string>((resolve, reject) => {
 		marked(text, { highlight }, (err, value) =>
-			err ? reject(err) : resolve(value),
+			err ? reject(err) : resolve(value)
 		);
 	}).then((raw) => {
 		if (shouldSanitize) {

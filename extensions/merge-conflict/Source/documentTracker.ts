@@ -16,7 +16,7 @@ class ScanTask {
 	constructor(delayTime: number, initialOrigin: string) {
 		this.origins.add(initialOrigin);
 		this.delayTask = new Delayer<interfaces.IDocumentMergeConflict[]>(
-			delayTime,
+			delayTime
 		);
 	}
 
@@ -34,11 +34,11 @@ class OriginDocumentMergeConflictTracker
 {
 	constructor(
 		private parent: DocumentMergeConflictTracker,
-		private origin: string,
+		private origin: string
 	) {}
 
 	getConflicts(
-		document: vscode.TextDocument,
+		document: vscode.TextDocument
 	): PromiseLike<interfaces.IDocumentMergeConflict[]> {
 		return this.parent.getConflicts(document, this.origin);
 	}
@@ -64,7 +64,7 @@ export default class DocumentMergeConflictTracker
 
 	getConflicts(
 		document: vscode.TextDocument,
-		origin: string,
+		origin: string
 	): PromiseLike<interfaces.IDocumentMergeConflict[]> {
 		// Attempt from cache
 
@@ -73,7 +73,7 @@ export default class DocumentMergeConflictTracker
 		if (!key) {
 			// Document doesn't have a uri, can't cache it, so return
 			return Promise.resolve(
-				this.getConflictsOrEmpty(document, [origin]),
+				this.getConflictsOrEmpty(document, [origin])
 			);
 		}
 
@@ -88,7 +88,7 @@ export default class DocumentMergeConflictTracker
 		return cacheItem.delayTask.trigger(() => {
 			const conflicts = this.getConflictsOrEmpty(
 				document,
-				Array.from(cacheItem!.origins),
+				Array.from(cacheItem!.origins)
 			);
 
 			this.cache?.delete(key!);
@@ -135,7 +135,7 @@ export default class DocumentMergeConflictTracker
 
 	private getConflictsOrEmpty(
 		document: vscode.TextDocument,
-		_origins: string[],
+		_origins: string[]
 	): interfaces.IDocumentMergeConflict[] {
 		const containsConflict = MergeConflictParser.containsConflict(document);
 
@@ -145,7 +145,7 @@ export default class DocumentMergeConflictTracker
 
 		const conflicts = MergeConflictParser.scanDocument(
 			document,
-			this.telemetryReporter,
+			this.telemetryReporter
 		);
 
 		const key = document.uri.toString();
@@ -166,7 +166,7 @@ export default class DocumentMergeConflictTracker
 				{},
 				{
 					conflictCount: conflicts.length,
-				},
+				}
 			);
 		}
 

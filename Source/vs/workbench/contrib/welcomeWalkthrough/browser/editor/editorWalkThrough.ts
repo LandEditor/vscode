@@ -25,7 +25,7 @@ const inputOptions: WalkThroughInputOptions = {
 	typeId,
 	name: localize("editorWalkThrough.title", "Editor Playground"),
 	resource: FileAccess.asBrowserUri(
-		"vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough.md",
+		"vs/workbench/contrib/welcomeWalkthrough/browser/editor/vs_code_editor_walkthrough.md"
 	).with({
 		scheme: Schemas.walkThrough,
 		query: JSON.stringify({
@@ -57,7 +57,7 @@ export class EditorWalkThroughAction extends Action2 {
 		const instantiationService = serviceAccessor.get(IInstantiationService);
 		const input = instantiationService.createInstance(
 			WalkThroughInput,
-			inputOptions,
+			inputOptions
 		);
 		// TODO @lramos15 adopt the resolver here
 		return editorService
@@ -78,11 +78,11 @@ export class EditorWalkThroughInputSerializer implements IEditorSerializer {
 	}
 
 	public deserialize(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): WalkThroughInput {
 		return instantiationService.createInstance(
 			WalkThroughInput,
-			inputOptions,
+			inputOptions
 		);
 	}
 }

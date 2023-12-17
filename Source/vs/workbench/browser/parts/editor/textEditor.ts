@@ -71,7 +71,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	private static readonly VIEW_STATE_PREFERENCE_KEY = "textEditorViewState";
 
 	protected readonly _onDidChangeSelection = this._register(
-		new Emitter<IEditorPaneSelectionChangeEvent>(),
+		new Emitter<IEditorPaneSelectionChangeEvent>()
 	);
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
 
@@ -87,34 +87,62 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IFileService protected readonly fileService: IFileService
 	) {
-		super(id, AbstractTextEditor.VIEW_STATE_PREFERENCE_KEY, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService);
+		super(
+			id,
+			AbstractTextEditor.VIEW_STATE_PREFERENCE_KEY,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService
+		);
 
 		// Listen to configuration changes
-		this._register(this.textResourceConfigurationService.onDidChangeConfiguration(e => this.handleConfigurationChangeEvent(e)));
+		this._register(
+			this.textResourceConfigurationService.onDidChangeConfiguration(
+				(e) => this.handleConfigurationChangeEvent(e)
+			)
+		);
 
 		// ARIA: if a group is added or removed, update the editor's ARIA
 		// label so that it appears in the label for when there are > 1 groups
 
-		this._register(Event.any(this.editorGroupService.onDidAddGroup, this.editorGroupService.onDidRemoveGroup)(() => {
-			const ariaLabel = this.computeAriaLabel();
+		this._register(
+			Event.any(
+				this.editorGroupService.onDidAddGroup,
+				this.editorGroupService.onDidRemoveGroup
+			)(() => {
+				const ariaLabel = this.computeAriaLabel();
 
-			this.editorContainer?.setAttribute('aria-label', ariaLabel);
-			this.updateEditorControlOptions({ ariaLabel });
-		}));
+				this.editorContainer?.setAttribute("aria-label", ariaLabel);
+				this.updateEditorControlOptions({ ariaLabel });
+			})
+		);
 
 		// Listen to file system provider changes
-		this._register(this.fileService.onDidChangeFileSystemProviderCapabilities(e => this.onDidChangeFileSystemProvider(e.scheme)));
-		this._register(this.fileService.onDidChangeFileSystemProviderRegistrations(e => this.onDidChangeFileSystemProvider(e.scheme)));
+		this._register(
+			this.fileService.onDidChangeFileSystemProviderCapabilities((e) =>
+				this.onDidChangeFileSystemProvider(e.scheme)
+			)
+		);
+		this._register(
+			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
+				this.onDidChangeFileSystemProvider(e.scheme)
+			)
+		);
 	}
 
 	private handleConfigurationChangeEvent(
-		e: ITextResourceConfigurationChangeEvent,
+		e: ITextResourceConfigurationChangeEvent
 	): void {
 		const resource = this.getActiveResource();
 		if (!this.shouldHandleConfigurationChangeEvent(e, resource)) {
@@ -130,7 +158,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 
 	protected shouldHandleConfigurationChangeEvent(
 		e: ITextResourceConfigurationChangeEvent,
-		resource: URI | undefined,
+		resource: URI | undefined
 	): boolean {
 		return (
 			e.affectsConfiguration(resource, "editor") ||
@@ -146,17 +174,17 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected computeConfiguration(
-		configuration: IEditorConfiguration,
+		configuration: IEditorConfiguration
 	): ICodeEditorOptions {
 		// Specific editor options always overwrite user configuration
 		const editorConfiguration: ICodeEditorOptions = isObject(
-			configuration.editor,
+			configuration.editor
 		)
 			? deepClone(configuration.editor)
 			: Object.create(null);
 		Object.assign(
 			editorConfiguration,
-			this.getConfigurationOverrides(configuration),
+			this.getConfigurationOverrides(configuration)
 		);
 
 		// ARIA label
@@ -171,8 +199,8 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 					this._input,
 					undefined,
 					this.group,
-					this.editorGroupService.count,
-			  )
+					this.editorGroupService.count
+				)
 			: localize("editor", "Editor");
 	}
 
@@ -199,7 +227,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected getReadonlyConfiguration(
-		isReadonly: boolean | IMarkdownString | undefined,
+		isReadonly: boolean | IMarkdownString | undefined
 	): { readOnly: boolean; readOnlyMessage: IMarkdownString | undefined } {
 		return {
 			readOnly: !!isReadonly,
@@ -209,7 +237,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected getConfigurationOverrides(
-		configuration: IEditorConfiguration,
+		configuration: IEditorConfiguration
 	): ICodeEditorOptions {
 		return {
 			overviewRulerLanes: 3,
@@ -228,9 +256,9 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 			parent,
 			this.computeConfiguration(
 				this.textResourceConfigurationService.getValue<IEditorConfiguration>(
-					this.getActiveResource(),
-				),
-			),
+					this.getActiveResource()
+				)
+			)
 		);
 
 		// Listeners
@@ -242,33 +270,33 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		if (mainControl) {
 			this._register(
 				mainControl.onDidChangeModelLanguage(() =>
-					this.updateEditorConfiguration(),
-				),
+					this.updateEditorConfiguration()
+				)
 			);
 			this._register(
 				mainControl.onDidChangeModel(() =>
-					this.updateEditorConfiguration(),
-				),
+					this.updateEditorConfiguration()
+				)
 			);
 			this._register(
 				mainControl.onDidChangeCursorPosition((e) =>
 					this._onDidChangeSelection.fire({
 						reason: this.toEditorPaneSelectionChangeReason(e),
-					}),
-				),
+					})
+				)
 			);
 			this._register(
 				mainControl.onDidChangeModelContent(() =>
 					this._onDidChangeSelection.fire({
 						reason: EditorPaneSelectionChangeReason.EDIT,
-					}),
-				),
+					})
+				)
 			);
 		}
 	}
 
 	private toEditorPaneSelectionChangeReason(
-		e: ICursorPositionChangedEvent,
+		e: ICursorPositionChangedEvent
 	): EditorPaneSelectionChangeReason {
 		switch (e.source) {
 			case TextEditorSelectionSource.PROGRAMMATIC:
@@ -304,7 +332,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	 */
 	protected abstract createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions,
+		initialOptions: ICodeEditorOptions
 	): void;
 
 	/**
@@ -312,7 +340,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	 * whenever there is change to the options.
 	 */
 	protected abstract updateEditorControlOptions(
-		options: ICodeEditorOptions,
+		options: ICodeEditorOptions
 	): void;
 
 	/**
@@ -326,13 +354,13 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		input: EditorInput,
 		options: ITextEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
 
 		// Update our listener for input capabilities
 		this.inputListener.value = input.onDidChangeCapabilities(() =>
-			this.onDidChangeInputCapabilities(input),
+			this.onDidChangeInputCapabilities(input)
 		);
 
 		// Update editor options after having set the input. We do this because there can be
@@ -353,7 +381,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined,
+		group: IEditorGroup | undefined
 	): void {
 		if (visible) {
 			this.consumePendingConfigurationChangeEvent();
@@ -363,19 +391,19 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 	}
 
 	protected override toEditorViewStateResource(
-		input: EditorInput,
+		input: EditorInput
 	): URI | undefined {
 		return input.resource;
 	}
 
 	private updateEditorConfiguration(
-		resource = this.getActiveResource(),
+		resource = this.getActiveResource()
 	): void {
 		let configuration: IEditorConfiguration | undefined = undefined;
 		if (resource) {
 			configuration =
 				this.textResourceConfigurationService.getValue<IEditorConfiguration>(
-					resource,
+					resource
 				);
 		}
 
@@ -392,7 +420,7 @@ export abstract class AbstractTextEditor<T extends IEditorViewState>
 		if (this.lastAppliedEditorOptions) {
 			editorSettingsToApply = distinct(
 				this.lastAppliedEditorOptions,
-				editorSettingsToApply,
+				editorSettingsToApply
 			);
 		}
 
@@ -438,11 +466,11 @@ export class TextEditorPaneSelection implements IEditorPaneSelection {
 
 		const thisLineNumber = Math.min(
 			this.textSelection.selectionStartLineNumber,
-			this.textSelection.positionLineNumber,
+			this.textSelection.positionLineNumber
 		);
 		const otherLineNumber = Math.min(
 			other.textSelection.selectionStartLineNumber,
-			other.textSelection.positionLineNumber,
+			other.textSelection.positionLineNumber
 		);
 
 		if (thisLineNumber === otherLineNumber) {

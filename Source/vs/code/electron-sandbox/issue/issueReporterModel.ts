@@ -103,7 +103,7 @@ ${this.getInfos()}
 					.map((remote) =>
 						isRemoteDiagnosticError(remote)
 							? remote.errorMessage
-							: `Remote OS version: ${remote.machineInfo.os}`,
+							: `Remote OS version: ${remote.machineInfo.os}`
 					)
 					.join("\n") + "\n"
 			);
@@ -199,7 +199,7 @@ ${this.getInfos()}
 			md += `|CPUs|${this._data.systemInfo.cpus}|
 |GPU Status|${Object.keys(this._data.systemInfo.gpuStatus)
 				.map(
-					(key) => `${key}: ${this._data.systemInfo!.gpuStatus[key]}`,
+					(key) => `${key}: ${this._data.systemInfo!.gpuStatus[key]}`
 				)
 				.join("<br>")}|
 |Load (avg)|${this._data.systemInfo.load}|
@@ -227,11 +227,11 @@ ${this.getInfos()}
 						remote.latency
 							? `${
 									remote.hostName
-							  } (latency: ${remote.latency.current.toFixed(
-									2,
-							  )}ms last, ${remote.latency.average.toFixed(
-									2,
-							  )}ms average)`
+								} (latency: ${remote.latency.current.toFixed(
+									2
+								)}ms last, ${remote.latency.average.toFixed(
+									2
+								)}ms average)`
 							: remote.hostName
 					}|
 |OS|${remote.machineInfo.os}|

@@ -64,7 +64,7 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 		}
 		if (shouldTransformUri(String(input))) {
 			input = (await asBrowserUri(URI.parse(String(input)))).toString(
-				true,
+				true
 			);
 		}
 		return nativeFetch(input, init);
@@ -76,7 +76,7 @@ function patchFetching(asBrowserUri: (uri: URI) => Promise<URI>) {
 			url: string | URL,
 			async?: boolean,
 			username?: string | null,
-			password?: string | null,
+			password?: string | null
 		): void {
 			(async () => {
 				if (shouldTransformUri(url.toString())) {
@@ -113,14 +113,14 @@ if ((<any>self).Worker) {
 	Worker = <any>function (stringUrl: string | URL, options?: WorkerOptions) {
 		if (/^file:/i.test(stringUrl.toString())) {
 			stringUrl = FileAccess.uriToBrowserUri(
-				URI.parse(stringUrl.toString()),
+				URI.parse(stringUrl.toString())
 			).toString(true);
 		} else if (/^vscode-remote:/i.test(stringUrl.toString())) {
 			// Supporting transformation of vscode-remote URIs requires an async call to the main thread,
 			// but we cannot do this call from within the embedded Worker, and the only way out would be
 			// to use templating instead of a function in the web api (`resourceUriProvider`)
 			throw new Error(
-				`Creating workers from remote extensions is currently not supported.`,
+				`Creating workers from remote extensions is currently not supported.`
 			);
 		}
 
@@ -129,12 +129,12 @@ if ((<any>self).Worker) {
 		// that logic of FileAccess.asBrowserUri had to be copied, see `asWorkerBrowserUrl` (below).
 		const bootstrapFnSource = function bootstrapFn(workerUrl: string) {
 			function asWorkerBrowserUrl(
-				url: string | URL | TrustedScriptURL,
+				url: string | URL | TrustedScriptURL
 			): any {
 				if (typeof url === "string" || url instanceof URL) {
 					return String(url).replace(
 						/^file:\/\//i,
-						"vscode-file://vscode-app",
+						"vscode-file://vscode-app"
 					);
 				}
 				return url;
@@ -154,14 +154,14 @@ if ((<any>self).Worker) {
 					url: string | URL,
 					async?: boolean,
 					username?: string | null,
-					password?: string | null,
+					password?: string | null
 				): void {
 					return super.open(
 						method,
 						asWorkerBrowserUrl(url),
 						async ?? true,
 						username,
-						password,
+						password
 					);
 				}
 			};
@@ -238,7 +238,7 @@ class ExtensionWorker {
 				if (!terminating) {
 					const data = vsbuf.buffer.buffer.slice(
 						vsbuf.buffer.byteOffset,
-						vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength,
+						vsbuf.buffer.byteOffset + vsbuf.buffer.byteLength
 					);
 					channel.port1.postMessage(data, [data]);
 				}
@@ -252,7 +252,7 @@ interface IRendererConnection {
 	initData: IExtensionHostInitData;
 }
 function connectToRenderer(
-	protocol: IMessagePassingProtocol,
+	protocol: IMessagePassingProtocol
 ): Promise<IRendererConnection> {
 	return new Promise<IRendererConnection>((resolve) => {
 		const once = protocol.onMessage((raw) => {
@@ -298,7 +298,7 @@ export function create(): { onmessage: (message: any) => void } {
 					data.initData,
 					hostUtil,
 					null,
-					message.data,
+					message.data
 				);
 
 				patchFetching((uri) => extHostMain.asBrowserUri(uri));

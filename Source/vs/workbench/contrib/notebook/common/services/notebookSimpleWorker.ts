@@ -47,13 +47,11 @@ class MirrorCell {
 
 		const builder = new PieceTreeTextBufferBuilder();
 		builder.acceptChunk(
-			Array.isArray(this._source)
-				? this._source.join("\n")
-				: this._source,
+			Array.isArray(this._source) ? this._source.join("\n") : this._source
 		);
 		const bufferFactory = builder.finish(true);
 		this._textBuffer = bufferFactory.create(
-			model.DefaultEndOfLine.LF,
+			model.DefaultEndOfLine.LF
 		).textBuffer;
 
 		return this._textBuffer;
@@ -77,7 +75,7 @@ class MirrorCell {
 		public cellKind: CellKind,
 		public outputs: IOutputDto[],
 		public metadata?: NotebookCellMetadata,
-		public internalMetadata?: NotebookCellInternalMetadata,
+		public internalMetadata?: NotebookCellInternalMetadata
 	) {}
 
 	getFullModelRange() {
@@ -86,7 +84,7 @@ class MirrorCell {
 			1,
 			1,
 			lineCount,
-			this.textBuffer.getLineLength(lineCount) + 1,
+			this.textBuffer.getLineLength(lineCount) + 1
 		);
 	}
 
@@ -94,7 +92,7 @@ class MirrorCell {
 		const fullRange = this.getFullModelRange();
 		return this.textBuffer.getValueInRange(
 			fullRange,
-			model.EndOfLinePreference.LF,
+			model.EndOfLinePreference.LF
 		);
 	}
 
@@ -138,7 +136,7 @@ class MirrorNotebookDocument {
 	constructor(
 		readonly uri: URI,
 		public cells: MirrorCell[],
-		public metadata: NotebookDocumentMetadata,
+		public metadata: NotebookDocumentMetadata
 	) {}
 
 	acceptModelChanged(event: NotebookCellsChangedEventDto) {
@@ -175,7 +173,7 @@ class MirrorNotebookDocument {
 	private _assertIndex(index: number): void {
 		if (index < 0 || index >= this.cells.length) {
 			throw new Error(
-				`Illegal index ${index}. Cells length: ${this.cells.length}`,
+				`Illegal index ${index}. Cells length: ${this.cells.length}`
 			);
 		}
 	}
@@ -190,7 +188,7 @@ class MirrorNotebookDocument {
 					cell.language,
 					cell.cellKind,
 					cell.outputs,
-					cell.metadata,
+					cell.metadata
 				);
 			});
 
@@ -243,16 +241,16 @@ export class NotebookEditorSimpleWorker
 						dto.language,
 						dto.cellKind,
 						dto.outputs,
-						dto.metadata,
-					),
+						dto.metadata
+					)
 			),
-			data.metadata,
+			data.metadata
 		);
 	}
 
 	public acceptModelChanged(
 		strURL: string,
-		event: NotebookCellsChangedEventDto,
+		event: NotebookCellsChangedEventDto
 	) {
 		const model = this._models[strURL];
 		model?.acceptModelChanged(event);
@@ -271,7 +269,7 @@ export class NotebookEditorSimpleWorker
 
 		const diff = new LcsDiff(
 			new CellSequence(original),
-			new CellSequence(modified),
+			new CellSequence(modified)
 		);
 		const diffResult = diff.ComputeDiff(false);
 
@@ -350,13 +348,13 @@ export class NotebookEditorSimpleWorker
 				1,
 				1,
 				maxLineCount,
-				cell.textBuffer.getLineLength(maxLineCount) + 1,
+				cell.textBuffer.getLineLength(maxLineCount) + 1
 			);
 			const searchParams = new SearchParams(
 				"import\\s*pandas|from\\s*pandas",
 				true,
 				false,
-				null,
+				null
 			);
 			const searchData = searchParams.parseSearchRequest();
 
@@ -368,7 +366,7 @@ export class NotebookEditorSimpleWorker
 				range,
 				searchData,
 				true,
-				1,
+				1
 			);
 			if (cellMatches.length > 0) {
 				return true;

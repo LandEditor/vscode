@@ -83,13 +83,13 @@ export class ViewUserInputEvents {
 	}
 
 	private _convertViewToModelMouseEvent(
-		e: IEditorMouseEvent,
+		e: IEditorMouseEvent
 	): IEditorMouseEvent;
 	private _convertViewToModelMouseEvent(
-		e: IPartialEditorMouseEvent,
+		e: IPartialEditorMouseEvent
 	): IPartialEditorMouseEvent;
 	private _convertViewToModelMouseEvent(
-		e: IEditorMouseEvent | IPartialEditorMouseEvent,
+		e: IEditorMouseEvent | IPartialEditorMouseEvent
 	): IEditorMouseEvent | IPartialEditorMouseEvent {
 		if (e.target) {
 			return {
@@ -103,24 +103,24 @@ export class ViewUserInputEvents {
 	private _convertViewToModelMouseTarget(target: IMouseTarget): IMouseTarget {
 		return ViewUserInputEvents.convertViewToModelMouseTarget(
 			target,
-			this._coordinatesConverter,
+			this._coordinatesConverter
 		);
 	}
 
 	public static convertViewToModelMouseTarget(
 		target: IMouseTarget,
-		coordinatesConverter: ICoordinatesConverter,
+		coordinatesConverter: ICoordinatesConverter
 	): IMouseTarget {
 		const result = { ...target };
 		if (result.position) {
 			result.position =
 				coordinatesConverter.convertViewPositionToModelPosition(
-					result.position,
+					result.position
 				);
 		}
 		if (result.range) {
 			result.range = coordinatesConverter.convertViewRangeToModelRange(
-				result.range,
+				result.range
 			);
 		}
 		if (
@@ -129,7 +129,7 @@ export class ViewUserInputEvents {
 		) {
 			result.detail = this.convertViewToModelViewZoneData(
 				result.detail,
-				coordinatesConverter,
+				coordinatesConverter
 			);
 		}
 		return result;
@@ -137,26 +137,26 @@ export class ViewUserInputEvents {
 
 	private static convertViewToModelViewZoneData(
 		data: IMouseTargetViewZoneData,
-		coordinatesConverter: ICoordinatesConverter,
+		coordinatesConverter: ICoordinatesConverter
 	): IMouseTargetViewZoneData {
 		return {
 			viewZoneId: data.viewZoneId,
 			positionBefore: data.positionBefore
 				? coordinatesConverter.convertViewPositionToModelPosition(
-						data.positionBefore,
-				  )
+						data.positionBefore
+					)
 				: data.positionBefore,
 			positionAfter: data.positionAfter
 				? coordinatesConverter.convertViewPositionToModelPosition(
-						data.positionAfter,
-				  )
+						data.positionAfter
+					)
 				: data.positionAfter,
 			position: coordinatesConverter.convertViewPositionToModelPosition(
-				data.position,
+				data.position
 			),
 			afterLineNumber:
 				coordinatesConverter.convertViewPositionToModelPosition(
-					new Position(data.afterLineNumber, 1),
+					new Position(data.afterLineNumber, 1)
 				).lineNumber,
 		};
 	}

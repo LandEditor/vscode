@@ -48,7 +48,7 @@ import {
 
 export const IExtensionStatusBarItemService =
 	createDecorator<IExtensionStatusBarItemService>(
-		"IExtensionStatusBarItemService",
+		"IExtensionStatusBarItemService"
 	);
 
 export interface IExtensionStatusBarItemChangeEvent {
@@ -87,7 +87,7 @@ export interface IExtensionStatusBarItemService {
 		backgroundColor: ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined,
+		accessibilityInformation: IAccessibilityInformation | undefined
 	): StatusBarUpdateKind;
 
 	unsetEntry(id: string): void;
@@ -114,7 +114,9 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 	readonly onDidChange: Event<IExtensionStatusBarItemChangeEvent> =
 		this._onDidChange.event;
 
-	constructor(@IStatusbarService private readonly _statusbarService: IStatusbarService) { }
+	constructor(
+		@IStatusbarService private readonly _statusbarService: IStatusbarService
+	) {}
 
 	dispose(): void {
 		this._entries.forEach((entry) => entry.accessor.dispose());
@@ -134,7 +136,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 		backgroundColor: ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined,
+		accessibilityInformation: IAccessibilityInformation | undefined
 	): StatusBarUpdateKind {
 		// if there are icons in the text use the tooltip for the aria label
 		let ariaLabel: string;
@@ -210,7 +212,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 				entry,
 				id,
 				alignment,
-				entryPriority,
+				entryPriority
 			);
 			this._entries.set(entryId, {
 				accessor,
@@ -258,7 +260,7 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 registerSingleton(
 	IExtensionStatusBarItemService,
 	ExtensionStatusBarItemService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // --- extension point and reading of it
@@ -275,7 +277,7 @@ interface IUserFriendlyStatusItemEntry {
 }
 
 function isUserFriendlyStatusItemEntry(
-	candidate: any,
+	candidate: any
 ): candidate is IUserFriendlyStatusItemEntry {
 	const obj = candidate as IUserFriendlyStatusItemEntry;
 	return (
@@ -300,21 +302,21 @@ const statusBarItemSchema: IJSONSchema = {
 			type: "string",
 			markdownDescription: localize(
 				"id",
-				"The identifier of the status bar entry. Must be unique within the extension. The same value must be used when calling the `vscode.window.createStatusBarItem(id, ...)`-API",
+				"The identifier of the status bar entry. Must be unique within the extension. The same value must be used when calling the `vscode.window.createStatusBarItem(id, ...)`-API"
 			),
 		},
 		name: {
 			type: "string",
 			description: localize(
 				"name",
-				"The name of the entry, like 'Python Language Indicator', 'Git Status' etc. Try to keep the length of the name short, yet descriptive enough that users can understand what the status bar item is about.",
+				"The name of the entry, like 'Python Language Indicator', 'Git Status' etc. Try to keep the length of the name short, yet descriptive enough that users can understand what the status bar item is about."
 			),
 		},
 		text: {
 			type: "string",
 			description: localize(
 				"text",
-				"The text to show for the entry. You can embed icons in the text by leveraging the `$(<name>)`-syntax, like 'Hello $(globe)!'",
+				"The text to show for the entry. You can embed icons in the text by leveraging the `$(<name>)`-syntax, like 'Hello $(globe)!'"
 			),
 		},
 		tooltip: {
@@ -325,7 +327,7 @@ const statusBarItemSchema: IJSONSchema = {
 			type: "string",
 			description: localize(
 				"command",
-				"The command to execute when the status bar entry is clicked.",
+				"The command to execute when the status bar entry is clicked."
 			),
 		},
 		alignment: {
@@ -333,35 +335,35 @@ const statusBarItemSchema: IJSONSchema = {
 			enum: ["left", "right"],
 			description: localize(
 				"alignment",
-				"The alignment of the status bar entry.",
+				"The alignment of the status bar entry."
 			),
 		},
 		priority: {
 			type: "number",
 			description: localize(
 				"priority",
-				"The priority of the status bar entry. Higher value means the item should be shown more to the left.",
+				"The priority of the status bar entry. Higher value means the item should be shown more to the left."
 			),
 		},
 		accessibilityInformation: {
 			type: "object",
 			description: localize(
 				"accessibilityInformation",
-				"Defines the role and aria label to be used when the status bar entry is focused.",
+				"Defines the role and aria label to be used when the status bar entry is focused."
 			),
 			properties: {
 				role: {
 					type: "string",
 					description: localize(
 						"accessibilityInformation.role",
-						"The role of the status bar entry which defines how a screen reader interacts with it. More about aria roles can be found here https://w3c.github.io/aria/#widget_roles",
+						"The role of the status bar entry which defines how a screen reader interacts with it. More about aria roles can be found here https://w3c.github.io/aria/#widget_roles"
 					),
 				},
 				label: {
 					type: "string",
 					description: localize(
 						"accessibilityInformation.label",
-						"The aria label of the status bar entry. Defaults to the entry's text.",
+						"The aria label of the status bar entry. Defaults to the entry's text."
 					),
 				},
 			},
@@ -372,7 +374,7 @@ const statusBarItemSchema: IJSONSchema = {
 const statusBarItemsSchema: IJSONSchema = {
 	description: localize(
 		"vscode.extension.contributes.statusBarItems",
-		"Contributes items to the status bar.",
+		"Contributes items to the status bar."
 	),
 	oneOf: [
 		statusBarItemSchema,
@@ -391,18 +393,25 @@ const statusBarItemsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 });
 
 export class StatusBarItemsExtensionPoint {
-	constructor(@IExtensionStatusBarItemService statusBarItemsService: IExtensionStatusBarItemService) {
-
+	constructor(
+		@IExtensionStatusBarItemService
+		statusBarItemsService: IExtensionStatusBarItemService
+	) {
 		const contributions = new DisposableStore();
 
 		statusBarItemsExtensionPoint.setHandler((extensions) => {
-
 			contributions.clear();
 
 			for (const entry of extensions) {
-
-				if (!isProposedApiEnabled(entry.description, 'contribStatusBarItems')) {
-					entry.collector.error(`The ${statusBarItemsExtensionPoint.name} is proposed API`);
+				if (
+					!isProposedApiEnabled(
+						entry.description,
+						"contribStatusBarItems"
+					)
+				) {
+					entry.collector.error(
+						`The ${statusBarItemsExtensionPoint.name} is proposed API`
+					);
 					continue;
 				}
 
@@ -410,28 +419,45 @@ export class StatusBarItemsExtensionPoint {
 
 				for (const candidate of Iterable.wrap(value)) {
 					if (!isUserFriendlyStatusItemEntry(candidate)) {
-						collector.error(localize('invalid', "Invalid status bar item contribution."));
+						collector.error(
+							localize(
+								"invalid",
+								"Invalid status bar item contribution."
+							)
+						);
 						continue;
 					}
 
-					const fullItemId = asStatusBarItemIdentifier(entry.description.identifier, candidate.id);
+					const fullItemId = asStatusBarItemIdentifier(
+						entry.description.identifier,
+						candidate.id
+					);
 
 					const kind = statusBarItemsService.setOrUpdateEntry(
 						fullItemId,
 						fullItemId,
 						ExtensionIdentifier.toKey(entry.description.identifier),
-						candidate.name ?? entry.description.displayName ?? entry.description.name,
+						candidate.name ??
+							entry.description.displayName ??
+							entry.description.name,
 						candidate.text,
 						candidate.tooltip,
-						candidate.command ? { id: candidate.command, title: candidate.name } : undefined,
-						undefined, undefined,
-						candidate.alignment === 'left',
+						candidate.command
+							? { id: candidate.command, title: candidate.name }
+							: undefined,
+						undefined,
+						undefined,
+						candidate.alignment === "left",
 						candidate.priority,
 						candidate.accessibilityInformation
 					);
 
 					if (kind === StatusBarUpdateKind.DidDefine) {
-						contributions.add(toDisposable(() => statusBarItemsService.unsetEntry(fullItemId)));
+						contributions.add(
+							toDisposable(() =>
+								statusBarItemsService.unsetEntry(fullItemId)
+							)
+						);
 					}
 				}
 			}

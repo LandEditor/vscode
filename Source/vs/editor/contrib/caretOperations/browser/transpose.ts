@@ -71,31 +71,31 @@ class TransposeLettersAction extends EditorAction {
 					: MoveOperations.rightPosition(
 							model,
 							selection.getPosition().lineNumber,
-							selection.getPosition().column,
-					  );
+							selection.getPosition().column
+						);
 
 			const middlePosition = MoveOperations.leftPosition(
 				model,
-				endPosition,
+				endPosition
 			);
 			const beginPosition = MoveOperations.leftPosition(
 				model,
-				middlePosition,
+				middlePosition
 			);
 
 			const leftChar = model.getValueInRange(
-				Range.fromPositions(beginPosition, middlePosition),
+				Range.fromPositions(beginPosition, middlePosition)
 			);
 			const rightChar = model.getValueInRange(
-				Range.fromPositions(middlePosition, endPosition),
+				Range.fromPositions(middlePosition, endPosition)
 			);
 
 			const replaceRange = Range.fromPositions(
 				beginPosition,
-				endPosition,
+				endPosition
 			);
 			commands.push(
-				new ReplaceCommand(replaceRange, rightChar + leftChar),
+				new ReplaceCommand(replaceRange, rightChar + leftChar)
 			);
 		}
 

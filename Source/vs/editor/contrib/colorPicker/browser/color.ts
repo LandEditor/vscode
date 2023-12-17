@@ -28,14 +28,14 @@ export async function getColors(
 	colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>,
 	model: ITextModel,
 	token: CancellationToken,
-	isDefaultColorDecoratorsEnabled: boolean = true,
+	isDefaultColorDecoratorsEnabled: boolean = true
 ): Promise<IColorData[]> {
 	return _findColorData<IColorData>(
 		new ColorDataCollector(),
 		colorProviderRegistry,
 		model,
 		token,
-		isDefaultColorDecoratorsEnabled,
+		isDefaultColorDecoratorsEnabled
 	);
 }
 
@@ -43,10 +43,10 @@ export function getColorPresentations(
 	model: ITextModel,
 	colorInfo: IColorInformation,
 	provider: DocumentColorProvider,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<IColorPresentation[] | null | undefined> {
 	return Promise.resolve(
-		provider.provideColorPresentations(model, colorInfo, token),
+		provider.provideColorPresentations(model, colorInfo, token)
 	);
 }
 
@@ -65,7 +65,7 @@ interface DataCollector<T> {
 		provider: DocumentColorProvider,
 		model: ITextModel,
 		token: CancellationToken,
-		result: T[],
+		result: T[]
 	): Promise<boolean>;
 }
 
@@ -75,11 +75,11 @@ class ColorDataCollector implements DataCollector<IColorData> {
 		provider: DocumentColorProvider,
 		model: ITextModel,
 		token: CancellationToken,
-		colors: IColorData[],
+		colors: IColorData[]
 	): Promise<boolean> {
 		const documentColors = await provider.provideDocumentColors(
 			model,
-			token,
+			token
 		);
 		if (Array.isArray(documentColors)) {
 			for (const colorInfo of documentColors) {
@@ -96,11 +96,11 @@ class ExtColorDataCollector implements DataCollector<IExtColorData> {
 		provider: DocumentColorProvider,
 		model: ITextModel,
 		token: CancellationToken,
-		colors: IExtColorData[],
+		colors: IExtColorData[]
 	): Promise<boolean> {
 		const documentColors = await provider.provideDocumentColors(
 			model,
-			token,
+			token
 		);
 		if (Array.isArray(documentColors)) {
 			for (const colorInfo of documentColors) {
@@ -125,12 +125,12 @@ class ColorPresentationsCollector implements DataCollector<IColorPresentation> {
 		provider: DocumentColorProvider,
 		model: ITextModel,
 		_token: CancellationToken,
-		colors: IColorPresentation[],
+		colors: IColorPresentation[]
 	): Promise<boolean> {
 		const documentColors = await provider.provideColorPresentations(
 			model,
 			this.colorInfo,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		if (Array.isArray(documentColors)) {
 			colors.push(...documentColors);
@@ -146,7 +146,7 @@ async function _findColorData<
 	colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>,
 	model: ITextModel,
 	token: CancellationToken,
-	isDefaultColorDecoratorsEnabled: boolean,
+	isDefaultColorDecoratorsEnabled: boolean
 ): Promise<T[]> {
 	let validDocumentColorProviderFound = false;
 	let defaultProvider: DefaultDocumentColorProvider | undefined;
@@ -180,14 +180,14 @@ async function _findColorData<
 
 function _setupColorCommand(
 	accessor: ServicesAccessor,
-	resource: URI,
+	resource: URI
 ): {
 	model: ITextModel;
 	colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>;
 	isDefaultColorDecoratorsEnabled: boolean;
 } {
 	const { colorProvider: colorProviderRegistry } = accessor.get(
-		ILanguageFeaturesService,
+		ILanguageFeaturesService
 	);
 	const model = accessor.get(IModelService).getModel(resource);
 	if (!model) {
@@ -216,9 +216,9 @@ CommandsRegistry.registerCommand(
 			colorProviderRegistry,
 			model,
 			CancellationToken.None,
-			isDefaultColorDecoratorsEnabled,
+			isDefaultColorDecoratorsEnabled
 		);
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -248,7 +248,7 @@ CommandsRegistry.registerCommand(
 			colorProviderRegistry,
 			model,
 			CancellationToken.None,
-			isDefaultColorDecoratorsEnabled,
+			isDefaultColorDecoratorsEnabled
 		);
-	},
+	}
 );

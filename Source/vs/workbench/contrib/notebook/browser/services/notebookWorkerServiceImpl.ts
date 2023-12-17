@@ -32,12 +32,12 @@ export class NotebookEditorWorkerServiceImpl
 
 	private readonly _workerManager: WorkerManager;
 
-	constructor(
-		@INotebookService notebookService: INotebookService
-	) {
+	constructor(@INotebookService notebookService: INotebookService) {
 		super();
 
-		this._workerManager = this._register(new WorkerManager(notebookService));
+		this._workerManager = this._register(
+			new WorkerManager(notebookService)
+		);
 	}
 	canComputeDiff(original: URI, modified: URI): boolean {
 		throw new Error("Method not implemented.");
@@ -71,7 +71,7 @@ class WorkerManager extends Disposable {
 		if (!this._editorWorkerClient) {
 			this._editorWorkerClient = new NotebookWorkerClient(
 				this._notebookService,
-				"notebookEditorWorkerService",
+				"notebookEditorWorkerService"
 			);
 		}
 		return Promise.resolve(this._editorWorkerClient);
@@ -91,7 +91,7 @@ class NotebookEditorModelManager extends Disposable {
 
 	constructor(
 		private readonly _proxy: NotebookEditorSimpleWorker,
-		private readonly _notebookService: INotebookService,
+		private readonly _notebookService: INotebookService
 	) {
 		super();
 	}
@@ -114,7 +114,7 @@ class NotebookEditorModelManager extends Disposable {
 		const model = this._notebookService
 			.listNotebookDocuments()
 			.find(
-				(document) => document.uri.toString() === resource.toString(),
+				(document) => document.uri.toString() === resource.toString()
 			);
 		if (!model) {
 			return;
@@ -176,18 +176,18 @@ class NotebookEditorModelManager extends Disposable {
 												diff[1],
 												diff[2].map((cell) =>
 													cellToDto(
-														cell as NotebookCellTextModel,
-													),
+														cell as NotebookCellTextModel
+													)
 												),
 											] as [
 												number,
 												number,
 												IMainCellDto[],
-											],
+											]
 									),
-							  }
+								}
 							: e.kind === NotebookCellsChangeType.Move
-							  ? {
+								? {
 										kind: e.kind,
 										index: e.index,
 										length: e.length,
@@ -195,11 +195,11 @@ class NotebookEditorModelManager extends Disposable {
 										versionId: event.versionId,
 										cells: e.cells.map((cell) =>
 											cellToDto(
-												cell as NotebookCellTextModel,
-											),
+												cell as NotebookCellTextModel
+											)
 										),
-								  }
-							  : e;
+									}
+								: e;
 
 					return data;
 				});
@@ -208,18 +208,18 @@ class NotebookEditorModelManager extends Disposable {
 					rawEvents: dto,
 					versionId: event.versionId,
 				});
-			}),
+			})
 		);
 
 		toDispose.add(
 			model.onWillDispose(() => {
 				this._stopModelSync(modelUrl);
-			}),
+			})
 		);
 		toDispose.add(
 			toDisposable(() => {
 				this._proxy.acceptRemovedModel(modelUrl);
-			}),
+			})
 		);
 
 		this._syncedModels[modelUrl] = toDispose;
@@ -253,7 +253,7 @@ class NotebookWorkerClient extends Disposable {
 
 	constructor(
 		private readonly _notebookService: INotebookService,
-		label: string,
+		label: string
 	) {
 		super();
 		this._workerFactory = new DefaultWorkerFactory(label);
@@ -279,22 +279,22 @@ class NotebookWorkerClient extends Disposable {
 	}
 
 	private _getOrCreateModelManager(
-		proxy: NotebookEditorSimpleWorker,
+		proxy: NotebookEditorSimpleWorker
 	): NotebookEditorModelManager {
 		if (!this._modelManager) {
 			this._modelManager = this._register(
-				new NotebookEditorModelManager(proxy, this._notebookService),
+				new NotebookEditorModelManager(proxy, this._notebookService)
 			);
 		}
 		return this._modelManager;
 	}
 
 	protected _withSyncedResources(
-		resources: URI[],
+		resources: URI[]
 	): Promise<NotebookEditorSimpleWorker> {
 		return this._getProxy().then((proxy) => {
 			this._getOrCreateModelManager(proxy).ensureSyncedResources(
-				resources,
+				resources
 			);
 			return proxy;
 		});
@@ -310,8 +310,8 @@ class NotebookWorkerClient extends Disposable {
 					>(
 						this._workerFactory,
 						"vs/workbench/contrib/notebook/common/services/notebookSimpleWorker",
-						new NotebookWorkerHost(this),
-					),
+						new NotebookWorkerHost(this)
+					)
 				);
 			} catch (err) {
 				// logOnceWebWorkerWarning(err);

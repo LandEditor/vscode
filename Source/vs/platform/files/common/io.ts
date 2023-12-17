@@ -42,7 +42,7 @@ export async function readFileIntoStream<T>(
 	target: WriteableStream<T>,
 	transformer: IDataTransformer<VSBuffer, T>,
 	options: ICreateReadStreamOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<void> {
 	let error: Error | undefined = undefined;
 
@@ -53,7 +53,7 @@ export async function readFileIntoStream<T>(
 			target,
 			transformer,
 			options,
-			token,
+			token
 		);
 	} catch (err) {
 		error = err;
@@ -76,7 +76,7 @@ async function doReadFileIntoStream<T>(
 	target: WriteableStream<T>,
 	transformer: IDataTransformer<VSBuffer, T>,
 	options: ICreateReadStreamOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<void> {
 	// Check for cancellation
 	throwIfCancelled(token);
@@ -100,8 +100,8 @@ async function doReadFileIntoStream<T>(
 				options.bufferSize,
 				typeof allowedRemainingBytes === "number"
 					? allowedRemainingBytes
-					: options.bufferSize,
-			),
+					: options.bufferSize
+			)
 		);
 
 		let posInFile =
@@ -117,7 +117,7 @@ async function doReadFileIntoStream<T>(
 				posInFile,
 				buffer.buffer,
 				posInBuffer,
-				buffer.byteLength - posInBuffer,
+				buffer.byteLength - posInBuffer
 			);
 
 			posInFile += bytesRead;
@@ -137,8 +137,8 @@ async function doReadFileIntoStream<T>(
 						options.bufferSize,
 						typeof allowedRemainingBytes === "number"
 							? allowedRemainingBytes
-							: options.bufferSize,
-					),
+							: options.bufferSize
+					)
 				);
 
 				posInBuffer = 0;
@@ -177,7 +177,7 @@ function throwIfCancelled(token: CancellationToken): boolean {
 
 function throwIfTooLarge(
 	totalBytesRead: number,
-	options: ICreateReadStreamOptions,
+	options: ICreateReadStreamOptions
 ): boolean {
 	// Return early if file is too large to load and we have configured limits
 	if (
@@ -186,7 +186,7 @@ function throwIfTooLarge(
 	) {
 		throw createFileSystemProviderError(
 			localize("fileTooLargeError", "File is too large to open"),
-			FileSystemProviderErrorCode.FileTooLarge,
+			FileSystemProviderErrorCode.FileTooLarge
 		);
 	}
 

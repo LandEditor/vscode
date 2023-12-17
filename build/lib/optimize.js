@@ -46,12 +46,12 @@ function loaderPlugin(src, base, amdModuleId) {
 				let contents = data.contents.toString("utf8");
 				contents = contents.replace(
 					/^define\(/m,
-					`define("${amdModuleId}",`,
+					`define("${amdModuleId}",`
 				);
 				data.contents = Buffer.from(contents);
 			}
 			this.emit("data", data);
-		}),
+		})
 	);
 }
 function loader(src, bundledFileHeader, bundleLoader, externalLoaderInfo) {
@@ -60,7 +60,7 @@ function loader(src, bundledFileHeader, bundleLoader, externalLoaderInfo) {
 		loaderStream = es.merge(
 			loaderStream,
 			loaderPlugin(`${src}/vs/css.js`, `${src}`, "vs/css"),
-			loaderPlugin(`${src}/vs/nls.js`, `${src}`, "vs/nls"),
+			loaderPlugin(`${src}/vs/nls.js`, `${src}`, "vs/nls")
 		);
 	}
 	const files = [];
@@ -91,7 +91,7 @@ function loader(src, bundledFileHeader, bundleLoader, externalLoaderInfo) {
 							path: "fake",
 							base: ".",
 							contents: Buffer.from(bundledFileHeader),
-						}),
+						})
 					);
 					if (externalLoaderInfo !== undefined) {
 						files.push(
@@ -99,17 +99,17 @@ function loader(src, bundledFileHeader, bundleLoader, externalLoaderInfo) {
 								path: "fake2",
 								base: ".",
 								contents: Buffer.from(
-									emitExternalLoaderInfo(externalLoaderInfo),
+									emitExternalLoaderInfo(externalLoaderInfo)
 								),
-							}),
+							})
 						);
 					}
 					for (const file of files) {
 						this.emit("data", file);
 					}
 					this.emit("end");
-				},
-			),
+				}
+			)
 		)
 		.pipe(concat("vs/loader.js"));
 }
@@ -120,7 +120,7 @@ function emitExternalLoaderInfo(externalLoaderInfo) {
 	const code = `
 (function() {
 	const baseUrl = require.getConfig().baseUrl || ${JSON.stringify(
-		externalBaseUrl,
+		externalBaseUrl
 	)};
 	require.config(${JSON.stringify(externalLoaderInfo, undefined, 2)});
 })();`;
@@ -131,7 +131,7 @@ function toConcatStream(
 	bundledFileHeader,
 	sources,
 	dest,
-	fileContentMapper,
+	fileContentMapper
 ) {
 	const useSourcemaps = /\.js$/.test(dest) && !/\.nls\.js$/.test(dest);
 	// If a bundle ends up including in any of the sources our copyright, then
@@ -179,9 +179,9 @@ function toBundleStream(src, bundledFileHeader, bundles, fileContentMapper) {
 				bundledFileHeader,
 				bundle.sources,
 				bundle.dest,
-				fileContentMapper,
+				fileContentMapper
 			);
-		}),
+		})
 	);
 }
 const DEFAULT_FILE_HEADER = [
@@ -209,7 +209,7 @@ function optimizeAMDTask(opts) {
 			src,
 			bundledFileHeader,
 			result.files,
-			fileContentMapper,
+			fileContentMapper
 		).pipe(bundlesStream);
 		// Remove css inlined resources
 		const filteredResources = resources.slice();
@@ -220,7 +220,7 @@ function optimizeAMDTask(opts) {
 			filteredResources.push("!" + resource);
 		});
 		gulp.src(filteredResources, { base: `${src}`, allowEmpty: true }).pipe(
-			resourcesStream,
+			resourcesStream
 		);
 		const bundleInfoArray = [];
 		if (opts.bundleInfo) {
@@ -229,9 +229,9 @@ function optimizeAMDTask(opts) {
 					path: "bundleInfo.json",
 					base: ".",
 					contents: Buffer.from(
-						JSON.stringify(result.bundleData, null, "\t"),
+						JSON.stringify(result.bundleData, null, "\t")
 					),
-				}),
+				})
 			);
 		}
 		es.readArray(bundleInfoArray).pipe(bundleInfoStream);
@@ -240,7 +240,7 @@ function optimizeAMDTask(opts) {
 		loader(src, bundledFileHeader, false, opts.externalLoaderInfo),
 		bundlesStream,
 		resourcesStream,
-		bundleInfoStream,
+		bundleInfoStream
 	);
 	return result
 		.pipe(
@@ -248,15 +248,15 @@ function optimizeAMDTask(opts) {
 				sourceRoot: undefined,
 				addComment: true,
 				includeContent: true,
-			}),
+			})
 		)
 		.pipe(
 			opts.languages && opts.languages.length
 				? (0, i18n_1.processNlsFiles)({
 						fileHeader: bundledFileHeader,
 						languages: opts.languages,
-				  })
-				: es.through(),
+					})
+				: es.through()
 		);
 }
 function optimizeCommonJSTask(opts) {
@@ -278,7 +278,7 @@ function optimizeCommonJSTask(opts) {
 					f.contents = Buffer.from(jsFile.contents);
 					cb(undefined, f);
 				});
-		}),
+		})
 	);
 }
 function optimizeManualTask(options) {
@@ -292,11 +292,11 @@ function optimizeLoaderTask(
 	out,
 	bundleLoader,
 	bundledFileHeader = "",
-	externalLoaderInfo,
+	externalLoaderInfo
 ) {
 	return () =>
 		loader(src, bundledFileHeader, bundleLoader, externalLoaderInfo).pipe(
-			gulp.dest(out),
+			gulp.dest(out)
 		);
 }
 exports.optimizeLoaderTask = optimizeLoaderTask;
@@ -343,10 +343,10 @@ function minifyTask(src, sourceMapBaseUrl) {
 					})
 					.then((res) => {
 						const jsFile = res.outputFiles.find((f) =>
-							/\.js$/.test(f.path),
+							/\.js$/.test(f.path)
 						);
 						const sourceMapFile = res.outputFiles.find((f) =>
-							/\.js\.map$/.test(f.path),
+							/\.js\.map$/.test(f.path)
 						);
 						const contents = Buffer.from(jsFile.contents);
 						const unicodeMatch = contents
@@ -355,8 +355,8 @@ function minifyTask(src, sourceMapBaseUrl) {
 						if (unicodeMatch) {
 							cb(
 								new Error(
-									`Found non-ascii character ${unicodeMatch[0]} in the minified output of ${f.path}. Non-ASCII characters in the output can cause performance problems when loading. Please review if you have introduced a regular expression that esbuild is not automatically converting and convert it to using unicode escape sequences.`,
-								),
+									`Found non-ascii character ${unicodeMatch[0]} in the minified output of ${f.path}. Non-ASCII characters in the output can cause performance problems when loading. Please review if you have introduced a regular expression that esbuild is not automatically converting and convert it to using unicode escape sequences.`
+								)
 							);
 						} else {
 							f.contents = contents;
@@ -385,7 +385,7 @@ function minifyTask(src, sourceMapBaseUrl) {
 				addComment: true,
 			}),
 			gulp.dest(src + "-min"),
-			(err) => cb(err),
+			(err) => cb(err)
 		);
 	};
 }

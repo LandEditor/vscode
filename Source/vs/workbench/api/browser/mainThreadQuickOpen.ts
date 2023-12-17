@@ -55,7 +55,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IQuickInputService quickInputService: IQuickInputService,
+		@IQuickInputService quickInputService: IQuickInputService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostQuickOpen);
 		this._quickInputService = quickInputService;
@@ -66,12 +66,12 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 	$show(
 		instance: number,
 		options: IPickOptions<TransferQuickPickItem>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<number | number[] | undefined> {
 		const contents = new Promise<TransferQuickPickItemOrSeparator[]>(
 			(resolve, reject) => {
 				this._items[instance] = { resolve, reject };
-			},
+			}
 		);
 
 		options = {
@@ -79,7 +79,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 			onDidFocus: (el) => {
 				if (el) {
 					this._proxy.$onItemSelected(
-						(<TransferQuickPickItem>el).handle,
+						(<TransferQuickPickItem>el).handle
 					);
 				}
 			},
@@ -108,7 +108,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 
 	$setItems(
 		instance: number,
-		items: TransferQuickPickItemOrSeparator[],
+		items: TransferQuickPickItemOrSeparator[]
 	): Promise<void> {
 		if (this._items[instance]) {
 			this._items[instance].resolve(items);
@@ -130,7 +130,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 	$input(
 		options: IInputBoxOptions | undefined,
 		validateInput: boolean,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<string | undefined> {
 		const inputOptions: IInputOptions = Object.create(null);
 
@@ -171,7 +171,7 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 			input.onDidTriggerButton((button) => {
 				this._proxy.$onDidTriggerButton(
 					sessionId,
-					(button as TransferQuickInputButton).handle,
+					(button as TransferQuickInputButton).handle
 				);
 			});
 			input.onDidChangeValue((value) => {
@@ -188,23 +188,23 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 					this._proxy.$onDidChangeActive(
 						sessionId,
 						items.map(
-							(item) => (item as TransferQuickPickItem).handle,
-						),
+							(item) => (item as TransferQuickPickItem).handle
+						)
 					);
 				});
 				quickpick.onDidChangeSelection((items) => {
 					this._proxy.$onDidChangeSelection(
 						sessionId,
 						items.map(
-							(item) => (item as TransferQuickPickItem).handle,
-						),
+							(item) => (item as TransferQuickPickItem).handle
+						)
 					);
 				});
 				quickpick.onDidTriggerItemButton((e) => {
 					this._proxy.$onDidTriggerItemButton(
 						sessionId,
 						(e.item as TransferQuickPickItem).handle,
-						(e.button as TransferQuickInputButton).handle,
+						(e.button as TransferQuickInputButton).handle
 					);
 				});
 			}
@@ -242,11 +242,11 @@ export class MainThreadQuickOpen implements MainThreadQuickOpenShape {
 									}
 
 									return button;
-								},
+								}
 							);
 						}
 						handlesToItems.set(item.handle, item);
-					},
+					}
 				);
 				(input as any)[param] = params[param];
 			} else if (param === "activeItems" || param === "selectedItems") {

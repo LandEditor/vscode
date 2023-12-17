@@ -62,13 +62,25 @@ export class UntitledTextEditorInput
 		@ILabelService labelService: ILabelService,
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IPathService private readonly pathService: IPathService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService
 	) {
-		super(model.resource, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService);
+		super(
+			model.resource,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService
+		);
 
 		this.registerModelListeners(model);
 	}
@@ -76,10 +88,10 @@ export class UntitledTextEditorInput
 	private registerModelListeners(model: IUntitledTextEditorModel): void {
 		// re-emit some events from the model
 		this._register(
-			model.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
+			model.onDidChangeDirty(() => this._onDidChangeDirty.fire())
 		);
 		this._register(
-			model.onDidChangeName(() => this._onDidChangeLabel.fire()),
+			model.onDidChangeName(() => this._onDidChangeLabel.fire())
 		);
 
 		// a reverted untitled text editor model renders this input disposed
@@ -132,7 +144,7 @@ export class UntitledTextEditorInput
 
 	setEncoding(
 		encoding: string,
-		mode: EncodingMode /* ignored, we only have Encode */,
+		mode: EncodingMode /* ignored, we only have Encode */
 	): Promise<void> {
 		return this.model.setEncoding(encoding);
 	}
@@ -151,7 +163,7 @@ export class UntitledTextEditorInput
 				// Acquire a model reference
 				this.cachedUntitledTextEditorModelReference =
 					(await this.textModelService.createModelReference(
-						this.resource,
+						this.resource
 					)) as IReference<IUntitledTextEditorModel>;
 			})();
 		}
@@ -179,8 +191,8 @@ export class UntitledTextEditorInput
 				? toLocalResource(
 						this.model.resource,
 						this.environmentService.remoteAuthority,
-						this.pathService.defaultUriScheme,
-				  )
+						this.pathService.defaultUriScheme
+					)
 				: this.resource,
 			forceUntitled: true,
 			options: {
@@ -197,7 +209,7 @@ export class UntitledTextEditorInput
 			untypedInput.options.viewState = findViewStateForEditor(
 				this,
 				options.preserveViewState,
-				this.editorService,
+				this.editorService
 			);
 
 			if (

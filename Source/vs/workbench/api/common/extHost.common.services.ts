@@ -101,58 +101,58 @@ import {
 registerSingleton(
 	IExtHostLocalizationService,
 	ExtHostLocalizationService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ILoggerService,
 	ExtHostLoggerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IExtHostApiDeprecationService,
 	ExtHostApiDeprecationService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(IExtHostCommands, ExtHostCommands, InstantiationType.Eager);
 registerSingleton(
 	IExtHostConfiguration,
 	ExtHostConfiguration,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostConsumerFileSystem,
 	ExtHostConsumerFileSystem,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostDebugService,
 	WorkerExtHostDebugService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostDecorations,
 	ExtHostDecorations,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostDocumentsAndEditors,
 	ExtHostDocumentsAndEditors,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostManagedSockets,
 	ExtHostManagedSockets,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostFileSystemInfo,
 	ExtHostFileSystemInfo,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostOutputService,
 	ExtHostOutputService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(IExtHostSearch, ExtHostSearch, InstantiationType.Eager);
 registerSingleton(IExtHostStorage, ExtHostStorage, InstantiationType.Eager);
@@ -160,28 +160,28 @@ registerSingleton(IExtHostTask, WorkerExtHostTask, InstantiationType.Eager);
 registerSingleton(
 	IExtHostTerminalService,
 	WorkerExtHostTerminalService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostTunnelService,
 	ExtHostTunnelService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(IExtHostWindow, ExtHostWindow, InstantiationType.Eager);
 registerSingleton(IExtHostWorkspace, ExtHostWorkspace, InstantiationType.Eager);
 registerSingleton(
 	IExtHostSecretState,
 	ExtHostSecretState,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(IExtHostTelemetry, ExtHostTelemetry, InstantiationType.Eager);
 registerSingleton(
 	IExtHostEditorTabs,
 	ExtHostEditorTabs,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostVariableResolverProvider,
 	ExtHostVariableResolverProviderService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

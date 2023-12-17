@@ -27,7 +27,7 @@ class ExtensionUrlHandler implements IExtensionContributedURLHandler {
 		private readonly proxy: ExtHostUrlsShape,
 		private readonly handle: number,
 		readonly extensionId: ExtensionIdentifier,
-		readonly extensionDisplayName: string,
+		readonly extensionDisplayName: string
 	) {}
 
 	handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
@@ -36,7 +36,7 @@ class ExtensionUrlHandler implements IExtensionContributedURLHandler {
 		}
 
 		return Promise.resolve(
-			this.proxy.$handleExternalUri(this.handle, uri),
+			this.proxy.$handleExternalUri(this.handle, uri)
 		).then(() => true);
 	}
 }
@@ -52,7 +52,8 @@ export class MainThreadUrls implements MainThreadUrlsShape {
 	constructor(
 		context: IExtHostContext,
 		@IURLService private readonly urlService: IURLService,
-		@IExtensionUrlHandler private readonly extensionUrlHandler: IExtensionUrlHandler
+		@IExtensionUrlHandler
+		private readonly extensionUrlHandler: IExtensionUrlHandler
 	) {
 		this.proxy = context.getProxy(ExtHostContext.ExtHostUrls);
 	}
@@ -60,13 +61,13 @@ export class MainThreadUrls implements MainThreadUrlsShape {
 	$registerUriHandler(
 		handle: number,
 		extensionId: ExtensionIdentifier,
-		extensionDisplayName: string,
+		extensionDisplayName: string
 	): Promise<void> {
 		const handler = new ExtensionUrlHandler(
 			this.proxy,
 			handle,
 			extensionId,
-			extensionDisplayName,
+			extensionDisplayName
 		);
 		const disposable = this.urlService.registerHandler(handler);
 

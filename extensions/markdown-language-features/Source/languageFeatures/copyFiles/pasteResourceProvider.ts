@@ -28,7 +28,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 		document: vscode.TextDocument,
 		ranges: readonly vscode.Range[],
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentPasteEdit | undefined> {
 		const enabled = vscode.workspace
 			.getConfiguration("markdown", document)
@@ -40,7 +40,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 		const createEdit = await this._getMediaFilesEdit(
 			document,
 			dataTransfer,
-			token,
+			token
 		);
 		if (createEdit) {
 			return createEdit;
@@ -57,7 +57,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 		document: vscode.TextDocument,
 		ranges: readonly vscode.Range[],
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentPasteEdit | undefined> {
 		const uriList = await dataTransfer.get(Mime.textUriList)?.asString();
 		if (!uriList || token.isCancellationRequested) {
@@ -70,7 +70,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 			ranges,
 			uriList,
 			false,
-			pasteUrlSetting === PasteUrlAsFormattedLink.Smart,
+			pasteUrlSetting === PasteUrlAsFormattedLink.Smart
 		);
 		if (!pasteEdit) {
 			return;
@@ -85,7 +85,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 	private async _getMediaFilesEdit(
 		document: vscode.TextDocument,
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentPasteEdit | undefined> {
 		if (getParentDocumentUri(document.uri).scheme === Schemes.untitled) {
 			return;
@@ -95,7 +95,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 			.getConfiguration("markdown", document)
 			.get<"mediaFiles" | "never">(
 				"editor.filePaste.copyIntoWorkspace",
-				"mediaFiles",
+				"mediaFiles"
 			);
 		if (copyFilesIntoWorkspace === "never") {
 			return;
@@ -104,7 +104,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 		const edit = await createEditForMediaFiles(
 			document,
 			dataTransfer,
-			token,
+			token
 		);
 		if (!edit) {
 			return;
@@ -112,7 +112,7 @@ class PasteResourceEditProvider implements vscode.DocumentPasteEditProvider {
 
 		const pasteEdit = new vscode.DocumentPasteEdit(
 			edit.snippet,
-			edit.label,
+			edit.label
 		);
 		pasteEdit.additionalEdit = edit.additionalEdits;
 		pasteEdit.yieldTo = this._yieldTo;
@@ -124,6 +124,6 @@ export function registerPasteSupport(selector: vscode.DocumentSelector) {
 	return vscode.languages.registerDocumentPasteEditProvider(
 		selector,
 		new PasteResourceEditProvider(),
-		PasteResourceEditProvider,
+		PasteResourceEditProvider
 	);
 }

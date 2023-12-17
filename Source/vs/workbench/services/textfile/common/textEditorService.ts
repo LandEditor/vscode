@@ -76,7 +76,7 @@ export interface ITextEditorService {
 	 */
 	resolveTextEditor(input: IUntypedEditorInput): Promise<EditorInput>;
 	resolveTextEditor(
-		input: IUntypedFileEditorInput,
+		input: IUntypedFileEditorInput
 	): Promise<IFileEditorInput>;
 }
 
@@ -91,15 +91,19 @@ export class TextEditorService
 	>();
 
 	private readonly fileEditorFactory = Registry.as<IEditorFactoryRegistry>(
-		EditorExtensions.EditorFactory,
+		EditorExtensions.EditorFactory
 	).getFileEditorFactory();
 
 	constructor(
-		@IUntitledTextEditorService private readonly untitledTextEditorService: IUntitledTextEditorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUntitledTextEditorService
+		private readonly untitledTextEditorService: IUntitledTextEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService
 	) {
 		super();
 
@@ -129,17 +133,17 @@ export class TextEditorService
 					createDiffEditorInput: (diffEditor) => ({
 						editor: this.createTextEditor(diffEditor),
 					}),
-				},
-			),
+				}
+			)
 		);
 	}
 
 	resolveTextEditor(input: IUntypedEditorInput): Promise<EditorInput>;
 	resolveTextEditor(
-		input: IUntypedFileEditorInput,
+		input: IUntypedFileEditorInput
 	): Promise<IFileEditorInput>;
 	async resolveTextEditor(
-		input: IUntypedEditorInput | IUntypedFileEditorInput,
+		input: IUntypedEditorInput | IUntypedFileEditorInput
 	): Promise<EditorInput | IFileEditorInput> {
 		return this.createTextEditor(input);
 	}
@@ -147,7 +151,7 @@ export class TextEditorService
 	createTextEditor(input: IUntypedEditorInput): EditorInput;
 	createTextEditor(input: IUntypedFileEditorInput): IFileEditorInput;
 	createTextEditor(
-		input: IUntypedEditorInput | IUntypedFileEditorInput,
+		input: IUntypedEditorInput | IUntypedFileEditorInput
 	): EditorInput | IFileEditorInput {
 		// Merge Editor Not Supported (we fallback to showing the result only)
 		if (isResourceMergeEditorInput(input)) {
@@ -165,7 +169,7 @@ export class TextEditorService
 				input.description,
 				original,
 				modified,
-				undefined,
+				undefined
 			);
 		}
 
@@ -179,7 +183,7 @@ export class TextEditorService
 				input.label,
 				input.description,
 				secondary,
-				primary,
+				primary
 			);
 		}
 
@@ -216,8 +220,8 @@ export class TextEditorService
 			return this.createOrGetCached(untitledModel.resource, () =>
 				this.instantiationService.createInstance(
 					UntitledTextEditorInput,
-					untitledModel,
-				),
+					untitledModel
+				)
 			);
 		}
 
@@ -255,7 +259,7 @@ export class TextEditorService
 							textResourceEditorInput.encoding,
 							textResourceEditorInput.languageId,
 							textResourceEditorInput.contents,
-							this.instantiationService,
+							this.instantiationService
 						);
 					}
 
@@ -266,7 +270,7 @@ export class TextEditorService
 						textResourceEditorInput.label,
 						textResourceEditorInput.description,
 						textResourceEditorInput.languageId,
-						textResourceEditorInput.contents,
+						textResourceEditorInput.contents
 					);
 				},
 				(cachedInput) => {
@@ -283,25 +287,25 @@ export class TextEditorService
 
 						if (textResourceEditorInput.label) {
 							cachedInput.setPreferredName(
-								textResourceEditorInput.label,
+								textResourceEditorInput.label
 							);
 						}
 
 						if (textResourceEditorInput.description) {
 							cachedInput.setPreferredDescription(
-								textResourceEditorInput.description,
+								textResourceEditorInput.description
 							);
 						}
 
 						if (textResourceEditorInput.encoding) {
 							cachedInput.setPreferredEncoding(
-								textResourceEditorInput.encoding,
+								textResourceEditorInput.encoding
 							);
 						}
 
 						if (textResourceEditorInput.languageId) {
 							cachedInput.setPreferredLanguageId(
-								textResourceEditorInput.languageId,
+								textResourceEditorInput.languageId
 							);
 						}
 
@@ -309,7 +313,7 @@ export class TextEditorService
 							typeof textResourceEditorInput.contents === "string"
 						) {
 							cachedInput.setPreferredContents(
-								textResourceEditorInput.contents,
+								textResourceEditorInput.contents
 							);
 						}
 					}
@@ -322,13 +326,13 @@ export class TextEditorService
 
 						if (textResourceEditorInput.description) {
 							cachedInput.setDescription(
-								textResourceEditorInput.description,
+								textResourceEditorInput.description
 							);
 						}
 
 						if (textResourceEditorInput.languageId) {
 							cachedInput.setPreferredLanguageId(
-								textResourceEditorInput.languageId,
+								textResourceEditorInput.languageId
 							);
 						}
 
@@ -336,18 +340,18 @@ export class TextEditorService
 							typeof textResourceEditorInput.contents === "string"
 						) {
 							cachedInput.setPreferredContents(
-								textResourceEditorInput.contents,
+								textResourceEditorInput.contents
 							);
 						}
 					}
-				},
+				}
 			);
 		}
 
 		throw new Error(
 			`ITextEditorService: Unable to create texteditor from ${JSON.stringify(
-				input,
-			)}`,
+				input
+			)}`
 		);
 	}
 
@@ -361,8 +365,8 @@ export class TextEditorService
 			input:
 				| TextResourceEditorInput
 				| IFileEditorInput
-				| UntitledTextEditorInput,
-		) => void,
+				| UntitledTextEditorInput
+		) => void
 	): TextResourceEditorInput | IFileEditorInput | UntitledTextEditorInput {
 		// Return early if already cached
 		let input = this.editorInputCache.get(resource);
@@ -376,7 +380,7 @@ export class TextEditorService
 		input = factoryFn();
 		this.editorInputCache.set(resource, input);
 		Event.once(input.onWillDispose)(() =>
-			this.editorInputCache.delete(resource),
+			this.editorInputCache.delete(resource)
 		);
 
 		return input;
@@ -386,5 +390,5 @@ export class TextEditorService
 registerSingleton(
 	ITextEditorService,
 	TextEditorService,
-	InstantiationType.Eager /* do not change: https://github.com/microsoft/vscode/issues/137675 */,
+	InstantiationType.Eager /* do not change: https://github.com/microsoft/vscode/issues/137675 */
 );

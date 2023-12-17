@@ -69,7 +69,7 @@ export class GitExtensionImpl implements GitExtension {
 		}
 
 		return this._model.repositories.map(
-			(repository) => new ApiRepository(repository),
+			(repository) => new ApiRepository(repository)
 		);
 	}
 

@@ -44,7 +44,7 @@ export class ColorContribution
 
 	private onMouseDown(mouseEvent: IEditorMouseEvent) {
 		const colorDecoratorsActivatedOn = this._editor.getOption(
-			EditorOption.colorDecoratorsActivatedOn,
+			EditorOption.colorDecoratorsActivatedOn
 		);
 		if (
 			colorDecoratorsActivatedOn !== "click" &&
@@ -75,7 +75,7 @@ export class ColorContribution
 		}
 
 		const hoverController = this._editor.getContribution<HoverController>(
-			HoverController.ID,
+			HoverController.ID
 		);
 		if (!hoverController) {
 			return;
@@ -85,14 +85,14 @@ export class ColorContribution
 				target.range.startLineNumber,
 				target.range.startColumn + 1,
 				target.range.endLineNumber,
-				target.range.endColumn + 1,
+				target.range.endColumn + 1
 			);
 			hoverController.showContentHover(
 				range,
 				HoverStartMode.Immediate,
 				HoverStartSource.Mouse,
 				false,
-				true,
+				true
 			);
 		}
 	}
@@ -101,6 +101,6 @@ export class ColorContribution
 registerEditorContribution(
 	ColorContribution.ID,
 	ColorContribution,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 HoverParticipantRegistry.register(ColorHoverParticipant);

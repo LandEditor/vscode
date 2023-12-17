@@ -83,20 +83,12 @@ fn set_env_vars_from_map_keys(prefix: &str, map: impl IntoIterator<Item = (Strin
 		//#endregion
 
 		if let Value::String(s) = value {
-			println!(
-				"cargo:rustc-env={}_{}={}",
-				prefix,
-				camel_case_to_constant_case(&key),
-				s
-			);
+			println!("cargo:rustc-env={}_{}={}", prefix, camel_case_to_constant_case(&key), s);
 		}
 	}
 
 	if !win32_app_ids.is_empty() {
-		println!(
-			"cargo:rustc-env=VSCODE_CLI_WIN32_APP_IDS={}",
-			win32_app_ids.join(",")
-		);
+		println!("cargo:rustc-env=VSCODE_CLI_WIN32_APP_IDS={}", win32_app_ids.join(","));
 	}
 }
 
@@ -121,10 +113,7 @@ struct PackageJson {
 fn apply_build_environment_variables() {
 	let repo_dir = env::current_dir().unwrap().join("..");
 	let package_json = read_json_from_path::<PackageJson>(&repo_dir.join("package.json"));
-	println!(
-		"cargo:rustc-env=VSCODE_CLI_VERSION={}",
-		package_json.version
-	);
+	println!("cargo:rustc-env=VSCODE_CLI_VERSION={}", package_json.version);
 
 	match env::var("VSCODE_CLI_PRODUCT_JSON") {
 		Ok(v) => {

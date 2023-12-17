@@ -24,14 +24,14 @@ export function getColorClass(colorKey: string): string;
 export function getColorClass(profile: ITerminalProfile): string;
 export function getColorClass(terminal: ITerminalInstance): string | undefined;
 export function getColorClass(
-	extensionTerminalProfile: IExtensionTerminalProfile,
+	extensionTerminalProfile: IExtensionTerminalProfile
 ): string | undefined;
 export function getColorClass(
 	terminalOrColorKey:
 		| ITerminalInstance
 		| IExtensionTerminalProfile
 		| ITerminalProfile
-		| string,
+		| string
 ): string | undefined {
 	let color = undefined;
 	if (typeof terminalOrColorKey === "string") {
@@ -82,7 +82,7 @@ export function createColorStyleElement(colorTheme: IColorTheme): IDisposable {
 
 export function getColorStyleContent(
 	colorTheme: IColorTheme,
-	editor?: boolean,
+	editor?: boolean
 ): string {
 	const standardColors = getStandardColors(colorTheme);
 	let css = "";
@@ -108,7 +108,7 @@ export function getColorStyleContent(
 export function getUriClasses(
 	terminal: ITerminalInstance | IExtensionTerminalProfile | ITerminalProfile,
 	colorScheme: ColorScheme,
-	extensionContributed?: boolean,
+	extensionContributed?: boolean
 ): string[] | undefined {
 	const icon = terminal.icon;
 	if (!icon) {
@@ -144,7 +144,7 @@ export function getUriClasses(
 
 export function getIconId(
 	accessor: ServicesAccessor,
-	terminal: ITerminalInstance | IExtensionTerminalProfile | ITerminalProfile,
+	terminal: ITerminalInstance | IExtensionTerminalProfile | ITerminalProfile
 ): string {
 	if (
 		!terminal.icon ||

@@ -47,27 +47,27 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 	private _inReplay = false;
 
 	private readonly _onProcessData = this._register(
-		new Emitter<string | IProcessDataEvent>(),
+		new Emitter<string | IProcessDataEvent>()
 	);
 	readonly onProcessData = this._onProcessData.event;
 	private readonly _onProcessReplayComplete = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onProcessReplayComplete = this._onProcessReplayComplete.event;
 	private readonly _onProcessReady = this._register(
-		new Emitter<IProcessReadyEvent>(),
+		new Emitter<IProcessReadyEvent>()
 	);
 	readonly onProcessReady = this._onProcessReady.event;
 	private readonly _onDidChangeProperty = this._register(
-		new Emitter<IProcessProperty<any>>(),
+		new Emitter<IProcessProperty<any>>()
 	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
 	private readonly _onProcessExit = this._register(
-		new Emitter<number | undefined>(),
+		new Emitter<number | undefined>()
 	);
 	readonly onProcessExit = this._onProcessExit.event;
 	private readonly _onRestoreCommands = this._register(
-		new Emitter<ISerializedCommandDetectionCapability>(),
+		new Emitter<ISerializedCommandDetectionCapability>()
 	);
 	readonly onRestoreCommands = this._onRestoreCommands.event;
 
@@ -75,7 +75,8 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		readonly id: number,
 		readonly shouldPersist: boolean,
 		private readonly _remoteTerminalChannel: RemoteTerminalChannelClient,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService
 	) {
 		super();
@@ -111,7 +112,7 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		await this._startBarrier.wait();
 		return this._remoteTerminalChannel.detachFromProcess(
 			this.id,
-			forcePersist,
+			forcePersist
 		);
 	}
 
@@ -151,11 +152,11 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 	}
 
 	freePortKillProcess(
-		port: string,
+		port: string
 	): Promise<{ port: string; processId: string }> {
 		if (!this._remoteTerminalChannel.freePortKillProcess) {
 			throw new Error(
-				"freePortKillProcess does not exist on the local pty service",
+				"freePortKillProcess does not exist on the local pty service"
 			);
 		}
 		return this._remoteTerminalChannel.freePortKillProcess(port);
@@ -170,7 +171,7 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		this._startBarrier.wait().then((_) => {
 			this._remoteTerminalChannel.acknowledgeDataEvent(
 				this.id,
-				charCount,
+				charCount
 			);
 		});
 	}
@@ -188,14 +189,14 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 	}
 
 	async refreshProperty<T extends ProcessPropertyType>(
-		type: T,
+		type: T
 	): Promise<IProcessPropertyMap[T]> {
 		return this._remoteTerminalChannel.refreshProperty(this.id, type);
 	}
 
 	async updateProperty<T extends ProcessPropertyType>(
 		type: T,
-		value: IProcessPropertyMap[T],
+		value: IProcessPropertyMap[T]
 	): Promise<void> {
 		return this._remoteTerminalChannel.updateProperty(this.id, type, value);
 	}

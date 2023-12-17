@@ -89,7 +89,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 	private paneListeners = new Map<string, IDisposable>();
 
 	private readonly stopActionViewItemDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 
 	constructor(
@@ -104,27 +104,61 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IExtensionService extensionService: IExtensionService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IViewDescriptorService viewDescriptorService: IViewDescriptorService
 	) {
-		super(VIEWLET_ID, { mergeViewWithContainerWhenSingleView: true }, instantiationService, configurationService, layoutService, contextMenuService, telemetryService, extensionService, themeService, storageService, contextService, viewDescriptorService);
+		super(
+			VIEWLET_ID,
+			{ mergeViewWithContainerWhenSingleView: true },
+			instantiationService,
+			configurationService,
+			layoutService,
+			contextMenuService,
+			telemetryService,
+			extensionService,
+			themeService,
+			storageService,
+			contextService,
+			viewDescriptorService
+		);
 
 		// When there are potential updates to the docked debug toolbar we need to update it
-		this._register(this.debugService.onDidChangeState(state => this.onDebugServiceStateChange(state)));
+		this._register(
+			this.debugService.onDidChangeState((state) =>
+				this.onDebugServiceStateChange(state)
+			)
+		);
 
-		this._register(this.contextKeyService.onDidChangeContext(e => {
-			if (e.affectsSome(new Set([CONTEXT_DEBUG_UX_KEY, 'inDebugMode']))) {
-				this.updateTitleArea();
-			}
-		}));
+		this._register(
+			this.contextKeyService.onDidChangeContext((e) => {
+				if (
+					e.affectsSome(
+						new Set([CONTEXT_DEBUG_UX_KEY, "inDebugMode"])
+					)
+				) {
+					this.updateTitleArea();
+				}
+			})
+		);
 
-		this._register(this.contextService.onDidChangeWorkbenchState(() => this.updateTitleArea()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('debug.toolBarLocation') || e.affectsConfiguration('debug.hideLauncherWhileDebugging')) {
-				this.updateTitleArea();
-			}
-		}));
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(() =>
+				this.updateTitleArea()
+			)
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("debug.toolBarLocation") ||
+					e.affectsConfiguration("debug.hideLauncherWhileDebugging")
+				) {
+					this.updateTitleArea();
+				}
+			})
+		);
 	}
 
 	override create(parent: HTMLElement): void {
@@ -148,7 +182,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 				this.instantiationService.createInstance(
 					StartDebugActionViewItem,
 					null,
-					action,
+					action
 				);
 			return this.startDebugActionViewItem;
 		}
@@ -158,7 +192,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 				undefined,
 				this.debugService,
 				this.contextViewService,
-				this.configurationService,
+				this.configurationService
 			);
 		}
 
@@ -168,8 +202,8 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 				createDisconnectMenuItemAction(
 					action as MenuItemAction,
 					this.stopActionViewItemDisposables,
-					accessor,
-				),
+					accessor
+				)
 			);
 			if (item) {
 				return item;
@@ -197,15 +231,15 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 				{ location: VIEWLET_ID },
 				(_progress) => {
 					return new Promise<void>(
-						(resolve) => (this.progressResolve = resolve),
+						(resolve) => (this.progressResolve = resolve)
 					);
-				},
+				}
 			);
 		}
 	}
 
 	override addPanes(
-		panes: { pane: ViewPane; size: number; index?: number }[],
+		panes: { pane: ViewPane; size: number; index?: number }[]
 	): void {
 		super.addPanes(panes);
 
@@ -217,7 +251,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 			} else {
 				this.paneListeners.set(
 					pane.id,
-					pane.onDidChange(() => this.updateBreakpointsMaxSize()),
+					pane.onDidChange(() => this.updateBreakpointsMaxSize())
 				);
 			}
 		}
@@ -235,7 +269,7 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 		if (this.breakpointView) {
 			// We need to update the breakpoints view since all other views are collapsed #25384
 			const allOtherCollapsed = this.panes.every(
-				(view) => !view.isExpanded() || view === this.breakpointView,
+				(view) => !view.isExpanded() || view === this.breakpointView
 			);
 			this.breakpointView.maximumBodySize = allOtherCollapsed
 				? Number.POSITIVE_INFINITY
@@ -251,18 +285,18 @@ MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
 		WorkbenchStateContext.notEqualsTo("empty"),
 		ContextKeyExpr.or(
 			CONTEXT_DEBUG_STATE.isEqualTo("inactive"),
-			ContextKeyExpr.notEquals("config.debug.toolBarLocation", "docked"),
+			ContextKeyExpr.notEquals("config.debug.toolBarLocation", "docked")
 		),
 		ContextKeyExpr.or(
 			ContextKeyExpr.not("config.debug.hideLauncherWhileDebugging"),
-			ContextKeyExpr.not("inDebugMode"),
-		),
+			ContextKeyExpr.not("inDebugMode")
+		)
 	),
 	order: 10,
 	group: "navigation",
 	command: {
 		precondition: CONTEXT_DEBUG_STATE.notEqualsTo(
-			getStateLabel(State.Initializing),
+			getStateLabel(State.Initializing)
 		),
 		id: DEBUG_START_COMMAND_ID,
 		title: DEBUG_START_LABEL,
@@ -282,7 +316,7 @@ registerAction2(
 							key: "miOpenConfigurations",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"Open &&Configurations",
+						"Open &&Configurations"
 					),
 				},
 				f1: true,
@@ -301,9 +335,9 @@ registerAction2(
 								CONTEXT_DEBUG_STATE.isEqualTo("inactive"),
 								ContextKeyExpr.notEquals(
 									"config.debug.toolBarLocation",
-									"docked",
-								),
-							),
+									"docked"
+								)
+							)
 						),
 					},
 					{
@@ -315,8 +349,8 @@ registerAction2(
 							CONTEXT_DEBUG_STATE.notEqualsTo("inactive"),
 							ContextKeyExpr.equals(
 								"config.debug.toolBarLocation",
-								"docked",
-							),
+								"docked"
+							)
 						),
 					},
 					{
@@ -359,7 +393,7 @@ registerAction2(
 									"User picks a workspace folder or a workspace configuration file here. Workspace configuration files can contain settings and thus a launch.json configuration can be written into one.",
 								],
 							},
-							"Select a workspace folder to create a launch.json file in or add it to the workspace config file",
+							"Select a workspace folder to create a launch.json file in or add it to the workspace config file"
 						),
 					});
 					if (picked) {
@@ -372,7 +406,7 @@ registerAction2(
 				await launch.openConfigFile({ preserveFocus: false });
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -388,7 +422,7 @@ registerAction2(
 						group: "3_toggleRepl",
 						order: 30,
 						when: ContextKeyExpr.and(
-							ContextKeyExpr.equals("viewContainer", VIEWLET_ID),
+							ContextKeyExpr.equals("viewContainer", VIEWLET_ID)
 						),
 					},
 				],
@@ -403,7 +437,7 @@ registerAction2(
 				await viewsService.openView(REPL_VIEW_ID);
 			}
 		}
-	},
+	}
 );
 
 MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
@@ -412,15 +446,15 @@ MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
 		CONTEXT_DEBUG_STATE.notEqualsTo("inactive"),
 		ContextKeyExpr.or(
 			ContextKeyExpr.equals("config.debug.toolBarLocation", "docked"),
-			ContextKeyExpr.has("config.debug.hideLauncherWhileDebugging"),
-		),
+			ContextKeyExpr.has("config.debug.hideLauncherWhileDebugging")
+		)
 	),
 	order: 10,
 	command: {
 		id: SELECT_AND_START_ID,
 		title: nls.localize(
 			"startAdditionalSession",
-			"Start Additional Session",
+			"Start Additional Session"
 		),
 	},
 });

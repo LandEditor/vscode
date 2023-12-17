@@ -76,7 +76,7 @@ export class DynamicEditorConfigurations
 
 	private readonly configurationRegistry =
 		Registry.as<IConfigurationRegistry>(
-			ConfigurationExtensions.Configuration,
+			ConfigurationExtensions.Configuration
 		);
 
 	private autoLockConfigurationNode: IConfigurationNode | undefined;
@@ -89,9 +89,11 @@ export class DynamicEditorConfigurations
 		| undefined;
 
 	constructor(
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
 		@IExtensionService extensionService: IExtensionService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService
 	) {
 		super();
 
@@ -111,7 +113,7 @@ export class DynamicEditorConfigurations
 		// Registered editors (debounced to reduce perf overhead)
 		Event.debounce(
 			this.editorResolverService.onDidChangeEditorRegistrations,
-			(_, e) => e,
+			(_, e) => e
 		)(() => this.updateDynamicEditorConfigurations());
 	}
 
@@ -121,7 +123,7 @@ export class DynamicEditorConfigurations
 			...DynamicEditorConfigurations.AUTO_LOCK_EXTRA_EDITORS,
 		].filter(
 			(e) =>
-				!DynamicEditorConfigurations.AUTO_LOCK_REMOVE_EDITORS.has(e.id),
+				!DynamicEditorConfigurations.AUTO_LOCK_REMOVE_EDITORS.has(e.id)
 		);
 		const binaryEditorCandidates = this.editorResolverService
 			.getEditors()
@@ -135,7 +137,7 @@ export class DynamicEditorConfigurations
 				type: "boolean",
 				default:
 					DynamicEditorConfigurations.AUTO_LOCK_DEFAULT_ENABLED.has(
-						editor.id,
+						editor.id
 					),
 				description: editor.label,
 			};
@@ -146,7 +148,7 @@ export class DynamicEditorConfigurations
 		for (const editor of lockableEditors) {
 			defaultAutoLockGroupConfiguration[editor.id] =
 				DynamicEditorConfigurations.AUTO_LOCK_DEFAULT_ENABLED.has(
-					editor.id,
+					editor.id
 				);
 		}
 
@@ -159,7 +161,7 @@ export class DynamicEditorConfigurations
 					type: "object",
 					description: localize(
 						"workbench.editor.autoLockGroups",
-						"If an editor matching one of the listed types is opened as the first in an editor group and more than one group is open, the group is automatically locked. Locked groups will only be used for opening editors when explicitly chosen by a user gesture (for example drag and drop), but not by default. Consequently, the active editor in a locked group is less likely to be replaced accidentally with a different editor.",
+						"If an editor matching one of the listed types is opened as the first in an editor group and more than one group is open, the group is automatically locked. Locked groups will only be used for opening editors when explicitly chosen by a user gesture (for example drag and drop), but not by default. Consequently, the active editor in a locked group is less likely to be replaced accidentally with a different editor."
 					),
 					properties: autoLockGroupConfiguration,
 					default: defaultAutoLockGroupConfiguration,
@@ -181,7 +183,7 @@ export class DynamicEditorConfigurations
 					enum: [...binaryEditorCandidates, ""],
 					description: localize(
 						"workbench.editor.defaultBinaryEditor",
-						"The default editor for files detected as binary. If undefined, the user will be presented with a picker.",
+						"The default editor for files detected as binary. If undefined, the user will be presented with a picker."
 					),
 				},
 			},
@@ -197,7 +199,7 @@ export class DynamicEditorConfigurations
 					type: "object",
 					markdownDescription: localize(
 						"editor.editorAssociations",
-						'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.',
+						'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.'
 					),
 					patternProperties: {
 						".*": {
@@ -219,13 +221,13 @@ export class DynamicEditorConfigurations
 					type: "number",
 					default:
 						getLargeFileConfirmationLimit(
-							this.environmentService.remoteAuthority,
+							this.environmentService.remoteAuthority
 						) / ByteSize.MB,
 					minimum: 1,
 					scope: ConfigurationScope.RESOURCE,
 					markdownDescription: localize(
 						"editorLargeFileSizeConfirmation",
-						"Controls the minimum size of a file in MB before asking for confirmation when opening in the editor. Note that this setting may not apply to all editor types and environments.",
+						"Controls the minimum size of a file in MB before asking for confirmation when opening in the editor. Note that this setting may not apply to all editor types and environments."
 					),
 				},
 			},

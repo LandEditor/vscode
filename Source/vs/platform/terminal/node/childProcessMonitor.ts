@@ -35,7 +35,7 @@ export class ChildProcessMonitor extends Disposable {
 			this._hasChildProcesses = value;
 			this._logService.debug(
 				"ChildProcessMonitor: Has child processes changed",
-				value,
+				value
 			);
 			this._onDidChangeHasChildProcesses.fire(value);
 		}
@@ -48,7 +48,7 @@ export class ChildProcessMonitor extends Disposable {
 	}
 
 	private readonly _onDidChangeHasChildProcesses = this._register(
-		new Emitter<boolean>(),
+		new Emitter<boolean>()
 	);
 	/**
 	 * An event that fires when whether the process has child processes changes.
@@ -88,7 +88,7 @@ export class ChildProcessMonitor extends Disposable {
 		} catch (e) {
 			this._logService.debug(
 				"ChildProcessMonitor: Fetching process tree failed",
-				e,
+				e
 			);
 		}
 	}

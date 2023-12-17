@@ -49,7 +49,7 @@ import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
 registerSingleton(
 	ITerminalLinkProviderService,
 	TerminalLinkProviderService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 class TerminalLinkContribution
@@ -60,7 +60,7 @@ class TerminalLinkContribution
 
 	static get(instance: ITerminalInstance): TerminalLinkContribution | null {
 		return instance.getContribution<TerminalLinkContribution>(
-			TerminalLinkContribution.ID,
+			TerminalLinkContribution.ID
 		);
 	}
 
@@ -69,14 +69,21 @@ class TerminalLinkContribution
 	private _linkResolver: TerminalLinkResolver;
 
 	constructor(
-		private readonly _instance: ITerminalInstance | IDetachedTerminalInstance,
-		private readonly _processManager: ITerminalProcessManager | ITerminalProcessInfo,
+		private readonly _instance:
+			| ITerminalInstance
+			| IDetachedTerminalInstance,
+		private readonly _processManager:
+			| ITerminalProcessManager
+			| ITerminalProcessInfo,
 		private readonly _widgetManager: TerminalWidgetManager,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITerminalLinkProviderService private readonly _terminalLinkProviderService: ITerminalLinkProviderService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITerminalLinkProviderService
+		private readonly _terminalLinkProviderService: ITerminalLinkProviderService
 	) {
 		super();
-		this._linkResolver = this._instantiationService.createInstance(TerminalLinkResolver);
+		this._linkResolver =
+			this._instantiationService.createInstance(TerminalLinkResolver);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
@@ -85,7 +92,7 @@ class TerminalLinkContribution
 			xterm.raw,
 			this._processManager,
 			this._instance.capabilities,
-			this._linkResolver,
+			this._linkResolver
 		);
 		if (isTerminalProcessManager(this._processManager)) {
 			this._processManager.onProcessReady(() => {
@@ -101,10 +108,7 @@ class TerminalLinkContribution
 			for (const linkProvider of this._terminalLinkProviderService
 				.linkProviders) {
 				this._linkManager.registerExternalLinkProvider(
-					linkProvider.provideLinks.bind(
-						linkProvider,
-						this._instance,
-					),
+					linkProvider.provideLinks.bind(linkProvider, this._instance)
 				);
 			}
 			this.add(
@@ -112,10 +116,10 @@ class TerminalLinkContribution
 					linkManager.registerExternalLinkProvider(
 						e.provideLinks.bind(
 							e,
-							this._instance as ITerminalInstance,
-						),
+							this._instance as ITerminalInstance
+						)
 					);
-				}),
+				})
 			);
 		}
 		// TODO: Currently only a single link provider is supported; the one registered by the ext host
@@ -123,16 +127,14 @@ class TerminalLinkContribution
 			this._terminalLinkProviderService.onDidRemoveLinkProvider((e) => {
 				linkManager.dispose();
 				this.xtermReady(xterm);
-			}),
+			})
 		);
 	}
 
 	async showLinkQuickpick(extended?: boolean): Promise<void> {
 		if (!this._terminalLinkQuickpick) {
 			this._terminalLinkQuickpick = this.add(
-				this._instantiationService.createInstance(
-					TerminalLinkQuickpick,
-				),
+				this._instantiationService.createInstance(TerminalLinkQuickpick)
 			);
 			this._terminalLinkQuickpick.onDidRequestMoreLinks(() => {
 				this.showLinkQuickpick(true);
@@ -148,7 +150,7 @@ class TerminalLinkContribution
 	}> {
 		if (!this._linkManager) {
 			throw new Error(
-				"terminal links are not ready, cannot generate link quick pick",
+				"terminal links are not ready, cannot generate link quick pick"
 			);
 		}
 		return this._linkManager.getLinks();
@@ -165,7 +167,7 @@ class TerminalLinkContribution
 registerTerminalContribution(
 	TerminalLinkContribution.ID,
 	TerminalLinkContribution,
-	true,
+	true
 );
 
 const category = terminalStrings.actionCategory;
@@ -175,7 +177,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.openDetectedLink",
-			"Open Detected Link...",
+			"Open Detected Link..."
 		),
 		original: "Open Detected Link...",
 	},
@@ -195,8 +197,8 @@ registerActiveInstanceAction({
 				accessibleViewIsShown,
 				ContextKeyExpr.equals(
 					accessibleViewCurrentProviderId.key,
-					AccessibleViewProviderId.Terminal,
-				),
+					AccessibleViewProviderId.Terminal
+				)
 			),
 		},
 	],
@@ -208,7 +210,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.openLastUrlLink",
-			"Open Last URL Link",
+			"Open Last URL Link"
 		),
 		original: "Open Last URL Link",
 	},
@@ -223,7 +225,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.openLastLocalFileLink",
-			"Open Last Local File Link",
+			"Open Last Local File Link"
 		),
 		original: "Open Last Local File Link",
 	},
@@ -232,6 +234,6 @@ registerActiveInstanceAction({
 	precondition: TerminalContextKeys.terminalHasBeenCreated,
 	run: (activeInstance) =>
 		TerminalLinkContribution.get(activeInstance)?.openRecentLink(
-			"localFile",
+			"localFile"
 		),
 });

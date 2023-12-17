@@ -19,7 +19,7 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 				const session = await vscode.authentication.getSession(
 					"github",
 					["gist", "user:email"],
-					{ createIfNone: true },
+					{ createIfNone: true }
 				);
 				const token = session.accessToken;
 
@@ -37,7 +37,7 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 
 	async saveProfile(
 		name: string,
-		content: string,
+		content: string
 	): Promise<{ readonly id: string; readonly link: vscode.Uri } | null> {
 		const octokit = await this.getOctokit();
 		const result = await octokit.gists.create({
@@ -91,5 +91,5 @@ class GitHubGistProfileContentHandler implements vscode.ProfileContentHandler {
 
 vscode.window.registerProfileContentHandler(
 	"github",
-	new GitHubGistProfileContentHandler(),
+	new GitHubGistProfileContentHandler()
 );

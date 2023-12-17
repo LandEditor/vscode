@@ -77,7 +77,7 @@ export const SUGGESTIONS_FONT_WEIGHT = [
 
 export const ITerminalProfileResolverService =
 	createDecorator<ITerminalProfileResolverService>(
-		"terminalProfileResolverService",
+		"terminalProfileResolverService"
 	);
 export interface ITerminalProfileResolverService {
 	readonly _serviceBrand: undefined;
@@ -89,22 +89,22 @@ export interface ITerminalProfileResolverService {
 	 */
 	resolveIcon(
 		shellLaunchConfig: IShellLaunchConfig,
-		os: OperatingSystem,
+		os: OperatingSystem
 	): void;
 	resolveShellLaunchConfig(
 		shellLaunchConfig: IShellLaunchConfig,
-		options: IShellLaunchConfigResolveOptions,
+		options: IShellLaunchConfigResolveOptions
 	): Promise<void>;
 	getDefaultProfile(
-		options: IShellLaunchConfigResolveOptions,
+		options: IShellLaunchConfigResolveOptions
 	): Promise<ITerminalProfile>;
 	getDefaultShell(options: IShellLaunchConfigResolveOptions): Promise<string>;
 	getDefaultShellArgs(
-		options: IShellLaunchConfigResolveOptions,
+		options: IShellLaunchConfigResolveOptions
 	): Promise<string | string[]>;
 	getDefaultIcon(): TerminalIcon & ThemeIcon;
 	getEnvironment(
-		remoteAuthority: string | undefined,
+		remoteAuthority: string | undefined
 	): Promise<IProcessEnvironment>;
 }
 
@@ -122,7 +122,7 @@ export interface IRegisterContributedProfileArgs {
 }
 
 export const ITerminalProfileService = createDecorator<ITerminalProfileService>(
-	"terminalProfileService",
+	"terminalProfileService"
 );
 export interface ITerminalProfileService {
 	readonly _serviceBrand: undefined;
@@ -135,25 +135,25 @@ export interface ITerminalProfileService {
 	getDefaultProfile(os?: OperatingSystem): ITerminalProfile | undefined;
 	onDidChangeAvailableProfiles: Event<ITerminalProfile[]>;
 	getContributedDefaultProfile(
-		shellLaunchConfig: IShellLaunchConfig,
+		shellLaunchConfig: IShellLaunchConfig
 	): Promise<IExtensionTerminalProfile | undefined>;
 	registerContributedProfile(
-		args: IRegisterContributedProfileArgs,
+		args: IRegisterContributedProfileArgs
 	): Promise<void>;
 	getContributedProfileProvider(
 		extensionIdentifier: string,
-		id: string,
+		id: string
 	): ITerminalProfileProvider | undefined;
 	registerTerminalProfileProvider(
 		extensionIdentifier: string,
 		id: string,
-		profileProvider: ITerminalProfileProvider,
+		profileProvider: ITerminalProfileProvider
 	): IDisposable;
 }
 
 export interface ITerminalProfileProvider {
 	createContributedTerminalProfile(
-		options: ICreateContributedTerminalProfileOptions,
+		options: ICreateContributedTerminalProfileOptions
 	): Promise<void>;
 }
 
@@ -366,7 +366,7 @@ export interface ITerminalProcessInfo {
 }
 
 export const isTerminalProcessManager = (
-	t: ITerminalProcessInfo | ITerminalProcessManager,
+	t: ITerminalProcessInfo | ITerminalProcessManager
 ): t is ITerminalProcessManager =>
 	typeof (t as ITerminalProcessManager).write === "function";
 
@@ -390,13 +390,13 @@ export interface ITerminalProcessManager
 	createProcess(
 		shellLaunchConfig: IShellLaunchConfig,
 		cols: number,
-		rows: number,
+		rows: number
 	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 	relaunch(
 		shellLaunchConfig: IShellLaunchConfig,
 		cols: number,
 		rows: number,
-		reset: boolean,
+		reset: boolean
 	): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined>;
 	write(data: string): Promise<void>;
 	setDimensions(cols: number, rows: number): Promise<void>;
@@ -408,11 +408,11 @@ export interface ITerminalProcessManager
 	processBinary(data: string): void;
 
 	refreshProperty<T extends ProcessPropertyType>(
-		type: T,
+		type: T
 	): Promise<IProcessPropertyMap[T]>;
 	updateProperty<T extends ProcessPropertyType>(
 		property: T,
-		value: IProcessPropertyMap[T],
+		value: IProcessPropertyMap[T]
 	): Promise<void>;
 	getBackendOS(): Promise<OperatingSystem>;
 	freePortKillProcess(port: string): Promise<void>;
@@ -445,7 +445,7 @@ export interface ITerminalProcessExtHostProxy extends IDisposable {
 	emitReady(
 		pid: number,
 		cwd: string,
-		windowsPty: IProcessReadyWindowsPty | undefined,
+		windowsPty: IProcessReadyWindowsPty | undefined
 	): void;
 	emitExit(exitCode: number | undefined): void;
 
@@ -774,7 +774,7 @@ export const terminalContributionsDescriptor: IExtensionPointDescriptor<ITermina
 		defaultExtensionKind: ["workspace"],
 		activationEventsGenerator: (
 			contribs: ITerminalContributions[],
-			result: { push(item: string): void },
+			result: { push(item: string): void }
 		) => {
 			for (const contrib of contribs) {
 				for (const profileContrib of contrib.profiles ?? []) {
@@ -785,7 +785,7 @@ export const terminalContributionsDescriptor: IExtensionPointDescriptor<ITermina
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.terminal",
-				"Contributes terminal functionality.",
+				"Contributes terminal functionality."
 			),
 			type: "object",
 			properties: {
@@ -793,7 +793,7 @@ export const terminalContributionsDescriptor: IExtensionPointDescriptor<ITermina
 					type: "array",
 					description: nls.localize(
 						"vscode.extension.contributes.terminal.profiles",
-						"Defines additional terminal profiles that the user can create.",
+						"Defines additional terminal profiles that the user can create."
 					),
 					items: {
 						type: "object",
@@ -810,21 +810,21 @@ export const terminalContributionsDescriptor: IExtensionPointDescriptor<ITermina
 							id: {
 								description: nls.localize(
 									"vscode.extension.contributes.terminal.profiles.id",
-									"The ID of the terminal profile provider.",
+									"The ID of the terminal profile provider."
 								),
 								type: "string",
 							},
 							title: {
 								description: nls.localize(
 									"vscode.extension.contributes.terminal.profiles.title",
-									"Title for this terminal profile.",
+									"Title for this terminal profile."
 								),
 								type: "string",
 							},
 							icon: {
 								description: nls.localize(
 									"vscode.extension.contributes.terminal.types.icon",
-									"A codicon, URI, or light and dark URIs to associate with this terminal type.",
+									"A codicon, URI, or light and dark URIs to associate with this terminal type."
 								),
 								anyOf: [
 									{
@@ -836,14 +836,14 @@ export const terminalContributionsDescriptor: IExtensionPointDescriptor<ITermina
 											light: {
 												description: nls.localize(
 													"vscode.extension.contributes.terminal.types.icon.light",
-													"Icon path when a light theme is used",
+													"Icon path when a light theme is used"
 												),
 												type: "string",
 											},
 											dark: {
 												description: nls.localize(
 													"vscode.extension.contributes.terminal.types.icon.dark",
-													"Icon path when a dark theme is used",
+													"Icon path when a dark theme is used"
 												),
 												type: "string",
 											},

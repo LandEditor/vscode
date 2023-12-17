@@ -18,11 +18,11 @@ export class NativeWorkspacesService implements IWorkspacesService {
 
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@INativeHostService nativeHostService: INativeHostService,
+		@INativeHostService nativeHostService: INativeHostService
 	) {
 		return ProxyChannel.toService<IWorkspacesService>(
 			mainProcessService.getChannel("workspaces"),
-			{ context: nativeHostService.windowId },
+			{ context: nativeHostService.windowId }
 		);
 	}
 }
@@ -30,5 +30,5 @@ export class NativeWorkspacesService implements IWorkspacesService {
 registerSingleton(
 	IWorkspacesService,
 	NativeWorkspacesService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -41,7 +41,7 @@ const workbenchPromise = new DeferredPromise<IWorkbench>();
  */
 export function create(
 	domElement: HTMLElement,
-	options: IWorkbenchConstructionOptions,
+	options: IWorkbenchConstructionOptions
 ): IDisposable {
 	// Mark start of workbench
 	mark("code/didLoadWorkbenchMain");
@@ -50,7 +50,7 @@ export function create(
 	// do not support this and require a full context switch to clean-up.
 	if (created) {
 		throw new Error(
-			"Unable to create the VSCode workbench more than once.",
+			"Unable to create the VSCode workbench more than once."
 		);
 	} else {
 		created = true;
@@ -65,13 +65,13 @@ export function create(
 					// we currently only pass on the arguments but not the accessor
 					// to the command to reduce our exposure of internal API.
 					return command.handler(...args);
-				},
+				}
 			);
 
 			// Commands with labels appear in the command palette
 			if (command.label) {
 				for (const menu of asArray(
-					command.menu ?? Menu.CommandPalette,
+					command.menu ?? Menu.CommandPalette
 				)) {
 					MenuRegistry.appendMenuItem(asMenuId(menu), {
 						command: { id: command.id, title: command.label },
@@ -93,7 +93,7 @@ export function create(
 			instantiatedWorkbench.shutdown();
 		} else {
 			workbenchPromise.p.then((instantiatedWorkbench) =>
-				instantiatedWorkbench.shutdown(),
+				instantiatedWorkbench.shutdown()
 			);
 		}
 	});
@@ -128,7 +128,7 @@ export namespace logger {
 	 */
 	export function log(level: LogLevel, message: string) {
 		workbenchPromise.p.then((workbench) =>
-			workbench.logger.log(level, message),
+			workbench.logger.log(level, message)
 		);
 	}
 }
@@ -175,7 +175,7 @@ export namespace window {
 			| IProgressNotificationOptions
 			| IProgressWindowOptions
 			| IProgressCompositeOptions,
-		task: (progress: IProgress<IProgressStep>) => Promise<R>,
+		task: (progress: IProgress<IProgressStep>) => Promise<R>
 	): Promise<R> {
 		const workbench = await workbenchPromise.p;
 
@@ -183,7 +183,7 @@ export namespace window {
 	}
 
 	export async function createTerminal(
-		options: IEmbedderTerminalOptions,
+		options: IEmbedderTerminalOptions
 	): Promise<void> {
 		const workbench = await workbenchPromise.p;
 		workbench.window.createTerminal(options);
@@ -195,7 +195,7 @@ export namespace workspace {
 	 * {@linkcode IWorkbench.workspace IWorkbench.workspace.openTunnel}
 	 */
 	export async function openTunnel(
-		tunnelOptions: ITunnelOptions,
+		tunnelOptions: ITunnelOptions
 	): Promise<ITunnel> {
 		const workbench = await workbenchPromise.p;
 

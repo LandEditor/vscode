@@ -28,11 +28,11 @@ registerAction2(
 				.createInstance(
 					OpenLogsFolderAction,
 					OpenLogsFolderAction.ID,
-					OpenLogsFolderAction.TITLE.value,
+					OpenLogsFolderAction.TITLE.value
 				)
 				.run();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -51,9 +51,9 @@ registerAction2(
 				.createInstance(
 					OpenExtensionLogsFolderAction,
 					OpenExtensionLogsFolderAction.ID,
-					OpenExtensionLogsFolderAction.TITLE.value,
+					OpenExtensionLogsFolderAction.TITLE.value
 				)
 				.run();
 		}
-	},
+	}
 );

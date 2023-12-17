@@ -33,7 +33,7 @@ export namespace WebviewResourceResponse {
 			public readonly stream: VSBufferReadableStream,
 			public readonly etag: string | undefined,
 			public readonly mtime: number | undefined,
-			public readonly mimeType: string,
+			public readonly mimeType: string
 		) {}
 	}
 
@@ -45,7 +45,7 @@ export namespace WebviewResourceResponse {
 
 		constructor(
 			public readonly mimeType: string,
-			public readonly mtime: number | undefined,
+			public readonly mtime: number | undefined
 		) {}
 	}
 
@@ -64,14 +64,14 @@ export async function loadLocalResource(
 	},
 	fileService: IFileService,
 	logService: ILogService,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<WebviewResourceResponse.StreamResponse> {
 	logService.debug(`loadLocalResource - begin. requestUri=${requestUri}`);
 
 	const resourceToLoad = getResourceToLoad(requestUri, options.roots);
 
 	logService.debug(
-		`loadLocalResource - found resource to load. requestUri=${requestUri}, resourceToLoad=${resourceToLoad}`,
+		`loadLocalResource - found resource to load. requestUri=${requestUri}, resourceToLoad=${resourceToLoad}`
 	);
 
 	if (!resourceToLoad) {
@@ -84,13 +84,13 @@ export async function loadLocalResource(
 		const result = await fileService.readFileStream(
 			resourceToLoad,
 			{ etag: options.ifNoneMatch },
-			token,
+			token
 		);
 		return new WebviewResourceResponse.StreamSuccess(
 			result.value,
 			result.etag,
 			result.mtime,
-			mime,
+			mime
 		);
 	} catch (err) {
 		if (err instanceof FileOperationError) {
@@ -100,14 +100,14 @@ export async function loadLocalResource(
 			if (result === FileOperationResult.FILE_NOT_MODIFIED_SINCE) {
 				return new WebviewResourceResponse.NotModified(
 					mime,
-					(err.options as IWriteFileOptions | undefined)?.mtime,
+					(err.options as IWriteFileOptions | undefined)?.mtime
 				);
 			}
 		}
 
 		// Otherwise the error is unexpected.
 		logService.debug(
-			`loadLocalResource - Error using fileReader. requestUri=${requestUri}`,
+			`loadLocalResource - Error using fileReader. requestUri=${requestUri}`
 		);
 		console.log(err);
 
@@ -117,7 +117,7 @@ export async function loadLocalResource(
 
 function getResourceToLoad(
 	requestUri: URI,
-	roots: ReadonlyArray<URI>,
+	roots: ReadonlyArray<URI>
 ): URI | undefined {
 	for (const root of roots) {
 		if (containsResource(root, requestUri)) {
@@ -135,7 +135,7 @@ function containsResource(root: URI, resource: URI): boolean {
 
 	let resourceFsPath = normalize(resource.fsPath);
 	let rootPath = normalize(
-		root.fsPath + (root.fsPath.endsWith(sep) ? "" : sep),
+		root.fsPath + (root.fsPath.endsWith(sep) ? "" : sep)
 	);
 
 	if (isUNC(root.fsPath) && isUNC(resource.fsPath)) {

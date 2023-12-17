@@ -78,7 +78,7 @@ export function reportSample(
 	data: SampleData,
 	telemetryService: ITelemetryService,
 	logService: ILogService,
-	sendAsErrorTelemtry: boolean,
+	sendAsErrorTelemtry: boolean
 ): void {
 	const { sample, perfBaseline, source } = data;
 

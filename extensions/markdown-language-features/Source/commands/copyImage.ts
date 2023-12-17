@@ -11,7 +11,7 @@ export class CopyImageCommand implements Command {
 	public readonly id = "_markdown.copyImage";
 
 	public constructor(
-		private readonly _webviewManager: MarkdownPreviewManager,
+		private readonly _webviewManager: MarkdownPreviewManager
 	) {}
 
 	public execute(args: { id: string; resource: string }) {

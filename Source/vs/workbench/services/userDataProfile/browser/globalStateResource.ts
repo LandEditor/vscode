@@ -39,8 +39,9 @@ interface IGlobalState {
 export class GlobalStateResourceInitializer
 	implements IProfileResourceInitializer
 {
-	constructor(@IStorageService private readonly storageService: IStorageService) {
-	}
+	constructor(
+		@IStorageService private readonly storageService: IStorageService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const globalState: IGlobalState = JSON.parse(content);
@@ -63,10 +64,10 @@ export class GlobalStateResourceInitializer
 export class GlobalStateResource implements IProfileResource {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@IUserDataProfileStorageService private readonly userDataProfileStorageService: IUserDataProfileStorageService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@IUserDataProfileStorageService
+		private readonly userDataProfileStorageService: IUserDataProfileStorageService,
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const globalState = await this.getGlobalState(profile);
@@ -95,7 +96,7 @@ export class GlobalStateResource implements IProfileResource {
 
 	private async writeGlobalState(
 		globalState: IGlobalState,
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<void> {
 		const storageKeys = Object.keys(globalState.storage);
 		if (storageKeys.length) {
@@ -104,21 +105,21 @@ export class GlobalStateResource implements IProfileResource {
 				// Do not include application scope user target keys because they also include default profile user target keys
 				...this.storageService.keys(
 					StorageScope.APPLICATION,
-					StorageTarget.MACHINE,
+					StorageTarget.MACHINE
 				),
 				...this.storageService.keys(
 					StorageScope.WORKSPACE,
-					StorageTarget.USER,
+					StorageTarget.USER
 				),
 				...this.storageService.keys(
 					StorageScope.WORKSPACE,
-					StorageTarget.MACHINE,
+					StorageTarget.MACHINE
 				),
 			];
 			for (const key of storageKeys) {
 				if (nonProfileKeys.includes(key)) {
 					this.logService.info(
-						`Importing Profile (${profile.name}): Ignoring global state key '${key}' because it is not a profile key.`,
+						`Importing Profile (${profile.name}): Ignoring global state key '${key}' because it is not a profile key.`
 					);
 				} else {
 					updatedStorage.set(key, globalState.storage[key]);
@@ -127,7 +128,7 @@ export class GlobalStateResource implements IProfileResource {
 			await this.userDataProfileStorageService.updateStorageData(
 				profile,
 				updatedStorage,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 		}
 	}
@@ -144,7 +145,7 @@ export abstract class GlobalStateResourceTreeItem
 
 	constructor(
 		private readonly resource: URI,
-		private readonly uriIdentityService: IUriIdentityService,
+		private readonly uriIdentityService: IUriIdentityService
 	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
@@ -155,7 +156,7 @@ export abstract class GlobalStateResourceTreeItem
 				collapsibleState: TreeItemCollapsibleState.None,
 				accessibilityInformation: {
 					label: this.uriIdentityService.extUri.basename(
-						this.resource,
+						this.resource
 					),
 				},
 				parent: this,
@@ -177,7 +178,8 @@ export class GlobalStateResourceExportTreeItem extends GlobalStateResourceTreeIt
 		private readonly profile: IUserDataProfile,
 		resource: URI,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super(resource, uriIdentityService);
 	}
@@ -207,7 +209,7 @@ export class GlobalStateResourceImportTreeItem extends GlobalStateResourceTreeIt
 	constructor(
 		private readonly content: string,
 		resource: URI,
-		@IUriIdentityService uriIdentityService: IUriIdentityService,
+		@IUriIdentityService uriIdentityService: IUriIdentityService
 	) {
 		super(resource, uriIdentityService);
 	}

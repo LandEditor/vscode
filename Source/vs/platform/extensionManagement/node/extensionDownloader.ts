@@ -47,15 +47,20 @@ export class ExtensionsDownloader extends Disposable {
 	private readonly cleanUpPromise: Promise<void>;
 
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionSignatureVerificationService private readonly extensionSignatureVerificationService: IExtensionSignatureVerificationService,
-		@ILogService private readonly logService: ILogService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionSignatureVerificationService
+		private readonly extensionSignatureVerificationService: IExtensionSignatureVerificationService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
-		this.extensionsDownloadDir = environmentService.extensionsDownloadLocation;
+		this.extensionsDownloadDir =
+			environmentService.extensionsDownloadLocation;
 		this.cache = 20; // Cache 20 downloaded VSIX files
 		this.cleanUpPromise = this.cleanUp();
 	}
@@ -63,7 +68,7 @@ export class ExtensionsDownloader extends Disposable {
 	async download(
 		extension: IGalleryExtension,
 		operation: InstallOperation,
-		verifySignature: boolean,
+		verifySignature: boolean
 	): Promise<{
 		readonly location: URI;
 		readonly verificationStatus: ExtensionVerificationStatus;
@@ -72,20 +77,20 @@ export class ExtensionsDownloader extends Disposable {
 
 		const location = joinPath(
 			this.extensionsDownloadDir,
-			this.getName(extension),
+			this.getName(extension)
 		);
 		try {
 			await this.downloadFile(extension, location, (location) =>
 				this.extensionGalleryService.download(
 					extension,
 					location,
-					operation,
-				),
+					operation
+				)
 			);
 		} catch (error) {
 			throw new ExtensionManagementError(
 				error.message,
-				ExtensionManagementErrorCode.Download,
+				ExtensionManagementErrorCode.Download
 			);
 		}
 
@@ -99,14 +104,14 @@ export class ExtensionsDownloader extends Disposable {
 					await this.extensionSignatureVerificationService.verify(
 						location.fsPath,
 						signatureArchiveLocation.fsPath,
-						this.logService.getLevel() === LogLevel.Trace,
+						this.logService.getLevel() === LogLevel.Trace
 					);
 			} catch (error) {
 				const sigError = error as ExtensionSignatureVerificationError;
 				verificationStatus = sigError.code;
 				if (sigError.output) {
 					this.logService.trace(
-						`Extension signature verification details for ${extension.identifier.id} ${extension.version}:\n${sigError.output}`,
+						`Extension signature verification details for ${extension.identifier.id} ${extension.version}:\n${sigError.output}`
 					);
 				}
 				if (
@@ -123,7 +128,7 @@ export class ExtensionsDownloader extends Disposable {
 					}
 					throw new ExtensionManagementError(
 						CorruptZipMessage,
-						ExtensionManagementErrorCode.CorruptZip,
+						ExtensionManagementErrorCode.CorruptZip
 					);
 				}
 			} finally {
@@ -138,15 +143,15 @@ export class ExtensionsDownloader extends Disposable {
 
 		if (verificationStatus === true) {
 			this.logService.info(
-				`Extension signature is verified: ${extension.identifier.id}`,
+				`Extension signature is verified: ${extension.identifier.id}`
 			);
 		} else if (verificationStatus === false) {
 			this.logService.info(
-				`Extension signature verification is not done: ${extension.identifier.id}`,
+				`Extension signature verification is not done: ${extension.identifier.id}`
 			);
 		} else {
 			this.logService.warn(
-				`Extension signature verification failed with error '${verificationStatus}': ${extension.identifier.id}`,
+				`Extension signature verification failed with error '${verificationStatus}': ${extension.identifier.id}`
 			);
 		}
 
@@ -159,13 +164,13 @@ export class ExtensionsDownloader extends Disposable {
 		}
 
 		const value = this.configurationService.getValue(
-			"extensions.verifySignature",
+			"extensions.verifySignature"
 		);
 		return isBoolean(value) ? value : true;
 	}
 
 	private async downloadSignatureArchive(
-		extension: IGalleryExtension,
+		extension: IGalleryExtension
 	): Promise<URI> {
 		await this.cleanUpPromise;
 
@@ -173,13 +178,13 @@ export class ExtensionsDownloader extends Disposable {
 			this.extensionsDownloadDir,
 			`${this.getName(extension)}${
 				ExtensionsDownloader.SignatureArchiveExtension
-			}`,
+			}`
 		);
 		await this.downloadFile(extension, location, (location) =>
 			this.extensionGalleryService.downloadSignatureArchive(
 				extension,
-				location,
-			),
+				location
+			)
 		);
 		return location;
 	}
@@ -187,7 +192,7 @@ export class ExtensionsDownloader extends Disposable {
 	private async downloadFile(
 		extension: IGalleryExtension,
 		location: URI,
-		downloadFn: (location: URI) => Promise<void>,
+		downloadFn: (location: URI) => Promise<void>
 	): Promise<void> {
 		// Do not download if exists
 		if (await this.fileService.exists(location)) {
@@ -203,7 +208,7 @@ export class ExtensionsDownloader extends Disposable {
 		// Download to temporary location first only if file does not exist
 		const tempLocation = joinPath(
 			this.extensionsDownloadDir,
-			`.${generateUuid()}`,
+			`.${generateUuid()}`
 		);
 		if (!(await this.fileService.exists(tempLocation))) {
 			await downloadFn(tempLocation);
@@ -214,7 +219,7 @@ export class ExtensionsDownloader extends Disposable {
 			await FSPromises.rename(
 				tempLocation.fsPath,
 				location.fsPath,
-				2 * 60 * 1000 /* Retry for 2 minutes */,
+				2 * 60 * 1000 /* Retry for 2 minutes */
 			);
 		} catch (error) {
 			try {
@@ -226,14 +231,14 @@ export class ExtensionsDownloader extends Disposable {
 				this.logService.info(
 					`Rename failed because the file was downloaded by another source. So ignoring renaming.`,
 					extension.identifier.id,
-					location.path,
+					location.path
 				);
 			} else {
 				this.logService.info(
 					`Rename failed because of ${getErrorMessage(
-						error,
+						error
 					)}. Deleted the file from downloaded location`,
-					tempLocation.path,
+					tempLocation.path
 				);
 				throw error;
 			}
@@ -249,13 +254,13 @@ export class ExtensionsDownloader extends Disposable {
 		try {
 			if (!(await this.fileService.exists(this.extensionsDownloadDir))) {
 				this.logService.trace(
-					"Extension VSIX downloads cache dir does not exist",
+					"Extension VSIX downloads cache dir does not exist"
 				);
 				return;
 			}
 			const folderStat = await this.fileService.resolve(
 				this.extensionsDownloadDir,
-				{ resolveMetadata: true },
+				{ resolveMetadata: true }
 			);
 			if (folderStat.children) {
 				const toDelete: URI[] = [];
@@ -265,7 +270,7 @@ export class ExtensionsDownloader extends Disposable {
 				for (const stat of folderStat.children) {
 					if (
 						stat.name.endsWith(
-							ExtensionsDownloader.SignatureArchiveExtension,
+							ExtensionsDownloader.SignatureArchiveExtension
 						)
 					) {
 						signatureArchives.push(stat.resource);
@@ -279,12 +284,12 @@ export class ExtensionsDownloader extends Disposable {
 
 				const byExtension = groupByExtension(
 					vsixs,
-					([extension]) => extension,
+					([extension]) => extension
 				);
 				const distinct: IFileStatWithMetadata[] = [];
 				for (const p of byExtension) {
 					p.sort((a, b) =>
-						semver.rcompare(a[0].version, b[0].version),
+						semver.rcompare(a[0].version, b[0].version)
 					);
 					toDelete.push(...p.slice(1).map((e) => e[1].resource)); // Delete outdated extensions
 					distinct.push(p[0][1]);
@@ -293,7 +298,7 @@ export class ExtensionsDownloader extends Disposable {
 				toDelete.push(
 					...distinct
 						.slice(0, Math.max(0, distinct.length - this.cache))
-						.map((s) => s.resource),
+						.map((s) => s.resource)
 				); // Retain minimum cacheSize and delete the rest
 				toDelete.push(...signatureArchives); // Delete all signature archives
 
@@ -301,10 +306,10 @@ export class ExtensionsDownloader extends Disposable {
 					toDelete.map((resource) => {
 						this.logService.trace(
 							"Deleting from cache",
-							resource.path,
+							resource.path
 						);
 						return this.fileService.del(resource);
-					}),
+					})
 				);
 			}
 		} catch (e) {

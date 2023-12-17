@@ -22,14 +22,14 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 			filename?: string,
 			line?: number,
 			column?: number,
-			error?: Error,
+			error?: Error
 		) {
 			that._onUncaughtError(
 				message as string,
 				filename as string,
 				line as number,
 				column,
-				error,
+				error
 			);
 			oldOnError?.apply(this, [message, filename, line, column, error]);
 		};
@@ -38,7 +38,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 				if (oldOnError) {
 					mainWindow.onerror = oldOnError;
 				}
-			}),
+			})
 		);
 	}
 
@@ -47,7 +47,7 @@ export default class ErrorTelemetry extends BaseErrorTelemetry {
 		file: string,
 		line: number,
 		column?: number,
-		err?: any,
+		err?: any
 	): void {
 		const data: ErrorEvent = {
 			callstack: msg,

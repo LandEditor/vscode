@@ -45,7 +45,7 @@ declare module "vscode" {
 		 */
 		export function createFileSystemWatcher(
 			pattern: RelativePattern,
-			options?: FileSystemWatcherOptions,
+			options?: FileSystemWatcherOptions
 		): FileSystemWatcher;
 	}
 }

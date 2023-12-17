@@ -18,31 +18,37 @@ export class ModelUndoRedoParticipant
 {
 	constructor(
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService
 	) {
 		super();
-		this._register(this._modelService.onModelRemoved((model) => {
-			// a model will get disposed, so let's check if the undo redo stack is maintained
-			const elements = this._undoRedoService.getElements(model.uri);
-			if (elements.past.length === 0 && elements.future.length === 0) {
-				return;
-			}
-			for (const element of elements.past) {
-				if (element instanceof MultiModelEditStackElement) {
-					element.setDelegate(this);
+		this._register(
+			this._modelService.onModelRemoved((model) => {
+				// a model will get disposed, so let's check if the undo redo stack is maintained
+				const elements = this._undoRedoService.getElements(model.uri);
+				if (
+					elements.past.length === 0 &&
+					elements.future.length === 0
+				) {
+					return;
 				}
-			}
-			for (const element of elements.future) {
-				if (element instanceof MultiModelEditStackElement) {
-					element.setDelegate(this);
+				for (const element of elements.past) {
+					if (element instanceof MultiModelEditStackElement) {
+						element.setDelegate(this);
+					}
 				}
-			}
-		}));
+				for (const element of elements.future) {
+					if (element instanceof MultiModelEditStackElement) {
+						element.setDelegate(this);
+					}
+				}
+			})
+		);
 	}
 
 	public prepareUndoRedo(
-		element: MultiModelEditStackElement,
+		element: MultiModelEditStackElement
 	): IDisposable | Promise<IDisposable> {
 		// Load all the needed text models
 		const missingModels = element.getMissingModels();

@@ -45,7 +45,7 @@ import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
 registerSingleton(
 	ITerminalQuickFixService,
 	TerminalQuickFixService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // Contributions
@@ -56,10 +56,10 @@ class TerminalQuickFixContribution
 	static readonly ID = "quickFix";
 
 	static get(
-		instance: ITerminalInstance,
+		instance: ITerminalInstance
 	): TerminalQuickFixContribution | null {
 		return instance.getContribution<TerminalQuickFixContribution>(
-			TerminalQuickFixContribution.ID,
+			TerminalQuickFixContribution.ID
 		);
 	}
 
@@ -72,7 +72,8 @@ class TerminalQuickFixContribution
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 	}
@@ -82,15 +83,15 @@ class TerminalQuickFixContribution
 		this._addon = this._instantiationService.createInstance(
 			TerminalQuickFixAddon,
 			undefined,
-			this._instance.capabilities,
+			this._instance.capabilities
 		);
 		xterm.raw.loadAddon(this._addon);
 
 		// Hook up listeners
 		this.add(
 			this._addon.onDidRequestRerunCommand((e) =>
-				this._instance.runCommand(e.command, e.shouldExecute || false),
-			),
+				this._instance.runCommand(e.command, e.shouldExecute || false)
+			)
 		);
 
 		// Register quick fixes
@@ -98,7 +99,7 @@ class TerminalQuickFixContribution
 			gitTwoDashes(),
 			gitPull(),
 			freePort((port: string, command: string) =>
-				this._instance.freePortKillProcess(port, command),
+				this._instance.freePortKillProcess(port, command)
 			),
 			gitSimilar(),
 			gitPushSetUpstream(),
@@ -112,7 +113,7 @@ class TerminalQuickFixContribution
 }
 registerTerminalContribution(
 	TerminalQuickFixContribution.ID,
-	TerminalQuickFixContribution,
+	TerminalQuickFixContribution
 );
 
 // Actions
@@ -121,7 +122,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.showQuickFixes",
-			"Show Terminal Quick Fixes",
+			"Show Terminal Quick Fixes"
 		),
 		original: "Show Terminal Quick Fixes",
 	},

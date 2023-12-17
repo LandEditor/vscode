@@ -14,7 +14,7 @@ export interface TSConfig {
 
 export class TsConfigProvider {
 	public async getConfigsForWorkspace(
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<Iterable<TSConfig>> {
 		if (!vscode.workspace.workspaceFolders) {
 			return [];
@@ -36,13 +36,13 @@ export class TsConfigProvider {
 	}
 
 	private async findConfigFiles(
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.Uri[]> {
 		return await vscode.workspace.findFiles(
 			"**/tsconfig*.json",
 			"**/{node_modules,.*}/**",
 			undefined,
-			token,
+			token
 		);
 	}
 }

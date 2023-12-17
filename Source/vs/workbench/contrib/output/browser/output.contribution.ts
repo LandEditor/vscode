@@ -104,10 +104,10 @@ ModesRegistry.registerLanguage({
 const outputViewIcon = registerIcon(
 	"output-view-icon",
 	Codicon.output,
-	nls.localize("outputViewIcon", "View icon of the output view."),
+	nls.localize("outputViewIcon", "View icon of the output view.")
 );
 const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry,
+	ViewContainerExtensions.ViewContainersRegistry
 ).registerViewContainer(
 	{
 		id: OUTPUT_VIEW_ID,
@@ -122,11 +122,11 @@ const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
 		hideIfEmpty: true,
 	},
 	ViewContainerLocation.Panel,
-	{ doNotRegisterOpenCommand: true },
+	{ doNotRegisterOpenCommand: true }
 );
 
 Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry,
+	ViewContainerExtensions.ViewsRegistry
 ).registerViews(
 	[
 		{
@@ -143,14 +143,14 @@ Registry.as<IViewsRegistry>(
 						key: "miToggleOutput",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Output",
+					"&&Output"
 				),
 				keybindings: {
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyU,
 					linux: {
 						primary: KeyChord(
 							KeyMod.CtrlCmd | KeyCode.KeyK,
-							KeyMod.CtrlCmd | KeyCode.KeyH,
+							KeyMod.CtrlCmd | KeyCode.KeyH
 						), // On Ubuntu Ctrl+Shift+U is taken by some global OS command
 					},
 				},
@@ -158,13 +158,13 @@ Registry.as<IViewsRegistry>(
 			},
 		},
 	],
-	VIEW_CONTAINER,
+	VIEW_CONTAINER
 );
 
 class OutputContribution extends Disposable implements IWorkbenchContribution {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IOutputService private readonly outputService: IOutputService,
+		@IOutputService private readonly outputService: IOutputService
 	) {
 		super();
 		this.registerActions();
@@ -189,13 +189,13 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							id: `workbench.output.action.switchBetweenOutputs`,
 							title: nls.localize(
 								"switchBetweenOutputs.label",
-								"Switch Output",
+								"Switch Output"
 							),
 						});
 					}
 					async run(
 						accessor: ServicesAccessor,
-						channelId: string,
+						channelId: string
 					): Promise<void> {
 						if (channelId) {
 							accessor
@@ -203,11 +203,11 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								.showChannel(channelId, true);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 		const switchOutputMenu = new MenuId(
-			"workbench.output.menu.switchOutput",
+			"workbench.output.menu.switchOutput"
 		);
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.ViewTitle, {
@@ -217,14 +217,14 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				when: ContextKeyExpr.equals("view", OUTPUT_VIEW_ID),
 				order: 1,
 				isSelection: true,
-			}),
+			})
 		);
 		const registeredChannels = new Map<string, IDisposable>();
 		this._register(
-			toDisposable(() => dispose(registeredChannels.values())),
+			toDisposable(() => dispose(registeredChannels.values()))
 		);
 		const registerOutputChannels = (
-			channels: IOutputChannelDescriptor[],
+			channels: IOutputChannelDescriptor[]
 		) => {
 			for (const channel of channels) {
 				const title = channel.label;
@@ -241,7 +241,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 									title,
 									toggled:
 										ACTIVE_OUTPUT_CHANNEL_CONTEXT.isEqualTo(
-											channel.id,
+											channel.id
 										),
 									menu: {
 										id: switchOutputMenu,
@@ -250,20 +250,20 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								});
 							}
 							async run(
-								accessor: ServicesAccessor,
+								accessor: ServicesAccessor
 							): Promise<void> {
 								return accessor
 									.get(IOutputService)
 									.showChannel(channel.id, true);
 							}
-						},
-					),
+						}
+					)
 				);
 			}
 		};
 		registerOutputChannels(this.outputService.getChannelDescriptors());
 		const outputChannelRegistry = Registry.as<IOutputChannelRegistry>(
-			Extensions.OutputChannels,
+			Extensions.OutputChannels
 		);
 		this._register(
 			outputChannelRegistry.onDidRegisterChannel((e) => {
@@ -271,13 +271,13 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 				if (channel) {
 					registerOutputChannels([channel]);
 				}
-			}),
+			})
 		);
 		this._register(
 			outputChannelRegistry.onDidRemoveChannel((e) => {
 				registeredChannels.get(e)?.dispose();
 				registeredChannels.delete(e);
-			}),
+			})
 		);
 	}
 
@@ -290,7 +290,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							id: "workbench.action.showOutputChannels",
 							title: nls.localize2(
 								"showOutputChannels",
-								"Show Output Channels...",
+								"Show Output Channels..."
 							),
 							category: nls.localize2("output", "Output"),
 							f1: true,
@@ -325,15 +325,15 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						const entry = await quickInputService.pick(entries, {
 							placeHolder: nls.localize(
 								"selectOutput",
-								"Select Output Channel",
+								"Select Output Channel"
 							),
 						});
 						if (entry) {
 							return outputService.showChannel(entry.id);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -346,7 +346,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							id: `workbench.output.action.clearOutput`,
 							title: nls.localize2(
 								"clearOutput.label",
-								"Clear Output",
+								"Clear Output"
 							),
 							category: Categories.View,
 							menu: [
@@ -354,7 +354,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 									id: MenuId.ViewTitle,
 									when: ContextKeyExpr.equals(
 										"view",
-										OUTPUT_VIEW_ID,
+										OUTPUT_VIEW_ID
 									),
 									group: "navigation",
 									order: 2,
@@ -373,18 +373,18 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const outputService = accessor.get(IOutputService);
 						const accessibleNotificationService = accessor.get(
-							IAccessibleNotificationService,
+							IAccessibleNotificationService
 						);
 						const activeChannel = outputService.getActiveChannel();
 						if (activeChannel) {
 							activeChannel.clear();
 							accessibleNotificationService.notify(
-								AccessibleNotificationEvent.Clear,
+								AccessibleNotificationEvent.Clear
 							);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -397,19 +397,19 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							id: `workbench.output.action.toggleAutoScroll`,
 							title: nls.localize2(
 								"toggleAutoScroll",
-								"Toggle Auto Scrolling",
+								"Toggle Auto Scrolling"
 							),
 							tooltip: nls.localize(
 								"outputScrollOff",
-								"Turn Auto Scrolling Off",
+								"Turn Auto Scrolling Off"
 							),
 							menu: {
 								id: MenuId.ViewTitle,
 								when: ContextKeyExpr.and(
 									ContextKeyExpr.equals(
 										"view",
-										OUTPUT_VIEW_ID,
-									),
+										OUTPUT_VIEW_ID
+									)
 								),
 								group: "navigation",
 								order: 3,
@@ -420,7 +420,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								icon: Codicon.unlock,
 								tooltip: nls.localize(
 									"outputScrollOn",
-									"Turn Auto Scrolling On",
+									"Turn Auto Scrolling On"
 								),
 							},
 						});
@@ -429,12 +429,12 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						const outputView = accessor
 							.get(IViewsService)
 							.getActiveViewWithId<OutputViewPane>(
-								OUTPUT_VIEW_ID,
+								OUTPUT_VIEW_ID
 							)!;
 						outputView.scrollLock = !outputView.scrollLock;
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -447,14 +447,14 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							id: `workbench.action.openActiveLogOutputFile`,
 							title: nls.localize2(
 								"openActiveOutputFile",
-								"Open Output as Editor",
+								"Open Output as Editor"
 							),
 							menu: [
 								{
 									id: MenuId.ViewTitle,
 									when: ContextKeyExpr.equals(
 										"view",
-										OUTPUT_VIEW_ID,
+										OUTPUT_VIEW_ID
 									),
 									group: "navigation",
 									order: 4,
@@ -468,14 +468,14 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						const outputService = accessor.get(IOutputService);
 						const editorService = accessor.get(IEditorService);
 						const fileConfigurationService = accessor.get(
-							IFilesConfigurationService,
+							IFilesConfigurationService
 						);
 						const fileOutputChannelDescriptor =
 							this.getFileOutputChannelDescriptor(outputService);
 						if (fileOutputChannelDescriptor) {
 							await fileConfigurationService.updateReadonly(
 								fileOutputChannelDescriptor.file,
-								true,
+								true
 							);
 							await editorService.openEditor({
 								resource: fileOutputChannelDescriptor.file,
@@ -486,7 +486,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						}
 					}
 					private getFileOutputChannelDescriptor(
-						outputService: IOutputService,
+						outputService: IOutputService
 					): IFileOutputChannelDescriptor | null {
 						const channel = outputService.getActiveChannel();
 						if (channel) {
@@ -499,8 +499,8 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						}
 						return null;
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -545,7 +545,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 								type: "separator",
 								label: nls.localize(
 									"extensionLogs",
-									"Extension Logs",
+									"Extension Logs"
 								),
 							});
 						}
@@ -555,15 +555,15 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 						const entry = await quickInputService.pick(entries, {
 							placeHolder: nls.localize(
 								"selectlog",
-								"Select Log",
+								"Select Log"
 							),
 						});
 						if (entry) {
 							return outputService.showChannel(entry.id);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -579,7 +579,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							id: "workbench.action.openLogFile",
 							title: nls.localize2(
 								"openLogFile",
-								"Open Log File...",
+								"Open Log File..."
 							),
 							category: Categories.Developer,
 							menu: {
@@ -593,7 +593,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 										schema: {
 											markdownDescription: nls.localize(
 												"logFile",
-												'The id of the log file to open, for example `"window"`. Currently the best way to get this is to get the ID by checking the `workbench.action.output.show.<id>` commands',
+												'The id of the log file to open, for example `"window"`. Currently the best way to get this is to get the ID by checking the `workbench.action.output.show.<id>` commands'
 											),
 											type: "string",
 										},
@@ -604,14 +604,14 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 					}
 					async run(
 						accessor: ServicesAccessor,
-						args?: unknown,
+						args?: unknown
 					): Promise<void> {
 						const outputService = accessor.get(IOutputService);
 						const quickInputService =
 							accessor.get(IQuickInputService);
 						const editorService = accessor.get(IEditorService);
 						const fileConfigurationService = accessor.get(
-							IFilesConfigurationService,
+							IFilesConfigurationService
 						);
 
 						const entries: IOutputChannelQuickPickItem[] =
@@ -624,7 +624,7 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 											id: channel.id,
 											label: channel.label,
 											channel,
-										},
+										}
 								);
 
 						const argName =
@@ -637,17 +637,17 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							entry = await quickInputService.pick(entries, {
 								placeHolder: nls.localize(
 									"selectlogFile",
-									"Select Log File",
+									"Select Log File"
 								),
 							});
 						}
 						if (entry) {
 							const resource = assertIsDefined(
-								entry.channel.file,
+								entry.channel.file
 							);
 							await fileConfigurationService.updateReadonly(
 								resource,
-								true,
+								true
 							);
 							await editorService.openEditor({
 								resource,
@@ -657,18 +657,18 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 							});
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(OutputContribution, LifecyclePhase.Restored);
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	id: "output",
 	order: 30,
@@ -679,7 +679,7 @@ Registry.as<IConfigurationRegistry>(
 			type: "boolean",
 			description: nls.localize(
 				"output.smartScroll.enabled",
-				"Enable/disable the ability of smart scrolling in the output view. Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line.",
+				"Enable/disable the ability of smart scrolling in the output view. Smart scrolling allows you to lock scrolling automatically when you click in the output view and unlocks when you click in the last line."
 			),
 			default: true,
 			scope: ConfigurationScope.WINDOW,

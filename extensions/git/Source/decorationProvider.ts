@@ -46,11 +46,11 @@ class GitIgnoreDecorationProvider implements FileDecorationProvider {
 		this.onDidChangeFileDecorations = fireEvent(
 			anyEvent<any>(
 				filterEvent(workspace.onDidSaveTextDocument, (e) =>
-					/\.gitignore$|\.git\/info\/exclude$/.test(e.uri.path),
+					/\.gitignore$|\.git\/info\/exclude$/.test(e.uri.path)
 				),
 				model.onDidOpenRepository,
-				model.onDidCloseRepository,
-			),
+				model.onDidCloseRepository
+			)
 		);
 
 		this.disposables.push(window.registerFileDecorationProvider(this));
@@ -101,7 +101,7 @@ class GitIgnoreDecorationProvider implements FileDecorationProvider {
 						promiseSource.resolve(
 							ignoreSet.has(path)
 								? GitIgnoreDecorationProvider.Decoration
-								: undefined,
+								: undefined
 						);
 					}
 				},
@@ -113,7 +113,7 @@ class GitIgnoreDecorationProvider implements FileDecorationProvider {
 					for (const [, promiseSource] of item.queue.entries()) {
 						promiseSource.reject(err);
 					}
-				},
+				}
 			);
 		}
 	}
@@ -141,7 +141,7 @@ class GitDecorationProvider implements FileDecorationProvider {
 	constructor(private repository: Repository) {
 		this.disposables.push(
 			window.registerFileDecorationProvider(this),
-			repository.onDidRunGitStatus(this.onDidRunGitStatus, this),
+			repository.onDidRunGitStatus(this.onDidRunGitStatus, this)
 		);
 	}
 
@@ -152,26 +152,26 @@ class GitDecorationProvider implements FileDecorationProvider {
 		this.collectDecorationData(this.repository.indexGroup, newDecorations);
 		this.collectDecorationData(
 			this.repository.untrackedGroup,
-			newDecorations,
+			newDecorations
 		);
 		this.collectDecorationData(
 			this.repository.workingTreeGroup,
-			newDecorations,
+			newDecorations
 		);
 		this.collectDecorationData(this.repository.mergeGroup, newDecorations);
 
 		const uris = new Set(
-			[...this.decorations.keys()].concat([...newDecorations.keys()]),
+			[...this.decorations.keys()].concat([...newDecorations.keys()])
 		);
 		this.decorations = newDecorations;
 		this._onDidChangeDecorations.fire(
-			[...uris.values()].map((value) => Uri.parse(value, true)),
+			[...uris.values()].map((value) => Uri.parse(value, true))
 		);
 	}
 
 	private collectDecorationData(
 		group: GitResourceGroup,
-		bucket: Map<string, FileDecoration>,
+		bucket: Map<string, FileDecoration>
 	): void {
 		for (const r of group.resourceStates) {
 			const decoration = r.resourceDecoration;
@@ -195,14 +195,14 @@ class GitDecorationProvider implements FileDecorationProvider {
 	}
 
 	private collectSubmoduleDecorationData(
-		bucket: Map<string, FileDecoration>,
+		bucket: Map<string, FileDecoration>
 	): void {
 		for (const submodule of this.repository.submodules) {
 			bucket.set(
 				Uri.file(
-					path.join(this.repository.root, submodule.path),
+					path.join(this.repository.root, submodule.path)
 				).toString(),
-				GitDecorationProvider.SubmoduleDecorationData,
+				GitDecorationProvider.SubmoduleDecorationData
 			);
 		}
 	}
@@ -226,7 +226,7 @@ export class GitDecorations {
 
 		const onEnablementChange = filterEvent(
 			workspace.onDidChangeConfiguration,
-			(e) => e.affectsConfiguration("git.decorations.enabled"),
+			(e) => e.affectsConfiguration("git.decorations.enabled")
 		);
 		onEnablementChange(this.update, this, this.disposables);
 		this.update();
@@ -248,12 +248,12 @@ export class GitDecorations {
 		this.model.onDidOpenRepository(
 			this.onDidOpenRepository,
 			this,
-			this.modelDisposables,
+			this.modelDisposables
 		);
 		this.model.onDidCloseRepository(
 			this.onDidCloseRepository,
 			this,
-			this.modelDisposables,
+			this.modelDisposables
 		);
 		this.model.repositories.forEach(this.onDidOpenRepository, this);
 	}

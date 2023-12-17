@@ -39,7 +39,7 @@ export class ExtHostDocumentSaveParticipant
 		private readonly _thresholds: { timeout: number; errors: number } = {
 			timeout: 1500,
 			errors: 3,
-		},
+		}
 	) {
 		//
 	}
@@ -49,7 +49,7 @@ export class ExtHostDocumentSaveParticipant
 	}
 
 	getOnWillSaveTextDocumentEvent(
-		extension: IExtensionDescription,
+		extension: IExtensionDescription
 	): Event<vscode.TextDocumentWillSaveEvent> {
 		return (listener, thisArg, disposables) => {
 			const remove = this._callbacks.push([listener, thisArg, extension]);
@@ -63,14 +63,14 @@ export class ExtHostDocumentSaveParticipant
 
 	async $participateInSave(
 		data: UriComponents,
-		reason: SaveReason,
+		reason: SaveReason
 	): Promise<boolean[]> {
 		const resource = URI.revive(data);
 
 		let didTimeout = false;
 		const didTimeoutHandle = setTimeout(
 			() => (didTimeout = true),
-			this._thresholds.timeout,
+			this._thresholds.timeout
 		);
 
 		const results: boolean[] = [];
@@ -88,7 +88,7 @@ export class ExtHostDocumentSaveParticipant
 						<any>{
 							document,
 							reason: TextDocumentSaveReason.to(reason),
-						},
+						}
 					);
 				results.push(success);
 			}
@@ -100,7 +100,7 @@ export class ExtHostDocumentSaveParticipant
 
 	private _deliverEventAsyncAndBlameBadListeners(
 		[listener, thisArg, extension]: Listener,
-		stubEvent: vscode.TextDocumentWillSaveEvent,
+		stubEvent: vscode.TextDocumentWillSaveEvent
 	): Promise<any> {
 		const errors = this._badListeners.get(listener);
 		if (typeof errors === "number" && errors > this._thresholds.errors) {
@@ -112,7 +112,7 @@ export class ExtHostDocumentSaveParticipant
 			extension,
 			listener,
 			thisArg,
-			stubEvent,
+			stubEvent
 		).then(
 			() => {
 				// don't send result across the wire
@@ -120,7 +120,7 @@ export class ExtHostDocumentSaveParticipant
 			},
 			(err) => {
 				this._logService.error(
-					`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' threw ERROR`,
+					`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' threw ERROR`
 				);
 				this._logService.error(err);
 
@@ -136,12 +136,12 @@ export class ExtHostDocumentSaveParticipant
 						errors > this._thresholds.errors
 					) {
 						this._logService.info(
-							`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' will now be IGNORED because of timeouts and/or errors`,
+							`onWillSaveTextDocument-listener from extension '${extension.identifier.value}' will now be IGNORED because of timeouts and/or errors`
 						);
 					}
 				}
 				return false;
-			},
+			}
 		);
 	}
 
@@ -149,7 +149,7 @@ export class ExtHostDocumentSaveParticipant
 		extension: IExtensionDescription,
 		listener: Function,
 		thisArg: any,
-		stubEvent: vscode.TextDocumentWillSaveEvent,
+		stubEvent: vscode.TextDocumentWillSaveEvent
 	): Promise<any> {
 		const promises: Promise<vscode.TextEdit[]>[] = [];
 
@@ -182,7 +182,7 @@ export class ExtHostDocumentSaveParticipant
 			// join on all listener promises, reject after timeout
 			const handle = setTimeout(
 				() => reject(new Error("timeout")),
-				this._thresholds.timeout,
+				this._thresholds.timeout
 			);
 
 			return Promise.all(promises)
@@ -190,7 +190,7 @@ export class ExtHostDocumentSaveParticipant
 					this._logService.debug(
 						`onWillSaveTextDocument-listener from extension '${
 							extension.identifier.value
-						}' finished after ${Date.now() - t1}ms`,
+						}' finished after ${Date.now() - t1}ms`
 					);
 					clearTimeout(handle);
 					resolve(edits);
@@ -205,7 +205,7 @@ export class ExtHostDocumentSaveParticipant
 				if (
 					Array.isArray(value) &&
 					(<vscode.TextEdit[]>value).every(
-						(e) => e instanceof TextEdit,
+						(e) => e instanceof TextEdit
 					)
 				) {
 					for (const { newText, newEol, range } of value) {

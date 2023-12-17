@@ -67,7 +67,7 @@ const LEARN_MORE_DIRTY_WRITE_IGNORE_KEY = "learnMoreDirtyWriteError";
 
 const conflictEditorHelp = localize(
 	"userGuide",
-	"Use the actions in the editor tool bar to either undo your changes or overwrite the content of the file with your changes.",
+	"Use the actions in the editor tool bar to either undo your changes or overwrite the content of the file with your changes."
 );
 
 // A handler for text file save error happening with conflict resolution actions
@@ -79,23 +79,32 @@ export class TextFileSaveErrorHandler
 	private readonly conflictResolutionContext = new RawContextKey<boolean>(
 		CONFLICT_RESOLUTION_CONTEXT,
 		false,
-		true,
+		true
 	).bindTo(this.contextKeyService);
 	private activeConflictResolutionResource: URI | undefined = undefined;
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IContextKeyService private contextKeyService: IContextKeyService,
 		@IEditorService private readonly editorService: IEditorService,
 		@ITextModelService textModelService: ITextModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IStorageService private readonly storageService: IStorageService
 	) {
 		super();
 
-		const provider = this._register(instantiationService.createInstance(TextFileContentProvider));
-		this._register(textModelService.registerTextModelContentProvider(CONFLICT_RESOLUTION_SCHEME, provider));
+		const provider = this._register(
+			instantiationService.createInstance(TextFileContentProvider)
+		);
+		this._register(
+			textModelService.registerTextModelContentProvider(
+				CONFLICT_RESOLUTION_SCHEME,
+				provider
+			)
+		);
 
 		// Set as save error handler to service for text files
 		this.textFileService.files.saveErrorHandler = this;
@@ -106,18 +115,18 @@ export class TextFileSaveErrorHandler
 	private registerListeners(): void {
 		this._register(
 			this.textFileService.files.onDidSave((e) =>
-				this.onFileSavedOrReverted(e.model.resource),
-			),
+				this.onFileSavedOrReverted(e.model.resource)
+			)
 		);
 		this._register(
 			this.textFileService.files.onDidRevert((model) =>
-				this.onFileSavedOrReverted(model.resource),
-			),
+				this.onFileSavedOrReverted(model.resource)
+			)
 		);
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
-				this.onActiveEditorChanged(),
-			),
+				this.onActiveEditorChanged()
+			)
 		);
 	}
 
@@ -136,7 +145,7 @@ export class TextFileSaveErrorHandler
 		}
 
 		this.conflictResolutionContext.set(
-			isActiveEditorSaveConflictResolution,
+			isActiveEditorSaveConflictResolution
 		);
 		this.activeConflictResolutionResource =
 			activeConflictResolutionResource;
@@ -171,7 +180,7 @@ export class TextFileSaveErrorHandler
 				if (
 					this.storageService.getBoolean(
 						LEARN_MORE_DIRTY_WRITE_IGNORE_KEY,
-						StorageScope.APPLICATION,
+						StorageScope.APPLICATION
 					)
 				) {
 					return; // return if this message is ignored
@@ -181,13 +190,13 @@ export class TextFileSaveErrorHandler
 
 				primaryActions.push(
 					this.instantiationService.createInstance(
-						ResolveConflictLearnMoreAction,
-					),
+						ResolveConflictLearnMoreAction
+					)
 				);
 				secondaryActions.push(
 					this.instantiationService.createInstance(
-						DoNotShowResolveConflictLearnMoreAction,
-					),
+						DoNotShowResolveConflictLearnMoreAction
+					)
 				);
 			}
 
@@ -196,26 +205,26 @@ export class TextFileSaveErrorHandler
 				message = localize(
 					"staleSaveError",
 					"Failed to save '{0}': The content of the file is newer. Please compare your version with the file contents or overwrite the content of the file with your changes.",
-					basename(resource),
+					basename(resource)
 				);
 
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						ResolveSaveConflictAction,
-						model,
-					),
+						model
+					)
 				);
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						SaveModelIgnoreModifiedSinceAction,
-						model,
-					),
+						model
+					)
 				);
 
 				secondaryActions.push(
 					this.instantiationService.createInstance(
-						ConfigureSaveConflictAction,
-					),
+						ConfigureSaveConflictAction
+					)
 				);
 			}
 		}
@@ -240,8 +249,8 @@ export class TextFileSaveErrorHandler
 					this.instantiationService.createInstance(
 						SaveModelElevatedAction,
 						model,
-						!!triedToUnlock,
-					),
+						!!triedToUnlock
+					)
 				);
 			}
 
@@ -250,8 +259,8 @@ export class TextFileSaveErrorHandler
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						UnlockModelAction,
-						model,
-					),
+						model
+					)
 				);
 			}
 
@@ -260,8 +269,8 @@ export class TextFileSaveErrorHandler
 				primaryActions.push(
 					this.instantiationService.createInstance(
 						RetrySaveModelAction,
-						model,
-					),
+						model
+					)
 				);
 			}
 
@@ -269,16 +278,16 @@ export class TextFileSaveErrorHandler
 			primaryActions.push(
 				this.instantiationService.createInstance(
 					SaveModelAsAction,
-					model,
-				),
+					model
+				)
 			);
 
 			// Discard
 			primaryActions.push(
 				this.instantiationService.createInstance(
 					DiscardModelAction,
-					model,
-				),
+					model
+				)
 			);
 
 			// Message
@@ -288,18 +297,18 @@ export class TextFileSaveErrorHandler
 						? localize(
 								"readonlySaveErrorAdmin",
 								"Failed to save '{0}': File is read-only. Select 'Overwrite as Admin' to retry as administrator.",
-								basename(resource),
-						  )
+								basename(resource)
+							)
 						: localize(
 								"readonlySaveErrorSudo",
 								"Failed to save '{0}': File is read-only. Select 'Overwrite as Sudo' to retry as superuser.",
-								basename(resource),
-						  );
+								basename(resource)
+							);
 				} else {
 					message = localize(
 						"readonlySaveError",
 						"Failed to save '{0}': File is read-only. Select 'Overwrite' to attempt to make it writeable.",
-						basename(resource),
+						basename(resource)
 					);
 				}
 			} else if (canSaveElevated && isPermissionDenied) {
@@ -307,13 +316,13 @@ export class TextFileSaveErrorHandler
 					? localize(
 							"permissionDeniedSaveError",
 							"Failed to save '{0}': Insufficient permissions. Select 'Retry as Admin' to retry as administrator.",
-							basename(resource),
-					  )
+							basename(resource)
+						)
 					: localize(
 							"permissionDeniedSaveErrorSudo",
 							"Failed to save '{0}': Insufficient permissions. Select 'Retry as Sudo' to retry as superuser.",
-							basename(resource),
-					  );
+							basename(resource)
+						);
 			} else {
 				message = localize(
 					{
@@ -324,7 +333,7 @@ export class TextFileSaveErrorHandler
 					},
 					"Failed to save '{0}': {1}",
 					basename(resource),
-					toErrorMessage(error, false),
+					toErrorMessage(error, false)
 				);
 			}
 		}
@@ -366,12 +375,15 @@ class ResolveConflictLearnMoreAction extends Action {
 	constructor(
 		@IOpenerService private readonly openerService: IOpenerService
 	) {
-		super('workbench.files.action.resolveConflictLearnMore', localize('learnMore', "Learn More"));
+		super(
+			"workbench.files.action.resolveConflictLearnMore",
+			localize("learnMore", "Learn More")
+		);
 	}
 
 	override async run(): Promise<void> {
 		await this.openerService.open(
-			URI.parse("https://go.microsoft.com/fwlink/?linkid=868264"),
+			URI.parse("https://go.microsoft.com/fwlink/?linkid=868264")
 		);
 	}
 }
@@ -380,7 +392,10 @@ class DoNotShowResolveConflictLearnMoreAction extends Action {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService
 	) {
-		super('workbench.files.action.resolveConflictLearnMoreDoNotShowAgain', localize('dontShowAgain', "Don't Show Again"));
+		super(
+			"workbench.files.action.resolveConflictLearnMoreDoNotShowAgain",
+			localize("dontShowAgain", "Don't Show Again")
+		);
 	}
 
 	override async run(notification: IDisposable): Promise<void> {
@@ -389,7 +404,7 @@ class DoNotShowResolveConflictLearnMoreAction extends Action {
 			LEARN_MORE_DIRTY_WRITE_IGNORE_KEY,
 			true,
 			StorageScope.APPLICATION,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 
 		// Hide notification
@@ -401,11 +416,16 @@ class ResolveSaveConflictAction extends Action {
 	constructor(
 		private model: ITextFileEditorModel,
 		@IEditorService private readonly editorService: IEditorService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IProductService private readonly productService: IProductService
 	) {
-		super('workbench.files.action.resolveConflict', localize('compareChanges', "Compare"));
+		super(
+			"workbench.files.action.resolveConflict",
+			localize("compareChanges", "Compare")
+		);
 	}
 
 	override async run(): Promise<void> {
@@ -417,7 +437,7 @@ class ResolveSaveConflictAction extends Action {
 				"{0} (in file) ↔ {1} (in {2}) - Resolve save conflict",
 				name,
 				name,
-				this.productService.nameLong,
+				this.productService.nameLong
 			);
 
 			await TextFileContentProvider.open(
@@ -425,14 +445,14 @@ class ResolveSaveConflictAction extends Action {
 				CONFLICT_RESOLUTION_SCHEME,
 				editorLabel,
 				this.editorService,
-				{ pinned: true },
+				{ pinned: true }
 			);
 
 			// Show additional help how to resolve the save conflict
 			const actions = {
 				primary: [
 					this.instantiationService.createInstance(
-						ResolveConflictLearnMoreAction,
+						ResolveConflictLearnMoreAction
 					),
 				],
 			};
@@ -455,7 +475,7 @@ class ResolveSaveConflictAction extends Action {
 class SaveModelElevatedAction extends Action {
 	constructor(
 		private model: ITextFileEditorModel,
-		private triedToUnlock: boolean,
+		private triedToUnlock: boolean
 	) {
 		super(
 			"workbench.files.action.saveModelElevated",
@@ -464,8 +484,8 @@ class SaveModelElevatedAction extends Action {
 					? localize("overwriteElevated", "Overwrite as Admin...")
 					: localize("overwriteElevatedSudo", "Overwrite as Sudo...")
 				: isWindows
-				  ? localize("saveElevated", "Retry as Admin...")
-				  : localize("saveElevatedSudo", "Retry as Sudo..."),
+					? localize("saveElevated", "Retry as Admin...")
+					: localize("saveElevatedSudo", "Retry as Sudo...")
 		);
 	}
 
@@ -496,7 +516,7 @@ class DiscardModelAction extends Action {
 	constructor(private model: ITextFileEditorModel) {
 		super(
 			"workbench.files.action.discardModel",
-			localize("discard", "Discard"),
+			localize("discard", "Discard")
 		);
 	}
 
@@ -512,7 +532,7 @@ class SaveModelAsAction extends Action {
 		private model: ITextFileEditorModel,
 		@IEditorService private editorService: IEditorService
 	) {
-		super('workbench.files.action.saveModelAs', SAVE_FILE_AS_LABEL);
+		super("workbench.files.action.saveModelAs", SAVE_FILE_AS_LABEL);
 	}
 
 	override async run(): Promise<void> {
@@ -554,7 +574,7 @@ class UnlockModelAction extends Action {
 	constructor(private model: ITextFileEditorModel) {
 		super(
 			"workbench.files.action.unlock",
-			localize("overwrite", "Overwrite"),
+			localize("overwrite", "Overwrite")
 		);
 	}
 
@@ -572,7 +592,7 @@ class SaveModelIgnoreModifiedSinceAction extends Action {
 	constructor(private model: ITextFileEditorModel) {
 		super(
 			"workbench.files.action.saveIgnoreModifiedSince",
-			localize("overwrite", "Overwrite"),
+			localize("overwrite", "Overwrite")
 		);
 	}
 
@@ -588,9 +608,13 @@ class SaveModelIgnoreModifiedSinceAction extends Action {
 
 class ConfigureSaveConflictAction extends Action {
 	constructor(
-		@IPreferencesService private readonly preferencesService: IPreferencesService
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService
 	) {
-		super('workbench.files.action.configureSaveConflict', localize('configure', "Configure"));
+		super(
+			"workbench.files.action.configureSaveConflict",
+			localize("configure", "Configure")
+		);
 	}
 
 	override async run(): Promise<void> {
@@ -602,14 +626,14 @@ class ConfigureSaveConflictAction extends Action {
 
 export const acceptLocalChangesCommand = (
 	accessor: ServicesAccessor,
-	resource: URI,
+	resource: URI
 ) => {
 	return acceptOrRevertLocalChangesCommand(accessor, resource, true);
 };
 
 export const revertLocalChangesCommand = (
 	accessor: ServicesAccessor,
-	resource: URI,
+	resource: URI
 ) => {
 	return acceptOrRevertLocalChangesCommand(accessor, resource, false);
 };
@@ -617,7 +641,7 @@ export const revertLocalChangesCommand = (
 async function acceptOrRevertLocalChangesCommand(
 	accessor: ServicesAccessor,
 	resource: URI,
-	accept: boolean,
+	accept: boolean
 ) {
 	const editorService = accessor.get(IEditorService);
 

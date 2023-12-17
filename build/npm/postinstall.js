@@ -45,7 +45,7 @@ function yarnInstall(dir, opts) {
 		(arg) =>
 			arg === "--ignore-optional" ||
 			arg === "--frozen-lockfile" ||
-			arg === "--check-files",
+			arg === "--check-files"
 	);
 
 	if (opts.ignoreEngines) {
@@ -59,7 +59,7 @@ function yarnInstall(dir, opts) {
 	) {
 		const userinfo = os.userInfo();
 		console.log(
-			`Installing dependencies in ${dir} inside container ${process.env["VSCODE_REMOTE_DEPENDENCIES_CONTAINER_NAME"]}...`,
+			`Installing dependencies in ${dir} inside container ${process.env["VSCODE_REMOTE_DEPENDENCIES_CONTAINER_NAME"]}...`
 		);
 
 		opts.cwd = root;
@@ -76,7 +76,7 @@ function yarnInstall(dir, opts) {
 					"-p",
 					"yes",
 				],
-				opts,
+				opts
 			);
 		}
 		run(
@@ -98,7 +98,7 @@ function yarnInstall(dir, opts) {
 				dir,
 				...args,
 			],
-			opts,
+			opts
 		);
 		run(
 			"sudo",
@@ -108,7 +108,7 @@ function yarnInstall(dir, opts) {
 				`${userinfo.uid}:${userinfo.gid}`,
 				`${dir}/node_modules`,
 			],
-			opts,
+			opts
 		);
 	} else {
 		console.log(`Installing dependencies in ${dir}...`);

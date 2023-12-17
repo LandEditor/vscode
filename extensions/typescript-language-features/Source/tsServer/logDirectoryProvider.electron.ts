@@ -17,7 +17,7 @@ export class NodeLogDirectoryProvider implements ILogDirectoryProvider {
 		if (root) {
 			try {
 				return vscode.Uri.file(
-					fs.mkdtempSync(path.join(root, `tsserver-log-`)),
+					fs.mkdtempSync(path.join(root, `tsserver-log-`))
 				);
 			} catch (e) {
 				return undefined;

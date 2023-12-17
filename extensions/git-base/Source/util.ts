@@ -27,7 +27,7 @@ export namespace Versions {
 
 	export function compare(
 		v1: string | Version,
-		v2: string | Version,
+		v2: string | Version
 	): VersionComparisonResult {
 		if (typeof v1 === "string") {
 			v1 = fromString(v1);
@@ -75,7 +75,7 @@ export namespace Versions {
 		major: string | number,
 		minor: string | number,
 		patch?: string | number,
-		pre?: string,
+		pre?: string
 	): Version {
 		return {
 			major: typeof major === "string" ? parseInt(major, 10) : major,
@@ -84,8 +84,8 @@ export namespace Versions {
 				patch === undefined || patch === null
 					? 0
 					: typeof patch === "string"
-					  ? parseInt(patch, 10)
-					  : patch,
+						? parseInt(patch, 10)
+						: patch,
 			pre: pre,
 		};
 	}

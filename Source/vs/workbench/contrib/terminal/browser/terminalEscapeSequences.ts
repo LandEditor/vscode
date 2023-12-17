@@ -105,7 +105,7 @@ export const enum ITermOscPt {
 
 export function VSCodeSequence(
 	osc: VSCodeOscPt,
-	data?: string | VSCodeOscProperty,
+	data?: string | VSCodeOscProperty
 ): string {
 	return oscSequence(ShellIntegrationOscPs.VSCode, osc, data);
 }

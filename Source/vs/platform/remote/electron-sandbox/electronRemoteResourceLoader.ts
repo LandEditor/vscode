@@ -27,7 +27,7 @@ export class ElectronRemoteResourceLoader extends Disposable {
 	constructor(
 		private readonly windowId: number,
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@IFileService private readonly fileService: IFileService,
+		@IFileService private readonly fileService: IFileService
 	) {
 		super();
 
@@ -38,14 +38,18 @@ export class ElectronRemoteResourceLoader extends Disposable {
 
 			call: (_: unknown, command: string, arg?: any): Promise<any> => {
 				switch (command) {
-					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME: return this.doRequest(URI.revive(arg[0]));
+					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME:
+						return this.doRequest(URI.revive(arg[0]));
 				}
 
 				throw new Error(`Call not found: ${command}`);
-			}
+			},
 		};
 
-		mainProcessService.registerChannel(NODE_REMOTE_RESOURCE_CHANNEL_NAME, channel);
+		mainProcessService.registerChannel(
+			NODE_REMOTE_RESOURCE_CHANNEL_NAME,
+			channel
+		);
 	}
 
 	private async doRequest(uri: URI): Promise<NodeRemoteResourceResponse> {

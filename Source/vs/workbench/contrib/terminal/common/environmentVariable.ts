@@ -44,7 +44,7 @@ export interface IEnvironmentVariableService {
 	 */
 	set(
 		extensionIdentifier: string,
-		collection: IEnvironmentVariableCollection,
+		collection: IEnvironmentVariableCollection
 	): void;
 
 	/**

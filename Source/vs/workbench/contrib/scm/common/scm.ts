@@ -101,9 +101,10 @@ export interface IInputValidation {
 }
 
 export interface IInputValidator {
-	(value: string, cursorPosition: number): Promise<
-		IInputValidation | undefined
-	>;
+	(
+		value: string,
+		cursorPosition: number
+	): Promise<IInputValidation | undefined>;
 }
 
 export enum SCMInputChangeReason {
@@ -153,7 +154,7 @@ export interface ISCMInput {
 
 	showValidationMessage(
 		message: string | IMarkdownString,
-		type: InputValidationType,
+		type: InputValidationType
 	): void;
 	readonly onDidChangeValidationMessage: Event<IInputValidation>;
 

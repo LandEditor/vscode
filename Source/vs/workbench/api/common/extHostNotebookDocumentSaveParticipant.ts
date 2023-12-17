@@ -40,13 +40,13 @@ export class ExtHostNotebookDocumentSaveParticipant
 		private readonly _thresholds: { timeout: number; errors: number } = {
 			timeout: 1500,
 			errors: 3,
-		},
+		}
 	) {}
 
 	dispose(): void {}
 
 	getOnWillSaveNotebookDocumentEvent(
-		extension: IExtensionDescription,
+		extension: IExtensionDescription
 	): Event<NotebookDocumentWillSaveEvent> {
 		return (listener, thisArg, disposables) => {
 			const wrappedListener: IExtensionListener<NotebookDocumentWillSaveEvent> =
@@ -57,7 +57,7 @@ export class ExtHostNotebookDocumentSaveParticipant
 			return this._onWillSaveNotebookDocumentEvent.event(
 				wrappedListener,
 				undefined,
-				disposables,
+				disposables
 			);
 		};
 	}
@@ -65,7 +65,7 @@ export class ExtHostNotebookDocumentSaveParticipant
 	async $participateInSave(
 		resource: UriComponents,
 		reason: SaveReason,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<boolean> {
 		const revivedUri = URI.revive(resource);
 		const document =
@@ -91,7 +91,7 @@ export class ExtHostNotebookDocumentSaveParticipant
 						"onWillSaveNotebookDocument-listener from extension",
 						(<IExtensionListener<NotebookDocumentWillSaveEvent>>(
 							listener
-						)).extension.identifier,
+						)).extension.identifier
 					);
 				}
 
@@ -109,13 +109,13 @@ export class ExtHostNotebookDocumentSaveParticipant
 							(<
 								IExtensionListener<NotebookDocumentWillSaveEvent>
 							>listener).extension.identifier,
-							"ignored due to invalid data",
+							"ignored due to invalid data"
 						);
 					}
 				}
 
 				return;
-			},
+			}
 		);
 
 		if (token.isCancellationRequested) {

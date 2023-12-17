@@ -35,11 +35,14 @@ import { IJSONEditingService } from "vs/workbench/services/configuration/common/
 
 export class NativeSecretStorageService extends BaseSecretStorageService {
 	constructor(
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IJSONEditingService private readonly _jsonEditingService: IJSONEditingService,
-		@INativeEnvironmentService private readonly _environmentService: INativeEnvironmentService,
+		@IJSONEditingService
+		private readonly _jsonEditingService: IJSONEditingService,
+		@INativeEnvironmentService
+		private readonly _environmentService: INativeEnvironmentService,
 		@IStorageService storageService: IStorageService,
 		@IEncryptionService encryptionService: IEncryptionService,
 		@ILogService logService: ILogService
@@ -61,7 +64,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 				!this._environmentService.useInMemorySecretStorage
 			) {
 				this._logService.trace(
-					"[NativeSecretStorageService] Notifying user that secrets are not being stored on disk.",
+					"[NativeSecretStorageService] Notifying user that secrets are not being stored on disk."
 				);
 				await this.notifyOfNoEncryptionOnce();
 			}
@@ -71,18 +74,18 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 	}
 
 	private notifyOfNoEncryptionOnce = createSingleCallFunction(() =>
-		this.notifyOfNoEncryption(),
+		this.notifyOfNoEncryption()
 	);
 	private async notifyOfNoEncryption(): Promise<void> {
 		const buttons: IPromptChoice[] = [];
 		const troubleshootingButton: IPromptChoice = {
 			label: localize(
 				"troubleshootingButton",
-				"Open troubleshooting guide",
+				"Open troubleshooting guide"
 			),
 			run: () =>
 				this._openerService.open(
-					"https://go.microsoft.com/fwlink/?linkid=2239490",
+					"https://go.microsoft.com/fwlink/?linkid=2239490"
 				),
 			// doesn't close dialogs
 			keepOpen: true,
@@ -91,14 +94,14 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 
 		let errorMessage = localize(
 			"encryptionNotAvailableJustTroubleshootingGuide",
-			"An OS keyring couldn't be identified for storing the encryption related data in your current desktop environment.",
+			"An OS keyring couldn't be identified for storing the encryption related data in your current desktop environment."
 		);
 
 		if (!isLinux) {
 			this._notificationService.prompt(
 				Severity.Error,
 				errorMessage,
-				buttons,
+				buttons
 			);
 			return;
 		}
@@ -107,7 +110,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 		if (provider === KnownStorageProvider.basicText) {
 			const detail = localize(
 				"usePlainTextExtraSentence",
-				"Open the troubleshooting guide to address this or you can use weaker encryption that doesn't use the OS keyring.",
+				"Open the troubleshooting guide to address this or you can use weaker encryption that doesn't use the OS keyring."
 			);
 			const usePlainTextButton: IPromptChoice = {
 				label: localize("usePlainText", "Use weaker encryption"),
@@ -121,7 +124,7 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 								value: PasswordStoreCLIOption.basic,
 							},
 						],
-						true,
+						true
 					);
 					this.reinitialize();
 				},
@@ -140,12 +143,12 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 		if (isGnome(provider)) {
 			errorMessage = localize(
 				"isGnome",
-				"You're running in a GNOME environment but the OS keyring is not available for encryption. Ensure you have gnome-keyring or another libsecret compatible implementation installed and running.",
+				"You're running in a GNOME environment but the OS keyring is not available for encryption. Ensure you have gnome-keyring or another libsecret compatible implementation installed and running."
 			);
 		} else if (isKwallet(provider)) {
 			errorMessage = localize(
 				"isKwallet",
-				"You're running in a KDE environment but the OS keyring is not available for encryption. Ensure you have kwallet running.",
+				"You're running in a KDE environment but the OS keyring is not available for encryption. Ensure you have kwallet running."
 			);
 		}
 
@@ -156,5 +159,5 @@ export class NativeSecretStorageService extends BaseSecretStorageService {
 registerSingleton(
 	ISecretStorageService,
 	NativeSecretStorageService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

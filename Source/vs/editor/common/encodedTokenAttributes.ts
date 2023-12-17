@@ -159,7 +159,7 @@ export class TokenMetadata {
 
 	public static getInlineStyleFromMetadata(
 		metadata: number,
-		colorMap: string[],
+		colorMap: string[]
 	): string {
 		const foreground = this.getForeground(metadata);
 		const fontStyle = this.getFontStyle(metadata);
@@ -185,7 +185,7 @@ export class TokenMetadata {
 	}
 
 	public static getPresentationFromMetadata(
-		metadata: number,
+		metadata: number
 	): ITokenPresentation {
 		const foreground = this.getForeground(metadata);
 		const fontStyle = this.getFontStyle(metadata);

@@ -57,7 +57,7 @@ export class CloseWindowAction extends Action2 {
 						key: "miCloseWindow",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Clos&&e Window",
+					"Clos&&e Window"
 				),
 				original: "Close Window",
 			},
@@ -103,7 +103,7 @@ abstract class BaseZoomAction extends Action2 {
 
 	protected async setConfiguredZoomLevel(
 		accessor: ServicesAccessor,
-		level: number,
+		level: number
 	): Promise<void> {
 		const configurationService = accessor.get(IConfigurationService);
 
@@ -118,7 +118,7 @@ abstract class BaseZoomAction extends Action2 {
 
 		await configurationService.updateValue(
 			BaseZoomAction.SETTING_KEY,
-			level,
+			level
 		);
 
 		applyZoom(level);
@@ -133,7 +133,7 @@ export class ZoomInAction extends BaseZoomAction {
 				value: localize("zoomIn", "Zoom In"),
 				mnemonicTitle: localize(
 					{ key: "miZoomIn", comment: ["&& denotes a mnemonic"] },
-					"&&Zoom In",
+					"&&Zoom In"
 				),
 				original: "Zoom In",
 			},
@@ -168,7 +168,7 @@ export class ZoomOutAction extends BaseZoomAction {
 				value: localize("zoomOut", "Zoom Out"),
 				mnemonicTitle: localize(
 					{ key: "miZoomOut", comment: ["&& denotes a mnemonic"] },
-					"&&Zoom Out",
+					"&&Zoom Out"
 				),
 				original: "Zoom Out",
 			},
@@ -207,7 +207,7 @@ export class ZoomResetAction extends BaseZoomAction {
 				value: localize("zoomReset", "Reset Zoom"),
 				mnemonicTitle: localize(
 					{ key: "miZoomReset", comment: ["&& denotes a mnemonic"] },
-					"&&Reset Zoom",
+					"&&Reset Zoom"
 				),
 				original: "Reset Zoom",
 			},
@@ -269,13 +269,13 @@ abstract class BaseSwitchWindow extends Action2 {
 		for (const window of windows) {
 			if (isOpenedAuxiliaryWindow(window)) {
 				let auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(
-					window.parentId,
+					window.parentId
 				);
 				if (!auxiliaryWindows) {
 					auxiliaryWindows = new Set<IOpenedAuxiliaryWindow>();
 					mapMainWindowToAuxiliaryWindows.set(
 						window.parentId,
-						auxiliaryWindows,
+						auxiliaryWindows
 					);
 				}
 				auxiliaryWindows.add(window);
@@ -291,7 +291,7 @@ abstract class BaseSwitchWindow extends Action2 {
 		const picks: Array<IWindowPickItem> = [];
 		for (const window of mainWindows) {
 			const auxiliaryWindows = mapMainWindowToAuxiliaryWindows.get(
-				window.id,
+				window.id
 			);
 			if (mapMainWindowToAuxiliaryWindows.size > 0) {
 				picks.push({
@@ -306,17 +306,17 @@ abstract class BaseSwitchWindow extends Action2 {
 			const resource = window.filename
 				? URI.file(window.filename)
 				: isSingleFolderWorkspaceIdentifier(window.workspace)
-				  ? window.workspace.uri
-				  : isWorkspaceIdentifier(window.workspace)
-					  ? window.workspace.configPath
-					  : undefined;
+					? window.workspace.uri
+					: isWorkspaceIdentifier(window.workspace)
+						? window.workspace.configPath
+						: undefined;
 			const fileKind = window.filename
 				? FileKind.FILE
 				: isSingleFolderWorkspaceIdentifier(window.workspace)
-				  ? FileKind.FOLDER
-				  : isWorkspaceIdentifier(window.workspace)
-					  ? FileKind.ROOT_FOLDER
-					  : FileKind.FILE;
+					? FileKind.FOLDER
+					: isWorkspaceIdentifier(window.workspace)
+						? FileKind.ROOT_FOLDER
+						: FileKind.FILE;
 			const pick: IWindowPickItem = {
 				windowId: window.id,
 				label: window.title,
@@ -324,14 +324,14 @@ abstract class BaseSwitchWindow extends Action2 {
 					? localize(
 							"windowDirtyAriaLabel",
 							"{0}, window with unsaved changes",
-							window.title,
-					  )
+							window.title
+						)
 					: window.title,
 				iconClasses: getIconClasses(
 					modelService,
 					languageService,
 					resource,
-					fileKind,
+					fileKind
 				),
 				description:
 					currentWindowId === window.id
@@ -357,7 +357,7 @@ abstract class BaseSwitchWindow extends Action2 {
 							auxiliaryWindow.filename
 								? URI.file(auxiliaryWindow.filename)
 								: undefined,
-							FileKind.FILE,
+							FileKind.FILE
 						),
 						description:
 							currentWindowId === auxiliaryWindow.id
@@ -372,11 +372,11 @@ abstract class BaseSwitchWindow extends Action2 {
 
 		const placeHolder = localize(
 			"switchWindowPlaceHolder",
-			"Select a window to switch to",
+			"Select a window to switch to"
 		);
 		const autoFocusIndex =
 			(picks.indexOf(
-				picks.filter((pick) => pick.windowId === currentWindowId)[0],
+				picks.filter((pick) => pick.windowId === currentWindowId)[0]
 			) +
 				1) %
 			picks.length;
@@ -388,9 +388,9 @@ abstract class BaseSwitchWindow extends Action2 {
 			quickNavigate: this.isQuickNavigate()
 				? {
 						keybindings: keybindingService.lookupKeybindings(
-							this.desc.id,
+							this.desc.id
 						),
-				  }
+					}
 				: undefined,
 			hideInput: this.isQuickNavigate(),
 			onDidTriggerItemButton: async (context) => {
@@ -456,7 +456,7 @@ function canRunNativeTabsHandler(accessor: ServicesAccessor): boolean {
 }
 
 export const NewWindowTabHandler: ICommandHandler = function (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
@@ -466,7 +466,7 @@ export const NewWindowTabHandler: ICommandHandler = function (
 };
 
 export const ShowPreviousWindowTabHandler: ICommandHandler = function (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
@@ -476,7 +476,7 @@ export const ShowPreviousWindowTabHandler: ICommandHandler = function (
 };
 
 export const ShowNextWindowTabHandler: ICommandHandler = function (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
@@ -486,7 +486,7 @@ export const ShowNextWindowTabHandler: ICommandHandler = function (
 };
 
 export const MoveWindowTabToNewWindowHandler: ICommandHandler = function (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
@@ -496,7 +496,7 @@ export const MoveWindowTabToNewWindowHandler: ICommandHandler = function (
 };
 
 export const MergeWindowTabsHandlerHandler: ICommandHandler = function (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;
@@ -506,7 +506,7 @@ export const MergeWindowTabsHandlerHandler: ICommandHandler = function (
 };
 
 export const ToggleWindowTabsBarHandler: ICommandHandler = function (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) {
 	if (!canRunNativeTabsHandler(accessor)) {
 		return;

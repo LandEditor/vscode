@@ -34,7 +34,7 @@ async function main(url, dir) {
 
 	for await (const file of getYarnLockFiles(root)) {
 		console.log(
-			`Enabling custom NPM registry: ${path.relative(root, file)}`,
+			`Enabling custom NPM registry: ${path.relative(root, file)}`
 		);
 		await setup(url, file);
 	}

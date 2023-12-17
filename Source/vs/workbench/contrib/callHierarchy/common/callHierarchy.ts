@@ -58,17 +58,17 @@ export interface CallHierarchyProvider {
 	prepareCallHierarchy(
 		document: ITextModel,
 		position: IPosition,
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<CallHierarchySession>;
 
 	provideIncomingCalls(
 		item: CallHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<IncomingCall[]>;
 
 	provideOutgoingCalls(
 		item: CallHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<OutgoingCall[]>;
 }
 
@@ -79,7 +79,7 @@ export class CallHierarchyModel {
 	static async create(
 		model: ITextModel,
 		position: IPosition,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<CallHierarchyModel | undefined> {
 		const [provider] = CallHierarchyProviderRegistry.ordered(model);
 		if (!provider) {
@@ -88,7 +88,7 @@ export class CallHierarchyModel {
 		const session = await provider.prepareCallHierarchy(
 			model,
 			position,
-			token,
+			token
 		);
 		if (!session) {
 			return undefined;
@@ -97,7 +97,7 @@ export class CallHierarchyModel {
 			session.roots.reduce((p, c) => p + c._sessionId, ""),
 			provider,
 			session.roots,
-			new RefCountedDisposable(session),
+			new RefCountedDisposable(session)
 		);
 	}
 
@@ -107,7 +107,7 @@ export class CallHierarchyModel {
 		readonly id: string,
 		readonly provider: CallHierarchyProvider,
 		readonly roots: CallHierarchyItem[],
-		readonly ref: RefCountedDisposable,
+		readonly ref: RefCountedDisposable
 	) {
 		this.root = roots[0];
 	}
@@ -127,12 +127,12 @@ export class CallHierarchyModel {
 
 	async resolveIncomingCalls(
 		item: CallHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IncomingCall[]> {
 		try {
 			const result = await this.provider.provideIncomingCalls(
 				item,
-				token,
+				token
 			);
 			if (isNonEmptyArray(result)) {
 				return result;
@@ -145,12 +145,12 @@ export class CallHierarchyModel {
 
 	async resolveOutgoingCalls(
 		item: CallHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<OutgoingCall[]> {
 		try {
 			const result = await this.provider.provideOutgoingCalls(
 				item,
-				token,
+				token
 			);
 			if (isNonEmptyArray(result)) {
 				return result;
@@ -188,7 +188,7 @@ CommandsRegistry.registerCommand(
 			const model = await CallHierarchyModel.create(
 				textModel,
 				position,
-				CancellationToken.None,
+				CancellationToken.None
 			);
 			if (!model) {
 				return [];
@@ -205,7 +205,7 @@ CommandsRegistry.registerCommand(
 		} finally {
 			textModelReference?.dispose();
 		}
-	},
+	}
 );
 
 function isCallHierarchyItemDto(obj: any): obj is CallHierarchyItem {
@@ -225,7 +225,7 @@ CommandsRegistry.registerCommand(
 		}
 
 		return model.resolveIncomingCalls(item, CancellationToken.None);
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -241,5 +241,5 @@ CommandsRegistry.registerCommand(
 		}
 
 		return model.resolveOutgoingCalls(item, CancellationToken.None);
-	},
+	}
 );

@@ -43,7 +43,7 @@ function patchGrammar(grammar) {
 	}
 	if (patchCount !== 2) {
 		console.warn(
-			`Expected to patch 2 occurrences of source.js & source.css: Was ${patchCount}`,
+			`Expected to patch 2 occurrences of source.js & source.css: Was ${patchCount}`
 		);
 	}
 
@@ -56,5 +56,5 @@ vscodeGrammarUpdater.update(
 	tsGrammarRepo,
 	grammarPath,
 	"./syntaxes/html.tmLanguage.json",
-	(grammar) => patchGrammar(grammar),
+	(grammar) => patchGrammar(grammar)
 );

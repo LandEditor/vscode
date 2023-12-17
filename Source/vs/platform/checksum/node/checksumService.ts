@@ -12,7 +12,7 @@ import { IFileService } from "vs/platform/files/common/files";
 export class ChecksumService implements IChecksumService {
 	declare readonly _serviceBrand: undefined;
 
-	constructor(@IFileService private readonly fileService: IFileService) { }
+	constructor(@IFileService private readonly fileService: IFileService) {}
 
 	async checksum(resource: URI): Promise<string> {
 		const stream = (await this.fileService.readFileStream(resource)).value;

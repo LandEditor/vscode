@@ -24,18 +24,18 @@ export function toVSDataTransfer(dataTransfer: DataTransfer) {
 		const type = item.type;
 		if (item.kind === "string") {
 			const asStringValue = new Promise<string>((resolve) =>
-				item.getAsString(resolve),
+				item.getAsString(resolve)
 			);
 			vsDataTransfer.append(
 				type,
-				createStringDataTransferItem(asStringValue),
+				createStringDataTransferItem(asStringValue)
 			);
 		} else if (item.kind === "file") {
 			const file = item.getAsFile();
 			if (file) {
 				vsDataTransfer.append(
 					type,
-					createFileDataTransferItemFromFile(file),
+					createFileDataTransferItemFromFile(file)
 				);
 			}
 		}
@@ -61,7 +61,7 @@ const INTERNAL_DND_MIME_TYPES = Object.freeze([
 
 export function toExternalVSDataTransfer(
 	sourceDataTransfer: DataTransfer,
-	overwriteUriList = false,
+	overwriteUriList = false
 ): VSDataTransfer {
 	const vsDataTransfer = toVSDataTransfer(sourceDataTransfer);
 
@@ -82,7 +82,7 @@ export function toExternalVSDataTransfer(
 							editorData.push(URI.file(path).toString());
 						} else {
 							editorData.push(
-								URI.parse(file.name, true).toString(),
+								URI.parse(file.name, true).toString()
 							);
 						}
 					} catch {
@@ -94,7 +94,7 @@ export function toExternalVSDataTransfer(
 			if (editorData.length) {
 				vsDataTransfer.replace(
 					Mimes.uriList,
-					createStringDataTransferItem(UriList.create(editorData)),
+					createStringDataTransferItem(UriList.create(editorData))
 				);
 			}
 		}

@@ -76,12 +76,12 @@
 							},
 						];
 						for (const entry of performance.getEntriesByType(
-							"mark",
+							"mark"
 						)) {
 							result.push({
 								name: entry.name,
 								startTime: Math.round(
-									timeOrigin + entry.startTime,
+									timeOrigin + entry.startTime
 								),
 							});
 						}
@@ -96,7 +96,7 @@
 				performance?.timeOrigin ??
 				Math.round(
 					(require.__$__nodeRequire || require)("perf_hooks")
-						.performance.timeOrigin,
+						.performance.timeOrigin
 				);
 			return _definePolyfillMarks(timeOrigin);
 		} else {
@@ -142,7 +142,7 @@
 		module.exports = _factory(sharedObj);
 	} else {
 		console.trace(
-			"perf-util defined in UNKNOWN context (neither requirejs or commonjs)",
+			"perf-util defined in UNKNOWN context (neither requirejs or commonjs)"
 		);
 		sharedObj.perf = _factory(sharedObj);
 	}

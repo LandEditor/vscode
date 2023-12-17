@@ -42,9 +42,9 @@ function getHTTPRequestService(): RequestService {
 					return Promise.reject(
 						error.responseText ||
 							getErrorStatusDescription(error.status) ||
-							error.toString(),
+							error.toString()
 					);
-				},
+				}
 			);
 		},
 	};

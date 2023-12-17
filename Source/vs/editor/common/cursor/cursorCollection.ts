@@ -61,7 +61,7 @@ export class CursorCollection {
 
 	public readSelectionFromMarkers(): Selection[] {
 		return this.cursors.map((c) =>
-			c.readSelectionFromMarkers(this.context),
+			c.readSelectionFromMarkers(this.context)
 		);
 	}
 
@@ -76,14 +76,14 @@ export class CursorCollection {
 	public getTopMostViewPosition(): Position {
 		return findFirstMinBy(
 			this.cursors,
-			compareBy((c) => c.viewState.position, Position.compare),
+			compareBy((c) => c.viewState.position, Position.compare)
 		)!.viewState.position;
 	}
 
 	public getBottomMostViewPosition(): Position {
 		return findLastMaxBy(
 			this.cursors,
-			compareBy((c) => c.viewState.position, Position.compare),
+			compareBy((c) => c.viewState.position, Position.compare)
 		)!.viewState.position;
 	}
 
@@ -110,7 +110,7 @@ export class CursorCollection {
 		this.cursors[0].setState(
 			this.context,
 			states[0].modelState,
-			states[0].viewState,
+			states[0].viewState
 		);
 		this._setSecondaryStates(states.slice(1));
 	}
@@ -138,7 +138,7 @@ export class CursorCollection {
 			this.cursors[i + 1].setState(
 				this.context,
 				secondaryStates[i].modelState,
-				secondaryStates[i].viewState,
+				secondaryStates[i].viewState
 			);
 		}
 	}
@@ -186,7 +186,7 @@ export class CursorCollection {
 		}
 
 		sortedCursors.sort(
-			compareBy((s) => s.selection, Range.compareRangesUsingStarts),
+			compareBy((s) => s.selection, Range.compareRangesUsingStarts)
 		);
 
 		for (
@@ -267,14 +267,14 @@ export class CursorCollection {
 							resultingRange.startLineNumber,
 							resultingRange.startColumn,
 							resultingRange.endLineNumber,
-							resultingRange.endColumn,
+							resultingRange.endColumn
 						);
 					} else {
 						resultingSelection = new Selection(
 							resultingRange.endLineNumber,
 							resultingRange.endColumn,
 							resultingRange.startLineNumber,
-							resultingRange.startColumn,
+							resultingRange.startColumn
 						);
 					}
 
@@ -285,7 +285,7 @@ export class CursorCollection {
 					cursors[winnerIndex].setState(
 						this.context,
 						resultingState.modelState,
-						resultingState.viewState,
+						resultingState.viewState
 					);
 				}
 

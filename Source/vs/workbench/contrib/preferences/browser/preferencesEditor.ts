@@ -24,14 +24,25 @@ export class SettingsEditorContribution extends Disposable {
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 		this._createPreferencesRenderer();
-		this._register(this.editor.onDidChangeModel(e => this._createPreferencesRenderer()));
-		this._register(this.workspaceContextService.onDidChangeWorkbenchState(() => this._createPreferencesRenderer()));
+		this._register(
+			this.editor.onDidChangeModel((e) =>
+				this._createPreferencesRenderer()
+			)
+		);
+		this._register(
+			this.workspaceContextService.onDidChangeWorkbenchState(() =>
+				this._createPreferencesRenderer()
+			)
+		);
 	}
 
 	private async _createPreferencesRenderer(): Promise<void> {
@@ -44,7 +55,7 @@ export class SettingsEditorContribution extends Disposable {
 			// in settings files or workspace files
 			const settingsModel =
 				await this.preferencesService.createPreferencesEditorModel(
-					model.uri,
+					model.uri
 				);
 			if (
 				settingsModel instanceof SettingsEditorModel &&
@@ -57,8 +68,8 @@ export class SettingsEditorContribution extends Disposable {
 							this.instantiationService.createInstance(
 								WorkspaceSettingsRenderer,
 								this.editor,
-								settingsModel,
-							),
+								settingsModel
+							)
 						);
 						break;
 					default:
@@ -66,8 +77,8 @@ export class SettingsEditorContribution extends Disposable {
 							this.instantiationService.createInstance(
 								UserSettingsRenderer,
 								this.editor,
-								settingsModel,
-							),
+								settingsModel
+							)
 						);
 						break;
 				}

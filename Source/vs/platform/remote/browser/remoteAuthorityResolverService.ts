@@ -36,7 +36,7 @@ export class RemoteAuthorityResolverService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeConnectionData = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	public readonly onDidChangeConnectionData =
 		this._onDidChangeConnectionData.event;
@@ -55,16 +55,19 @@ export class RemoteAuthorityResolverService
 		connectionToken: Promise<string> | string | undefined,
 		resourceUriProvider: ((uri: URI) => URI) | undefined,
 		@IProductService productService: IProductService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		super();
 		this._connectionToken = connectionToken;
 		this._connectionTokens = new Map<string, string>();
-		this._isWorkbenchOptionsBasedResolution = isWorkbenchOptionsBasedResolution;
+		this._isWorkbenchOptionsBasedResolution =
+			isWorkbenchOptionsBasedResolution;
 		if (resourceUriProvider) {
 			RemoteAuthorities.setDelegate(resourceUriProvider);
 		}
-		RemoteAuthorities.setServerRootPath(getRemoteServerRootPath(productService));
+		RemoteAuthorities.setServerRootPath(
+			getRemoteServerRootPath(productService)
+		);
 	}
 
 	async resolveAuthority(authority: string): Promise<ResolverResult> {
@@ -75,7 +78,7 @@ export class RemoteAuthorityResolverService
 			if (this._isWorkbenchOptionsBasedResolution) {
 				this._doResolveAuthority(authority).then(
 					(v) => result!.complete(v),
-					(err) => result!.error(err),
+					(err) => result!.error(err)
 				);
 			}
 		}
@@ -103,25 +106,25 @@ export class RemoteAuthorityResolverService
 	}
 
 	private async _doResolveAuthority(
-		authority: string,
+		authority: string
 	): Promise<ResolverResult> {
 		const authorityPrefix = getRemoteAuthorityPrefix(authority);
 		const sw = StopWatch.create(false);
 		this._logService.info(
-			`Resolving connection token (${authorityPrefix})...`,
+			`Resolving connection token (${authorityPrefix})...`
 		);
 		performance.mark(`code/willResolveConnectionToken/${authorityPrefix}`);
 		const connectionToken = await Promise.resolve(
-			this._connectionTokens.get(authority) || this._connectionToken,
+			this._connectionTokens.get(authority) || this._connectionToken
 		);
 		performance.mark(`code/didResolveConnectionToken/${authorityPrefix}`);
 		this._logService.info(
-			`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`,
+			`Resolved connection token (${authorityPrefix}) after ${sw.elapsed()} ms`
 		);
 		const defaultPort = /^https:/.test(mainWindow.location.href) ? 443 : 80;
 		const { host, port } = parseAuthorityWithOptionalPort(
 			authority,
-			defaultPort,
+			defaultPort
 		);
 		const result: ResolverResult = {
 			authority: {
@@ -145,11 +148,11 @@ export class RemoteAuthorityResolverService
 
 	_setResolvedAuthority(
 		resolvedAuthority: ResolvedAuthority,
-		options?: ResolvedOptions,
+		options?: ResolvedOptions
 	): void {
 		if (this._resolveAuthorityRequests.has(resolvedAuthority.authority)) {
 			const request = this._resolveAuthorityRequests.get(
-				resolvedAuthority.authority,
+				resolvedAuthority.authority
 			)!;
 			// For non-websocket types, it's expected the embedder passes a `remoteResourceProvider`
 			// which is wrapped to a `IResourceUriProvider` and is not handled here.
@@ -160,13 +163,13 @@ export class RemoteAuthorityResolverService
 				RemoteAuthorities.set(
 					resolvedAuthority.authority,
 					resolvedAuthority.connectTo.host,
-					resolvedAuthority.connectTo.port,
+					resolvedAuthority.connectTo.port
 				);
 			}
 			if (resolvedAuthority.connectionToken) {
 				RemoteAuthorities.setConnectionToken(
 					resolvedAuthority.authority,
-					resolvedAuthority.connectionToken,
+					resolvedAuthority.connectionToken
 				);
 			}
 			request.complete({ authority: resolvedAuthority, options });
@@ -184,7 +187,7 @@ export class RemoteAuthorityResolverService
 
 	_setAuthorityConnectionToken(
 		authority: string,
-		connectionToken: string,
+		connectionToken: string
 	): void {
 		this._connectionTokens.set(authority, connectionToken);
 		RemoteAuthorities.setConnectionToken(authority, connectionToken);

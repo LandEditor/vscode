@@ -80,16 +80,23 @@ export class UserDataSyncResourceProviderService
 	private readonly extUri: IExtUri;
 
 	constructor(
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService private readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
-		@IUserDataSyncLogService protected readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		private readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncLogService
+		protected readonly logService: IUserDataSyncLogService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		this.extUri = uriIdentityService.extUri;
 	}
@@ -98,12 +105,12 @@ export class UserDataSyncResourceProviderService
 		const userData = await this.userDataSyncStoreService.readResource(
 			SyncResource.Profiles,
 			null,
-			undefined,
+			undefined
 		);
 		if (userData.content) {
 			const syncData = this.parseSyncData(
 				userData.content,
-				SyncResource.Profiles,
+				SyncResource.Profiles
 			);
 			return parseUserDataProfilesManifest(syncData);
 		}
@@ -111,13 +118,13 @@ export class UserDataSyncResourceProviderService
 	}
 
 	async getLocalSyncedProfiles(
-		location?: URI,
+		location?: URI
 	): Promise<ISyncUserDataProfile[]> {
 		const refs =
 			await this.userDataSyncLocalStoreService.getAllResourceRefs(
 				SyncResource.Profiles,
 				undefined,
-				location,
+				location
 			);
 		if (refs.length) {
 			const content =
@@ -125,12 +132,12 @@ export class UserDataSyncResourceProviderService
 					SyncResource.Profiles,
 					refs[0].ref,
 					undefined,
-					location,
+					location
 				);
 			if (content) {
 				const syncData = this.parseSyncData(
 					content,
-					SyncResource.Profiles,
+					SyncResource.Profiles
 				);
 				return parseUserDataProfilesManifest(syncData);
 			}
@@ -139,13 +146,13 @@ export class UserDataSyncResourceProviderService
 	}
 
 	async getLocalSyncedMachines(
-		location?: URI,
+		location?: URI
 	): Promise<IUserDataSyncMachine[]> {
 		const refs =
 			await this.userDataSyncLocalStoreService.getAllResourceRefs(
 				"machines",
 				undefined,
-				location,
+				location
 			);
 		if (refs.length) {
 			const content =
@@ -153,7 +160,7 @@ export class UserDataSyncResourceProviderService
 					"machines",
 					refs[0].ref,
 					undefined,
-					location,
+					location
 				);
 			if (content) {
 				const machinesData: IMachinesData = JSON.parse(content);
@@ -168,11 +175,11 @@ export class UserDataSyncResourceProviderService
 
 	async getRemoteSyncResourceHandles(
 		syncResource: SyncResource,
-		profile?: ISyncUserDataProfile,
+		profile?: ISyncUserDataProfile
 	): Promise<ISyncResourceHandle[]> {
 		const handles = await this.userDataSyncStoreService.getAllResourceRefs(
 			syncResource,
-			profile?.collection,
+			profile?.collection
 		);
 		return handles.map(({ created, ref }) => ({
 			created,
@@ -193,13 +200,13 @@ export class UserDataSyncResourceProviderService
 	async getLocalSyncResourceHandles(
 		syncResource: SyncResource,
 		profile?: ISyncUserDataProfile,
-		location?: URI,
+		location?: URI
 	): Promise<ISyncResourceHandle[]> {
 		const handles =
 			await this.userDataSyncLocalStoreService.getAllResourceRefs(
 				syncResource,
 				profile?.collection,
-				location,
+				location
 			);
 		return handles.map(({ created, ref }) => ({
 			created,
@@ -223,8 +230,8 @@ export class UserDataSyncResourceProviderService
 		const resolved = this.resolveUri(uri);
 		const profile = resolved
 			? this.userDataProfilesService.profiles.find(
-					(p) => p.id === resolved.profile,
-			  )
+					(p) => p.id === resolved.profile
+				)
 			: undefined;
 		return resolved && profile
 			? { profile, syncResource: resolved?.syncResource }
@@ -242,7 +249,7 @@ export class UserDataSyncResourceProviderService
 		}
 
 		const profile = this.userDataProfilesService.profiles.find(
-			(p) => p.id === resolved.profile,
+			(p) => p.id === resolved.profile
 		);
 		switch (resolved.syncResource) {
 			case SyncResource.Settings:
@@ -276,12 +283,12 @@ export class UserDataSyncResourceProviderService
 				const { content } = await this.getUserData(
 					resolved.syncResource,
 					resolved.ref,
-					resolved.collection,
+					resolved.collection
 				);
 				if (content) {
 					const syncData = this.parseSyncData(
 						content,
-						resolved.syncResource,
+						resolved.syncResource
 					);
 					return syncData?.machineId;
 				}
@@ -296,12 +303,12 @@ export class UserDataSyncResourceProviderService
 						resolved.syncResource,
 						resolved.ref,
 						resolved.collection,
-						resolved.location,
+						resolved.location
 					);
 				if (content) {
 					const syncData = this.parseSyncData(
 						content,
-						resolved.syncResource,
+						resolved.syncResource
 					);
 					return syncData?.machineId;
 				}
@@ -312,7 +319,7 @@ export class UserDataSyncResourceProviderService
 		return getServiceMachineId(
 			this.environmentService,
 			this.fileService,
-			this.storageService,
+			this.storageService
 		);
 	}
 
@@ -335,13 +342,13 @@ export class UserDataSyncResourceProviderService
 				resolved.syncResource,
 				resolved.collection,
 				resolved.ref,
-				resolved.location,
+				resolved.location
 			);
 			if (resolved.node && content) {
 				return this.resolveNodeContent(
 					resolved.syncResource,
 					content,
-					resolved.node,
+					resolved.node
 				);
 			}
 			return content;
@@ -350,7 +357,7 @@ export class UserDataSyncResourceProviderService
 		if (!resolved.remote && !resolved.node) {
 			return this.resolveLatestContent(
 				resolved.syncResource,
-				resolved.profile,
+				resolved.profile
 			);
 		}
 
@@ -362,13 +369,13 @@ export class UserDataSyncResourceProviderService
 		syncResource: SyncResource,
 		collection: string | undefined,
 		ref: string,
-		location?: URI,
+		location?: URI
 	): Promise<string | null> {
 		if (remote) {
 			const { content } = await this.getUserData(
 				syncResource,
 				ref,
-				collection,
+				collection
 			);
 			return content;
 		}
@@ -376,14 +383,14 @@ export class UserDataSyncResourceProviderService
 			syncResource,
 			ref,
 			collection,
-			location,
+			location
 		);
 	}
 
 	private resolveNodeContent(
 		syncResource: SyncResource,
 		content: string,
-		node: string,
+		node: string
 	): string | null {
 		const syncData = this.parseSyncData(content, syncResource);
 		switch (syncResource) {
@@ -408,10 +415,10 @@ export class UserDataSyncResourceProviderService
 
 	private async resolveLatestContent(
 		syncResource: SyncResource,
-		profileId: string,
+		profileId: string
 	): Promise<string | null> {
 		const profile = this.userDataProfilesService.profiles.find(
-			(p) => p.id === profileId,
+			(p) => p.id === profileId
 		);
 		if (!profile) {
 			return null;
@@ -438,21 +445,21 @@ export class UserDataSyncResourceProviderService
 
 	private getSettingsAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): { resource: URI; comparableResource: URI }[] {
 		const resource = this.extUri.joinPath(uri, "settings.json");
 		const comparableResource = profile
 			? profile.settingsResource
 			: this.extUri.joinPath(
 					uri,
-					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
-			  );
+					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
+				);
 		return [{ resource, comparableResource }];
 	}
 
 	private resolveSettingsNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		switch (node) {
 			case "settings.json":
@@ -463,30 +470,30 @@ export class UserDataSyncResourceProviderService
 
 	private getKeybindingsAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): { resource: URI; comparableResource: URI }[] {
 		const resource = this.extUri.joinPath(uri, "keybindings.json");
 		const comparableResource = profile
 			? profile.keybindingsResource
 			: this.extUri.joinPath(
 					uri,
-					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
-			  );
+					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
+				);
 		return [{ resource, comparableResource }];
 	}
 
 	private resolveKeybindingsNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		switch (node) {
 			case "keybindings.json":
 				return getKeybindingsContentFromSyncContent(
 					syncData.content,
 					!!this.configurationService.getValue(
-						CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM,
+						CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM
 					),
-					this.logService,
+					this.logService
 				);
 		}
 		return null;
@@ -494,27 +501,27 @@ export class UserDataSyncResourceProviderService
 
 	private getTasksAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): { resource: URI; comparableResource: URI }[] {
 		const resource = this.extUri.joinPath(uri, "tasks.json");
 		const comparableResource = profile
 			? profile.tasksResource
 			: this.extUri.joinPath(
 					uri,
-					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
-			  );
+					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
+				);
 		return [{ resource, comparableResource }];
 	}
 
 	private resolveTasksNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		switch (node) {
 			case "tasks.json":
 				return getTasksContentFromSyncContent(
 					syncData.content,
-					this.logService,
+					this.logService
 				);
 		}
 		return null;
@@ -522,7 +529,7 @@ export class UserDataSyncResourceProviderService
 
 	private async getSnippetsAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): Promise<{ resource: URI; comparableResource: URI }[]> {
 		const content = await this.resolveContent(uri);
 		if (content) {
@@ -536,8 +543,8 @@ export class UserDataSyncResourceProviderService
 						? this.extUri.joinPath(profile.snippetsHome, snippet)
 						: this.extUri.joinPath(
 								uri,
-								UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
-						  );
+								UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
+							);
 					result.push({ resource, comparableResource });
 				}
 				return result;
@@ -548,14 +555,14 @@ export class UserDataSyncResourceProviderService
 
 	private resolveSnippetsNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		return parseSnippets(syncData)[node] || null;
 	}
 
 	private getExtensionsAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): { resource: URI; comparableResource: URI }[] {
 		const resource = this.extUri.joinPath(uri, "extensions.json");
 		const comparableResource = profile
@@ -567,17 +574,17 @@ export class UserDataSyncResourceProviderService
 					collection: undefined,
 					ref: undefined,
 					node: undefined,
-			  })
+				})
 			: this.extUri.joinPath(
 					uri,
-					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
-			  );
+					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
+				);
 		return [{ resource, comparableResource }];
 	}
 
 	private resolveExtensionsNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		switch (node) {
 			case "extensions.json":
@@ -587,7 +594,7 @@ export class UserDataSyncResourceProviderService
 	}
 
 	private async resolveLatestExtensionsContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<string | null> {
 		const { localExtensions } = await this.instantiationService
 			.createInstance(LocalExtensionsProvider)
@@ -597,7 +604,7 @@ export class UserDataSyncResourceProviderService
 
 	private getGlobalStateAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): { resource: URI; comparableResource: URI }[] {
 		const resource = this.extUri.joinPath(uri, "globalState.json");
 		const comparableResource = profile
@@ -609,17 +616,17 @@ export class UserDataSyncResourceProviderService
 					collection: undefined,
 					ref: undefined,
 					node: undefined,
-			  })
+				})
 			: this.extUri.joinPath(
 					uri,
-					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE,
-			  );
+					UserDataSyncResourceProviderService.NOT_EXISTING_RESOURCE
+				);
 		return [{ resource, comparableResource }];
 	}
 
 	private resolveGlobalStateNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		switch (node) {
 			case "globalState.json":
@@ -629,7 +636,7 @@ export class UserDataSyncResourceProviderService
 	}
 
 	private async resolveLatestGlobalStateContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<string | null> {
 		const localGlobalState = await this.instantiationService
 			.createInstance(LocalGlobalStateProvider)
@@ -639,7 +646,7 @@ export class UserDataSyncResourceProviderService
 
 	private getProfilesAssociatedResources(
 		uri: URI,
-		profile: IUserDataProfile | undefined,
+		profile: IUserDataProfile | undefined
 	): { resource: URI; comparableResource: URI }[] {
 		const resource = this.extUri.joinPath(uri, "profiles.json");
 		const comparableResource = this.toUri({
@@ -656,7 +663,7 @@ export class UserDataSyncResourceProviderService
 
 	private resolveProfileNodeContent(
 		syncData: ISyncData,
-		node: string,
+		node: string
 	): string | null {
 		switch (node) {
 			case "profiles.json":
@@ -666,13 +673,13 @@ export class UserDataSyncResourceProviderService
 	}
 
 	private async resolveLatestProfilesContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<string | null> {
 		return stringifyLocalProfiles(
 			this.userDataProfilesService.profiles.filter(
-				(p) => !p.isDefault && !p.isTransient,
+				(p) => !p.isDefault && !p.isTransient
 			),
-			true,
+			true
 		);
 	}
 
@@ -705,7 +712,7 @@ export class UserDataSyncResourceProviderService
 				query: syncResourceUriInfo.location?.query,
 				fragment: syncResourceUriInfo.location?.fragment,
 			}),
-			...paths,
+			...paths
 		);
 	}
 
@@ -740,7 +747,7 @@ export class UserDataSyncResourceProviderService
 				authority = path.substring("authority:".length);
 			} else if (path.startsWith("syncResource:")) {
 				syncResource = path.substring(
-					"syncResource:".length,
+					"syncResource:".length
 				) as SyncResource;
 			} else if (path.startsWith("profile:")) {
 				profile = path.substring("profile:".length);
@@ -771,15 +778,15 @@ export class UserDataSyncResourceProviderService
 								fragment: uri.fragment,
 								path: "/",
 							}),
-							...locationPaths,
-					  )
+							...locationPaths
+						)
 					: undefined,
 		};
 	}
 
 	private parseSyncData(
 		content: string,
-		syncResource: SyncResource,
+		syncResource: SyncResource
 	): ISyncData {
 		try {
 			const syncData: ISyncData = JSON.parse(content);
@@ -792,23 +799,23 @@ export class UserDataSyncResourceProviderService
 		throw new UserDataSyncError(
 			localize(
 				"incompatible sync data",
-				"Cannot parse sync data as it is not compatible with the current version.",
+				"Cannot parse sync data as it is not compatible with the current version."
 			),
 			UserDataSyncErrorCode.IncompatibleRemoteContent,
-			syncResource,
+			syncResource
 		);
 	}
 
 	private async getUserData(
 		syncResource: SyncResource,
 		ref: string,
-		collection?: string,
+		collection?: string
 	): Promise<IUserData> {
 		const content =
 			await this.userDataSyncStoreService.resolveResourceContent(
 				syncResource,
 				ref,
-				collection,
+				collection
 			);
 		return { ref, content };
 	}

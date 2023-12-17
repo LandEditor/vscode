@@ -42,7 +42,7 @@ export class MarkdownString implements IMarkdownString {
 					isTrusted?: boolean | MarkdownStringTrustedOptions;
 					supportThemeIcons?: boolean;
 					supportHtml?: boolean;
-			  } = false,
+			  } = false
 	) {
 		this.value = value;
 		if (typeof this.value !== "string") {
@@ -63,10 +63,10 @@ export class MarkdownString implements IMarkdownString {
 
 	appendText(
 		value: string,
-		newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph,
+		newlineStyle: MarkdownStringTextNewlineStyle = MarkdownStringTextNewlineStyle.Paragraph
 	): MarkdownString {
 		this.value += escapeMarkdownSyntaxTokens(
-			this.supportThemeIcons ? escapeIcons(value) : value,
+			this.supportThemeIcons ? escapeIcons(value) : value
 		) // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
 			.replace(/([ \t]+)/g, (_match, g1) => "&nbsp;".repeat(g1.length)) // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
 			.replace(/\>/gm, "\\>") // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
@@ -74,7 +74,7 @@ export class MarkdownString implements IMarkdownString {
 				/\n/g,
 				newlineStyle === MarkdownStringTextNewlineStyle.Break
 					? "\\\n"
-					: "\n\n",
+					: "\n\n"
 			); // CodeQL [SM02383] The Markdown is fully sanitized after being rendered.
 
 		return this;
@@ -88,7 +88,7 @@ export class MarkdownString implements IMarkdownString {
 	appendCodeblock(langId: string, code: string): MarkdownString {
 		this.value += `\n${appendEscapedMarkdownCodeBlockFence(
 			code,
-			langId,
+			langId
 		)}\n`;
 		return this;
 	}
@@ -96,7 +96,7 @@ export class MarkdownString implements IMarkdownString {
 	appendLink(
 		target: URI | string,
 		label: string,
-		title?: string,
+		title?: string
 	): MarkdownString {
 		this.value += "[";
 		this.value += this._escape(label, "]");
@@ -122,7 +122,7 @@ export class MarkdownString implements IMarkdownString {
 }
 
 export function isEmptyMarkdownString(
-	oneOrMany: IMarkdownString | IMarkdownString[] | null | undefined,
+	oneOrMany: IMarkdownString | IMarkdownString[] | null | undefined
 ): boolean {
 	if (isMarkdownString(oneOrMany)) {
 		return !oneOrMany.value;
@@ -151,7 +151,7 @@ export function isMarkdownString(thing: any): thing is IMarkdownString {
 
 export function markdownStringEqual(
 	a: IMarkdownString,
-	b: IMarkdownString,
+	b: IMarkdownString
 ): boolean {
 	if (a === b) {
 		return true;
@@ -181,7 +181,7 @@ export function escapeMarkdownSyntaxTokens(text: string): string {
  */
 export function appendEscapedMarkdownCodeBlockFence(
 	code: string,
-	langId: string,
+	langId: string
 ) {
 	const longestFenceLength =
 		code.match(/^`+/gm)?.reduce((a, b) => (a.length > b.length ? a : b))

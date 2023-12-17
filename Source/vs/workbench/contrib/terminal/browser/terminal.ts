@@ -66,10 +66,10 @@ import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
 export const ITerminalService =
 	createDecorator<ITerminalService>("terminalService");
 export const ITerminalEditorService = createDecorator<ITerminalEditorService>(
-	"terminalEditorService",
+	"terminalEditorService"
 );
 export const ITerminalGroupService = createDecorator<ITerminalGroupService>(
-	"terminalGroupService",
+	"terminalGroupService"
 );
 export const ITerminalInstanceService =
 	createDecorator<ITerminalInstanceService>("terminalInstanceService");
@@ -82,7 +82,7 @@ export const ITerminalInstanceService =
 export interface ITerminalContribution extends IDisposable {
 	layout?(
 		xterm: IXtermTerminal & { raw: RawXtermTerminal },
-		dimension: IDimension,
+		dimension: IDimension
 	): void;
 	xtermOpen?(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void;
 	xtermReady?(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void;
@@ -110,7 +110,7 @@ export interface ITerminalInstanceService {
 	 */
 	convertProfileToShellLaunchConfig(
 		shellLaunchConfigOrProfile?: IShellLaunchConfig | ITerminalProfile,
-		cwd?: string | URI,
+		cwd?: string | URI
 	): IShellLaunchConfig;
 
 	/**
@@ -120,7 +120,7 @@ export interface ITerminalInstanceService {
 	 */
 	createInstance(
 		launchConfig: IShellLaunchConfig,
-		target: TerminalLocation,
+		target: TerminalLocation
 	): ITerminalInstance;
 
 	/**
@@ -166,7 +166,7 @@ export interface IMarkTracker {
 	scrollToPreviousMark(
 		scrollPosition?: ScrollPosition,
 		retainSelection?: boolean,
-		skipEmptyCommands?: boolean,
+		skipEmptyCommands?: boolean
 	): void;
 	scrollToNextMark(): void;
 	selectToPreviousMark(): void;
@@ -177,7 +177,7 @@ export interface IMarkTracker {
 	scrollToClosestMarker(
 		startMarkerId: string,
 		endMarkerId?: string,
-		highlight?: boolean | undefined,
+		highlight?: boolean | undefined
 	): void;
 
 	scrollToLine(line: number, position: ScrollPosition): void;
@@ -185,7 +185,7 @@ export interface IMarkTracker {
 	registerTemporaryDecoration(
 		marker: IMarker,
 		endMarker: IMarker | undefined,
-		showOutline: boolean,
+		showOutline: boolean
 	): void;
 	showCommandGuide(command: ITerminalCommand | undefined): void;
 }
@@ -303,12 +303,12 @@ export interface IDetachedTerminalInstance
 	 */
 	attachToElement(
 		container: HTMLElement,
-		options?: Partial<IXtermAttachToElementOptions>,
+		options?: Partial<IXtermAttachToElementOptions>
 	): void;
 }
 
 export const isDetachedTerminalInstance = (
-	t: ITerminalInstance | IDetachedTerminalInstance,
+	t: ITerminalInstance | IDetachedTerminalInstance
 ): t is IDetachedTerminalInstance =>
 	typeof (t as ITerminalInstance).instanceId !== "number";
 
@@ -355,7 +355,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	 * profile will be used at the default target.
 	 */
 	createTerminal(
-		options?: ICreateTerminalOptions,
+		options?: ICreateTerminalOptions
 	): Promise<ITerminalInstance>;
 
 	/**
@@ -364,7 +364,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	 * @params options The options to create the terminal with
 	 */
 	createDetachedTerminal(
-		options: IDetachedXTermOptions,
+		options: IDetachedXTermOptions
 	): Promise<IDetachedTerminalInstance>;
 
 	/**
@@ -378,7 +378,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	 * so store them to be requested/adopted later
 	 */
 	getReconnectedTerminals(
-		reconnectionOwner: string,
+		reconnectionOwner: string
 	): ITerminalInstance[] | undefined;
 
 	getActiveOrCreateInstance(options?: {
@@ -399,18 +399,18 @@ export interface ITerminalService extends ITerminalInstanceHost {
 
 	showProfileQuickPick(
 		type: "setDefault" | "createInstance",
-		cwd?: string | URI,
+		cwd?: string | URI
 	): Promise<ITerminalInstance | undefined>;
 
 	setContainers(
 		panelContainer: HTMLElement,
-		terminalContainer: HTMLElement,
+		terminalContainer: HTMLElement
 	): void;
 
 	requestStartExtensionTerminal(
 		proxy: ITerminalProcessExtHostProxy,
 		cols: number,
-		rows: number,
+		rows: number
 	): Promise<ITerminalLaunchError | undefined>;
 	isAttachedToTerminal(remoteTerm: IRemoteTerminalAttachTarget): boolean;
 	getEditableData(instance: ITerminalInstance): IEditableData | undefined;
@@ -420,11 +420,11 @@ export interface ITerminalService extends ITerminalInstanceHost {
 
 	getDefaultInstanceHost(): ITerminalInstanceHost;
 	getInstanceHost(
-		target: ITerminalLocationOptions | undefined,
+		target: ITerminalLocationOptions | undefined
 	): Promise<ITerminalInstanceHost>;
 
 	resolveLocation(
-		location?: ITerminalLocationOptions,
+		location?: ITerminalLocationOptions
 	): Promise<TerminalLocation | undefined>;
 	setNativeDelegate(nativeCalls: ITerminalServiceNativeDelegate): void;
 
@@ -437,7 +437,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	 * @param getEvent Maps the instance to the event.
 	 */
 	createOnInstanceEvent<T>(
-		getEvent: (instance: ITerminalInstance) => Event<T>,
+		getEvent: (instance: ITerminalInstance) => Event<T>
 	): Event<T>;
 
 	/**
@@ -448,7 +448,7 @@ export interface ITerminalService extends ITerminalInstanceHost {
 	 */
 	createOnInstanceCapabilityEvent<T extends TerminalCapability, K>(
 		capabilityId: T,
-		getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>,
+		getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>
 	): IDynamicListEventMultiplexer<{ instance: ITerminalInstance; data: K }>;
 }
 export class TerminalLinkQuickPickEvent extends MouseEvent {}
@@ -468,17 +468,17 @@ export interface ITerminalEditorService extends ITerminalInstanceHost {
 
 	openEditor(
 		instance: ITerminalInstance,
-		editorOptions?: TerminalEditorLocation,
+		editorOptions?: TerminalEditorLocation
 	): Promise<void>;
 	detachInstance(instance: ITerminalInstance): void;
 	splitInstance(
 		instanceToSplit: ITerminalInstance,
-		shellLaunchConfig?: IShellLaunchConfig,
+		shellLaunchConfig?: IShellLaunchConfig
 	): ITerminalInstance;
 	revealActiveEditor(preserveFocus?: boolean): Promise<void>;
 	resolveResource(instance: ITerminalInstance): URI;
 	reviveInput(
-		deserializedInput: IDeserializedTerminalEditorInput,
+		deserializedInput: IDeserializedTerminalEditorInput
 	): EditorInput;
 	getInputFromResource(resource: URI): EditorInput;
 }
@@ -568,7 +568,7 @@ export interface ITerminalGroupService extends ITerminalInstanceHost {
 	createGroup(shellLaunchConfig?: IShellLaunchConfig): ITerminalGroup;
 	createGroup(instance?: ITerminalInstance): ITerminalGroup;
 	getGroupForInstance(
-		instance: ITerminalInstance,
+		instance: ITerminalInstance
 	): ITerminalGroup | undefined;
 
 	/**
@@ -582,7 +582,7 @@ export interface ITerminalGroupService extends ITerminalInstanceHost {
 	moveInstance(
 		source: ITerminalInstance,
 		target: ITerminalInstance,
-		side: "before" | "after",
+		side: "before" | "after"
 	): void;
 	unsplitInstance(instance: ITerminalInstance): void;
 	joinInstances(instances: ITerminalInstance[]): void;
@@ -628,7 +628,7 @@ export interface ITerminalInstanceHost {
 	 * when you only know about a terminal's URI. (a URI's instance ID may not be this window's instance ID)
 	 */
 	getInstanceFromResource(
-		resource: URI | undefined,
+		resource: URI | undefined
 	): ITerminalInstance | undefined;
 }
 
@@ -640,7 +640,7 @@ export interface ITerminalInstanceHost {
 export interface ITerminalExternalLinkProvider {
 	provideLinks(
 		instance: ITerminalInstance,
-		line: string,
+		line: string
 	): Promise<ITerminalLink[] | undefined>;
 }
 
@@ -938,7 +938,7 @@ export interface ITerminalInstance extends IBaseTerminalInstance {
 	scrollToMark(
 		startMarkId: string,
 		endMarkId?: string,
-		highlight?: boolean,
+		highlight?: boolean
 	): void;
 
 	/**
@@ -1007,7 +1007,7 @@ export interface ITerminalInstance extends IBaseTerminalInstance {
 	sendText(
 		text: string,
 		shouldExecute: boolean,
-		bracketedPasteMode?: boolean,
+		bracketedPasteMode?: boolean
 	): Promise<void>;
 
 	/**
@@ -1129,7 +1129,7 @@ export interface ITerminalInstance extends IBaseTerminalInstance {
 	 */
 	changeColor(
 		color?: string,
-		skipQuickPick?: boolean,
+		skipQuickPick?: boolean
 	): Promise<string | undefined>;
 
 	/**
@@ -1148,7 +1148,7 @@ export interface ITerminalInstance extends IBaseTerminalInstance {
 	 * Update the parent context key service to use for this terminal instance.
 	 */
 	setParentContextKeyService(
-		parentContextKeyService: IContextKeyService,
+		parentContextKeyService: IContextKeyService
 	): void;
 }
 
@@ -1213,7 +1213,7 @@ export interface IXtermTerminal extends IDisposable {
 	 */
 	attachToElement(
 		container: HTMLElement,
-		options?: Partial<IXtermAttachToElementOptions>,
+		options?: Partial<IXtermAttachToElementOptions>
 	): void;
 
 	findResult?: { resultIndex: number; resultCount: number };
@@ -1265,7 +1265,7 @@ export interface IXtermTerminal extends IDisposable {
 	selectMarkedRange(
 		fromMarkerId: string,
 		toMarkerId: string,
-		scrollIntoView?: boolean,
+		scrollIntoView?: boolean
 	): void;
 
 	/**
@@ -1289,7 +1289,7 @@ export interface IXtermTerminal extends IDisposable {
 	/** Scroll the terminal buffer to the top.    */ scrollToTop(): void;
 	/** Scroll the terminal buffer to a set line  */ scrollToLine(
 		line: number,
-		position?: ScrollPosition,
+		position?: ScrollPosition
 	): void;
 
 	/**
@@ -1376,7 +1376,7 @@ export interface ISuggestController {
 	selectNextSuggestion(): void;
 	selectNextPageSuggestion(): void;
 	acceptSelectedSuggestion(
-		suggestion?: Pick<ISimpleSelectedSuggestion, "item" | "model">,
+		suggestion?: Pick<ISimpleSelectedSuggestion, "item" | "model">
 	): void;
 	hideSuggestWidget(): void;
 	/**

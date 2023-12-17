@@ -41,7 +41,7 @@ interface IRemoteSelectItem extends ISelectOptionItem {
 
 export const SELECTED_REMOTE_IN_EXPLORER = new RawContextKey<string>(
 	"selectedRemoteInExplorer",
-	"",
+	""
 );
 
 export class SwitchRemoteViewItem extends Disposable {
@@ -51,27 +51,38 @@ export class SwitchRemoteViewItem extends Disposable {
 	private readonly selectedRemoteContext: IContextKey<string>;
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IRemoteExplorerService private remoteExplorerService: IRemoteExplorerService,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IRemoteExplorerService
+		private remoteExplorerService: IRemoteExplorerService,
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService
 	) {
 		super();
-		this.selectedRemoteContext = SELECTED_REMOTE_IN_EXPLORER.bindTo(contextKeyService);
+		this.selectedRemoteContext =
+			SELECTED_REMOTE_IN_EXPLORER.bindTo(contextKeyService);
 
-		this.switchRemoteMenu = MenuId.for('workbench.remote.menu.switchRemoteMenu');
-		this._register(MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
-			submenu: this.switchRemoteMenu,
-			title: nls.localize('switchRemote.label', "Switch Remote"),
-			group: 'navigation',
-			when: ContextKeyExpr.equals('viewContainer', VIEWLET_ID),
-			order: 1,
-			isSelection: true
-		}));
-		this._register(remoteExplorerService.onDidChangeTargetType(e => {
-			this.select(e);
-		}));
+		this.switchRemoteMenu = MenuId.for(
+			"workbench.remote.menu.switchRemoteMenu"
+		);
+		this._register(
+			MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
+				submenu: this.switchRemoteMenu,
+				title: nls.localize("switchRemote.label", "Switch Remote"),
+				group: "navigation",
+				when: ContextKeyExpr.equals("viewContainer", VIEWLET_ID),
+				order: 1,
+				isSelection: true,
+			})
+		);
+		this._register(
+			remoteExplorerService.onDidChangeTargetType((e) => {
+				this.select(e);
+			})
+		);
 	}
 
 	public setSelectionForConnection(): boolean {
@@ -82,21 +93,21 @@ export class SwitchRemoteViewItem extends Disposable {
 			let virtualWorkspace: string | undefined;
 			if (!remoteAuthority) {
 				virtualWorkspace = getVirtualWorkspaceLocation(
-					this.workspaceContextService.getWorkspace(),
+					this.workspaceContextService.getWorkspace()
 				)?.scheme;
 			}
 			isSetForConnection = true;
 			const explorerType: string[] | undefined = remoteAuthority
 				? [remoteAuthority.split("+")[0]]
 				: virtualWorkspace
-				  ? [virtualWorkspace]
-				  : this.storageService
+					? [virtualWorkspace]
+					: this.storageService
 							.get(
 								REMOTE_EXPLORER_TYPE_KEY,
-								StorageScope.WORKSPACE,
+								StorageScope.WORKSPACE
 							)
 							?.split(",") ??
-					  this.storageService
+						this.storageService
 							.get(REMOTE_EXPLORER_TYPE_KEY, StorageScope.PROFILE)
 							?.split(",");
 			if (explorerType !== undefined) {
@@ -115,7 +126,7 @@ export class SwitchRemoteViewItem extends Disposable {
 	}
 
 	private getAuthorityForExplorerType(
-		explorerType: string[],
+		explorerType: string[]
 	): string[] | undefined {
 		let authority: string[] | undefined;
 		for (const option of this.completedRemotes) {
@@ -176,7 +187,7 @@ export class SwitchRemoteViewItem extends Disposable {
 								id: `workbench.action.remoteExplorer.show.${authority[0]}`,
 								title: text,
 								toggled: SELECTED_REMOTE_IN_EXPLORER.isEqualTo(
-									authority[0],
+									authority[0]
 								),
 								menu: {
 									id: thisCapture.switchRemoteMenu,
@@ -186,7 +197,7 @@ export class SwitchRemoteViewItem extends Disposable {
 						async run(): Promise<void> {
 							thisCapture.select(authority);
 						}
-					},
+					}
 				);
 				this.completedRemotes.set(authority[0], {
 					text: text.value,

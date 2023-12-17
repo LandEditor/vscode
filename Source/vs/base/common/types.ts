@@ -90,11 +90,11 @@ export function isUndefinedOrNull(obj: unknown): obj is undefined | null {
 
 export function assertType(
 	condition: unknown,
-	type?: string,
+	type?: string
 ): asserts condition {
 	if (!condition) {
 		throw new Error(
-			type ? `Unexpected type, expected '${type}'` : "Unexpected type",
+			type ? `Unexpected type, expected '${type}'` : "Unexpected type"
 		);
 	}
 }
@@ -115,18 +115,18 @@ export function assertIsDefined<T>(arg: T | null | undefined): T {
  */
 export function assertAllDefined<T1, T2>(
 	t1: T1 | null | undefined,
-	t2: T2 | null | undefined,
+	t2: T2 | null | undefined
 ): [T1, T2];
 export function assertAllDefined<T1, T2, T3>(
 	t1: T1 | null | undefined,
 	t2: T2 | null | undefined,
-	t3: T3 | null | undefined,
+	t3: T3 | null | undefined
 ): [T1, T2, T3];
 export function assertAllDefined<T1, T2, T3, T4>(
 	t1: T1 | null | undefined,
 	t2: T2 | null | undefined,
 	t3: T3 | null | undefined,
-	t4: T4 | null | undefined,
+	t4: T4 | null | undefined
 ): [T1, T2, T3, T4];
 export function assertAllDefined(
 	...args: (unknown | null | undefined)[]
@@ -138,7 +138,7 @@ export function assertAllDefined(
 
 		if (isUndefinedOrNull(arg)) {
 			throw new Error(
-				`Assertion Failed: argument at index ${i} is undefined or null`,
+				`Assertion Failed: argument at index ${i} is undefined or null`
 			);
 		}
 
@@ -185,7 +185,7 @@ export type TypeConstraint = string | Function;
 
 export function validateConstraints(
 	args: unknown[],
-	constraints: Array<TypeConstraint | undefined>,
+	constraints: Array<TypeConstraint | undefined>
 ): void {
 	const len = Math.min(args.length, constraints.length);
 	for (let i = 0; i < len; i++) {
@@ -195,12 +195,12 @@ export function validateConstraints(
 
 export function validateConstraint(
 	arg: unknown,
-	constraint: TypeConstraint | undefined,
+	constraint: TypeConstraint | undefined
 ): void {
 	if (isString(constraint)) {
 		if (typeof arg !== constraint) {
 			throw new Error(
-				`argument does not match constraint: typeof ${constraint}`,
+				`argument does not match constraint: typeof ${constraint}`
 			);
 		}
 	} else if (isFunction(constraint)) {
@@ -224,7 +224,7 @@ export function validateConstraint(
 			return;
 		}
 		throw new Error(
-			`argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`,
+			`argument does not match one of these constraints: arg instanceof constraint, arg.constructor === constraint, nor constraint(arg) === true`
 		);
 	}
 }
@@ -232,9 +232,9 @@ export function validateConstraint(
 type AddFirstParameterToFunction<T, TargetFunctionsReturnType, FirstParameter> =
 	T extends (...args: any[]) => TargetFunctionsReturnType
 		? // Function: add param to function
-		  (firstArg: FirstParameter, ...args: Parameters<T>) => ReturnType<T>
+			(firstArg: FirstParameter, ...args: Parameters<T>) => ReturnType<T>
 		: // Else: just leave as is
-		  T;
+			T;
 
 /**
  * Allows to add a first parameter to functions of a type.

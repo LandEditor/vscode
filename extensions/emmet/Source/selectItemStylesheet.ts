@@ -17,7 +17,7 @@ export function nextItemStylesheet(
 	document: vscode.TextDocument,
 	startPosition: vscode.Position,
 	endPosition: vscode.Position,
-	rootNode: Node,
+	rootNode: Node
 ): vscode.Selection | undefined {
 	const startOffset = document.offsetAt(startPosition);
 	const endOffset = document.offsetAt(endPosition);
@@ -42,7 +42,7 @@ export function nextItemStylesheet(
 			startOffset,
 			endOffset,
 			true,
-			"next",
+			"next"
 		);
 	}
 
@@ -58,7 +58,7 @@ export function nextItemStylesheet(
 			startOffset,
 			endOffset,
 			false,
-			"next",
+			"next"
 		);
 		if (singlePropertyValue) {
 			return singlePropertyValue;
@@ -94,7 +94,7 @@ export function prevItemStylesheet(
 	document: vscode.TextDocument,
 	startPosition: vscode.Position,
 	endPosition: vscode.Position,
-	rootNode: CssNode,
+	rootNode: CssNode
 ): vscode.Selection | undefined {
 	const startOffset = document.offsetAt(startPosition);
 	const endOffset = document.offsetAt(endPosition);
@@ -127,7 +127,7 @@ export function prevItemStylesheet(
 			startOffset,
 			endOffset,
 			false,
-			"prev",
+			"prev"
 		);
 		if (singlePropertyValue) {
 			return singlePropertyValue;
@@ -156,13 +156,13 @@ export function prevItemStylesheet(
 		startOffset,
 		endOffset,
 		false,
-		"prev",
+		"prev"
 	);
 }
 
 function getSelectionFromNode(
 	document: vscode.TextDocument,
-	node: Node | undefined,
+	node: Node | undefined
 ): vscode.Selection | undefined {
 	if (!node) {
 		return;
@@ -173,7 +173,7 @@ function getSelectionFromNode(
 	return offsetRangeToSelection(
 		document,
 		nodeToSelect.start,
-		nodeToSelect.end,
+		nodeToSelect.end
 	);
 }
 
@@ -183,7 +183,7 @@ function getSelectionFromProperty(
 	selectionStart: number,
 	selectionEnd: number,
 	selectFullValue: boolean,
-	direction: string,
+	direction: string
 ): vscode.Selection | undefined {
 	if (!node || node.type !== "property") {
 		return;
@@ -192,7 +192,7 @@ function getSelectionFromProperty(
 
 	const propertyValue = propertyNode.valueToken.stream.substring(
 		propertyNode.valueToken.start,
-		propertyNode.valueToken.end,
+		propertyNode.valueToken.end
 	);
 	selectFullValue =
 		selectFullValue ||
@@ -204,7 +204,7 @@ function getSelectionFromProperty(
 		return offsetRangeToSelection(
 			document,
 			propertyNode.valueToken.start,
-			propertyNode.valueToken.end,
+			propertyNode.valueToken.end
 		);
 	}
 
@@ -216,7 +216,7 @@ function getSelectionFromProperty(
 		const selectionStartChar =
 			document.positionAt(selectionStart).character;
 		const tokenStartChar = document.positionAt(
-			propertyNode.valueToken.start,
+			propertyNode.valueToken.start
 		).character;
 		pos =
 			selectionStart > propertyNode.valueToken.end
@@ -232,7 +232,7 @@ function getSelectionFromProperty(
 		}
 		const selectionEndChar = document.positionAt(selectionEnd).character;
 		const tokenStartChar = document.positionAt(
-			propertyNode.valueToken.start,
+			propertyNode.valueToken.start
 		).character;
 		pos =
 			selectionEnd === propertyNode.valueToken.end

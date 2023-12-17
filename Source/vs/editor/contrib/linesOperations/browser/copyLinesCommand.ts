@@ -34,7 +34,7 @@ export class CopyLinesCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder,
+		builder: IEditOperationBuilder
 	): void {
 		let s = this._selection;
 
@@ -44,7 +44,7 @@ export class CopyLinesCommand implements ICommand {
 			this._endLineNumberDelta = 1;
 			s = s.setEndPosition(
 				s.endLineNumber - 1,
-				model.getLineMaxColumn(s.endLineNumber - 1),
+				model.getLineMaxColumn(s.endLineNumber - 1)
 			);
 		}
 
@@ -68,9 +68,9 @@ export class CopyLinesCommand implements ICommand {
 					s.endLineNumber,
 					model.getLineMaxColumn(s.endLineNumber),
 					s.endLineNumber + 1,
-					1,
+					1
 				),
-				s.endLineNumber === model.getLineCount() ? "" : "\n",
+				s.endLineNumber === model.getLineCount() ? "" : "\n"
 			);
 		} else {
 			if (!this._isCopyingDown) {
@@ -79,14 +79,14 @@ export class CopyLinesCommand implements ICommand {
 						s.endLineNumber,
 						model.getLineMaxColumn(s.endLineNumber),
 						s.endLineNumber,
-						model.getLineMaxColumn(s.endLineNumber),
+						model.getLineMaxColumn(s.endLineNumber)
 					),
-					"\n" + sourceText,
+					"\n" + sourceText
 				);
 			} else {
 				builder.addEditOperation(
 					new Range(s.startLineNumber, 1, s.startLineNumber, 1),
-					sourceText + "\n",
+					sourceText + "\n"
 				);
 			}
 		}
@@ -97,7 +97,7 @@ export class CopyLinesCommand implements ICommand {
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData,
+		helper: ICursorStateComputerData
 	): Selection {
 		let result = helper.getTrackedSelection(this._selectionId!);
 
@@ -125,7 +125,7 @@ export class CopyLinesCommand implements ICommand {
 				startColumn,
 				endLineNumber,
 				endColumn,
-				this._selectionDirection,
+				this._selectionDirection
 			);
 		}
 

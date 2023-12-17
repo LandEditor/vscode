@@ -20,7 +20,7 @@ export interface IWorkspaceEditingService {
 	 */
 	addFolders(
 		folders: IWorkspaceFolderCreationData[],
-		donotNotifyError?: boolean,
+		donotNotifyError?: boolean
 	): Promise<void>;
 
 	/**
@@ -37,7 +37,7 @@ export interface IWorkspaceEditingService {
 		index: number,
 		deleteCount?: number,
 		foldersToAdd?: IWorkspaceFolderCreationData[],
-		donotNotifyError?: boolean,
+		donotNotifyError?: boolean
 	): Promise<void>;
 
 	/**
@@ -51,7 +51,7 @@ export interface IWorkspaceEditingService {
 	 */
 	createAndEnterWorkspace(
 		folders: IWorkspaceFolderCreationData[],
-		path?: URI,
+		path?: URI
 	): Promise<void>;
 
 	/**

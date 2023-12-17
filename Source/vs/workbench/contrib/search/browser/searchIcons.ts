@@ -10,7 +10,7 @@ import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 export const searchDetailsIcon = registerIcon(
 	"search-details",
 	Codicon.ellipsis,
-	localize("searchDetailsIcon", "Icon to make search details visible."),
+	localize("searchDetailsIcon", "Icon to make search details visible.")
 );
 
 export const searchShowContextIcon = registerIcon(
@@ -18,96 +18,93 @@ export const searchShowContextIcon = registerIcon(
 	Codicon.listSelection,
 	localize(
 		"searchShowContextIcon",
-		"Icon for toggle the context in the search editor.",
-	),
+		"Icon for toggle the context in the search editor."
+	)
 );
 export const searchHideReplaceIcon = registerIcon(
 	"search-hide-replace",
 	Codicon.chevronRight,
 	localize(
 		"searchHideReplaceIcon",
-		"Icon to collapse the replace section in the search view.",
-	),
+		"Icon to collapse the replace section in the search view."
+	)
 );
 export const searchShowReplaceIcon = registerIcon(
 	"search-show-replace",
 	Codicon.chevronDown,
 	localize(
 		"searchShowReplaceIcon",
-		"Icon to expand the replace section in the search view.",
-	),
+		"Icon to expand the replace section in the search view."
+	)
 );
 export const searchReplaceAllIcon = registerIcon(
 	"search-replace-all",
 	Codicon.replaceAll,
-	localize(
-		"searchReplaceAllIcon",
-		"Icon for replace all in the search view.",
-	),
+	localize("searchReplaceAllIcon", "Icon for replace all in the search view.")
 );
 export const searchReplaceIcon = registerIcon(
 	"search-replace",
 	Codicon.replace,
-	localize("searchReplaceIcon", "Icon for replace in the search view."),
+	localize("searchReplaceIcon", "Icon for replace in the search view.")
 );
 export const searchRemoveIcon = registerIcon(
 	"search-remove",
 	Codicon.close,
-	localize("searchRemoveIcon", "Icon to remove a search result."),
+	localize("searchRemoveIcon", "Icon to remove a search result.")
 );
 
 export const searchRefreshIcon = registerIcon(
 	"search-refresh",
 	Codicon.refresh,
-	localize("searchRefreshIcon", "Icon for refresh in the search view."),
+	localize("searchRefreshIcon", "Icon for refresh in the search view.")
 );
 export const searchCollapseAllIcon = registerIcon(
 	"search-collapse-results",
 	Codicon.collapseAll,
 	localize(
 		"searchCollapseAllIcon",
-		"Icon for collapse results in the search view.",
-	),
+		"Icon for collapse results in the search view."
+	)
 );
 export const searchExpandAllIcon = registerIcon(
 	"search-expand-results",
 	Codicon.expandAll,
 	localize(
 		"searchExpandAllIcon",
-		"Icon for expand results in the search view.",
-	),
+		"Icon for expand results in the search view."
+	)
 );
 export const searchShowAsTree = registerIcon(
 	"search-tree",
 	Codicon.listTree,
 	localize(
 		"searchShowAsTree",
-		"Icon for viewing results as a tree in the search view.",
-	),
+		"Icon for viewing results as a tree in the search view."
+	)
 );
 export const searchShowAsList = registerIcon(
 	"search-list",
 	Codicon.listFlat,
 	localize(
 		"searchShowAsList",
-		"Icon for viewing results as a list in the search view.",
-	),
+		"Icon for viewing results as a list in the search view."
+	)
 );
 export const searchClearIcon = registerIcon(
 	"search-clear-results",
 	Codicon.clearAll,
-	localize("searchClearIcon", "Icon for clear results in the search view."),
+	localize("searchClearIcon", "Icon for clear results in the search view.")
 );
 export const searchStopIcon = registerIcon(
 	"search-stop",
 	Codicon.searchStop,
-	localize("searchStopIcon", "Icon for stop in the search view."),
+	localize("searchStopIcon", "Icon for stop in the search view.")
 );
 
 export const searchViewIcon = registerIcon(
 	"search-view-icon",
 	Codicon.search,
-	localize("searchViewIcon", "View icon of the search view."),
+	localize("searchViewIcon", "View icon of the search view.")
 );
 
 export const searchNewEditorIcon = registerIcon(
@@ -115,14 +112,14 @@ export const searchNewEditorIcon = registerIcon(
 	Codicon.newFile,
 	localize(
 		"searchNewEditorIcon",
-		"Icon for the action to open a new search editor.",
-	),
+		"Icon for the action to open a new search editor."
+	)
 );
 export const searchOpenInFileIcon = registerIcon(
 	"search-open-in-file",
 	Codicon.goToFile,
 	localize(
 		"searchOpenInFile",
-		"Icon for the action to go to the file of the current search result.",
-	),
+		"Icon for the action to go to the file of the current search result."
+	)
 );

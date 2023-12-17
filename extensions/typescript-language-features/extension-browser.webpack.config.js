@@ -54,16 +54,16 @@ module.exports = [
 							const normalizedFileName =
 								pathData.absoluteFilename.replace(
 									/[\\/]/g,
-									"/",
+									"/"
 								);
 							const match = normalizedFileName.match(
-								/typescript\/lib\/(.*)/,
+								/typescript\/lib\/(.*)/
 							);
 							if (match) {
 								return `typescript/${match[1]}`;
 							}
 							console.log(
-								`Did not find typescript/lib in ${normalizedFileName}`,
+								`Did not find typescript/lib in ${normalizedFileName}`
 							);
 							return "typescript/";
 						},

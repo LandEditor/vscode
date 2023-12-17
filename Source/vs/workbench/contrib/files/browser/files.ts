@@ -33,7 +33,7 @@ export interface IExplorerService {
 
 	getContext(
 		respectMultiSelection: boolean,
-		ignoreNestedChildren?: boolean,
+		ignoreNestedChildren?: boolean
 	): ExplorerItem[];
 	hasViewFocus(): boolean;
 	setEditable(stat: ExplorerItem, data: IEditableData | null): Promise<void>;
@@ -55,7 +55,7 @@ export interface IExplorerService {
 			progressLocation?:
 				| ProgressLocation.Explorer
 				| ProgressLocation.Window;
-		},
+		}
 	): Promise<void>;
 
 	/**
@@ -76,13 +76,13 @@ export interface IExplorerView {
 	refresh(recursive: boolean, item?: ExplorerItem): Promise<void>;
 	selectResource(
 		resource: URI | undefined,
-		reveal?: boolean | string,
+		reveal?: boolean | string
 	): Promise<void>;
 	setTreeInput(): Promise<void>;
 	itemsCopied(
 		tats: ExplorerItem[],
 		cut: boolean,
-		previousCut: ExplorerItem[] | undefined,
+		previousCut: ExplorerItem[] | undefined
 	): void;
 	setEditable(stat: ExplorerItem, isEditing: boolean): Promise<void>;
 	isItemVisible(item: ExplorerItem): boolean;
@@ -118,7 +118,7 @@ function getFocus(listService: IListService): unknown | undefined {
 export function getResourceForCommand(
 	resource: URI | object | undefined,
 	listService: IListService,
-	editorService: IEditorService,
+	editorService: IEditorService
 ): URI | undefined {
 	if (URI.isUri(resource)) {
 		return resource;
@@ -140,7 +140,7 @@ export function getMultiSelectedResources(
 	resource: URI | object | undefined,
 	listService: IListService,
 	editorService: IEditorService,
-	explorerService: IExplorerService,
+	explorerService: IExplorerService
 ): Array<URI> {
 	const list = listService.lastFocusedList;
 	const element = list?.getHTMLElement();
@@ -163,7 +163,7 @@ export function getMultiSelectedResources(
 				list
 					.getSelectedElements()
 					.filter((s) => s instanceof OpenEditor)
-					.map((oe: OpenEditor) => oe.getResource()),
+					.map((oe: OpenEditor) => oe.getResource())
 			);
 			const focusedElements = list.getFocusedElements();
 			const focus = focusedElements.length
@@ -191,7 +191,7 @@ export function getMultiSelectedResources(
 
 export function getOpenEditorsViewMultiSelection(
 	listService: IListService,
-	editorGroupService: IEditorGroupsService,
+	editorGroupService: IEditorGroupsService
 ): Array<IEditorIdentifier> | undefined {
 	const list = listService.lastFocusedList;
 	const element = list?.getHTMLElement();
@@ -201,7 +201,7 @@ export function getOpenEditorsViewMultiSelection(
 			const selection = coalesce(
 				list
 					.getSelectedElements()
-					.filter((s) => s instanceof OpenEditor),
+					.filter((s) => s instanceof OpenEditor)
 			);
 			const focusedElements = list.getFocusedElements();
 			const focus = focusedElements.length

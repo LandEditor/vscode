@@ -23,7 +23,7 @@ export interface IIconsStyleSheet extends IDisposable {
 }
 
 export function getIconsStyleSheet(
-	themeService: IThemeService | undefined,
+	themeService: IThemeService | undefined
 ): IIconsStyleSheet {
 	const disposable = new DisposableStore();
 
@@ -33,8 +33,8 @@ export function getIconsStyleSheet(
 	if (themeService) {
 		disposable.add(
 			themeService.onDidProductIconThemeChange(() =>
-				onDidChangeEmmiter.fire(),
-			),
+				onDidChangeEmmiter.fire()
+			)
 		);
 	}
 
@@ -47,7 +47,7 @@ export function getIconsStyleSheet(
 				: new UnthemedProductIconTheme();
 			const usedFontIds: { [id: string]: IconFontDefinition } = {};
 			const formatIconRule = (
-				contribution: IconContribution,
+				contribution: IconContribution
 			): string | undefined => {
 				const definition = productIconTheme.getIcon(contribution);
 				if (!definition) {
@@ -60,7 +60,7 @@ export function getIconsStyleSheet(
 					return `.codicon-${contribution.id}:before { content: '${
 						definition.fontCharacter
 					}'; font-family: ${asCSSPropertyValue(
-						fontContribution.id,
+						fontContribution.id
 					)}; }`;
 				}
 				// default font (codicon)
@@ -87,8 +87,8 @@ export function getIconsStyleSheet(
 					.join(", ");
 				rules.push(
 					`@font-face { src: ${src}; font-family: ${asCSSPropertyValue(
-						id,
-					)};${fontWeight}${fontStyle} font-display: block; }`,
+						id
+					)};${fontWeight}${fontStyle} font-display: block; }`
 				);
 			}
 			return rules.join("\n");

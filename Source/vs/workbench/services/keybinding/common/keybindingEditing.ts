@@ -40,13 +40,13 @@ export interface IKeybindingEditingService {
 	addKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
 		key: string,
-		when: string | undefined,
+		when: string | undefined
 	): Promise<void>;
 
 	editKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
 		key: string,
-		when: string | undefined,
+		when: string | undefined
 	): Promise<void>;
 
 	removeKeybinding(keybindingItem: ResolvedKeybindingItem): Promise<void>;
@@ -62,11 +62,14 @@ export class KeybindingsEditingService
 	private queue: Queue<void>;
 
 	constructor(
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService
 	) {
 		super();
 		this.queue = new Queue<void>();
@@ -75,20 +78,20 @@ export class KeybindingsEditingService
 	addKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
 		key: string,
-		when: string | undefined,
+		when: string | undefined
 	): Promise<void> {
 		return this.queue.queue(() =>
-			this.doEditKeybinding(keybindingItem, key, when, true),
+			this.doEditKeybinding(keybindingItem, key, when, true)
 		); // queue up writes to prevent race conditions
 	}
 
 	editKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
 		key: string,
-		when: string | undefined,
+		when: string | undefined
 	): Promise<void> {
 		return this.queue.queue(() =>
-			this.doEditKeybinding(keybindingItem, key, when, false),
+			this.doEditKeybinding(keybindingItem, key, when, false)
 		); // queue up writes to prevent race conditions
 	}
 
@@ -104,7 +107,7 @@ export class KeybindingsEditingService
 		keybindingItem: ResolvedKeybindingItem,
 		key: string,
 		when: string | undefined,
-		add: boolean,
+		add: boolean
 	): Promise<void> {
 		const reference = await this.resolveAndValidate();
 		const model = reference.object.textEditorModel;
@@ -116,14 +119,14 @@ export class KeybindingsEditingService
 			);
 			const userKeybindingEntryIndex = this.findUserKeybindingEntryIndex(
 				keybindingItem,
-				userKeybindingEntries,
+				userKeybindingEntries
 			);
 			this.updateKeybinding(
 				keybindingItem,
 				key,
 				when,
 				model,
-				userKeybindingEntryIndex,
+				userKeybindingEntryIndex
 			);
 			if (keybindingItem.isDefault && keybindingItem.resolvedKeybinding) {
 				this.removeDefaultKeybinding(keybindingItem, model);
@@ -137,7 +140,7 @@ export class KeybindingsEditingService
 	}
 
 	private doRemoveKeybinding(
-		keybindingItem: ResolvedKeybindingItem,
+		keybindingItem: ResolvedKeybindingItem
 	): Promise<void> {
 		return this.resolveAndValidate().then((reference) => {
 			const model = reference.object.textEditorModel;
@@ -151,7 +154,7 @@ export class KeybindingsEditingService
 	}
 
 	private doResetKeybinding(
-		keybindingItem: ResolvedKeybindingItem,
+		keybindingItem: ResolvedKeybindingItem
 	): Promise<void> {
 		return this.resolveAndValidate().then((reference) => {
 			const model = reference.object.textEditorModel;
@@ -165,7 +168,7 @@ export class KeybindingsEditingService
 
 	private save(): Promise<any> {
 		return this.textFileService.save(
-			this.userDataProfileService.currentProfile.keybindingsResource,
+			this.userDataProfileService.currentProfile.keybindingsResource
 		);
 	}
 
@@ -174,7 +177,7 @@ export class KeybindingsEditingService
 		newKey: string,
 		when: string | undefined,
 		model: ITextModel,
-		userKeybindingEntryIndex: number,
+		userKeybindingEntryIndex: number
 	): void {
 		const { tabSize, insertSpaces } = model.getOptions();
 		const eol = model.getEOL();
@@ -185,15 +188,15 @@ export class KeybindingsEditingService
 					model.getValue(),
 					[userKeybindingEntryIndex, "key"],
 					newKey,
-					{ tabSize, insertSpaces, eol },
+					{ tabSize, insertSpaces, eol }
 				)[0],
-				model,
+				model
 			);
 			const edits = setProperty(
 				model.getValue(),
 				[userKeybindingEntryIndex, "when"],
 				when,
-				{ tabSize, insertSpaces, eol },
+				{ tabSize, insertSpaces, eol }
 			);
 			if (edits.length > 0) {
 				this.applyEditsToBuffer(edits[0], model);
@@ -205,16 +208,16 @@ export class KeybindingsEditingService
 					model.getValue(),
 					[-1],
 					this.asObject(newKey, keybindingItem.command, when, false),
-					{ tabSize, insertSpaces, eol },
+					{ tabSize, insertSpaces, eol }
 				)[0],
-				model,
+				model
 			);
 		}
 	}
 
 	private removeUserKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
-		model: ITextModel,
+		model: ITextModel
 	): void {
 		const { tabSize, insertSpaces } = model.getOptions();
 		const eol = model.getEOL();
@@ -223,7 +226,7 @@ export class KeybindingsEditingService
 		);
 		const userKeybindingEntryIndex = this.findUserKeybindingEntryIndex(
 			keybindingItem,
-			userKeybindingEntries,
+			userKeybindingEntries
 		);
 		if (userKeybindingEntryIndex !== -1) {
 			this.applyEditsToBuffer(
@@ -231,16 +234,16 @@ export class KeybindingsEditingService
 					model.getValue(),
 					[userKeybindingEntryIndex],
 					undefined,
-					{ tabSize, insertSpaces, eol },
+					{ tabSize, insertSpaces, eol }
 				)[0],
-				model,
+				model
 			);
 		}
 	}
 
 	private removeDefaultKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
-		model: ITextModel,
+		model: ITextModel
 	): void {
 		const { tabSize, insertSpaces } = model.getOptions();
 		const eol = model.getEOL();
@@ -254,7 +257,7 @@ export class KeybindingsEditingService
 				keybindingItem.when
 					? keybindingItem.when.serialize()
 					: undefined,
-				true,
+				true
 			);
 			const userKeybindingEntries = <IUserFriendlyKeybinding[]>(
 				json.parse(model.getValue())
@@ -266,7 +269,7 @@ export class KeybindingsEditingService
 						insertSpaces,
 						eol,
 					})[0],
-					model,
+					model
 				);
 			}
 		}
@@ -274,7 +277,7 @@ export class KeybindingsEditingService
 
 	private removeUnassignedDefaultKeybinding(
 		keybindingItem: ResolvedKeybindingItem,
-		model: ITextModel,
+		model: ITextModel
 	): void {
 		const { tabSize, insertSpaces } = model.getOptions();
 		const eol = model.getEOL();
@@ -283,7 +286,7 @@ export class KeybindingsEditingService
 		);
 		const indices = this.findUnassignedDefaultKeybindingEntryIndex(
 			keybindingItem,
-			userKeybindingEntries,
+			userKeybindingEntries
 		).reverse();
 		for (const index of indices) {
 			this.applyEditsToBuffer(
@@ -292,14 +295,14 @@ export class KeybindingsEditingService
 					insertSpaces,
 					eol,
 				})[0],
-				model,
+				model
 			);
 		}
 	}
 
 	private findUserKeybindingEntryIndex(
 		keybindingItem: ResolvedKeybindingItem,
-		userKeybindingEntries: IUserFriendlyKeybinding[],
+		userKeybindingEntries: IUserFriendlyKeybinding[]
 	): number {
 		for (let index = 0; index < userKeybindingEntries.length; index++) {
 			const keybinding = userKeybindingEntries[index];
@@ -309,7 +312,7 @@ export class KeybindingsEditingService
 				}
 				if (keybinding.when && keybindingItem.when) {
 					const contextKeyExpr = ContextKeyExpr.deserialize(
-						keybinding.when,
+						keybinding.when
 					);
 					if (
 						contextKeyExpr &&
@@ -326,7 +329,7 @@ export class KeybindingsEditingService
 
 	private findUnassignedDefaultKeybindingEntryIndex(
 		keybindingItem: ResolvedKeybindingItem,
-		userKeybindingEntries: IUserFriendlyKeybinding[],
+		userKeybindingEntries: IUserFriendlyKeybinding[]
 	): number[] {
 		const indices: number[] = [];
 		for (let index = 0; index < userKeybindingEntries.length; index++) {
@@ -344,7 +347,7 @@ export class KeybindingsEditingService
 		key: string,
 		command: string | null,
 		when: string | undefined,
-		negate: boolean,
+		negate: boolean
 	): any {
 		const object: any = { key };
 		if (command) {
@@ -358,7 +361,7 @@ export class KeybindingsEditingService
 
 	private areSame(
 		a: IUserFriendlyKeybinding,
-		b: IUserFriendlyKeybinding,
+		b: IUserFriendlyKeybinding
 	): boolean {
 		if (a.command !== b.command) {
 			return false;
@@ -387,7 +390,7 @@ export class KeybindingsEditingService
 			startPosition.lineNumber,
 			startPosition.column,
 			endPosition.lineNumber,
-			endPosition.column,
+			endPosition.column
 		);
 		const currentText = model.getValueInRange(range);
 		const editOperation = currentText
@@ -399,11 +402,11 @@ export class KeybindingsEditingService
 					startPosition.lineNumber,
 					startPosition.column,
 					startPosition.lineNumber,
-					startPosition.column,
+					startPosition.column
 				),
 			],
 			[editOperation],
-			() => [],
+			() => []
 		);
 	}
 
@@ -412,12 +415,12 @@ export class KeybindingsEditingService
 	> {
 		return this.fileService
 			.exists(
-				this.userDataProfileService.currentProfile.keybindingsResource,
+				this.userDataProfileService.currentProfile.keybindingsResource
 			)
 			.then((exists) => {
 				const EOL = this.configurationService.getValue<{ eol: string }>(
 					"files",
-					{ overrideIdentifier: "json" },
+					{ overrideIdentifier: "json" }
 				)["eol"];
 				const result: Promise<any> = exists
 					? Promise.resolve(null)
@@ -425,13 +428,13 @@ export class KeybindingsEditingService
 							this.userDataProfileService.currentProfile
 								.keybindingsResource,
 							this.getEmptyContent(EOL),
-							{ encoding: "utf8" },
-					  );
+							{ encoding: "utf8" }
+						);
 				return result.then(() =>
 					this.textModelResolverService.createModelReference(
 						this.userDataProfileService.currentProfile
-							.keybindingsResource,
-					),
+							.keybindingsResource
+					)
 				);
 			});
 	}
@@ -442,16 +445,16 @@ export class KeybindingsEditingService
 		// Target cannot be dirty if not writing into buffer
 		if (
 			this.textFileService.isDirty(
-				this.userDataProfileService.currentProfile.keybindingsResource,
+				this.userDataProfileService.currentProfile.keybindingsResource
 			)
 		) {
 			return Promise.reject(
 				new Error(
 					localize(
 						"errorKeybindingsFileDirty",
-						"Unable to write because the keybindings configuration file has unsaved changes. Please save it first and then try again.",
-					),
-				),
+						"Unable to write because the keybindings configuration file has unsaved changes. Please save it first and then try again."
+					)
+				)
 			);
 		}
 
@@ -466,9 +469,9 @@ export class KeybindingsEditingService
 						new Error(
 							localize(
 								"parseErrors",
-								"Unable to write to the keybindings configuration file. Please open it to correct errors/warnings in the file and try again.",
-							),
-						),
+								"Unable to write to the keybindings configuration file. Please open it to correct errors/warnings in the file and try again."
+							)
+						)
 					);
 				}
 				if (parsed.result) {
@@ -478,9 +481,9 @@ export class KeybindingsEditingService
 							new Error(
 								localize(
 									"errorInvalidConfiguration",
-									"Unable to write to the keybindings configuration file. It has an object which is not of type Array. Please open the file to clean up and try again.",
-								),
-							),
+									"Unable to write to the keybindings configuration file. It has an object which is not of type Array. Please open the file to clean up and try again."
+								)
+							)
 						);
 					}
 				} else {
@@ -491,14 +494,14 @@ export class KeybindingsEditingService
 							length: content.length,
 							offset: model.getValue().length,
 						},
-						model,
+						model
 					);
 				}
 			} else {
 				const content = this.getEmptyContent(EOL);
 				this.applyEditsToBuffer(
 					{ content, length: content.length, offset: 0 },
-					model,
+					model
 				);
 			}
 			return reference;
@@ -522,7 +525,7 @@ export class KeybindingsEditingService
 			"// " +
 			localize(
 				"emptyKeybindingsHeader",
-				"Place your key bindings in this file to override the defaults",
+				"Place your key bindings in this file to override the defaults"
 			) +
 			EOL +
 			"[]"
@@ -533,5 +536,5 @@ export class KeybindingsEditingService
 registerSingleton(
 	IKeybindingEditingService,
 	KeybindingsEditingService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

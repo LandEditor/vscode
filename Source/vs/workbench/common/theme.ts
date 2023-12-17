@@ -61,8 +61,8 @@ export const TAB_ACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabActiveBackground",
-		"Active tab background color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Active tab background color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_ACTIVE_BACKGROUND = registerColor(
@@ -75,8 +75,8 @@ export const TAB_UNFOCUSED_ACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabUnfocusedActiveBackground",
-		"Active tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Active tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_INACTIVE_BACKGROUND = registerColor(
@@ -89,8 +89,8 @@ export const TAB_INACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabInactiveBackground",
-		"Inactive tab background color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Inactive tab background color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_INACTIVE_BACKGROUND = registerColor(
@@ -103,8 +103,8 @@ export const TAB_UNFOCUSED_INACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabUnfocusedInactiveBackground",
-		"Inactive tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Inactive tab background color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 //#endregion
@@ -121,8 +121,8 @@ export const TAB_ACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"tabActiveForeground",
-		"Active tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Active tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_INACTIVE_FOREGROUND = registerColor(
@@ -135,8 +135,8 @@ export const TAB_INACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"tabInactiveForeground",
-		"Inactive tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Inactive tab foreground color in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_ACTIVE_FOREGROUND = registerColor(
@@ -149,8 +149,8 @@ export const TAB_UNFOCUSED_ACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"tabUnfocusedActiveForeground",
-		"Active tab foreground color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Active tab foreground color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_INACTIVE_FOREGROUND = registerColor(
@@ -163,8 +163,8 @@ export const TAB_UNFOCUSED_INACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"tabUnfocusedInactiveForeground",
-		"Inactive tab foreground color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Inactive tab foreground color in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 //#endregion
@@ -181,8 +181,8 @@ export const TAB_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabHoverBackground",
-		"Tab background color when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Tab background color when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_HOVER_BACKGROUND = registerColor(
@@ -195,8 +195,8 @@ export const TAB_UNFOCUSED_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabUnfocusedHoverBackground",
-		"Tab background color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Tab background color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_HOVER_FOREGROUND = registerColor(
@@ -209,8 +209,8 @@ export const TAB_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"tabHoverForeground",
-		"Tab foreground color when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Tab foreground color when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_HOVER_FOREGROUND = registerColor(
@@ -223,8 +223,8 @@ export const TAB_UNFOCUSED_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"tabUnfocusedHoverForeground",
-		"Tab foreground color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Tab foreground color in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 //#endregion
@@ -241,8 +241,8 @@ export const TAB_BORDER = registerColor(
 	},
 	localize(
 		"tabBorder",
-		"Border to separate tabs from each other. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border to separate tabs from each other. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_LAST_PINNED_BORDER = registerColor(
@@ -255,8 +255,8 @@ export const TAB_LAST_PINNED_BORDER = registerColor(
 	},
 	localize(
 		"lastPinnedTabBorder",
-		"Border to separate pinned tabs from other tabs. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border to separate pinned tabs from other tabs. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_ACTIVE_BORDER = registerColor(
@@ -269,8 +269,8 @@ export const TAB_ACTIVE_BORDER = registerColor(
 	},
 	localize(
 		"tabActiveBorder",
-		"Border on the bottom of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border on the bottom of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor(
@@ -283,8 +283,8 @@ export const TAB_UNFOCUSED_ACTIVE_BORDER = registerColor(
 	},
 	localize(
 		"tabActiveUnfocusedBorder",
-		"Border on the bottom of an active tab in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border on the bottom of an active tab in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_ACTIVE_BORDER_TOP = registerColor(
@@ -297,8 +297,8 @@ export const TAB_ACTIVE_BORDER_TOP = registerColor(
 	},
 	localize(
 		"tabActiveBorderTop",
-		"Border to the top of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border to the top of an active tab. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_ACTIVE_BORDER_TOP = registerColor(
@@ -311,8 +311,8 @@ export const TAB_UNFOCUSED_ACTIVE_BORDER_TOP = registerColor(
 	},
 	localize(
 		"tabActiveUnfocusedBorderTop",
-		"Border to the top of an active tab in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border to the top of an active tab in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_HOVER_BORDER = registerColor(
@@ -325,8 +325,8 @@ export const TAB_HOVER_BORDER = registerColor(
 	},
 	localize(
 		"tabHoverBorder",
-		"Border to highlight tabs when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border to highlight tabs when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_HOVER_BORDER = registerColor(
@@ -339,8 +339,8 @@ export const TAB_UNFOCUSED_HOVER_BORDER = registerColor(
 	},
 	localize(
 		"tabUnfocusedHoverBorder",
-		"Border to highlight tabs in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border to highlight tabs in an unfocused group when hovering. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 //#endregion
@@ -357,8 +357,8 @@ export const TAB_ACTIVE_MODIFIED_BORDER = registerColor(
 	},
 	localize(
 		"tabActiveModifiedBorder",
-		"Border on the top of modified active tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border on the top of modified active tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_INACTIVE_MODIFIED_BORDER = registerColor(
@@ -371,8 +371,8 @@ export const TAB_INACTIVE_MODIFIED_BORDER = registerColor(
 	},
 	localize(
 		"tabInactiveModifiedBorder",
-		"Border on the top of modified inactive tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border on the top of modified inactive tabs in an active group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_ACTIVE_MODIFIED_BORDER = registerColor(
@@ -385,8 +385,8 @@ export const TAB_UNFOCUSED_ACTIVE_MODIFIED_BORDER = registerColor(
 	},
 	localize(
 		"unfocusedActiveModifiedBorder",
-		"Border on the top of modified active tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border on the top of modified active tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 export const TAB_UNFOCUSED_INACTIVE_MODIFIED_BORDER = registerColor(
@@ -399,8 +399,8 @@ export const TAB_UNFOCUSED_INACTIVE_MODIFIED_BORDER = registerColor(
 	},
 	localize(
 		"unfocusedINactiveModifiedBorder",
-		"Border on the top of modified inactive tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups.",
-	),
+		"Border on the top of modified inactive tabs in an unfocused group. Tabs are the containers for editors in the editor area. Multiple tabs can be opened in one editor group. There can be multiple editor groups."
+	)
 );
 
 //#endregion
@@ -417,8 +417,8 @@ export const EDITOR_PANE_BACKGROUND = registerColor(
 	},
 	localize(
 		"editorPaneBackground",
-		"Background color of the editor pane visible on the left and right side of the centered editor layout.",
-	),
+		"Background color of the editor pane visible on the left and right side of the centered editor layout."
+	)
 );
 
 export const EDITOR_GROUP_EMPTY_BACKGROUND = registerColor(
@@ -431,8 +431,8 @@ export const EDITOR_GROUP_EMPTY_BACKGROUND = registerColor(
 	},
 	localize(
 		"editorGroupEmptyBackground",
-		"Background color of an empty editor group. Editor groups are the containers of editors.",
-	),
+		"Background color of an empty editor group. Editor groups are the containers of editors."
+	)
 );
 
 export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor(
@@ -445,8 +445,8 @@ export const EDITOR_GROUP_FOCUSED_EMPTY_BORDER = registerColor(
 	},
 	localize(
 		"editorGroupFocusedEmptyBorder",
-		"Border color of an empty editor group that is focused. Editor groups are the containers of editors.",
-	),
+		"Border color of an empty editor group that is focused. Editor groups are the containers of editors."
+	)
 );
 
 export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor(
@@ -459,8 +459,8 @@ export const EDITOR_GROUP_HEADER_TABS_BACKGROUND = registerColor(
 	},
 	localize(
 		"tabsContainerBackground",
-		"Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.",
-	),
+		"Background color of the editor group title header when tabs are enabled. Editor groups are the containers of editors."
+	)
 );
 
 export const EDITOR_GROUP_HEADER_TABS_BORDER = registerColor(
@@ -473,8 +473,8 @@ export const EDITOR_GROUP_HEADER_TABS_BORDER = registerColor(
 	},
 	localize(
 		"tabsContainerBorder",
-		"Border color of the editor group title header when tabs are enabled. Editor groups are the containers of editors.",
-	),
+		"Border color of the editor group title header when tabs are enabled. Editor groups are the containers of editors."
+	)
 );
 
 export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor(
@@ -487,8 +487,8 @@ export const EDITOR_GROUP_HEADER_NO_TABS_BACKGROUND = registerColor(
 	},
 	localize(
 		"editorGroupHeaderBackground",
-		'Background color of the editor group title header when (`"workbench.editor.showTabs": "single"`). Editor groups are the containers of editors.',
-	),
+		'Background color of the editor group title header when (`"workbench.editor.showTabs": "single"`). Editor groups are the containers of editors.'
+	)
 );
 
 export const EDITOR_GROUP_HEADER_BORDER = registerColor(
@@ -501,8 +501,8 @@ export const EDITOR_GROUP_HEADER_BORDER = registerColor(
 	},
 	localize(
 		"editorTitleContainerBorder",
-		"Border color of the editor group title header. Editor groups are the containers of editors.",
-	),
+		"Border color of the editor group title header. Editor groups are the containers of editors."
+	)
 );
 
 export const EDITOR_GROUP_BORDER = registerColor(
@@ -515,8 +515,8 @@ export const EDITOR_GROUP_BORDER = registerColor(
 	},
 	localize(
 		"editorGroupBorder",
-		"Color to separate multiple editor groups from each other. Editor groups are the containers of editors.",
-	),
+		"Color to separate multiple editor groups from each other. Editor groups are the containers of editors."
+	)
 );
 
 export const EDITOR_DRAG_AND_DROP_BACKGROUND = registerColor(
@@ -529,8 +529,8 @@ export const EDITOR_DRAG_AND_DROP_BACKGROUND = registerColor(
 	},
 	localize(
 		"editorDragAndDropBackground",
-		"Background color when dragging editors around. The color should have transparency so that the editor contents can still shine through.",
-	),
+		"Background color when dragging editors around. The color should have transparency so that the editor contents can still shine through."
+	)
 );
 
 export const EDITOR_DROP_INTO_PROMPT_FOREGROUND = registerColor(
@@ -543,8 +543,8 @@ export const EDITOR_DROP_INTO_PROMPT_FOREGROUND = registerColor(
 	},
 	localize(
 		"editorDropIntoPromptForeground",
-		"Foreground color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor.",
-	),
+		"Foreground color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor."
+	)
 );
 
 export const EDITOR_DROP_INTO_PROMPT_BACKGROUND = registerColor(
@@ -557,8 +557,8 @@ export const EDITOR_DROP_INTO_PROMPT_BACKGROUND = registerColor(
 	},
 	localize(
 		"editorDropIntoPromptBackground",
-		"Background color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor.",
-	),
+		"Background color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor."
+	)
 );
 
 export const EDITOR_DROP_INTO_PROMPT_BORDER = registerColor(
@@ -571,8 +571,8 @@ export const EDITOR_DROP_INTO_PROMPT_BORDER = registerColor(
 	},
 	localize(
 		"editorDropIntoPromptBorder",
-		"Border color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor.",
-	),
+		"Border color of text shown over editors when dragging files. This text informs the user that they can hold shift to drop into the editor."
+	)
 );
 
 export const SIDE_BY_SIDE_EDITOR_HORIZONTAL_BORDER = registerColor(
@@ -585,8 +585,8 @@ export const SIDE_BY_SIDE_EDITOR_HORIZONTAL_BORDER = registerColor(
 	},
 	localize(
 		"sideBySideEditor.horizontalBorder",
-		"Color to separate two editors from each other when shown side by side in an editor group from top to bottom.",
-	),
+		"Color to separate two editors from each other when shown side by side in an editor group from top to bottom."
+	)
 );
 
 export const SIDE_BY_SIDE_EDITOR_VERTICAL_BORDER = registerColor(
@@ -599,8 +599,8 @@ export const SIDE_BY_SIDE_EDITOR_VERTICAL_BORDER = registerColor(
 	},
 	localize(
 		"sideBySideEditor.verticalBorder",
-		"Color to separate two editors from each other when shown side by side in an editor group from left to right.",
-	),
+		"Color to separate two editors from each other when shown side by side in an editor group from left to right."
+	)
 );
 
 // < --- Panels --- >
@@ -615,8 +615,8 @@ export const PANEL_BACKGROUND = registerColor(
 	},
 	localize(
 		"panelBackground",
-		"Panel background color. Panels are shown below the editor area and contain views like output and integrated terminal.",
-	),
+		"Panel background color. Panels are shown below the editor area and contain views like output and integrated terminal."
+	)
 );
 
 export const PANEL_BORDER = registerColor(
@@ -629,8 +629,8 @@ export const PANEL_BORDER = registerColor(
 	},
 	localize(
 		"panelBorder",
-		"Panel border color to separate the panel from the editor. Panels are shown below the editor area and contain views like output and integrated terminal.",
-	),
+		"Panel border color to separate the panel from the editor. Panels are shown below the editor area and contain views like output and integrated terminal."
+	)
 );
 
 export const PANEL_ACTIVE_TITLE_FOREGROUND = registerColor(
@@ -643,8 +643,8 @@ export const PANEL_ACTIVE_TITLE_FOREGROUND = registerColor(
 	},
 	localize(
 		"panelActiveTitleForeground",
-		"Title color for the active panel. Panels are shown below the editor area and contain views like output and integrated terminal.",
-	),
+		"Title color for the active panel. Panels are shown below the editor area and contain views like output and integrated terminal."
+	)
 );
 
 export const PANEL_INACTIVE_TITLE_FOREGROUND = registerColor(
@@ -657,8 +657,8 @@ export const PANEL_INACTIVE_TITLE_FOREGROUND = registerColor(
 	},
 	localize(
 		"panelInactiveTitleForeground",
-		"Title color for the inactive panel. Panels are shown below the editor area and contain views like output and integrated terminal.",
-	),
+		"Title color for the inactive panel. Panels are shown below the editor area and contain views like output and integrated terminal."
+	)
 );
 
 export const PANEL_ACTIVE_TITLE_BORDER = registerColor(
@@ -671,8 +671,8 @@ export const PANEL_ACTIVE_TITLE_BORDER = registerColor(
 	},
 	localize(
 		"panelActiveTitleBorder",
-		"Border color for the active panel title. Panels are shown below the editor area and contain views like output and integrated terminal.",
-	),
+		"Border color for the active panel title. Panels are shown below the editor area and contain views like output and integrated terminal."
+	)
 );
 
 export const PANEL_INPUT_BORDER = registerColor(
@@ -683,7 +683,7 @@ export const PANEL_INPUT_BORDER = registerColor(
 		hcDark: inputBorder,
 		hcLight: inputBorder,
 	},
-	localize("panelInputBorder", "Input box border for inputs in the panel."),
+	localize("panelInputBorder", "Input box border for inputs in the panel.")
 );
 
 export const PANEL_DRAG_AND_DROP_BORDER = registerColor(
@@ -696,8 +696,8 @@ export const PANEL_DRAG_AND_DROP_BORDER = registerColor(
 	},
 	localize(
 		"panelDragAndDropBorder",
-		"Drag and drop feedback color for the panel titles. Panels are shown below the editor area and contain views like output and integrated terminal.",
-	),
+		"Drag and drop feedback color for the panel titles. Panels are shown below the editor area and contain views like output and integrated terminal."
+	)
 );
 
 export const PANEL_SECTION_DRAG_AND_DROP_BACKGROUND = registerColor(
@@ -710,8 +710,8 @@ export const PANEL_SECTION_DRAG_AND_DROP_BACKGROUND = registerColor(
 	},
 	localize(
 		"panelSectionDragAndDropBackground",
-		"Drag and drop feedback color for the panel sections. The color should have transparency so that the panel sections can still shine through. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels.",
-	),
+		"Drag and drop feedback color for the panel sections. The color should have transparency so that the panel sections can still shine through. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels."
+	)
 );
 
 export const PANEL_SECTION_HEADER_BACKGROUND = registerColor(
@@ -724,8 +724,8 @@ export const PANEL_SECTION_HEADER_BACKGROUND = registerColor(
 	},
 	localize(
 		"panelSectionHeaderBackground",
-		"Panel section header background color. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels.",
-	),
+		"Panel section header background color. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels."
+	)
 );
 
 export const PANEL_SECTION_HEADER_FOREGROUND = registerColor(
@@ -738,8 +738,8 @@ export const PANEL_SECTION_HEADER_FOREGROUND = registerColor(
 	},
 	localize(
 		"panelSectionHeaderForeground",
-		"Panel section header foreground color. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels.",
-	),
+		"Panel section header foreground color. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels."
+	)
 );
 
 export const PANEL_SECTION_HEADER_BORDER = registerColor(
@@ -752,8 +752,8 @@ export const PANEL_SECTION_HEADER_BORDER = registerColor(
 	},
 	localize(
 		"panelSectionHeaderBorder",
-		"Panel section header border color used when multiple views are stacked vertically in the panel. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels.",
-	),
+		"Panel section header border color used when multiple views are stacked vertically in the panel. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels."
+	)
 );
 
 export const PANEL_SECTION_BORDER = registerColor(
@@ -766,8 +766,8 @@ export const PANEL_SECTION_BORDER = registerColor(
 	},
 	localize(
 		"panelSectionBorder",
-		"Panel section border color used when multiple views are stacked horizontally in the panel. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels.",
-	),
+		"Panel section border color used when multiple views are stacked horizontally in the panel. Panels are shown below the editor area and contain views like output and integrated terminal. Panel sections are views nested within the panels."
+	)
 );
 
 // < --- Output Editor -->
@@ -780,7 +780,7 @@ const OUTPUT_EDITOR_BACKGROUND = registerColor(
 		hcDark: null,
 		hcLight: null,
 	},
-	localize("outputEditorBackground", "Output editor background color."),
+	localize("outputEditorBackground", "Output editor background color.")
 );
 
 registerColor(
@@ -793,8 +793,8 @@ registerColor(
 	},
 	localize(
 		"outputEditorStickyScrollBackground",
-		"Output editor sticky scroll background color.",
-	),
+		"Output editor sticky scroll background color."
+	)
 );
 
 // < --- Banner --- >
@@ -809,8 +809,8 @@ export const BANNER_BACKGROUND = registerColor(
 	},
 	localize(
 		"banner.background",
-		"Banner background color. The banner is shown under the title bar of the window.",
-	),
+		"Banner background color. The banner is shown under the title bar of the window."
+	)
 );
 
 export const BANNER_FOREGROUND = registerColor(
@@ -823,8 +823,8 @@ export const BANNER_FOREGROUND = registerColor(
 	},
 	localize(
 		"banner.foreground",
-		"Banner foreground color. The banner is shown under the title bar of the window.",
-	),
+		"Banner foreground color. The banner is shown under the title bar of the window."
+	)
 );
 
 export const BANNER_ICON_FOREGROUND = registerColor(
@@ -837,8 +837,8 @@ export const BANNER_ICON_FOREGROUND = registerColor(
 	},
 	localize(
 		"banner.iconForeground",
-		"Banner icon color. The banner is shown under the title bar of the window.",
-	),
+		"Banner icon color. The banner is shown under the title bar of the window."
+	)
 );
 
 // < --- Status --- >
@@ -853,8 +853,8 @@ export const STATUS_BAR_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarForeground",
-		"Status bar foreground color when a workspace or folder is opened. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar foreground color when a workspace or folder is opened. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_NO_FOLDER_FOREGROUND = registerColor(
@@ -867,8 +867,8 @@ export const STATUS_BAR_NO_FOLDER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarNoFolderForeground",
-		"Status bar foreground color when no folder is opened. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar foreground color when no folder is opened. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_BACKGROUND = registerColor(
@@ -881,8 +881,8 @@ export const STATUS_BAR_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarBackground",
-		"Status bar background color when a workspace or folder is opened. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar background color when a workspace or folder is opened. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_NO_FOLDER_BACKGROUND = registerColor(
@@ -895,8 +895,8 @@ export const STATUS_BAR_NO_FOLDER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarNoFolderBackground",
-		"Status bar background color when no folder is opened. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar background color when no folder is opened. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_BORDER = registerColor(
@@ -909,8 +909,8 @@ export const STATUS_BAR_BORDER = registerColor(
 	},
 	localize(
 		"statusBarBorder",
-		"Status bar border color separating to the sidebar and editor. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar border color separating to the sidebar and editor. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_FOCUS_BORDER = registerColor(
@@ -923,8 +923,8 @@ export const STATUS_BAR_FOCUS_BORDER = registerColor(
 	},
 	localize(
 		"statusBarFocusBorder",
-		"Status bar border color when focused on keyboard navigation. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar border color when focused on keyboard navigation. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_NO_FOLDER_BORDER = registerColor(
@@ -937,8 +937,8 @@ export const STATUS_BAR_NO_FOLDER_BORDER = registerColor(
 	},
 	localize(
 		"statusBarNoFolderBorder",
-		"Status bar border color separating to the sidebar and editor when no folder is opened. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar border color separating to the sidebar and editor when no folder is opened. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ITEM_ACTIVE_BACKGROUND = registerColor(
@@ -951,8 +951,8 @@ export const STATUS_BAR_ITEM_ACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemActiveBackground",
-		"Status bar item background color when clicking. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar item background color when clicking. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ITEM_FOCUS_BORDER = registerColor(
@@ -965,8 +965,8 @@ export const STATUS_BAR_ITEM_FOCUS_BORDER = registerColor(
 	},
 	localize(
 		"statusBarItemFocusBorder",
-		"Status bar item border color when focused on keyboard navigation. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar item border color when focused on keyboard navigation. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ITEM_HOVER_BACKGROUND = registerColor(
@@ -979,8 +979,8 @@ export const STATUS_BAR_ITEM_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemHoverBackground",
-		"Status bar item background color when hovering. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar item background color when hovering. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ITEM_HOVER_FOREGROUND = registerColor(
@@ -993,8 +993,8 @@ export const STATUS_BAR_ITEM_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemHoverForeground",
-		"Status bar item foreground color when hovering. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar item foreground color when hovering. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND = registerColor(
@@ -1007,8 +1007,8 @@ export const STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemCompactHoverBackground",
-		"Status bar item background color when hovering an item that contains two hovers. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar item background color when hovering an item that contains two hovers. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_PROMINENT_ITEM_FOREGROUND = registerColor(
@@ -1021,8 +1021,8 @@ export const STATUS_BAR_PROMINENT_ITEM_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarProminentItemForeground",
-		"Status bar prominent items foreground color. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar prominent items foreground color. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_PROMINENT_ITEM_BACKGROUND = registerColor(
@@ -1035,8 +1035,8 @@ export const STATUS_BAR_PROMINENT_ITEM_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarProminentItemBackground",
-		"Status bar prominent items background color. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar prominent items background color. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_PROMINENT_ITEM_HOVER_FOREGROUND = registerColor(
@@ -1049,8 +1049,8 @@ export const STATUS_BAR_PROMINENT_ITEM_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarProminentItemHoverForeground",
-		"Status bar prominent items foreground color when hovering. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar prominent items foreground color when hovering. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_PROMINENT_ITEM_HOVER_BACKGROUND = registerColor(
@@ -1063,8 +1063,8 @@ export const STATUS_BAR_PROMINENT_ITEM_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarProminentItemHoverBackground",
-		"Status bar prominent items background color when hovering. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar prominent items background color when hovering. Prominent items stand out from other status bar entries to indicate importance. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ERROR_ITEM_BACKGROUND = registerColor(
@@ -1077,8 +1077,8 @@ export const STATUS_BAR_ERROR_ITEM_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarErrorItemBackground",
-		"Status bar error items background color. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar error items background color. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ERROR_ITEM_FOREGROUND = registerColor(
@@ -1091,8 +1091,8 @@ export const STATUS_BAR_ERROR_ITEM_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarErrorItemForeground",
-		"Status bar error items foreground color. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar error items foreground color. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ERROR_ITEM_HOVER_FOREGROUND = registerColor(
@@ -1105,8 +1105,8 @@ export const STATUS_BAR_ERROR_ITEM_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarErrorItemHoverForeground",
-		"Status bar error items foreground color when hovering. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar error items foreground color when hovering. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_ERROR_ITEM_HOVER_BACKGROUND = registerColor(
@@ -1119,8 +1119,8 @@ export const STATUS_BAR_ERROR_ITEM_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarErrorItemHoverBackground",
-		"Status bar error items background color when hovering. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar error items background color when hovering. Error items stand out from other status bar entries to indicate error conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_WARNING_ITEM_BACKGROUND = registerColor(
@@ -1133,8 +1133,8 @@ export const STATUS_BAR_WARNING_ITEM_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarWarningItemBackground",
-		"Status bar warning items background color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar warning items background color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_WARNING_ITEM_FOREGROUND = registerColor(
@@ -1147,8 +1147,8 @@ export const STATUS_BAR_WARNING_ITEM_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarWarningItemForeground",
-		"Status bar warning items foreground color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar warning items foreground color. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_WARNING_ITEM_HOVER_FOREGROUND = registerColor(
@@ -1161,8 +1161,8 @@ export const STATUS_BAR_WARNING_ITEM_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarWarningItemHoverForeground",
-		"Status bar warning items foreground color when hovering. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar warning items foreground color when hovering. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 export const STATUS_BAR_WARNING_ITEM_HOVER_BACKGROUND = registerColor(
@@ -1175,8 +1175,8 @@ export const STATUS_BAR_WARNING_ITEM_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarWarningItemHoverBackground",
-		"Status bar warning items background color when hovering. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window.",
-	),
+		"Status bar warning items background color when hovering. Warning items stand out from other status bar entries to indicate warning conditions. The status bar is shown in the bottom of the window."
+	)
 );
 
 // < --- Activity Bar --- >
@@ -1191,8 +1191,8 @@ export const ACTIVITY_BAR_BACKGROUND = registerColor(
 	},
 	localize(
 		"activityBarBackground",
-		"Activity bar background color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar background color. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_FOREGROUND = registerColor(
@@ -1205,8 +1205,8 @@ export const ACTIVITY_BAR_FOREGROUND = registerColor(
 	},
 	localize(
 		"activityBarForeground",
-		"Activity bar item foreground color when it is active. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar item foreground color when it is active. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_INACTIVE_FOREGROUND = registerColor(
@@ -1219,8 +1219,8 @@ export const ACTIVITY_BAR_INACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"activityBarInActiveForeground",
-		"Activity bar item foreground color when it is inactive. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar item foreground color when it is inactive. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_BORDER = registerColor(
@@ -1233,8 +1233,8 @@ export const ACTIVITY_BAR_BORDER = registerColor(
 	},
 	localize(
 		"activityBarBorder",
-		"Activity bar border color separating to the side bar. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar border color separating to the side bar. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_ACTIVE_BORDER = registerColor(
@@ -1247,8 +1247,8 @@ export const ACTIVITY_BAR_ACTIVE_BORDER = registerColor(
 	},
 	localize(
 		"activityBarActiveBorder",
-		"Activity bar border color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar border color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_ACTIVE_FOCUS_BORDER = registerColor(
@@ -1261,8 +1261,8 @@ export const ACTIVITY_BAR_ACTIVE_FOCUS_BORDER = registerColor(
 	},
 	localize(
 		"activityBarActiveFocusBorder",
-		"Activity bar focus border color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar focus border color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_ACTIVE_BACKGROUND = registerColor(
@@ -1275,8 +1275,8 @@ export const ACTIVITY_BAR_ACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"activityBarActiveBackground",
-		"Activity bar background color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity bar background color for the active item. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_DRAG_AND_DROP_BORDER = registerColor(
@@ -1289,8 +1289,8 @@ export const ACTIVITY_BAR_DRAG_AND_DROP_BORDER = registerColor(
 	},
 	localize(
 		"activityBarDragAndDropBorder",
-		"Drag and drop feedback color for the activity bar items. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Drag and drop feedback color for the activity bar items. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_BADGE_BACKGROUND = registerColor(
@@ -1303,8 +1303,8 @@ export const ACTIVITY_BAR_BADGE_BACKGROUND = registerColor(
 	},
 	localize(
 		"activityBarBadgeBackground",
-		"Activity notification badge background color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity notification badge background color. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 export const ACTIVITY_BAR_BADGE_FOREGROUND = registerColor(
@@ -1317,8 +1317,8 @@ export const ACTIVITY_BAR_BADGE_FOREGROUND = registerColor(
 	},
 	localize(
 		"activityBarBadgeForeground",
-		"Activity notification badge foreground color. The activity bar is showing on the far left or right and allows to switch between views of the side bar.",
-	),
+		"Activity notification badge foreground color. The activity bar is showing on the far left or right and allows to switch between views of the side bar."
+	)
 );
 
 // < --- Profiles --- >
@@ -1333,8 +1333,8 @@ export const PROFILE_BADGE_BACKGROUND = registerColor(
 	},
 	localize(
 		"profileBadgeBackground",
-		"Profile badge background color. The profile badge shows on top of the settings gear icon in the activity bar.",
-	),
+		"Profile badge background color. The profile badge shows on top of the settings gear icon in the activity bar."
+	)
 );
 
 export const PROFILE_BADGE_FOREGROUND = registerColor(
@@ -1347,8 +1347,8 @@ export const PROFILE_BADGE_FOREGROUND = registerColor(
 	},
 	localize(
 		"profileBadgeForeground",
-		"Profile badge foreground color. The profile badge shows on top of the settings gear icon in the activity bar.",
-	),
+		"Profile badge foreground color. The profile badge shows on top of the settings gear icon in the activity bar."
+	)
 );
 
 // < --- Remote --- >
@@ -1363,8 +1363,8 @@ export const STATUS_BAR_REMOTE_ITEM_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemHostBackground",
-		"Background color for the remote indicator on the status bar.",
-	),
+		"Background color for the remote indicator on the status bar."
+	)
 );
 
 export const STATUS_BAR_REMOTE_ITEM_FOREGROUND = registerColor(
@@ -1377,8 +1377,8 @@ export const STATUS_BAR_REMOTE_ITEM_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemHostForeground",
-		"Foreground color for the remote indicator on the status bar.",
-	),
+		"Foreground color for the remote indicator on the status bar."
+	)
 );
 
 export const STATUS_BAR_REMOTE_ITEM_HOVER_FOREGROUND = registerColor(
@@ -1391,8 +1391,8 @@ export const STATUS_BAR_REMOTE_ITEM_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarRemoteItemHoverForeground",
-		"Foreground color for the remote indicator on the status bar when hovering.",
-	),
+		"Foreground color for the remote indicator on the status bar when hovering."
+	)
 );
 
 export const STATUS_BAR_REMOTE_ITEM_HOVER_BACKGROUND = registerColor(
@@ -1405,8 +1405,8 @@ export const STATUS_BAR_REMOTE_ITEM_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarRemoteItemHoverBackground",
-		"Background color for the remote indicator on the status bar when hovering.",
-	),
+		"Background color for the remote indicator on the status bar when hovering."
+	)
 );
 
 export const STATUS_BAR_OFFLINE_ITEM_BACKGROUND = registerColor(
@@ -1419,8 +1419,8 @@ export const STATUS_BAR_OFFLINE_ITEM_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemOfflineBackground",
-		"Status bar item background color when the workbench is offline.",
-	),
+		"Status bar item background color when the workbench is offline."
+	)
 );
 
 export const STATUS_BAR_OFFLINE_ITEM_FOREGROUND = registerColor(
@@ -1433,8 +1433,8 @@ export const STATUS_BAR_OFFLINE_ITEM_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarItemOfflineForeground",
-		"Status bar item foreground color when the workbench is offline.",
-	),
+		"Status bar item foreground color when the workbench is offline."
+	)
 );
 
 export const STATUS_BAR_OFFLINE_ITEM_HOVER_FOREGROUND = registerColor(
@@ -1447,8 +1447,8 @@ export const STATUS_BAR_OFFLINE_ITEM_HOVER_FOREGROUND = registerColor(
 	},
 	localize(
 		"statusBarOfflineItemHoverForeground",
-		"Status bar item foreground hover color when the workbench is offline.",
-	),
+		"Status bar item foreground hover color when the workbench is offline."
+	)
 );
 
 export const STATUS_BAR_OFFLINE_ITEM_HOVER_BACKGROUND = registerColor(
@@ -1461,8 +1461,8 @@ export const STATUS_BAR_OFFLINE_ITEM_HOVER_BACKGROUND = registerColor(
 	},
 	localize(
 		"statusBarOfflineItemHoverBackground",
-		"Status bar item background hover color when the workbench is offline.",
-	),
+		"Status bar item background hover color when the workbench is offline."
+	)
 );
 
 export const EXTENSION_BADGE_REMOTE_BACKGROUND = registerColor(
@@ -1475,8 +1475,8 @@ export const EXTENSION_BADGE_REMOTE_BACKGROUND = registerColor(
 	},
 	localize(
 		"extensionBadge.remoteBackground",
-		"Background color for the remote badge in the extensions view.",
-	),
+		"Background color for the remote badge in the extensions view."
+	)
 );
 
 export const EXTENSION_BADGE_REMOTE_FOREGROUND = registerColor(
@@ -1489,8 +1489,8 @@ export const EXTENSION_BADGE_REMOTE_FOREGROUND = registerColor(
 	},
 	localize(
 		"extensionBadge.remoteForeground",
-		"Foreground color for the remote badge in the extensions view.",
-	),
+		"Foreground color for the remote badge in the extensions view."
+	)
 );
 
 // < --- Side Bar --- >
@@ -1505,8 +1505,8 @@ export const SIDE_BAR_BACKGROUND = registerColor(
 	},
 	localize(
 		"sideBarBackground",
-		"Side bar background color. The side bar is the container for views like explorer and search.",
-	),
+		"Side bar background color. The side bar is the container for views like explorer and search."
+	)
 );
 
 export const SIDE_BAR_FOREGROUND = registerColor(
@@ -1519,8 +1519,8 @@ export const SIDE_BAR_FOREGROUND = registerColor(
 	},
 	localize(
 		"sideBarForeground",
-		"Side bar foreground color. The side bar is the container for views like explorer and search.",
-	),
+		"Side bar foreground color. The side bar is the container for views like explorer and search."
+	)
 );
 
 export const SIDE_BAR_BORDER = registerColor(
@@ -1533,8 +1533,8 @@ export const SIDE_BAR_BORDER = registerColor(
 	},
 	localize(
 		"sideBarBorder",
-		"Side bar border color on the side separating to the editor. The side bar is the container for views like explorer and search.",
-	),
+		"Side bar border color on the side separating to the editor. The side bar is the container for views like explorer and search."
+	)
 );
 
 export const SIDE_BAR_TITLE_FOREGROUND = registerColor(
@@ -1547,8 +1547,8 @@ export const SIDE_BAR_TITLE_FOREGROUND = registerColor(
 	},
 	localize(
 		"sideBarTitleForeground",
-		"Side bar title foreground color. The side bar is the container for views like explorer and search.",
-	),
+		"Side bar title foreground color. The side bar is the container for views like explorer and search."
+	)
 );
 
 export const SIDE_BAR_DRAG_AND_DROP_BACKGROUND = registerColor(
@@ -1561,8 +1561,8 @@ export const SIDE_BAR_DRAG_AND_DROP_BACKGROUND = registerColor(
 	},
 	localize(
 		"sideBarDragAndDropBackground",
-		"Drag and drop feedback color for the side bar sections. The color should have transparency so that the side bar sections can still shine through. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.",
-	),
+		"Drag and drop feedback color for the side bar sections. The color should have transparency so that the side bar sections can still shine through. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar."
+	)
 );
 
 export const SIDE_BAR_SECTION_HEADER_BACKGROUND = registerColor(
@@ -1575,8 +1575,8 @@ export const SIDE_BAR_SECTION_HEADER_BACKGROUND = registerColor(
 	},
 	localize(
 		"sideBarSectionHeaderBackground",
-		"Side bar section header background color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.",
-	),
+		"Side bar section header background color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar."
+	)
 );
 
 export const SIDE_BAR_SECTION_HEADER_FOREGROUND = registerColor(
@@ -1589,8 +1589,8 @@ export const SIDE_BAR_SECTION_HEADER_FOREGROUND = registerColor(
 	},
 	localize(
 		"sideBarSectionHeaderForeground",
-		"Side bar section header foreground color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.",
-	),
+		"Side bar section header foreground color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar."
+	)
 );
 
 export const SIDE_BAR_SECTION_HEADER_BORDER = registerColor(
@@ -1603,8 +1603,8 @@ export const SIDE_BAR_SECTION_HEADER_BORDER = registerColor(
 	},
 	localize(
 		"sideBarSectionHeaderBorder",
-		"Side bar section header border color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar.",
-	),
+		"Side bar section header border color. The side bar is the container for views like explorer and search. Side bar sections are views nested within the side bar."
+	)
 );
 
 // < --- Title Bar --- >
@@ -1619,8 +1619,8 @@ export const TITLE_BAR_ACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"titleBarActiveForeground",
-		"Title bar foreground when the window is active.",
-	),
+		"Title bar foreground when the window is active."
+	)
 );
 
 export const TITLE_BAR_INACTIVE_FOREGROUND = registerColor(
@@ -1633,8 +1633,8 @@ export const TITLE_BAR_INACTIVE_FOREGROUND = registerColor(
 	},
 	localize(
 		"titleBarInactiveForeground",
-		"Title bar foreground when the window is inactive.",
-	),
+		"Title bar foreground when the window is inactive."
+	)
 );
 
 export const TITLE_BAR_ACTIVE_BACKGROUND = registerColor(
@@ -1647,8 +1647,8 @@ export const TITLE_BAR_ACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"titleBarActiveBackground",
-		"Title bar background when the window is active.",
-	),
+		"Title bar background when the window is active."
+	)
 );
 
 export const TITLE_BAR_INACTIVE_BACKGROUND = registerColor(
@@ -1661,8 +1661,8 @@ export const TITLE_BAR_INACTIVE_BACKGROUND = registerColor(
 	},
 	localize(
 		"titleBarInactiveBackground",
-		"Title bar background when the window is inactive.",
-	),
+		"Title bar background when the window is inactive."
+	)
 );
 
 export const TITLE_BAR_BORDER = registerColor(
@@ -1673,7 +1673,7 @@ export const TITLE_BAR_BORDER = registerColor(
 		hcDark: contrastBorder,
 		hcLight: contrastBorder,
 	},
-	localize("titleBarBorder", "Title bar border color."),
+	localize("titleBarBorder", "Title bar border color.")
 );
 
 // < --- Menubar --- >
@@ -1688,8 +1688,8 @@ export const MENUBAR_SELECTION_FOREGROUND = registerColor(
 	},
 	localize(
 		"menubarSelectionForeground",
-		"Foreground color of the selected menu item in the menubar.",
-	),
+		"Foreground color of the selected menu item in the menubar."
+	)
 );
 
 export const MENUBAR_SELECTION_BACKGROUND = registerColor(
@@ -1702,8 +1702,8 @@ export const MENUBAR_SELECTION_BACKGROUND = registerColor(
 	},
 	localize(
 		"menubarSelectionBackground",
-		"Background color of the selected menu item in the menubar.",
-	),
+		"Background color of the selected menu item in the menubar."
+	)
 );
 
 export const MENUBAR_SELECTION_BORDER = registerColor(
@@ -1716,8 +1716,8 @@ export const MENUBAR_SELECTION_BORDER = registerColor(
 	},
 	localize(
 		"menubarSelectionBorder",
-		"Border color of the selected menu item in the menubar.",
-	),
+		"Border color of the selected menu item in the menubar."
+	)
 );
 
 // < --- Command Center --- >
@@ -1733,9 +1733,9 @@ export const COMMAND_CENTER_FOREGROUND = registerColor(
 	},
 	localize(
 		"commandCenter-foreground",
-		"Foreground color of the command center",
+		"Foreground color of the command center"
 	),
-	false,
+	false
 );
 export const COMMAND_CENTER_ACTIVEFOREGROUND = registerColor(
 	"commandCenter.activeForeground",
@@ -1747,9 +1747,9 @@ export const COMMAND_CENTER_ACTIVEFOREGROUND = registerColor(
 	},
 	localize(
 		"commandCenter-activeForeground",
-		"Active foreground color of the command center",
+		"Active foreground color of the command center"
 	),
-	false,
+	false
 );
 export const COMMAND_CENTER_INACTIVEFOREGROUND = registerColor(
 	"commandCenter.inactiveForeground",
@@ -1761,9 +1761,9 @@ export const COMMAND_CENTER_INACTIVEFOREGROUND = registerColor(
 	},
 	localize(
 		"commandCenter-inactiveForeground",
-		"Foreground color of the command center when the window is inactive",
+		"Foreground color of the command center when the window is inactive"
 	),
-	false,
+	false
 );
 // background (inactive and active)
 export const COMMAND_CENTER_BACKGROUND = registerColor(
@@ -1776,9 +1776,9 @@ export const COMMAND_CENTER_BACKGROUND = registerColor(
 	},
 	localize(
 		"commandCenter-background",
-		"Background color of the command center",
+		"Background color of the command center"
 	),
-	false,
+	false
 );
 export const COMMAND_CENTER_ACTIVEBACKGROUND = registerColor(
 	"commandCenter.activeBackground",
@@ -1790,9 +1790,9 @@ export const COMMAND_CENTER_ACTIVEBACKGROUND = registerColor(
 	},
 	localize(
 		"commandCenter-activeBackground",
-		"Active background color of the command center",
+		"Active background color of the command center"
 	),
-	false,
+	false
 );
 // border: active and inactive. defaults to active background
 export const COMMAND_CENTER_BORDER = registerColor(
@@ -1804,7 +1804,7 @@ export const COMMAND_CENTER_BORDER = registerColor(
 		hcLight: contrastBorder,
 	},
 	localize("commandCenter-border", "Border color of the command center"),
-	false,
+	false
 );
 export const COMMAND_CENTER_ACTIVEBORDER = registerColor(
 	"commandCenter.activeBorder",
@@ -1816,9 +1816,9 @@ export const COMMAND_CENTER_ACTIVEBORDER = registerColor(
 	},
 	localize(
 		"commandCenter-activeBorder",
-		"Active border color of the command center",
+		"Active border color of the command center"
 	),
-	false,
+	false
 );
 // border: defaults to active background
 export const COMMAND_CENTER_INACTIVEBORDER = registerColor(
@@ -1831,9 +1831,9 @@ export const COMMAND_CENTER_INACTIVEBORDER = registerColor(
 	},
 	localize(
 		"commandCenter-inactiveBorder",
-		"Border color of the command center when the window is inactive",
+		"Border color of the command center when the window is inactive"
 	),
-	false,
+	false
 );
 
 // < --- Notifications --- >
@@ -1848,8 +1848,8 @@ export const NOTIFICATIONS_CENTER_BORDER = registerColor(
 	},
 	localize(
 		"notificationCenterBorder",
-		"Notifications center border color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notifications center border color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_TOAST_BORDER = registerColor(
@@ -1862,8 +1862,8 @@ export const NOTIFICATIONS_TOAST_BORDER = registerColor(
 	},
 	localize(
 		"notificationToastBorder",
-		"Notification toast border color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notification toast border color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_FOREGROUND = registerColor(
@@ -1876,8 +1876,8 @@ export const NOTIFICATIONS_FOREGROUND = registerColor(
 	},
 	localize(
 		"notificationsForeground",
-		"Notifications foreground color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notifications foreground color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_BACKGROUND = registerColor(
@@ -1890,8 +1890,8 @@ export const NOTIFICATIONS_BACKGROUND = registerColor(
 	},
 	localize(
 		"notificationsBackground",
-		"Notifications background color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notifications background color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_LINKS = registerColor(
@@ -1904,8 +1904,8 @@ export const NOTIFICATIONS_LINKS = registerColor(
 	},
 	localize(
 		"notificationsLink",
-		"Notification links foreground color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notification links foreground color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_CENTER_HEADER_FOREGROUND = registerColor(
@@ -1918,8 +1918,8 @@ export const NOTIFICATIONS_CENTER_HEADER_FOREGROUND = registerColor(
 	},
 	localize(
 		"notificationCenterHeaderForeground",
-		"Notifications center header foreground color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notifications center header foreground color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_CENTER_HEADER_BACKGROUND = registerColor(
@@ -1932,8 +1932,8 @@ export const NOTIFICATIONS_CENTER_HEADER_BACKGROUND = registerColor(
 	},
 	localize(
 		"notificationCenterHeaderBackground",
-		"Notifications center header background color. Notifications slide in from the bottom right of the window.",
-	),
+		"Notifications center header background color. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_BORDER = registerColor(
@@ -1946,8 +1946,8 @@ export const NOTIFICATIONS_BORDER = registerColor(
 	},
 	localize(
 		"notificationsBorder",
-		"Notifications border color separating from other notifications in the notifications center. Notifications slide in from the bottom right of the window.",
-	),
+		"Notifications border color separating from other notifications in the notifications center. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_ERROR_ICON_FOREGROUND = registerColor(
@@ -1960,8 +1960,8 @@ export const NOTIFICATIONS_ERROR_ICON_FOREGROUND = registerColor(
 	},
 	localize(
 		"notificationsErrorIconForeground",
-		"The color used for the icon of error notifications. Notifications slide in from the bottom right of the window.",
-	),
+		"The color used for the icon of error notifications. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_WARNING_ICON_FOREGROUND = registerColor(
@@ -1974,8 +1974,8 @@ export const NOTIFICATIONS_WARNING_ICON_FOREGROUND = registerColor(
 	},
 	localize(
 		"notificationsWarningIconForeground",
-		"The color used for the icon of warning notifications. Notifications slide in from the bottom right of the window.",
-	),
+		"The color used for the icon of warning notifications. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const NOTIFICATIONS_INFO_ICON_FOREGROUND = registerColor(
@@ -1988,8 +1988,8 @@ export const NOTIFICATIONS_INFO_ICON_FOREGROUND = registerColor(
 	},
 	localize(
 		"notificationsInfoIconForeground",
-		"The color used for the icon of info notifications. Notifications slide in from the bottom right of the window.",
-	),
+		"The color used for the icon of info notifications. Notifications slide in from the bottom right of the window."
+	)
 );
 
 export const WINDOW_ACTIVE_BORDER = registerColor(
@@ -2002,8 +2002,8 @@ export const WINDOW_ACTIVE_BORDER = registerColor(
 	},
 	localize(
 		"windowActiveBorder",
-		"The color used for the border of the window when it is active. Only supported in the macOS and Linux desktop client when using the custom title bar.",
-	),
+		"The color used for the border of the window when it is active. Only supported in the macOS and Linux desktop client when using the custom title bar."
+	)
 );
 
 export const WINDOW_INACTIVE_BORDER = registerColor(
@@ -2016,6 +2016,6 @@ export const WINDOW_INACTIVE_BORDER = registerColor(
 	},
 	localize(
 		"windowInactiveBorder",
-		"The color used for the border of the window when it is inactive. Only supported in the macOS and Linux desktop client when using the custom title bar.",
-	),
+		"The color used for the border of the window when it is inactive. Only supported in the macOS and Linux desktop client when using the custom title bar."
+	)
 );

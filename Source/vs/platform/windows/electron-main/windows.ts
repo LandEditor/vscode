@@ -62,16 +62,16 @@ export interface IWindowsMainService {
 	open(openConfig: IOpenConfiguration): Promise<ICodeWindow[]>;
 	openEmptyWindow(
 		openConfig: IOpenEmptyConfiguration,
-		options?: IOpenEmptyWindowOptions,
+		options?: IOpenEmptyWindowOptions
 	): Promise<ICodeWindow[]>;
 	openExtensionDevelopmentHostWindow(
 		extensionDevelopmentPath: string[],
-		openConfig: IOpenConfiguration,
+		openConfig: IOpenConfiguration
 	): Promise<ICodeWindow[]>;
 
 	openExistingWindow(
 		window: ICodeWindow,
-		openConfig: IOpenConfiguration,
+		openConfig: IOpenConfiguration
 	): void;
 
 	sendToFocused(channel: string, ...args: any[]): void;
@@ -79,7 +79,7 @@ export interface IWindowsMainService {
 	sendToAll(
 		channel: string,
 		payload?: any,
-		windowIdsToIgnore?: number[],
+		windowIdsToIgnore?: number[]
 	): void;
 
 	getWindows(): ICodeWindow[];
@@ -153,7 +153,7 @@ export interface IOpenEmptyConfiguration extends IBaseOpenConfiguration {}
 export function defaultBrowserWindowOptions(
 	accessor: ServicesAccessor,
 	windowState?: IWindowState,
-	overrides?: BrowserWindowConstructorOptions,
+	overrides?: BrowserWindowConstructorOptions
 ): BrowserWindowConstructorOptions & { experimentalDarkMode: boolean } {
 	const themeMainService = accessor.get(IThemeMainService);
 	const productService = accessor.get(IProductService);
@@ -196,12 +196,12 @@ export function defaultBrowserWindowOptions(
 	if (isLinux) {
 		options.icon = join(
 			environmentMainService.appRoot,
-			"resources/linux/code.png",
+			"resources/linux/code.png"
 		); // always on Linux
 	} else if (isWindows && !environmentMainService.isBuilt) {
 		options.icon = join(
 			environmentMainService.appRoot,
-			"resources/win32/code_150x150.png",
+			"resources/win32/code_150x150.png"
 		); // only when running out of sources on Windows
 	}
 
@@ -255,11 +255,11 @@ export function defaultBrowserWindowOptions(
 }
 
 export function getFocusedOrLastActiveWindow(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): ICodeWindow | IAuxiliaryWindow | undefined {
 	const windowsMainService = accessor.get(IWindowsMainService);
 	const auxiliaryWindowsMainService = accessor.get(
-		IAuxiliaryWindowsMainService,
+		IAuxiliaryWindowsMainService
 	);
 
 	// By: Electron focused window
@@ -287,10 +287,10 @@ export function getFocusedOrLastActiveWindow(
 
 export function getLastFocused(windows: ICodeWindow[]): ICodeWindow | undefined;
 export function getLastFocused(
-	windows: IAuxiliaryWindow[],
+	windows: IAuxiliaryWindow[]
 ): IAuxiliaryWindow | undefined;
 export function getLastFocused(
-	windows: ICodeWindow[] | IAuxiliaryWindow[],
+	windows: ICodeWindow[] | IAuxiliaryWindow[]
 ): ICodeWindow | IAuxiliaryWindow | undefined {
 	let lastFocusedWindow: ICodeWindow | IAuxiliaryWindow | undefined =
 		undefined;

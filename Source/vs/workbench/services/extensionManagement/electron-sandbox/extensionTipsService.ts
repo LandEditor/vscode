@@ -29,19 +29,19 @@ class NativeExtensionTipsService
 	constructor(
 		@IFileService fileService: IFileService,
 		@IProductService productService: IProductService,
-		@ISharedProcessService sharedProcessService: ISharedProcessService,
+		@ISharedProcessService sharedProcessService: ISharedProcessService
 	) {
 		super(fileService, productService);
 		this.channel = sharedProcessService.getChannel("extensionTipsService");
 	}
 
 	override getConfigBasedTips(
-		folder: URI,
+		folder: URI
 	): Promise<IConfigBasedExtensionTip[]> {
 		if (folder.scheme === Schemas.file) {
 			return this.channel.call<IConfigBasedExtensionTip[]>(
 				"getConfigBasedTips",
-				[folder],
+				[folder]
 			);
 		}
 		return super.getConfigBasedTips(folder);
@@ -51,7 +51,7 @@ class NativeExtensionTipsService
 		IExecutableBasedExtensionTip[]
 	> {
 		return this.channel.call<IExecutableBasedExtensionTip[]>(
-			"getImportantExecutableBasedTips",
+			"getImportantExecutableBasedTips"
 		);
 	}
 
@@ -59,7 +59,7 @@ class NativeExtensionTipsService
 		IExecutableBasedExtensionTip[]
 	> {
 		return this.channel.call<IExecutableBasedExtensionTip[]>(
-			"getOtherExecutableBasedTips",
+			"getOtherExecutableBasedTips"
 		);
 	}
 }
@@ -67,5 +67,5 @@ class NativeExtensionTipsService
 registerSingleton(
 	IExtensionTipsService,
 	NativeExtensionTipsService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

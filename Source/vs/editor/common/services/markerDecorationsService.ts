@@ -49,7 +49,7 @@ export class MarkerDecorationsService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeMarker = this._register(
-		new Emitter<ITextModel>(),
+		new Emitter<ITextModel>()
 	);
 	readonly onDidChangeMarker: Event<ITextModel> =
 		this._onDidChangeMarker.event;
@@ -61,10 +61,12 @@ export class MarkerDecorationsService
 		@IMarkerService private readonly _markerService: IMarkerService
 	) {
 		super();
-		modelService.getModels().forEach(model => this._onModelAdded(model));
+		modelService.getModels().forEach((model) => this._onModelAdded(model));
 		this._register(modelService.onModelAdded(this._onModelAdded, this));
 		this._register(modelService.onModelRemoved(this._onModelRemoved, this));
-		this._register(this._markerService.onMarkerChanged(this._handleMarkerChange, this));
+		this._register(
+			this._markerService.onMarkerChanged(this._handleMarkerChange, this)
+		);
 	}
 
 	override dispose() {
@@ -117,7 +119,7 @@ export class MarkerDecorationsService
 				?.read({ resource: model.uri })
 				.map((marker) => marker.owner)
 				.forEach((owner) =>
-					this._markerService.remove(owner, [model.uri]),
+					this._markerService.remove(owner, [model.uri])
 				);
 		}
 	}
@@ -146,7 +148,7 @@ class MarkerDecorations extends Disposable {
 			toDisposable(() => {
 				this.model.deltaDecorations([...this._map.values()], []);
 				this._map.clear();
-			}),
+			})
 		);
 	}
 
@@ -156,7 +158,7 @@ class MarkerDecorations extends Disposable {
 
 		const { added, removed } = diffSets(
 			new Set(this._map.keys()),
-			new Set(markers),
+			new Set(markers)
 		);
 
 		if (added.length === 0 && removed.length === 0) {
@@ -164,7 +166,7 @@ class MarkerDecorations extends Disposable {
 		}
 
 		const oldIds: string[] = removed.map(
-			(marker) => this._map.get(marker)!,
+			(marker) => this._map.get(marker)!
 		);
 		const newDecorations: IModelDeltaDecoration[] = added.map((marker) => {
 			return {
@@ -200,7 +202,7 @@ class MarkerDecorations extends Disposable {
 
 	private _createDecorationRange(
 		model: ITextModel,
-		rawMarker: IMarker,
+		rawMarker: IMarker
 	): Range {
 		let ret = Range.lift(rawMarker);
 
@@ -233,7 +235,7 @@ class MarkerDecorations extends Disposable {
 					ret.startLineNumber,
 					word.startColumn,
 					ret.endLineNumber,
-					word.endColumn,
+					word.endColumn
 				);
 			}
 		} else if (
@@ -242,14 +244,14 @@ class MarkerDecorations extends Disposable {
 			ret.startLineNumber === ret.endLineNumber
 		) {
 			const minColumn = model.getLineFirstNonWhitespaceColumn(
-				rawMarker.startLineNumber,
+				rawMarker.startLineNumber
 			);
 			if (minColumn < ret.endColumn) {
 				ret = new Range(
 					ret.startLineNumber,
 					minColumn,
 					ret.endLineNumber,
-					ret.endColumn,
+					ret.endColumn
 				);
 				rawMarker.startColumn = minColumn;
 			}

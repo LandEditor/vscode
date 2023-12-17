@@ -34,7 +34,7 @@ function replaceLinks(text: string): string {
 						default:
 							return `[${text ? text.trim() : link}](${link})`;
 					}
-				},
+				}
 			)
 	);
 }
@@ -45,7 +45,7 @@ function processInlineTags(text: string): string {
 
 function getTagBodyText(
 	tag: Proto.JSDocTagInfo,
-	filePathConverter: IFilePathToResourceConverter,
+	filePathConverter: IFilePathToResourceConverter
 ): string | undefined {
 	if (!tag.text) {
 		return undefined;
@@ -68,7 +68,7 @@ function getTagBodyText(
 
 			// check for caption tags, fix for #79704
 			const captionTagMatches = text.match(
-				/<caption>(.*?)<\/caption>\s*(\r\n|\n)/,
+				/<caption>(.*?)<\/caption>\s*(\r\n|\n)/
 			);
 			if (captionTagMatches && captionTagMatches.index === 0) {
 				return (
@@ -99,7 +99,7 @@ function getTagBodyText(
 
 function getTagDocumentation(
 	tag: Proto.JSDocTagInfo,
-	filePathConverter: IFilePathToResourceConverter,
+	filePathConverter: IFilePathToResourceConverter
 ): string | undefined {
 	switch (tag.name) {
 		case "augments":
@@ -146,7 +146,7 @@ function getTagDocumentation(
 
 function getTagBody(
 	tag: Proto.JSDocTagInfo,
-	filePathConverter: IFilePathToResourceConverter,
+	filePathConverter: IFilePathToResourceConverter
 ): Array<string> | undefined {
 	if (tag.name === "template") {
 		const parts = tag.text;
@@ -160,8 +160,8 @@ function getTagBody(
 				.map((p) =>
 					convertLinkTags(
 						p.text.replace(/^\s*-?\s*/, ""),
-						filePathConverter,
-					),
+						filePathConverter
+					)
 				)
 				.join(" ");
 			return params ? ["", params, docs] : undefined;
@@ -171,7 +171,7 @@ function getTagBody(
 }
 
 function asPlainText(
-	parts: readonly Proto.SymbolDisplayPart[] | string,
+	parts: readonly Proto.SymbolDisplayPart[] | string
 ): string {
 	if (typeof parts === "string") {
 		return parts;
@@ -181,7 +181,7 @@ function asPlainText(
 
 export function asPlainTextWithLinks(
 	parts: readonly Proto.SymbolDisplayPart[] | string,
-	filePathConverter: IFilePathToResourceConverter,
+	filePathConverter: IFilePathToResourceConverter
 ): string {
 	return processInlineTags(convertLinkTags(parts, filePathConverter));
 }
@@ -191,7 +191,7 @@ export function asPlainTextWithLinks(
  */
 function convertLinkTags(
 	parts: readonly Proto.SymbolDisplayPart[] | string | undefined,
-	filePathConverter: IFilePathToResourceConverter,
+	filePathConverter: IFilePathToResourceConverter
 ): string {
 	if (!parts) {
 		return "";
@@ -217,12 +217,12 @@ function convertLinkTags(
 				if (currentLink) {
 					if (currentLink.target) {
 						const file = filePathConverter.toResource(
-							currentLink.target.file,
+							currentLink.target.file
 						);
 						const args: OpenJsDocLinkCommand_Args = {
 							file: { ...file.toJSON(), $mid: undefined }, // Prevent VS Code from trying to transform the uri,
 							position: typeConverters.Position.fromLocation(
-								currentLink.target.start,
+								currentLink.target.start
 							),
 						};
 						const command = `command:${
@@ -232,14 +232,14 @@ function convertLinkTags(
 						const linkText = currentLink.text
 							? currentLink.text
 							: escapeMarkdownSyntaxTokensForCode(
-									currentLink.name ?? "",
-							  );
+									currentLink.name ?? ""
+								);
 						out.push(
 							`[${
 								currentLink.linkcode
 									? "`" + linkText + "`"
 									: linkText
-							}](${command})`,
+							}](${command})`
 						);
 					} else {
 						const text = currentLink.text ?? currentLink.name;
@@ -254,17 +254,17 @@ function convertLinkTags(
 										`[${
 											currentLink.linkcode
 												? "`" +
-												  escapeMarkdownSyntaxTokensForCode(
-														linkText,
-												  ) +
-												  "`"
+													escapeMarkdownSyntaxTokensForCode(
+														linkText
+													) +
+													"`"
 												: linkText
-										}](${parts[0]})`,
+										}](${parts[0]})`
 									);
 								}
 							} else {
 								out.push(
-									escapeMarkdownSyntaxTokensForCode(text),
+									escapeMarkdownSyntaxTokensForCode(text)
 								);
 							}
 						}
@@ -306,7 +306,7 @@ function escapeMarkdownSyntaxTokensForCode(text: string): string {
 
 export function tagsToMarkdown(
 	tags: readonly Proto.JSDocTagInfo[],
-	filePathConverter: IFilePathToResourceConverter,
+	filePathConverter: IFilePathToResourceConverter
 ): string {
 	return tags
 		.map((tag) => getTagDocumentation(tag, filePathConverter))
@@ -317,7 +317,7 @@ export function documentationToMarkdown(
 	documentation: readonly Proto.SymbolDisplayPart[] | string,
 	tags: readonly Proto.JSDocTagInfo[],
 	filePathConverter: IFilePathToResourceConverter,
-	baseUri: vscode.Uri | undefined,
+	baseUri: vscode.Uri | undefined
 ): vscode.MarkdownString {
 	const out = new vscode.MarkdownString();
 	appendDocumentationAsMarkdown(out, documentation, tags, filePathConverter);
@@ -330,7 +330,7 @@ export function appendDocumentationAsMarkdown(
 	out: vscode.MarkdownString,
 	documentation: readonly Proto.SymbolDisplayPart[] | string | undefined,
 	tags: readonly Proto.JSDocTagInfo[] | undefined,
-	converter: IFilePathToResourceConverter,
+	converter: IFilePathToResourceConverter
 ): vscode.MarkdownString {
 	if (documentation) {
 		out.appendMarkdown(asPlainTextWithLinks(documentation, converter));

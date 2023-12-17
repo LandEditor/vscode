@@ -32,7 +32,7 @@ export class Type {
 	constructor(
 		readonly item: TypeHierarchyItem,
 		readonly model: TypeHierarchyModel,
-		readonly parent: Type | undefined,
+		readonly parent: Type | undefined
 	) {}
 
 	static compare(a: Type, b: Type): number {
@@ -54,7 +54,7 @@ export class DataSource implements IAsyncDataSource<TypeHierarchyModel, Type> {
 	async getChildren(element: TypeHierarchyModel | Type): Promise<Type[]> {
 		if (element instanceof TypeHierarchyModel) {
 			return element.roots.map(
-				(root) => new Type(root, element, undefined),
+				(root) => new Type(root, element, undefined)
 			);
 		}
 
@@ -98,7 +98,10 @@ export class IdentityProvider implements IIdentityProvider<Type> {
 }
 
 class TypeRenderingTemplate {
-	constructor(readonly icon: HTMLDivElement, readonly label: IconLabel) {}
+	constructor(
+		readonly icon: HTMLDivElement,
+		readonly label: IconLabel
+	) {}
 }
 
 export class TypeRenderer
@@ -119,15 +122,13 @@ export class TypeRenderer
 	renderElement(
 		node: ITreeNode<Type, FuzzyScore>,
 		_index: number,
-		template: TypeRenderingTemplate,
+		template: TypeRenderingTemplate
 	): void {
 		const { element, filterData } = node;
 		const deprecated = element.item.tags?.includes(SymbolTag.Deprecated);
 		template.icon.classList.add(
 			"inline",
-			...ThemeIcon.asClassNameArray(
-				SymbolKinds.toIcon(element.item.kind),
-			),
+			...ThemeIcon.asClassNameArray(SymbolKinds.toIcon(element.item.kind))
 		);
 		template.label.setLabel(element.item.name, element.item.detail, {
 			labelEscapeNewLines: true,
@@ -162,7 +163,7 @@ export class AccessibilityProvider implements IListAccessibilityProvider<Type> {
 			return localize(
 				"supertypes",
 				"supertypes of {0}",
-				element.item.name,
+				element.item.name
 			);
 		} else {
 			return localize("subtypes", "subtypes of {0}", element.item.name);

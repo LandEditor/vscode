@@ -49,7 +49,7 @@ export class SelectionClipboard
 
 	constructor(
 		editor: ICodeEditor,
-		@IClipboardService clipboardService: IClipboardService,
+		@IClipboardService clipboardService: IClipboardService
 	) {
 		super();
 
@@ -61,11 +61,11 @@ export class SelectionClipboard
 					(e: ConfigurationChangedEvent) => {
 						if (e.hasChanged(EditorOption.selectionClipboard)) {
 							isEnabled = editor.getOption(
-								EditorOption.selectionClipboard,
+								EditorOption.selectionClipboard
 							);
 						}
-					},
-				),
+					}
+				)
 			);
 
 			const setSelectionToClipboard = this._register(
@@ -100,14 +100,14 @@ export class SelectionClipboard
 						result.push(
 							model.getValueInRange(
 								sel,
-								EndOfLinePreference.TextDefined,
-							),
+								EndOfLinePreference.TextDefined
+							)
 						);
 					}
 
 					const textToCopy = result.join(model.getEOL());
 					clipboardService.writeText(textToCopy, "selection");
-				}, 100),
+				}, 100)
 			);
 
 			this._register(
@@ -122,8 +122,8 @@ export class SelectionClipboard
 							return;
 						}
 						setSelectionToClipboard.schedule();
-					},
-				),
+					}
+				)
 			);
 		}
 	}
@@ -143,19 +143,34 @@ class SelectionClipboardPastePreventer
 		super();
 
 		if (platform.isLinux) {
-			this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
-				disposables.add(addDisposableListener(window.document, 'mouseup', e => {
-					if (e.button === 1) {
-						// middle button
-						const config = configurationService.getValue<{ selectionClipboard: boolean }>('editor');
-						if (!config.selectionClipboard) {
-							// selection clipboard is disabled
-							// try to stop the upcoming paste
-							e.preventDefault();
-						}
-					}
-				}));
-			}, { window: mainWindow, disposables: this._store }));
+			this._register(
+				Event.runAndSubscribe(
+					onDidRegisterWindow,
+					({ window, disposables }) => {
+						disposables.add(
+							addDisposableListener(
+								window.document,
+								"mouseup",
+								(e) => {
+									if (e.button === 1) {
+										// middle button
+										const config =
+											configurationService.getValue<{
+												selectionClipboard: boolean;
+											}>("editor");
+										if (!config.selectionClipboard) {
+											// selection clipboard is disabled
+											// try to stop the upcoming paste
+											e.preventDefault();
+										}
+									}
+								}
+							)
+						);
+					},
+					{ window: mainWindow, disposables: this._store }
+				)
+			);
 		}
 	}
 }
@@ -166,7 +181,7 @@ class PasteSelectionClipboardAction extends EditorAction {
 			id: "editor.action.selectionClipboardPaste",
 			label: nls.localize(
 				"actions.pasteSelectionClipboard",
-				"Paste Selection Clipboard",
+				"Paste Selection Clipboard"
 			),
 			alias: "Paste Selection Clipboard",
 			precondition: EditorContextKeys.writable,
@@ -176,7 +191,7 @@ class PasteSelectionClipboardAction extends EditorAction {
 	public async run(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): Promise<void> {
 		const clipboardService = accessor.get(IClipboardService);
 
@@ -194,13 +209,13 @@ class PasteSelectionClipboardAction extends EditorAction {
 registerEditorContribution(
 	SelectionClipboardContributionID,
 	SelectionClipboard,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // eager because it needs to listen to selection change events
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	SelectionClipboardPastePreventer,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 if (platform.isLinux) {
 	registerEditorAction(PasteSelectionClipboardAction);

@@ -57,7 +57,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 	constructor(
 		mainContext: IMainContext,
 		private readonly _extHostChatProvider: ExtHostChatProvider,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadChatAgents2);
 	}
@@ -65,7 +65,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 	createChatAgent(
 		extension: IExtensionDescription,
 		name: string,
-		handler: vscode.ChatAgentExtendedHandler,
+		handler: vscode.ChatAgentExtendedHandler
 	): vscode.ChatAgent2 {
 		const handle = ExtHostChatAgents2._idPool++;
 		const agent = new ExtHostChatAgent(
@@ -73,7 +73,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 			name,
 			this._proxy,
 			handle,
-			handler,
+			handler
 		);
 		this._agents.set(handle, agent);
 
@@ -87,7 +87,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 		requestId: string,
 		request: IChatAgentRequest,
 		context: { history: IChatMessage[] },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentResult | undefined> {
 		// Clear the previous result so that $acceptFeedback or $acceptAction during a request will be ignored.
 		// We may want to support sending those during a request.
@@ -96,7 +96,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 		const agent = this._agents.get(handle);
 		if (!agent) {
 			throw new Error(
-				`[CHAT](${handle}) CANNOT invoke agent because the agent is not registered`,
+				`[CHAT](${handle}) CANNOT invoke agent because the agent is not registered`
 			);
 		}
 
@@ -111,7 +111,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 		token.onCancellationRequested(() => commandExecution.complete());
 		this._extHostChatProvider.allowListExtensionWhile(
 			agent.extension.identifier,
-			commandExecution.p,
+			commandExecution.p
 		);
 
 		const slashCommand = request.command
@@ -125,7 +125,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 				{
 					prompt: request.message,
 					variables: typeConvert.ChatVariable.objectTo(
-						request.variables,
+						request.variables
 					),
 					slashCommand,
 				},
@@ -144,12 +144,11 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 					const convertedProgress =
 						typeConvert.ChatResponseProgress.from(
 							agent.extension,
-							progress,
+							progress
 						);
 					if (!convertedProgress) {
 						this._logService.error(
-							"Unknown progress type: " +
-								JSON.stringify(progress),
+							"Unknown progress type: " + JSON.stringify(progress)
 						);
 						return;
 					}
@@ -161,7 +160,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 						const resolvedContent = Promise.all([
 							this._proxy.$handleProgressChunk(
 								requestId,
-								convertedProgress,
+								convertedProgress
 							),
 							progress.resolvedContent,
 						]);
@@ -173,12 +172,12 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 							const convertedContent =
 								typeConvert.ChatResponseProgress.from(
 									agent.extension,
-									progressContent,
+									progressContent
 								);
 							if (!convertedContent) {
 								this._logService.error(
 									"Unknown progress type: " +
-										JSON.stringify(progressContent),
+										JSON.stringify(progressContent)
 								);
 								return;
 							}
@@ -186,17 +185,17 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 							this._proxy.$handleProgressChunk(
 								requestId,
 								convertedContent,
-								progressHandle ?? undefined,
+								progressHandle ?? undefined
 							);
 						});
 					} else {
 						this._proxy.$handleProgressChunk(
 							requestId,
-							convertedProgress,
+							convertedProgress
 						);
 					}
 				}),
-				token,
+				token
 			);
 
 			return await raceCancellation(
@@ -209,7 +208,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 							sessionResults = new Map();
 							this._resultsBySessionAndRequestId.set(
 								sessionId,
-								sessionResults,
+								sessionResults
 							);
 						}
 						sessionResults.set(requestId, result);
@@ -225,7 +224,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 
 					return undefined;
 				}),
-				token,
+				token
 			);
 		} catch (e) {
 			this._logService.error(e, agent.extension);
@@ -234,7 +233,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 					message: localize(
 						"errorResponse",
 						"Error from provider: {0}",
-						toErrorMessage(e),
+						toErrorMessage(e)
 					),
 					responseIsIncomplete: true,
 				},
@@ -252,7 +251,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 
 	async $provideSlashCommands(
 		handle: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentCommand[]> {
 		const agent = this._agents.get(handle);
 		if (!agent) {
@@ -265,7 +264,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 	$provideFollowups(
 		handle: number,
 		sessionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatFollowup[]> {
 		const agent = this._agents.get(handle);
 		if (!agent) {
@@ -285,7 +284,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 		sessionId: string,
 		requestId: string,
 		vote: InteractiveSessionVoteDirection,
-		reportIssue?: boolean,
+		reportIssue?: boolean
 	): void {
 		const agent = this._agents.get(handle);
 		if (!agent) {
@@ -310,7 +309,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 		agent.acceptFeedback(
 			reportIssue
 				? Object.freeze({ result, kind, reportIssue })
-				: Object.freeze({ result, kind }),
+				: Object.freeze({ result, kind })
 		);
 	}
 
@@ -318,7 +317,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 		handle: number,
 		sessionId: string,
 		requestId: string,
-		action: IChatUserActionEvent,
+		action: IChatUserActionEvent
 	): void {
 		const agent = this._agents.get(handle);
 		if (!agent) {
@@ -340,7 +339,7 @@ export class ExtHostChatAgents2 implements ExtHostChatAgentsShape2 {
 	async $invokeCompletionProvider(
 		handle: number,
 		query: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentCompletionItem[]> {
 		const agent = this._agents.get(handle);
 		if (!agent) {
@@ -385,7 +384,7 @@ class ExtHostChatAgent {
 		private readonly _id: string,
 		private readonly _proxy: MainThreadChatAgentsShape2,
 		private readonly _handle: number,
-		private readonly _callback: vscode.ChatAgentExtendedHandler,
+		private readonly _callback: vscode.ChatAgentExtendedHandler
 	) {}
 
 	acceptFeedback(feedback: vscode.ChatAgentResult2Feedback) {
@@ -398,7 +397,7 @@ class ExtHostChatAgent {
 
 	async invokeCompletionProvider(
 		query: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<vscode.ChatAgentCompletionItem[]> {
 		if (!this._agentVariableProvider) {
 			return [];
@@ -407,7 +406,7 @@ class ExtHostChatAgent {
 		return (
 			(await this._agentVariableProvider.provider.provideCompletionItems(
 				query,
-				token,
+				token
 			)) ?? []
 		);
 	}
@@ -418,7 +417,7 @@ class ExtHostChatAgent {
 			assertType(this._lastSlashCommands);
 		}
 		const result = this._lastSlashCommands.find(
-			(candidate) => candidate.name === command,
+			(candidate) => candidate.name === command
 		);
 		if (!result) {
 			throw new Error(`Unknown slashCommand: ${command}`);
@@ -427,7 +426,7 @@ class ExtHostChatAgent {
 	}
 
 	async provideSlashCommand(
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentCommand[]> {
 		if (!this._slashCommandProvider) {
 			return [];
@@ -449,14 +448,14 @@ class ExtHostChatAgent {
 
 	async provideFollowups(
 		result: vscode.ChatAgentResult2,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatFollowup[]> {
 		if (!this._followupProvider) {
 			return [];
 		}
 		const followups = await this._followupProvider.provideFollowups(
 			result,
-			token,
+			token
 		);
 		if (!followups) {
 			return [];
@@ -482,15 +481,15 @@ class ExtHostChatAgent {
 					icon: !this._iconPath
 						? undefined
 						: this._iconPath instanceof URI
-						  ? this._iconPath
-						  : "light" in this._iconPath
-							  ? this._iconPath.light
-							  : undefined,
+							? this._iconPath
+							: "light" in this._iconPath
+								? this._iconPath.light
+								: undefined,
 					iconDark: !this._iconPath
 						? undefined
 						: "dark" in this._iconPath
-						  ? this._iconPath.dark
-						  : undefined,
+							? this._iconPath.dark
+							: undefined,
 					themeIcon:
 						this._iconPath instanceof extHostTypes.ThemeIcon
 							? this._iconPath
@@ -504,15 +503,15 @@ class ExtHostChatAgent {
 						typeof this._helpTextPrefix === "string"
 							? this._helpTextPrefix
 							: typeConvert.MarkdownString.from(
-									this._helpTextPrefix,
-							  ),
+									this._helpTextPrefix
+								),
 					helpTextPostfix:
 						!this._helpTextPostfix ||
 						typeof this._helpTextPostfix === "string"
 							? this._helpTextPostfix
 							: typeConvert.MarkdownString.from(
-									this._helpTextPostfix,
-							  ),
+									this._helpTextPostfix
+								),
 					sampleRequest: this._sampleRequest,
 					supportIssueReporting: this._supportIssueReporting,
 				});
@@ -581,7 +580,7 @@ class ExtHostChatAgent {
 				checkProposedApiEnabled(that.extension, "defaultChatAgent");
 				if (!that._isDefault) {
 					throw new Error(
-						"helpTextPrefix is only available on the default chat agent",
+						"helpTextPrefix is only available on the default chat agent"
 					);
 				}
 
@@ -596,7 +595,7 @@ class ExtHostChatAgent {
 				checkProposedApiEnabled(that.extension, "defaultChatAgent");
 				if (!that._isDefault) {
 					throw new Error(
-						"helpTextPostfix is only available on the default chat agent",
+						"helpTextPostfix is only available on the default chat agent"
 					);
 				}
 
@@ -640,11 +639,11 @@ class ExtHostChatAgent {
 
 					that._proxy.$registerAgentCompletionsProvider(
 						that._handle,
-						v.triggerCharacters,
+						v.triggerCharacters
 					);
 				} else {
 					that._proxy.$unregisterAgentCompletionsProvider(
-						that._handle,
+						that._handle
 					);
 				}
 			},
@@ -653,7 +652,7 @@ class ExtHostChatAgent {
 			},
 			onDidPerformAction: !isProposedApiEnabled(
 				this.extension,
-				"chatAgents2Additions",
+				"chatAgents2Additions"
 			)
 				? undefined!
 				: this._onDidPerformAction.event,
@@ -671,7 +670,7 @@ class ExtHostChatAgent {
 		request: vscode.ChatAgentRequest,
 		context: vscode.ChatAgentContext,
 		progress: Progress<vscode.ChatAgentExtendedProgress>,
-		token: CancellationToken,
+		token: CancellationToken
 	): vscode.ProviderResult<vscode.ChatAgentResult2> {
 		return this._callback(request, context, progress, token);
 	}

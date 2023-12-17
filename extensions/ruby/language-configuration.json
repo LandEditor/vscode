@@ -3,7 +3,11 @@
 		"lineComment": "#",
 		"blockComment": ["=begin", "=end"]
 	},
-	"brackets": [["{", "}"], ["[", "]"], ["(", ")"]],
+	"brackets": [
+		["{", "}"],
+		["[", "]"],
+		["(", ")"]
+	],
 	"autoClosingPairs": [
 		["{", "}"],
 		["[", "]"],

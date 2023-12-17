@@ -63,7 +63,7 @@ class ExtHostEditorTab {
 	constructor(
 		dto: IEditorTabDto,
 		parentGroup: ExtHostEditorTabGroup,
-		activeTabIdGetter: () => string,
+		activeTabIdGetter: () => string
 	) {
 		this._activeTabIdGetter = activeTabIdGetter;
 		this._parentGroup = parentGroup;
@@ -119,39 +119,39 @@ class ExtHostEditorTab {
 			case TabInputKind.TextDiffInput:
 				return new TextDiffTabInput(
 					URI.revive(this._dto.input.original),
-					URI.revive(this._dto.input.modified),
+					URI.revive(this._dto.input.modified)
 				);
 			case TabInputKind.TextMergeInput:
 				return new TextMergeTabInput(
 					URI.revive(this._dto.input.base),
 					URI.revive(this._dto.input.input1),
 					URI.revive(this._dto.input.input2),
-					URI.revive(this._dto.input.result),
+					URI.revive(this._dto.input.result)
 				);
 			case TabInputKind.CustomEditorInput:
 				return new CustomEditorTabInput(
 					URI.revive(this._dto.input.uri),
-					this._dto.input.viewType,
+					this._dto.input.viewType
 				);
 			case TabInputKind.WebviewEditorInput:
 				return new WebviewEditorTabInput(this._dto.input.viewType);
 			case TabInputKind.NotebookInput:
 				return new NotebookEditorTabInput(
 					URI.revive(this._dto.input.uri),
-					this._dto.input.notebookType,
+					this._dto.input.notebookType
 				);
 			case TabInputKind.NotebookDiffInput:
 				return new NotebookDiffEditorTabInput(
 					URI.revive(this._dto.input.original),
 					URI.revive(this._dto.input.modified),
-					this._dto.input.notebookType,
+					this._dto.input.notebookType
 				);
 			case TabInputKind.TerminalEditorInput:
 				return new TerminalEditorTabInput();
 			case TabInputKind.InteractiveEditorInput:
 				return new InteractiveWindowInput(
 					URI.revive(this._dto.input.uri),
-					URI.revive(this._dto.input.inputBoxUri),
+					URI.revive(this._dto.input.inputBoxUri)
 				);
 			case TabInputKind.ChatEditorInput:
 				return new ChatEditorTabInput(this._dto.input.providerId);
@@ -170,7 +170,7 @@ class ExtHostEditorTabGroup {
 
 	constructor(
 		dto: IEditorTabGroupDto,
-		activeGroupIdGetter: () => number | undefined,
+		activeGroupIdGetter: () => number | undefined
 	) {
 		this._dto = dto;
 		this._activeGroupIdGetter = activeGroupIdGetter;
@@ -180,7 +180,7 @@ class ExtHostEditorTabGroup {
 				this._activeTabId = tabDto.id;
 			}
 			this._tabs.push(
-				new ExtHostEditorTab(tabDto, this, () => this.activeTabId()),
+				new ExtHostEditorTab(tabDto, this, () => this.activeTabId())
 			);
 		}
 	}
@@ -199,12 +199,12 @@ class ExtHostEditorTabGroup {
 				},
 				get activeTab() {
 					return that._tabs.find(
-						(tab) => tab.tabId === that._activeTabId,
+						(tab) => tab.tabId === that._activeTabId
 					)?.apiObject;
 				},
 				get tabs() {
 					return Object.freeze(
-						that._tabs.map((tab) => tab.apiObject),
+						that._tabs.map((tab) => tab.apiObject)
 					);
 				},
 			};
@@ -229,7 +229,7 @@ class ExtHostEditorTabGroup {
 		// In the open case we add the tab to the group
 		if (operation.kind === TabModelOperationKind.TAB_OPEN) {
 			const tab = new ExtHostEditorTab(operation.tabDto, this, () =>
-				this.activeTabId(),
+				this.activeTabId()
 			);
 			// Insert tab at editor index
 			this._tabs.splice(operation.index, 0, tab);
@@ -241,7 +241,7 @@ class ExtHostEditorTabGroup {
 			const tab = this._tabs.splice(operation.index, 1)[0];
 			if (!tab) {
 				throw new Error(
-					`Tab close updated received for index ${operation.index} which does not exist`,
+					`Tab close updated received for index ${operation.index} which does not exist`
 				);
 			}
 			if (tab.tabId === this._activeTabId) {
@@ -256,14 +256,14 @@ class ExtHostEditorTabGroup {
 			const tab = this._tabs.splice(operation.oldIndex, 1)[0];
 			if (!tab) {
 				throw new Error(
-					`Tab move updated received for index ${operation.oldIndex} which does not exist`,
+					`Tab move updated received for index ${operation.oldIndex} which does not exist`
 				);
 			}
 			this._tabs.splice(operation.index, 0, tab);
 			return tab;
 		}
 		const tab = this._tabs.find(
-			(extHostTab) => extHostTab.tabId === operation.tabDto.id,
+			(extHostTab) => extHostTab.tabId === operation.tabDto.id
 		);
 		if (!tab) {
 			throw new Error("INVALID tab");
@@ -318,7 +318,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 				// dynamic -> getters
 				get all() {
 					return Object.freeze(
-						that._extHostTabGroups.map((group) => group.apiObject),
+						that._extHostTabGroups.map((group) => group.apiObject)
 					);
 				},
 				get activeTabGroup() {
@@ -326,8 +326,8 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 					const activeTabGroup = assertIsDefined(
 						that._extHostTabGroups.find(
 							(candidate) =>
-								candidate.groupId === activeTabGroupId,
-						)?.apiObject,
+								candidate.groupId === activeTabGroupId
+						)?.apiObject
 					);
 					return activeTabGroup;
 				},
@@ -337,7 +337,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 						| readonly vscode.Tab[]
 						| vscode.TabGroup
 						| readonly vscode.TabGroup[],
-					preserveFocus?: boolean,
+					preserveFocus?: boolean
 				) => {
 					const tabsOrTabGroups = Array.isArray(tabOrTabGroup)
 						? tabOrTabGroup
@@ -350,12 +350,12 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 					if (isTabGroup(tabsOrTabGroups[0])) {
 						return this._closeGroups(
 							tabsOrTabGroups as vscode.TabGroup[],
-							preserveFocus,
+							preserveFocus
 						);
 					} else {
 						return this._closeTabs(
 							tabsOrTabGroups as vscode.Tab[],
-							preserveFocus,
+							preserveFocus
 						);
 					}
 				},
@@ -375,7 +375,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 
 	$acceptEditorTabModel(tabGroups: IEditorTabGroupDto[]): void {
 		const groupIdsBefore = new Set(
-			this._extHostTabGroups.map((group) => group.groupId),
+			this._extHostTabGroups.map((group) => group.groupId)
 		);
 		const groupIdsAfter = new Set(tabGroups.map((dto) => dto.groupId));
 		const diff = diffSets(groupIdsBefore, groupIdsAfter);
@@ -389,7 +389,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 		this._extHostTabGroups = tabGroups.map((tabGroup) => {
 			const group = new ExtHostEditorTabGroup(
 				tabGroup,
-				() => this._activeGroupId,
+				() => this._activeGroupId
 			);
 			if (diff.added.includes(group.groupId)) {
 				opened.push(group.apiObject);
@@ -401,7 +401,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 
 		// Set the active tab group id
 		const activeTabGroupId = assertIsDefined(
-			tabGroups.find((group) => group.isActive === true)?.groupId,
+			tabGroups.find((group) => group.isActive === true)?.groupId
 		);
 		if (
 			activeTabGroupId !== undefined &&
@@ -410,17 +410,17 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 			this._activeGroupId = activeTabGroupId;
 		}
 		this._onDidChangeTabGroups.fire(
-			Object.freeze({ opened, closed, changed }),
+			Object.freeze({ opened, closed, changed })
 		);
 	}
 
 	$acceptTabGroupUpdate(groupDto: IEditorTabGroupDto) {
 		const group = this._extHostTabGroups.find(
-			(group) => group.groupId === groupDto.groupId,
+			(group) => group.groupId === groupDto.groupId
 		);
 		if (!group) {
 			throw new Error(
-				"Update Group IPC call received before group creation.",
+				"Update Group IPC call received before group creation."
 			);
 		}
 		group.acceptGroupDtoUpdate(groupDto);
@@ -432,17 +432,17 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 				changed: [group.apiObject],
 				opened: [],
 				closed: [],
-			}),
+			})
 		);
 	}
 
 	$acceptTabOperation(operation: TabOperation) {
 		const group = this._extHostTabGroups.find(
-			(group) => group.groupId === operation.groupId,
+			(group) => group.groupId === operation.groupId
 		);
 		if (!group) {
 			throw new Error(
-				"Update Tabs IPC call received before group creation.",
+				"Update Tabs IPC call received before group creation."
 			);
 		}
 		const tab = group.acceptTabOperation(operation);
@@ -455,7 +455,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 						opened: [tab.apiObject],
 						closed: [],
 						changed: [],
-					}),
+					})
 				);
 				return;
 			case TabModelOperationKind.TAB_CLOSE:
@@ -464,7 +464,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 						opened: [],
 						closed: [tab.apiObject],
 						changed: [],
-					}),
+					})
 				);
 				return;
 			case TabModelOperationKind.TAB_MOVE:
@@ -474,14 +474,14 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 						opened: [],
 						closed: [],
 						changed: [tab.apiObject],
-					}),
+					})
 				);
 				return;
 		}
 	}
 
 	private _findExtHostTabFromApi(
-		apiTab: vscode.Tab,
+		apiTab: vscode.Tab
 	): ExtHostEditorTab | undefined {
 		for (const group of this._extHostTabGroups) {
 			for (const tab of group.tabs) {
@@ -494,16 +494,16 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 	}
 
 	private _findExtHostTabGroupFromApi(
-		apiTabGroup: vscode.TabGroup,
+		apiTabGroup: vscode.TabGroup
 	): ExtHostEditorTabGroup | undefined {
 		return this._extHostTabGroups.find(
-			(candidate) => candidate.apiObject === apiTabGroup,
+			(candidate) => candidate.apiObject === apiTabGroup
 		);
 	}
 
 	private async _closeTabs(
 		tabs: vscode.Tab[],
-		preserveFocus?: boolean,
+		preserveFocus?: boolean
 	): Promise<boolean> {
 		const extHostTabIds: string[] = [];
 		for (const tab of tabs) {
@@ -518,7 +518,7 @@ export class ExtHostEditorTabs implements IExtHostEditorTabs {
 
 	private async _closeGroups(
 		groups: vscode.TabGroup[],
-		preserverFoucs?: boolean,
+		preserverFoucs?: boolean
 	): Promise<boolean> {
 		const extHostGroupIds: number[] = [];
 		for (const group of groups) {

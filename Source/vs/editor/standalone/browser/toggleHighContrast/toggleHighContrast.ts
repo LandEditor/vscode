@@ -41,14 +41,14 @@ class ToggleHighContrast extends EditorAction {
 				this._originalThemeName ||
 					(isDark(currentTheme.type)
 						? VS_DARK_THEME_NAME
-						: VS_LIGHT_THEME_NAME),
+						: VS_LIGHT_THEME_NAME)
 			);
 			this._originalThemeName = null;
 		} else {
 			standaloneThemeService.setTheme(
 				isDark(currentTheme.type)
 					? HC_BLACK_THEME_NAME
-					: HC_LIGHT_THEME_NAME,
+					: HC_LIGHT_THEME_NAME
 			);
 			this._originalThemeName = currentTheme.themeName;
 		}

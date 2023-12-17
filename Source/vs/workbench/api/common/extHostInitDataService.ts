@@ -7,7 +7,7 @@ import { IExtensionHostInitData } from "vs/workbench/services/extensions/common/
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IExtHostInitDataService = createDecorator<IExtHostInitDataService>(
-	"IExtHostInitDataService",
+	"IExtHostInitDataService"
 );
 
 export interface IExtHostInitDataService

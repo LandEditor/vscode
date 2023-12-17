@@ -47,30 +47,42 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		"extensionsAssistant/languagePackSuggestionIgnore";
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ILocaleService private readonly localeService: ILocaleService,
 		@IProductService private readonly productService: IProductService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
 		super();
 
 		this.checkAndInstall();
-		this._register(this.extensionManagementService.onDidInstallExtensions(e => this.onDidInstallExtensions(e)));
-		this._register(this.extensionManagementService.onDidUninstallExtension(e => this.onDidUninstallExtension(e)));
+		this._register(
+			this.extensionManagementService.onDidInstallExtensions((e) =>
+				this.onDidInstallExtensions(e)
+			)
+		);
+		this._register(
+			this.extensionManagementService.onDidUninstallExtension((e) =>
+				this.onDidUninstallExtension(e)
+			)
+		);
 	}
 
 	private async onDidInstallExtensions(
-		results: readonly InstallExtensionResult[],
+		results: readonly InstallExtensionResult[]
 	): Promise<void> {
 		for (const result of results) {
 			if (result.operation === InstallOperation.Install && result.local) {
 				await this.onDidInstallExtension(
 					result.local,
-					!!result.context?.extensionsSync,
+					!!result.context?.extensionsSync
 				);
 			}
 		}
@@ -78,7 +90,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 
 	private async onDidInstallExtension(
 		localExtension: ILocalExtension,
-		fromSettingsSync: boolean,
+		fromSettingsSync: boolean
 	): Promise<void> {
 		const localization =
 			localExtension.manifest.contributes?.localizations?.[0];
@@ -93,13 +105,13 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				"updateLocale",
 				"Would you like to change {0}'s display language to {1} and restart?",
 				this.productService.nameLong,
-				languageName || languageId,
+				languageName || languageId
 			),
 			[
 				{
 					label: localize(
 						"changeAndRestart",
-						"Change Language and Restart",
+						"Change Language and Restart"
 					),
 					run: async () => {
 						await this.localeService.setLocale(
@@ -110,7 +122,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 								// If settings sync installs the language pack, then we would have just shown the notification so no
 								// need to show the dialog.
 							},
-							true,
+							true
 						);
 					},
 				},
@@ -122,12 +134,12 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					isSecondary: true,
 					scope: NeverShowAgainScope.APPLICATION,
 				},
-			},
+			}
 		);
 	}
 
 	private async onDidUninstallExtension(
-		_event: DidUninstallExtensionEvent,
+		_event: DidUninstallExtensionEvent
 	): Promise<void> {
 		if (!(await this.isLocaleInstalled(platform.language))) {
 			this.localeService.setLocale({
@@ -144,8 +156,8 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			this.storageService.get(
 				NativeLocalizationWorkbenchContribution.LANGUAGEPACK_SUGGESTION_IGNORE_STORAGE_KEY,
 				StorageScope.APPLICATION,
-				"[]",
-			),
+				"[]"
+			)
 		);
 
 		if (!this.galleryService.isEnabled()) {
@@ -174,14 +186,14 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		const fullLocale = locale;
 		let tagResult = await this.galleryService.query(
 			{ text: `tag:lp-${locale}` },
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		if (tagResult.total === 0) {
 			// Trim the locale and try again.
 			locale = locale.split("-")[0];
 			tagResult = await this.galleryService.query(
 				{ text: `tag:lp-${locale}` },
-				CancellationToken.None,
+				CancellationToken.None
 			);
 			if (tagResult.total === 0) {
 				return;
@@ -194,8 +206,8 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				: tagResult.firstPage.find(
 						(e) =>
 							e.publisher === "MS-CEINTL" &&
-							e.name.startsWith("vscode-language-pack"),
-				  );
+							e.name.startsWith("vscode-language-pack")
+					);
 		const extensionToFetchTranslationsFrom =
 			extensionToInstall ?? tagResult.firstPage[0];
 
@@ -206,15 +218,15 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		const [manifest, translation] = await Promise.all([
 			this.galleryService.getManifest(
 				extensionToFetchTranslationsFrom,
-				CancellationToken.None,
+				CancellationToken.None
 			),
 			this.galleryService.getCoreTranslation(
 				extensionToFetchTranslationsFrom,
-				locale,
+				locale
 			),
 		]);
 		const loc = manifest?.contributes?.localizations?.find((x) =>
-			locale.startsWith(x.languageId.toLowerCase()),
+			locale.startsWith(x.languageId.toLowerCase())
 		);
 		const languageName = loc ? loc.languageName || locale : locale;
 		const languageDisplayName = loc
@@ -234,15 +246,15 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			if (!translationsFromPack[key] || useEnglish) {
 				translations[key] = minimumTranslatedStrings[key].replace(
 					"{0}",
-					() => languageName,
+					() => languageName
 				);
 			} else {
 				translations[key] = `${translationsFromPack[key].replace(
 					"{0}",
-					() => languageDisplayName,
+					() => languageDisplayName
 				)} (${minimumTranslatedStrings[key].replace(
 					"{0}",
-					() => languageName,
+					() => languageName
 				)})`;
 			}
 		});
@@ -269,7 +281,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					await this.paneCompositeService.openPaneComposite(
 						EXTENSIONS_VIEWLET_ID,
 						ViewContainerLocation.Sidebar,
-						true,
+						true
 					);
 				if (!viewlet) {
 					return;
@@ -279,7 +291,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 					return;
 				}
 				(container as IExtensionsViewPaneContainer).search(
-					`tag:lp-${locale}`,
+					`tag:lp-${locale}`
 				);
 				container.focus();
 			},
@@ -297,7 +309,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 						galleryExtension: extensionToInstall,
 						// The user will be prompted if they want to install the language pack before this.
 					},
-					true,
+					true
 				);
 			},
 		};
@@ -318,7 +330,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 							NativeLocalizationWorkbenchContribution.LANGUAGEPACK_SUGGESTION_IGNORE_STORAGE_KEY,
 							JSON.stringify(languagePackSuggestionIgnoreList),
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 						logUserReaction("neverShowAgain");
 					},
@@ -328,7 +340,7 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 				onCancel: () => {
 					logUserReaction("cancelled");
 				},
-			},
+			}
 		);
 	}
 
@@ -338,16 +350,16 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 			(i) =>
 				!!i.manifest.contributes?.localizations?.length &&
 				i.manifest.contributes.localizations.some((l) =>
-					locale.startsWith(l.languageId.toLowerCase()),
-				),
+					locale.startsWith(l.languageId.toLowerCase())
+				)
 		);
 	}
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	NativeLocalizationWorkbenchContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

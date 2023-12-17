@@ -145,7 +145,7 @@ declare module "vscode" {
 		provideTimeline(
 			uri: Uri,
 			options: TimelineOptions,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<Timeline>;
 	}
 
@@ -163,7 +163,7 @@ declare module "vscode" {
 		 */
 		export function registerTimelineProvider(
 			scheme: string | string[],
-			provider: TimelineProvider,
+			provider: TimelineProvider
 		): Disposable;
 	}
 }

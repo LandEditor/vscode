@@ -45,7 +45,7 @@ declare module "vscode" {
 		constructor(
 			badge?: string | ThemeIcon,
 			tooltip?: string,
-			color?: ThemeColor,
+			color?: ThemeColor
 		);
 	}
 }

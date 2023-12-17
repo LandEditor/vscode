@@ -58,7 +58,7 @@ export class ToolBar extends Disposable {
 	private readonly element: HTMLElement;
 
 	private _onDidChangeDropdownVisibility = this._register(
-		new EventMultiplexer<boolean>(),
+		new EventMultiplexer<boolean>()
 	);
 	readonly onDidChangeDropdownVisibility =
 		this._onDidChangeDropdownVisibility.event;
@@ -69,7 +69,7 @@ export class ToolBar extends Disposable {
 		contextMenuProvider: IContextMenuProvider,
 		options: IToolBarOptions = {
 			orientation: ActionsOrientation.HORIZONTAL,
-		},
+		}
 	) {
 		super();
 
@@ -80,8 +80,8 @@ export class ToolBar extends Disposable {
 		this.toggleMenuAction = this._register(
 			new ToggleMenuAction(
 				() => this.toggleMenuActionViewItem?.show(),
-				options.toggleMenuTitle,
-			),
+				options.toggleMenuTitle
+			)
 		);
 
 		this.element = document.createElement("div");
@@ -109,7 +109,7 @@ export class ToolBar extends Disposable {
 									keybindingProvider:
 										this.options.getKeyBinding,
 									classNames: ThemeIcon.asClassNameArray(
-										options.moreIcon ?? Codicon.toolBarMore,
+										options.moreIcon ?? Codicon.toolBarMore
 									),
 									anchorAlignmentProvider:
 										this.options.anchorAlignmentProvider,
@@ -118,16 +118,16 @@ export class ToolBar extends Disposable {
 											.renderDropdownAsChildElement,
 									skipTelemetry: this.options.skipTelemetry,
 									isMenu: true,
-								},
+								}
 							);
 						this.toggleMenuActionViewItem.setActionContext(
-							this.actionBar.context,
+							this.actionBar.context
 						);
 						this.disposables.add(
 							this._onDidChangeDropdownVisibility.add(
 								this.toggleMenuActionViewItem
-									.onDidChangeVisibility,
-							),
+									.onDidChangeVisibility
+							)
 						);
 
 						return this.toggleMenuActionViewItem;
@@ -136,7 +136,7 @@ export class ToolBar extends Disposable {
 					if (options.actionViewItemProvider) {
 						const result = options.actionViewItemProvider(
 							action,
-							viewItemOptions,
+							viewItemOptions
 						);
 
 						if (result) {
@@ -160,14 +160,14 @@ export class ToolBar extends Disposable {
 								menuAsChild:
 									!!this.options.renderDropdownAsChildElement,
 								skipTelemetry: this.options.skipTelemetry,
-							},
+							}
 						);
 						result.setActionContext(this.actionBar.context);
 						this.submenuActionViewItems.push(result);
 						this.disposables.add(
 							this._onDidChangeDropdownVisibility.add(
-								result.onDidChangeVisibility,
-							),
+								result.onDidChangeVisibility
+							)
 						);
 
 						return result;
@@ -175,7 +175,7 @@ export class ToolBar extends Disposable {
 
 					return undefined;
 				},
-			}),
+			})
 		);
 	}
 
@@ -229,7 +229,7 @@ export class ToolBar extends Disposable {
 
 	setActions(
 		primaryActions: ReadonlyArray<IAction>,
-		secondaryActions?: ReadonlyArray<IAction>,
+		secondaryActions?: ReadonlyArray<IAction>
 	): void {
 		this.clear();
 

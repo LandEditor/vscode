@@ -15,12 +15,12 @@ import { IExtHostRpcService } from "vs/workbench/api/common/extHostRpcService";
 export class ExtHostDownloadService extends Disposable {
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostCommands commands: IExtHostCommands,
+		@IExtHostCommands commands: IExtHostCommands
 	) {
 		super();
 
 		const proxy = extHostRpc.getProxy(
-			MainContext.MainThreadDownloadService,
+			MainContext.MainThreadDownloadService
 		);
 
 		commands.registerCommand(
@@ -30,7 +30,7 @@ export class ExtHostDownloadService extends Disposable {
 				const location = URI.file(join(tmpdir(), generateUuid()));
 				await proxy.$download(resource, location);
 				return location;
-			},
+			}
 		);
 	}
 }

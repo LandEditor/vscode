@@ -69,7 +69,7 @@ export class FindInput extends Widget {
 	public readonly inputBox: HistoryInputBox;
 
 	private readonly _onDidOptionChange = this._register(
-		new Emitter<boolean>(),
+		new Emitter<boolean>()
 	);
 	public readonly onDidOptionChange: Event<boolean /* via keyboard */> =
 		this._onDidOptionChange.event;
@@ -87,7 +87,7 @@ export class FindInput extends Widget {
 	public readonly onKeyUp: Event<IKeyboardEvent> = this._onKeyUp.event;
 
 	private _onCaseSensitiveKeyDown = this._register(
-		new Emitter<IKeyboardEvent>(),
+		new Emitter<IKeyboardEvent>()
 	);
 	public readonly onCaseSensitiveKeyDown: Event<IKeyboardEvent> =
 		this._onCaseSensitiveKeyDown.event;
@@ -99,7 +99,7 @@ export class FindInput extends Widget {
 	constructor(
 		parent: HTMLElement | null,
 		contextViewProvider: IContextViewProvider | undefined,
-		options: IFindInputOptions,
+		options: IFindInputOptions
 	) {
 		super();
 		this.placeholder = options.placeholder || "";
@@ -131,7 +131,7 @@ export class FindInput extends Widget {
 				flexibleWidth,
 				flexibleMaxHeight,
 				inputBoxStyles: options.inputBoxStyles,
-			}),
+			})
 		);
 
 		if (this.showCommonFindToggles) {
@@ -140,7 +140,7 @@ export class FindInput extends Widget {
 					appendTitle: appendRegexLabel,
 					isChecked: false,
 					...options.toggleStyles,
-				}),
+				})
 			);
 			this._register(
 				this.regex.onChange((viaKeyboard) => {
@@ -149,12 +149,12 @@ export class FindInput extends Widget {
 						this.inputBox.focus();
 					}
 					this.validate();
-				}),
+				})
 			);
 			this._register(
 				this.regex.onKeyDown((e) => {
 					this._onRegexKeyDown.fire(e);
-				}),
+				})
 			);
 
 			this.wholeWords = this._register(
@@ -162,7 +162,7 @@ export class FindInput extends Widget {
 					appendTitle: appendWholeWordsLabel,
 					isChecked: false,
 					...options.toggleStyles,
-				}),
+				})
 			);
 			this._register(
 				this.wholeWords.onChange((viaKeyboard) => {
@@ -171,7 +171,7 @@ export class FindInput extends Widget {
 						this.inputBox.focus();
 					}
 					this.validate();
-				}),
+				})
 			);
 
 			this.caseSensitive = this._register(
@@ -179,7 +179,7 @@ export class FindInput extends Widget {
 					appendTitle: appendCaseSensitiveLabel,
 					isChecked: false,
 					...options.toggleStyles,
-				}),
+				})
 			);
 			this._register(
 				this.caseSensitive.onChange((viaKeyboard) => {
@@ -188,12 +188,12 @@ export class FindInput extends Widget {
 						this.inputBox.focus();
 					}
 					this.validate();
-				}),
+				})
 			);
 			this._register(
 				this.caseSensitive.onKeyDown((e) => {
 					this._onCaseSensitiveKeyDown.fire(e);
-				}),
+				})
 			);
 
 			// Arrow-Key support to navigate between options
@@ -209,7 +209,7 @@ export class FindInput extends Widget {
 					event.equals(KeyCode.Escape)
 				) {
 					const index = indexes.indexOf(
-						<HTMLElement>this.domNode.ownerDocument.activeElement,
+						<HTMLElement>this.domNode.ownerDocument.activeElement
 					);
 					if (index >= 0) {
 						let newIndex: number = -1;
@@ -263,8 +263,8 @@ export class FindInput extends Widget {
 				"compositionstart",
 				(e: CompositionEvent) => {
 					this.imeSessionInProgress = true;
-				},
-			),
+				}
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -273,17 +273,17 @@ export class FindInput extends Widget {
 				(e: CompositionEvent) => {
 					this.imeSessionInProgress = false;
 					this._onInput.fire();
-				},
-			),
+				}
+			)
 		);
 
 		this.onkeydown(this.inputBox.inputElement, (e) =>
-			this._onKeyDown.fire(e),
+			this._onKeyDown.fire(e)
 		);
 		this.onkeyup(this.inputBox.inputElement, (e) => this._onKeyUp.fire(e));
 		this.oninput(this.inputBox.inputElement, (e) => this._onInput.fire());
 		this.onmousedown(this.inputBox.inputElement, (e) =>
-			this._onMouseDown.fire(e),
+			this._onMouseDown.fire(e)
 		);
 	}
 
@@ -357,7 +357,7 @@ export class FindInput extends Widget {
 					if (!viaKeyboard && this.fixFocusOnOptionClickEnabled) {
 						this.inputBox.focus();
 					}
-				}),
+				})
 			);
 
 			this.additionalToggles.push(toggle);
@@ -452,11 +452,11 @@ export class FindInput extends Widget {
 	private _lastHighlightFindOptions: number = 0;
 	public highlightFindOptions(): void {
 		this.domNode.classList.remove(
-			"highlight-" + this._lastHighlightFindOptions,
+			"highlight-" + this._lastHighlightFindOptions
 		);
 		this._lastHighlightFindOptions = 1 - this._lastHighlightFindOptions;
 		this.domNode.classList.add(
-			"highlight-" + this._lastHighlightFindOptions,
+			"highlight-" + this._lastHighlightFindOptions
 		);
 	}
 

@@ -19,7 +19,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
 	private _activeJsTsEditor: vscode.TextEditor | undefined;
 
 	private readonly _onDidChangeActiveJsTsEditor = this._register(
-		new vscode.EventEmitter<vscode.TextEditor | undefined>(),
+		new vscode.EventEmitter<vscode.TextEditor | undefined>()
 	);
 	public readonly onDidChangeActiveJsTsEditor =
 		this._onDidChangeActiveJsTsEditor.event;
@@ -29,7 +29,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
 		vscode.window.onDidChangeActiveTextEditor(
 			this.onDidChangeActiveTextEditor,
 			this,
-			this._disposables,
+			this._disposables
 		);
 		vscode.window.onDidChangeVisibleTextEditors(
 			() => {
@@ -39,7 +39,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
 					if (
 						!vscode.window.visibleTextEditors.some(
 							(visibleEditor) =>
-								visibleEditor === this._activeJsTsEditor,
+								visibleEditor === this._activeJsTsEditor
 						)
 					) {
 						this.onDidChangeActiveTextEditor(undefined);
@@ -47,7 +47,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
 				}
 			},
 			this,
-			this._disposables,
+			this._disposables
 		);
 
 		this.onDidChangeActiveTextEditor(vscode.window.activeTextEditor);
@@ -58,7 +58,7 @@ export class ActiveJsTsEditorTracker extends Disposable {
 	}
 
 	private onDidChangeActiveTextEditor(
-		editor: vscode.TextEditor | undefined,
+		editor: vscode.TextEditor | undefined
 	): any {
 		if (editor === this._activeJsTsEditor) {
 			return;

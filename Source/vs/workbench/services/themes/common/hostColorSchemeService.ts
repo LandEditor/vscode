@@ -7,7 +7,7 @@ import { Event } from "vs/base/common/event";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IHostColorSchemeService = createDecorator<IHostColorSchemeService>(
-	"hostColorSchemeService",
+	"hostColorSchemeService"
 );
 
 export interface IHostColorSchemeService {

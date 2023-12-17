@@ -22,7 +22,7 @@ function generateVSCodeConfigurationTask() {
 		}
 		if (!shouldSetupSettingsSearch()) {
 			console.log(
-				`Only runs on main and release branches, not ${process.env.BUILD_SOURCEBRANCH}`,
+				`Only runs on main and release branches, not ${process.env.BUILD_SOURCEBRANCH}`
 			);
 			return resolve(undefined);
 		}
@@ -31,7 +31,7 @@ function generateVSCodeConfigurationTask() {
 			process.env.VSCODE_QUALITY !== "stable"
 		) {
 			console.log(
-				`Only runs on insider and stable qualities, not ${process.env.VSCODE_QUALITY}`,
+				`Only runs on insider and stable qualities, not ${process.env.VSCODE_QUALITY}`
 			);
 			return resolve(undefined);
 		}
@@ -51,7 +51,7 @@ function generateVSCodeConfigurationTask() {
 			"Resources",
 			"app",
 			"bin",
-			"code",
+			"code"
 		);
 		const codeProc = cp.exec(
 			`${appPath} --export-default-configuration='${result}' --wait --user-data-dir='${userDataDir}' --extensions-dir='${extensionsDir}'`,
@@ -68,7 +68,7 @@ function generateVSCodeConfigurationTask() {
 					console.log(`stderr: ${stderr}`);
 				}
 				resolve(result);
-			},
+			}
 		);
 		const timer = setTimeout(() => {
 			codeProc.kill();
@@ -95,8 +95,8 @@ function getSettingsSearchBuildId(packageJson) {
 			branch.indexOf("/release/") >= 0
 				? 0
 				: /\/main$/.test(branch)
-				  ? 1
-				  : 2; // Some unexpected branch
+					? 1
+					: 2; // Some unexpected branch
 		const out = cp.execSync(`git rev-list HEAD --count`);
 		const count = parseInt(out.toString());
 		// <version number><commit count><branchId (avoid unlikely conflicts)>
@@ -123,7 +123,7 @@ async function main() {
 	const credential = new identity_1.ClientSecretCredential(
 		process.env["AZURE_TENANT_ID"],
 		process.env["AZURE_CLIENT_ID"],
-		process.env["AZURE_CLIENT_SECRET"],
+		process.env["AZURE_CLIENT_SECRET"]
 	);
 	return new Promise((c, e) => {
 		vfs.src(configPath)
@@ -133,7 +133,7 @@ async function main() {
 					credential,
 					container: "configuration",
 					prefix: `${settingsSearchBuildId}/${commit}/`,
-				}),
+				})
 			)
 			.on("end", () => c())
 			.on("error", (err) => e(err));

@@ -14,7 +14,7 @@ import {
 
 export function register(
 	tree: SymbolsTree,
-	context: vscode.ExtensionContext,
+	context: vscode.ExtensionContext
 ): void {
 	function findLocations(title: string, command: string) {
 		if (vscode.window.activeTextEditor) {
@@ -22,9 +22,9 @@ export function register(
 				title,
 				new vscode.Location(
 					vscode.window.activeTextEditor.document.uri,
-					vscode.window.activeTextEditor.selection.active,
+					vscode.window.activeTextEditor.selection.active
 				),
-				command,
+				command
 			);
 			tree.setInput(input);
 		}
@@ -32,15 +32,15 @@ export function register(
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand("references-view.findReferences", () =>
-			findLocations("References", "vscode.executeReferenceProvider"),
+			findLocations("References", "vscode.executeReferenceProvider")
 		),
 		vscode.commands.registerCommand(
 			"references-view.findImplementations",
 			() =>
 				findLocations(
 					"Implementations",
-					"vscode.executeImplementationProvider",
-				),
+					"vscode.executeImplementationProvider"
+				)
 		),
 		// --- legacy name
 		vscode.commands.registerCommand(
@@ -48,22 +48,22 @@ export function register(
 			(...args: any[]) =>
 				vscode.commands.executeCommand(
 					"references-view.findReferences",
-					...args,
-				),
+					...args
+				)
 		),
 		vscode.commands.registerCommand(
 			"references-view.removeReferenceItem",
-			removeReferenceItem,
+			removeReferenceItem
 		),
 		vscode.commands.registerCommand("references-view.copy", copyCommand),
 		vscode.commands.registerCommand(
 			"references-view.copyAll",
-			copyAllCommand,
+			copyAllCommand
 		),
 		vscode.commands.registerCommand(
 			"references-view.copyPath",
-			copyPathCommand,
-		),
+			copyPathCommand
+		)
 	);
 
 	// --- references.preferredLocation setting
@@ -85,21 +85,21 @@ export function register(
 				async (
 					uri: vscode.Uri,
 					position: vscode.Position,
-					locations: vscode.Location[],
+					locations: vscode.Location[]
 				) => {
 					const input = new ReferencesTreeInput(
 						vscode.l10n.t("References"),
 						new vscode.Location(uri, position),
 						"vscode.executeReferenceProvider",
-						locations,
+						locations
 					);
 					tree.setInput(input);
-				},
+				}
 			);
 		}
 	}
 	context.subscriptions.push(
-		vscode.workspace.onDidChangeConfiguration(updateShowReferences),
+		vscode.workspace.onDidChangeConfiguration(updateShowReferences)
 	);
 	context.subscriptions.push({
 		dispose: () => showReferencesDisposable?.dispose(),
@@ -124,7 +124,7 @@ function removeReferenceItem(item: FileItem | ReferenceItem | unknown) {
 }
 
 async function copyCommand(
-	item: ReferencesModel | ReferenceItem | FileItem | unknown,
+	item: ReferencesModel | ReferenceItem | FileItem | unknown
 ) {
 	let val: string | undefined;
 	if (item instanceof ReferencesModel) {

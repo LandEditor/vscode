@@ -270,66 +270,66 @@ import { EditorContextKeys } from "vs/editor/common/editorContextKeys";
 //#region Editor Registrations
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		TextResourceEditor,
 		TextResourceEditor.ID,
-		localize("textEditor", "Text Editor"),
+		localize("textEditor", "Text Editor")
 	),
 	[
 		new SyncDescriptor(UntitledTextEditorInput),
 		new SyncDescriptor(TextResourceEditorInput),
-	],
+	]
 );
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		TextDiffEditor,
 		TextDiffEditor.ID,
-		localize("textDiffEditor", "Text Diff Editor"),
+		localize("textDiffEditor", "Text Diff Editor")
 	),
-	[new SyncDescriptor(DiffEditorInput)],
+	[new SyncDescriptor(DiffEditorInput)]
 );
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		BinaryResourceDiffEditor,
 		BinaryResourceDiffEditor.ID,
-		localize("binaryDiffEditor", "Binary Diff Editor"),
+		localize("binaryDiffEditor", "Binary Diff Editor")
 	),
-	[new SyncDescriptor(DiffEditorInput)],
+	[new SyncDescriptor(DiffEditorInput)]
 );
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		SideBySideEditor,
 		SideBySideEditor.ID,
-		localize("sideBySideEditor", "Side by Side Editor"),
+		localize("sideBySideEditor", "Side by Side Editor")
 	),
-	[new SyncDescriptor(SideBySideEditorInput)],
+	[new SyncDescriptor(SideBySideEditorInput)]
 );
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(
 	UntitledTextEditorInput.ID,
-	UntitledTextEditorInputSerializer,
+	UntitledTextEditorInputSerializer
 );
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(
 	SideBySideEditorInput.ID,
-	SideBySideEditorInputSerializer,
+	SideBySideEditorInputSerializer
 );
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(DiffEditorInput.ID, DiffEditorInputSerializer);
 
 //#endregion
@@ -337,40 +337,40 @@ Registry.as<IEditorFactoryRegistry>(
 //#region Workbench Contributions
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(EditorAutoSave, LifecyclePhase.Ready);
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(EditorStatusContribution, LifecyclePhase.Ready);
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	UntitledTextEditorWorkingCopyEditorHandler,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	DynamicEditorConfigurations,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 
 registerEditorContribution(
 	FloatingEditorClickMenu.ID,
 	FloatingEditorClickMenu,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );
 //#endregion
 
 //#region Quick Access
 
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(
-	QuickAccessExtensions.Quickaccess,
+	QuickAccessExtensions.Quickaccess
 );
 const editorPickerContextKey = "inEditorsPicker";
 const editorPickerContext = ContextKeyExpr.and(
 	inQuickPickContext,
-	ContextKeyExpr.has(editorPickerContextKey),
+	ContextKeyExpr.has(editorPickerContextKey)
 );
 
 quickAccessRegistry.registerQuickAccessProvider({
@@ -379,13 +379,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: editorPickerContextKey,
 	placeholder: localize(
 		"editorQuickAccessPlaceholder",
-		"Type the name of an editor to open it.",
+		"Type the name of an editor to open it."
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"activeGroupEditorsByMostRecentlyUsedQuickAccess",
-				"Show Editors in Active Group by Most Recently Used",
+				"Show Editors in Active Group by Most Recently Used"
 			),
 			commandId: ShowEditorsInActiveGroupByMostRecentlyUsedAction.ID,
 		},
@@ -398,13 +398,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: editorPickerContextKey,
 	placeholder: localize(
 		"editorQuickAccessPlaceholder",
-		"Type the name of an editor to open it.",
+		"Type the name of an editor to open it."
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"allEditorsByAppearanceQuickAccess",
-				"Show All Opened Editors By Appearance",
+				"Show All Opened Editors By Appearance"
 			),
 			commandId: ShowAllEditorsByAppearanceAction.ID,
 		},
@@ -417,13 +417,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: editorPickerContextKey,
 	placeholder: localize(
 		"editorQuickAccessPlaceholder",
-		"Type the name of an editor to open it.",
+		"Type the name of an editor to open it."
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"allEditorsByMostRecentlyUsedQuickAccess",
-				"Show All Opened Editors By Most Recently Used",
+				"Show All Opened Editors By Most Recently Used"
 			),
 			commandId: ShowAllEditorsByMostRecentlyUsedAction.ID,
 		},
@@ -576,7 +576,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigateNextInEditorPickerId,
-		true,
+		true
 	),
 	when: editorPickerContext,
 	primary: KeyMod.CtrlCmd | KeyCode.Tab,
@@ -590,7 +590,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + 50,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigatePreviousInEditorPickerId,
-		false,
+		false
 	),
 	when: editorPickerContext,
 	primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Tab,
@@ -611,7 +611,7 @@ if (isMacintosh) {
 			title: NavigateBackwardsAction.LABEL,
 			icon: {
 				dark: FileAccess.asFileUri(
-					"vs/workbench/browser/parts/editor/media/back-tb.png",
+					"vs/workbench/browser/parts/editor/media/back-tb.png"
 				),
 			},
 		},
@@ -625,7 +625,7 @@ if (isMacintosh) {
 			title: NavigateForwardAction.LABEL,
 			icon: {
 				dark: FileAccess.asFileUri(
-					"vs/workbench/browser/parts/editor/media/forward-tb.png",
+					"vs/workbench/browser/parts/editor/media/forward-tb.png"
 				),
 			},
 		},
@@ -645,7 +645,7 @@ MenuRegistry.appendMenuItem(MenuId.EmptyEditorGroup, {
 	order: 10,
 	when: ContextKeyExpr.and(
 		IsAuxiliaryEditorPartContext,
-		ActiveEditorGroupLockedContext.toNegated(),
+		ActiveEditorGroupLockedContext.toNegated()
 	),
 });
 MenuRegistry.appendMenuItem(MenuId.EmptyEditorGroup, {
@@ -669,7 +669,7 @@ MenuRegistry.appendMenuItem(MenuId.EmptyEditorGroup, {
 	order: 20,
 	when: ContextKeyExpr.or(
 		IsAuxiliaryEditorPartContext,
-		EditorPartMultipleEditorGroupsContext,
+		EditorPartMultipleEditorGroupsContext
 	),
 });
 
@@ -792,7 +792,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTabsBarShowTabsSubmenu, {
 		title: localize("multipleTabs", "Multiple Tabs"),
 		toggled: ContextKeyExpr.equals(
 			"config.workbench.editor.showTabs",
-			"multiple",
+			"multiple"
 		),
 	},
 	group: "1_config",
@@ -804,7 +804,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTabsBarShowTabsSubmenu, {
 		title: localize("singleTab", "Single Tab"),
 		toggled: ContextKeyExpr.equals(
 			"config.workbench.editor.showTabs",
-			"single",
+			"single"
 		),
 	},
 	group: "1_config",
@@ -816,7 +816,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTabsBarShowTabsSubmenu, {
 		title: localize("hideTabs", "Hidden"),
 		toggled: ContextKeyExpr.equals(
 			"config.workbench.editor.showTabs",
-			"none",
+			"none"
 		),
 	},
 	group: "1_config",
@@ -870,14 +870,14 @@ MenuRegistry.appendMenuItem(MenuId.EditorActionsPositionSubmenu, {
 		title: localize("tabBar", "Tab Bar"),
 		toggled: ContextKeyExpr.equals(
 			"config.workbench.editor.editorActionsLocation",
-			"default",
+			"default"
 		),
 	},
 	group: "1_config",
 	order: 10,
 	when: ContextKeyExpr.equals(
 		"config.workbench.editor.showTabs",
-		"none",
+		"none"
 	).negate(),
 });
 MenuRegistry.appendMenuItem(MenuId.EditorActionsPositionSubmenu, {
@@ -887,25 +887,25 @@ MenuRegistry.appendMenuItem(MenuId.EditorActionsPositionSubmenu, {
 		toggled: ContextKeyExpr.or(
 			ContextKeyExpr.equals(
 				"config.workbench.editor.editorActionsLocation",
-				"titleBar",
+				"titleBar"
 			),
 			ContextKeyExpr.and(
 				ContextKeyExpr.equals(
 					"config.workbench.editor.showTabs",
-					"none",
+					"none"
 				),
 				ContextKeyExpr.equals(
 					"config.workbench.editor.editorActionsLocation",
-					"default",
-				),
-			),
+					"default"
+				)
+			)
 		),
 	},
 	group: "1_config",
 	order: 20,
 	when: ContextKeyExpr.equals(
 		"config.window.titleBarStyle",
-		"native",
+		"native"
 	).negate(),
 });
 MenuRegistry.appendMenuItem(MenuId.EditorActionsPositionSubmenu, {
@@ -915,15 +915,15 @@ MenuRegistry.appendMenuItem(MenuId.EditorActionsPositionSubmenu, {
 		toggled: ContextKeyExpr.or(
 			ContextKeyExpr.equals(
 				"config.workbench.editor.editorActionsLocation",
-				"hidden",
+				"hidden"
 			),
 			ContextKeyExpr.and(
 				ContextKeyExpr.equals("config.window.titleBarStyle", "native"),
 				ContextKeyExpr.equals(
 					"config.workbench.editor.editorActionsLocation",
-					"titleBar",
-				),
-			),
+					"titleBar"
+				)
+			)
 		),
 	},
 	group: "1_config",
@@ -1073,7 +1073,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 		title: localize("inlineView", "Inline View"),
 		toggled: ContextKeyExpr.equals(
 			"config.diffEditor.renderSideBySide",
-			false,
+			false
 		),
 	},
 	group: "1_diff",
@@ -1122,7 +1122,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	order: 5,
 	when: ContextKeyExpr.and(
 		EditorPartMaximizedEditorGroupContext.negate(),
-		EditorPartMultipleEditorGroupsContext,
+		EditorPartMultipleEditorGroupsContext
 	),
 });
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
@@ -1150,7 +1150,7 @@ function appendEditorToolItem(
 	when: ContextKeyExpression | undefined,
 	order: number,
 	alternative?: ICommandAction,
-	precondition?: ContextKeyExpression | undefined,
+	precondition?: ContextKeyExpression | undefined
 ): void {
 	const item: IMenuItem = {
 		command: {
@@ -1192,7 +1192,7 @@ appendEditorToolItem(
 		id: SPLIT_EDITOR_DOWN,
 		title: localize("splitEditorDown", "Split Editor Down"),
 		icon: Codicon.splitVertical,
-	},
+	}
 );
 
 appendEditorToolItem(
@@ -1207,7 +1207,7 @@ appendEditorToolItem(
 		id: SPLIT_EDITOR_RIGHT,
 		title: localize("splitEditorRight", "Split Editor Right"),
 		icon: Codicon.splitHorizontal,
-	},
+	}
 );
 
 // Side by side: layout
@@ -1218,7 +1218,7 @@ appendEditorToolItem(
 		icon: Codicon.editorLayout,
 	},
 	SideBySideEditorActiveContext,
-	SPLIT_ORDER - 1, // left to split actions
+	SPLIT_ORDER - 1 // left to split actions
 );
 
 // Editor Title Menu: Close (tabs disabled, normal editor)
@@ -1231,14 +1231,14 @@ appendEditorToolItem(
 	ContextKeyExpr.and(
 		EditorTabsVisibleContext.toNegated(),
 		ActiveEditorDirtyContext.toNegated(),
-		ActiveEditorStickyContext.toNegated(),
+		ActiveEditorStickyContext.toNegated()
 	),
 	CLOSE_ORDER,
 	{
 		id: CLOSE_EDITORS_IN_GROUP_COMMAND_ID,
 		title: localize("closeAll", "Close All"),
 		icon: Codicon.closeAll,
-	},
+	}
 );
 
 // Editor Title Menu: Close (tabs disabled, dirty editor)
@@ -1251,14 +1251,14 @@ appendEditorToolItem(
 	ContextKeyExpr.and(
 		EditorTabsVisibleContext.toNegated(),
 		ActiveEditorDirtyContext,
-		ActiveEditorStickyContext.toNegated(),
+		ActiveEditorStickyContext.toNegated()
 	),
 	CLOSE_ORDER,
 	{
 		id: CLOSE_EDITORS_IN_GROUP_COMMAND_ID,
 		title: localize("closeAll", "Close All"),
 		icon: Codicon.closeAll,
-	},
+	}
 );
 
 // Editor Title Menu: Close (tabs disabled, sticky editor)
@@ -1271,14 +1271,14 @@ appendEditorToolItem(
 	ContextKeyExpr.and(
 		EditorTabsVisibleContext.toNegated(),
 		ActiveEditorDirtyContext.toNegated(),
-		ActiveEditorStickyContext,
+		ActiveEditorStickyContext
 	),
 	CLOSE_ORDER,
 	{
 		id: CLOSE_EDITOR_COMMAND_ID,
 		title: localize("close", "Close"),
 		icon: Codicon.close,
-	},
+	}
 );
 
 // Editor Title Menu: Close (tabs disabled, dirty & sticky editor)
@@ -1291,14 +1291,14 @@ appendEditorToolItem(
 	ContextKeyExpr.and(
 		EditorTabsVisibleContext.toNegated(),
 		ActiveEditorDirtyContext,
-		ActiveEditorStickyContext,
+		ActiveEditorStickyContext
 	),
 	CLOSE_ORDER,
 	{
 		id: CLOSE_EDITOR_COMMAND_ID,
 		title: localize("close", "Close"),
 		icon: Codicon.close,
-	},
+	}
 );
 
 // Lock Group: only on auxiliary window and when group is unlocked
@@ -1310,9 +1310,9 @@ appendEditorToolItem(
 	},
 	ContextKeyExpr.and(
 		IsAuxiliaryEditorPartContext,
-		ActiveEditorGroupLockedContext.toNegated(),
+		ActiveEditorGroupLockedContext.toNegated()
 	),
-	CLOSE_ORDER - 1, // immediately to the left of close action
+	CLOSE_ORDER - 1 // immediately to the left of close action
 );
 
 // Unlock Group: only when group is locked
@@ -1324,7 +1324,7 @@ appendEditorToolItem(
 		toggled: ContextKeyExpr.true(),
 	},
 	ActiveEditorGroupLockedContext,
-	CLOSE_ORDER - 1, // immediately to the left of close action
+	CLOSE_ORDER - 1 // immediately to the left of close action
 );
 
 const previousChangeIcon = registerIcon(
@@ -1332,24 +1332,24 @@ const previousChangeIcon = registerIcon(
 	Codicon.arrowUp,
 	localize(
 		"previousChangeIcon",
-		"Icon for the previous change action in the diff editor.",
-	),
+		"Icon for the previous change action in the diff editor."
+	)
 );
 const nextChangeIcon = registerIcon(
 	"diff-editor-next-change",
 	Codicon.arrowDown,
 	localize(
 		"nextChangeIcon",
-		"Icon for the next change action in the diff editor.",
-	),
+		"Icon for the next change action in the diff editor."
+	)
 );
 const toggleWhitespace = registerIcon(
 	"diff-editor-toggle-whitespace",
 	Codicon.whitespace,
 	localize(
 		"toggleWhitespace",
-		"Icon for the toggle whitespace action in the diff editor.",
-	),
+		"Icon for the toggle whitespace action in the diff editor."
+	)
 );
 
 // Diff Editor Title Menu: Previous Change
@@ -1362,7 +1362,7 @@ appendEditorToolItem(
 	TextCompareEditorActiveContext,
 	10,
 	undefined,
-	EditorContextKeys.hasChanges,
+	EditorContextKeys.hasChanges
 );
 
 // Diff Editor Title Menu: Next Change
@@ -1375,7 +1375,7 @@ appendEditorToolItem(
 	TextCompareEditorActiveContext,
 	11,
 	undefined,
-	EditorContextKeys.hasChanges,
+	EditorContextKeys.hasChanges
 );
 
 // Diff Editor Title Menu: Swap Sides
@@ -1387,11 +1387,11 @@ appendEditorToolItem(
 	},
 	ContextKeyExpr.and(
 		TextCompareEditorActiveContext,
-		ActiveCompareEditorOriginalWriteableContext,
+		ActiveCompareEditorOriginalWriteableContext
 	),
 	15,
 	undefined,
-	undefined,
+	undefined
 );
 
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
@@ -1399,13 +1399,13 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 		id: TOGGLE_DIFF_IGNORE_TRIM_WHITESPACE,
 		title: localize(
 			"ignoreTrimWhitespace.label",
-			"Show Leading/Trailing Whitespace Differences",
+			"Show Leading/Trailing Whitespace Differences"
 		),
 		icon: toggleWhitespace,
 		precondition: TextCompareEditorActiveContext,
 		toggled: ContextKeyExpr.equals(
 			"config.diffEditor.ignoreTrimWhitespace",
-			false,
+			false
 		),
 	},
 	group: "navigation",
@@ -1471,7 +1471,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		title: {
 			value: localize(
 				"closeEditorsInGroup",
-				"Close All Editors in Group",
+				"Close All Editors in Group"
 			),
 			original: "Close All Editors in Group",
 		},
@@ -1484,7 +1484,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		title: {
 			value: localize(
 				"closeSavedEditors",
-				"Close Saved Editors in Group",
+				"Close Saved Editors in Group"
 			),
 			original: "Close Saved Editors in Group",
 		},
@@ -1497,7 +1497,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		title: {
 			value: localize(
 				"closeOtherEditors",
-				"Close Other Editors in Group",
+				"Close Other Editors in Group"
 			),
 			original: "Close Other Editors in Group",
 		},
@@ -1510,7 +1510,7 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		title: {
 			value: localize(
 				"closeRightEditors",
-				"Close Editors to the Right in Group",
+				"Close Editors to the Right in Group"
 			),
 			original: "Close Editors to the Right in Group",
 		},
@@ -1548,7 +1548,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarRecentMenu, {
 		id: ReopenClosedEditorAction.ID,
 		title: localize(
 			{ key: "miReopenClosedEditor", comment: ["&& denotes a mnemonic"] },
-			"&&Reopen Closed Editor",
+			"&&Reopen Closed Editor"
 		),
 		precondition: ContextKeyExpr.has("canReopenClosedEditor"),
 	},
@@ -1561,7 +1561,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarRecentMenu, {
 		id: ClearRecentFilesAction.ID,
 		title: localize(
 			{ key: "miClearRecentOpen", comment: ["&& denotes a mnemonic"] },
-			"&&Clear Recently Opened...",
+			"&&Clear Recently Opened..."
 		),
 	},
 	order: 1,
@@ -1579,7 +1579,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarViewMenu, {
 	group: "2_appearance",
 	title: localize(
 		{ key: "miEditorLayout", comment: ["&& denotes a mnemonic"] },
-		"Editor &&Layout",
+		"Editor &&Layout"
 	),
 	submenu: MenuId.MenubarLayoutMenu,
 	order: 2,
@@ -1594,7 +1594,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			value: localize("miSplitEditorUpWithoutMnemonic", "Split Up"),
 			mnemonicTitle: localize(
 				{ key: "miSplitEditorUp", comment: ["&& denotes a mnemonic"] },
-				"Split &&Up",
+				"Split &&Up"
 			),
 		},
 	},
@@ -1613,7 +1613,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 					key: "miSplitEditorDown",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Split &&Down",
+				"Split &&Down"
 			),
 		},
 	},
@@ -1632,7 +1632,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 					key: "miSplitEditorLeft",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Split &&Left",
+				"Split &&Left"
 			),
 		},
 	},
@@ -1651,7 +1651,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 					key: "miSplitEditorRight",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Split &&Right",
+				"Split &&Right"
 			),
 		},
 	},
@@ -1666,14 +1666,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Split in Group",
 			value: localize(
 				"miSplitEditorInGroupWithoutMnemonic",
-				"Split in Group",
+				"Split in Group"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miSplitEditorInGroup",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Split in &&Group",
+				"Split in &&Group"
 			),
 		},
 	},
@@ -1689,14 +1689,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Join in Group",
 			value: localize(
 				"miJoinEditorInGroupWithoutMnemonic",
-				"Join in Group",
+				"Join in Group"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miJoinEditorInGroup",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Join in &&Group",
+				"Join in &&Group"
 			),
 		},
 	},
@@ -1712,14 +1712,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Move Editor into New Window",
 			value: localize(
 				"moveEditorToNewWindow",
-				"Move Editor into New Window",
+				"Move Editor into New Window"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miMoveEditorToNewWindow",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Move Editor into New Window",
+				"&&Move Editor into New Window"
 			),
 		},
 	},
@@ -1734,14 +1734,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Copy Editor into New Window",
 			value: localize(
 				"copyEditorToNewWindow",
-				"Copy Editor into New Window",
+				"Copy Editor into New Window"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miCopyEditorToNewWindow",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Copy Editor into New Window",
+				"&&Copy Editor into New Window"
 			),
 		},
 	},
@@ -1756,14 +1756,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Single",
 			value: localize(
 				"miSingleColumnEditorLayoutWithoutMnemonic",
-				"Single",
+				"Single"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miSingleColumnEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Single",
+				"&&Single"
 			),
 		},
 	},
@@ -1778,14 +1778,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Two Columns",
 			value: localize(
 				"miTwoColumnsEditorLayoutWithoutMnemonic",
-				"Two Columns",
+				"Two Columns"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miTwoColumnsEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Two Columns",
+				"&&Two Columns"
 			),
 		},
 	},
@@ -1800,14 +1800,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Three Columns",
 			value: localize(
 				"miThreeColumnsEditorLayoutWithoutMnemonic",
-				"Three Columns",
+				"Three Columns"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miThreeColumnsEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"T&&hree Columns",
+				"T&&hree Columns"
 			),
 		},
 	},
@@ -1826,7 +1826,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 					key: "miTwoRowsEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"T&&wo Rows",
+				"T&&wo Rows"
 			),
 		},
 	},
@@ -1841,14 +1841,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Three Rows",
 			value: localize(
 				"miThreeRowsEditorLayoutWithoutMnemonic",
-				"Three Rows",
+				"Three Rows"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miThreeRowsEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Three &&Rows",
+				"Three &&Rows"
 			),
 		},
 	},
@@ -1863,14 +1863,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Grid (2x2)",
 			value: localize(
 				"miTwoByTwoGridEditorLayoutWithoutMnemonic",
-				"Grid (2x2)",
+				"Grid (2x2)"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miTwoByTwoGridEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Grid (2x2)",
+				"&&Grid (2x2)"
 			),
 		},
 	},
@@ -1885,14 +1885,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Two Rows Right",
 			value: localize(
 				"miTwoRowsRightEditorLayoutWithoutMnemonic",
-				"Two Rows Right",
+				"Two Rows Right"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miTwoRowsRightEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Two R&&ows Right",
+				"Two R&&ows Right"
 			),
 		},
 	},
@@ -1907,14 +1907,14 @@ MenuRegistry.appendMenuItem(MenuId.MenubarLayoutMenu, {
 			original: "Two Columns Bottom",
 			value: localize(
 				"miTwoColumnsBottomEditorLayoutWithoutMnemonic",
-				"Two Columns Bottom",
+				"Two Columns Bottom"
 			),
 			mnemonicTitle: localize(
 				{
 					key: "miTwoColumnsBottomEditorLayout",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"Two &&Columns Bottom",
+				"Two &&Columns Bottom"
 			),
 		},
 	},
@@ -1929,7 +1929,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarGoMenu, {
 		id: "workbench.action.navigateToLastEditLocation",
 		title: localize(
 			{ key: "miLastEditLocation", comment: ["&& denotes a mnemonic"] },
-			"&&Last Edit Location",
+			"&&Last Edit Location"
 		),
 		precondition: ContextKeyExpr.has("canNavigateToLastEditLocation"),
 	},
@@ -1944,12 +1944,12 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 		id: FOCUS_FIRST_SIDE_EDITOR,
 		title: localize(
 			{ key: "miFirstSideEditor", comment: ["&& denotes a mnemonic"] },
-			"&&First Side in Editor",
+			"&&First Side in Editor"
 		),
 	},
 	when: ContextKeyExpr.or(
 		SideBySideEditorActiveContext,
-		TextCompareEditorActiveContext,
+		TextCompareEditorActiveContext
 	),
 	order: 1,
 });
@@ -1960,12 +1960,12 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 		id: FOCUS_SECOND_SIDE_EDITOR,
 		title: localize(
 			{ key: "miSecondSideEditor", comment: ["&& denotes a mnemonic"] },
-			"&&Second Side in Editor",
+			"&&Second Side in Editor"
 		),
 	},
 	when: ContextKeyExpr.or(
 		SideBySideEditorActiveContext,
-		TextCompareEditorActiveContext,
+		TextCompareEditorActiveContext
 	),
 	order: 2,
 });
@@ -1976,7 +1976,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 		id: "workbench.action.nextEditor",
 		title: localize(
 			{ key: "miNextEditor", comment: ["&& denotes a mnemonic"] },
-			"&&Next Editor",
+			"&&Next Editor"
 		),
 	},
 	order: 1,
@@ -1988,7 +1988,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 		id: "workbench.action.previousEditor",
 		title: localize(
 			{ key: "miPreviousEditor", comment: ["&& denotes a mnemonic"] },
-			"&&Previous Editor",
+			"&&Previous Editor"
 		),
 	},
 	order: 2,
@@ -2003,7 +2003,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 				key: "miNextRecentlyUsedEditor",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"&&Next Used Editor",
+			"&&Next Used Editor"
 		),
 	},
 	order: 1,
@@ -2018,7 +2018,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 				key: "miPreviousRecentlyUsedEditor",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"&&Previous Used Editor",
+			"&&Previous Used Editor"
 		),
 	},
 	order: 2,
@@ -2030,7 +2030,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 		id: "workbench.action.nextEditorInGroup",
 		title: localize(
 			{ key: "miNextEditorInGroup", comment: ["&& denotes a mnemonic"] },
-			"&&Next Editor in Group",
+			"&&Next Editor in Group"
 		),
 	},
 	order: 1,
@@ -2045,7 +2045,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 				key: "miPreviousEditorInGroup",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"&&Previous Editor in Group",
+			"&&Previous Editor in Group"
 		),
 	},
 	order: 2,
@@ -2060,7 +2060,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 				key: "miNextUsedEditorInGroup",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"&&Next Used Editor in Group",
+			"&&Next Used Editor in Group"
 		),
 	},
 	order: 1,
@@ -2075,7 +2075,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchEditorMenu, {
 				key: "miPreviousUsedEditorInGroup",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"&&Previous Used Editor in Group",
+			"&&Previous Used Editor in Group"
 		),
 	},
 	order: 2,
@@ -2085,7 +2085,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarGoMenu, {
 	group: "2_editor_nav",
 	title: localize(
 		{ key: "miSwitchEditor", comment: ["&& denotes a mnemonic"] },
-		"Switch &&Editor",
+		"Switch &&Editor"
 	),
 	submenu: MenuId.MenubarSwitchEditorMenu,
 	order: 1,
@@ -2098,7 +2098,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusFirstEditorGroup",
 		title: localize(
 			{ key: "miFocusFirstGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&1",
+			"Group &&1"
 		),
 	},
 	order: 1,
@@ -2110,7 +2110,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusSecondEditorGroup",
 		title: localize(
 			{ key: "miFocusSecondGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&2",
+			"Group &&2"
 		),
 	},
 	order: 2,
@@ -2122,7 +2122,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusThirdEditorGroup",
 		title: localize(
 			{ key: "miFocusThirdGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&3",
+			"Group &&3"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2135,7 +2135,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusFourthEditorGroup",
 		title: localize(
 			{ key: "miFocusFourthGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&4",
+			"Group &&4"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2148,7 +2148,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusFifthEditorGroup",
 		title: localize(
 			{ key: "miFocusFifthGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&5",
+			"Group &&5"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2161,7 +2161,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusNextGroup",
 		title: localize(
 			{ key: "miNextGroup", comment: ["&& denotes a mnemonic"] },
-			"&&Next Group",
+			"&&Next Group"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2174,7 +2174,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusPreviousGroup",
 		title: localize(
 			{ key: "miPreviousGroup", comment: ["&& denotes a mnemonic"] },
-			"&&Previous Group",
+			"&&Previous Group"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2187,7 +2187,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusLeftGroup",
 		title: localize(
 			{ key: "miFocusLeftGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&Left",
+			"Group &&Left"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2200,7 +2200,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusRightGroup",
 		title: localize(
 			{ key: "miFocusRightGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&Right",
+			"Group &&Right"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2213,7 +2213,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusAboveGroup",
 		title: localize(
 			{ key: "miFocusAboveGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&Above",
+			"Group &&Above"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2226,7 +2226,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSwitchGroupMenu, {
 		id: "workbench.action.focusBelowGroup",
 		title: localize(
 			{ key: "miFocusBelowGroup", comment: ["&& denotes a mnemonic"] },
-			"Group &&Below",
+			"Group &&Below"
 		),
 		precondition: MultipleEditorGroupsContext,
 	},
@@ -2237,7 +2237,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarGoMenu, {
 	group: "2_editor_nav",
 	title: localize(
 		{ key: "miSwitchGroup", comment: ["&& denotes a mnemonic"] },
-		"Switch &&Group",
+		"Switch &&Group"
 	),
 	submenu: MenuId.MenubarSwitchGroupMenu,
 	order: 2,

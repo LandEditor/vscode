@@ -53,7 +53,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 		jsonSchema: {
 			description: localize(
 				"vscode.extension.contributes.languages",
-				"Contributes language declarations.",
+				"Contributes language declarations."
 			),
 			type: "array",
 			items: {
@@ -72,14 +72,14 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					id: {
 						description: localize(
 							"vscode.extension.contributes.languages.id",
-							"ID of the language.",
+							"ID of the language."
 						),
 						type: "string",
 					},
 					aliases: {
 						description: localize(
 							"vscode.extension.contributes.languages.aliases",
-							"Name aliases for the language.",
+							"Name aliases for the language."
 						),
 						type: "array",
 						items: {
@@ -89,7 +89,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					extensions: {
 						description: localize(
 							"vscode.extension.contributes.languages.extensions",
-							"File extensions associated to the language.",
+							"File extensions associated to the language."
 						),
 						default: [".foo"],
 						type: "array",
@@ -100,7 +100,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					filenames: {
 						description: localize(
 							"vscode.extension.contributes.languages.filenames",
-							"File names associated to the language.",
+							"File names associated to the language."
 						),
 						type: "array",
 						items: {
@@ -110,7 +110,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					filenamePatterns: {
 						description: localize(
 							"vscode.extension.contributes.languages.filenamePatterns",
-							"File name glob patterns associated to the language.",
+							"File name glob patterns associated to the language."
 						),
 						type: "array",
 						items: {
@@ -120,7 +120,7 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					mimetypes: {
 						description: localize(
 							"vscode.extension.contributes.languages.mimetypes",
-							"Mime types associated to the language.",
+							"Mime types associated to the language."
 						),
 						type: "array",
 						items: {
@@ -130,14 +130,14 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 					firstLine: {
 						description: localize(
 							"vscode.extension.contributes.languages.firstLine",
-							"A regular expression matching the first line of a file of the language.",
+							"A regular expression matching the first line of a file of the language."
 						),
 						type: "string",
 					},
 					configuration: {
 						description: localize(
 							"vscode.extension.contributes.languages.configuration",
-							"A relative path to a file containing configuration options for the language.",
+							"A relative path to a file containing configuration options for the language."
 						),
 						type: "string",
 						default: "./language-configuration.json",
@@ -146,20 +146,20 @@ export const languagesExtPoint: IExtensionPoint<IRawLanguageExtensionPoint[]> =
 						type: "object",
 						description: localize(
 							"vscode.extension.contributes.languages.icon",
-							"A icon to use as file icon, if no icon theme provides one for the language.",
+							"A icon to use as file icon, if no icon theme provides one for the language."
 						),
 						properties: {
 							light: {
 								description: localize(
 									"vscode.extension.contributes.languages.icon.light",
-									"Icon path when a light theme is used",
+									"Icon path when a light theme is used"
 								),
 								type: "string",
 							},
 							dark: {
 								description: localize(
 									"vscode.extension.contributes.languages.icon.dark",
-									"Icon path when a dark theme is used",
+									"Icon path when a dark theme is used"
 								),
 								type: "string",
 							},
@@ -190,52 +190,86 @@ export class WorkbenchLanguageService extends LanguageService {
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@ILogService private readonly logService: ILogService
 	) {
-		super(environmentService.verbose || environmentService.isExtensionDevelopment || !environmentService.isBuilt);
+		super(
+			environmentService.verbose ||
+				environmentService.isExtensionDevelopment ||
+				!environmentService.isBuilt
+		);
 		this._configurationService = configurationService;
 		this._extensionService = extensionService;
 
-		languagesExtPoint.setHandler((extensions: readonly IExtensionPointUser<IRawLanguageExtensionPoint[]>[]) => {
-			const allValidLanguages: ILanguageExtensionPoint[] = [];
+		languagesExtPoint.setHandler(
+			(
+				extensions: readonly IExtensionPointUser<
+					IRawLanguageExtensionPoint[]
+				>[]
+			) => {
+				const allValidLanguages: ILanguageExtensionPoint[] = [];
 
-			for (let i = 0, len = extensions.length; i < len; i++) {
-				const extension = extensions[i];
+				for (let i = 0, len = extensions.length; i < len; i++) {
+					const extension = extensions[i];
 
-				if (!Array.isArray(extension.value)) {
-					extension.collector.error(localize('invalid', "Invalid `contributes.{0}`. Expected an array.", languagesExtPoint.name));
-					continue;
-				}
+					if (!Array.isArray(extension.value)) {
+						extension.collector.error(
+							localize(
+								"invalid",
+								"Invalid `contributes.{0}`. Expected an array.",
+								languagesExtPoint.name
+							)
+						);
+						continue;
+					}
 
-				for (let j = 0, lenJ = extension.value.length; j < lenJ; j++) {
-					const ext = extension.value[j];
-					if (isValidLanguageExtensionPoint(ext, extension.description, extension.collector)) {
-						let configuration: URI | undefined = undefined;
-						if (ext.configuration) {
-							configuration = joinPath(extension.description.extensionLocation, ext.configuration);
-						}
-						allValidLanguages.push({
-							id: ext.id,
-							extensions: ext.extensions,
-							filenames: ext.filenames,
-							filenamePatterns: ext.filenamePatterns,
-							firstLine: ext.firstLine,
-							aliases: ext.aliases,
-							mimetypes: ext.mimetypes,
-							configuration: configuration,
-							icon: ext.icon && {
-								light: joinPath(extension.description.extensionLocation, ext.icon.light),
-								dark: joinPath(extension.description.extensionLocation, ext.icon.dark)
+					for (
+						let j = 0, lenJ = extension.value.length;
+						j < lenJ;
+						j++
+					) {
+						const ext = extension.value[j];
+						if (
+							isValidLanguageExtensionPoint(
+								ext,
+								extension.description,
+								extension.collector
+							)
+						) {
+							let configuration: URI | undefined = undefined;
+							if (ext.configuration) {
+								configuration = joinPath(
+									extension.description.extensionLocation,
+									ext.configuration
+								);
 							}
-						});
+							allValidLanguages.push({
+								id: ext.id,
+								extensions: ext.extensions,
+								filenames: ext.filenames,
+								filenamePatterns: ext.filenamePatterns,
+								firstLine: ext.firstLine,
+								aliases: ext.aliases,
+								mimetypes: ext.mimetypes,
+								configuration: configuration,
+								icon: ext.icon && {
+									light: joinPath(
+										extension.description.extensionLocation,
+										ext.icon.light
+									),
+									dark: joinPath(
+										extension.description.extensionLocation,
+										ext.icon.dark
+									),
+								},
+							});
+						}
 					}
 				}
+
+				this._registry.setDynamicLanguages(allValidLanguages);
 			}
-
-			this._registry.setDynamicLanguages(allValidLanguages);
-
-		});
+		);
 
 		this.updateMime();
-		this._configurationService.onDidChangeConfiguration(e => {
+		this._configurationService.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration(FILES_ASSOCIATIONS_CONFIG)) {
 				this.updateMime();
 			}
@@ -244,11 +278,15 @@ export class WorkbenchLanguageService extends LanguageService {
 			this.updateMime();
 		});
 
-		this._register(this.onDidRequestRichLanguageFeatures((languageId) => {
-			// extension activation
-			this._extensionService.activateByEvent(`onLanguage:${languageId}`);
-			this._extensionService.activateByEvent(`onLanguage`);
-		}));
+		this._register(
+			this.onDidRequestRichLanguageFeatures((languageId) => {
+				// extension activation
+				this._extensionService.activateByEvent(
+					`onLanguage:${languageId}`
+				);
+				this._extensionService.activateByEvent(`onLanguage`);
+			})
+		);
 	}
 
 	private updateMime(): void {
@@ -264,7 +302,7 @@ export class WorkbenchLanguageService extends LanguageService {
 				const langId = configuration.files.associations[pattern];
 				if (typeof langId !== "string") {
 					this.logService.warn(
-						`Ignoring configured 'files.associations' for '${pattern}' because its type is not a string but '${typeof langId}'`,
+						`Ignoring configured 'files.associations' for '${pattern}' because its type is not a string but '${typeof langId}'`
 					);
 
 					return; // https://github.com/microsoft/vscode/issues/147284
@@ -297,15 +335,15 @@ function isUndefinedOrStringArray(value: string[]): boolean {
 function isValidLanguageExtensionPoint(
 	value: IRawLanguageExtensionPoint,
 	extension: IExtensionDescription,
-	collector: ExtensionMessageCollector,
+	collector: ExtensionMessageCollector
 ): boolean {
 	if (!value) {
 		collector.error(
 			localize(
 				"invalid.empty",
 				"Empty value for `contributes.{0}`",
-				languagesExtPoint.name,
-			),
+				languagesExtPoint.name
+			)
 		);
 		return false;
 	}
@@ -314,8 +352,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"require.id",
 				"property `{0}` is mandatory and must be of type `string`",
-				"id",
-			),
+				"id"
+			)
 		);
 		return false;
 	}
@@ -324,8 +362,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.extensions",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"extensions",
-			),
+				"extensions"
+			)
 		);
 		return false;
 	}
@@ -334,8 +372,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.filenames",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"filenames",
-			),
+				"filenames"
+			)
 		);
 		return false;
 	}
@@ -347,8 +385,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.firstLine",
 				"property `{0}` can be omitted and must be of type `string`",
-				"firstLine",
-			),
+				"firstLine"
+			)
 		);
 		return false;
 	}
@@ -360,8 +398,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.configuration",
 				"property `{0}` can be omitted and must be of type `string`",
-				"configuration",
-			),
+				"configuration"
+			)
 		);
 		return false;
 	}
@@ -370,8 +408,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.aliases",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"aliases",
-			),
+				"aliases"
+			)
 		);
 		return false;
 	}
@@ -380,8 +418,8 @@ function isValidLanguageExtensionPoint(
 			localize(
 				"opt.mimetypes",
 				"property `{0}` can be omitted and must be of type `string[]`",
-				"mimetypes",
-			),
+				"mimetypes"
+			)
 		);
 		return false;
 	}
@@ -397,8 +435,8 @@ function isValidLanguageExtensionPoint(
 					"property `{0}` can be omitted and must be of type `object` with properties `{1}` and `{2}` of type `string`",
 					"icon",
 					"light",
-					"dark",
-				),
+					"dark"
+				)
 			);
 			return false;
 		}
@@ -409,5 +447,5 @@ function isValidLanguageExtensionPoint(
 registerSingleton(
 	ILanguageService,
 	WorkbenchLanguageService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

@@ -18,7 +18,7 @@ export class WindowIgnoreMenuShortcutsManager {
 	constructor(
 		configurationService: IConfigurationService,
 		mainProcessService: IMainProcessService,
-		private readonly _nativeHostService: INativeHostService,
+		private readonly _nativeHostService: INativeHostService
 	) {
 		this._isUsingNativeTitleBars =
 			configurationService.getValue<string>("window.titleBarStyle") ===
@@ -26,7 +26,7 @@ export class WindowIgnoreMenuShortcutsManager {
 
 		this._webviewMainService =
 			ProxyChannel.toService<IWebviewManagerService>(
-				mainProcessService.getChannel("webview"),
+				mainProcessService.getChannel("webview")
 			);
 	}
 
@@ -46,7 +46,7 @@ export class WindowIgnoreMenuShortcutsManager {
 		if (this._shouldToggleMenuShortcutsEnablement) {
 			this._webviewMainService.setIgnoreMenuShortcuts(
 				{ windowId: this._nativeHostService.windowId },
-				value,
+				value
 			);
 		}
 	}

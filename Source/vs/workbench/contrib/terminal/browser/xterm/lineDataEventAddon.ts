@@ -37,15 +37,15 @@ export class LineDataEventAddon extends Disposable implements ITerminalAddon {
 			xterm.onLineFeed(() => {
 				const buffer = xterm.buffer;
 				const newLine = buffer.active.getLine(
-					buffer.active.baseY + buffer.active.cursorY,
+					buffer.active.baseY + buffer.active.cursorY
 				);
 				if (newLine && !newLine.isWrapped) {
 					this._sendLineData(
 						buffer.active,
-						buffer.active.baseY + buffer.active.cursorY - 1,
+						buffer.active.baseY + buffer.active.cursorY - 1
 					);
 				}
-			}),
+			})
 		);
 
 		// Fire onLineData when disposing object to flush last line
@@ -54,9 +54,9 @@ export class LineDataEventAddon extends Disposable implements ITerminalAddon {
 				const buffer = xterm.buffer;
 				this._sendLineData(
 					buffer.active,
-					buffer.active.baseY + buffer.active.cursorY,
+					buffer.active.baseY + buffer.active.cursorY
 				);
-			}),
+			})
 		);
 	}
 
@@ -76,10 +76,10 @@ export class LineDataEventAddon extends Disposable implements ITerminalAddon {
 					const buffer = xterm.buffer;
 					this._sendLineData(
 						buffer.active,
-						buffer.active.baseY + buffer.active.cursorY,
+						buffer.active.baseY + buffer.active.cursorY
 					);
 					return false;
-				}),
+				})
 			);
 		}
 	}

@@ -182,13 +182,13 @@ export class ChatListItemRenderer
 	private readonly renderer: MarkdownRenderer;
 
 	protected readonly _onDidClickFollowup = this._register(
-		new Emitter<IChatReplyFollowup>(),
+		new Emitter<IChatReplyFollowup>()
 	);
 	readonly onDidClickFollowup: Event<IChatReplyFollowup> =
 		this._onDidClickFollowup.event;
 
 	protected readonly _onDidChangeItemHeight = this._register(
-		new Emitter<IItemHeightChangeParams>(),
+		new Emitter<IItemHeightChangeParams>()
 	);
 	readonly onDidChangeItemHeight: Event<IItemHeightChangeParams> =
 		this._onDidChangeItemHeight.event;
@@ -207,30 +207,59 @@ export class ChatListItemRenderer
 		private readonly editorOptions: ChatEditorOptions,
 		private readonly rendererOptions: IChatListItemRendererOptions,
 		private readonly delegate: IChatRendererDelegate,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IConfigurationService configService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IChatService private readonly chatService: IChatService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IProductService productService: IProductService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService
 	) {
 		super();
-		this.renderer = this.instantiationService.createInstance(MarkdownRenderer, {});
-		this._editorPool = this._register(this.instantiationService.createInstance(EditorPool, this.editorOptions));
-		this._treePool = this._register(this.instantiationService.createInstance(TreePool, this._onDidChangeVisibility.event));
-		this._contentReferencesListPool = this._register(this.instantiationService.createInstance(ContentReferencesListPool, this._onDidChangeVisibility.event));
+		this.renderer = this.instantiationService.createInstance(
+			MarkdownRenderer,
+			{}
+		);
+		this._editorPool = this._register(
+			this.instantiationService.createInstance(
+				EditorPool,
+				this.editorOptions
+			)
+		);
+		this._treePool = this._register(
+			this.instantiationService.createInstance(
+				TreePool,
+				this._onDidChangeVisibility.event
+			)
+		);
+		this._contentReferencesListPool = this._register(
+			this.instantiationService.createInstance(
+				ContentReferencesListPool,
+				this._onDidChangeVisibility.event
+			)
+		);
 
-		this._usedReferencesEnabled = configService.getValue('chat.experimental.usedReferences') ?? true;
-		this._register(configService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('chat.experimental.usedReferences')) {
-				this._usedReferencesEnabled = configService.getValue('chat.experimental.usedReferences') ?? true;
-			}
-		}));
+		this._usedReferencesEnabled =
+			configService.getValue("chat.experimental.usedReferences") ?? true;
+		this._register(
+			configService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("chat.experimental.usedReferences")
+				) {
+					this._usedReferencesEnabled =
+						configService.getValue(
+							"chat.experimental.usedReferences"
+						) ?? true;
+				}
+			})
+		);
 	}
 
 	get templateId(): string {
@@ -271,7 +300,7 @@ export class ChatListItemRenderer
 	}
 
 	getCodeBlockInfosForResponse(
-		response: IChatResponseViewModel,
+		response: IChatResponseViewModel
 	): IChatCodeBlockInfo[] {
 		const codeBlocks = this.codeBlocksByResponseId.get(response.id);
 		return codeBlocks ?? [];
@@ -282,18 +311,18 @@ export class ChatListItemRenderer
 	}
 
 	getFileTreeInfosForResponse(
-		response: IChatResponseViewModel,
+		response: IChatResponseViewModel
 	): IChatFileTreeInfo[] {
 		const fileTrees = this.fileTreesByResponseId.get(response.id);
 		return fileTrees ?? [];
 	}
 
 	getLastFocusedFileTreeForResponse(
-		response: IChatResponseViewModel,
+		response: IChatResponseViewModel
 	): IChatFileTreeInfo | undefined {
 		const fileTrees = this.fileTreesByResponseId.get(response.id);
 		const lastFocusedFileTreeIndex = this.focusedFileTreesByResponseId.get(
-			response.id,
+			response.id
 		);
 		if (
 			fileTrees?.length &&
@@ -322,7 +351,7 @@ export class ChatListItemRenderer
 		const templateDisposables = new DisposableStore();
 		const rowContainer = dom.append(
 			container,
-			$(".interactive-item-container"),
+			$(".interactive-item-container")
 		);
 		if (this.rendererOptions.renderStyle === "compact") {
 			rowContainer.classList.add("interactive-item-compact");
@@ -335,7 +364,7 @@ export class ChatListItemRenderer
 		const avatarContainer = dom.append(user, $(".avatar-container"));
 		const agentAvatarContainer = dom.append(
 			user,
-			$(".agent-avatar-container"),
+			$(".agent-avatar-container")
 		);
 		const username = dom.append(user, $("h3.username"));
 		const detailContainer = dom.append(user, $("span.detail-container"));
@@ -344,17 +373,17 @@ export class ChatListItemRenderer
 		const progressSteps = dom.append(rowContainer, $(".progress-steps"));
 		const referencesListContainer = dom.append(
 			rowContainer,
-			$(".referencesListContainer"),
+			$(".referencesListContainer")
 		);
 		const value = dom.append(rowContainer, $(".value"));
 		const elementDisposables = new DisposableStore();
 
 		const contextKeyService = templateDisposables.add(
-			this.contextKeyService.createScoped(rowContainer),
+			this.contextKeyService.createScoped(rowContainer)
 		);
 		const scopedInstantiationService =
 			this.instantiationService.createChild(
-				new ServiceCollection([IContextKeyService, contextKeyService]),
+				new ServiceCollection([IContextKeyService, contextKeyService])
 			);
 		let titleToolbar: MenuWorkbenchToolBar | undefined;
 		if (this.rendererOptions.noHeader) {
@@ -371,7 +400,7 @@ export class ChatListItemRenderer
 						},
 						actionViewItemProvider: (
 							action: IAction,
-							options: IActionViewItemOptions,
+							options: IActionViewItemOptions
 						) => {
 							if (
 								action instanceof MenuItemAction &&
@@ -383,14 +412,14 @@ export class ChatListItemRenderer
 								return scopedInstantiationService.createInstance(
 									ChatVoteButton,
 									action,
-									options as IMenuEntryActionViewItemOptions,
+									options as IMenuEntryActionViewItemOptions
 								);
 							}
 
 							return undefined;
 						},
-					},
-				),
+					}
+				)
 			);
 		}
 		const template: IChatListItemTemplate = {
@@ -413,7 +442,7 @@ export class ChatListItemRenderer
 	renderElement(
 		node: ITreeNode<ChatTreeItem, FuzzyScore>,
 		index: number,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): void {
 		this.renderChatTreeItem(node.element, index, templateData);
 	}
@@ -421,35 +450,35 @@ export class ChatListItemRenderer
 	renderChatTreeItem(
 		element: ChatTreeItem,
 		index: number,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): void {
 		const kind = isRequestVM(element)
 			? "request"
 			: isResponseVM(element)
-			  ? "response"
-			  : "welcome";
+				? "response"
+				: "welcome";
 		this.traceLayout("renderElement", `${kind}, index=${index}`);
 
 		CONTEXT_RESPONSE.bindTo(templateData.contextKeyService).set(
-			isResponseVM(element),
+			isResponseVM(element)
 		);
 		CONTEXT_REQUEST.bindTo(templateData.contextKeyService).set(
-			isRequestVM(element),
+			isRequestVM(element)
 		);
 		if (isResponseVM(element)) {
 			CONTEXT_CHAT_RESPONSE_SUPPORT_ISSUE_REPORTING.bindTo(
-				templateData.contextKeyService,
+				templateData.contextKeyService
 			).set(!!element.agent?.metadata.supportIssueReporting);
 			CONTEXT_RESPONSE_VOTE.bindTo(templateData.contextKeyService).set(
 				element.vote === InteractiveSessionVoteDirection.Up
 					? "up"
 					: element.vote === InteractiveSessionVoteDirection.Down
-					  ? "down"
-					  : "",
+						? "down"
+						: ""
 			);
 		} else {
 			CONTEXT_RESPONSE_VOTE.bindTo(templateData.contextKeyService).set(
-				"",
+				""
 			);
 		}
 
@@ -461,30 +490,30 @@ export class ChatListItemRenderer
 			isResponseVM(element) && element.errorDetails?.responseIsFiltered
 		);
 		CONTEXT_RESPONSE_FILTERED.bindTo(templateData.contextKeyService).set(
-			isFiltered,
+			isFiltered
 		);
 
 		templateData.rowContainer.classList.toggle(
 			"interactive-request",
-			isRequestVM(element),
+			isRequestVM(element)
 		);
 		templateData.rowContainer.classList.toggle(
 			"interactive-response",
-			isResponseVM(element),
+			isResponseVM(element)
 		);
 		templateData.rowContainer.classList.toggle(
 			"interactive-welcome",
-			isWelcomeVM(element),
+			isWelcomeVM(element)
 		);
 		templateData.rowContainer.classList.toggle(
 			"filtered-response",
-			isFiltered,
+			isFiltered
 		);
 		templateData.rowContainer.classList.toggle(
 			"show-detail-progress",
 			isResponseVM(element) &&
 				!element.isComplete &&
-				!element.progressMessages.length,
+				!element.progressMessages.length
 		);
 		templateData.username.textContent = element.username;
 		if (!this.rendererOptions.noHeader) {
@@ -512,13 +541,13 @@ export class ChatListItemRenderer
 		) {
 			this.traceLayout(
 				"renderElement",
-				`start progressive render ${kind}, index=${index}`,
+				`start progressive render ${kind}, index=${index}`
 			);
 
 			const progressiveRenderingDisposables =
 				templateData.elementDisposables.add(new DisposableStore());
 			const timer = templateData.elementDisposables.add(
-				new dom.WindowIntervalTimer(),
+				new dom.WindowIntervalTimer()
 			);
 			const runProgressiveRender = (initial?: boolean) => {
 				try {
@@ -528,7 +557,7 @@ export class ChatListItemRenderer
 							index,
 							templateData,
 							!!initial,
-							progressiveRenderingDisposables,
+							progressiveRenderingDisposables
 						)
 					) {
 						timer.cancel();
@@ -542,18 +571,18 @@ export class ChatListItemRenderer
 			timer.cancelAndSet(
 				runProgressiveRender,
 				50,
-				dom.getWindow(templateData.rowContainer),
+				dom.getWindow(templateData.rowContainer)
 			);
 			runProgressiveRender(true);
 		} else if (isResponseVM(element)) {
 			const renderableResponse = annotateSpecialMarkdownContent(
-				element.response.value,
+				element.response.value
 			);
 			this.basicRenderElement(
 				renderableResponse,
 				element,
 				index,
-				templateData,
+				templateData
 			);
 		} else if (isRequestVM(element)) {
 			const markdown =
@@ -569,7 +598,7 @@ export class ChatListItemRenderer
 				],
 				element,
 				index,
-				templateData,
+				templateData
 			);
 		} else {
 			this.renderWelcomeMessage(element, templateData);
@@ -578,7 +607,7 @@ export class ChatListItemRenderer
 
 	private renderDetail(
 		element: IChatResponseViewModel,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): void {
 		let progressMsg: string = "";
 		if (element.agent && !element.agent.metadata.isDefault) {
@@ -610,7 +639,7 @@ export class ChatListItemRenderer
 
 	private renderProgressSteps(
 		element: IChatResponseViewModel,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): void {
 		if (element.response.value.length || element.isComplete) {
 			return;
@@ -625,7 +654,7 @@ export class ChatListItemRenderer
 				".progress-step",
 				undefined,
 				renderIcon(icon),
-				dom.$("span.progress-step-message", undefined, msg.content),
+				dom.$("span.progress-step-message", undefined, msg.content)
 			);
 			templateData.progressSteps.appendChild(step);
 		});
@@ -633,15 +662,15 @@ export class ChatListItemRenderer
 
 	private renderAvatar(
 		element: ChatTreeItem,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): void {
 		if (element.avatarIconUri) {
 			const avatarImgIcon = dom.$<HTMLImageElement>("img.icon");
 			avatarImgIcon.src = FileAccess.uriToBrowserUri(
-				element.avatarIconUri,
+				element.avatarIconUri
 			).toString(true);
 			templateData.avatarContainer.replaceChildren(
-				dom.$(".avatar", undefined, avatarImgIcon),
+				dom.$(".avatar", undefined, avatarImgIcon)
 			);
 		} else {
 			const defaultIcon = isRequestVM(element)
@@ -649,7 +678,7 @@ export class ChatListItemRenderer
 				: Codicon.copilot;
 			const avatarIcon = dom.$(ThemeIcon.asCSSSelector(defaultIcon));
 			templateData.avatarContainer.replaceChildren(
-				dom.$(".avatar.codicon-avatar", undefined, avatarIcon),
+				dom.$(".avatar.codicon-avatar", undefined, avatarIcon)
 			);
 		}
 
@@ -665,12 +694,12 @@ export class ChatListItemRenderer
 				avatarIcon.src =
 					FileAccess.uriToBrowserUri(icon).toString(true);
 				templateData.agentAvatarContainer.replaceChildren(
-					dom.$(".avatar", undefined, avatarIcon),
+					dom.$(".avatar", undefined, avatarIcon)
 				);
 			} else if (icon) {
 				const avatarIcon = dom.$(ThemeIcon.asCSSSelector(icon));
 				templateData.agentAvatarContainer.replaceChildren(
-					dom.$(".avatar.codicon-avatar", undefined, avatarIcon),
+					dom.$(".avatar.codicon-avatar", undefined, avatarIcon)
 				);
 			} else {
 				dom.hide(templateData.agentAvatarContainer);
@@ -679,7 +708,7 @@ export class ChatListItemRenderer
 
 			templateData.agentAvatarContainer.classList.toggle(
 				"complete",
-				element.isComplete,
+				element.isComplete
 			);
 			if (!element.agentAvatarHasBeenRendered && !element.isComplete) {
 				element.agentAvatarHasBeenRendered = true;
@@ -688,14 +717,14 @@ export class ChatListItemRenderer
 					disposableTimeout(() => {
 						templateData.agentAvatarContainer.classList.toggle(
 							"loading",
-							!element.isComplete,
+							!element.isComplete
 						);
-					}, 100),
+					}, 100)
 				);
 			} else {
 				templateData.agentAvatarContainer.classList.toggle(
 					"loading",
-					!element.isComplete,
+					!element.isComplete
 				);
 			}
 		} else {
@@ -704,7 +733,7 @@ export class ChatListItemRenderer
 	}
 
 	private getAgentIcon(
-		agent: IChatAgentMetadata,
+		agent: IChatAgentMetadata
 	): URI | ThemeIcon | undefined {
 		if (agent.themeIcon) {
 			return agent.themeIcon;
@@ -720,7 +749,7 @@ export class ChatListItemRenderer
 		value: ReadonlyArray<IChatProgressRenderableResponseContent>,
 		element: ChatTreeItem,
 		index: number,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	) {
 		const fillInIncompleteTokens =
 			isResponseVM(element) &&
@@ -739,7 +768,7 @@ export class ChatListItemRenderer
 		this.renderContentReferencesIfNeeded(
 			element,
 			templateData,
-			templateData.elementDisposables,
+			templateData.elementDisposables
 		);
 
 		let fileTreeIndex = 0;
@@ -750,19 +779,19 @@ export class ChatListItemRenderer
 							data.treeData,
 							element,
 							templateData,
-							fileTreeIndex++,
-					  )
+							fileTreeIndex++
+						)
 					: data.kind === "markdownContent"
-					  ? this.renderMarkdown(
+						? this.renderMarkdown(
 								data.content,
 								element,
 								templateData,
-								fillInIncompleteTokens,
-						  )
-					  : this.renderPlaceholder(
+								fillInIncompleteTokens
+							)
+						: this.renderPlaceholder(
 								new MarkdownString(data.content),
-								templateData,
-						  );
+								templateData
+							);
 			templateData.value.appendChild(result.element);
 			templateData.elementDisposables.add(result);
 		}
@@ -776,23 +805,23 @@ export class ChatListItemRenderer
 				$(
 					".interactive-response-error-details",
 					undefined,
-					renderIcon(icon),
-				),
+					renderIcon(icon)
+				)
 			);
 			const renderedError = templateData.elementDisposables.add(
 				this.renderer.render(
-					new MarkdownString(element.errorDetails.message),
-				),
+					new MarkdownString(element.errorDetails.message)
+				)
 			);
 			errorDetails.appendChild(
-				$("span", undefined, renderedError.element),
+				$("span", undefined, renderedError.element)
 			);
 		}
 
 		if (isResponseVM(element) && element.commandFollowups?.length) {
 			const followupsContainer = dom.append(
 				templateData.value,
-				$(".interactive-response-followups"),
+				$(".interactive-response-followups")
 			);
 			templateData.elementDisposables.add(
 				new ChatFollowups(
@@ -812,11 +841,11 @@ export class ChatListItemRenderer
 						});
 						return this.commandService.executeCommand(
 							followup.commandId,
-							...(followup.args ?? []),
+							...(followup.args ?? [])
 						);
 					},
-					templateData.contextKeyService,
-				),
+					templateData.contextKeyService
+				)
 			);
 		}
 
@@ -835,15 +864,15 @@ export class ChatListItemRenderer
 							element,
 							height: newHeight,
 						});
-					},
-				),
+					}
+				)
 			);
 		}
 	}
 
 	private renderWelcomeMessage(
 		element: IChatWelcomeMessageViewModel,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	) {
 		dom.clearNode(templateData.value);
 		dom.clearNode(templateData.referencesListContainer);
@@ -856,14 +885,14 @@ export class ChatListItemRenderer
 						item,
 						undefined,
 						(followup) => this._onDidClickFollowup.fire(followup),
-						templateData.contextKeyService,
-					),
+						templateData.contextKeyService
+					)
 				);
 			} else {
 				const result = this.renderMarkdown(
 					item as IMarkdownString,
 					element,
-					templateData,
+					templateData
 				);
 				templateData.value.appendChild(result.element);
 				templateData.elementDisposables.add(result);
@@ -885,8 +914,8 @@ export class ChatListItemRenderer
 							element,
 							height: newHeight,
 						});
-					},
-				),
+					}
+				)
 			);
 		}
 	}
@@ -899,7 +928,7 @@ export class ChatListItemRenderer
 		index: number,
 		templateData: IChatListItemTemplate,
 		isInRenderElement: boolean,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): boolean {
 		if (!this._isVisible) {
 			return true;
@@ -908,21 +937,21 @@ export class ChatListItemRenderer
 		disposables.clear();
 
 		const annotatedResult = annotateSpecialMarkdownContent(
-			element.response.value,
+			element.response.value
 		);
 		const renderableResponse = annotatedResult;
 		let isFullyRendered = false;
 		if (element.isCanceled) {
 			this.traceLayout(
 				"runProgressiveRender",
-				`canceled, index=${index}`,
+				`canceled, index=${index}`
 			);
 			element.renderData = undefined;
 			this.basicRenderElement(
 				renderableResponse,
 				element,
 				index,
-				templateData,
+				templateData
 			);
 			isFullyRendered = true;
 		} else {
@@ -944,12 +973,12 @@ export class ChatListItemRenderer
 							this.getDataForProgressiveRender(
 								element,
 								contentToMarkdown(part.content),
-								{ renderedWordCount: 0, lastRenderTime: 0 },
+								{ renderedWordCount: 0, lastRenderTime: 0 }
 							);
 						if (wordCountResult !== undefined) {
 							this.traceLayout(
 								"doNextProgressiveRender",
-								`Rendering new part ${index}, wordCountResult=${wordCountResult.actualWordCount}, rate=${wordCountResult.rate}`,
+								`Rendering new part ${index}, wordCountResult=${wordCountResult.actualWordCount}, rate=${wordCountResult.rate}`
 							);
 							partsToRender[index] = {
 								renderedWordCount:
@@ -978,7 +1007,7 @@ export class ChatListItemRenderer
 					const wordCountResult = this.getDataForProgressiveRender(
 						element,
 						contentToMarkdown(part.content),
-						renderedPart,
+						renderedPart
 					);
 					// Check if there are any new words to render
 					if (
@@ -988,7 +1017,7 @@ export class ChatListItemRenderer
 					) {
 						this.traceLayout(
 							"doNextProgressiveRender",
-							`Rendering changed part ${index}, wordCountResult=${wordCountResult.actualWordCount}, rate=${wordCountResult.rate}`,
+							`Rendering changed part ${index}, wordCountResult=${wordCountResult.actualWordCount}, rate=${wordCountResult.rate}`
 						);
 						partsToRender[index] = {
 							renderedWordCount: wordCountResult.actualWordCount,
@@ -1013,7 +1042,7 @@ export class ChatListItemRenderer
 				// Response is done and content is rendered, so do a normal render
 				this.traceLayout(
 					"runProgressiveRender",
-					`end progressive render, index=${index} and clearing renderData, response is complete, index=${index}`,
+					`end progressive render, index=${index} and clearing renderData, response is complete, index=${index}`
 				);
 				element.renderData = undefined;
 				disposables.clear();
@@ -1021,13 +1050,13 @@ export class ChatListItemRenderer
 					renderableResponse,
 					element,
 					index,
-					templateData,
+					templateData
 				);
 			} else if (!isFullyRendered) {
 				this.renderContentReferencesIfNeeded(
 					element,
 					templateData,
-					disposables,
+					disposables
 				);
 				let hasRenderedOneMarkdownBlock = false;
 				partsToRender.forEach((partToRender, index) => {
@@ -1041,7 +1070,7 @@ export class ChatListItemRenderer
 							partToRender,
 							element,
 							templateData,
-							index,
+							index
 						);
 					}
 
@@ -1052,14 +1081,14 @@ export class ChatListItemRenderer
 							renderableResponse[index].kind === "asyncContent"
 								? this.renderPlaceholder(
 										new MarkdownString(value),
-										templateData,
-								  )
+										templateData
+									)
 								: this.renderMarkdown(
 										new MarkdownString(value),
 										element,
 										templateData,
-										true,
-								  );
+										true
+									);
 						hasRenderedOneMarkdownBlock = true;
 					}
 
@@ -1073,7 +1102,7 @@ export class ChatListItemRenderer
 					if (existingElement) {
 						templateData.value.replaceChild(
 							result.element,
-							existingElement,
+							existingElement
 						);
 					} else {
 						templateData.value.appendChild(result.element);
@@ -1103,7 +1132,7 @@ export class ChatListItemRenderer
 		data: IChatResponseProgressFileTreeData,
 		element: ChatTreeItem,
 		templateData: IChatListItemTemplate,
-		treeDataIndex: number,
+		treeDataIndex: number
 	): { element: HTMLElement; dispose: () => void } {
 		const treeDisposables = new DisposableStore();
 		const ref = treeDisposables.add(this._treePool.get());
@@ -1114,7 +1143,7 @@ export class ChatListItemRenderer
 				if (e.element && !("children" in e.element)) {
 					this.openerService.open(e.element.uri);
 				}
-			}),
+			})
 		);
 		treeDisposables.add(
 			tree.onDidChangeCollapseState(() => {
@@ -1122,13 +1151,13 @@ export class ChatListItemRenderer
 					element,
 					height: templateData.rowContainer.offsetHeight,
 				});
-			}),
+			})
 		);
 		treeDisposables.add(
 			tree.onContextMenu((e) => {
 				e.browserEvent.preventDefault();
 				e.browserEvent.stopPropagation();
-			}),
+			})
 		);
 
 		tree.setInput(data).then(() => {
@@ -1154,26 +1183,26 @@ export class ChatListItemRenderer
 				tree.onDidFocus(() => {
 					this.focusedFileTreesByResponseId.set(
 						element.id,
-						fileTreeFocusInfo.treeIndex,
+						fileTreeFocusInfo.treeIndex
 					);
-				}),
+				})
 			);
 
 			const fileTrees = this.fileTreesByResponseId.get(element.id) ?? [];
 			fileTrees.push(fileTreeFocusInfo);
 			this.fileTreesByResponseId.set(
 				element.id,
-				distinct(fileTrees, (v) => v.treeDataId),
+				distinct(fileTrees, (v) => v.treeDataId)
 			);
 			treeDisposables.add(
 				toDisposable(() =>
 					this.fileTreesByResponseId.set(
 						element.id,
 						fileTrees.filter(
-							(v) => v.treeDataId !== data.uri.toString(),
-						),
-					),
-				),
+							(v) => v.treeDataId !== data.uri.toString()
+						)
+					)
+				)
 			);
 		}
 
@@ -1188,7 +1217,7 @@ export class ChatListItemRenderer
 	private renderContentReferencesIfNeeded(
 		element: ChatTreeItem,
 		templateData: IChatListItemTemplate,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): void {
 		dom.clearNode(templateData.referencesListContainer);
 		if (
@@ -1201,10 +1230,10 @@ export class ChatListItemRenderer
 				this.renderContentReferencesListData(
 					element.contentReferences,
 					element,
-					templateData,
+					templateData
 				);
 			templateData.referencesListContainer.appendChild(
-				contentReferencesListResult.element,
+				contentReferencesListResult.element
 			);
 			disposables.add(contentReferencesListResult);
 		} else {
@@ -1215,7 +1244,7 @@ export class ChatListItemRenderer
 	private renderContentReferencesListData(
 		data: ReadonlyArray<IChatContentReference>,
 		element: IChatResponseViewModel,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): { element: HTMLElement; dispose: () => void } {
 		const listDisposables = new DisposableStore();
 		const referencesLabel =
@@ -1223,8 +1252,8 @@ export class ChatListItemRenderer
 				? localize(
 						"usedReferencesPlural",
 						"Used {0} references",
-						data.length,
-				  )
+						data.length
+					)
 				: localize("usedReferencesSingular", "Used {0} reference", 1);
 		const iconElement = $(".chat-used-context-icon");
 		const icon = (element: IChatResponseViewModel) =>
@@ -1250,25 +1279,25 @@ export class ChatListItemRenderer
 		this.updateAriaLabel(
 			collapseButton.element,
 			referencesLabel,
-			element.usedReferencesExpanded,
+			element.usedReferencesExpanded
 		);
 		container.classList.toggle(
 			"chat-used-context-collapsed",
-			!element.usedReferencesExpanded,
+			!element.usedReferencesExpanded
 		);
 		listDisposables.add(
 			collapseButton.onDidClick(() => {
 				iconElement.classList.remove(
-					...ThemeIcon.asClassNameArray(icon(element)),
+					...ThemeIcon.asClassNameArray(icon(element))
 				);
 				element.usedReferencesExpanded =
 					!element.usedReferencesExpanded;
 				iconElement.classList.add(
-					...ThemeIcon.asClassNameArray(icon(element)),
+					...ThemeIcon.asClassNameArray(icon(element))
 				);
 				container.classList.toggle(
 					"chat-used-context-collapsed",
-					!element.usedReferencesExpanded,
+					!element.usedReferencesExpanded
 				);
 				this._onDidChangeItemHeight.fire({
 					element,
@@ -1277,9 +1306,9 @@ export class ChatListItemRenderer
 				this.updateAriaLabel(
 					collapseButton.element,
 					referencesLabel,
-					element.usedReferencesExpanded,
+					element.usedReferencesExpanded
 				);
-			}),
+			})
 		);
 
 		const ref = listDisposables.add(this._contentReferencesListPool.get());
@@ -1305,13 +1334,13 @@ export class ChatListItemRenderer
 						},
 					});
 				}
-			}),
+			})
 		);
 		listDisposables.add(
 			list.onContextMenu((e) => {
 				e.browserEvent.preventDefault();
 				e.browserEvent.stopPropagation();
-			}),
+			})
 		);
 
 		const maxItemsShown = 6;
@@ -1332,7 +1361,7 @@ export class ChatListItemRenderer
 	private updateAriaLabel(
 		element: HTMLElement,
 		label: string,
-		expanded?: boolean,
+		expanded?: boolean
 	): void {
 		element.ariaLabel = expanded
 			? localize("usedReferencesExpanded", "{0}, expanded", label)
@@ -1341,12 +1370,12 @@ export class ChatListItemRenderer
 
 	private renderPlaceholder(
 		markdown: IMarkdownString,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): IMarkdownRenderResult {
 		const codicon = $(
 			".interactive-response-codicon-details",
 			undefined,
-			renderIcon({ id: "sync~spin" }),
+			renderIcon({ id: "sync~spin" })
 		);
 		codicon.classList.add("interactive-response-placeholder-codicon");
 		const result = dom.append(templateData.value, codicon);
@@ -1362,7 +1391,7 @@ export class ChatListItemRenderer
 		markdown: IMarkdownString,
 		element: ChatTreeItem,
 		templateData: IChatListItemTemplate,
-		fillInIncompleteTokens = false,
+		fillInIncompleteTokens = false
 	): IMarkdownRenderResult {
 		const disposables = new DisposableStore();
 		let codeBlockIndex = 0;
@@ -1408,7 +1437,7 @@ export class ChatListItemRenderer
 							element,
 							height: templateData.rowContainer.offsetHeight,
 						});
-					}),
+					})
 				);
 
 				if (isResponseVM(element)) {
@@ -1422,14 +1451,14 @@ export class ChatListItemRenderer
 					codeblocks.push(info);
 					this.codeBlocksByEditorUri.set(
 						ref.object.textModel.uri,
-						info,
+						info
 					);
 					disposables.add(
 						toDisposable(() =>
 							this.codeBlocksByEditorUri.delete(
-								ref.object.textModel.uri,
-							),
-						),
+								ref.object.textModel.uri
+							)
+						)
 					);
 				}
 				orderedDisposablesList.push(ref);
@@ -1446,14 +1475,14 @@ export class ChatListItemRenderer
 			this.codeBlocksByResponseId.set(element.id, codeblocks);
 			disposables.add(
 				toDisposable(() =>
-					this.codeBlocksByResponseId.delete(element.id),
-				),
+					this.codeBlocksByResponseId.delete(element.id)
+				)
 			);
 		}
 
 		walkTreeAndAnnotateReferenceLinks(
 			result.element,
-			this.keybindingService,
+			this.keybindingService
 		);
 
 		orderedDisposablesList.reverse().forEach((d) => disposables.add(d));
@@ -1468,7 +1497,7 @@ export class ChatListItemRenderer
 
 	private renderCodeBlock(
 		data: ICodeBlockData,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IDisposableReference<ICodeBlockPart> {
 		const ref = this._editorPool.get();
 		const editorInfo = ref.object;
@@ -1483,18 +1512,17 @@ export class ChatListItemRenderer
 		renderData: Pick<
 			IChatResponseMarkdownRenderData,
 			"lastRenderTime" | "renderedWordCount"
-		>,
+		>
 	): (IWordCountResult & { rate: number }) | undefined {
 		const rate = this.getProgressiveRenderRate(element);
 		const numWordsToRender =
 			renderData.lastRenderTime === 0
 				? 1
 				: renderData.renderedWordCount +
-				  // Additional words to render beyond what's already rendered
-				  Math.floor(
-						((Date.now() - renderData.lastRenderTime) / 1000) *
-							rate,
-				  );
+					// Additional words to render beyond what's already rendered
+					Math.floor(
+						((Date.now() - renderData.lastRenderTime) / 1000) * rate
+					);
 
 		if (numWordsToRender === renderData.renderedWordCount) {
 			return undefined;
@@ -1509,7 +1537,7 @@ export class ChatListItemRenderer
 	disposeElement(
 		node: ITreeNode<ChatTreeItem, FuzzyScore>,
 		index: number,
-		templateData: IChatListItemTemplate,
+		templateData: IChatListItemTemplate
 	): void {
 		templateData.elementDisposables.clear();
 	}
@@ -1520,9 +1548,7 @@ export class ChatListItemRenderer
 }
 
 export class ChatListDelegate implements IListVirtualDelegate<ChatTreeItem> {
-	constructor(
-		@ILogService private readonly logService: ILogService
-	) { }
+	constructor(@ILogService private readonly logService: ILogService) {}
 
 	private _traceLayout(method: string, message: string) {
 		if (forceVerboseLayoutTracing) {
@@ -1555,10 +1581,9 @@ export class ChatAccessibilityProvider
 	implements IListAccessibilityProvider<ChatTreeItem>
 {
 	constructor(
-		@IAccessibleViewService private readonly _accessibleViewService: IAccessibleViewService
-	) {
-
-	}
+		@IAccessibleViewService
+		private readonly _accessibleViewService: IAccessibleViewService
+	) {}
 	getWidgetRole(): AriaRole {
 		return "list";
 	}
@@ -1585,7 +1610,7 @@ export class ChatAccessibilityProvider
 				.map((c) =>
 					"value" in c
 						? c.value
-						: c.map((followup) => followup.message).join("\n"),
+						: c.map((followup) => followup.message).join("\n")
 				)
 				.join("\n");
 		}
@@ -1594,10 +1619,10 @@ export class ChatAccessibilityProvider
 	}
 
 	private _getLabelWithCodeBlockCount(
-		element: IChatResponseViewModel,
+		element: IChatResponseViewModel
 	): string {
 		const accessibleViewHint = this._accessibleViewService.getOpenAriaHint(
-			AccessibilityVerbositySettingId.Chat,
+			AccessibilityVerbositySettingId.Chat
 		);
 		let label: string = "";
 		let commandFollowUpInfo;
@@ -1609,7 +1634,7 @@ export class ChatAccessibilityProvider
 				commandFollowUpInfo = localize(
 					"commandFollowUpInfo",
 					"Command: {0}",
-					element.commandFollowups![0].title,
+					element.commandFollowups![0].title
 				);
 				break;
 			default:
@@ -1618,7 +1643,7 @@ export class ChatAccessibilityProvider
 					"Commands: {0}",
 					element
 						.commandFollowups!.map((followup) => followup.title)
-						.join(", "),
+						.join(", ")
 				);
 		}
 		const fileTreeCount =
@@ -1630,14 +1655,14 @@ export class ChatAccessibilityProvider
 			case 1:
 				fileTreeCountHint = localize(
 					"singleFileTreeHint",
-					"1 file tree",
+					"1 file tree"
 				);
 				break;
 			default:
 				fileTreeCountHint = localize(
 					"multiFileTreeHint",
 					"{0} file trees",
-					fileTreeCount,
+					fileTreeCount
 				);
 				break;
 		}
@@ -1653,14 +1678,14 @@ export class ChatAccessibilityProvider
 							"{0} {1} {2}",
 							fileTreeCountHint,
 							element.response.asString(),
-							accessibleViewHint,
-					  )
+							accessibleViewHint
+						)
 					: localize(
 							"noCodeBlocks",
 							"{0} {1}",
 							fileTreeCountHint,
-							element.response.asString(),
-					  );
+							element.response.asString()
+						);
 				break;
 			case 1:
 				label = accessibleViewHint
@@ -1669,14 +1694,14 @@ export class ChatAccessibilityProvider
 							"{0} 1 code block: {1} {2}",
 							fileTreeCountHint,
 							element.response.asString(),
-							accessibleViewHint,
-					  )
+							accessibleViewHint
+						)
 					: localize(
 							"singleCodeBlock",
 							"{0} 1 code block: {1}",
 							fileTreeCountHint,
-							element.response.asString(),
-					  );
+							element.response.asString()
+						);
 				break;
 			default:
 				label = accessibleViewHint
@@ -1686,15 +1711,15 @@ export class ChatAccessibilityProvider
 							fileTreeCountHint,
 							codeBlockCount,
 							element.response.asString(),
-							accessibleViewHint,
-					  )
+							accessibleViewHint
+						)
 					: localize(
 							"multiCodeBlock",
 							"{0} {1} code blocks",
 							fileTreeCountHint,
 							codeBlockCount,
-							element.response.asString(),
-					  );
+							element.response.asString()
+						);
 				break;
 		}
 		return commandFollowUpInfo ? commandFollowUpInfo + ", " + label : label;
@@ -1715,10 +1740,13 @@ class EditorPool extends Disposable {
 
 	constructor(
 		private readonly options: ChatEditorOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
-		this._pool = this._register(new ResourcePool(() => this.editorFactory()));
+		this._pool = this._register(
+			new ResourcePool(() => this.editorFactory())
+		);
 
 		// TODO listen to changes on options
 	}
@@ -1727,7 +1755,7 @@ class EditorPool extends Disposable {
 		return this.instantiationService.createInstance(
 			CodeBlockPart,
 			this.options,
-			MenuId.ChatCodeBlock,
+			MenuId.ChatCodeBlock
 		);
 	}
 
@@ -1766,9 +1794,11 @@ class TreePool extends Disposable {
 
 	constructor(
 		private _onDidChangeVisibility: Event<boolean>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configService: IConfigurationService,
-		@IThemeService private readonly themeService: IThemeService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configService: IConfigurationService,
+		@IThemeService private readonly themeService: IThemeService
 	) {
 		super();
 		this._pool = this._register(new ResourcePool(() => this.treeFactory()));
@@ -1781,7 +1811,7 @@ class TreePool extends Disposable {
 	> {
 		const resourceLabels = this.instantiationService.createInstance(
 			ResourceLabels,
-			{ onDidChangeVisibility: this._onDidChangeVisibility },
+			{ onDidChangeVisibility: this._onDidChangeVisibility }
 		);
 
 		const container = $(".interactive-response-progress-tree");
@@ -1801,7 +1831,7 @@ class TreePool extends Disposable {
 			[
 				new ChatListTreeRenderer(
 					resourceLabels,
-					this.configService.getValue("explorer.decorations"),
+					this.configService.getValue("explorer.decorations")
 				),
 			],
 			new ChatListTreeDataSource(),
@@ -1814,13 +1844,13 @@ class TreePool extends Disposable {
 				},
 				accessibilityProvider: {
 					getAriaLabel: (
-						element: IChatResponseProgressFileTreeData,
+						element: IChatResponseProgressFileTreeData
 					) => element.label,
 					getWidgetAriaLabel: () =>
 						localize("treeAriaLabel", "File Tree"),
 				},
 				alwaysConsumeMouseWheel: false,
-			},
+			}
 		);
 
 		return tree;
@@ -1855,8 +1885,9 @@ class ContentReferencesListPool extends Disposable {
 
 	constructor(
 		private _onDidChangeVisibility: Event<boolean>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IThemeService private readonly themeService: IThemeService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IThemeService private readonly themeService: IThemeService
 	) {
 		super();
 		this._pool = this._register(new ResourcePool(() => this.listFactory()));
@@ -1865,7 +1896,7 @@ class ContentReferencesListPool extends Disposable {
 	private listFactory(): WorkbenchList<IChatContentReference> {
 		const resourceLabels = this.instantiationService.createInstance(
 			ResourceLabels,
-			{ onDidChangeVisibility: this._onDidChangeVisibility },
+			{ onDidChangeVisibility: this._onDidChangeVisibility }
 		);
 
 		const container = $(".chat-used-context-list");
@@ -1880,7 +1911,7 @@ class ContentReferencesListPool extends Disposable {
 				[new ContentReferencesListRenderer(resourceLabels)],
 				{
 					alwaysConsumeMouseWheel: false,
-				},
+				}
 			)
 		);
 
@@ -1930,7 +1961,7 @@ class ContentReferencesListRenderer
 	renderTemplate(container: HTMLElement): IChatContentReferenceListTemplate {
 		const templateDisposables = new DisposableStore();
 		const label = templateDisposables.add(
-			this.labels.create(container, { supportHighlights: true }),
+			this.labels.create(container, { supportHighlights: true })
 		);
 		return { templateDisposables, label };
 	}
@@ -1939,7 +1970,7 @@ class ContentReferencesListRenderer
 		element: IChatContentReference,
 		index: number,
 		templateData: IChatContentReferenceListTemplate,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.label.element.style.display = "flex";
 		templateData.label.setFile(
@@ -1954,7 +1985,7 @@ class ContentReferencesListRenderer
 					"range" in element.reference
 						? element.reference.range
 						: undefined,
-			},
+			}
 		);
 	}
 
@@ -2039,7 +2070,7 @@ class ChatListTreeRenderer
 
 	constructor(
 		private labels: ResourceLabels,
-		private decorations: IFilesConfiguration["explorer"]["decorations"],
+		private decorations: IFilesConfiguration["explorer"]["decorations"]
 	) {}
 
 	renderCompressedElements(
@@ -2049,7 +2080,7 @@ class ChatListTreeRenderer
 		>,
 		index: number,
 		templateData: IChatListTreeRendererTemplate,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.label.element.style.display = "flex";
 		const label = element.element.elements.map((e) => e.label);
@@ -2060,13 +2091,13 @@ class ChatListTreeRenderer
 				fileKind: element.children ? FileKind.FOLDER : FileKind.FILE,
 				extraClasses: ["explorer-item"],
 				fileDecorations: this.decorations,
-			},
+			}
 		);
 	}
 	renderTemplate(container: HTMLElement): IChatListTreeRendererTemplate {
 		const templateDisposables = new DisposableStore();
 		const label = templateDisposables.add(
-			this.labels.create(container, { supportHighlights: true }),
+			this.labels.create(container, { supportHighlights: true })
 		);
 		return { templateDisposables, label };
 	}
@@ -2074,7 +2105,7 @@ class ChatListTreeRenderer
 		element: ITreeNode<IChatResponseProgressFileTreeData, void>,
 		index: number,
 		templateData: IChatListTreeRendererTemplate,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.label.element.style.display = "flex";
 		const hasExtension = /\.[^/.]+$/.test(element.element.label);
@@ -2091,7 +2122,7 @@ class ChatListTreeRenderer
 					title: element.element.label,
 					fileKind: FileKind.FOLDER,
 					fileDecorations: this.decorations,
-				},
+				}
 			);
 		}
 	}
@@ -2112,7 +2143,7 @@ class ChatListTreeDataSource
 	}
 
 	async getChildren(
-		element: IChatResponseProgressFileTreeData,
+		element: IChatResponseProgressFileTreeData
 	): Promise<Iterable<IChatResponseProgressFileTreeData>> {
 		return element.children ?? [];
 	}
@@ -2122,7 +2153,7 @@ function isInteractiveProgressTreeData(
 	item:
 		| IChatResponseProgressFileTreeData
 		| IChatResponseMarkdownRenderData
-		| IMarkdownString,
+		| IMarkdownString
 ): item is IChatResponseProgressFileTreeData {
 	return "label" in item;
 }

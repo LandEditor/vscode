@@ -30,7 +30,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 
 	constructor(extHostContext: IExtHostContext) {
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostDocumentSaveParticipant,
+			ExtHostContext.ExtHostDocumentSaveParticipant
 		);
 	}
 
@@ -38,7 +38,7 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 		editorModel: ITextFileEditorModel,
 		env: { reason: SaveReason },
 		_progress: IProgress<IProgressStep>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		if (
 			!editorModel.textEditorModel ||
@@ -56,11 +56,11 @@ class ExtHostSaveParticipant implements ITextFileSaveParticipant {
 						new Error(
 							localize(
 								"timeout.onWillSave",
-								"Aborted onWillSaveTextDocument-event after 1750ms",
-							),
-						),
+								"Aborted onWillSaveTextDocument-event after 1750ms"
+							)
+						)
 					),
-				1750,
+				1750
 			);
 			this._proxy
 				.$participateInSave(editorModel.resource, env.reason)
@@ -87,7 +87,13 @@ export class SaveParticipant {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ITextFileService private readonly _textFileService: ITextFileService
 	) {
-		this._saveParticipantDisposable = this._textFileService.files.addSaveParticipant(instantiationService.createInstance(ExtHostSaveParticipant, extHostContext));
+		this._saveParticipantDisposable =
+			this._textFileService.files.addSaveParticipant(
+				instantiationService.createInstance(
+					ExtHostSaveParticipant,
+					extHostContext
+				)
+			);
 	}
 
 	dispose(): void {

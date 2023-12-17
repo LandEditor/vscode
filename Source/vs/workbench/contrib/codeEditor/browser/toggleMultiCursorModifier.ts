@@ -38,7 +38,7 @@ export class ToggleMultiCursorModifierAction extends Action2 {
 			title: {
 				value: localize(
 					"toggleLocation",
-					"Toggle Multi-Cursor Modifier",
+					"Toggle Multi-Cursor Modifier"
 				),
 				original: "Toggle Multi-Cursor Modifier",
 			},
@@ -57,14 +57,14 @@ export class ToggleMultiCursorModifierAction extends Action2 {
 
 		return configurationService.updateValue(
 			ToggleMultiCursorModifierAction.multiCursorModifierConfigurationKey,
-			newValue,
+			newValue
 		);
 	}
 }
 
 const multiCursorModifier = new RawContextKey<string>(
 	"multiCursorModifier",
-	"altKey",
+	"altKey"
 );
 
 class MultiCursorModifierContextKeyController
@@ -73,14 +73,16 @@ class MultiCursorModifierContextKeyController
 	private readonly _multiCursorModifier: IContextKey<string>;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		this._multiCursorModifier = multiCursorModifier.bindTo(contextKeyService);
+		this._multiCursorModifier =
+			multiCursorModifier.bindTo(contextKeyService);
 
 		this._update();
 		configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('editor.multiCursorModifier')) {
+			if (e.affectsConfiguration("editor.multiCursorModifier")) {
 				this._update();
 			}
 		});
@@ -97,10 +99,10 @@ class MultiCursorModifierContextKeyController
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	MultiCursorModifierContextKeyController,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 registerAction2(ToggleMultiCursorModifierAction);
@@ -111,7 +113,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSelectionMenu, {
 		id: ToggleMultiCursorModifierAction.ID,
 		title: localize(
 			"miMultiCursorAlt",
-			"Switch to Alt+Click for Multi-Cursor",
+			"Switch to Alt+Click for Multi-Cursor"
 		),
 	},
 	when: multiCursorModifier.isEqualTo("ctrlCmd"),
@@ -124,12 +126,12 @@ MenuRegistry.appendMenuItem(MenuId.MenubarSelectionMenu, {
 		title: isMacintosh
 			? localize(
 					"miMultiCursorCmd",
-					"Switch to Cmd+Click for Multi-Cursor",
-			  )
+					"Switch to Cmd+Click for Multi-Cursor"
+				)
 			: localize(
 					"miMultiCursorCtrl",
-					"Switch to Ctrl+Click for Multi-Cursor",
-			  ),
+					"Switch to Ctrl+Click for Multi-Cursor"
+				),
 	},
 	when: multiCursorModifier.isEqualTo("altKey"),
 	order: 1,

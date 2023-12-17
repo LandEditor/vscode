@@ -12,7 +12,7 @@ export class ViewContext {
 		readonly notebookOptions: NotebookOptions,
 		readonly eventDispatcher: NotebookEventDispatcher,
 		readonly getBaseCellEditorOptions: (
-			language: string,
-		) => IBaseCellEditorOptions,
+			language: string
+		) => IBaseCellEditorOptions
 	) {}
 }

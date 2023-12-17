@@ -35,7 +35,7 @@ export function registerQuickChatActions() {
 					title: {
 						value: localize(
 							"chat.openInChatView.label",
-							"Open in Chat View",
+							"Open in Chat View"
 						),
 						original: "Open in Chat View",
 					},
@@ -54,7 +54,7 @@ export function registerQuickChatActions() {
 				const quickChatService = accessor.get(IQuickChatService);
 				quickChatService.openInChatView();
 			}
-		},
+		}
 	);
 
 	registerAction2(
@@ -65,7 +65,7 @@ export function registerQuickChatActions() {
 					title: {
 						value: localize(
 							"chat.closeQuickChat.label",
-							"Close Quick Chat",
+							"Close Quick Chat"
 						),
 						original: "Close Quick Chat",
 					},
@@ -84,7 +84,7 @@ export function registerQuickChatActions() {
 				const quickChatService = accessor.get(IQuickChatService);
 				quickChatService.close();
 			}
-		},
+		}
 	);
 
 	registerAction2(
@@ -95,7 +95,7 @@ export function registerQuickChatActions() {
 					title: {
 						value: localize(
 							"chat.launchInlineChat.label",
-							"Launch Inline Chat",
+							"Launch Inline Chat"
 						),
 						original: "Launch Inline Chat",
 					},
@@ -123,7 +123,7 @@ export function registerQuickChatActions() {
 				await controller.run();
 				controller.focus();
 			}
-		},
+		}
 	);
 }
 
@@ -164,14 +164,14 @@ class QuickChatGlobalAction extends Action2 {
 										query: {
 											description: localize(
 												"toggle.query",
-												"The query to open the quick chat with",
+												"The query to open the quick chat with"
 											),
 											type: "string",
 										},
 										isPartialQuery: {
 											description: localize(
 												"toggle.isPartialQuery",
-												"Whether the query is partial; it will wait for more user input",
+												"Whether the query is partial; it will wait for more user input"
 											),
 											type: "boolean",
 										},
@@ -181,7 +181,7 @@ class QuickChatGlobalAction extends Action2 {
 									type: "string",
 									description: localize(
 										"toggle.query",
-										"The query to open the quick chat with",
+										"The query to open the quick chat with"
 									),
 								},
 							],
@@ -194,7 +194,7 @@ class QuickChatGlobalAction extends Action2 {
 
 	override run(
 		accessor: ServicesAccessor,
-		query?: string | Omit<IQuickChatOpenOptions, "selection">,
+		query?: string | Omit<IQuickChatOpenOptions, "selection">
 	): void {
 		const quickChatService = accessor.get(IQuickChatService);
 		let options: IQuickChatOpenOptions | undefined;
@@ -211,7 +211,7 @@ class QuickChatGlobalAction extends Action2 {
 				1,
 				options.query.length + 1,
 				1,
-				options.query.length + 1,
+				options.query.length + 1
 			);
 		}
 		quickChatService.toggle(undefined, options);
@@ -236,7 +236,7 @@ export function getQuickChatActionForProvider(id: string, label: string) {
 					value: localize(
 						"interactiveSession.open",
 						"Open Quick Chat ({0})",
-						label,
+						label
 					),
 					original: `Open Quick Chat (${label})`,
 				},

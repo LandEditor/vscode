@@ -53,7 +53,7 @@ export type IUserDataSyncMachine = Readonly<IMachineData> & {
 
 export const IUserDataSyncMachinesService =
 	createDecorator<IUserDataSyncMachinesService>(
-		"IUserDataSyncMachinesService",
+		"IUserDataSyncMachinesService"
 	);
 export interface IUserDataSyncMachinesService {
 	_serviceBrand: any;
@@ -127,16 +127,22 @@ export class UserDataSyncMachinesService
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-		@IProductService private readonly productService: IProductService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
-		this.currentMachineIdPromise = getServiceMachineId(environmentService, fileService, storageService);
+		this.currentMachineIdPromise = getServiceMachineId(
+			environmentService,
+			fileService,
+			storageService
+		);
 	}
 
 	async getMachines(
-		manifest?: IUserDataManifest,
+		manifest?: IUserDataManifest
 	): Promise<IUserDataSyncMachine[]> {
 		const currentMachineId = await this.currentMachineIdPromise;
 		const machineData = await this.readMachinesData(manifest);
@@ -163,7 +169,7 @@ export class UserDataSyncMachinesService
 		const currentMachineId = await this.currentMachineIdPromise;
 		const machineData = await this.readMachinesData(manifest);
 		const updatedMachines = machineData.machines.filter(
-			({ id }) => id !== currentMachineId,
+			({ id }) => id !== currentMachineId
 		);
 		if (updatedMachines.length !== machineData.machines.length) {
 			machineData.machines = updatedMachines;
@@ -174,7 +180,7 @@ export class UserDataSyncMachinesService
 	async renameMachine(
 		machineId: string,
 		name: string,
-		manifest?: IUserDataManifest,
+		manifest?: IUserDataManifest
 	): Promise<void> {
 		const machineData = await this.readMachinesData(manifest);
 		const machine = machineData.machines.find(({ id }) => id === machineId);
@@ -187,7 +193,7 @@ export class UserDataSyncMachinesService
 					currentMachineNameKey,
 					name,
 					StorageScope.APPLICATION,
-					StorageTarget.MACHINE,
+					StorageTarget.MACHINE
 				);
 			}
 		}
@@ -197,7 +203,7 @@ export class UserDataSyncMachinesService
 		const machineData = await this.readMachinesData();
 		for (const [machineId, enabled] of enablements) {
 			const machine = machineData.machines.find(
-				(machine) => machine.id === machineId,
+				(machine) => machine.id === machineId
 			);
 			if (machine) {
 				machine.disabled = enabled ? undefined : true;
@@ -209,7 +215,7 @@ export class UserDataSyncMachinesService
 	private computeCurrentMachineName(machines: IMachineData[]): string {
 		const previousName = this.storageService.get(
 			currentMachineNameKey,
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 		if (previousName) {
 			return previousName;
@@ -221,7 +227,7 @@ export class UserDataSyncMachinesService
 				: ""
 		}${getPlatformName()} (${this.productService.nameShort})`;
 		const nameRegEx = new RegExp(
-			`${escapeRegExpCharacters(namePrefix)}\\s#(\\d+)`,
+			`${escapeRegExpCharacters(namePrefix)}\\s#(\\d+)`
 		);
 		let nameIndex = 0;
 		for (const machine of machines) {
@@ -233,7 +239,7 @@ export class UserDataSyncMachinesService
 	}
 
 	private async readMachinesData(
-		manifest?: IUserDataManifest,
+		manifest?: IUserDataManifest
 	): Promise<IMachinesData> {
 		this.userData = await this.readUserData(manifest);
 		const machinesData = this.parse(this.userData);
@@ -242,28 +248,28 @@ export class UserDataSyncMachinesService
 				localize(
 					"error incompatible",
 					"Cannot read machines data as the current version is incompatible. Please update {0} and try again.",
-					this.productService.nameLong,
-				),
+					this.productService.nameLong
+				)
 			);
 		}
 		return machinesData;
 	}
 
 	private async writeMachinesData(
-		machinesData: IMachinesData,
+		machinesData: IMachinesData
 	): Promise<void> {
 		const content = JSON.stringify(machinesData);
 		const ref = await this.userDataSyncStoreService.writeResource(
 			UserDataSyncMachinesService.RESOURCE,
 			content,
-			this.userData?.ref || null,
+			this.userData?.ref || null
 		);
 		this.userData = { ref, content };
 		this._onDidChange.fire();
 	}
 
 	private async readUserData(
-		manifest?: IUserDataManifest,
+		manifest?: IUserDataManifest
 	): Promise<IUserData> {
 		if (this.userData) {
 			const latestRef =
@@ -284,7 +290,7 @@ export class UserDataSyncMachinesService
 
 		return this.userDataSyncStoreService.readResource(
 			UserDataSyncMachinesService.RESOURCE,
-			this.userData,
+			this.userData
 		);
 	}
 

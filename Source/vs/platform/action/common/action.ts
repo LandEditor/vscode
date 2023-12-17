@@ -61,7 +61,7 @@ export interface ICommandActionToggleInfo {
 }
 
 export function isICommandActionToggleInfo(
-	thing: ContextKeyExpression | ICommandActionToggleInfo | undefined,
+	thing: ContextKeyExpression | ICommandActionToggleInfo | undefined
 ): thing is ICommandActionToggleInfo {
 	return thing
 		? (<ICommandActionToggleInfo>thing).condition !== undefined

@@ -20,37 +20,37 @@ export class CollapsedCellOutput extends CellContentPart {
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
 		cellOutputCollapseContainer: HTMLElement,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
 		super();
 
 		const placeholder = DOM.append(
 			cellOutputCollapseContainer,
-			$("span.expandOutputPlaceholder"),
+			$("span.expandOutputPlaceholder")
 		) as HTMLElement;
 		placeholder.textContent = localize(
 			"cellOutputsCollapsedMsg",
-			"Outputs are collapsed",
+			"Outputs are collapsed"
 		);
 		const expandIcon = DOM.append(
 			cellOutputCollapseContainer,
-			$("span.expandOutputIcon"),
+			$("span.expandOutputIcon")
 		);
 		expandIcon.classList.add(...ThemeIcon.asClassNameArray(Codicon.more));
 
 		const keybinding = keybindingService.lookupKeybinding(
-			EXPAND_CELL_OUTPUT_COMMAND_ID,
+			EXPAND_CELL_OUTPUT_COMMAND_ID
 		);
 		if (keybinding) {
 			placeholder.title = localize(
 				"cellExpandOutputButtonLabelWithDoubleClick",
 				"Double-click to expand cell output ({0})",
-				keybinding.getLabel(),
+				keybinding.getLabel()
 			);
 			cellOutputCollapseContainer.title = localize(
 				"cellExpandOutputButtonLabel",
 				"Expand Cell Output (${0})",
-				keybinding.getLabel(),
+				keybinding.getLabel()
 			);
 		}
 
@@ -58,15 +58,15 @@ export class CollapsedCellOutput extends CellContentPart {
 
 		this._register(
 			DOM.addDisposableListener(expandIcon, DOM.EventType.CLICK, () =>
-				this.expand(),
-			),
+				this.expand()
+			)
 		);
 		this._register(
 			DOM.addDisposableListener(
 				cellOutputCollapseContainer,
 				DOM.EventType.DBLCLICK,
-				() => this.expand(),
-			),
+				() => this.expand()
+			)
 		);
 	}
 

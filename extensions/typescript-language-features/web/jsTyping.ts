@@ -34,15 +34,15 @@ const maxPackageNameLength = 214;
 // Copied from typescript/jsTypings.ts
 export function validatePackageNameWorker(
 	packageName: string,
-	supportScopedPackage: true,
+	supportScopedPackage: true
 ): ScopedPackageNameValidationResult;
 export function validatePackageNameWorker(
 	packageName: string,
-	supportScopedPackage: false,
+	supportScopedPackage: false
 ): NameValidationResult;
 export function validatePackageNameWorker(
 	packageName: string,
-	supportScopedPackage: boolean,
+	supportScopedPackage: boolean
 ): PackageNameValidationResult {
 	if (!packageName) {
 		return NameValidationResult.EmptyName;
@@ -64,7 +64,7 @@ export function validatePackageNameWorker(
 		if (matches) {
 			const scopeResult = validatePackageNameWorker(
 				matches[1],
-				/*supportScopedPackage*/ false,
+				/*supportScopedPackage*/ false
 			);
 			if (scopeResult !== NameValidationResult.Ok) {
 				return {
@@ -75,7 +75,7 @@ export function validatePackageNameWorker(
 			}
 			const packageResult = validatePackageNameWorker(
 				matches[2],
-				/*supportScopedPackage*/ false,
+				/*supportScopedPackage*/ false
 			);
 			if (packageResult !== NameValidationResult.Ok) {
 				return {
@@ -104,6 +104,6 @@ export interface TypingResolutionHost {
 		extensions: readonly string[],
 		excludes: readonly string[] | undefined,
 		includes: readonly string[] | undefined,
-		depth?: number,
+		depth?: number
 	): string[];
 }

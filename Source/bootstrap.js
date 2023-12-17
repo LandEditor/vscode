@@ -56,7 +56,7 @@
 	function enableASARSupport() {
 		if (!path || !Module || typeof process === "undefined") {
 			console.warn(
-				"enableASARSupport() is only available in node.js environments",
+				"enableASARSupport() is only available in node.js environments"
 			);
 			return;
 		}
@@ -115,7 +115,7 @@
 			uri = encodeURI(
 				`${config.scheme || "file"}://${
 					config.fallbackAuthority || ""
-				}${pathName}`,
+				}${pathName}`
 			);
 		}
 
@@ -161,7 +161,7 @@
 				// @ts-ignore
 				safeReadNlsFile(
 					nlsConfig._resolvedLanguagePackCoreLocation,
-					`${bundle.replace(/\//g, "!")}.nls.json`,
+					`${bundle.replace(/\//g, "!")}.nls.json`
 				)
 					.then(function (content) {
 						const json = JSON.parse(content);
@@ -174,7 +174,7 @@
 							if (nlsConfig._corruptedFile) {
 								safeWriteNlsFile(
 									nlsConfig._corruptedFile,
-									"corrupted",
+									"corrupted"
 								).catch(function (error) {
 									console.error(error);
 								});
@@ -197,8 +197,8 @@
 			typeof self === "object"
 				? self
 				: typeof global === "object"
-				  ? global
-				  : {};
+					? global
+					: {};
 
 		// @ts-ignore
 		return globals.vscode;

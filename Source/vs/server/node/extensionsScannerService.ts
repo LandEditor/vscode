@@ -28,32 +28,48 @@ export class ExtensionsScannerService
 	implements IExtensionsScannerService
 {
 	constructor(
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsProfileScannerService
+		extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
-		@INativeEnvironmentService private readonly nativeEnvironmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		private readonly nativeEnvironmentService: INativeEnvironmentService,
 		@IProductService productService: IProductService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(
 			URI.file(nativeEnvironmentService.builtinExtensionsPath),
 			URI.file(nativeEnvironmentService.extensionsPath),
-			joinPath(nativeEnvironmentService.userHome, '.vscode-oss-dev', 'extensions', 'control.json'),
+			joinPath(
+				nativeEnvironmentService.userHome,
+				".vscode-oss-dev",
+				"extensions",
+				"control.json"
+			),
 			userDataProfilesService.defaultProfile,
-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, nativeEnvironmentService, productService, uriIdentityService, instantiationService);
+			userDataProfilesService,
+			extensionsProfileScannerService,
+			fileService,
+			logService,
+			nativeEnvironmentService,
+			productService,
+			uriIdentityService,
+			instantiationService
+		);
 	}
 
 	protected async getTranslations(language: string): Promise<Translations> {
 		const config = await getNLSConfiguration(
 			language,
-			this.nativeEnvironmentService.userDataPath,
+			this.nativeEnvironmentService.userDataPath
 		);
 		if (InternalNLSConfiguration.is(config)) {
 			try {
 				const content = await this.fileService.readFile(
-					URI.file(config._translationsConfigFile),
+					URI.file(config._translationsConfigFile)
 				);
 				return JSON.parse(content.value.toString());
 			} catch (err) {

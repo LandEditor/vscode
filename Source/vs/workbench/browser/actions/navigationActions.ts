@@ -33,7 +33,10 @@ import { getActiveWindow } from "vs/base/browser/dom";
 import { isAuxiliaryWindow } from "vs/base/browser/window";
 
 abstract class BaseNavigationAction extends Action2 {
-	constructor(options: IAction2Options, protected direction: Direction) {
+	constructor(
+		options: IAction2Options,
+		protected direction: Direction
+	) {
 		super(options);
 	}
 
@@ -46,14 +49,14 @@ abstract class BaseNavigationAction extends Action2 {
 		const isPanelFocus = layoutService.hasFocus(Parts.PANEL_PART);
 		const isSidebarFocus = layoutService.hasFocus(Parts.SIDEBAR_PART);
 		const isAuxiliaryBarFocus = layoutService.hasFocus(
-			Parts.AUXILIARYBAR_PART,
+			Parts.AUXILIARYBAR_PART
 		);
 
 		let neighborPart: Parts | undefined;
 		if (isEditorFocus) {
 			const didNavigate = this.navigateAcrossEditorGroup(
 				this.toGroupDirection(this.direction),
-				editorGroupService,
+				editorGroupService
 			);
 			if (didNavigate) {
 				return;
@@ -61,28 +64,28 @@ abstract class BaseNavigationAction extends Action2 {
 
 			neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.EDITOR_PART,
-				this.direction,
+				this.direction
 			);
 		}
 
 		if (isPanelFocus) {
 			neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.PANEL_PART,
-				this.direction,
+				this.direction
 			);
 		}
 
 		if (isSidebarFocus) {
 			neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.SIDEBAR_PART,
-				this.direction,
+				this.direction
 			);
 		}
 
 		if (isAuxiliaryBarFocus) {
 			neighborPart = neighborPart = layoutService.getVisibleNeighborPart(
 				Parts.AUXILIARYBAR_PART,
-				this.direction,
+				this.direction
 			);
 		}
 
@@ -90,14 +93,14 @@ abstract class BaseNavigationAction extends Action2 {
 			if (
 				!this.navigateBackToEditorGroup(
 					this.toGroupDirection(this.direction),
-					editorGroupService,
+					editorGroupService
 				)
 			) {
 				this.navigateToEditorGroup(
 					this.direction === Direction.Right
 						? GroupLocation.FIRST
 						: GroupLocation.LAST,
-					editorGroupService,
+					editorGroupService
 				);
 			}
 		} else if (neighborPart === Parts.SIDEBAR_PART) {
@@ -111,14 +114,14 @@ abstract class BaseNavigationAction extends Action2 {
 
 	private async navigateToPanel(
 		layoutService: IWorkbenchLayoutService,
-		paneCompositeService: IPaneCompositePartService,
+		paneCompositeService: IPaneCompositePartService
 	): Promise<IComposite | boolean> {
 		if (!layoutService.isVisible(Parts.PANEL_PART)) {
 			return false;
 		}
 
 		const activePanel = paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Panel,
+			ViewContainerLocation.Panel
 		);
 		if (!activePanel) {
 			return false;
@@ -129,7 +132,7 @@ abstract class BaseNavigationAction extends Action2 {
 		const res = await paneCompositeService.openPaneComposite(
 			activePanelId,
 			ViewContainerLocation.Panel,
-			true,
+			true
 		);
 		if (!res) {
 			return false;
@@ -140,14 +143,14 @@ abstract class BaseNavigationAction extends Action2 {
 
 	private async navigateToSidebar(
 		layoutService: IWorkbenchLayoutService,
-		paneCompositeService: IPaneCompositePartService,
+		paneCompositeService: IPaneCompositePartService
 	): Promise<IPaneComposite | boolean> {
 		if (!layoutService.isVisible(Parts.SIDEBAR_PART)) {
 			return false;
 		}
 
 		const activeViewlet = paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Sidebar,
+			ViewContainerLocation.Sidebar
 		);
 		if (!activeViewlet) {
 			return false;
@@ -157,21 +160,21 @@ abstract class BaseNavigationAction extends Action2 {
 		const viewlet = await paneCompositeService.openPaneComposite(
 			activeViewletId,
 			ViewContainerLocation.Sidebar,
-			true,
+			true
 		);
 		return !!viewlet;
 	}
 
 	private async navigateToAuxiliaryBar(
 		layoutService: IWorkbenchLayoutService,
-		paneCompositeService: IPaneCompositePartService,
+		paneCompositeService: IPaneCompositePartService
 	): Promise<IComposite | boolean> {
 		if (!layoutService.isVisible(Parts.AUXILIARYBAR_PART)) {
 			return false;
 		}
 
 		const activePanel = paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.AuxiliaryBar,
+			ViewContainerLocation.AuxiliaryBar
 		);
 		if (!activePanel) {
 			return false;
@@ -182,7 +185,7 @@ abstract class BaseNavigationAction extends Action2 {
 		const res = await paneCompositeService.openPaneComposite(
 			activePanelId,
 			ViewContainerLocation.AuxiliaryBar,
-			true,
+			true
 		);
 		if (!res) {
 			return false;
@@ -193,21 +196,21 @@ abstract class BaseNavigationAction extends Action2 {
 
 	private navigateAcrossEditorGroup(
 		direction: GroupDirection,
-		editorGroupService: IEditorGroupsService,
+		editorGroupService: IEditorGroupsService
 	): boolean {
 		return this.doNavigateToEditorGroup({ direction }, editorGroupService);
 	}
 
 	private navigateToEditorGroup(
 		location: GroupLocation,
-		editorGroupService: IEditorGroupsService,
+		editorGroupService: IEditorGroupsService
 	): boolean {
 		return this.doNavigateToEditorGroup({ location }, editorGroupService);
 	}
 
 	private navigateBackToEditorGroup(
 		direction: GroupDirection,
-		editorGroupService: IEditorGroupsService,
+		editorGroupService: IEditorGroupsService
 	): boolean {
 		if (!editorGroupService.activeGroup) {
 			return false;
@@ -220,7 +223,7 @@ abstract class BaseNavigationAction extends Action2 {
 
 		const groupInBetween = editorGroupService.findGroup(
 			{ direction: oppositeDirection },
-			editorGroupService.activeGroup,
+			editorGroupService.activeGroup
 		);
 		if (!groupInBetween) {
 			// No group in between means we can return
@@ -261,11 +264,11 @@ abstract class BaseNavigationAction extends Action2 {
 
 	private doNavigateToEditorGroup(
 		scope: IFindGroupScope,
-		editorGroupService: IEditorGroupsService,
+		editorGroupService: IEditorGroupsService
 	): boolean {
 		const targetGroup = editorGroupService.findGroup(
 			scope,
-			editorGroupService.activeGroup,
+			editorGroupService.activeGroup
 		);
 		if (targetGroup) {
 			targetGroup.focus();
@@ -286,17 +289,17 @@ registerAction2(
 					title: {
 						value: localize(
 							"navigateLeft",
-							"Navigate to the View on the Left",
+							"Navigate to the View on the Left"
 						),
 						original: "Navigate to the View on the Left",
 					},
 					category: Categories.View,
 					f1: true,
 				},
-				Direction.Left,
+				Direction.Left
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -308,17 +311,17 @@ registerAction2(
 					title: {
 						value: localize(
 							"navigateRight",
-							"Navigate to the View on the Right",
+							"Navigate to the View on the Right"
 						),
 						original: "Navigate to the View on the Right",
 					},
 					category: Categories.View,
 					f1: true,
 				},
-				Direction.Right,
+				Direction.Right
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -330,17 +333,17 @@ registerAction2(
 					title: {
 						value: localize(
 							"navigateUp",
-							"Navigate to the View Above",
+							"Navigate to the View Above"
 						),
 						original: "Navigate to the View Above",
 					},
 					category: Categories.View,
 					f1: true,
 				},
-				Direction.Up,
+				Direction.Up
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -352,21 +355,24 @@ registerAction2(
 					title: {
 						value: localize(
 							"navigateDown",
-							"Navigate to the View Below",
+							"Navigate to the View Below"
 						),
 						original: "Navigate to the View Below",
 					},
 					category: Categories.View,
 					f1: true,
 				},
-				Direction.Down,
+				Direction.Down
 			);
 		}
-	},
+	}
 );
 
 abstract class BaseFocusAction extends Action2 {
-	constructor(options: IAction2Options, private readonly focusNext: boolean) {
+	constructor(
+		options: IAction2Options,
+		private readonly focusNext: boolean
+	) {
 		super(options);
 	}
 
@@ -377,14 +383,14 @@ abstract class BaseFocusAction extends Action2 {
 		this.focusNextOrPreviousPart(
 			layoutService,
 			editorService,
-			this.focusNext,
+			this.focusNext
 		);
 	}
 
 	private findVisibleNeighbour(
 		layoutService: IWorkbenchLayoutService,
 		part: Parts,
-		next: boolean,
+		next: boolean
 	): Parts {
 		const activeWindow = getActiveWindow();
 		const windowIsAuxiliary = isAuxiliaryWindow(activeWindow);
@@ -439,7 +445,7 @@ abstract class BaseFocusAction extends Action2 {
 	private focusNextOrPreviousPart(
 		layoutService: IWorkbenchLayoutService,
 		editorService: IEditorService,
-		next: boolean,
+		next: boolean
 	): void {
 		let currentlyFocusedPart: Parts | undefined;
 		if (
@@ -462,10 +468,10 @@ abstract class BaseFocusAction extends Action2 {
 				? this.findVisibleNeighbour(
 						layoutService,
 						currentlyFocusedPart,
-						next,
-				  )
+						next
+					)
 				: Parts.EDITOR_PART,
-			getActiveWindow(),
+			getActiveWindow()
 		);
 	}
 }
@@ -487,10 +493,10 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 					},
 				},
-				true,
+				true
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -502,7 +508,7 @@ registerAction2(
 					title: {
 						value: localize(
 							"focusPreviousPart",
-							"Focus Previous Part",
+							"Focus Previous Part"
 						),
 						original: "Focus Previous Part",
 					},
@@ -513,8 +519,8 @@ registerAction2(
 						weight: KeybindingWeight.WorkbenchContrib,
 					},
 				},
-				false,
+				false
 			);
 		}
-	},
+	}
 );

@@ -24,7 +24,11 @@ import { StatusBarFocused } from "vs/workbench/common/contextkeys";
 import { getActiveWindow } from "vs/base/browser/dom";
 
 export class ToggleStatusbarEntryVisibilityAction extends Action {
-	constructor(id: string, label: string, private model: StatusbarViewModel) {
+	constructor(
+		id: string,
+		label: string,
+		private model: StatusbarViewModel
+	) {
 		super(id, label, undefined, true);
 
 		this.checked = !model.isHidden(id);
@@ -40,7 +44,11 @@ export class ToggleStatusbarEntryVisibilityAction extends Action {
 }
 
 export class HideStatusbarEntryAction extends Action {
-	constructor(id: string, name: string, private model: StatusbarViewModel) {
+	constructor(
+		id: string,
+		name: string,
+		private model: StatusbarViewModel
+	) {
 		super(id, localize("hide", "Hide '{0}'", name), undefined, true);
 	}
 

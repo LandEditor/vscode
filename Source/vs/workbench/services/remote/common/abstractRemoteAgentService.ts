@@ -54,17 +54,31 @@ export abstract class AbstractRemoteAgentService
 	private _environment: Promise<IRemoteAgentEnvironment | null> | null;
 
 	constructor(
-		@IRemoteSocketFactoryService private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
+		@IRemoteSocketFactoryService
+		private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkbenchEnvironmentService
+		protected readonly _environmentService: IWorkbenchEnvironmentService,
 		@IProductService productService: IProductService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ISignService signService: ISignService,
 		@ILogService logService: ILogService
 	) {
 		super();
 		if (this._environmentService.remoteAuthority) {
-			this._connection = this._register(new RemoteAgentConnection(this._environmentService.remoteAuthority, productService.commit, productService.quality, this.remoteSocketFactoryService, this._remoteAuthorityResolverService, signService, logService));
+			this._connection = this._register(
+				new RemoteAgentConnection(
+					this._environmentService.remoteAuthority,
+					productService.commit,
+					productService.quality,
+					this.remoteSocketFactoryService,
+					this._remoteAuthorityResolverService,
+					signService,
+					logService
+				)
+			);
 		} else {
 			this._connection = null;
 		}
@@ -89,44 +103,44 @@ export abstract class AbstractRemoteAgentService
 							connection.remoteAuthority,
 							this.userDataProfileService.currentProfile.isDefault
 								? undefined
-								: this.userDataProfileService.currentProfile.id,
+								: this.userDataProfileService.currentProfile.id
 						);
 					this._remoteAuthorityResolverService._setAuthorityConnectionToken(
 						connection.remoteAuthority,
-						env.connectionToken,
+						env.connectionToken
 					);
 					return env;
 				},
-				null,
+				null
 			);
 		}
 		return this._environment;
 	}
 
 	getExtensionHostExitInfo(
-		reconnectionToken: string,
+		reconnectionToken: string
 	): Promise<IExtensionHostExitInfo | null> {
 		return this._withChannel(
 			(channel, connection) =>
 				RemoteExtensionEnvironmentChannelClient.getExtensionHostExitInfo(
 					channel,
 					connection.remoteAuthority,
-					reconnectionToken,
+					reconnectionToken
 				),
-			null,
+			null
 		);
 	}
 
 	getDiagnosticInfo(
-		options: IDiagnosticInfoOptions,
+		options: IDiagnosticInfoOptions
 	): Promise<IDiagnosticInfo | undefined> {
 		return this._withChannel(
 			(channel) =>
 				RemoteExtensionEnvironmentChannelClient.getDiagnosticInfo(
 					channel,
-					options,
+					options
 				),
-			undefined,
+			undefined
 		);
 	}
 
@@ -135,9 +149,9 @@ export abstract class AbstractRemoteAgentService
 			(channel) =>
 				RemoteExtensionEnvironmentChannelClient.updateTelemetryLevel(
 					channel,
-					telemetryLevel,
+					telemetryLevel
 				),
-			undefined,
+			undefined
 		);
 	}
 
@@ -147,9 +161,9 @@ export abstract class AbstractRemoteAgentService
 				RemoteExtensionEnvironmentChannelClient.logTelemetry(
 					channel,
 					eventName,
-					data,
+					data
 				),
-			undefined,
+			undefined
 		);
 	}
 
@@ -157,7 +171,7 @@ export abstract class AbstractRemoteAgentService
 		return this._withTelemetryChannel(
 			(channel) =>
 				RemoteExtensionEnvironmentChannelClient.flushTelemetry(channel),
-			undefined,
+			undefined
 		);
 	}
 
@@ -172,9 +186,9 @@ export abstract class AbstractRemoteAgentService
 	private _withChannel<R>(
 		callback: (
 			channel: IChannel,
-			connection: IRemoteAgentConnection,
+			connection: IRemoteAgentConnection
 		) => Promise<R>,
-		fallback: R,
+		fallback: R
 	): Promise<R> {
 		const connection = this.getConnection();
 		if (!connection) {
@@ -182,23 +196,23 @@ export abstract class AbstractRemoteAgentService
 		}
 		return connection.withChannel(
 			"remoteextensionsenvironment",
-			(channel) => callback(channel, connection),
+			(channel) => callback(channel, connection)
 		);
 	}
 
 	private _withTelemetryChannel<R>(
 		callback: (
 			channel: IChannel,
-			connection: IRemoteAgentConnection,
+			connection: IRemoteAgentConnection
 		) => Promise<R>,
-		fallback: R,
+		fallback: R
 	): Promise<R> {
 		const connection = this.getConnection();
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
 		return connection.withChannel("telemetry", (channel) =>
-			callback(channel, connection),
+			callback(channel, connection)
 		);
 	}
 }
@@ -211,7 +225,7 @@ class RemoteAgentConnection
 	public readonly onReconnecting = this._onReconnecting.event;
 
 	private readonly _onDidStateChange = this._register(
-		new Emitter<PersistentConnectionEvent>(),
+		new Emitter<PersistentConnectionEvent>()
 	);
 	public readonly onDidStateChange = this._onDidStateChange.event;
 
@@ -227,7 +241,7 @@ class RemoteAgentConnection
 		private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService,
 		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		private readonly _signService: ISignService,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		super();
 		this.remoteAuthority = remoteAuthority;
@@ -238,15 +252,15 @@ class RemoteAgentConnection
 		return <T>(
 			getDelayedChannel(
 				this._getOrCreateConnection().then((c) =>
-					c.getChannel(channelName),
-				),
+					c.getChannel(channelName)
+				)
 			)
 		);
 	}
 
 	withChannel<T extends IChannel, R>(
 		channelName: string,
-		callback: (channel: T) => Promise<R>,
+		callback: (channel: T) => Promise<R>
 	): Promise<R> {
 		const channel = this.getChannel<T>(channelName);
 		const result = callback(channel);
@@ -255,10 +269,10 @@ class RemoteAgentConnection
 
 	registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(
 		channelName: string,
-		channel: T,
+		channel: T
 	): void {
 		this._getOrCreateConnection().then((client) =>
-			client.registerChannel(channelName, channel),
+			client.registerChannel(channelName, channel)
 		);
 	}
 
@@ -297,7 +311,7 @@ class RemoteAgentConnection
 					}
 					const { authority } =
 						await this._remoteAuthorityResolverService.resolveAuthority(
-							this.remoteAuthority,
+							this.remoteAuthority
 						);
 					return {
 						connectTo: authority.connectTo,
@@ -319,8 +333,8 @@ class RemoteAgentConnection
 				await connectRemoteAgentManagement(
 					options,
 					this.remoteAuthority,
-					`renderer`,
-				),
+					`renderer`
+				)
 			);
 		} finally {
 			this._initialConnectionMs = Date.now() - start;
@@ -330,7 +344,7 @@ class RemoteAgentConnection
 			connection.dispose();
 		});
 		this._register(
-			connection.onDidStateChange((e) => this._onDidStateChange.fire(e)),
+			connection.onDidStateChange((e) => this._onDidStateChange.fire(e))
 		);
 		return connection.client;
 	}

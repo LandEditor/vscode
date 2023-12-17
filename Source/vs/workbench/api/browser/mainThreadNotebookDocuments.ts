@@ -35,20 +35,39 @@ export class MainThreadNotebookDocuments
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotebookEditorModelResolverService private readonly _notebookEditorModelResolverService: INotebookEditorModelResolverService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService
+		@INotebookEditorModelResolverService
+		private readonly _notebookEditorModelResolverService: INotebookEditorModelResolverService,
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookDocuments);
-		this._modelReferenceCollection = new BoundModelReferenceCollection(this._uriIdentityService.extUri);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookDocuments
+		);
+		this._modelReferenceCollection = new BoundModelReferenceCollection(
+			this._uriIdentityService.extUri
+		);
 
 		// forward dirty and save events
-		this._disposables.add(this._notebookEditorModelResolverService.onDidChangeDirty(model => this._proxy.$acceptDirtyStateChanged(model.resource, model.isDirty())));
-		this._disposables.add(this._notebookEditorModelResolverService.onDidSaveNotebook(e => this._proxy.$acceptModelSaved(e)));
+		this._disposables.add(
+			this._notebookEditorModelResolverService.onDidChangeDirty((model) =>
+				this._proxy.$acceptDirtyStateChanged(
+					model.resource,
+					model.isDirty()
+				)
+			)
+		);
+		this._disposables.add(
+			this._notebookEditorModelResolverService.onDidSaveNotebook((e) =>
+				this._proxy.$acceptModelSaved(e)
+			)
+		);
 
 		// when a conflict is going to happen RELEASE references that are held by extensions
-		this._disposables.add(_notebookEditorModelResolverService.onWillFailWithConflict(e => {
-			this._modelReferenceCollection.remove(e.resource);
-		}));
+		this._disposables.add(
+			_notebookEditorModelResolverService.onWillFailWithConflict((e) => {
+				this._modelReferenceCollection.remove(e.resource);
+			})
+		);
 	}
 
 	dispose(): void {
@@ -79,14 +98,14 @@ export class MainThreadNotebookDocuments
 												diff[1],
 												diff[2].map((cell) =>
 													NotebookDto.toNotebookCellDto(
-														cell,
-													),
+														cell
+													)
 												),
 											] as [
 												number,
 												number,
 												NotebookCellDto[],
-											],
+											]
 									),
 								});
 								break;
@@ -103,7 +122,7 @@ export class MainThreadNotebookDocuments
 									kind: e.kind,
 									index: e.index,
 									outputs: e.outputs.map(
-										NotebookDto.toNotebookOutputDto,
+										NotebookDto.toNotebookOutputDto
 									),
 								});
 								break;
@@ -113,7 +132,7 @@ export class MainThreadNotebookDocuments
 									index: e.index,
 									outputId: e.outputId,
 									outputItems: e.outputItems.map(
-										NotebookDto.toNotebookOutputItemDto,
+										NotebookDto.toNotebookOutputItemDto
 									),
 									append: e.append,
 								});
@@ -130,7 +149,7 @@ export class MainThreadNotebookDocuments
 					const hasDocumentMetadataChangeEvent = event.rawEvents.find(
 						(e) =>
 							e.kind ===
-							NotebookCellsChangeType.ChangeDocumentMetadata,
+							NotebookCellsChangeType.ChangeDocumentMetadata
 					);
 
 					// using the model resolver service to know if the model is dirty or not.
@@ -140,18 +159,18 @@ export class MainThreadNotebookDocuments
 						textModel.uri,
 						new SerializableObjectWithBuffers(eventDto),
 						this._notebookEditorModelResolverService.isDirty(
-							textModel.uri,
+							textModel.uri
 						),
 						hasDocumentMetadataChangeEvent
 							? textModel.metadata
-							: undefined,
+							: undefined
 					);
-				}),
+				})
 			);
 
 			this._documentEventListenersMapping.set(
 				textModel.uri,
-				disposableStore,
+				disposableStore
 			);
 		}
 	}
@@ -169,7 +188,7 @@ export class MainThreadNotebookDocuments
 	}): Promise<UriComponents> {
 		const ref = await this._notebookEditorModelResolverService.resolve(
 			{ untitledResource: undefined },
-			options.viewType,
+			options.viewType
 		);
 
 		// untitled notebooks are disposed when they get saved. we should not hold a reference
@@ -187,7 +206,7 @@ export class MainThreadNotebookDocuments
 			ref.object.notebook.reset(
 				data.cells,
 				data.metadata,
-				ref.object.notebook.transientOptions,
+				ref.object.notebook.transientOptions
 			);
 		}
 		return ref.object.resource;
@@ -197,7 +216,7 @@ export class MainThreadNotebookDocuments
 		const uri = URI.revive(uriComponents);
 		const ref = await this._notebookEditorModelResolverService.resolve(
 			uri,
-			undefined,
+			undefined
 		);
 		this._modelReferenceCollection.add(uri, ref);
 		return uri;

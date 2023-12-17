@@ -15,7 +15,7 @@ export class Temp {
 	tmpNameSync(): string {
 		const file = path.join(
 			os.tmpdir(),
-			crypto.randomBytes(20).toString("hex"),
+			crypto.randomBytes(20).toString("hex")
 		);
 		this._files.push(file);
 		return file;
@@ -183,7 +183,7 @@ export function main([
 	const iv = crypto.randomBytes(16);
 	fs.writeFileSync(
 		keyFile,
-		JSON.stringify({ key: key.toString("hex"), iv: iv.toString("hex") }),
+		JSON.stringify({ key: key.toString("hex"), iv: iv.toString("hex") })
 	);
 
 	const clientkeyPath = tmp.tmpNameSync();

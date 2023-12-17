@@ -84,19 +84,19 @@ import { registerIcon } from "vs/platform/theme/common/iconRegistry";
 
 CommandsRegistry.registerCommandAlias(
 	"interactiveEditor.start",
-	"inlineChat.start",
+	"inlineChat.start"
 );
 export const LOCALIZED_START_INLINE_CHAT_STRING = localize(
 	"run",
-	"Start Inline Chat",
+	"Start Inline Chat"
 );
 const START_INLINE_CHAT = registerIcon(
 	"start-inline-chat",
 	Codicon.sparkle,
 	localize(
 		"startInlineChat",
-		"Icon which spawns the inline chat from the editor toolbar.",
-	),
+		"Icon which spawns the inline chat from the editor toolbar."
+	)
 );
 
 export class StartSessionAction extends EditorAction2 {
@@ -111,7 +111,7 @@ export class StartSessionAction extends EditorAction2 {
 			f1: true,
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_HAS_PROVIDER,
-				EditorContextKeys.writable,
+				EditorContextKeys.writable
 			),
 			keybinding: {
 				when: EditorContextKeys.focus,
@@ -150,7 +150,7 @@ export class UnstashSessionAction extends EditorAction2 {
 			category: AbstractInlineChatAction.category,
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_HAS_STASHED_SESSION,
-				EditorContextKeys.writable,
+				EditorContextKeys.writable
 			),
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
@@ -189,7 +189,7 @@ abstract class AbstractInlineChatAction extends EditorAction2 {
 			category: AbstractInlineChatAction.category,
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_HAS_PROVIDER,
-				desc.precondition,
+				desc.precondition
 			),
 		});
 	}
@@ -215,7 +215,7 @@ abstract class AbstractInlineChatAction extends EditorAction2 {
 						this.runEditorCommand(
 							accessor,
 							diffEditor.getParentEditor(),
-							..._args,
+							..._args
 						);
 					}
 				}
@@ -241,7 +241,7 @@ export class MakeRequestAction extends AbstractInlineChatAction {
 			icon: Codicon.send,
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_VISIBLE,
-				CTX_INLINE_CHAT_EMPTY.negate(),
+				CTX_INLINE_CHAT_EMPTY.negate()
 			),
 			keybinding: {
 				when: CTX_INLINE_CHAT_FOCUSED,
@@ -278,8 +278,8 @@ export class ReRunRequestAction extends AbstractInlineChatAction {
 				CTX_INLINE_CHAT_VISIBLE,
 				CTX_INLINE_CHAT_EMPTY.negate(),
 				CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-					InlineChatResponseTypes.Empty,
-				),
+					InlineChatResponseTypes.Empty
+				)
 			),
 			menu: {
 				id: MENU_INLINE_CHAT_WIDGET_STATUS,
@@ -291,7 +291,7 @@ export class ReRunRequestAction extends AbstractInlineChatAction {
 
 	override runInlineChatCommand(
 		_accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): void {
 		ctrl.regenerate();
 	}
@@ -306,7 +306,7 @@ export class StopRequestAction extends AbstractInlineChatAction {
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_VISIBLE,
 				CTX_INLINE_CHAT_EMPTY.negate(),
-				CTX_INLINE_CHAT_HAS_ACTIVE_REQUEST,
+				CTX_INLINE_CHAT_HAS_ACTIVE_REQUEST
 			),
 			menu: {
 				id: MENU_INLINE_CHAT_WIDGET,
@@ -340,7 +340,7 @@ export class ArrowOutUpAction extends AbstractInlineChatAction {
 				CTX_INLINE_CHAT_FOCUSED,
 				CTX_INLINE_CHAT_INNER_CURSOR_FIRST,
 				EditorContextKeys.isEmbeddedDiffEditor.negate(),
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 			),
 			keybinding: {
 				weight: KeybindingWeight.EditorCore,
@@ -368,7 +368,7 @@ export class ArrowOutDownAction extends AbstractInlineChatAction {
 				CTX_INLINE_CHAT_FOCUSED,
 				CTX_INLINE_CHAT_INNER_CURSOR_LAST,
 				EditorContextKeys.isEmbeddedDiffEditor.negate(),
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 			),
 			keybinding: {
 				weight: KeybindingWeight.EditorCore,
@@ -401,16 +401,16 @@ export class FocusInlineChat extends EditorAction2 {
 				EditorContextKeys.editorTextFocus,
 				CTX_INLINE_CHAT_VISIBLE,
 				CTX_INLINE_CHAT_FOCUSED.negate(),
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 			),
 			keybinding: [
 				{
 					weight: KeybindingWeight.EditorCore + 10, // win against core_command
 					when: ContextKeyExpr.and(
 						CTX_INLINE_CHAT_OUTER_CURSOR_POSITION.isEqualTo(
-							"above",
+							"above"
 						),
-						EditorContextKeys.isEmbeddedDiffEditor.negate(),
+						EditorContextKeys.isEmbeddedDiffEditor.negate()
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 				},
@@ -418,9 +418,9 @@ export class FocusInlineChat extends EditorAction2 {
 					weight: KeybindingWeight.EditorCore + 10, // win against core_command
 					when: ContextKeyExpr.and(
 						CTX_INLINE_CHAT_OUTER_CURSOR_POSITION.isEqualTo(
-							"below",
+							"below"
 						),
-						EditorContextKeys.isEmbeddedDiffEditor.negate(),
+						EditorContextKeys.isEmbeddedDiffEditor.negate()
 					),
 					primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 				},
@@ -444,7 +444,7 @@ export class PreviousFromHistory extends AbstractInlineChatAction {
 			title: localize("previousFromHistory", "Previous From History"),
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_FOCUSED,
-				CTX_INLINE_CHAT_INNER_CURSOR_START,
+				CTX_INLINE_CHAT_INNER_CURSOR_START
 			),
 			keybinding: {
 				weight: KeybindingWeight.EditorCore + 10, // win against core_command
@@ -470,7 +470,7 @@ export class NextFromHistory extends AbstractInlineChatAction {
 			title: localize("nextFromHistory", "Next From History"),
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_FOCUSED,
-				CTX_INLINE_CHAT_INNER_CURSOR_END,
+				CTX_INLINE_CHAT_INNER_CURSOR_END
 			),
 			keybinding: {
 				weight: KeybindingWeight.EditorCore + 10, // win against core_command
@@ -499,8 +499,8 @@ MenuRegistry.appendMenuItem(MENU_INLINE_CHAT_WIDGET_STATUS, {
 		CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Preview),
 		CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Live),
 		CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-			InlineChatResponseTypes.OnlyMessages,
-		),
+			InlineChatResponseTypes.OnlyMessages
+		)
 	),
 	rememberDefaultAction: true,
 });
@@ -542,7 +542,7 @@ export class DiscardToClipboardAction extends AbstractInlineChatAction {
 			title: localize("undo.clipboard", "Discard to Clipboard"),
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_VISIBLE,
-				CTX_INLINE_CHAT_DID_EDIT,
+				CTX_INLINE_CHAT_DID_EDIT
 			),
 			// keybinding: {
 			// 	weight: KeybindingWeight.EditorContrib + 10,
@@ -559,7 +559,7 @@ export class DiscardToClipboardAction extends AbstractInlineChatAction {
 
 	override async runInlineChatCommand(
 		accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): Promise<void> {
 		const clipboardService = accessor.get(IClipboardService);
 		const changedText = await ctrl.cancelSession();
@@ -576,7 +576,7 @@ export class DiscardUndoToNewFileAction extends AbstractInlineChatAction {
 			title: localize("undo.newfile", "Discard to New File"),
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_VISIBLE,
-				CTX_INLINE_CHAT_DID_EDIT,
+				CTX_INLINE_CHAT_DID_EDIT
 			),
 			menu: {
 				id: MENU_INLINE_CHAT_WIDGET_DISCARD,
@@ -613,7 +613,7 @@ export class ToggleDiffForChange extends AbstractInlineChatAction {
 			precondition: ContextKeyExpr.and(
 				CTX_INLINE_CHAT_VISIBLE,
 				CTX_INLINE_CHAT_EDIT_MODE.isEqualTo(EditMode.Live),
-				CTX_INLINE_CHAT_CHANGE_HAS_DIFF,
+				CTX_INLINE_CHAT_CHANGE_HAS_DIFF
 			),
 			title: localize2("showChanges", "Show Changes"),
 			icon: Codicon.diffSingle,
@@ -626,7 +626,7 @@ export class ToggleDiffForChange extends AbstractInlineChatAction {
 					group: "1_main",
 					when: ContextKeyExpr.and(
 						CTX_INLINE_CHAT_EDIT_MODE.isEqualTo(EditMode.Live),
-						CTX_INLINE_CHAT_CHANGE_HAS_DIFF,
+						CTX_INLINE_CHAT_CHANGE_HAS_DIFF
 					),
 				},
 			],
@@ -635,7 +635,7 @@ export class ToggleDiffForChange extends AbstractInlineChatAction {
 
 	override runInlineChatCommand(
 		accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): void {
 		ctrl.toggleDiff();
 	}
@@ -652,7 +652,7 @@ export class FeebackHelpfulCommand extends AbstractInlineChatAction {
 			menu: {
 				id: MENU_INLINE_CHAT_WIDGET_FEEDBACK,
 				when: CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-					InlineChatResponseTypes.Empty,
+					InlineChatResponseTypes.Empty
 				),
 				group: "2_feedback",
 				order: 1,
@@ -662,7 +662,7 @@ export class FeebackHelpfulCommand extends AbstractInlineChatAction {
 
 	override runInlineChatCommand(
 		_accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): void {
 		ctrl.feedbackLast(InlineChatResponseFeedbackKind.Helpful);
 	}
@@ -679,7 +679,7 @@ export class FeebackUnhelpfulCommand extends AbstractInlineChatAction {
 			menu: {
 				id: MENU_INLINE_CHAT_WIDGET_FEEDBACK,
 				when: CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-					InlineChatResponseTypes.Empty,
+					InlineChatResponseTypes.Empty
 				),
 				group: "2_feedback",
 				order: 2,
@@ -689,7 +689,7 @@ export class FeebackUnhelpfulCommand extends AbstractInlineChatAction {
 
 	override runInlineChatCommand(
 		_accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): void {
 		ctrl.feedbackLast(InlineChatResponseFeedbackKind.Unhelpful);
 	}
@@ -707,8 +707,8 @@ export class ReportIssueForBugCommand extends AbstractInlineChatAction {
 				when: ContextKeyExpr.and(
 					CTX_INLINE_CHAT_SUPPORT_ISSUE_REPORTING,
 					CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-						InlineChatResponseTypes.Empty,
-					),
+						InlineChatResponseTypes.Empty
+					)
 				),
 				group: "2_feedback",
 				order: 3,
@@ -718,7 +718,7 @@ export class ReportIssueForBugCommand extends AbstractInlineChatAction {
 
 	override runInlineChatCommand(
 		_accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): void {
 		ctrl.feedbackLast(InlineChatResponseFeedbackKind.Bug);
 	}
@@ -739,8 +739,8 @@ export class AcceptChanges extends AbstractInlineChatAction {
 				CTX_INLINE_CHAT_VISIBLE,
 				ContextKeyExpr.or(
 					CTX_INLINE_CHAT_DOCUMENT_CHANGED.toNegated(),
-					CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Preview),
-				),
+					CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Preview)
+				)
 			),
 			keybinding: [
 				{
@@ -756,9 +756,9 @@ export class AcceptChanges extends AbstractInlineChatAction {
 			menu: {
 				when: ContextKeyExpr.and(
 					CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(
-						InlineChatResponseTypes.OnlyMessages,
+						InlineChatResponseTypes.OnlyMessages
 					),
-					CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Live),
+					CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Live)
 				),
 				id: MENU_INLINE_CHAT_WIDGET_STATUS,
 				group: "0_main",
@@ -769,7 +769,7 @@ export class AcceptChanges extends AbstractInlineChatAction {
 
 	override async runInlineChatCommand(
 		_accessor: ServicesAccessor,
-		ctrl: InlineChatController,
+		ctrl: InlineChatController
 	): Promise<void> {
 		ctrl.acceptSession();
 	}
@@ -813,7 +813,7 @@ export class CopyRecordings extends AbstractInlineChatAction {
 			title: {
 				value: localize(
 					"copyRecordings",
-					"(Developer) Write Exchange to Clipboard",
+					"(Developer) Write Exchange to Clipboard"
 				),
 				original: "(Developer) Write Exchange to Clipboard",
 			},
@@ -821,7 +821,7 @@ export class CopyRecordings extends AbstractInlineChatAction {
 	}
 
 	override async runInlineChatCommand(
-		accessor: ServicesAccessor,
+		accessor: ServicesAccessor
 	): Promise<void> {
 		const clipboardService = accessor.get(IClipboardService);
 		const quickPickService = accessor.get(IQuickInputService);
@@ -843,11 +843,11 @@ export class CopyRecordings extends AbstractInlineChatAction {
 						"'{0}' and {1} follow ups ({2})",
 						rec.exchanges[0].prompt,
 						rec.exchanges.length - 1,
-						fromNow(rec.when, true),
+						fromNow(rec.when, true)
 					),
 					tooltip: rec.exchanges.map((ex) => ex.prompt).join("\n"),
 				};
-			},
+			}
 		);
 
 		const pick = await quickPickService.pick(picks, { canPickMany: false });
@@ -867,7 +867,7 @@ export class ViewInChatAction extends AbstractInlineChatAction {
 			menu: {
 				id: MENU_INLINE_CHAT_WIDGET_STATUS,
 				when: CTX_INLINE_CHAT_RESPONSE_TYPES.isEqualTo(
-					InlineChatResponseTypes.OnlyMessages,
+					InlineChatResponseTypes.OnlyMessages
 				),
 				group: "0_main",
 				order: 1,
@@ -896,13 +896,13 @@ export class ExpandMessageAction extends AbstractInlineChatAction {
 				when: ContextKeyExpr.and(
 					ContextKeyExpr.or(
 						CTX_INLINE_CHAT_RESPONSE_TYPES.isEqualTo(
-							InlineChatResponseTypes.OnlyMessages,
+							InlineChatResponseTypes.OnlyMessages
 						),
 						CTX_INLINE_CHAT_RESPONSE_TYPES.isEqualTo(
-							InlineChatResponseTypes.Mixed,
-						),
+							InlineChatResponseTypes.Mixed
+						)
 					),
-					CTX_INLINE_CHAT_MESSAGE_CROP_STATE.isEqualTo("cropped"),
+					CTX_INLINE_CHAT_MESSAGE_CROP_STATE.isEqualTo("cropped")
 				),
 				group: "2_expandOrContract",
 				order: 1,
@@ -931,13 +931,13 @@ export class ContractMessageAction extends AbstractInlineChatAction {
 				when: ContextKeyExpr.and(
 					ContextKeyExpr.or(
 						CTX_INLINE_CHAT_RESPONSE_TYPES.isEqualTo(
-							InlineChatResponseTypes.OnlyMessages,
+							InlineChatResponseTypes.OnlyMessages
 						),
 						CTX_INLINE_CHAT_RESPONSE_TYPES.isEqualTo(
-							InlineChatResponseTypes.Mixed,
-						),
+							InlineChatResponseTypes.Mixed
+						)
 					),
-					CTX_INLINE_CHAT_MESSAGE_CROP_STATE.isEqualTo("expanded"),
+					CTX_INLINE_CHAT_MESSAGE_CROP_STATE.isEqualTo("expanded")
 				),
 				group: "2_expandOrContract",
 				order: 1,
@@ -973,14 +973,14 @@ export class InlineAccessibilityHelpContribution extends Disposable {
 					runAccessibilityHelpAction(
 						accessor,
 						codeEditor,
-						"inlineChat",
+						"inlineChat"
 					);
 				},
 				ContextKeyExpr.or(
 					CTX_INLINE_CHAT_RESPONSE_FOCUSED,
-					CTX_INLINE_CHAT_FOCUSED,
-				),
-			),
+					CTX_INLINE_CHAT_FOCUSED
+				)
+			)
 		);
 	}
 }

@@ -15,8 +15,9 @@ import { TerminalEditorInput } from "vs/workbench/contrib/terminal/browser/termi
 
 export class TerminalInputSerializer implements IEditorSerializer {
 	constructor(
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService
-	) { }
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService
+	) {}
 
 	public canSerialize(editorInput: TerminalEditorInput): boolean {
 		return !!editorInput.terminalInstance?.persistentProcessId;
@@ -35,14 +36,14 @@ export class TerminalInputSerializer implements IEditorSerializer {
 
 	public deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditorInput: string,
+		serializedEditorInput: string
 	): EditorInput | undefined {
 		const terminalInstance = JSON.parse(serializedEditorInput);
 		return this._terminalEditorService.reviveInput(terminalInstance);
 	}
 
 	private _toJson(
-		instance: ITerminalInstance,
+		instance: ITerminalInstance
 	): ISerializedTerminalEditorInput {
 		return {
 			id: instance.persistentProcessId!,

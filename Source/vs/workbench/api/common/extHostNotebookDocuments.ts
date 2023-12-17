@@ -24,36 +24,36 @@ export class ExtHostNotebookDocuments
 		this._onDidChangeNotebookDocument.event;
 
 	constructor(
-		private readonly _notebooksAndEditors: ExtHostNotebookController,
+		private readonly _notebooksAndEditors: ExtHostNotebookController
 	) {}
 
 	$acceptModelChanged(
 		uri: UriComponents,
 		event: SerializableObjectWithBuffers<extHostProtocol.NotebookCellsChangedEventDto>,
 		isDirty: boolean,
-		newMetadata?: NotebookDocumentMetadata,
+		newMetadata?: NotebookDocumentMetadata
 	): void {
 		const document = this._notebooksAndEditors.getNotebookDocument(
-			URI.revive(uri),
+			URI.revive(uri)
 		);
 		const e = document.acceptModelChanged(
 			event.value,
 			isDirty,
-			newMetadata,
+			newMetadata
 		);
 		this._onDidChangeNotebookDocument.fire(e);
 	}
 
 	$acceptDirtyStateChanged(uri: UriComponents, isDirty: boolean): void {
 		const document = this._notebooksAndEditors.getNotebookDocument(
-			URI.revive(uri),
+			URI.revive(uri)
 		);
 		document.acceptDirty(isDirty);
 	}
 
 	$acceptModelSaved(uri: UriComponents): void {
 		const document = this._notebooksAndEditors.getNotebookDocument(
-			URI.revive(uri),
+			URI.revive(uri)
 		);
 		this._onDidSaveNotebookDocument.fire(document.apiNotebook);
 	}

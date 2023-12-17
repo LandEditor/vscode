@@ -20,12 +20,12 @@ export function registerContributions(): void {
 	registerSingleton(
 		INotebookSearchService,
 		NotebookSearchService,
-		InstantiationType.Delayed,
+		InstantiationType.Delayed
 	);
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	).registerWorkbenchContribution(
 		ReplacePreviewContentProvider,
-		LifecyclePhase.Starting,
+		LifecyclePhase.Starting
 	);
 }

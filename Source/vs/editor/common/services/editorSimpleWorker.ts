@@ -108,12 +108,12 @@ export interface ICommonModel
 	words(wordDefinition: RegExp): Iterable<string>;
 	getWordUntilPosition(
 		position: IPosition,
-		wordDefinition: RegExp,
+		wordDefinition: RegExp
 	): IWordAtPosition;
 	getValueInRange(range: IRange): string;
 	getWordAtPosition(
 		position: IPosition,
-		wordDefinition: RegExp,
+		wordDefinition: RegExp
 	): Range | null;
 	offsetAt(position: IPosition): number;
 	positionAt(offset: number): IPosition;
@@ -181,13 +181,13 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 
 	public getWordAtPosition(
 		position: IPosition,
-		wordDefinition: RegExp,
+		wordDefinition: RegExp
 	): Range | null {
 		const wordAtText = getWordAtText(
 			position.column,
 			ensureValidWordDefinition(wordDefinition),
 			this._lines[position.lineNumber - 1],
-			0,
+			0
 		);
 
 		if (wordAtText) {
@@ -195,7 +195,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 				position.lineNumber,
 				wordAtText.startColumn,
 				position.lineNumber,
-				wordAtText.endColumn,
+				wordAtText.endColumn
 			);
 		}
 
@@ -204,7 +204,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 
 	public getWordUntilPosition(
 		position: IPosition,
-		wordDefinition: RegExp,
+		wordDefinition: RegExp
 	): IWordAtPosition {
 		const wordAtPosition = this.getWordAtPosition(position, wordDefinition);
 		if (!wordAtPosition) {
@@ -217,7 +217,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		return {
 			word: this._lines[position.lineNumber - 1].substring(
 				wordAtPosition.startColumn - 1,
-				position.column - 1,
+				position.column - 1
 			),
 			startColumn: wordAtPosition.startColumn,
 			endColumn: position.column,
@@ -239,7 +239,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 					if (wordRangesIdx < wordRanges.length) {
 						const value = lineText.substring(
 							wordRanges[wordRangesIdx].start,
-							wordRanges[wordRangesIdx].end,
+							wordRanges[wordRangesIdx].end
 						);
 						wordRangesIdx += 1;
 						yield value;
@@ -260,7 +260,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 
 	public getLineWords(
 		lineNumber: number,
-		wordDefinition: RegExp,
+		wordDefinition: RegExp
 	): IWordAtPosition[] {
 		const content = this._lines[lineNumber - 1];
 		const ranges = this._wordenize(content, wordDefinition);
@@ -300,7 +300,7 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		if (range.startLineNumber === range.endLineNumber) {
 			return this._lines[range.startLineNumber - 1].substring(
 				range.startColumn - 1,
-				range.endColumn - 1,
+				range.endColumn - 1
 			);
 		}
 
@@ -310,13 +310,13 @@ class MirrorModel extends BaseMirrorModel implements ICommonModel {
 		const resultLines: string[] = [];
 
 		resultLines.push(
-			this._lines[startLineIndex].substring(range.startColumn - 1),
+			this._lines[startLineIndex].substring(range.startColumn - 1)
 		);
 		for (let i = startLineIndex + 1; i < endLineIndex; i++) {
 			resultLines.push(this._lines[i]);
 		}
 		resultLines.push(
-			this._lines[endLineIndex].substring(0, range.endColumn - 1),
+			this._lines[endLineIndex].substring(0, range.endColumn - 1)
 		);
 
 		return resultLines.join(lineEnding);
@@ -429,7 +429,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 
 	constructor(
 		host: IEditorWorkerHost,
-		foreignModuleFactory: IForeignModuleFactory | null,
+		foreignModuleFactory: IForeignModuleFactory | null
 	) {
 		this._host = host;
 		this._models = Object.create(null);
@@ -456,7 +456,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			URI.parse(data.url),
 			data.lines,
 			data.EOL,
-			data.versionId,
+			data.versionId
 		);
 	}
 
@@ -478,7 +478,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	public async computeUnicodeHighlights(
 		url: string,
 		options: UnicodeHighlighterOptions,
-		range?: IRange,
+		range?: IRange
 	): Promise<IUnicodeHighlightsResult> {
 		const model = this._getModel(url);
 		if (!model) {
@@ -493,7 +493,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		return UnicodeTextModelHighlighter.computeUnicodeHighlights(
 			model,
 			options,
-			range,
+			range
 		);
 	}
 
@@ -503,7 +503,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		originalUrl: string,
 		modifiedUrl: string,
 		options: IDocumentDiffProviderOptions,
-		algorithm: DiffAlgorithmName,
+		algorithm: DiffAlgorithmName
 	): Promise<IDiffComputationResult | null> {
 		const original = this._getModel(originalUrl);
 		const modified = this._getModel(modifiedUrl);
@@ -515,7 +515,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			original,
 			modified,
 			options,
-			algorithm,
+			algorithm
 		);
 	}
 
@@ -523,7 +523,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		originalTextModel: ICommonModel | ITextModel,
 		modifiedTextModel: ICommonModel | ITextModel,
 		options: IDocumentDiffProviderOptions,
-		algorithm: DiffAlgorithmName,
+		algorithm: DiffAlgorithmName
 	): IDiffComputationResult {
 		const diffAlgorithm: ILinesDiffComputer =
 			algorithm === "advanced"
@@ -536,7 +536,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		const result = diffAlgorithm.computeDiff(
 			originalLines,
 			modifiedLines,
-			options,
+			options
 		);
 
 		const identical =
@@ -544,11 +544,11 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 				? false
 				: this._modelsAreIdentical(
 						originalTextModel,
-						modifiedTextModel,
-				  );
+						modifiedTextModel
+					);
 
 		function getLineChanges(
-			changes: readonly DetailedLineRangeMapping[],
+			changes: readonly DetailedLineRangeMapping[]
 		): ILineChange[] {
 			return changes.map((m) => [
 				m.original.startLineNumber,
@@ -584,7 +584,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 
 	private static _modelsAreIdentical(
 		original: ICommonModel | ITextModel,
-		modified: ICommonModel | ITextModel,
+		modified: ICommonModel | ITextModel
 	): boolean {
 		const originalLineCount = original.getLineCount();
 		const modifiedLineCount = modified.getLineCount();
@@ -604,7 +604,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	public async computeDirtyDiff(
 		originalUrl: string,
 		modifiedUrl: string,
-		ignoreTrimWhitespace: boolean,
+		ignoreTrimWhitespace: boolean
 	): Promise<IChange[] | null> {
 		const original = this._getModel(originalUrl);
 		const modified = this._getModel(modifiedUrl);
@@ -633,7 +633,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	public async computeMoreMinimalEdits(
 		modelUrl: string,
 		edits: TextEdit[],
-		pretty: boolean,
+		pretty: boolean
 	): Promise<TextEdit[]> {
 		const model = this._getModel(modelUrl);
 		if (!model) {
@@ -658,12 +658,12 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		for (let readIndex = 1; readIndex < edits.length; readIndex++) {
 			if (
 				Range.getEndPosition(edits[writeIndex].range).equals(
-					Range.getStartPosition(edits[readIndex].range),
+					Range.getStartPosition(edits[readIndex].range)
 				)
 			) {
 				edits[writeIndex].range = Range.fromPositions(
 					Range.getStartPosition(edits[writeIndex].range),
-					Range.getEndPosition(edits[readIndex].range),
+					Range.getEndPosition(edits[readIndex].range)
 				);
 				edits[writeIndex].text += edits[readIndex].text;
 			} else {
@@ -703,20 +703,20 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			// compute diff between original and edit.text
 			const changes = stringDiff(original, text, pretty);
 			const editOffset = model.offsetAt(
-				Range.lift(range).getStartPosition(),
+				Range.lift(range).getStartPosition()
 			);
 
 			for (const change of changes) {
 				const start = model.positionAt(
-					editOffset + change.originalStart,
+					editOffset + change.originalStart
 				);
 				const end = model.positionAt(
-					editOffset + change.originalStart + change.originalLength,
+					editOffset + change.originalStart + change.originalLength
 				);
 				const newEdit: TextEdit = {
 					text: text.substr(
 						change.modifiedStart,
-						change.modifiedLength,
+						change.modifiedLength
 					),
 					range: {
 						startLineNumber: start.lineNumber,
@@ -751,7 +751,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	public computeHumanReadableDiff(
 		modelUrl: string,
 		edits: TextEdit[],
-		options: ILinesDiffComputerOptions,
+		options: ILinesDiffComputerOptions
 	): TextEdit[] {
 		const model = this._getModel(modelUrl);
 		if (!model) {
@@ -814,7 +814,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 					pos1.lineNumber + pos2.lineNumber - 1,
 					pos2.lineNumber === 1
 						? pos1.column + pos2.column - 1
-						: pos2.column,
+						: pos2.column
 				);
 			}
 
@@ -833,8 +833,8 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 						result.push(
 							line.substring(
 								range.startColumn - 1,
-								range.endColumn - 1,
-							),
+								range.endColumn - 1
+							)
 						);
 					} else if (i === range.startLineNumber) {
 						result.push(line.substring(range.startColumn - 1));
@@ -854,21 +854,21 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 							range: Range.fromPositions(
 								addPositions(
 									start,
-									x.originalRange.getStartPosition(),
+									x.originalRange.getStartPosition()
 								),
 								addPositions(
 									start,
-									x.originalRange.getEndPosition(),
-								),
+									x.originalRange.getEndPosition()
+								)
 							),
 							text: getText(modifiedLines, x.modifiedRange).join(
-								model.eol,
+								model.eol
 							),
 						});
 					}
 				} else {
 					throw new BugIndicatingError(
-						"The experimental diff algorithm always produces inner changes",
+						"The experimental diff algorithm always produces inner changes"
 					);
 				}
 			}
@@ -904,7 +904,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	// --- BEGIN default document colors -----------------------------------------------------------
 
 	public async computeDefaultDocumentColors(
-		modelUrl: string,
+		modelUrl: string
 	): Promise<IColorInformation[] | null> {
 		const model = this._getModel(modelUrl);
 		if (!model) {
@@ -921,7 +921,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		modelUrls: string[],
 		leadingWord: string | undefined,
 		wordDef: string,
-		wordDefFlags: string,
+		wordDefFlags: string
 	): Promise<{ words: string[]; duration: number } | null> {
 		const sw = new StopWatch();
 		const wordDefRegExp = new RegExp(wordDef, wordDefFlags);
@@ -955,7 +955,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		modelUrl: string,
 		range: IRange,
 		wordDef: string,
-		wordDefFlags: string,
+		wordDefFlags: string
 	): Promise<{ [word: string]: IRange[] }> {
 		const model = this._getModel(modelUrl);
 		if (!model) {
@@ -996,7 +996,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 		range: IRange,
 		up: boolean,
 		wordDef: string,
-		wordDefFlags: string,
+		wordDefFlags: string
 	): Promise<IInplaceReplaceSupportResult | null> {
 		const model = this._getModel(modelUrl);
 		if (!model) {
@@ -1018,7 +1018,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 
 		const wordRange = model.getWordAtPosition(
 			{ lineNumber: range.startLineNumber, column: range.startColumn },
-			wordDefRegExp,
+			wordDefRegExp
 		);
 		if (!wordRange) {
 			return null;
@@ -1029,7 +1029,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			selectionText,
 			wordRange,
 			word,
-			up,
+			up
 		);
 		return result;
 	}
@@ -1039,18 +1039,18 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 	public loadForeignModule(
 		moduleId: string,
 		createData: any,
-		foreignHostMethods: string[],
+		foreignHostMethods: string[]
 	): Promise<string[]> {
 		const proxyMethodRequest = (
 			method: string,
-			args: any[],
+			args: any[]
 		): Promise<any> => {
 			return this._host.fhr(method, args);
 		};
 
 		const foreignHost = createProxyObject(
 			foreignHostMethods,
-			proxyMethodRequest,
+			proxyMethodRequest
 		);
 
 		const ctx: IWorkerContext<any> = {
@@ -1089,13 +1089,13 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 			typeof this._foreignModule[method] !== "function"
 		) {
 			return Promise.reject(
-				new Error("Missing requestHandler or method: " + method),
+				new Error("Missing requestHandler or method: " + method)
 			);
 		}
 
 		try {
 			return Promise.resolve(
-				this._foreignModule[method].apply(this._foreignModule, args),
+				this._foreignModule[method].apply(this._foreignModule, args)
 			);
 		} catch (e) {
 			return Promise.reject(e);

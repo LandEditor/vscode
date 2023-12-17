@@ -27,7 +27,10 @@ export interface IResourceCreator {
 export class OutputLinkComputer {
 	private patterns = new Map<URI /* folder uri */, RegExp[]>();
 
-	constructor(private ctx: IWorkerContext, createData: ICreateData) {
+	constructor(
+		private ctx: IWorkerContext,
+		createData: ICreateData
+	) {
 		this.computePatterns(createData);
 	}
 
@@ -38,7 +41,7 @@ export class OutputLinkComputer {
 		const workspaceFolders = createData.workspaceFolders
 			.sort(
 				(resourceStrA, resourceStrB) =>
-					resourceStrB.length - resourceStrA.length,
+					resourceStrB.length - resourceStrA.length
 			) // longest paths first (for https://github.com/microsoft/vscode/issues/88121)
 			.map((resourceStr) => URI.parse(resourceStr));
 
@@ -70,7 +73,7 @@ export class OutputLinkComputer {
 					if (typeof folderRelativePath === "string") {
 						return resources.joinPath(
 							folderUri,
-							folderRelativePath,
+							folderRelativePath
 						);
 					}
 
@@ -84,8 +87,8 @@ export class OutputLinkComputer {
 						lines[i],
 						i + 1,
 						folderPatterns,
-						resourceCreator,
-					),
+						resourceCreator
+					)
 				);
 			}
 		}
@@ -103,7 +106,7 @@ export class OutputLinkComputer {
 		const workspaceFolderVariants = [workspaceFolderPath];
 		if (isWindows && workspaceFolder.scheme === Schemas.file) {
 			workspaceFolderVariants.push(
-				extpath.toSlashes(workspaceFolderPath),
+				extpath.toSlashes(workspaceFolderPath)
 			);
 		}
 
@@ -118,8 +121,8 @@ export class OutputLinkComputer {
 				new RegExp(
 					strings.escapeRegExpCharacters(workspaceFolderVariant) +
 						`(${pathPattern}) on line ((\\d+)(, column (\\d+))?)`,
-					"gi",
-				),
+					"gi"
+				)
 			);
 
 			// Example: /workspaces/express/server.js:line 8, column 13
@@ -127,8 +130,8 @@ export class OutputLinkComputer {
 				new RegExp(
 					strings.escapeRegExpCharacters(workspaceFolderVariant) +
 						`(${pathPattern}):line ((\\d+)(, column (\\d+))?)`,
-					"gi",
-				),
+					"gi"
+				)
 			);
 
 			// Example: /workspaces/mankala/Features.ts(45): error
@@ -140,8 +143,8 @@ export class OutputLinkComputer {
 				new RegExp(
 					strings.escapeRegExpCharacters(workspaceFolderVariant) +
 						`(${pathPattern})(\\s?\\((\\d+)(,(\\d+))?)\\)`,
-					"gi",
-				),
+					"gi"
+				)
 			);
 
 			// Example: at /workspaces/mankala/Game.ts
@@ -151,8 +154,8 @@ export class OutputLinkComputer {
 				new RegExp(
 					strings.escapeRegExpCharacters(workspaceFolderVariant) +
 						`(${strictPathPattern})(:(\\d+))?(:(\\d+))?`,
-					"gi",
-				),
+					"gi"
+				)
 			);
 		}
 
@@ -166,7 +169,7 @@ export class OutputLinkComputer {
 		line: string,
 		lineIndex: number,
 		patterns: RegExp[],
-		resourceCreator: IResourceCreator,
+		resourceCreator: IResourceCreator
 	): ILink[] {
 		const links: ILink[] = [];
 
@@ -201,13 +204,13 @@ export class OutputLinkComputer {
 							"{0}#{1},{2}",
 							resourceString,
 							lineNumber,
-							columnNumber,
+							columnNumber
 						);
 					} else {
 						resourceString = strings.format(
 							"{0}#{1}",
 							resourceString,
-							lineNumber,
+							lineNumber
 						);
 					}
 				}
@@ -226,7 +229,7 @@ export class OutputLinkComputer {
 
 				if (
 					links.some((link) =>
-						Range.areIntersectingOrTouching(link.range, linkRange),
+						Range.areIntersectingOrTouching(link.range, linkRange)
 					)
 				) {
 					return; // Do not detect duplicate links
@@ -246,7 +249,7 @@ export class OutputLinkComputer {
 // Export this function because this will be called by the web worker for computing links
 export function create(
 	ctx: IWorkerContext,
-	createData: ICreateData,
+	createData: ICreateData
 ): OutputLinkComputer {
 	return new OutputLinkComputer(ctx, createData);
 }

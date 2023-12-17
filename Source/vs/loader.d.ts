@@ -9,29 +9,29 @@ declare namespace AMDLoader {
 			pluginParam: string,
 			parentRequire: IRelativeRequire,
 			loadCallback: IPluginLoadCallback,
-			options: IConfigurationOptions,
+			options: IConfigurationOptions
 		) => void;
 		write?: (
 			pluginName: string,
 			moduleName: string,
-			write: IPluginWriteCallback,
+			write: IPluginWriteCallback
 		) => void;
 		writeFile?: (
 			pluginName: string,
 			moduleName: string,
 			req: IRelativeRequire,
 			write: IPluginWriteFileCallback,
-			config: IConfigurationOptions,
+			config: IConfigurationOptions
 		) => void;
 		finishBuild?: (
-			write: (filename: string, contents: string) => void,
+			write: (filename: string, contents: string) => void
 		) => void;
 	}
 	interface IRelativeRequire {
 		(
 			dependencies: string[],
 			callback: Function,
-			errorback?: (error: Error) => void,
+			errorback?: (error: Error) => void
 		): void;
 		toUrl(id: string): string;
 	}

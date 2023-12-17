@@ -66,7 +66,7 @@ export class ViewCursorStateChangedEvent {
 	constructor(
 		public readonly selections: Selection[],
 		public readonly modelSelections: Selection[],
-		public readonly reason: CursorChangeReason,
+		public readonly reason: CursorChangeReason
 	) {}
 }
 
@@ -131,7 +131,7 @@ export class ViewLinesChangedEvent {
 		/**
 		 * The number of lines that have changed.
 		 */
-		public readonly count: number,
+		public readonly count: number
 	) {}
 }
 
@@ -213,7 +213,7 @@ export class ViewRevealRangeRequestEvent {
 		/**
 		 * The scroll type.
 		 */
-		public readonly scrollType: ScrollType,
+		public readonly scrollType: ScrollType
 	) {}
 }
 

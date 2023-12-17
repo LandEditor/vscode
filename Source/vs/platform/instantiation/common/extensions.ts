@@ -25,24 +25,22 @@ export const enum InstantiationType {
 export function registerSingleton<T, Services extends BrandedService[]>(
 	id: ServiceIdentifier<T>,
 	ctor: new (...services: Services) => T,
-	supportsDelayedInstantiation: InstantiationType,
+	supportsDelayedInstantiation: InstantiationType
 ): void;
 export function registerSingleton<T, Services extends BrandedService[]>(
 	id: ServiceIdentifier<T>,
-	descriptor: SyncDescriptor<any>,
+	descriptor: SyncDescriptor<any>
 ): void;
 export function registerSingleton<T, Services extends BrandedService[]>(
 	id: ServiceIdentifier<T>,
 	ctorOrDescriptor: { new (...services: Services): T } | SyncDescriptor<any>,
-	supportsDelayedInstantiation?: boolean | InstantiationType,
+	supportsDelayedInstantiation?: boolean | InstantiationType
 ): void {
 	if (!(ctorOrDescriptor instanceof SyncDescriptor)) {
 		ctorOrDescriptor = new SyncDescriptor<T>(
-			ctorOrDescriptor as new (
-				...args: any[]
-			) => T,
+			ctorOrDescriptor as new (...args: any[]) => T,
 			[],
-			Boolean(supportsDelayedInstantiation),
+			Boolean(supportsDelayedInstantiation)
 		);
 	}
 

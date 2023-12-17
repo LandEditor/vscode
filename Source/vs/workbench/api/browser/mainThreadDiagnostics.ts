@@ -31,17 +31,23 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDiagnostics);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostDiagnostics
+		);
 
-		this._markerListener = this._markerService.onMarkerChanged(this._forwardMarkers, this);
+		this._markerListener = this._markerService.onMarkerChanged(
+			this._forwardMarkers,
+			this
+		);
 	}
 
 	dispose(): void {
 		this._markerListener.dispose();
 		this._activeOwners.forEach((owner) =>
-			this._markerService.changeAll(owner, []),
+			this._markerService.changeAll(owner, [])
 		);
 		this._activeOwners.clear();
 	}
@@ -54,7 +60,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 				data.push([resource, []]);
 			} else {
 				const forgeinMarkerData = allMarkerData.filter(
-					(marker) => !this._activeOwners.has(marker.owner),
+					(marker) => !this._activeOwners.has(marker.owner)
 				);
 				if (forgeinMarkerData.length > 0) {
 					data.push([resource, forgeinMarkerData]);
@@ -68,7 +74,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 
 	$changeMany(
 		owner: string,
-		entries: [UriComponents, IMarkerData[]][],
+		entries: [UriComponents, IMarkerData[]][]
 	): void {
 		for (const entry of entries) {
 			const [uri, markers] = entry;
@@ -77,7 +83,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 					if (marker.relatedInformation) {
 						for (const relatedInformation of marker.relatedInformation) {
 							relatedInformation.resource = URI.revive(
-								relatedInformation.resource,
+								relatedInformation.resource
 							);
 						}
 					}
@@ -89,7 +95,7 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 			this._markerService.changeOne(
 				owner,
 				this._uriIdentService.asCanonicalUri(URI.revive(uri)),
-				markers,
+				markers
 			);
 		}
 		this._activeOwners.add(owner);

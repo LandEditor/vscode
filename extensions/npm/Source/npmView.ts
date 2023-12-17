@@ -76,7 +76,7 @@ class PackageJSON extends TreeItem {
 	constructor(folder: Folder, relativePath: string) {
 		super(
 			PackageJSON.getLabel(relativePath),
-			TreeItemCollapsibleState.Expanded,
+			TreeItemCollapsibleState.Expanded
 		);
 		this.folder = folder;
 		this.path = relativePath;
@@ -86,12 +86,12 @@ class PackageJSON extends TreeItem {
 				path.join(
 					folder!.resourceUri!.fsPath,
 					relativePath,
-					packageName,
-				),
+					packageName
+				)
 			);
 		} else {
 			this.resourceUri = Uri.file(
-				path.join(folder!.resourceUri!.fsPath, packageName),
+				path.join(folder!.resourceUri!.fsPath, packageName)
 			);
 		}
 		this.iconPath = ThemeIcon.File;
@@ -112,14 +112,14 @@ class NpmScript extends TreeItem {
 	constructor(
 		_context: ExtensionContext,
 		packageJson: PackageJSON,
-		task: ITaskWithLocation,
+		task: ITaskWithLocation
 	) {
 		const name =
 			packageJson.path.length > 0
 				? task.task.name.substring(
 						0,
-						task.task.name.length - packageJson.path.length - 2,
-				  )
+						task.task.name.length - packageJson.path.length - 2
+					)
 				: task.task.name;
 		super(name, TreeItemCollapsibleState.None);
 		this.taskLocation = task.location;
@@ -138,9 +138,9 @@ class NpmScript extends TreeItem {
 						? <TextDocumentShowOptions>{
 								selection: new Range(
 									this.taskLocation.range.start,
-									this.taskLocation.range.start,
+									this.taskLocation.range.start
 								),
-						  }
+							}
 						: undefined,
 				],
 			},
@@ -190,21 +190,21 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 
 	constructor(
 		private context: ExtensionContext,
-		public taskProvider: NpmTaskProvider,
+		public taskProvider: NpmTaskProvider
 	) {
 		const subscriptions = context.subscriptions;
 		this.extensionContext = context;
 		subscriptions.push(
-			commands.registerCommand("npm.runScript", this.runScript, this),
+			commands.registerCommand("npm.runScript", this.runScript, this)
 		);
 		subscriptions.push(
-			commands.registerCommand("npm.debugScript", this.debugScript, this),
+			commands.registerCommand("npm.debugScript", this.debugScript, this)
 		);
 		subscriptions.push(
-			commands.registerCommand("npm.openScript", this.openScript, this),
+			commands.registerCommand("npm.openScript", this.openScript, this)
 		);
 		subscriptions.push(
-			commands.registerCommand("npm.runInstall", this.runInstall, this),
+			commands.registerCommand("npm.runInstall", this.runInstall, this)
 		);
 	}
 
@@ -219,7 +219,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 			this.extensionContext,
 			script.task.definition.script,
 			path.dirname(script.package.resourceUri!.fsPath),
-			script.getFolder(),
+			script.getFolder()
 		);
 	}
 
@@ -236,7 +236,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 		const found = scripts.scripts.find(
 			(s) =>
 				getTaskName(s.name, script.task.definition.path) ===
-				script.task.name,
+				script.task.name
 		);
 		return found?.nameRange.start;
 	}
@@ -253,14 +253,14 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 			await getPackageManager(
 				this.context,
 				selection.folder.workspaceFolder.uri,
-				true,
+				true
 			),
 			"install",
 			["install"],
 			selection.folder.workspaceFolder,
 			uri,
 			undefined,
-			[],
+			[]
 		);
 		tasks.executeTask(task);
 	}
@@ -279,7 +279,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 		const position =
 			this.findScriptPosition(
 				document,
-				selection instanceof NpmScript ? selection : undefined,
+				selection instanceof NpmScript ? selection : undefined
 			) || new Position(0, 0);
 		await window.showTextDocument(document, {
 			preserveFocus: true,
@@ -322,7 +322,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 					let message = l10n.t("No scripts found.");
 					if (!isAutoDetectionEnabled()) {
 						message = l10n.t(
-							'The setting "npm.autoDetect" is "off".',
+							'The setting "npm.autoDetect" is "off".'
 						);
 					}
 					this.taskTree = [new NoScripts(message)];
@@ -355,7 +355,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 	}
 
 	private getTaskTreeItemLabel(
-		taskTreeLabel: string | TreeItemLabel | undefined,
+		taskTreeLabel: string | TreeItemLabel | undefined
 	): string {
 		if (taskTreeLabel === undefined) {
 			return "";
@@ -393,7 +393,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 					.get<string[]>("scriptExplorerExclude", []);
 				excludeConfig.set(
 					location.uri.toString(),
-					regularExpressionsSetting?.map((value) => RegExp(value)),
+					regularExpressionsSetting?.map((value) => RegExp(value))
 				);
 			}
 			const regularExpressions =
@@ -405,8 +405,8 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 				regularExpressions &&
 				regularExpressions.some((regularExpression) =>
 					(<INpmTaskDefinition>each.task.definition).script.match(
-						regularExpression,
-					),
+						regularExpression
+					)
 				)
 			) {
 				return;
@@ -435,7 +435,7 @@ export class NpmScriptsTreeDataProvider implements TreeDataProvider<TreeItem> {
 				const script = new NpmScript(
 					this.extensionContext,
 					packageJson,
-					each,
+					each
 				);
 				packageJson.addScript(script);
 			}

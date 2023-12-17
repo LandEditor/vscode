@@ -17,7 +17,7 @@ export class HoverProviderResult {
 	constructor(
 		public readonly provider: HoverProvider,
 		public readonly hover: Hover,
-		public readonly ordinal: number,
+		public readonly ordinal: number
 	) {}
 }
 
@@ -26,11 +26,11 @@ async function executeProvider(
 	ordinal: number,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<HoverProviderResult | undefined> {
 	try {
 		const result = await Promise.resolve(
-			provider.provideHover(model, position, token),
+			provider.provideHover(model, position, token)
 		);
 		if (result && isValid(result)) {
 			return new HoverProviderResult(provider, result, ordinal);
@@ -45,11 +45,11 @@ export function getHover(
 	registry: LanguageFeatureRegistry<HoverProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): AsyncIterableObject<HoverProviderResult> {
 	const providers = registry.ordered(model);
 	const promises = providers.map((provider, index) =>
-		executeProvider(provider, index, model, position, token),
+		executeProvider(provider, index, model, position, token)
 	);
 	return AsyncIterableObject.fromPromises(promises).coalesce();
 }
@@ -58,7 +58,7 @@ export function getHoverPromise(
 	registry: LanguageFeatureRegistry<HoverProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<Hover[]> {
 	return getHover(registry, model, position, token)
 		.map((item) => item.hover)
@@ -73,9 +73,9 @@ registerModelAndPositionCommand(
 			languageFeaturesService.hoverProvider,
 			model,
 			position,
-			CancellationToken.None,
+			CancellationToken.None
 		);
-	},
+	}
 );
 
 function isValid(result: Hover) {

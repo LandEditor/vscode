@@ -69,7 +69,7 @@ export interface ITaskExecuteResult {
 export interface ITaskResolver {
 	resolve(
 		uri: URI | string,
-		identifier: string | KeyedTaskIdentifier | undefined,
+		identifier: string | KeyedTaskIdentifier | undefined
 	): Promise<Task | undefined>;
 }
 
@@ -98,19 +98,19 @@ export interface ITaskSystemInfo {
 	resolveVariables(
 		workspaceFolder: IWorkspaceFolder,
 		toResolve: IResolveSet,
-		target: ConfigurationTarget,
+		target: ConfigurationTarget
 	): Promise<IResolvedVariables | undefined>;
 	findExecutable(
 		command: string,
 		cwd?: string,
-		paths?: string[],
+		paths?: string[]
 	): Promise<string | undefined>;
 }
 
 export interface ITaskSystemInfoResolver {
-	(workspaceFolder: IWorkspaceFolder | undefined):
-		| ITaskSystemInfo
-		| undefined;
+	(
+		workspaceFolder: IWorkspaceFolder | undefined
+	): ITaskSystemInfo | undefined;
 }
 
 export interface ITaskSystem {

@@ -80,7 +80,8 @@ export class TaskService extends AbstractTaskService {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IMarkerService markerService: IMarkerService,
 		@IOutputService outputService: IOutputService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
 		@IViewsService viewsService: IViewsService,
 		@ICommandService commandService: ICommandService,
 		@IEditorService editorService: IEditorService,
@@ -92,7 +93,8 @@ export class TaskService extends AbstractTaskService {
 		@IModelService modelService: IModelService,
 		@IExtensionService extensionService: IExtensionService,
 		@IQuickInputService quickInputService: IQuickInputService,
-		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
+		@IConfigurationResolverService
+		configurationResolverService: IConfigurationResolverService,
 		@ITerminalService terminalService: ITerminalService,
 		@ITerminalGroupService terminalGroupService: ITerminalGroupService,
 		@IStorageService storageService: IStorageService,
@@ -101,19 +103,23 @@ export class TaskService extends AbstractTaskService {
 		@IDialogService dialogService: IDialogService,
 		@INotificationService notificationService: INotificationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@ITerminalProfileResolverService terminalProfileResolverService: ITerminalProfileResolverService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@ITerminalProfileResolverService
+		terminalProfileResolverService: ITerminalProfileResolverService,
 		@IPathService pathService: IPathService,
 		@ITextModelService textModelResolverService: ITextModelService,
 		@IPreferencesService preferencesService: IPreferencesService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustRequestService
+		workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@ILogService logService: ILogService,
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IAudioCueService audioCueService: IAudioCueService,
+		@IAudioCueService audioCueService: IAudioCueService
 	) {
 		super(
 			configurationService,
@@ -151,12 +157,12 @@ export class TaskService extends AbstractTaskService {
 			themeService,
 			lifecycleService,
 			remoteAgentService,
-			instantiationService,
+			instantiationService
 		);
 		this._register(
 			lifecycleService.onBeforeShutdown((event) =>
-				event.veto(this.beforeShutdown(), "veto.tasks"),
-			),
+				event.veto(this.beforeShutdown(), "veto.tasks")
+			)
 		);
 	}
 
@@ -176,7 +182,7 @@ export class TaskService extends AbstractTaskService {
 	}
 
 	protected _computeLegacyConfiguration(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): Promise<IWorkspaceFolderConfigurationResult> {
 		const { config, hasParseErrors } =
 			this._getConfiguration(workspaceFolder);
@@ -235,14 +241,14 @@ export class TaskService extends AbstractTaskService {
 			terminatePromise = this._dialogService.confirm({
 				message: nls.localize(
 					"TaskSystem.runningTask",
-					"There is a task running. Do you want to terminate it?",
+					"There is a task running. Do you want to terminate it?"
 				),
 				primaryButton: nls.localize(
 					{
 						key: "TaskSystem.terminateTask",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Terminate Task",
+					"&&Terminate Task"
 				),
 			});
 		}
@@ -276,14 +282,14 @@ export class TaskService extends AbstractTaskService {
 								.confirm({
 									message: nls.localize(
 										"TaskSystem.noProcess",
-										"The launched task doesn't exist anymore. If the task spawned background processes exiting VS Code might result in orphaned processes. To avoid this start the last background process with a wait flag.",
+										"The launched task doesn't exist anymore. If the task spawned background processes exiting VS Code might result in orphaned processes. To avoid this start the last background process with a wait flag."
 									),
 									primaryButton: nls.localize(
 										{
 											key: "TaskSystem.exitAnyways",
 											comment: ["&& denotes a mnemonic"],
 										},
-										"&&Exit Anyways",
+										"&&Exit Anyways"
 									),
 									type: "info",
 								})
@@ -293,7 +299,7 @@ export class TaskService extends AbstractTaskService {
 					},
 					(err) => {
 						return true; // veto
-					},
+					}
 				);
 			}
 

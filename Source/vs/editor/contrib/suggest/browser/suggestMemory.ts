@@ -52,7 +52,7 @@ export abstract class Memory {
 	abstract memorize(
 		model: ITextModel,
 		pos: IPosition,
-		item: CompletionItem,
+		item: CompletionItem
 	): void;
 
 	abstract toJSON(): object | undefined;
@@ -104,7 +104,7 @@ export class LRUMemory extends Memory {
 	override select(
 		model: ITextModel,
 		pos: IPosition,
-		items: CompletionItem[],
+		items: CompletionItem[]
 	): number {
 		if (items.length === 0) {
 			return 0;
@@ -191,7 +191,7 @@ export class PrefixMemory extends Memory {
 	override select(
 		model: ITextModel,
 		pos: IPosition,
-		items: CompletionItem[],
+		items: CompletionItem[]
 	): number {
 		const { word } = model.getWordUntilPosition(pos);
 		if (!word) {
@@ -265,14 +265,17 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 
 	constructor(
 		@IStorageService private readonly _storageService: IStorageService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService
 	) {
 		this._persistSoon = new RunOnceScheduler(() => this._saveState(), 500);
-		this._disposables.add(_storageService.onWillSaveState(e => {
-			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				this._saveState();
-			}
-		}));
+		this._disposables.add(
+			_storageService.onWillSaveState((e) => {
+				if (e.reason === WillSaveStateReason.SHUTDOWN) {
+					this._saveState();
+				}
+			})
+		);
 	}
 
 	dispose(): void {
@@ -295,10 +298,10 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 			{
 				overrideIdentifier: model.getLanguageIdAtPosition(
 					pos.lineNumber,
-					pos.column,
+					pos.column
 				),
 				resource: model.uri,
-			},
+			}
 		);
 
 		if (this._strategy?.name !== mode) {
@@ -309,14 +312,14 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 
 			try {
 				const share = this._configService.getValue<boolean>(
-					"editor.suggest.shareSuggestSelections",
+					"editor.suggest.shareSuggestSelections"
 				);
 				const scope = share
 					? StorageScope.PROFILE
 					: StorageScope.WORKSPACE;
 				const raw = this._storageService.get(
 					`${SuggestMemoryService._storagePrefix}/${mode}`,
-					scope,
+					scope
 				);
 				if (raw) {
 					this._strategy.fromJSON(JSON.parse(raw));
@@ -332,7 +335,7 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 	private _saveState() {
 		if (this._strategy) {
 			const share = this._configService.getValue<boolean>(
-				"editor.suggest.shareSuggestSelections",
+				"editor.suggest.shareSuggestSelections"
 			);
 			const scope = share ? StorageScope.PROFILE : StorageScope.WORKSPACE;
 			const raw = JSON.stringify(this._strategy);
@@ -340,7 +343,7 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 				`${SuggestMemoryService._storagePrefix}/${this._strategy.name}`,
 				raw,
 				scope,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		}
 	}
@@ -358,5 +361,5 @@ export interface ISuggestMemoryService {
 registerSingleton(
 	ISuggestMemoryService,
 	SuggestMemoryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

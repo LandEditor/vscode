@@ -30,7 +30,7 @@ class StandaloneLayoutService implements ILayoutService {
 	get mainContainer(): HTMLElement {
 		return (
 			firstOrDefault(
-				this._codeEditorService.listCodeEditors(),
+				this._codeEditorService.listCodeEditors()
 			)?.getContainerDomNode() ?? mainWindow.document.body
 		);
 	}
@@ -64,7 +64,7 @@ class StandaloneLayoutService implements ILayoutService {
 		return coalesce(
 			this._codeEditorService
 				.listCodeEditors()
-				.map((codeEditor) => codeEditor.getContainerDomNode()),
+				.map((codeEditor) => codeEditor.getContainerDomNode())
 		);
 	}
 
@@ -78,7 +78,7 @@ class StandaloneLayoutService implements ILayoutService {
 
 	constructor(
 		@ICodeEditorService private _codeEditorService: ICodeEditorService
-	) { }
+	) {}
 }
 
 export class EditorScopedLayoutService extends StandaloneLayoutService {
@@ -87,7 +87,7 @@ export class EditorScopedLayoutService extends StandaloneLayoutService {
 	}
 	constructor(
 		private _container: HTMLElement,
-		@ICodeEditorService codeEditorService: ICodeEditorService,
+		@ICodeEditorService codeEditorService: ICodeEditorService
 	) {
 		super(codeEditorService);
 	}
@@ -96,5 +96,5 @@ export class EditorScopedLayoutService extends StandaloneLayoutService {
 registerSingleton(
 	ILayoutService,
 	StandaloneLayoutService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

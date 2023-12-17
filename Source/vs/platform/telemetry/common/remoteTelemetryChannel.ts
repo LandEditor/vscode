@@ -16,7 +16,7 @@ export class ServerTelemetryChannel
 {
 	constructor(
 		private readonly telemetryService: IServerTelemetryService,
-		private readonly telemetryAppender: ITelemetryAppender | null,
+		private readonly telemetryAppender: ITelemetryAppender | null
 	) {
 		super();
 	}
@@ -26,7 +26,7 @@ export class ServerTelemetryChannel
 			case "updateTelemetryLevel": {
 				const { telemetryLevel } = arg;
 				return this.telemetryService.updateInjectedTelemetryLevel(
-					telemetryLevel,
+					telemetryLevel
 				);
 			}
 

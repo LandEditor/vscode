@@ -11,7 +11,7 @@ export class ReloadTypeScriptProjectsCommand implements Command {
 	public readonly id = "typescript.reloadProjects";
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {
@@ -23,7 +23,7 @@ export class ReloadJavaScriptProjectsCommand implements Command {
 	public readonly id = "javascript.reloadProjects";
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {

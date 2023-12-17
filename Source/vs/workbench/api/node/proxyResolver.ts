@@ -38,7 +38,7 @@ export function connectProxyResolver(
 	extensionService: ExtHostExtensionService,
 	extHostLogService: ILogService,
 	mainThreadTelemetry: MainThreadTelemetryShape,
-	initData: IExtensionHostInitData,
+	initData: IExtensionHostInitData
 ) {
 	const useHostProxy = initData.environment.useHostProxy;
 	const doUseHostProxy =
@@ -53,7 +53,7 @@ export function connectProxyResolver(
 			mainThreadTelemetry,
 			configProvider,
 			{},
-			initData.remote.isRemote,
+			initData.remote.isRemote
 		),
 		getProxyURL: () => configProvider.getConfiguration("http").get("proxy"),
 		getProxySupport: () =>
@@ -92,19 +92,19 @@ export function connectProxyResolver(
 			const promises: Promise<string[]>[] = [];
 			if (initData.remote.isRemote) {
 				promises.push(
-					loadSystemCertificates({ log: extHostLogService }),
+					loadSystemCertificates({ log: extHostLogService })
 				);
 			}
 			if (doUseHostProxy) {
 				extHostLogService.trace(
-					"ProxyResolver#loadAdditionalCertificates: Loading certificates from main process",
+					"ProxyResolver#loadAdditionalCertificates: Loading certificates from main process"
 				);
 				const certs = extHostWorkspace.loadCertificates(); // Loading from main process to share cache.
 				certs.then((certs) =>
 					extHostLogService.trace(
 						"ProxyResolver#loadAdditionalCertificates: Loaded certificates from main process",
-						certs.length,
-					),
+						certs.length
+					)
 				);
 				promises.push(certs);
 			}
@@ -119,13 +119,13 @@ export function connectProxyResolver(
 
 function createPatchedModules(
 	params: ProxyAgentParams,
-	resolveProxy: ReturnType<typeof createProxyResolver>,
+	resolveProxy: ReturnType<typeof createProxyResolver>
 ) {
 	return {
 		http: Object.assign(http, createHttpPatch(params, http, resolveProxy)),
 		https: Object.assign(
 			https,
-			createHttpPatch(params, https, resolveProxy),
+			createHttpPatch(params, https, resolveProxy)
 		),
 		net: Object.assign(net, createNetPatch(params, net)),
 		tls: Object.assign(tls, createTlsPatch(params, tls)),
@@ -137,7 +137,7 @@ function certSettingV1(configProvider: ExtHostConfigProvider) {
 	return (
 		!http.get<boolean>(
 			"experimental.systemCertificatesV2",
-			systemCertificatesV2Default,
+			systemCertificatesV2Default
 		) && !!http.get<boolean>("systemCertificates")
 	);
 }
@@ -147,7 +147,7 @@ function certSettingV2(configProvider: ExtHostConfigProvider) {
 	return (
 		!!http.get<boolean>(
 			"experimental.systemCertificatesV2",
-			systemCertificatesV2Default,
+			systemCertificatesV2Default
 		) && !!http.get<boolean>("systemCertificates")
 	);
 }
@@ -158,7 +158,7 @@ const modulesCache = new Map<
 >();
 function configureModuleLoading(
 	extensionService: ExtHostExtensionService,
-	lookup: ReturnType<typeof createPatchedModules>,
+	lookup: ReturnType<typeof createPatchedModules>
 ): Promise<void> {
 	return extensionService.getExtensionPathIndex().then((extensionPaths) => {
 		const node_module = <any>globalThis._VSCODE_NODE_MODULES.module;
@@ -166,7 +166,7 @@ function configureModuleLoading(
 		node_module._load = function load(
 			request: string,
 			parent: { filename: string },
-			isMain: boolean,
+			isMain: boolean
 		) {
 			if (request === "net") {
 				return lookup.net;
@@ -202,7 +202,7 @@ async function lookupProxyAuthorization(
 	isRemote: boolean,
 	proxyURL: string,
 	proxyAuthenticate: string | string[] | undefined,
-	state: { kerberosRequested?: boolean },
+	state: { kerberosRequested?: boolean }
 ): Promise<string | undefined> {
 	const cached = proxyAuthenticateCache[proxyURL];
 	if (proxyAuthenticate) {
@@ -212,14 +212,14 @@ async function lookupProxyAuthorization(
 		"ProxyResolver#lookupProxyAuthorization callback",
 		`proxyURL:${proxyURL}`,
 		`proxyAuthenticate:${proxyAuthenticate}`,
-		`proxyAuthenticateCache:${cached}`,
+		`proxyAuthenticateCache:${cached}`
 	);
 	const header = proxyAuthenticate || cached;
 	const authenticate = Array.isArray(header)
 		? header
 		: typeof header === "string"
-		  ? [header]
-		  : [];
+			? [header]
+			: [];
 	sendTelemetry(mainThreadTelemetry, authenticate, isRemote);
 	if (
 		authenticate.some((a) => /^(Negotiate|Kerberos)( |$)/i.test(a)) &&
@@ -239,7 +239,7 @@ async function lookupProxyAuthorization(
 			extHostLogService.debug(
 				"ProxyResolver#lookupProxyAuthorization Kerberos authentication lookup",
 				`proxyURL:${proxyURL}`,
-				`spn:${spn}`,
+				`spn:${spn}`
 			);
 			const client = await kerberos.initializeClient(spn);
 			const response = await client.step("");
@@ -247,7 +247,7 @@ async function lookupProxyAuthorization(
 		} catch (err) {
 			extHostLogService.error(
 				"ProxyResolver#lookupProxyAuthorization Kerberos authentication failed",
-				err,
+				err
 			);
 		}
 	}
@@ -279,7 +279,7 @@ let telemetrySent = false;
 function sendTelemetry(
 	mainThreadTelemetry: MainThreadTelemetryShape,
 	authenticate: string[],
-	isRemote: boolean,
+	isRemote: boolean
 ) {
 	if (telemetrySent || !authenticate.length) {
 		return;

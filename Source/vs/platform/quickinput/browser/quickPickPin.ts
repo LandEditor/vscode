@@ -30,7 +30,7 @@ export async function showWithPinnedItems(
 	storageService: IStorageService,
 	storageKey: string,
 	quickPick: IQuickPick<IQuickPickItem>,
-	filterDuplicates?: boolean,
+	filterDuplicates?: boolean
 ): Promise<void> {
 	const itemsWithoutPinned = quickPick.items;
 	let itemsWithPinned = _formatPinnedItems(
@@ -38,7 +38,7 @@ export async function showWithPinnedItems(
 		quickPick,
 		storageService,
 		undefined,
-		filterDuplicates,
+		filterDuplicates
 	);
 	quickPick.onDidTriggerItemButton(async (buttonEvent) => {
 		const expectedButton =
@@ -51,7 +51,7 @@ export async function showWithPinnedItems(
 				quickPick,
 				storageService,
 				buttonEvent.item,
-				filterDuplicates,
+				filterDuplicates
 			);
 			quickPick.items = quickPick.value
 				? itemsWithoutPinned
@@ -75,7 +75,7 @@ function _formatPinnedItems(
 	quickPick: IQuickPick<IQuickPickItem>,
 	storageService: IStorageService,
 	changedItem?: IQuickPickItem,
-	filterDuplicates?: boolean,
+	filterDuplicates?: boolean
 ): QuickPickItem[] {
 	const formattedItems: QuickPickItem[] = [];
 	let pinnedItems;
@@ -83,7 +83,7 @@ function _formatPinnedItems(
 		pinnedItems = updatePinnedItems(
 			storageKey,
 			changedItem,
-			storageService,
+			storageService
 		);
 	} else {
 		pinnedItems = getPinnedItems(storageKey, storageService);
@@ -97,13 +97,13 @@ function _formatPinnedItems(
 	const pinnedIds = new Set();
 	for (const itemToFind of pinnedItems) {
 		const itemToPin = quickPick.items.find((item) =>
-			itemsMatch(item, itemToFind),
+			itemsMatch(item, itemToFind)
 		);
 		if (itemToPin) {
 			const pinnedItemId = getItemIdentifier(itemToPin);
 			const pinnedItem: IQuickPickItem = Object.assign(
 				{} as IQuickPickItem,
-				itemToPin,
+				itemToPin
 			);
 			if (!filterDuplicates || !pinnedIds.has(pinnedItemId)) {
 				pinnedIds.add(pinnedItemId);
@@ -135,7 +135,7 @@ function updateButtons(item: QuickPickItem, removePin: boolean): void {
 	const newButtons =
 		item.buttons?.filter(
 			(button) =>
-				button.iconClass && !buttonClasses.includes(button.iconClass),
+				button.iconClass && !buttonClasses.includes(button.iconClass)
 		) ?? [];
 	newButtons.unshift({
 		iconClass: removePin ? pinButtonClass : pinnedButtonClass,
@@ -154,16 +154,15 @@ function itemsMatch(itemA: QuickPickItem, itemB: QuickPickItem): boolean {
 function updatePinnedItems(
 	storageKey: string,
 	changedItem: IQuickPickItem,
-	storageService: IStorageService,
+	storageService: IStorageService
 ): IQuickPickItem[] {
 	const removePin = changedItem.buttons?.find(
-		(b) => b.iconClass === pinnedButtonClass,
+		(b) => b.iconClass === pinnedButtonClass
 	);
 	let items = getPinnedItems(storageKey, storageService);
 	if (removePin) {
 		items = items.filter(
-			(item) =>
-				getItemIdentifier(item) !== getItemIdentifier(changedItem),
+			(item) => getItemIdentifier(item) !== getItemIdentifier(changedItem)
 		);
 	} else {
 		items.push(changedItem);
@@ -172,14 +171,14 @@ function updatePinnedItems(
 		storageKey,
 		JSON.stringify(items),
 		StorageScope.WORKSPACE,
-		StorageTarget.MACHINE,
+		StorageTarget.MACHINE
 	);
 	return items;
 }
 
 function getPinnedItems(
 	storageKey: string,
-	storageService: IStorageService,
+	storageService: IStorageService
 ): IQuickPickItem[] {
 	const items = storageService.get(storageKey, StorageScope.WORKSPACE);
 	return items ? JSON.parse(items) : [];

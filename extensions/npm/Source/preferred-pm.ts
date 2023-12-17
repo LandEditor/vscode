@@ -61,13 +61,13 @@ async function isYarnPreferred(pkgPath: string): Promise<PreferredProperties> {
 
 async function isNPMPreferred(pkgPath: string): Promise<PreferredProperties> {
 	const lockfileExists = await pathExists(
-		path.join(pkgPath, "package-lock.json"),
+		path.join(pkgPath, "package-lock.json")
 	);
 	return { isPreferred: lockfileExists, hasLockfile: lockfileExists };
 }
 
 export async function findPreferredPM(
-	pkgPath: string,
+	pkgPath: string
 ): Promise<{ name: string; multipleLockFilesDetected: boolean }> {
 	const detectedPackageManagerNames: string[] = [];
 	const detectedPackageManagerProperties: PreferredProperties[] = [];
@@ -112,7 +112,7 @@ export async function findPreferredPM(
 
 	let lockfilesCount = 0;
 	detectedPackageManagerProperties.forEach(
-		(detected) => (lockfilesCount += detected.hasLockfile ? 1 : 0),
+		(detected) => (lockfilesCount += detected.hasLockfile ? 1 : 0)
 	);
 
 	return {

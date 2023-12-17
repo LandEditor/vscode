@@ -29,14 +29,14 @@ export class SyncDocumentDiffProvider implements IDocumentDiffProvider {
 		original: ITextModel,
 		modified: ITextModel,
 		options: IDocumentDiffProviderOptions,
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<IDocumentDiff> {
 		const result = linesDiffComputers
 			.getDefault()
 			.computeDiff(
 				original.getLinesContent(),
 				modified.getLinesContent(),
-				options,
+				options
 			);
 		return Promise.resolve({
 			changes: result.changes,

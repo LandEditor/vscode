@@ -8,5 +8,5 @@ import { ICustomEndpointTelemetryService } from "vs/platform/telemetry/common/te
 
 registerSharedProcessRemoteService(
 	ICustomEndpointTelemetryService,
-	"customEndpointTelemetry",
+	"customEndpointTelemetry"
 );

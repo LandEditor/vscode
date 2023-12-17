@@ -85,15 +85,15 @@ export class BulkEditPane extends ViewPane {
 
 	static readonly ctxHasCategories = new RawContextKey(
 		"refactorPreview.hasCategories",
-		false,
+		false
 	);
 	static readonly ctxGroupByFile = new RawContextKey(
 		"refactorPreview.groupByFile",
-		true,
+		true
 	);
 	static readonly ctxHasCheckedChanges = new RawContextKey(
 		"refactorPreview.hasCheckedChanges",
-		true,
+		true
 	);
 
 	private static readonly _memGroupByFile = `${BulkEditPane.ID}.groupByFile`;
@@ -119,12 +119,15 @@ export class BulkEditPane extends ViewPane {
 
 	constructor(
 		options: IViewletViewOptions,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
@@ -133,17 +136,28 @@ export class BulkEditPane extends ViewPane {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(
 			{ ...options, titleMenuId: MenuId.BulkEditTitle },
-			keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, _instaService, openerService, themeService, telemetryService
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			_instaService,
+			openerService,
+			themeService,
+			telemetryService
 		);
 
-		this.element.classList.add('bulk-edit-panel', 'show-file-icons');
-		this._ctxHasCategories = BulkEditPane.ctxHasCategories.bindTo(contextKeyService);
-		this._ctxGroupByFile = BulkEditPane.ctxGroupByFile.bindTo(contextKeyService);
-		this._ctxHasCheckedChanges = BulkEditPane.ctxHasCheckedChanges.bindTo(contextKeyService);
+		this.element.classList.add("bulk-edit-panel", "show-file-icons");
+		this._ctxHasCategories =
+			BulkEditPane.ctxHasCategories.bindTo(contextKeyService);
+		this._ctxGroupByFile =
+			BulkEditPane.ctxGroupByFile.bindTo(contextKeyService);
+		this._ctxHasCheckedChanges =
+			BulkEditPane.ctxHasCheckedChanges.bindTo(contextKeyService);
 	}
 
 	override dispose(): void {
@@ -159,7 +173,7 @@ export class BulkEditPane extends ViewPane {
 			ResourceLabels,
 			<IResourceLabelsContainer>{
 				onDidChangeVisibility: this.onDidChangeBodyVisibility,
-			},
+			}
 		);
 		this._disposables.add(resourceLabels);
 
@@ -176,7 +190,7 @@ export class BulkEditPane extends ViewPane {
 		this._treeDataSource.groupByFile = this._storageService.getBoolean(
 			BulkEditPane._memGroupByFile,
 			StorageScope.PROFILE,
-			true,
+			true
 		);
 		this._ctxGroupByFile.set(this._treeDataSource.groupByFile);
 
@@ -195,14 +209,14 @@ export class BulkEditPane extends ViewPane {
 				this._instaService.createInstance(TextEditElementRenderer),
 				this._instaService.createInstance(
 					FileElementRenderer,
-					resourceLabels,
+					resourceLabels
 				),
 				this._instaService.createInstance(CategoryElementRenderer),
 			],
 			this._treeDataSource,
 			{
 				accessibilityProvider: this._instaService.createInstance(
-					BulkEditAccessibilityProvider,
+					BulkEditAccessibilityProvider
 				),
 				identityProvider: new BulkEditIdentityProvider(),
 				expandOnlyOnTwistieClick: true,
@@ -211,14 +225,14 @@ export class BulkEditPane extends ViewPane {
 					new BulkEditNaviLabelProvider(),
 				sorter: new BulkEditSorter(),
 				selectionNavigation: true,
-			},
+			}
 		);
 
 		this._disposables.add(
-			this._tree.onContextMenu(this._onContextMenu, this),
+			this._tree.onContextMenu(this._onContextMenu, this)
 		);
 		this._disposables.add(
-			this._tree.onDidOpen((e) => this._openElementAsEditor(e)),
+			this._tree.onDidOpen((e) => this._openElementAsEditor(e))
 		);
 
 		// buttons
@@ -247,7 +261,7 @@ export class BulkEditPane extends ViewPane {
 		this._message.className = "message";
 		this._message.innerText = localize(
 			"empty.msg",
-			"Invoke a code action, like rename, to see a preview of its changes here.",
+			"Invoke a code action, like rename, to see a preview of its changes here."
 		);
 		parent.appendChild(this._message);
 
@@ -258,8 +272,7 @@ export class BulkEditPane extends ViewPane {
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
 		const treeHeight = height - 50;
-		this._tree.getHTMLElement()
-			.parentElement!.style.height = `${treeHeight}px`;
+		this._tree.getHTMLElement().parentElement!.style.height = `${treeHeight}px`;
 		this._tree.layout(treeHeight, width);
 	}
 
@@ -269,7 +282,7 @@ export class BulkEditPane extends ViewPane {
 
 	async setInput(
 		edit: ResourceEdit[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ResourceEdit[] | undefined> {
 		this._setState(State.Data);
 		this._sessionDisposables.clear();
@@ -282,11 +295,11 @@ export class BulkEditPane extends ViewPane {
 
 		const input = await this._instaService.invokeFunction(
 			BulkFileOperations.create,
-			edit,
+			edit
 		);
 		this._currentProvider = this._instaService.createInstance(
 			BulkEditPreviewProvider,
-			input,
+			input
 		);
 		this._sessionDisposables.add(this._currentProvider);
 		this._sessionDisposables.add(input);
@@ -311,9 +324,9 @@ export class BulkEditPane extends ViewPane {
 				input.checked.onDidChange(() => {
 					this._tree.updateChildren();
 					this._ctxHasCheckedChanges.set(
-						input.checked.checkedCount > 0,
+						input.checked.checkedCount > 0
 					);
-				}),
+				})
 			);
 		});
 	}
@@ -324,7 +337,7 @@ export class BulkEditPane extends ViewPane {
 
 	private async _setTreeInput(input: BulkFileOperations) {
 		const viewState = this._treeViewStates.get(
-			this._treeDataSource.groupByFile,
+			this._treeDataSource.groupByFile
 		);
 		await this._tree.setInput(input, viewState);
 		this._tree.domFocus();
@@ -362,13 +375,13 @@ export class BulkEditPane extends ViewPane {
 				"Cannot apply refactoring because '{0}' has changed in the meantime.",
 				this._labelService.getUriLabel(conflicts[0], {
 					relative: true,
-				}),
+				})
 			);
 		} else {
 			message = localize(
 				"conflict.N",
 				"Cannot apply refactoring because {0} other files have changed in the meantime.",
-				conflicts.length,
+				conflicts.length
 			);
 		}
 
@@ -381,7 +394,7 @@ export class BulkEditPane extends ViewPane {
 
 	private _done(accept: boolean): void {
 		this._currentResolve?.(
-			accept ? this._currentInput?.getWorkspaceEdit() : undefined,
+			accept ? this._currentInput?.getWorkspaceEdit() : undefined
 		);
 		this._currentInput = undefined;
 		this._setState(State.Message);
@@ -420,7 +433,7 @@ export class BulkEditPane extends ViewPane {
 			const oldViewState = this._tree.getViewState();
 			this._treeViewStates.set(
 				this._treeDataSource.groupByFile,
-				oldViewState,
+				oldViewState
 			);
 
 			// (2) toggle and update
@@ -433,14 +446,14 @@ export class BulkEditPane extends ViewPane {
 				BulkEditPane._memGroupByFile,
 				this._treeDataSource.groupByFile,
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			this._ctxGroupByFile.set(this._treeDataSource.groupByFile);
 		}
 	}
 
 	private async _openElementAsEditor(
-		e: IOpenEvent<BulkEditElement | undefined>,
+		e: IOpenEvent<BulkEditElement | undefined>
 	): Promise<void> {
 		const options: Mutable<ITextEditorOptions> = { ...e.editorOptions };
 		let fileElement: FileElement;
@@ -457,7 +470,7 @@ export class BulkEditPane extends ViewPane {
 		}
 
 		const previewUri = this._currentProvider!.asPreviewUri(
-			fileElement.edit.uri,
+			fileElement.edit.uri
 		);
 
 		if (fileElement.edit.type & BulkFileOperationType.Delete) {
@@ -466,7 +479,7 @@ export class BulkEditPane extends ViewPane {
 				label: localize(
 					"edt.title.del",
 					"{0} (delete, refactor preview)",
-					basename(fileElement.edit.uri),
+					basename(fileElement.edit.uri)
 				),
 				resource: previewUri,
 				options,
@@ -477,7 +490,7 @@ export class BulkEditPane extends ViewPane {
 			try {
 				(
 					await this._textModelService.createModelReference(
-						fileElement.edit.uri,
+						fileElement.edit.uri
 					)
 				).dispose();
 				leftResource = fileElement.edit.uri;
@@ -498,13 +511,13 @@ export class BulkEditPane extends ViewPane {
 					"edt.title.2",
 					"{0} ({1}, refactor preview)",
 					basename(fileElement.edit.uri),
-					typeLabel,
+					typeLabel
 				);
 			} else {
 				label = localize(
 					"edt.title.1",
 					"{0} (refactor preview)",
-					basename(fileElement.edit.uri),
+					basename(fileElement.edit.uri)
 				);
 			}
 
@@ -515,11 +528,11 @@ export class BulkEditPane extends ViewPane {
 					label,
 					description: this._labelService.getUriLabel(
 						dirname(leftResource),
-						{ relative: true },
+						{ relative: true }
 					),
 					options,
 				},
-				e.sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
+				e.sideBySide ? SIDE_GROUP : ACTIVE_GROUP
 			);
 		}
 	}

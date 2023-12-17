@@ -20,13 +20,21 @@ import { IPathService } from "vs/workbench/services/path/common/pathService";
 export class WorkbenchModelService extends ModelService {
 	constructor(
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourcePropertiesService resourcePropertiesService: ITextResourcePropertiesService,
+		@ITextResourcePropertiesService
+		resourcePropertiesService: ITextResourcePropertiesService,
 		@IUndoRedoService undoRedoService: IUndoRedoService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageService languageService: ILanguageService,
-		@IPathService private readonly _pathService: IPathService,
+		@IPathService private readonly _pathService: IPathService
 	) {
-		super(configurationService, resourcePropertiesService, undoRedoService, languageService, languageConfigurationService);
+		super(
+			configurationService,
+			resourcePropertiesService,
+			undoRedoService,
+			languageService,
+			languageConfigurationService
+		);
 	}
 
 	protected override _schemaShouldMaintainUndoRedoElements(resource: URI) {
@@ -40,5 +48,5 @@ export class WorkbenchModelService extends ModelService {
 registerSingleton(
 	IModelService,
 	WorkbenchModelService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

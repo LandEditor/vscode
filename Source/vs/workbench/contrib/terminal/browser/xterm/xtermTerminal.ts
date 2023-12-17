@@ -133,7 +133,7 @@ let WebglAddon: typeof WebglAddonType;
 
 function getFullBufferLineAsString(
 	lineIndex: number,
-	buffer: IBuffer,
+	buffer: IBuffer
 ): { lineData: string | undefined; lineIndex: number } {
 	let line = buffer.getLine(lineIndex);
 	if (!line) {
@@ -218,7 +218,7 @@ export class XtermTerminal
 	private _imageAddon?: ImageAddonType;
 
 	private readonly _attachedDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private readonly _anyTerminalFocusContextKey: IContextKey<boolean>;
 	private readonly _anyFocusedTerminalHasSelection: IContextKey<boolean>;
@@ -242,25 +242,25 @@ export class XtermTerminal
 			command: ITerminalCommand;
 			copyAsHtml?: boolean;
 			noNewLine?: boolean;
-		}>(),
+		}>()
 	);
 	readonly onDidRequestRunCommand = this._onDidRequestRunCommand.event;
 	private readonly _onDidRequestFocus = this._register(new Emitter<void>());
 	readonly onDidRequestFocus = this._onDidRequestFocus.event;
 	private readonly _onDidRequestSendText = this._register(
-		new Emitter<string>(),
+		new Emitter<string>()
 	);
 	readonly onDidRequestSendText = this._onDidRequestSendText.event;
 	private readonly _onDidRequestFreePort = this._register(
-		new Emitter<string>(),
+		new Emitter<string>()
 	);
 	readonly onDidRequestFreePort = this._onDidRequestFreePort.event;
 	private readonly _onDidChangeFindResults = this._register(
-		new Emitter<{ resultIndex: number; resultCount: number }>(),
+		new Emitter<{ resultIndex: number; resultCount: number }>()
 	);
 	readonly onDidChangeFindResults = this._onDidChangeFindResults.event;
 	private readonly _onDidChangeSelection = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
 	private readonly _onDidChangeFocus = this._register(new Emitter<boolean>());
@@ -304,101 +304,160 @@ export class XtermTerminal
 		private readonly _capabilities: ITerminalCapabilityStore,
 		shellIntegrationNonce: string,
 		disableShellIntegrationReporting: boolean,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IAccessibleNotificationService private readonly _accessibleNotificationService: IAccessibleNotificationService,
+		@IAccessibleNotificationService
+		private readonly _accessibleNotificationService: IAccessibleNotificationService,
 		@ILayoutService layoutService: ILayoutService
 	) {
 		super();
-		const font = this._configHelper.getFont(dom.getActiveWindow(), undefined, true);
+		const font = this._configHelper.getFont(
+			dom.getActiveWindow(),
+			undefined,
+			true
+		);
 		const config = this._configHelper.config;
-		const editorOptions = this._configurationService.getValue<IEditorOptions>('editor');
+		const editorOptions =
+			this._configurationService.getValue<IEditorOptions>("editor");
 
-		this.raw = this._register(new xtermCtor({
-			allowProposedApi: true,
-			cols,
-			rows,
-			documentOverride: layoutService.mainContainer.ownerDocument,
-			altClickMovesCursor: config.altClickMovesCursor && editorOptions.multiCursorModifier === 'alt',
-			scrollback: config.scrollback,
-			theme: this.getXtermTheme(),
-			drawBoldTextInBrightColors: config.drawBoldTextInBrightColors,
-			fontFamily: font.fontFamily,
-			fontWeight: config.fontWeight,
-			fontWeightBold: config.fontWeightBold,
-			fontSize: font.fontSize,
-			letterSpacing: font.letterSpacing,
-			lineHeight: font.lineHeight,
-			logLevel: vscodeToXtermLogLevel(this._logService.getLevel()),
-			logger: this._logService,
-			minimumContrastRatio: config.minimumContrastRatio,
-			tabStopWidth: config.tabStopWidth,
-			cursorBlink: config.cursorBlinking,
-			cursorStyle: vscodeToXtermCursorStyle<'cursorStyle'>(config.cursorStyle),
-			cursorInactiveStyle: vscodeToXtermCursorStyle(config.cursorStyleInactive),
-			cursorWidth: config.cursorWidth,
-			macOptionIsMeta: config.macOptionIsMeta,
-			macOptionClickForcesSelection: config.macOptionClickForcesSelection,
-			rightClickSelectsWord: config.rightClickBehavior === 'selectWord',
-			fastScrollModifier: 'alt',
-			fastScrollSensitivity: config.fastScrollSensitivity,
-			scrollSensitivity: config.mouseWheelScrollSensitivity,
-			wordSeparator: config.wordSeparators,
-			overviewRulerWidth: 10,
-			ignoreBracketedPasteMode: config.ignoreBracketedPasteMode
-		}));
+		this.raw = this._register(
+			new xtermCtor({
+				allowProposedApi: true,
+				cols,
+				rows,
+				documentOverride: layoutService.mainContainer.ownerDocument,
+				altClickMovesCursor:
+					config.altClickMovesCursor &&
+					editorOptions.multiCursorModifier === "alt",
+				scrollback: config.scrollback,
+				theme: this.getXtermTheme(),
+				drawBoldTextInBrightColors: config.drawBoldTextInBrightColors,
+				fontFamily: font.fontFamily,
+				fontWeight: config.fontWeight,
+				fontWeightBold: config.fontWeightBold,
+				fontSize: font.fontSize,
+				letterSpacing: font.letterSpacing,
+				lineHeight: font.lineHeight,
+				logLevel: vscodeToXtermLogLevel(this._logService.getLevel()),
+				logger: this._logService,
+				minimumContrastRatio: config.minimumContrastRatio,
+				tabStopWidth: config.tabStopWidth,
+				cursorBlink: config.cursorBlinking,
+				cursorStyle: vscodeToXtermCursorStyle<"cursorStyle">(
+					config.cursorStyle
+				),
+				cursorInactiveStyle: vscodeToXtermCursorStyle(
+					config.cursorStyleInactive
+				),
+				cursorWidth: config.cursorWidth,
+				macOptionIsMeta: config.macOptionIsMeta,
+				macOptionClickForcesSelection:
+					config.macOptionClickForcesSelection,
+				rightClickSelectsWord:
+					config.rightClickBehavior === "selectWord",
+				fastScrollModifier: "alt",
+				fastScrollSensitivity: config.fastScrollSensitivity,
+				scrollSensitivity: config.mouseWheelScrollSensitivity,
+				wordSeparator: config.wordSeparators,
+				overviewRulerWidth: 10,
+				ignoreBracketedPasteMode: config.ignoreBracketedPasteMode,
+			})
+		);
 		this._updateSmoothScrolling();
 		this._core = (this.raw as any)._core as IXtermCore;
 
-		this._register(this._configurationService.onDidChangeConfiguration(async e => {
-			if (e.affectsConfiguration(TerminalSettingId.GpuAcceleration)) {
-				XtermTerminal._suggestedRendererType = undefined;
-			}
-			if (e.affectsConfiguration('terminal.integrated') || e.affectsConfiguration('editor.fastScrollSensitivity') || e.affectsConfiguration('editor.mouseWheelScrollSensitivity') || e.affectsConfiguration('editor.multiCursorModifier')) {
-				this.updateConfig();
-			}
-			if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
-				this._updateUnicodeVersion();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration(async (e) => {
+				if (e.affectsConfiguration(TerminalSettingId.GpuAcceleration)) {
+					XtermTerminal._suggestedRendererType = undefined;
+				}
+				if (
+					e.affectsConfiguration("terminal.integrated") ||
+					e.affectsConfiguration("editor.fastScrollSensitivity") ||
+					e.affectsConfiguration(
+						"editor.mouseWheelScrollSensitivity"
+					) ||
+					e.affectsConfiguration("editor.multiCursorModifier")
+				) {
+					this.updateConfig();
+				}
+				if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
+					this._updateUnicodeVersion();
+				}
+			})
+		);
 
-		this._register(this._themeService.onDidColorThemeChange(theme => this._updateTheme(theme)));
-		this._register(this._logService.onDidChangeLogLevel(e => this.raw.options.logLevel = vscodeToXtermLogLevel(e)));
+		this._register(
+			this._themeService.onDidColorThemeChange((theme) =>
+				this._updateTheme(theme)
+			)
+		);
+		this._register(
+			this._logService.onDidChangeLogLevel(
+				(e) => (this.raw.options.logLevel = vscodeToXtermLogLevel(e))
+			)
+		);
 
 		// Refire events
-		this._register(this.raw.onSelectionChange(() => {
-			this._onDidChangeSelection.fire();
-			if (this.isFocused) {
-				this._anyFocusedTerminalHasSelection.set(this.raw.hasSelection());
-			}
-		}));
+		this._register(
+			this.raw.onSelectionChange(() => {
+				this._onDidChangeSelection.fire();
+				if (this.isFocused) {
+					this._anyFocusedTerminalHasSelection.set(
+						this.raw.hasSelection()
+					);
+				}
+			})
+		);
 
 		// Load addons
 		this._updateUnicodeVersion();
-		this._markNavigationAddon = this._instantiationService.createInstance(MarkNavigationAddon, _capabilities);
+		this._markNavigationAddon = this._instantiationService.createInstance(
+			MarkNavigationAddon,
+			_capabilities
+		);
 		this.raw.loadAddon(this._markNavigationAddon);
-		this._decorationAddon = this._instantiationService.createInstance(DecorationAddon, this._capabilities);
-		this._register(this._decorationAddon.onDidRequestRunCommand(e => this._onDidRequestRunCommand.fire(e)));
+		this._decorationAddon = this._instantiationService.createInstance(
+			DecorationAddon,
+			this._capabilities
+		);
+		this._register(
+			this._decorationAddon.onDidRequestRunCommand((e) =>
+				this._onDidRequestRunCommand.fire(e)
+			)
+		);
 		this.raw.loadAddon(this._decorationAddon);
-		this._shellIntegrationAddon = new ShellIntegrationAddon(shellIntegrationNonce, disableShellIntegrationReporting, this._telemetryService, this._logService);
+		this._shellIntegrationAddon = new ShellIntegrationAddon(
+			shellIntegrationNonce,
+			disableShellIntegrationReporting,
+			this._telemetryService,
+			this._logService
+		);
 		this.raw.loadAddon(this._shellIntegrationAddon);
 
-		this._anyTerminalFocusContextKey = TerminalContextKeys.focusInAny.bindTo(contextKeyService);
-		this._anyFocusedTerminalHasSelection = TerminalContextKeys.textSelectedInFocused.bindTo(contextKeyService);
+		this._anyTerminalFocusContextKey =
+			TerminalContextKeys.focusInAny.bindTo(contextKeyService);
+		this._anyFocusedTerminalHasSelection =
+			TerminalContextKeys.textSelectedInFocused.bindTo(contextKeyService);
 	}
 
 	*getBufferReverseIterator(): IterableIterator<string> {
 		for (let i = this.raw.buffer.active.length; i >= 0; i--) {
 			const { lineData, lineIndex } = getFullBufferLineAsString(
 				i,
-				this.raw.buffer.active,
+				this.raw.buffer.active
 			);
 			if (lineData) {
 				i = lineIndex;
@@ -428,13 +487,13 @@ export class XtermTerminal
 			const row = command.marker?.line;
 			if (!length || !row) {
 				throw new Error(
-					`No row ${row} or output length ${length} for command ${command}`,
+					`No row ${row} or output length ${length} for command ${command}`
 				);
 			}
 			this.raw.select(
 				0,
 				row + 1,
-				length - Math.floor(length / this.raw.cols),
+				length - Math.floor(length / this.raw.cols)
 			);
 		}
 		const result = this._serializeAddon.serializeAsHTML({
@@ -448,7 +507,7 @@ export class XtermTerminal
 
 	attachToElement(
 		container: HTMLElement,
-		partialOptions?: Partial<IXtermAttachToElementOptions>,
+		partialOptions?: Partial<IXtermAttachToElementOptions>
 	): HTMLElement {
 		const options: IXtermAttachToElementOptions = {
 			enableGpu: true,
@@ -475,18 +534,18 @@ export class XtermTerminal
 		ad.clear();
 		ad.add(
 			dom.addDisposableListener(this.raw.textarea, "focus", () =>
-				this._setFocused(true),
-			),
+				this._setFocused(true)
+			)
 		);
 		ad.add(
 			dom.addDisposableListener(this.raw.textarea, "blur", () =>
-				this._setFocused(false),
-			),
+				this._setFocused(false)
+			)
 		);
 		ad.add(
 			dom.addDisposableListener(this.raw.textarea, "focusout", () =>
-				this._setFocused(false),
-			),
+				this._setFocused(false)
+			)
 		);
 
 		// Track wheel events in mouse wheel classifier and update smoothScrolling when it changes
@@ -498,7 +557,7 @@ export class XtermTerminal
 				(e: IMouseWheelEvent) => {
 					const classifier = MouseWheelClassifier.INSTANCE;
 					classifier.acceptStandardWheelEvent(
-						new StandardWheelEvent(e),
+						new StandardWheelEvent(e)
 					);
 					const value = classifier.isPhysicalMouseWheel();
 					if (value !== this._isPhysicalMouseWheel) {
@@ -506,8 +565,8 @@ export class XtermTerminal
 						this._updateSmoothScrolling();
 					}
 				},
-				{ passive: true },
-			),
+				{ passive: true }
+			)
 		);
 
 		this._attached = { container, options };
@@ -519,7 +578,7 @@ export class XtermTerminal
 		this._onDidChangeFocus.fire(isFocused);
 		this._anyTerminalFocusContextKey.set(isFocused);
 		this._anyFocusedTerminalHasSelection.set(
-			isFocused && this.raw.hasSelection(),
+			isFocused && this.raw.hasSelection()
 		);
 	}
 
@@ -629,7 +688,7 @@ export class XtermTerminal
 
 	async findNext(
 		term: string,
-		searchOptions: ISearchOptions,
+		searchOptions: ISearchOptions
 	): Promise<boolean> {
 		this._updateFindColors(searchOptions);
 		return (await this._getSearchAddon()).findNext(term, searchOptions);
@@ -637,7 +696,7 @@ export class XtermTerminal
 
 	async findPrevious(
 		term: string,
-		searchOptions: ISearchOptions,
+		searchOptions: ISearchOptions
 	): Promise<boolean> {
 		this._updateFindColors(searchOptions);
 		return (await this._getSearchAddon()).findPrevious(term, searchOptions);
@@ -653,22 +712,22 @@ export class XtermTerminal
 			theme.getColor(TERMINAL_BACKGROUND_COLOR) ||
 			theme.getColor(PANEL_BACKGROUND);
 		const findMatchBackground = theme.getColor(
-			TERMINAL_FIND_MATCH_BACKGROUND_COLOR,
+			TERMINAL_FIND_MATCH_BACKGROUND_COLOR
 		);
 		const findMatchBorder = theme.getColor(
-			TERMINAL_FIND_MATCH_BORDER_COLOR,
+			TERMINAL_FIND_MATCH_BORDER_COLOR
 		);
 		const findMatchOverviewRuler = theme.getColor(
-			TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR,
+			TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR
 		);
 		const findMatchHighlightBackground = theme.getColor(
-			TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR,
+			TERMINAL_FIND_MATCH_HIGHLIGHT_BACKGROUND_COLOR
 		);
 		const findMatchHighlightBorder = theme.getColor(
-			TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR,
+			TERMINAL_FIND_MATCH_HIGHLIGHT_BORDER_COLOR
 		);
 		const findMatchHighlightOverviewRuler = theme.getColor(
-			TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
+			TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR
 		);
 		searchOptions.decorations = {
 			activeMatchBackground: findMatchBackground?.toString(),
@@ -704,10 +763,10 @@ export class XtermTerminal
 						}) => {
 							this._lastFindResult = results;
 							this._onDidChangeFindResults.fire(results);
-						},
+						}
 					);
 					return this._searchAddon;
-				},
+				}
 			);
 		}
 		return this._searchAddonPromise;
@@ -724,7 +783,7 @@ export class XtermTerminal
 	getFont(): ITerminalFont {
 		return this._configHelper.getFont(
 			dom.getWindow(this.raw.element),
-			this._core,
+			this._core
 		);
 	}
 
@@ -737,11 +796,11 @@ export class XtermTerminal
 		) {
 			const lineInfo = this._getWrappedLineCount(
 				i,
-				this.raw.buffer.active,
+				this.raw.buffer.active
 			);
 			maxLineLength = Math.max(
 				maxLineLength,
-				lineInfo.lineCount * this.raw.cols - lineInfo.endSpaces || 0,
+				lineInfo.lineCount * this.raw.cols - lineInfo.endSpaces || 0
 			);
 			i = lineInfo.currentIndex;
 		}
@@ -750,7 +809,7 @@ export class XtermTerminal
 
 	private _getWrappedLineCount(
 		index: number,
-		buffer: IBuffer,
+		buffer: IBuffer
 	): { lineCount: number; currentIndex: number; endSpaces: number } {
 		let line = buffer.getLine(index);
 		if (!line) {
@@ -799,7 +858,7 @@ export class XtermTerminal
 
 	scrollToLine(
 		line: number,
-		position: ScrollPosition = ScrollPosition.Top,
+		position: ScrollPosition = ScrollPosition.Top
 	): void {
 		this.markTracker.scrollToLine(line, position);
 	}
@@ -815,7 +874,7 @@ export class XtermTerminal
 			.get(TerminalCapability.CommandDetection)
 			?.handleCommandStart();
 		this._accessibleNotificationService.notify(
-			AccessibleNotificationEvent.Clear,
+			AccessibleNotificationEvent.Clear
 		);
 	}
 
@@ -830,10 +889,10 @@ export class XtermTerminal
 	selectMarkedRange(
 		fromMarkerId: string,
 		toMarkerId: string,
-		scrollIntoView = false,
+		scrollIntoView = false
 	) {
 		const detectionCapability = this.shellIntegration.capabilities.get(
-			TerminalCapability.BufferMarkDetection,
+			TerminalCapability.BufferMarkDetection
 		);
 		if (!detectionCapability) {
 			return;
@@ -862,7 +921,7 @@ export class XtermTerminal
 
 	async copySelection(
 		asHtml?: boolean,
-		command?: ITerminalCommand,
+		command?: ITerminalCommand
 	): Promise<void> {
 		if (this.hasSelection() || (asHtml && command)) {
 			if (asHtml) {
@@ -871,7 +930,7 @@ export class XtermTerminal
 					if (!e.clipboardData.types.includes("text/plain")) {
 						e.clipboardData.setData(
 							"text/plain",
-							command?.getOutput() ?? "",
+							command?.getOutput() ?? ""
 						);
 					}
 					e.clipboardData.setData("text/html", textAsHtml);
@@ -888,8 +947,8 @@ export class XtermTerminal
 			this._notificationService.warn(
 				localize(
 					"terminal.integrated.copySelection.noSelection",
-					"The terminal has no selection to copy",
-				),
+					"The terminal has no selection to copy"
+				)
 			);
 		}
 	}
@@ -902,7 +961,7 @@ export class XtermTerminal
 	}
 
 	private _setCursorStyle(
-		style: ITerminalConfiguration["cursorStyle"],
+		style: ITerminalConfiguration["cursorStyle"]
 	): void {
 		const mapped = vscodeToXtermCursorStyle<"cursorStyle">(style);
 		if (this.raw.options.cursorStyle !== mapped) {
@@ -911,7 +970,7 @@ export class XtermTerminal
 	}
 
 	private _setCursorStyleInactive(
-		style: ITerminalConfiguration["cursorStyleInactive"],
+		style: ITerminalConfiguration["cursorStyleInactive"]
 	): void {
 		const mapped = vscodeToXtermCursorStyle(style);
 		if (this.raw.options.cursorInactiveStyle !== mapped) {
@@ -939,15 +998,15 @@ export class XtermTerminal
 			const checkCanvas = document.createElement("canvas");
 			const checkGl = checkCanvas.getContext("webgl2");
 			const debugInfo = checkGl?.getExtension(
-				"WEBGL_debug_renderer_info",
+				"WEBGL_debug_renderer_info"
 			);
 			if (checkGl && debugInfo) {
 				const renderer = checkGl.getParameter(
-					debugInfo.UNMASKED_RENDERER_WEBGL,
+					debugInfo.UNMASKED_RENDERER_WEBGL
 				);
 				if (
 					renderer.startsWith(
-						"ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)",
+						"ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero)"
 					)
 				) {
 					this._disableWebglForThisSession();
@@ -964,7 +1023,7 @@ export class XtermTerminal
 			this._logService.trace("Webgl was loaded");
 			this._webglAddon.onContextLoss(() => {
 				this._logService.info(
-					`Webgl lost context, disposing of webgl renderer`,
+					`Webgl lost context, disposing of webgl renderer`
 				);
 				this._disposeOfWebglRenderer();
 			});
@@ -978,12 +1037,12 @@ export class XtermTerminal
 		} catch (e) {
 			this._logService.warn(
 				`Webgl could not be loaded. Falling back to the canvas renderer type.`,
-				e,
+				e
 			);
 			const neverMeasureRenderTime = this._storageService.getBoolean(
 				TerminalStorageKeys.NeverMeasureRenderTime,
 				StorageScope.APPLICATION,
-				false,
+				false
 			);
 			// if it's already set to dom, no need to measure render time
 			if (
@@ -1015,12 +1074,12 @@ export class XtermTerminal
 		} catch (e) {
 			this._logService.warn(
 				`Canvas renderer could not be loaded, falling back to dom renderer`,
-				e,
+				e
 			);
 			const neverMeasureRenderTime = this._storageService.getBoolean(
 				TerminalStorageKeys.NeverMeasureRenderTime,
 				StorageScope.APPLICATION,
-				false,
+				false
 			);
 			// if it's already set to dom, no need to measure render time
 			if (
@@ -1042,7 +1101,7 @@ export class XtermTerminal
 			CanvasAddon = (
 				await importAMDNodeModule<typeof import("@xterm/addon-canvas")>(
 					"@xterm/addon-canvas",
-					"lib/xterm-addon-canvas.js",
+					"lib/xterm-addon-canvas.js"
 				)
 			).CanvasAddon;
 		}
@@ -1078,7 +1137,7 @@ export class XtermTerminal
 			ImageAddon = (
 				await importAMDNodeModule<typeof import("@xterm/addon-image")>(
 					"@xterm/addon-image",
-					"lib/addon-image.js",
+					"lib/addon-image.js"
 				)
 			).ImageAddon;
 		}
@@ -1092,7 +1151,7 @@ export class XtermTerminal
 			SearchAddon = (
 				await importAMDNodeModule<typeof import("@xterm/addon-search")>(
 					"@xterm/addon-search",
-					"lib/addon-search.js",
+					"lib/addon-search.js"
 				)
 			).SearchAddon;
 		}
@@ -1119,7 +1178,7 @@ export class XtermTerminal
 			WebglAddon = (
 				await importAMDNodeModule<typeof import("@xterm/addon-webgl")>(
 					"@xterm/addon-webgl",
-					"lib/addon-webgl.js",
+					"lib/addon-webgl.js"
 				)
 			).WebglAddon;
 		}
@@ -1186,7 +1245,7 @@ export class XtermTerminal
 								this._configurationService.updateValue(
 									TerminalSettingId.GpuAcceleration,
 									"off",
-									ConfigurationTarget.USER,
+									ConfigurationTarget.USER
 								),
 						} as IPromptChoice,
 						{
@@ -1196,7 +1255,7 @@ export class XtermTerminal
 						{
 							label: localize(
 								"dontShowAgain",
-								"Don't Show Again",
+								"Don't Show Again"
 							),
 							isSecondary: true,
 							run: () =>
@@ -1204,7 +1263,7 @@ export class XtermTerminal
 									TerminalStorageKeys.NeverMeasureRenderTime,
 									true,
 									StorageScope.APPLICATION,
-									StorageTarget.MACHINE,
+									StorageTarget.MACHINE
 								),
 						} as IPromptChoice,
 					];
@@ -1212,9 +1271,9 @@ export class XtermTerminal
 						Severity.Warning,
 						localize(
 							"terminal.slowRendering",
-							"Terminal GPU acceleration appears to be slow on your computer. Would you like to switch to disable it which may improve performance? [Read more about terminal settings](https://code.visualstudio.com/docs/editor/integrated-terminal#_changing-how-the-terminal-is-rendered).",
+							"Terminal GPU acceleration appears to be slow on your computer. Would you like to switch to disable it which may improve performance? [Read more about terminal settings](https://code.visualstudio.com/docs/editor/integrated-terminal#_changing-how-the-terminal-is-rendered)."
 						),
-						promptChoices,
+						promptChoices
 					);
 				}
 			}
@@ -1223,14 +1282,14 @@ export class XtermTerminal
 		textRenderLayer.onGridChanged = (
 			terminal: RawXtermTerminal,
 			firstRow: number,
-			lastRow: number,
+			lastRow: number
 		) => {
 			const startTime = performance.now();
 			originalOnGridChanged.call(
 				textRenderLayer,
 				terminal,
 				firstRow,
-				lastRow,
+				lastRow
 			);
 			frameTimes.push(performance.now() - startTime);
 			if (frameTimes.length === RenderConstants.NumberOfFramestoMeasure) {
@@ -1254,10 +1313,10 @@ export class XtermTerminal
 		const cursorAccentColor =
 			theme.getColor(TERMINAL_CURSOR_BACKGROUND_COLOR) || backgroundColor;
 		const selectionBackgroundColor = theme.getColor(
-			TERMINAL_SELECTION_BACKGROUND_COLOR,
+			TERMINAL_SELECTION_BACKGROUND_COLOR
 		);
 		const selectionInactiveBackgroundColor = theme.getColor(
-			TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR,
+			TERMINAL_INACTIVE_SELECTION_BACKGROUND_COLOR
 		);
 		const selectionForegroundColor =
 			theme.getColor(TERMINAL_SELECTION_FOREGROUND_COLOR) || undefined;
@@ -1334,7 +1393,7 @@ export function getXtermScaledDimensions(
 	w: Window,
 	font: ITerminalFont,
 	width: number,
-	height: number,
+	height: number
 ) {
 	if (!font.charWidth || !font.charHeight) {
 		return null;
@@ -1350,7 +1409,7 @@ export function getXtermScaledDimensions(
 		font.charWidth * w.devicePixelRatio + font.letterSpacing;
 	const cols = Math.max(
 		Math.floor(scaledWidthAvailable / scaledCharWidth),
-		1,
+		1
 	);
 
 	const scaledHeightAvailable = height * w.devicePixelRatio;
@@ -1358,7 +1417,7 @@ export function getXtermScaledDimensions(
 	const scaledLineHeight = Math.floor(scaledCharHeight * font.lineHeight);
 	const rows = Math.max(
 		Math.floor(scaledHeightAvailable / scaledLineHeight),
-		1,
+		1
 	);
 
 	return { rows, cols };

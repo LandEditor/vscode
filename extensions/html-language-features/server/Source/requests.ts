@@ -8,7 +8,7 @@ import { RuntimeEnvironment } from "./htmlServer";
 
 export namespace FsStatRequest {
 	export const type: RequestType<string, FileStat, any> = new RequestType(
-		"fs/stat",
+		"fs/stat"
 	);
 }
 
@@ -63,7 +63,7 @@ export interface FileSystemProvider {
 export function getFileSystemProvider(
 	handledSchemas: string[],
 	connection: Connection,
-	runtime: RuntimeEnvironment,
+	runtime: RuntimeEnvironment
 ): FileSystemProvider {
 	const fileFs =
 		runtime.fileFs && handledSchemas.indexOf("file") !== -1
@@ -76,7 +76,7 @@ export function getFileSystemProvider(
 			}
 			const res = await connection.sendRequest(
 				FsStatRequest.type,
-				uri.toString(),
+				uri.toString()
 			);
 			return res;
 		},
@@ -86,7 +86,7 @@ export function getFileSystemProvider(
 			}
 			return connection.sendRequest(
 				FsReadDirRequest.type,
-				uri.toString(),
+				uri.toString()
 			);
 		},
 	};

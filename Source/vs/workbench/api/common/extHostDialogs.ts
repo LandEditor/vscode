@@ -22,7 +22,7 @@ export class ExtHostDialogs {
 
 	showOpenDialog(
 		extension: IRelaxedExtensionDescription,
-		options?: vscode.OpenDialogOptions,
+		options?: vscode.OpenDialogOptions
 	): Promise<URI[] | undefined> {
 		if (options?.allowUIResources) {
 			checkProposedApiEnabled(extension, "showLocal");
@@ -33,7 +33,7 @@ export class ExtHostDialogs {
 	}
 
 	showSaveDialog(
-		options?: vscode.SaveDialogOptions,
+		options?: vscode.SaveDialogOptions
 	): Promise<URI | undefined> {
 		return this._proxy.$showSaveDialog(options).then((filepath) => {
 			return filepath ? URI.revive(filepath) : undefined;

@@ -38,27 +38,27 @@ export type IResolveAuthorityResult =
 export interface IExtensionHostProxy {
 	resolveAuthority(
 		remoteAuthority: string,
-		resolveAttempt: number,
+		resolveAttempt: number
 	): Promise<IResolveAuthorityResult>;
 	/**
 	 * Returns `null` if no resolver for `remoteAuthority` is found.
 	 */
 	getCanonicalURI(remoteAuthority: string, uri: URI): Promise<URI | null>;
 	startExtensionHost(
-		extensionsDelta: IExtensionDescriptionDelta,
+		extensionsDelta: IExtensionDescriptionDelta
 	): Promise<void>;
 	extensionTestsExecute(): Promise<number>;
 	activateByEvent(
 		activationEvent: string,
-		activationKind: ActivationKind,
+		activationKind: ActivationKind
 	): Promise<void>;
 	activate(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason,
+		reason: ExtensionActivationReason
 	): Promise<boolean>;
 	setRemoteEnvironment(env: { [key: string]: string | null }): Promise<void>;
 	updateRemoteConnectionData(
-		connectionData: IRemoteConnectionData,
+		connectionData: IRemoteConnectionData
 	): Promise<void>;
 	deltaExtensions(extensionsDelta: IExtensionDescriptionDelta): Promise<void>;
 	test_latency(n: number): Promise<number>;

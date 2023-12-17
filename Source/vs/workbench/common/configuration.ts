@@ -44,7 +44,7 @@ export const workbenchConfigurationNodeBase = Object.freeze<IConfigurationNode>(
 		order: 7,
 		title: localize("workbenchConfigurationTitle", "Workbench"),
 		type: "object",
-	},
+	}
 );
 
 export const securityConfigurationNodeBase = Object.freeze<IConfigurationNode>({
@@ -63,7 +63,7 @@ export type ConfigurationValue = { value: any | undefined /* Remove */ };
 export type ConfigurationKeyValuePairs = [string, ConfigurationValue][];
 export type ConfigurationMigrationFn = (
 	value: any,
-	valueAccessor: (key: string) => any,
+	valueAccessor: (key: string) => any
 ) =>
 	| ConfigurationValue
 	| ConfigurationKeyValuePairs
@@ -75,7 +75,7 @@ export type ConfigurationMigration = {
 
 export interface IConfigurationMigrationRegistry {
 	registerConfigurationMigrations(
-		configurationMigrations: ConfigurationMigration[],
+		configurationMigrations: ConfigurationMigration[]
 	): void;
 }
 
@@ -91,7 +91,7 @@ class ConfigurationMigrationRegistry
 		this._onDidRegisterConfigurationMigrations.event;
 
 	registerConfigurationMigrations(
-		configurationMigrations: ConfigurationMigration[],
+		configurationMigrations: ConfigurationMigration[]
 	): void {
 		this.migrations.push(...configurationMigrations);
 	}
@@ -105,21 +105,32 @@ export class ConfigurationMigrationWorkbenchContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService
 	) {
 		super();
-		this._register(this.workspaceService.onDidChangeWorkspaceFolders(async (e) => {
-			for (const folder of e.added) {
-				await this.migrateConfigurationsForFolder(folder, configurationMigrationRegistry.migrations);
-			}
-		}));
+		this._register(
+			this.workspaceService.onDidChangeWorkspaceFolders(async (e) => {
+				for (const folder of e.added) {
+					await this.migrateConfigurationsForFolder(
+						folder,
+						configurationMigrationRegistry.migrations
+					);
+				}
+			})
+		);
 		this.migrateConfigurations(configurationMigrationRegistry.migrations);
-		this._register(configurationMigrationRegistry.onDidRegisterConfigurationMigration(migration => this.migrateConfigurations(migration)));
+		this._register(
+			configurationMigrationRegistry.onDidRegisterConfigurationMigration(
+				(migration) => this.migrateConfigurations(migration)
+			)
+		);
 	}
 
 	private async migrateConfigurations(
-		migrations: ConfigurationMigration[],
+		migrations: ConfigurationMigration[]
 	): Promise<void> {
 		await this.migrateConfigurationsForFolder(undefined, migrations);
 		for (const folder of this.workspaceService.getWorkspace().folders) {
@@ -129,21 +140,21 @@ export class ConfigurationMigrationWorkbenchContribution
 
 	private async migrateConfigurationsForFolder(
 		folder: IWorkspaceFolder | undefined,
-		migrations: ConfigurationMigration[],
+		migrations: ConfigurationMigration[]
 	): Promise<void> {
 		await Promise.all([
 			migrations.map((migration) =>
 				this.migrateConfigurationsForFolderAndOverride(
 					migration,
-					folder?.uri,
-				),
+					folder?.uri
+				)
 			),
 		]);
 	}
 
 	private async migrateConfigurationsForFolderAndOverride(
 		migration: ConfigurationMigration,
-		resource?: URI,
+		resource?: URI
 	): Promise<void> {
 		const inspectData = this.configurationService.inspect(migration.key, {
 			resource,
@@ -164,13 +175,13 @@ export class ConfigurationMigrationWorkbenchContribution
 							"workspaceFolder",
 							ConfigurationTarget.WORKSPACE_FOLDER,
 						],
-				  ]
+					]
 				: [
 						["user", ConfigurationTarget.USER],
 						["userLocal", ConfigurationTarget.USER_LOCAL],
 						["userRemote", ConfigurationTarget.USER_REMOTE],
 						["workspace", ConfigurationTarget.WORKSPACE],
-				  ];
+					];
 		for (const [dataKey, target] of targetPairs) {
 			const migrationValues: [[string, ConfigurationValue], string[]][] =
 				[];
@@ -181,17 +192,17 @@ export class ConfigurationMigrationWorkbenchContribution
 				const keyValuePairs = await this.runMigration(
 					migration,
 					{ resource, overrideIdentifier },
-					dataKey,
+					dataKey
 				);
 				for (const keyValuePair of keyValuePairs ?? []) {
 					let keyValueAndOverridesPair = migrationValues.find(
 						([[k, v]]) =>
 							k === keyValuePair[0] &&
-							equals(v.value, keyValuePair[1].value),
+							equals(v.value, keyValuePair[1].value)
 					);
 					if (!keyValueAndOverridesPair) {
 						migrationValues.push(
-							(keyValueAndOverridesPair = [keyValuePair, []]),
+							(keyValueAndOverridesPair = [keyValuePair, []])
 						);
 					}
 					keyValueAndOverridesPair[1].push(overrideIdentifier);
@@ -203,7 +214,7 @@ export class ConfigurationMigrationWorkbenchContribution
 				migration,
 				{ resource },
 				dataKey,
-				inspectData,
+				inspectData
 			);
 			for (const keyValuePair of keyValuePairs ?? []) {
 				migrationValues.push([keyValuePair, []]);
@@ -218,9 +229,9 @@ export class ConfigurationMigrationWorkbenchContribution
 								key,
 								value.value,
 								{ resource, overrideIdentifiers },
-								target,
-							),
-					),
+								target
+							)
+					)
 				);
 			}
 		}
@@ -230,7 +241,7 @@ export class ConfigurationMigrationWorkbenchContribution
 		migration: ConfigurationMigration,
 		overrides: IConfigurationOverrides,
 		dataKey: keyof IConfigurationValue<any>,
-		data?: IConfigurationValue<any>,
+		data?: IConfigurationValue<any>
 	): Promise<ConfigurationKeyValuePairs | undefined> {
 		const valueAccessor = (key: string) =>
 			getInspectValue(this.configurationService.inspect(key, overrides));
@@ -256,42 +267,52 @@ export class DynamicWorkbenchConfigurationWorkbenchContribution
 	extends Disposable
 	implements IWorkbenchContribution
 {
-	constructor(
-		@IRemoteAgentService remoteAgentService: IRemoteAgentService
-	) {
+	constructor(@IRemoteAgentService remoteAgentService: IRemoteAgentService) {
 		super();
 
 		(async () => {
 			if (!isWindows) {
-				const remoteEnvironment = await remoteAgentService.getEnvironment();
+				const remoteEnvironment =
+					await remoteAgentService.getEnvironment();
 				if (remoteEnvironment?.os !== OperatingSystem.Windows) {
 					return;
 				}
 			}
 
 			// Windows: UNC allow list security configuration
-			const registry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
+			const registry = Registry.as<IConfigurationRegistry>(
+				ConfigurationExtensions.Configuration
+			);
 			registry.registerConfiguration({
 				...securityConfigurationNodeBase,
-				'properties': {
-					'security.allowedUNCHosts': {
-						'type': 'array',
-						'items': {
-							'type': 'string',
-							'pattern': '^[^\\\\]+$',
-							'patternErrorMessage': localize('security.allowedUNCHosts.patternErrorMessage', 'UNC host names must not contain backslashes.')
+				"properties": {
+					"security.allowedUNCHosts": {
+						"type": "array",
+						"items": {
+							"type": "string",
+							"pattern": "^[^\\\\]+$",
+							"patternErrorMessage": localize(
+								"security.allowedUNCHosts.patternErrorMessage",
+								"UNC host names must not contain backslashes."
+							),
 						},
-						'default': [],
-						'markdownDescription': localize('security.allowedUNCHosts', 'A set of UNC host names (without leading or trailing backslash, for example `192.168.0.1` or `my-server`) to allow without user confirmation. If a UNC host is being accessed that is not allowed via this setting or has not been acknowledged via user confirmation, an error will occur and the operation stopped. A restart is required when changing this setting. Find out more about this setting at https://aka.ms/vscode-windows-unc.'),
-						'scope': ConfigurationScope.MACHINE
+						"default": [],
+						"markdownDescription": localize(
+							"security.allowedUNCHosts",
+							"A set of UNC host names (without leading or trailing backslash, for example `192.168.0.1` or `my-server`) to allow without user confirmation. If a UNC host is being accessed that is not allowed via this setting or has not been acknowledged via user confirmation, an error will occur and the operation stopped. A restart is required when changing this setting. Find out more about this setting at https://aka.ms/vscode-windows-unc."
+						),
+						"scope": ConfigurationScope.MACHINE,
 					},
-					'security.restrictUNCAccess': {
-						'type': 'boolean',
-						'default': true,
-						'markdownDescription': localize('security.restrictUNCAccess', 'If enabled, only allows access to UNC host names that are allowed by the `#security.allowedUNCHosts#` setting or after user confirmation. Find out more about this setting at https://aka.ms/vscode-windows-unc.'),
-						'scope': ConfigurationScope.MACHINE
-					}
-				}
+					"security.restrictUNCAccess": {
+						"type": "boolean",
+						"default": true,
+						"markdownDescription": localize(
+							"security.restrictUNCAccess",
+							"If enabled, only allows access to UNC host names that are allowed by the `#security.allowedUNCHosts#` setting or after user confirmation. Find out more about this setting at https://aka.ms/vscode-windows-unc."
+						),
+						"scope": ConfigurationScope.MACHINE,
+					},
+				},
 			});
 		})();
 	}

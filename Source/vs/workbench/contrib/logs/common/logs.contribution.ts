@@ -80,11 +80,11 @@ registerAction2(
 				.createInstance(
 					SetLogLevelAction,
 					SetLogLevelAction.ID,
-					SetLogLevelAction.TITLE.value,
+					SetLogLevelAction.TITLE.value
 				)
 				.run();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -95,7 +95,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"setDefaultLogLevel",
-						"Set Default Log Level",
+						"Set Default Log Level"
 					),
 					original: "Set Default Log Level",
 				},
@@ -105,13 +105,13 @@ registerAction2(
 		run(
 			servicesAccessor: ServicesAccessor,
 			logLevel: LogLevel,
-			extensionId?: string,
+			extensionId?: string
 		): Promise<void> {
 			return servicesAccessor
 				.get(IDefaultLogLevelsService)
 				.setDefaultLogLevel(logLevel, extensionId);
 		}
-	},
+	}
 );
 
 class LogOutputChannels extends Disposable implements IWorkbenchContribution {
@@ -123,36 +123,46 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILoggerService private readonly loggerService: ILoggerService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
 		super();
 		const contextKey = CONTEXT_LOG_LEVEL.bindTo(contextKeyService);
 		contextKey.set(LogLevelToString(loggerService.getLogLevel()));
-		loggerService.onDidChangeLogLevel(e => {
+		loggerService.onDidChangeLogLevel((e) => {
 			if (isLogLevel(e)) {
 				contextKey.set(LogLevelToString(loggerService.getLogLevel()));
 			}
 		});
 
 		this.onDidAddLoggers(loggerService.getRegisteredLoggers());
-		this._register(loggerService.onDidChangeLoggers(({ added, removed }) => {
-			this.onDidAddLoggers(added);
-			this.onDidRemoveLoggers(removed);
-		}));
-		this._register(loggerService.onDidChangeVisibility(([resource, visibility]) => {
-			const logger = loggerService.getRegisteredLogger(resource);
-			if (logger) {
-				if (visibility) {
-					this.registerLogChannel(logger);
-				} else {
-					this.deregisterLogChannel(logger);
+		this._register(
+			loggerService.onDidChangeLoggers(({ added, removed }) => {
+				this.onDidAddLoggers(added);
+				this.onDidRemoveLoggers(removed);
+			})
+		);
+		this._register(
+			loggerService.onDidChangeVisibility(([resource, visibility]) => {
+				const logger = loggerService.getRegisteredLogger(resource);
+				if (logger) {
+					if (visibility) {
+						this.registerLogChannel(logger);
+					} else {
+						this.deregisterLogChannel(logger);
+					}
 				}
-			}
-		}));
+			})
+		);
 		this.registerShowWindowLogAction();
-		this._register(Event.filter(contextKeyService.onDidChangeContext, e => e.affectsSome(this.contextKeys))(() => this.onDidChangeContext()));
+		this._register(
+			Event.filter(contextKeyService.onDidChangeContext, (e) =>
+				e.affectsSome(this.contextKeys)
+			)(() => this.onDidChangeContext())
+		);
 	}
 
 	private onDidAddLoggers(loggers: Iterable<ILoggerResource>): void {
@@ -165,7 +175,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					}
 					if (
 						!this.contextKeyService.contextMatchesRules(
-							contextKeyExpr,
+							contextKeyExpr
 						)
 					) {
 						continue;
@@ -184,7 +194,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			if (logger.when) {
 				if (
 					this.contextKeyService.contextMatchesRules(
-						ContextKeyExpr.deserialize(logger.when),
+						ContextKeyExpr.deserialize(logger.when)
 					)
 				) {
 					this.registerLogChannel(logger);
@@ -215,7 +225,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			channel &&
 			this.uriIdentityService.extUri.isEqual(
 				channel.file,
-				logger.resource,
+				logger.resource
 			)
 		) {
 			return;
@@ -226,13 +236,13 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 			try {
 				await this.whenFileExists(logger.resource, 1, token);
 				const existingChannel = this.outputChannelRegistry.getChannel(
-					logger.id,
+					logger.id
 				);
 				const remoteLogger =
 					existingChannel?.file?.scheme === Schemas.vscodeRemote
 						? this.loggerService.getRegisteredLogger(
-								existingChannel.file,
-						  )
+								existingChannel.file
+							)
 						: undefined;
 				if (remoteLogger) {
 					this.deregisterLogChannel(remoteLogger);
@@ -247,8 +257,8 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					? nls.localize(
 							"remote name",
 							"{0} (Remote)",
-							logger.name ?? logger.id,
-					  )
+							logger.name ?? logger.id
+						)
 					: logger.name ?? logger.id;
 				this.outputChannelRegistry.registerChannel({
 					id,
@@ -259,8 +269,8 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 				});
 				disposables.add(
 					toDisposable(() =>
-						this.outputChannelRegistry.removeChannel(id),
-					),
+						this.outputChannelRegistry.removeChannel(id)
+					)
 				);
 				if (remoteLogger) {
 					this.registerLogChannel(remoteLogger);
@@ -270,7 +280,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					this.logService.error(
 						"Error while registering log channel",
 						logger.resource.toString(),
-						getErrorMessage(error),
+						getErrorMessage(error)
 					);
 				}
 			}
@@ -286,7 +296,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 	private async whenFileExists(
 		file: URI,
 		trial: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const exists = await this.fileService.exists(file);
 		if (exists) {
@@ -300,7 +310,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 		}
 		this.logService.debug(
 			`[Registering Log Channel] File does not exist. Waiting for 1s to retry.`,
-			file.toString(),
+			file.toString()
 		);
 		await timeout(1000, token);
 		await this.whenFileExists(file, trial + 1, token);
@@ -315,7 +325,7 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 						title: {
 							value: nls.localize(
 								"show window log",
-								"Show Window Log",
+								"Show Window Log"
 							),
 							original: "Show Window Log",
 						},
@@ -327,22 +337,23 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 					const outputService = servicesAccessor.get(IOutputService);
 					outputService.showChannel(windowLogId);
 				}
-			},
+			}
 		);
 	}
 }
 
 class LogLevelMigration implements IWorkbenchContribution {
 	constructor(
-		@IDefaultLogLevelsService defaultLogLevelsService: IDefaultLogLevelsService
+		@IDefaultLogLevelsService
+		defaultLogLevelsService: IDefaultLogLevelsService
 	) {
 		defaultLogLevelsService.migrateLogLevels();
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(LogOutputChannels, LifecyclePhase.Restored);
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(LogLevelMigration, LifecyclePhase.Eventually);

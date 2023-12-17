@@ -8,7 +8,7 @@ import { isThenable, Promises } from "vs/base/common/async";
 // Shared veto handling across main and renderer
 export function handleVetos(
 	vetos: (boolean | Promise<boolean>)[],
-	onError: (error: Error) => void,
+	onError: (error: Error) => void
 ): Promise<boolean /* veto */> {
 	if (vetos.length === 0) {
 		return Promise.resolve(false);
@@ -34,8 +34,8 @@ export function handleVetos(
 					(err) => {
 						onError(err); // error, treated like a veto, done
 						lazyValue = true;
-					},
-				),
+					}
+				)
 			);
 		}
 	}

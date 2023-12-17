@@ -32,11 +32,11 @@ import {
 export class BrowserWindowDriver implements IWindowDriver {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILogService private readonly logService: ILogService
-	) {
-	}
+	) {}
 
 	async getLogs(): Promise<ILogFile[]> {
 		return getLogs(this.fileService, this.environmentService);
@@ -44,14 +44,14 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 	async whenWorkbenchRestored(): Promise<void> {
 		this.logService.info(
-			"[driver] Waiting for restored lifecycle phase...",
+			"[driver] Waiting for restored lifecycle phase..."
 		);
 		await this.lifecycleService.when(LifecyclePhase.Restored);
 		this.logService.info(
-			"[driver] Restored lifecycle phase reached. Waiting for contributions...",
+			"[driver] Restored lifecycle phase reached. Waiting for contributions..."
 		);
 		await Registry.as<IWorkbenchContributionsRegistry>(
-			WorkbenchExtensions.Workbench,
+			WorkbenchExtensions.Workbench
 		).whenRestored;
 		this.logService.info("[driver] Workbench contributions created.");
 	}
@@ -81,7 +81,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 				const tagName = el.tagName;
 				const id = el.id ? `#${el.id}` : "";
 				const classes = coalesce(
-					el.className.split(/\s+/g).map((c) => c.trim()),
+					el.className.split(/\s+/g).map((c) => c.trim())
 				)
 					.map((c) => `.${c}`)
 					.join("");
@@ -92,8 +92,8 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 			throw new Error(
 				`Active element not found. Current active element is '${chain.join(
-					" > ",
-				)}'. Looking for ${selector}`,
+					" > "
+				)}'. Looking for ${selector}`
 			);
 		}
 
@@ -102,7 +102,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 	async getElements(
 		selector: string,
-		recursive: boolean,
+		recursive: boolean
 	): Promise<IElement[]> {
 		const query = mainWindow.document.querySelectorAll(selector);
 		const result: IElement[] = [];
@@ -151,7 +151,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 	async getElementXY(
 		selector: string,
 		xoffset?: number,
-		yoffset?: number,
+		yoffset?: number
 	): Promise<{ x: number; y: number }> {
 		const offset =
 			typeof xoffset === "number" && typeof yoffset === "number"
@@ -234,7 +234,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 
 	protected async _getElementXY(
 		selector: string,
-		offset?: { x: number; y: number },
+		offset?: { x: number; y: number }
 	): Promise<{ x: number; y: number }> {
 		const element = mainWindow.document.querySelector(selector);
 
@@ -266,7 +266,7 @@ export class BrowserWindowDriver implements IWindowDriver {
 }
 
 export function registerWindowDriver(
-	instantiationService: IInstantiationService,
+	instantiationService: IInstantiationService
 ): void {
 	Object.assign(mainWindow, {
 		driver: instantiationService.createInstance(BrowserWindowDriver),

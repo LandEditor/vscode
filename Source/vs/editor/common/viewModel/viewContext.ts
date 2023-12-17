@@ -18,7 +18,7 @@ export class ViewContext {
 	constructor(
 		configuration: IEditorConfiguration,
 		theme: IColorTheme,
-		model: IViewModel,
+		model: IViewModel
 	) {
 		this.configuration = configuration;
 		this.theme = new EditorTheme(theme);

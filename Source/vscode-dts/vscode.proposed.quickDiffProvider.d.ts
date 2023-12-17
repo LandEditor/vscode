@@ -11,7 +11,7 @@ declare module "vscode" {
 			selector: DocumentSelector,
 			quickDiffProvider: QuickDiffProvider,
 			label: string,
-			rootUri?: Uri,
+			rootUri?: Uri
 		): Disposable;
 	}
 

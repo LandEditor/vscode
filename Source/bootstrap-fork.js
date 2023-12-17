@@ -23,7 +23,7 @@ bootstrap.enableASARSupport();
 
 if (process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]) {
 	bootstrapNode.injectNodeModuleLookupPath(
-		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"],
+		process.env["VSCODE_INJECT_NODE_MODULE_LOOKUP_PATH"]
 	);
 }
 
@@ -189,10 +189,10 @@ function pipeLoggingToParent() {
 			get:
 				() =>
 				(
-				/** @type {string | Buffer | Uint8Array} */ chunk,
-				/** @type {BufferEncoding | undefined} */ encoding,
-				/** @type {((err?: Error | undefined) => void) | undefined} */ callback,
-			) => {
+					/** @type {string | Buffer | Uint8Array} */ chunk,
+					/** @type {BufferEncoding | undefined} */ encoding,
+					/** @type {((err?: Error | undefined) => void) | undefined} */ callback
+				) => {
 					buf += chunk.toString(encoding);
 					const eol =
 						buf.length > MAX_STREAM_BUFFER_LENGTH
@@ -271,7 +271,7 @@ function configureCrashReporter() {
 				// @ts-ignore
 				process["crashReporter"].addExtraParameter(
 					"processType",
-					crashReporterProcessType,
+					crashReporterProcessType
 				);
 			}
 		} catch (error) {

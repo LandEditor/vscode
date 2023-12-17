@@ -12,18 +12,18 @@ export interface MessagePoster {
 	 */
 	postMessage<T extends FromWebviewMessage.Type>(
 		type: T["type"],
-		body: Omit<T, "source" | "type">,
+		body: Omit<T, "source" | "type">
 	): void;
 }
 
 export const createPosterForVsCode = (
 	vscode: any,
-	settingsManager: SettingsManager,
+	settingsManager: SettingsManager
 ): MessagePoster => {
 	return {
 		postMessage<T extends FromWebviewMessage.Type>(
 			type: T["type"],
-			body: Omit<T, "source" | "type">,
+			body: Omit<T, "source" | "type">
 		): void {
 			vscode.postMessage({
 				type,

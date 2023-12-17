@@ -17,7 +17,7 @@ export class UnicodeTextModelHighlighter {
 	public static computeUnicodeHighlights(
 		model: IUnicodeCharacterSearcherTarget,
 		options: UnicodeHighlighterOptions,
-		range?: IRange,
+		range?: IRange
 	): IUnicodeHighlightsResult {
 		const startLine = range ? range.startLineNumber : 1;
 		const endLine = range ? range.endLineNumber : model.getLineCount();
@@ -31,7 +31,7 @@ export class UnicodeTextModelHighlighter {
 		} else {
 			regex = new RegExp(
 				`${buildRegExpCharClassExpr(Array.from(candidates))}`,
-				"g",
+				"g"
 			);
 		}
 
@@ -63,7 +63,7 @@ export class UnicodeTextModelHighlighter {
 					// Extend range to entire code point
 					if (startIndex > 0) {
 						const charCodeBefore = lineContent.charCodeAt(
-							startIndex - 1,
+							startIndex - 1
 						);
 						if (strings.isHighSurrogate(charCodeBefore)) {
 							startIndex--;
@@ -71,7 +71,7 @@ export class UnicodeTextModelHighlighter {
 					}
 					if (endIndex + 1 < lineLength) {
 						const charCodeBefore = lineContent.charCodeAt(
-							endIndex - 1,
+							endIndex - 1
 						);
 						if (strings.isHighSurrogate(charCodeBefore)) {
 							endIndex++;
@@ -82,7 +82,7 @@ export class UnicodeTextModelHighlighter {
 						startIndex + 1,
 						DEFAULT_WORD_REGEXP,
 						lineContent,
-						0,
+						0
 					);
 					if (word && word.endColumn <= startIndex + 1) {
 						// The word does not include the problematic character, ignore the word
@@ -91,7 +91,7 @@ export class UnicodeTextModelHighlighter {
 					const highlightReason =
 						codePointHighlighter.shouldHighlightNonBasicASCII(
 							str,
-							word ? word.word : null,
+							word ? word.word : null
 						);
 
 					if (highlightReason !== SimpleHighlightReason.None) {
@@ -123,8 +123,8 @@ export class UnicodeTextModelHighlighter {
 								lineNumber,
 								startIndex + 1,
 								lineNumber,
-								endIndex + 1,
-							),
+								endIndex + 1
+							)
 						);
 					}
 				}
@@ -141,13 +141,13 @@ export class UnicodeTextModelHighlighter {
 
 	public static computeUnicodeHighlightReason(
 		char: string,
-		options: UnicodeHighlighterOptions,
+		options: UnicodeHighlighterOptions
 	): UnicodeHighlighterReason | null {
 		const codePointHighlighter = new CodePointHighlighter(options);
 
 		const reason = codePointHighlighter.shouldHighlightNonBasicASCII(
 			char,
-			null,
+			null
 		);
 		switch (reason) {
 			case SimpleHighlightReason.None:
@@ -159,14 +159,14 @@ export class UnicodeTextModelHighlighter {
 				const codePoint = char.codePointAt(0)!;
 				const primaryConfusable =
 					codePointHighlighter.ambiguousCharacters.getPrimaryConfusable(
-						codePoint,
+						codePoint
 					)!;
 				const notAmbiguousInLocales =
 					strings.AmbiguousCharacters.getLocales().filter(
 						(l) =>
 							!strings.AmbiguousCharacters.getInstance(
-								new Set([...options.allowedLocales, l]),
-							).isAmbiguous(codePoint),
+								new Set([...options.allowedLocales, l])
+							).isAmbiguous(codePoint)
 					);
 				return {
 					kind: UnicodeHighlighterReasonKind.Ambiguous,
@@ -182,10 +182,10 @@ export class UnicodeTextModelHighlighter {
 
 function buildRegExpCharClassExpr(
 	codePoints: number[],
-	flags?: string,
+	flags?: string
 ): string {
 	const src = `[${strings.escapeRegExpCharacters(
-		codePoints.map((i) => String.fromCodePoint(i)).join(""),
+		codePoints.map((i) => String.fromCodePoint(i)).join("")
 	)}]`;
 	return src;
 }
@@ -215,7 +215,7 @@ class CodePointHighlighter {
 	constructor(private readonly options: UnicodeHighlighterOptions) {
 		this.allowedCodePoints = new Set(options.allowedCodePoints);
 		this.ambiguousCharacters = strings.AmbiguousCharacters.getInstance(
-			new Set(options.allowedLocales),
+			new Set(options.allowedLocales)
 		);
 	}
 
@@ -249,7 +249,7 @@ class CodePointHighlighter {
 
 	public shouldHighlightNonBasicASCII(
 		character: string,
-		wordContext: string | null,
+		wordContext: string | null
 	): SimpleHighlightReason {
 		const codePoint = character.codePointAt(0)!;
 

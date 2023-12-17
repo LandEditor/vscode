@@ -273,7 +273,7 @@ let hasErrors = false;
 function checkFile(
 	program: ts.Program,
 	sourceFile: ts.SourceFile,
-	rule: IRule,
+	rule: IRule
 ) {
 	checkNode(sourceFile);
 
@@ -310,7 +310,7 @@ function checkFile(
 					rule.target
 				}' (${sourceFile.fileName} (${line + 1},${
 					character + 1
-				}). Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`,
+				}). Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`
 			);
 
 			hasErrors = true;
@@ -331,7 +331,7 @@ function checkFile(
 								for (const allowedDefinition of rule.allowedDefinitions) {
 									if (
 										definitionFileName.indexOf(
-											allowedDefinition,
+											allowedDefinition
 										) >= 0
 									) {
 										continue DeclarationLoop;
@@ -342,12 +342,12 @@ function checkFile(
 								for (const disallowedDefinition of rule.disallowedDefinitions) {
 									if (
 										definitionFileName.indexOf(
-											disallowedDefinition,
+											disallowedDefinition
 										) >= 0
 									) {
 										const { line, character } =
 											sourceFile.getLineAndCharacterOfPosition(
-												node.getStart(),
+												node.getStart()
 											);
 
 										console.log(
@@ -357,7 +357,7 @@ function checkFile(
 												line + 1
 											},${
 												character + 1
-											}) Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`,
+											}) Learn more about our source code organization at https://github.com/microsoft/vscode/wiki/Source-Code-Organization.`
 										);
 
 										hasErrors = true;
@@ -386,7 +386,7 @@ function createProgram(tsconfigPath: string): ts.Program {
 		tsConfig.config,
 		configHostParser,
 		resolve(dirname(tsconfigPath)),
-		{ noEmit: true },
+		{ noEmit: true }
 	);
 
 	const compilerHost = ts.createCompilerHost(tsConfigParsed.options, true);
@@ -394,7 +394,7 @@ function createProgram(tsconfigPath: string): ts.Program {
 	return ts.createProgram(
 		tsConfigParsed.fileNames,
 		tsConfigParsed.options,
-		compilerHost,
+		compilerHost
 	);
 }
 

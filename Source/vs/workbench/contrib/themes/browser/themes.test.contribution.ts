@@ -68,7 +68,7 @@ class ThemeDocument {
 	private _generateExplanation(selector: string, color: Color): string {
 		return `${selector}: ${Color.Format.CSS.formatHexA(
 			color,
-			true,
+			true
 		).toUpperCase()}`;
 	}
 
@@ -82,10 +82,10 @@ class ThemeDocument {
 					`[${
 						this._theme.label
 					}]: Unexpected color ${Color.Format.CSS.formatHexA(
-						color,
+						color
 					)} for ${scopes}. Expected default ${Color.Format.CSS.formatHexA(
-						expected,
-					)}`,
+						expected
+					)}`
 				);
 			}
 			return this._generateExplanation("default", color);
@@ -97,10 +97,10 @@ class ThemeDocument {
 				`[${
 					this._theme.label
 				}]: Unexpected color ${Color.Format.CSS.formatHexA(
-					color,
+					color
 				)} for ${scopes}. Expected ${Color.Format.CSS.formatHexA(
-					expected,
-				)} coming in from ${matchingRule.rawSelector}`,
+					expected
+				)} coming in from ${matchingRule.rawSelector}`
 			);
 		}
 		return this._generateExplanation(matchingRule.rawSelector, color);
@@ -110,7 +110,7 @@ class ThemeDocument {
 		if (!this._cache[scopes]) {
 			this._cache[scopes] = findMatchingThemeRule(
 				this._theme,
-				scopes.split(" "),
+				scopes.split(" ")
 			)!;
 		}
 		return this._cache[scopes];
@@ -120,14 +120,15 @@ class ThemeDocument {
 class Snapper {
 	constructor(
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkbenchThemeService private readonly themeService: IWorkbenchThemeService,
-		@ITextMateTokenizationService private readonly textMateService: ITextMateTokenizationService
-	) {
-	}
+		@IWorkbenchThemeService
+		private readonly themeService: IWorkbenchThemeService,
+		@ITextMateTokenizationService
+		private readonly textMateService: ITextMateTokenizationService
+	) {}
 
 	private _themedTokenize(
 		grammar: IGrammar,
-		lines: string[],
+		lines: string[]
 	): IThemedToken[] {
 		const colorMap = TokenizationRegistry.getColorMap();
 		let state: StateStack | null = null;
@@ -183,7 +184,7 @@ class Snapper {
 				const token = tokenizationResult.tokens[j];
 				const tokenText = line.substring(
 					token.startIndex,
-					token.endIndex,
+					token.endIndex
 				);
 				const tokenScopes = token.scopes.join(" ");
 
@@ -212,7 +213,7 @@ class Snapper {
 
 	private async _getThemesResult(
 		grammar: IGrammar,
-		lines: string[],
+		lines: string[]
 	): Promise<IThemesResult> {
 		const currentTheme = this.themeService.getColorTheme();
 
@@ -229,19 +230,19 @@ class Snapper {
 
 		const themeDatas = await this.themeService.getColorThemes();
 		const defaultThemes = themeDatas.filter(
-			(themeData) => !!getThemeName(themeData.id),
+			(themeData) => !!getThemeName(themeData.id)
 		);
 		for (const defaultTheme of defaultThemes) {
 			const themeId = defaultTheme.id;
 			const success = await this.themeService.setColorTheme(
 				themeId,
-				undefined,
+				undefined
 			);
 			if (success) {
 				const themeName = getThemeName(themeId);
 				result[themeName!] = {
 					document: new ThemeDocument(
-						this.themeService.getColorTheme(),
+						this.themeService.getColorTheme()
 					),
 					tokens: this._themedTokenize(grammar, lines),
 				};
@@ -278,11 +279,11 @@ class Snapper {
 
 	public captureSyntaxTokens(
 		fileName: string,
-		content: string,
+		content: string
 	): Promise<IToken[]> {
 		const languageId =
 			this.languageService.guessLanguageIdByFilepathOrFirstLine(
-				URI.file(fileName),
+				URI.file(fileName)
 			);
 		return this.textMateService
 			.createTokenizer(languageId!)
@@ -297,7 +298,7 @@ class Snapper {
 					(themesResult) => {
 						this._enrichResult(result, themesResult);
 						return result.filter((t) => t.c.length > 0);
-					},
+					}
 				);
 			});
 	}
@@ -316,7 +317,7 @@ CommandsRegistry.registerCommand(
 			return fileService.readFile(resource).then((content) => {
 				return snapper.captureSyntaxTokens(
 					fileName,
-					content.value.toString(),
+					content.value.toString()
 				);
 			});
 		};
@@ -326,8 +327,8 @@ CommandsRegistry.registerCommand(
 			const file = editorService.activeEditor
 				? EditorResourceAccessor.getCanonicalUri(
 						editorService.activeEditor,
-						{ filterByScheme: Schemas.file },
-				  )
+						{ filterByScheme: Schemas.file }
+					)
 				: null;
 			if (file) {
 				process(file).then((result) => {
@@ -340,5 +341,5 @@ CommandsRegistry.registerCommand(
 			return process(resource);
 		}
 		return undefined;
-	},
+	}
 );

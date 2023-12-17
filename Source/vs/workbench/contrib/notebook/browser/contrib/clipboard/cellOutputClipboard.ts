@@ -15,15 +15,15 @@ export async function copyCellOutput(
 	mimeType: string | undefined,
 	outputViewModel: ICellOutputViewModel,
 	clipboardService: IClipboardService,
-	logService: ILogService,
+	logService: ILogService
 ) {
 	const cellOutput = outputViewModel.model;
 	const output =
 		mimeType && TEXT_BASED_MIMETYPES.includes(mimeType)
 			? cellOutput.outputs.find((output) => output.mime === mimeType)
 			: cellOutput.outputs.find((output) =>
-					TEXT_BASED_MIMETYPES.includes(output.mime),
-			  );
+					TEXT_BASED_MIMETYPES.includes(output.mime)
+				);
 
 	mimeType = output?.mime;
 
@@ -42,7 +42,7 @@ export async function copyCellOutput(
 		while (index < cellViewModel.model.outputs.length) {
 			const nextCellOutput = cellViewModel.model.outputs[index];
 			const nextOutput = nextCellOutput.outputs.find((output) =>
-				isTextStreamMime(output.mime),
+				isTextStreamMime(output.mime)
 			);
 			if (!nextOutput) {
 				break;

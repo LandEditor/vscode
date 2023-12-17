@@ -47,7 +47,7 @@ export class MemFs implements vscode.FileSystemProvider {
 	writeFile(
 		uri: vscode.Uri,
 		content: Uint8Array,
-		{ create, overwrite }: { create: boolean; overwrite: boolean },
+		{ create, overwrite }: { create: boolean; overwrite: boolean }
 	): void {
 		// console.log('writeFile', uri.toString());
 
@@ -76,7 +76,7 @@ export class MemFs implements vscode.FileSystemProvider {
 				]);
 			} else {
 				throw vscode.FileSystemError.NoPermissions(
-					"overwrite option was not passed in",
+					"overwrite option was not passed in"
 				);
 			}
 		}
@@ -85,7 +85,7 @@ export class MemFs implements vscode.FileSystemProvider {
 	rename(
 		_oldUri: vscode.Uri,
 		_newUri: vscode.Uri,
-		_options: { overwrite: boolean },
+		_options: { overwrite: boolean }
 	): void {
 		throw new Error("not implemented");
 	}
@@ -181,7 +181,7 @@ class FsEntry {
 		if (this.type === vscode.FileType.Directory) {
 			return [...this.contents.values()].reduce(
 				(acc: number, entry: FsEntry) => acc + entry.size,
-				0,
+				0
 			);
 		} else {
 			return this.data.length;
@@ -191,7 +191,7 @@ class FsEntry {
 	constructor(
 		private _data: Uint8Array | Map<string, FsEntry>,
 		public ctime: number,
-		public mtime: number,
+		public mtime: number
 	) {}
 
 	get data() {

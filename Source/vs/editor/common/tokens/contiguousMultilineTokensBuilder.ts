@@ -16,7 +16,7 @@ export class ContiguousMultilineTokensBuilder {
 			offset = ContiguousMultilineTokens.deserialize(
 				buff,
 				offset,
-				result,
+				result
 			);
 		}
 		return result;
@@ -38,7 +38,7 @@ export class ContiguousMultilineTokensBuilder {
 			}
 		}
 		this._tokens.push(
-			new ContiguousMultilineTokens(lineNumber, [lineTokens]),
+			new ContiguousMultilineTokens(lineNumber, [lineTokens])
 		);
 	}
 

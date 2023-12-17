@@ -19,8 +19,8 @@ const SettingsEditorIcon = registerIcon(
 	Codicon.settings,
 	nls.localize(
 		"settingsEditorLabelIcon",
-		"Icon of the settings editor label.",
-	),
+		"Icon of the settings editor label."
+	)
 );
 
 export class SettingsEditor2Input extends EditorInput {
@@ -32,9 +32,7 @@ export class SettingsEditor2Input extends EditorInput {
 		path: `settingseditor`,
 	});
 
-	constructor(
-		@IPreferencesService _preferencesService: IPreferencesService,
-	) {
+	constructor(@IPreferencesService _preferencesService: IPreferencesService) {
 		super();
 
 		this._settingsModel = _preferencesService.createSettings2EditorModel();

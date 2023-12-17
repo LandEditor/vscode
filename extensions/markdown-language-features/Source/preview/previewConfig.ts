@@ -27,20 +27,20 @@ export class MarkdownPreviewConfiguration {
 	private constructor(resource: vscode.Uri) {
 		const editorConfig = vscode.workspace.getConfiguration(
 			"editor",
-			resource,
+			resource
 		);
 		const markdownConfig = vscode.workspace.getConfiguration(
 			"markdown",
-			resource,
+			resource
 		);
 		const markdownEditorConfig = vscode.workspace.getConfiguration(
 			"[markdown]",
-			resource,
+			resource
 		);
 
 		this.scrollBeyondLastLine = editorConfig.get<boolean>(
 			"scrollBeyondLastLine",
-			false,
+			false
 		);
 
 		this.wordWrap = editorConfig.get<string>("wordWrap", "off") !== "off";
@@ -50,36 +50,36 @@ export class MarkdownPreviewConfiguration {
 
 		this.scrollPreviewWithEditor = !!markdownConfig.get<boolean>(
 			"preview.scrollPreviewWithEditor",
-			true,
+			true
 		);
 		this.scrollEditorWithPreview = !!markdownConfig.get<boolean>(
 			"preview.scrollEditorWithPreview",
-			true,
+			true
 		);
 		this.lineBreaks = !!markdownConfig.get<boolean>(
 			"preview.breaks",
-			false,
+			false
 		);
 		this.doubleClickToSwitchToEditor = !!markdownConfig.get<boolean>(
 			"preview.doubleClickToSwitchToEditor",
-			true,
+			true
 		);
 		this.markEditorSelection = !!markdownConfig.get<boolean>(
 			"preview.markEditorSelection",
-			true,
+			true
 		);
 
 		this.fontFamily = markdownConfig.get<string | undefined>(
 			"preview.fontFamily",
-			undefined,
+			undefined
 		);
 		this.fontSize = Math.max(
 			8,
-			+markdownConfig.get<number>("preview.fontSize", NaN),
+			+markdownConfig.get<number>("preview.fontSize", NaN)
 		);
 		this.lineHeight = Math.max(
 			0.6,
-			+markdownConfig.get<number>("preview.lineHeight", NaN),
+			+markdownConfig.get<number>("preview.lineHeight", NaN)
 		);
 
 		this.styles = markdownConfig.get<string[]>("styles", []);
@@ -107,12 +107,12 @@ export class MarkdownPreviewConfigurationManager {
 	>();
 
 	public loadAndCacheConfiguration(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): MarkdownPreviewConfiguration {
 		const config = MarkdownPreviewConfiguration.getForResource(resource);
 		this._previewConfigurationsForWorkspaces.set(
 			this._getKey(resource),
-			config,
+			config
 		);
 		return config;
 	}

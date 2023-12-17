@@ -32,12 +32,19 @@ export class TextResourceConfigurationService
 		this._onDidChangeConfiguration.event;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageService private readonly languageService: ILanguageService,
+		@ILanguageService private readonly languageService: ILanguageService
 	) {
 		super();
-		this._register(this.configurationService.onDidChangeConfiguration(e => this._onDidChangeConfiguration.fire(this.toResourceConfigurationChangeEvent(e))));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this._onDidChangeConfiguration.fire(
+					this.toResourceConfigurationChangeEvent(e)
+				)
+			)
+		);
 	}
 
 	getValue<T>(resource: URI | undefined, section?: string): T;
@@ -47,13 +54,13 @@ export class TextResourceConfigurationService
 			return this._getValue(
 				resource,
 				Position.isIPosition(arg2) ? arg2 : null,
-				arg3,
+				arg3
 			);
 		}
 		return this._getValue(
 			resource,
 			null,
-			typeof arg2 === "string" ? arg2 : undefined,
+			typeof arg2 === "string" ? arg2 : undefined
 		);
 	}
 
@@ -61,7 +68,7 @@ export class TextResourceConfigurationService
 		resource: URI,
 		key: string,
 		value: any,
-		configurationTarget?: ConfigurationTarget,
+		configurationTarget?: ConfigurationTarget
 	): Promise<void> {
 		const language = this.getLanguage(resource, null);
 		const configurationValue = this.configurationService.inspect(key, {
@@ -71,7 +78,7 @@ export class TextResourceConfigurationService
 		if (configurationTarget === undefined) {
 			configurationTarget = this.deriveConfigurationTarget(
 				configurationValue,
-				language,
+				language
 			);
 		}
 		switch (configurationTarget) {
@@ -82,7 +89,7 @@ export class TextResourceConfigurationService
 					configurationTarget,
 					configurationValue.memory?.override,
 					resource,
-					language,
+					language
 				);
 			case ConfigurationTarget.WORKSPACE_FOLDER:
 				return this._updateValue(
@@ -91,7 +98,7 @@ export class TextResourceConfigurationService
 					configurationTarget,
 					configurationValue.workspaceFolder?.override,
 					resource,
-					language,
+					language
 				);
 			case ConfigurationTarget.WORKSPACE:
 				return this._updateValue(
@@ -100,7 +107,7 @@ export class TextResourceConfigurationService
 					configurationTarget,
 					configurationValue.workspace?.override,
 					resource,
-					language,
+					language
 				);
 			case ConfigurationTarget.USER_REMOTE:
 				return this._updateValue(
@@ -109,7 +116,7 @@ export class TextResourceConfigurationService
 					configurationTarget,
 					configurationValue.userRemote?.override,
 					resource,
-					language,
+					language
 				);
 			default:
 				return this._updateValue(
@@ -118,7 +125,7 @@ export class TextResourceConfigurationService
 					configurationTarget,
 					configurationValue.userLocal?.override,
 					resource,
-					language,
+					language
 				);
 		}
 	}
@@ -129,28 +136,28 @@ export class TextResourceConfigurationService
 		configurationTarget: ConfigurationTarget,
 		overriddenValue: any | undefined,
 		resource: URI,
-		language: string | null,
+		language: string | null
 	): Promise<void> {
 		if (language && overriddenValue !== undefined) {
 			return this.configurationService.updateValue(
 				key,
 				value,
 				{ resource, overrideIdentifier: language },
-				configurationTarget,
+				configurationTarget
 			);
 		} else {
 			return this.configurationService.updateValue(
 				key,
 				value,
 				{ resource },
-				configurationTarget,
+				configurationTarget
 			);
 		}
 	}
 
 	private deriveConfigurationTarget(
 		configurationValue: IConfigurationValue<any>,
-		language: string | null,
+		language: string | null
 	): ConfigurationTarget {
 		if (language) {
 			if (configurationValue.memory?.override !== undefined) {
@@ -187,7 +194,7 @@ export class TextResourceConfigurationService
 	private _getValue<T>(
 		resource: URI | undefined,
 		position: IPosition | null,
-		section: string | undefined,
+		section: string | undefined
 	): T {
 		const language = resource
 			? this.getLanguage(resource, position)
@@ -207,7 +214,7 @@ export class TextResourceConfigurationService
 	inspect<T>(
 		resource: URI | undefined,
 		position: IPosition | null,
-		section: string,
+		section: string
 	): IConfigurationValue<Readonly<T>> {
 		const language = resource
 			? this.getLanguage(resource, position)
@@ -220,37 +227,37 @@ export class TextResourceConfigurationService
 
 	private getLanguage(
 		resource: URI,
-		position: IPosition | null,
+		position: IPosition | null
 	): string | null {
 		const model = this.modelService.getModel(resource);
 		if (model) {
 			return position
 				? model.getLanguageIdAtPosition(
 						position.lineNumber,
-						position.column,
-				  )
+						position.column
+					)
 				: model.getLanguageId();
 		}
 		return this.languageService.guessLanguageIdByFilepathOrFirstLine(
-			resource,
+			resource
 		);
 	}
 
 	private toResourceConfigurationChangeEvent(
-		configurationChangeEvent: IConfigurationChangeEvent,
+		configurationChangeEvent: IConfigurationChangeEvent
 	): ITextResourceConfigurationChangeEvent {
 		return {
 			affectedKeys: configurationChangeEvent.affectedKeys,
 			affectsConfiguration: (
 				resource: URI | undefined,
-				configuration: string,
+				configuration: string
 			) => {
 				const overrideIdentifier = resource
 					? this.getLanguage(resource, null)
 					: undefined;
 				return configurationChangeEvent.affectsConfiguration(
 					configuration,
-					{ resource, overrideIdentifier },
+					{ resource, overrideIdentifier }
 				);
 			},
 		};

@@ -27,16 +27,18 @@ export class CustomEndpointTelemetryService
 	private customTelemetryServices = new Map<string, ITelemetryService>();
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILogService private readonly logService: ILogService,
 		@ILoggerService private readonly loggerService: ILoggerService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IProductService private readonly productService: IProductService
-	) { }
+	) {}
 
 	private getCustomTelemetryService(
-		endpoint: ITelemetryEndpoint,
+		endpoint: ITelemetryEndpoint
 	): ITelemetryService {
 		if (!this.customTelemetryServices.has(endpoint.id)) {
 			const telemetryInfo: { [key: string]: string } =
@@ -62,7 +64,7 @@ export class CustomEndpointTelemetryService
 						VSCODE_AMD_ENTRYPOINT:
 							"vs/workbench/contrib/debug/node/telemetryApp",
 					},
-				},
+				}
 			);
 
 			const channel = client.getChannel("telemetryAppender");
@@ -73,7 +75,7 @@ export class CustomEndpointTelemetryService
 					this.loggerService,
 					this.environmentService,
 					this.productService,
-					`[${endpoint.id}] `,
+					`[${endpoint.id}] `
 				),
 			];
 
@@ -85,8 +87,8 @@ export class CustomEndpointTelemetryService
 						sendErrorTelemetry: endpoint.sendErrorTelemetry,
 					},
 					this.configurationService,
-					this.productService,
-				),
+					this.productService
+				)
 			);
 		}
 
@@ -96,7 +98,7 @@ export class CustomEndpointTelemetryService
 	publicLog(
 		telemetryEndpoint: ITelemetryEndpoint,
 		eventName: string,
-		data?: ITelemetryData,
+		data?: ITelemetryData
 	) {
 		const customTelemetryService =
 			this.getCustomTelemetryService(telemetryEndpoint);
@@ -106,7 +108,7 @@ export class CustomEndpointTelemetryService
 	publicLogError(
 		telemetryEndpoint: ITelemetryEndpoint,
 		errorEventName: string,
-		data?: ITelemetryData,
+		data?: ITelemetryData
 	) {
 		const customTelemetryService =
 			this.getCustomTelemetryService(telemetryEndpoint);

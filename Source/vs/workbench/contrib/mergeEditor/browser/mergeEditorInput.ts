@@ -46,7 +46,7 @@ export class MergeEditorInputData {
 		readonly uri: URI,
 		readonly title: string | undefined,
 		readonly detail: string | undefined,
-		readonly description: string | undefined,
+		readonly description: string | undefined
 	) {}
 }
 
@@ -62,7 +62,7 @@ export class MergeEditorInput
 		showConfirm: () => this._inputModel?.shouldConfirmClose() ?? false,
 		confirm: async (editors) => {
 			assertFn(() =>
-				editors.every((e) => e.editor instanceof MergeEditorInput),
+				editors.every((e) => e.editor instanceof MergeEditorInput)
 			);
 			const inputModels = editors
 				.map((e) => (e.editor as MergeEditorInput)._inputModel)
@@ -83,16 +83,29 @@ export class MergeEditorInput
 		public readonly input1: MergeEditorInputData,
 		public readonly input2: MergeEditorInputData,
 		public readonly result: URI,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@IEditorService editorService: IEditorService,
 		@ITextFileService textFileService: ITextFileService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService
 	) {
-		super(result, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService);
+		super(
+			result,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService
+		);
 	}
 
 	override dispose(): void {
@@ -124,7 +137,7 @@ export class MergeEditorInput
 		this.useWorkingCopy
 			? TempFileMergeEditorModeFactory
 			: WorkspaceMergeEditorModeFactory,
-		this._instaService.createInstance(MergeEditorTelemetry),
+		this._instaService.createInstance(MergeEditorTelemetry)
 	);
 
 	override async resolve(): Promise<IMergeEditorInputModel> {
@@ -135,7 +148,7 @@ export class MergeEditorInput
 					input1: this.input1,
 					input2: this.input2,
 					result: this.result,
-				}),
+				})
 			);
 			this._inputModel = inputModel;
 
@@ -144,7 +157,7 @@ export class MergeEditorInput
 					/** @description fire dirty event */
 					inputModel.isDirty.read(reader);
 					this._onDidChangeDirty.fire();
-				}),
+				})
 			);
 
 			await this._inputModel.model.onInitialized;
@@ -159,7 +172,7 @@ export class MergeEditorInput
 
 	override async save(
 		group: number,
-		options?: ITextFileSaveOptions | undefined,
+		options?: ITextFileSaveOptions | undefined
 	): Promise<IUntypedEditorInput | undefined> {
 		await this._inputModel?.save(options);
 		return undefined;
@@ -215,7 +228,7 @@ export class MergeEditorInput
 
 	override async revert(
 		group: number,
-		options?: IRevertOptions,
+		options?: IRevertOptions
 	): Promise<void> {
 		return this._inputModel?.revert(options);
 	}

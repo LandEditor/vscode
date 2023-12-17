@@ -33,7 +33,7 @@ exports.downloadLibcxxHeaders = downloadLibcxxHeaders;
 async function downloadLibcxxObjects(
 	outDir,
 	electronVersion,
-	targetArch = "x64",
+	targetArch = "x64"
 ) {
 	if (await fs.existsSync(path.resolve(outDir, "libc++.a"))) {
 		return;
@@ -59,7 +59,7 @@ async function main() {
 		process.env["VSCODE_LIBCXXABI_HEADERS_DIR"];
 	const arch = process.env["VSCODE_ARCH"];
 	const packageJSON = JSON.parse(
-		fs.readFileSync(path.join(root, "package.json"), "utf8"),
+		fs.readFileSync(path.join(root, "package.json"), "utf8")
 	);
 	const electronVersion = packageJSON.devDependencies.electron;
 	if (
@@ -73,12 +73,12 @@ async function main() {
 	await downloadLibcxxHeaders(
 		libcxxHeadersDownloadDir,
 		electronVersion,
-		"libcxx",
+		"libcxx"
 	);
 	await downloadLibcxxHeaders(
 		libcxxabiHeadersDownloadDir,
 		electronVersion,
-		"libcxxabi",
+		"libcxxabi"
 	);
 }
 if (require.main === module) {

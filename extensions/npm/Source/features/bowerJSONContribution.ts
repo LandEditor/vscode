@@ -114,7 +114,7 @@ export class BowerJSONContribution implements IJSONContribution {
 
 	public collectDefaultSuggestions(
 		_resource: Uri,
-		collector: ISuggestionsCollector,
+		collector: ISuggestionsCollector
 	): Thenable<any> {
 		const defaultValue = {
 			name: "${1:name}",
@@ -127,7 +127,7 @@ export class BowerJSONContribution implements IJSONContribution {
 		const proposal = new CompletionItem(l10n.t("Default bower.json"));
 		proposal.kind = CompletionItemKind.Class;
 		proposal.insertText = new SnippetString(
-			JSON.stringify(defaultValue, null, "\t"),
+			JSON.stringify(defaultValue, null, "\t")
 		);
 		collector.add(proposal);
 		return Promise.resolve(null);
@@ -139,7 +139,7 @@ export class BowerJSONContribution implements IJSONContribution {
 		currentWord: string,
 		addValue: boolean,
 		isLast: boolean,
-		collector: ISuggestionsCollector,
+		collector: ISuggestionsCollector
 	): Thenable<any> | null {
 		if (!this.isEnabled()) {
 			return null;
@@ -171,7 +171,7 @@ export class BowerJSONContribution implements IJSONContribution {
 											result.description || "";
 										const insertText =
 											new SnippetString().appendText(
-												JSON.stringify(name),
+												JSON.stringify(name)
 											);
 										if (addValue) {
 											insertText
@@ -182,7 +182,7 @@ export class BowerJSONContribution implements IJSONContribution {
 											}
 										}
 										const proposal = new CompletionItem(
-											name,
+											name
 										);
 										proposal.kind =
 											CompletionItemKind.Property;
@@ -201,8 +201,8 @@ export class BowerJSONContribution implements IJSONContribution {
 							collector.error(
 								l10n.t(
 									"Request to the bower repository failed: {0}",
-									success.responseText,
-								),
+									success.responseText
+								)
 							);
 							return 0;
 						}
@@ -212,16 +212,16 @@ export class BowerJSONContribution implements IJSONContribution {
 						collector.error(
 							l10n.t(
 								"Request to the bower repository failed: {0}",
-								error.responseText,
-							),
+								error.responseText
+							)
 						);
 						return 0;
-					},
+					}
 				);
 			} else {
 				this.topRanked.forEach((name) => {
 					const insertText = new SnippetString().appendText(
-						JSON.stringify(name),
+						JSON.stringify(name)
 					);
 					if (addValue) {
 						insertText.appendText(": ").appendPlaceholder("latest");
@@ -247,7 +247,7 @@ export class BowerJSONContribution implements IJSONContribution {
 	public collectValueSuggestions(
 		_resource: Uri,
 		location: Location,
-		collector: ISuggestionsCollector,
+		collector: ISuggestionsCollector
 	): Promise<any> | null {
 		if (!this.isEnabled()) {
 			return null;
@@ -269,7 +269,7 @@ export class BowerJSONContribution implements IJSONContribution {
 
 	public resolveSuggestion(
 		_resource: Uri | undefined,
-		item: CompletionItem,
+		item: CompletionItem
 	): Thenable<CompletionItem | null> | null {
 		if (
 			item.kind === CompletionItemKind.Property &&
@@ -322,13 +322,13 @@ export class BowerJSONContribution implements IJSONContribution {
 			},
 			() => {
 				return undefined;
-			},
+			}
 		);
 	}
 
 	public getInfoContribution(
 		_resource: Uri,
-		location: Location,
+		location: Location
 	): Thenable<MarkdownString[] | null> | null {
 		if (!this.isEnabled()) {
 			return null;

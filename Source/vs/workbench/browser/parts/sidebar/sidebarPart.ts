@@ -113,19 +113,27 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IExtensionService extensionService: IExtensionService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IMenuService menuService: IMenuService,
+		@IMenuService menuService: IMenuService
 	) {
 		super(
 			Parts.SIDEBAR_PART,
-			{ hasTitle: true, borderWidth: () => (this.getColor(SIDE_BAR_BORDER) || this.getColor(contrastBorder)) ? 1 : 0 },
+			{
+				hasTitle: true,
+				borderWidth: () =>
+					this.getColor(SIDE_BAR_BORDER) ||
+					this.getColor(contrastBorder)
+						? 1
+						: 0,
+			},
 			SidebarPart.activeViewletSettingsKey,
 			ActiveViewletContext.bindTo(contextKeyService),
 			SidebarFocusContext.bindTo(contextKeyService),
-			'sideBar',
-			'viewlet',
+			"sideBar",
+			"viewlet",
 			SIDE_BAR_TITLE_FOREGROUND,
 			notificationService,
 			storageService,
@@ -137,25 +145,42 @@ export class SidebarPart extends AbstractPaneCompositePart {
 			viewDescriptorService,
 			contextKeyService,
 			extensionService,
-			menuService,
+			menuService
 		);
 
-		this.acitivityBarPart = this._register(instantiationService.createInstance(ActivitybarPart, this));
+		this.acitivityBarPart = this._register(
+			instantiationService.createInstance(ActivitybarPart, this)
+		);
 		this.rememberActivityBarVisiblePosition();
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(LayoutSettings.ACTIVITY_BAR_LOCATION)) {
-				this.onDidChangeActivityBarLocation();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(LayoutSettings.ACTIVITY_BAR_LOCATION)
+				) {
+					this.onDidChangeActivityBarLocation();
+				}
+			})
+		);
 
 		this.registerActions();
 
 		lifecycleService.when(LifecyclePhase.Eventually).then(() => {
-			telemetryService.publicLog2<{ location: string }, {
-				owner: 'sandy081';
-				location: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Locaiton where the activity bar is shown' };
-				comment: 'This is used to know where activity bar is shown in the workbench.';
-			}>('activityBar:location', { location: configurationService.getValue(LayoutSettings.ACTIVITY_BAR_LOCATION) });
+			telemetryService.publicLog2<
+				{ location: string },
+				{
+					owner: "sandy081";
+					location: {
+						classification: "SystemMetaData";
+						purpose: "FeatureInsight";
+						comment: "Locaiton where the activity bar is shown";
+					};
+					comment: "This is used to know where activity bar is shown in the workbench.";
+				}
+			>("activityBar:location", {
+				location: configurationService.getValue(
+					LayoutSettings.ACTIVITY_BAR_LOCATION
+				),
+			});
 		});
 	}
 
@@ -205,7 +230,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		width: number,
 		height: number,
 		top: number,
-		left: number,
+		left: number
 	): void {
 		if (!this.layoutService.isVisible(Parts.SIDEBAR_PART)) {
 			return;
@@ -226,7 +251,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 			this.getCompositeBarOptions(),
 			this.partId,
 			this,
-			false,
+			false
 		);
 	}
 
@@ -258,13 +283,13 @@ export class SidebarPart extends AbstractPaneCompositePart {
 				activeBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				inactiveBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				activeBorderBottomColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_BORDER,
+					PANEL_ACTIVE_TITLE_BORDER
 				),
 				activeForegroundColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_FOREGROUND,
+					PANEL_ACTIVE_TITLE_FOREGROUND
 				),
 				inactiveForegroundColor: theme.getColor(
-					PANEL_INACTIVE_TITLE_FOREGROUND,
+					PANEL_INACTIVE_TITLE_FOREGROUND
 				),
 				badgeBackground: theme.getColor(ACTIVITY_BAR_BADGE_BACKGROUND),
 				badgeForeground: theme.getColor(ACTIVITY_BAR_BADGE_FOREGROUND),
@@ -278,7 +303,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		return (
 			this.layoutService.isVisible(Parts.TITLEBAR_PART, mainWindow) &&
 			this.configurationService.getValue(
-				LayoutSettings.ACTIVITY_BAR_LOCATION,
+				LayoutSettings.ACTIVITY_BAR_LOCATION
 			) === ActivityBarPosition.TOP
 		);
 	}
@@ -289,21 +314,21 @@ export class SidebarPart extends AbstractPaneCompositePart {
 		}
 		return (
 			this.configurationService.getValue(
-				LayoutSettings.ACTIVITY_BAR_LOCATION,
+				LayoutSettings.ACTIVITY_BAR_LOCATION
 			) !== ActivityBarPosition.HIDDEN
 		);
 	}
 
 	private rememberActivityBarVisiblePosition(): void {
 		const activityBarPosition = this.configurationService.getValue<string>(
-			LayoutSettings.ACTIVITY_BAR_LOCATION,
+			LayoutSettings.ACTIVITY_BAR_LOCATION
 		);
 		if (activityBarPosition !== ActivityBarPosition.HIDDEN) {
 			this.storageService.store(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
 				activityBarPosition,
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 		}
 	}
@@ -311,7 +336,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 	private getRememberedActivityBarVisiblePosition(): ActivityBarPosition {
 		const activityBarPosition = this.storageService.get(
 			LayoutSettings.ACTIVITY_BAR_LOCATION,
-			StorageScope.PROFILE,
+			StorageScope.PROFILE
 		);
 		switch (activityBarPosition) {
 			case ActivityBarPosition.SIDE:
@@ -344,12 +369,12 @@ export class SidebarPart extends AbstractPaneCompositePart {
 	async focusActivityBar(): Promise<void> {
 		if (
 			this.configurationService.getValue(
-				LayoutSettings.ACTIVITY_BAR_LOCATION,
+				LayoutSettings.ACTIVITY_BAR_LOCATION
 			) === ActivityBarPosition.HIDDEN
 		) {
 			await this.configurationService.updateValue(
 				LayoutSettings.ACTIVITY_BAR_LOCATION,
-				this.getRememberedActivityBarVisiblePosition(),
+				this.getRememberedActivityBarVisiblePosition()
 			);
 			this.onDidChangeActivityBarLocation();
 		}
@@ -374,7 +399,7 @@ export class SidebarPart extends AbstractPaneCompositePart {
 							title: {
 								value: localize(
 									"toggleActivityBar",
-									"Toggle Activity Bar Visibility",
+									"Toggle Activity Bar Visibility"
 								),
 								original: "Toggle Activity Bar Visibility",
 							},
@@ -383,17 +408,17 @@ export class SidebarPart extends AbstractPaneCompositePart {
 					run(): Promise<void> {
 						const value =
 							that.configurationService.getValue(
-								LayoutSettings.ACTIVITY_BAR_LOCATION,
+								LayoutSettings.ACTIVITY_BAR_LOCATION
 							) === ActivityBarPosition.HIDDEN
 								? that.getRememberedActivityBarVisiblePosition()
 								: ActivityBarPosition.HIDDEN;
 						return that.configurationService.updateValue(
 							LayoutSettings.ACTIVITY_BAR_LOCATION,
-							value,
+							value
 						);
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 

@@ -31,7 +31,8 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 	private static readonly WILL_SHUTDOWN_WARNING_DELAY = 800;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IStorageService storageService: IStorageService,
 		@ILogService logService: ILogService
 	) {
@@ -52,10 +53,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 					okChannel: string;
 					cancelChannel: string;
 					reason: ShutdownReason;
-				},
+				}
 			) => {
 				this.logService.trace(
-					`[lifecycle] onBeforeUnload (reason: ${reply.reason})`,
+					`[lifecycle] onBeforeUnload (reason: ${reply.reason})`
 				);
 
 				// trigger onBeforeShutdown events and veto collecting
@@ -64,7 +65,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				// veto: cancel unload
 				if (veto) {
 					this.logService.trace(
-						"[lifecycle] onBeforeUnload prevented via veto",
+						"[lifecycle] onBeforeUnload prevented via veto"
 					);
 
 					// Indicate as event
@@ -76,13 +77,13 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				// no veto: allow unload
 				else {
 					this.logService.trace(
-						"[lifecycle] onBeforeUnload continues without veto",
+						"[lifecycle] onBeforeUnload continues without veto"
 					);
 
 					this.shutdownReason = reply.reason;
 					ipcRenderer.send(reply.okChannel, windowId);
 				}
-			},
+			}
 		);
 
 		// Main side indicates that we will indeed shutdown
@@ -90,10 +91,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 			"vscode:onWillUnload",
 			async (
 				event: unknown,
-				reply: { replyChannel: string; reason: ShutdownReason },
+				reply: { replyChannel: string; reason: ShutdownReason }
 			) => {
 				this.logService.trace(
-					`[lifecycle] onWillUnload (reason: ${reply.reason})`,
+					`[lifecycle] onWillUnload (reason: ${reply.reason})`
 				);
 
 				// trigger onWillShutdown events and joining
@@ -104,12 +105,12 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 
 				// acknowledge to main side
 				ipcRenderer.send(reply.replyChannel, windowId);
-			},
+			}
 		);
 	}
 
 	protected async handleBeforeShutdown(
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): Promise<boolean> {
 		const logService = this.logService;
 
@@ -129,7 +130,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 				// Log any veto instantly
 				if (value === true) {
 					logService.info(
-						`[lifecycle]: Shutdown was prevented (id: ${id})`,
+						`[lifecycle]: Shutdown was prevented (id: ${id})`
 					);
 				}
 
@@ -140,7 +141,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 						.then((veto) => {
 							if (veto === true) {
 								logService.info(
-									`[lifecycle]: Shutdown was prevented (id: ${id})`,
+									`[lifecycle]: Shutdown was prevented (id: ${id})`
 								);
 							}
 						})
@@ -153,7 +154,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 					finalVetoId = id;
 				} else {
 					throw new Error(
-						`[lifecycle]: Final veto is already defined (id: ${id})`,
+						`[lifecycle]: Final veto is already defined (id: ${id})`
 					);
 				}
 			},
@@ -162,15 +163,15 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		const longRunningBeforeShutdownWarning = disposableTimeout(() => {
 			logService.warn(
 				`[lifecycle] onBeforeShutdown is taking a long time, pending operations: ${Array.from(
-					pendingVetos,
-				).join(", ")}`,
+					pendingVetos
+				).join(", ")}`
 			);
 		}, NativeLifecycleService.BEFORE_SHUTDOWN_WARNING_DELAY);
 
 		try {
 			// First: run list of vetos in parallel
 			let veto = await handleVetos(vetos, (error) =>
-				this.handleBeforeShutdownError(error, reason),
+				this.handleBeforeShutdownError(error, reason)
 			);
 			if (veto) {
 				return veto;
@@ -183,7 +184,7 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 					veto = await (finalVeto as () => Promise<boolean>)();
 					if (veto) {
 						logService.info(
-							`[lifecycle]: Shutdown was prevented by final veto (id: ${finalVetoId})`,
+							`[lifecycle]: Shutdown was prevented by final veto (id: ${finalVetoId})`
 						);
 					}
 				} catch (error) {
@@ -201,12 +202,12 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 
 	private handleBeforeShutdownError(
 		error: Error,
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): void {
 		this.logService.error(
 			`[lifecycle]: Error during before-shutdown phase (error: ${toErrorMessage(
-				error,
-			)})`,
+				error
+			)})`
 		);
 
 		this._onBeforeShutdownError.fire({ reason, error });
@@ -236,10 +237,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		const longRunningWillShutdownWarning = disposableTimeout(() => {
 			this.logService.warn(
 				`[lifecycle] onWillShutdown is taking a long time, pending operations: ${Array.from(
-					pendingJoiners,
+					pendingJoiners
 				)
 					.map((joiner) => joiner.id)
-					.join(", ")}`,
+					.join(", ")}`
 			);
 		}, NativeLifecycleService.WILL_SHUTDOWN_WARNING_DELAY);
 
@@ -248,8 +249,8 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 		} catch (error) {
 			this.logService.error(
 				`[lifecycle]: Error during will-shutdown phase (error: ${toErrorMessage(
-					error,
-				)})`,
+					error
+				)})`
 			); // this error will not prevent the shutdown
 		} finally {
 			longRunningWillShutdownWarning.dispose();
@@ -264,5 +265,5 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 registerSingleton(
 	ILifecycleService,
 	NativeLifecycleService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

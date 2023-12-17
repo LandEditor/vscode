@@ -76,7 +76,7 @@ class StackOperation implements IWorkspaceUndoRedoElement {
 		private _pauseableEmitter: PauseableEmitter<NotebookTextModelChangedEvent>,
 		private _postUndoRedo: (alternativeVersionId: string) => void,
 		selectionState: ISelectionState | undefined,
-		beginAlternativeVersionId: string,
+		beginAlternativeVersionId: string
 	) {
 		this.type = UndoRedoElementType.Workspace;
 		this._beginSelectionState = selectionState;
@@ -93,7 +93,7 @@ class StackOperation implements IWorkspaceUndoRedoElement {
 
 	pushEndState(
 		alternativeVersionId: string,
-		selectionState: ISelectionState | undefined,
+		selectionState: ISelectionState | undefined
 	) {
 		this._resultAlternativeVersionId = alternativeVersionId;
 		this._resultSelectionState = selectionState;
@@ -102,7 +102,7 @@ class StackOperation implements IWorkspaceUndoRedoElement {
 	pushEditOperation(
 		element: IUndoRedoElement,
 		beginSelectionState: ISelectionState | undefined,
-		resultSelectionState: ISelectionState | undefined,
+		resultSelectionState: ISelectionState | undefined
 	) {
 		if (this._operations.length === 0) {
 			this._beginSelectionState =
@@ -149,7 +149,7 @@ class NotebookOperationManager {
 		private readonly _textModel: NotebookTextModel,
 		private _undoService: IUndoRedoService,
 		private _pauseableEmitter: PauseableEmitter<NotebookTextModelChangedEvent>,
-		private _postUndoRedo: (alternativeVersionId: string) => void,
+		private _postUndoRedo: (alternativeVersionId: string) => void
 	) {}
 
 	isUndoStackEmpty(): boolean {
@@ -163,17 +163,17 @@ class NotebookOperationManager {
 		label: string,
 		selectionState: ISelectionState | undefined,
 		undoRedoGroup: UndoRedoGroup | undefined,
-		alternativeVersionId: string,
+		alternativeVersionId: string
 	) {
 		if (this._pendingStackOperation) {
 			this._pendingStackOperation.pushEndState(
 				alternativeVersionId,
-				selectionState,
+				selectionState
 			);
 			if (!this._pendingStackOperation.isEmpty) {
 				this._undoService.pushElement(
 					this._pendingStackOperation,
-					this._pendingStackOperation.undoRedoGroup,
+					this._pendingStackOperation.undoRedoGroup
 				);
 			}
 			this._pendingStackOperation = null;
@@ -187,20 +187,20 @@ class NotebookOperationManager {
 			this._pauseableEmitter,
 			this._postUndoRedo,
 			selectionState,
-			alternativeVersionId,
+			alternativeVersionId
 		);
 	}
 
 	pushEditOperation(
 		element: IUndoRedoElement,
 		beginSelectionState: ISelectionState | undefined,
-		resultSelectionState: ISelectionState | undefined,
+		resultSelectionState: ISelectionState | undefined
 	) {
 		if (this._pendingStackOperation) {
 			this._pendingStackOperation.pushEditOperation(
 				element,
 				beginSelectionState,
-				resultSelectionState,
+				resultSelectionState
 			);
 			return;
 		}
@@ -236,13 +236,13 @@ export class NotebookTextModel
 {
 	private _isDisposed = false;
 	private readonly _onWillDispose: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	private readonly _onWillAddRemoveCells = this._register(
-		new Emitter<NotebookTextModelWillAddRemoveEvent>(),
+		new Emitter<NotebookTextModelWillAddRemoveEvent>()
 	);
 	private readonly _onDidChangeContent = this._register(
-		new Emitter<NotebookTextModelChangedEvent>(),
+		new Emitter<NotebookTextModelChangedEvent>()
 	);
 	readonly onWillDispose: Event<void> = this._onWillDispose.event;
 	readonly onWillAddRemoveCells = this._onWillAddRemoveCells.event;
@@ -299,7 +299,7 @@ export class NotebookTextModel
 		options: TransientOptions,
 		@IUndoRedoService private readonly _undoService: IUndoRedoService,
 		@IModelService private readonly _modelService: IModelService,
-		@ILanguageService private readonly _languageService: ILanguageService,
+		@ILanguageService private readonly _languageService: ILanguageService
 	) {
 		super();
 		this.transientOptions = options;
@@ -307,7 +307,10 @@ export class NotebookTextModel
 		this._initialize(cells);
 
 		const maybeUpdateCellTextModel = (textModel: ITextModel) => {
-			if (textModel.uri.scheme === Schemas.vscodeNotebookCell && textModel instanceof TextModel) {
+			if (
+				textModel.uri.scheme === Schemas.vscodeNotebookCell &&
+				textModel instanceof TextModel
+			) {
 				const cellUri = CellUri.parse(textModel.uri);
 				if (cellUri && isEqual(cellUri.notebook, this.uri)) {
 					const cellIdx = this._getCellIndexByHandle(cellUri.handle);
@@ -320,7 +323,9 @@ export class NotebookTextModel
 				}
 			}
 		};
-		this._register(_modelService.onModelAdded(e => maybeUpdateCellTextModel(e)));
+		this._register(
+			_modelService.onModelAdded((e) => maybeUpdateCellTextModel(e))
+		);
 
 		this._pauseableEmitter = new NotebookEventEmitter({
 			merge: (events: NotebookTextModelChangedEvent[]) => {
@@ -334,19 +339,27 @@ export class NotebookTextModel
 				for (let i = 1; i < events.length; i++) {
 					rawEvents.push(...events[i].rawEvents);
 					versionId = events[i].versionId;
-					endSelectionState = events[i].endSelectionState !== undefined ? events[i].endSelectionState : endSelectionState;
-					synchronous = events[i].synchronous !== undefined ? events[i].synchronous : synchronous;
+					endSelectionState =
+						events[i].endSelectionState !== undefined
+							? events[i].endSelectionState
+							: endSelectionState;
+					synchronous =
+						events[i].synchronous !== undefined
+							? events[i].synchronous
+							: synchronous;
 				}
 
 				return { rawEvents, versionId, endSelectionState, synchronous };
-			}
+			},
 		});
 
-		this._register(this._pauseableEmitter.event(e => {
-			if (e.rawEvents.length) {
-				this._onDidChangeContent.fire(e);
-			}
-		}));
+		this._register(
+			this._pauseableEmitter.event((e) => {
+				if (e.rawEvents.length) {
+					this._onDidChangeContent.fire(e);
+				}
+			})
+		);
 
 		this._operationManager = new NotebookOperationManager(
 			this,
@@ -360,7 +373,7 @@ export class NotebookTextModel
 	}
 
 	setCellCollapseDefault(
-		collapseConfig: NotebookCellDefaultCollapseConfig | undefined,
+		collapseConfig: NotebookCellDefaultCollapseConfig | undefined
 	) {
 		this._defaultCollapseConfig = collapseConfig;
 	}
@@ -386,7 +399,7 @@ export class NotebookTextModel
 				cell.internalMetadata,
 				collapseState,
 				this.transientOptions,
-				this._languageService,
+				this._languageService
 			);
 		});
 
@@ -416,7 +429,7 @@ export class NotebookTextModel
 
 	private _bindCellContentHandler(
 		cell: NotebookCellTextModel,
-		e: "content" | "language" | "mime",
+		e: "content" | "language" | "mime"
 	) {
 		this._increaseVersionId(e === "content");
 		switch (e) {
@@ -499,13 +512,13 @@ export class NotebookTextModel
 	pushStackElement(
 		label: string,
 		selectionState: ISelectionState | undefined,
-		undoRedoGroup: UndoRedoGroup | undefined,
+		undoRedoGroup: UndoRedoGroup | undefined
 	) {
 		this._operationManager.pushStackElement(
 			label,
 			selectionState,
 			undoRedoGroup,
-			this.alternativeVersionId,
+			this.alternativeVersionId
 		);
 	}
 
@@ -515,12 +528,11 @@ export class NotebookTextModel
 
 	private _getCellIndexWithOutputIdHandleFromEdits(
 		outputId: string,
-		rawEdits: ICellEditOperation[],
+		rawEdits: ICellEditOperation[]
 	) {
 		const edit = rawEdits.find(
 			(e) =>
-				"outputs" in e &&
-				e.outputs.some((o) => o.outputId === outputId),
+				"outputs" in e && e.outputs.some((o) => o.outputId === outputId)
 		);
 		if (edit) {
 			if ("index" in edit) {
@@ -537,14 +549,14 @@ export class NotebookTextModel
 
 	private _getCellIndexWithOutputIdHandle(outputId: string) {
 		return this.cells.findIndex(
-			(c) => !!c.outputs.find((o) => o.outputId === outputId),
+			(c) => !!c.outputs.find((o) => o.outputId === outputId)
 		);
 	}
 
 	reset(
 		cells: ICellDto2[],
 		metadata: NotebookDocumentMetadata,
-		transientOptions: TransientOptions,
+		transientOptions: TransientOptions
 	): void {
 		this.transientOptions = transientOptions;
 		const edits = NotebookTextModel.computeEdits(this, cells);
@@ -555,7 +567,7 @@ export class NotebookTextModel
 			undefined,
 			() => undefined,
 			undefined,
-			false,
+			false
 		);
 	}
 
@@ -568,7 +580,7 @@ export class NotebookTextModel
 			0,
 			cells,
 			cells.length,
-			0,
+			0
 		);
 
 		if (commonPrefix > 0) {
@@ -582,8 +594,8 @@ export class NotebookTextModel
 					...this._computeOutputEdit(
 						i,
 						model.cells[i].outputs,
-						cells[i].outputs,
-					),
+						cells[i].outputs
+					)
 				);
 			}
 		}
@@ -601,7 +613,7 @@ export class NotebookTextModel
 			commonPrefix,
 			cells,
 			cells.length - commonPrefix,
-			commonPrefix,
+			commonPrefix
 		);
 
 		if (commonSuffix > 0) {
@@ -639,8 +651,8 @@ export class NotebookTextModel
 					...this._computeOutputEdit(
 						model.cells.length - i,
 						model.cells[model.cells.length - i].outputs,
-						cells[cells.length - i].outputs,
-					),
+						cells[cells.length - i].outputs
+					)
 				);
 			}
 		}
@@ -651,7 +663,7 @@ export class NotebookTextModel
 	private static _computeOutputEdit(
 		index: number,
 		a: ICellOutput[],
-		b: IOutputDto[],
+		b: IOutputDto[]
 	): ICellEditOperation[] {
 		if (a.length !== b.length) {
 			return [
@@ -686,7 +698,7 @@ export class NotebookTextModel
 		aDelta: number,
 		b: ICellDto2[],
 		bLen: number,
-		bDelta: number,
+		bDelta: number
 	): number {
 		const maxResult = Math.min(aLen, bLen);
 		let result = 0;
@@ -707,7 +719,7 @@ export class NotebookTextModel
 		aDelta: number,
 		b: ICellDto2[],
 		bLen: number,
-		bDelta: number,
+		bDelta: number
 	): number {
 		const maxResult = Math.min(aLen, bLen);
 		let result = 0;
@@ -728,7 +740,7 @@ export class NotebookTextModel
 		beginSelectionState: ISelectionState | undefined,
 		endSelectionsComputer: () => ISelectionState | undefined,
 		undoRedoGroup: UndoRedoGroup | undefined,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	): boolean {
 		this._pauseableEmitter.pause();
 		this.pushStackElement("edit", beginSelectionState, undoRedoGroup);
@@ -741,7 +753,7 @@ export class NotebookTextModel
 			const endSelections = endSelectionsComputer();
 			this._increaseVersionId(
 				this._operationManager.isUndoStackEmpty() &&
-					!this._pauseableEmitter.isDirtyEvent(),
+					!this._pauseableEmitter.isDirtyEvent()
 			);
 
 			// Finalize undo element
@@ -761,7 +773,7 @@ export class NotebookTextModel
 	private _doApplyEdits(
 		rawEdits: ICellEditOperation[],
 		synchronous: boolean,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	): void {
 		const editsWithDetails = rawEdits
 			.map((edit, index) => {
@@ -773,14 +785,14 @@ export class NotebookTextModel
 					this._assertIndex(cellIndex);
 				} else if ("outputId" in edit) {
 					cellIndex = this._getCellIndexWithOutputIdHandle(
-						edit.outputId,
+						edit.outputId
 					);
 					if (this._indexIsInvalid(cellIndex)) {
 						// The referenced output may have been created in this batch of edits
 						cellIndex =
 							this._getCellIndexWithOutputIdHandleFromEdits(
 								edit.outputId,
-								rawEdits.slice(0, index),
+								rawEdits.slice(0, index)
 							);
 					}
 
@@ -799,8 +811,8 @@ export class NotebookTextModel
 						edit.editType === CellEditType.DocumentMetadata
 							? undefined
 							: edit.editType === CellEditType.Replace
-							  ? edit.index + edit.count
-							  : cellIndex,
+								? edit.index + edit.count
+								: cellIndex,
 					originalIndex: index,
 				};
 			})
@@ -819,26 +831,23 @@ export class NotebookTextModel
 
 				return b.end - a.end || b.originalIndex - a.originalIndex;
 			})
-			.reduce(
-				(prev, curr) => {
-					if (!prev.length) {
-						// empty
-						prev.push([curr]);
+			.reduce((prev, curr) => {
+				if (!prev.length) {
+					// empty
+					prev.push([curr]);
+				} else {
+					const last = prev[prev.length - 1];
+					const index = last[0].cellIndex;
+
+					if (curr.cellIndex === index) {
+						last.push(curr);
 					} else {
-						const last = prev[prev.length - 1];
-						const index = last[0].cellIndex;
-
-						if (curr.cellIndex === index) {
-							last.push(curr);
-						} else {
-							prev.push([curr]);
-						}
+						prev.push([curr]);
 					}
+				}
 
-					return prev;
-				},
-				[] as TransformedEdit[][],
-			)
+				return prev;
+			}, [] as TransformedEdit[][])
 			.map((editsOnSameIndex) => {
 				const replaceEdits: TransformedEdit[] = [];
 				const otherEdits: TransformedEdit[] = [];
@@ -864,7 +873,7 @@ export class NotebookTextModel
 						edit.count,
 						edit.cells,
 						synchronous,
-						computeUndoRedo,
+						computeUndoRedo
 					);
 					break;
 				case CellEditType.Output: {
@@ -877,46 +886,47 @@ export class NotebookTextModel
 								start: cell.outputs.length,
 								deleteCount: 0,
 								newOutputs: edit.outputs.map(
-									(op) => new NotebookCellOutputTextModel(op),
+									(op) => new NotebookCellOutputTextModel(op)
 								),
 							},
 							true,
-							computeUndoRedo,
+							computeUndoRedo
 						);
 					} else {
 						this._spliceNotebookCellOutputs2(
 							cell,
 							edit.outputs,
-							computeUndoRedo,
+							computeUndoRedo
 						);
 					}
 					break;
 				}
-				case CellEditType.OutputItems: {
-					this._assertIndex(cellIndex);
-					const cell = this._cells[cellIndex];
-					if (edit.append) {
-						this._appendNotebookCellOutputItems(
-							cell,
-							edit.outputId,
-							edit.items,
-						);
-					} else {
-						this._replaceNotebookCellOutputItems(
-							cell,
-							edit.outputId,
-							edit.items,
-						);
+				case CellEditType.OutputItems:
+					{
+						this._assertIndex(cellIndex);
+						const cell = this._cells[cellIndex];
+						if (edit.append) {
+							this._appendNotebookCellOutputItems(
+								cell,
+								edit.outputId,
+								edit.items
+							);
+						} else {
+							this._replaceNotebookCellOutputItems(
+								cell,
+								edit.outputId,
+								edit.items
+							);
+						}
 					}
-				}
-				break;
+					break;
 
 				case CellEditType.Metadata:
 					this._assertIndex(edit.index);
 					this._changeCellMetadata(
 						this._cells[edit.index],
 						edit.metadata,
-						computeUndoRedo,
+						computeUndoRedo
 					);
 					break;
 				case CellEditType.PartialMetadata:
@@ -924,14 +934,14 @@ export class NotebookTextModel
 					this._changeCellMetadataPartial(
 						this._cells[cellIndex],
 						edit.metadata,
-						computeUndoRedo,
+						computeUndoRedo
 					);
 					break;
 				case CellEditType.PartialInternalMetadata:
 					this._assertIndex(cellIndex);
 					this._changeCellInternalMetadataPartial(
 						this._cells[cellIndex],
-						edit.internalMetadata,
+						edit.internalMetadata
 					);
 					break;
 				case CellEditType.CellLanguage:
@@ -939,13 +949,13 @@ export class NotebookTextModel
 					this._changeCellLanguage(
 						this._cells[edit.index],
 						edit.language,
-						computeUndoRedo,
+						computeUndoRedo
 					);
 					break;
 				case CellEditType.DocumentMetadata:
 					this._updateNotebookMetadata(
 						edit.metadata,
-						computeUndoRedo,
+						computeUndoRedo
 					);
 					break;
 				case CellEditType.Move:
@@ -956,7 +966,7 @@ export class NotebookTextModel
 						synchronous,
 						computeUndoRedo,
 						undefined,
-						undefined,
+						undefined
 					);
 					break;
 			}
@@ -1003,7 +1013,7 @@ export class NotebookTextModel
 	}
 
 	private _getDefaultCollapseState(
-		cellDto: ICellDto2,
+		cellDto: ICellDto2
 	): NotebookCellCollapseState | undefined {
 		const defaultConfig =
 			cellDto.cellKind === CellKind.Code
@@ -1017,7 +1027,7 @@ export class NotebookTextModel
 		count: number,
 		cellDtos: ICellDto2[],
 		synchronous: boolean,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	): void {
 		if (count === 0 && cellDtos.length === 0) {
 			return;
@@ -1057,7 +1067,7 @@ export class NotebookTextModel
 				cellDto.internalMetadata,
 				collapseState,
 				this.transientOptions,
-				this._languageService,
+				this._languageService
 			);
 			const textModel = this._modelService.getModel(cellUri);
 			if (textModel && textModel instanceof TextModel) {
@@ -1117,7 +1127,7 @@ export class NotebookTextModel
 								index,
 								[cell],
 								true,
-								endSelections,
+								endSelections
 							);
 						},
 						deleteCell: (index, endSelections) => {
@@ -1129,15 +1139,15 @@ export class NotebookTextModel
 								count,
 								cells,
 								true,
-								endSelections,
+								endSelections
 							);
 						},
 					},
 					undefined,
-					undefined,
+					undefined
 				),
 				undefined,
-				undefined,
+				undefined
 			);
 		}
 
@@ -1165,25 +1175,25 @@ export class NotebookTextModel
 	}
 
 	private _overwriteAlternativeVersionId(
-		newAlternativeVersionId: string,
+		newAlternativeVersionId: string
 	): void {
 		this._alternativeVersionId = newAlternativeVersionId;
 		this._notebookSpecificAlternativeId = Number(
 			newAlternativeVersionId.substring(
 				0,
-				newAlternativeVersionId.indexOf("_"),
-			),
+				newAlternativeVersionId.indexOf("_")
+			)
 		);
 	}
 
 	private _updateNotebookMetadata(
 		metadata: NotebookDocumentMetadata,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	) {
 		const oldMetadata = this.metadata;
 		const triggerDirtyChange = this._isDocumentMetadataChanged(
 			this.metadata,
-			metadata,
+			metadata
 		);
 
 		if (triggerDirtyChange) {
@@ -1206,7 +1216,7 @@ export class NotebookTextModel
 						}
 					})(),
 					undefined,
-					undefined,
+					undefined
 				);
 			}
 		}
@@ -1230,7 +1240,7 @@ export class NotebookTextModel
 		index: number,
 		cells: NotebookCellTextModel[],
 		synchronous: boolean,
-		endSelections: ISelectionState | undefined,
+		endSelections: ISelectionState | undefined
 	): void {
 		for (let i = 0; i < cells.length; i++) {
 			const dirtyStateListener = cells[i].onDidChangeContent((e) => {
@@ -1267,7 +1277,7 @@ export class NotebookTextModel
 		index: number,
 		count: number,
 		synchronous: boolean,
-		endSelections: ISelectionState | undefined,
+		endSelections: ISelectionState | undefined
 	) {
 		for (let i = index; i < index + count; i++) {
 			const cell = this._cells[i];
@@ -1300,7 +1310,7 @@ export class NotebookTextModel
 		count: number,
 		cells: NotebookCellTextModel[],
 		synchronous: boolean,
-		endSelections: ISelectionState | undefined,
+		endSelections: ISelectionState | undefined
 	) {
 		for (let i = index; i < index + count; i++) {
 			const cell = this._cells[i];
@@ -1339,7 +1349,7 @@ export class NotebookTextModel
 
 	private _isDocumentMetadataChanged(
 		a: NotebookDocumentMetadata,
-		b: NotebookDocumentMetadata,
+		b: NotebookDocumentMetadata
 	) {
 		const keys = new Set([
 			...Object.keys(a || {}),
@@ -1371,7 +1381,7 @@ export class NotebookTextModel
 
 	private _isCellMetadataChanged(
 		a: NotebookCellMetadata,
-		b: NotebookCellMetadata,
+		b: NotebookCellMetadata
 	) {
 		const keys = new Set([
 			...Object.keys(a || {}),
@@ -1422,7 +1432,7 @@ export class NotebookTextModel
 	private _changeCellMetadataPartial(
 		cell: NotebookCellTextModel,
 		metadata: NullablePartialNotebookCellMetadata,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	) {
 		const newMetadata: NotebookCellMetadata = {
 			...cell.metadata,
@@ -1439,11 +1449,11 @@ export class NotebookTextModel
 	private _changeCellMetadata(
 		cell: NotebookCellTextModel,
 		metadata: NotebookCellMetadata,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	) {
 		const triggerDirtyChange = this._isCellMetadataChanged(
 			cell.metadata,
-			metadata,
+			metadata
 		);
 
 		if (triggerDirtyChange) {
@@ -1464,13 +1474,13 @@ export class NotebookTextModel
 								this._changeCellMetadata(
 									cell,
 									newMetadata,
-									false,
+									false
 								);
 							},
-						},
+						}
 					),
 					undefined,
-					undefined,
+					undefined
 				);
 			}
 		}
@@ -1494,7 +1504,7 @@ export class NotebookTextModel
 
 	private _changeCellInternalMetadataPartial(
 		cell: NotebookCellTextModel,
-		internalMetadata: NullablePartialNotebookCellInternalMetadata,
+		internalMetadata: NullablePartialNotebookCellInternalMetadata
 	) {
 		const newInternalMetadata: NotebookCellInternalMetadata = {
 			...cell.internalMetadata,
@@ -1524,7 +1534,7 @@ export class NotebookTextModel
 	private _changeCellLanguage(
 		cell: NotebookCellTextModel,
 		languageId: string,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	) {
 		if (cell.language === languageId) {
 			return;
@@ -1552,7 +1562,7 @@ export class NotebookTextModel
 					}
 				})(),
 				undefined,
-				undefined,
+				undefined
 			);
 		}
 
@@ -1574,7 +1584,7 @@ export class NotebookTextModel
 	private _spliceNotebookCellOutputs2(
 		cell: NotebookCellTextModel,
 		outputs: IOutputDto[],
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	): void {
 		if (outputs.length === 0 && cell.outputs.length === 0) {
 			return;
@@ -1587,18 +1597,18 @@ export class NotebookTextModel
 					start: 0,
 					deleteCount: cell.outputs.length,
 					newOutputs: outputs.map(
-						(op) => new NotebookCellOutputTextModel(op),
+						(op) => new NotebookCellOutputTextModel(op)
 					),
 				},
 				false,
-				computeUndoRedo,
+				computeUndoRedo
 			);
 			return;
 		}
 
 		const diff = new LcsDiff(
 			new OutputSequence(cell.outputs),
-			new OutputSequence(outputs),
+			new OutputSequence(outputs)
 		);
 		const diffResult = diff.ComputeDiff(false);
 		const splices: NotebookCellOutputsSplice[] = diffResult.changes.map(
@@ -1609,17 +1619,17 @@ export class NotebookTextModel
 				newOutputs: outputs
 					.slice(
 						change.modifiedStart,
-						change.modifiedStart + change.modifiedLength,
+						change.modifiedStart + change.modifiedLength
 					)
 					.map((op) => new NotebookCellOutputTextModel(op)),
-			}),
+			})
 		);
 		splices.reverse().forEach((splice) => {
 			this._spliceNotebookCellOutputs(
 				cell,
 				splice,
 				false,
-				computeUndoRedo,
+				computeUndoRedo
 			);
 		});
 	}
@@ -1628,7 +1638,7 @@ export class NotebookTextModel
 		cell: NotebookCellTextModel,
 		splice: NotebookCellOutputsSplice,
 		append: boolean,
-		computeUndoRedo: boolean,
+		computeUndoRedo: boolean
 	): void {
 		cell.spliceNotebookCellOutputs(splice);
 		this._pauseableEmitter.fire({
@@ -1650,7 +1660,7 @@ export class NotebookTextModel
 	private _appendNotebookCellOutputItems(
 		cell: NotebookCellTextModel,
 		outputId: string,
-		items: IOutputItemDto[],
+		items: IOutputItemDto[]
 	) {
 		if (cell.changeOutputItems(outputId, true, items)) {
 			this._pauseableEmitter.fire({
@@ -1674,7 +1684,7 @@ export class NotebookTextModel
 	private _replaceNotebookCellOutputItems(
 		cell: NotebookCellTextModel,
 		outputId: string,
-		items: IOutputItemDto[],
+		items: IOutputItemDto[]
 	) {
 		if (cell.changeOutputItems(outputId, false, items)) {
 			this._pauseableEmitter.fire({
@@ -1702,7 +1712,7 @@ export class NotebookTextModel
 		synchronous: boolean,
 		pushedToUndoStack: boolean,
 		beforeSelections: ISelectionState | undefined,
-		endSelections: ISelectionState | undefined,
+		endSelections: ISelectionState | undefined
 	): boolean {
 		if (pushedToUndoStack) {
 			this._operationManager.pushEditOperation(
@@ -1717,7 +1727,7 @@ export class NotebookTextModel
 							length: number,
 							toIndex: number,
 							beforeSelections: ISelectionState | undefined,
-							endSelections: ISelectionState | undefined,
+							endSelections: ISelectionState | undefined
 						) => {
 							this._moveCellToIdx(
 								fromIndex,
@@ -1726,15 +1736,15 @@ export class NotebookTextModel
 								true,
 								false,
 								beforeSelections,
-								endSelections,
+								endSelections
 							);
 						},
 					},
 					beforeSelections,
-					endSelections,
+					endSelections
 				),
 				beforeSelections,
-				endSelections,
+				endSelections
 			);
 		}
 
@@ -1782,7 +1792,7 @@ class OutputSequence implements ISequence {
 				output.outputs.map((output) => ({
 					mime: output.mime,
 					data: output.data,
-				})),
+				}))
 			);
 		});
 	}

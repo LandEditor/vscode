@@ -12,8 +12,8 @@ function findRenameLocations(projectPath, fileName, position) {
 	if (!service) {
 		service = ts.createLanguageService(
 			new staticLanguageServiceHost_1.StaticLanguageServiceHost(
-				projectPath,
-			),
+				projectPath
+			)
 		);
 	}
 	return (

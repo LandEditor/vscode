@@ -41,22 +41,23 @@ export class SnippetsResourceInitializer
 	implements IProfileResourceInitializer
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) {
-	}
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const snippetsContent: ISnippetsContent = JSON.parse(content);
 		for (const key in snippetsContent.snippets) {
 			const resource = this.uriIdentityService.extUri.joinPath(
 				this.userDataProfileService.currentProfile.snippetsHome,
-				key,
+				key
 			);
 			await this.fileService.writeFile(
 				resource,
-				VSBuffer.fromString(snippetsContent.snippets[key]),
+				VSBuffer.fromString(snippetsContent.snippets[key])
 			);
 		}
 	}
@@ -65,13 +66,13 @@ export class SnippetsResourceInitializer
 export class SnippetsResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) {
-	}
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
+	) {}
 
 	async getContent(
 		profile: IUserDataProfile,
-		excluded?: ResourceSet,
+		excluded?: ResourceSet
 	): Promise<string> {
 		const snippets = await this.getSnippets(profile, excluded);
 		return JSON.stringify({ snippets });
@@ -82,28 +83,28 @@ export class SnippetsResource implements IProfileResource {
 		for (const key in snippetsContent.snippets) {
 			const resource = this.uriIdentityService.extUri.joinPath(
 				profile.snippetsHome,
-				key,
+				key
 			);
 			await this.fileService.writeFile(
 				resource,
-				VSBuffer.fromString(snippetsContent.snippets[key]),
+				VSBuffer.fromString(snippetsContent.snippets[key])
 			);
 		}
 	}
 
 	private async getSnippets(
 		profile: IUserDataProfile,
-		excluded?: ResourceSet,
+		excluded?: ResourceSet
 	): Promise<IStringDictionary<string>> {
 		const snippets: IStringDictionary<string> = {};
 		const snippetsResources = await this.getSnippetsResources(
 			profile,
-			excluded,
+			excluded
 		);
 		for (const resource of snippetsResources) {
 			const key = this.uriIdentityService.extUri.relativePath(
 				profile.snippetsHome,
-				resource,
+				resource
 			)!;
 			const content = await this.fileService.readFile(resource);
 			snippets[key] = content.value.toString();
@@ -113,7 +114,7 @@ export class SnippetsResource implements IProfileResource {
 
 	async getSnippetsResources(
 		profile: IUserDataProfile,
-		excluded?: ResourceSet,
+		excluded?: ResourceSet
 	): Promise<URI[]> {
 		const snippets: URI[] = [];
 		let stat: IFileStat;
@@ -154,9 +155,11 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[] | undefined> {
 		const snippetsResources = await this.instantiationService
@@ -189,18 +192,18 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 									"exclude",
 									"Select Snippet {0}",
 									this.uriIdentityService.extUri.basename(
-										resource,
-									),
+										resource
+									)
 								),
 							},
-					  }
+						}
 					: undefined,
 				command: {
 					id: API_OPEN_EDITOR_COMMAND_ID,
 					title: "",
 					arguments: [resource, undefined, undefined],
 				},
-			}),
+			})
 		);
 	}
 

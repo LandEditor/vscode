@@ -9,17 +9,17 @@ export class IgnoreFile {
 	private isPathIgnored: (
 		path: string,
 		isDir: boolean,
-		parent?: IgnoreFile,
+		parent?: IgnoreFile
 	) => boolean;
 
 	constructor(
 		contents: string,
 		private readonly location: string,
-		private readonly parent?: IgnoreFile,
+		private readonly parent?: IgnoreFile
 	) {
 		if (location[location.length - 1] === "\\") {
 			throw Error(
-				"Unexpected path format, do not use trailing backslashes",
+				"Unexpected path format, do not use trailing backslashes"
 			);
 		}
 		if (location[location.length - 1] !== "/") {
@@ -28,7 +28,7 @@ export class IgnoreFile {
 		this.isPathIgnored = this.parseIgnoreFile(
 			contents,
 			this.location,
-			this.parent,
+			this.parent
 		);
 	}
 
@@ -40,7 +40,7 @@ export class IgnoreFile {
 		this.isPathIgnored = this.parseIgnoreFile(
 			contents,
 			this.location,
-			this.parent,
+			this.parent
 		);
 	}
 
@@ -56,7 +56,7 @@ export class IgnoreFile {
 		if (path[0] !== "/" || path[path.length - 1] === "/") {
 			throw Error(
 				"Unexpected path format, expectred to begin with slash and end without. got:" +
-					path,
+					path
 			);
 		}
 
@@ -73,7 +73,7 @@ export class IgnoreFile {
 		if (path[0] !== "/" || path[path.length - 1] === "/") {
 			throw Error(
 				"Unexpected path format, expectred to begin with slash and end without. got:" +
-					path,
+					path
 			);
 		}
 
@@ -91,7 +91,7 @@ export class IgnoreFile {
 			if (
 				!this.isPathIncludedInTraversal(
 					walkingPath,
-					isLast ? isDir : true,
+					isLast ? isDir : true
 				)
 			) {
 				ignored = true;
@@ -105,10 +105,10 @@ export class IgnoreFile {
 	private gitignoreLinesToExpression(
 		lines: string[],
 		dirPath: string,
-		trimForExclusions: boolean,
+		trimForExclusions: boolean
 	): glob.ParsedExpression {
 		const includeLines = lines.map((line) =>
-			this.gitignoreLineToGlob(line, dirPath),
+			this.gitignoreLineToGlob(line, dirPath)
 		);
 
 		const includeExpression: glob.IExpression = Object.create(null);
@@ -122,7 +122,7 @@ export class IgnoreFile {
 	private parseIgnoreFile(
 		ignoreContents: string,
 		dirPath: string,
-		parent: IgnoreFile | undefined,
+		parent: IgnoreFile | undefined
 	): (path: string, isDir: boolean) => boolean {
 		const contentLines = ignoreContents
 			.split("\n")
@@ -136,7 +136,7 @@ export class IgnoreFile {
 		const isFileIgnored = this.gitignoreLinesToExpression(
 			fileIgnoreLines,
 			dirPath,
-			true,
+			true
 		);
 
 		// TODO: Slight hack... this naieve approach may reintroduce too many files in cases of weirdly complex .gitignores
@@ -146,17 +146,17 @@ export class IgnoreFile {
 		const isFileIncluded = this.gitignoreLinesToExpression(
 			fileIncludeLines,
 			dirPath,
-			false,
+			false
 		);
 
 		// When checking if a dir is ignored we can use all lines
 		const dirIgnoreLines = contentLines.filter(
-			(line) => !line.includes("!"),
+			(line) => !line.includes("!")
 		);
 		const isDirIgnored = this.gitignoreLinesToExpression(
 			dirIgnoreLines,
 			dirPath,
-			true,
+			true
 		);
 
 		// Same hack.
@@ -166,7 +166,7 @@ export class IgnoreFile {
 		const isDirIncluded = this.gitignoreLinesToExpression(
 			dirIncludeLines,
 			dirPath,
-			false,
+			false
 		);
 
 		const isPathIgnored = (path: string, isDir: boolean) => {

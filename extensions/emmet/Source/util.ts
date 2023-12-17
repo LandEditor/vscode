@@ -59,7 +59,7 @@ export function updateEmmetExtensionsPath(forceRefresh: boolean = false) {
 				extensionsPath,
 				fileSystem,
 				rootPaths,
-				_homeDir,
+				_homeDir
 			)
 			.catch((err) => {
 				if (Array.isArray(extensionsPath) && extensionsPath.length) {
@@ -317,7 +317,7 @@ export function getMappingForIncludedLanguages(): Record<string, string> {
 	const includeLanguages = Object.assign(
 		{},
 		MAPPED_MODES,
-		includeLanguagesConfig ?? {},
+		includeLanguagesConfig ?? {}
 	);
 	Object.keys(includeLanguages).forEach((syntax) => {
 		if (
@@ -341,7 +341,7 @@ export function getMappingForIncludedLanguages(): Record<string, string> {
 export function getEmmetMode(
 	language: string,
 	mappedModes: Record<string, string>,
-	excludedLanguages: string[],
+	excludedLanguages: string[]
 ): string | undefined {
 	if (!language || excludedLanguages.includes(language)) {
 		return;
@@ -388,7 +388,7 @@ const star = 42;
  */
 export function parsePartialStylesheet(
 	document: vscode.TextDocument,
-	position: vscode.Position,
+	position: vscode.Position
 ): FlatStylesheet | undefined {
 	const isCSS = document.languageId === "css";
 	const positionOffset = document.offsetAt(position);
@@ -426,7 +426,7 @@ export function parsePartialStylesheet(
 				.text.indexOf("//");
 			if (startLineComment > -1) {
 				stream.pos = document.offsetAt(
-					new vscode.Position(currentLine, startLineComment),
+					new vscode.Position(currentLine, startLineComment)
 				);
 			}
 		}
@@ -448,7 +448,7 @@ export function parsePartialStylesheet(
 			if (stream.eat(slash) && !isCSS) {
 				const posLineNumber = document.positionAt(stream.pos).line;
 				stream.pos = document.offsetAt(
-					new vscode.Position(posLineNumber + 1, 0),
+					new vscode.Position(posLineNumber + 1, 0)
 				);
 			} else if (stream.eat(star)) {
 				stream.pos =
@@ -557,14 +557,14 @@ export function parsePartialStylesheet(
 export function getFlatNode(
 	root: FlatNode | undefined,
 	offset: number,
-	includeNodeBoundary: boolean,
+	includeNodeBoundary: boolean
 ): FlatNode | undefined {
 	if (!root) {
 		return;
 	}
 
 	function getFlatNodeChild(
-		child: FlatNode | undefined,
+		child: FlatNode | undefined
 	): FlatNode | undefined {
 		if (!child) {
 			return;
@@ -617,7 +617,7 @@ export function getHtmlFlatNode(
 	documentText: string,
 	root: FlatNode | undefined,
 	offset: number,
-	includeNodeBoundary: boolean,
+	includeNodeBoundary: boolean
 ): HtmlFlatNode | undefined {
 	let currentNode: HtmlFlatNode | undefined = <HtmlFlatNode | undefined>(
 		getFlatNode(root, offset, includeNodeBoundary)
@@ -630,7 +630,7 @@ export function getHtmlFlatNode(
 	if (currentNode.name === "script" && currentNode.children.length === 0) {
 		const scriptNodeBody = setupScriptNodeSubtree(
 			documentText,
-			currentNode,
+			currentNode
 		);
 		if (scriptNodeBody) {
 			currentNode =
@@ -638,7 +638,7 @@ export function getHtmlFlatNode(
 					scriptNodeBody,
 					currentNode,
 					offset,
-					includeNodeBoundary,
+					includeNodeBoundary
 				) ?? currentNode;
 		}
 	} else if (currentNode.type === "cdata") {
@@ -648,7 +648,7 @@ export function getHtmlFlatNode(
 				cdataBody,
 				currentNode,
 				offset,
-				includeNodeBoundary,
+				includeNodeBoundary
 			) ?? currentNode;
 	}
 	return currentNode;
@@ -656,7 +656,7 @@ export function getHtmlFlatNode(
 
 export function setupScriptNodeSubtree(
 	documentText: string,
-	scriptNode: HtmlFlatNode,
+	scriptNode: HtmlFlatNode
 ): string {
 	const isTemplateScript =
 		scriptNode.name === "script" &&
@@ -664,7 +664,7 @@ export function setupScriptNodeSubtree(
 		scriptNode.attributes.some(
 			(x) =>
 				x.name.toString() === "type" &&
-				allowedMimeTypesInScriptTag.includes(x.value.toString()),
+				allowedMimeTypesInScriptTag.includes(x.value.toString())
 		);
 	if (isTemplateScript && scriptNode.open) {
 		// blank out the rest of the document and generate the subtree.
@@ -687,7 +687,7 @@ export function setupScriptNodeSubtree(
 
 export function setupCdataNodeSubtree(
 	documentText: string,
-	cdataNode: HtmlFlatNode,
+	cdataNode: HtmlFlatNode
 ): string {
 	// blank out the rest of the document and generate the subtree.
 	const cdataStart = "<![CDATA[";
@@ -707,7 +707,7 @@ export function setupCdataNodeSubtree(
 
 export function isOffsetInsideOpenOrCloseTag(
 	node: FlatNode,
-	offset: number,
+	offset: number
 ): boolean {
 	const htmlNode = node as HtmlFlatNode;
 	if (
@@ -727,7 +727,7 @@ export function isOffsetInsideOpenOrCloseTag(
 export function offsetRangeToSelection(
 	document: vscode.TextDocument,
 	start: number,
-	end: number,
+	end: number
 ): vscode.Selection {
 	const startPos = document.positionAt(start);
 	const endPos = document.positionAt(end);
@@ -737,7 +737,7 @@ export function offsetRangeToSelection(
 export function offsetRangeToVsRange(
 	document: vscode.TextDocument,
 	start: number,
-	end: number,
+	end: number
 ): vscode.Range {
 	const startPos = document.positionAt(start);
 	const endPos = document.positionAt(end);
@@ -748,7 +748,7 @@ export function offsetRangeToVsRange(
  * Returns the deepest non comment node under given node
  */
 export function getDeepestFlatNode(
-	node: FlatNode | undefined,
+	node: FlatNode | undefined
 ): FlatNode | undefined {
 	if (
 		!node ||
@@ -768,7 +768,7 @@ export function getDeepestFlatNode(
 
 export function findNextWord(
 	propertyValue: string,
-	pos: number,
+	pos: number
 ): [number | undefined, number | undefined] {
 	let foundSpace = pos === -1;
 	let foundStart = false;
@@ -808,7 +808,7 @@ export function findNextWord(
 
 export function findPrevWord(
 	propertyValue: string,
-	pos: number,
+	pos: number
 ): [number | undefined, number | undefined] {
 	let foundSpace = pos === propertyValue.length;
 	let foundStart = false;
@@ -848,7 +848,7 @@ export function findPrevWord(
 
 export function getNodesInBetween(
 	node1: FlatNode,
-	node2: FlatNode,
+	node2: FlatNode
 ): FlatNode[] {
 	// Same node
 	if (sameNodes(node1, node2)) {
@@ -890,7 +890,7 @@ export function getNodesInBetween(
 
 export function sameNodes(
 	node1: FlatNode | undefined,
-	node2: FlatNode | undefined,
+	node2: FlatNode | undefined
 ): boolean {
 	// return true if they're both undefined
 	if (!node1 && !node2) {
@@ -907,7 +907,7 @@ export function getEmmetConfiguration(syntax: string) {
 	const emmetConfig = vscode.workspace.getConfiguration("emmet");
 	const syntaxProfiles = Object.assign(
 		{},
-		emmetConfig["syntaxProfiles"] || {},
+		emmetConfig["syntaxProfiles"] || {}
 	);
 	const preferences = Object.assign({}, emmetConfig["preferences"] || {});
 	// jsx, xml and xsl syntaxes need to have self closing tags unless otherwise configured by user
@@ -942,7 +942,7 @@ export function getEmmetConfiguration(syntax: string) {
  */
 export function iterateCSSToken(
 	token: FlatCssToken,
-	fn: (x: any) => any,
+	fn: (x: any) => any
 ): boolean {
 	for (let i = 0, il = token.size; i < il; i++) {
 		if (
@@ -960,10 +960,10 @@ export function iterateCSSToken(
  */
 export function getCssPropertyFromRule(
 	rule: FlatRule,
-	name: string,
+	name: string
 ): FlatProperty | undefined {
 	return rule.children.find(
-		(node) => node.type === "property" && node.name === name,
+		(node) => node.type === "property" && node.name === name
 	) as FlatProperty;
 }
 
@@ -973,7 +973,7 @@ export function getCssPropertyFromRule(
  */
 export function getCssPropertyFromDocument(
 	editor: vscode.TextEditor,
-	position: vscode.Position,
+	position: vscode.Position
 ): FlatProperty | null {
 	const document = editor.document;
 	const rootNode = getRootNode(document, true);
@@ -1009,7 +1009,7 @@ export function getCssPropertyFromDocument(
 export function getEmbeddedCssNodeIfAny(
 	document: vscode.TextDocument,
 	currentNode: FlatNode | undefined,
-	position: vscode.Position,
+	position: vscode.Position
 ): FlatNode | undefined {
 	if (!currentNode) {
 		return;
@@ -1028,7 +1028,7 @@ export function getEmbeddedCssNodeIfAny(
 						.getText()
 						.substring(
 							currentHtmlNode.open.end,
-							currentHtmlNode.close.start,
+							currentHtmlNode.close.start
 						);
 				return parseStylesheet(buffer);
 			}
@@ -1039,14 +1039,14 @@ export function getEmbeddedCssNodeIfAny(
 
 export function isStyleAttribute(
 	currentNode: FlatNode | undefined,
-	offset: number,
+	offset: number
 ): boolean {
 	if (!currentNode) {
 		return false;
 	}
 	const currentHtmlNode = <HtmlFlatNode>currentNode;
 	const index = (currentHtmlNode.attributes || []).findIndex(
-		(x) => x.name.toString() === "style",
+		(x) => x.name.toString() === "style"
 	);
 	if (index === -1) {
 		return false;
@@ -1067,7 +1067,7 @@ export function toLSTextDocument(doc: vscode.TextDocument): LSTextDocument {
 		doc.uri.toString(),
 		doc.languageId,
 		doc.version,
-		doc.getText(),
+		doc.getText()
 	);
 }
 

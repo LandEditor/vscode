@@ -40,7 +40,7 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
 				start === 0 && i === items.length
 					? items
 					: items.slice(start, i),
-				false,
+				false
 			);
 		} else {
 			return items[start];
@@ -71,7 +71,7 @@ export function concat23Trees(items: AstNode[]): AstNode | null {
 
 export function concat23TreesOfSameHeight(
 	items: AstNode[],
-	createImmutableLists: boolean = false,
+	createImmutableLists: boolean = false
 ): AstNode | null {
 	if (items.length === 0) {
 		return null;
@@ -90,7 +90,7 @@ export function concat23TreesOfSameHeight(
 				items[j],
 				items[j + 1],
 				j + 3 === length ? items[j + 2] : null,
-				createImmutableLists,
+				createImmutableLists
 			);
 		}
 		length = newLength;
@@ -99,7 +99,7 @@ export function concat23TreesOfSameHeight(
 		items[0],
 		items[1],
 		length >= 3 ? items[2] : null,
-		createImmutableLists,
+		createImmutableLists
 	);
 }
 
@@ -155,7 +155,7 @@ function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 					parent.unappendChild()!,
 					nodeToAppendOfCorrectHeight,
 					null,
-					false,
+					false
 				);
 			} else {
 				parent.appendChildOfSameHeight(nodeToAppendOfCorrectHeight);
@@ -170,7 +170,7 @@ function append(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 			list,
 			nodeToAppendOfCorrectHeight,
 			null,
-			false,
+			false
 		);
 	} else {
 		return list;
@@ -210,7 +210,7 @@ function prepend(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 					nodeToPrependOfCorrectHeight,
 					parent.unprependChild()!,
 					null,
-					false,
+					false
 				);
 			} else {
 				parent.prependChildOfSameHeight(nodeToPrependOfCorrectHeight);
@@ -225,7 +225,7 @@ function prepend(list: ListAstNode, nodeToAppend: AstNode): AstNode {
 			nodeToPrependOfCorrectHeight,
 			list,
 			null,
-			false,
+			false
 		);
 	} else {
 		return list;

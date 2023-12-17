@@ -14,5 +14,5 @@ require("../esbuild-webview-common").run(
 		srcDir,
 		outdir: outDir,
 	},
-	process.argv,
+	process.argv
 );

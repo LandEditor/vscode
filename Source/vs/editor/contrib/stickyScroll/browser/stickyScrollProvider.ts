@@ -33,7 +33,7 @@ export class StickyLineCandidate {
 	constructor(
 		public readonly startLineNumber: number,
 		public readonly endLineNumber: number,
-		public readonly nestingDepth: number,
+		public readonly nestingDepth: number
 	) {}
 }
 
@@ -42,7 +42,7 @@ export interface IStickyLineCandidateProvider {
 	getVersionId(): number | undefined;
 	update(): Promise<void>;
 	getCandidateStickyLinesIntersecting(
-		range: StickyRange,
+		range: StickyRange
 	): StickyLineCandidate[];
 	onDidChangeStickyScroll: Event<void>;
 }
@@ -54,7 +54,7 @@ export class StickyLineCandidateProvider
 	static readonly ID = "store.contrib.stickyScrollController";
 
 	private readonly _onDidChangeStickyScroll = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	public readonly onDidChangeStickyScroll =
 		this._onDidChangeStickyScroll.event;
@@ -71,19 +71,25 @@ export class StickyLineCandidateProvider
 
 	constructor(
 		editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService
 	) {
 		super();
 		this._editor = editor;
 		this._sessionStore = this._register(new DisposableStore());
-		this._updateSoon = this._register(new RunOnceScheduler(() => this.update(), 50));
+		this._updateSoon = this._register(
+			new RunOnceScheduler(() => this.update(), 50)
+		);
 
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.stickyScroll)) {
-				this.readConfiguration();
-			}
-		}));
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.stickyScroll)) {
+					this.readConfiguration();
+				}
+			})
+		);
 		this.readConfiguration();
 	}
 
@@ -101,8 +107,8 @@ export class StickyLineCandidateProvider
 				this._editor,
 				this._languageConfigurationService,
 				this._languageFeaturesService,
-				this._options.defaultModel,
-			),
+				this._options.defaultModel
+			)
 		);
 
 		this._sessionStore.add(
@@ -113,20 +119,20 @@ export class StickyLineCandidateProvider
 				this._onDidChangeStickyScroll.fire();
 
 				this.update();
-			}),
+			})
 		);
 		this._sessionStore.add(
-			this._editor.onDidChangeHiddenAreas(() => this.update()),
+			this._editor.onDidChangeHiddenAreas(() => this.update())
 		);
 		this._sessionStore.add(
 			this._editor.onDidChangeModelContent(() =>
-				this._updateSoon.schedule(),
-			),
+				this._updateSoon.schedule()
+			)
 		);
 		this._sessionStore.add(
 			this._languageFeaturesService.documentSymbolProvider.onDidChange(
-				() => this.update(),
-			),
+				() => this.update()
+			)
 		);
 		this.update();
 	}
@@ -158,7 +164,7 @@ export class StickyLineCandidateProvider
 		const model = await this._stickyModelProvider.update(
 			textModel,
 			modelVersionId,
-			token,
+			token
 		);
 		if (token.isCancellationRequested) {
 			// the computation was canceled, so do not overwrite the model
@@ -182,7 +188,7 @@ export class StickyLineCandidateProvider
 		outlineModel: StickyElement,
 		result: StickyLineCandidate[],
 		depth: number,
-		lastStartLineNumber: number,
+		lastStartLineNumber: number
 	): void {
 		if (outlineModel.children.length === 0) {
 			return;
@@ -202,8 +208,8 @@ export class StickyLineCandidateProvider
 				range.startLineNumber,
 				(a: number, b: number) => {
 					return a - b;
-				},
-			),
+				}
+			)
 		);
 		const upperBound = this.updateIndex(
 			binarySearch(
@@ -211,8 +217,8 @@ export class StickyLineCandidateProvider
 				range.startLineNumber + depth,
 				(a: number, b: number) => {
 					return a - b;
-				},
-			),
+				}
+			)
 		);
 
 		for (let i = lowerBound; i <= upperBound; i++) {
@@ -233,15 +239,15 @@ export class StickyLineCandidateProvider
 						new StickyLineCandidate(
 							childStartLine,
 							childEndLine - 1,
-							depth + 1,
-						),
+							depth + 1
+						)
 					);
 					this.getCandidateStickyLinesIntersectingFromStickyModel(
 						range,
 						child,
 						result,
 						depth + 1,
-						childStartLine,
+						childStartLine
 					);
 				}
 			} else {
@@ -250,14 +256,14 @@ export class StickyLineCandidateProvider
 					child,
 					result,
 					depth,
-					lastStartLineNumber,
+					lastStartLineNumber
 				);
 			}
 		}
 	}
 
 	public getCandidateStickyLinesIntersecting(
-		range: StickyRange,
+		range: StickyRange
 	): StickyLineCandidate[] {
 		if (!this._model?.element) {
 			return [];
@@ -268,7 +274,7 @@ export class StickyLineCandidateProvider
 			this._model.element,
 			stickyLineCandidates,
 			0,
-			-1,
+			-1
 		);
 		const hiddenRanges: Range[] | undefined = this._editor
 			._getViewModel()
@@ -283,7 +289,7 @@ export class StickyLineCandidateProvider
 								hiddenRange.startLineNumber &&
 							stickyLine.endLineNumber <=
 								hiddenRange.endLineNumber + 1
-						),
+						)
 				);
 			}
 		}

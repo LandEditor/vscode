@@ -9,7 +9,7 @@ import { additionalDeps } from "./dep-lists";
 
 export function generatePackageDeps(files: string[]): Set<string>[] {
 	const dependencies: Set<string>[] = files.map((file) =>
-		calculatePackageDeps(file),
+		calculatePackageDeps(file)
 	);
 	const additionalDepsSet = new Set(additionalDeps);
 	dependencies.push(additionalDepsSet);
@@ -21,7 +21,7 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
 	try {
 		if (!(statSync(binaryPath).mode & constants.S_IXUSR)) {
 			throw new Error(
-				`Binary ${binaryPath} needs to have an executable bit set.`,
+				`Binary ${binaryPath} needs to have an executable bit set.`
 			);
 		}
 	} catch (e) {
@@ -34,12 +34,12 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
 	});
 	if (findRequiresResult.status !== 0) {
 		throw new Error(
-			`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`,
+			`find-requires failed with exit code ${findRequiresResult.status}.\nstderr: ${findRequiresResult.stderr}`
 		);
 	}
 
 	const requires = new Set(
-		findRequiresResult.stdout.toString("utf-8").trimEnd().split("\n"),
+		findRequiresResult.stdout.toString("utf-8").trimEnd().split("\n")
 	);
 	return requires;
 }

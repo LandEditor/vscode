@@ -43,11 +43,11 @@ import { IClipboardService } from "vs/platform/clipboard/common/clipboardService
 
 export const IExtensionHostProfileService =
 	createDecorator<IExtensionHostProfileService>(
-		"extensionHostProfileService",
+		"extensionHostProfileService"
 	);
 export const CONTEXT_PROFILE_SESSION_STATE = new RawContextKey<string>(
 	"profileSessionState",
-	"none",
+	"none"
 );
 export const CONTEXT_EXTENSION_HOST_PROFILE_RECORDED =
 	new RawContextKey<boolean>("extensionHostProfileRecorded", false);
@@ -72,11 +72,11 @@ export interface IExtensionHostProfileService {
 	stopProfiling(): void;
 
 	getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
+		extensionId: ExtensionIdentifier
 	): IExtensionHostProfile | undefined;
 	setUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
-		profile: IExtensionHostProfile,
+		profile: IExtensionHostProfile
 	): void;
 }
 
@@ -89,31 +89,56 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IExtensionService extensionService: IExtensionService,
 		@INotificationService notificationService: INotificationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
 		@ILabelService labelService: ILabelService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IClipboardService clipboardService: IClipboardService,
-		@IExtensionHostProfileService private readonly _extensionHostProfileService: IExtensionHostProfileService,
+		@IExtensionHostProfileService
+		private readonly _extensionHostProfileService: IExtensionHostProfileService
 	) {
-		super(telemetryService, themeService, contextKeyService, extensionsWorkbenchService, extensionService, notificationService, contextMenuService, instantiationService, storageService, labelService, environmentService, clipboardService);
+		super(
+			telemetryService,
+			themeService,
+			contextKeyService,
+			extensionsWorkbenchService,
+			extensionService,
+			notificationService,
+			contextMenuService,
+			instantiationService,
+			storageService,
+			labelService,
+			environmentService,
+			clipboardService
+		);
 		this._profileInfo = this._extensionHostProfileService.lastProfile;
-		this._extensionsHostRecorded = CONTEXT_EXTENSION_HOST_PROFILE_RECORDED.bindTo(contextKeyService);
-		this._profileSessionState = CONTEXT_PROFILE_SESSION_STATE.bindTo(contextKeyService);
+		this._extensionsHostRecorded =
+			CONTEXT_EXTENSION_HOST_PROFILE_RECORDED.bindTo(contextKeyService);
+		this._profileSessionState =
+			CONTEXT_PROFILE_SESSION_STATE.bindTo(contextKeyService);
 
-		this._register(this._extensionHostProfileService.onDidChangeLastProfile(() => {
-			this._profileInfo = this._extensionHostProfileService.lastProfile;
-			this._extensionsHostRecorded.set(!!this._profileInfo);
-			this._updateExtensions();
-		}));
-		this._register(this._extensionHostProfileService.onDidChangeState(() => {
-			const state = this._extensionHostProfileService.state;
-			this._profileSessionState.set(ProfileSessionState[state].toLowerCase());
-		}));
+		this._register(
+			this._extensionHostProfileService.onDidChangeLastProfile(() => {
+				this._profileInfo =
+					this._extensionHostProfileService.lastProfile;
+				this._extensionsHostRecorded.set(!!this._profileInfo);
+				this._updateExtensions();
+			})
+		);
+		this._register(
+			this._extensionHostProfileService.onDidChangeState(() => {
+				const state = this._extensionHostProfileService.state;
+				this._profileSessionState.set(
+					ProfileSessionState[state].toLowerCase()
+				);
+			})
+		);
 	}
 
 	protected _getProfileInfo(): IExtensionHostProfile | null {
@@ -121,33 +146,33 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	}
 
 	protected _getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
+		extensionId: ExtensionIdentifier
 	): IExtensionHostProfile | undefined {
 		return this._extensionHostProfileService.getUnresponsiveProfile(
-			extensionId,
+			extensionId
 		);
 	}
 
 	protected _createSlowExtensionAction(
-		element: IRuntimeExtension,
+		element: IRuntimeExtension
 	): Action | null {
 		if (element.unresponsiveProfile) {
 			return this._instantiationService.createInstance(
 				SlowExtensionAction,
 				element.description,
-				element.unresponsiveProfile,
+				element.unresponsiveProfile
 			);
 		}
 		return null;
 	}
 
 	protected _createReportExtensionIssueAction(
-		element: IRuntimeExtension,
+		element: IRuntimeExtension
 	): Action | null {
 		if (element.marketplaceInfo) {
 			return this._instantiationService.createInstance(
 				ReportExtensionIssueAction,
-				element.description,
+				element.description
 			);
 		}
 		return null;
@@ -157,7 +182,7 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 		return this._instantiationService.createInstance(
 			SaveExtensionHostProfileAction,
 			SaveExtensionHostProfileAction.ID,
-			SaveExtensionHostProfileAction.LABEL,
+			SaveExtensionHostProfileAction.LABEL
 		);
 	}
 
@@ -168,13 +193,13 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 				? this._instantiationService.createInstance(
 						StopExtensionHostProfileAction,
 						StopExtensionHostProfileAction.ID,
-						StopExtensionHostProfileAction.LABEL,
-				  )
+						StopExtensionHostProfileAction.LABEL
+					)
 				: this._instantiationService.createInstance(
 						StartExtensionHostProfileAction,
 						StartExtensionHostProfileAction.ID,
-						StartExtensionHostProfileAction.LABEL,
-				  );
+						StartExtensionHostProfileAction.LABEL
+					);
 		return profileAction;
 	}
 }
@@ -183,12 +208,14 @@ export class StartExtensionHostProfileAction extends Action {
 	static readonly ID = "workbench.extensions.action.extensionHostProfile";
 	static readonly LABEL = nls.localize(
 		"extensionHostProfileStart",
-		"Start Extension Host Profile",
+		"Start Extension Host Profile"
 	);
 
 	constructor(
-		id: string = StartExtensionHostProfileAction.ID, label: string = StartExtensionHostProfileAction.LABEL,
-		@IExtensionHostProfileService private readonly _extensionHostProfileService: IExtensionHostProfileService,
+		id: string = StartExtensionHostProfileAction.ID,
+		label: string = StartExtensionHostProfileAction.LABEL,
+		@IExtensionHostProfileService
+		private readonly _extensionHostProfileService: IExtensionHostProfileService
 	) {
 		super(id, label);
 	}
@@ -203,12 +230,14 @@ export class StopExtensionHostProfileAction extends Action {
 	static readonly ID = "workbench.extensions.action.stopExtensionHostProfile";
 	static readonly LABEL = nls.localize(
 		"stopExtensionHostProfileStart",
-		"Stop Extension Host Profile",
+		"Stop Extension Host Profile"
 	);
 
 	constructor(
-		id: string = StartExtensionHostProfileAction.ID, label: string = StartExtensionHostProfileAction.LABEL,
-		@IExtensionHostProfileService private readonly _extensionHostProfileService: IExtensionHostProfileService,
+		id: string = StartExtensionHostProfileAction.ID,
+		label: string = StartExtensionHostProfileAction.LABEL,
+		@IExtensionHostProfileService
+		private readonly _extensionHostProfileService: IExtensionHostProfileService
 	) {
 		super(id, label);
 	}
@@ -222,20 +251,25 @@ export class StopExtensionHostProfileAction extends Action {
 export class SaveExtensionHostProfileAction extends Action {
 	static readonly LABEL = nls.localize(
 		"saveExtensionHostProfile",
-		"Save Extension Host Profile",
+		"Save Extension Host Profile"
 	);
 	static readonly ID = "workbench.extensions.action.saveExtensionHostProfile";
 
 	constructor(
-		id: string = SaveExtensionHostProfileAction.ID, label: string = SaveExtensionHostProfileAction.LABEL,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IExtensionHostProfileService private readonly _extensionHostProfileService: IExtensionHostProfileService,
+		id: string = SaveExtensionHostProfileAction.ID,
+		label: string = SaveExtensionHostProfileAction.LABEL,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IExtensionHostProfileService
+		private readonly _extensionHostProfileService: IExtensionHostProfileService,
 		@IFileService private readonly _fileService: IFileService
 	) {
 		super(id, label, undefined, false);
 		this._extensionHostProfileService.onDidChangeLastProfile(() => {
-			this.enabled = (this._extensionHostProfileService.lastProfile !== null);
+			this.enabled =
+				this._extensionHostProfileService.lastProfile !== null;
 		});
 	}
 
@@ -247,7 +281,7 @@ export class SaveExtensionHostProfileAction extends Action {
 		const picked = await this._nativeHostService.showSaveDialog({
 			title: nls.localize(
 				"saveprofile.dialogTitle",
-				"Save Extension Host Profile",
+				"Save Extension Host Profile"
 			),
 			buttonLabel: nls.localize("saveprofile.saveButton", "Save"),
 			defaultPath: `CPU-${new Date()
@@ -277,7 +311,7 @@ export class SaveExtensionHostProfileAction extends Action {
 			// easier to attach these files to GH issues
 			dataToWrite = Utils.rewriteAbsolutePaths(
 				dataToWrite as IV8Profile,
-				"piiRemoved",
+				"piiRemoved"
 			);
 
 			savePath = savePath + ".txt";
@@ -286,8 +320,8 @@ export class SaveExtensionHostProfileAction extends Action {
 		return this._fileService.writeFile(
 			URI.file(savePath),
 			VSBuffer.fromString(
-				JSON.stringify(profileInfo ? profileInfo.data : {}, null, "\t"),
-			),
+				JSON.stringify(profileInfo ? profileInfo.data : {}, null, "\t")
+			)
 		);
 	}
 }

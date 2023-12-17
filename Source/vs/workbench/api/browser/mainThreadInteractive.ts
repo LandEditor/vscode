@@ -25,10 +25,11 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IInteractiveDocumentService interactiveDocumentService: IInteractiveDocumentService,
+		@IInteractiveDocumentService
+		interactiveDocumentService: IInteractiveDocumentService
 	) {
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostInteractive,
+			ExtHostContext.ExtHostInteractive
 		);
 
 		this._disposables.add(
@@ -37,18 +38,18 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 					e.inputUri,
 					"\n",
 					PLAINTEXT_LANGUAGE_ID,
-					e.notebookUri,
+					e.notebookUri
 				);
-			}),
+			})
 		);
 
 		this._disposables.add(
 			interactiveDocumentService.onWillRemoveInteractiveDocument((e) => {
 				this._proxy.$willRemoveInteractiveDocument(
 					e.inputUri,
-					e.notebookUri,
+					e.notebookUri
 				);
-			}),
+			})
 		);
 	}
 

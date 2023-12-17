@@ -14,7 +14,7 @@ import { LogService } from "vs/platform/log/common/logService";
 export class NativeLogService extends LogService {
 	constructor(
 		loggerService: LoggerChannelClient,
-		environmentService: INativeWorkbenchEnvironmentService,
+		environmentService: INativeWorkbenchEnvironmentService
 	) {
 		const disposables = new DisposableStore();
 
@@ -22,7 +22,7 @@ export class NativeLogService extends LogService {
 			loggerService.createLogger(environmentService.logFile, {
 				id: windowLogId,
 				name: localize("rendererLog", "Window"),
-			}),
+			})
 		);
 
 		let consoleLogger: ILogger;

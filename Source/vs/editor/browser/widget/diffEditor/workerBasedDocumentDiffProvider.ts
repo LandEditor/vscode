@@ -43,8 +43,9 @@ export class WorkerBasedDocumentDiffProvider
 
 	constructor(
 		options: IWorkerBasedDocumentDiffProviderOptions,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
 		this.setOptions(options);
 	}
@@ -57,14 +58,14 @@ export class WorkerBasedDocumentDiffProvider
 		original: ITextModel,
 		modified: ITextModel,
 		options: IDocumentDiffProviderOptions,
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<IDocumentDiff> {
 		if (typeof this.diffAlgorithm !== "string") {
 			return this.diffAlgorithm.computeDiff(
 				original,
 				modified,
 				options,
-				cancellationToken,
+				cancellationToken
 			);
 		}
 
@@ -93,9 +94,9 @@ export class WorkerBasedDocumentDiffProvider
 						[
 							new RangeMapping(
 								original.getFullModelRange(),
-								modified.getFullModelRange(),
+								modified.getFullModelRange()
 							),
-						],
+						]
 					),
 				],
 				identical: false,
@@ -125,7 +126,7 @@ export class WorkerBasedDocumentDiffProvider
 			original.uri,
 			modified.uri,
 			options,
-			this.diffAlgorithm,
+			this.diffAlgorithm
 		);
 		const timeMs = sw.elapsed();
 
@@ -184,7 +185,7 @@ export class WorkerBasedDocumentDiffProvider
 		// max 10 items in cache
 		if (WorkerBasedDocumentDiffProvider.diffCache.size > 10) {
 			WorkerBasedDocumentDiffProvider.diffCache.delete(
-				WorkerBasedDocumentDiffProvider.diffCache.keys().next().value,
+				WorkerBasedDocumentDiffProvider.diffCache.keys().next().value
 			);
 		}
 
@@ -196,7 +197,7 @@ export class WorkerBasedDocumentDiffProvider
 	}
 
 	public setOptions(
-		newOptions: IWorkerBasedDocumentDiffProviderOptions,
+		newOptions: IWorkerBasedDocumentDiffProviderOptions
 	): void {
 		let didChange = false;
 		if (newOptions.diffAlgorithm) {
@@ -208,7 +209,7 @@ export class WorkerBasedDocumentDiffProvider
 				if (typeof newOptions.diffAlgorithm !== "string") {
 					this.diffAlgorithmOnDidChangeSubscription =
 						newOptions.diffAlgorithm.onDidChange(() =>
-							this.onDidChangeEventEmitter.fire(),
+							this.onDidChangeEventEmitter.fire()
 						);
 				}
 				didChange = true;

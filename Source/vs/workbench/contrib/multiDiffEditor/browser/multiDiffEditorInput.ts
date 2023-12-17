@@ -40,10 +40,7 @@ import { ILanguageSupport } from "vs/workbench/services/textfile/common/textfile
 const MultiDiffEditorIcon = registerIcon(
 	"multi-diff-editor-label-icon",
 	Codicon.diffMultiple,
-	localize(
-		"multiDiffEditorLabelIcon",
-		"Icon of the multi diff editor label.",
-	),
+	localize("multiDiffEditorLabelIcon", "Icon of the multi diff editor label.")
 );
 
 /* hot-reload:patch-prototype-methods */
@@ -86,13 +83,18 @@ export class MultiDiffEditorInput
 		readonly label: string | undefined,
 		readonly resources: readonly MultiDiffEditorInputData[],
 		id: string | undefined,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@ITextResourceConfigurationService private readonly _textResourceConfigurationService: ITextResourceConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IModelService private readonly _modelService: IModelService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@ITextResourceConfigurationService
+		private readonly _textResourceConfigurationService: ITextResourceConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IModelService private readonly _modelService: IModelService
 	) {
 		super();
-		this.id = id || new Date().getMilliseconds().toString() + Math.random().toString();
+		this.id =
+			id ||
+			new Date().getMilliseconds().toString() + Math.random().toString();
 	}
 
 	setLanguageId(languageId: string, source?: string | undefined): void {
@@ -119,7 +121,7 @@ export class MultiDiffEditorInput
 		this._register(model);
 		const vm = new MultiDiffEditorViewModel(
 			model,
-			this._instantiationService,
+			this._instantiationService
 		);
 		this._register(vm);
 		await raceTimeout(vm.waitForDiffs(), 1000);
@@ -136,32 +138,26 @@ export class MultiDiffEditorInput
 							originalRef: r.original
 								? store.add(
 										await this._textModelService.createModelReference(
-											r.original,
-										),
-								  )
+											r.original
+										)
+									)
 								: undefined,
 							originalModel: !r.original
 								? store.add(
-										this._modelService.createModel(
-											"",
-											null,
-										),
-								  )
+										this._modelService.createModel("", null)
+									)
 								: undefined,
 							modifiedRef: r.modified
 								? store.add(
 										await this._textModelService.createModelReference(
-											r.modified,
-										),
-								  )
+											r.modified
+										)
+									)
 								: undefined,
 							modifiedModel: !r.modified
 								? store.add(
-										this._modelService.createModel(
-											"",
-											null,
-										),
-								  )
+										this._modelService.createModel("", null)
+									)
 								: undefined,
 							title: r.resource.fsPath,
 						};
@@ -171,7 +167,7 @@ export class MultiDiffEditorInput
 						onUnexpectedError(e);
 						return undefined;
 					}
-				}),
+				})
 			)
 		).filter(isDefined);
 
@@ -197,10 +193,10 @@ export class MultiDiffEditorInput
 
 						return {
 							...getReadonlyConfiguration(
-								r.modifiedRef?.object.isReadonly() ?? true,
+								r.modifiedRef?.object.isReadonly() ?? true
 							),
 							...computeOptions(
-								textResourceConfigurationService.getValue(uri),
+								textResourceConfigurationService.getValue(uri)
 							),
 						} satisfies IDiffEditorOptions;
 					},
@@ -213,7 +209,7 @@ export class MultiDiffEditorInput
 								) {
 									h();
 								}
-							},
+							}
 						),
 				});
 			}),
@@ -222,7 +218,7 @@ export class MultiDiffEditorInput
 }
 
 function getReadonlyConfiguration(
-	isReadonly: boolean | IMarkdownString | undefined,
+	isReadonly: boolean | IMarkdownString | undefined
 ): { readOnly: boolean; readOnlyMessage: IMarkdownString | undefined } {
 	return {
 		readOnly: !!isReadonly,
@@ -232,14 +228,14 @@ function getReadonlyConfiguration(
 }
 
 function computeOptions(
-	configuration: IEditorConfiguration,
+	configuration: IEditorConfiguration
 ): IDiffEditorOptions {
 	const editorConfiguration = deepClone(configuration.editor);
 
 	// Handle diff editor specially by merging in diffEditor configuration
 	if (isObject(configuration.diffEditor)) {
 		const diffEditorConfiguration: IDiffEditorOptions = deepClone(
-			configuration.diffEditor,
+			configuration.diffEditor
 		);
 
 		// User settings defines `diffEditor.codeLens`, but here we rename that to `diffEditor.diffCodeLens` to avoid collisions with `editor.codeLens`.
@@ -261,6 +257,6 @@ export class MultiDiffEditorInputData {
 	constructor(
 		readonly resource: URI,
 		readonly original: URI | undefined,
-		readonly modified: URI | undefined,
+		readonly modified: URI | undefined
 	) {}
 }

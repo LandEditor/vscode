@@ -101,17 +101,17 @@ export class ApiRepositoryState implements RepositoryState {
 
 	get mergeChanges(): Change[] {
 		return this._repository.mergeGroup.resourceStates.map(
-			(r) => new ApiChange(r),
+			(r) => new ApiChange(r)
 		);
 	}
 	get indexChanges(): Change[] {
 		return this._repository.indexGroup.resourceStates.map(
-			(r) => new ApiChange(r),
+			(r) => new ApiChange(r)
 		);
 	}
 	get workingTreeChanges(): Change[] {
 		return this._repository.workingTreeGroup.resourceStates.map(
-			(r) => new ApiChange(r),
+			(r) => new ApiChange(r)
 		);
 	}
 
@@ -127,7 +127,7 @@ export class ApiRepositoryUIState implements RepositoryUIState {
 
 	readonly onDidChange: Event<void> = mapEvent<boolean, void>(
 		this._sourceControl.onDidChangeSelection,
-		() => null,
+		() => null
 	);
 
 	constructor(private _sourceControl: SourceControl) {}
@@ -138,7 +138,7 @@ export class ApiRepository implements Repository {
 	readonly inputBox: InputBox = new ApiInputBox(this.repository.inputBox);
 	readonly state: RepositoryState = new ApiRepositoryState(this.repository);
 	readonly ui: RepositoryUIState = new ApiRepositoryUIState(
-		this.repository.sourceControl,
+		this.repository.sourceControl
 	);
 
 	constructor(readonly repository: BaseRepository) {}
@@ -165,13 +165,13 @@ export class ApiRepository implements Repository {
 
 	getObjectDetails(
 		treeish: string,
-		path: string,
+		path: string
 	): Promise<{ mode: string; object: string; size: number }> {
 		return this.repository.getObjectDetails(treeish, path);
 	}
 
 	detectObjectType(
-		object: string,
+		object: string
 	): Promise<{ mimetype: string; encoding?: string }> {
 		return this.repository.detectObjectType(object);
 	}
@@ -237,7 +237,7 @@ export class ApiRepository implements Repository {
 	diffBetween(
 		ref1: string,
 		ref2: string,
-		path?: string,
+		path?: string
 	): Promise<string | Change[]> {
 		return this.repository.diffBetween(ref1, ref2, path);
 	}
@@ -253,7 +253,7 @@ export class ApiRepository implements Repository {
 	createBranch(
 		name: string,
 		checkout: boolean,
-		ref?: string | undefined,
+		ref?: string | undefined
 	): Promise<void> {
 		return this.repository.branch(name, checkout, ref);
 	}
@@ -268,7 +268,7 @@ export class ApiRepository implements Repository {
 
 	getBranches(
 		query: BranchQuery,
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): Promise<Ref[]> {
 		return this.repository.getBranches(query, cancellationToken);
 	}
@@ -283,7 +283,7 @@ export class ApiRepository implements Repository {
 
 	getRefs(
 		query: RefQuery,
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): Promise<Ref[]> {
 		return this.repository.getRefs(query, cancellationToken);
 	}
@@ -324,7 +324,7 @@ export class ApiRepository implements Repository {
 		arg0?: FetchOptions | string | undefined,
 		ref?: string | undefined,
 		depth?: number | undefined,
-		prune?: boolean | undefined,
+		prune?: boolean | undefined
 	): Promise<void> {
 		if (arg0 !== undefined && typeof arg0 !== "string") {
 			return this.repository.fetch(arg0);
@@ -341,13 +341,13 @@ export class ApiRepository implements Repository {
 		remoteName?: string,
 		branchName?: string,
 		setUpstream: boolean = false,
-		force?: ForcePushMode,
+		force?: ForcePushMode
 	): Promise<void> {
 		return this.repository.pushTo(
 			remoteName,
 			branchName,
 			setUpstream,
-			force,
+			force
 		);
 	}
 
@@ -390,14 +390,14 @@ export class ApiImpl implements API {
 	get onDidOpenRepository(): Event<Repository> {
 		return mapEvent(
 			this._model.onDidOpenRepository,
-			(r) => new ApiRepository(r),
+			(r) => new ApiRepository(r)
 		);
 	}
 
 	get onDidCloseRepository(): Event<Repository> {
 		return mapEvent(
 			this._model.onDidCloseRepository,
-			(r) => new ApiRepository(r),
+			(r) => new ApiRepository(r)
 		);
 	}
 
@@ -432,19 +432,19 @@ export class ApiImpl implements API {
 		if (provider.publishRepository) {
 			disposables.push(
 				this._model.registerRemoteSourcePublisher(
-					provider as RemoteSourcePublisher,
-				),
+					provider as RemoteSourcePublisher
+				)
 			);
 		}
 		disposables.push(
-			GitBaseApi.getAPI().registerRemoteSourceProvider(provider),
+			GitBaseApi.getAPI().registerRemoteSourceProvider(provider)
 		);
 
 		return combinedDisposable(disposables);
 	}
 
 	registerRemoteSourcePublisher(
-		publisher: RemoteSourcePublisher,
+		publisher: RemoteSourcePublisher
 	): Disposable {
 		return this._model.registerRemoteSourcePublisher(publisher);
 	}
@@ -454,7 +454,7 @@ export class ApiImpl implements API {
 	}
 
 	registerPostCommitCommandsProvider(
-		provider: PostCommitCommandsProvider,
+		provider: PostCommitCommandsProvider
 	): Disposable {
 		return this._model.registerPostCommitCommandsProvider(provider);
 	}
@@ -465,7 +465,7 @@ export class ApiImpl implements API {
 
 	registerBranchProtectionProvider(
 		root: Uri,
-		provider: BranchProtectionProvider,
+		provider: BranchProtectionProvider
 	): Disposable {
 		return this._model.registerBranchProtectionProvider(root, provider);
 	}
@@ -538,7 +538,7 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
 		commands.registerCommand("git.api.getRepositories", () => {
 			const api = extension.getAPI(1);
 			return api.repositories.map((r) => r.rootUri.toString());
-		}),
+		})
 	);
 
 	disposables.push(
@@ -573,8 +573,8 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
 					indexChanges: state.indexChanges.map(change),
 					workingTreeChanges: state.workingTreeChanges.map(change),
 				};
-			},
-		),
+			}
+		)
 	);
 
 	disposables.push(
@@ -583,10 +583,10 @@ export function registerAPICommands(extension: GitExtensionImpl): Disposable {
 			(opts?: PickRemoteSourceOptions) => {
 				return commands.executeCommand(
 					"git-base.api.getRemoteSources",
-					opts,
+					opts
 				);
-			},
-		),
+			}
+		)
 	);
 
 	return Disposable.from(...disposables);

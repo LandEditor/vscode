@@ -25,7 +25,7 @@ export class NotebookCellStatusBarService
 	readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeProviders = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeProviders: Event<void> =
 		this._onDidChangeProviders.event;
@@ -36,13 +36,13 @@ export class NotebookCellStatusBarService
 	private readonly _providers: INotebookCellStatusBarItemProvider[] = [];
 
 	registerCellStatusBarItemProvider(
-		provider: INotebookCellStatusBarItemProvider,
+		provider: INotebookCellStatusBarItemProvider
 	): IDisposable {
 		this._providers.push(provider);
 		let changeListener: IDisposable | undefined;
 		if (provider.onDidChangeStatusBarItems) {
 			changeListener = provider.onDidChangeStatusBarItems(() =>
-				this._onDidChangeItems.fire(),
+				this._onDidChangeItems.fire()
 			);
 		}
 
@@ -59,10 +59,10 @@ export class NotebookCellStatusBarService
 		docUri: URI,
 		cellIndex: number,
 		viewType: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<INotebookCellStatusBarItemList[]> {
 		const providers = this._providers.filter(
-			(p) => p.viewType === viewType || p.viewType === "*",
+			(p) => p.viewType === viewType || p.viewType === "*"
 		);
 		return await Promise.all(
 			providers.map(async (p) => {
@@ -71,14 +71,14 @@ export class NotebookCellStatusBarService
 						(await p.provideCellStatusBarItems(
 							docUri,
 							cellIndex,
-							token,
+							token
 						)) ?? { items: [] }
 					);
 				} catch (e) {
 					onUnexpectedExternalError(e);
 					return { items: [] };
 				}
-			}),
+			})
 		);
 	}
 }

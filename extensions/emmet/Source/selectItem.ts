@@ -38,14 +38,14 @@ export function fetchSelectItem(direction: string): void {
 							document,
 							selectionStart,
 							selectionEnd,
-							<CssNode>rootNode,
-					  )
+							<CssNode>rootNode
+						)
 					: prevItemStylesheet(
 							document,
 							selectionStart,
 							selectionEnd,
-							<CssNode>rootNode,
-					  );
+							<CssNode>rootNode
+						);
 		} else {
 			updatedSelection =
 				direction === "next"
@@ -53,14 +53,14 @@ export function fetchSelectItem(direction: string): void {
 							document,
 							selectionStart,
 							selectionEnd,
-							<HtmlNode>rootNode,
-					  )
+							<HtmlNode>rootNode
+						)
 					: prevItemHTML(
 							document,
 							selectionStart,
 							selectionEnd,
-							<HtmlNode>rootNode,
-					  );
+							<HtmlNode>rootNode
+						);
 		}
 		newSelections.push(updatedSelection ? updatedSelection : selection);
 	});

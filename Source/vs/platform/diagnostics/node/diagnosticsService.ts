@@ -40,7 +40,7 @@ interface ConfigFilePatterns {
 const worksapceStatsCache = new Map<string, Promise<WorkspaceStats>>();
 export async function collectWorkspaceStats(
 	folder: string,
-	filter: string[],
+	filter: string[]
 ): Promise<WorkspaceStats> {
 	const cacheKey = `${folder}::${filter.join(":")}`;
 	const cached = worksapceStatsCache.get(cacheKey);
@@ -86,7 +86,7 @@ export async function collectWorkspaceStats(
 		root: string,
 		dir: string,
 		filter: string[],
-		token: { count: number; maxReached: boolean },
+		token: { count: number; maxReached: boolean }
 	): Promise<void> {
 		const relativePath = dir.substring(root.length + 1);
 
@@ -129,7 +129,7 @@ export async function collectWorkspaceStats(
 							root,
 							join(dir, file.name),
 							filter,
-							token,
+							token
 						);
 					}
 
@@ -144,7 +144,7 @@ export async function collectWorkspaceStats(
 						if (fileType) {
 							fileTypes.set(
 								fileType,
-								(fileTypes.get(fileType) ?? 0) + 1,
+								(fileTypes.get(fileType) ?? 0) + 1
 							);
 						}
 					}
@@ -152,13 +152,13 @@ export async function collectWorkspaceStats(
 					for (const configFile of configFilePatterns) {
 						if (
 							configFile.relativePathPattern?.test(
-								relativePath,
+								relativePath
 							) !== false &&
 							configFile.filePattern.test(file.name)
 						) {
 							configFiles.set(
 								configFile.tag,
-								(configFiles.get(configFile.tag) ?? 0) + 1,
+								(configFiles.get(configFile.tag) ?? 0) + 1
 							);
 						}
 					}
@@ -188,7 +188,7 @@ export async function collectWorkspaceStats(
 				maxFilesReached: token.maxReached,
 				launchConfigFiles: launchConfigs,
 			});
-		},
+		}
 	);
 
 	worksapceStatsCache.set(cacheKey, statsPromise);
@@ -220,7 +220,7 @@ export function getMachineInfo(): IMachineInfo {
 }
 
 export async function collectLaunchConfigs(
-	folder: string,
+	folder: string
 ): Promise<WorkspaceStatItem[]> {
 	try {
 		const launchConfigs = new Map<string, number>();
@@ -260,7 +260,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService
-	) { }
+	) {}
 
 	private formatMachineInfo(info: IMachineInfo): string {
 		const output: string[] = [];
@@ -279,41 +279,37 @@ export class DiagnosticsService implements IDiagnosticsService {
 				this.productService.version
 			} (${this.productService.commit || "Commit unknown"}, ${
 				this.productService.date || "Date unknown"
-			})`,
+			})`
 		);
 		output.push(
-			`OS Version:       ${osLib.type()} ${osLib.arch()} ${osLib.release()}`,
+			`OS Version:       ${osLib.type()} ${osLib.arch()} ${osLib.release()}`
 		);
 		const cpus = osLib.cpus();
 		if (cpus && cpus.length > 0) {
 			output.push(
-				`CPUs:             ${cpus[0].model} (${cpus.length} x ${cpus[0].speed})`,
+				`CPUs:             ${cpus[0].model} (${cpus.length} x ${cpus[0].speed})`
 			);
 		}
 		output.push(
 			`Memory (System):  ${(osLib.totalmem() / ByteSize.GB).toFixed(
-				2,
-			)}GB (${(osLib.freemem() / ByteSize.GB).toFixed(2)}GB free)`,
+				2
+			)}GB (${(osLib.freemem() / ByteSize.GB).toFixed(2)}GB free)`
 		);
 		if (!isWindows) {
 			output.push(
 				`Load (avg):       ${osLib
 					.loadavg()
 					.map((l) => Math.round(l))
-					.join(", ")}`,
+					.join(", ")}`
 			); // only provided on Linux/macOS
 		}
 		output.push(
-			`VM:               ${Math.round(
-				virtualMachineHint.value() * 100,
-			)}%`,
+			`VM:               ${Math.round(virtualMachineHint.value() * 100)}%`
 		);
 		output.push(`Screen Reader:    ${info.screenReader ? "yes" : "no"}`);
 		output.push(`Process Argv:     ${info.mainArguments.join(" ")}`);
 		output.push(
-			`GPU Status:       ${this.expandGPUFeatures(
-				info.gpuFeatureStatus,
-			)}`,
+			`GPU Status:       ${this.expandGPUFeatures(info.gpuFeatureStatus)}`
 		);
 
 		return output.join("\n");
@@ -321,7 +317,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 	public async getPerformanceInfo(
 		info: IMainProcessDiagnostics,
-		remoteData: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteData: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<PerformanceInfo> {
 		return Promise.all([
 			listProcesses(info.mainPID),
@@ -339,14 +335,14 @@ export class DiagnosticsService implements IDiagnosticsService {
 					if (diagnostics.processes) {
 						processInfo += `\n${this.formatProcessList(
 							info,
-							diagnostics.processes,
+							diagnostics.processes
 						)}`;
 					}
 
 					if (diagnostics.workspaceMetadata) {
 						workspaceInfo += `\n|  Remote: ${diagnostics.hostName}`;
 						for (const folder of Object.keys(
-							diagnostics.workspaceMetadata,
+							diagnostics.workspaceMetadata
 						)) {
 							const metadata =
 								diagnostics.workspaceMetadata[folder];
@@ -373,7 +369,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 	public async getSystemInfo(
 		info: IMainProcessDiagnostics,
-		remoteData: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteData: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<SystemInfo> {
 		const { memory, vmHint, os, cpus } = getMachineInfo();
 		const systemInfo: SystemInfo = {
@@ -408,7 +404,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 	public async getDiagnostics(
 		info: IMainProcessDiagnostics,
-		remoteDiagnostics: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteDiagnostics: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<string> {
 		const output: string[] = [];
 		return listProcesses(info.mainPID).then(async (rootProcess) => {
@@ -426,7 +422,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 					(window) =>
 						window.folderURIs &&
 						window.folderURIs.length > 0 &&
-						!window.remoteAuthority,
+						!window.remoteAuthority
 				)
 			) {
 				output.push("");
@@ -441,18 +437,18 @@ export class DiagnosticsService implements IDiagnosticsService {
 					output.push("\n\n");
 					output.push(`Remote:           ${diagnostics.hostName}`);
 					output.push(
-						this.formatMachineInfo(diagnostics.machineInfo),
+						this.formatMachineInfo(diagnostics.machineInfo)
 					);
 
 					if (diagnostics.processes) {
 						output.push(
-							this.formatProcessList(info, diagnostics.processes),
+							this.formatProcessList(info, diagnostics.processes)
 						);
 					}
 
 					if (diagnostics.workspaceMetadata) {
 						for (const folder of Object.keys(
-							diagnostics.workspaceMetadata,
+							diagnostics.workspaceMetadata
 						)) {
 							const metadata =
 								diagnostics.workspaceMetadata[folder];
@@ -533,21 +529,21 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 	private expandGPUFeatures(gpuFeatures: any): string {
 		const longestFeatureName = Math.max(
-			...Object.keys(gpuFeatures).map((feature) => feature.length),
+			...Object.keys(gpuFeatures).map((feature) => feature.length)
 		);
 		// Make columns aligned by adding spaces after feature name
 		return Object.keys(gpuFeatures)
 			.map(
 				(feature) =>
 					`${feature}:  ${" ".repeat(
-						longestFeatureName - feature.length,
-					)}  ${gpuFeatures[feature]}`,
+						longestFeatureName - feature.length
+					)}  ${gpuFeatures[feature]}`
 			)
 			.join("\n                  ");
 	}
 
 	private formatWorkspaceMetadata(
-		info: IMainProcessDiagnostics,
+		info: IMainProcessDiagnostics
 	): Promise<string> {
 		const output: string[] = [];
 		const workspaceStatPromises: Promise<void>[] = [];
@@ -572,20 +568,20 @@ export class DiagnosticsService implements IDiagnosticsService {
 								}
 								output.push(
 									`|    Folder (${basename(
-										folder,
-									)}): ${countMessage}`,
+										folder
+									)}): ${countMessage}`
 								);
 								output.push(this.formatWorkspaceStats(stats));
 							})
 							.catch((error) => {
 								output.push(
-									`|      Error: Unable to collect workspace stats for folder ${folder} (${error.toString()})`,
+									`|      Error: Unable to collect workspace stats for folder ${folder} (${error.toString()})`
 								);
-							}),
+							})
 					);
 				} else {
 					output.push(
-						`|    Folder (${folderUri.toString()}): Workspace stats not available.`,
+						`|    Folder (${folderUri.toString()}): Workspace stats not available.`
 					);
 				}
 			});
@@ -598,17 +594,17 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 	private formatProcessList(
 		info: IMainProcessDiagnostics,
-		rootProcess: ProcessItem,
+		rootProcess: ProcessItem
 	): string {
 		const mapProcessToName = new Map<number, string>();
 		info.windows.forEach((window) =>
 			mapProcessToName.set(
 				window.pid,
-				`window [${window.id}] (${window.title})`,
-			),
+				`window [${window.id}] (${window.title})`
+			)
 		);
 		info.pidToNames.forEach(({ pid, name }) =>
-			mapProcessToName.set(pid, name),
+			mapProcessToName.set(pid, name)
 		);
 
 		const output: string[] = [];
@@ -621,7 +617,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 				mapProcessToName,
 				output,
 				rootProcess,
-				0,
+				0
 			);
 		}
 
@@ -633,7 +629,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 		mapProcessToName: Map<number, string>,
 		output: string[],
 		item: ProcessItem,
-		indent: number,
+		indent: number
 	): void {
 		const isRoot = indent === 0;
 
@@ -661,7 +657,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 				.toFixed(0)
 				.padStart(6, " ")}\t${item.pid
 				.toFixed(0)
-				.padStart(6, " ")}\t${name}`,
+				.padStart(6, " ")}\t${name}`
 		);
 
 		// Recurse into children if any
@@ -672,14 +668,14 @@ export class DiagnosticsService implements IDiagnosticsService {
 					mapProcessToName,
 					output,
 					child,
-					indent + 1,
-				),
+					indent + 1
+				)
 			);
 		}
 	}
 
 	public async getWorkspaceFileExtensions(
-		workspace: IWorkspace,
+		workspace: IWorkspace
 	): Promise<{ extensions: string[] }> {
 		const items = new Set<string>();
 		for (const { uri } of workspace.folders) {
@@ -700,7 +696,7 @@ export class DiagnosticsService implements IDiagnosticsService {
 	}
 
 	public async reportWorkspaceStats(
-		workspace: IWorkspaceInformation,
+		workspace: IWorkspaceInformation
 	): Promise<void> {
 		for (const { uri } of workspace.folders) {
 			const folderUri = URI.revive(uri);

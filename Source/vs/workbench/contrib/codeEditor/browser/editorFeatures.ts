@@ -24,13 +24,21 @@ class EditorFeaturesInstantiator
 
 	constructor(
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
-		this._register(codeEditorService.onWillCreateCodeEditor(() => this._instantiate()));
-		this._register(codeEditorService.onWillCreateDiffEditor(() => this._instantiate()));
-		if (codeEditorService.listCodeEditors().length > 0 || codeEditorService.listDiffEditors().length > 0) {
+		this._register(
+			codeEditorService.onWillCreateCodeEditor(() => this._instantiate())
+		);
+		this._register(
+			codeEditorService.onWillCreateDiffEditor(() => this._instantiate())
+		);
+		if (
+			codeEditorService.listCodeEditors().length > 0 ||
+			codeEditorService.listDiffEditors().length > 0
+		) {
 			this._instantiate();
 		}
 	}
@@ -58,9 +66,9 @@ class EditorFeaturesInstantiator
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	EditorFeaturesInstantiator,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );

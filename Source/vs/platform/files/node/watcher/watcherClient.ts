@@ -18,7 +18,7 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 	constructor(
 		onFileChanges: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean,
+		verboseLogging: boolean
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
 
@@ -26,7 +26,7 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 	}
 
 	protected override createWatcher(
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IUniversalWatcher {
 		// Fork the universal file watcher and build a client around
 		// its server for passing over requests and receiving events.
@@ -40,20 +40,20 @@ export class UniversalWatcherClient extends AbstractUniversalWatcherClient {
 					VSCODE_PIPE_LOGGING: "true",
 					VSCODE_VERBOSE_LOGGING: "true", // transmit console logs from server to client
 				},
-			}),
+			})
 		);
 
 		// React on unexpected termination of the watcher process
 		disposables.add(
 			client.onDidProcessExit(({ code, signal }) =>
 				this.onError(
-					`terminated by itself with code ${code}, signal: ${signal}`,
-				),
-			),
+					`terminated by itself with code ${code}, signal: ${signal}`
+				)
+			)
 		);
 
 		return ProxyChannel.toService<IUniversalWatcher>(
-			getNextTickChannel(client.getChannel("watcher")),
+			getNextTickChannel(client.getChannel("watcher"))
 		);
 	}
 }

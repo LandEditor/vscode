@@ -32,7 +32,7 @@ export abstract class AbstractURLService
 		return first(
 			handlers.map((h) => () => h.handleURL(uri, options)),
 			undefined,
-			false,
+			false
 		).then((val) => val || false);
 	}
 
@@ -57,7 +57,7 @@ export class NativeURLService extends AbstractURLService {
 					path: undefined,
 					query: undefined,
 					fragment: undefined,
-			  };
+				};
 
 		if (authority && path && path.indexOf("/") !== 0) {
 			path = `/${path}`; // URI validation requires a path if there is an authority

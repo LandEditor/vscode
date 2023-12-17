@@ -35,14 +35,14 @@ export class ChatVariablesService implements IChatVariablesService {
 	private _resolver = new Map<string, IChatData>();
 
 	constructor(
-		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService
-	) {
-	}
+		@IChatWidgetService
+		private readonly chatWidgetService: IChatWidgetService
+	) {}
 
 	async resolveVariables(
 		prompt: IParsedChatRequest,
 		model: IChatModel,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatVariableResolveResult> {
 		const resolvedVariables: Record<string, IChatRequestVariableValue[]> =
 			{};
@@ -52,7 +52,7 @@ export class ChatVariablesService implements IChatVariablesService {
 		prompt.parts.forEach((part, i) => {
 			if (part instanceof ChatRequestVariablePart) {
 				const data = this._resolver.get(
-					part.variableName.toLowerCase(),
+					part.variableName.toLowerCase()
 				);
 				if (data) {
 					jobs.push(
@@ -61,26 +61,25 @@ export class ChatVariablesService implements IChatVariablesService {
 								prompt.text,
 								part.variableArg,
 								model,
-								token,
+								token
 							)
 							.then((value) => {
 								if (value) {
 									resolvedVariables[part.variableName] =
 										value;
-									parsedPrompt[
-										i
-									] = `[${part.text}](values:${part.variableName})`;
+									parsedPrompt[i] =
+										`[${part.text}](values:${part.variableName})`;
 								} else {
 									parsedPrompt[i] = part.promptText;
 								}
 							})
-							.catch(onUnexpectedExternalError),
+							.catch(onUnexpectedExternalError)
 					);
 				}
 			} else if (part instanceof ChatRequestDynamicVariablePart) {
 				const referenceName = this.getUniqueReferenceName(
 					part.referenceText,
-					resolvedVariables,
+					resolvedVariables
 				);
 				resolvedVariables[referenceName] = part.data;
 				const safeText = part.text.replace(/[\[\]]/g, "_");
@@ -101,7 +100,7 @@ export class ChatVariablesService implements IChatVariablesService {
 
 	private getUniqueReferenceName(
 		name: string,
-		vars: Record<string, any>,
+		vars: Record<string, any>
 	): string {
 		let i = 1;
 		while (vars[name]) {
@@ -130,7 +129,7 @@ export class ChatVariablesService implements IChatVariablesService {
 		}
 
 		const model = widget.getContrib<ChatDynamicVariableModel>(
-			ChatDynamicVariableModel.ID,
+			ChatDynamicVariableModel.ID
 		);
 		if (!model) {
 			return [];
@@ -141,12 +140,12 @@ export class ChatVariablesService implements IChatVariablesService {
 
 	registerVariable(
 		data: IChatVariableData,
-		resolver: IChatVariableResolver,
+		resolver: IChatVariableResolver
 	): IDisposable {
 		const key = data.name.toLowerCase();
 		if (this._resolver.has(key)) {
 			throw new Error(
-				`A chat variable with the name '${data.name}' already exists.`,
+				`A chat variable with the name '${data.name}' already exists.`
 			);
 		}
 		this._resolver.set(key, { data, resolver });

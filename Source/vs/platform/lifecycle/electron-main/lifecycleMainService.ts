@@ -27,7 +27,7 @@ import {
 import { IEnvironmentMainService } from "vs/platform/environment/electron-main/environmentMainService";
 
 export const ILifecycleMainService = createDecorator<ILifecycleMainService>(
-	"lifecycleMainService",
+	"lifecycleMainService"
 );
 
 interface WindowLoadEvent {
@@ -148,7 +148,7 @@ export interface ILifecycleMainService {
 	 */
 	unload(
 		window: ICodeWindow,
-		reason: UnloadReason,
+		reason: UnloadReason
 	): Promise<boolean /* veto */>;
 
 	/**
@@ -224,17 +224,17 @@ export class LifecycleMainService
 	readonly onBeforeShutdown = this._onBeforeShutdown.event;
 
 	private readonly _onWillShutdown = this._register(
-		new Emitter<ShutdownEvent>(),
+		new Emitter<ShutdownEvent>()
 	);
 	readonly onWillShutdown = this._onWillShutdown.event;
 
 	private readonly _onWillLoadWindow = this._register(
-		new Emitter<WindowLoadEvent>(),
+		new Emitter<WindowLoadEvent>()
 	);
 	readonly onWillLoadWindow = this._onWillLoadWindow.event;
 
 	private readonly _onBeforeCloseWindow = this._register(
-		new Emitter<ICodeWindow>(),
+		new Emitter<ICodeWindow>()
 	);
 	readonly onBeforeCloseWindow = this._onBeforeCloseWindow.event;
 
@@ -275,23 +275,26 @@ export class LifecycleMainService
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@IStateService private readonly stateService: IStateService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService
 	) {
 		super();
 
 		this.resolveRestarted();
-		this.when(LifecycleMainPhase.Ready).then(() => this.registerListeners());
+		this.when(LifecycleMainPhase.Ready).then(() =>
+			this.registerListeners()
+		);
 	}
 
 	private resolveRestarted(): void {
 		this._wasRestarted = !!this.stateService.getItem(
-			LifecycleMainService.QUIT_AND_RESTART_KEY,
+			LifecycleMainService.QUIT_AND_RESTART_KEY
 		);
 
 		if (this._wasRestarted) {
 			// remove the marker right after if found
 			this.stateService.removeItem(
-				LifecycleMainService.QUIT_AND_RESTART_KEY,
+				LifecycleMainService.QUIT_AND_RESTART_KEY
 			);
 		}
 	}
@@ -344,13 +347,13 @@ export class LifecycleMainService
 
 			// Start shutdown sequence
 			const shutdownPromise = this.fireOnWillShutdown(
-				ShutdownReason.QUIT,
+				ShutdownReason.QUIT
 			);
 
 			// Wait until shutdown is signaled to be complete
 			shutdownPromise.finally(() => {
 				this.trace(
-					"Lifecycle#app.on(will-quit) - after fireOnWillShutdown",
+					"Lifecycle#app.on(will-quit) - after fireOnWillShutdown"
 				);
 
 				// Resolve pending quit promise now without veto
@@ -363,7 +366,7 @@ export class LifecycleMainService
 				app.removeListener("before-quit", beforeQuitListener);
 				app.removeListener(
 					"window-all-closed",
-					windowAllClosedListener,
+					windowAllClosedListener
 				);
 
 				this.trace("Lifecycle#app.on(will-quit) - calling app.quit()");
@@ -390,9 +393,9 @@ export class LifecycleMainService
 				joiners.push(
 					promise.finally(() => {
 						logService.trace(
-							`Lifecycle#onWillShutdown - end '${id}'`,
+							`Lifecycle#onWillShutdown - end '${id}'`
 						);
-					}),
+					})
 				);
 			},
 		});
@@ -464,8 +467,8 @@ export class LifecycleMainService
 					window,
 					workspace: e.workspace,
 					reason: e.reason,
-				}),
-			),
+				})
+			)
 		);
 
 		// Window Before Closing: Main -> Renderer
@@ -493,7 +496,7 @@ export class LifecycleMainService
 
 				// Fire onBeforeCloseWindow before actually closing
 				this.trace(
-					`Lifecycle#onBeforeCloseWindow.fire() - window ID ${windowId}`,
+					`Lifecycle#onBeforeCloseWindow.fire() - window ID ${windowId}`
 				);
 				this._onBeforeCloseWindow.fire(window);
 
@@ -505,7 +508,7 @@ export class LifecycleMainService
 		// Window After Closing
 		win.on("closed", () => {
 			this.trace(
-				`Lifecycle#window.on('closed') - window ID ${window.id}`,
+				`Lifecycle#window.on('closed') - window ID ${window.id}`
 			);
 
 			// update window count
@@ -536,11 +539,11 @@ export class LifecycleMainService
 
 	unload(
 		window: ICodeWindow,
-		reason: UnloadReason,
+		reason: UnloadReason
 	): Promise<boolean /* veto */> {
 		// Ensure there is only 1 unload running at the same time
 		const pendingUnloadPromise = this.mapWindowIdToPendingUnload.get(
-			window.id,
+			window.id
 		);
 		if (pendingUnloadPromise) {
 			return pendingUnloadPromise;
@@ -557,7 +560,7 @@ export class LifecycleMainService
 
 	private async doUnload(
 		window: ICodeWindow,
-		reason: UnloadReason,
+		reason: UnloadReason
 	): Promise<boolean /* veto */> {
 		// Always allow to unload a window that is not yet ready
 		if (!window.isReady) {
@@ -572,11 +575,11 @@ export class LifecycleMainService
 			: reason;
 		const veto = await this.onBeforeUnloadWindowInRenderer(
 			window,
-			windowUnloadReason,
+			windowUnloadReason
 		);
 		if (veto) {
 			this.trace(
-				`Lifecycle#unload() - veto in renderer (window ID ${window.id})`,
+				`Lifecycle#unload() - veto in renderer (window ID ${window.id})`
 			);
 
 			return this.handleWindowUnloadVeto(veto);
@@ -612,7 +615,7 @@ export class LifecycleMainService
 
 	private onBeforeUnloadWindowInRenderer(
 		window: ICodeWindow,
-		reason: UnloadReason,
+		reason: UnloadReason
 	): Promise<boolean /* veto */> {
 		return new Promise<boolean>((resolve) => {
 			const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
@@ -637,7 +640,7 @@ export class LifecycleMainService
 
 	private onWillUnloadWindowInRenderer(
 		window: ICodeWindow,
-		reason: UnloadReason,
+		reason: UnloadReason
 	): Promise<void> {
 		return new Promise<void>((resolve) => {
 			const oneTimeEventToken = this.oneTimeListenerTokenGenerator++;
@@ -685,7 +688,7 @@ export class LifecycleMainService
 		if (willRestart) {
 			this.stateService.setItem(
 				LifecycleMainService.QUIT_AND_RESTART_KEY,
-				true,
+				true
 			);
 		}
 
@@ -778,7 +781,7 @@ export class LifecycleMainService
 							!window.webContents.isDestroyed()
 						) {
 							whenWindowClosed = new Promise((resolve) =>
-								window.once("closed", resolve),
+								window.once("closed", resolve)
 							);
 						} else {
 							whenWindowClosed = Promise.resolve();

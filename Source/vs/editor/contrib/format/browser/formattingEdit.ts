@@ -16,7 +16,7 @@ import { StableEditorScrollState } from "vs/editor/browser/stableEditorScroll";
 export class FormattingEdit {
 	private static _handleEolEdits(
 		editor: ICodeEditor,
-		edits: TextEdit[],
+		edits: TextEdit[]
 	): ISingleEditOperation[] {
 		let newEol: EndOfLineSequence | undefined = undefined;
 		const singleEdits: ISingleEditOperation[] = [];
@@ -41,7 +41,7 @@ export class FormattingEdit {
 
 	private static _isFullModelReplaceEdit(
 		editor: ICodeEditor,
-		edit: ISingleEditOperation,
+		edit: ISingleEditOperation
 	): boolean {
 		if (!editor.hasModel()) {
 			return false;
@@ -55,7 +55,7 @@ export class FormattingEdit {
 	static execute(
 		editor: ICodeEditor,
 		_edits: TextEdit[],
-		addUndoStops: boolean,
+		addUndoStops: boolean
 	) {
 		if (addUndoStops) {
 			editor.pushUndoStop();
@@ -70,18 +70,15 @@ export class FormattingEdit {
 			editor.executeEdits(
 				"formatEditsCommand",
 				edits.map((edit) =>
-					EditOperation.replace(Range.lift(edit.range), edit.text),
-				),
+					EditOperation.replace(Range.lift(edit.range), edit.text)
+				)
 			);
 		} else {
 			editor.executeEdits(
 				"formatEditsCommand",
 				edits.map((edit) =>
-					EditOperation.replaceMove(
-						Range.lift(edit.range),
-						edit.text,
-					),
-				),
+					EditOperation.replaceMove(Range.lift(edit.range), edit.text)
+				)
 			);
 		}
 		if (addUndoStops) {

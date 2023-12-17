@@ -53,12 +53,12 @@ export default class WebTypingsInstallerClient
 
 	constructor(
 		private readonly fs: ts.server.ServerHost,
-		readonly globalTypingsCacheLocation: string,
+		readonly globalTypingsCacheLocation: string
 	) {
 		this.server = WebTypingsInstallerServer.initialize(
 			(response: InstallerResponse) => this.handleResponse(response),
 			this.fs,
-			globalTypingsCacheLocation,
+			globalTypingsCacheLocation
 		);
 	}
 
@@ -87,7 +87,7 @@ export default class WebTypingsInstallerClient
 	// NB(kmarchan): this is a code action that expects an actual NPM-specific
 	// installation. We shouldn't mess with this ourselves.
 	async installPackage(
-		_options: ts.server.InstallPackageOptionsWithProject,
+		_options: ts.server.InstallPackageOptionsWithProject
 	): Promise<ts.ApplyCodeActionCommandResult> {
 		throw new Error("not implemented");
 	}
@@ -116,17 +116,17 @@ export default class WebTypingsInstallerClient
 	enqueueInstallTypingsRequest(
 		p: ts.server.Project,
 		typeAcquisition: ts.TypeAcquisition,
-		unresolvedImports: ts.SortedReadonlyArray<string>,
+		unresolvedImports: ts.SortedReadonlyArray<string>
 	): void {
 		console.log(
 			"enqueueInstallTypingsRequest",
 			typeAcquisition,
-			unresolvedImports,
+			unresolvedImports
 		);
 		const req = ts.server.createInstallTypingsRequest(
 			p,
 			typeAcquisition,
-			unresolvedImports,
+			unresolvedImports
 		);
 		this.server.then((s) => s.install(req));
 	}
@@ -155,14 +155,14 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 		private readonly handleResponse: (response: InstallerResponse) => void,
 		fs: ts.server.ServerHost,
 		private readonly packageManager: PackageManager,
-		globalTypingsCachePath: string,
+		globalTypingsCachePath: string
 	) {
 		super(
 			fs,
 			globalTypingsCachePath,
 			join(globalTypingsCachePath, "fakeSafeList") as ts.Path,
 			join(globalTypingsCachePath, "fakeTypesMapLocation") as ts.Path,
-			Infinity,
+			Infinity
 		);
 	}
 
@@ -176,7 +176,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 	static async initialize(
 		handleResponse: (response: InstallerResponse) => void,
 		fs: ts.server.ServerHost,
-		globalTypingsCachePath: string,
+		globalTypingsCachePath: string
 	): Promise<WebTypingsInstallerServer> {
 		const pm = new PackageManager(fs);
 		const pkgJson = join(globalTypingsCachePath, "package.json");
@@ -191,7 +191,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 		const registry = new Map<string, ts.MapLike<string>>();
 		const indexPath = join(
 			globalTypingsCachePath,
-			"node_modules/types-registry/index.json",
+			"node_modules/types-registry/index.json"
 		);
 		const index = WebTypingsInstallerServer.readJson(fs, indexPath);
 		for (const [packageName, entry] of Object.entries(index.entries)) {
@@ -203,7 +203,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 			handleResponse,
 			fs,
 			pm,
-			globalTypingsCachePath,
+			globalTypingsCachePath
 		);
 	}
 
@@ -217,7 +217,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller
 		requestId: number,
 		packageNames: string[],
 		cwd: string,
-		onRequestCompleted: ts.server.typingsInstaller.RequestCompletedAction,
+		onRequestCompleted: ts.server.typingsInstaller.RequestCompletedAction
 	): void {
 		console.log("installWorker", requestId, cwd);
 		(async () => {

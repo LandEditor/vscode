@@ -55,7 +55,7 @@ function extractDomain(url: string): string | null {
 
 export function getDomainsOfRemotes(
 	text: string,
-	allowedDomains: readonly string[],
+	allowedDomains: readonly string[]
 ): string[] {
 	const domains = new Set<string>();
 	let match: RegExpExecArray | null;
@@ -68,7 +68,7 @@ export function getDomainsOfRemotes(
 
 	const allowedDomainsSet = new Set(allowedDomains);
 	return Array.from(domains).map((key) =>
-		allowedDomainsSet.has(key) ? key : key.replace(AnyButDot, "a"),
+		allowedDomainsSet.has(key) ? key : key.replace(AnyButDot, "a")
 	);
 }
 
@@ -80,7 +80,7 @@ function stripPort(authority: string): string | null {
 function normalizeRemote(
 	host: string | null,
 	path: string,
-	stripEndingDotGit: boolean,
+	stripEndingDotGit: boolean
 ): string | null {
 	if (host && path) {
 		if (stripEndingDotGit && path.endsWith(".git")) {
@@ -104,7 +104,7 @@ function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
 			return normalizeRemote(
 				stripPort(uri.authority),
 				uri.path,
-				stripEndingDotGit,
+				stripEndingDotGit
 			);
 		}
 	} catch (e) {
@@ -115,7 +115,7 @@ function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
 
 export function getRemotes(
 	text: string,
-	stripEndingDotGit: boolean = false,
+	stripEndingDotGit: boolean = false
 ): string[] {
 	const remotes: string[] = [];
 	let match: RegExpExecArray | null;

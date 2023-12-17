@@ -32,7 +32,7 @@ export interface ISnippetsService {
 
 	getSnippets(
 		languageId: string | undefined,
-		opt?: ISnippetGetOptions,
+		opt?: ISnippetGetOptions
 	): Promise<Snippet[]>;
 
 	getSnippetsSync(languageId: string, opt?: ISnippetGetOptions): Snippet[];

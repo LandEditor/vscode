@@ -109,7 +109,7 @@ export class ViewModel implements IViewModel {
 				CONTEXT_DISASSEMBLE_REQUEST_SUPPORTED.bindTo(contextKeyService);
 			this.focusedStackFrameHasInstructionPointerReference =
 				CONTEXT_FOCUSED_STACK_FRAME_HAS_INSTRUCTION_POINTER_REFERENCE.bindTo(
-					contextKeyService,
+					contextKeyService
 				);
 		});
 	}
@@ -134,7 +134,7 @@ export class ViewModel implements IViewModel {
 		stackFrame: IStackFrame | undefined,
 		thread: IThread | undefined,
 		session: IDebugSession | undefined,
-		explicit: boolean,
+		explicit: boolean
 	): void {
 		const shouldEmitForStackFrame = this._focusedStackFrame !== stackFrame;
 		const shouldEmitForSession = this._focusedSession !== session;
@@ -148,48 +148,48 @@ export class ViewModel implements IViewModel {
 			this.loadedScriptsSupportedContextKey.set(
 				session
 					? !!session.capabilities.supportsLoadedSourcesRequest
-					: false,
+					: false
 			);
 			this.stepBackSupportedContextKey.set(
-				session ? !!session.capabilities.supportsStepBack : false,
+				session ? !!session.capabilities.supportsStepBack : false
 			);
 			this.restartFrameSupportedContextKey.set(
-				session ? !!session.capabilities.supportsRestartFrame : false,
+				session ? !!session.capabilities.supportsRestartFrame : false
 			);
 			this.stepIntoTargetsSupported.set(
 				session
 					? !!session.capabilities.supportsStepInTargetsRequest
-					: false,
+					: false
 			);
 			this.jumpToCursorSupported.set(
 				session
 					? !!session.capabilities.supportsGotoTargetsRequest
-					: false,
+					: false
 			);
 			this.setVariableSupported.set(
-				session ? !!session.capabilities.supportsSetVariable : false,
+				session ? !!session.capabilities.supportsSetVariable : false
 			);
 			this.setExpressionSupported.set(
-				session ? !!session.capabilities.supportsSetExpression : false,
+				session ? !!session.capabilities.supportsSetExpression : false
 			);
 			this.terminateDebuggeeSupported.set(
 				session
 					? !!session.capabilities.supportTerminateDebuggee
-					: false,
+					: false
 			);
 			this.suspendDebuggeeSupported.set(
-				session ? !!session.capabilities.supportSuspendDebuggee : false,
+				session ? !!session.capabilities.supportSuspendDebuggee : false
 			);
 			this.disassembleRequestSupported.set(
-				!!session?.capabilities.supportsDisassembleRequest,
+				!!session?.capabilities.supportsDisassembleRequest
 			);
 			this.focusedStackFrameHasInstructionPointerReference.set(
-				!!stackFrame?.instructionPointerReference,
+				!!stackFrame?.instructionPointerReference
 			);
 			const attach = !!session && isSessionAttach(session);
 			this.focusedSessionIsAttach.set(attach);
 			this.focusedSessionIsNoDebug.set(
-				!!session && !!session.configuration.noDebug,
+				!!session && !!session.configuration.noDebug
 			);
 		});
 
@@ -233,7 +233,7 @@ export class ViewModel implements IViewModel {
 
 	setSelectedExpression(
 		expression: IExpression | undefined,
-		settingWatch: boolean,
+		settingWatch: boolean
 	) {
 		this.selectedExpression = expression
 			? { expression, settingWatch: settingWatch }
@@ -269,7 +269,7 @@ export class ViewModel implements IViewModel {
 	}
 
 	async evaluateLazyExpression(
-		expression: IExpressionContainer,
+		expression: IExpressionContainer
 	): Promise<void> {
 		await expression.evaluateLazy();
 		this._onDidEvaluateLazyExpression.fire(expression);

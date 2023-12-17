@@ -39,7 +39,7 @@ export class ParameterHintsController
 
 	public static get(editor: ICodeEditor): ParameterHintsController | null {
 		return editor.getContribution<ParameterHintsController>(
-			ParameterHintsController.ID,
+			ParameterHintsController.ID
 		);
 	}
 
@@ -50,7 +50,8 @@ export class ParameterHintsController
 	constructor(
 		editor: ICodeEditor,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 
@@ -59,8 +60,8 @@ export class ParameterHintsController
 		this.model = this._register(
 			new ParameterHintsModel(
 				editor,
-				languageFeaturesService.signatureHelpProvider,
-			),
+				languageFeaturesService.signatureHelpProvider
+			)
 		);
 
 		this._register(
@@ -71,7 +72,7 @@ export class ParameterHintsController
 				} else {
 					this.widget.rawValue?.hide();
 				}
-			}),
+			})
 		);
 
 		this.widget = new Lazy(() =>
@@ -79,9 +80,9 @@ export class ParameterHintsController
 				instantiationService.createInstance(
 					ParameterHintsWidget,
 					this.editor,
-					this.model,
-				),
-			),
+					this.model
+				)
+			)
 		);
 	}
 
@@ -108,7 +109,7 @@ export class TriggerParameterHintsAction extends EditorAction {
 			id: "editor.action.triggerParameterHints",
 			label: nls.localize(
 				"parameterHints.trigger.label",
-				"Trigger Parameter Hints",
+				"Trigger Parameter Hints"
 			),
 			alias: "Trigger Parameter Hints",
 			precondition: EditorContextKeys.hasSignatureHelpProvider,
@@ -131,7 +132,7 @@ export class TriggerParameterHintsAction extends EditorAction {
 registerEditorContribution(
 	ParameterHintsController.ID,
 	ParameterHintsController,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 registerEditorAction(TriggerParameterHintsAction);
 
@@ -139,7 +140,7 @@ const weight = KeybindingWeight.EditorContrib + 75;
 
 const ParameterHintsCommand =
 	EditorCommand.bindToContribution<ParameterHintsController>(
-		ParameterHintsController.get,
+		ParameterHintsController.get
 	);
 
 registerEditorCommand(
@@ -153,7 +154,7 @@ registerEditorCommand(
 			primary: KeyCode.Escape,
 			secondary: [KeyMod.Shift | KeyCode.Escape],
 		},
-	}),
+	})
 );
 
 registerEditorCommand(
@@ -161,7 +162,7 @@ registerEditorCommand(
 		id: "showPrevParameterHint",
 		precondition: ContextKeyExpr.and(
 			Context.Visible,
-			Context.MultipleSignatures,
+			Context.MultipleSignatures
 		),
 		handler: (x) => x.previous(),
 		kbOpts: {
@@ -177,7 +178,7 @@ registerEditorCommand(
 				],
 			},
 		},
-	}),
+	})
 );
 
 registerEditorCommand(
@@ -185,7 +186,7 @@ registerEditorCommand(
 		id: "showNextParameterHint",
 		precondition: ContextKeyExpr.and(
 			Context.Visible,
-			Context.MultipleSignatures,
+			Context.MultipleSignatures
 		),
 		handler: (x) => x.next(),
 		kbOpts: {
@@ -201,5 +202,5 @@ registerEditorCommand(
 				],
 			},
 		},
-	}),
+	})
 );

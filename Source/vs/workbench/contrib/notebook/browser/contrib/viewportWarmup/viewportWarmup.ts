@@ -34,23 +34,33 @@ class NotebookViewportContribution
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@IAccessibilityService accessibilityService: IAccessibilityService
 	) {
 		super();
 
-		this._warmupViewport = new RunOnceScheduler(() => this._warmupViewportNow(), 200);
+		this._warmupViewport = new RunOnceScheduler(
+			() => this._warmupViewportNow(),
+			200
+		);
 		this._register(this._warmupViewport);
-		this._register(this._notebookEditor.onDidScroll(() => {
-			this._warmupViewport.schedule();
-		}));
+		this._register(
+			this._notebookEditor.onDidScroll(() => {
+				this._warmupViewport.schedule();
+			})
+		);
 
-		this._warmupDocument = new RunOnceScheduler(() => this._warmupDocumentNow(), 200);
+		this._warmupDocument = new RunOnceScheduler(
+			() => this._warmupDocumentNow(),
+			200
+		);
 		this._register(this._warmupDocument);
-		this._register(this._notebookEditor.onDidAttachViewModel(() => {
-			if (this._notebookEditor.hasModel()) {
-				this._warmupDocument?.schedule();
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidAttachViewModel(() => {
+				if (this._notebookEditor.hasModel()) {
+					this._warmupDocument?.schedule();
+				}
+			})
+		);
 
 		if (this._notebookEditor.hasModel()) {
 			this._warmupDocument?.schedule();
@@ -113,7 +123,7 @@ class NotebookViewportContribution
 		for (const output of outputs.slice(0, outputDisplayLimit)) {
 			const [mimeTypes, pick] = output.resolveMimeTypes(
 				this._notebookEditor.textModel!,
-				undefined,
+				undefined
 			);
 			if (
 				!mimeTypes.find((mimeType) => mimeType.isTrusted) ||
@@ -133,7 +143,7 @@ class NotebookViewportContribution
 			}
 
 			const renderer = this._notebookService.getRendererInfo(
-				pickedMimeTypeRenderer.rendererId,
+				pickedMimeTypeRenderer.rendererId
 			);
 
 			if (!renderer) {
@@ -153,5 +163,5 @@ class NotebookViewportContribution
 
 registerNotebookContribution(
 	NotebookViewportContribution.id,
-	NotebookViewportContribution,
+	NotebookViewportContribution
 );

@@ -17,7 +17,7 @@ try {
 	const dtsUri = `https://raw.githubusercontent.com/microsoft/vscode/${tag}/src/vscode-dts/vscode.d.ts`;
 	const outPath = path.resolve(
 		process.cwd(),
-		"DefinitelyTyped/types/vscode/index.d.ts",
+		"DefinitelyTyped/types/vscode/index.d.ts"
 	);
 	cp.execSync(`curl ${dtsUri} --output ${outPath}`);
 
@@ -58,7 +58,7 @@ function getNewFileContent(content: string, tag: string) {
 	].join("\n");
 
 	return convertTabsToSpaces(
-		getNewFileHeader(tag) + content.slice(oldheader.length),
+		getNewFileHeader(tag) + content.slice(oldheader.length)
 	);
 }
 

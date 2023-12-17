@@ -14,9 +14,9 @@ import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle
 export class WebLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchContribution {}
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	WebLocalizationWorkbenchContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

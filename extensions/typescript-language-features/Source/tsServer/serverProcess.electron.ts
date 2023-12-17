@@ -52,7 +52,7 @@ class ProtocolBuffer {
 			} else {
 				this.buffer = Buffer.concat(
 					[this.buffer.slice(0, this.index), toAppend],
-					newSize,
+					newSize
 				);
 			}
 		}
@@ -123,7 +123,7 @@ class Reader<T> extends Disposable {
 	}
 
 	private readonly _onError = this._register(
-		new vscode.EventEmitter<Error>(),
+		new vscode.EventEmitter<Error>()
 	);
 	public readonly onError = this._onError.event;
 
@@ -161,7 +161,7 @@ class Reader<T> extends Disposable {
 function generatePatchedEnv(
 	env: any,
 	modulePath: string,
-	hasExecPath: boolean,
+	hasExecPath: boolean
 ): any {
 	const newEnv = Object.assign({}, env);
 
@@ -178,7 +178,7 @@ function generatePatchedEnv(
 
 function getExecArgv(
 	kind: TsServerProcessKind,
-	configuration: TypeScriptServiceConfiguration,
+	configuration: TypeScriptServiceConfiguration
 ): string[] {
 	const args: string[] = [];
 
@@ -236,7 +236,7 @@ class IpcChildServerProcess extends Disposable implements TsServerProcess {
 	}
 
 	onExit(
-		handler: (code: number | null, signal: string | null) => void,
+		handler: (code: number | null, signal: string | null) => void
 	): void {
 		this._process.on("exit", handler);
 	}
@@ -256,14 +256,14 @@ class StdioChildServerProcess extends Disposable implements TsServerProcess {
 	constructor(private readonly _process: child_process.ChildProcess) {
 		super();
 		this._reader = this._register(
-			new Reader<Proto.Response>(this._process.stdout!),
+			new Reader<Proto.Response>(this._process.stdout!)
 		);
 	}
 
 	write(serverRequest: Proto.Request): void {
 		this._process.stdin!.write(
 			JSON.stringify(serverRequest) + "\r\n",
-			"utf8",
+			"utf8"
 		);
 	}
 
@@ -272,7 +272,7 @@ class StdioChildServerProcess extends Disposable implements TsServerProcess {
 	}
 
 	onExit(
-		handler: (code: number | null, signal: string | null) => void,
+		handler: (code: number | null, signal: string | null) => void
 	): void {
 		this._process.on("exit", handler);
 	}
@@ -296,7 +296,7 @@ export class ElectronServiceProcessFactory implements TsServerProcessFactory {
 		configuration: TypeScriptServiceConfiguration,
 		versionManager: TypeScriptVersionManager,
 		nodeVersionManager: NodeVersionManager,
-		_tsserverLog: TsServerLog | undefined,
+		_tsserverLog: TsServerLog | undefined
 	): TsServerProcess {
 		let tsServerPath = version.tsServerPath;
 
@@ -304,8 +304,8 @@ export class ElectronServiceProcessFactory implements TsServerProcessFactory {
 			vscode.window.showWarningMessage(
 				vscode.l10n.t(
 					"The path {0} doesn't point to a valid tsserver install. Falling back to bundled TypeScript version.",
-					tsServerPath,
-				),
+					tsServerPath
+				)
 			);
 			versionManager.reset();
 			tsServerPath = versionManager.currentVersion.tsServerPath;
@@ -330,15 +330,15 @@ export class ElectronServiceProcessFactory implements TsServerProcessFactory {
 						windowsHide: true,
 						cwd: undefined,
 						env,
-					},
-			  )
+					}
+				)
 			: child_process.fork(tsServerPath, runtimeArgs, {
 					silent: true,
 					cwd: undefined,
 					env,
 					execArgv,
 					stdio: useIpc ? ["pipe", "pipe", "pipe", "ipc"] : undefined,
-			  });
+				});
 
 		return useIpc
 			? new IpcChildServerProcess(childProcess)

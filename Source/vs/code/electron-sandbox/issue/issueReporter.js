@@ -22,7 +22,7 @@
 					disallowReloadKeybinding: true,
 				};
 			},
-		},
+		}
 	);
 
 	/**

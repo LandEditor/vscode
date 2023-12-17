@@ -20,7 +20,7 @@ export interface INpmScriptInfo {
 
 export const readScripts = (
 	document: TextDocument,
-	buffer = document.getText(),
+	buffer = document.getText()
 ): INpmScriptInfo | undefined => {
 	let start: Position | undefined;
 	let end: Position | undefined;
@@ -50,7 +50,7 @@ export const readScripts = (
 					value,
 					valueRange: new Range(
 						document.positionAt(offset),
-						document.positionAt(offset + length),
+						document.positionAt(offset + length)
 					),
 				});
 				buildingScript = undefined;
@@ -65,7 +65,7 @@ export const readScripts = (
 					name: property,
 					nameRange: new Range(
 						document.positionAt(offset),
-						document.positionAt(offset + length),
+						document.positionAt(offset + length)
 					),
 				};
 			}

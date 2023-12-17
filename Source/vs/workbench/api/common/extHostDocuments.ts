@@ -47,7 +47,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 
 	constructor(
 		mainContext: IMainContext,
-		documentsAndEditors: ExtHostDocumentsAndEditors,
+		documentsAndEditors: ExtHostDocumentsAndEditors
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadDocuments);
 		this._documentsAndEditors = documentsAndEditors;
@@ -59,7 +59,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 				}
 			},
 			undefined,
-			this._toDispose,
+			this._toDispose
 		);
 		this._documentsAndEditors.onDidAddDocuments(
 			(documents) => {
@@ -68,7 +68,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 				}
 			},
 			undefined,
-			this._toDispose,
+			this._toDispose
 		);
 	}
 
@@ -81,7 +81,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 	}
 
 	public getDocumentData(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): ExtHostDocumentData | undefined {
 		if (!resource) {
 			return undefined;
@@ -97,7 +97,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 		const data = this.getDocumentData(resource);
 		if (!data?.document) {
 			throw new Error(
-				`Unable to retrieve document from URI '${resource}'`,
+				`Unable to retrieve document from URI '${resource}'`
 			);
 		}
 		return data.document;
@@ -116,13 +116,13 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 					this._documentLoader.delete(uri.toString());
 					const canonicalUri = URI.revive(uriData);
 					return assertIsDefined(
-						this._documentsAndEditors.getDocument(canonicalUri),
+						this._documentsAndEditors.getDocument(canonicalUri)
 					);
 				},
 				(err) => {
 					this._documentLoader.delete(uri.toString());
 					return Promise.reject(err);
-				},
+				}
 			);
 			this._documentLoader.set(uri.toString(), promise);
 		}
@@ -141,7 +141,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 
 	public $acceptModelLanguageChanged(
 		uriComponents: UriComponents,
-		newLanguageId: string,
+		newLanguageId: string
 	): void {
 		const uri = URI.revive(uriComponents);
 		const data = this._documentsAndEditors.getDocument(uri);
@@ -167,7 +167,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 
 	public $acceptDirtyStateChanged(
 		uriComponents: UriComponents,
-		isDirty: boolean,
+		isDirty: boolean
 	): void {
 		const uri = URI.revive(uriComponents);
 		const data = this._documentsAndEditors.getDocument(uri);
@@ -185,7 +185,7 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 	public $acceptModelChanged(
 		uriComponents: UriComponents,
 		events: IModelChangedEvent,
-		isDirty: boolean,
+		isDirty: boolean
 	): void {
 		const uri = URI.revive(uriComponents);
 		const data = this._documentsAndEditors.getDocument(uri);
@@ -214,13 +214,13 @@ export class ExtHostDocuments implements ExtHostDocumentsShape {
 					};
 				}),
 				reason,
-			}),
+			})
 		);
 	}
 
 	public setWordDefinitionFor(
 		languageId: string,
-		wordDefinition: RegExp | undefined,
+		wordDefinition: RegExp | undefined
 	): void {
 		setWordDefinitionFor(languageId, wordDefinition);
 	}

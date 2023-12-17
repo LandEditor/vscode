@@ -59,7 +59,10 @@
 	position: absolute;
 }
 
-.monaco-workbench .simple-fr-find-part-wrapper .find-replace-progress .monaco-progress-container {
+.monaco-workbench
+	.simple-fr-find-part-wrapper
+	.find-replace-progress
+	.monaco-progress-container {
 	top: 0px !important;
 	z-index: 100 !important;
 }
@@ -151,10 +154,17 @@
 }
 
 .monaco-workbench .simple-fr-find-part .monaco-inputbox > .ibwrapper > .input,
-.monaco-workbench .simple-fr-replace-part .monaco-inputbox > .ibwrapper > .input {
+.monaco-workbench
+	.simple-fr-replace-part
+	.monaco-inputbox
+	> .ibwrapper
+	> .input {
 	height: 24px;
 }
 .monaco-workbench .simple-fr-find-part-wrapper .monaco-sash {
 	left: 0 !important;
-	background-color: var(--vscode-editorWidget-resizeBorder, var(--vscode-editorWidget-border));
+	background-color: var(
+		--vscode-editorWidget-resizeBorder,
+		var(--vscode-editorWidget-border)
+	);
 }

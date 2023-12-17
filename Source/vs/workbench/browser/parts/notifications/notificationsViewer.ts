@@ -98,7 +98,7 @@ export class NotificationsListDelegate
 		if (
 			notification.source ||
 			isNonEmptyArray(
-				notification.actions && notification.actions.primary,
+				notification.actions && notification.actions.primary
 			)
 		) {
 			expandedHeight += NotificationsListDelegate.ROW_HEIGHT;
@@ -114,7 +114,7 @@ export class NotificationsListDelegate
 	}
 
 	private computePreferredHeight(
-		notification: INotificationViewItem,
+		notification: INotificationViewItem
 	): number {
 		// Prepare offset helper depending on toolbar actions count
 		let actions = 0;
@@ -126,7 +126,7 @@ export class NotificationsListDelegate
 		}
 		if (
 			isNonEmptyArray(
-				notification.actions && notification.actions.secondary,
+				notification.actions && notification.actions.secondary
 			)
 		) {
 			actions++; // secondary actions
@@ -141,14 +141,14 @@ export class NotificationsListDelegate
 
 		// Render message into offset helper
 		const renderedMessage = NotificationMessageRenderer.render(
-			notification.message,
+			notification.message
 		);
 		this.offsetHelper.appendChild(renderedMessage);
 
 		// Compute height
 		const preferredHeight = Math.max(
 			this.offsetHelper.offsetHeight,
-			this.offsetHelper.scrollHeight,
+			this.offsetHelper.scrollHeight
 		);
 
 		// Always clear offset helper after use
@@ -192,7 +192,7 @@ interface IMessageActionHandler {
 class NotificationMessageRenderer {
 	static render(
 		message: INotificationMessage,
-		actionHandler?: IMessageActionHandler,
+		actionHandler?: IMessageActionHandler
 	): HTMLElement {
 		const messageContainer = document.createElement("span");
 
@@ -206,7 +206,7 @@ class NotificationMessageRenderer {
 					title = localize(
 						"executeCommand",
 						"Click to execute command '{0}'",
-						node.href.substr("command:".length),
+						node.href.substr("command:".length)
 					);
 				} else if (!title) {
 					title = node.href;
@@ -215,7 +215,7 @@ class NotificationMessageRenderer {
 				const anchor = $(
 					"a",
 					{ href: node.href, title, tabIndex: 0 },
-					node.label,
+					node.label
 				);
 
 				if (actionHandler) {
@@ -228,11 +228,11 @@ class NotificationMessageRenderer {
 					};
 
 					const onClick = actionHandler.toDispose.add(
-						new DomEmitter(anchor, EventType.CLICK),
+						new DomEmitter(anchor, EventType.CLICK)
 					).event;
 
 					const onKeydown = actionHandler.toDispose.add(
-						new DomEmitter(anchor, EventType.KEY_DOWN),
+						new DomEmitter(anchor, EventType.KEY_DOWN)
 					).event;
 					const onSpaceOrEnter = Event.chain(onKeydown, ($) =>
 						$.filter((e) => {
@@ -242,18 +242,18 @@ class NotificationMessageRenderer {
 								event.equals(KeyCode.Space) ||
 								event.equals(KeyCode.Enter)
 							);
-						}),
+						})
 					);
 
 					actionHandler.toDispose.add(Gesture.addTarget(anchor));
 					const onTap = actionHandler.toDispose.add(
-						new DomEmitter(anchor, GestureEventType.Tap),
+						new DomEmitter(anchor, GestureEventType.Tap)
 					).event;
 
 					Event.any(onClick, onTap, onSpaceOrEnter)(
 						handleOpen,
 						null,
-						actionHandler.toDispose,
+						actionHandler.toDispose
 					);
 				}
 
@@ -272,10 +272,11 @@ export class NotificationRenderer
 
 	constructor(
 		private actionRunner: IActionRunner,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) {
-	}
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
+	) {}
 
 	get templateId() {
 		return NotificationRenderer.TEMPLATE_ID;
@@ -304,7 +305,7 @@ export class NotificationRenderer
 		// Toolbar
 		const toolbarContainer = document.createElement("div");
 		toolbarContainer.classList.add(
-			"notification-list-item-toolbar-container",
+			"notification-list-item-toolbar-container"
 		);
 		data.toolbar = new ActionBar(toolbarContainer, {
 			ariaLabel: localize("notificationActions", "Notification Actions"),
@@ -317,7 +318,7 @@ export class NotificationRenderer
 						{
 							actionRunner: this.actionRunner,
 							classNames: action.class,
-						},
+						}
 					);
 					data.toDispose.add(item);
 
@@ -341,7 +342,7 @@ export class NotificationRenderer
 		// Buttons Container
 		data.buttonsContainer = document.createElement("div");
 		data.buttonsContainer.classList.add(
-			"notification-list-item-buttons-container",
+			"notification-list-item-buttons-container"
 		);
 
 		container.appendChild(data.container);
@@ -365,7 +366,7 @@ export class NotificationRenderer
 		data.renderer = this.instantiationService.createInstance(
 			NotificationTemplateRenderer,
 			data,
-			this.actionRunner,
+			this.actionRunner
 		);
 		data.toDispose.add(data.renderer);
 
@@ -375,7 +376,7 @@ export class NotificationRenderer
 	renderElement(
 		notification: INotificationViewItem,
 		index: number,
-		data: INotificationTemplateData,
+		data: INotificationTemplateData
 	): void {
 		data.renderer.setInput(notification);
 	}
@@ -402,16 +403,34 @@ export class NotificationTemplateRenderer extends Disposable {
 		private template: INotificationTemplateData,
 		private actionRunner: IActionRunner,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService
 	) {
 		super();
 
 		if (!NotificationTemplateRenderer.closeNotificationAction) {
-			NotificationTemplateRenderer.closeNotificationAction = instantiationService.createInstance(ClearNotificationAction, ClearNotificationAction.ID, ClearNotificationAction.LABEL);
-			NotificationTemplateRenderer.expandNotificationAction = instantiationService.createInstance(ExpandNotificationAction, ExpandNotificationAction.ID, ExpandNotificationAction.LABEL);
-			NotificationTemplateRenderer.collapseNotificationAction = instantiationService.createInstance(CollapseNotificationAction, CollapseNotificationAction.ID, CollapseNotificationAction.LABEL);
+			NotificationTemplateRenderer.closeNotificationAction =
+				instantiationService.createInstance(
+					ClearNotificationAction,
+					ClearNotificationAction.ID,
+					ClearNotificationAction.LABEL
+				);
+			NotificationTemplateRenderer.expandNotificationAction =
+				instantiationService.createInstance(
+					ExpandNotificationAction,
+					ExpandNotificationAction.ID,
+					ExpandNotificationAction.LABEL
+				);
+			NotificationTemplateRenderer.collapseNotificationAction =
+				instantiationService.createInstance(
+					CollapseNotificationAction,
+					CollapseNotificationAction.ID,
+					CollapseNotificationAction.LABEL
+				);
 		}
 	}
 
@@ -425,7 +444,7 @@ export class NotificationTemplateRenderer extends Disposable {
 		// Container
 		this.template.container.classList.toggle(
 			"expanded",
-			notification.expanded,
+			notification.expanded
 		);
 		this.inputDisposables.add(
 			addDisposableListener(
@@ -436,8 +455,8 @@ export class NotificationTemplateRenderer extends Disposable {
 						// Prevent firing the 'paste' event in the editor textarea - #109322
 						EventHelper.stop(e, true);
 					}
-				},
-			),
+				}
+			)
 		);
 		this.inputDisposables.add(
 			addDisposableListener(
@@ -452,8 +471,8 @@ export class NotificationTemplateRenderer extends Disposable {
 
 						notification.close();
 					}
-				},
-			),
+				}
+			)
 		);
 
 		// Severity Icon
@@ -491,7 +510,7 @@ export class NotificationTemplateRenderer extends Disposable {
 						this.renderMessage(notification);
 						break;
 				}
-			}),
+			})
 		);
 	}
 
@@ -500,16 +519,14 @@ export class NotificationTemplateRenderer extends Disposable {
 		NotificationTemplateRenderer.SEVERITIES.forEach((severity) => {
 			if (notification.severity !== severity) {
 				this.template.icon.classList.remove(
-					...ThemeIcon.asClassNameArray(
-						this.toSeverityIcon(severity),
-					),
+					...ThemeIcon.asClassNameArray(this.toSeverityIcon(severity))
 				);
 			}
 		});
 		this.template.icon.classList.add(
 			...ThemeIcon.asClassNameArray(
-				this.toSeverityIcon(notification.severity),
-			),
+				this.toSeverityIcon(notification.severity)
+			)
 		);
 	}
 
@@ -522,7 +539,7 @@ export class NotificationTemplateRenderer extends Disposable {
 						allowCommands: true,
 					}),
 				toDispose: this.inputDisposables,
-			}),
+			})
 		);
 
 		const messageOverflows =
@@ -542,7 +559,7 @@ export class NotificationTemplateRenderer extends Disposable {
 
 	private renderSecondaryActions(
 		notification: INotificationViewItem,
-		messageOverflows: boolean,
+		messageOverflows: boolean
 	): void {
 		const actions: IAction[] = [];
 
@@ -556,7 +573,7 @@ export class NotificationTemplateRenderer extends Disposable {
 					ConfigureNotificationAction,
 					ConfigureNotificationAction.ID,
 					ConfigureNotificationAction.LABEL,
-					secondaryActions,
+					secondaryActions
 				);
 			actions.push(configureNotificationAction);
 			this.inputDisposables.add(configureNotificationAction);
@@ -578,7 +595,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			actions.push(
 				notification.expanded
 					? NotificationTemplateRenderer.collapseNotificationAction
-					: NotificationTemplateRenderer.expandNotificationAction,
+					: NotificationTemplateRenderer.expandNotificationAction
 			);
 		}
 
@@ -594,7 +611,7 @@ export class NotificationTemplateRenderer extends Disposable {
 				icon: true,
 				label: false,
 				keybinding: this.getKeybindingLabel(action),
-			}),
+			})
 		);
 	}
 
@@ -603,7 +620,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			this.template.source.textContent = localize(
 				"notificationSource",
 				"Source: {0}",
-				notification.source,
+				notification.source
 			);
 			this.template.source.title = notification.source;
 		} else {
@@ -624,7 +641,7 @@ export class NotificationTemplateRenderer extends Disposable {
 			const actionRunner: IActionRunner =
 				new (class extends ActionRunner {
 					protected override async runAction(
-						action: IAction,
+						action: IAction
 					): Promise<void> {
 						// Run action
 						that.actionRunner.run(action, notification);
@@ -640,7 +657,7 @@ export class NotificationTemplateRenderer extends Disposable {
 				})();
 
 			const buttonToolbar = this.inputDisposables.add(
-				new ButtonBar(this.template.buttonsContainer),
+				new ButtonBar(this.template.buttonsContainer)
 			);
 			for (let i = 0; i < primaryActions.length; i++) {
 				const action = primaryActions[i];
@@ -660,8 +677,8 @@ export class NotificationTemplateRenderer extends Disposable {
 								contextMenuProvider: this.contextMenuService,
 								actions: dropdownActions,
 								actionRunner,
-						  })
-						: buttonToolbar.addButton(options),
+							})
+						: buttonToolbar.addButton(options)
 				);
 
 				button.label = action.label;
@@ -673,7 +690,7 @@ export class NotificationTemplateRenderer extends Disposable {
 						}
 
 						actionRunner.run(action);
-					}),
+					})
 				);
 			}
 		}

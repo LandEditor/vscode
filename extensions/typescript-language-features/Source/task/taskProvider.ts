@@ -39,7 +39,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	private readonly tsconfigProvider: TsConfigProvider;
 
 	public constructor(
-		private readonly client: Lazy<ITypeScriptServiceClient>,
+		private readonly client: Lazy<ITypeScriptServiceClient>
 	) {
 		super();
 		this.tsconfigProvider = new TsConfigProvider();
@@ -47,14 +47,14 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 		this._register(
 			vscode.workspace.onDidChangeConfiguration(
 				this.onConfigurationChanged,
-				this,
-			),
+				this
+			)
 		);
 		this.onConfigurationChanged();
 	}
 
 	public async provideTasks(
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.Task[]> {
 		const folders = vscode.workspace.workspaceFolders;
 		if (this.autoDetect === AutoDetect.off || !folders || !folders.length) {
@@ -73,15 +73,15 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	}
 
 	public async resolveTask(
-		task: vscode.Task,
+		task: vscode.Task
 	): Promise<vscode.Task | undefined> {
 		const definition = <TypeScriptTaskDefinition>task.definition;
 		if (/\\tsconfig.*\.json/.test(definition.tsconfig)) {
 			// Warn that the task has the wrong slash type
 			vscode.window.showWarningMessage(
 				vscode.l10n.t(
-					'TypeScript Task in tasks.json contains "\\\\". TypeScript tasks tsconfig must use "/"',
-				),
+					'TypeScript Task in tasks.json contains "\\\\". TypeScript tasks tsconfig must use "/"'
+				)
 			);
 			return undefined;
 		}
@@ -112,7 +112,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	}
 
 	private async getAllTsConfigs(
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<TSConfig[]> {
 		const configs = (
 			await Promise.all([
@@ -123,13 +123,13 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 
 		return Promise.all(
 			configs.map(async (config) =>
-				(await exists(config.uri)) ? config : undefined,
-			),
+				(await exists(config.uri)) ? config : undefined
+			)
 		).then(coalesce);
 	}
 
 	private async getTsConfigForActiveFile(
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<TSConfig[]> {
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
@@ -156,13 +156,13 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 			this.client.value.execute(
 				"projectInfo",
 				{ file, needFileNameList: false },
-				token,
+				token
 			),
 			new Promise<typeof ServerResponse.NoContent>((resolve) =>
 				setTimeout(
 					() => resolve(ServerResponse.NoContent),
-					this.projectInfoRequestTimeout,
-				),
+					this.projectInfoRequestTimeout
+				)
 			),
 		]);
 		if (response.type !== "response" || !response.body) {
@@ -188,7 +188,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	}
 
 	private async getTsConfigsInWorkspace(
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<TSConfig[]> {
 		const getConfigsTimeout = new vscode.CancellationTokenSource();
 		token.onCancellationRequested(() => getConfigsTimeout.cancel());
@@ -207,14 +207,14 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	private static async getCommand(project: TSConfig): Promise<string> {
 		if (project.workspaceFolder) {
 			const localTsc = await TscTaskProvider.getLocalTscAtPath(
-				path.dirname(project.fsPath),
+				path.dirname(project.fsPath)
 			);
 			if (localTsc) {
 				return localTsc;
 			}
 
 			const workspaceTsc = await TscTaskProvider.getLocalTscAtPath(
-				project.workspaceFolder.uri.fsPath,
+				project.workspaceFolder.uri.fsPath
 			);
 			if (workspaceTsc) {
 				return workspaceTsc;
@@ -226,7 +226,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	}
 
 	private static async getLocalTscAtPath(
-		folderPath: string,
+		folderPath: string
 	): Promise<string | undefined> {
 		const platform = process.platform;
 		const bin = path.join(folderPath, "node_modules", ".bin");
@@ -264,7 +264,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 		label: string,
 		command: string,
 		args: string[],
-		buildTaskidentifier: TypeScriptTaskDefinition,
+		buildTaskidentifier: TypeScriptTaskDefinition
 	): vscode.Task {
 		const buildTask = new vscode.Task(
 			buildTaskidentifier,
@@ -272,7 +272,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 			vscode.l10n.t("build - {0}", label),
 			"tsc",
 			new vscode.ShellExecution(command, args),
-			"$tsc",
+			"$tsc"
 		);
 		buildTask.group = vscode.TaskGroup.Build;
 		buildTask.isBackground = false;
@@ -284,7 +284,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 		label: string,
 		command: string,
 		args: string[],
-		watchTaskidentifier: TypeScriptTaskDefinition,
+		watchTaskidentifier: TypeScriptTaskDefinition
 	) {
 		const watchTask = new vscode.Task(
 			watchTaskidentifier,
@@ -292,7 +292,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 			vscode.l10n.t("watch - {0}", label),
 			"tsc",
 			new vscode.ShellExecution(command, [...args, "--watch"]),
-			"$tsc-watch",
+			"$tsc-watch"
 		);
 		watchTask.group = vscode.TaskGroup.Build;
 		watchTask.isBackground = true;
@@ -300,7 +300,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	}
 
 	private async getTasksForProject(
-		project: TSConfig,
+		project: TSConfig
 	): Promise<vscode.Task[]> {
 		const command = await TscTaskProvider.getCommand(project);
 		const args = await this.getBuildShellArgs(project);
@@ -318,8 +318,8 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 					label,
 					command,
 					args,
-					{ type: "typescript", tsconfig: label },
-				),
+					{ type: "typescript", tsconfig: label }
+				)
 			);
 		}
 
@@ -333,8 +333,8 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 					label,
 					command,
 					args,
-					{ type: "typescript", tsconfig: label, option: "watch" },
-				),
+					{ type: "typescript", tsconfig: label, option: "watch" }
+				)
 			);
 		}
 
@@ -343,7 +343,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 
 	private async getTasksForProjectAndDefinition(
 		project: TSConfig,
-		definition: TypeScriptTaskDefinition,
+		definition: TypeScriptTaskDefinition
 	): Promise<vscode.Task | undefined> {
 		const command = await TscTaskProvider.getCommand(project);
 		const args = await this.getBuildShellArgs(project);
@@ -357,7 +357,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 				label,
 				command,
 				args,
-				definition,
+				definition
 			);
 		} else if (definition.option === "watch") {
 			task = this.getWatchTask(
@@ -365,7 +365,7 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 				label,
 				command,
 				args,
-				definition,
+				definition
 			);
 		}
 
@@ -390,11 +390,11 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 	private getLabelForTasks(project: TSConfig): string {
 		if (project.workspaceFolder) {
 			const workspaceNormalizedUri = vscode.Uri.file(
-				path.normalize(project.workspaceFolder.uri.fsPath),
+				path.normalize(project.workspaceFolder.uri.fsPath)
 			); // Make sure the drive letter is lowercase
 			return path.posix.relative(
 				workspaceNormalizedUri.path,
-				project.posixPath,
+				project.posixPath
 			);
 		}
 
@@ -412,6 +412,6 @@ class TscTaskProvider extends Disposable implements vscode.TaskProvider {
 export function register(lazyClient: Lazy<ITypeScriptServiceClient>) {
 	return vscode.tasks.registerTaskProvider(
 		"typescript",
-		new TscTaskProvider(lazyClient),
+		new TscTaskProvider(lazyClient)
 	);
 }

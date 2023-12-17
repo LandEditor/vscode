@@ -50,12 +50,12 @@ class TypeScriptWorkspaceSymbolProvider
 {
 	public constructor(
 		private readonly client: ITypeScriptServiceClient,
-		private readonly modeIds: readonly string[],
+		private readonly modeIds: readonly string[]
 	) {}
 
 	public async provideWorkspaceSymbols(
 		search: string,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.SymbolInformation[]> {
 		let file: string | undefined;
 		if (this.searchAllOpenProjects) {
@@ -101,7 +101,7 @@ class TypeScriptWorkspaceSymbolProvider
 		if (document.uri.scheme === fileSchemes.git) {
 			try {
 				const path = vscode.Uri.file(
-					JSON.parse(document.uri.query)?.path,
+					JSON.parse(document.uri.query)?.path
 				);
 				if (
 					doesResourceLookLikeATypeScriptFile(path) ||
@@ -126,8 +126,8 @@ class TypeScriptWorkspaceSymbolProvider
 			item.containerName || "",
 			typeConverters.Location.fromTextSpan(
 				this.client.toResource(item.file),
-				item,
-			),
+				item
+			)
 		);
 		const kindModifiers = item.kindModifiers
 			? parseKindModifier(item.kindModifiers)
@@ -170,9 +170,9 @@ class TypeScriptWorkspaceSymbolProvider
 
 export function register(
 	client: ITypeScriptServiceClient,
-	modeIds: readonly string[],
+	modeIds: readonly string[]
 ) {
 	return vscode.languages.registerWorkspaceSymbolProvider(
-		new TypeScriptWorkspaceSymbolProvider(client, modeIds),
+		new TypeScriptWorkspaceSymbolProvider(client, modeIds)
 	);
 }

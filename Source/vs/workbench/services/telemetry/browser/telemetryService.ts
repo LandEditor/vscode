@@ -65,13 +65,14 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 	}
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@ILogService logService: ILogService,
 		@ILoggerService loggerService: ILoggerService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IStorageService storageService: IStorageService,
 		@IProductService productService: IProductService,
-		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService remoteAgentService: IRemoteAgentService
 	) {
 		super();
 
@@ -82,7 +83,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 			configurationService,
 			storageService,
 			productService,
-			remoteAgentService,
+			remoteAgentService
 		);
 
 		// When the level changes it could change from off to on and we want to make sure telemetry is properly intialized
@@ -96,10 +97,10 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 						configurationService,
 						storageService,
 						productService,
-						remoteAgentService,
+						remoteAgentService
 					);
 				}
-			}),
+			})
 		);
 	}
 
@@ -115,7 +116,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 		configurationService: IConfigurationService,
 		storageService: IStorageService,
 		productService: IProductService,
-		remoteAgentService: IRemoteAgentService,
+		remoteAgentService: IRemoteAgentService
 	) {
 		const telemetrySupported =
 			supportsTelemetry(productService, environmentService) &&
@@ -129,16 +130,16 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 			const appenders: ITelemetryAppender[] = [];
 			const isInternal = isInternalTelemetry(
 				productService,
-				configurationService,
+				configurationService
 			);
 			if (!isLoggingOnly(productService, environmentService)) {
 				if (remoteAgentService.getConnection() !== null) {
 					const remoteTelemetryProvider = {
 						log: remoteAgentService.logTelemetry.bind(
-							remoteAgentService,
+							remoteAgentService
 						),
 						flush: remoteAgentService.flushTelemetry.bind(
-							remoteAgentService,
+							remoteAgentService
 						),
 					};
 					appenders.push(remoteTelemetryProvider);
@@ -148,8 +149,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 							isInternal,
 							"monacoworkbench",
 							null,
-							productService.aiConfig?.ariaKey,
-						),
+							productService.aiConfig?.ariaKey
+						)
 					);
 				}
 			}
@@ -158,8 +159,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 					logService,
 					loggerService,
 					environmentService,
-					productService,
-				),
+					productService
+				)
 			);
 			const config: ITelemetryServiceConfig = {
 				appenders,
@@ -173,7 +174,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 					productService.removeTelemetryMachineId,
 					environmentService.options &&
 						environmentService.options
-							.resolveCommonTelemetryProperties,
+							.resolveCommonTelemetryProperties
 				),
 				sendErrorTelemetry: this.sendErrorTelemetry,
 			};
@@ -182,8 +183,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 				new BaseTelemetryService(
 					config,
 					configurationService,
-					productService,
-				),
+					productService
+				)
 			);
 		}
 		return this.impl;
@@ -223,5 +224,5 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 registerSingleton(
 	ITelemetryService,
 	TelemetryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

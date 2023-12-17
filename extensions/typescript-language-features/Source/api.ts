@@ -11,7 +11,7 @@ class ApiV0 {
 		public readonly onCompletionAccepted: vscode.Event<
 			vscode.CompletionItem & { metadata?: any }
 		>,
-		private readonly _pluginManager: PluginManager,
+		private readonly _pluginManager: PluginManager
 	) {}
 
 	configurePlugin(pluginId: string, configuration: {}): void {
@@ -25,7 +25,7 @@ export interface Api {
 
 export function getExtensionApi(
 	onCompletionAccepted: vscode.Event<vscode.CompletionItem>,
-	pluginManager: PluginManager,
+	pluginManager: PluginManager
 ): Api {
 	return {
 		getAPI(version) {

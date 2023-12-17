@@ -26,7 +26,7 @@ export class ConfigurationCache implements IConfigurationCache {
 	constructor(
 		private readonly donotCacheResourcesWithSchemes: string[],
 		environmentService: IEnvironmentService,
-		private readonly fileService: IFileService,
+		private readonly fileService: IFileService
 	) {
 		this.cacheHome = environmentService.cacheHome;
 	}
@@ -58,7 +58,7 @@ export class ConfigurationCache implements IConfigurationCache {
 			cachedConfiguration = new CachedConfiguration(
 				{ type, key },
 				this.cacheHome,
-				this.fileService,
+				this.fileService
 			);
 			this.cachedConfigurations.set(k, cachedConfiguration);
 		}
@@ -74,17 +74,17 @@ class CachedConfiguration {
 	constructor(
 		{ type, key }: ConfigurationKey,
 		cacheHome: URI,
-		private readonly fileService: IFileService,
+		private readonly fileService: IFileService
 	) {
 		this.cachedConfigurationFolderResource = joinPath(
 			cacheHome,
 			"CachedConfigurations",
 			type,
-			key,
+			key
 		);
 		this.cachedConfigurationFileResource = joinPath(
 			this.cachedConfigurationFolderResource,
-			type === "workspaces" ? "workspace.json" : "configuration.json",
+			type === "workspaces" ? "workspace.json" : "configuration.json"
 		);
 		this.queue = new Queue<void>();
 	}
@@ -92,7 +92,7 @@ class CachedConfiguration {
 	async read(): Promise<string> {
 		try {
 			const content = await this.fileService.readFile(
-				this.cachedConfigurationFileResource,
+				this.cachedConfigurationFileResource
 			);
 			return content.value.toString();
 		} catch (e) {
@@ -106,7 +106,7 @@ class CachedConfiguration {
 			await this.queue.queue(async () => {
 				await this.fileService.writeFile(
 					this.cachedConfigurationFileResource,
-					VSBuffer.fromString(content),
+					VSBuffer.fromString(content)
 				);
 			});
 		}
@@ -118,7 +118,7 @@ class CachedConfiguration {
 				this.fileService.del(this.cachedConfigurationFolderResource, {
 					recursive: true,
 					useTrash: false,
-				}),
+				})
 			);
 		} catch (error) {
 			if (
@@ -133,14 +133,14 @@ class CachedConfiguration {
 	private async createCachedFolder(): Promise<boolean> {
 		if (
 			await this.fileService.exists(
-				this.cachedConfigurationFolderResource,
+				this.cachedConfigurationFolderResource
 			)
 		) {
 			return true;
 		}
 		try {
 			await this.fileService.createFolder(
-				this.cachedConfigurationFolderResource,
+				this.cachedConfigurationFolderResource
 			);
 			return true;
 		} catch (error) {

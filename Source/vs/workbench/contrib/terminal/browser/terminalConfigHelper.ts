@@ -68,23 +68,29 @@ export class TerminalConfigHelper
 	}
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IExtensionManagementService private readonly _extensionManagementService: IExtensionManagementService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IProductService private readonly _productService: IProductService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IExtensionManagementService
+		private readonly _extensionManagementService: IExtensionManagementService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IProductService private readonly _productService: IProductService
 	) {
 		super();
 		this._updateConfig();
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TERMINAL_CONFIG_SECTION)) {
-				this._updateConfig();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TERMINAL_CONFIG_SECTION)) {
+					this._updateConfig();
+				}
+			})
+		);
 		if (isLinux) {
-			if (navigator.userAgent.includes('Ubuntu')) {
+			if (navigator.userAgent.includes("Ubuntu")) {
 				this._linuxDistro = LinuxDistro.Ubuntu;
-			} else if (navigator.userAgent.includes('Fedora')) {
+			} else if (navigator.userAgent.includes("Fedora")) {
 				this._linuxDistro = LinuxDistro.Fedora;
 			}
 		}
@@ -93,15 +99,15 @@ export class TerminalConfigHelper
 	private _updateConfig(): void {
 		const configValues =
 			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION,
+				TERMINAL_CONFIG_SECTION
 			);
 		configValues.fontWeight = this._normalizeFontWeight(
 			configValues.fontWeight,
-			DEFAULT_FONT_WEIGHT,
+			DEFAULT_FONT_WEIGHT
 		);
 		configValues.fontWeightBold = this._normalizeFontWeight(
 			configValues.fontWeightBold,
-			DEFAULT_BOLD_FONT_WEIGHT,
+			DEFAULT_BOLD_FONT_WEIGHT
 		);
 
 		this.config = configValues;
@@ -129,7 +135,7 @@ export class TerminalConfigHelper
 	private _createCharMeasureElementIfNecessary(): HTMLElement {
 		if (!this.panelContainer) {
 			throw new Error(
-				"Cannot measure element when terminal is not attached",
+				"Cannot measure element when terminal is not attached"
 			);
 		}
 		// Create charMeasureElement if it hasn't been created or if it was orphaned by its parent
@@ -146,7 +152,7 @@ export class TerminalConfigHelper
 	private _getBoundingRectFor(
 		char: string,
 		fontFamily: string,
-		fontSize: number,
+		fontSize: number
 	): ClientRect | DOMRect | undefined {
 		let charMeasureElement: HTMLElement;
 		try {
@@ -171,7 +177,7 @@ export class TerminalConfigHelper
 		fontFamily: string,
 		fontSize: number,
 		letterSpacing: number,
-		lineHeight: number,
+		lineHeight: number
 	): ITerminalFont {
 		const rect = this._getBoundingRectFor("X", fontFamily, fontSize);
 
@@ -200,7 +206,7 @@ export class TerminalConfigHelper
 				this._lastFontMeasurement.charWidth = rect.width;
 			} else {
 				const deviceCharWidth = Math.floor(
-					rect.width * w.devicePixelRatio,
+					rect.width * w.devicePixelRatio
 				);
 				const deviceCellWidth =
 					deviceCharWidth + Math.round(letterSpacing);
@@ -221,7 +227,7 @@ export class TerminalConfigHelper
 	getFont(
 		w: Window,
 		xtermCore?: IXtermCore,
-		excludeDimensions?: boolean,
+		excludeDimensions?: boolean
 	): ITerminalFont {
 		const editorConfig =
 			this._configurationService.getValue<IEditorOptions>("editor");
@@ -234,7 +240,7 @@ export class TerminalConfigHelper
 			this.config.fontSize,
 			FontConstants.MinimumFontSize,
 			FontConstants.MaximumFontSize,
-			EDITOR_FONT_DEFAULTS.fontSize,
+			EDITOR_FONT_DEFAULTS.fontSize
 		);
 
 		// Work around bad font on Fedora/Ubuntu
@@ -250,7 +256,7 @@ export class TerminalConfigHelper
 					fontSize + 2,
 					FontConstants.MinimumFontSize,
 					FontConstants.MaximumFontSize,
-					EDITOR_FONT_DEFAULTS.fontSize,
+					EDITOR_FONT_DEFAULTS.fontSize
 				);
 			}
 		}
@@ -261,8 +267,8 @@ export class TerminalConfigHelper
 		const letterSpacing = this.config.letterSpacing
 			? Math.max(
 					Math.floor(this.config.letterSpacing),
-					MINIMUM_LETTER_SPACING,
-			  )
+					MINIMUM_LETTER_SPACING
+				)
 			: DEFAULT_LETTER_SPACING;
 		const lineHeight = this.config.lineHeight
 			? Math.max(this.config.lineHeight, 1)
@@ -300,7 +306,7 @@ export class TerminalConfigHelper
 			fontFamily,
 			fontSize,
 			letterSpacing,
-			lineHeight,
+			lineHeight
 		);
 	}
 
@@ -308,7 +314,7 @@ export class TerminalConfigHelper
 		source: any,
 		minimum: number,
 		maximum: number,
-		fallback: T,
+		fallback: T
 	): number | T {
 		let r = parseInt(source, 10);
 		if (isNaN(r)) {
@@ -326,7 +332,7 @@ export class TerminalConfigHelper
 	private _recommendationsShown = false;
 
 	async showRecommendations(
-		shellLaunchConfig: IShellLaunchConfig,
+		shellLaunchConfig: IShellLaunchConfig
 	): Promise<void> {
 		if (this._recommendationsShown) {
 			return;
@@ -344,10 +350,10 @@ export class TerminalConfigHelper
 				return;
 			}
 			const extId = Object.keys(
-				exeBasedExtensionTips.wsl.recommendations,
+				exeBasedExtensionTips.wsl.recommendations
 			).find(
 				(extId) =>
-					exeBasedExtensionTips.wsl.recommendations[extId].important,
+					exeBasedExtensionTips.wsl.recommendations[extId].important
 			);
 			if (extId && !(await this._isExtensionInstalled(extId))) {
 				this._notificationService.prompt(
@@ -355,7 +361,7 @@ export class TerminalConfigHelper
 					nls.localize(
 						"useWslExtension.title",
 						"The '{0}' extension is recommended for opening a terminal in WSL.",
-						exeBasedExtensionTips.wsl.friendlyName,
+						exeBasedExtensionTips.wsl.friendlyName
 					),
 					[
 						{
@@ -364,7 +370,7 @@ export class TerminalConfigHelper
 								this._instantiationService
 									.createInstance(
 										InstallRecommendedExtensionAction,
-										extId,
+										extId
 									)
 									.run();
 							},
@@ -377,7 +383,7 @@ export class TerminalConfigHelper
 							scope: NeverShowAgainScope.APPLICATION,
 						},
 						onCancel: () => {},
-					},
+					}
 				);
 			}
 		}
@@ -391,7 +397,7 @@ export class TerminalConfigHelper
 
 	private _normalizeFontWeight(
 		input: any,
-		defaultWeight: FontWeight,
+		defaultWeight: FontWeight
 	): FontWeight {
 		if (input === "normal" || input === "bold") {
 			return input;
@@ -400,7 +406,7 @@ export class TerminalConfigHelper
 			input,
 			MINIMUM_FONT_WEIGHT,
 			MAXIMUM_FONT_WEIGHT,
-			defaultWeight,
+			defaultWeight
 		);
 	}
 }

@@ -44,7 +44,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 				new MessageEvent("message", {
 					data: msg.data,
 					ports: msg.ports ? [...msg.ports] : undefined,
-				}),
+				})
 			);
 		});
 
@@ -54,7 +54,7 @@ const _bootstrapFnSource = function _bootstrapFn(workerUrl: string) {
 		globalThis.Worker = <any>class {
 			constructor() {
 				throw new TypeError(
-					"Nested workers from within nested worker are NOT supported.",
+					"Nested workers from within nested worker are NOT supported."
 				);
 			}
 		};
@@ -78,7 +78,7 @@ export class NestedWorker extends EventTarget implements Worker {
 	constructor(
 		nativePostMessage: typeof postMessage,
 		stringOrUrl: string | URL,
-		options?: WorkerOptions,
+		options?: WorkerOptions
 	) {
 		super();
 

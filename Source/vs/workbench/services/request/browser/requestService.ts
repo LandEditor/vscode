@@ -21,7 +21,8 @@ import { CommandsRegistry } from "vs/platform/commands/common/commands";
 
 export class BrowserRequestService extends RequestService {
 	constructor(
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILoggerService loggerService: ILoggerService
 	) {
@@ -30,7 +31,7 @@ export class BrowserRequestService extends RequestService {
 
 	override async request(
 		options: IRequestOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IRequestContext> {
 		try {
 			const context = await super.request(options, token);
@@ -51,10 +52,10 @@ export class BrowserRequestService extends RequestService {
 	private _makeRemoteRequest(
 		connection: IRemoteAgentConnection,
 		options: IRequestOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IRequestContext> {
 		return connection.withChannel("request", (channel) =>
-			new RequestChannelClient(channel).request(options, token),
+			new RequestChannelClient(channel).request(options, token)
 		);
 	}
 }
@@ -74,5 +75,5 @@ CommandsRegistry.registerCommand(
 		} else {
 			throw new Error(result.statusText);
 		}
-	},
+	}
 );

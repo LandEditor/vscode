@@ -55,7 +55,7 @@ export async function activate(context: ExtensionContext) {
 	const newLanguageClient: LanguageClientConstructor = (
 		id: string,
 		name: string,
-		clientOptions: LanguageClientOptions,
+		clientOptions: LanguageClientOptions
 	) => {
 		return new LanguageClient(id, name, serverOptions, clientOptions);
 	};

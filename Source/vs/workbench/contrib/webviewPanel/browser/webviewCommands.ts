@@ -24,14 +24,14 @@ import { IEditorService } from "vs/workbench/services/editor/common/editorServic
 
 const webviewActiveContextKeyExpr = ContextKeyExpr.and(
 	ContextKeyExpr.equals("activeEditor", WebviewEditor.ID),
-	EditorContextKeys.focus.toNegated() /* https://github.com/microsoft/vscode/issues/58668 */,
+	EditorContextKeys.focus.toNegated() /* https://github.com/microsoft/vscode/issues/58668 */
 )!;
 
 export class ShowWebViewEditorFindWidgetAction extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.showFind";
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.showFind",
-		"Show find",
+		"Show find"
 	);
 
 	constructor() {
@@ -41,7 +41,7 @@ export class ShowWebViewEditorFindWidgetAction extends Action2 {
 			keybinding: {
 				when: ContextKeyExpr.and(
 					webviewActiveContextKeyExpr,
-					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED,
+					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED
 				),
 				primary: KeyMod.CtrlCmd | KeyCode.KeyF,
 				weight: KeybindingWeight.EditorContrib,
@@ -58,7 +58,7 @@ export class HideWebViewEditorFindCommand extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.hideFind";
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.hideFind",
-		"Stop find",
+		"Stop find"
 	);
 
 	constructor() {
@@ -68,7 +68,7 @@ export class HideWebViewEditorFindCommand extends Action2 {
 			keybinding: {
 				when: ContextKeyExpr.and(
 					webviewActiveContextKeyExpr,
-					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE,
+					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE
 				),
 				primary: KeyCode.Escape,
 				weight: KeybindingWeight.EditorContrib,
@@ -85,7 +85,7 @@ export class WebViewEditorFindNextCommand extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.findNext";
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.findNext",
-		"Find next",
+		"Find next"
 	);
 
 	constructor() {
@@ -95,7 +95,7 @@ export class WebViewEditorFindNextCommand extends Action2 {
 			keybinding: {
 				when: ContextKeyExpr.and(
 					webviewActiveContextKeyExpr,
-					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED,
+					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED
 				),
 				primary: KeyCode.Enter,
 				weight: KeybindingWeight.EditorContrib,
@@ -112,7 +112,7 @@ export class WebViewEditorFindPreviousCommand extends Action2 {
 	public static readonly ID = "editor.action.webvieweditor.findPrevious";
 	public static readonly LABEL = nls.localize(
 		"editor.action.webvieweditor.findPrevious",
-		"Find previous",
+		"Find previous"
 	);
 
 	constructor() {
@@ -122,7 +122,7 @@ export class WebViewEditorFindPreviousCommand extends Action2 {
 			keybinding: {
 				when: ContextKeyExpr.and(
 					webviewActiveContextKeyExpr,
-					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED,
+					KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED
 				),
 				primary: KeyMod.Shift | KeyCode.Enter,
 				weight: KeybindingWeight.EditorContrib,
@@ -139,7 +139,7 @@ export class ReloadWebviewAction extends Action2 {
 	static readonly ID = "workbench.action.webview.reloadWebviewAction";
 	static readonly LABEL = nls.localize(
 		"refreshWebviewLabel",
-		"Reload Webviews",
+		"Reload Webviews"
 	);
 
 	public constructor() {
@@ -167,7 +167,7 @@ export class ReloadWebviewAction extends Action2 {
 }
 
 function getActiveWebviewEditor(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): IWebview | undefined {
 	const editorService = accessor.get(IEditorService);
 	const activeEditor = editorService.activeEditor;

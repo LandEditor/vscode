@@ -73,7 +73,7 @@ export interface IPickerQuickAccessItem extends IQuickPickItem {
 	 */
 	trigger?(
 		buttonIndex: number,
-		keyMods: IKeyMods,
+		keyMods: IKeyMods
 	): TriggerAction | Promise<TriggerAction>;
 }
 
@@ -137,7 +137,7 @@ export abstract class PickerQuickAccessProvider<
 {
 	constructor(
 		private prefix: string,
-		protected options?: IPickerQuickAccessProviderOptions<T>,
+		protected options?: IPickerQuickAccessProviderOptions<T>
 	) {
 		super();
 	}
@@ -145,7 +145,7 @@ export abstract class PickerQuickAccessProvider<
 	provide(
 		picker: IQuickPick<T>,
 		token: CancellationToken,
-		runOptions?: IQuickAccessProviderRunOptions,
+		runOptions?: IQuickAccessProviderRunOptions
 	): IDisposable {
 		const disposables = new DisposableStore();
 
@@ -185,12 +185,12 @@ export abstract class PickerQuickAccessProvider<
 				picksFilter,
 				picksDisposables,
 				picksToken,
-				runOptions,
+				runOptions
 			);
 
 			const applyPicks = (
 				picks: Picks<T>,
-				skipEmpty?: boolean,
+				skipEmpty?: boolean
 			): boolean => {
 				let items: readonly Pick<T>[];
 				let activeItem: T | undefined = undefined;
@@ -229,7 +229,7 @@ export abstract class PickerQuickAccessProvider<
 			};
 
 			const applyFastAndSlowPicks = async (
-				fastAndSlowPicks: FastAndSlowPicks<T>,
+				fastAndSlowPicks: FastAndSlowPicks<T>
 			): Promise<void> => {
 				let fastPicksApplied = false;
 				let slowPicksApplied = false;
@@ -252,7 +252,7 @@ export abstract class PickerQuickAccessProvider<
 						if (!slowPicksApplied) {
 							fastPicksApplied = applyPicks(
 								fastAndSlowPicks.picks,
-								true /* skip over empty to reduce flicker */,
+								true /* skip over empty to reduce flicker */
 							);
 						}
 					})(),
@@ -308,7 +308,7 @@ export abstract class PickerQuickAccessProvider<
 									if (
 										fallbackActivePickCandidate &&
 										picks.indexOf(
-											fallbackActivePickCandidate,
+											fallbackActivePickCandidate
 										) !== -1
 									) {
 										fallbackActivePick =
@@ -385,7 +385,7 @@ export abstract class PickerQuickAccessProvider<
 
 					item.accept(picker.keyMods, event);
 				}
-			}),
+			})
 		);
 
 		// Trigger the pick with button index if button triggered
@@ -396,7 +396,7 @@ export abstract class PickerQuickAccessProvider<
 					if (buttonIndex >= 0) {
 						const result = item.trigger(
 							buttonIndex,
-							picker.keyMods,
+							picker.keyMods
 						);
 						const action =
 							typeof result === "number" ? result : await result;
@@ -422,7 +422,7 @@ export abstract class PickerQuickAccessProvider<
 									const activeItems =
 										picker.activeItems.filter(
 											(activeItem) =>
-												activeItem !== removed[0],
+												activeItem !== removed[0]
 										);
 									const keepScrollPositionBefore =
 										picker.keepScrollPosition;
@@ -439,7 +439,7 @@ export abstract class PickerQuickAccessProvider<
 						}
 					}
 				}
-			}),
+			})
 		);
 
 		return disposables;
@@ -465,7 +465,7 @@ export abstract class PickerQuickAccessProvider<
 		filter: string,
 		disposables: DisposableStore,
 		token: CancellationToken,
-		runOptions?: IQuickAccessProviderRunOptions,
+		runOptions?: IQuickAccessProviderRunOptions
 	):
 		| Picks<T>
 		| Promise<Picks<T> | FastAndSlowPicks<T>>

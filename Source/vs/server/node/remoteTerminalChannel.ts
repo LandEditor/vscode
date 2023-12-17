@@ -57,13 +57,13 @@ class CustomVariableResolver extends AbstractVariableResolverService {
 		workspaceFolders: IWorkspaceFolder[],
 		activeFileResource: URI | undefined,
 		resolvedVariables: { [name: string]: string },
-		extensionService: IExtensionManagementService,
+		extensionService: IExtensionManagementService
 	) {
 		super(
 			{
 				getFolderUri: (folderName: string): URI | undefined => {
 					const found = workspaceFolders.filter(
-						(f) => f.name === folderName,
+						(f) => f.name === folderName
 					);
 					if (found && found.length > 0) {
 						return found[0].uri;
@@ -75,7 +75,7 @@ class CustomVariableResolver extends AbstractVariableResolverService {
 				},
 				getConfigurationValue: (
 					folderUri: URI,
-					section: string,
+					section: string
 				): string | undefined => {
 					return resolvedVariables[`config:${section}`];
 				},
@@ -105,7 +105,7 @@ class CustomVariableResolver extends AbstractVariableResolverService {
 			},
 			undefined,
 			Promise.resolve(os.homedir()),
-			Promise.resolve(env),
+			Promise.resolve(env)
 		);
 	}
 }
@@ -130,7 +130,7 @@ export class RemoteTerminalChannel
 			persistentProcessId: number;
 			commandId: string;
 			commandArgs: any[];
-		}>(),
+		}>()
 	);
 	readonly onExecuteCommand = this._onExecuteCommand.event;
 
@@ -140,7 +140,7 @@ export class RemoteTerminalChannel
 		private readonly _ptyHostService: IPtyHostService,
 		private readonly _productService: IProductService,
 		private readonly _extensionManagementService: IExtensionManagementService,
-		private readonly _configurationService: IConfigurationService,
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -148,106 +148,106 @@ export class RemoteTerminalChannel
 	async call(
 		ctx: RemoteAgentConnectionContext,
 		command: RemoteTerminalChannelRequest,
-		args?: any,
+		args?: any
 	): Promise<any> {
 		switch (command) {
 			case RemoteTerminalChannelRequest.RestartPtyHost:
 				return this._ptyHostService.restartPtyHost.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 
 			case RemoteTerminalChannelRequest.CreateProcess: {
 				const uriTransformer = createURITransformer(
-					ctx.remoteAuthority,
+					ctx.remoteAuthority
 				);
 				return this._createProcess(
 					uriTransformer,
-					<ICreateTerminalProcessArguments>args,
+					<ICreateTerminalProcessArguments>args
 				);
 			}
 			case RemoteTerminalChannelRequest.AttachToProcess:
 				return this._ptyHostService.attachToProcess.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.DetachFromProcess:
 				return this._ptyHostService.detachFromProcess.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 
 			case RemoteTerminalChannelRequest.ListProcesses:
 				return this._ptyHostService.listProcesses.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.GetLatency:
 				return this._ptyHostService.getLatency.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.GetPerformanceMarks:
 				return this._ptyHostService.getPerformanceMarks.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.OrphanQuestionReply:
 				return this._ptyHostService.orphanQuestionReply.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.AcceptPtyHostResolvedVariables:
 				return this._ptyHostService.acceptPtyHostResolvedVariables.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 
 			case RemoteTerminalChannelRequest.Start:
 				return this._ptyHostService.start.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.Input:
 				return this._ptyHostService.input.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.AcknowledgeDataEvent:
 				return this._ptyHostService.acknowledgeDataEvent.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.Shutdown:
 				return this._ptyHostService.shutdown.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.Resize:
 				return this._ptyHostService.resize.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.ClearBuffer:
 				return this._ptyHostService.clearBuffer.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.GetInitialCwd:
 				return this._ptyHostService.getInitialCwd.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.GetCwd:
 				return this._ptyHostService.getCwd.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 
 			case RemoteTerminalChannelRequest.ProcessBinary:
 				return this._ptyHostService.processBinary.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 
 			case RemoteTerminalChannelRequest.SendCommandResult:
@@ -255,12 +255,12 @@ export class RemoteTerminalChannel
 			case RemoteTerminalChannelRequest.InstallAutoReply:
 				return this._ptyHostService.installAutoReply.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.UninstallAllAutoReplies:
 				return this._ptyHostService.uninstallAllAutoReplies.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.GetDefaultSystemShell:
 				return this._getDefaultSystemShell.apply(this, args);
@@ -272,73 +272,73 @@ export class RemoteTerminalChannel
 				return this._getWslPath(args[0], args[1]);
 			case RemoteTerminalChannelRequest.GetTerminalLayoutInfo:
 				return this._ptyHostService.getTerminalLayoutInfo(
-					<IGetTerminalLayoutInfoArgs>args,
+					<IGetTerminalLayoutInfoArgs>args
 				);
 			case RemoteTerminalChannelRequest.SetTerminalLayoutInfo:
 				return this._ptyHostService.setTerminalLayoutInfo(
-					<ISetTerminalLayoutInfoArgs>args,
+					<ISetTerminalLayoutInfoArgs>args
 				);
 			case RemoteTerminalChannelRequest.SerializeTerminalState:
 				return this._ptyHostService.serializeTerminalState.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.ReviveTerminalProcesses:
 				return this._ptyHostService.reviveTerminalProcesses.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.GetRevivedPtyNewId:
 				return this._ptyHostService.getRevivedPtyNewId.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.SetUnicodeVersion:
 				return this._ptyHostService.setUnicodeVersion.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.ReduceConnectionGraceTime:
 				return this._reduceConnectionGraceTime();
 			case RemoteTerminalChannelRequest.UpdateIcon:
 				return this._ptyHostService.updateIcon.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.UpdateTitle:
 				return this._ptyHostService.updateTitle.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.UpdateProperty:
 				return this._ptyHostService.updateProperty.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.RefreshProperty:
 				return this._ptyHostService.refreshProperty.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.RequestDetachInstance:
 				return this._ptyHostService.requestDetachInstance(
 					args[0],
-					args[1],
+					args[1]
 				);
 			case RemoteTerminalChannelRequest.AcceptDetachedInstance:
 				return this._ptyHostService.acceptDetachInstanceReply(
 					args[0],
-					args[1],
+					args[1]
 				);
 			case RemoteTerminalChannelRequest.FreePortKillProcess:
 				return this._ptyHostService.freePortKillProcess.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 			case RemoteTerminalChannelRequest.AcceptDetachInstanceReply:
 				return this._ptyHostService.acceptDetachInstanceReply.apply(
 					this._ptyHostService,
-					args,
+					args
 				);
 		}
 
@@ -385,7 +385,7 @@ export class RemoteTerminalChannel
 
 	private async _createProcess(
 		uriTransformer: IURITransformer,
-		args: ICreateTerminalProcessArguments,
+		args: ICreateTerminalProcessArguments
 	): Promise<ICreateTerminalProcessResult> {
 		const shellLaunchConfig: IShellLaunchConfig = {
 			name: args.shellLaunchConfig.name,
@@ -397,9 +397,9 @@ export class RemoteTerminalChannel
 					? args.shellLaunchConfig.cwd
 					: URI.revive(
 							uriTransformer.transformIncoming(
-								args.shellLaunchConfig.cwd,
-							),
-					  ),
+								args.shellLaunchConfig.cwd
+							)
+						),
 			env: args.shellLaunchConfig.env,
 			useShellEnvironment: args.shellLaunchConfig.useShellEnvironment,
 			reconnectionProperties:
@@ -414,16 +414,16 @@ export class RemoteTerminalChannel
 			platform.language,
 			this._environmentService,
 			this._logService,
-			this._configurationService,
+			this._configurationService
 		);
 		this._logService.trace("baseEnv", baseEnv);
 
 		const reviveWorkspaceFolder = (
-			workspaceData: IWorkspaceFolderData,
+			workspaceData: IWorkspaceFolderData
 		): IWorkspaceFolder => {
 			return {
 				uri: URI.revive(
-					uriTransformer.transformIncoming(workspaceData.uri),
+					uriTransformer.transformIncoming(workspaceData.uri)
 				),
 				name: workspaceData.name,
 				index: workspaceData.index,
@@ -433,27 +433,27 @@ export class RemoteTerminalChannel
 			};
 		};
 		const workspaceFolders = args.workspaceFolders.map(
-			reviveWorkspaceFolder,
+			reviveWorkspaceFolder
 		);
 		const activeWorkspaceFolder = args.activeWorkspaceFolder
 			? reviveWorkspaceFolder(args.activeWorkspaceFolder)
 			: undefined;
 		const activeFileResource = args.activeFileResource
 			? URI.revive(
-					uriTransformer.transformIncoming(args.activeFileResource),
-			  )
+					uriTransformer.transformIncoming(args.activeFileResource)
+				)
 			: undefined;
 		const customVariableResolver = new CustomVariableResolver(
 			baseEnv,
 			workspaceFolders,
 			activeFileResource,
 			args.resolvedVariables,
-			this._extensionManagementService,
+			this._extensionManagementService
 		);
 		const variableResolver = terminalEnvironment.createVariableResolver(
 			activeWorkspaceFolder,
 			process.env,
-			customVariableResolver,
+			customVariableResolver
 		);
 
 		// Get the initial cwd
@@ -463,15 +463,15 @@ export class RemoteTerminalChannel
 			variableResolver,
 			activeWorkspaceFolder?.uri,
 			args.configuration["terminal.integrated.cwd"],
-			this._logService,
+			this._logService
 		);
 		shellLaunchConfig.cwd = initialCwd;
 
 		const envPlatformKey = platform.isWindows
 			? "terminal.integrated.env.windows"
 			: platform.isMacintosh
-			  ? "terminal.integrated.env.osx"
-			  : "terminal.integrated.env.linux";
+				? "terminal.integrated.env.osx"
+				: "terminal.integrated.env.linux";
 		const envFromConfig = args.configuration[envPlatformKey];
 		const env = await terminalEnvironment.createTerminalEnvironment(
 			shellLaunchConfig,
@@ -479,7 +479,7 @@ export class RemoteTerminalChannel
 			variableResolver,
 			this._productService.version,
 			args.configuration["terminal.integrated.detectLocale"],
-			baseEnv,
+			baseEnv
 		);
 
 		// Apply extension environment variable collections to the environment
@@ -499,7 +499,7 @@ export class RemoteTerminalChannel
 				IEnvironmentVariableCollection
 			>(entries);
 			const mergedCollection = new MergedEnvironmentVariableCollection(
-				envVariableCollections,
+				envVariableCollections
 			);
 			const workspaceFolder = activeWorkspaceFolder
 				? activeWorkspaceFolder ?? undefined
@@ -507,7 +507,7 @@ export class RemoteTerminalChannel
 			await mergedCollection.applyToProcessEnvironment(
 				env,
 				{ workspaceFolder },
-				variableResolver,
+				variableResolver
 			);
 		}
 
@@ -535,7 +535,7 @@ export class RemoteTerminalChannel
 			args.options,
 			args.shouldPersistTerminal,
 			args.workspaceId,
-			args.workspaceName,
+			args.workspaceName
 		);
 		const commandsExecuter: ICommandsExecuter = {
 			executeCommand: <T>(id: string, ...args: any[]): Promise<T> =>
@@ -543,16 +543,16 @@ export class RemoteTerminalChannel
 					persistentProcessId,
 					id,
 					args,
-					uriTransformer,
+					uriTransformer
 				),
 		};
 		const cliServer = new CLIServerBase(
 			commandsExecuter,
 			this._logService,
-			ipcHandlePath,
+			ipcHandlePath
 		);
 		this._ptyHostService.onProcessExit(
-			(e) => e.id === persistentProcessId && cliServer.dispose(),
+			(e) => e.id === persistentProcessId && cliServer.dispose()
 		);
 
 		return {
@@ -565,7 +565,7 @@ export class RemoteTerminalChannel
 		persistentProcessId: number,
 		commandId: string,
 		commandArgs: any[],
-		uriTransformer: IURITransformer,
+		uriTransformer: IURITransformer
 	): Promise<T> {
 		let resolve!: (data: any) => void;
 		let reject!: (err: any) => void;
@@ -600,7 +600,7 @@ export class RemoteTerminalChannel
 	private _sendCommandResult(
 		reqId: number,
 		isError: boolean,
-		serializedPayload: any,
+		serializedPayload: any
 	): void {
 		const data = this._pendingCommands.get(reqId);
 		if (!data) {
@@ -622,7 +622,7 @@ export class RemoteTerminalChannel
 	}
 
 	private _getDefaultSystemShell(
-		osOverride?: platform.OperatingSystem,
+		osOverride?: platform.OperatingSystem
 	): Promise<string> {
 		return this._ptyHostService.getDefaultSystemShell(osOverride);
 	}
@@ -631,14 +631,14 @@ export class RemoteTerminalChannel
 		workspaceId: string,
 		profiles: unknown,
 		defaultProfile: unknown,
-		includeDetectedProfiles?: boolean,
+		includeDetectedProfiles?: boolean
 	): Promise<ITerminalProfile[]> {
 		return (
 			this._ptyHostService.getProfiles(
 				workspaceId,
 				profiles,
 				defaultProfile,
-				includeDetectedProfiles,
+				includeDetectedProfiles
 			) || []
 		);
 	}
@@ -649,7 +649,7 @@ export class RemoteTerminalChannel
 
 	private _getWslPath(
 		original: string,
-		direction: "unix-to-win" | "win-to-unix",
+		direction: "unix-to-win" | "win-to-unix"
 	): Promise<string> {
 		return this._ptyHostService.getWslPath(original, direction);
 	}

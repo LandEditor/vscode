@@ -339,7 +339,7 @@ export class Transform extends Marker {
 			!didMatch &&
 			this._children.some(
 				(child) =>
-					child instanceof FormatString && Boolean(child.elseValue),
+					child instanceof FormatString && Boolean(child.elseValue)
 			)
 		) {
 			ret = this._replace([]);
@@ -367,7 +367,7 @@ export class Transform extends Marker {
 
 	toTextmateString(): string {
 		return `/${this.regexp.source}/${this.children.map((c) =>
-			c.toTextmateString(),
+			c.toTextmateString()
 		)}/${
 			(this.regexp.ignoreCase ? "i" : "") +
 			(this.regexp.global ? "g" : "")
@@ -380,7 +380,7 @@ export class Transform extends Marker {
 			this.regexp.source,
 			"" +
 				(this.regexp.ignoreCase ? "i" : "") +
-				(this.regexp.global ? "g" : ""),
+				(this.regexp.global ? "g" : "")
 		);
 		ret._children = this.children.map((child) => child.clone());
 		return ret;
@@ -392,7 +392,7 @@ export class FormatString extends Marker {
 		readonly index: number,
 		readonly shorthandName?: string,
 		readonly ifValue?: string,
-		readonly elseValue?: string,
+		readonly elseValue?: string
 	) {
 		super();
 	}
@@ -465,7 +465,7 @@ export class FormatString extends Marker {
 			this.index,
 			this.shorthandName,
 			this.ifValue,
-			this.elseValue,
+			this.elseValue
 		);
 		return ret;
 	}
@@ -620,7 +620,7 @@ export class TextmateSnippet extends Marker {
 	toTextmateString(): string {
 		return this.children.reduce(
 			(prev, cur) => prev + cur.toTextmateString(),
-			"",
+			""
 		);
 	}
 
@@ -658,14 +658,14 @@ export class SnippetParser {
 	parse(
 		value: string,
 		insertFinalTabstop?: boolean,
-		enforceFinalTabstop?: boolean,
+		enforceFinalTabstop?: boolean
 	): TextmateSnippet {
 		const snippet = new TextmateSnippet();
 		this.parseFragment(value, snippet);
 		this.ensureFinalTabstop(
 			snippet,
 			enforceFinalTabstop ?? false,
-			insertFinalTabstop ?? false,
+			insertFinalTabstop ?? false
 		);
 		return snippet;
 	}
@@ -703,10 +703,10 @@ export class SnippetParser {
 
 		const fillInIncompletePlaceholder = (
 			placeholder: Placeholder,
-			stack: Set<number>,
+			stack: Set<number>
 		) => {
 			const defaultValues = placeholderDefaultValues.get(
-				placeholder.index,
+				placeholder.index
 			);
 			if (!defaultValues) {
 				return;
@@ -742,14 +742,14 @@ export class SnippetParser {
 	ensureFinalTabstop(
 		snippet: TextmateSnippet,
 		enforceFinalTabstop: boolean,
-		insertFinalTabstop: boolean,
+		insertFinalTabstop: boolean
 	) {
 		if (
 			enforceFinalTabstop ||
 			(insertFinalTabstop && snippet.placeholders.length > 0)
 		) {
 			const finalTabstop = snippet.placeholders.find(
-				(p) => p.index === 0,
+				(p) => p.index === 0
 			);
 			if (!finalTabstop) {
 				// the snippet uses placeholders but has no
@@ -844,7 +844,7 @@ export class SnippetParser {
 		parent.appendChild(
 			/^\d+$/.test(value!)
 				? new Placeholder(Number(value!))
-				: new Variable(value!),
+				: new Variable(value!)
 		);
 		return true;
 	}
@@ -1139,8 +1139,8 @@ export class SnippetParser {
 						Number(index),
 						undefined,
 						ifValue,
-						undefined,
-					),
+						undefined
+					)
 				);
 				return true;
 			}
@@ -1153,8 +1153,8 @@ export class SnippetParser {
 						Number(index),
 						undefined,
 						undefined,
-						elseValue,
-					),
+						elseValue
+					)
 				);
 				return true;
 			}
@@ -1169,8 +1169,8 @@ export class SnippetParser {
 							Number(index),
 							undefined,
 							ifValue,
-							elseValue,
-						),
+							elseValue
+						)
 					);
 					return true;
 				}
@@ -1184,8 +1184,8 @@ export class SnippetParser {
 						Number(index),
 						undefined,
 						undefined,
-						elseValue,
-					),
+						elseValue
+					)
 				);
 				return true;
 			}

@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-.runtime-extensions-editor .monaco-list .monaco-list-rows > .monaco-list-row.odd:not(:hover):not(.focused) {
+.runtime-extensions-editor
+	.monaco-list
+	.monaco-list-rows
+	> .monaco-list-row.odd:not(:hover):not(.focused) {
 	background-color: rgba(130, 130, 130, 0.08);
 }
 
@@ -31,13 +34,17 @@
 	text-align: right;
 }
 
-.runtime-extensions-editor .extension .desc > .msg > span:not(:last-child)::after {
-	content: '\2022';
+.runtime-extensions-editor
+	.extension
+	.desc
+	> .msg
+	> span:not(:last-child)::after {
+	content: "\2022";
 	padding: 0 4px;
-	opacity: .8;
+	opacity: 0.8;
 }
 
-.runtime-extensions-editor .monaco-action-bar  {
+.runtime-extensions-editor .monaco-action-bar {
 	height: unset;
 }
 
@@ -57,7 +64,11 @@
 	object-fit: contain;
 }
 
-.runtime-extensions-editor .extension > .icon-container .extension-remote-badge .codicon {
+.runtime-extensions-editor
+	.extension
+	> .icon-container
+	.extension-remote-badge
+	.codicon {
 	color: currentColor;
 }
 
@@ -75,14 +86,24 @@
 	min-width: 0;
 }
 
-.runtime-extensions-editor .extension > .desc > .header-container > .header > .name {
+.runtime-extensions-editor
+	.extension
+	> .desc
+	> .header-container
+	> .header
+	> .name {
 	font-weight: bold;
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
-.runtime-extensions-editor .extension > .desc > .header-container > .header > .version {
+.runtime-extensions-editor
+	.extension
+	> .desc
+	> .header-container
+	> .header
+	> .version {
 	opacity: 0.85;
 	font-size: 80%;
 	padding-left: 6px;

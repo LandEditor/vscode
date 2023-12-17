@@ -58,16 +58,25 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		@IExtHostWorkspace workspaceService: IExtHostWorkspace,
 		@IExtHostExtensionService extensionService: IExtHostExtensionService,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
-		@IExtHostTerminalService private _terminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		private _terminalService: IExtHostTerminalService,
 		@IExtHostEditorTabs editorTabs: IExtHostEditorTabs,
-		@IExtHostVariableResolverProvider variableResolver: IExtHostVariableResolverProvider,
+		@IExtHostVariableResolverProvider
+		variableResolver: IExtHostVariableResolverProvider
 	) {
-		super(extHostRpcService, workspaceService, extensionService, configurationService, editorTabs, variableResolver);
+		super(
+			extHostRpcService,
+			workspaceService,
+			extensionService,
+			configurationService,
+			editorTabs,
+			variableResolver
+		);
 	}
 
 	protected override createDebugAdapter(
 		adapter: IAdapterDescriptor,
-		session: ExtHostDebugSession,
+		session: ExtHostDebugSession
 	): AbstractDebugAdapter | undefined {
 		switch (adapter.type) {
 			case "server":
@@ -82,17 +91,17 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 	protected override daExecutableFromPackage(
 		session: ExtHostDebugSession,
-		extensionRegistry: ExtensionDescriptionRegistry,
+		extensionRegistry: ExtensionDescriptionRegistry
 	): DebugAdapterExecutable | undefined {
 		const dae = ExecutableDebugAdapter.platformAdapterExecutable(
 			extensionRegistry.getAllExtensionDescriptions(),
-			session.type,
+			session.type
 		);
 		if (dae) {
 			return new DebugAdapterExecutable(
 				dae.command,
 				dae.args,
-				dae.options,
+				dae.options
 			);
 		}
 		return undefined;
@@ -104,7 +113,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 	public override async $runInTerminal(
 		args: DebugProtocol.RunInTerminalRequestArguments,
-		sessionId: string,
+		sessionId: string
 	): Promise<number | undefined> {
 		if (args.kind === "integrated") {
 			if (!this._terminalDisposedListener) {
@@ -112,7 +121,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				this._terminalDisposedListener =
 					this._terminalService.onDidCloseTerminal((terminal) => {
 						this._integratedTerminalInstances.onTerminalClosed(
-							terminal,
+							terminal
 						);
 					});
 			}
@@ -129,7 +138,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 			const shellConfig = JSON.stringify({ shell, shellArgs });
 			let terminal = await this._integratedTerminalInstances.checkout(
 				shellConfig,
-				terminalName,
+				terminalName
 			);
 
 			let cwdForPrepareCommand: string | undefined;
@@ -149,7 +158,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 					{
 						isFeatureTerminal: true,
 						useShellEnvironment: true,
-					},
+					}
 				);
 				this._integratedTerminalInstances.insert(terminal, shellConfig);
 			} else {
@@ -191,7 +200,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 				args.args,
 				!!args.argsCanBeInterpretedByShell,
 				cwdForPrepareCommand,
-				args.env,
+				args.env
 			);
 			terminal.sendText(command);
 
@@ -207,7 +216,7 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		} else if (args.kind === "external") {
 			return runInExternalTerminal(
 				args,
-				await this._configurationService.getConfigProvider(),
+				await this._configurationService.getConfigProvider()
 			);
 		}
 		return super.$runInTerminal(args, sessionId);
@@ -218,7 +227,7 @@ let externalTerminalService: IExternalTerminalService | undefined = undefined;
 
 function runInExternalTerminal(
 	args: DebugProtocol.RunInTerminalRequestArguments,
-	configProvider: ExtHostConfigProvider,
+	configProvider: ExtHostConfigProvider
 ): Promise<number | undefined> {
 	if (!externalTerminalService) {
 		if (platform.isWindows) {
@@ -229,7 +238,7 @@ function runInExternalTerminal(
 			externalTerminalService = new LinuxExternalTerminalService();
 		} else {
 			throw new Error(
-				"external terminals not supported on this platform",
+				"external terminals not supported on this platform"
 			);
 		}
 	}
@@ -239,7 +248,7 @@ function runInExternalTerminal(
 		args.cwd,
 		args.args,
 		args.env || {},
-		config.external || {},
+		config.external || {}
 	);
 }
 
@@ -286,7 +295,7 @@ class DebugTerminalCollection {
 
 				termInfo.lastUsedAt = now;
 				return terminal;
-			}),
+			})
 		);
 
 		return await firstParallel(promises, (t): t is vscode.Terminal => !!t);

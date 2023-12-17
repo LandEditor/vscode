@@ -26,7 +26,7 @@ export class BlockDecorations extends ViewPart {
 		super(context);
 
 		this.domNode = createFastDomNode<HTMLElement>(
-			document.createElement("div"),
+			document.createElement("div")
 		);
 		this.domNode.setAttribute("role", "presentation");
 		this.domNode.setAttribute("aria-hidden", "true");
@@ -63,23 +63,23 @@ export class BlockDecorations extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		return this.update();
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return e.scrollTopChanged || e.scrollLeftChanged;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent,
+		e: viewEvents.ViewDecorationsChangedEvent
 	): boolean {
 		return true;
 	}
 
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
+		e: viewEvents.ViewZonesChangedEvent
 	): boolean {
 		return true;
 	}
@@ -100,7 +100,7 @@ export class BlockDecorations extends ViewPart {
 			let block = this.blocks[count];
 			if (!block) {
 				block = this.blocks[count] = createFastDomNode(
-					document.createElement("div"),
+					document.createElement("div")
 				);
 				this.domNode.appendChild(block);
 			}
@@ -112,35 +112,35 @@ export class BlockDecorations extends ViewPart {
 				// range must be empty
 				top = ctx.getVerticalOffsetAfterLineNumber(
 					decoration.range.endLineNumber,
-					false,
+					false
 				);
 				bottom = ctx.getVerticalOffsetAfterLineNumber(
 					decoration.range.endLineNumber,
-					true,
+					true
 				);
 			} else {
 				top = ctx.getVerticalOffsetForLineNumber(
 					decoration.range.startLineNumber,
-					true,
+					true
 				);
 				bottom =
 					decoration.range.isEmpty() &&
 					!decoration.options.blockDoesNotCollapse
 						? ctx.getVerticalOffsetForLineNumber(
 								decoration.range.startLineNumber,
-								false,
-						  )
+								false
+							)
 						: ctx.getVerticalOffsetAfterLineNumber(
 								decoration.range.endLineNumber,
-								true,
-						  );
+								true
+							);
 			}
 
 			const [paddingTop, paddingRight, paddingBottom, paddingLeft] =
 				decoration.options.blockPadding ?? [0, 0, 0, 0];
 
 			block.setClassName(
-				"blockDecorations-block " + decoration.options.blockClassName,
+				"blockDecorations-block " + decoration.options.blockClassName
 			);
 			block.setLeft(this.contentLeft - paddingLeft);
 			block.setWidth(this.contentWidth + paddingLeft + paddingRight);

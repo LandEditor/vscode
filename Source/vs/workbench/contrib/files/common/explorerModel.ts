@@ -48,7 +48,7 @@ export class ExplorerModel implements IDisposable {
 		private readonly uriIdentityService: IUriIdentityService,
 		fileService: IFileService,
 		configService: IConfigurationService,
-		filesConfigService: IFilesConfigurationService,
+		filesConfigService: IFilesConfigurationService
 	) {
 		const setRoots = () =>
 			(this._roots = this.contextService
@@ -65,8 +65,8 @@ export class ExplorerModel implements IDisposable {
 							false,
 							false,
 							false,
-							folder.name,
-						),
+							folder.name
+						)
 				));
 		setRoots();
 
@@ -102,7 +102,7 @@ export class ExplorerModel implements IDisposable {
 		const folder = this.contextService.getWorkspaceFolder(resource);
 		if (folder) {
 			const root = this.roots.find((r) =>
-				this.uriIdentityService.extUri.isEqual(r.resource, folder.uri),
+				this.uriIdentityService.extUri.isEqual(r.resource, folder.uri)
 			);
 			if (root) {
 				return root.find(resource);
@@ -137,7 +137,7 @@ export class ExplorerItem {
 		private _locked?: boolean,
 		private _name: string = basenameOrAuthority(resource),
 		private _mtime?: number,
-		private _unknown = false,
+		private _unknown = false
 	) {
 		this._isDirectoryResolved = false;
 	}
@@ -243,7 +243,7 @@ export class ExplorerItem {
 		filesConfigService: IFilesConfigurationService,
 		raw: IFileStat,
 		parent: ExplorerItem | undefined,
-		resolveTo?: readonly URI[],
+		resolveTo?: readonly URI[]
 	): ExplorerItem {
 		const stat = new ExplorerItem(
 			raw.resource,
@@ -257,7 +257,7 @@ export class ExplorerItem {
 			raw.locked,
 			raw.name,
 			raw.mtime,
-			!raw.isFile && !raw.isDirectory,
+			!raw.isFile && !raw.isDirectory
 		);
 
 		// Recursively add children if present
@@ -281,7 +281,7 @@ export class ExplorerItem {
 						filesConfigService,
 						raw.children[i],
 						stat,
-						resolveTo,
+						resolveTo
 					);
 					stat.addChild(child);
 				}
@@ -336,13 +336,13 @@ export class ExplorerItem {
 			// Merge received children
 			disk.children.forEach((diskChild) => {
 				const formerLocalChild = oldLocalChildren.get(
-					diskChild.resource,
+					diskChild.resource
 				);
 				// Existing child: merge
 				if (formerLocalChild) {
 					ExplorerItem.mergeLocalWithDisk(
 						diskChild,
-						formerLocalChild,
+						formerLocalChild
 					);
 					local.addChild(formerLocalChild);
 					oldLocalChildren.delete(diskChild.resource);
@@ -377,7 +377,7 @@ export class ExplorerItem {
 	}
 
 	fetchChildren(
-		sortOrder: SortOrder,
+		sortOrder: SortOrder
 	): ExplorerItem[] | Promise<ExplorerItem[]> {
 		const nestingConfig = this.configService.getValue<IFilesConfiguration>({
 			resource: this.root.resource,
@@ -404,7 +404,7 @@ export class ExplorerItem {
 						this.configService,
 						this.filesConfigService,
 						stat,
-						this,
+						this
 					);
 					ExplorerItem.mergeLocalWithDisk(resolved, this);
 				} catch (e) {
@@ -429,7 +429,7 @@ export class ExplorerItem {
 
 				const nested = this.fileNester.nest(
 					fileChildren.map(([name]) => name),
-					this.getPlatformAwareName(this.name),
+					this.getPlatformAwareName(this.name)
 				);
 
 				for (const [fileEntryName, fileEntryItem] of fileChildren) {
@@ -438,7 +438,7 @@ export class ExplorerItem {
 						fileEntryItem.nestedChildren = [];
 						for (const name of nestedItems.keys()) {
 							const child = assertIsDefined(
-								this.children.get(name),
+								this.children.get(name)
 							);
 							fileEntryItem.nestedChildren.push(child);
 							child.nestedParent = fileEntryItem;
@@ -474,7 +474,7 @@ export class ExplorerItem {
 						typeof entry[0] === "string" &&
 						typeof entry[1] === "string" &&
 						entry[0] &&
-						entry[1],
+						entry[1]
 				)
 				.map(
 					([parentPattern, childrenPatterns]) =>
@@ -487,11 +487,11 @@ export class ExplorerItem {
 										p
 											.trim()
 											.replace(/\u200b/g, "")
-											.trim(),
-									),
+											.trim()
+									)
 								)
 								.filter((p) => p !== ""),
-						] as [string, string[]],
+						] as [string, string[]]
 				);
 
 			this.root._fileNester = new ExplorerFileNestingTrie(patterns);
@@ -517,7 +517,7 @@ export class ExplorerItem {
 	private getPlatformAwareName(name: string): string {
 		return this.fileService.hasCapability(
 			this.resource,
-			FileSystemProviderCapabilities.PathCaseSensitive,
+			FileSystemProviderCapabilities.PathCaseSensitive
 		)
 			? name
 			: name.toLowerCase();
@@ -570,7 +570,7 @@ export class ExplorerItem {
 		// For performance reasons try to do the comparison as fast as possible
 		const ignoreCase = !this.fileService.hasCapability(
 			resource,
-			FileSystemProviderCapabilities.PathCaseSensitive,
+			FileSystemProviderCapabilities.PathCaseSensitive
 		);
 		if (
 			resource &&
@@ -583,7 +583,7 @@ export class ExplorerItem {
 			return this.findByPath(
 				rtrim(resource.path, posix.sep),
 				this.resource.path.length,
-				ignoreCase,
+				ignoreCase
 			);
 		}
 
@@ -593,7 +593,7 @@ export class ExplorerItem {
 	private findByPath(
 		path: string,
 		index: number,
-		ignoreCase: boolean,
+		ignoreCase: boolean
 	): ExplorerItem | null {
 		if (isEqual(rtrim(this.resource.path, posix.sep), path, ignoreCase)) {
 			return this;
@@ -631,7 +631,7 @@ export class NewExplorerItem extends ExplorerItem {
 		configService: IConfigurationService,
 		filesConfigService: IFilesConfigurationService,
 		parent: ExplorerItem,
-		isDirectory: boolean,
+		isDirectory: boolean
 	) {
 		super(
 			URI.file(""),
@@ -639,7 +639,7 @@ export class NewExplorerItem extends ExplorerItem {
 			configService,
 			filesConfigService,
 			parent,
-			isDirectory,
+			isDirectory
 		);
 		this._isDirectoryResolved = true;
 	}

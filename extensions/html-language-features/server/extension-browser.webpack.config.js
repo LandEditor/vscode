@@ -35,7 +35,7 @@ serverConfig.module.rules.push({
 			loader: path.resolve(
 				__dirname,
 				"build",
-				"javaScriptLibraryLoader.js",
+				"javaScriptLibraryLoader.js"
 			),
 		},
 	],

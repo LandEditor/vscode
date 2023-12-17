@@ -55,7 +55,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 	static async getEnvironmentData(
 		channel: IChannel,
 		remoteAuthority: string,
-		profile: string | undefined,
+		profile: string | undefined
 	): Promise<IRemoteAgentEnvironment> {
 		const args: IGetEnvironmentDataArguments = {
 			remoteAuthority,
@@ -64,7 +64,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 
 		const data = await channel.call<IRemoteAgentEnvironmentDTO>(
 			"getEnvironmentData",
-			args,
+			args
 		);
 
 		return {
@@ -89,7 +89,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 	static async getExtensionHostExitInfo(
 		channel: IChannel,
 		remoteAuthority: string,
-		reconnectionToken: string,
+		reconnectionToken: string
 	): Promise<IExtensionHostExitInfo | null> {
 		const args: IGetExtensionHostExitInfoArguments = {
 			remoteAuthority,
@@ -97,20 +97,20 @@ export class RemoteExtensionEnvironmentChannelClient {
 		};
 		return channel.call<IExtensionHostExitInfo | null>(
 			"getExtensionHostExitInfo",
-			args,
+			args
 		);
 	}
 
 	static getDiagnosticInfo(
 		channel: IChannel,
-		options: IDiagnosticInfoOptions,
+		options: IDiagnosticInfoOptions
 	): Promise<IDiagnosticInfo> {
 		return channel.call<IDiagnosticInfo>("getDiagnosticInfo", options);
 	}
 
 	static updateTelemetryLevel(
 		channel: IChannel,
-		telemetryLevel: TelemetryLevel,
+		telemetryLevel: TelemetryLevel
 	): Promise<void> {
 		return channel.call<void>("updateTelemetryLevel", { telemetryLevel });
 	}
@@ -118,7 +118,7 @@ export class RemoteExtensionEnvironmentChannelClient {
 	static logTelemetry(
 		channel: IChannel,
 		eventName: string,
-		data: ITelemetryData,
+		data: ITelemetryData
 	): Promise<void> {
 		return channel.call<void>("logTelemetry", { eventName, data });
 	}

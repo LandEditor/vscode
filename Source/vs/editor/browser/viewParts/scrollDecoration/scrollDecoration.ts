@@ -71,7 +71,7 @@ export class ScrollDecorationViewPart extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 		const scrollbar = options.get(EditorOption.scrollbar);
@@ -81,7 +81,7 @@ export class ScrollDecorationViewPart extends ViewPart {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		this._scrollTop = e.scrollTop;
 		return this._updateShouldShow();

@@ -42,15 +42,19 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeColorScheme = this._register(
-		new Emitter<IColorScheme>(),
+		new Emitter<IColorScheme>()
 	);
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
-	constructor(@IStateService private stateService: IStateService, @IConfigurationService private configurationService: IConfigurationService) {
+	constructor(
+		@IStateService private stateService: IStateService,
+		@IConfigurationService
+		private configurationService: IConfigurationService
+	) {
 		super();
 
 		// Color Scheme changes
-		nativeTheme.on('updated', () => {
+		nativeTheme.on("updated", () => {
 			this._onDidChangeColorScheme.fire(this.getColorScheme());
 		});
 	}
@@ -99,7 +103,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 
 		let background = this.stateService.getItem<string | null>(
 			THEME_BG_STORAGE_KEY,
-			null,
+			null
 		);
 		if (!background) {
 			const baseTheme = this.stateService
@@ -143,7 +147,7 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 
 	private updateBackgroundColor(
 		windowId: number,
-		splash: IPartsSplash,
+		splash: IPartsSplash
 	): void {
 		for (const window of BrowserWindow.getAllWindows()) {
 			if (window.id === windowId) {

@@ -41,7 +41,7 @@ import {
 // If @vscode/ripgrep is in an .asar file, then the binary is unpacked.
 const rgDiskPath = rgPath.replace(
 	/\bnode_modules\.asar\b/,
-	"node_modules.asar.unpacked",
+	"node_modules.asar.unpacked"
 );
 
 export class RipgrepTextSearchEngine {
@@ -51,7 +51,7 @@ export class RipgrepTextSearchEngine {
 		query: TextSearchQuery,
 		options: TextSearchOptions,
 		progress: Progress<TextSearchResult>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<TextSearchComplete> {
 		this.outputChannel.appendLine(
 			`provideTextSearchResults ${query.pattern}, ${JSON.stringify({
@@ -59,7 +59,7 @@ export class RipgrepTextSearchEngine {
 				...{
 					folder: options.folder.toString(),
 				},
-			})}`,
+			})}`
 		);
 
 		return new Promise((resolve, reject) => {
@@ -73,7 +73,7 @@ export class RipgrepTextSearchEngine {
 				.map((arg) => (arg.match(/^-/) ? arg : `'${arg}'`))
 				.join(" ");
 			this.outputChannel.appendLine(
-				`${rgDiskPath} ${escapedArgs}\n - cwd: ${cwd}`,
+				`${rgDiskPath} ${escapedArgs}\n - cwd: ${cwd}`
 			);
 
 			let rgProc: Maybe<cp.ChildProcess> = cp.spawn(rgDiskPath, rgArgs, {
@@ -86,9 +86,9 @@ export class RipgrepTextSearchEngine {
 					serializeSearchError(
 						new SearchError(
 							e && e.message,
-							SearchErrorCode.rgProcessError,
-						),
-					),
+							SearchErrorCode.rgProcessError
+						)
+					)
 				);
 			});
 
@@ -96,7 +96,7 @@ export class RipgrepTextSearchEngine {
 			const ripgrepParser = new RipgrepParser(
 				options.maxResults,
 				options.folder,
-				options.previewOptions,
+				options.previewOptions
 			);
 			ripgrepParser.on("result", (match: TextSearchResult) => {
 				gotResult = true;
@@ -142,16 +142,16 @@ export class RipgrepTextSearchEngine {
 
 			rgProc.on("close", () => {
 				this.outputChannel.appendLine(
-					gotData ? "Got data from stdout" : "No data from stdout",
+					gotData ? "Got data from stdout" : "No data from stdout"
 				);
 				this.outputChannel.appendLine(
 					gotResult
 						? "Got result from parser"
-						: "No result from parser",
+						: "No result from parser"
 				);
 				if (dataWithoutResult) {
 					this.outputChannel.appendLine(
-						`Got data without result: ${dataWithoutResult}`,
+						`Got data without result: ${dataWithoutResult}`
 					);
 				}
 
@@ -173,9 +173,9 @@ export class RipgrepTextSearchEngine {
 							serializeSearchError(
 								new SearchError(
 									searchError.message,
-									searchError.code,
-								),
-							),
+									searchError.code
+								)
+							)
 						);
 					} else {
 						resolve({ limitHit });
@@ -199,7 +199,7 @@ function rgErrorMsgForDisplay(msg: string): Maybe<SearchError> {
 	if (lines.some((l) => l.startsWith("regex parse error"))) {
 		return new SearchError(
 			buildRegexParseError(lines),
-			SearchErrorCode.regexParseError,
+			SearchErrorCode.regexParseError
 		);
 	}
 
@@ -207,7 +207,7 @@ function rgErrorMsgForDisplay(msg: string): Maybe<SearchError> {
 	if (match) {
 		return new SearchError(
 			`Unknown encoding: ${match[1]}`,
-			SearchErrorCode.unknownEncoding,
+			SearchErrorCode.unknownEncoding
 		);
 	}
 
@@ -215,7 +215,7 @@ function rgErrorMsgForDisplay(msg: string): Maybe<SearchError> {
 		// Uppercase first letter
 		return new SearchError(
 			firstLine.charAt(0).toUpperCase() + firstLine.substr(1),
-			SearchErrorCode.globParseError,
+			SearchErrorCode.globParseError
 		);
 	}
 
@@ -223,7 +223,7 @@ function rgErrorMsgForDisplay(msg: string): Maybe<SearchError> {
 		// Uppercase first letter
 		return new SearchError(
 			firstLine.charAt(0).toUpperCase() + firstLine.substr(1),
-			SearchErrorCode.invalidLiteral,
+			SearchErrorCode.invalidLiteral
 		);
 	}
 
@@ -262,7 +262,7 @@ export class RipgrepParser extends EventEmitter {
 	constructor(
 		private maxResults: number,
 		private root: URI,
-		private previewOptions?: TextSearchPreviewOptions,
+		private previewOptions?: TextSearchPreviewOptions
 	) {
 		super();
 		this.stringDecoder = new StringDecoder();
@@ -278,7 +278,7 @@ export class RipgrepParser extends EventEmitter {
 
 	override on(
 		event: "result",
-		listener: (result: TextSearchResult) => void,
+		listener: (result: TextSearchResult) => void
 	): this;
 	override on(event: "hitLimit", listener: () => void): this;
 	override on(event: string, listener: (...args: any[]) => void): this {
@@ -367,7 +367,7 @@ export class RipgrepParser extends EventEmitter {
 			data.submatches.push(
 				fullText.length
 					? { start: 0, end: 1, match: { text: fullText[0] } }
-					: { start: 0, end: 0, match: { text: "" } },
+					: { start: 0, end: 0, match: { text: "" } }
 			);
 		}
 
@@ -412,22 +412,22 @@ export class RipgrepParser extends EventEmitter {
 					startLineNumber,
 					startCol,
 					endLineNumber,
-					endCol,
+					endCol
 				);
-			}),
+			})
 		);
 
 		return createTextSearchResult(
 			uri,
 			fullText,
 			<Range[]>ranges,
-			this.previewOptions,
+			this.previewOptions
 		);
 	}
 
 	private createTextSearchContext(
 		data: IRgMatch,
-		uri: URI,
+		uri: URI
 	): TextSearchContext[] {
 		const text = bytesOrTextToString(data.lines);
 		const startLine = data.line_number;
@@ -474,7 +474,7 @@ function getNumLinesAndLastNewlineLength(text: string): {
 // exported for testing
 export function getRgArgs(
 	query: TextSearchQuery,
-	options: TextSearchOptions,
+	options: TextSearchOptions
 ): string[] {
 	const args = ["--hidden", "--no-require-git"];
 	args.push(query.isCaseSensitive ? "--case-sensitive" : "--ignore-case");
@@ -482,7 +482,7 @@ export function getRgArgs(
 	const { doubleStarIncludes, otherIncludes } = groupBy(
 		options.includes,
 		(include: string) =>
-			include.startsWith("**") ? "doubleStarIncludes" : "otherIncludes",
+			include.startsWith("**") ? "doubleStarIncludes" : "otherIncludes"
 	);
 
 	if (otherIncludes && otherIncludes.length) {
@@ -702,7 +702,7 @@ export function fixRegexNewline(pattern: string): string {
 						replace(
 							parent.start,
 							parent.end,
-							otherContent ? `[^${otherContent}]` : ".",
+							otherContent ? `[^${otherContent}]` : "."
 						);
 					} else {
 						replace(
@@ -710,7 +710,7 @@ export function fixRegexNewline(pattern: string): string {
 							parent.end,
 							"(?!\\r?\\n" +
 								(otherContent ? `|[${otherContent}]` : "") +
-								")",
+								")"
 						);
 					}
 				} else {
@@ -723,7 +723,7 @@ export function fixRegexNewline(pattern: string): string {
 						parent.end,
 						otherContent === ""
 							? "\\r?\\n"
-							: `(?:[${otherContent}]|\\r?\\n)`,
+							: `(?:[${otherContent}]|\\r?\\n)`
 					);
 				}
 			} else if (parent.type === "Quantifier") {

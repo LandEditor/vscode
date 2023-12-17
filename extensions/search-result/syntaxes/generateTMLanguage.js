@@ -170,7 +170,7 @@ mappings.forEach(
 					patterns: [{ include: scope }],
 				},
 			],
-		}),
+		})
 );
 
 const header = [
@@ -183,13 +183,13 @@ const header = [
 			{
 				match: "(\\\\n)|(\\\\\\\\)",
 				name: [scopes.header.value, scopes.header.query.escape].join(
-					" ",
+					" "
 				),
 			},
 			{
 				match: "\\\\.|\\\\$",
 				name: [scopes.header.value, scopes.header.query.invalid].join(
-					" ",
+					" "
 				),
 			},
 			{
@@ -250,7 +250,7 @@ const plainText = [
 	{
 		match: "^  (?:\\s*)(?:((\\d+)(:))|((\\d+)( ))(.*))",
 		name: [scopes.resultBlock.meta, scopes.resultBlock.result.meta].join(
-			" ",
+			" "
 		),
 		captures: {
 			1: {
@@ -274,7 +274,7 @@ const plainText = [
 	{
 		match: "⟪ [0-9]+ characters skipped ⟫",
 		name: [scopes.resultBlock.meta, scopes.resultBlock.result.elision].join(
-			" ",
+			" "
 		),
 	},
 ];
@@ -294,5 +294,5 @@ const tmLanguage = {
 
 require("fs").writeFileSync(
 	require("path").join(__dirname, "./searchResult.tmLanguage.json"),
-	JSON.stringify(tmLanguage, null, 2),
+	JSON.stringify(tmLanguage, null, 2)
 );

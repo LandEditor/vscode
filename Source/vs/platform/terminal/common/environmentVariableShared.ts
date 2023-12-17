@@ -15,7 +15,7 @@ import {
 // This file is shared between the renderer and extension host
 
 export function serializeEnvironmentVariableCollection(
-	collection: ReadonlyMap<string, IEnvironmentVariableMutator>,
+	collection: ReadonlyMap<string, IEnvironmentVariableMutator>
 ): ISerializableEnvironmentVariableCollection {
 	return [...collection.entries()];
 }
@@ -23,13 +23,13 @@ export function serializeEnvironmentVariableCollection(
 export function serializeEnvironmentDescriptionMap(
 	descriptionMap:
 		| ReadonlyMap<string, IEnvironmentVariableCollectionDescription>
-		| undefined,
+		| undefined
 ): ISerializableEnvironmentDescriptionMap {
 	return descriptionMap ? [...descriptionMap.entries()] : [];
 }
 
 export function deserializeEnvironmentVariableCollection(
-	serializedCollection: ISerializableEnvironmentVariableCollection,
+	serializedCollection: ISerializableEnvironmentVariableCollection
 ): Map<string, IEnvironmentVariableMutator> {
 	return new Map<string, IEnvironmentVariableMutator>(serializedCollection);
 }
@@ -37,15 +37,15 @@ export function deserializeEnvironmentVariableCollection(
 export function deserializeEnvironmentDescriptionMap(
 	serializableEnvironmentDescription:
 		| ISerializableEnvironmentDescriptionMap
-		| undefined,
+		| undefined
 ): Map<string, IEnvironmentVariableCollectionDescription> {
 	return new Map<string, IEnvironmentVariableCollectionDescription>(
-		serializableEnvironmentDescription ?? [],
+		serializableEnvironmentDescription ?? []
 	);
 }
 
 export function serializeEnvironmentVariableCollections(
-	collections: ReadonlyMap<string, IEnvironmentVariableCollection>,
+	collections: ReadonlyMap<string, IEnvironmentVariableCollection>
 ): ISerializableEnvironmentVariableCollections {
 	return Array.from(collections.entries()).map((e) => {
 		return [
@@ -57,7 +57,7 @@ export function serializeEnvironmentVariableCollections(
 }
 
 export function deserializeEnvironmentVariableCollections(
-	serializedCollection: ISerializableEnvironmentVariableCollections,
+	serializedCollection: ISerializableEnvironmentVariableCollections
 ): Map<string, IEnvironmentVariableCollection> {
 	return new Map<string, IEnvironmentVariableCollection>(
 		serializedCollection.map((e) => {
@@ -68,6 +68,6 @@ export function deserializeEnvironmentVariableCollections(
 					descriptionMap: deserializeEnvironmentDescriptionMap(e[2]),
 				},
 			];
-		}),
+		})
 	);
 }

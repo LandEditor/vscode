@@ -18,8 +18,8 @@ export const terminalStickyScrollBackground = registerColor(
 	},
 	localize(
 		"terminalStickyScroll.background",
-		"The background color of the sticky scroll overlay in the terminal.",
-	),
+		"The background color of the sticky scroll overlay in the terminal."
+	)
 );
 
 export const terminalStickyScrollHoverBackground = registerColor(
@@ -32,6 +32,6 @@ export const terminalStickyScrollHoverBackground = registerColor(
 	},
 	localize(
 		"terminalStickyScrollHover.background",
-		"The background color of the sticky scroll overlay in the terminal when hovered.",
-	),
+		"The background color of the sticky scroll overlay in the terminal when hovered."
+	)
 );

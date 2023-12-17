@@ -72,7 +72,7 @@ export class ContextMenuService implements IContextMenuService {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextViewService contextViewService: IContextViewService,
 		@IMenuService menuService: IMenuService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		// Custom context menu: Linux/Windows if custom title is enabled
 		if (
@@ -85,7 +85,7 @@ export class ContextMenuService implements IContextMenuService {
 				contextViewService,
 				keybindingService,
 				menuService,
-				contextKeyService,
+				contextKeyService
 			);
 		}
 
@@ -96,7 +96,7 @@ export class ContextMenuService implements IContextMenuService {
 				telemetryService,
 				keybindingService,
 				menuService,
-				contextKeyService,
+				contextKeyService
 			);
 		}
 	}
@@ -106,7 +106,7 @@ export class ContextMenuService implements IContextMenuService {
 	}
 
 	showContextMenu(
-		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
 	): void {
 		this.impl.showContextMenu(delegate);
 	}
@@ -119,32 +119,35 @@ class NativeContextMenuService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidShowContextMenu = this._store.add(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidShowContextMenu = this._onDidShowContextMenu.event;
 
 	private readonly _onDidHideContextMenu = this._store.add(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService
 	) {
 		super();
 	}
 
 	showContextMenu(
-		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
 	): void {
 		delegate = ContextMenuMenuDelegate.transform(
 			delegate,
 			this.menuService,
-			this.contextKeyService,
+			this.contextKeyService
 		);
 
 		const actions = delegate.getActions();
@@ -246,7 +249,7 @@ class NativeContextMenuService
 						? 0
 						: undefined,
 				},
-				() => onHide(),
+				() => onHide()
 			);
 
 			this._onDidShowContextMenu.fire();
@@ -257,7 +260,7 @@ class NativeContextMenuService
 		delegate: IContextMenuDelegate,
 		entries: readonly IAction[],
 		onHide: () => void,
-		submenuIds = new Set<string>(),
+		submenuIds = new Set<string>()
 	): IContextMenuItem[] {
 		const actionRunner = delegate.actionRunner || new ActionRunner();
 		return coalesce(
@@ -267,9 +270,9 @@ class NativeContextMenuService
 					entry,
 					actionRunner,
 					onHide,
-					submenuIds,
-				),
-			),
+					submenuIds
+				)
+			)
 		);
 	}
 
@@ -278,7 +281,7 @@ class NativeContextMenuService
 		entry: IAction,
 		actionRunner: IActionRunner,
 		onHide: () => void,
-		submenuIds: Set<string>,
+		submenuIds: Set<string>
 	): IContextMenuItem | undefined {
 		// Separator
 		if (entry instanceof Separator) {
@@ -298,7 +301,7 @@ class NativeContextMenuService
 					delegate,
 					entry.actions,
 					onHide,
-					new Set([...submenuIds, entry.id]),
+					new Set([...submenuIds, entry.id])
 				),
 			};
 		}
@@ -356,7 +359,7 @@ class NativeContextMenuService
 		actionRunner: IActionRunner,
 		actionToRun: IAction,
 		delegate: IContextMenuDelegate,
-		event: IContextMenuEvent,
+		event: IContextMenuEvent
 	): Promise<void> {
 		if (!delegate.skipTelemetry) {
 			this.telemetryService.publicLog2<
@@ -384,5 +387,5 @@ class NativeContextMenuService
 registerSingleton(
 	IContextMenuService,
 	ContextMenuService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

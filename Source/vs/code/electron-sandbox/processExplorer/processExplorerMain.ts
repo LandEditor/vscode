@@ -55,7 +55,7 @@ class ProcessListDelegate
 		element:
 			| MachineProcessInformation
 			| ProcessItem
-			| IRemoteDiagnosticError,
+			| IRemoteDiagnosticError
 	) {
 		return 22;
 	}
@@ -65,7 +65,7 @@ class ProcessListDelegate
 			| ProcessInformation
 			| MachineProcessInformation
 			| ProcessItem
-			| IRemoteDiagnosticError,
+			| IRemoteDiagnosticError
 	) {
 		if (isProcessItem(element)) {
 			return "process";
@@ -113,7 +113,7 @@ class ProcessTreeDataSource
 			| ProcessInformation
 			| MachineProcessInformation
 			| ProcessItem
-			| IRemoteDiagnosticError,
+			| IRemoteDiagnosticError
 	): boolean {
 		if (isRemoteDiagnosticError(element)) {
 			return false;
@@ -132,7 +132,7 @@ class ProcessTreeDataSource
 			| ProcessInformation
 			| MachineProcessInformation
 			| ProcessItem
-			| IRemoteDiagnosticError,
+			| IRemoteDiagnosticError
 	) {
 		if (isProcessItem(element)) {
 			return element.children ? element.children : [];
@@ -160,7 +160,8 @@ class ProcessTreeDataSource
 }
 
 class ProcessHeaderTreeRenderer
-	implements ITreeRenderer<ProcessInformation, void, IProcessItemTemplateData>
+	implements
+		ITreeRenderer<ProcessInformation, void, IProcessItemTemplateData>
 {
 	templateId: string = "header";
 
@@ -177,7 +178,7 @@ class ProcessHeaderTreeRenderer
 		node: ITreeNode<ProcessInformation, void>,
 		index: number,
 		templateData: IProcessItemTemplateData,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.name.textContent = localize("name", "Process Name");
 		templateData.CPU.textContent = localize("cpu", "CPU (%)");
@@ -205,7 +206,7 @@ class MachineRenderer
 		node: ITreeNode<MachineProcessInformation, void>,
 		index: number,
 		templateData: IProcessRowTemplateData,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.name.textContent = node.element.name;
 	}
@@ -229,7 +230,7 @@ class ErrorRenderer
 		node: ITreeNode<IRemoteDiagnosticError, void>,
 		index: number,
 		templateData: IProcessRowTemplateData,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.name.textContent = node.element.errorMessage;
 	}
@@ -244,7 +245,7 @@ class ProcessRenderer
 	constructor(
 		private platform: string,
 		private totalMem: number,
-		private mapPidToName: Map<number, string>,
+		private mapPidToName: Map<number, string>
 	) {}
 
 	templateId: string = "process";
@@ -262,7 +263,7 @@ class ProcessRenderer
 		node: ITreeNode<ProcessItem, void>,
 		index: number,
 		templateData: IProcessItemTemplateData,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		const { element } = node;
 
@@ -306,7 +307,7 @@ interface ProcessTree {
 }
 
 function isMachineProcessInformation(
-	item: any,
+	item: any
 ): item is MachineProcessInformation {
 	return !!item.name && !!item.rootProcess;
 }
@@ -338,11 +339,14 @@ class ProcessExplorer {
 		  >
 		| undefined;
 
-	constructor(windowId: number, private data: ProcessExplorerData) {
+	constructor(
+		windowId: number,
+		private data: ProcessExplorerData
+	) {
 		const mainProcessService = new ElectronIPCMainProcessService(windowId);
 		this.nativeHostService = new NativeHostService(
 			windowId,
-			mainProcessService,
+			mainProcessService
 		) as INativeHostService;
 
 		this.applyStyles(data.styles);
@@ -356,14 +360,14 @@ class ProcessExplorer {
 				for (const [pid, name] of pidToNames) {
 					this.mapPidToName.set(pid, name);
 				}
-			},
+			}
 		);
 
 		ipcRenderer.on(
 			"vscode:listProcessesResponse",
 			async (
 				event: unknown,
-				processRoots: MachineProcessInformation[],
+				processRoots: MachineProcessInformation[]
 			) => {
 				processRoots.forEach((info, index) => {
 					if (isProcessItem(info.rootProcess)) {
@@ -380,12 +384,12 @@ class ProcessExplorer {
 					this.tree.setInput({ processes: { processRoots } });
 					this.tree.layout(
 						mainWindow.innerHeight,
-						mainWindow.innerWidth,
+						mainWindow.innerWidth
 					);
 				}
 
 				this.requestProcessList(0);
-			},
+			}
 		);
 
 		this.lastRequestTime = Date.now();
@@ -419,7 +423,7 @@ class ProcessExplorer {
 	}
 
 	private async createProcessTree(
-		processRoots: MachineProcessInformation[],
+		processRoots: MachineProcessInformation[]
 	): Promise<void> {
 		const container = mainWindow.document.getElementById("process-list");
 		if (!container) {
@@ -432,7 +436,7 @@ class ProcessExplorer {
 			new ProcessRenderer(
 				this.data.platform,
 				totalmem,
-				this.mapPidToName,
+				this.mapPidToName
 			),
 			new ProcessHeaderTreeRenderer(),
 			new MachineRenderer(),
@@ -453,7 +457,7 @@ class ProcessExplorer {
 							| ProcessItem
 							| MachineProcessInformation
 							| ProcessInformation
-							| IRemoteDiagnosticError,
+							| IRemoteDiagnosticError
 					) => {
 						if (isProcessItem(element)) {
 							return element.pid.toString();
@@ -474,7 +478,7 @@ class ProcessExplorer {
 						return "header";
 					},
 				},
-			},
+			}
 		);
 
 		this.tree.setInput({ processes: { processRoots } });
@@ -485,8 +489,8 @@ class ProcessExplorer {
 				const selectionPids = this.getSelectedPids();
 				void Promise.all(
 					selectionPids.map((pid) =>
-						this.nativeHostService.killProcess(pid, "SIGTERM"),
-					),
+						this.nativeHostService.killProcess(pid, "SIGTERM")
+					)
 				).then(() => this.tree?.refresh());
 			}
 		});
@@ -548,55 +552,55 @@ class ProcessExplorer {
 
 		if (styles.listFocusBackground) {
 			content.push(
-				`.monaco-list:focus .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`,
+				`.monaco-list:focus .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`
 			);
 			content.push(
-				`.monaco-list:focus .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`,
+				`.monaco-list:focus .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`
 			);
 		}
 
 		if (styles.listFocusForeground) {
 			content.push(
-				`.monaco-list:focus .monaco-list-row.focused { color: ${styles.listFocusForeground}; }`,
+				`.monaco-list:focus .monaco-list-row.focused { color: ${styles.listFocusForeground}; }`
 			);
 		}
 
 		if (styles.listActiveSelectionBackground) {
 			content.push(
-				`.monaco-list:focus .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`,
+				`.monaco-list:focus .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`
 			);
 			content.push(
-				`.monaco-list:focus .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`,
+				`.monaco-list:focus .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`
 			);
 		}
 
 		if (styles.listActiveSelectionForeground) {
 			content.push(
-				`.monaco-list:focus .monaco-list-row.selected { color: ${styles.listActiveSelectionForeground}; }`,
+				`.monaco-list:focus .monaco-list-row.selected { color: ${styles.listActiveSelectionForeground}; }`
 			);
 		}
 
 		if (styles.listHoverBackground) {
 			content.push(
-				`.monaco-list-row:hover:not(.selected):not(.focused) { background-color: ${styles.listHoverBackground}; }`,
+				`.monaco-list-row:hover:not(.selected):not(.focused) { background-color: ${styles.listHoverBackground}; }`
 			);
 		}
 
 		if (styles.listHoverForeground) {
 			content.push(
-				`.monaco-list-row:hover:not(.selected):not(.focused) { color: ${styles.listHoverForeground}; }`,
+				`.monaco-list-row:hover:not(.selected):not(.focused) { color: ${styles.listHoverForeground}; }`
 			);
 		}
 
 		if (styles.listFocusOutline) {
 			content.push(
-				`.monaco-list:focus .monaco-list-row.focused { outline: 1px solid ${styles.listFocusOutline}; outline-offset: -1px; }`,
+				`.monaco-list:focus .monaco-list-row.focused { outline: 1px solid ${styles.listFocusOutline}; outline-offset: -1px; }`
 			);
 		}
 
 		if (styles.listHoverOutline) {
 			content.push(
-				`.monaco-list-row:hover { outline: 1px dashed ${styles.listHoverOutline}; outline-offset: -1px; }`,
+				`.monaco-list-row:hover { outline: 1px dashed ${styles.listHoverOutline}; outline-offset: -1px; }`
 			);
 		}
 
@@ -703,7 +707,7 @@ class ProcessExplorer {
 					mainWindow.document.getElementById("process-list");
 				if (processList) {
 					this.nativeHostService.writeClipboardText(
-						processList.innerText,
+						processList.innerText
 					);
 				}
 			},
@@ -770,14 +774,14 @@ function createCodiconStyleSheet() {
 }
 
 export function startup(
-	configuration: ProcessExplorerWindowConfiguration,
+	configuration: ProcessExplorerWindowConfiguration
 ): void {
 	const platformClass =
 		configuration.data.platform === "win32"
 			? "windows"
 			: configuration.data.platform === "linux"
-			  ? "linux"
-			  : "mac";
+				? "linux"
+				: "mac";
 	mainWindow.document.body.classList.add(platformClass); // used by our fonts
 	createCodiconStyleSheet();
 	applyZoom(configuration.data.zoomLevel);

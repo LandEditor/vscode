@@ -13,7 +13,7 @@ export function findFreePort(
 	startPort: number,
 	giveUpAfter: number,
 	timeout: number,
-	stride = 1,
+	stride = 1
 ): Promise<number> {
 	let done = false;
 
@@ -39,7 +39,7 @@ function doFindFreePort(
 	startPort: number,
 	giveUpAfter: number,
 	stride: number,
-	clb: (port: number) => void,
+	clb: (port: number) => void
 ): void {
 	if (giveUpAfter === 0) {
 		return clb(0);
@@ -67,7 +67,7 @@ function doFindFreePort(
 				startPort + stride,
 				giveUpAfter - 1,
 				stride,
-				clb,
+				clb
 			);
 		}
 
@@ -169,7 +169,7 @@ export function findFreePortFaster(
 	startPort: number,
 	giveUpAfter: number,
 	timeout: number,
-	hostname: string = "127.0.0.1",
+	hostname: string = "127.0.0.1"
 ): Promise<number> {
 	let resolved: boolean = false;
 	let timeoutHandle: NodeJS.Timeout | undefined = undefined;

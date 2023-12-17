@@ -31,7 +31,7 @@ export function convertLinkRangeToBuffer(
 	lines: IBufferLine[],
 	bufferWidth: number,
 	range: IRange,
-	startLine: number,
+	startLine: number
 ): IBufferRange {
 	const bufferRange: IBufferRange = {
 		start: {
@@ -50,7 +50,7 @@ export function convertLinkRangeToBuffer(
 	for (let y = 0; y < Math.min(startWrappedLineCount); y++) {
 		const lineLength = Math.min(
 			bufferWidth,
-			range.startColumn - 1 - y * bufferWidth,
+			range.startColumn - 1 - y * bufferWidth
 		);
 		let lineOffset = 0;
 		const line = lines[y];
@@ -97,7 +97,7 @@ export function convertLinkRangeToBuffer(
 				: 0;
 		const lineLength = Math.min(
 			bufferWidth,
-			range.endColumn + startOffset - y * bufferWidth,
+			range.endColumn + startOffset - y * bufferWidth
 		);
 		let lineOffset = 0;
 		const line = lines[y];
@@ -155,7 +155,7 @@ export function convertLinkRangeToBuffer(
 
 export function convertBufferRangeToViewport(
 	bufferRange: IBufferRange,
-	viewportY: number,
+	viewportY: number
 ): IViewportRange {
 	return {
 		start: {
@@ -173,7 +173,7 @@ export function getXtermLineContent(
 	buffer: IBuffer,
 	lineStart: number,
 	lineEnd: number,
-	cols: number,
+	cols: number
 ): string {
 	// Cap the maximum number of lines generated to prevent potential performance problems. This is
 	// more of a sanity check as the wrapped line should already be trimmed down at this point.
@@ -195,7 +195,7 @@ export function getXtermRangesByAttr(
 	buffer: IBuffer,
 	lineStart: number,
 	lineEnd: number,
-	cols: number,
+	cols: number
 ): IBufferRange[] {
 	let bufferRangeStart: IBufferCellPosition | undefined = undefined;
 	let lastFgAttr: number = -1;
@@ -261,7 +261,7 @@ export function updateLinkWithRelativeCwd(
 	y: number,
 	text: string,
 	osPath: IPath,
-	logService: ITerminalLogService,
+	logService: ITerminalLogService
 ): string[] | undefined {
 	const cwd = capabilities
 		.get(TerminalCapability.CommandDetection)
@@ -285,9 +285,7 @@ export function updateLinkWithRelativeCwd(
 		// likely as cwd detection is active.
 		while (i < cwdPath.length) {
 			result.push(
-				osPath.resolve(
-					cwd + sep + linkPath.slice(commonDirs).join(sep),
-				),
+				osPath.resolve(cwd + sep + linkPath.slice(commonDirs).join(sep))
 			);
 			if (cwdPath[i] === linkPath[i]) {
 				commonDirs++;

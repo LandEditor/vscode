@@ -93,7 +93,7 @@ export function positionFromString(str: string): Position {
 }
 
 function panelOpensMaximizedSettingToString(
-	setting: PanelOpensMaximizedOptions,
+	setting: PanelOpensMaximizedOptions
 ): string {
 	switch (setting) {
 		case PanelOpensMaximizedOptions.ALWAYS:
@@ -115,12 +115,12 @@ const panelOpensMaximizedByString: {
 	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]:
 		PanelOpensMaximizedOptions.NEVER,
 	[panelOpensMaximizedSettingToString(
-		PanelOpensMaximizedOptions.REMEMBER_LAST,
+		PanelOpensMaximizedOptions.REMEMBER_LAST
 	)]: PanelOpensMaximizedOptions.REMEMBER_LAST,
 };
 
 export function panelOpensMaximizedFromString(
-	str: string,
+	str: string
 ): PanelOpensMaximizedOptions {
 	return panelOpensMaximizedByString[str];
 }
@@ -231,7 +231,7 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 		part: Exclude<
 			SINGLE_WINDOW_PARTS,
 			Parts.STATUSBAR_PART | Parts.TITLEBAR_PART
-		>,
+		>
 	): void;
 	setPartHidden(
 		hidden: boolean,
@@ -239,12 +239,12 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 			MULTI_WINDOW_PARTS,
 			Parts.STATUSBAR_PART | Parts.TITLEBAR_PART
 		>,
-		targetWindow: Window,
+		targetWindow: Window
 	): void;
 	setPartHidden(
 		hidden: boolean,
 		part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>,
-		targetWindow: Window,
+		targetWindow: Window
 	): void;
 
 	/**
@@ -324,7 +324,7 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	resizePart(
 		part: Parts,
 		sizeChangeWidth: number,
-		sizeChangeHeight: number,
+		sizeChangeHeight: number
 	): void;
 
 	/**
@@ -347,6 +347,6 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	 */
 	getVisibleNeighborPart(
 		part: Parts,
-		direction: Direction,
+		direction: Direction
 	): Parts | undefined;
 }

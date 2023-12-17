@@ -34,7 +34,7 @@ export class CountBadge {
 	constructor(
 		container: HTMLElement,
 		private readonly options: ICountBadgeOptions,
-		private readonly styles: ICountBadgeStyles,
+		private readonly styles: ICountBadgeStyles
 	) {
 		this.element = append(container, $(".monaco-count-badge"));
 		this.countFormat = this.options.countFormat || "{0}";

@@ -210,35 +210,89 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourcePropertiesService private readonly textResourcePropertiesService: ITextResourcePropertiesService,
+		@ITextResourcePropertiesService
+		private readonly textResourcePropertiesService: ITextResourcePropertiesService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IOpenerService openerService: IOpenerService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IMenuService menuService: IMenuService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILogService private readonly logService: ILogService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILogService private readonly logService: ILogService
 	) {
-		const filterText = storageService.get(FILTER_VALUE_STORAGE_KEY, StorageScope.WORKSPACE, '');
-		super({
-			...options,
-			filterOptions: {
-				placeholder: localize({ key: 'workbench.debug.filter.placeholder', comment: ['Text in the brackets after e.g. is not localizable'] }, "Filter (e.g. text, !exclude)"),
-				text: filterText,
-				history: JSON.parse(storageService.get(FILTER_HISTORY_STORAGE_KEY, StorageScope.WORKSPACE, '[]')) as string[],
-			}
-		}, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService);
+		const filterText = storageService.get(
+			FILTER_VALUE_STORAGE_KEY,
+			StorageScope.WORKSPACE,
+			""
+		);
+		super(
+			{
+				...options,
+				filterOptions: {
+					placeholder: localize(
+						{
+							key: "workbench.debug.filter.placeholder",
+							comment: [
+								"Text in the brackets after e.g. is not localizable",
+							],
+						},
+						"Filter (e.g. text, !exclude)"
+					),
+					text: filterText,
+					history: JSON.parse(
+						storageService.get(
+							FILTER_HISTORY_STORAGE_KEY,
+							StorageScope.WORKSPACE,
+							"[]"
+						)
+					) as string[],
+				},
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService
+		);
 
-		this.menu = menuService.createMenu(MenuId.DebugConsoleContext, contextKeyService);
+		this.menu = menuService.createMenu(
+			MenuId.DebugConsoleContext,
+			contextKeyService
+		);
 		this._register(this.menu);
-		this.history = new HistoryNavigator(JSON.parse(this.storageService.get(HISTORY_STORAGE_KEY, StorageScope.WORKSPACE, '[]')), 50);
+		this.history = new HistoryNavigator(
+			JSON.parse(
+				this.storageService.get(
+					HISTORY_STORAGE_KEY,
+					StorageScope.WORKSPACE,
+					"[]"
+				)
+			),
+			50
+		);
 		this.filter = new ReplFilter();
 		this.filter.filterQuery = filterText;
-		this.multiSessionRepl = CONTEXT_MULTI_SESSION_REPL.bindTo(contextKeyService);
-		this.replOptions = this._register(this.instantiationService.createInstance(ReplOptions, this.id, () => this.getBackgroundColor()));
-		this._register(this.replOptions.onDidChange(() => this.onDidStyleChange()));
+		this.multiSessionRepl =
+			CONTEXT_MULTI_SESSION_REPL.bindTo(contextKeyService);
+		this.replOptions = this._register(
+			this.instantiationService.createInstance(ReplOptions, this.id, () =>
+				this.getBackgroundColor()
+			)
+		);
+		this._register(
+			this.replOptions.onDidChange(() => this.onDidStyleChange())
+		);
 
-		codeEditorService.registerDecorationType('repl-decoration', DECORATION_KEY, {});
+		codeEditorService.registerDecorationType(
+			"repl-decoration",
+			DECORATION_KEY,
+			{}
+		);
 		this.multiSessionRepl.set(this.isMultiSessionView);
 		this.registerListeners();
 	}
@@ -246,7 +300,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 	private registerListeners(): void {
 		if (this.debugService.getViewModel().focusedSession) {
 			this.onDidFocusSession(
-				this.debugService.getViewModel().focusedSession,
+				this.debugService.getViewModel().focusedSession
 			);
 		}
 
@@ -254,8 +308,8 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			this.debugService
 				.getViewModel()
 				.onDidFocusSession(async (session) =>
-					this.onDidFocusSession(session),
-				),
+					this.onDidFocusSession(session)
+				)
 		);
 		this._register(
 			this.debugService
@@ -265,7 +319,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 						await this.tree.updateChildren(e, false, true);
 						await this.tree.expand(e);
 					}
-				}),
+				})
 		);
 		this._register(
 			this.debugService.onWillNewSession(async (newSession) => {
@@ -275,14 +329,14 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					await this.selectSession(newSession);
 				}
 				this.multiSessionRepl.set(this.isMultiSessionView);
-			}),
+			})
 		);
 		this._register(
 			this.debugService.onDidEndSession(async () => {
 				// Update view, since orphaned sessions might now be separate
 				await Promise.resolve(); // allow other listeners to go first, so sessions can update parents
 				this.multiSessionRepl.set(this.isMultiSessionView);
-			}),
+			})
 		);
 		this._register(
 			this.themeService.onDidColorThemeChange(() => {
@@ -290,7 +344,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				if (this.isVisible()) {
 					this.updateInputDecoration();
 				}
-			}),
+			})
 		);
 		this._register(
 			this.onDidChangeBodyVisibility((visible) => {
@@ -302,7 +356,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 								"",
 								null,
 								Repl.URI,
-								true,
+								true
 							);
 					}
 					this.setMode();
@@ -310,7 +364,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					this.updateInputDecoration();
 					this.refreshReplElements(true);
 				}
-			}),
+			})
 		);
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
@@ -325,12 +379,12 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				}
 				if (
 					e.affectsConfiguration(
-						"debug.console.acceptSuggestionOnEnter",
+						"debug.console.acceptSuggestionOnEnter"
 					)
 				) {
 					const config =
 						this.configurationService.getValue<IDebugConfiguration>(
-							"debug",
+							"debug"
 						);
 					this.replInput.updateOptions({
 						acceptSuggestionOnEnter:
@@ -339,13 +393,13 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 								: "off",
 					});
 				}
-			}),
+			})
 		);
 
 		this._register(
 			this.editorService.onDidActiveEditorChange(() => {
 				this.setMode();
-			}),
+			})
 		);
 
 		this._register(
@@ -355,12 +409,12 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					this.tree.refilter();
 					revealLastElement(this.tree);
 				}
-			}),
+			})
 		);
 	}
 
 	private async onDidFocusSession(
-		session: IDebugSession | undefined,
+		session: IDebugSession | undefined
 	): Promise<void> {
 		if (session) {
 			sessionsToIgnore.delete(session);
@@ -381,7 +435,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 								_: ITextModel,
 								position: Position,
 								_context: CompletionContext,
-								token: CancellationToken,
+								token: CancellationToken
 							): Promise<CompletionList> => {
 								// Disable history navigation because up and down are used to navigate through the suggest widget
 								this.setHistoryNavigationEnablement(false);
@@ -406,14 +460,14 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 										text,
 										position,
 										overwriteBefore,
-										token,
+										token
 									);
 
 									const suggestions: CompletionItem[] = [];
 									const computeRange = (length: number) =>
 										Range.fromPositions(
 											position.delta(0, -length),
-											position,
+											position
 										);
 									if (
 										response &&
@@ -443,22 +497,22 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 														const placeholder =
 															selectionLength > 0
 																? "${1:" +
-																  insertText.substring(
+																	insertText.substring(
 																		item.selectionStart,
 																		item.selectionStart +
-																			selectionLength,
-																  ) +
-																  "}$0"
+																			selectionLength
+																	) +
+																	"}$0"
 																: "$0";
 														insertText =
 															insertText.substring(
 																0,
-																item.selectionStart,
+																item.selectionStart
 															) +
 															placeholder +
 															insertText.substring(
 																item.selectionStart +
-																	selectionLength,
+																	selectionLength
 															);
 													}
 
@@ -468,7 +522,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 														detail: item.detail,
 														kind: CompletionItemKinds.fromString(
 															item.type ||
-																"property",
+																"property"
 														),
 														filterText:
 															item.start &&
@@ -477,33 +531,33 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 																		.substring(
 																			item.start,
 																			item.start +
-																				item.length,
+																				item.length
 																		)
 																		.concat(
-																			item.label,
+																			item.label
 																		)
 																: undefined,
 														range: computeRange(
 															item.length ||
-																overwriteBefore,
+																overwriteBefore
 														),
 														sortText: item.sortText,
 														insertTextRules,
 													});
 												}
-											},
+											}
 										);
 									}
 
 									if (
 										this.configurationService.getValue<IDebugConfiguration>(
-											"debug",
+											"debug"
 										).console.historySuggestions
 									) {
 										const history =
 											this.history.getHistory();
 										const idxLength = String(
-											history.length,
+											history.length
 										).length;
 										history.forEach((h, i) =>
 											suggestions.push({
@@ -514,9 +568,9 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 												sortText:
 													"ZZZ" +
 													String(
-														history.length - i,
+														history.length - i
 													).padStart(idxLength, "0"),
-											}),
+											})
 										);
 									}
 
@@ -525,7 +579,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 
 								return Promise.resolve({ suggestions: [] });
 							},
-						},
+						}
 					);
 			}
 		}
@@ -579,11 +633,11 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			this.modelChangeListener.dispose();
 			this.modelChangeListener =
 				activeEditorControl.onDidChangeModelLanguage(() =>
-					this.setMode(),
+					this.setMode()
 				);
 			if (this.model && activeEditorControl.hasModel()) {
 				this.model.setLanguage(
-					activeEditorControl.getModel().getLanguageId(),
+					activeEditorControl.getModel().getLanguageId()
 				);
 			}
 		}
@@ -601,7 +655,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			});
 
 			const replInputLineHeight = this.replInput.getOption(
-				EditorOption.lineHeight,
+				EditorOption.lineHeight
 			);
 
 			// Set the font size, font family, line height and align the twistie to be centered, and input theme color
@@ -620,19 +674,19 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					: this.replOptions.replConfiguration.fontFamily;
 			this.container.style.setProperty(
 				`--vscode-repl-font-family`,
-				cssFontFamily,
+				cssFontFamily
 			);
 			this.container.style.setProperty(
 				`--vscode-repl-font-size`,
-				`${this.replOptions.replConfiguration.fontSize}px`,
+				`${this.replOptions.replConfiguration.fontSize}px`
 			);
 			this.container.style.setProperty(
 				`--vscode-repl-font-size-for-twistie`,
-				`${this.replOptions.replConfiguration.fontSizeForTwistie}px`,
+				`${this.replOptions.replConfiguration.fontSizeForTwistie}px`
 			);
 			this.container.style.setProperty(
 				`--vscode-repl-line-height`,
-				this.replOptions.replConfiguration.cssLineHeight,
+				this.replOptions.replConfiguration.cssLineHeight
 			);
 
 			this.tree?.rerender();
@@ -640,7 +694,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			if (this.bodyContentDimension) {
 				this.layoutBodyContent(
 					this.bodyContentDimension.height,
-					this.bodyContentDimension.width,
+					this.bodyContentDimension.width
 				);
 			}
 		}
@@ -681,9 +735,9 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			this.replElementsChangeListener = session.onDidChangeReplElements(
 				() => {
 					this.refreshReplElements(
-						session!.getReplElements().length === 0,
+						session!.getReplElements().length === 0
 					);
-				},
+				}
 			);
 
 			if (this.tree && treeInput !== session) {
@@ -721,7 +775,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		if (session && !this.isReadonly) {
 			session.addReplExpression(
 				this.debugService.getViewModel().focusedStackFrame,
-				this.replInput.getValue(),
+				this.replInput.getValue()
 			);
 			revealLastElement(this.tree!);
 			this.history.add(this.replInput.getValue());
@@ -732,7 +786,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				// Trigger a layout to shrink a potential multi line input
 				this.layoutBodyContent(
 					this.bodyContentDimension.height,
-					this.bodyContentDimension.width,
+					this.bodyContentDimension.width
 				);
 			}
 		}
@@ -742,10 +796,10 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		let text = "";
 		if (this.model && this.tree) {
 			const lineDelimiter = this.textResourcePropertiesService.getEOL(
-				this.model.uri,
+				this.model.uri
 			);
 			const traverseAndAppend = (
-				node: ITreeNode<IReplElement, FuzzyScore>,
+				node: ITreeNode<IReplElement, FuzzyScore>
 			) => {
 				node.children.forEach((child) => {
 					if (child.visible) {
@@ -768,7 +822,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		this.bodyContentDimension = new dom.Dimension(width, height);
 		const replInputHeight = Math.min(
 			this.replInput.getContentHeight(),
-			height,
+			height
 		);
 		if (this.tree) {
 			const lastElementVisible =
@@ -807,7 +861,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			return this.instantiationService.createInstance(
 				SelectReplActionViewItem,
 				action,
-				session,
+				session
 			);
 		}
 
@@ -873,8 +927,8 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 							"showing filtered repl lines",
 							"Showing {0} of {1}",
 							filtered,
-							total,
-					  ),
+							total
+						)
 			);
 		}, Repl.REFRESH_DELAY);
 	}
@@ -902,7 +956,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 						this.focusFilter();
 					}
 				},
-			}),
+			})
 		);
 	}
 
@@ -911,7 +965,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		this.container = dom.append(parent, $(".repl"));
 		this.treeContainer = dom.append(
 			this.container,
-			$(`.repl-tree.${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`),
+			$(`.repl-tree.${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`)
 		);
 		this.createReplInput(this.container);
 		this.createReplTree();
@@ -920,7 +974,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 	private createReplTree(): void {
 		this.replDelegate = new ReplDelegate(
 			this.configurationService,
-			this.replOptions,
+			this.replOptions
 		);
 		const wordWrap =
 			this.configurationService.getValue<IDebugConfiguration>("debug")
@@ -938,16 +992,16 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			[
 				this.instantiationService.createInstance(
 					ReplVariablesRenderer,
-					linkDetector,
+					linkDetector
 				),
 				this.instantiationService.createInstance(
 					ReplOutputElementRenderer,
-					linkDetector,
+					linkDetector
 				),
 				new ReplEvaluationInputsRenderer(),
 				this.instantiationService.createInstance(
 					ReplGroupRenderer,
-					linkDetector,
+					linkDetector
 				),
 				new ReplEvaluationResultsRenderer(linkDetector),
 				new ReplRawObjectsRenderer(linkDetector),
@@ -973,7 +1027,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				overrideStyles: {
 					listBackground: this.getBackgroundColor(),
 				},
-			},
+			}
 		));
 
 		this._register(
@@ -993,7 +1047,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				}
 
 				this.previousTreeScrollHeight = tree.scrollHeight;
-			}),
+			})
 		);
 
 		this._register(tree.onContextMenu((e) => this.onContextMenu(e)));
@@ -1012,7 +1066,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					this.replInput.focus();
 				}
 				lastSelectedString = selection ? selection.toString() : "";
-			}),
+			})
 		);
 		// Make sure to select the session if debugging is already active
 		this.selectSession();
@@ -1023,14 +1077,14 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 	private createReplInput(container: HTMLElement): void {
 		this.replInputContainer = dom.append(
 			container,
-			$(".repl-input-wrapper"),
+			$(".repl-input-wrapper")
 		);
 		dom.append(
 			this.replInputContainer,
 			$(
 				".repl-input-chevron" +
-					ThemeIcon.asCSSSelector(debugConsoleEvaluationPrompt),
-			),
+					ThemeIcon.asCSSSelector(debugConsoleEvaluationPrompt)
+			)
 		);
 
 		const {
@@ -1039,8 +1093,8 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		} = this._register(
 			registerAndCreateHistoryNavigationContext(
 				this.scopedContextKeyService,
-				this,
-			),
+				this
+			)
 		);
 		this.setHistoryNavigationEnablement = (enabled) => {
 			historyNavigationBackwardsEnablement.set(enabled);
@@ -1052,7 +1106,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			new ServiceCollection([
 				IContextKeyService,
 				this.scopedContextKeyService,
-			]),
+			])
 		);
 		const options = getSimpleEditorOptions(this.configurationService);
 		options.readOnly = true;
@@ -1067,14 +1121,14 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 			CodeEditorWidget,
 			this.replInputContainer,
 			options,
-			getSimpleCodeEditorWidgetOptions(),
+			getSimpleCodeEditorWidgetOptions()
 		);
 
 		this._register(
 			this.replInput.onDidChangeModelContent(() => {
 				const model = this.replInput.getModel();
 				this.setHistoryNavigationEnablement(
-					!!model && model.getValue() === "",
+					!!model && model.getValue() === ""
 				);
 				const lineCount = model
 					? Math.min(10, model.getLineCount())
@@ -1084,38 +1138,38 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					if (this.bodyContentDimension) {
 						this.layoutBodyContent(
 							this.bodyContentDimension.height,
-							this.bodyContentDimension.width,
+							this.bodyContentDimension.width
 						);
 					}
 				}
-			}),
+			})
 		);
 		// We add the input decoration only when the focus is in the input #61126
 		this._register(
 			this.replInput.onDidFocusEditorText(() =>
-				this.updateInputDecoration(),
-			),
+				this.updateInputDecoration()
+			)
 		);
 		this._register(
 			this.replInput.onDidBlurEditorText(() =>
-				this.updateInputDecoration(),
-			),
+				this.updateInputDecoration()
+			)
 		);
 
 		this._register(
 			dom.addStandardDisposableListener(
 				this.replInputContainer,
 				dom.EventType.FOCUS,
-				() => this.replInputContainer.classList.add("synthetic-focus"),
-			),
+				() => this.replInputContainer.classList.add("synthetic-focus")
+			)
 		);
 		this._register(
 			dom.addStandardDisposableListener(
 				this.replInputContainer,
 				dom.EventType.BLUR,
 				() =>
-					this.replInputContainer.classList.remove("synthetic-focus"),
-			),
+					this.replInputContainer.classList.remove("synthetic-focus")
+			)
 		);
 	}
 
@@ -1124,7 +1178,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		createAndFillInContextMenuActions(
 			this.menu,
 			{ arg: e.element, shouldForwardArgs: false },
-			actions,
+			actions
 		);
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => e.anchor,
@@ -1158,7 +1212,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		) {
 			const transparentForeground = resolveColorValue(
 				editorForeground,
-				this.themeService.getColorTheme(),
+				this.themeService.getColorTheme()
 			)?.transparent(0.4);
 			decorations.push({
 				range: {
@@ -1171,7 +1225,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 					after: {
 						contentText: localize(
 							"startDebugFirst",
-							"Please start a debug session to evaluate expressions",
+							"Please start a debug session to evaluate expressions"
 						),
 						color: transparentForeground
 							? transparentForeground.toString()
@@ -1184,7 +1238,7 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		this.replInput.setDecorationsByType(
 			"repl-decoration",
 			DECORATION_KEY,
-			decorations,
+			decorations
 		);
 	}
 
@@ -1195,12 +1249,12 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				HISTORY_STORAGE_KEY,
 				JSON.stringify(replHistory),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		} else {
 			this.storageService.remove(
 				HISTORY_STORAGE_KEY,
-				StorageScope.WORKSPACE,
+				StorageScope.WORKSPACE
 			);
 		}
 		const filterHistory = this.filterWidget.getHistory();
@@ -1209,12 +1263,12 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				FILTER_HISTORY_STORAGE_KEY,
 				JSON.stringify(filterHistory),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		} else {
 			this.storageService.remove(
 				FILTER_HISTORY_STORAGE_KEY,
-				StorageScope.WORKSPACE,
+				StorageScope.WORKSPACE
 			);
 		}
 		const filterValue = this.filterWidget.getFilterText();
@@ -1223,12 +1277,12 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 				FILTER_VALUE_STORAGE_KEY,
 				filterValue,
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		} else {
 			this.storageService.remove(
 				FILTER_VALUE_STORAGE_KEY,
-				StorageScope.WORKSPACE,
+				StorageScope.WORKSPACE
 			);
 		}
 
@@ -1258,30 +1312,42 @@ class ReplOptions extends Disposable implements IReplOptions {
 	constructor(
 		viewId: string,
 		private readonly backgroundColorDelegate: () => string,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService
 	) {
 		super();
 
-		this._register(this.themeService.onDidColorThemeChange(e => this.update()));
-		this._register(this.viewDescriptorService.onDidChangeLocation(e => {
-			if (e.views.some(v => v.id === viewId)) {
-				this.update();
-			}
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('debug.console.lineHeight') || e.affectsConfiguration('debug.console.fontSize') || e.affectsConfiguration('debug.console.fontFamily')) {
-				this.update();
-			}
-		}));
+		this._register(
+			this.themeService.onDidColorThemeChange((e) => this.update())
+		);
+		this._register(
+			this.viewDescriptorService.onDidChangeLocation((e) => {
+				if (e.views.some((v) => v.id === viewId)) {
+					this.update();
+				}
+			})
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("debug.console.lineHeight") ||
+					e.affectsConfiguration("debug.console.fontSize") ||
+					e.affectsConfiguration("debug.console.fontFamily")
+				) {
+					this.update();
+				}
+			})
+		);
 		this.update();
 	}
 
 	private update() {
 		const debugConsole =
 			this.configurationService.getValue<IDebugConfiguration>(
-				"debug",
+				"debug"
 			).console;
 		this._replConfig = {
 			fontSize: debugConsole.fontSize,
@@ -1313,7 +1379,7 @@ class AcceptReplInputAction extends EditorAction {
 					key: "actions.repl.acceptInput",
 					comment: ["Apply input from the debug console input box"],
 				},
-				"REPL Accept Input",
+				"REPL Accept Input"
 			),
 			alias: "REPL Accept Input",
 			precondition: CONTEXT_IN_DEBUG_REPL,
@@ -1338,7 +1404,7 @@ class FilterReplAction extends EditorAction {
 			id: "repl.action.filter",
 			label: localize(
 				"repl.action.filter",
-				"REPL Focus Content to Filter",
+				"REPL Focus Content to Filter"
 			),
 			alias: "REPL Filter",
 			precondition: CONTEXT_IN_DEBUG_REPL,
@@ -1388,7 +1454,7 @@ class SelectReplActionViewItem extends FocusSessionActionViewItem {
 	}
 
 	protected override mapFocusedSessionToSelected(
-		focusedSession: IDebugSession,
+		focusedSession: IDebugSession
 	): IDebugSession {
 		while (
 			focusedSession.parentSession &&
@@ -1420,7 +1486,7 @@ registerAction2(
 					group: "navigation",
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", REPL_VIEW_ID),
-						CONTEXT_MULTI_SESSION_REPL,
+						CONTEXT_MULTI_SESSION_REPL
 					),
 					order: 20,
 				},
@@ -1430,7 +1496,7 @@ registerAction2(
 		async runInView(
 			accessor: ServicesAccessor,
 			view: Repl,
-			session: IDebugSession | undefined,
+			session: IDebugSession | undefined
 		) {
 			const debugService = accessor.get(IDebugService);
 			// If session is already the focused session we need to manualy update the tree since view model will not send a focused change event
@@ -1447,7 +1513,7 @@ registerAction2(
 						.find(
 							(s) =>
 								s.parentSession === session &&
-								s.state === State.Stopped,
+								s.state === State.Stopped
 						);
 					if (stopppedChildSession) {
 						session = stopppedChildSession;
@@ -1457,13 +1523,13 @@ registerAction2(
 					undefined,
 					undefined,
 					session,
-					{ explicit: true },
+					{ explicit: true }
 				);
 			}
 			// Need to select the session in the view since the focussed session might not have changed
 			await view.selectSession(session);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -1496,14 +1562,14 @@ registerAction2(
 
 		runInView(_accessor: ServicesAccessor, view: Repl): void {
 			const accessibleNotificationService = _accessor.get(
-				IAccessibleNotificationService,
+				IAccessibleNotificationService
 			);
 			view.clearRepl();
 			accessibleNotificationService.notify(
-				AccessibleNotificationEvent.Clear,
+				AccessibleNotificationEvent.Clear
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -1525,7 +1591,7 @@ registerAction2(
 			view.collapseAll();
 			view.focus();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -1536,7 +1602,7 @@ registerAction2(
 				title: localize("paste", "Paste"),
 				viewId: REPL_VIEW_ID,
 				precondition: CONTEXT_DEBUG_STATE.notEqualsTo(
-					getStateLabel(State.Inactive),
+					getStateLabel(State.Inactive)
 				),
 				menu: {
 					id: MenuId.DebugConsoleContext,
@@ -1564,7 +1630,7 @@ registerAction2(
 				}
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -1586,7 +1652,7 @@ registerAction2(
 			const clipboardService = accessor.get(IClipboardService);
 			await clipboardService.writeText(view.getVisibleContent());
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -1605,7 +1671,7 @@ registerAction2(
 
 		async run(
 			accessor: ServicesAccessor,
-			element: IReplElement,
+			element: IReplElement
 		): Promise<void> {
 			const clipboardService = accessor.get(IClipboardService);
 			const debugService = accessor.get(IDebugService);
@@ -1616,14 +1682,14 @@ registerAction2(
 			} else if (element) {
 				return clipboardService.writeText(
 					(await this.tryEvaluateAndCopy(debugService, element)) ||
-						element.toString(),
+						element.toString()
 				);
 			}
 		}
 
 		private async tryEvaluateAndCopy(
 			debugService: IDebugService,
-			element: IReplElement,
+			element: IReplElement
 		): Promise<string | undefined> {
 			// todo: we should expand DAP to allow copying more types here (#187784)
 			if (!(element instanceof ReplEvaluationResult)) {
@@ -1644,12 +1710,12 @@ registerAction2(
 				const evaluation = await session.evaluate(
 					element.originalExpression,
 					stackFrame.frameId,
-					"clipboard",
+					"clipboard"
 				);
 				return evaluation?.body.result;
 			} catch (e) {
 				return;
 			}
 		}
-	},
+	}
 );

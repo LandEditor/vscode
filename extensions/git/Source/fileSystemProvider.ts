@@ -40,13 +40,13 @@ const FIVE_MINUTES = 1000 * 60 * 5;
 function sanitizeRef(
 	ref: string,
 	path: string,
-	repository: Repository,
+	repository: Repository
 ): string {
 	if (ref === "~") {
 		const fileUri = Uri.file(path);
 		const uriString = fileUri.toString();
 		const [indexStatus] = repository.indexGroup.resourceStates.filter(
-			(r) => r.resourceUri.toString() === uriString,
+			(r) => r.resourceUri.toString() === uriString
 		);
 		return indexStatus ? "" : "HEAD";
 	}
@@ -73,12 +73,12 @@ export class GitFileSystemProvider implements FileSystemProvider {
 			model.onDidChangeRepository(this.onDidChangeRepository, this),
 			model.onDidChangeOriginalResource(
 				this.onDidChangeOriginalResource,
-				this,
+				this
 			),
 			workspace.registerFileSystemProvider("git", this, {
 				isReadonly: true,
 				isCaseSensitive: true,
-			}),
+			})
 		);
 
 		setInterval(() => this.cleanup(), FIVE_MINUTES);
@@ -113,7 +113,7 @@ export class GitFileSystemProvider implements FileSystemProvider {
 		if (!window.state.focused) {
 			const onDidFocusWindow = filterEvent(
 				window.onDidChangeWindowState,
-				(e) => e.focused,
+				(e) => e.focused
 			);
 			await eventToPromise(onDidFocusWindow);
 		}
@@ -178,7 +178,7 @@ export class GitFileSystemProvider implements FileSystemProvider {
 		try {
 			const details = await repository.getObjectDetails(
 				sanitizeRef(ref, path, repository),
-				path,
+				path
 			);
 			size = details.size;
 		} catch {
@@ -230,7 +230,7 @@ export class GitFileSystemProvider implements FileSystemProvider {
 		try {
 			return await repository.buffer(
 				sanitizeRef(ref, path, repository),
-				path,
+				path
 			);
 		} catch (err) {
 			return new Uint8Array(0);

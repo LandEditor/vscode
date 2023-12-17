@@ -39,14 +39,16 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 		container: HTMLElement,
 		stylesHaveLoaded: Barrier,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super(window, container, stylesHaveLoaded, configurationService);
 	}
 
 	protected override async confirmBeforeClose(
-		e: BeforeUnloadEvent,
+		e: BeforeUnloadEvent
 	): Promise<void> {
 		if (this.skipUnloadConfirmation) {
 			return;
@@ -56,7 +58,7 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 
 		const confirmed = await this.instantiationService.invokeFunction(
 			(accessor) =>
-				NativeWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE),
+				NativeWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE)
 		);
 		if (confirmed) {
 			this.skipUnloadConfirmation = true;
@@ -71,21 +73,28 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IDialogService dialogService: IDialogService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super(layoutService, dialogService, configurationService, telemetryService);
+		super(
+			layoutService,
+			dialogService,
+			configurationService,
+			telemetryService
+		);
 	}
 
 	protected override async resolveWindowId(
-		auxiliaryWindow: NativeCodeWindow,
+		auxiliaryWindow: NativeCodeWindow
 	): Promise<number> {
 		mark("code/auxiliaryWindow/willResolveWindowId");
 		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke(
 			"vscode:registerAuxiliaryWindow",
-			this.nativeHostService.windowId,
+			this.nativeHostService.windowId
 		);
 		mark("code/auxiliaryWindow/didResolveWindowId");
 
@@ -94,7 +103,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 
 	protected override createContainer(
 		auxiliaryWindow: NativeCodeWindow,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	) {
 		// Zoom level
 		const windowConfig =
@@ -130,7 +139,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 	protected override createAuxiliaryWindow(
 		targetWindow: CodeWindow,
 		container: HTMLElement,
-		stylesHaveLoaded: Barrier,
+		stylesHaveLoaded: Barrier
 	): AuxiliaryWindow {
 		return new NativeAuxiliaryWindow(
 			targetWindow,
@@ -138,7 +147,7 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 			stylesHaveLoaded,
 			this.configurationService,
 			this.nativeHostService,
-			this.instantiationService,
+			this.instantiationService
 		);
 	}
 }
@@ -146,5 +155,5 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 registerSingleton(
 	IAuxiliaryWindowService,
 	NativeAuxiliaryWindowService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

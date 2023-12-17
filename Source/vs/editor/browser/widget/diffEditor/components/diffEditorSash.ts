@@ -23,7 +23,7 @@ import { DiffEditorOptions } from "../diffEditorOptions";
 export class DiffEditorSash extends Disposable {
 	private readonly _sashRatio = observableValue<number | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 
 	public readonly sashLeft = derived(this, (reader) => {
@@ -43,8 +43,8 @@ export class DiffEditorSash extends Disposable {
 				getVerticalSashHeight: (_sash: Sash): number =>
 					this._dimensions.height.get(),
 			},
-			{ orientation: Orientation.VERTICAL },
-		),
+			{ orientation: Orientation.VERTICAL }
+		)
 	);
 
 	private _startSashPosition: number | undefined = undefined;
@@ -56,17 +56,14 @@ export class DiffEditorSash extends Disposable {
 			height: IObservable<number>;
 			width: IObservable<number>;
 		},
-		private readonly _sashes: IObservable<
-			IBoundarySashes | undefined,
-			void
-		>,
+		private readonly _sashes: IObservable<IBoundarySashes | undefined, void>
 	) {
 		super();
 
 		this._register(
 			this._sash.onDidStart(() => {
 				this._startSashPosition = this.sashLeft.get();
-			}),
+			})
 		);
 		this._register(
 			this._sash.onDidChange((e: ISashEvent) => {
@@ -74,16 +71,16 @@ export class DiffEditorSash extends Disposable {
 				const sashPosition = this._computeSashLeft(
 					(this._startSashPosition! + (e.currentX - e.startX)) /
 						contentWidth,
-					undefined,
+					undefined
 				);
 				this._sashRatio.set(sashPosition / contentWidth, undefined);
-			}),
+			})
 		);
 		this._register(this._sash.onDidEnd(() => this._sash.layout()));
 		this._register(
 			this._sash.onDidReset(() =>
-				this._sashRatio.set(undefined, undefined),
-			),
+				this._sashRatio.set(undefined, undefined)
+			)
 		);
 
 		this._register(
@@ -92,7 +89,7 @@ export class DiffEditorSash extends Disposable {
 				if (sashes) {
 					this._sash.orthogonalEndSash = sashes.bottom;
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -106,18 +103,18 @@ export class DiffEditorSash extends Disposable {
 				this.sashLeft.read(reader);
 				this._dimensions.height.read(reader);
 				this._sash.layout();
-			}),
+			})
 		);
 	}
 
 	/** @pure */
 	private _computeSashLeft(
 		desiredRatio: number,
-		reader: IReader | undefined,
+		reader: IReader | undefined
 	): number {
 		const contentWidth = this._dimensions.width.read(reader);
 		const midPoint = Math.floor(
-			this._options.splitViewDefaultRatio.read(reader) * contentWidth,
+			this._options.splitViewDefaultRatio.read(reader) * contentWidth
 		);
 		const sashLeft = this._options.enableSplitViewResizing.read(reader)
 			? Math.floor(desiredRatio * contentWidth)

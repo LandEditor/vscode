@@ -39,7 +39,7 @@ namespace ParameterHintState {
 			readonly request: CancelablePromise<
 				languages.SignatureHelpResult | undefined | null
 			>,
-			readonly previouslyActiveHints: languages.SignatureHelp | undefined,
+			readonly previouslyActiveHints: languages.SignatureHelp | undefined
 		) {}
 	}
 
@@ -55,7 +55,7 @@ export class ParameterHintsModel extends Disposable {
 	private static readonly DEFAULT_DELAY = 120; // ms
 
 	private readonly _onChangedHints = this._register(
-		new Emitter<languages.SignatureHelp | undefined>(),
+		new Emitter<languages.SignatureHelp | undefined>()
 	);
 	public readonly onChangedHints = this._onChangedHints.event;
 
@@ -67,7 +67,7 @@ export class ParameterHintsModel extends Disposable {
 	private _pendingTriggers: TriggerContext[] = [];
 
 	private readonly _lastSignatureHelpResult = this._register(
-		new MutableDisposable<languages.SignatureHelpResult>(),
+		new MutableDisposable<languages.SignatureHelpResult>()
 	);
 	private readonly triggerChars = new CharacterSet();
 	private readonly retriggerChars = new CharacterSet();
@@ -78,7 +78,7 @@ export class ParameterHintsModel extends Disposable {
 	constructor(
 		editor: ICodeEditor,
 		providers: LanguageFeatureRegistry<languages.SignatureHelpProvider>,
-		delay: number = ParameterHintsModel.DEFAULT_DELAY,
+		delay: number = ParameterHintsModel.DEFAULT_DELAY
 	) {
 		super();
 
@@ -90,24 +90,24 @@ export class ParameterHintsModel extends Disposable {
 		this._register(this.editor.onDidBlurEditorWidget(() => this.cancel()));
 		this._register(
 			this.editor.onDidChangeConfiguration(() =>
-				this.onEditorConfigurationChange(),
-			),
+				this.onEditorConfigurationChange()
+			)
 		);
 		this._register(
-			this.editor.onDidChangeModel((e) => this.onModelChanged()),
+			this.editor.onDidChangeModel((e) => this.onModelChanged())
 		);
 		this._register(
-			this.editor.onDidChangeModelLanguage((_) => this.onModelChanged()),
+			this.editor.onDidChangeModelLanguage((_) => this.onModelChanged())
 		);
 		this._register(
 			this.editor.onDidChangeCursorSelection((e) =>
-				this.onCursorChange(e),
-			),
+				this.onCursorChange(e)
+			)
 		);
 		this._register(
 			this.editor.onDidChangeModelContent((e) =>
-				this.onModelContentChange(),
-			),
+				this.onModelContentChange()
+			)
 		);
 		this._register(this.providers.onDidChange(this.onModelChanged, this));
 		this._register(this.editor.onDidType((text) => this.onDidType(text)));
@@ -188,7 +188,7 @@ export class ParameterHintsModel extends Disposable {
 		}
 
 		this.updateActiveSignature(
-			first && cycle ? length - 1 : activeSignature - 1,
+			first && cycle ? length - 1 : activeSignature - 1
 		);
 	}
 
@@ -240,10 +240,10 @@ export class ParameterHintsModel extends Disposable {
 					model,
 					position,
 					triggerContext,
-					token,
-				),
+					token
+				)
 			),
-			activeSignatureHelp,
+			activeSignatureHelp
 		);
 
 		try {
@@ -369,7 +369,7 @@ export class ParameterHintsModel extends Disposable {
 
 	private onEditorConfigurationChange(): void {
 		this.triggerOnType = this.editor.getOption(
-			EditorOption.parameterHints,
+			EditorOption.parameterHints
 		).enabled;
 
 		if (!this.triggerOnType) {
@@ -385,7 +385,7 @@ export class ParameterHintsModel extends Disposable {
 
 function mergeTriggerContexts(
 	previous: TriggerContext,
-	current: TriggerContext,
+	current: TriggerContext
 ) {
 	switch (current.triggerKind) {
 		case languages.SignatureHelpTriggerKind.Invoke:

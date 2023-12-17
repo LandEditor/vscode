@@ -20,7 +20,7 @@ function toRevealRange(line: number, editor: vscode.TextEditor): vscode.Range {
 			editor.document.lineCount - 1,
 			0,
 			editor.document.lineCount - 1,
-			0,
+			0
 		);
 	}
 

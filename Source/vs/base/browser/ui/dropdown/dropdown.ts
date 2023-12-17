@@ -64,8 +64,8 @@ class BaseDropdown extends ActionRunner {
 		]) {
 			this._register(
 				addDisposableListener(this.element, event, (e) =>
-					EventHelper.stop(e, true),
-				),
+					EventHelper.stop(e, true)
+				)
 			); // prevent default click behaviour to trigger
 		}
 
@@ -83,7 +83,7 @@ class BaseDropdown extends ActionRunner {
 					} else {
 						this.show();
 					}
-				}),
+				})
 			);
 		}
 
@@ -102,7 +102,7 @@ class BaseDropdown extends ActionRunner {
 						this.show();
 					}
 				}
-			}),
+			})
 		);
 
 		const cleanupFn = labelRenderer(this._label);
@@ -189,7 +189,7 @@ export class DropdownMenu extends BaseDropdown {
 
 	constructor(
 		container: HTMLElement,
-		private readonly _options: IDropdownMenuOptions,
+		private readonly _options: IDropdownMenuOptions
 	) {
 		super(container, _options);
 

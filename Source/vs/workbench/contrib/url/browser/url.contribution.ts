@@ -79,26 +79,26 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 });
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	OpenerValidatorContributions,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	TrustedDomainsFileSystemProvider,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	ExternalUriResolverContribution,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
@@ -109,7 +109,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: localize(
 				"workbench.trustedDomains.promptInTrustedWorkspace",
-				"When enabled, trusted domain prompts will appear when opening links in trusted workspaces.",
+				"When enabled, trusted domain prompts will appear when opening links in trusted workspaces."
 			),
 		},
 	},

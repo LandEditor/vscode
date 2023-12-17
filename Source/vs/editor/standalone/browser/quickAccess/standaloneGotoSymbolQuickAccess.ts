@@ -34,8 +34,9 @@ export class StandaloneGotoSymbolQuickAccessProvider extends AbstractGotoSymbolQ
 
 	constructor(
 		@ICodeEditorService private readonly editorService: ICodeEditorService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IOutlineModelService outlineModelService: IOutlineModelService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@IOutlineModelService outlineModelService: IOutlineModelService
 	) {
 		super(languageFeaturesService, outlineModelService);
 	}
@@ -78,7 +79,7 @@ export class GotoSymbolAction extends EditorAction {
 registerEditorAction(GotoSymbolAction);
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess,
+	Extensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: StandaloneGotoSymbolQuickAccessProvider,
 	prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX,

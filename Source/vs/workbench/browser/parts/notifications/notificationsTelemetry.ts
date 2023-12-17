@@ -42,7 +42,7 @@ export type NotificationMetricsClassification = {
 export function notificationToMetrics(
 	message: NotificationMessage,
 	source: string | undefined,
-	silent: boolean,
+	silent: boolean
 ): NotificationMetrics {
 	return {
 		id: hash(message.toString()).toString(),
@@ -57,7 +57,8 @@ export class NotificationsTelemetry
 {
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@INotificationService private readonly notificationService: INotificationService
+		@INotificationService
+		private readonly notificationService: INotificationService
 	) {
 		super();
 		this.registerListeners();
@@ -79,10 +80,10 @@ export class NotificationsTelemetry
 					notificationToMetrics(
 						notification.message,
 						source,
-						notification.priority === NotificationPriority.SILENT,
-					),
+						notification.priority === NotificationPriority.SILENT
+					)
 				);
-			}),
+			})
 		);
 
 		this._register(
@@ -100,10 +101,10 @@ export class NotificationsTelemetry
 					notificationToMetrics(
 						notification.message,
 						source,
-						notification.priority === NotificationPriority.SILENT,
-					),
+						notification.priority === NotificationPriority.SILENT
+					)
 				);
-			}),
+			})
 		);
 	}
 }

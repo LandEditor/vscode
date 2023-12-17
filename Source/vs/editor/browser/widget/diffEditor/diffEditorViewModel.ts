@@ -52,7 +52,7 @@ export class DiffEditorViewModel
 	private _lastDiff: IDocumentDiff | undefined;
 	private readonly _diff = observableValue<DiffState | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 	public readonly diff: IObservable<DiffState | undefined> = this._diff;
 
@@ -79,21 +79,21 @@ export class DiffEditorViewModel
 				});
 				return [];
 			}
-		},
+		}
 	);
 
 	public readonly movedTextToCompare = observableValue<MovedText | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 
 	private readonly _activeMovedText = observableValue<MovedText | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 	private readonly _hoveredMovedText = observableValue<MovedText | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 
 	public readonly activeMovedText = derived(
@@ -101,7 +101,7 @@ export class DiffEditorViewModel
 		(r) =>
 			this.movedTextToCompare.read(r) ??
 			this._hoveredMovedText.read(r) ??
-			this._activeMovedText.read(r),
+			this._activeMovedText.read(r)
 	);
 
 	public setActiveMovedText(movedText: MovedText | undefined): void {
@@ -121,7 +121,7 @@ export class DiffEditorViewModel
 			});
 		const onChangeSignal = observableSignalFromEvent(
 			"onDidChange",
-			diffProvider.onDidChange,
+			diffProvider.onDidChange
 		);
 		return {
 			diffProvider,
@@ -132,48 +132,80 @@ export class DiffEditorViewModel
 	constructor(
 		public readonly model: IDiffEditorModel,
 		private readonly _options: DiffEditorOptions,
-		@IDiffProviderFactoryService private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
+		@IDiffProviderFactoryService
+		private readonly _diffProviderFactoryService: IDiffProviderFactoryService
 	) {
 		super();
 
-		this._register(toDisposable(() => this._cancellationTokenSource.cancel()));
+		this._register(
+			toDisposable(() => this._cancellationTokenSource.cancel())
+		);
 
-		const contentChangedSignal = observableSignal('contentChangedSignal');
-		const debouncer = this._register(new RunOnceScheduler(() => contentChangedSignal.trigger(undefined), 200));
+		const contentChangedSignal = observableSignal("contentChangedSignal");
+		const debouncer = this._register(
+			new RunOnceScheduler(
+				() => contentChangedSignal.trigger(undefined),
+				200
+			)
+		);
 
-		const updateUnchangedRegions = (result: IDocumentDiff, tx: ITransaction, reader?: IReader) => {
+		const updateUnchangedRegions = (
+			result: IDocumentDiff,
+			tx: ITransaction,
+			reader?: IReader
+		) => {
 			const newUnchangedRegions = UnchangedRegion.fromDiffs(
 				result.changes,
 				model.original.getLineCount(),
 				model.modified.getLineCount(),
 				this._options.hideUnchangedRegionsMinimumLineCount.read(reader),
-				this._options.hideUnchangedRegionsContextLineCount.read(reader),
+				this._options.hideUnchangedRegionsContextLineCount.read(reader)
 			);
 
 			// Transfer state from cur state
 			const lastUnchangedRegions = this._unchangedRegions.get();
-			const lastUnchangedRegionsOrigRanges = lastUnchangedRegions.originalDecorationIds
-				.map(id => model.original.getDecorationRange(id))
-				.map(r => r ? LineRange.fromRange(r) : undefined);
-			const lastUnchangedRegionsModRanges = lastUnchangedRegions.modifiedDecorationIds
-				.map(id => model.modified.getDecorationRange(id))
-				.map(r => r ? LineRange.fromRange(r) : undefined);
+			const lastUnchangedRegionsOrigRanges =
+				lastUnchangedRegions.originalDecorationIds
+					.map((id) => model.original.getDecorationRange(id))
+					.map((r) => (r ? LineRange.fromRange(r) : undefined));
+			const lastUnchangedRegionsModRanges =
+				lastUnchangedRegions.modifiedDecorationIds
+					.map((id) => model.modified.getDecorationRange(id))
+					.map((r) => (r ? LineRange.fromRange(r) : undefined));
 
 			const originalDecorationIds = model.original.deltaDecorations(
 				lastUnchangedRegions.originalDecorationIds,
-				newUnchangedRegions.map(r => ({ range: r.originalUnchangedRange.toInclusiveRange()!, options: { description: 'unchanged' } }))
+				newUnchangedRegions.map((r) => ({
+					range: r.originalUnchangedRange.toInclusiveRange()!,
+					options: { description: "unchanged" },
+				}))
 			);
 			const modifiedDecorationIds = model.modified.deltaDecorations(
 				lastUnchangedRegions.modifiedDecorationIds,
-				newUnchangedRegions.map(r => ({ range: r.modifiedUnchangedRange.toInclusiveRange()!, options: { description: 'unchanged' } }))
+				newUnchangedRegions.map((r) => ({
+					range: r.modifiedUnchangedRange.toInclusiveRange()!,
+					options: { description: "unchanged" },
+				}))
 			);
-
 
 			for (const r of newUnchangedRegions) {
 				for (let i = 0; i < lastUnchangedRegions.regions.length; i++) {
-					if (lastUnchangedRegionsOrigRanges[i] && r.originalUnchangedRange.intersectsStrict(lastUnchangedRegionsOrigRanges[i]!)
-						&& lastUnchangedRegionsModRanges[i] && r.modifiedUnchangedRange.intersectsStrict(lastUnchangedRegionsModRanges[i]!)) {
-						r.setHiddenModifiedRange(lastUnchangedRegions.regions[i].getHiddenModifiedRange(undefined), tx);
+					if (
+						lastUnchangedRegionsOrigRanges[i] &&
+						r.originalUnchangedRange.intersectsStrict(
+							lastUnchangedRegionsOrigRanges[i]!
+						) &&
+						lastUnchangedRegionsModRanges[i] &&
+						r.modifiedUnchangedRange.intersectsStrict(
+							lastUnchangedRegionsModRanges[i]!
+						)
+					) {
+						r.setHiddenModifiedRange(
+							lastUnchangedRegions.regions[
+								i
+							].getHiddenModifiedRange(undefined),
+							tx
+						);
 						break;
 					}
 				}
@@ -182,111 +214,210 @@ export class DiffEditorViewModel
 				{
 					regions: newUnchangedRegions,
 					originalDecorationIds,
-					modifiedDecorationIds
+					modifiedDecorationIds,
 				},
 				tx
 			);
 		};
 
-		this._register(model.modified.onDidChangeContent((e) => {
-			const diff = this._diff.get();
-			if (diff) {
-				const textEdits = TextEditInfo.fromModelContentChanges(e.changes);
-				const result = applyModifiedEdits(this._lastDiff!, textEdits, model.original, model.modified);
-				if (result) {
-					this._lastDiff = result;
-					transaction(tx => {
-						this._diff.set(DiffState.fromDiffResult(this._lastDiff!), tx);
-						updateUnchangedRegions(result, tx);
-						const currentSyncedMovedText = this.movedTextToCompare.get();
-						this.movedTextToCompare.set(currentSyncedMovedText ? this._lastDiff!.moves.find(m => m.lineRangeMapping.modified.intersect(currentSyncedMovedText.lineRangeMapping.modified)) : undefined, tx);
-					});
+		this._register(
+			model.modified.onDidChangeContent((e) => {
+				const diff = this._diff.get();
+				if (diff) {
+					const textEdits = TextEditInfo.fromModelContentChanges(
+						e.changes
+					);
+					const result = applyModifiedEdits(
+						this._lastDiff!,
+						textEdits,
+						model.original,
+						model.modified
+					);
+					if (result) {
+						this._lastDiff = result;
+						transaction((tx) => {
+							this._diff.set(
+								DiffState.fromDiffResult(this._lastDiff!),
+								tx
+							);
+							updateUnchangedRegions(result, tx);
+							const currentSyncedMovedText =
+								this.movedTextToCompare.get();
+							this.movedTextToCompare.set(
+								currentSyncedMovedText
+									? this._lastDiff!.moves.find((m) =>
+											m.lineRangeMapping.modified.intersect(
+												currentSyncedMovedText
+													.lineRangeMapping.modified
+											)
+										)
+									: undefined,
+								tx
+							);
+						});
+					}
 				}
-			}
 
-			this._isDiffUpToDate.set(false, undefined);
-			debouncer.schedule();
-		}));
-		this._register(model.original.onDidChangeContent((e) => {
-			const diff = this._diff.get();
-			if (diff) {
-				const textEdits = TextEditInfo.fromModelContentChanges(e.changes);
-				const result = applyOriginalEdits(this._lastDiff!, textEdits, model.original, model.modified);
-				if (result) {
-					this._lastDiff = result;
-					transaction(tx => {
-						this._diff.set(DiffState.fromDiffResult(this._lastDiff!), tx);
-						updateUnchangedRegions(result, tx);
-						const currentSyncedMovedText = this.movedTextToCompare.get();
-						this.movedTextToCompare.set(currentSyncedMovedText ? this._lastDiff!.moves.find(m => m.lineRangeMapping.modified.intersect(currentSyncedMovedText.lineRangeMapping.modified)) : undefined, tx);
-					});
+				this._isDiffUpToDate.set(false, undefined);
+				debouncer.schedule();
+			})
+		);
+		this._register(
+			model.original.onDidChangeContent((e) => {
+				const diff = this._diff.get();
+				if (diff) {
+					const textEdits = TextEditInfo.fromModelContentChanges(
+						e.changes
+					);
+					const result = applyOriginalEdits(
+						this._lastDiff!,
+						textEdits,
+						model.original,
+						model.modified
+					);
+					if (result) {
+						this._lastDiff = result;
+						transaction((tx) => {
+							this._diff.set(
+								DiffState.fromDiffResult(this._lastDiff!),
+								tx
+							);
+							updateUnchangedRegions(result, tx);
+							const currentSyncedMovedText =
+								this.movedTextToCompare.get();
+							this.movedTextToCompare.set(
+								currentSyncedMovedText
+									? this._lastDiff!.moves.find((m) =>
+											m.lineRangeMapping.modified.intersect(
+												currentSyncedMovedText
+													.lineRangeMapping.modified
+											)
+										)
+									: undefined,
+								tx
+							);
+						});
+					}
 				}
-			}
 
-			this._isDiffUpToDate.set(false, undefined);
-			debouncer.schedule();
-		}));
+				this._isDiffUpToDate.set(false, undefined);
+				debouncer.schedule();
+			})
+		);
 
-		this._register(autorunWithStore(async (reader, store) => {
-			/** @description compute diff */
+		this._register(
+			autorunWithStore(async (reader, store) => {
+				/** @description compute diff */
 
-			// So that they get recomputed when these settings change
-			this._options.hideUnchangedRegionsMinimumLineCount.read(reader);
-			this._options.hideUnchangedRegionsContextLineCount.read(reader);
+				// So that they get recomputed when these settings change
+				this._options.hideUnchangedRegionsMinimumLineCount.read(reader);
+				this._options.hideUnchangedRegionsContextLineCount.read(reader);
 
-			debouncer.cancel();
-			contentChangedSignal.read(reader);
-			const documentDiffProvider = this._diffProvider.read(reader);
-			documentDiffProvider.onChangeSignal.read(reader);
+				debouncer.cancel();
+				contentChangedSignal.read(reader);
+				const documentDiffProvider = this._diffProvider.read(reader);
+				documentDiffProvider.onChangeSignal.read(reader);
 
-			readHotReloadableExport(DefaultLinesDiffComputer, reader);
-			readHotReloadableExport(optimizeSequenceDiffs, reader);
+				readHotReloadableExport(DefaultLinesDiffComputer, reader);
+				readHotReloadableExport(optimizeSequenceDiffs, reader);
 
-			this._isDiffUpToDate.set(false, undefined);
+				this._isDiffUpToDate.set(false, undefined);
 
-			let originalTextEditInfos: TextEditInfo[] = [];
-			store.add(model.original.onDidChangeContent((e) => {
-				const edits = TextEditInfo.fromModelContentChanges(e.changes);
-				originalTextEditInfos = combineTextEditInfos(originalTextEditInfos, edits);
-			}));
+				let originalTextEditInfos: TextEditInfo[] = [];
+				store.add(
+					model.original.onDidChangeContent((e) => {
+						const edits = TextEditInfo.fromModelContentChanges(
+							e.changes
+						);
+						originalTextEditInfos = combineTextEditInfos(
+							originalTextEditInfos,
+							edits
+						);
+					})
+				);
 
-			let modifiedTextEditInfos: TextEditInfo[] = [];
-			store.add(model.modified.onDidChangeContent((e) => {
-				const edits = TextEditInfo.fromModelContentChanges(e.changes);
-				modifiedTextEditInfos = combineTextEditInfos(modifiedTextEditInfos, edits);
-			}));
+				let modifiedTextEditInfos: TextEditInfo[] = [];
+				store.add(
+					model.modified.onDidChangeContent((e) => {
+						const edits = TextEditInfo.fromModelContentChanges(
+							e.changes
+						);
+						modifiedTextEditInfos = combineTextEditInfos(
+							modifiedTextEditInfos,
+							edits
+						);
+					})
+				);
 
-			let result = await documentDiffProvider.diffProvider.computeDiff(model.original, model.modified, {
-				ignoreTrimWhitespace: this._options.ignoreTrimWhitespace.read(reader),
-				maxComputationTimeMs: this._options.maxComputationTimeMs.read(reader),
-				computeMoves: this._options.showMoves.read(reader),
-			}, this._cancellationTokenSource.token);
+				let result =
+					await documentDiffProvider.diffProvider.computeDiff(
+						model.original,
+						model.modified,
+						{
+							ignoreTrimWhitespace:
+								this._options.ignoreTrimWhitespace.read(reader),
+							maxComputationTimeMs:
+								this._options.maxComputationTimeMs.read(reader),
+							computeMoves: this._options.showMoves.read(reader),
+						},
+						this._cancellationTokenSource.token
+					);
 
-			if (this._cancellationTokenSource.token.isCancellationRequested) {
-				return;
-			}
+				if (
+					this._cancellationTokenSource.token.isCancellationRequested
+				) {
+					return;
+				}
 
-			result = normalizeDocumentDiff(result, model.original, model.modified);
-			result = applyOriginalEdits(result, originalTextEditInfos, model.original, model.modified) ?? result;
-			result = applyModifiedEdits(result, modifiedTextEditInfos, model.original, model.modified) ?? result;
+				result = normalizeDocumentDiff(
+					result,
+					model.original,
+					model.modified
+				);
+				result =
+					applyOriginalEdits(
+						result,
+						originalTextEditInfos,
+						model.original,
+						model.modified
+					) ?? result;
+				result =
+					applyModifiedEdits(
+						result,
+						modifiedTextEditInfos,
+						model.original,
+						model.modified
+					) ?? result;
 
-			transaction(tx => {
-				/** @description write diff result */
-				updateUnchangedRegions(result, tx);
+				transaction((tx) => {
+					/** @description write diff result */
+					updateUnchangedRegions(result, tx);
 
-				this._lastDiff = result;
-				const state = DiffState.fromDiffResult(result);
-				this._diff.set(state, tx);
-				this._isDiffUpToDate.set(true, tx);
-				const currentSyncedMovedText = this.movedTextToCompare.get();
-				this.movedTextToCompare.set(currentSyncedMovedText ? this._lastDiff.moves.find(m => m.lineRangeMapping.modified.intersect(currentSyncedMovedText.lineRangeMapping.modified)) : undefined, tx);
-			});
-		}));
+					this._lastDiff = result;
+					const state = DiffState.fromDiffResult(result);
+					this._diff.set(state, tx);
+					this._isDiffUpToDate.set(true, tx);
+					const currentSyncedMovedText =
+						this.movedTextToCompare.get();
+					this.movedTextToCompare.set(
+						currentSyncedMovedText
+							? this._lastDiff.moves.find((m) =>
+									m.lineRangeMapping.modified.intersect(
+										currentSyncedMovedText.lineRangeMapping
+											.modified
+									)
+								)
+							: undefined,
+						tx
+					);
+				});
+			})
+		);
 	}
 
 	public ensureModifiedLineIsVisible(
 		lineNumber: number,
-		tx: ITransaction | undefined,
+		tx: ITransaction | undefined
 	): void {
 		if (this.diff.get()?.mappings.length === 0) {
 			return;
@@ -302,7 +433,7 @@ export class DiffEditorViewModel
 
 	public ensureOriginalLineIsVisible(
 		lineNumber: number,
-		tx: ITransaction | undefined,
+		tx: ITransaction | undefined
 	): void {
 		if (this.diff.get()?.mappings.length === 0) {
 			return;
@@ -331,7 +462,7 @@ export class DiffEditorViewModel
 
 	public restoreSerializedState(state: SerializedState): void {
 		const ranges = state.collapsedRegions.map((r) =>
-			LineRange.deserialize(r.range),
+			LineRange.deserialize(r.range)
 		);
 		const regions = this._unchangedRegions.get();
 		transaction((tx) => {
@@ -350,7 +481,7 @@ export class DiffEditorViewModel
 function normalizeDocumentDiff(
 	diff: IDocumentDiff,
 	original: ITextModel,
-	modified: ITextModel,
+	modified: ITextModel
 ): IDocumentDiff {
 	return {
 		changes: diff.changes.map(
@@ -360,10 +491,10 @@ function normalizeDocumentDiff(
 					c.modified,
 					c.innerChanges
 						? c.innerChanges.map((i) =>
-								normalizeRangeMapping(i, original, modified),
-						  )
-						: undefined,
-				),
+								normalizeRangeMapping(i, original, modified)
+							)
+						: undefined
+				)
 		),
 		moves: diff.moves,
 		identical: diff.identical,
@@ -374,7 +505,7 @@ function normalizeDocumentDiff(
 function normalizeRangeMapping(
 	rangeMapping: RangeMapping,
 	original: ITextModel,
-	modified: ITextModel,
+	modified: ITextModel
 ): RangeMapping {
 	let originalRange = rangeMapping.originalRange;
 	let modifiedRange = rangeMapping.modifiedRange;
@@ -389,11 +520,11 @@ function normalizeRangeMapping(
 	) {
 		originalRange = originalRange.setEndPosition(
 			originalRange.endLineNumber + 1,
-			1,
+			1
 		);
 		modifiedRange = modifiedRange.setEndPosition(
 			modifiedRange.endLineNumber + 1,
-			1,
+			1
 		);
 	}
 	return new RangeMapping(originalRange, modifiedRange);
@@ -409,7 +540,7 @@ export class DiffState {
 			result.changes.map((c) => new DiffMapping(c)),
 			result.moves || [],
 			result.identical,
-			result.quitEarly,
+			result.quitEarly
 		);
 	}
 
@@ -417,7 +548,7 @@ export class DiffState {
 		public readonly mappings: readonly DiffMapping[],
 		public readonly movedTexts: readonly MovedText[],
 		public readonly identical: boolean,
-		public readonly quitEarly: boolean,
+		public readonly quitEarly: boolean
 	) {}
 }
 
@@ -450,12 +581,12 @@ export class UnchangedRegion {
 		originalLineCount: number,
 		modifiedLineCount: number,
 		minHiddenLineCount: number,
-		minContext: number,
+		minContext: number
 	): UnchangedRegion[] {
 		const inversedMappings = DetailedLineRangeMapping.inverse(
 			changes,
 			originalLineCount,
-			modifiedLineCount,
+			modifiedLineCount
 		);
 		const result: UnchangedRegion[] = [];
 
@@ -482,14 +613,14 @@ export class UnchangedRegion {
 					length -= minContext;
 				}
 				result.push(
-					new UnchangedRegion(origStart, modStart, length, 0, 0),
+					new UnchangedRegion(origStart, modStart, length, 0, 0)
 				);
 			} else if (length >= minContext * 2 + minHiddenLineCount) {
 				origStart += minContext;
 				modStart += minContext;
 				length -= minContext * 2;
 				result.push(
-					new UnchangedRegion(origStart, modStart, length, 0, 0),
+					new UnchangedRegion(origStart, modStart, length, 0, 0)
 				);
 			}
 		}
@@ -518,12 +649,12 @@ export class UnchangedRegion {
 		(reader /** @description isVisible */) =>
 			this.visibleLineCountTop.read(reader) +
 				this.visibleLineCountBottom.read(reader) ===
-				this.lineCount && !this.isDragged.read(reader),
+				this.lineCount && !this.isDragged.read(reader)
 	);
 
 	public readonly isDragged = observableValue<undefined | "bottom" | "top">(
 		this,
-		undefined,
+		undefined
 	);
 
 	constructor(
@@ -531,7 +662,7 @@ export class UnchangedRegion {
 		public readonly modifiedLineNumber: number,
 		public readonly lineCount: number,
 		visibleLineCountTop: number,
-		visibleLineCountBottom: number,
+		visibleLineCountBottom: number
 	) {
 		this._visibleLineCountTop.set(visibleLineCountTop, undefined);
 		this._visibleLineCountBottom.set(visibleLineCountBottom, undefined);
@@ -546,7 +677,7 @@ export class UnchangedRegion {
 			this.originalLineNumber + this._visibleLineCountTop.read(reader),
 			this.lineCount -
 				this._visibleLineCountTop.read(reader) -
-				this._visibleLineCountBottom.read(reader),
+				this._visibleLineCountBottom.read(reader)
 		);
 	}
 
@@ -555,7 +686,7 @@ export class UnchangedRegion {
 			this.modifiedLineNumber + this._visibleLineCountTop.read(reader),
 			this.lineCount -
 				this._visibleLineCountTop.read(reader) -
-				this._visibleLineCountBottom.read(reader),
+				this._visibleLineCountBottom.read(reader)
 		);
 	}
 
@@ -582,9 +713,9 @@ export class UnchangedRegion {
 		this._visibleLineCountTop.set(
 			Math.min(
 				this._visibleLineCountTop.get() + count,
-				maxVisibleLineCountTop,
+				maxVisibleLineCountTop
 			),
-			tx,
+			tx
 		);
 	}
 
@@ -594,22 +725,22 @@ export class UnchangedRegion {
 		this._visibleLineCountBottom.set(
 			Math.min(
 				this._visibleLineCountBottom.get() + count,
-				maxVisibleLineCountBottom,
+				maxVisibleLineCountBottom
 			),
-			tx,
+			tx
 		);
 	}
 
 	public showAll(tx: ITransaction | undefined): void {
 		this._visibleLineCountBottom.set(
 			this.lineCount - this._visibleLineCountTop.get(),
-			tx,
+			tx
 		);
 	}
 
 	public showModifiedLine(
 		lineNumber: number,
-		tx: ITransaction | undefined,
+		tx: ITransaction | undefined
 	): void {
 		const top =
 			lineNumber +
@@ -623,19 +754,19 @@ export class UnchangedRegion {
 		if (top < bottom) {
 			this._visibleLineCountTop.set(
 				this._visibleLineCountTop.get() + top,
-				tx,
+				tx
 			);
 		} else {
 			this._visibleLineCountBottom.set(
 				this._visibleLineCountBottom.get() + bottom,
-				tx,
+				tx
 			);
 		}
 	}
 
 	public showOriginalLine(
 		lineNumber: number,
-		tx: ITransaction | undefined,
+		tx: ITransaction | undefined
 	): void {
 		const top = lineNumber - this.originalLineNumber;
 		const bottom = this.originalLineNumber + this.lineCount - lineNumber;
@@ -643,17 +774,17 @@ export class UnchangedRegion {
 			this._visibleLineCountTop.set(
 				Math.min(
 					this._visibleLineCountTop.get() + bottom - top,
-					this.getMaxVisibleLineCountTop(),
+					this.getMaxVisibleLineCountTop()
 				),
-				tx,
+				tx
 			);
 		} else {
 			this._visibleLineCountBottom.set(
 				Math.min(
 					this._visibleLineCountBottom.get() + top - bottom,
-					this.getMaxVisibleLineCountBottom(),
+					this.getMaxVisibleLineCountBottom()
 				),
-				tx,
+				tx
 			);
 		}
 	}
@@ -666,18 +797,18 @@ export class UnchangedRegion {
 	public setState(
 		visibleLineCountTop: number,
 		visibleLineCountBottom: number,
-		tx: ITransaction | undefined,
+		tx: ITransaction | undefined
 	): void {
 		visibleLineCountTop = Math.max(
 			Math.min(visibleLineCountTop, this.lineCount),
-			0,
+			0
 		);
 		visibleLineCountBottom = Math.max(
 			Math.min(
 				visibleLineCountBottom,
-				this.lineCount - visibleLineCountTop,
+				this.lineCount - visibleLineCountTop
 			),
-			0,
+			0
 		);
 
 		this._visibleLineCountTop.set(visibleLineCountTop, tx);
@@ -689,7 +820,7 @@ function applyOriginalEdits(
 	diff: IDocumentDiff,
 	textEdits: TextEditInfo[],
 	originalTextModel: ITextModel,
-	modifiedTextModel: ITextModel,
+	modifiedTextModel: ITextModel
 ): IDocumentDiff | undefined {
 	return undefined;
 	/*
@@ -719,7 +850,7 @@ function applyModifiedEdits(
 	diff: IDocumentDiff,
 	textEdits: TextEditInfo[],
 	originalTextModel: ITextModel,
-	modifiedTextModel: ITextModel,
+	modifiedTextModel: ITextModel
 ): IDocumentDiff | undefined {
 	return undefined;
 	/*

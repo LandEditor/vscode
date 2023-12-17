@@ -42,7 +42,10 @@ interface ISerializedCacheData {
 }
 
 class CacheItem {
-	constructor(readonly lineCount: number, readonly data: CodeLensModel) {}
+	constructor(
+		readonly lineCount: number,
+		readonly data: CodeLensModel
+	) {}
 }
 
 export class CodeLensCache implements ICodeLensCache {
@@ -57,20 +60,26 @@ export class CodeLensCache implements ICodeLensCache {
 	private readonly _cache = new LRUCache<string, CacheItem>(20, 0.75);
 
 	constructor(@IStorageService storageService: IStorageService) {
-
 		// remove old data
-		const oldkey = 'codelens/cache';
-		runWhenWindowIdle(mainWindow, () => storageService.remove(oldkey, StorageScope.WORKSPACE));
+		const oldkey = "codelens/cache";
+		runWhenWindowIdle(mainWindow, () =>
+			storageService.remove(oldkey, StorageScope.WORKSPACE)
+		);
 
 		// restore lens data on start
-		const key = 'codelens/cache2';
-		const raw = storageService.get(key, StorageScope.WORKSPACE, '{}');
+		const key = "codelens/cache2";
+		const raw = storageService.get(key, StorageScope.WORKSPACE, "{}");
 		this._deserialize(raw);
 
 		// store lens data on shutdown
-		Event.once(storageService.onWillSaveState)(e => {
+		Event.once(storageService.onWillSaveState)((e) => {
 			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				storageService.store(key, this._serialize(), StorageScope.WORKSPACE, StorageTarget.MACHINE);
+				storageService.store(
+					key,
+					this._serialize(),
+					StorageScope.WORKSPACE,
+					StorageTarget.MACHINE
+				);
 			}
 		});
 	}
@@ -90,7 +99,7 @@ export class CodeLensCache implements ICodeLensCache {
 		const copyModel = new CodeLensModel();
 		copyModel.add(
 			{ lenses: copyItems, dispose: () => {} },
-			this._fakeProvider,
+			this._fakeProvider
 		);
 
 		const item = new CacheItem(model.getLineCount(), copyModel);

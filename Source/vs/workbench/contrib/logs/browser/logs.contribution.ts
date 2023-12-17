@@ -25,7 +25,8 @@ class WebLogOutputChannels
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 		this.registerWebContributions();
@@ -50,15 +51,15 @@ class WebLogOutputChannels
 						.createInstance(
 							OpenWindowSessionLogFileAction,
 							OpenWindowSessionLogFileAction.ID,
-							OpenWindowSessionLogFileAction.TITLE.value,
+							OpenWindowSessionLogFileAction.TITLE.value
 						)
 						.run();
 				}
-			},
+			}
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(WebLogOutputChannels, LifecyclePhase.Restored);

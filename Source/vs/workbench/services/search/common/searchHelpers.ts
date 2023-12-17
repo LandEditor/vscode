@@ -17,7 +17,7 @@ import {
 function editorMatchToTextSearchResult(
 	matches: FindMatch[],
 	model: ITextModel,
-	previewOptions?: ITextSearchPreviewOptions,
+	previewOptions?: ITextSearchPreviewOptions
 ): TextSearchMatch {
 	const firstLine = matches[0].range.startLineNumber;
 	const lastLine = matches[matches.length - 1].range.endLineNumber;
@@ -35,10 +35,10 @@ function editorMatchToTextSearchResult(
 					m.range.startLineNumber - 1,
 					m.range.startColumn - 1,
 					m.range.endLineNumber - 1,
-					m.range.endColumn - 1,
-				),
+					m.range.endColumn - 1
+				)
 		),
-		previewOptions,
+		previewOptions
 	);
 }
 
@@ -48,7 +48,7 @@ function editorMatchToTextSearchResult(
 export function editorMatchesToTextSearchResults(
 	matches: FindMatch[],
 	model: ITextModel,
-	previewOptions?: ITextSearchPreviewOptions,
+	previewOptions?: ITextSearchPreviewOptions
 ): TextSearchMatch[] {
 	let previousEndLine = -1;
 	const groupedMatches: FindMatch[][] = [];
@@ -67,7 +67,7 @@ export function editorMatchesToTextSearchResults(
 		return editorMatchToTextSearchResult(
 			sameLineMatches,
 			model,
-			previewOptions,
+			previewOptions
 		);
 	});
 }
@@ -75,14 +75,14 @@ export function editorMatchesToTextSearchResults(
 export function getTextSearchMatchWithModelContext(
 	matches: ITextSearchMatch[],
 	model: ITextModel,
-	query: ITextQuery,
+	query: ITextQuery
 ): ITextSearchResult[] {
 	const results: ITextSearchResult[] = [];
 
 	let prevLine = -1;
 	for (let i = 0; i < matches.length; i++) {
 		const { start: matchStartLine, end: matchEndLine } = getMatchStartEnd(
-			matches[i],
+			matches[i]
 		);
 		if (
 			typeof query.beforeContext === "number" &&
@@ -90,7 +90,7 @@ export function getTextSearchMatchWithModelContext(
 		) {
 			const beforeContextStartLine = Math.max(
 				prevLine + 1,
-				matchStartLine - query.beforeContext,
+				matchStartLine - query.beforeContext
 			);
 			for (let b = beforeContextStartLine; b < matchStartLine; b++) {
 				results.push(<ITextSearchContext>{
@@ -110,7 +110,7 @@ export function getTextSearchMatchWithModelContext(
 			const afterContextToLine = Math.min(
 				nextMatchStartLine - 1,
 				matchEndLine + query.afterContext,
-				model.getLineCount() - 1,
+				model.getLineCount() - 1
 			);
 			for (let a = matchEndLine + 1; a <= afterContextToLine; a++) {
 				results.push(<ITextSearchContext>{

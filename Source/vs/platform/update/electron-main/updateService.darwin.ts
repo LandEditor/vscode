@@ -42,20 +42,20 @@ export class DarwinUpdateService
 		return Event.fromNodeEventEmitter(
 			electron.autoUpdater,
 			"error",
-			(_, message) => message,
+			(_, message) => message
 		);
 	}
 	@memoize private get onRawUpdateNotAvailable(): Event<void> {
 		return Event.fromNodeEventEmitter<void>(
 			electron.autoUpdater,
-			"update-not-available",
+			"update-not-available"
 		);
 	}
 	@memoize private get onRawUpdateAvailable(): Event<IUpdate> {
 		return Event.fromNodeEventEmitter(
 			electron.autoUpdater,
 			"update-available",
-			(_, url, version) => ({ url, version, productVersion: version }),
+			(_, url, version) => ({ url, version, productVersion: version })
 		);
 	}
 	@memoize private get onRawUpdateDownloaded(): Event<IUpdate> {
@@ -67,7 +67,7 @@ export class DarwinUpdateService
 				version,
 				productVersion: version,
 				date,
-			}),
+			})
 		);
 	}
 
@@ -75,12 +75,20 @@ export class DarwinUpdateService
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@IRequestService requestService: IRequestService,
 		@ILogService logService: ILogService,
 		@IProductService productService: IProductService
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService
+		);
 
 		lifecycleMainService.setRelaunchHandler(this);
 	}
@@ -95,7 +103,7 @@ export class DarwinUpdateService
 		}
 
 		this.logService.trace(
-			"update#handleRelaunch(): running raw#quitAndInstall()",
+			"update#handleRelaunch(): running raw#quitAndInstall()"
 		);
 		this.doQuitAndInstall();
 
@@ -108,17 +116,17 @@ export class DarwinUpdateService
 		this.onRawUpdateAvailable(
 			this.onUpdateAvailable,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		this.onRawUpdateDownloaded(
 			this.onUpdateDownloaded,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		this.onRawUpdateNotAvailable(
 			this.onUpdateNotAvailable,
 			this,
-			this.disposables,
+			this.disposables
 		);
 	}
 
@@ -205,7 +213,7 @@ export class DarwinUpdateService
 
 	protected override doQuitAndInstall(): void {
 		this.logService.trace(
-			"update#quitAndInstall(): running raw#quitAndInstall()",
+			"update#quitAndInstall(): running raw#quitAndInstall()"
 		);
 		electron.autoUpdater.quitAndInstall();
 	}

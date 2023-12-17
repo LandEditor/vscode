@@ -121,13 +121,13 @@ export interface IStatusbarEntryContainer extends IDisposable {
 		entry: IStatusbarEntry,
 		id: string,
 		alignment: StatusbarAlignment,
-		priority?: number | IStatusbarEntryPriority,
+		priority?: number | IStatusbarEntryPriority
 	): IStatusbarEntryAccessor;
 	addEntry(
 		entry: IStatusbarEntry,
 		id: string,
 		alignment: StatusbarAlignment,
-		priority?: number | IStatusbarEntryPriority | IStatusbarEntryLocation,
+		priority?: number | IStatusbarEntryPriority | IStatusbarEntryLocation
 	): IStatusbarEntryAccessor;
 
 	/**
@@ -142,7 +142,7 @@ export interface IStatusbarEntryContainer extends IDisposable {
 		entry: IStatusbarEntry,
 		id: string,
 		alignment: StatusbarAlignment,
-		location?: IStatusbarEntryLocation,
+		location?: IStatusbarEntryLocation
 	): IStatusbarEntryAccessor;
 
 	/**
@@ -207,7 +207,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	private pendingEntries: IPendingStatusbarEntry[] = [];
 
 	private readonly viewModel = this._register(
-		new StatusbarViewModel(this.storageService),
+		new StatusbarViewModel(this.storageService)
 	);
 
 	readonly onDidChangeEntryVisibility =
@@ -230,18 +230,18 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 			}
 
 			return this.configurationService.getValue<number>(
-				"workbench.hover.delay",
+				"workbench.hover.delay"
 			);
 		}
 
 		constructor(
 			private readonly configurationService: IConfigurationService,
-			private readonly hoverService: IHoverService,
+			private readonly hoverService: IHoverService
 		) {}
 
 		showHover(
 			options: IHoverDelegateOptions,
-			focus?: boolean,
+			focus?: boolean
 		): IHoverWidget | undefined {
 			return this.hoverService.showHover(
 				{
@@ -250,7 +250,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 						hideOnKeyDown: true,
 					},
 				},
-				focus,
+				focus
 			);
 		}
 
@@ -260,23 +260,33 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	})(this.configurationService, this.hoverService);
 
 	private readonly compactEntriesDisposable = this._register(
-		new MutableDisposable<DisposableStore>(),
+		new MutableDisposable<DisposableStore>()
 	);
 	private readonly styleOverrides = new Set<IStatusbarStyleOverride>();
 
 	constructor(
 		id: string,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IContextMenuService private contextMenuService: IContextMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
-		super(id, { hasTitle: false }, themeService, storageService, layoutService);
+		super(
+			id,
+			{ hasTitle: false },
+			themeService,
+			storageService,
+			layoutService
+		);
 
 		this.registerListeners();
 	}
@@ -284,14 +294,14 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 	private registerListeners(): void {
 		// Entry visibility changes
 		this._register(
-			this.onDidChangeEntryVisibility(() => this.updateCompactEntries()),
+			this.onDidChangeEntryVisibility(() => this.updateCompactEntries())
 		);
 
 		// Workbench state changes
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
-				this.updateStyles(),
-			),
+				this.updateStyles()
+			)
 		);
 	}
 
@@ -302,7 +312,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		priorityOrLocation:
 			| number
 			| IStatusbarEntryLocation
-			| IStatusbarEntryPriority = 0,
+			| IStatusbarEntryPriority = 0
 	): IStatusbarEntryAccessor {
 		let priority: IStatusbarEntryPriority;
 		if (isStatusbarEntryPriority(priorityOrLocation)) {
@@ -328,7 +338,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		entry: IStatusbarEntry,
 		id: string,
 		alignment: StatusbarAlignment,
-		priority: IStatusbarEntryPriority,
+		priority: IStatusbarEntryPriority
 	): IStatusbarEntryAccessor {
 		const pendingEntry: IPendingStatusbarEntry = {
 			entry,
@@ -352,7 +362,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					pendingEntry.accessor.dispose();
 				} else {
 					this.pendingEntries = this.pendingEntries.filter(
-						(entry) => entry !== pendingEntry,
+						(entry) => entry !== pendingEntry
 					);
 				}
 			},
@@ -365,7 +375,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		entry: IStatusbarEntry,
 		id: string,
 		alignment: StatusbarAlignment,
-		priority: IStatusbarEntryPriority,
+		priority: IStatusbarEntryPriority
 	): IStatusbarEntryAccessor {
 		// View model item
 		const itemContainer = this.doCreateStatusItem(id, alignment);
@@ -373,7 +383,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 			StatusbarEntryItem,
 			itemContainer,
 			entry,
-			this.hoverDelegate,
+			this.hoverDelegate
 		);
 
 		// View model entry
@@ -397,7 +407,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		// Add to view model
 		const { needsFullRefresh } = this.doAddOrRemoveModelEntry(
 			viewModelEntry,
-			true,
+			true
 		);
 		if (needsFullRefresh) {
 			this.appendStatusbarEntries();
@@ -412,7 +422,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 			dispose: () => {
 				const { needsFullRefresh } = this.doAddOrRemoveModelEntry(
 					viewModelEntry,
-					false,
+					false
 				);
 				if (needsFullRefresh) {
 					this.appendStatusbarEntries();
@@ -448,7 +458,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 	private doAddOrRemoveModelEntry(
 		entry: IStatusbarViewModelEntry,
-		add: boolean,
+		add: boolean
 	) {
 		// Update model but remember previous entries
 		const entriesBefore = this.viewModel.entries;
@@ -509,7 +519,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 		// Track focus within container
 		const scopedContextKeyService = this.contextKeyService.createScoped(
-			this.element,
+			this.element
 		);
 		StatusBarFocused.bindTo(scopedContextKeyService).set(true);
 
@@ -523,21 +533,21 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		this.rightItemsContainer = document.createElement("div");
 		this.rightItemsContainer.classList.add(
 			"right-items",
-			"items-container",
+			"items-container"
 		);
 		this.element.appendChild(this.rightItemsContainer);
 
 		// Context menu support
 		this._register(
 			addDisposableListener(parent, EventType.CONTEXT_MENU, (e) =>
-				this.showContextMenu(e),
-			),
+				this.showContextMenu(e)
+			)
 		);
 		this._register(Gesture.addTarget(parent));
 		this._register(
 			addDisposableListener(parent, TouchEventType.Contextmenu, (e) =>
-				this.showContextMenu(e),
-			),
+				this.showContextMenu(e)
+			)
 		);
 
 		// Initial status bar entries
@@ -558,7 +568,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					pending.entry,
 					pending.id,
 					pending.alignment,
-					pending.priority.primary,
+					pending.priority.primary
 				);
 			}
 		}
@@ -599,7 +609,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		const target = assertIsDefined(
 			entry.alignment === StatusbarAlignment.LEFT
 				? this.leftItemsContainer
-				: this.rightItemsContainer,
+				: this.rightItemsContainer
 		);
 
 		const index = entries.indexOf(entry);
@@ -670,10 +680,10 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		// Install mouse listeners to update hover feedback for
 		// all compact entries that belong to each other
 		const statusBarItemHoverBackground = this.getColor(
-			STATUS_BAR_ITEM_HOVER_BACKGROUND,
+			STATUS_BAR_ITEM_HOVER_BACKGROUND
 		);
 		const statusBarItemCompactHoverBackground = this.getColor(
-			STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND,
+			STATUS_BAR_ITEM_COMPACT_HOVER_BACKGROUND
 		);
 		this.compactEntriesDisposable.value = new DisposableStore();
 		if (
@@ -695,12 +705,12 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 								compactEntryGroup.forEach(
 									(compactEntry) =>
 										(compactEntry.labelContainer.style.backgroundColor =
-											statusBarItemHoverBackground),
+											statusBarItemHoverBackground)
 								);
 								compactEntry.labelContainer.style.backgroundColor =
 									statusBarItemCompactHoverBackground;
-							},
-						),
+							}
+						)
 					);
 
 					this.compactEntriesDisposable.value.add(
@@ -711,10 +721,10 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 								compactEntryGroup.forEach(
 									(compactEntry) =>
 										(compactEntry.labelContainer.style.backgroundColor =
-											""),
+											"")
 								);
-							},
-						),
+							}
+						)
 					);
 				}
 			}
@@ -752,9 +762,9 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 				label: localize("hideStatusBar", "Hide Status Bar"),
 				run: () =>
 					this.instantiationService.invokeFunction((accessor) =>
-						new ToggleStatusbarVisibilityAction().run(accessor),
+						new ToggleStatusbarVisibilityAction().run(accessor)
 					),
-			}),
+			})
 		);
 		actions.push(new Separator());
 
@@ -769,8 +779,8 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					new ToggleStatusbarEntryVisibilityAction(
 						entry.id,
 						entry.name,
-						this.viewModel,
-					),
+						this.viewModel
+					)
 				);
 				handledEntries.add(entry.id);
 			}
@@ -797,8 +807,8 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 				new HideStatusbarEntryAction(
 					statusEntryUnderMouse.id,
 					statusEntryUnderMouse.name,
-					this.viewModel,
-				),
+					this.viewModel
+				)
 			);
 		}
 
@@ -820,7 +830,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					(this.contextService.getWorkbenchState() !==
 					WorkbenchState.EMPTY
 						? STATUS_BAR_BACKGROUND
-						: STATUS_BAR_NO_FOLDER_BACKGROUND),
+						: STATUS_BAR_NO_FOLDER_BACKGROUND)
 			) || "";
 		container.style.backgroundColor = backgroundColor;
 		const foregroundColor =
@@ -829,7 +839,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					(this.contextService.getWorkbenchState() !==
 					WorkbenchState.EMPTY
 						? STATUS_BAR_FOREGROUND
-						: STATUS_BAR_NO_FOLDER_FOREGROUND),
+						: STATUS_BAR_NO_FOLDER_FOREGROUND)
 			) || "";
 		container.style.color = foregroundColor;
 		const itemBorderColor = this.getColor(STATUS_BAR_ITEM_FOCUS_BORDER);
@@ -841,13 +851,13 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 					(this.contextService.getWorkbenchState() !==
 					WorkbenchState.EMPTY
 						? STATUS_BAR_BORDER
-						: STATUS_BAR_NO_FOLDER_BORDER),
+						: STATUS_BAR_NO_FOLDER_BORDER)
 			) || this.getColor(contrastBorder);
 		if (borderColor) {
 			container.classList.add("status-border-top");
 			container.style.setProperty(
 				"--status-border-top-color",
-				borderColor,
+				borderColor
 			);
 		} else {
 			container.classList.remove("status-border-top");
@@ -871,9 +881,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 
 				/* Status bar item focus outline */
 				.monaco-workbench .part.statusbar > .items-container > .statusbar-item a:focus-visible:not(.disabled) {
-					outline: 1px solid ${
-						this.getColor(activeContrastBorder) ?? itemBorderColor
-					};
+					outline: 1px solid ${this.getColor(activeContrastBorder) ?? itemBorderColor};
 					outline-offset: ${borderColor ? "-2px" : "-1px"};
 				}
 
@@ -888,7 +896,7 @@ class StatusbarPart extends Part implements IStatusbarEntryContainer {
 		width: number,
 		height: number,
 		top: number,
-		left: number,
+		left: number
 	): void {
 		super.layout(width, height, top, left);
 		super.layoutContents(width, height);
@@ -927,7 +935,7 @@ export class MainStatusbarPart extends StatusbarPart {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IHoverService hoverService: IHoverService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(
 			Parts.STATUSBAR_PART,
@@ -939,7 +947,7 @@ export class MainStatusbarPart extends StatusbarPart {
 			contextMenuService,
 			contextKeyService,
 			hoverService,
-			configurationService,
+			configurationService
 		);
 	}
 }
@@ -969,7 +977,7 @@ export class AuxiliaryStatusbarPart
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IHoverService hoverService: IHoverService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		const id = AuxiliaryStatusbarPart.COUNTER++;
 		super(
@@ -982,7 +990,7 @@ export class AuxiliaryStatusbarPart
 			contextMenuService,
 			contextKeyService,
 			hoverService,
-			configurationService,
+			configurationService
 		);
 	}
 }
@@ -994,11 +1002,12 @@ export class StatusbarService
 	declare readonly _serviceBrand: undefined;
 
 	readonly mainPart = this._register(
-		this.instantiationService.createInstance(MainStatusbarPart),
+		this.instantiationService.createInstance(MainStatusbarPart)
 	);
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -1008,7 +1017,7 @@ export class StatusbarService
 	//#region Auxiliary Statusbar Parts
 
 	createAuxiliaryStatusbarPart(
-		container: HTMLElement,
+		container: HTMLElement
 	): IAuxiliaryStatusbarPart {
 		const statusbarPartContainer = document.createElement("footer");
 		statusbarPartContainer.classList.add("part", "statusbar");
@@ -1020,7 +1029,7 @@ export class StatusbarService
 
 		const statusbarPart = this.instantiationService.createInstance(
 			AuxiliaryStatusbarPart,
-			statusbarPartContainer,
+			statusbarPartContainer
 		);
 		const disposable = this.registerPart(statusbarPart);
 
@@ -1033,13 +1042,13 @@ export class StatusbarService
 
 	createScoped(
 		statusbarEntryContainer: IStatusbarEntryContainer,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IStatusbarService {
 		return disposables.add(
 			this.instantiationService.createInstance(
 				ScopedStatusbarService,
-				statusbarEntryContainer,
-			),
+				statusbarEntryContainer
+			)
 		);
 	}
 
@@ -1057,7 +1066,7 @@ export class StatusbarService
 		priorityOrLocation:
 			| number
 			| IStatusbarEntryLocation
-			| IStatusbarEntryPriority = 0,
+			| IStatusbarEntryPriority = 0
 	): IStatusbarEntryAccessor {
 		return this.mainPart.addEntry(entry, id, alignment, priorityOrLocation);
 	}
@@ -1115,18 +1124,18 @@ export class ScopedStatusbarService
 	}
 
 	createAuxiliaryStatusbarPart(
-		container: HTMLElement,
+		container: HTMLElement
 	): IAuxiliaryStatusbarPart {
 		return this.statusbarService.createAuxiliaryStatusbarPart(container);
 	}
 
 	createScoped(
 		statusbarEntryContainer: IStatusbarEntryContainer,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IStatusbarService {
 		return this.statusbarService.createScoped(
 			statusbarEntryContainer,
-			disposables,
+			disposables
 		);
 	}
 
@@ -1144,13 +1153,13 @@ export class ScopedStatusbarService
 		priorityOrLocation:
 			| number
 			| IStatusbarEntryLocation
-			| IStatusbarEntryPriority = 0,
+			| IStatusbarEntryPriority = 0
 	): IStatusbarEntryAccessor {
 		return this.statusbarEntryContainer.addEntry(
 			entry,
 			id,
 			alignment,
-			priorityOrLocation,
+			priorityOrLocation
 		);
 	}
 

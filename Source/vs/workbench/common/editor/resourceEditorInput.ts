@@ -59,8 +59,10 @@ export abstract class AbstractResourceEditorInput
 		preferredResource: URI | undefined,
 		@ILabelService protected readonly labelService: ILabelService,
 		@IFileService protected readonly fileService: IFileService,
-		@IFilesConfigurationService protected readonly filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService protected readonly textResourceConfigurationService: ITextResourceConfigurationService
+		@IFilesConfigurationService
+		protected readonly filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		protected readonly textResourceConfigurationService: ITextResourceConfigurationService
 	) {
 		super();
 
@@ -73,18 +75,18 @@ export abstract class AbstractResourceEditorInput
 		// Clear our labels on certain label related events
 		this._register(
 			this.labelService.onDidChangeFormatters((e) =>
-				this.onLabelEvent(e.scheme),
-			),
+				this.onLabelEvent(e.scheme)
+			)
 		);
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderRegistrations((e) =>
-				this.onLabelEvent(e.scheme),
-			),
+				this.onLabelEvent(e.scheme)
+			)
 		);
 		this._register(
 			this.fileService.onDidChangeFileSystemProviderCapabilities((e) =>
-				this.onLabelEvent(e.scheme),
-			),
+				this.onLabelEvent(e.scheme)
+			)
 		);
 	}
 
@@ -120,7 +122,7 @@ export abstract class AbstractResourceEditorInput
 	override getName(): string {
 		if (typeof this._name !== "string") {
 			this._name = this.labelService.getUriBasenameLabel(
-				this._preferredResource,
+				this._preferredResource
 			);
 		}
 
@@ -143,7 +145,7 @@ export abstract class AbstractResourceEditorInput
 	private get shortDescription(): string {
 		if (typeof this._shortDescription !== "string") {
 			this._shortDescription = this.labelService.getUriBasenameLabel(
-				dirname(this._preferredResource),
+				dirname(this._preferredResource)
 			);
 		}
 
@@ -155,7 +157,7 @@ export abstract class AbstractResourceEditorInput
 		if (typeof this._mediumDescription !== "string") {
 			this._mediumDescription = this.labelService.getUriLabel(
 				dirname(this._preferredResource),
-				{ relative: true },
+				{ relative: true }
 			);
 		}
 
@@ -166,7 +168,7 @@ export abstract class AbstractResourceEditorInput
 	private get longDescription(): string {
 		if (typeof this._longDescription !== "string") {
 			this._longDescription = this.labelService.getUriLabel(
-				dirname(this._preferredResource),
+				dirname(this._preferredResource)
 			);
 		}
 
@@ -187,7 +189,7 @@ export abstract class AbstractResourceEditorInput
 		if (typeof this._mediumTitle !== "string") {
 			this._mediumTitle = this.labelService.getUriLabel(
 				this._preferredResource,
-				{ relative: true },
+				{ relative: true }
 			);
 		}
 
@@ -198,7 +200,7 @@ export abstract class AbstractResourceEditorInput
 	private get longTitle(): string {
 		if (typeof this._longTitle !== "string") {
 			this._longTitle = this.labelService.getUriLabel(
-				this._preferredResource,
+				this._preferredResource
 			);
 		}
 
@@ -222,7 +224,7 @@ export abstract class AbstractResourceEditorInput
 	}
 
 	protected ensureLimits(
-		options?: IFileLimitedEditorInputOptions,
+		options?: IFileLimitedEditorInputOptions
 	): IFileReadLimits | undefined {
 		if (options?.limits) {
 			return options.limits; // respect passed in limits if any
@@ -240,7 +242,7 @@ export abstract class AbstractResourceEditorInput
 			this.textResourceConfigurationService.inspect<number>(
 				this.resource,
 				null,
-				"workbench.editorLargeFileConfirmation",
+				"workbench.editorLargeFileConfirmation"
 			);
 		if (isConfigured(configuredSizeLimitMb)) {
 			configuredSizeLimit = configuredSizeLimitMb.value * ByteSize.MB; // normalize to MB

@@ -134,7 +134,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 	private static readonly LOG_SLOW_CLOSE_THRESHOLD = 2000;
 
 	protected readonly _onDidChangeStorage = this._register(
-		new Emitter<IStorageChangeEvent>(),
+		new Emitter<IStorageChangeEvent>()
 	);
 	readonly onDidChangeStorage = this._onDidChangeStorage.event;
 
@@ -144,7 +144,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 	private _storage = this._register(
 		new Storage(new InMemoryStorageDatabase(), {
 			hint: StorageHint.STORAGE_IN_MEMORY,
-		}),
+		})
 	); // storage is in-memory until initialized
 	get storage(): IStorage {
 		return this._storage;
@@ -161,7 +161,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 
 	constructor(
 		protected readonly logService: ILogService,
-		private readonly fileService: IFileService,
+		private readonly fileService: IFileService
 	) {
 		super();
 	}
@@ -190,8 +190,8 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 					// Re-emit storage changes via event
 					this._register(
 						storage.onDidChangeStorage((e) =>
-							this._onDidChangeStorage.fire(e),
-						),
+							this._onDidChangeStorage.fire(e)
+						)
 					);
 
 					// Await storage init
@@ -206,7 +206,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 					}
 				} catch (error) {
 					this.logService.error(
-						`[storage main] initialize(): Unable to init storage due to ${error}`,
+						`[storage main] initialize(): Unable to init storage due to ${error}`
 					);
 				} finally {
 					// Update state
@@ -249,7 +249,7 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 
 	set(
 		key: string,
-		value: string | boolean | number | undefined | null,
+		value: string | boolean | number | undefined | null
 	): Promise<void> {
 		return this._storage.set(key, value);
 	}
@@ -288,10 +288,10 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 		try {
 			const largestEntries = top(
 				Array.from(this._storage.items.entries()).map(
-					([key, value]) => ({ key, length: value.length }),
+					([key, value]) => ({ key, length: value.length })
 				),
 				(entryA, entryB) => entryB.length - entryA.length,
-				5,
+				5
 			)
 				.map((entry) => `${entry.key}:${entry.length}`)
 				.join(", ");
@@ -299,12 +299,12 @@ abstract class BaseStorageMain extends Disposable implements IStorageMain {
 				.size;
 
 			this.logService.warn(
-				`[storage main] detected slow close() operation: Time: ${watch.elapsed()}ms, DB size: ${dbSize}b, Large Keys: ${largestEntries}`,
+				`[storage main] detected slow close() operation: Time: ${watch.elapsed()}ms, DB size: ${dbSize}b, Large Keys: ${largestEntries}`
 			);
 		} catch (error) {
 			this.logService.error(
 				"[storage main] figuring out stats for slow DB on close() resulted in an error",
-				error,
+				error
 			);
 		}
 	}
@@ -334,7 +334,7 @@ class BaseProfileAwareStorageMain extends BaseStorageMain {
 			return join(
 				this.profile.globalStorageHome.with({ scheme: Schemas.file })
 					.fsPath,
-				BaseProfileAwareStorageMain.STORAGE_NAME,
+				BaseProfileAwareStorageMain.STORAGE_NAME
 			);
 		}
 
@@ -345,7 +345,7 @@ class BaseProfileAwareStorageMain extends BaseStorageMain {
 		private readonly profile: IUserDataProfile,
 		private readonly options: IStorageMainOptions,
 		logService: ILogService,
-		fileService: IFileService,
+		fileService: IFileService
 	) {
 		super(logService, fileService);
 	}
@@ -356,9 +356,9 @@ class BaseProfileAwareStorageMain extends BaseStorageMain {
 				this.path ?? SQLiteStorageDatabase.IN_MEMORY_PATH,
 				{
 					logging: this.createLoggingOptions(),
-				},
+				}
 			),
-			!this.path ? { hint: StorageHint.STORAGE_IN_MEMORY } : undefined,
+			!this.path ? { hint: StorageHint.STORAGE_IN_MEMORY } : undefined
 		);
 	}
 }
@@ -368,7 +368,7 @@ export class ProfileStorageMain extends BaseProfileAwareStorageMain {
 		profile: IUserDataProfile,
 		options: IStorageMainOptions,
 		logService: ILogService,
-		fileService: IFileService,
+		fileService: IFileService
 	) {
 		super(profile, options, logService, fileService);
 	}
@@ -379,13 +379,13 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
 		options: IStorageMainOptions,
 		userDataProfileService: IUserDataProfilesService,
 		logService: ILogService,
-		fileService: IFileService,
+		fileService: IFileService
 	) {
 		super(
 			userDataProfileService.defaultProfile,
 			options,
 			logService,
-			fileService,
+			fileService
 		);
 	}
 
@@ -400,7 +400,7 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
 		// First session date (once)
 		const firstSessionDate = storage.get(
 			firstSessionDateStorageKey,
-			undefined,
+			undefined
 		);
 		if (firstSessionDate === undefined) {
 			storage.set(firstSessionDateStorageKey, new Date().toUTCString());
@@ -411,12 +411,12 @@ export class ApplicationStorageMain extends BaseProfileAwareStorageMain {
 		// current session date is "now"
 		const lastSessionDate = storage.get(
 			currentSessionDateStorageKey,
-			undefined,
+			undefined
 		);
 		const currentSessionDate = new Date().toUTCString();
 		storage.set(
 			lastSessionDateStorageKey,
-			typeof lastSessionDate === "undefined" ? null : lastSessionDate,
+			typeof lastSessionDate === "undefined" ? null : lastSessionDate
 		);
 		storage.set(currentSessionDateStorageKey, currentSessionDate);
 	}
@@ -433,7 +433,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 					scheme: Schemas.file,
 				}).fsPath,
 				this.workspace.id,
-				WorkspaceStorageMain.WORKSPACE_STORAGE_NAME,
+				WorkspaceStorageMain.WORKSPACE_STORAGE_NAME
 			);
 		}
 
@@ -445,7 +445,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 		private readonly options: IStorageMainOptions,
 		logService: ILogService,
 		private readonly environmentService: IEnvironmentService,
-		fileService: IFileService,
+		fileService: IFileService
 	) {
 		super(logService, fileService);
 	}
@@ -462,9 +462,9 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 				hint: this.options.useInMemoryStorage
 					? StorageHint.STORAGE_IN_MEMORY
 					: wasCreated
-					  ? StorageHint.STORAGE_DOES_NOT_EXIST
-					  : undefined,
-			},
+						? StorageHint.STORAGE_DOES_NOT_EXIST
+						: undefined,
+			}
 		);
 	}
 
@@ -485,11 +485,11 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 			this.environmentService.workspaceStorageHome.with({
 				scheme: Schemas.file,
 			}).fsPath,
-			this.workspace.id,
+			this.workspace.id
 		);
 		const workspaceStorageDatabasePath = join(
 			workspaceStorageFolderPath,
-			WorkspaceStorageMain.WORKSPACE_STORAGE_NAME,
+			WorkspaceStorageMain.WORKSPACE_STORAGE_NAME
 		);
 
 		const storageExists = await Promises.exists(workspaceStorageFolderPath);
@@ -513,7 +513,7 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 	}
 
 	private async ensureWorkspaceStorageFolderMeta(
-		workspaceStorageFolderPath: string,
+		workspaceStorageFolderPath: string
 	): Promise<void> {
 		let meta: object | undefined = undefined;
 		if (isSingleFolderWorkspaceIdentifier(this.workspace)) {
@@ -526,20 +526,20 @@ export class WorkspaceStorageMain extends BaseStorageMain {
 			try {
 				const workspaceStorageMetaPath = join(
 					workspaceStorageFolderPath,
-					WorkspaceStorageMain.WORKSPACE_META_NAME,
+					WorkspaceStorageMain.WORKSPACE_META_NAME
 				);
 				const storageExists = await Promises.exists(
-					workspaceStorageMetaPath,
+					workspaceStorageMetaPath
 				);
 				if (!storageExists) {
 					await Promises.writeFile(
 						workspaceStorageMetaPath,
-						JSON.stringify(meta, undefined, 2),
+						JSON.stringify(meta, undefined, 2)
 					);
 				}
 			} catch (error) {
 				this.logService.error(
-					`[storage main] ensureWorkspaceStorageFolderMeta(): Unable to create workspace storage metadata due to ${error}`,
+					`[storage main] ensureWorkspaceStorageFolderMeta(): Unable to create workspace storage metadata due to ${error}`
 				);
 			}
 		}

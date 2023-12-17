@@ -40,17 +40,25 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 		_notebookEditor: INotebookEditorDelegate,
 		private readonly _cell: ICellViewModel,
 		private readonly _element: HTMLElement,
-		@INotebookExecutionStateService private _executionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private _executionStateService: INotebookExecutionStateService
 	) {
 		super();
 
 		this._update();
-		this._register(this._executionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell && e.affectsCell(this._cell.uri)) {
-				this._update();
-			}
-		}));
-		this._register(this._cell.model.onDidChangeInternalMetadata(() => this._update()));
+		this._register(
+			this._executionStateService.onDidChangeExecution((e) => {
+				if (
+					e.type === NotebookExecutionType.cell &&
+					e.affectsCell(this._cell.uri)
+				) {
+					this._update();
+				}
+			})
+		);
+		this._register(
+			this._cell.model.onDidChangeInternalMetadata(() => this._update())
+		);
 	}
 
 	setVisibility(visible: boolean): void {
@@ -64,11 +72,11 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 		}
 
 		const runState = this._executionStateService.getCellExecution(
-			this._cell.uri,
+			this._cell.uri
 		);
 		const item = this._getItemForState(
 			runState,
-			this._cell.model.internalMetadata,
+			this._cell.model.internalMetadata
 		);
 		if (item) {
 			this._element.style.display = "";
@@ -82,7 +90,7 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 
 	private _getItemForState(
 		runState: INotebookCellExecution | undefined,
-		internalMetadata: NotebookCellInternalMetadata,
+		internalMetadata: NotebookCellInternalMetadata
 	): IExecutionItem | undefined {
 		const state = runState?.state;
 		const { lastRunSuccess } = internalMetadata;
@@ -110,7 +118,7 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 				text: `$(${icon.id})`,
 				tooltip: localize(
 					"notebook.cell.status.executing",
-					"Executing",
+					"Executing"
 				),
 			};
 		}

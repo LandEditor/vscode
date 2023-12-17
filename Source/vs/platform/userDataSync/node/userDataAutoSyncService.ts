@@ -22,16 +22,21 @@ import { IUserDataSyncMachinesService } from "vs/platform/userDataSync/common/us
 export class UserDataAutoSyncService extends BaseUserDataAutoSyncService {
 	constructor(
 		@IProductService productService: IProductService,
-		@IUserDataSyncStoreManagementService userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncStoreManagementService
+		userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IUserDataSyncService userDataSyncService: IUserDataSyncService,
 		@INativeHostService nativeHostService: INativeHostService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
-		@IUserDataSyncAccountService authTokenService: IUserDataSyncAccountService,
+		@IUserDataSyncAccountService
+		authTokenService: IUserDataSyncAccountService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IUserDataSyncMachinesService userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IStorageService storageService: IStorageService,
+		@IUserDataSyncMachinesService
+		userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IStorageService storageService: IStorageService
 	) {
 		super(
 			productService,
@@ -43,7 +48,7 @@ export class UserDataAutoSyncService extends BaseUserDataAutoSyncService {
 			authTokenService,
 			telemetryService,
 			userDataSyncMachinesService,
-			storageService,
+			storageService
 		);
 
 		this._register(
@@ -51,16 +56,16 @@ export class UserDataAutoSyncService extends BaseUserDataAutoSyncService {
 				Event.any<string>(
 					Event.map(
 						nativeHostService.onDidFocusMainWindow,
-						() => "windowFocus",
+						() => "windowFocus"
 					),
 					Event.map(
 						nativeHostService.onDidOpenMainWindow,
-						() => "windowOpen",
-					),
+						() => "windowOpen"
+					)
 				),
 				(last, source) => (last ? [...last, source] : [source]),
-				1000,
-			)((sources) => this.triggerSync(sources, true, false)),
+				1000
+			)((sources) => this.triggerSync(sources, true, false))
 		);
 	}
 }

@@ -29,15 +29,17 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@ICommandService private readonly _commandService: ICommandService,
+		@ICommandService private readonly _commandService: ICommandService
 	) {
-		super(DEBUG_CONSOLE_QUICK_ACCESS_PREFIX, { canAcceptInBackground: true });
+		super(DEBUG_CONSOLE_QUICK_ACCESS_PREFIX, {
+			canAcceptInBackground: true,
+		});
 	}
 
 	protected _getPicks(
 		filter: string,
 		disposables: DisposableStore,
-		token: CancellationToken,
+		token: CancellationToken
 	):
 		| Picks<IPickerQuickAccessItem>
 		| Promise<Picks<IPickerQuickAccessItem>>
@@ -64,7 +66,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 
 		const createTerminalLabel = localize(
 			"workbench.action.debug.startDebug",
-			"Start a New Debug Session",
+			"Start a New Debug Session"
 		);
 		debugConsolePicks.push({
 			label: `$(plus) ${createTerminalLabel}`,
@@ -78,7 +80,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 	private _createPick(
 		session: IDebugSession,
 		sessionIndex: number,
-		filter: string,
+		filter: string
 	): IPickerQuickAccessItem | undefined {
 		const label = session.name;
 
@@ -92,7 +94,7 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 						undefined,
 						undefined,
 						session,
-						{ explicit: true },
+						{ explicit: true }
 					);
 					if (!this._viewsService.isViewVisible(REPL_VIEW_ID)) {
 						this._viewsService.openView(REPL_VIEW_ID, true);

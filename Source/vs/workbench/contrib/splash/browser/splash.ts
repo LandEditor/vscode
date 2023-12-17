@@ -7,7 +7,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 import { IPartsSplash } from "vs/platform/theme/common/themeService";
 
 export const ISplashStorageService = createDecorator<ISplashStorageService>(
-	"ISplashStorageService",
+	"ISplashStorageService"
 );
 
 export interface ISplashStorageService {

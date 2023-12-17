@@ -35,7 +35,7 @@ export class BoundModelReferenceCollection {
 		private readonly _extUri: IExtUri,
 		private readonly _maxAge: number = 1000 * 60 * 3, // auto-dispse by age
 		private readonly _maxLength: number = 1024 * 1024 * 80, // auto-dispose by total length
-		private readonly _maxSize: number = 50, // auto-dispose by number of references
+		private readonly _maxSize: number = 50 // auto-dispose by number of references
 	) {
 		//
 	}
@@ -93,7 +93,7 @@ class ModelTracker extends Disposable {
 		private readonly _model: ITextModel,
 		private readonly _onIsCaughtUpWithContentChanges: Emitter<URI>,
 		private readonly _proxy: ExtHostDocumentsShape,
-		private readonly _textFileService: ITextFileService,
+		private readonly _textFileService: ITextFileService
 	) {
 		super();
 		this._knownVersionId = this._model.getVersionId();
@@ -103,12 +103,12 @@ class ModelTracker extends Disposable {
 				this._proxy.$acceptModelChanged(
 					this._model.uri,
 					e,
-					this._textFileService.isDirty(this._model.uri),
+					this._textFileService.isDirty(this._model.uri)
 				);
 				if (this.isCaughtUpWithContentChanges()) {
 					this._onIsCaughtUpWithContentChanges.fire(this._model.uri);
 				}
-			}),
+			})
 		);
 	}
 
@@ -122,7 +122,7 @@ export class MainThreadDocuments
 	implements MainThreadDocumentsShape
 {
 	private _onIsCaughtUpWithContentChanges = this._store.add(
-		new Emitter<URI>(),
+		new Emitter<URI>()
 	);
 	readonly onIsCaughtUpWithContentChanges =
 		this._onIsCaughtUpWithContentChanges.event;
@@ -136,42 +136,59 @@ export class MainThreadDocuments
 		@IModelService private readonly _modelService: IModelService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
 		@IFileService private readonly _fileService: IFileService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
-		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService,
+		@IWorkingCopyFileService
+		workingCopyFileService: IWorkingCopyFileService,
 		@IPathService private readonly _pathService: IPathService
 	) {
 		super();
 
-		this._modelReferenceCollection = this._store.add(new BoundModelReferenceCollection(_uriIdentityService.extUri));
+		this._modelReferenceCollection = this._store.add(
+			new BoundModelReferenceCollection(_uriIdentityService.extUri)
+		);
 
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocuments);
 
-		this._store.add(_modelService.onModelLanguageChanged(this._onModelModeChanged, this));
+		this._store.add(
+			_modelService.onModelLanguageChanged(this._onModelModeChanged, this)
+		);
 
-		this._store.add(_textFileService.files.onDidSave(e => {
-			if (this._shouldHandleFileEvent(e.model.resource)) {
-				this._proxy.$acceptModelSaved(e.model.resource);
-			}
-		}));
-		this._store.add(_textFileService.files.onDidChangeDirty(m => {
-			if (this._shouldHandleFileEvent(m.resource)) {
-				this._proxy.$acceptDirtyStateChanged(m.resource, m.isDirty());
-			}
-		}));
+		this._store.add(
+			_textFileService.files.onDidSave((e) => {
+				if (this._shouldHandleFileEvent(e.model.resource)) {
+					this._proxy.$acceptModelSaved(e.model.resource);
+				}
+			})
+		);
+		this._store.add(
+			_textFileService.files.onDidChangeDirty((m) => {
+				if (this._shouldHandleFileEvent(m.resource)) {
+					this._proxy.$acceptDirtyStateChanged(
+						m.resource,
+						m.isDirty()
+					);
+				}
+			})
+		);
 
-		this._store.add(workingCopyFileService.onDidRunWorkingCopyFileOperation(e => {
-			const isMove = e.operation === FileOperation.MOVE;
-			if (isMove || e.operation === FileOperation.DELETE) {
-				for (const pair of e.files) {
-					const removed = isMove ? pair.source : pair.target;
-					if (removed) {
-						this._modelReferenceCollection.remove(removed);
+		this._store.add(
+			workingCopyFileService.onDidRunWorkingCopyFileOperation((e) => {
+				const isMove = e.operation === FileOperation.MOVE;
+				if (isMove || e.operation === FileOperation.DELETE) {
+					for (const pair of e.files) {
+						const removed = isMove ? pair.source : pair.target;
+						if (removed) {
+							this._modelReferenceCollection.remove(removed);
+						}
 					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	override dispose(): void {
@@ -205,8 +222,8 @@ export class MainThreadDocuments
 				model,
 				this._onIsCaughtUpWithContentChanges,
 				this._proxy,
-				this._textFileService,
-			),
+				this._textFileService
+			)
 		);
 	}
 
@@ -220,7 +237,7 @@ export class MainThreadDocuments
 		}
 		this._proxy.$acceptModelLanguageChanged(
 			model.uri,
-			model.getLanguageId(),
+			model.getLanguageId()
 		);
 	}
 
@@ -243,7 +260,7 @@ export class MainThreadDocuments
 		const inputUri = URI.revive(uriData);
 		if (!inputUri.scheme || !(inputUri.fsPath || inputUri.authority)) {
 			throw new ErrorNoTelemetry(
-				`Invalid uri. Scheme and authority or path must be set.`,
+				`Invalid uri. Scheme and authority or path must be set.`
 			);
 		}
 
@@ -266,21 +283,21 @@ export class MainThreadDocuments
 		} catch (err) {
 			throw new ErrorNoTelemetry(
 				`cannot open ${canonicalUri.toString()}. Detail: ${toErrorMessage(
-					err,
-				)}`,
+					err
+				)}`
 			);
 		}
 		if (!documentUri) {
 			throw new ErrorNoTelemetry(
-				`cannot open ${canonicalUri.toString()}`,
+				`cannot open ${canonicalUri.toString()}`
 			);
 		} else if (!extUri.isEqual(documentUri, canonicalUri)) {
 			throw new ErrorNoTelemetry(
-				`cannot open ${canonicalUri.toString()}. Detail: Actual document opened as ${documentUri.toString()}`,
+				`cannot open ${canonicalUri.toString()}. Detail: Actual document opened as ${documentUri.toString()}`
 			);
 		} else if (!this._modelTrackers.has(canonicalUri)) {
 			throw new ErrorNoTelemetry(
-				`cannot open ${canonicalUri.toString()}. Detail: Files above 50MB cannot be synchronized with extensions.`,
+				`cannot open ${canonicalUri.toString()}. Detail: Files above 50MB cannot be synchronized with extensions.`
 			);
 		} else {
 			return canonicalUri;
@@ -294,7 +311,7 @@ export class MainThreadDocuments
 		return this._doCreateUntitled(
 			undefined,
 			options ? options.language : undefined,
-			options ? options.content : undefined,
+			options ? options.content : undefined
 		);
 	}
 
@@ -304,7 +321,7 @@ export class MainThreadDocuments
 		this._modelReferenceCollection.add(
 			uri,
 			ref,
-			ref.object.textEditorModel.getValueLength(),
+			ref.object.textEditorModel.getValueLength()
 		);
 		return ref.object.textEditorModel.uri;
 	}
@@ -313,7 +330,7 @@ export class MainThreadDocuments
 		const asLocalUri = toLocalResource(
 			uri,
 			this._environmentService.remoteAuthority,
-			this._pathService.defaultUriScheme,
+			this._pathService.defaultUriScheme
 		);
 		const exists = await this._fileService.exists(asLocalUri);
 		if (exists) {
@@ -321,14 +338,14 @@ export class MainThreadDocuments
 			return Promise.reject(new Error("file already exists"));
 		}
 		return await this._doCreateUntitled(
-			Boolean(uri.path) ? uri : undefined,
+			Boolean(uri.path) ? uri : undefined
 		);
 	}
 
 	private async _doCreateUntitled(
 		associatedResource?: URI,
 		languageId?: string,
-		initialValue?: string,
+		initialValue?: string
 	): Promise<URI> {
 		const model = this._textFileService.untitled.create({
 			associatedResource,
@@ -341,16 +358,16 @@ export class MainThreadDocuments
 		if (!this._modelTrackers.has(resource)) {
 			ref.dispose();
 			throw new Error(
-				`expected URI ${resource.toString()} to have come to LIFE`,
+				`expected URI ${resource.toString()} to have come to LIFE`
 			);
 		}
 		this._modelReferenceCollection.add(
 			resource,
 			ref,
-			ref.object.textEditorModel.getValueLength(),
+			ref.object.textEditorModel.getValueLength()
 		);
 		Event.once(model.onDidRevert)(() =>
-			this._modelReferenceCollection.remove(resource),
+			this._modelReferenceCollection.remove(resource)
 		);
 		this._proxy.$acceptDirtyStateChanged(resource, true); // mark as dirty
 		return resource;

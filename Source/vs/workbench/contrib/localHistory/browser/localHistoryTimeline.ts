@@ -58,22 +58,26 @@ export class LocalHistoryTimeline
 	readonly scheme = "*"; // we try to show local history for all schemes if possible
 
 	private readonly _onDidChange = this._register(
-		new Emitter<TimelineChangeEvent>(),
+		new Emitter<TimelineChangeEvent>()
 	);
 	readonly onDidChange = this._onDidChange.event;
 
 	private readonly timelineProviderDisposable = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 
 	constructor(
 		@ITimelineService private readonly timelineService: ITimelineService,
-		@IWorkingCopyHistoryService private readonly workingCopyHistoryService: IWorkingCopyHistoryService,
+		@IWorkingCopyHistoryService
+		private readonly workingCopyHistoryService: IWorkingCopyHistoryService,
 		@IPathService private readonly pathService: IPathService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService
 	) {
 		super();
 
@@ -89,15 +93,15 @@ export class LocalHistoryTimeline
 		this._register(
 			this.fileService.registerProvider(
 				LocalHistoryFileSystemProvider.SCHEMA,
-				new LocalHistoryFileSystemProvider(this.fileService),
-			),
+				new LocalHistoryFileSystemProvider(this.fileService)
+			)
 		);
 	}
 
 	private updateTimelineRegistration(): void {
 		if (
 			this.configurationService.getValue<boolean>(
-				LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY,
+				LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY
 			)
 		) {
 			this.timelineProviderDisposable.value =
@@ -111,37 +115,37 @@ export class LocalHistoryTimeline
 		// History changes
 		this._register(
 			this.workingCopyHistoryService.onDidAddEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
-			),
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
+			)
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidChangeEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
-			),
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
+			)
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidReplaceEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
-			),
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
+			)
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidRemoveEntry((e) =>
-				this.onDidChangeWorkingCopyHistoryEntry(e.entry),
-			),
+				this.onDidChangeWorkingCopyHistoryEntry(e.entry)
+			)
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidRemoveEntries(() =>
 				this.onDidChangeWorkingCopyHistoryEntry(
-					undefined /* all entries */,
-				),
-			),
+					undefined /* all entries */
+				)
+			)
 		);
 		this._register(
 			this.workingCopyHistoryService.onDidMoveEntries(() =>
 				this.onDidChangeWorkingCopyHistoryEntry(
-					undefined /* all entries */,
-				),
-			),
+					undefined /* all entries */
+				)
+			)
 		);
 
 		// Configuration changes
@@ -149,17 +153,17 @@ export class LocalHistoryTimeline
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(
-						LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY,
+						LocalHistoryTimeline.LOCAL_HISTORY_ENABLED_SETTINGS_KEY
 					)
 				) {
 					this.updateTimelineRegistration();
 				}
-			}),
+			})
 		);
 	}
 
 	private onDidChangeWorkingCopyHistoryEntry(
-		entry: IWorkingCopyHistoryEntry | undefined,
+		entry: IWorkingCopyHistoryEntry | undefined
 	): void {
 		// Re-emit as timeline change event
 		this._onDidChange.fire({
@@ -172,7 +176,7 @@ export class LocalHistoryTimeline
 	async provideTimeline(
 		uri: URI,
 		options: TimelineOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Timeline> {
 		const items: TimelineItem[] = [];
 
@@ -185,7 +189,7 @@ export class LocalHistoryTimeline
 			// `vscode-local-history`: convert back to the associated resource
 			resource =
 				LocalHistoryFileSystemProvider.fromLocalHistoryFileSystem(
-					uri,
+					uri
 				).associatedResource;
 		} else if (
 			uri.scheme === this.pathService.defaultUriScheme ||
@@ -205,7 +209,7 @@ export class LocalHistoryTimeline
 				authority:
 					this.environmentService.remoteAuthority ??
 					getVirtualWorkspaceAuthority(
-						this.contextService.getWorkspace(),
+						this.contextService.getWorkspace()
 					),
 				path: uri.path,
 			});
@@ -215,7 +219,7 @@ export class LocalHistoryTimeline
 			// Retrieve from working copy history
 			const entries = await this.workingCopyHistoryService.getEntries(
 				resource,
-				token,
+				token
 			);
 
 			// Convert to timeline items
@@ -236,9 +240,9 @@ export class LocalHistoryTimeline
 			label: SaveSourceRegistry.getSourceLabel(entry.source),
 			tooltip: new MarkdownString(
 				`$(history) ${getLocalHistoryDateFormatter().format(
-					entry.timestamp,
+					entry.timestamp
 				)}\n\n${SaveSourceRegistry.getSourceLabel(entry.source)}`,
-				{ supportThemeIcons: true },
+				{ supportThemeIcons: true }
 			),
 			source: LocalHistoryTimeline.ID,
 			timestamp: entry.timestamp,
@@ -249,7 +253,7 @@ export class LocalHistoryTimeline
 				title: COMPARE_WITH_FILE_LABEL.value,
 				arguments: toDiffEditorArguments(
 					entry,
-					entry.workingCopy.resource,
+					entry.workingCopy.resource
 				),
 			},
 		};

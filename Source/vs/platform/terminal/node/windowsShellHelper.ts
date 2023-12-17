@@ -66,7 +66,7 @@ export class WindowsShellHelper
 
 		if (!isWindows) {
 			throw new Error(
-				`WindowsShellHelper cannot be instantiated on ${platform}`,
+				`WindowsShellHelper cannot be instantiated on ${platform}`
 			);
 		}
 

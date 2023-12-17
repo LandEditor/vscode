@@ -12,7 +12,7 @@ export class ArrayEdit {
 		/**
 		 * Disjoint edits that are applied in parallel
 		 */
-		edits: readonly SingleArrayEdit[],
+		edits: readonly SingleArrayEdit[]
 	) {
 		this.edits = edits
 			.slice()
@@ -31,7 +31,7 @@ export class SingleArrayEdit {
 	constructor(
 		public readonly offset: number,
 		public readonly length: number,
-		public readonly newLength: number,
+		public readonly newLength: number
 	) {}
 
 	toString() {
@@ -50,7 +50,7 @@ export class MonotonousIndexTransformer implements IIndexTransformer {
 	public static fromMany(transformations: ArrayEdit[]): IIndexTransformer {
 		// TODO improve performance by combining transformations first
 		const transformers = transformations.map(
-			(t) => new MonotonousIndexTransformer(t),
+			(t) => new MonotonousIndexTransformer(t)
 		);
 		return new CombinedIndexTransformer(transformers);
 	}

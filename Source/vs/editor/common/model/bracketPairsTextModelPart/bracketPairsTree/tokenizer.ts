@@ -57,7 +57,7 @@ export class Token {
 		 * Otherwise, it is empty.
 		 */
 		readonly bracketIds: SmallImmutableSet<OpeningBracketId>,
-		readonly astNode: BracketAstNode | TextAstNode | undefined,
+		readonly astNode: BracketAstNode | TextAstNode | undefined
 	) {}
 }
 
@@ -77,16 +77,16 @@ export class TextBufferTokenizer implements Tokenizer {
 
 	private readonly reader = new NonPeekableTextBufferTokenizer(
 		this.textModel,
-		this.bracketTokens,
+		this.bracketTokens
 	);
 
 	constructor(
 		private readonly textModel: ITokenizerSource,
-		private readonly bracketTokens: LanguageAgnosticBracketTokens,
+		private readonly bracketTokens: LanguageAgnosticBracketTokens
 	) {
 		this.textBufferLineCount = textModel.getLineCount();
 		this.textBufferLastLineLength = textModel.getLineLength(
-			this.textBufferLineCount,
+			this.textBufferLineCount
 		);
 	}
 
@@ -99,7 +99,7 @@ export class TextBufferTokenizer implements Tokenizer {
 	get length() {
 		return toLength(
 			this.textBufferLineCount - 1,
-			this.textBufferLastLineLength,
+			this.textBufferLastLineLength
 		);
 	}
 
@@ -149,11 +149,11 @@ class NonPeekableTextBufferTokenizer {
 
 	constructor(
 		private readonly textModel: ITokenizerSource,
-		private readonly bracketTokens: LanguageAgnosticBracketTokens,
+		private readonly bracketTokens: LanguageAgnosticBracketTokens
 	) {
 		this.textBufferLineCount = textModel.getLineCount();
 		this.textBufferLastLineLength = textModel.getLineLength(
-			this.textBufferLineCount,
+			this.textBufferLineCount
 		);
 	}
 
@@ -172,8 +172,8 @@ class NonPeekableTextBufferTokenizer {
 					this.lineCharOffset === 0
 						? 0
 						: this.lineTokens!.findTokenIndexAtOffset(
-								this.lineCharOffset,
-						  );
+								this.lineCharOffset
+							);
 			}
 		} else {
 			this.lineIdx = lineIdx;
@@ -191,7 +191,7 @@ class NonPeekableTextBufferTokenizer {
 			const token = this.peekedToken;
 			this.peekedToken = null;
 			this.lineCharOffset += lengthGetColumnCountIfZeroLineCount(
-				token.length,
+				token.length
 			);
 			return token;
 		}
@@ -207,15 +207,15 @@ class NonPeekableTextBufferTokenizer {
 
 		if (this.line === null) {
 			this.lineTokens = this.textModel.tokenization.getLineTokens(
-				this.lineIdx + 1,
+				this.lineIdx + 1
 			);
 			this.line = this.lineTokens.getLineContent();
 			this.lineTokenOffset =
 				this.lineCharOffset === 0
 					? 0
 					: this.lineTokens!.findTokenIndexAtOffset(
-							this.lineCharOffset,
-					  );
+							this.lineCharOffset
+						);
 		}
 
 		const startLineIdx = this.lineIdx;
@@ -232,7 +232,7 @@ class NonPeekableTextBufferTokenizer {
 
 			if (this.lineTokenOffset < tokenCount) {
 				const tokenMetadata = lineTokens.getMetadata(
-					this.lineTokenOffset,
+					this.lineTokenOffset
 				);
 				while (
 					this.lineTokenOffset + 1 < tokenCount &&
@@ -258,16 +258,16 @@ class NonPeekableTextBufferTokenizer {
 					this.lineCharOffset < endOffset
 				) {
 					const languageId = lineTokens.getLanguageId(
-						this.lineTokenOffset,
+						this.lineTokenOffset
 					);
 					const text = this.line.substring(
 						this.lineCharOffset,
-						endOffset,
+						endOffset
 					);
 
 					const brackets =
 						this.bracketTokens.getSingleLanguageBracketTokens(
-							languageId,
+							languageId
 						);
 					const regexp = brackets.regExpGlobal;
 					if (regexp) {
@@ -299,7 +299,7 @@ class NonPeekableTextBufferTokenizer {
 						// Consume the peeked token
 						this.lineCharOffset +=
 							lengthGetColumnCountIfZeroLineCount(
-								peekedBracketToken.length,
+								peekedBracketToken.length
 							);
 						return peekedBracketToken;
 					}
@@ -314,7 +314,7 @@ class NonPeekableTextBufferTokenizer {
 				}
 				this.lineIdx++;
 				this.lineTokens = this.textModel.tokenization.getLineTokens(
-					this.lineIdx + 1,
+					this.lineIdx + 1
 				);
 				this.lineTokenOffset = 0;
 				this.line = this.lineTokens.getLineContent();
@@ -345,14 +345,14 @@ class NonPeekableTextBufferTokenizer {
 			startLineIdx,
 			startLineCharOffset,
 			this.lineIdx,
-			this.lineCharOffset,
+			this.lineCharOffset
 		);
 		return new Token(
 			length,
 			TokenKind.Text,
 			-1,
 			SmallImmutableSet.getEmpty(),
-			new TextAstNode(length),
+			new TextAstNode(length)
 		);
 	}
 }
@@ -362,7 +362,10 @@ export class FastTokenizer implements Tokenizer {
 	private readonly tokens: readonly Token[];
 	private idx = 0;
 
-	constructor(private readonly text: string, brackets: BracketTokens) {
+	constructor(
+		private readonly text: string,
+		brackets: BracketTokens
+	) {
 		const regExpStr = brackets.getRegExpStr();
 		const regexp = regExpStr ? new RegExp(regExpStr + "|\n", "gi") : null;
 
@@ -383,8 +386,8 @@ export class FastTokenizer implements Tokenizer {
 					TokenKind.Text,
 					-1,
 					SmallImmutableSet.getEmpty(),
-					new TextAstNode(toLength(0, i)),
-				),
+					new TextAstNode(toLength(0, i))
+				)
 			);
 		}
 
@@ -396,8 +399,8 @@ export class FastTokenizer implements Tokenizer {
 					TokenKind.Text,
 					-1,
 					SmallImmutableSet.getEmpty(),
-					new TextAstNode(toLength(1, i)),
-				),
+					new TextAstNode(toLength(1, i))
+				)
 			);
 		}
 
@@ -424,7 +427,7 @@ export class FastTokenizer implements Tokenizer {
 									TokenKind.Text,
 									-1,
 									SmallImmutableSet.getEmpty(),
-									new TextAstNode(length),
+									new TextAstNode(length)
 								);
 							}
 						} else {
@@ -442,7 +445,7 @@ export class FastTokenizer implements Tokenizer {
 									TokenKind.Text,
 									-1,
 									SmallImmutableSet.getEmpty(),
-									new TextAstNode(length),
+									new TextAstNode(length)
 								);
 							}
 						}
@@ -466,16 +469,16 @@ export class FastTokenizer implements Tokenizer {
 					? toLength(0, offset - lastTokenEndOffset)
 					: toLength(
 							curLineCount - lastTokenEndLine,
-							offset - lastLineBreakOffset,
-					  );
+							offset - lastLineBreakOffset
+						);
 			tokens.push(
 				new Token(
 					length,
 					TokenKind.Text,
 					-1,
 					SmallImmutableSet.getEmpty(),
-					new TextAstNode(length),
-				),
+					new TextAstNode(length)
+				)
 			);
 		}
 

@@ -32,12 +32,18 @@ export class OutputLinkProvider {
 	private linkProviderRegistration: IDisposable | undefined;
 
 	constructor(
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService
 	) {
-		this.disposeWorkerScheduler = new RunOnceScheduler(() => this.disposeWorker(), OutputLinkProvider.DISPOSE_WORKER_TIME);
+		this.disposeWorkerScheduler = new RunOnceScheduler(
+			() => this.disposeWorker(),
+			OutputLinkProvider.DISPOSE_WORKER_TIME
+		);
 
 		this.registerListeners();
 		this.updateLinkProviderWorker();
@@ -45,7 +51,7 @@ export class OutputLinkProvider {
 
 	private registerListeners(): void {
 		this.contextService.onDidChangeWorkspaceFolders(() =>
-			this.updateLinkProviderWorker(),
+			this.updateLinkProviderWorker()
 		);
 	}
 
@@ -63,12 +69,12 @@ export class OutputLinkProvider {
 						{
 							provideLinks: async (model) => {
 								const links = await this.provideLinks(
-									model.uri,
+									model.uri
 								);
 
 								return links && { links };
 							},
-						},
+						}
 					);
 			}
 		} else {
@@ -99,7 +105,7 @@ export class OutputLinkProvider {
 						"vs/workbench/contrib/output/common/outputLinkComputer",
 					createData,
 					label: "outputLinkComputer",
-				},
+				}
 			);
 		}
 
@@ -108,7 +114,7 @@ export class OutputLinkProvider {
 
 	private async provideLinks(modelUri: URI): Promise<ILink[]> {
 		const linkComputer = await this.getOrCreateWorker().withSyncedResources(
-			[modelUri],
+			[modelUri]
 		);
 
 		return linkComputer.computeLinks(modelUri.toString());

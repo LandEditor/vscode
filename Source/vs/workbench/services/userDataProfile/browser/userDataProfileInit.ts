@@ -38,15 +38,17 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 	private readonly initializationFinished = new Barrier();
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IRequestService private readonly requestService: IRequestService,
-	) {
-	}
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IRequestService private readonly requestService: IRequestService
+	) {}
 
 	async whenInitializationFinished(): Promise<void> {
 		await this.initializationFinished.wait();
@@ -64,7 +66,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 
 	async initializeRequiredResources(): Promise<void> {
 		this.logService.trace(
-			`UserDataProfileInitializer#initializeRequiredResources`,
+			`UserDataProfileInitializer#initializeRequiredResources`
 		);
 		const promises = [];
 		const profileTemplate = await this.getProfileTemplate();
@@ -74,11 +76,11 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 					new SettingsResourceInitializer(
 						this.userDataProfileService,
 						this.fileService,
-						this.logService,
+						this.logService
 					),
 					profileTemplate.settings,
-					ProfileResourceType.Settings,
-				),
+					ProfileResourceType.Settings
+				)
 			);
 		}
 		if (profileTemplate?.globalState) {
@@ -86,19 +88,19 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 				this.initialize(
 					new GlobalStateResourceInitializer(this.storageService),
 					profileTemplate.globalState,
-					ProfileResourceType.GlobalState,
-				),
+					ProfileResourceType.GlobalState
+				)
 			);
 		}
 		await Promise.all(promises);
 	}
 
 	async initializeOtherResources(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		try {
 			this.logService.trace(
-				`UserDataProfileInitializer#initializeOtherResources`,
+				`UserDataProfileInitializer#initializeOtherResources`
 			);
 			const promises = [];
 			const profileTemplate = await this.getProfileTemplate();
@@ -108,11 +110,11 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 						new KeybindingsResourceInitializer(
 							this.userDataProfileService,
 							this.fileService,
-							this.logService,
+							this.logService
 						),
 						profileTemplate.keybindings,
-						ProfileResourceType.Keybindings,
-					),
+						ProfileResourceType.Keybindings
+					)
 				);
 			}
 			if (profileTemplate?.tasks) {
@@ -121,11 +123,11 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 						new TasksResourceInitializer(
 							this.userDataProfileService,
 							this.fileService,
-							this.logService,
+							this.logService
 						),
 						profileTemplate.tasks,
-						ProfileResourceType.Tasks,
-					),
+						ProfileResourceType.Tasks
+					)
 				);
 			}
 			if (profileTemplate?.snippets) {
@@ -134,15 +136,15 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 						new SnippetsResourceInitializer(
 							this.userDataProfileService,
 							this.fileService,
-							this.uriIdentityService,
+							this.uriIdentityService
 						),
 						profileTemplate.snippets,
-						ProfileResourceType.Snippets,
-					),
+						ProfileResourceType.Snippets
+					)
 				);
 			}
 			promises.push(
-				this.initializeInstalledExtensions(instantiationService),
+				this.initializeInstalledExtensions(instantiationService)
 			);
 			await Promises.settled(promises);
 		} finally {
@@ -152,17 +154,17 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 
 	private initializeInstalledExtensionsPromise: Promise<void> | undefined;
 	async initializeInstalledExtensions(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		if (!this.initializeInstalledExtensionsPromise) {
 			const profileTemplate = await this.getProfileTemplate();
 			if (profileTemplate?.extensions) {
 				this.initializeInstalledExtensionsPromise = this.initialize(
 					instantiationService.createInstance(
-						ExtensionsResourceInitializer,
+						ExtensionsResourceInitializer
 					),
 					profileTemplate.extensions,
-					ProfileResourceType.Extensions,
+					ProfileResourceType.Extensions
 				);
 			} else {
 				this.initializeInstalledExtensionsPromise = Promise.resolve();
@@ -188,7 +190,7 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 		if (isString(this.environmentService.options.profile.contents)) {
 			try {
 				return JSON.parse(
-					this.environmentService.options.profile.contents,
+					this.environmentService.options.profile.contents
 				);
 			} catch (error) {
 				this.logService.error(error);
@@ -197,17 +199,17 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 		}
 		try {
 			const url = URI.revive(
-				this.environmentService.options.profile.contents,
+				this.environmentService.options.profile.contents
 			).toString(true);
 			const context = await this.requestService.request(
 				{ type: "GET", url },
-				CancellationToken.None,
+				CancellationToken.None
 			);
 			if (context.res.statusCode === 200) {
 				return await asJson(context);
 			} else {
 				this.logService.warn(
-					`UserDataProfileInitializer: Failed to get profile from URL: ${url}. Status code: ${context.res.statusCode}.`,
+					`UserDataProfileInitializer: Failed to get profile from URL: ${url}. Status code: ${context.res.statusCode}.`
 				);
 			}
 		} catch (error) {
@@ -219,26 +221,26 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 	private async initialize(
 		initializer: IProfileResourceInitializer,
 		content: string,
-		profileResource: ProfileResourceType,
+		profileResource: ProfileResourceType
 	): Promise<void> {
 		try {
 			if (this.initialized.includes(profileResource)) {
 				this.logService.info(
-					`UserDataProfileInitializer: ${profileResource} initialized already.`,
+					`UserDataProfileInitializer: ${profileResource} initialized already.`
 				);
 				return;
 			}
 			this.initialized.push(profileResource);
 			this.logService.trace(
-				`UserDataProfileInitializer: Initializing ${profileResource}`,
+				`UserDataProfileInitializer: Initializing ${profileResource}`
 			);
 			await initializer.initialize(content);
 			this.logService.info(
-				`UserDataProfileInitializer: Initialized ${profileResource}`,
+				`UserDataProfileInitializer: Initialized ${profileResource}`
 			);
 		} catch (error) {
 			this.logService.info(
-				`UserDataProfileInitializer: Error while initializing ${profileResource}`,
+				`UserDataProfileInitializer: Error while initializing ${profileResource}`
 			);
 			this.logService.error(error);
 		}

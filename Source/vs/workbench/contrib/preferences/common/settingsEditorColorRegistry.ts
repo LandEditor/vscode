@@ -34,8 +34,8 @@ export const settingsHeaderForeground = registerColor(
 	},
 	localize(
 		"headerForeground",
-		"The foreground color for a section header or active title.",
-	),
+		"The foreground color for a section header or active title."
+	)
 );
 export const settingsHeaderHoverForeground = registerColor(
 	"settings.settingsHeaderHoverForeground",
@@ -47,8 +47,8 @@ export const settingsHeaderHoverForeground = registerColor(
 	},
 	localize(
 		"settingsHeaderHoverForeground",
-		"The foreground color for a section header or hovered title.",
-	),
+		"The foreground color for a section header or hovered title."
+	)
 );
 export const modifiedItemIndicator = registerColor(
 	"settings.modifiedItemIndicator",
@@ -60,8 +60,8 @@ export const modifiedItemIndicator = registerColor(
 	},
 	localize(
 		"modifiedItemForeground",
-		"The color of the modified setting indicator.",
-	),
+		"The color of the modified setting indicator."
+	)
 );
 export const settingsHeaderBorder = registerColor(
 	"settings.headerBorder",
@@ -73,8 +73,8 @@ export const settingsHeaderBorder = registerColor(
 	},
 	localize(
 		"settingsHeaderBorder",
-		"The color of the header container border.",
-	),
+		"The color of the header container border."
+	)
 );
 export const settingsSashBorder = registerColor(
 	"settings.sashBorder",
@@ -86,8 +86,8 @@ export const settingsSashBorder = registerColor(
 	},
 	localize(
 		"settingsSashBorder",
-		"The color of the Settings editor splitview sash border.",
-	),
+		"The color of the Settings editor splitview sash border."
+	)
 );
 
 // Enum control colors
@@ -101,8 +101,8 @@ export const settingsSelectBackground = registerColor(
 	},
 	localize(
 		"settingsDropdownBackground",
-		"Settings editor dropdown background.",
-	),
+		"Settings editor dropdown background."
+	)
 );
 export const settingsSelectForeground = registerColor(
 	"settings.dropdownForeground",
@@ -114,8 +114,8 @@ export const settingsSelectForeground = registerColor(
 	},
 	localize(
 		"settingsDropdownForeground",
-		"Settings editor dropdown foreground.",
-	),
+		"Settings editor dropdown foreground."
+	)
 );
 export const settingsSelectBorder = registerColor(
 	"settings.dropdownBorder",
@@ -125,7 +125,7 @@ export const settingsSelectBorder = registerColor(
 		hcDark: selectBorder,
 		hcLight: selectBorder,
 	},
-	localize("settingsDropdownBorder", "Settings editor dropdown border."),
+	localize("settingsDropdownBorder", "Settings editor dropdown border.")
 );
 export const settingsSelectListBorder = registerColor(
 	"settings.dropdownListBorder",
@@ -137,8 +137,8 @@ export const settingsSelectListBorder = registerColor(
 	},
 	localize(
 		"settingsDropdownListBorder",
-		"Settings editor dropdown list border. This surrounds the options and separates the options from the description.",
-	),
+		"Settings editor dropdown list border. This surrounds the options and separates the options from the description."
+	)
 );
 
 // Bool control colors
@@ -152,8 +152,8 @@ export const settingsCheckboxBackground = registerColor(
 	},
 	localize(
 		"settingsCheckboxBackground",
-		"Settings editor checkbox background.",
-	),
+		"Settings editor checkbox background."
+	)
 );
 export const settingsCheckboxForeground = registerColor(
 	"settings.checkboxForeground",
@@ -165,8 +165,8 @@ export const settingsCheckboxForeground = registerColor(
 	},
 	localize(
 		"settingsCheckboxForeground",
-		"Settings editor checkbox foreground.",
-	),
+		"Settings editor checkbox foreground."
+	)
 );
 export const settingsCheckboxBorder = registerColor(
 	"settings.checkboxBorder",
@@ -176,7 +176,7 @@ export const settingsCheckboxBorder = registerColor(
 		hcDark: checkboxBorder,
 		hcLight: checkboxBorder,
 	},
-	localize("settingsCheckboxBorder", "Settings editor checkbox border."),
+	localize("settingsCheckboxBorder", "Settings editor checkbox border.")
 );
 
 // Text control colors
@@ -190,8 +190,8 @@ export const settingsTextInputBackground = registerColor(
 	},
 	localize(
 		"textInputBoxBackground",
-		"Settings editor text input box background.",
-	),
+		"Settings editor text input box background."
+	)
 );
 export const settingsTextInputForeground = registerColor(
 	"settings.textInputForeground",
@@ -203,8 +203,8 @@ export const settingsTextInputForeground = registerColor(
 	},
 	localize(
 		"textInputBoxForeground",
-		"Settings editor text input box foreground.",
-	),
+		"Settings editor text input box foreground."
+	)
 );
 export const settingsTextInputBorder = registerColor(
 	"settings.textInputBorder",
@@ -214,7 +214,7 @@ export const settingsTextInputBorder = registerColor(
 		hcDark: inputBorder,
 		hcLight: inputBorder,
 	},
-	localize("textInputBoxBorder", "Settings editor text input box border."),
+	localize("textInputBoxBorder", "Settings editor text input box border.")
 );
 
 // Number control colors
@@ -228,8 +228,8 @@ export const settingsNumberInputBackground = registerColor(
 	},
 	localize(
 		"numberInputBoxBackground",
-		"Settings editor number input box background.",
-	),
+		"Settings editor number input box background."
+	)
 );
 export const settingsNumberInputForeground = registerColor(
 	"settings.numberInputForeground",
@@ -241,8 +241,8 @@ export const settingsNumberInputForeground = registerColor(
 	},
 	localize(
 		"numberInputBoxForeground",
-		"Settings editor number input box foreground.",
-	),
+		"Settings editor number input box foreground."
+	)
 );
 export const settingsNumberInputBorder = registerColor(
 	"settings.numberInputBorder",
@@ -252,10 +252,7 @@ export const settingsNumberInputBorder = registerColor(
 		hcDark: inputBorder,
 		hcLight: inputBorder,
 	},
-	localize(
-		"numberInputBoxBorder",
-		"Settings editor number input box border.",
-	),
+	localize("numberInputBoxBorder", "Settings editor number input box border.")
 );
 
 export const focusedRowBackground = registerColor(
@@ -268,8 +265,8 @@ export const focusedRowBackground = registerColor(
 	},
 	localize(
 		"focusedRowBackground",
-		"The background color of a settings row when focused.",
-	),
+		"The background color of a settings row when focused."
+	)
 );
 
 export const rowHoverBackground = registerColor(
@@ -282,8 +279,8 @@ export const rowHoverBackground = registerColor(
 	},
 	localize(
 		"settings.rowHoverBackground",
-		"The background color of a settings row when hovered.",
-	),
+		"The background color of a settings row when hovered."
+	)
 );
 
 export const focusedRowBorder = registerColor(
@@ -296,6 +293,6 @@ export const focusedRowBorder = registerColor(
 	},
 	localize(
 		"settings.focusedRowBorder",
-		"The color of the row's top and bottom border when the row is focused.",
-	),
+		"The color of the row's top and bottom border when the row is focused."
+	)
 );

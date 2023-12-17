@@ -19,7 +19,7 @@ import { ITreeItem, ITreeItemCheckboxState } from "vs/workbench/common/views";
 
 export class CheckboxStateHandler extends Disposable {
 	private readonly _onDidChangeCheckboxState = this._register(
-		new Emitter<ITreeItem[]>(),
+		new Emitter<ITreeItem[]>()
 	);
 	readonly onDidChangeCheckboxState: Event<ITreeItem[]> =
 		this._onDidChangeCheckboxState.event;
@@ -44,7 +44,7 @@ export class TreeItemCheckbox extends Disposable {
 	constructor(
 		container: HTMLElement,
 		private checkboxStateHandler: CheckboxStateHandler,
-		private readonly hoverDelegate: IHoverDelegate,
+		private readonly hoverDelegate: IHoverDelegate
 	) {
 		super();
 		this.checkboxContainer = <HTMLDivElement>container;
@@ -57,7 +57,7 @@ export class TreeItemCheckbox extends Disposable {
 			} else {
 				this.toggle.checked = node.checkbox.isChecked;
 				this.toggle.setIcon(
-					this.toggle.checked ? Codicon.check : undefined,
+					this.toggle.checked ? Codicon.check : undefined
 				);
 			}
 		}
@@ -87,7 +87,7 @@ export class TreeItemCheckbox extends Disposable {
 			this._register(
 				this.toggle.onChange(() => {
 					this.setCheckbox(node);
-				}),
+				})
 			);
 		}
 	}
@@ -98,7 +98,7 @@ export class TreeItemCheckbox extends Disposable {
 				this.hover = setupCustomHover(
 					this.hoverDelegate,
 					this.toggle.domNode,
-					this.checkboxHoverContent(checkbox),
+					this.checkboxHoverContent(checkbox)
 				);
 				this._register(this.hover);
 			} else {
@@ -111,7 +111,7 @@ export class TreeItemCheckbox extends Disposable {
 		if (this.toggle && node.checkbox) {
 			node.checkbox.isChecked = this.toggle.checked;
 			this.toggle.setIcon(
-				this.toggle.checked ? Codicon.check : undefined,
+				this.toggle.checked ? Codicon.check : undefined
 			);
 			this.setHover(node.checkbox);
 
@@ -124,8 +124,8 @@ export class TreeItemCheckbox extends Disposable {
 		return checkbox.tooltip
 			? checkbox.tooltip
 			: checkbox.isChecked
-			  ? localize("checked", "Checked")
-			  : localize("unchecked", "Unchecked");
+				? localize("checked", "Checked")
+				: localize("unchecked", "Unchecked");
 	}
 
 	private setAccessibilityInformation(checkbox: ITreeItemCheckboxState) {

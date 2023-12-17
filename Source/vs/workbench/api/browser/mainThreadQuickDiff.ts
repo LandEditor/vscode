@@ -38,7 +38,7 @@ export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
 		handle: number,
 		selector: IDocumentFilterDto[],
 		label: string,
-		rootUri: UriComponents | undefined,
+		rootUri: UriComponents | undefined
 	): Promise<void> {
 		const provider: QuickDiffProvider = {
 			label,
@@ -50,8 +50,8 @@ export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
 					await this.proxy.$provideOriginalResource(
 						handle,
 						uri,
-						new CancellationTokenSource().token,
-					),
+						new CancellationTokenSource().token
+					)
 				);
 			},
 		};

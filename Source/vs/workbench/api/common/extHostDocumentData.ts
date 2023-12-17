@@ -24,7 +24,7 @@ import { equals } from "vs/base/common/arrays";
 const _languageId2WordDefinition = new Map<string, RegExp>();
 export function setWordDefinitionFor(
 	languageId: string,
-	wordDefinition: RegExp | undefined,
+	wordDefinition: RegExp | undefined
 ): void {
 	if (!wordDefinition) {
 		_languageId2WordDefinition.delete(languageId);
@@ -49,7 +49,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		versionId: number,
 		private _languageId: string,
 		private _isDirty: boolean,
-		public readonly notebook?: vscode.NotebookDocument | undefined,
+		public readonly notebook?: vscode.NotebookDocument | undefined
 	) {
 		super(uri, lines, eol, versionId);
 	}
@@ -155,7 +155,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		if (range.isSingleLine) {
 			return this._lines[range.start.line].substring(
 				range.start.character,
-				range.end.character,
+				range.end.character
 			);
 		}
 
@@ -165,13 +165,13 @@ export class ExtHostDocumentData extends MirrorTextModel {
 			resultLines: string[] = [];
 
 		resultLines.push(
-			this._lines[startLineIndex].substring(range.start.character),
+			this._lines[startLineIndex].substring(range.start.character)
 		);
 		for (let i = startLineIndex + 1; i < endLineIndex; i++) {
 			resultLines.push(this._lines[i]);
 		}
 		resultLines.push(
-			this._lines[endLineIndex].substring(0, range.end.character),
+			this._lines[endLineIndex].substring(0, range.end.character)
 		);
 
 		return resultLines.join(lineEnding);
@@ -197,7 +197,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		return new ExtHostDocumentLine(
 			line,
 			this._lines[line],
-			line === this._lines.length - 1,
+			line === this._lines.length - 1
 		);
 	}
 
@@ -278,7 +278,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 
 	private _getWordRangeAtPosition(
 		_position: vscode.Position,
-		regexp?: RegExp,
+		regexp?: RegExp
 	): vscode.Range | undefined {
 		const position = this._validatePosition(_position);
 
@@ -288,7 +288,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 		} else if (regExpLeadsToEndlessLoop(regexp)) {
 			// use default when custom-regexp is bad
 			throw new Error(
-				`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`,
+				`[getWordRangeAtPosition]: ignoring custom regexp '${regexp.source}' because it matches the empty string.`
 			);
 		}
 
@@ -296,7 +296,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 			position.character + 1,
 			ensureValidWordDefinition(regexp),
 			this._lines[position.line],
-			0,
+			0
 		);
 
 		if (wordAtText) {
@@ -304,7 +304,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
 				position.line,
 				wordAtText.startColumn - 1,
 				position.line,
-				wordAtText.endColumn - 1,
+				wordAtText.endColumn - 1
 			);
 		}
 		return undefined;

@@ -99,12 +99,12 @@ import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
 
 registerSingleton(
 	IUserDataInitializationService,
-	new SyncDescriptor(UserDataInitializationService, [[]], true),
+	new SyncDescriptor(UserDataInitializationService, [[]], true)
 );
 registerSingleton(
 	IExtensionsProfileScannerService,
 	ExtensionsProfileScannerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 //#endregion

@@ -10,7 +10,7 @@ export class TypeScriptServerError extends Error {
 	public static create(
 		serverId: string,
 		version: TypeScriptVersion,
-		response: Proto.Response,
+		response: Proto.Response
 	): TypeScriptServerError {
 		const parsedResult = TypeScriptServerError.parseErrorText(response);
 		return new TypeScriptServerError(
@@ -19,7 +19,7 @@ export class TypeScriptServerError extends Error {
 			response,
 			parsedResult?.message,
 			parsedResult?.stack,
-			parsedResult?.sanitizedStack,
+			parsedResult?.sanitizedStack
 		);
 	}
 
@@ -29,10 +29,10 @@ export class TypeScriptServerError extends Error {
 		private readonly response: Proto.Response,
 		public readonly serverMessage: string | undefined,
 		public readonly serverStack: string | undefined,
-		private readonly sanitizedStack: string | undefined,
+		private readonly sanitizedStack: string | undefined
 	) {
 		super(
-			`<${serverId}> TypeScript Server Error (${version.displayName})\n${serverMessage}\n${serverStack}`,
+			`<${serverId}> TypeScript Server Error (${version.displayName})\n${serverMessage}\n${serverStack}`
 		);
 	}
 
@@ -73,13 +73,13 @@ export class TypeScriptServerError extends Error {
 			const errorPrefix = "Error processing request. ";
 			if (errorText.startsWith(errorPrefix)) {
 				const prefixFreeErrorText = errorText.substr(
-					errorPrefix.length,
+					errorPrefix.length
 				);
 				const newlineIndex = prefixFreeErrorText.indexOf("\n");
 				if (newlineIndex >= 0) {
 					// Newline expected between message and stack.
 					const stack = prefixFreeErrorText.substring(
-						newlineIndex + 1,
+						newlineIndex + 1
 					);
 					return {
 						message: prefixFreeErrorText.substring(0, newlineIndex),

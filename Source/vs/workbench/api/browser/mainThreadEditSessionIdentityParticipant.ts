@@ -34,7 +34,7 @@ class ExtHostEditSessionIdentityCreateParticipant
 
 	async participate(
 		workspaceFolder: WorkspaceFolder,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const p = new Promise<any>((resolve, reject) => {
 			setTimeout(
@@ -43,17 +43,17 @@ class ExtHostEditSessionIdentityCreateParticipant
 						new Error(
 							localize(
 								"timeout.onWillCreateEditSessionIdentity",
-								"Aborted onWillCreateEditSessionIdentity-event after 10000ms",
-							),
-						),
+								"Aborted onWillCreateEditSessionIdentity-event after 10000ms"
+							)
+						)
 					),
-				this.timeout,
+				this.timeout
 			);
 			this._proxy
 				.$onWillCreateEditSessionIdentity(
 					workspaceFolder.uri,
 					token,
-					this.timeout,
+					this.timeout
 				)
 				.then(resolve, reject);
 		});
@@ -69,9 +69,16 @@ export class EditSessionIdentityCreateParticipant {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IEditSessionIdentityService private readonly _editSessionIdentityService: IEditSessionIdentityService
+		@IEditSessionIdentityService
+		private readonly _editSessionIdentityService: IEditSessionIdentityService
 	) {
-		this._saveParticipantDisposable = this._editSessionIdentityService.addEditSessionIdentityCreateParticipant(instantiationService.createInstance(ExtHostEditSessionIdentityCreateParticipant, extHostContext));
+		this._saveParticipantDisposable =
+			this._editSessionIdentityService.addEditSessionIdentityCreateParticipant(
+				instantiationService.createInstance(
+					ExtHostEditSessionIdentityCreateParticipant,
+					extHostContext
+				)
+			);
 	}
 
 	dispose(): void {

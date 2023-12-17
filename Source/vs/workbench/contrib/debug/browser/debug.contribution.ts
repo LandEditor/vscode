@@ -211,60 +211,60 @@ registerSingleton(IDebugService, DebugService, InstantiationType.Delayed);
 
 // Register Debug Workbench Contributions
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	DebugStatusContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	DebugProgressContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 if (isWeb) {
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	).registerWorkbenchContribution(
 		DebugTitleContribution,
-		LifecyclePhase.Eventually,
+		LifecyclePhase.Eventually
 	);
 }
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(DebugToolBar, LifecyclePhase.Restored);
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	DebugContentProvider,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	StatusBarColorProvider,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	DisassemblyViewContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(DebugLifecycle, LifecyclePhase.Eventually);
 
 // Register Quick Access
 Registry.as<IQuickAccessRegistry>(
-	QuickAccessExtensions.Quickaccess,
+	QuickAccessExtensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: StartDebugQuickAccessProvider,
 	prefix: DEBUG_QUICK_ACCESS_PREFIX,
 	contextKey: "inLaunchConfigurationsPicker",
 	placeholder: nls.localize(
 		"startDebugPlaceholder",
-		"Type the name of a launch configuration to run.",
+		"Type the name of a launch configuration to run."
 	),
 	helpEntries: [
 		{
@@ -277,20 +277,20 @@ Registry.as<IQuickAccessRegistry>(
 
 // Register quick access for debug console
 Registry.as<IQuickAccessRegistry>(
-	QuickAccessExtensions.Quickaccess,
+	QuickAccessExtensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: DebugConsoleQuickAccess,
 	prefix: DEBUG_CONSOLE_QUICK_ACCESS_PREFIX,
 	contextKey: "inDebugConsolePicker",
 	placeholder: nls.localize(
 		"tasksQuickAccessPlaceholder",
-		"Type the name of a debug console to open.",
+		"Type the name of a debug console to open."
 	),
 	helpEntries: [
 		{
 			description: nls.localize(
 				"tasksQuickAccessHelp",
-				"Show All Debug Consoles",
+				"Show All Debug Consoles"
 			),
 			commandId: SELECT_DEBUG_CONSOLE_ID,
 		},
@@ -300,24 +300,24 @@ Registry.as<IQuickAccessRegistry>(
 registerEditorContribution(
 	"editor.contrib.callStack",
 	CallStackEditorContribution,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );
 registerEditorContribution(
 	BREAKPOINT_EDITOR_CONTRIBUTION_ID,
 	BreakpointEditorContribution,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );
 registerEditorContribution(
 	EDITOR_CONTRIBUTION_ID,
 	DebugEditorContribution,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 
 const registerDebugCommandPaletteItem = (
 	id: string,
 	title: ICommandActionTitle,
 	when?: ContextKeyExpression,
-	precondition?: ContextKeyExpression,
+	precondition?: ContextKeyExpression
 ) => {
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		when: ContextKeyExpr.and(CONTEXT_DEBUGGERS_AVAILABLE, when),
@@ -335,19 +335,19 @@ registerDebugCommandPaletteItem(RESTART_SESSION_ID, RESTART_LABEL);
 registerDebugCommandPaletteItem(
 	TERMINATE_THREAD_ID,
 	nls.localize2("terminateThread", "Terminate Thread"),
-	CONTEXT_IN_DEBUG_MODE,
+	CONTEXT_IN_DEBUG_MODE
 );
 registerDebugCommandPaletteItem(
 	STEP_OVER_ID,
 	STEP_OVER_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	STEP_INTO_ID,
 	STEP_INTO_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	STEP_INTO_TARGET_ID,
@@ -356,14 +356,14 @@ registerDebugCommandPaletteItem(
 	ContextKeyExpr.and(
 		CONTEXT_STEP_INTO_TARGETS_SUPPORTED,
 		CONTEXT_IN_DEBUG_MODE,
-		CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-	),
+		CONTEXT_DEBUG_STATE.isEqualTo("stopped")
+	)
 );
 registerDebugCommandPaletteItem(
 	STEP_OUT_ID,
 	STEP_OUT_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	PAUSE_ID,
@@ -371,8 +371,8 @@ registerDebugCommandPaletteItem(
 	CONTEXT_IN_DEBUG_MODE,
 	ContextKeyExpr.and(
 		CONTEXT_DEBUG_STATE.isEqualTo("running"),
-		CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated(),
-	),
+		CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated()
+	)
 );
 registerDebugCommandPaletteItem(
 	DISCONNECT_ID,
@@ -380,8 +380,8 @@ registerDebugCommandPaletteItem(
 	CONTEXT_IN_DEBUG_MODE,
 	ContextKeyExpr.or(
 		CONTEXT_FOCUSED_SESSION_IS_ATTACH,
-		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-	),
+		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED
+	)
 );
 registerDebugCommandPaletteItem(
 	DISCONNECT_AND_SUSPEND_ID,
@@ -391,9 +391,9 @@ registerDebugCommandPaletteItem(
 		CONTEXT_FOCUSED_SESSION_IS_ATTACH,
 		ContextKeyExpr.and(
 			CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED,
-			CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-		),
-	),
+			CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED
+		)
+	)
 );
 registerDebugCommandPaletteItem(
 	STOP_ID,
@@ -401,14 +401,14 @@ registerDebugCommandPaletteItem(
 	CONTEXT_IN_DEBUG_MODE,
 	ContextKeyExpr.or(
 		CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(),
-		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-	),
+		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED
+	)
 );
 registerDebugCommandPaletteItem(
 	CONTINUE_ID,
 	CONTINUE_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	FOCUS_REPL_ID,
@@ -417,105 +417,105 @@ registerDebugCommandPaletteItem(
 			comment: ["Debug is a noun in this context, not a verb."],
 			key: "debugFocusConsole",
 		},
-		"Focus on Debug Console View",
-	),
+		"Focus on Debug Console View"
+	)
 );
 registerDebugCommandPaletteItem(
 	JUMP_TO_CURSOR_ID,
 	nls.localize2("jumpToCursor", "Jump to Cursor"),
-	CONTEXT_JUMP_TO_CURSOR_SUPPORTED,
+	CONTEXT_JUMP_TO_CURSOR_SUPPORTED
 );
 registerDebugCommandPaletteItem(
 	JUMP_TO_CURSOR_ID,
 	nls.localize2("SetNextStatement", "Set Next Statement"),
-	CONTEXT_JUMP_TO_CURSOR_SUPPORTED,
+	CONTEXT_JUMP_TO_CURSOR_SUPPORTED
 );
 registerDebugCommandPaletteItem(
 	RunToCursorAction.ID,
 	RunToCursorAction.LABEL,
-	CONTEXT_DEBUGGERS_AVAILABLE,
+	CONTEXT_DEBUGGERS_AVAILABLE
 );
 registerDebugCommandPaletteItem(
 	SelectionToReplAction.ID,
 	SelectionToReplAction.LABEL,
-	CONTEXT_IN_DEBUG_MODE,
+	CONTEXT_IN_DEBUG_MODE
 );
 registerDebugCommandPaletteItem(
 	SelectionToWatchExpressionsAction.ID,
-	SelectionToWatchExpressionsAction.LABEL,
+	SelectionToWatchExpressionsAction.LABEL
 );
 registerDebugCommandPaletteItem(
 	TOGGLE_INLINE_BREAKPOINT_ID,
-	nls.localize2("inlineBreakpoint", "Inline Breakpoint"),
+	nls.localize2("inlineBreakpoint", "Inline Breakpoint")
 );
 registerDebugCommandPaletteItem(
 	DEBUG_START_COMMAND_ID,
 	DEBUG_START_LABEL,
 	ContextKeyExpr.and(
 		CONTEXT_DEBUGGERS_AVAILABLE,
-		CONTEXT_DEBUG_STATE.notEqualsTo(getStateLabel(State.Initializing)),
-	),
+		CONTEXT_DEBUG_STATE.notEqualsTo(getStateLabel(State.Initializing))
+	)
 );
 registerDebugCommandPaletteItem(
 	DEBUG_RUN_COMMAND_ID,
 	DEBUG_RUN_LABEL,
 	ContextKeyExpr.and(
 		CONTEXT_DEBUGGERS_AVAILABLE,
-		CONTEXT_DEBUG_STATE.notEqualsTo(getStateLabel(State.Initializing)),
-	),
+		CONTEXT_DEBUG_STATE.notEqualsTo(getStateLabel(State.Initializing))
+	)
 );
 registerDebugCommandPaletteItem(
 	SELECT_AND_START_ID,
 	SELECT_AND_START_LABEL,
 	ContextKeyExpr.and(
 		CONTEXT_DEBUGGERS_AVAILABLE,
-		CONTEXT_DEBUG_STATE.notEqualsTo(getStateLabel(State.Initializing)),
-	),
+		CONTEXT_DEBUG_STATE.notEqualsTo(getStateLabel(State.Initializing))
+	)
 );
 registerDebugCommandPaletteItem(
 	NEXT_DEBUG_CONSOLE_ID,
-	NEXT_DEBUG_CONSOLE_LABEL,
+	NEXT_DEBUG_CONSOLE_LABEL
 );
 registerDebugCommandPaletteItem(
 	PREV_DEBUG_CONSOLE_ID,
-	PREV_DEBUG_CONSOLE_LABEL,
+	PREV_DEBUG_CONSOLE_LABEL
 );
 registerDebugCommandPaletteItem(
 	SHOW_LOADED_SCRIPTS_ID,
 	OPEN_LOADED_SCRIPTS_LABEL,
-	CONTEXT_IN_DEBUG_MODE,
+	CONTEXT_IN_DEBUG_MODE
 );
 registerDebugCommandPaletteItem(
 	SELECT_DEBUG_CONSOLE_ID,
-	SELECT_DEBUG_CONSOLE_LABEL,
+	SELECT_DEBUG_CONSOLE_LABEL
 );
 registerDebugCommandPaletteItem(
 	SELECT_DEBUG_SESSION_ID,
-	SELECT_DEBUG_SESSION_LABEL,
+	SELECT_DEBUG_SESSION_LABEL
 );
 registerDebugCommandPaletteItem(
 	CALLSTACK_TOP_ID,
 	CALLSTACK_TOP_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	CALLSTACK_BOTTOM_ID,
 	CALLSTACK_BOTTOM_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	CALLSTACK_UP_ID,
 	CALLSTACK_UP_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugCommandPaletteItem(
 	CALLSTACK_DOWN_ID,
 	CALLSTACK_DOWN_LABEL,
 	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 
 // Debug callstack context menu
@@ -527,7 +527,7 @@ const registerDebugViewMenuItem = (
 	when?: ContextKeyExpression,
 	precondition?: ContextKeyExpression,
 	group = "navigation",
-	icon?: Icon,
+	icon?: Icon
 ) => {
 	MenuRegistry.appendMenuItem(menuId, {
 		group,
@@ -549,7 +549,7 @@ registerDebugViewMenuItem(
 	10,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("session"),
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -558,7 +558,7 @@ registerDebugViewMenuItem(
 	20,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("session"),
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -568,10 +568,10 @@ registerDebugViewMenuItem(
 	ContextKeyExpr.and(
 		CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("session"),
 		CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED,
-		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
+		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED
 	),
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -580,7 +580,7 @@ registerDebugViewMenuItem(
 	30,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("session"),
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -591,9 +591,9 @@ registerDebugViewMenuItem(
 		CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("thread"),
 		ContextKeyExpr.and(
 			CONTEXT_DEBUG_STATE.isEqualTo("running"),
-			CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated(),
-		),
-	),
+			CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated()
+		)
+	)
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -602,8 +602,8 @@ registerDebugViewMenuItem(
 	10,
 	ContextKeyExpr.and(
 		CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("thread"),
-		CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-	),
+		CONTEXT_DEBUG_STATE.isEqualTo("stopped")
+	)
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -611,7 +611,7 @@ registerDebugViewMenuItem(
 	STEP_OVER_LABEL,
 	20,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("thread"),
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -619,7 +619,7 @@ registerDebugViewMenuItem(
 	STEP_INTO_LABEL,
 	30,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("thread"),
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -627,7 +627,7 @@ registerDebugViewMenuItem(
 	STEP_OUT_LABEL,
 	40,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("thread"),
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
+	CONTEXT_DEBUG_STATE.isEqualTo("stopped")
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -636,7 +636,7 @@ registerDebugViewMenuItem(
 	10,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("thread"),
 	undefined,
-	"termination",
+	"termination"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -645,9 +645,9 @@ registerDebugViewMenuItem(
 	10,
 	ContextKeyExpr.and(
 		CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("stackFrame"),
-		CONTEXT_RESTART_FRAME_SUPPORTED,
+		CONTEXT_RESTART_FRAME_SUPPORTED
 	),
-	CONTEXT_STACK_FRAME_SUPPORTS_RESTART,
+	CONTEXT_STACK_FRAME_SUPPORTS_RESTART
 );
 registerDebugViewMenuItem(
 	MenuId.DebugCallStackContext,
@@ -656,7 +656,7 @@ registerDebugViewMenuItem(
 	20,
 	CONTEXT_CALLSTACK_ITEM_TYPE.isEqualTo("stackFrame"),
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 
 registerDebugViewMenuItem(
@@ -667,7 +667,7 @@ registerDebugViewMenuItem(
 	CONTEXT_CAN_VIEW_MEMORY,
 	CONTEXT_IN_DEBUG_MODE,
 	"inline",
-	icons.debugInspectMemory,
+	icons.debugInspectMemory
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -678,11 +678,11 @@ registerDebugViewMenuItem(
 		CONTEXT_SET_VARIABLE_SUPPORTED,
 		ContextKeyExpr.and(
 			CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
-			CONTEXT_SET_EXPRESSION_SUPPORTED,
-		),
+			CONTEXT_SET_EXPRESSION_SUPPORTED
+		)
 	),
 	CONTEXT_VARIABLE_IS_READONLY.toNegated(),
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -691,7 +691,7 @@ registerDebugViewMenuItem(
 	10,
 	undefined,
 	undefined,
-	"5_cutcopypaste",
+	"5_cutcopypaste"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -700,7 +700,7 @@ registerDebugViewMenuItem(
 	20,
 	CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
 	undefined,
-	"5_cutcopypaste",
+	"5_cutcopypaste"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -709,7 +709,7 @@ registerDebugViewMenuItem(
 	100,
 	CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -718,7 +718,7 @@ registerDebugViewMenuItem(
 	200,
 	CONTEXT_BREAK_WHEN_VALUE_IS_READ_SUPPORTED,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -727,7 +727,7 @@ registerDebugViewMenuItem(
 	210,
 	CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugVariablesContext,
@@ -736,7 +736,7 @@ registerDebugViewMenuItem(
 	220,
 	CONTEXT_BREAK_WHEN_VALUE_IS_ACCESSED_SUPPORTED,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 
 registerDebugViewMenuItem(
@@ -747,7 +747,7 @@ registerDebugViewMenuItem(
 	CONTEXT_CAN_VIEW_MEMORY,
 	CONTEXT_IN_DEBUG_MODE,
 	"inline",
-	icons.debugInspectMemory,
+	icons.debugInspectMemory
 );
 registerDebugViewMenuItem(
 	MenuId.DebugHoverContext,
@@ -756,7 +756,7 @@ registerDebugViewMenuItem(
 	10,
 	undefined,
 	undefined,
-	"5_cutcopypaste",
+	"5_cutcopypaste"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugHoverContext,
@@ -765,7 +765,7 @@ registerDebugViewMenuItem(
 	20,
 	CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
 	undefined,
-	"5_cutcopypaste",
+	"5_cutcopypaste"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugHoverContext,
@@ -774,7 +774,7 @@ registerDebugViewMenuItem(
 	100,
 	CONTEXT_VARIABLE_EVALUATE_NAME_PRESENT,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugHoverContext,
@@ -783,7 +783,7 @@ registerDebugViewMenuItem(
 	200,
 	CONTEXT_BREAK_WHEN_VALUE_IS_READ_SUPPORTED,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugHoverContext,
@@ -792,7 +792,7 @@ registerDebugViewMenuItem(
 	210,
 	CONTEXT_BREAK_WHEN_VALUE_CHANGES_SUPPORTED,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugHoverContext,
@@ -801,7 +801,7 @@ registerDebugViewMenuItem(
 	220,
 	CONTEXT_BREAK_WHEN_VALUE_IS_ACCESSED_SUPPORTED,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 
 registerDebugViewMenuItem(
@@ -811,7 +811,7 @@ registerDebugViewMenuItem(
 	10,
 	undefined,
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugWatchContext,
@@ -820,7 +820,7 @@ registerDebugViewMenuItem(
 	20,
 	CONTEXT_WATCH_ITEM_TYPE.isEqualTo("expression"),
 	undefined,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugWatchContext,
@@ -830,15 +830,15 @@ registerDebugViewMenuItem(
 	ContextKeyExpr.or(
 		ContextKeyExpr.and(
 			CONTEXT_WATCH_ITEM_TYPE.isEqualTo("expression"),
-			CONTEXT_SET_EXPRESSION_SUPPORTED,
+			CONTEXT_SET_EXPRESSION_SUPPORTED
 		),
 		ContextKeyExpr.and(
 			CONTEXT_WATCH_ITEM_TYPE.isEqualTo("variable"),
-			CONTEXT_SET_VARIABLE_SUPPORTED,
-		),
+			CONTEXT_SET_VARIABLE_SUPPORTED
+		)
 	),
 	CONTEXT_VARIABLE_IS_READONLY.toNegated(),
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugWatchContext,
@@ -847,10 +847,10 @@ registerDebugViewMenuItem(
 	40,
 	ContextKeyExpr.or(
 		CONTEXT_WATCH_ITEM_TYPE.isEqualTo("expression"),
-		CONTEXT_WATCH_ITEM_TYPE.isEqualTo("variable"),
+		CONTEXT_WATCH_ITEM_TYPE.isEqualTo("variable")
 	),
 	CONTEXT_IN_DEBUG_MODE,
-	"3_modification",
+	"3_modification"
 );
 registerDebugViewMenuItem(
 	MenuId.DebugWatchContext,
@@ -860,7 +860,7 @@ registerDebugViewMenuItem(
 	CONTEXT_CAN_VIEW_MEMORY,
 	undefined,
 	"inline",
-	icons.debugInspectMemory,
+	icons.debugInspectMemory
 );
 registerDebugViewMenuItem(
 	MenuId.DebugWatchContext,
@@ -870,7 +870,7 @@ registerDebugViewMenuItem(
 	CONTEXT_WATCH_ITEM_TYPE.isEqualTo("expression"),
 	undefined,
 	"inline",
-	icons.watchExpressionRemove,
+	icons.watchExpressionRemove
 );
 registerDebugViewMenuItem(
 	MenuId.DebugWatchContext,
@@ -879,7 +879,7 @@ registerDebugViewMenuItem(
 	20,
 	undefined,
 	undefined,
-	"z_commands",
+	"z_commands"
 );
 
 // Touch Bar
@@ -889,7 +889,7 @@ if (isMacintosh) {
 		title: string | ICommandActionTitle,
 		order: number,
 		when: ContextKeyExpression | undefined,
-		iconUri: URI,
+		iconUri: URI
 	) => {
 		MenuRegistry.appendMenuItem(MenuId.TouchBarContext, {
 			command: {
@@ -909,8 +909,8 @@ if (isMacintosh) {
 		0,
 		CONTEXT_IN_DEBUG_MODE.toNegated(),
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/continue-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/continue-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		DEBUG_START_COMMAND_ID,
@@ -918,8 +918,8 @@ if (isMacintosh) {
 		1,
 		CONTEXT_IN_DEBUG_MODE.toNegated(),
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/run-with-debugging-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/run-with-debugging-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		CONTINUE_ID,
@@ -927,8 +927,8 @@ if (isMacintosh) {
 		0,
 		CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/continue-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/continue-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		PAUSE_ID,
@@ -938,12 +938,12 @@ if (isMacintosh) {
 			CONTEXT_IN_DEBUG_MODE,
 			ContextKeyExpr.and(
 				CONTEXT_DEBUG_STATE.isEqualTo("running"),
-				CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated(),
-			),
+				CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated()
+			)
 		),
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/pause-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/pause-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		STEP_OVER_ID,
@@ -951,8 +951,8 @@ if (isMacintosh) {
 		2,
 		CONTEXT_IN_DEBUG_MODE,
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/stepover-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/stepover-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		STEP_INTO_ID,
@@ -960,8 +960,8 @@ if (isMacintosh) {
 		3,
 		CONTEXT_IN_DEBUG_MODE,
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/stepinto-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/stepinto-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		STEP_OUT_ID,
@@ -969,8 +969,8 @@ if (isMacintosh) {
 		4,
 		CONTEXT_IN_DEBUG_MODE,
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/stepout-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/stepout-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		RESTART_SESSION_ID,
@@ -978,8 +978,8 @@ if (isMacintosh) {
 		5,
 		CONTEXT_IN_DEBUG_MODE,
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/restart-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/restart-tb.png"
+		)
 	);
 	registerTouchBarEntry(
 		STOP_ID,
@@ -987,8 +987,8 @@ if (isMacintosh) {
 		6,
 		CONTEXT_IN_DEBUG_MODE,
 		FileAccess.asFileUri(
-			"vs/workbench/contrib/debug/browser/media/stop-tb.png",
-		),
+			"vs/workbench/contrib/debug/browser/media/stop-tb.png"
+		)
 	);
 }
 
@@ -1012,7 +1012,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarMainMenu, {
 		original: "Run",
 		mnemonicTitle: nls.localize(
 			{ key: "mRun", comment: ["&& denotes a mnemonic"] },
-			"&&Run",
+			"&&Run"
 		),
 	},
 	order: 6,
@@ -1024,7 +1024,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: DEBUG_START_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miStartDebugging", comment: ["&& denotes a mnemonic"] },
-			"&&Start Debugging",
+			"&&Start Debugging"
 		),
 	},
 	order: 1,
@@ -1037,7 +1037,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: DEBUG_RUN_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miRun", comment: ["&& denotes a mnemonic"] },
-			"Run &&Without Debugging",
+			"Run &&Without Debugging"
 		),
 	},
 	order: 2,
@@ -1050,7 +1050,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: STOP_ID,
 		title: nls.localize(
 			{ key: "miStopDebugging", comment: ["&& denotes a mnemonic"] },
-			"&&Stop Debugging",
+			"&&Stop Debugging"
 		),
 		precondition: CONTEXT_IN_DEBUG_MODE,
 	},
@@ -1064,7 +1064,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: RESTART_SESSION_ID,
 		title: nls.localize(
 			{ key: "miRestart Debugging", comment: ["&& denotes a mnemonic"] },
-			"&&Restart Debugging",
+			"&&Restart Debugging"
 		),
 		precondition: CONTEXT_IN_DEBUG_MODE,
 	},
@@ -1080,7 +1080,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: ADD_CONFIGURATION_ID,
 		title: nls.localize(
 			{ key: "miAddConfiguration", comment: ["&& denotes a mnemonic"] },
-			"A&&dd Configuration...",
+			"A&&dd Configuration..."
 		),
 	},
 	order: 2,
@@ -1094,7 +1094,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: STEP_OVER_ID,
 		title: nls.localize(
 			{ key: "miStepOver", comment: ["&& denotes a mnemonic"] },
-			"Step &&Over",
+			"Step &&Over"
 		),
 		precondition: CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
 	},
@@ -1108,7 +1108,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: STEP_INTO_ID,
 		title: nls.localize(
 			{ key: "miStepInto", comment: ["&& denotes a mnemonic"] },
-			"Step &&Into",
+			"Step &&Into"
 		),
 		precondition: CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
 	},
@@ -1122,7 +1122,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: STEP_OUT_ID,
 		title: nls.localize(
 			{ key: "miStepOut", comment: ["&& denotes a mnemonic"] },
-			"Step O&&ut",
+			"Step O&&ut"
 		),
 		precondition: CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
 	},
@@ -1136,7 +1136,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 		id: CONTINUE_ID,
 		title: nls.localize(
 			{ key: "miContinue", comment: ["&& denotes a mnemonic"] },
-			"&&Continue",
+			"&&Continue"
 		),
 		precondition: CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
 	},
@@ -1152,7 +1152,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarNewBreakpointMenu, {
 		id: TOGGLE_INLINE_BREAKPOINT_ID,
 		title: nls.localize(
 			{ key: "miInlineBreakpoint", comment: ["&& denotes a mnemonic"] },
-			"Inline Breakp&&oint",
+			"Inline Breakp&&oint"
 		),
 	},
 	order: 2,
@@ -1163,7 +1163,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 	group: "4_new_breakpoint",
 	title: nls.localize(
 		{ key: "miNewBreakpoint", comment: ["&& denotes a mnemonic"] },
-		"&&New Breakpoint",
+		"&&New Breakpoint"
 	),
 	submenu: MenuId.MenubarNewBreakpointMenu,
 	order: 2,
@@ -1182,7 +1182,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 				key: "miInstallAdditionalDebuggers",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"&&Install Additional Debuggers...",
+			"&&Install Additional Debuggers..."
 		),
 	},
 	order: 1,
@@ -1191,7 +1191,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarDebugMenu, {
 // register repl panel
 
 const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
-	ViewExtensions.ViewContainersRegistry,
+	ViewExtensions.ViewContainersRegistry
 ).registerViewContainer(
 	{
 		id: DEBUG_PANEL_ID,
@@ -1200,7 +1200,7 @@ const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
 				comment: ["Debug is a noun in this context, not a verb."],
 				key: "debugPanel",
 			},
-			"Debug Console",
+			"Debug Console"
 		),
 		icon: icons.debugConsoleViewIcon,
 		ctorDescriptor: new SyncDescriptor(ViewPaneContainer, [
@@ -1212,7 +1212,7 @@ const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
 		order: 2,
 	},
 	ViewContainerLocation.Panel,
-	{ doNotRegisterOpenCommand: true },
+	{ doNotRegisterOpenCommand: true }
 );
 
 Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
@@ -1224,7 +1224,7 @@ Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 					comment: ["Debug is a noun in this context, not a verb."],
 					key: "debugPanel",
 				},
-				"Debug Console",
+				"Debug Console"
 			),
 			containerIcon: icons.debugConsoleViewIcon,
 			canToggleVisibility: false,
@@ -1238,7 +1238,7 @@ Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 						key: "miToggleDebugConsole",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"De&&bug Console",
+					"De&&bug Console"
 				),
 				keybindings: {
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyY,
@@ -1247,11 +1247,11 @@ Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 			},
 		},
 	],
-	VIEW_CONTAINER,
+	VIEW_CONTAINER
 );
 
 const viewContainer = Registry.as<IViewContainersRegistry>(
-	ViewExtensions.ViewContainersRegistry,
+	ViewExtensions.ViewContainersRegistry
 ).registerViewContainer(
 	{
 		id: VIEWLET_ID,
@@ -1260,7 +1260,7 @@ const viewContainer = Registry.as<IViewContainersRegistry>(
 			id: VIEWLET_ID,
 			mnemonicTitle: nls.localize(
 				{ key: "miViewRun", comment: ["&& denotes a mnemonic"] },
-				"&&Run",
+				"&&Run"
 			),
 			keybindings: {
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyD,
@@ -1272,7 +1272,7 @@ const viewContainer = Registry.as<IViewContainersRegistry>(
 		alwaysUseContainerInfo: true,
 		order: 3,
 	},
-	ViewContainerLocation.Sidebar,
+	ViewContainerLocation.Sidebar
 );
 
 // Register default debug views
@@ -1292,7 +1292,7 @@ viewsRegistry.registerViews(
 			when: CONTEXT_DEBUG_UX.isEqualTo("default"),
 		},
 	],
-	viewContainer,
+	viewContainer
 );
 viewsRegistry.registerViews(
 	[
@@ -1309,7 +1309,7 @@ viewsRegistry.registerViews(
 			when: CONTEXT_DEBUG_UX.isEqualTo("default"),
 		},
 	],
-	viewContainer,
+	viewContainer
 );
 viewsRegistry.registerViews(
 	[
@@ -1326,7 +1326,7 @@ viewsRegistry.registerViews(
 			when: CONTEXT_DEBUG_UX.isEqualTo("default"),
 		},
 	],
-	viewContainer,
+	viewContainer
 );
 viewsRegistry.registerViews(
 	[
@@ -1343,11 +1343,11 @@ viewsRegistry.registerViews(
 			when: ContextKeyExpr.or(
 				CONTEXT_BREAKPOINTS_EXIST,
 				CONTEXT_DEBUG_UX.isEqualTo("default"),
-				CONTEXT_HAS_DEBUGGED,
+				CONTEXT_HAS_DEBUGGED
 			),
 		},
 	],
-	viewContainer,
+	viewContainer
 );
 viewsRegistry.registerViews(
 	[
@@ -1362,7 +1362,7 @@ viewsRegistry.registerViews(
 			when: CONTEXT_DEBUG_UX.isEqualTo("simple"),
 		},
 	],
-	viewContainer,
+	viewContainer
 );
 viewsRegistry.registerViews(
 	[
@@ -1378,29 +1378,29 @@ viewsRegistry.registerViews(
 			collapsed: true,
 			when: ContextKeyExpr.and(
 				CONTEXT_LOADED_SCRIPTS_SUPPORTED,
-				CONTEXT_DEBUG_UX.isEqualTo("default"),
+				CONTEXT_DEBUG_UX.isEqualTo("default")
 			),
 		},
 	],
-	viewContainer,
+	viewContainer
 );
 
 // Register disassembly view
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		DisassemblyView,
 		DISASSEMBLY_VIEW_ID,
-		nls.localize("disassembly", "Disassembly"),
+		nls.localize("disassembly", "Disassembly")
 	),
-	[new SyncDescriptor(DisassemblyViewInput)],
+	[new SyncDescriptor(DisassemblyViewInput)]
 );
 
 // Register configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	id: "debug",
@@ -1415,7 +1415,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "allowBreakpointsEverywhere",
 				},
-				"Allow setting breakpoints in any file.",
+				"Allow setting breakpoints in any file."
 			),
 			default: false,
 		},
@@ -1426,7 +1426,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "openExplorerOnEnd",
 				},
-				"Automatically open the explorer view at the end of a debug session.",
+				"Automatically open the explorer view at the end of a debug session."
 			),
 			default: false,
 		},
@@ -1437,7 +1437,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "closeReadonlyTabsOnEnd",
 				},
-				"At the end of a debug session, all the read-only tabs associated with that session will be closed",
+				"At the end of a debug session, all the read-only tabs associated with that session will be closed"
 			),
 			default: false,
 		},
@@ -1449,20 +1449,20 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "inlineValues",
 				},
-				"Show variable values inline in editor while debugging.",
+				"Show variable values inline in editor while debugging."
 			),
 			enumDescriptions: [
 				nls.localize(
 					"inlineValues.on",
-					"Always show variable values inline in editor while debugging.",
+					"Always show variable values inline in editor while debugging."
 				),
 				nls.localize(
 					"inlineValues.off",
-					"Never show variable values inline in editor while debugging.",
+					"Never show variable values inline in editor while debugging."
 				),
 				nls.localize(
 					"inlineValues.focusNoScroll",
-					"Show variable values inline in editor while debugging when the language supports inline value locations.",
+					"Show variable values inline in editor while debugging when the language supports inline value locations."
 				),
 			],
 			default: "auto",
@@ -1475,25 +1475,25 @@ configurationRegistry.registerConfiguration({
 					key: "toolBarLocation",
 				},
 				"Controls the location of the debug toolbar. Either `floating` in all views, `docked` in the debug view, `commandCenter` (requires `{0}`), or `hidden`.",
-				"#window.commandCenter#",
+				"#window.commandCenter#"
 			),
 			default: "floating",
 			markdownEnumDescriptions: [
 				nls.localize(
 					"debugToolBar.floating",
-					"Show debug toolbar in all views.",
+					"Show debug toolbar in all views."
 				),
 				nls.localize(
 					"debugToolBar.docked",
-					"Show debug toolbar only in debug views.",
+					"Show debug toolbar only in debug views."
 				),
 				nls.localize(
 					"debugToolBar.commandCenter",
-					"`(Experimental)` Show debug toolbar in the command center.",
+					"`(Experimental)` Show debug toolbar in the command center."
 				),
 				nls.localize(
 					"debugToolBar.hidden",
-					"Do not show debug toolbar.",
+					"Do not show debug toolbar."
 				),
 			],
 		},
@@ -1504,7 +1504,7 @@ configurationRegistry.registerConfiguration({
 				nls.localize("always", "Always show debug in Status bar"),
 				nls.localize(
 					"onFirstSessionStart",
-					"Show debug in Status bar only after debug was started for the first time",
+					"Show debug in Status bar only after debug was started for the first time"
 				),
 			],
 			description: nls.localize(
@@ -1512,7 +1512,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "showInStatusBar",
 				},
-				"Controls when the debug Status bar should be visible.",
+				"Controls when the debug Status bar should be visible."
 			),
 			default: "onFirstSessionStart",
 		},
@@ -1521,7 +1521,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"debug.console.closeOnEnd",
-				"Controls if the Debug Console should be automatically closed when the debug session ends.",
+				"Controls if the Debug Console should be automatically closed when the debug session ends."
 			),
 			default: false,
 		},
@@ -1532,7 +1532,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "debug.terminal.clearBeforeReusing",
 				},
-				"Before starting a new debug session in an integrated or external terminal, clear the terminal.",
+				"Before starting a new debug session in an integrated or external terminal, clear the terminal."
 			),
 			default: false,
 		},
@@ -1546,7 +1546,7 @@ configurationRegistry.registerConfiguration({
 			default: "openOnDebugBreak",
 			description: nls.localize(
 				"openDebug",
-				"Controls when the debug view should open.",
+				"Controls when the debug view should open."
 			),
 		},
 		"debug.showSubSessionsInToolBar": {
@@ -1556,7 +1556,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "showSubSessionsInToolBar",
 				},
-				"Controls whether the debug sub-sessions are shown in the debug tool bar. When this setting is false the stop command on a sub-session will also stop the parent session.",
+				"Controls whether the debug sub-sessions are shown in the debug tool bar. When this setting is false the stop command on a sub-session will also stop the parent session."
 			),
 			default: false,
 		},
@@ -1564,7 +1564,7 @@ configurationRegistry.registerConfiguration({
 			type: "number",
 			description: nls.localize(
 				"debug.console.fontSize",
-				"Controls the font size in pixels in the Debug Console.",
+				"Controls the font size in pixels in the Debug Console."
 			),
 			default: isMacintosh ? 12 : 14,
 		},
@@ -1572,7 +1572,7 @@ configurationRegistry.registerConfiguration({
 			type: "string",
 			description: nls.localize(
 				"debug.console.fontFamily",
-				"Controls the font family in the Debug Console.",
+				"Controls the font family in the Debug Console."
 			),
 			default: "default",
 		},
@@ -1580,7 +1580,7 @@ configurationRegistry.registerConfiguration({
 			type: "number",
 			description: nls.localize(
 				"debug.console.lineHeight",
-				"Controls the line height in pixels in the Debug Console. Use 0 to compute the line height from the font size.",
+				"Controls the line height in pixels in the Debug Console. Use 0 to compute the line height from the font size."
 			),
 			default: 0,
 		},
@@ -1588,7 +1588,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"debug.console.wordWrap",
-				"Controls if the lines should wrap in the Debug Console.",
+				"Controls if the lines should wrap in the Debug Console."
 			),
 			default: true,
 		},
@@ -1596,7 +1596,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"debug.console.historySuggestions",
-				"Controls if the Debug Console should suggest previously typed input.",
+				"Controls if the Debug Console should suggest previously typed input."
 			),
 			default: true,
 		},
@@ -1604,7 +1604,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"debug.console.collapseIdenticalLines",
-				"Controls if the Debug Console should collapse identical lines and show a number of occurrences with a badge.",
+				"Controls if the Debug Console should collapse identical lines and show a number of occurrences with a badge."
 			),
 			default: true,
 		},
@@ -1612,7 +1612,7 @@ configurationRegistry.registerConfiguration({
 			enum: ["off", "on"],
 			description: nls.localize(
 				"debug.console.acceptSuggestionOnEnter",
-				"Controls whether suggestions should be accepted on Enter in the Debug Console. Enter is also used to evaluate whatever is typed in the Debug Console.",
+				"Controls whether suggestions should be accepted on Enter in the Debug Console. Enter is also used to evaluate whatever is typed in the Debug Console."
 			),
 			default: "off",
 		},
@@ -1623,7 +1623,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "launch",
 				},
-				"Global debug launch configuration. Should be used as an alternative to 'launch.json' that is shared across workspaces.",
+				"Global debug launch configuration. Should be used as an alternative to 'launch.json' that is shared across workspaces."
 			),
 			default: { configurations: [], compounds: [] },
 			$ref: launchSchemaId,
@@ -1632,7 +1632,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"debug.focusWindowOnBreak",
-				"Controls whether the workbench window should be focused when the debugger breaks.",
+				"Controls whether the workbench window should be focused when the debugger breaks."
 			),
 			default: true,
 		},
@@ -1640,7 +1640,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"debug.focusEditorOnBreak",
-				"Controls whether the editor should be focused when the debugger breaks.",
+				"Controls whether the editor should be focused when the debugger breaks."
 			),
 			default: true,
 		},
@@ -1649,18 +1649,18 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"debugAnyway",
-					"Ignore task errors and start debugging.",
+					"Ignore task errors and start debugging."
 				),
 				nls.localize(
 					"showErrors",
-					"Show the Problems view and do not start debugging.",
+					"Show the Problems view and do not start debugging."
 				),
 				nls.localize("prompt", "Prompt user."),
 				nls.localize("cancel", "Cancel debugging."),
 			],
 			description: nls.localize(
 				"debug.onTaskErrors",
-				"Controls what to do when errors are encountered after running a preLaunchTask.",
+				"Controls what to do when errors are encountered after running a preLaunchTask."
 			),
 			default: "prompt",
 		},
@@ -1671,7 +1671,7 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "showBreakpointsInOverviewRuler",
 				},
-				"Controls whether breakpoints should be shown in the overview ruler.",
+				"Controls whether breakpoints should be shown in the overview ruler."
 			),
 			default: false,
 		},
@@ -1682,14 +1682,14 @@ configurationRegistry.registerConfiguration({
 					comment: ["This is the description for a setting"],
 					key: "showInlineBreakpointCandidates",
 				},
-				"Controls whether inline breakpoints candidate decorations should be shown in the editor while debugging.",
+				"Controls whether inline breakpoints candidate decorations should be shown in the editor while debugging."
 			),
 			default: true,
 		},
 		"debug.saveBeforeStart": {
 			description: nls.localize(
 				"debug.saveBeforeStart",
-				"Controls what editors to save before starting a debug session.",
+				"Controls what editors to save before starting a debug session."
 			),
 			enum: [
 				"allEditorsInActiveGroup",
@@ -1699,15 +1699,15 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"debug.saveBeforeStart.allEditorsInActiveGroup",
-					"Save all editors in the active group before starting a debug session.",
+					"Save all editors in the active group before starting a debug session."
 				),
 				nls.localize(
 					"debug.saveBeforeStart.nonUntitledEditorsInActiveGroup",
-					"Save all editors in the active group except untitled ones before starting a debug session.",
+					"Save all editors in the active group except untitled ones before starting a debug session."
 				),
 				nls.localize(
 					"debug.saveBeforeStart.none",
-					"Don't save any editors before starting a debug session.",
+					"Don't save any editors before starting a debug session."
 				),
 			],
 			default: "allEditorsInActiveGroup",
@@ -1716,7 +1716,7 @@ configurationRegistry.registerConfiguration({
 		"debug.confirmOnExit": {
 			description: nls.localize(
 				"debug.confirmOnExit",
-				"Controls whether to confirm when the window closes if there are active debug sessions.",
+				"Controls whether to confirm when the window closes if there are active debug sessions."
 			),
 			type: "string",
 			enum: ["never", "always"],
@@ -1724,7 +1724,7 @@ configurationRegistry.registerConfiguration({
 				nls.localize("debug.confirmOnExit.never", "Never confirm."),
 				nls.localize(
 					"debug.confirmOnExit.always",
-					"Always confirm if there are debug sessions.",
+					"Always confirm if there are debug sessions."
 				),
 			],
 			default: "never",
@@ -1734,7 +1734,7 @@ configurationRegistry.registerConfiguration({
 			default: true,
 			description: nls.localize(
 				"debug.disassemblyView.showSourceCode",
-				"Show Source Code in Disassembly View.",
+				"Show Source Code in Disassembly View."
 			),
 		},
 		"debug.autoExpandLazyVariables": {
@@ -1742,14 +1742,14 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: nls.localize(
 				"debug.autoExpandLazyVariables",
-				"Automatically show values for variables that are lazily resolved by the debugger, such as getters.",
+				"Automatically show values for variables that are lazily resolved by the debugger, such as getters."
 			),
 		},
 		"debug.enableStatusBarColor": {
 			type: "boolean",
 			description: nls.localize(
 				"debug.enableStatusBarColor",
-				"Color of the Status bar when debugger is active.",
+				"Color of the Status bar when debugger is active."
 			),
 			default: true,
 		},
@@ -1761,7 +1761,7 @@ configurationRegistry.registerConfiguration({
 					key: "debug.hideLauncherWhileDebugging",
 				},
 				"Hide 'Start Debugging' control in title bar of 'Run and Debug' view while debugging is active. Only relevant when `{0}` is not `docked`.",
-				"#debug.toolBarLocation#",
+				"#debug.toolBarLocation#"
 			),
 			default: false,
 		},

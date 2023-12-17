@@ -36,12 +36,16 @@ export class CommandService extends Disposable implements ICommandService {
 		this._onDidExecuteCommand.event;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@ILogService private readonly _logService: ILogService
 	) {
 		super();
-		this._extensionService.whenInstalledExtensionsRegistered().then(value => this._extensionHostIsReady = value);
+		this._extensionService
+			.whenInstalledExtensionsRegistered()
+			.then((value) => (this._extensionHostIsReady = value));
 		this._starActivation = null;
 	}
 
@@ -91,8 +95,8 @@ export class CommandService extends Disposable implements ICommandService {
 				Event.toPromise(
 					Event.filter(
 						CommandsRegistry.onDidRegisterCommand,
-						(e) => e === id,
-					),
+						(e) => e === id
+					)
 				),
 			]),
 		]);
@@ -108,7 +112,7 @@ export class CommandService extends Disposable implements ICommandService {
 			this._onWillExecuteCommand.fire({ commandId: id, args });
 			const result = this._instantiationService.invokeFunction(
 				command.handler,
-				...args,
+				...args
 			);
 			this._onDidExecuteCommand.fire({ commandId: id, args });
 			return Promise.resolve(result);

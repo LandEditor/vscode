@@ -31,7 +31,7 @@ export class InlineChatAccessibleViewContribution extends Disposable {
 				"inlineChat",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService,
+						IAccessibleViewService
 					);
 					const codeEditorService = accessor.get(ICodeEditorService);
 
@@ -66,9 +66,9 @@ export class InlineChatAccessibleViewContribution extends Disposable {
 				},
 				ContextKeyExpr.or(
 					CTX_INLINE_CHAT_FOCUSED,
-					CTX_INLINE_CHAT_RESPONSE_FOCUSED,
-				),
-			),
+					CTX_INLINE_CHAT_RESPONSE_FOCUSED
+				)
+			)
 		);
 	}
 }

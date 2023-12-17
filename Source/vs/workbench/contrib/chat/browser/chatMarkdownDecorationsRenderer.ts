@@ -28,7 +28,7 @@ import {
 const variableRefUrl = "http://_vscodedecoration_";
 
 export function convertParsedRequestToMarkdown(
-	parsedRequest: IParsedChatRequest,
+	parsedRequest: IParsedChatRequest
 ): string {
 	let result = "";
 	for (const part of parsedRequest.parts) {
@@ -44,7 +44,7 @@ export function convertParsedRequestToMarkdown(
 
 export function walkTreeAndAnnotateReferenceLinks(
 	element: HTMLElement,
-	keybindingService: IKeybindingService,
+	keybindingService: IKeybindingService
 ): void {
 	element.querySelectorAll("a").forEach((a) => {
 		const href = a.getAttribute("data-href");
@@ -52,7 +52,7 @@ export function walkTreeAndAnnotateReferenceLinks(
 			if (href.startsWith(variableRefUrl)) {
 				a.parentElement!.replaceChild(
 					renderResourceWidget(a.textContent!),
-					a,
+					a
 				);
 			} else if (href.startsWith(contentRefUrl)) {
 				renderFileWidget(href, a);
@@ -66,7 +66,7 @@ export function walkTreeAndAnnotateReferenceLinks(
 function injectKeybindingHint(
 	a: HTMLAnchorElement,
 	href: string,
-	keybindingService: IKeybindingService,
+	keybindingService: IKeybindingService
 ): void {
 	const command = href.match(/command:([^\)]+)/)?.[1];
 	if (command) {
@@ -91,7 +91,7 @@ function renderFileWidget(href: string, a: HTMLAnchorElement): void {
 	// TODO this can be a nicer FileLabel widget with an icon. Do a simple link for now.
 	const fullUri = URI.parse(href);
 	const location: Location | { uri: URI; range: undefined } = revive(
-		JSON.parse(fullUri.fragment),
+		JSON.parse(fullUri.fragment)
 	);
 	const fragment = location.range
 		? `${location.range.startLineNumber}-${location.range.endLineNumber}`
@@ -115,7 +115,7 @@ export function extractVulnerabilitiesFromText(text: string): {
 	while (
 		(match =
 			/<vscode_annotation details="(.*?)">(.*?)<\/vscode_annotation>/ms.exec(
-				newText,
+				newText
 			)) !== null
 	) {
 		const [full, details, content] = match;
@@ -132,7 +132,7 @@ export function extractVulnerabilitiesFromText(text: string): {
 
 		try {
 			const vulnDetails: IChatAgentVulnerabilityDetails[] = JSON.parse(
-				decodeURIComponent(details),
+				decodeURIComponent(details)
 			);
 			vulnDetails.forEach(({ title, description }) =>
 				vulnerabilities.push({
@@ -144,7 +144,7 @@ export function extractVulnerabilitiesFromText(text: string): {
 						endLineNumber: linesBefore + linesInside + 1,
 						endColumn,
 					},
-				}),
+				})
 			);
 		} catch (err) {
 			// Something went wrong with encoding this text, just ignore it
@@ -161,7 +161,7 @@ export function extractVulnerabilitiesFromText(text: string): {
 const contentRefUrl = "http://_vscodecontentref_"; // must be lowercase for URI
 
 export function annotateSpecialMarkdownContent(
-	response: ReadonlyArray<IChatProgressResponseContent>,
+	response: ReadonlyArray<IChatProgressResponseContent>
 ): ReadonlyArray<IChatProgressRenderableResponseContent> {
 	const result: Exclude<
 		IChatProgressResponseContent,
@@ -184,7 +184,7 @@ export function annotateSpecialMarkdownContent(
 				result[result.length - 1] = {
 					content: new MarkdownString(
 						previousItem.content.value + markdownText,
-						{ isTrusted: previousItem.content.isTrusted },
+						{ isTrusted: previousItem.content.isTrusted }
 					),
 					kind: "markdownContent",
 				};
@@ -201,20 +201,20 @@ export function annotateSpecialMarkdownContent(
 			result[result.length - 1] = {
 				content: new MarkdownString(
 					previousItem.content.value + item.content.value,
-					{ isTrusted: previousItem.content.isTrusted },
+					{ isTrusted: previousItem.content.isTrusted }
 				),
 				kind: "markdownContent",
 			};
 		} else if (item.kind === "markdownVuln") {
 			const vulnText = encodeURIComponent(
-				JSON.stringify(item.vulnerabilities),
+				JSON.stringify(item.vulnerabilities)
 			);
 			const markdownText = `<vscode_annotation details="${vulnText}">${item.content.value}</vscode_annotation>`;
 			if (previousItem?.kind === "markdownContent") {
 				result[result.length - 1] = {
 					content: new MarkdownString(
 						previousItem.content.value + markdownText,
-						{ isTrusted: previousItem.content.isTrusted },
+						{ isTrusted: previousItem.content.isTrusted }
 					),
 					kind: "markdownContent",
 				};

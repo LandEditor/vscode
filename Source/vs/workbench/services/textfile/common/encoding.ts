@@ -30,7 +30,7 @@ export type UTF_ENCODING =
 
 export function isUTFEncoding(encoding: string): encoding is UTF_ENCODING {
 	return [UTF8, UTF8_with_bom, UTF16be, UTF16le].some(
-		(utfEncoding) => utfEncoding === encoding,
+		(utfEncoding) => utfEncoding === encoding
 	);
 }
 
@@ -67,7 +67,7 @@ export const enum DecodeStreamErrorKind {
 export class DecodeStreamError extends Error {
 	constructor(
 		message: string,
-		readonly decodeStreamErrorKind: DecodeStreamErrorKind,
+		readonly decodeStreamErrorKind: DecodeStreamErrorKind
 	) {
 		super(message);
 	}
@@ -130,7 +130,7 @@ class DecoderStream implements IDecoderStream {
 
 export function toDecodeStream(
 	source: VSBufferReadableStream,
-	options: IDecodeStreamOptions,
+	options: IDecodeStreamOptions
 ): Promise<IDecodeStreamResult> {
 	const minBytesRequiredForDetection =
 		options.minBytesRequiredForDetection ?? options.guessEncoding
@@ -139,7 +139,7 @@ export function toDecodeStream(
 
 	return new Promise<IDecodeStreamResult>((resolve, reject) => {
 		const target = newWriteableStream<string>((strings) =>
-			strings.join(""),
+			strings.join("")
 		);
 
 		const bufferedChunks: VSBuffer[] = [];
@@ -157,7 +157,7 @@ export function toDecodeStream(
 						buffer: VSBuffer.concat(bufferedChunks),
 						bytesRead: bytesBuffered,
 					},
-					options.guessEncoding,
+					options.guessEncoding
 				);
 
 				// throw early if the source seems binary and
@@ -165,19 +165,19 @@ export function toDecodeStream(
 				if (detected.seemsBinary && options.acceptTextOnly) {
 					throw new DecodeStreamError(
 						"Stream is binary but only text is accepted for decoding",
-						DecodeStreamErrorKind.STREAM_IS_BINARY,
+						DecodeStreamErrorKind.STREAM_IS_BINARY
 					);
 				}
 
 				// ensure to respect overwrite of encoding
 				detected.encoding = await options.overwriteEncoding(
-					detected.encoding,
+					detected.encoding
 				);
 
 				// decode and write buffered content
 				decoder = await DecoderStream.create(detected.encoding);
 				const decoded = decoder.write(
-					VSBuffer.concat(bufferedChunks).buffer,
+					VSBuffer.concat(bufferedChunks).buffer
 				);
 				target.write(decoded);
 
@@ -238,7 +238,7 @@ export function toDecodeStream(
 					target.end(decoder?.end());
 				},
 			},
-			cts.token,
+			cts.token
 		);
 	});
 }
@@ -246,7 +246,7 @@ export function toDecodeStream(
 export async function toEncodeReadable(
 	readable: Readable<string>,
 	encoding: string,
-	options?: { addBOM?: boolean },
+	options?: { addBOM?: boolean }
 ): Promise<VSBufferReadable> {
 	const iconv = await importAMDNodeModule<
 		typeof import("@vscode/iconv-lite-umd")
@@ -316,7 +316,7 @@ export function toNodeEncoding(enc: string | null): string {
 
 export function detectEncodingByBOMFromBuffer(
 	buffer: VSBuffer | null,
-	bytesRead: number,
+	bytesRead: number
 ): typeof UTF8_with_bom | typeof UTF16le | typeof UTF16be | null {
 	if (!buffer || bytesRead < UTF16be_BOM.length) {
 		return null;
@@ -362,7 +362,7 @@ const IGNORE_ENCODINGS = ["ascii", "utf-16", "utf-32"];
 async function guessEncodingByBuffer(buffer: VSBuffer): Promise<string | null> {
 	const jschardet = await importAMDNodeModule<typeof import("jschardet")>(
 		"jschardet",
-		"dist/jschardet.min.js",
+		"dist/jschardet.min.js"
 	);
 
 	// ensure to limit buffer for guessing due to https://github.com/aadsm/jschardet/issues/53
@@ -459,15 +459,15 @@ export interface IReadResult {
 
 export function detectEncodingFromBuffer(
 	readResult: IReadResult,
-	autoGuessEncoding?: false,
+	autoGuessEncoding?: false
 ): IDetectedEncodingResult;
 export function detectEncodingFromBuffer(
 	readResult: IReadResult,
-	autoGuessEncoding?: boolean,
+	autoGuessEncoding?: boolean
 ): Promise<IDetectedEncodingResult>;
 export function detectEncodingFromBuffer(
 	{ buffer, bytesRead }: IReadResult,
-	autoGuessEncoding?: boolean,
+	autoGuessEncoding?: boolean
 ): Promise<IDetectedEncodingResult> | IDetectedEncodingResult {
 	// Always first check for BOM to find out about encoding
 	let encoding = detectEncodingByBOMFromBuffer(buffer, bytesRead);
@@ -540,7 +540,7 @@ export function detectEncodingFromBuffer(
 					seemsBinary: false,
 					encoding: guessedEncoding,
 				};
-			},
+			}
 		);
 	}
 

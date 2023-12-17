@@ -79,7 +79,7 @@ export class NotebookFindFilters extends Disposable {
 		markupInput: boolean,
 		markupPreview: boolean,
 		codeInput: boolean,
-		codeOutput: boolean,
+		codeOutput: boolean
 	) {
 		super();
 

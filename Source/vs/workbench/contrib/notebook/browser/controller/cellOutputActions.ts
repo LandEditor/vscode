@@ -50,11 +50,11 @@ registerAction2(
 			accessor: ServicesAccessor,
 			outputContext:
 				| INotebookOutputActionContext
-				| { outputViewModel: ICellOutputViewModel },
+				| { outputViewModel: ICellOutputViewModel }
 		): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const notebookEditor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane,
+				editorService.activeEditorPane
 			);
 
 			if (!notebookEditor) {
@@ -68,7 +68,7 @@ registerAction2(
 			) {
 				outputViewModel = getOutputViewModelFromId(
 					outputContext.outputId,
-					notebookEditor,
+					notebookEditor
 				);
 			} else {
 				outputViewModel = outputContext.outputViewModel;
@@ -89,7 +89,7 @@ registerAction2(
 				await notebookEditor.focusNotebookCell(
 					outputViewModel.cellViewModel as ICellViewModel,
 					"output",
-					focusOptions,
+					focusOptions
 				);
 				notebookEditor.copyOutputImage(outputViewModel);
 			} else {
@@ -100,25 +100,25 @@ registerAction2(
 					mimeType,
 					outputViewModel,
 					clipboardService,
-					logService,
+					logService
 				);
 			}
 		}
-	},
+	}
 );
 
 function getOutputViewModelFromId(
 	outputId: string,
-	notebookEditor: INotebookEditor,
+	notebookEditor: INotebookEditor
 ): ICellOutputViewModel | undefined {
 	const notebookViewModel = notebookEditor.getViewModel();
 	if (notebookViewModel) {
 		const codeCells = notebookViewModel.viewCells.filter(
-			(cell) => cell.cellKind === CellKind.Code,
+			(cell) => cell.cellKind === CellKind.Code
 		) as CodeCellViewModel[];
 		for (const cell of codeCells) {
 			const output = cell.outputsViewModels.find(
-				(output) => output.model.outputId === outputId,
+				(output) => output.model.outputId === outputId
 			);
 			if (output) {
 				return output;

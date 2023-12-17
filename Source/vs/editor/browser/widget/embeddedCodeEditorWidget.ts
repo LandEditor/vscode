@@ -49,8 +49,10 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		@IThemeService themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
 		super(
 			domElement,
@@ -68,7 +70,7 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 			notificationService,
 			accessibilityService,
 			languageConfigurationService,
-			languageFeaturesService,
+			languageFeaturesService
 		);
 
 		this._parentEditor = parentEditor;
@@ -80,8 +82,8 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		this._register(
 			parentEditor.onDidChangeConfiguration(
 				(e: ConfigurationChangedEvent) =>
-					this._onParentConfigurationChanged(e),
-			),
+					this._onParentConfigurationChanged(e)
+			)
 		);
 	}
 
@@ -113,7 +115,7 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IAudioCueService audioCueService: IAudioCueService,
-		@IEditorProgressService editorProgressService: IEditorProgressService,
+		@IEditorProgressService editorProgressService: IEditorProgressService
 	) {
 		super(
 			domElement,
@@ -123,7 +125,7 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 			instantiationService,
 			codeEditorService,
 			audioCueService,
-			editorProgressService,
+			editorProgressService
 		);
 
 		this._parentEditor = parentEditor;
@@ -134,8 +136,8 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 
 		this._register(
 			parentEditor.onDidChangeConfiguration((e) =>
-				this._onParentConfigurationChanged(e),
-			),
+				this._onParentConfigurationChanged(e)
+			)
 		);
 	}
 

@@ -92,7 +92,7 @@ export class NotificationsToasts
 	};
 
 	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
@@ -118,17 +118,21 @@ export class NotificationsToasts
 		NotificationsToastsVisibleContext.bindTo(this.contextKeyService);
 
 	private readonly addedToastsIntervalCounter = new IntervalCounter(
-		NotificationsToasts.SPAM_PROTECTION.interval,
+		NotificationsToasts.SPAM_PROTECTION.interval
 	);
 
 	constructor(
 		private readonly container: HTMLElement,
 		private readonly model: INotificationsModel,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IThemeService themeService: IThemeService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IHostService private readonly hostService: IHostService
 	) {
@@ -141,8 +145,8 @@ export class NotificationsToasts
 		// Layout
 		this._register(
 			this.layoutService.onDidLayoutMainContainer((dimension) =>
-				this.layout(Dimension.lift(dimension)),
-			),
+				this.layout(Dimension.lift(dimension))
+			)
 		);
 
 		// Delay some tasks until after we have restored
@@ -150,14 +154,14 @@ export class NotificationsToasts
 		this.lifecycleService.when(LifecyclePhase.Restored).then(() => {
 			// Show toast for initial notifications if any
 			this.model.notifications.forEach((notification) =>
-				this.addToast(notification),
+				this.addToast(notification)
 			);
 
 			// Update toasts on notification changes
 			this._register(
 				this.model.onDidChangeNotification((e) =>
-					this.onDidChangeNotification(e),
-				),
+					this.onDidChangeNotification(e)
+				)
 			);
 		});
 
@@ -170,7 +174,7 @@ export class NotificationsToasts
 				) {
 					this.hide();
 				}
-			}),
+			})
 		);
 	}
 
@@ -215,14 +219,14 @@ export class NotificationsToasts
 		this.mapNotificationToDisposable.set(item, itemDisposables);
 		itemDisposables.add(
 			scheduleAtNextAnimationFrame(getWindow(this.container), () =>
-				this.doAddToast(item, itemDisposables),
-			),
+				this.doAddToast(item, itemDisposables)
+			)
 		);
 	}
 
 	private doAddToast(
 		item: INotificationViewItem,
-		itemDisposables: DisposableStore,
+		itemDisposables: DisposableStore
 	): void {
 		// Lazily create toasts containers
 		let notificationsToastsContainer = this.notificationsToastsContainer;
@@ -240,18 +244,18 @@ export class NotificationsToasts
 		// Container
 		const notificationToastContainer = document.createElement("div");
 		notificationToastContainer.classList.add(
-			"notification-toast-container",
+			"notification-toast-container"
 		);
 
 		const firstToast = notificationsToastsContainer.firstChild;
 		if (firstToast) {
 			notificationsToastsContainer.insertBefore(
 				notificationToastContainer,
-				firstToast,
+				firstToast
 			); // always first
 		} else {
 			notificationsToastsContainer.appendChild(
-				notificationToastContainer,
+				notificationToastContainer
 			);
 		}
 
@@ -271,17 +275,17 @@ export class NotificationsToasts
 						return localize(
 							"notificationAriaLabel",
 							"{0}, notification",
-							item.message.raw,
+							item.message.raw
 						);
 					}
 					return localize(
 						"notificationWithSourceAriaLabel",
 						"{0}, source: {1}, notification",
 						item.message.raw,
-						item.source,
+						item.source
 					);
 				})(),
-			},
+			}
 		);
 		itemDisposables.add(notificationList);
 
@@ -295,7 +299,7 @@ export class NotificationsToasts
 
 		// When disposed, remove as visible
 		itemDisposables.add(
-			toDisposable(() => this.updateToastVisibility(toast, false)),
+			toDisposable(() => this.updateToastVisibility(toast, false))
 		);
 
 		// Make visible
@@ -316,7 +320,7 @@ export class NotificationsToasts
 		itemDisposables.add(
 			item.onDidChangeExpansion(() => {
 				notificationList.updateNotificationsList(0, 1, [item]);
-			}),
+			})
 		);
 
 		// Handle content changes
@@ -334,7 +338,7 @@ export class NotificationsToasts
 						}
 						break;
 				}
-			}),
+			})
 		);
 
 		// Remove when item gets closed
@@ -347,7 +351,7 @@ export class NotificationsToasts
 			item,
 			notificationToastContainer,
 			notificationList,
-			itemDisposables,
+			itemDisposables
 		);
 
 		// Theming
@@ -362,7 +366,7 @@ export class NotificationsToasts
 			addDisposableListener(notificationToast, "transitionend", () => {
 				notificationToast.classList.remove("notification-fade-in");
 				notificationToast.classList.add("notification-fade-in-done");
-			}),
+			})
 		);
 
 		// Mark as visible
@@ -379,7 +383,7 @@ export class NotificationsToasts
 		item: INotificationViewItem,
 		notificationToastContainer: HTMLElement,
 		notificationList: NotificationsList,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): void {
 		// Track mouse over item
 		let isMouseOverToast = false;
@@ -387,15 +391,15 @@ export class NotificationsToasts
 			addDisposableListener(
 				notificationToastContainer,
 				EventType.MOUSE_OVER,
-				() => (isMouseOverToast = true),
-			),
+				() => (isMouseOverToast = true)
+			)
 		);
 		disposables.add(
 			addDisposableListener(
 				notificationToastContainer,
 				EventType.MOUSE_OUT,
-				() => (isMouseOverToast = false),
-			),
+				() => (isMouseOverToast = false)
+			)
 		);
 
 		// Install Timers to Purge Notification
@@ -403,38 +407,35 @@ export class NotificationsToasts
 		let listener: IDisposable;
 
 		const hideAfterTimeout = () => {
-			purgeTimeoutHandle = setTimeout(
-				() => {
-					// If the window does not have focus, we wait for the window to gain focus
-					// again before triggering the timeout again. This prevents an issue where
-					// focussing the window could immediately hide the notification because the
-					// timeout was triggered again.
-					if (!this.hostService.hasFocus) {
-						if (!listener) {
-							listener = this.hostService.onDidChangeFocus(
-								(focus) => {
-									if (focus) {
-										hideAfterTimeout();
-									}
-								},
-							);
-							disposables.add(listener);
-						}
+			purgeTimeoutHandle = setTimeout(() => {
+				// If the window does not have focus, we wait for the window to gain focus
+				// again before triggering the timeout again. This prevents an issue where
+				// focussing the window could immediately hide the notification because the
+				// timeout was triggered again.
+				if (!this.hostService.hasFocus) {
+					if (!listener) {
+						listener = this.hostService.onDidChangeFocus(
+							(focus) => {
+								if (focus) {
+									hideAfterTimeout();
+								}
+							}
+						);
+						disposables.add(listener);
 					}
+				}
 
-					// Otherwise...
-					else if (
-						item.sticky || // never hide sticky notifications
-						notificationList.hasFocus() || // never hide notifications with focus
-						isMouseOverToast // never hide notifications under mouse
-					) {
-						hideAfterTimeout();
-					} else {
-						this.removeToast(item);
-					}
-				},
-				NotificationsToasts.PURGE_TIMEOUT[item.severity],
-			);
+				// Otherwise...
+				else if (
+					item.sticky || // never hide sticky notifications
+					notificationList.hasFocus() || // never hide notifications with focus
+					isMouseOverToast // never hide notifications under mouse
+				) {
+					hideAfterTimeout();
+				} else {
+					this.removeToast(item);
+				}
+			}, NotificationsToasts.PURGE_TIMEOUT[item.severity]);
 		};
 
 		hideAfterTimeout();
@@ -449,7 +450,7 @@ export class NotificationsToasts
 		const notificationToast = this.mapNotificationToToast.get(item);
 		if (notificationToast) {
 			const toastHasDOMFocus = isAncestorOfActiveElement(
-				notificationToast.container,
+				notificationToast.container
 			);
 			if (toastHasDOMFocus) {
 				focusEditor = !(this.focusNext() || this.focusPrevious()); // focus next if any, otherwise focus editor
@@ -489,7 +490,7 @@ export class NotificationsToasts
 
 		// Disposables
 		this.mapNotificationToDisposable.forEach((disposable) =>
-			dispose(disposable),
+			dispose(disposable)
 		);
 		this.mapNotificationToDisposable.clear();
 
@@ -689,7 +690,7 @@ export class NotificationsToasts
 
 		return new Dimension(
 			Math.min(maxWidth, availableWidth),
-			availableHeight,
+			availableHeight
 		);
 	}
 
@@ -725,7 +726,7 @@ export class NotificationsToasts
 
 	private updateToastVisibility(
 		toast: INotificationToast,
-		visible: boolean,
+		visible: boolean
 	): void {
 		if (this.isToastInDOM(toast) === visible) {
 			return;
@@ -733,7 +734,7 @@ export class NotificationsToasts
 
 		// Update visibility in DOM
 		const notificationsToastsContainer = assertIsDefined(
-			this.notificationsToastsContainer,
+			this.notificationsToastsContainer
 		);
 		if (visible) {
 			notificationsToastsContainer.appendChild(toast.container);

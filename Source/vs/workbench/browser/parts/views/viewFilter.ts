@@ -89,7 +89,7 @@ export class FilterWidget extends Widget {
 	private readonly focusContextKey: IContextKey<boolean> | undefined;
 
 	private readonly _onDidChangeFilterText = this._register(
-		new Emitter<string>(),
+		new Emitter<string>()
 	);
 	readonly onDidChangeFilterText = this._onDidChangeFilterText.event;
 
@@ -106,25 +106,36 @@ export class FilterWidget extends Widget {
 
 	constructor(
 		private readonly options: IFilterWidgetOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService
 	) {
 		super();
 		this.delayedFilterUpdate = new Delayer<void>(400);
 		this._register(toDisposable(() => this.delayedFilterUpdate.cancel()));
 
 		if (options.focusContextKey) {
-			this.focusContextKey = new RawContextKey(options.focusContextKey, false).bindTo(contextKeyService);
+			this.focusContextKey = new RawContextKey(
+				options.focusContextKey,
+				false
+			).bindTo(contextKeyService);
 		}
 
-		this.element = DOM.$('.viewpane-filter');
-		[this.filterInputBox, this.focusTracker] = this.createInput(this.element);
+		this.element = DOM.$(".viewpane-filter");
+		[this.filterInputBox, this.focusTracker] = this.createInput(
+			this.element
+		);
 		this._register(this.filterInputBox);
 		this._register(this.focusTracker);
 
-		const controlsContainer = DOM.append(this.element, DOM.$('.viewpane-filter-controls'));
+		const controlsContainer = DOM.append(
+			this.element,
+			DOM.$(".viewpane-filter-controls")
+		);
 		this.filterBadge = this.createBadge(controlsContainer);
 		this.toolbar = this._register(this.createToolBar(controlsContainer));
 
@@ -175,7 +186,7 @@ export class FilterWidget extends Widget {
 	}
 
 	private createInput(
-		container: HTMLElement,
+		container: HTMLElement
 	): [ContextScopedHistoryInputBox, DOM.IFocusTracker] {
 		const inputBox = this._register(
 			this.instantiationService.createInstance(
@@ -189,8 +200,8 @@ export class FilterWidget extends Widget {
 					showHistoryHint: () =>
 						showHistoryKeybindingHint(this.keybindingService),
 					inputBoxStyles: defaultInputBoxStyles,
-				},
-			),
+				}
+			)
 		);
 		if (this.options.text) {
 			inputBox.value = this.options.text;
@@ -198,30 +209,30 @@ export class FilterWidget extends Widget {
 		this._register(
 			inputBox.onDidChange((filter) =>
 				this.delayedFilterUpdate.trigger(() =>
-					this.onDidInputChange(inputBox!),
-				),
-			),
+					this.onDidInputChange(inputBox!)
+				)
+			)
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
 				inputBox.inputElement,
 				DOM.EventType.KEY_DOWN,
-				(e: any) => this.onInputKeyDown(e, inputBox!),
-			),
+				(e: any) => this.onInputKeyDown(e, inputBox!)
+			)
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
 				container,
 				DOM.EventType.KEY_DOWN,
-				this.handleKeyboardEvent,
-			),
+				this.handleKeyboardEvent
+			)
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
 				container,
 				DOM.EventType.KEY_UP,
-				this.handleKeyboardEvent,
-			),
+				this.handleKeyboardEvent
+			)
 		);
 		this._register(
 			DOM.addStandardDisposableListener(
@@ -230,19 +241,19 @@ export class FilterWidget extends Widget {
 				(e) => {
 					e.stopPropagation();
 					e.preventDefault();
-				},
-			),
+				}
+			)
 		);
 
 		const focusTracker = this._register(
-			DOM.trackFocus(inputBox.inputElement),
+			DOM.trackFocus(inputBox.inputElement)
 		);
 		if (this.focusContextKey) {
 			this._register(
-				focusTracker.onDidFocus(() => this.focusContextKey!.set(true)),
+				focusTracker.onDidFocus(() => this.focusContextKey!.set(true))
 			);
 			this._register(
-				focusTracker.onDidBlur(() => this.focusContextKey!.set(false)),
+				focusTracker.onDidBlur(() => this.focusContextKey!.set(false))
 			);
 			this._register(toDisposable(() => this.focusContextKey!.reset()));
 		}
@@ -252,7 +263,7 @@ export class FilterWidget extends Widget {
 	private createBadge(container: HTMLElement): HTMLElement {
 		const filterBadge = DOM.append(
 			container,
-			DOM.$(".viewpane-filter-badge.hidden"),
+			DOM.$(".viewpane-filter-badge.hidden")
 		);
 		filterBadge.style.backgroundColor = asCssVariable(badgeBackground);
 		filterBadge.style.color = asCssVariable(badgeForeground);
@@ -276,7 +287,7 @@ export class FilterWidget extends Widget {
 							this.instantiationService.createInstance(
 								MoreFiltersActionViewItem,
 								action,
-								undefined,
+								undefined
 							);
 						this.moreFiltersActionViewItem.checked =
 							this.isMoreFiltersChecked;
@@ -284,7 +295,7 @@ export class FilterWidget extends Widget {
 					}
 					return undefined;
 				},
-			},
+			}
 		);
 	}
 
@@ -314,7 +325,7 @@ export class FilterWidget extends Widget {
 
 	private onInputKeyDown(
 		event: StandardKeyboardEvent,
-		filterInputBox: HistoryInputBox,
+		filterInputBox: HistoryInputBox
 	) {
 		let handled = false;
 		if (event.equals(KeyCode.Tab) && !this.toolbar.isEmpty()) {

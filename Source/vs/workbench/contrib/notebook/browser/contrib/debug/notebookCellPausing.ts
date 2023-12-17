@@ -26,21 +26,26 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
 	) {
 		super();
 
-		this._register(_debugService.getModel().onDidChangeCallStack(() => {
-			// First update using the stale callstack if the real callstack is empty, to reduce blinking while stepping.
-			// After not pausing for 2s, update again with the latest callstack.
-			this.onDidChangeCallStack(true);
-			this._scheduler.schedule();
-		}));
-		this._scheduler = this._register(new RunOnceScheduler(() => this.onDidChangeCallStack(false), 2000));
+		this._register(
+			_debugService.getModel().onDidChangeCallStack(() => {
+				// First update using the stale callstack if the real callstack is empty, to reduce blinking while stepping.
+				// After not pausing for 2s, update again with the latest callstack.
+				this.onDidChangeCallStack(true);
+				this._scheduler.schedule();
+			})
+		);
+		this._scheduler = this._register(
+			new RunOnceScheduler(() => this.onDidChangeCallStack(false), 2000)
+		);
 	}
 
 	private async onDidChangeCallStack(
-		fallBackOnStaleCallstack: boolean,
+		fallBackOnStaleCallstack: boolean
 	): Promise<void> {
 		const newPausedCells = new Set<string>();
 
@@ -93,5 +98,5 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(NotebookCellPausing, LifecyclePhase.Restored);

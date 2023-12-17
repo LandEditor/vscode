@@ -14,5 +14,5 @@ import { IWorkingCopyHistoryService } from "vs/workbench/services/workingCopy/co
 registerSingleton(
 	IWorkingCopyHistoryService,
 	NativeWorkingCopyHistoryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

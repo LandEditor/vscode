@@ -50,14 +50,22 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 	private readonly _renderDisposables = new DisposableStore();
 
 	constructor(
-		@ILanguageDetectionService private readonly _languageDetectionService: ILanguageDetectionService,
-		@IStatusbarService private readonly _statusBarService: IStatusbarService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@ILanguageDetectionService
+		private readonly _languageDetectionService: ILanguageDetectionService,
+		@IStatusbarService
+		private readonly _statusBarService: IStatusbarService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
-		_editorService.onDidActiveEditorChange(() => this._update(true), this, this._disposables);
+		_editorService.onDidActiveEditorChange(
+			() => this._update(true),
+			this,
+			this._disposables
+		);
 		this._update(false);
 	}
 
@@ -78,7 +86,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 
 	private async _doUpdate(): Promise<void> {
 		const editor = getCodeEditor(
-			this._editorService.activeTextEditorControl,
+			this._editorService.activeTextEditorControl
 		);
 
 		this._renderDisposables.clear();
@@ -87,19 +95,19 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 		editor?.onDidChangeModelLanguage(
 			() => this._update(true),
 			this,
-			this._renderDisposables,
+			this._renderDisposables
 		);
 		editor?.onDidChangeModelContent(
 			() => this._update(false),
 			this,
-			this._renderDisposables,
+			this._renderDisposables
 		);
 		const editorModel = editor?.getModel();
 		const editorUri = editorModel?.uri;
 		const existingId = editorModel?.getLanguageId();
 		const enablementConfig =
 			this._configurationService.getValue<LanguageDetectionHintConfig>(
-				"workbench.editor.languageDetectionHints",
+				"workbench.editor.languageDetectionHints"
 			);
 		const enabled =
 			typeof enablementConfig === "object" &&
@@ -121,10 +129,10 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 				let tooltip = localize(
 					"status.autoDetectLanguage",
 					"Accept Detected Language: {0}",
-					detectedName,
+					detectedName
 				);
 				const keybinding = this._keybindingService.lookupKeybinding(
-					detectLanguageCommandId,
+					detectLanguageCommandId
 				);
 				const label = keybinding?.getLabel();
 				if (label) {
@@ -136,7 +144,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 					ariaLabel: localize(
 						"langDetection.aria",
 						"Change to Detected Language: {0}",
-						lang,
+						lang
 					),
 					tooltip,
 					command: detectLanguageCommandId,
@@ -151,7 +159,7 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 							id: "status.editor.mode",
 							alignment: StatusbarAlignment.RIGHT,
 							compact: true,
-						},
+						}
 					);
 				} else {
 					this._combinedEntry.update(props);
@@ -165,10 +173,10 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	LanguageDetectionStatusContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 registerAction2(
@@ -179,14 +187,14 @@ registerAction2(
 				title: {
 					value: localize(
 						"detectlang",
-						"Detect Language from Content",
+						"Detect Language from Content"
 					),
 					original: "Detect Language from Content",
 				},
 				f1: true,
 				precondition: ContextKeyExpr.and(
 					NOTEBOOK_EDITOR_EDITABLE.toNegated(),
-					EditorContextKeys.editorTextFocus,
+					EditorContextKeys.editorTextFocus
 				),
 				keybinding: {
 					primary: KeyCode.KeyD | KeyMod.Alt | KeyMod.Shift,
@@ -198,7 +206,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const languageDetectionService = accessor.get(
-				ILanguageDetectionService,
+				ILanguageDetectionService
 			);
 			const editor = getCodeEditor(editorService.activeTextEditorControl);
 			const notificationService = accessor.get(INotificationService);
@@ -211,17 +219,17 @@ registerAction2(
 						.getModel()
 						?.setLanguage(
 							lang,
-							LanguageDetectionLanguageEventSource,
+							LanguageDetectionLanguageEventSource
 						);
 				} else {
 					notificationService.warn(
 						localize(
 							"noDetection",
-							"Unable to detect editor language",
-						),
+							"Unable to detect editor language"
+						)
 					);
 				}
 			}
 		}
-	},
+	}
 );

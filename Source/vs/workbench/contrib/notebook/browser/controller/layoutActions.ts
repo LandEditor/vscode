@@ -40,14 +40,14 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.layout.select.label",
-						"Select between Notebook Layouts",
+						"Select between Notebook Layouts"
 					),
 					original: "Select between Notebook Layouts",
 				},
 				f1: true,
 				precondition: ContextKeyExpr.equals(
 					`config.${NotebookSetting.openGettingStarted}`,
-					true,
+					true
 				),
 				category: NOTEBOOK_ACTIONS_CATEGORY,
 				menu: [
@@ -58,12 +58,12 @@ registerAction2(
 							NOTEBOOK_IS_ACTIVE_EDITOR,
 							ContextKeyExpr.notEquals(
 								"config.notebook.globalToolbar",
-								true,
+								true
 							),
 							ContextKeyExpr.equals(
 								`config.${NotebookSetting.openGettingStarted}`,
-								true,
-							),
+								true
+							)
 						),
 						order: 0,
 					},
@@ -73,12 +73,12 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							ContextKeyExpr.equals(
 								"config.notebook.globalToolbar",
-								true,
+								true
 							),
 							ContextKeyExpr.equals(
 								`config.${NotebookSetting.openGettingStarted}`,
-								true,
-							),
+								true
+							)
 						),
 						order: 0,
 					},
@@ -91,10 +91,10 @@ registerAction2(
 				.executeCommand(
 					"workbench.action.openWalkthrough",
 					{ category: "notebooks", step: "notebookProfile" },
-					true,
+					true
 				);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -105,7 +105,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.layout.configure.label",
-						"Customize Notebook Layout",
+						"Customize Notebook Layout"
 					),
 					original: "Customize Notebook Layout",
 				},
@@ -117,7 +117,7 @@ registerAction2(
 						group: "notebookLayout",
 						when: ContextKeyExpr.equals(
 							"config.notebook.globalToolbar",
-							true,
+							true
 						),
 						order: 1,
 					},
@@ -125,14 +125,12 @@ registerAction2(
 			});
 		}
 		run(accessor: ServicesAccessor): void {
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@tag:notebookLayout",
-				});
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@tag:notebookLayout",
+			});
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -143,7 +141,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.layout.configure.label",
-						"Customize Notebook Layout",
+						"Customize Notebook Layout"
 					),
 					original: "Customize Notebook Layout",
 				},
@@ -160,14 +158,12 @@ registerAction2(
 			});
 		}
 		run(accessor: ServicesAccessor): void {
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@tag:notebookLayout",
-				});
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@tag:notebookLayout",
+			});
 		}
-	},
+	}
 );
 
 MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
@@ -191,7 +187,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.toggleLineNumbers",
-						"Toggle Notebook Line Numbers",
+						"Toggle Notebook Line Numbers"
 					),
 					original: "Toggle Notebook Line Numbers",
 				},
@@ -209,11 +205,11 @@ registerAction2(
 				toggled: {
 					condition: ContextKeyExpr.notEquals(
 						"config.notebook.lineNumbers",
-						"off",
+						"off"
 					),
 					title: localize(
 						"notebook.showLineNumbers",
-						"Notebook Line Numbers",
+						"Notebook Line Numbers"
 					),
 				},
 			});
@@ -224,7 +220,7 @@ registerAction2(
 				.get(ICommandService)
 				.executeCommand("notebook.toggleLineNumbers");
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -235,7 +231,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.toggleCellToolbarPosition",
-						"Toggle Cell Toolbar Position",
+						"Toggle Cell Toolbar Position"
 					),
 					original: "Toggle Cell Toolbar Position",
 				},
@@ -256,7 +252,7 @@ registerAction2(
 				.get(ICommandService)
 				.executeCommand("notebook.toggleCellToolbarPosition", ...args);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -267,7 +263,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.toggleBreadcrumb",
-						"Toggle Breadcrumbs",
+						"Toggle Breadcrumbs"
 					),
 					original: "Toggle Breadcrumbs",
 				},
@@ -287,7 +283,7 @@ registerAction2(
 				.get(ICommandService)
 				.executeCommand("breadcrumbs.toggle");
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -298,7 +294,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.saveMimeTypeOrder",
-						"Save Mimetype Display Order",
+						"Save Mimetype Display Order"
 					),
 					original: "Save Mimetype Display Order",
 				},
@@ -317,7 +313,7 @@ registerAction2(
 				>();
 			qp.placeholder = localize(
 				"notebook.placeholder",
-				"Settings file to save in",
+				"Settings file to save in"
 			);
 			qp.items = [
 				{
@@ -328,7 +324,7 @@ registerAction2(
 					target: ConfigurationTarget.WORKSPACE,
 					label: localize(
 						"saveTarget.workspace",
-						"Workspace Settings",
+						"Workspace Settings"
 					),
 				},
 			];
@@ -345,7 +341,7 @@ registerAction2(
 
 			qp.show();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -356,7 +352,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.layout.webview.reset.label",
-						"Reset Notebook Webview",
+						"Reset Notebook Webview"
 					),
 					original: "Reset Notebook Webview",
 				},
@@ -370,14 +366,14 @@ registerAction2(
 			if (args) {
 				const uri = URI.revive(args);
 				const notebookEditorService = accessor.get(
-					INotebookEditorService,
+					INotebookEditorService
 				);
 				const widgets = notebookEditorService
 					.listNotebookEditors()
 					.filter(
 						(widget) =>
 							widget.hasModel() &&
-							widget.textModel.uri.toString() === uri.toString(),
+							widget.textModel.uri.toString() === uri.toString()
 					);
 				for (const widget of widgets) {
 					if (widget.hasModel()) {
@@ -386,7 +382,7 @@ registerAction2(
 				}
 			} else {
 				const editor = getNotebookEditorFromEditorPane(
-					editorService.activeEditorPane,
+					editorService.activeEditorPane
 				);
 				if (!editor) {
 					return;
@@ -395,5 +391,5 @@ registerAction2(
 				editor.getInnerWebview()?.reload();
 			}
 		}
-	},
+	}
 );

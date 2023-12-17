@@ -27,9 +27,12 @@ class NotebookKernelDetection
 	private _localDisposableStore = this._register(new DisposableStore());
 
 	constructor(
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotebookLoggingService private readonly _notebookLoggingService: INotebookLoggingService
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotebookLoggingService
+		private readonly _notebookLoggingService: INotebookLoggingService
 	) {
 		super();
 
@@ -48,7 +51,7 @@ class NotebookKernelDetection
 
 					// parse the event to get the notebook type
 					const notebookType = e.event.substring(
-						"onNotebook:".length,
+						"onNotebook:".length
 					);
 
 					if (notebookType === "*") {
@@ -79,19 +82,19 @@ class NotebookKernelDetection
 					) {
 						this._notebookLoggingService.debug(
 							"KernelDetection",
-							`start extension activation for ${notebookType}`,
+							`start extension activation for ${notebookType}`
 						);
 						const task =
 							this._notebookKernelService.registerNotebookKernelDetectionTask(
 								{
 									notebookType: notebookType,
-								},
+								}
 							);
 
 						this._detectionMap.set(notebookType, task);
 					}
 				}
-			}),
+			})
 		);
 
 		let timer: any = null;
@@ -108,12 +111,12 @@ class NotebookKernelDetection
 					for (const [notebookType, task] of this._detectionMap) {
 						if (
 							this._extensionService.activationEventIsDone(
-								`onNotebook:${notebookType}`,
+								`onNotebook:${notebookType}`
 							)
 						) {
 							this._notebookLoggingService.debug(
 								"KernelDetection",
-								`finish extension activation for ${notebookType}`,
+								`finish extension activation for ${notebookType}`
 							);
 							taskToDelete.push(notebookType);
 							task.dispose();
@@ -124,7 +127,7 @@ class NotebookKernelDetection
 						this._detectionMap.delete(notebookType);
 					});
 				});
-			}),
+			})
 		);
 
 		this._localDisposableStore.add({
@@ -138,8 +141,8 @@ class NotebookKernelDetection
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	NotebookKernelDetection,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

@@ -39,5 +39,5 @@ export class EncryptionService implements IEncryptionService {
 registerSingleton(
 	IEncryptionService,
 	EncryptionService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

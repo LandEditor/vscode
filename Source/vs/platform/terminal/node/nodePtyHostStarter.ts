@@ -20,7 +20,8 @@ import {
 export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 	constructor(
 		private readonly _reconnectConstants: IReconnectConstants,
-		@IEnvironmentService private readonly _environmentService: INativeEnvironmentService
+		@IEnvironmentService
+		private readonly _environmentService: INativeEnvironmentService
 	) {
 		super();
 	}
@@ -48,7 +49,7 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 
 		const ptyHostDebug = parsePtyHostDebugPort(
 			this._environmentService.args,
-			this._environmentService.isBuilt,
+			this._environmentService.isBuilt
 		);
 		if (ptyHostDebug) {
 			if (ptyHostDebug.break && ptyHostDebug.port) {
@@ -60,7 +61,7 @@ export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 
 		const client = new Client(
 			FileAccess.asFileUri("bootstrap-fork").fsPath,
-			opts,
+			opts
 		);
 
 		const store = new DisposableStore();

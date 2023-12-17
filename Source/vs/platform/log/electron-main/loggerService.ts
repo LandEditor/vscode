@@ -25,7 +25,7 @@ export const ILoggerMainService = refineServiceDecorator<
 
 export interface ILoggerMainService extends ILoggerService {
 	getOnDidChangeLogLevelEvent(
-		windowId: number,
+		windowId: number
 	): Event<LogLevel | [URI, LogLevel]>;
 
 	getOnDidChangeVisibilityEvent(windowId: number): Event<[URI, boolean]>;
@@ -35,13 +35,13 @@ export interface ILoggerMainService extends ILoggerService {
 	createLogger(
 		resource: URI,
 		options?: ILoggerOptions,
-		windowId?: number,
+		windowId?: number
 	): ILogger;
 
 	createLogger(
 		id: string,
 		options?: Omit<ILoggerOptions, "id">,
-		windowId?: number,
+		windowId?: number
 	): ILogger;
 
 	registerLogger(resource: ILoggerResource, windowId?: number): void;
@@ -60,12 +60,12 @@ export class LoggerMainService
 	override createLogger(
 		idOrResource: URI | string,
 		options?: ILoggerOptions,
-		windowId?: number,
+		windowId?: number
 	): ILogger {
 		if (windowId !== undefined) {
 			this.loggerResourcesByWindow.set(
 				this.toResource(idOrResource),
-				windowId,
+				windowId
 			);
 		}
 		try {
@@ -78,7 +78,7 @@ export class LoggerMainService
 
 	override registerLogger(
 		resource: ILoggerResource,
-		windowId?: number,
+		windowId?: number
 	): void {
 		if (windowId !== undefined) {
 			this.loggerResourcesByWindow.set(resource.resource, windowId);
@@ -104,19 +104,19 @@ export class LoggerMainService
 	}
 
 	getOnDidChangeLogLevelEvent(
-		windowId: number,
+		windowId: number
 	): Event<LogLevel | [URI, LogLevel]> {
 		return Event.filter(
 			this.onDidChangeLogLevel,
 			(arg) =>
 				isLogLevel(arg) ||
-				this.isInterestedLoggerResource(arg[0], windowId),
+				this.isInterestedLoggerResource(arg[0], windowId)
 		);
 	}
 
 	getOnDidChangeVisibilityEvent(windowId: number): Event<[URI, boolean]> {
 		return Event.filter(this.onDidChangeVisibility, ([resource]) =>
-			this.isInterestedLoggerResource(resource, windowId),
+			this.isInterestedLoggerResource(resource, windowId)
 		);
 	}
 
@@ -127,19 +127,19 @@ export class LoggerMainService
 					added: [...e.added].filter((loggerResource) =>
 						this.isInterestedLoggerResource(
 							loggerResource.resource,
-							windowId,
-						),
+							windowId
+						)
 					),
 					removed: [...e.removed].filter((loggerResource) =>
 						this.isInterestedLoggerResource(
 							loggerResource.resource,
-							windowId,
-						),
+							windowId
+						)
 					),
 				};
 				return r;
 			}),
-			(e) => e.added.length > 0 || e.removed.length > 0,
+			(e) => e.added.length > 0 || e.removed.length > 0
 		);
 	}
 
@@ -153,7 +153,7 @@ export class LoggerMainService
 
 	private isInterestedLoggerResource(
 		resource: URI,
-		windowId: number | undefined,
+		windowId: number | undefined
 	): boolean {
 		const loggerWindowId = this.loggerResourcesByWindow.get(resource);
 		return loggerWindowId === undefined || loggerWindowId === windowId;

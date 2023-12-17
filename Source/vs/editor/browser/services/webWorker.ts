@@ -16,12 +16,12 @@ import { IModelService } from "vs/editor/common/services/model";
 export function createWebWorker<T extends object>(
 	modelService: IModelService,
 	languageConfigurationService: ILanguageConfigurationService,
-	opts: IWebWorkerOptions,
+	opts: IWebWorkerOptions
 ): MonacoWebWorker<T> {
 	return new MonacoWebWorkerImpl<T>(
 		modelService,
 		languageConfigurationService,
-		opts,
+		opts
 	);
 }
 
@@ -81,13 +81,13 @@ class MonacoWebWorkerImpl<T extends object>
 	constructor(
 		modelService: IModelService,
 		languageConfigurationService: ILanguageConfigurationService,
-		opts: IWebWorkerOptions,
+		opts: IWebWorkerOptions
 	) {
 		super(
 			modelService,
 			opts.keepIdleModels || false,
 			opts.label,
-			languageConfigurationService,
+			languageConfigurationService
 		);
 		this._foreignModuleId = opts.moduleId;
 		this._foreignModuleCreateData = opts.createData || null;
@@ -105,8 +105,8 @@ class MonacoWebWorkerImpl<T extends object>
 				new Error(
 					"Missing method " +
 						method +
-						" or missing main thread foreign host.",
-				),
+						" or missing main thread foreign host."
+				)
 			);
 		}
 
@@ -114,8 +114,8 @@ class MonacoWebWorkerImpl<T extends object>
 			return Promise.resolve(
 				this._foreignModuleHost[method].apply(
 					this._foreignModuleHost,
-					args,
-				),
+					args
+				)
 			);
 		} catch (e) {
 			return Promise.reject(e);
@@ -132,14 +132,14 @@ class MonacoWebWorkerImpl<T extends object>
 					.loadForeignModule(
 						this._foreignModuleId,
 						this._foreignModuleCreateData,
-						foreignHostMethods,
+						foreignHostMethods
 					)
 					.then((foreignMethods) => {
 						this._foreignModuleCreateData = null;
 
 						const proxyMethodRequest = (
 							method: string,
-							args: any[],
+							args: any[]
 						): Promise<any> => {
 							return proxy.fmr(method, args);
 						};
@@ -148,13 +148,13 @@ class MonacoWebWorkerImpl<T extends object>
 							method: string,
 							proxyMethodRequest: (
 								method: string,
-								args: any[],
-							) => Promise<any>,
+								args: any[]
+							) => Promise<any>
 						): (() => Promise<any>) => {
 							return function () {
 								const args = Array.prototype.slice.call(
 									arguments,
-									0,
+									0
 								);
 								return proxyMethodRequest(method, args);
 							};
@@ -165,7 +165,7 @@ class MonacoWebWorkerImpl<T extends object>
 							(<any>foreignProxy)[foreignMethod] =
 								createProxyMethod(
 									foreignMethod,
-									proxyMethodRequest,
+									proxyMethodRequest
 								);
 						}
 
@@ -182,7 +182,7 @@ class MonacoWebWorkerImpl<T extends object>
 
 	public withSyncedResources(resources: URI[]): Promise<T> {
 		return this._withSyncedResources(resources).then((_) =>
-			this.getProxy(),
+			this.getProxy()
 		);
 	}
 }

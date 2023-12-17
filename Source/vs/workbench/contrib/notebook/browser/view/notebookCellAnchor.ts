@@ -29,14 +29,14 @@ export class NotebookCellAnchor implements IDisposable {
 	constructor(
 		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		private readonly configurationService: IConfigurationService,
-		private readonly scrollEvent: Event<ScrollEvent>,
+		private readonly scrollEvent: Event<ScrollEvent>
 	) {}
 
 	public shouldAnchor(
 		cellListView: IListView<CellViewModel>,
 		focusedIndex: number,
 		heightDelta: number,
-		executingCellUri: ICellViewModel,
+		executingCellUri: ICellViewModel
 	) {
 		if (
 			cellListView.element(focusedIndex).focusMode ===
@@ -56,11 +56,11 @@ export class NotebookCellAnchor implements IDisposable {
 			cellListView.renderHeight + cellListView.getScrollTop();
 		const focusStillVisible = viewBottom > newFocusBottom;
 		const anchorFocusedSetting = this.configurationService.getValue(
-			NotebookSetting.anchorToFocusedCell,
+			NotebookSetting.anchorToFocusedCell
 		);
 		const allowScrolling =
 			this.configurationService.getValue(
-				NotebookSetting.scrollToRevealCell,
+				NotebookSetting.scrollToRevealCell
 			) !== "none";
 		const growing = heightDelta > 0;
 		const autoAnchor =
@@ -85,7 +85,7 @@ export class NotebookCellAnchor implements IDisposable {
 		) {
 			const executionState =
 				this.notebookExecutionStateService.getCellExecution(
-					executingCell.uri,
+					executingCell.uri
 				);
 			if (
 				executionState &&

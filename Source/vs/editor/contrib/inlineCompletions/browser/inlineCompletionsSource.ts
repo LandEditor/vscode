@@ -42,7 +42,7 @@ import { SingleTextEdit } from "vs/editor/contrib/inlineCompletions/browser/sing
 
 export class InlineCompletionsSource extends Disposable {
 	private readonly _updateOperation = this._register(
-		new MutableDisposable<UpdateOperation>(),
+		new MutableDisposable<UpdateOperation>()
 	);
 	public readonly inlineCompletions = disposableObservableValue<
 		UpToDateInlineCompletions | undefined
@@ -55,25 +55,29 @@ export class InlineCompletionsSource extends Disposable {
 		private readonly textModel: ITextModel,
 		private readonly versionId: IObservable<number>,
 		private readonly _debounceValue: IFeatureDebounceInformation,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService
 	) {
 		super();
 
-		this._register(this.textModel.onDidChangeContent(() => {
-			this._updateOperation.clear();
-		}));
+		this._register(
+			this.textModel.onDidChangeContent(() => {
+				this._updateOperation.clear();
+			})
+		);
 	}
 
 	public fetch(
 		position: Position,
 		context: InlineCompletionContext,
-		activeInlineCompletion: InlineCompletionWithUpdatedRange | undefined,
+		activeInlineCompletion: InlineCompletionWithUpdatedRange | undefined
 	): Promise<boolean> {
 		const request = new UpdateRequest(
 			position,
 			context,
-			this.textModel.getVersionId(),
+			this.textModel.getVersionId()
 		);
 
 		const target = context.selectedSuggestionInfo
@@ -114,7 +118,7 @@ export class InlineCompletionsSource extends Disposable {
 				this.textModel,
 				context,
 				source.token,
-				this.languageConfigurationService,
+				this.languageConfigurationService
 			);
 
 			if (
@@ -127,14 +131,14 @@ export class InlineCompletionsSource extends Disposable {
 			const endTime = new Date();
 			this._debounceValue.update(
 				this.textModel,
-				endTime.getTime() - startTime.getTime(),
+				endTime.getTime() - startTime.getTime()
 			);
 
 			const completions = new UpToDateInlineCompletions(
 				updatedCompletions,
 				request,
 				this.textModel,
-				this.versionId,
+				this.versionId
 			);
 			if (activeInlineCompletion) {
 				const asInlineCompletion =
@@ -142,14 +146,14 @@ export class InlineCompletionsSource extends Disposable {
 				if (
 					activeInlineCompletion.canBeReused(
 						this.textModel,
-						position,
+						position
 					) &&
 					!updatedCompletions.has(asInlineCompletion)
 				) {
 					completions.prepend(
 						activeInlineCompletion.inlineCompletion,
 						asInlineCompletion.range,
-						true,
+						true
 					);
 				}
 			}
@@ -191,7 +195,7 @@ export class InlineCompletionsSource extends Disposable {
 
 function wait(
 	ms: number,
-	cancellationToken?: CancellationToken,
+	cancellationToken?: CancellationToken
 ): Promise<void> {
 	return new Promise((resolve) => {
 		let d: IDisposable | undefined = undefined;
@@ -217,7 +221,7 @@ class UpdateRequest {
 	constructor(
 		public readonly position: Position,
 		public readonly context: InlineCompletionContext,
-		public readonly versionId: number,
+		public readonly versionId: number
 	) {}
 
 	public satisfies(other: UpdateRequest): boolean {
@@ -226,7 +230,7 @@ class UpdateRequest {
 			equals(
 				this.context.selectedSuggestionInfo,
 				other.context.selectedSuggestionInfo,
-				(v1, v2) => v1.equals(v2),
+				(v1, v2) => v1.equals(v2)
 			) &&
 			(other.context.triggerKind ===
 				InlineCompletionTriggerKind.Automatic ||
@@ -240,7 +244,7 @@ class UpdateRequest {
 function equals<T>(
 	v1: T | undefined,
 	v2: T | undefined,
-	equals: (v1: T, v2: T) => boolean,
+	equals: (v1: T, v2: T) => boolean
 ): boolean {
 	if (!v1 || !v2) {
 		return v1 === v2;
@@ -252,7 +256,7 @@ class UpdateOperation implements IDisposable {
 	constructor(
 		public readonly request: UpdateRequest,
 		public readonly cancellationTokenSource: CancellationTokenSource,
-		public readonly promise: Promise<boolean>,
+		public readonly promise: Promise<boolean>
 	) {}
 
 	dispose() {
@@ -287,7 +291,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 		private readonly inlineCompletionProviderResult: InlineCompletionProviderResult,
 		public readonly request: UpdateRequest,
 		private readonly textModel: ITextModel,
-		private readonly versionId: IObservable<number>,
+		private readonly versionId: IObservable<number>
 	) {
 		const ids = textModel.deltaDecorations(
 			[],
@@ -296,7 +300,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 				options: {
 					description: "inline-completion-tracking-range",
 				},
-			})),
+			}))
 		);
 
 		this._inlineCompletions =
@@ -305,8 +309,8 @@ export class UpToDateInlineCompletions implements IDisposable {
 					new InlineCompletionWithUpdatedRange(
 						i,
 						ids[index],
-						this._rangeVersionId,
-					),
+						this._rangeVersionId
+					)
 			);
 	}
 
@@ -324,7 +328,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 					// This is just cleanup. It's ok if it happens with a delay.
 					this.textModel.deltaDecorations(
 						this._inlineCompletions.map((i) => i.decorationId),
-						[],
+						[]
 					);
 				}
 			}, 0);
@@ -338,7 +342,7 @@ export class UpToDateInlineCompletions implements IDisposable {
 	public prepend(
 		inlineCompletion: InlineCompletionItem,
 		range: Range,
-		addRefToSource: boolean,
+		addRefToSource: boolean
 	): void {
 		if (addRefToSource) {
 			inlineCompletion.source.addRef();
@@ -353,15 +357,15 @@ export class UpToDateInlineCompletions implements IDisposable {
 						description: "inline-completion-tracking-range",
 					},
 				},
-			],
+			]
 		)[0];
 		this._inlineCompletions.unshift(
 			new InlineCompletionWithUpdatedRange(
 				inlineCompletion,
 				id,
 				this._rangeVersionId,
-				range,
-			),
+				range
+			)
 		);
 		this._prependedInlineCompletionItems.push(inlineCompletion);
 	}
@@ -387,13 +391,13 @@ export class InlineCompletionWithUpdatedRange {
 		public readonly inlineCompletion: InlineCompletionItem,
 		public readonly decorationId: string,
 		private readonly rangeVersion: IObservable<number>,
-		initialRange?: Range,
+		initialRange?: Range
 	) {
 		this._updatedRange = initialRange ?? inlineCompletion.range;
 	}
 
 	public toInlineCompletion(
-		reader: IReader | undefined,
+		reader: IReader | undefined
 	): InlineCompletionItem {
 		return this.inlineCompletion.withRange(this._getUpdatedRange(reader));
 	}
@@ -401,14 +405,14 @@ export class InlineCompletionWithUpdatedRange {
 	public toSingleTextEdit(reader: IReader | undefined): SingleTextEdit {
 		return new SingleTextEdit(
 			this._getUpdatedRange(reader),
-			this.inlineCompletion.insertText,
+			this.inlineCompletion.insertText
 		);
 	}
 
 	public isVisible(
 		model: ITextModel,
 		cursorPosition: Position,
-		reader: IReader | undefined,
+		reader: IReader | undefined
 	): boolean {
 		const minimizedReplacement =
 			this._toFilterTextReplacement(reader).removeCommonPrefix(model);
@@ -427,13 +431,13 @@ export class InlineCompletionWithUpdatedRange {
 		// We might consider comparing by .toLowerText, but this requires GhostTextReplacement
 		const originalValue = model.getValueInRange(
 			minimizedReplacement.range,
-			EndOfLinePreference.LF,
+			EndOfLinePreference.LF
 		);
 		const filterText = minimizedReplacement.text;
 
 		const cursorPosIndex = Math.max(
 			0,
-			cursorPosition.column - minimizedReplacement.range.startColumn,
+			cursorPosition.column - minimizedReplacement.range.startColumn
 		);
 
 		let filterTextBefore = filterText.substring(0, cursorPosIndex);
@@ -443,7 +447,7 @@ export class InlineCompletionWithUpdatedRange {
 		let originalValueAfter = originalValue.substring(cursorPosIndex);
 
 		const originalValueIndent = model.getLineIndentColumn(
-			minimizedReplacement.range.startLineNumber,
+			minimizedReplacement.range.startLineNumber
 		);
 		if (minimizedReplacement.range.startColumn <= originalValueIndent) {
 			// Remove indentation
@@ -473,17 +477,17 @@ export class InlineCompletionWithUpdatedRange {
 	}
 
 	private _toFilterTextReplacement(
-		reader: IReader | undefined,
+		reader: IReader | undefined
 	): SingleTextEdit {
 		return new SingleTextEdit(
 			this._getUpdatedRange(reader),
-			this.inlineCompletion.filterText,
+			this.inlineCompletion.filterText
 		);
 	}
 
 	private _isSmallerThanOriginal(reader: IReader | undefined): boolean {
 		return length(this._getUpdatedRange(reader)).isBefore(
-			length(this.inlineCompletion.range),
+			length(this.inlineCompletion.range)
 		);
 	}
 
@@ -513,7 +517,7 @@ function length(range: Range): Position {
 	} else {
 		return new Position(
 			1 + range.endLineNumber - range.startLineNumber,
-			range.endColumn,
+			range.endColumn
 		);
 	}
 }

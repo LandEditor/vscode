@@ -19,7 +19,7 @@ import { MarkupCellViewModel } from "vs/workbench/contrib/notebook/browser/viewM
 export class FoldedCellHint extends CellContentPart {
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		private readonly _container: HTMLElement,
+		private readonly _container: HTMLElement
 	) {
 		super();
 	}
@@ -48,7 +48,7 @@ export class FoldedCellHint extends CellContentPart {
 			DOM.reset(
 				this._container,
 				this.getHiddenCellsLabel(length),
-				this.getHiddenCellHintButton(element),
+				this.getHiddenCellHintButton(element)
 			);
 			DOM.show(this._container);
 
@@ -75,17 +75,17 @@ export class FoldedCellHint extends CellContentPart {
 			DOM.addDisposableListener(expandIcon, DOM.EventType.CLICK, () => {
 				const controller =
 					this._notebookEditor.getContribution<FoldingController>(
-						FoldingController.id,
+						FoldingController.id
 					);
 				const idx = this._notebookEditor.getCellIndex(element);
 				if (typeof idx === "number") {
 					controller.setFoldingStateDown(
 						idx,
 						CellFoldingState.Expanded,
-						1,
+						1
 					);
 				}
-			}),
+			})
 		);
 
 		return expandIcon;

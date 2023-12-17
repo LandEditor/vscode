@@ -23,10 +23,14 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IWorkspaceTrustEnablementService workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchExtensionEnablementService
+		extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkspaceTrustEnablementService
+		workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService
 	) {
 		super();
 
@@ -53,8 +57,8 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 										await extensionService.stopExtensionHosts(
 											localize(
 												"restartExtensionHost.reason",
-												"Restarting extension host due to workspace trust change.",
-											),
+												"Restarting extension host due to workspace trust change."
+											)
 										);
 									await extensionEnablementService.updateExtensionsEnablementsWhenWorkspaceTrustChanges();
 									if (stopped) {
@@ -68,10 +72,10 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 					// Execute BEFORE the workspace trust transition completes
 					this._register(
 						workspaceTrustManagementService.addWorkspaceTrustTransitionParticipant(
-							workspaceTrustTransitionParticipant,
-						),
+							workspaceTrustTransitionParticipant
+						)
 					);
-				},
+				}
 			);
 		}
 	}

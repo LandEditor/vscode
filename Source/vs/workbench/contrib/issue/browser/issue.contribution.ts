@@ -27,18 +27,18 @@ class WebIssueContribution extends BaseIssueContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(WebIssueContribution, LifecyclePhase.Restored);
 
 registerSingleton(
 	IWorkbenchIssueService,
 	WebIssueService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 CommandsRegistry.registerCommand("_issues.getSystemStatus", (accessor) => {
 	return nls.localize(
 		"statusUnsupported",
-		"The --status argument is not yet supported in browsers.",
+		"The --status argument is not yet supported in browsers."
 	);
 });

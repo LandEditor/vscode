@@ -30,7 +30,7 @@ export namespace Iterable {
 	}
 
 	export function from<T>(
-		iterable: Iterable<T> | undefined | null,
+		iterable: Iterable<T> | undefined | null
 	): Iterable<T> {
 		return iterable || _empty;
 	}
@@ -42,7 +42,7 @@ export namespace Iterable {
 	}
 
 	export function isEmpty<T>(
-		iterable: Iterable<T> | undefined | null,
+		iterable: Iterable<T> | undefined | null
 	): boolean {
 		return !iterable || iterable[Symbol.iterator]().next().done === true;
 	}
@@ -53,7 +53,7 @@ export namespace Iterable {
 
 	export function some<T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => unknown,
+		predicate: (t: T) => unknown
 	): boolean {
 		for (const element of iterable) {
 			if (predicate(element)) {
@@ -65,15 +65,15 @@ export namespace Iterable {
 
 	export function find<T, R extends T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => t is R,
+		predicate: (t: T) => t is R
 	): R | undefined;
 	export function find<T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => boolean,
+		predicate: (t: T) => boolean
 	): T | undefined;
 	export function find<T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => boolean,
+		predicate: (t: T) => boolean
 	): T | undefined {
 		for (const element of iterable) {
 			if (predicate(element)) {
@@ -86,15 +86,15 @@ export namespace Iterable {
 
 	export function filter<T, R extends T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => t is R,
+		predicate: (t: T) => t is R
 	): Iterable<R>;
 	export function filter<T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => boolean,
+		predicate: (t: T) => boolean
 	): Iterable<T>;
 	export function* filter<T>(
 		iterable: Iterable<T>,
-		predicate: (t: T) => boolean,
+		predicate: (t: T) => boolean
 	): Iterable<T> {
 		for (const element of iterable) {
 			if (predicate(element)) {
@@ -105,7 +105,7 @@ export namespace Iterable {
 
 	export function* map<T, R>(
 		iterable: Iterable<T>,
-		fn: (t: T, index: number) => R,
+		fn: (t: T, index: number) => R
 	): Iterable<R> {
 		let index = 0;
 		for (const element of iterable) {
@@ -122,7 +122,7 @@ export namespace Iterable {
 	export function reduce<T, R>(
 		iterable: Iterable<T>,
 		reducer: (previousValue: R, currentValue: T) => R,
-		initialValue: R,
+		initialValue: R
 	): R {
 		let value = initialValue;
 		for (const element of iterable) {
@@ -137,7 +137,7 @@ export namespace Iterable {
 	export function* slice<T>(
 		arr: ReadonlyArray<T>,
 		from: number,
-		to = arr.length,
+		to = arr.length
 	): Iterable<T> {
 		if (from < 0) {
 			from += arr.length;
@@ -160,7 +160,7 @@ export namespace Iterable {
 	 */
 	export function consume<T>(
 		iterable: Iterable<T>,
-		atMost: number = Number.POSITIVE_INFINITY,
+		atMost: number = Number.POSITIVE_INFINITY
 	): [T[], Iterable<T>] {
 		const consumed: T[] = [];
 

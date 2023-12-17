@@ -19,7 +19,7 @@ export interface DecorationProvider {
 	getDecorationsInRange(
 		range: Range,
 		ownerId?: number,
-		filterOutValidation?: boolean,
+		filterOutValidation?: boolean
 	): IModelDecoration[];
 
 	/**
@@ -30,7 +30,7 @@ export interface DecorationProvider {
 	getAllDecorations(
 		ownerId?: number,
 		filterOutValidation?: boolean,
-		onlyMinimapDecorations?: boolean,
+		onlyMinimapDecorations?: boolean
 	): IModelDecoration[];
 
 	onDidChange: Event<void>;

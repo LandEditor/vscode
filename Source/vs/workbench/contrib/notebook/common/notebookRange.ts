@@ -46,23 +46,20 @@ export function cellIndexesToRanges(indexes: number[]) {
 				}
 				return ranges;
 			},
-			[[first, first + 1]],
+			[[first, first + 1]]
 		)
 		.reverse()
 		.map((val) => ({ start: val[0], end: val[1] }));
 }
 
 export function cellRangesToIndexes(ranges: ICellRange[]) {
-	const indexes = ranges.reduce(
-		(a, b) => {
-			for (let i = b.start; i < b.end; i++) {
-				a.push(i);
-			}
+	const indexes = ranges.reduce((a, b) => {
+		for (let i = b.start; i < b.end; i++) {
+			a.push(i);
+		}
 
-			return a;
-		},
-		[] as number[],
-	);
+		return a;
+	}, [] as number[]);
 
 	return indexes;
 }
@@ -85,7 +82,7 @@ export function reduceCellRanges(ranges: ICellRange[]): ICellRange[] {
 			}
 			return prev;
 		},
-		[first] as ICellRange[],
+		[first] as ICellRange[]
 	);
 }
 
@@ -114,7 +111,7 @@ export function cellRangesEqual(a: ICellRange[], b: ICellRange[]) {
 
 export function cellRangeContains(
 	range: ICellRange,
-	other: ICellRange,
+	other: ICellRange
 ): boolean {
 	return other.start >= range.start && other.end <= range.end;
 }

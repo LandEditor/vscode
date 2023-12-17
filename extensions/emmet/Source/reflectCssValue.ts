@@ -30,7 +30,7 @@ export function reflectCssValue(): Thenable<boolean> | undefined {
 
 function updateCSSNode(
 	editor: TextEditor,
-	property: Property,
+	property: Property
 ): Thenable<boolean> {
 	const rule: Rule = property.parent;
 	let currentPrefix = "";
@@ -54,13 +54,13 @@ function updateCSSNode(
 			}
 			const vendorProperty = getCssPropertyFromRule(
 				rule,
-				prefix + propertyName,
+				prefix + propertyName
 			);
 			if (vendorProperty) {
 				const rangeToReplace = offsetRangeToVsRange(
 					editor.document,
 					vendorProperty.valueToken.start,
-					vendorProperty.valueToken.end,
+					vendorProperty.valueToken.end
 				);
 				builder.replace(rangeToReplace, propertyValue);
 			}

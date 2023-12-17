@@ -29,7 +29,7 @@ export interface IStatusbarService extends IStatusbarEntryContainer {
 	 * Creates a new auxililary status bar part in the provided container.
 	 */
 	createAuxiliaryStatusbarPart(
-		container: HTMLElement,
+		container: HTMLElement
 	): IAuxiliaryStatusbarPart;
 
 	/**
@@ -38,7 +38,7 @@ export interface IStatusbarService extends IStatusbarEntryContainer {
 	 */
 	createScoped(
 		statusbarEntryContainer: IStatusbarEntryContainer,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IStatusbarService;
 }
 
@@ -69,7 +69,7 @@ export interface IStatusbarEntryLocation {
 }
 
 export function isStatusbarEntryLocation(
-	thing: unknown,
+	thing: unknown
 ): thing is IStatusbarEntryLocation {
 	const candidate = thing as IStatusbarEntryLocation | undefined;
 
@@ -102,7 +102,7 @@ export interface IStatusbarEntryPriority {
 }
 
 export function isStatusbarEntryPriority(
-	thing: unknown,
+	thing: unknown
 ): thing is IStatusbarEntryPriority {
 	const candidate = thing as IStatusbarEntryPriority | undefined;
 

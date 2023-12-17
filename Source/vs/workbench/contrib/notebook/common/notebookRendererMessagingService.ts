@@ -9,7 +9,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const INotebookRendererMessagingService =
 	createDecorator<INotebookRendererMessagingService>(
-		"INotebookRendererMessagingService",
+		"INotebookRendererMessagingService"
 	);
 
 export interface INotebookRendererMessagingService {
@@ -39,7 +39,7 @@ export interface INotebookRendererMessagingService {
 	receiveMessage(
 		editorId: string | undefined,
 		rendererId: string,
-		message: unknown,
+		message: unknown
 	): Promise<boolean>;
 }
 
@@ -50,7 +50,7 @@ export interface IScopedRendererMessaging extends IDisposable {
 	 */
 	receiveMessageHandler?: (
 		rendererId: string,
-		message: unknown,
+		message: unknown
 	) => Promise<boolean>;
 
 	/**

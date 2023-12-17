@@ -75,7 +75,7 @@ declare module "vscode" {
 		createCommentThread(
 			uri: Uri,
 			range: Range | undefined,
-			comments: readonly Comment[],
+			comments: readonly Comment[]
 		): CommentThread | CommentThread2;
 	}
 
@@ -85,7 +85,7 @@ declare module "vscode" {
 		 */
 		provideCommentingRanges(
 			document: TextDocument,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<
 			Range[] | { fileComments: boolean; ranges?: Range[] }
 		>;

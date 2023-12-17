@@ -64,7 +64,7 @@ declare module "vscode" {
 		 */
 		providePortAttributes(
 			attributes: { port: number; pid?: number; commandLine?: string },
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<PortAttributes>;
 	}
 
@@ -99,7 +99,7 @@ declare module "vscode" {
 		 */
 		export function registerPortAttributesProvider(
 			portSelector: PortAttributesSelector,
-			provider: PortAttributesProvider,
+			provider: PortAttributesProvider
 		): Disposable;
 	}
 }

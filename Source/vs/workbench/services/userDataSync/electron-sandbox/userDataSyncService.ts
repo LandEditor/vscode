@@ -15,5 +15,5 @@ registerSharedProcessRemoteService(IUserDataSyncService, "userDataSync", {
 });
 registerSharedProcessRemoteService(
 	IUserDataSyncResourceProviderService,
-	"IUserDataSyncResourceProviderService",
+	"IUserDataSyncResourceProviderService"
 );

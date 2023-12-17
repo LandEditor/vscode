@@ -89,7 +89,7 @@ export class KeybindingParser {
 					mods.shift,
 					mods.alt,
 					mods.meta,
-					scanCode,
+					scanCode
 				),
 				mods.remains,
 			];
@@ -101,7 +101,7 @@ export class KeybindingParser {
 				mods.shift,
 				mods.alt,
 				mods.meta,
-				keyCode,
+				keyCode
 			),
 			mods.remains,
 		];

@@ -29,7 +29,7 @@ export class ConflictDetector {
 		edits: ResourceEdit[],
 		@IFileService fileService: IFileService,
 		@IModelService modelService: IModelService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		const _workspaceEditResources = new ResourceMap<boolean>();
 
@@ -69,7 +69,7 @@ export class ConflictDetector {
 						break;
 					}
 				}
-			}),
+			})
 		);
 
 		// listen to model changes...?
@@ -82,7 +82,7 @@ export class ConflictDetector {
 		};
 		for (const model of modelService.getModels()) {
 			this._disposables.add(
-				model.onDidChangeContent(() => onDidChangeModel(model)),
+				model.onDidChangeContent(() => onDidChangeModel(model))
 			);
 		}
 	}

@@ -54,7 +54,7 @@ export function registerChatExportActions() {
 
 				const defaultUri = joinPath(
 					await fileDialogService.defaultFilePath(),
-					defaultFileName,
+					defaultFileName
 				);
 				const result = await fileDialogService.showSaveDialog({
 					defaultUri,
@@ -65,7 +65,7 @@ export function registerChatExportActions() {
 				}
 
 				const model = chatService.getSession(
-					widget.viewModel.sessionId,
+					widget.viewModel.sessionId
 				);
 				if (!model) {
 					return;
@@ -73,11 +73,11 @@ export function registerChatExportActions() {
 
 				// Using toJSON on the model
 				const content = VSBuffer.fromString(
-					JSON.stringify(model.toExport(), undefined, 2),
+					JSON.stringify(model.toExport(), undefined, 2)
 				);
 				await fileService.writeFile(result, content);
 			}
-		},
+		}
 	);
 
 	registerAction2(
@@ -103,7 +103,7 @@ export function registerChatExportActions() {
 
 				const defaultUri = joinPath(
 					await fileDialogService.defaultFilePath(),
-					defaultFileName,
+					defaultFileName
 				);
 				const result = await fileDialogService.showOpenDialog({
 					defaultUri,
@@ -132,6 +132,6 @@ export function registerChatExportActions() {
 					throw err;
 				}
 			}
-		},
+		}
 	);
 }

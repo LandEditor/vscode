@@ -11,7 +11,7 @@ import { CustomDataRequestService } from "./htmlServer";
 
 export function fetchHTMLDataProviders(
 	dataPaths: string[],
-	requestService: CustomDataRequestService,
+	requestService: CustomDataRequestService
 ): Promise<IHTMLDataProvider[]> {
 	const providers = dataPaths.map(async (p) => {
 		try {

@@ -52,7 +52,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 		private readonly _viewLineCounts: number[],
 		private readonly _originalTextModel: ITextModel,
 		private readonly _contextMenuService: IContextMenuService,
-		private readonly _clipboardService: IClipboardService,
+		private readonly _clipboardService: IClipboardService
 	) {
 		super();
 
@@ -64,7 +64,7 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 			ThemeIcon.asClassName(Codicon.lightBulb) + " lightbulb-glyph";
 		this._diffActions.style.position = "absolute";
 		const lineHeight = this._modifiedEditor.getOption(
-			EditorOption.lineHeight,
+			EditorOption.lineHeight
 		);
 		this._diffActions.style.right = "0px";
 		this._diffActions.style.visibility = "hidden";
@@ -94,33 +94,33 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 								? _diff.original.length > 1
 									? localize(
 											"diff.clipboard.copyDeletedLinesContent.label",
-											"Copy deleted lines",
-									  )
+											"Copy deleted lines"
+										)
 									: localize(
 											"diff.clipboard.copyDeletedLinesContent.single.label",
-											"Copy deleted line",
-									  )
+											"Copy deleted line"
+										)
 								: _diff.original.length > 1
-								  ? localize(
+									? localize(
 											"diff.clipboard.copyChangedLinesContent.label",
-											"Copy changed lines",
-									  )
-								  : localize(
+											"Copy changed lines"
+										)
+									: localize(
 											"diff.clipboard.copyChangedLinesContent.single.label",
-											"Copy changed line",
-									  ),
+											"Copy changed line"
+										),
 							undefined,
 							true,
 							async () => {
 								const originalText =
 									this._originalTextModel.getValueInRange(
-										_diff.original.toExclusiveRange(),
+										_diff.original.toExclusiveRange()
 									);
 								await this._clipboardService.writeText(
-									originalText,
+									originalText
 								);
-							},
-						),
+							}
+						)
 					);
 
 					if (_diff.original.length > 1) {
@@ -132,21 +132,21 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 											"diff.clipboard.copyDeletedLineContent.label",
 											"Copy deleted line ({0})",
 											_diff.original.startLineNumber +
-												currentLineNumberOffset,
-									  )
+												currentLineNumberOffset
+										)
 									: localize(
 											"diff.clipboard.copyChangedLineContent.label",
 											"Copy changed line ({0})",
 											_diff.original.startLineNumber +
-												currentLineNumberOffset,
-									  ),
+												currentLineNumberOffset
+										),
 								undefined,
 								true,
 								async () => {
 									let lineContent =
 										this._originalTextModel.getLineContent(
 											_diff.original.startLineNumber +
-												currentLineNumberOffset,
+												currentLineNumberOffset
 										);
 									if (lineContent === "") {
 										// empty line -> new line
@@ -158,14 +158,14 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 												: "\r\n";
 									}
 									await this._clipboardService.writeText(
-										lineContent,
+										lineContent
 									);
-								},
-							),
+								}
+							)
 						);
 					}
 					const readOnly = _modifiedEditor.getOption(
-						EditorOption.readOnly,
+						EditorOption.readOnly
 					);
 					if (!readOnly) {
 						actions.push(
@@ -173,14 +173,14 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 								"diff.inline.revertChange",
 								localize(
 									"diff.inline.revertChange.label",
-									"Revert this change",
+									"Revert this change"
 								),
 								undefined,
 								true,
 								async () => {
 									this._editor.revert(this._diff);
-								},
-							),
+								}
+							)
 						);
 					}
 					return actions;
@@ -199,13 +199,13 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 					}
 
 					const { top, height } = getDomNodePagePosition(
-						this._diffActions,
+						this._diffActions
 					);
 					const pad = Math.floor(lineHeight / 3);
 					e.preventDefault();
 					showContextMenu(e.posx, top + height + pad);
-				},
-			),
+				}
+			)
 		);
 
 		this._register(
@@ -218,13 +218,13 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 					currentLineNumberOffset = this._updateLightBulbPosition(
 						this._marginDomNode,
 						e.event.browserEvent.y,
-						lineHeight,
+						lineHeight
 					);
 					this.visibility = true;
 				} else {
 					this.visibility = false;
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -244,22 +244,22 @@ export class InlineDiffDeletedCodeMargin extends Disposable {
 						currentLineNumberOffset = this._updateLightBulbPosition(
 							this._marginDomNode,
 							e.event.browserEvent.y,
-							lineHeight,
+							lineHeight
 						);
 						showContextMenu(
 							e.event.posx,
-							e.event.posy + lineHeight,
+							e.event.posy + lineHeight
 						);
 					}
 				}
-			}),
+			})
 		);
 	}
 
 	private _updateLightBulbPosition(
 		marginDomNode: HTMLElement,
 		y: number,
-		lineHeight: number,
+		lineHeight: number
 	): number {
 		const { top } = getDomNodePagePosition(marginDomNode);
 		const offset = y - top;

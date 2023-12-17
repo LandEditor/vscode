@@ -14,18 +14,18 @@ export class ExtHostLogService extends LogService {
 	constructor(
 		isWorker: boolean,
 		@ILoggerService loggerService: ILoggerService,
-		@IExtHostInitDataService initData: IExtHostInitDataService,
+		@IExtHostInitDataService initData: IExtHostInitDataService
 	) {
 		const id = initData.remote.isRemote
 			? "remoteexthost"
 			: isWorker
-			  ? "workerexthost"
-			  : "exthost";
+				? "workerexthost"
+				: "exthost";
 		const name = initData.remote.isRemote
 			? localize("remote", "Extension Host (Remote)")
 			: isWorker
-			  ? localize("worker", "Extension Host (Worker)")
-			  : localize("local", "Extension Host");
+				? localize("worker", "Extension Host (Worker)")
+				: localize("local", "Extension Host");
 		super(loggerService.createLogger(id, { name }));
 	}
 }

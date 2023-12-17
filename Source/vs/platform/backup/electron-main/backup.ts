@@ -23,7 +23,7 @@ export interface IBackupMainService {
 	registerWorkspaceBackup(workspaceInfo: IWorkspaceBackupInfo): string;
 	registerWorkspaceBackup(
 		workspaceInfo: IWorkspaceBackupInfo,
-		migrateFrom: string,
+		migrateFrom: string
 	): Promise<string>;
 	registerFolderBackup(folderInfo: IFolderBackupInfo): string;
 	registerEmptyWindowBackup(emptyWindowInfo: IEmptyWindowBackupInfo): string;

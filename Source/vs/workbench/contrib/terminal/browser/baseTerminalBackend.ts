@@ -32,17 +32,17 @@ export abstract class BaseTerminalBackend extends Disposable {
 	}
 
 	protected readonly _onPtyHostConnected = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onPtyHostConnected = this._onPtyHostConnected.event;
 	protected readonly _onPtyHostRestart = this._register(new Emitter<void>());
 	readonly onPtyHostRestart = this._onPtyHostRestart.event;
 	protected readonly _onPtyHostUnresponsive = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onPtyHostUnresponsive = this._onPtyHostUnresponsive.event;
 	protected readonly _onPtyHostResponsive = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onPtyHostResponsive = this._onPtyHostResponsive.event;
 
@@ -52,7 +52,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 		historyService: IHistoryService,
 		configurationResolverService: IConfigurationResolverService,
 		statusBarService: IStatusbarService,
-		protected readonly _workspaceContextService: IWorkspaceContextService,
+		protected readonly _workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 
@@ -64,26 +64,26 @@ export abstract class BaseTerminalBackend extends Disposable {
 		this._register(
 			this._ptyHostController.onPtyHostExit(() => {
 				this._logService.error(
-					`The terminal's pty host process exited, the connection to all terminal processes was lost`,
+					`The terminal's pty host process exited, the connection to all terminal processes was lost`
 				);
-			}),
+			})
 		);
 		this.onPtyHostConnected(() => (hasStarted = true));
 		this._register(
 			this._ptyHostController.onPtyHostStart(() => {
 				this._logService.debug(
-					`The terminal's pty host process is starting`,
+					`The terminal's pty host process is starting`
 				);
 				// Only fire the _restart_ event after it has started
 				if (hasStarted) {
 					this._logService.trace(
-						"IPtyHostController#onPtyHostRestart",
+						"IPtyHostController#onPtyHostRestart"
 					);
 					this._onPtyHostRestart.fire();
 				}
 				statusBarAccessor?.dispose();
 				this._isPtyHostUnresponsive = false;
-			}),
+			})
 		);
 		this._register(
 			this._ptyHostController.onPtyHostUnresponsive(() => {
@@ -93,15 +93,15 @@ export abstract class BaseTerminalBackend extends Disposable {
 						name: localize("ptyHostStatus", "Pty Host Status"),
 						text: `$(debug-disconnect) ${localize(
 							"ptyHostStatus.short",
-							"Pty Host",
+							"Pty Host"
 						)}`,
 						tooltip: localize(
 							"nonResponsivePtyHost",
-							"The connection to the terminal's pty host process is unresponsive, terminals may stop working. Click to manually restart the pty host.",
+							"The connection to the terminal's pty host process is unresponsive, terminals may stop working. Click to manually restart the pty host."
 						),
 						ariaLabel: localize(
 							"ptyHostStatus.ariaLabel",
-							"Pty Host is unresponsive",
+							"Pty Host is unresponsive"
 						),
 						command: TerminalCommandId.RestartPtyHost,
 						kind: "warning",
@@ -110,11 +110,11 @@ export abstract class BaseTerminalBackend extends Disposable {
 				statusBarAccessor = statusBarService.addEntry(
 					unresponsiveStatusBarEntry,
 					"ptyHostStatus",
-					StatusbarAlignment.LEFT,
+					StatusbarAlignment.LEFT
 				);
 				this._isPtyHostUnresponsive = true;
 				this._onPtyHostUnresponsive.fire();
-			}),
+			})
 		);
 		this._register(
 			this._ptyHostController.onPtyHostResponsive(() => {
@@ -125,7 +125,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 				statusBarAccessor?.dispose();
 				this._isPtyHostUnresponsive = false;
 				this._onPtyHostResponsive.fire();
-			}),
+			})
 		);
 		this._register(
 			this._ptyHostController.onPtyHostRequestResolveVariables(
@@ -141,24 +141,24 @@ export abstract class BaseTerminalBackend extends Disposable {
 						historyService.getLastActiveWorkspaceRoot(Schemas.file);
 					const lastActiveWorkspaceRoot = activeWorkspaceRootUri
 						? this._workspaceContextService.getWorkspaceFolder(
-								activeWorkspaceRootUri,
-						  ) ?? undefined
+								activeWorkspaceRootUri
+							) ?? undefined
 						: undefined;
 					const resolveCalls: Promise<string>[] = e.originalText.map(
 						(t) => {
 							return configurationResolverService.resolveAsync(
 								lastActiveWorkspaceRoot,
-								t,
+								t
 							);
-						},
+						}
 					);
 					const result = await Promise.all(resolveCalls);
 					this._ptyHostController.acceptPtyHostResolvedVariables(
 						e.requestId,
-						result,
+						result
 					);
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -167,7 +167,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 	}
 
 	protected _deserializeTerminalState(
-		serializedState: string | undefined,
+		serializedState: string | undefined
 	): ISerializedTerminalState[] | undefined {
 		if (serializedState === undefined) {
 			return undefined;
@@ -180,7 +180,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 		) {
 			this._logService.warn(
 				"Could not revive serialized processes, wrong format",
-				parsedUnknown,
+				parsedUnknown
 			);
 			return undefined;
 		}
@@ -189,7 +189,7 @@ export abstract class BaseTerminalBackend extends Disposable {
 		if (parsedCrossVersion.version !== 1) {
 			this._logService.warn(
 				`Could not revive serialized processes, wrong version "${parsedCrossVersion.version}"`,
-				parsedCrossVersion,
+				parsedCrossVersion
 			);
 			return undefined;
 		}

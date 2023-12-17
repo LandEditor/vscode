@@ -33,13 +33,16 @@ registerAction2(
 					value: isWindows
 						? localize("revealInWindows", "Reveal in File Explorer")
 						: isMacintosh
-						  ? localize("revealInMac", "Reveal in Finder")
-						  : localize("openContainer", "Open Containing Folder"),
+							? localize("revealInMac", "Reveal in Finder")
+							: localize(
+									"openContainer",
+									"Open Containing Folder"
+								),
 					original: isWindows
 						? "Reveal in File Explorer"
 						: isMacintosh
-						  ? "Reveal in Finder"
-						  : "Open Containing Folder",
+							? "Reveal in Finder"
+							: "Open Containing Folder",
 				},
 				menu: {
 					id: MenuId.TimelineItemContext,
@@ -47,31 +50,31 @@ registerAction2(
 					order: 1,
 					when: ContextKeyExpr.and(
 						LOCAL_HISTORY_MENU_CONTEXT_KEY,
-						ResourceContextKey.Scheme.isEqualTo(Schemas.file),
+						ResourceContextKey.Scheme.isEqualTo(Schemas.file)
 					),
 				},
 			});
 		}
 		async run(
 			accessor: ServicesAccessor,
-			item: ITimelineCommandArgument,
+			item: ITimelineCommandArgument
 		): Promise<void> {
 			const workingCopyHistoryService = accessor.get(
-				IWorkingCopyHistoryService,
+				IWorkingCopyHistoryService
 			);
 			const nativeHostService = accessor.get(INativeHostService);
 
 			const { entry } = await findLocalHistoryEntry(
 				workingCopyHistoryService,
-				item,
+				item
 			);
 			if (entry) {
 				await nativeHostService.showItemInFolder(
-					entry.location.with({ scheme: Schemas.file }).fsPath,
+					entry.location.with({ scheme: Schemas.file }).fsPath
 				);
 			}
 		}
-	},
+	}
 );
 
 //#endregion

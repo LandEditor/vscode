@@ -72,7 +72,7 @@ export interface ITreeFilter<T, TFilterData = void> {
 	 */
 	filter(
 		element: T,
-		parentVisibility: TreeVisibility,
+		parentVisibility: TreeVisibility
 	): TreeFilterResult<TFilterData>;
 }
 
@@ -157,7 +157,7 @@ export interface ITreeModel<T, TFilterData, TRef> {
 	setCollapsed(
 		location: TRef,
 		collapsed?: boolean,
-		recursive?: boolean,
+		recursive?: boolean
 	): boolean;
 	expandTo(location: TRef): void;
 
@@ -253,7 +253,7 @@ export interface ITreeDragAndDrop<T> extends IListDragAndDrop<T> {
 		data: IDragAndDropData,
 		targetElement: T | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent,
+		originalEvent: DragEvent
 	): boolean | ITreeDragOverReaction;
 }
 

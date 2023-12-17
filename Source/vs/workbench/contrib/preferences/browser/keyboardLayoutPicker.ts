@@ -45,60 +45,79 @@ export class KeyboardLayoutPickerContribution
 	implements IWorkbenchContribution
 {
 	private readonly pickerElement = this._register(
-		new MutableDisposable<IStatusbarEntryAccessor>(),
+		new MutableDisposable<IStatusbarEntryAccessor>()
 	);
 
 	constructor(
-		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService,
-		@IStatusbarService private readonly statusbarService: IStatusbarService,
+		@IKeyboardLayoutService
+		private readonly keyboardLayoutService: IKeyboardLayoutService,
+		@IStatusbarService private readonly statusbarService: IStatusbarService
 	) {
 		super();
 
-		const name = nls.localize('status.workbench.keyboardLayout', "Keyboard Layout");
+		const name = nls.localize(
+			"status.workbench.keyboardLayout",
+			"Keyboard Layout"
+		);
 
 		const layout = this.keyboardLayoutService.getCurrentKeyboardLayout();
 		if (layout) {
 			const layoutInfo = parseKeyboardLayoutDescription(layout);
-			const text = nls.localize('keyboardLayout', "Layout: {0}", layoutInfo.label);
+			const text = nls.localize(
+				"keyboardLayout",
+				"Layout: {0}",
+				layoutInfo.label
+			);
 
 			this.pickerElement.value = this.statusbarService.addEntry(
 				{
 					name,
 					text,
 					ariaLabel: text,
-					command: KEYBOARD_LAYOUT_OPEN_PICKER
+					command: KEYBOARD_LAYOUT_OPEN_PICKER,
 				},
-				'status.workbench.keyboardLayout',
+				"status.workbench.keyboardLayout",
 				StatusbarAlignment.RIGHT
 			);
 		}
 
-		this._register(this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
-			const layout = this.keyboardLayoutService.getCurrentKeyboardLayout();
-			const layoutInfo = parseKeyboardLayoutDescription(layout);
+		this._register(
+			this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
+				const layout =
+					this.keyboardLayoutService.getCurrentKeyboardLayout();
+				const layoutInfo = parseKeyboardLayoutDescription(layout);
 
-			if (this.pickerElement.value) {
-				const text = nls.localize('keyboardLayout', "Layout: {0}", layoutInfo.label);
-				this.pickerElement.value.update({
-					name,
-					text,
-					ariaLabel: text,
-					command: KEYBOARD_LAYOUT_OPEN_PICKER
-				});
-			} else {
-				const text = nls.localize('keyboardLayout', "Layout: {0}", layoutInfo.label);
-				this.pickerElement.value = this.statusbarService.addEntry(
-					{
+				if (this.pickerElement.value) {
+					const text = nls.localize(
+						"keyboardLayout",
+						"Layout: {0}",
+						layoutInfo.label
+					);
+					this.pickerElement.value.update({
 						name,
 						text,
 						ariaLabel: text,
-						command: KEYBOARD_LAYOUT_OPEN_PICKER
-					},
-					'status.workbench.keyboardLayout',
-					StatusbarAlignment.RIGHT
-				);
-			}
-		}));
+						command: KEYBOARD_LAYOUT_OPEN_PICKER,
+					});
+				} else {
+					const text = nls.localize(
+						"keyboardLayout",
+						"Layout: {0}",
+						layoutInfo.label
+					);
+					this.pickerElement.value = this.statusbarService.addEntry(
+						{
+							name,
+							text,
+							ariaLabel: text,
+							command: KEYBOARD_LAYOUT_OPEN_PICKER,
+						},
+						"status.workbench.keyboardLayout",
+						StatusbarAlignment.RIGHT
+					);
+				}
+			})
+		);
 	}
 }
 
@@ -106,7 +125,7 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	KeyboardLayoutPickerContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 
 interface LayoutQuickPickItem extends IQuickPickItem {
@@ -122,11 +141,11 @@ interface IUnknownLayout {
 const DEFAULT_CONTENT: string = [
 	`// ${nls.localize(
 		"displayLanguage",
-		"Defines the keyboard layout used in VS Code in the browser environment.",
+		"Defines the keyboard layout used in VS Code in the browser environment."
 	)}`,
 	`// ${nls.localize(
 		"doc",
-		'Open VS Code and run "Developer: Inspect Key Mappings (JSON)" from Command Palette.',
+		'Open VS Code and run "Developer: Inspect Key Mappings (JSON)" from Command Palette.'
 	)}`,
 	``,
 	`// Once you have the keyboard layout info, please paste it below.`,
@@ -141,7 +160,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"keyboard.chooseLayout",
-						"Change Keyboard Layout",
+						"Change Keyboard Layout"
 					),
 					original: "Change Keyboard Layout",
 				},
@@ -198,14 +217,14 @@ registerAction2(
 				const platform = isMacintosh
 					? "Mac"
 					: isWindows
-					  ? "Win"
-					  : "Linux";
+						? "Win"
+						: "Linux";
 				picks.unshift({
 					type: "separator",
 					label: nls.localize(
 						"layoutPicks",
 						"Keyboard Layouts ({0})",
-						platform,
+						platform
 					),
 				});
 			}
@@ -213,7 +232,7 @@ registerAction2(
 			const configureKeyboardLayout: IQuickPickItem = {
 				label: nls.localize(
 					"configureKeyboardLayout",
-					"Configure Keyboard Layout",
+					"Configure Keyboard Layout"
 				),
 			};
 
@@ -225,7 +244,7 @@ registerAction2(
 				description: isAutoDetect
 					? `Current: ${
 							parseKeyboardLayoutDescription(currentLayout).label
-					  }`
+						}`
 					: undefined,
 				picked: isAutoDetect ? true : undefined,
 			};
@@ -235,7 +254,7 @@ registerAction2(
 			const pick = await quickInputService.pick(picks, {
 				placeHolder: nls.localize(
 					"pickKeyboardLayout",
-					"Select Keyboard Layout",
+					"Select Keyboard Layout"
 				),
 				matchOnDescription: true,
 			});
@@ -247,7 +266,7 @@ registerAction2(
 				// set keymap service to auto mode
 				configurationService.updateValue(
 					"keyboard.layout",
-					"autodetect",
+					"autodetect"
 				);
 				return;
 			}
@@ -260,12 +279,12 @@ registerAction2(
 					.then(undefined, () => {
 						return fileService.createFile(
 							file,
-							VSBuffer.fromString(DEFAULT_CONTENT),
+							VSBuffer.fromString(DEFAULT_CONTENT)
 						);
 					})
 					.then(
 						(
-							stat,
+							stat
 						): Promise<IEditorPane | undefined> | undefined => {
 							if (!stat) {
 								return undefined;
@@ -282,10 +301,10 @@ registerAction2(
 									"fail.createSettings",
 									"Unable to create '{0}' ({1}).",
 									file.toString(),
-									error,
-								),
+									error
+								)
 							);
-						},
+						}
 					);
 
 				return Promise.resolve();
@@ -293,8 +312,8 @@ registerAction2(
 
 			configurationService.updateValue(
 				"keyboard.layout",
-				getKeyboardLayoutId((<LayoutQuickPickItem>pick).layout),
+				getKeyboardLayoutId((<LayoutQuickPickItem>pick).layout)
 			);
 		}
-	},
+	}
 );

@@ -195,7 +195,7 @@ export interface IPreferencesEditorModel<T> {
 export type IGroupFilter = (group: ISettingsGroup) => boolean | null;
 export type ISettingMatcher = (
 	setting: ISetting,
-	group: ISettingsGroup,
+	group: ISettingsGroup
 ) => { matches: IRange[]; matchType: SettingMatchType; score: number } | null;
 
 export interface ISettingsEditorModel
@@ -205,12 +205,12 @@ export interface ISettingsEditorModel
 	filterSettings(
 		filter: string,
 		groupFilter: IGroupFilter,
-		settingMatcher: ISettingMatcher,
+		settingMatcher: ISettingMatcher
 	): ISettingMatch[];
 	findValueMatches(filter: string, setting: ISetting): IRange[];
 	updateResultGroup(
 		id: string,
-		resultGroup: ISearchResultGroup | undefined,
+		resultGroup: ISearchResultGroup | undefined
 	): IFilterResult | undefined;
 }
 
@@ -234,7 +234,7 @@ export interface IOpenSettingsOptions extends ISettingsEditorOptions {
 }
 
 export function validateSettingsEditorOptions(
-	options: ISettingsEditorOptions,
+	options: ISettingsEditorOptions
 ): ISettingsEditorOptions {
 	return {
 		// Inherit provided options
@@ -264,49 +264,49 @@ export interface IPreferencesService {
 	getFolderSettingsResource(resource: URI): URI | null;
 
 	createPreferencesEditorModel(
-		uri: URI,
+		uri: URI
 	): Promise<IPreferencesEditorModel<ISetting> | null>;
 	resolveModel(uri: URI): ITextModel | null;
 	createSettings2EditorModel(): Settings2EditorModel; // TODO
 
 	openRawDefaultSettings(): Promise<IEditorPane | undefined>;
 	openSettings(
-		options?: IOpenSettingsOptions,
+		options?: IOpenSettingsOptions
 	): Promise<IEditorPane | undefined>;
 	openApplicationSettings(
-		options?: IOpenSettingsOptions,
+		options?: IOpenSettingsOptions
 	): Promise<IEditorPane | undefined>;
 	openUserSettings(
-		options?: IOpenSettingsOptions,
+		options?: IOpenSettingsOptions
 	): Promise<IEditorPane | undefined>;
 	openRemoteSettings(
-		options?: IOpenSettingsOptions,
+		options?: IOpenSettingsOptions
 	): Promise<IEditorPane | undefined>;
 	openWorkspaceSettings(
-		options?: IOpenSettingsOptions,
+		options?: IOpenSettingsOptions
 	): Promise<IEditorPane | undefined>;
 	openFolderSettings(
 		options: IOpenSettingsOptions & {
 			folderUri: IOpenSettingsOptions["folderUri"];
-		},
+		}
 	): Promise<IEditorPane | undefined>;
 	openGlobalKeybindingSettings(
 		textual: boolean,
-		options?: IKeybindingsEditorOptions,
+		options?: IKeybindingsEditorOptions
 	): Promise<void>;
 	openDefaultKeybindingsFile(): Promise<IEditorPane | undefined>;
 	openLanguageSpecificSettings(
 		languageId: string,
-		options?: IOpenSettingsOptions,
+		options?: IOpenSettingsOptions
 	): Promise<IEditorPane | undefined>;
 	getEditableSettingsURI(
 		configurationTarget: ConfigurationTarget,
-		resource?: URI,
+		resource?: URI
 	): Promise<URI | null>;
 
 	createSplitJsonEditorInput(
 		configurationTarget: ConfigurationTarget,
-		resource: URI,
+		resource: URI
 	): EditorInput;
 }
 
@@ -361,13 +361,13 @@ export interface IKeybindingsEditorPane extends IEditorPane {
 	selectKeybinding(keybindingEntry: IKeybindingItemEntry): void;
 	defineKeybinding(
 		keybindingEntry: IKeybindingItemEntry,
-		add: boolean,
+		add: boolean
 	): Promise<void>;
 	defineWhenExpression(keybindingEntry: IKeybindingItemEntry): void;
 	updateKeybinding(
 		keybindingEntry: IKeybindingItemEntry,
 		key: string,
-		when: string | undefined,
+		when: string | undefined
 	): Promise<any>;
 	removeKeybinding(keybindingEntry: IKeybindingItemEntry): Promise<any>;
 	resetKeybinding(keybindingEntry: IKeybindingItemEntry): Promise<any>;

@@ -86,11 +86,10 @@ class BulkEdit {
 		private readonly _undoRedoGroup: UndoRedoGroup,
 		private readonly _undoRedoSource: UndoRedoSource | undefined,
 		private readonly _confirmBeforeUndo: boolean,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@ILogService private readonly _logService: ILogService,
-	) {
-
-	}
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@ILogService private readonly _logService: ILogService
+	) {}
 
 	ariaMessage(): string {
 		const otherResources = new ResourceMap<boolean>();
@@ -112,13 +111,13 @@ class BulkEdit {
 					"summary.nm",
 					"Made {0} text edits in {1} files",
 					textEditCount,
-					textEditResources.size,
+					textEditResources.size
 				);
 			} else {
 				return localize(
 					"summary.n0",
 					"Made {0} text edits in one file",
-					textEditCount,
+					textEditCount
 				);
 			}
 		} else {
@@ -127,7 +126,7 @@ class BulkEdit {
 				"Made {0} text edits in {1} files, also created or deleted {2} files",
 				textEditCount,
 				textEditResources.size,
-				otherResources.size,
+				otherResources.size
 			);
 		}
 	}
@@ -172,8 +171,8 @@ class BulkEdit {
 						this._undoRedoGroup,
 						this._undoRedoSource,
 						this._confirmBeforeUndo,
-						progress,
-					),
+						progress
+					)
 				);
 			} else if (group[0] instanceof ResourceTextEdit) {
 				resources.push(
@@ -181,8 +180,8 @@ class BulkEdit {
 						<ResourceTextEdit[]>group,
 						this._undoRedoGroup,
 						this._undoRedoSource,
-						progress,
-					),
+						progress
+					)
 				);
 			} else if (group[0] instanceof ResourceNotebookCellEdit) {
 				resources.push(
@@ -190,8 +189,8 @@ class BulkEdit {
 						<ResourceNotebookCellEdit[]>group,
 						this._undoRedoGroup,
 						this._undoRedoSource,
-						progress,
-					),
+						progress
+					)
 				);
 			} else {
 				console.log("UNKNOWN EDIT");
@@ -207,7 +206,7 @@ class BulkEdit {
 		undoRedoGroup: UndoRedoGroup,
 		undoRedoSource: UndoRedoSource | undefined,
 		confirmBeforeUndo: boolean,
-		progress: IProgress<void>,
+		progress: IProgress<void>
 	): Promise<readonly URI[]> {
 		this._logService.debug("_performFileEdits", JSON.stringify(edits));
 		const model = this._instaService.createInstance(
@@ -219,7 +218,7 @@ class BulkEdit {
 			confirmBeforeUndo,
 			progress,
 			this._token,
-			edits,
+			edits
 		);
 		return await model.apply();
 	}
@@ -228,7 +227,7 @@ class BulkEdit {
 		edits: ResourceTextEdit[],
 		undoRedoGroup: UndoRedoGroup,
 		undoRedoSource: UndoRedoSource | undefined,
-		progress: IProgress<void>,
+		progress: IProgress<void>
 	): Promise<readonly URI[]> {
 		this._logService.debug("_performTextEdits", JSON.stringify(edits));
 		const model = this._instaService.createInstance(
@@ -240,7 +239,7 @@ class BulkEdit {
 			undoRedoSource,
 			progress,
 			this._token,
-			edits,
+			edits
 		);
 		return await model.apply();
 	}
@@ -249,7 +248,7 @@ class BulkEdit {
 		edits: ResourceNotebookCellEdit[],
 		undoRedoGroup: UndoRedoGroup,
 		undoRedoSource: UndoRedoSource | undefined,
-		progress: IProgress<void>,
+		progress: IProgress<void>
 	): Promise<readonly URI[]> {
 		this._logService.debug("_performCellEdits", JSON.stringify(edits));
 		const model = this._instaService.createInstance(
@@ -258,7 +257,7 @@ class BulkEdit {
 			undoRedoSource,
 			progress,
 			this._token,
-			edits,
+			edits
 		);
 		return await model.apply();
 	}
@@ -271,14 +270,18 @@ export class BulkEditService implements IBulkEditService {
 	private _previewHandler?: IBulkEditPreviewHandler;
 
 	constructor(
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IWorkingCopyService private readonly _workingCopyService: IWorkingCopyService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-	) { }
+		@IWorkingCopyService
+		private readonly _workingCopyService: IWorkingCopyService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService
+	) {}
 
 	setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable {
 		this._previewHandler = handler;
@@ -295,7 +298,7 @@ export class BulkEditService implements IBulkEditService {
 
 	async apply(
 		editsIn: ResourceEdit[] | WorkspaceEdit,
-		options?: IBulkEditOptions,
+		options?: IBulkEditOptions
 	): Promise<IBulkEditResult> {
 		let edits = liftEdits(Array.isArray(editsIn) ? editsIn : editsIn.edits);
 
@@ -360,7 +363,7 @@ export class BulkEditService implements IBulkEditService {
 			edits,
 			undoRedoGroup,
 			options?.undoRedoSource,
-			!!options?.confirmBeforeUndo,
+			!!options?.confirmBeforeUndo
 		);
 
 		let listener: IDisposable | undefined;
@@ -368,8 +371,8 @@ export class BulkEditService implements IBulkEditService {
 			listener = this._lifecycleService.onBeforeShutdown((e) =>
 				e.veto(
 					this._shouldVeto(label, e.reason),
-					"veto.blukEditService",
-				),
+					"veto.blukEditService"
+				)
 			);
 			const resources = await bulkEdit.perform();
 
@@ -405,7 +408,7 @@ export class BulkEditService implements IBulkEditService {
 				if (set.has(copy.resource)) {
 					await copy.save();
 				}
-			},
+			}
 		);
 
 		const result = await Promise.allSettled(saves);
@@ -418,7 +421,7 @@ export class BulkEditService implements IBulkEditService {
 
 	private async _shouldVeto(
 		label: string | undefined,
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): Promise<boolean> {
 		let message: string;
 		let primaryButton: string;
@@ -426,50 +429,50 @@ export class BulkEditService implements IBulkEditService {
 			case ShutdownReason.CLOSE:
 				message = localize(
 					"closeTheWindow.message",
-					"Are you sure you want to close the window?",
+					"Are you sure you want to close the window?"
 				);
 				primaryButton = localize(
 					{
 						key: "closeTheWindow",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Close Window",
+					"&&Close Window"
 				);
 				break;
 			case ShutdownReason.LOAD:
 				message = localize(
 					"changeWorkspace.message",
-					"Are you sure you want to change the workspace?",
+					"Are you sure you want to change the workspace?"
 				);
 				primaryButton = localize(
 					{
 						key: "changeWorkspace",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Change &&Workspace",
+					"Change &&Workspace"
 				);
 				break;
 			case ShutdownReason.RELOAD:
 				message = localize(
 					"reloadTheWindow.message",
-					"Are you sure you want to reload the window?",
+					"Are you sure you want to reload the window?"
 				);
 				primaryButton = localize(
 					{
 						key: "reloadTheWindow",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Reload Window",
+					"&&Reload Window"
 				);
 				break;
 			default:
 				message = localize(
 					"quit.message",
-					"Are you sure you want to quit?",
+					"Are you sure you want to quit?"
 				);
 				primaryButton = localize(
 					{ key: "quit", comment: ["&& denotes a mnemonic"] },
-					"&&Quit",
+					"&&Quit"
 				);
 				break;
 		}
@@ -479,7 +482,7 @@ export class BulkEditService implements IBulkEditService {
 			detail: localize(
 				"areYouSureQuiteBulkEdit.detail",
 				"'{0}' is in progress.",
-				label || localize("fileOperation", "File operation"),
+				label || localize("fileOperation", "File operation")
 			),
 			primaryButton,
 		});
@@ -493,14 +496,14 @@ registerSingleton(IBulkEditService, BulkEditService, InstantiationType.Delayed);
 const autoSaveSetting = "files.refactoring.autoSave";
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration({
 	id: "files",
 	properties: {
 		[autoSaveSetting]: {
 			description: localize(
 				"refactoring.autoSave",
-				"Controls if files that were part of a refactoring are saved automatically",
+				"Controls if files that were part of a refactoring are saved automatically"
 			),
 			default: true,
 			type: "boolean",

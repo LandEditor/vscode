@@ -40,10 +40,10 @@ export type OptionDescriptions<T> = {
 	[P in keyof T]: T[P] extends boolean | undefined
 		? Option<"boolean">
 		: T[P] extends string | undefined
-		  ? Option<"string">
-		  : T[P] extends string[] | undefined
-			  ? Option<"string[]">
-			  : Subcommand<T[P]>;
+			? Option<"string">
+			: T[P] extends string[] | undefined
+				? Option<"string[]">
+				: Subcommand<T[P]>;
 };
 
 export const NATIVE_CLI_COMMANDS = ["tunnel", "serve-web"] as const;
@@ -59,7 +59,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 				args: "dir",
 				description: localize(
 					"cliDataDir",
-					"Directory where CLI metadata should be stored.",
+					"Directory where CLI metadata should be stored."
 				),
 			},
 			"disable-telemetry": { type: "boolean" },
@@ -87,7 +87,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 				args: "dir",
 				description: localize(
 					"cliDataDir",
-					"Directory where CLI metadata should be stored.",
+					"Directory where CLI metadata should be stored."
 				),
 			},
 			"disable-telemetry": { type: "boolean" },
@@ -109,7 +109,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: ["path1", "path2", "base", "result"],
 		description: localize(
 			"merge",
-			"Perform a three-way merge by providing paths for two modified versions of a file, the common origin of both modified versions and the output file to save merge results.",
+			"Perform a three-way merge by providing paths for two modified versions of a file, the common origin of both modified versions and the output file to save merge results."
 		),
 	},
 	add: {
@@ -119,7 +119,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "folder",
 		description: localize(
 			"add",
-			"Add folder(s) to the last active window.",
+			"Add folder(s) to the last active window."
 		),
 	},
 	goto: {
@@ -129,7 +129,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "file:line[:character]",
 		description: localize(
 			"goto",
-			"Open a file at the path on the specified line and character position.",
+			"Open a file at the path on the specified line and character position."
 		),
 	},
 	"new-window": {
@@ -144,7 +144,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		alias: "r",
 		description: localize(
 			"reuseWindow",
-			"Force to open a file or folder in an already opened window.",
+			"Force to open a file or folder in an already opened window."
 		),
 	},
 	wait: {
@@ -153,7 +153,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		alias: "w",
 		description: localize(
 			"wait",
-			"Wait for the files to be closed before returning.",
+			"Wait for the files to be closed before returning."
 		),
 	},
 	waitMarkerFilePath: { type: "string" },
@@ -163,7 +163,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "locale",
 		description: localize(
 			"locale",
-			"The locale to use (e.g. en-US or zh-TW).",
+			"The locale to use (e.g. en-US or zh-TW)."
 		),
 	},
 	"user-data-dir": {
@@ -172,7 +172,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "dir",
 		description: localize(
 			"userDataDir",
-			"Specifies the directory that user data is kept in. Can be used to open multiple distinct instances of Code.",
+			"Specifies the directory that user data is kept in. Can be used to open multiple distinct instances of Code."
 		),
 	},
 	profile: {
@@ -181,7 +181,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "profileName",
 		description: localize(
 			"profileName",
-			"Opens the provided folder or workspace with the given profile and associates the profile with the workspace. If the profile does not exist, a new empty one is created.",
+			"Opens the provided folder or workspace with the given profile and associates the profile with the workspace. If the profile does not exist, a new empty one is created."
 		),
 	},
 	help: {
@@ -198,7 +198,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "dir",
 		description: localize(
 			"extensionHomePath",
-			"Set the root path for extensions.",
+			"Set the root path for extensions."
 		),
 	},
 	"extensions-download-dir": { type: "string" },
@@ -208,7 +208,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "e",
 		description: localize(
 			"listExtensions",
-			"List the installed extensions.",
+			"List the installed extensions."
 		),
 	},
 	"show-versions": {
@@ -216,7 +216,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "e",
 		description: localize(
 			"showVersions",
-			"Show versions of installed extensions, when using --list-extensions.",
+			"Show versions of installed extensions, when using --list-extensions."
 		),
 	},
 	category: {
@@ -225,7 +225,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "e",
 		description: localize(
 			"category",
-			"Filters installed extensions by provided category, when using --list-extensions.",
+			"Filters installed extensions by provided category, when using --list-extensions."
 		),
 		args: "category",
 	},
@@ -235,7 +235,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "ext-id | path",
 		description: localize(
 			"installExtension",
-			"Installs or updates an extension. The argument is either an extension id or a path to a VSIX. The identifier of an extension is '${publisher}.${name}'. Use '--force' argument to update to latest version. To install a specific version provide '@${version}'. For example: 'vscode.csharp@1.2.3'.",
+			"Installs or updates an extension. The argument is either an extension id or a path to a VSIX. The identifier of an extension is '${publisher}.${name}'. Use '--force' argument to update to latest version. To install a specific version provide '@${version}'. For example: 'vscode.csharp@1.2.3'."
 		),
 	},
 	"pre-release": {
@@ -243,7 +243,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "e",
 		description: localize(
 			"install prerelease",
-			"Installs the pre-release version of the extension, when using --install-extension",
+			"Installs the pre-release version of the extension, when using --install-extension"
 		),
 	},
 	"uninstall-extension": {
@@ -259,7 +259,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "ext-id",
 		description: localize(
 			"experimentalApis",
-			"Enables proposed API features for extensions. Can receive one or more extension IDs to enable individually.",
+			"Enables proposed API features for extensions. Can receive one or more extension IDs to enable individually."
 		),
 	},
 
@@ -275,7 +275,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		global: true,
 		description: localize(
 			"verbose",
-			"Print verbose output (implies --wait).",
+			"Print verbose output (implies --wait)."
 		),
 	},
 	log: {
@@ -285,7 +285,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		global: true,
 		description: localize(
 			"log",
-			"Log level to use. Default is 'info'. Allowed values are 'critical', 'error', 'warn', 'info', 'debug', 'trace', 'off'. You can also configure the log level of an extension by passing extension id and log level in the following format: '${publisher}.${name}:${logLevel}'. For example: 'vscode.csharp:trace'. Can receive one or more such entries.",
+			"Log level to use. Default is 'info'. Allowed values are 'critical', 'error', 'warn', 'info', 'debug', 'trace', 'off'. You can also configure the log level of an extension by passing extension id and log level in the following format: '${publisher}.${name}:${logLevel}'. For example: 'vscode.csharp:trace'. Can receive one or more such entries."
 		),
 	},
 	status: {
@@ -294,7 +294,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"status",
-			"Print process usage and diagnostics information.",
+			"Print process usage and diagnostics information."
 		),
 	},
 	"prof-startup": {
@@ -302,7 +302,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"prof-startup",
-			"Run CPU profiler during startup.",
+			"Run CPU profiler during startup."
 		),
 	},
 	"prof-append-timers": { type: "string" },
@@ -317,7 +317,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"disableExtensions",
-			"Disable all installed extensions. This option is not persisted and is effective only when the command opens a new window.",
+			"Disable all installed extensions. This option is not persisted and is effective only when the command opens a new window."
 		),
 	},
 	"disable-extension": {
@@ -326,7 +326,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		args: "ext-id",
 		description: localize(
 			"disableExtension",
-			"Disable the provided extension. This option is not persisted and is effective only when the command opens a new window.",
+			"Disable the provided extension. This option is not persisted and is effective only when the command opens a new window."
 		),
 	},
 	sync: {
@@ -344,7 +344,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"inspect-extensions",
-			"Allow debugging and profiling of extensions. Check the developer tools for the connection URI.",
+			"Allow debugging and profiling of extensions. Check the developer tools for the connection URI."
 		),
 	},
 	"inspect-brk-extensions": {
@@ -355,7 +355,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"inspect-brk-extensions",
-			"Allow debugging and profiling of extensions with the extension host being paused after start. Check the developer tools for the connection URI.",
+			"Allow debugging and profiling of extensions with the extension host being paused after start. Check the developer tools for the connection URI."
 		),
 	},
 	"disable-gpu": {
@@ -363,7 +363,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"disableGPU",
-			"Disable GPU hardware acceleration.",
+			"Disable GPU hardware acceleration."
 		),
 	},
 	"disable-chromium-sandbox": {
@@ -371,7 +371,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"disableChromiumSandbox",
-			"Use this option only when there is requirement to launch the application as sudo user on Linux or when running as an elevated user in an applocker environment on Windows.",
+			"Use this option only when there is requirement to launch the application as sudo user on Linux or when running as an elevated user in an applocker environment on Windows."
 		),
 	},
 	sandbox: { type: "boolean" },
@@ -381,7 +381,7 @@ export const OPTIONS: OptionDescriptions<Required<NativeParsedArgs>> = {
 		cat: "t",
 		description: localize(
 			"telemetry",
-			"Shows all telemetry events which VS code collects.",
+			"Shows all telemetry events which VS code collects."
 		),
 	},
 
@@ -500,7 +500,7 @@ const ignoringReporter = {
 export function parseArgs<T>(
 	args: string[],
 	options: OptionDescriptions<T>,
-	errorReporter: ErrorReporter = ignoringReporter,
+	errorReporter: ErrorReporter = ignoringReporter
 ): T {
 	const firstArg = args.find((a) => a.length > 0 && a[0] !== "-");
 
@@ -564,7 +564,7 @@ export function parseArgs<T>(
 
 	// https://github.com/microsoft/vscode/issues/58177, https://github.com/microsoft/vscode/issues/106617
 	cleanedArgs._ = parsedArgs._.map((arg) => String(arg)).filter(
-		(arg) => arg.length > 0,
+		(arg) => arg.length > 0
 	);
 
 	delete remainingArgs._;
@@ -591,8 +591,8 @@ export function parseArgs<T>(
 									localize(
 										"deprecated.useInstead",
 										"Use {0} instead.",
-										optionId,
-									),
+										optionId
+									)
 							);
 						}
 					}
@@ -627,7 +627,7 @@ export function parseArgs<T>(
 			if (o.deprecationMessage) {
 				errorReporter.onDeprecatedOption(
 					optionId,
-					o.deprecationMessage,
+					o.deprecationMessage
 				);
 			}
 		}
@@ -659,7 +659,7 @@ function formatUsage(optionId: string, option: Option<any>) {
 // exported only for testing
 export function formatOptions(
 	options: OptionDescriptions<any>,
-	columns: number,
+	columns: number
 ): string[] {
 	const usageTexts: [string, string][] = [];
 	for (const optionId in options) {
@@ -673,14 +673,14 @@ export function formatOptions(
 function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 	const maxLength = usageTexts.reduce(
 		(previous, e) => Math.max(previous, e[0].length),
-		12,
+		12
 	);
-	const argLength = maxLength + 2 /*left padding*/ + 1 /*right padding*/;
+	const argLength = maxLength + 2 /*left padding*/ + 1; /*right padding*/
 	if (columns - argLength < 25) {
 		// Use a condensed version on narrow terminals
 		return usageTexts.reduce<string[]>(
 			(r, ut) => r.concat([`  ${ut[0]}`, `      ${ut[1]}`]),
-			[],
+			[]
 		);
 	}
 	const descriptionColumns = columns - argLength - 1;
@@ -689,7 +689,7 @@ function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 		const usage = ut[0];
 		const wrappedDescription = wrapText(ut[1], descriptionColumns);
 		const keyPadding = indent(
-			argLength - usage.length - 2 /*left padding*/,
+			argLength - usage.length - 2 /*left padding*/
 		);
 		result.push("  " + usage + keyPadding + wrappedDescription[0]);
 		for (let i = 1; i < wrappedDescription.length; i++) {
@@ -722,7 +722,7 @@ export function buildHelpMessage(
 	executableName: string,
 	version: string,
 	options: OptionDescriptions<any>,
-	capabilities?: { noPipe?: boolean; noInputFiles: boolean },
+	capabilities?: { noPipe?: boolean; noInputFiles: boolean }
 ): string {
 	const columns = (process.stdout.isTTY && process.stdout.columns) || 80;
 	const inputFiles =
@@ -735,8 +735,8 @@ export function buildHelpMessage(
 	help.push(
 		`${localize("usage", "Usage")}: ${executableName} [${localize(
 			"options",
-			"options",
-		)}]${inputFiles}`,
+			"options"
+		)}]${inputFiles}`
 	);
 	help.push("");
 	if (capabilities?.noPipe !== true) {
@@ -745,16 +745,16 @@ export function buildHelpMessage(
 				localize(
 					"stdinWindows",
 					"To read output from another program, append '-' (e.g. 'echo Hello World | {0} -')",
-					executableName,
-				),
+					executableName
+				)
 			);
 		} else {
 			help.push(
 				localize(
 					"stdinUnix",
 					"To read from stdin, append '-' (e.g. 'ps aux | grep code | {0} -')",
-					executableName,
-				),
+					executableName
+				)
 			);
 		}
 		help.push("");
@@ -797,8 +797,8 @@ export function buildHelpMessage(
 		help.push(
 			...formatUsageTexts(
 				subcommands.map((s) => [s.command, s.description]),
-				columns,
-			),
+				columns
+			)
 		);
 		help.push("");
 	}
@@ -808,7 +808,7 @@ export function buildHelpMessage(
 
 export function buildVersionMessage(
 	version: string | undefined,
-	commit: string | undefined,
+	commit: string | undefined
 ): string {
 	return `${version || localize("unknownVersion", "Unknown version")}\n${
 		commit || localize("unknownCommit", "Unknown commit")

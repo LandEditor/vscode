@@ -83,24 +83,24 @@ export const CTX_NOTEBOOK_CELL_CHAT_FOCUSED = new RawContextKey<boolean>(
 	false,
 	localize(
 		"notebookCellChatFocused",
-		"Whether the cell chat editor is focused",
-	),
+		"Whether the cell chat editor is focused"
+	)
 );
 export const CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST = new RawContextKey<boolean>(
 	"notebookChatHasActiveRequest",
 	false,
 	localize(
 		"notebookChatHasActiveRequest",
-		"Whether the cell chat editor has an active request",
-	),
+		"Whether the cell chat editor has an active request"
+	)
 );
 export const MENU_CELL_CHAT_WIDGET = MenuId.for("cellChatWidget");
 export const MENU_CELL_CHAT_WIDGET_STATUS = MenuId.for("cellChatWidget.status");
 export const MENU_CELL_CHAT_WIDGET_FEEDBACK = MenuId.for(
-	"cellChatWidget.feedback",
+	"cellChatWidget.feedback"
 );
 export const MENU_CELL_CHAT_WIDGET_TOOLBAR = MenuId.for(
-	"cellChatWidget.toolbar",
+	"cellChatWidget.toolbar"
 );
 
 interface ICellChatPart {
@@ -133,46 +133,60 @@ export class NotebookCellChatController extends Disposable {
 		undefined | InlineChatResponseType
 	>;
 	private _widgetDisposableStore: DisposableStore = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	constructor(
 		private readonly _notebookEditor: INotebookEditorDelegate,
 		private readonly _chatPart: ICellChatPart,
 		private readonly _cell: ICellViewModel,
 		private readonly _partContainer: HTMLElement,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInlineChatSessionService private readonly _inlineChatSessionService: IInlineChatSessionService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInlineChatSessionService
+		private readonly _inlineChatSessionService: IInlineChatSessionService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
 	) {
 		super();
 
 		NotebookCellChatController._cellChatControllers.set(this._cell, this);
-		this._ctxHasActiveRequest = CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST.bindTo(this._contextKeyService);
+		this._ctxHasActiveRequest = CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST.bindTo(
+			this._contextKeyService
+		);
 		this._ctxVisible = CTX_INLINE_CHAT_VISIBLE.bindTo(_contextKeyService);
-		this._ctxCellWidgetFocused = CTX_NOTEBOOK_CELL_CHAT_FOCUSED.bindTo(this._contextKeyService);
-		this._ctxLastResponseType = CTX_INLINE_CHAT_LAST_RESPONSE_TYPE.bindTo(this._contextKeyService);
+		this._ctxCellWidgetFocused = CTX_NOTEBOOK_CELL_CHAT_FOCUSED.bindTo(
+			this._contextKeyService
+		);
+		this._ctxLastResponseType = CTX_INLINE_CHAT_LAST_RESPONSE_TYPE.bindTo(
+			this._contextKeyService
+		);
 
-		this._register(this._cell.onDidChangeEditorAttachState(() => {
-			const editor = this._getCellEditor();
-			this._inlineChatListener?.dispose();
+		this._register(
+			this._cell.onDidChangeEditorAttachState(() => {
+				const editor = this._getCellEditor();
+				this._inlineChatListener?.dispose();
 
-			if (!editor) {
-				return;
-			}
+				if (!editor) {
+					return;
+				}
 
-			if (!this._widget && this._isVisible) {
-				this._initialize(editor);
-			}
+				if (!this._widget && this._isVisible) {
+					this._initialize(editor);
+				}
 
-			const inlineChatController = InlineChatController.get(editor);
-			if (inlineChatController) {
-				this._inlineChatListener = inlineChatController.onWillStartSession(() => {
-					this.dismiss(false);
-				});
-			}
-		}));
+				const inlineChatController = InlineChatController.get(editor);
+				if (inlineChatController) {
+					this._inlineChatListener =
+						inlineChatController.onWillStartSession(() => {
+							this.dismiss(false);
+						});
+				}
+			})
+		);
 	}
 
 	private _initialize(editor: IActiveCodeEditor) {
@@ -183,13 +197,13 @@ export class NotebookCellChatController extends Disposable {
 				menuId: MENU_CELL_CHAT_WIDGET,
 				statusMenuId: MENU_CELL_CHAT_WIDGET_STATUS,
 				feedbackMenuId: MENU_CELL_CHAT_WIDGET_FEEDBACK,
-			},
+			}
 		);
 
 		this._widgetDisposableStore.add(
 			this._widget.onDidChangeHeight(() => {
 				this._updateHeight();
-			}),
+			})
 		);
 
 		this._widgetDisposableStore.add(
@@ -212,7 +226,7 @@ export class NotebookCellChatController extends Disposable {
 						this._strategy?.createSnapshot();
 					}
 				}
-			}),
+			})
 		);
 
 		this._partContainer.appendChild(this._widget.domNode);
@@ -226,8 +240,8 @@ export class NotebookCellChatController extends Disposable {
 				{
 					telemetrySource: "interactiveEditorWidget-toolbar",
 					toolbarOptions: { primaryGroup: "main" },
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -271,9 +285,9 @@ export class NotebookCellChatController extends Disposable {
 		const heightWithMargin =
 			this._isVisible && this._widget
 				? this._widget.getHeight() -
-				  8 /** shadow */ -
-				  18 /** padding */ +
-				  margin /** bottom margin for the cell part */
+					8 /** shadow */ -
+					18 /** padding */ +
+					margin /** bottom margin for the cell part */
 				: 0;
 
 		if (this._cell.chatHeight === heightWithMargin) {
@@ -296,7 +310,7 @@ export class NotebookCellChatController extends Disposable {
 		this._partContainer.style.display = "flex";
 		this._widget?.focus();
 		this._widget?.updateInfo(
-			localize("welcome.1", "AI-generated code may be incorrect"),
+			localize("welcome.1", "AI-generated code may be incorrect")
 		);
 		this._ctxVisible.set(true);
 		this._ctxCellWidgetFocused.set(true);
@@ -310,7 +324,7 @@ export class NotebookCellChatController extends Disposable {
 				}
 			} else {
 				await Event.toPromise(
-					Event.once(this._cell.onDidChangeEditorAttachState),
+					Event.once(this._cell.onDidChangeEditorAttachState)
 				);
 				if (token.isCancellationRequested) {
 					return;
@@ -330,8 +344,8 @@ export class NotebookCellChatController extends Disposable {
 					this._activeSession?.session.message ??
 						localize(
 							"welcome.1",
-							"AI-generated code may be incorrect",
-						),
+							"AI-generated code may be incorrect"
+						)
 				);
 				this._widget.focus();
 			}
@@ -340,7 +354,7 @@ export class NotebookCellChatController extends Disposable {
 
 	private _getCellEditor() {
 		const editors = this._notebookEditor.codeEditors.find(
-			(editor) => editor[0] === this._chatPart.activeCell,
+			(editor) => editor[0] === this._chatPart.activeCell
 		);
 		if (!editors || !editors[1].hasModel()) {
 			return;
@@ -352,7 +366,7 @@ export class NotebookCellChatController extends Disposable {
 
 	private async _startSession(
 		editor: IActiveCodeEditor,
-		token: CancellationToken,
+		token: CancellationToken
 	) {
 		if (this._activeSession) {
 			this._inlineChatSessionService.releaseSession(this._activeSession);
@@ -361,7 +375,7 @@ export class NotebookCellChatController extends Disposable {
 		const session = await this._inlineChatSessionService.createSession(
 			editor,
 			{ editMode: EditMode.LivePreview },
-			token,
+			token
 		);
 
 		if (!session) {
@@ -381,7 +395,7 @@ export class NotebookCellChatController extends Disposable {
 
 		const value = this._activeSession.lastInput.value;
 		const editors = this._notebookEditor.codeEditors.find(
-			(editor) => editor[0] === this._chatPart.activeCell,
+			(editor) => editor[0] === this._chatPart.activeCell
 		);
 		if (!editors || !editors[1].hasModel()) {
 			return;
@@ -417,7 +431,7 @@ export class NotebookCellChatController extends Disposable {
 		const progressiveEditsClock = StopWatch.create();
 		const progressiveEditsAvgDuration = new MovingAverage();
 		const progressiveEditsCts = new CancellationTokenSource(
-			requestCts.token,
+			requestCts.token
 		);
 		const progress = new AsyncProgress<IInlineChatProgressItem>(
 			async (data) => {
@@ -435,12 +449,12 @@ export class NotebookCellChatController extends Disposable {
 				if (data.edits?.length) {
 					if (!request.live) {
 						throw new Error(
-							"Progress in NOT supported in non-live mode",
+							"Progress in NOT supported in non-live mode"
 						);
 					}
 					progressEdits.push(data.edits);
 					progressiveEditsAvgDuration.update(
-						progressiveEditsClock.elapsed(),
+						progressiveEditsClock.elapsed()
 					);
 					progressiveEditsClock.reset();
 
@@ -457,18 +471,18 @@ export class NotebookCellChatController extends Disposable {
 										duration:
 											progressiveEditsAvgDuration.value,
 										token: progressiveEditsCts.token,
-								  },
+									}
 						);
 					});
 				}
-			},
+			}
 		);
 
 		const task = this._activeSession.provider.provideResponse(
 			this._activeSession.session,
 			request,
 			progress,
-			requestCts.token,
+			requestCts.token
 		);
 		let response: ReplyResponse | ErrorResponse | EmptyResponse;
 
@@ -479,13 +493,13 @@ export class NotebookCellChatController extends Disposable {
 			this._widget?.updateInfo(
 				!this._activeSession.lastExchange
 					? localize("thinking", "Thinking\u2026")
-					: "",
+					: ""
 			);
 			this._ctxHasActiveRequest.set(true);
 
 			const reply = await raceCancellationError(
 				Promise.resolve(task),
-				requestCts.token,
+				requestCts.token
 			);
 			if (progressiveEditsQueue.size > 0) {
 				// we must wait for all edits that came in via progress to complete
@@ -509,7 +523,7 @@ export class NotebookCellChatController extends Disposable {
 						this._activeSession.textModelN.uri,
 						this._activeSession.textModelN.getAlternativeVersionId(),
 						progressEdits,
-						request.requestId,
+						request.requestId
 					));
 				for (
 					let i = progressEdits.length;
@@ -519,7 +533,7 @@ export class NotebookCellChatController extends Disposable {
 					await this._makeChanges(
 						editor,
 						replyResponse.allLocalEdits[i],
-						undefined,
+						undefined
 					);
 				}
 			}
@@ -538,10 +552,10 @@ export class NotebookCellChatController extends Disposable {
 		this._widget?.updateToolbar(true);
 
 		this._activeSession.addExchange(
-			new SessionExchange(this._activeSession.lastInput, response),
+			new SessionExchange(this._activeSession.lastInput, response)
 		);
 		this._ctxLastResponseType.set(
-			response instanceof ReplyResponse ? response.raw.type : undefined,
+			response instanceof ReplyResponse ? response.raw.type : undefined
 		);
 	}
 
@@ -591,7 +605,7 @@ export class NotebookCellChatController extends Disposable {
 			this._activeSession.provider.handleInlineChatResponseFeedback?.(
 				this._activeSession.session,
 				this._activeSession.lastExchange.response.raw,
-				kind,
+				kind
 			);
 			this._widget?.updateStatus("Thank you for your feedback!", {
 				resetAfter: 1250,
@@ -602,7 +616,7 @@ export class NotebookCellChatController extends Disposable {
 	private async _makeChanges(
 		editor: IActiveCodeEditor,
 		edits: TextEdit[],
-		opts: ProgressingEditsOptions | undefined,
+		opts: ProgressingEditsOptions | undefined
 	) {
 		assertType(this._activeSession);
 		assertType(this._strategy);
@@ -610,7 +624,7 @@ export class NotebookCellChatController extends Disposable {
 		const moreMinimalEdits =
 			await this._editorWorkerService.computeMoreMinimalEdits(
 				this._activeSession.textModelN.uri,
-				edits,
+				edits
 			);
 		// this._log('edits from PROVIDER and after making them MORE MINIMAL', this._activeSession.provider.debugName, edits, moreMinimalEdits);
 
@@ -630,7 +644,7 @@ export class NotebookCellChatController extends Disposable {
 				await this._strategy.makeProgressiveChanges(
 					editor,
 					editOperations,
-					opts,
+					opts
 				);
 			} else {
 				await this._strategy.makeChanges(editor, editOperations);
@@ -650,7 +664,7 @@ class EditStrategy {
 	async makeProgressiveChanges(
 		editor: IActiveCodeEditor,
 		edits: ISingleEditOperation[],
-		opts: ProgressingEditsOptions,
+		opts: ProgressingEditsOptions
 	): Promise<void> {
 		// push undo stop before first edit
 		if (++this._editCount === 1) {
@@ -664,14 +678,14 @@ class EditStrategy {
 			// console.log({ durationInSec, wordCount, speed: wordCount / durationInSec });
 			await performAsyncTextEdit(
 				editor.getModel(),
-				asProgressiveEdit(edit, speed, opts.token),
+				asProgressiveEdit(edit, speed, opts.token)
 			);
 		}
 	}
 
 	async makeChanges(
 		editor: IActiveCodeEditor,
-		edits: ISingleEditOperation[],
+		edits: ISingleEditOperation[]
 	): Promise<void> {
 		const cursorStateComputerAndInlineDiffCollection: ICursorStateComputer =
 			(undoEdits) => {
@@ -693,7 +707,7 @@ class EditStrategy {
 		editor.executeEdits(
 			"inline-chat-live",
 			edits,
-			cursorStateComputerAndInlineDiffCollection,
+			cursorStateComputerAndInlineDiffCollection
 		);
 	}
 
@@ -738,7 +752,7 @@ class EditStrategy {
 		if (
 			this._session &&
 			!this._session.textModel0.equalsTextBuffer(
-				this._session.textModelN.getTextBuffer(),
+				this._session.textModelN.getTextBuffer()
 			)
 		) {
 			this._session.createSnapshot();

@@ -38,7 +38,7 @@ import { IHistoryService } from "vs/workbench/services/history/common/history";
 import { ISearchConfigurationProperties } from "vs/workbench/services/search/common/search";
 
 export const toggleSearchEditorCaseSensitiveCommand = (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const input = editorService.activeEditor;
@@ -48,7 +48,7 @@ export const toggleSearchEditorCaseSensitiveCommand = (
 };
 
 export const toggleSearchEditorWholeWordCommand = (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const input = editorService.activeEditor;
@@ -66,7 +66,7 @@ export const toggleSearchEditorRegexCommand = (accessor: ServicesAccessor) => {
 };
 
 export const toggleSearchEditorContextLinesCommand = (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const input = editorService.activeEditor;
@@ -77,19 +77,19 @@ export const toggleSearchEditorContextLinesCommand = (
 
 export const modifySearchEditorContextLinesCommand = (
 	accessor: ServicesAccessor,
-	increase: boolean,
+	increase: boolean
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const input = editorService.activeEditor;
 	if (input instanceof SearchEditorInput) {
 		(editorService.activeEditorPane as SearchEditor).modifyContextLines(
-			increase,
+			increase
 		);
 	}
 };
 
 export const selectAllSearchEditorMatchesCommand = (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const input = editorService.activeEditor;
@@ -99,7 +99,7 @@ export const selectAllSearchEditorMatchesCommand = (
 };
 
 export async function openSearchEditor(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): Promise<void> {
 	const viewsService = accessor.get(IViewsService);
 	const instantiationService = accessor.get(IInstantiationService);
@@ -131,7 +131,7 @@ export async function openSearchEditor(
 export const openNewSearchEditor = async (
 	accessor: ServicesAccessor,
 	_args: OpenSearchEditorArgs = {},
-	toSide = false,
+	toSide = false
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const editorGroupsService = accessor.get(IEditorGroupsService);
@@ -140,16 +140,16 @@ export const openNewSearchEditor = async (
 	const configurationService = accessor.get(IConfigurationService);
 
 	const configurationResolverService = accessor.get(
-		IConfigurationResolverService,
+		IConfigurationResolverService
 	);
 	const workspaceContextService = accessor.get(IWorkspaceContextService);
 	const historyService = accessor.get(IHistoryService);
 	const activeWorkspaceRootUri = historyService.getLastActiveWorkspaceRoot(
-		Schemas.file,
+		Schemas.file
 	);
 	const lastActiveWorkspaceRoot = activeWorkspaceRootUri
 		? workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ??
-		  undefined
+			undefined
 		: undefined;
 
 	const activeEditorControl = editorService.activeTextEditorControl;
@@ -174,7 +174,7 @@ export const openNewSearchEditor = async (
 		if (
 			selection?.isEmpty() &&
 			configurationService.getValue<ISearchConfigurationProperties>(
-				"search",
+				"search"
 			).seedWithNearestWord
 		) {
 			const wordAtPosition = activeModel
@@ -214,8 +214,8 @@ export const openNewSearchEditor = async (
 				typeof value === "string"
 					? await configurationResolverService.resolveAsync(
 							lastActiveWorkspaceRoot,
-							value,
-					  )
+							value
+						)
 					: value;
 		}
 	}
@@ -239,19 +239,19 @@ export const openNewSearchEditor = async (
 	} else {
 		const input = instantiationService.invokeFunction(
 			getOrMakeSearchEditorInput,
-			{ config: args, resultsContents: "", from: "rawData" },
+			{ config: args, resultsContents: "", from: "rawData" }
 		);
 		// TODO @roblourens make this use the editor resolver service if possible
 		editor = (await editorService.openEditor(
 			input,
 			{ pinned: true },
-			toSide ? SIDE_GROUP : ACTIVE_GROUP,
+			toSide ? SIDE_GROUP : ACTIVE_GROUP
 		)) as SearchEditor;
 	}
 
 	const searchOnType =
 		configurationService.getValue<ISearchConfigurationProperties>(
-			"search",
+			"search"
 		).searchOnType;
 	if (
 		args.triggerSearch === true ||
@@ -270,12 +270,12 @@ export const createEditorFromSearchResult = async (
 	searchResult: SearchResult,
 	rawIncludePattern: string,
 	rawExcludePattern: string,
-	onlySearchInOpenEditors: boolean,
+	onlySearchInOpenEditors: boolean
 ) => {
 	if (!searchResult.query) {
 		console.error(
 			"Expected searchResult.query to be defined. Got",
-			searchResult,
+			searchResult
 		);
 		return;
 	}
@@ -287,7 +287,7 @@ export const createEditorFromSearchResult = async (
 	const configurationService = accessor.get(IConfigurationService);
 	const sortOrder =
 		configurationService.getValue<ISearchConfigurationProperties>(
-			"search",
+			"search"
 		).sortOrder;
 
 	telemetryService.publicLog2<
@@ -307,7 +307,7 @@ export const createEditorFromSearchResult = async (
 		rawExcludePattern,
 		0,
 		labelFormatter,
-		sortOrder,
+		sortOrder
 	);
 	config.onlyOpenEditors = onlySearchInOpenEditors;
 	const contextLines =
@@ -317,7 +317,7 @@ export const createEditorFromSearchResult = async (
 	if (searchResult.isDirty || contextLines === 0 || contextLines === null) {
 		const input = instantiationService.invokeFunction(
 			getOrMakeSearchEditorInput,
-			{ resultsContents: text, config, from: "rawData" },
+			{ resultsContents: text, config, from: "rawData" }
 		);
 		await editorService.openEditor(input, { pinned: true });
 		input.setMatchRanges(matchRanges);
@@ -328,7 +328,7 @@ export const createEditorFromSearchResult = async (
 				from: "rawData",
 				resultsContents: "",
 				config: { ...config, contextLines },
-			},
+			}
 		);
 		const editor = (await editorService.openEditor(input, {
 			pinned: true,

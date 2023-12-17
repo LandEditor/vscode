@@ -21,7 +21,7 @@ function isDocumentSuffix(str) {
 }
 const root = path.dirname(path.dirname(__dirname));
 const product = JSON.parse(
-	fs.readFileSync(path.join(root, "product.json"), "utf8"),
+	fs.readFileSync(path.join(root, "product.json"), "utf8")
 );
 const commit = (0, getVersion_1.getVersion)(root);
 function createTemplate(input) {
@@ -34,7 +34,7 @@ function createTemplate(input) {
 const darwinCreditsTemplate =
 	product.darwinCredits &&
 	createTemplate(
-		fs.readFileSync(path.join(root, product.darwinCredits), "utf8"),
+		fs.readFileSync(path.join(root, product.darwinCredits), "utf8")
 	);
 /**
  * Generate a `DarwinDocumentType` given a list of file extensions, an icon name, and an optional suffix or file type name.
@@ -113,7 +113,7 @@ exports.config = {
 	darwinBundleDocumentTypes: [
 		...darwinBundleDocumentTypes(
 			{ "C header file": "h", "C source code": "c" },
-			"c",
+			"c"
 		),
 		...darwinBundleDocumentTypes(
 			{
@@ -123,7 +123,7 @@ exports.config = {
 					"gitignore",
 				],
 			},
-			"config",
+			"config"
 		),
 		...darwinBundleDocumentTypes(
 			{
@@ -137,28 +137,28 @@ exports.config = {
 					"shtml",
 				],
 			},
-			"html",
+			"html"
 		),
 		darwinBundleDocumentType(
 			["bat", "cmd"],
 			"bat",
-			"Windows command script",
+			"Windows command script"
 		),
 		darwinBundleDocumentType(["bowerrc"], "Bower"),
 		darwinBundleDocumentType(
 			["config", "editorconfig", "ini", "cfg"],
 			"config",
-			"Configuration file",
+			"Configuration file"
 		),
 		darwinBundleDocumentType(
 			["hh", "hpp", "hxx", "h++"],
 			"cpp",
-			"C++ header file",
+			"C++ header file"
 		),
 		darwinBundleDocumentType(
 			["cc", "cpp", "cxx", "c++"],
 			"cpp",
-			"C++ source code",
+			"C++ source code"
 		),
 		darwinBundleDocumentType(["m"], "default", "Objective-C source code"),
 		darwinBundleDocumentType(["mm"], "cpp", "Objective-C++ source code"),
@@ -171,7 +171,7 @@ exports.config = {
 		darwinBundleDocumentType(
 			["js", "jscsrc", "jshintrc", "mjs", "cjs"],
 			"Javascript",
-			"file",
+			"file"
 		),
 		darwinBundleDocumentType(["json"], "JSON"),
 		darwinBundleDocumentType(["less"], "Less"),
@@ -187,19 +187,19 @@ exports.config = {
 				"mkd",
 				"mkdn",
 			],
-			"Markdown",
+			"Markdown"
 		),
 		darwinBundleDocumentType(["php"], "PHP", "source code"),
 		darwinBundleDocumentType(
 			["ps1", "psd1", "psm1"],
 			"Powershell",
-			"script",
+			"script"
 		),
 		darwinBundleDocumentType(["py", "pyi"], "Python", "script"),
 		darwinBundleDocumentType(
 			["gemspec", "rb", "erb"],
 			"Ruby",
-			"source code",
+			"source code"
 		),
 		darwinBundleDocumentType(["scss", "sass"], "SASS", "file"),
 		darwinBundleDocumentType(["sql"], "SQL", "script"),
@@ -218,7 +218,7 @@ exports.config = {
 				"xml",
 				"xaml",
 			],
-			"XML",
+			"XML"
 		),
 		darwinBundleDocumentType(["eyaml", "eyml", "yaml", "yml"], "YAML"),
 		darwinBundleDocumentType(
@@ -240,7 +240,7 @@ exports.config = {
 				"zshrc",
 			],
 			"Shell",
-			"script",
+			"script"
 		),
 		// Default icon with specified names
 		...darwinBundleDocumentTypes(
@@ -276,7 +276,7 @@ exports.config = {
 				"TOML document": "toml",
 				"Swift source code": "swift",
 			},
-			"default",
+			"default"
 		),
 		// Default icon with default name
 		darwinBundleDocumentType(
@@ -301,7 +301,7 @@ exports.config = {
 				"t",
 			],
 			"default",
-			product.nameLong + " document",
+			product.nameLong + " document"
 		),
 		// Folder support ()
 		darwinBundleDocumentType([], "default", "Folder", ["public.folder"]),
@@ -319,8 +319,8 @@ exports.config = {
 				darwinCreditsTemplate({
 					commit: commit,
 					date: new Date().toISOString(),
-				}),
-		  )
+				})
+			)
 		: undefined,
 	linuxExecutableName: product.applicationName,
 	winIcon: "resources/win32/code.ico",

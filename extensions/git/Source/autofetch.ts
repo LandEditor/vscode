@@ -38,29 +38,32 @@ export class AutoFetcher {
 
 	private disposables: Disposable[] = [];
 
-	constructor(private repository: Repository, private globalState: Memento) {
+	constructor(
+		private repository: Repository,
+		private globalState: Memento
+	) {
 		workspace.onDidChangeConfiguration(
 			this.onConfiguration,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		this.onConfiguration();
 
 		const onGoodRemoteOperation = filterEvent(
 			repository.onDidRunOperation,
-			({ operation, error }) => !error && operation.remote,
+			({ operation, error }) => !error && operation.remote
 		);
 		const onFirstGoodRemoteOperation = onceEvent(onGoodRemoteOperation);
 		onFirstGoodRemoteOperation(
 			this.onFirstGoodRemoteOperation,
 			this,
-			this.disposables,
+			this.disposables
 		);
 	}
 
 	private async onFirstGoodRemoteOperation(): Promise<void> {
 		const didInformUser = !this.globalState.get<boolean>(
-			AutoFetcher.DidInformUser,
+			AutoFetcher.DidInformUser
 		);
 
 		if (this.enabled && !didInformUser) {
@@ -83,11 +86,11 @@ export class AutoFetcher {
 			l10n.t(
 				'Would you like {0} to [periodically run "git fetch"]({1})?',
 				env.appName,
-				"https://go.microsoft.com/fwlink/?linkid=865294",
+				"https://go.microsoft.com/fwlink/?linkid=865294"
 			),
 			yes,
 			no,
-			askLater,
+			askLater
 		);
 
 		if (result === askLater) {
@@ -97,7 +100,7 @@ export class AutoFetcher {
 		if (result === yes) {
 			const gitConfig = workspace.getConfiguration(
 				"git",
-				Uri.file(this.repository.root),
+				Uri.file(this.repository.root)
 			);
 			gitConfig.update("autofetch", true, ConfigurationTarget.Global);
 		}
@@ -112,7 +115,7 @@ export class AutoFetcher {
 
 		const gitConfig = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		switch (gitConfig.get<boolean | "all">("autofetch")) {
 			case true:
@@ -174,7 +177,7 @@ export class AutoFetcher {
 					.get<number>("autofetchPeriod", 180) * 1000;
 			const timeout = new Promise((c) => setTimeout(c, period));
 			const whenDisabled = eventToPromise(
-				filterEvent(this.onDidChange, (enabled) => !enabled),
+				filterEvent(this.onDidChange, (enabled) => !enabled)
 			);
 
 			await Promise.race([timeout, whenDisabled]);

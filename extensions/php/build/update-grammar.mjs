@@ -36,7 +36,7 @@ function includeDerivativeHtml(grammar) {
 function fixBadRegex(grammar) {
 	function fail(msg) {
 		throw new Error(
-			`fixBadRegex callback couldn't patch ${msg}. It may be obsolete`,
+			`fixBadRegex callback couldn't patch ${msg}. It may be obsolete`
 		);
 	}
 
@@ -88,7 +88,7 @@ vscodeGrammarUpdater.update(
 	"KapitanOczywisty/language-php",
 	"grammars/php.cson",
 	"./syntaxes/php.tmLanguage.json",
-	fixBadRegex,
+	fixBadRegex
 );
 vscodeGrammarUpdater.update(
 	"KapitanOczywisty/language-php",
@@ -97,5 +97,5 @@ vscodeGrammarUpdater.update(
 	(grammar) => {
 		adaptInjectionScope(grammar);
 		includeDerivativeHtml(grammar);
-	},
+	}
 );

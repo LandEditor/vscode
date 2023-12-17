@@ -25,19 +25,28 @@ export class MainThreadNotebookRenderers
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotebookRendererMessagingService private readonly messaging: INotebookRendererMessagingService,
+		@INotebookRendererMessagingService
+		private readonly messaging: INotebookRendererMessagingService
 	) {
 		super();
-		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookRenderers);
-		this._register(messaging.onShouldPostMessage(e => {
-			this.proxy.$postRendererMessage(e.editorId, e.rendererId, e.message);
-		}));
+		this.proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookRenderers
+		);
+		this._register(
+			messaging.onShouldPostMessage((e) => {
+				this.proxy.$postRendererMessage(
+					e.editorId,
+					e.rendererId,
+					e.message
+				);
+			})
+		);
 	}
 
 	$postMessage(
 		editorId: string | undefined,
 		rendererId: string,
-		message: unknown,
+		message: unknown
 	): Promise<boolean> {
 		return this.messaging.receiveMessage(editorId, rendererId, message);
 	}

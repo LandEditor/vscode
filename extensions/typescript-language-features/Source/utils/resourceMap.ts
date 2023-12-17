@@ -15,7 +15,7 @@ import { looksLikeAbsoluteWindowsPath } from "./fs";
  */
 export class ResourceMap<T> {
 	private static readonly defaultPathNormalizer = (
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): string => {
 		if (resource.scheme === fileSchemes.file) {
 			return resource.fsPath;
@@ -30,11 +30,11 @@ export class ResourceMap<T> {
 
 	constructor(
 		protected readonly _normalizePath: (
-			resource: vscode.Uri,
+			resource: vscode.Uri
 		) => string | undefined = ResourceMap.defaultPathNormalizer,
 		protected readonly config: {
 			readonly onCaseInsensitiveFileSystem: boolean;
-		},
+		}
 	) {}
 
 	public get size() {

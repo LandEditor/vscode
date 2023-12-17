@@ -12,7 +12,7 @@ import { CancellationToken } from "vs/base/common/cancellation";
 import { ThemeIcon } from "vs/base/common/themables";
 
 export const IDecorationsService = createDecorator<IDecorationsService>(
-	"IFileDecorationsService",
+	"IFileDecorationsService"
 );
 
 export interface IDecorationData {
@@ -37,7 +37,7 @@ export interface IDecorationsProvider {
 	readonly onDidChange: Event<readonly URI[]>;
 	provideDecorations(
 		uri: URI,
-		token: CancellationToken,
+		token: CancellationToken
 	): IDecorationData | Promise<IDecorationData | undefined> | undefined;
 }
 

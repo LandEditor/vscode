@@ -61,7 +61,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 		public readonly tsEntry: Proto.CompletionEntry,
 		private readonly completionContext: CompletionContext,
 		public readonly metadata: any | undefined,
-		client: ITypeScriptServiceClient,
+		client: ITypeScriptServiceClient
 	) {
 		const label = tsEntry.name || (tsEntry.insertText ?? "");
 		super(label, MyCompletionItem.convertKind(tsEntry.kind));
@@ -81,7 +81,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 		if (tsEntry.source && tsEntry.hasAction) {
 			// Render "fancy" when source is a workspace path
 			const qualifierCandidate = vscode.workspace.asRelativePath(
-				tsEntry.source,
+				tsEntry.source
 			);
 			if (qualifierCandidate !== tsEntry.source) {
 				this.label = { label, description: qualifierCandidate };
@@ -94,7 +94,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 				label,
 				description: Previewer.asPlainTextWithLinks(
 					sourceDisplay,
-					client,
+					client
 				),
 			};
 		}
@@ -112,11 +112,11 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 		this.range = this.getRangeFromReplacementSpan(
 			tsEntry,
-			completionContext,
+			completionContext
 		);
 		this.commitCharacters = MyCompletionItem.getCommitCharacters(
 			completionContext,
-			tsEntry,
+			tsEntry
 		);
 		this.insertText =
 			isSnippet && tsEntry.insertText
@@ -141,7 +141,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 						inserting: completionContext.dotAccessorContext.range,
 						replacing:
 							completionContext.dotAccessorContext.range.union(
-								replacementRange,
+								replacementRange
 							),
 					};
 				} else {
@@ -189,7 +189,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 	public async resolveCompletionItem(
 		client: ITypeScriptServiceClient,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<ResolvedCompletionItem | undefined> {
 		token.onCancellationRequested(() => {
 			if (this._resolvedPromise && --this._resolvedPromise.waiting <= 0) {
@@ -223,7 +223,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 			const args: Proto.CompletionDetailsRequestArgs = {
 				...typeConverters.Position.toFileLocationRequestArgs(
 					filepath,
-					this.position,
+					this.position
 				),
 				entryNames: [
 					this.tsEntry.source || this.tsEntry.data
@@ -231,7 +231,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 								name: this.tsEntry.name,
 								source: this.tsEntry.source,
 								data: this.tsEntry.data,
-						  }
+							}
 						: this.tsEntry.name,
 				],
 			};
@@ -239,8 +239,8 @@ class MyCompletionItem extends vscode.CompletionItem {
 				client.execute(
 					"completionEntryDetails",
 					args,
-					requestToken.token,
-				),
+					requestToken.token
+				)
 			);
 			if (
 				response.type !== "response" ||
@@ -260,7 +260,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 			this.documentation = this.getDocumentation(
 				client,
 				detail,
-				this.document.uri,
+				this.document.uri
 			);
 
 			const codeAction = this.getCodeActions(detail, filepath);
@@ -283,12 +283,12 @@ class MyCompletionItem extends vscode.CompletionItem {
 						filepath,
 						this.position,
 						this.document,
-						token,
+						token
 					);
 				if (shouldCompleteFunction) {
 					const { snippet, parameterCount } = snippetForFunctionCall(
 						{ ...this, label: this.textLabel },
-						detail.displayParts,
+						detail.displayParts
 					);
 					this.insertText = snippet;
 					if (parameterCount > 0) {
@@ -322,7 +322,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 	private getDetails(
 		client: ITypeScriptServiceClient,
-		detail: Proto.CompletionEntryDetails,
+		detail: Proto.CompletionEntryDetails
 	): string | undefined {
 		const parts: string[] = [];
 
@@ -342,14 +342,14 @@ class MyCompletionItem extends vscode.CompletionItem {
 	private getDocumentation(
 		client: ITypeScriptServiceClient,
 		detail: Proto.CompletionEntryDetails,
-		baseUri: vscode.Uri,
+		baseUri: vscode.Uri
 	): vscode.MarkdownString | undefined {
 		const documentation = new vscode.MarkdownString();
 		Previewer.appendDocumentationAsMarkdown(
 			documentation,
 			detail.documentation,
 			detail.tags,
-			client,
+			client
 		);
 		documentation.baseUri = baseUri;
 		return documentation.value.length ? documentation : undefined;
@@ -360,7 +360,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 		filepath: string,
 		position: vscode.Position,
 		document: vscode.TextDocument,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<boolean> {
 		// Workaround for https://github.com/microsoft/TypeScript/issues/12677
 		// Don't complete function calls inside of destructive assignments or imports
@@ -368,7 +368,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 			const args: Proto.FileLocationRequestArgs =
 				typeConverters.Position.toFileLocationRequestArgs(
 					filepath,
-					position,
+					position
 				);
 			const response = await client.execute("quickinfo", args, token);
 			if (response.type === "response" && response.body) {
@@ -404,7 +404,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 	private getCodeActions(
 		detail: Proto.CompletionEntryDetails,
-		filepath: string,
+		filepath: string
 	): { command?: vscode.Command; additionalTextEdits?: vscode.TextEdit[] } {
 		if (!detail.codeActions?.length) {
 			return {};
@@ -426,8 +426,8 @@ class MyCompletionItem extends vscode.CompletionItem {
 					if (change.fileName === filepath) {
 						additionalTextEdits.push(
 							...change.textChanges.map(
-								typeConverters.TextEdit.fromCodeEdit,
-							),
+								typeConverters.TextEdit.fromCodeEdit
+							)
 						);
 					} else {
 						hasRemainingCommandsOrEdits = true;
@@ -449,9 +449,9 @@ class MyCompletionItem extends vscode.CompletionItem {
 							commands: x.commands,
 							description: x.description,
 							changes: x.changes.filter(
-								(x) => x.fileName !== filepath,
+								(x) => x.fileName !== filepath
 							),
-						}),
+						})
 					),
 				],
 			};
@@ -467,14 +467,14 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 	private getRangeFromReplacementSpan(
 		tsEntry: Proto.CompletionEntry,
-		completionContext: CompletionContext,
+		completionContext: CompletionContext
 	) {
 		if (!tsEntry.replacementSpan) {
 			return;
 		}
 
 		let replaceRange = typeConverters.Range.fromTextSpan(
-			tsEntry.replacementSpan,
+			tsEntry.replacementSpan
 		);
 		// Make sure we only replace a single line at most
 		if (!replaceRange.isSingleLine) {
@@ -482,7 +482,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 				replaceRange.start.line,
 				replaceRange.start.character,
 				replaceRange.start.line,
-				completionContext.line.length,
+				completionContext.line.length
 			);
 		}
 
@@ -495,7 +495,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 	private getFilterText(
 		line: string,
-		insertText: string | undefined,
+		insertText: string | undefined
 	): string | undefined {
 		// Handle private field completions
 		if (this.tsEntry.name.startsWith("#")) {
@@ -617,7 +617,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 
 	private static getCommitCharacters(
 		context: CompletionContext,
-		entry: Proto.CompletionEntry,
+		entry: Proto.CompletionEntry
 	): string[] | undefined {
 		if (
 			entry.kind === PConst.Kind.warning ||
@@ -641,7 +641,7 @@ class MyCompletionItem extends vscode.CompletionItem {
 }
 
 function getScriptKindDetails(
-	tsEntry: Proto.CompletionEntry,
+	tsEntry: Proto.CompletionEntry
 ): string | undefined {
 	if (!tsEntry.kindModifiers || tsEntry.kind !== PConst.Kind.script) {
 		return;
@@ -666,9 +666,9 @@ class CompletionAcceptedCommand implements Command {
 
 	public constructor(
 		private readonly onCompletionAccepted: (
-			item: vscode.CompletionItem,
+			item: vscode.CompletionItem
 		) => void,
-		private readonly telemetryReporter: TelemetryReporter,
+		private readonly telemetryReporter: TelemetryReporter
 	) {}
 
 	public execute(item: vscode.CompletionItem) {
@@ -709,7 +709,7 @@ class ApplyCompletionCommand implements Command {
 	public async execute(item: MyCompletionItem) {
 		const resolved = await item.resolveCompletionItem(
 			this.client,
-			nulToken,
+			nulToken
 		);
 		if (!resolved) {
 			return;
@@ -723,7 +723,7 @@ class ApplyCompletionCommand implements Command {
 				workspaceEdit.replace(
 					item.document.uri,
 					edit.range,
-					edit.newText,
+					edit.newText
 				);
 			}
 			await vscode.workspace.applyEdit(workspaceEdit);
@@ -732,7 +732,7 @@ class ApplyCompletionCommand implements Command {
 		for (const command of commands) {
 			await vscode.commands.executeCommand(
 				command.command,
-				...(command.arguments ?? []),
+				...(command.arguments ?? [])
 			);
 		}
 	}
@@ -746,7 +746,7 @@ class ApplyCompletionCodeActionCommand implements Command {
 
 	public async execute(
 		_file: string,
-		codeActions: Proto.CodeAction[],
+		codeActions: Proto.CodeAction[]
 	): Promise<boolean> {
 		if (codeActions.length === 0) {
 			return true;
@@ -764,7 +764,7 @@ class ApplyCompletionCodeActionCommand implements Command {
 			})),
 			{
 				placeHolder: vscode.l10n.t("Select code action to apply"),
-			},
+			}
 		);
 
 		if (selection) {
@@ -791,29 +791,29 @@ namespace CompletionConfiguration {
 
 	export function getConfigurationForResource(
 		modeId: string,
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): CompletionConfiguration {
 		const config = vscode.workspace.getConfiguration(modeId, resource);
 		return {
 			completeFunctionCalls: config.get<boolean>(
 				CompletionConfiguration.completeFunctionCalls,
-				false,
+				false
 			),
 			pathSuggestions: config.get<boolean>(
 				CompletionConfiguration.pathSuggestions,
-				true,
+				true
 			),
 			autoImportSuggestions: config.get<boolean>(
 				CompletionConfiguration.autoImportSuggestions,
-				true,
+				true
 			),
 			nameSuggestions: config.get<boolean>(
 				CompletionConfiguration.nameSuggestions,
-				true,
+				true
 			),
 			importStatementSuggestions: config.get<boolean>(
 				CompletionConfiguration.importStatementSuggestions,
-				true,
+				true
 			),
 		};
 	}
@@ -841,16 +841,16 @@ class TypeScriptCompletionItemProvider
 		private readonly fileConfigurationManager: FileConfigurationManager,
 		commandManager: CommandManager,
 		private readonly telemetryReporter: TelemetryReporter,
-		onCompletionAccepted: (item: vscode.CompletionItem) => void,
+		onCompletionAccepted: (item: vscode.CompletionItem) => void
 	) {
 		commandManager.register(
-			new ApplyCompletionCodeActionCommand(this.client),
+			new ApplyCompletionCodeActionCommand(this.client)
 		);
 		commandManager.register(
 			new CompletionAcceptedCommand(
 				onCompletionAccepted,
-				this.telemetryReporter,
-			),
+				this.telemetryReporter
+			)
 		);
 		commandManager.register(new ApplyCompletionCommand(this.client));
 	}
@@ -859,7 +859,7 @@ class TypeScriptCompletionItemProvider
 		document: vscode.TextDocument,
 		position: vscode.Position,
 		token: vscode.CancellationToken,
-		context: vscode.CompletionContext,
+		context: vscode.CompletionContext
 	): Promise<vscode.CompletionList<MyCompletionItem> | undefined> {
 		if (
 			!vscode.workspace
@@ -895,7 +895,7 @@ class TypeScriptCompletionItemProvider
 		const completionConfiguration =
 			CompletionConfiguration.getConfigurationForResource(
 				this.language.id,
-				document.uri,
+				document.uri
 			);
 
 		if (
@@ -903,7 +903,7 @@ class TypeScriptCompletionItemProvider
 				context,
 				line,
 				position,
-				completionConfiguration,
+				completionConfiguration
 			)
 		) {
 			return undefined;
@@ -913,7 +913,7 @@ class TypeScriptCompletionItemProvider
 		if (wordRange && !wordRange.isEmpty) {
 			const secondCharPosition = wordRange.start.translate(0, 1);
 			const firstChar = document.getText(
-				new vscode.Range(wordRange.start, secondCharPosition),
+				new vscode.Range(wordRange.start, secondCharPosition)
 			);
 			if (firstChar === "@") {
 				wordRange = wordRange.with(secondCharPosition);
@@ -923,14 +923,14 @@ class TypeScriptCompletionItemProvider
 		await this.client.interruptGetErr(() =>
 			this.fileConfigurationManager.ensureConfigurationForDocument(
 				document,
-				token,
-			),
+				token
+			)
 		);
 
 		const args: Proto.CompletionsRequestArgs = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				file,
-				position,
+				position
 			),
 			includeExternalModuleExports:
 				completionConfiguration.autoImportSuggestions,
@@ -938,7 +938,7 @@ class TypeScriptCompletionItemProvider
 			triggerCharacter: this.getTsTriggerCharacter(context),
 			triggerKind:
 				typeConverters.CompletionTriggerKind.toProtocolCompletionTriggerKind(
-					context.triggerKind,
+					context.triggerKind
 				),
 		};
 
@@ -956,7 +956,7 @@ class TypeScriptCompletionItemProvider
 			const startTime = Date.now();
 			try {
 				response = await this.client.interruptGetErr(() =>
-					this.client.execute("completionInfo", args, token),
+					this.client.execute("completionInfo", args, token)
 				);
 			} finally {
 				duration = Date.now() - startTime;
@@ -977,7 +977,7 @@ class TypeScriptCompletionItemProvider
 						position.translate({
 							characterDelta: -dotMatch[0].length,
 						}),
-						position,
+						position
 					);
 					const text = document.getText(range);
 					dotAccessorContext = { range, text };
@@ -991,7 +991,7 @@ class TypeScriptCompletionItemProvider
 			metadata = response.metadata;
 		} else {
 			const response = await this.client.interruptGetErr(() =>
-				this.client.execute("completions", args, token),
+				this.client.execute("completions", args, token)
 			);
 			if (response.type !== "response" || !response.body) {
 				return undefined;
@@ -1024,7 +1024,7 @@ class TypeScriptCompletionItemProvider
 					entry,
 					completionContext,
 					metadata,
-					this.client,
+					this.client
 				);
 				item.command = {
 					command: ApplyCompletionCommand.ID,
@@ -1044,7 +1044,7 @@ class TypeScriptCompletionItemProvider
 				duration,
 				response,
 				includesPackageJsonImport,
-				includesImportStatementCompletion,
+				includesImportStatementCompletion
 			);
 		}
 		return new vscode.CompletionList(items, isIncomplete);
@@ -1056,7 +1056,7 @@ class TypeScriptCompletionItemProvider
 			| ServerResponse.Response<Proto.CompletionInfoResponse>
 			| undefined,
 		includesPackageJsonImport?: boolean,
-		includesImportStatementCompletion?: boolean,
+		includesImportStatementCompletion?: boolean
 	) {
 		/* __GDPR__
 			"completions.execute" : {
@@ -1085,7 +1085,7 @@ class TypeScriptCompletionItemProvider
 			count: String(
 				response?.type === "response" && response.body
 					? response.body.entries.length
-					: 0,
+					: 0
 			),
 			updateGraphDurationMs:
 				response?.type === "response" &&
@@ -1099,8 +1099,8 @@ class TypeScriptCompletionItemProvider
 					?.createAutoImportProviderProgramDurationMs === "number"
 					? String(
 							response.performanceData
-								.createAutoImportProviderProgramDurationMs,
-					  )
+								.createAutoImportProviderProgramDurationMs
+						)
 					: undefined,
 			includesPackageJsonImport: includesPackageJsonImport
 				? "true"
@@ -1112,7 +1112,7 @@ class TypeScriptCompletionItemProvider
 	}
 
 	private getTsTriggerCharacter(
-		context: vscode.CompletionContext,
+		context: vscode.CompletionContext
 	): Proto.CompletionsTriggerCharacter | undefined {
 		switch (context.triggerCharacter) {
 			case "@": {
@@ -1145,7 +1145,7 @@ class TypeScriptCompletionItemProvider
 
 	public async resolveCompletionItem(
 		item: MyCompletionItem,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<MyCompletionItem | undefined> {
 		await item.resolveCompletionItem(this.client, token);
 		return item;
@@ -1155,7 +1155,7 @@ class TypeScriptCompletionItemProvider
 		context: vscode.CompletionContext,
 		line: vscode.TextLine,
 		position: vscode.Position,
-		configuration: CompletionConfiguration,
+		configuration: CompletionConfiguration
 	): boolean {
 		if (context.triggerCharacter === " ") {
 			if (
@@ -1173,7 +1173,7 @@ class TypeScriptCompletionItemProvider
 
 function shouldExcludeCompletionEntry(
 	element: Proto.CompletionEntry,
-	completionConfiguration: CompletionConfiguration,
+	completionConfiguration: CompletionConfiguration
 ) {
 	return (
 		(!completionConfiguration.nameSuggestions &&
@@ -1194,14 +1194,14 @@ export function register(
 	fileConfigurationManager: FileConfigurationManager,
 	commandManager: CommandManager,
 	telemetryReporter: TelemetryReporter,
-	onCompletionAccepted: (item: vscode.CompletionItem) => void,
+	onCompletionAccepted: (item: vscode.CompletionItem) => void
 ) {
 	return conditionalRegistration(
 		[
 			requireSomeCapability(
 				client,
 				ClientCapability.EnhancedSyntax,
-				ClientCapability.Semantic,
+				ClientCapability.Semantic
 			),
 		],
 		() => {
@@ -1214,10 +1214,10 @@ export function register(
 					fileConfigurationManager,
 					commandManager,
 					telemetryReporter,
-					onCompletionAccepted,
+					onCompletionAccepted
 				),
-				...TypeScriptCompletionItemProvider.triggerCharacters,
+				...TypeScriptCompletionItemProvider.triggerCharacters
 			);
-		},
+		}
 	);
 }

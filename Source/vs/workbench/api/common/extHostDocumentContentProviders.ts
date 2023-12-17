@@ -34,16 +34,16 @@ export class ExtHostDocumentContentProvider
 	constructor(
 		mainContext: IMainContext,
 		private readonly _documentsAndEditors: ExtHostDocumentsAndEditors,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		this._proxy = mainContext.getProxy(
-			MainContext.MainThreadDocumentContentProviders,
+			MainContext.MainThreadDocumentContentProviders
 		);
 	}
 
 	registerTextDocumentContentProvider(
 		scheme: string,
-		provider: vscode.TextDocumentContentProvider,
+		provider: vscode.TextDocumentContentProvider
 	): vscode.Disposable {
 		// todo@remote
 		// check with scheme from fs-providers!
@@ -63,7 +63,7 @@ export class ExtHostDocumentContentProvider
 			subscription = provider.onDidChange(async (uri) => {
 				if (uri.scheme !== scheme) {
 					this._logService.warn(
-						`Provider for scheme '${scheme}' is firing event for schema '${uri.scheme}' which will be IGNORED`,
+						`Provider for scheme '${scheme}' is firing event for schema '${uri.scheme}' which will be IGNORED`
 					);
 					return;
 				}
@@ -96,7 +96,7 @@ export class ExtHostDocumentContentProvider
 						if (!document.equalLines(lines)) {
 							return this._proxy.$onVirtualDocumentChange(
 								uri,
-								value,
+								value
 							);
 						}
 					})
@@ -123,19 +123,19 @@ export class ExtHostDocumentContentProvider
 
 	$provideTextDocumentContent(
 		handle: number,
-		uri: UriComponents,
+		uri: UriComponents
 	): Promise<string | null | undefined> {
 		const provider = this._documentContentProviders.get(handle);
 		if (!provider) {
 			return Promise.reject(
-				new Error(`unsupported uri-scheme: ${uri.scheme}`),
+				new Error(`unsupported uri-scheme: ${uri.scheme}`)
 			);
 		}
 		return Promise.resolve(
 			provider.provideTextDocumentContent(
 				URI.revive(uri),
-				CancellationToken.None,
-			),
+				CancellationToken.None
+			)
 		);
 	}
 }

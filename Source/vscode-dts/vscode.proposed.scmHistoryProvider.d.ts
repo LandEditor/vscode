@@ -27,21 +27,21 @@ declare module "vscode" {
 		provideHistoryItems(
 			historyItemGroupId: string,
 			options: SourceControlHistoryOptions,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<SourceControlHistoryItem[]>;
 		provideHistoryItemChanges(
 			historyItemId: string,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<SourceControlHistoryItemChange[]>;
 
 		resolveHistoryItemGroupBase(
 			historyItemGroupId: string,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<SourceControlHistoryItemGroup | undefined>;
 		resolveHistoryItemGroupCommonAncestor(
 			historyItemGroupId1: string,
 			historyItemGroupId: string,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<{ id: string; ahead: number; behind: number }>;
 	}
 

@@ -52,16 +52,16 @@ const _ctxHasCallHierarchyProvider = new RawContextKey<boolean>(
 	false,
 	localize(
 		"editorHasCallHierarchyProvider",
-		"Whether a call hierarchy provider is available",
-	),
+		"Whether a call hierarchy provider is available"
+	)
 );
 const _ctxCallHierarchyVisible = new RawContextKey<boolean>(
 	"callHierarchyVisible",
 	false,
 	localize(
 		"callHierarchyVisible",
-		"Whether call hierarchy peek is currently showing",
-	),
+		"Whether call hierarchy peek is currently showing"
+	)
 );
 const _ctxCallHierarchyDirection = new RawContextKey<string>(
 	"callHierarchyDirection",
@@ -70,9 +70,9 @@ const _ctxCallHierarchyDirection = new RawContextKey<string>(
 		type: "string",
 		description: localize(
 			"callHierarchyDirection",
-			"Whether call hierarchy shows incoming or outgoing calls",
+			"Whether call hierarchy shows incoming or outgoing calls"
 		),
-	},
+	}
 );
 
 function sanitizedDirection(candidate: string): CallHierarchyDirection {
@@ -87,7 +87,7 @@ class CallHierarchyController implements IEditorContribution {
 
 	static get(editor: ICodeEditor): CallHierarchyController | null {
 		return editor.getContribution<CallHierarchyController>(
-			CallHierarchyController.Id,
+			CallHierarchyController.Id
 		);
 	}
 
@@ -104,17 +104,34 @@ class CallHierarchyController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
-		this._ctxIsVisible = _ctxCallHierarchyVisible.bindTo(this._contextKeyService);
-		this._ctxHasProvider = _ctxHasCallHierarchyProvider.bindTo(this._contextKeyService);
-		this._ctxDirection = _ctxCallHierarchyDirection.bindTo(this._contextKeyService);
-		this._dispoables.add(Event.any<any>(_editor.onDidChangeModel, _editor.onDidChangeModelLanguage, CallHierarchyProviderRegistry.onDidChange)(() => {
-			this._ctxHasProvider.set(_editor.hasModel() && CallHierarchyProviderRegistry.has(_editor.getModel()));
-		}));
+		this._ctxIsVisible = _ctxCallHierarchyVisible.bindTo(
+			this._contextKeyService
+		);
+		this._ctxHasProvider = _ctxHasCallHierarchyProvider.bindTo(
+			this._contextKeyService
+		);
+		this._ctxDirection = _ctxCallHierarchyDirection.bindTo(
+			this._contextKeyService
+		);
+		this._dispoables.add(
+			Event.any<any>(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelLanguage,
+				CallHierarchyProviderRegistry.onDidChange
+			)(() => {
+				this._ctxHasProvider.set(
+					_editor.hasModel() &&
+						CallHierarchyProviderRegistry.has(_editor.getModel())
+				);
+			})
+		);
 		this._dispoables.add(this._sessionDisposables);
 	}
 
@@ -143,8 +160,8 @@ class CallHierarchyController implements IEditorContribution {
 			this._storageService.get(
 				CallHierarchyController._StorageDirection,
 				StorageScope.PROFILE,
-				CallHierarchyDirection.CallsTo,
-			),
+				CallHierarchyDirection.CallsTo
+			)
 		);
 
 		this._showCallHierarchyWidget(position, direction, model, cts);
@@ -161,7 +178,7 @@ class CallHierarchyController implements IEditorContribution {
 		}
 		const newEditor = await this._editorService.openCodeEditor(
 			{ resource: call.item.uri },
-			this._editor,
+			this._editor
 		);
 		if (!newEditor) {
 			return;
@@ -173,7 +190,7 @@ class CallHierarchyController implements IEditorContribution {
 			Range.lift(newModel.root.selectionRange).getStartPosition(),
 			this._widget.direction,
 			Promise.resolve(newModel),
-			new CancellationTokenSource(),
+			new CancellationTokenSource()
 		);
 	}
 
@@ -181,19 +198,19 @@ class CallHierarchyController implements IEditorContribution {
 		position: IPosition,
 		direction: CallHierarchyDirection,
 		model: Promise<CallHierarchyModel | undefined>,
-		cts: CancellationTokenSource,
+		cts: CancellationTokenSource
 	) {
 		this._ctxIsVisible.set(true);
 		this._ctxDirection.set(direction);
 		Event.any<any>(
 			this._editor.onDidChangeModel,
-			this._editor.onDidChangeModelLanguage,
+			this._editor.onDidChangeModelLanguage
 		)(this.endCallHierarchy, this, this._sessionDisposables);
 		this._widget = this._instantiationService.createInstance(
 			CallHierarchyTreePeekWidget,
 			this._editor,
 			position,
-			direction,
+			direction
 		);
 		this._widget.showLoading();
 		this._sessionDisposables.add(
@@ -203,9 +220,9 @@ class CallHierarchyController implements IEditorContribution {
 					CallHierarchyController._StorageDirection,
 					this._widget!.direction,
 					StorageScope.PROFILE,
-					StorageTarget.USER,
+					StorageTarget.USER
 				);
-			}),
+			})
 		);
 		this._sessionDisposables.add({
 			dispose() {
@@ -224,7 +241,7 @@ class CallHierarchyController implements IEditorContribution {
 					this._widget!.showModel(model);
 				} else {
 					this._widget!.showMessage(
-						localize("no.item", "No results"),
+						localize("no.item", "No results")
 					);
 				}
 			})
@@ -234,7 +251,7 @@ class CallHierarchyController implements IEditorContribution {
 					return;
 				}
 				this._widget!.showMessage(
-					localize("error", "Failed to show call hierarchy"),
+					localize("error", "Failed to show call hierarchy")
 				);
 			});
 	}
@@ -259,7 +276,7 @@ class CallHierarchyController implements IEditorContribution {
 registerEditorContribution(
 	CallHierarchyController.Id,
 	CallHierarchyController,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // eager because it needs to define a context key
 
 registerAction2(
@@ -277,7 +294,7 @@ registerAction2(
 					order: 1000,
 					when: ContextKeyExpr.and(
 						_ctxHasCallHierarchyProvider,
-						PeekContext.notInPeekEditor,
+						PeekContext.notInPeekEditor
 					),
 				},
 				keybinding: {
@@ -287,7 +304,7 @@ registerAction2(
 				},
 				precondition: ContextKeyExpr.and(
 					_ctxHasCallHierarchyProvider,
-					PeekContext.notInPeekEditor,
+					PeekContext.notInPeekEditor
 				),
 				f1: true,
 			});
@@ -295,13 +312,13 @@ registerAction2(
 
 		async runEditorCommand(
 			_accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			return CallHierarchyController.get(
-				editor,
+				editor
 			)?.startCallHierarchyFromEditor();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -318,14 +335,14 @@ registerAction2(
 					Codicon.callIncoming,
 					localize(
 						"showIncomingCallsIcons",
-						"Icon for incoming calls in the call hierarchy view.",
-					),
+						"Icon for incoming calls in the call hierarchy view."
+					)
 				),
 				precondition: ContextKeyExpr.and(
 					_ctxCallHierarchyVisible,
 					_ctxCallHierarchyDirection.isEqualTo(
-						CallHierarchyDirection.CallsFrom,
-					),
+						CallHierarchyDirection.CallsFrom
+					)
 				),
 				keybinding: {
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -334,7 +351,7 @@ registerAction2(
 				menu: {
 					id: CallHierarchyTreePeekWidget.TitleMenu,
 					when: _ctxCallHierarchyDirection.isEqualTo(
-						CallHierarchyDirection.CallsFrom,
+						CallHierarchyDirection.CallsFrom
 					),
 					order: 1,
 				},
@@ -344,7 +361,7 @@ registerAction2(
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			return CallHierarchyController.get(editor)?.showIncomingCalls();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -361,14 +378,14 @@ registerAction2(
 					Codicon.callOutgoing,
 					localize(
 						"showOutgoingCallsIcon",
-						"Icon for outgoing calls in the call hierarchy view.",
-					),
+						"Icon for outgoing calls in the call hierarchy view."
+					)
 				),
 				precondition: ContextKeyExpr.and(
 					_ctxCallHierarchyVisible,
 					_ctxCallHierarchyDirection.isEqualTo(
-						CallHierarchyDirection.CallsTo,
-					),
+						CallHierarchyDirection.CallsTo
+					)
 				),
 				keybinding: {
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -377,7 +394,7 @@ registerAction2(
 				menu: {
 					id: CallHierarchyTreePeekWidget.TitleMenu,
 					when: _ctxCallHierarchyDirection.isEqualTo(
-						CallHierarchyDirection.CallsTo,
+						CallHierarchyDirection.CallsTo
 					),
 					order: 1,
 				},
@@ -387,7 +404,7 @@ registerAction2(
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			return CallHierarchyController.get(editor)?.showOutgoingCalls();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -409,13 +426,13 @@ registerAction2(
 
 		async runEditorCommand(
 			_accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			return CallHierarchyController.get(
-				editor,
+				editor
 			)?.startCallHierarchyFromCallHierarchy();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -440,9 +457,9 @@ registerAction2(
 
 		runEditorCommand(
 			_accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): void {
 			return CallHierarchyController.get(editor)?.endCallHierarchy();
 		}
-	},
+	}
 );

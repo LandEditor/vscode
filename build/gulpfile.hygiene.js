@@ -26,7 +26,7 @@ function checkPackageJSON(actualPath) {
 			if (depVersion !== rootDepVersion) {
 				this.emit(
 					"error",
-					`The dependency ${depName} in '${actualPath}' (${depVersion}) is different than in the root package.json (${rootDepVersion})`,
+					`The dependency ${depName} in '${actualPath}' (${depVersion}) is different than in the root package.json (${rootDepVersion})`
 				);
 			}
 		}
@@ -42,13 +42,13 @@ const checkPackageJSONTask = task.define("check-package-json", () => {
 			checkPackageJSON.call(this, "remote/package.json");
 			checkPackageJSON.call(this, "remote/web/package.json");
 			checkPackageJSON.call(this, "build/package.json");
-		}),
+		})
 	);
 });
 gulp.task(checkPackageJSONTask);
 
 const hygieneTask = task.define(
 	"hygiene",
-	task.series(checkPackageJSONTask, () => hygiene(undefined, false)),
+	task.series(checkPackageJSONTask, () => hygiene(undefined, false))
 );
 gulp.task(hygieneTask);

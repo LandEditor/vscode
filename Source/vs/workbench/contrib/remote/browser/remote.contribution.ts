@@ -26,33 +26,33 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ShowCandidateContribution,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	TunnelFactoryContribution,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	RemoteAgentConnectionStatusListener,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	RemoteStatusIndicator,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ForwardedPortsView,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	PortRestore,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	AutomaticPortForwarding,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	RemoteMarkers,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

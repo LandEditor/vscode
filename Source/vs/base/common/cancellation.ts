@@ -23,25 +23,24 @@ export interface CancellationToken {
 	readonly onCancellationRequested: (
 		listener: (e: any) => any,
 		thisArgs?: any,
-		disposables?: IDisposable[],
+		disposables?: IDisposable[]
 	) => IDisposable;
 }
 
-const shortcutEvent: Event<any> = Object.freeze(function (
-	callback,
-	context?,
-): IDisposable {
-	const handle = setTimeout(callback.bind(context), 0);
-	return {
-		dispose() {
-			clearTimeout(handle);
-		},
-	};
-});
+const shortcutEvent: Event<any> = Object.freeze(
+	function (callback, context?): IDisposable {
+		const handle = setTimeout(callback.bind(context), 0);
+		return {
+			dispose() {
+				clearTimeout(handle);
+			},
+		};
+	}
+);
 
 export namespace CancellationToken {
 	export function isCancellationToken(
-		thing: unknown,
+		thing: unknown
 	): thing is CancellationToken {
 		if (
 			thing === CancellationToken.None ||

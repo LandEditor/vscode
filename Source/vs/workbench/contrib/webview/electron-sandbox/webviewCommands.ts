@@ -17,7 +17,7 @@ export class OpenWebviewDeveloperToolsAction extends Action2 {
 			title: {
 				value: nls.localize(
 					"openToolsLabel",
-					"Open Webview Developer Tools",
+					"Open Webview Developer Tools"
 				),
 				original: "Open Webview Developer Tools",
 			},
@@ -30,14 +30,14 @@ export class OpenWebviewDeveloperToolsAction extends Action2 {
 		const nativeHostService = accessor.get(INativeHostService);
 
 		const iframeWebviewElements = $window.document.querySelectorAll(
-			"iframe.webview.ready",
+			"iframe.webview.ready"
 		);
 		if (iframeWebviewElements.length) {
 			console.info(
 				nls.localize(
 					"iframeWebviewAlert",
-					"Using standard dev tools to debug iframe based webview",
-				),
+					"Using standard dev tools to debug iframe based webview"
+				)
 			);
 			nativeHostService.openDevTools();
 		}

@@ -39,7 +39,8 @@ export class NotificationsStatus extends Disposable {
 	constructor(
 		private readonly model: INotificationsModel,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
-		@INotificationService private readonly notificationService: INotificationService
+		@INotificationService
+		private readonly notificationService: INotificationService
 	) {
 		super();
 
@@ -55,18 +56,18 @@ export class NotificationsStatus extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
-				this.onDidChangeNotification(e),
-			),
+				this.onDidChangeNotification(e)
+			)
 		);
 		this._register(
 			this.model.onDidChangeStatusMessage((e) =>
-				this.onDidChangeStatusMessage(e),
-			),
+				this.onDidChangeStatusMessage(e)
+			)
 		);
 		this._register(
 			this.notificationService.onDidChangeDoNotDisturbMode(() =>
-				this.updateNotificationsCenterStatusItem(),
-			),
+				this.updateNotificationsCenterStatusItem()
+			)
 		);
 	}
 
@@ -133,7 +134,7 @@ export class NotificationsStatus extends Disposable {
 				ariaLabel: localize("status.doNotDisturb", "Do Not Disturb"),
 				tooltip: localize(
 					"status.doNotDisturbTooltip",
-					"Do Not Disturb Mode is Enabled",
+					"Do Not Disturb Mode is Enabled"
 				),
 			};
 		}
@@ -143,7 +144,7 @@ export class NotificationsStatus extends Disposable {
 				statusProperties,
 				"status.notifications",
 				StatusbarAlignment.RIGHT,
-				-Number.MAX_VALUE /* towards the far end of the right hand side */,
+				-Number.MAX_VALUE /* towards the far end of the right hand side */
 			);
 		} else {
 			this.notificationsCenterStatusItem.update(statusProperties);
@@ -174,7 +175,7 @@ export class NotificationsStatus extends Disposable {
 					comment: ["{0} will be replaced by a number"],
 				},
 				"{0} New Notifications",
-				this.newNotificationsCount,
+				this.newNotificationsCount
 			);
 		}
 
@@ -185,7 +186,7 @@ export class NotificationsStatus extends Disposable {
 					comment: ["{0} will be replaced by a number"],
 				},
 				"No New Notifications ({0} in progress)",
-				notificationsInProgress,
+				notificationsInProgress
 			);
 		}
 
@@ -196,7 +197,7 @@ export class NotificationsStatus extends Disposable {
 					comment: ["{0} will be replaced by a number"],
 				},
 				"1 New Notification ({0} in progress)",
-				notificationsInProgress,
+				notificationsInProgress
 			);
 		}
 
@@ -207,7 +208,7 @@ export class NotificationsStatus extends Disposable {
 			},
 			"{0} New Notifications ({1} in progress)",
 			this.newNotificationsCount,
-			notificationsInProgress,
+			notificationsInProgress
 		);
 	}
 
@@ -283,7 +284,7 @@ export class NotificationsStatus extends Disposable {
 				},
 				"status.message",
 				StatusbarAlignment.LEFT,
-				-Number.MAX_VALUE /* far right on left hand side */,
+				-Number.MAX_VALUE /* far right on left hand side */
 			);
 			showHandle = null;
 		}, showAfter);
@@ -307,7 +308,7 @@ export class NotificationsStatus extends Disposable {
 		if (hideAfter > 0) {
 			hideHandle = setTimeout(
 				() => statusMessageDispose.dispose(),
-				hideAfter,
+				hideAfter
 			);
 		}
 

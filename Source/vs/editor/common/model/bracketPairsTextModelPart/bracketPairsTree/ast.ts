@@ -78,7 +78,7 @@ abstract class BaseAstNode {
 	 * @param openBracketIds The set of all opening brackets that have not yet been closed.
 	 */
 	public abstract canBeReused(
-		openBracketIds: SmallImmutableSet<OpeningBracketId>,
+		openBracketIds: SmallImmutableSet<OpeningBracketId>
 	): boolean;
 
 	/**
@@ -93,7 +93,7 @@ abstract class BaseAstNode {
 
 	public abstract computeMinIndentation(
 		offset: Length,
-		textModel: ITextModel,
+		textModel: ITextModel
 	): number;
 }
 
@@ -106,7 +106,7 @@ export class PairAstNode extends BaseAstNode {
 	public static create(
 		openingBracket: BracketAstNode,
 		child: AstNode | null,
-		closingBracket: BracketAstNode | null,
+		closingBracket: BracketAstNode | null
 	) {
 		let length = openingBracket.length;
 		if (child) {
@@ -122,7 +122,7 @@ export class PairAstNode extends BaseAstNode {
 			closingBracket,
 			child
 				? child.missingOpeningBracketIds
-				: SmallImmutableSet.getEmpty(),
+				: SmallImmutableSet.getEmpty()
 		);
 	}
 
@@ -167,7 +167,7 @@ export class PairAstNode extends BaseAstNode {
 		public readonly openingBracket: BracketAstNode,
 		public readonly child: AstNode | null,
 		public readonly closingBracket: BracketAstNode | null,
-		public readonly missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>,
+		public readonly missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>
 	) {
 		super(length);
 	}
@@ -195,7 +195,7 @@ export class PairAstNode extends BaseAstNode {
 		return PairAstNode.create(
 			this.openingBracket.flattenLists(),
 			this.child && this.child.flattenLists(),
-			this.closingBracket && this.closingBracket.flattenLists(),
+			this.closingBracket && this.closingBracket.flattenLists()
 		);
 	}
 
@@ -205,19 +205,19 @@ export class PairAstNode extends BaseAstNode {
 			this.openingBracket.deepClone(),
 			this.child && this.child.deepClone(),
 			this.closingBracket && this.closingBracket.deepClone(),
-			this.missingOpeningBracketIds,
+			this.missingOpeningBracketIds
 		);
 	}
 
 	public computeMinIndentation(
 		offset: Length,
-		textModel: ITextModel,
+		textModel: ITextModel
 	): number {
 		return this.child
 			? this.child.computeMinIndentation(
 					lengthAdd(offset, this.openingBracket.length),
-					textModel,
-			  )
+					textModel
+				)
 			: Number.MAX_SAFE_INTEGER;
 	}
 }
@@ -230,7 +230,7 @@ export abstract class ListAstNode extends BaseAstNode {
 		item1: AstNode,
 		item2: AstNode,
 		item3: AstNode | null,
-		immutable: boolean = false,
+		immutable: boolean = false
 	): ListAstNode {
 		let length = item1.length;
 		let missingBracketIds = item1.missingOpeningBracketIds;
@@ -241,7 +241,7 @@ export abstract class ListAstNode extends BaseAstNode {
 
 		length = lengthAdd(length, item2.length);
 		missingBracketIds = missingBracketIds.merge(
-			item2.missingOpeningBracketIds,
+			item2.missingOpeningBracketIds
 		);
 
 		if (item3) {
@@ -250,7 +250,7 @@ export abstract class ListAstNode extends BaseAstNode {
 			}
 			length = lengthAdd(length, item3.length);
 			missingBracketIds = missingBracketIds.merge(
-				item3.missingOpeningBracketIds,
+				item3.missingOpeningBracketIds
 			);
 		}
 		return immutable
@@ -260,21 +260,21 @@ export abstract class ListAstNode extends BaseAstNode {
 					item1,
 					item2,
 					item3,
-					missingBracketIds,
-			  )
+					missingBracketIds
+				)
 			: new TwoThreeListAstNode(
 					length,
 					item1.listHeight + 1,
 					item1,
 					item2,
 					item3,
-					missingBracketIds,
-			  );
+					missingBracketIds
+				);
 	}
 
 	public static create(
 		items: AstNode[],
-		immutable: boolean = false,
+		immutable: boolean = false
 	): ListAstNode {
 		if (items.length === 0) {
 			return this.getEmpty();
@@ -284,7 +284,7 @@ export abstract class ListAstNode extends BaseAstNode {
 			for (let i = 1; i < items.length; i++) {
 				length = lengthAdd(length, items[i].length);
 				unopenedBrackets = unopenedBrackets.merge(
-					items[i].missingOpeningBracketIds,
+					items[i].missingOpeningBracketIds
 				);
 			}
 			return immutable
@@ -292,14 +292,14 @@ export abstract class ListAstNode extends BaseAstNode {
 						length,
 						items[0].listHeight + 1,
 						items,
-						unopenedBrackets,
-				  )
+						unopenedBrackets
+					)
 				: new ArrayListAstNode(
 						length,
 						items[0].listHeight + 1,
 						items,
-						unopenedBrackets,
-				  );
+						unopenedBrackets
+					);
 		}
 	}
 
@@ -308,7 +308,7 @@ export abstract class ListAstNode extends BaseAstNode {
 			lengthZero,
 			0,
 			[],
-			SmallImmutableSet.getEmpty(),
+			SmallImmutableSet.getEmpty()
 		);
 	}
 
@@ -328,7 +328,7 @@ export abstract class ListAstNode extends BaseAstNode {
 	constructor(
 		length: Length,
 		public readonly listHeight: number,
-		private _missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>,
+		private _missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>
 	) {
 		super(length);
 	}
@@ -374,7 +374,7 @@ export abstract class ListAstNode extends BaseAstNode {
 	}
 
 	public canBeReused(
-		openBracketIds: SmallImmutableSet<OpeningBracketId>,
+		openBracketIds: SmallImmutableSet<OpeningBracketId>
 	): boolean {
 		if (openBracketIds.intersects(this.missingOpeningBracketIds)) {
 			return false;
@@ -410,7 +410,7 @@ export abstract class ListAstNode extends BaseAstNode {
 			const child = this.getChild(i)!;
 			length = lengthAdd(length, child.length);
 			unopenedBrackets = unopenedBrackets.merge(
-				child.missingOpeningBracketIds,
+				child.missingOpeningBracketIds
 			);
 		}
 
@@ -434,7 +434,7 @@ export abstract class ListAstNode extends BaseAstNode {
 
 	public computeMinIndentation(
 		offset: Length,
-		textModel: ITextModel,
+		textModel: ITextModel
 	): number {
 		if (this.cachedMinIndentation !== -1) {
 			return this.cachedMinIndentation;
@@ -447,7 +447,7 @@ export abstract class ListAstNode extends BaseAstNode {
 			if (child) {
 				minIndentation = Math.min(
 					minIndentation,
-					child.computeMinIndentation(childOffset, textModel),
+					child.computeMinIndentation(childOffset, textModel)
 				);
 				childOffset = lengthAdd(childOffset, child.length);
 			}
@@ -520,7 +520,7 @@ class TwoThreeListAstNode extends ListAstNode {
 		private _item1: AstNode,
 		private _item2: AstNode,
 		private _item3: AstNode | null,
-		missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>,
+		missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>
 	) {
 		super(length, listHeight, missingOpeningBracketIds);
 	}
@@ -532,7 +532,7 @@ class TwoThreeListAstNode extends ListAstNode {
 			this._item1.deepClone(),
 			this._item2.deepClone(),
 			this._item3 ? this._item3.deepClone() : null,
-			this.missingOpeningBracketIds,
+			this.missingOpeningBracketIds
 		);
 	}
 
@@ -597,7 +597,7 @@ class Immutable23ListAstNode extends TwoThreeListAstNode {
 			this.item1,
 			this.item2,
 			this.item3,
-			this.missingOpeningBracketIds,
+			this.missingOpeningBracketIds
 		);
 	}
 
@@ -627,7 +627,7 @@ class ArrayListAstNode extends ListAstNode {
 		length: Length,
 		listHeight: number,
 		private readonly _children: AstNode[],
-		missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>,
+		missingOpeningBracketIds: SmallImmutableSet<OpeningBracketId>
 	) {
 		super(length, listHeight, missingOpeningBracketIds);
 	}
@@ -641,7 +641,7 @@ class ArrayListAstNode extends ListAstNode {
 			this.length,
 			this.listHeight,
 			children,
-			this.missingOpeningBracketIds,
+			this.missingOpeningBracketIds
 		);
 	}
 
@@ -685,7 +685,7 @@ class ImmutableArrayListAstNode extends ArrayListAstNode {
 			this.length,
 			this.listHeight,
 			[...this.children],
-			this.missingOpeningBracketIds,
+			this.missingOpeningBracketIds
 		);
 	}
 
@@ -732,7 +732,7 @@ export class TextAstNode extends ImmutableLeafAstNode {
 
 	public computeMinIndentation(
 		offset: Length,
-		textModel: ITextModel,
+		textModel: ITextModel
 	): number {
 		const start = lengthToObj(offset);
 		// Text ast nodes don't have partial indentation (ensured by the tokenizer).
@@ -760,7 +760,7 @@ export class TextAstNode extends ImmutableLeafAstNode {
 			const visibleColumn = CursorColumns.visibleColumnFromColumn(
 				lineContent,
 				firstNonWsColumn,
-				textModel.getOptions().tabSize,
+				textModel.getOptions().tabSize
 			)!;
 			result = Math.min(result, visibleColumn);
 		}
@@ -773,7 +773,7 @@ export class BracketAstNode extends ImmutableLeafAstNode {
 	public static create(
 		length: Length,
 		bracketInfo: BracketKind,
-		bracketIds: SmallImmutableSet<OpeningBracketId>,
+		bracketIds: SmallImmutableSet<OpeningBracketId>
 	): BracketAstNode {
 		const node = new BracketAstNode(length, bracketInfo, bracketIds);
 		return node;
@@ -794,7 +794,7 @@ export class BracketAstNode extends ImmutableLeafAstNode {
 		 * In case of a opening bracket, this is the id of the opening bracket.
 		 * In case of a closing bracket, this contains the ids of all opening brackets it can close.
 		 */
-		public readonly bracketIds: SmallImmutableSet<OpeningBracketId>,
+		public readonly bracketIds: SmallImmutableSet<OpeningBracketId>
 	) {
 		super(length);
 	}
@@ -816,7 +816,7 @@ export class BracketAstNode extends ImmutableLeafAstNode {
 
 	public computeMinIndentation(
 		offset: Length,
-		textModel: ITextModel,
+		textModel: ITextModel
 	): number {
 		return Number.MAX_SAFE_INTEGER;
 	}
@@ -831,7 +831,7 @@ export class InvalidBracketAstNode extends ImmutableLeafAstNode {
 
 	public constructor(
 		closingBrackets: SmallImmutableSet<OpeningBracketId>,
-		length: Length,
+		length: Length
 	) {
 		super(length);
 		this.missingOpeningBracketIds = closingBrackets;
@@ -843,7 +843,7 @@ export class InvalidBracketAstNode extends ImmutableLeafAstNode {
 
 	public computeMinIndentation(
 		offset: Length,
-		textModel: ITextModel,
+		textModel: ITextModel
 	): number {
 		return Number.MAX_SAFE_INTEGER;
 	}

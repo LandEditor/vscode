@@ -33,7 +33,7 @@ export interface IOutputChannelModelService {
 		id: string,
 		modelUri: URI,
 		language: ILanguageSelection,
-		file?: URI,
+		file?: URI
 	): IOutputChannelModel;
 }
 
@@ -44,32 +44,37 @@ export class OutputChannelModelService {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService
 	) {
-		this.outputLocation = joinPath(environmentService.windowLogsPath, `output_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')}`);
+		this.outputLocation = joinPath(
+			environmentService.windowLogsPath,
+			`output_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, "")}`
+		);
 	}
 
 	createOutputChannelModel(
 		id: string,
 		modelUri: URI,
 		language: ILanguageSelection,
-		file?: URI,
+		file?: URI
 	): IOutputChannelModel {
 		return file
 			? this.instantiationService.createInstance(
 					FileOutputChannelModel,
 					modelUri,
 					language,
-					file,
-			  )
+					file
+				)
 			: this.instantiationService.createInstance(
 					DelegatedOutputChannelModel,
 					id,
 					modelUri,
 					language,
-					this.outputDir,
-			  );
+					this.outputDir
+				);
 	}
 
 	private _outputDir: Promise<URI> | null = null;
@@ -86,5 +91,5 @@ export class OutputChannelModelService {
 registerSingleton(
 	IOutputChannelModelService,
 	OutputChannelModelService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

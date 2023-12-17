@@ -60,22 +60,22 @@ import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle
 import { MergeEditorSerializer } from "./mergeEditorSerializer";
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		MergeEditor,
 		MergeEditor.ID,
-		localize("name", "Merge Editor"),
+		localize("name", "Merge Editor")
 	),
-	[new SyncDescriptor(MergeEditorInput)],
+	[new SyncDescriptor(MergeEditorInput)]
 );
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(MergeEditorInput.ID, MergeEditorSerializer);
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration({
 	properties: {
 		"mergeEditor.diffAlgorithm": {
@@ -85,11 +85,11 @@ Registry.as<IConfigurationRegistry>(
 			markdownEnumDescriptions: [
 				localize(
 					"diffAlgorithm.legacy",
-					"Uses the legacy diffing algorithm.",
+					"Uses the legacy diffing algorithm."
 				),
 				localize(
 					"diffAlgorithm.advanced",
-					"Uses the advanced diffing algorithm.",
+					"Uses the advanced diffing algorithm."
 				),
 			],
 		},
@@ -135,15 +135,15 @@ registerAction2(MergeEditorSaveContentsToFolder);
 registerAction2(MergeEditorLoadContentsFromFolder);
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	MergeEditorOpenHandlerContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	MergeEditorResolverContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );

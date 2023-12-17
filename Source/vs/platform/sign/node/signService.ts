@@ -33,7 +33,7 @@ export class SignService extends AbstractSignService implements ISignService {
 
 	private vsda(): Promise<typeof vsda> {
 		return new Promise((resolve, reject) =>
-			require(["vsda"], resolve, reject),
+			require(["vsda"], resolve, reject)
 		);
 	}
 }

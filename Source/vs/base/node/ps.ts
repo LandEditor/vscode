@@ -17,7 +17,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 			ppid: number,
 			cmd: string,
 			load: number,
-			mem: number,
+			mem: number
 		) {
 			const parent = map.get(ppid);
 			if (pid === rootPid || parent) {
@@ -42,7 +42,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 					parent.children.push(item);
 					if (parent.children.length > 1) {
 						parent.children = parent.children.sort(
-							(a, b) => a.pid - b.pid,
+							(a, b) => a.pid - b.pid
 						);
 					}
 				}
@@ -136,8 +136,8 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 							if (!processList) {
 								reject(
 									new Error(
-										`Root process ${rootPid} not found`,
-									),
+										`Root process ${rootPid} not found`
+									)
 								);
 								return;
 							}
@@ -150,7 +150,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 									> = new Map();
 									completeProcessList.forEach((process) => {
 										const commandLine = cleanUNCPrefix(
-											process.commandLine || "",
+											process.commandLine || ""
 										);
 										processItems.set(process.pid, {
 											name: findName(commandLine),
@@ -166,7 +166,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 									if (rootItem) {
 										processItems.forEach((item) => {
 											const parent = processItems.get(
-												item.ppid,
+												item.ppid
 											);
 											if (parent) {
 												if (!parent.children) {
@@ -180,7 +180,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 											if (item.children) {
 												item.children =
 													item.children.sort(
-														(a, b) => a.pid - b.pid,
+														(a, b) => a.pid - b.pid
 													);
 											}
 										});
@@ -188,17 +188,17 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 									} else {
 										reject(
 											new Error(
-												`Root process ${rootPid} not found`,
-											),
+												`Root process ${rootPid} not found`
+											)
 										);
 									}
-								},
+								}
 							);
 						},
 						windowsProcessTree.ProcessDataFlag.CommandLine |
-							windowsProcessTree.ProcessDataFlag.Memory,
+							windowsProcessTree.ProcessDataFlag.Memory
 					);
-				},
+				}
 			);
 		} else {
 			// OS X & Linux
@@ -220,7 +220,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 				// recalculate the usage over a one second interval
 				// JSON.stringify is needed to escape spaces, https://github.com/nodejs/node/issues/6803
 				let cmd = JSON.stringify(
-					FileAccess.asFileUri("vs/base/node/cpuUsage.sh").fsPath,
+					FileAccess.asFileUri("vs/base/node/cpuUsage.sh").fsPath
 				);
 				cmd += " " + pids.join(" ");
 
@@ -236,7 +236,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 
 						if (!rootItem) {
 							reject(
-								new Error(`Root process ${rootPid} not found`),
+								new Error(`Root process ${rootPid} not found`)
 							);
 							return;
 						}
@@ -252,7 +252,7 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 						reject(err || new Error(stderr.toString()));
 					} else {
 						const cmd = JSON.stringify(
-							FileAccess.asFileUri("vs/base/node/ps.sh").fsPath,
+							FileAccess.asFileUri("vs/base/node/ps.sh").fsPath
 						);
 						exec(cmd, {}, (err, stdout, stderr) => {
 							if (err || stderr) {
@@ -291,15 +291,15 @@ export function listProcesses(rootPid: number): Promise<ProcessItem> {
 									if (!rootItem) {
 										reject(
 											new Error(
-												`Root process ${rootPid} not found`,
-											),
+												`Root process ${rootPid} not found`
+											)
 										);
 									} else {
 										resolve(rootItem);
 									}
 								}
 							}
-						},
+						}
 					);
 				}
 			});
@@ -314,8 +314,8 @@ function parsePsOutput(
 		ppid: number,
 		cmd: string,
 		load: number,
-		mem: number,
-	) => void,
+		mem: number
+	) => void
 ): void {
 	const PID_CMD =
 		/^\s*([0-9]+)\s+([0-9]+)\s+([0-9]+\.[0-9]+)\s+([0-9]+\.[0-9]+)\s+(.+)$/;
@@ -328,7 +328,7 @@ function parsePsOutput(
 				parseInt(matches[2]),
 				matches[5],
 				parseFloat(matches[3]),
-				parseFloat(matches[4]),
+				parseFloat(matches[4])
 			);
 		}
 	}

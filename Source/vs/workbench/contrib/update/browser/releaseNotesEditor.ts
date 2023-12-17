@@ -54,16 +54,22 @@ export class ReleaseNotesManager {
 	private readonly disposables = new DisposableStore();
 
 	public constructor(
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IRequestService private readonly _requestService: IRequestService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IProductService private readonly _productService: IProductService
 	) {
 		TokenizationRegistry.onDidChange(async () => {
@@ -76,8 +82,16 @@ export class ReleaseNotesManager {
 			}
 		});
 
-		_configurationService.onDidChangeConfiguration(this.onDidChangeConfiguration, this, this.disposables);
-		_webviewWorkbenchService.onDidChangeActiveWebviewEditor(this.onDidChangeActiveWebviewEditor, this, this.disposables);
+		_configurationService.onDidChangeConfiguration(
+			this.onDidChangeConfiguration,
+			this,
+			this.disposables
+		);
+		_webviewWorkbenchService.onDidChangeActiveWebviewEditor(
+			this.onDidChangeActiveWebviewEditor,
+			this,
+			this.disposables
+		);
 	}
 
 	public async show(version: string): Promise<boolean> {
@@ -87,7 +101,7 @@ export class ReleaseNotesManager {
 		const title = nls.localize(
 			"releaseNotesInputName",
 			"Release Notes: {0}",
-			version,
+			version
 		);
 
 		const activeEditorPane = this._editorService.activeEditorPane;
@@ -99,7 +113,7 @@ export class ReleaseNotesManager {
 				activeEditorPane
 					? activeEditorPane.group
 					: this._editorGroupService.activeGroup,
-				false,
+				false
 			);
 		} else {
 			this._currentReleaseNotes =
@@ -119,11 +133,11 @@ export class ReleaseNotesManager {
 					},
 					"releaseNotes",
 					title,
-					{ group: ACTIVE_GROUP, preserveFocus: false },
+					{ group: ACTIVE_GROUP, preserveFocus: false }
 				);
 
 			this._currentReleaseNotes.webview.onDidClickLink((uri) =>
-				this.onDidClickLink(URI.parse(uri)),
+				this.onDidClickLink(URI.parse(uri))
 			);
 
 			const disposables = new DisposableStore();
@@ -132,17 +146,17 @@ export class ReleaseNotesManager {
 					if (e.message.type === "showReleaseNotes") {
 						this._configurationService.updateValue(
 							"update.showReleaseNotes",
-							e.message.value,
+							e.message.value
 						);
 					}
-				}),
+				})
 			);
 
 			disposables.add(
 				this._currentReleaseNotes.onWillDispose(() => {
 					disposables.dispose();
 					this._currentReleaseNotes = undefined;
-				}),
+				})
 			);
 
 			this._currentReleaseNotes.webview.setHtml(html);
@@ -198,8 +212,8 @@ export class ReleaseNotesManager {
 				const resolved = kb(match, binding);
 				return resolved
 					? `<code title="${binding}">${escapeMdHtml(
-							resolved,
-					  )}</code>`
+							resolved
+						)}</code>`
 					: resolved;
 			};
 
@@ -207,8 +221,8 @@ export class ReleaseNotesManager {
 				const resolved = kbstyle(match, binding);
 				return resolved
 					? `<code title="${binding}">${escapeMdHtml(
-							resolved,
-					  )}</code>`
+							resolved
+						)}</code>`
 					: resolved;
 			};
 
@@ -216,10 +230,10 @@ export class ReleaseNotesManager {
 				.replace(/`kb\(([a-z.\d\-]+)\)`/gi, kbCode)
 				.replace(/`kbstyle\(([^\)]+)\)`/gi, kbstyleCode)
 				.replace(/kb\(([a-z.\d\-]+)\)/gi, (match, binding) =>
-					escapeMarkdownSyntaxTokens(kb(match, binding)),
+					escapeMarkdownSyntaxTokens(kb(match, binding))
 				)
 				.replace(/kbstyle\(([^\)]+)\)/gi, (match, binding) =>
-					escapeMarkdownSyntaxTokens(kbstyle(match, binding)),
+					escapeMarkdownSyntaxTokens(kbstyle(match, binding))
 				);
 		};
 
@@ -229,8 +243,8 @@ export class ReleaseNotesManager {
 				text = await asTextOrError(
 					await this._requestService.request(
 						{ url },
-						CancellationToken.None,
-					),
+						CancellationToken.None
+					)
 				);
 			} catch {
 				throw new Error("Failed to fetch release notes");
@@ -254,7 +268,7 @@ export class ReleaseNotesManager {
 						this._releaseNotesCache.delete(version);
 						throw err;
 					}
-				})(),
+				})()
 			);
 		}
 
@@ -270,7 +284,7 @@ export class ReleaseNotesManager {
 	private async addGAParameters(
 		uri: URI,
 		origin: string,
-		experiment = "1",
+		experiment = "1"
 	): Promise<URI> {
 		if (
 			supportsTelemetry(this._productService, this._environmentService) &&
@@ -285,7 +299,7 @@ export class ReleaseNotesManager {
 					query: `${
 						uri.query ? uri.query + "&" : ""
 					}utm_source=VsCode&utm_medium=${encodeURIComponent(
-						origin,
+						origin
 					)}&utm_content=${encodeURIComponent(experiment)}`,
 				});
 			}
@@ -299,14 +313,14 @@ export class ReleaseNotesManager {
 			text,
 			this._extensionService,
 			this._languageService,
-			false,
+			false
 		);
 		const colorMap = TokenizationRegistry.getColorMap();
 		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : "";
 		const showReleaseNotes = Boolean(
 			this._configurationService.getValue<boolean>(
-				"update.showReleaseNotes",
-			),
+				"update.showReleaseNotes"
+			)
 		);
 
 		return `<!DOCTYPE html>
@@ -339,7 +353,7 @@ export class ReleaseNotesManager {
 					label.htmlFor = 'showReleaseNotes';
 					label.textContent = '${nls.localize(
 						"showOnUpdate",
-						"Show release notes after an update",
+						"Show release notes after an update"
 					)}';
 					container.appendChild(label);
 
@@ -371,7 +385,7 @@ export class ReleaseNotesManager {
 	}
 
 	private onDidChangeActiveWebviewEditor(
-		input: WebviewInput | undefined,
+		input: WebviewInput | undefined
 	): void {
 		if (input && input === this._currentReleaseNotes) {
 			this.updateWebview();
@@ -383,7 +397,7 @@ export class ReleaseNotesManager {
 			this._currentReleaseNotes.webview.postMessage({
 				type: "showReleaseNotes",
 				value: this._configurationService.getValue<boolean>(
-					"update.showReleaseNotes",
+					"update.showReleaseNotes"
 				),
 			});
 		}

@@ -17,6 +17,6 @@ export const embeddedEditorBackground = registerColor(
 	},
 	localize(
 		"walkThrough.embeddedEditorBackground",
-		"Background color for the embedded editors on the Interactive Playground.",
-	),
+		"Background color for the embedded editors on the Interactive Playground."
+	)
 );

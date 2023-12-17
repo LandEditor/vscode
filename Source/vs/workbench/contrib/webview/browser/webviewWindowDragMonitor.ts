@@ -21,7 +21,7 @@ export class WebviewWindowDragMonitor extends Disposable {
 		this._register(
 			DOM.addDisposableListener($window, DOM.EventType.DRAG_START, () => {
 				getWebview()?.windowDidDragStart();
-			}),
+			})
 		);
 
 		const onDragEnd = () => {
@@ -32,8 +32,8 @@ export class WebviewWindowDragMonitor extends Disposable {
 			DOM.addDisposableListener(
 				$window,
 				DOM.EventType.DRAG_END,
-				onDragEnd,
-			),
+				onDragEnd
+			)
 		);
 		this._register(
 			DOM.addDisposableListener(
@@ -43,8 +43,8 @@ export class WebviewWindowDragMonitor extends Disposable {
 					if (currentEvent.buttons === 0) {
 						onDragEnd();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 }

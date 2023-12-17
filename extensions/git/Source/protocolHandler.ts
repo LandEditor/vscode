@@ -52,7 +52,7 @@ export class GitProtocolHandler implements UriHandler {
 		if (ref !== undefined && typeof ref !== "string") {
 			this.logger.warn(
 				"Failed to open URI due to multiple references:" +
-					uri.toString(),
+					uri.toString()
 			);
 			return;
 		}
@@ -83,11 +83,11 @@ export class GitProtocolHandler implements UriHandler {
 
 		if (!(await commands.getCommands(true)).includes("git.clone")) {
 			this.logger.error(
-				"Could not complete git clone operation as git installation was not found.",
+				"Could not complete git clone operation as git installation was not found."
 			);
 
 			const errorMessage = l10n.t(
-				"Could not clone your repository as Git is not installed.",
+				"Could not clone your repository as Git is not installed."
 			);
 			const downloadGit = l10n.t("Download Git");
 
@@ -95,12 +95,12 @@ export class GitProtocolHandler implements UriHandler {
 				(await window.showErrorMessage(
 					errorMessage,
 					{ modal: true },
-					downloadGit,
+					downloadGit
 				)) === downloadGit
 			) {
 				commands.executeCommand(
 					"vscode.open",
-					Uri.parse("https://aka.ms/vscode-download-git"),
+					Uri.parse("https://aka.ms/vscode-download-git")
 				);
 			}
 

@@ -83,26 +83,50 @@ export class ExtensionRecommendationsService
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionIgnoredRecommendationsService private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
-		@IExtensionRecommendationNotificationService private readonly extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IRemoteExtensionsScannerService private readonly remoteExtensionsScannerService: IRemoteExtensionsScannerService,
-		@IUserDataInitializationService private readonly userDataInitializationService: IUserDataInitializationService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
+		@IExtensionRecommendationNotificationService
+		private readonly extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IRemoteExtensionsScannerService
+		private readonly remoteExtensionsScannerService: IRemoteExtensionsScannerService,
+		@IUserDataInitializationService
+		private readonly userDataInitializationService: IUserDataInitializationService
 	) {
 		super();
 
-		this.workspaceRecommendations = this._register(instantiationService.createInstance(WorkspaceRecommendations));
-		this.fileBasedRecommendations = this._register(instantiationService.createInstance(FileBasedRecommendations));
-		this.configBasedRecommendations = this._register(instantiationService.createInstance(ConfigBasedRecommendations));
-		this.exeBasedRecommendations = this._register(instantiationService.createInstance(ExeBasedRecommendations));
-		this.keymapRecommendations = this._register(instantiationService.createInstance(KeymapRecommendations));
-		this.webRecommendations = this._register(instantiationService.createInstance(WebRecommendations));
-		this.languageRecommendations = this._register(instantiationService.createInstance(LanguageRecommendations));
-		this.remoteRecommendations = this._register(instantiationService.createInstance(RemoteRecommendations));
+		this.workspaceRecommendations = this._register(
+			instantiationService.createInstance(WorkspaceRecommendations)
+		);
+		this.fileBasedRecommendations = this._register(
+			instantiationService.createInstance(FileBasedRecommendations)
+		);
+		this.configBasedRecommendations = this._register(
+			instantiationService.createInstance(ConfigBasedRecommendations)
+		);
+		this.exeBasedRecommendations = this._register(
+			instantiationService.createInstance(ExeBasedRecommendations)
+		);
+		this.keymapRecommendations = this._register(
+			instantiationService.createInstance(KeymapRecommendations)
+		);
+		this.webRecommendations = this._register(
+			instantiationService.createInstance(WebRecommendations)
+		);
+		this.languageRecommendations = this._register(
+			instantiationService.createInstance(LanguageRecommendations)
+		);
+		this.remoteRecommendations = this._register(
+			instantiationService.createInstance(RemoteRecommendations)
+		);
 
 		if (!this.isEnabled()) {
 			this.sessionSeed = 0;
@@ -115,7 +139,11 @@ export class ExtensionRecommendationsService
 		// Activation
 		this.activationPromise = this.activate();
 
-		this._register(this.extensionManagementService.onDidInstallExtensions(e => this.onDidInstallExtensions(e)));
+		this._register(
+			this.extensionManagementService.onDidInstallExtensions((e) =>
+				this.onDidInstallExtensions(e)
+			)
+		);
 	}
 
 	private async activate(): Promise<void> {
@@ -145,8 +173,8 @@ export class ExtensionRecommendationsService
 				this.workspaceRecommendations.onDidChangeRecommendations,
 				this.configBasedRecommendations.onDidChangeRecommendations,
 				this.extensionRecommendationsManagementService
-					.onDidChangeIgnoredRecommendations,
-			)(() => this._onDidChangeRecommendations.fire()),
+					.onDidChangeIgnoredRecommendations
+			)(() => this._onDidChangeRecommendations.fire())
 		);
 		this._register(
 			this.extensionRecommendationsManagementService.onDidChangeGlobalIgnoredRecommendation(
@@ -166,12 +194,12 @@ export class ExtensionRecommendationsService
 								{
 									extensionId,
 									recommendationReason: reason.reasonId,
-								},
+								}
 							);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 
 		this.promptWorkspaceRecommendations();
@@ -233,10 +261,10 @@ export class ExtensionRecommendationsService
 		await this.configBasedRecommendations.activate();
 		return {
 			important: this.toExtensionRecommendations(
-				this.configBasedRecommendations.importantRecommendations,
+				this.configBasedRecommendations.importantRecommendations
 			),
 			others: this.toExtensionRecommendations(
-				this.configBasedRecommendations.otherRecommendations,
+				this.configBasedRecommendations.otherRecommendations
 			),
 		};
 	}
@@ -252,9 +280,9 @@ export class ExtensionRecommendationsService
 		];
 
 		const extensionIds = distinct(
-			recommendations.map((e) => e.extensionId),
+			recommendations.map((e) => e.extensionId)
 		).filter((extensionId) =>
-			this.isExtensionAllowedToBeRecommended(extensionId),
+			this.isExtensionAllowedToBeRecommended(extensionId)
 		);
 
 		shuffle(extensionIds, this.sessionSeed);
@@ -272,9 +300,9 @@ export class ExtensionRecommendationsService
 		];
 
 		const extensionIds = distinct(
-			recommendations.map((e) => e.extensionId),
+			recommendations.map((e) => e.extensionId)
 		).filter((extensionId) =>
-			this.isExtensionAllowedToBeRecommended(extensionId),
+			this.isExtensionAllowedToBeRecommended(extensionId)
 		);
 
 		shuffle(extensionIds, this.sessionSeed);
@@ -284,19 +312,19 @@ export class ExtensionRecommendationsService
 
 	getKeymapRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.keymapRecommendations.recommendations,
+			this.keymapRecommendations.recommendations
 		);
 	}
 
 	getLanguageRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.languageRecommendations.recommendations,
+			this.languageRecommendations.recommendations
 		);
 	}
 
 	getRemoteRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.remoteRecommendations.recommendations,
+			this.remoteRecommendations.recommendations
 		);
 	}
 
@@ -306,12 +334,12 @@ export class ExtensionRecommendationsService
 		}
 		await this.workspaceRecommendations.activate();
 		return this.toExtensionRecommendations(
-			this.workspaceRecommendations.recommendations,
+			this.workspaceRecommendations.recommendations
 		);
 	}
 
 	async getExeBasedRecommendations(
-		exe?: string,
+		exe?: string
 	): Promise<{ important: string[]; others: string[] }> {
 		await this.exeBasedRecommendations.activate();
 		const { important, others } = exe
@@ -320,7 +348,7 @@ export class ExtensionRecommendationsService
 					important:
 						this.exeBasedRecommendations.importantRecommendations,
 					others: this.exeBasedRecommendations.otherRecommendations,
-			  };
+				};
 		return {
 			important: this.toExtensionRecommendations(important),
 			others: this.toExtensionRecommendations(others),
@@ -329,12 +357,12 @@ export class ExtensionRecommendationsService
 
 	getFileBasedRecommendations(): string[] {
 		return this.toExtensionRecommendations(
-			this.fileBasedRecommendations.recommendations,
+			this.fileBasedRecommendations.recommendations
 		);
 	}
 
 	private onDidInstallExtensions(
-		results: readonly InstallExtensionResult[],
+		results: readonly InstallExtensionResult[]
 	): void {
 		for (const e of results) {
 			if (
@@ -361,7 +389,7 @@ export class ExtensionRecommendationsService
 						{
 							...e.source.telemetryData,
 							recommendationReason: recommendationReason.reasonId,
-						},
+						}
 					);
 				}
 			}
@@ -369,12 +397,12 @@ export class ExtensionRecommendationsService
 	}
 
 	private toExtensionRecommendations(
-		recommendations: ReadonlyArray<ExtensionRecommendation>,
+		recommendations: ReadonlyArray<ExtensionRecommendation>
 	): string[] {
 		const extensionIds = distinct(
-			recommendations.map((e) => e.extensionId),
+			recommendations.map((e) => e.extensionId)
 		).filter((extensionId) =>
-			this.isExtensionAllowedToBeRecommended(extensionId),
+			this.isExtensionAllowedToBeRecommended(extensionId)
 		);
 
 		return extensionIds;
@@ -382,7 +410,7 @@ export class ExtensionRecommendationsService
 
 	private isExtensionAllowedToBeRecommended(extensionId: string): boolean {
 		return !this.extensionRecommendationsManagementService.ignoredRecommendations.includes(
-			extensionId.toLowerCase(),
+			extensionId.toLowerCase()
 		);
 	}
 
@@ -396,20 +424,20 @@ export class ExtensionRecommendationsService
 					recommendation.whenNotInstalled.every((id) =>
 						installed.every(
 							(local) =>
-								!areSameExtensions(local.identifier, { id }),
-						),
-					),
+								!areSameExtensions(local.identifier, { id })
+						)
+					)
 			),
 		]
 			.map(({ extensionId }) => extensionId)
 			.filter((extensionId) =>
-				this.isExtensionAllowedToBeRecommended(extensionId),
+				this.isExtensionAllowedToBeRecommended(extensionId)
 			);
 
 		if (allowedRecommendations.length) {
 			await this._registerP(timeout(5000));
 			await this.extensionRecommendationNotificationService.promptWorkspaceRecommendations(
-				allowedRecommendations,
+				allowedRecommendations
 			);
 		}
 	}

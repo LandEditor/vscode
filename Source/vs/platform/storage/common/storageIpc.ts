@@ -68,7 +68,7 @@ abstract class BaseStorageDatabaseClient
 	constructor(
 		protected channel: IChannel,
 		protected profile: UriDto<IUserDataProfile> | undefined,
-		protected workspace: IAnyWorkspaceIdentifier | undefined,
+		protected workspace: IAnyWorkspaceIdentifier | undefined
 	) {
 		super();
 	}
@@ -80,7 +80,7 @@ abstract class BaseStorageDatabaseClient
 		};
 		const items: Item[] = await this.channel.call(
 			"getItems",
-			serializableRequest,
+			serializableRequest
 		);
 
 		return new Map(items);
@@ -117,13 +117,13 @@ abstract class BaseStorageDatabaseClient
 
 abstract class BaseProfileAwareStorageDatabaseClient extends BaseStorageDatabaseClient {
 	private readonly _onDidChangeItemsExternal = this._register(
-		new Emitter<IStorageItemsChangeEvent>(),
+		new Emitter<IStorageItemsChangeEvent>()
 	);
 	readonly onDidChangeItemsExternal = this._onDidChangeItemsExternal.event;
 
 	constructor(
 		channel: IChannel,
-		profile: UriDto<IUserDataProfile> | undefined,
+		profile: UriDto<IUserDataProfile> | undefined
 	) {
 		super(channel, profile, undefined);
 
@@ -134,8 +134,8 @@ abstract class BaseProfileAwareStorageDatabaseClient extends BaseStorageDatabase
 		this._register(
 			this.channel.listen<ISerializableItemsChangeEvent>(
 				"onDidChangeStorage",
-				{ profile: this.profile },
-			)((e: ISerializableItemsChangeEvent) => this.onDidChangeStorage(e)),
+				{ profile: this.profile }
+			)((e: ISerializableItemsChangeEvent) => this.onDidChangeStorage(e))
 		);
 	}
 

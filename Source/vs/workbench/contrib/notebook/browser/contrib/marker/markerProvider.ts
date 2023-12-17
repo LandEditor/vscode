@@ -42,7 +42,8 @@ class MarkerListProvider implements IMarkerListProvider {
 	constructor(
 		@IMarkerService private readonly _markerService: IMarkerService,
 		@IMarkerNavigationService markerNavigation: IMarkerNavigationService,
-		@IConfigurationService private readonly _configService: IConfigurationService
+		@IConfigurationService
+		private readonly _configService: IConfigurationService
 	) {
 		this._dispoables = markerNavigation.registerProvider(this);
 	}
@@ -67,7 +68,7 @@ class MarkerListProvider implements IMarkerListProvider {
 				);
 			},
 			this._markerService,
-			this._configService,
+			this._configService
 		);
 	}
 }
@@ -85,12 +86,22 @@ class NotebookMarkerDecorationContribution
 		super();
 
 		this._update();
-		this._register(this._notebookEditor.onDidChangeModel(() => this._update()));
-		this._register(this._markerService.onMarkerChanged(e => {
-			if (e.some(uri => this._notebookEditor.getCellsInRange().some(cell => isEqual(cell.uri, uri)))) {
-				this._update();
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidChangeModel(() => this._update())
+		);
+		this._register(
+			this._markerService.onMarkerChanged((e) => {
+				if (
+					e.some((uri) =>
+						this._notebookEditor
+							.getCellsInRange()
+							.some((cell) => isEqual(cell.uri, uri))
+					)
+				) {
+					this._update();
+				}
+			})
+		);
 	}
 
 	@throttle(100)
@@ -133,16 +144,16 @@ class NotebookMarkerDecorationContribution
 		this._markersOverviewRulerDecorations =
 			this._notebookEditor.deltaCellDecorations(
 				this._markersOverviewRulerDecorations,
-				cellDecorations,
+				cellDecorations
 			);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(MarkerListProvider, LifecyclePhase.Ready);
 
 registerNotebookContribution(
 	NotebookMarkerDecorationContribution.id,
-	NotebookMarkerDecorationContribution,
+	NotebookMarkerDecorationContribution
 );

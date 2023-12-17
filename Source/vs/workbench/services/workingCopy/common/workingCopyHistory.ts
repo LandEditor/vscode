@@ -107,7 +107,7 @@ export interface IWorkingCopyHistoryService {
 	 */
 	addEntry(
 		descriptor: IWorkingCopyHistoryEntryDescriptor,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IWorkingCopyHistoryEntry | undefined>;
 
 	/**
@@ -116,7 +116,7 @@ export interface IWorkingCopyHistoryService {
 	updateEntry(
 		entry: IWorkingCopyHistoryEntry,
 		properties: { source: SaveSource },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void>;
 
 	/**
@@ -124,7 +124,7 @@ export interface IWorkingCopyHistoryService {
 	 */
 	removeEntry(
 		entry: IWorkingCopyHistoryEntry,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<boolean>;
 
 	/**
@@ -140,7 +140,7 @@ export interface IWorkingCopyHistoryService {
 	 */
 	getEntries(
 		resource: URI,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<readonly IWorkingCopyHistoryEntry[]>;
 
 	/**

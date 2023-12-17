@@ -64,7 +64,7 @@ export class ViewCursors extends ViewPart {
 		this._cursorBlinking = options.get(EditorOption.cursorBlinking);
 		this._cursorStyle = options.get(EditorOption.cursorStyle);
 		this._cursorSmoothCaretAnimation = options.get(
-			EditorOption.cursorSmoothCaretAnimation,
+			EditorOption.cursorSmoothCaretAnimation
 		);
 		this._selectionIsEmpty = true;
 		this._isComposingInput = false;
@@ -103,21 +103,21 @@ export class ViewCursors extends ViewPart {
 
 	// --- begin event handlers
 	public override onCompositionStart(
-		e: viewEvents.ViewCompositionStartEvent,
+		e: viewEvents.ViewCompositionStartEvent
 	): boolean {
 		this._isComposingInput = true;
 		this._updateBlinking();
 		return true;
 	}
 	public override onCompositionEnd(
-		e: viewEvents.ViewCompositionEndEvent,
+		e: viewEvents.ViewCompositionEndEvent
 	): boolean {
 		this._isComposingInput = false;
 		this._updateBlinking();
 		return true;
 	}
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 
@@ -125,7 +125,7 @@ export class ViewCursors extends ViewPart {
 		this._cursorBlinking = options.get(EditorOption.cursorBlinking);
 		this._cursorStyle = options.get(EditorOption.cursorStyle);
 		this._cursorSmoothCaretAnimation = options.get(
-			EditorOption.cursorSmoothCaretAnimation,
+			EditorOption.cursorSmoothCaretAnimation
 		);
 
 		this._updateBlinking();
@@ -140,7 +140,7 @@ export class ViewCursors extends ViewPart {
 	private _onCursorPositionChanged(
 		position: Position,
 		secondaryPositions: Position[],
-		reason: CursorChangeReason,
+		reason: CursorChangeReason
 	): void {
 		const pauseAnimation =
 			this._secondaryCursors.length !== secondaryPositions.length ||
@@ -157,7 +157,7 @@ export class ViewCursors extends ViewPart {
 				const newCursor = new ViewCursor(this._context);
 				this._domNode.domNode.insertBefore(
 					newCursor.getDomNode().domNode,
-					this._primaryCursor.getDomNode().domNode.nextSibling,
+					this._primaryCursor.getDomNode().domNode.nextSibling
 				);
 				this._secondaryCursors.push(newCursor);
 			}
@@ -167,7 +167,7 @@ export class ViewCursors extends ViewPart {
 				this._secondaryCursors.length - secondaryPositions.length;
 			for (let i = 0; i < removeCnt; i++) {
 				this._domNode.removeChild(
-					this._secondaryCursors[0].getDomNode(),
+					this._secondaryCursors[0].getDomNode()
 				);
 				this._secondaryCursors.splice(0, 1);
 			}
@@ -176,12 +176,12 @@ export class ViewCursors extends ViewPart {
 		for (let i = 0; i < secondaryPositions.length; i++) {
 			this._secondaryCursors[i].onCursorPositionChanged(
 				secondaryPositions[i],
-				pauseAnimation,
+				pauseAnimation
 			);
 		}
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent,
+		e: viewEvents.ViewCursorStateChangedEvent
 	): boolean {
 		const positions: Position[] = [];
 		for (let i = 0, len = e.selections.length; i < len; i++) {
@@ -190,7 +190,7 @@ export class ViewCursors extends ViewPart {
 		this._onCursorPositionChanged(
 			positions[0],
 			positions.slice(1),
-			e.reason,
+			e.reason
 		);
 
 		const selectionIsEmpty = e.selections[0].isEmpty();
@@ -203,7 +203,7 @@ export class ViewCursors extends ViewPart {
 	}
 
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent,
+		e: viewEvents.ViewDecorationsChangedEvent
 	): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
@@ -212,34 +212,34 @@ export class ViewCursors extends ViewPart {
 		return true;
 	}
 	public override onFocusChanged(
-		e: viewEvents.ViewFocusChangedEvent,
+		e: viewEvents.ViewFocusChangedEvent
 	): boolean {
 		this._editorHasFocus = e.isFocused;
 		this._updateBlinking();
 		return false;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent,
+		e: viewEvents.ViewLinesChangedEvent
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent,
+		e: viewEvents.ViewLinesDeletedEvent
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent,
+		e: viewEvents.ViewLinesInsertedEvent
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return true;
 	}
 	public override onTokensChanged(
-		e: viewEvents.ViewTokensChangedEvent,
+		e: viewEvents.ViewTokensChangedEvent
 	): boolean {
 		const shouldRender = (position: Position) => {
 			for (let i = 0, len = e.ranges.length; i < len; i++) {
@@ -263,7 +263,7 @@ export class ViewCursors extends ViewPart {
 		return false;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
+		e: viewEvents.ViewZonesChangedEvent
 	): boolean {
 		return true;
 	}
@@ -317,7 +317,7 @@ export class ViewCursors extends ViewPart {
 						}
 					},
 					ViewCursors.BLINK_INTERVAL,
-					getWindow(this._domNode.domNode),
+					getWindow(this._domNode.domNode)
 				);
 			} else {
 				this._startCursorBlinkAnimation.setIfNotSet(() => {
@@ -449,11 +449,11 @@ registerThemingParticipant((theme, collector) => {
 			caretBackground = caret.opposite();
 		}
 		collector.addRule(
-			`.monaco-editor .cursors-layer .cursor { background-color: ${caret}; border-color: ${caret}; color: ${caretBackground}; }`,
+			`.monaco-editor .cursors-layer .cursor { background-color: ${caret}; border-color: ${caret}; color: ${caretBackground}; }`
 		);
 		if (isHighContrast(theme.type)) {
 			collector.addRule(
-				`.monaco-editor .cursors-layer.has-selection .cursor { border-left: 1px solid ${caretBackground}; border-right: 1px solid ${caretBackground}; }`,
+				`.monaco-editor .cursors-layer.has-selection .cursor { border-left: 1px solid ${caretBackground}; border-right: 1px solid ${caretBackground}; }`
 			);
 		}
 	}

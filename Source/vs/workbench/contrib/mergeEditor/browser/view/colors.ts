@@ -21,8 +21,8 @@ export const diff = registerColor(
 	},
 	localize(
 		"mergeEditor.change.background",
-		"The background color for changes.",
-	),
+		"The background color for changes."
+	)
 );
 
 export const diffWord = registerColor(
@@ -35,8 +35,8 @@ export const diffWord = registerColor(
 	},
 	localize(
 		"mergeEditor.change.word.background",
-		"The background color for word changes.",
-	),
+		"The background color for word changes."
+	)
 );
 
 export const diffBase = registerColor(
@@ -49,8 +49,8 @@ export const diffBase = registerColor(
 	},
 	localize(
 		"mergeEditor.changeBase.background",
-		"The background color for changes in base.",
-	),
+		"The background color for changes in base."
+	)
 );
 
 export const diffWordBase = registerColor(
@@ -63,8 +63,8 @@ export const diffWordBase = registerColor(
 	},
 	localize(
 		"mergeEditor.changeBase.word.background",
-		"The background color for word changes in base.",
-	),
+		"The background color for word changes in base."
+	)
 );
 
 export const conflictBorderUnhandledUnfocused = registerColor(
@@ -77,8 +77,8 @@ export const conflictBorderUnhandledUnfocused = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.unhandledUnfocused.border",
-		"The border color of unhandled unfocused conflicts.",
-	),
+		"The border color of unhandled unfocused conflicts."
+	)
 );
 
 export const conflictBorderUnhandledFocused = registerColor(
@@ -91,8 +91,8 @@ export const conflictBorderUnhandledFocused = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.unhandledFocused.border",
-		"The border color of unhandled focused conflicts.",
-	),
+		"The border color of unhandled focused conflicts."
+	)
 );
 
 export const conflictBorderHandledUnfocused = registerColor(
@@ -105,8 +105,8 @@ export const conflictBorderHandledUnfocused = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.handledUnfocused.border",
-		"The border color of handled unfocused conflicts.",
-	),
+		"The border color of handled unfocused conflicts."
+	)
 );
 
 export const conflictBorderHandledFocused = registerColor(
@@ -119,8 +119,8 @@ export const conflictBorderHandledFocused = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.handledFocused.border",
-		"The border color of handled focused conflicts.",
-	),
+		"The border color of handled focused conflicts."
+	)
 );
 
 export const handledConflictMinimapOverViewRulerColor = registerColor(
@@ -133,8 +133,8 @@ export const handledConflictMinimapOverViewRulerColor = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.handled.minimapOverViewRuler",
-		"The foreground color for changes in input 1.",
-	),
+		"The foreground color for changes in input 1."
+	)
 );
 
 export const unhandledConflictMinimapOverViewRulerColor = registerColor(
@@ -147,8 +147,8 @@ export const unhandledConflictMinimapOverViewRulerColor = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.unhandled.minimapOverViewRuler",
-		"The foreground color for changes in input 1.",
-	),
+		"The foreground color for changes in input 1."
+	)
 );
 
 export const conflictingLinesBackground = registerColor(
@@ -161,8 +161,8 @@ export const conflictingLinesBackground = registerColor(
 	},
 	localize(
 		"mergeEditor.conflictingLines.background",
-		'The background of the "Conflicting Lines" text.',
-	),
+		'The background of the "Conflicting Lines" text.'
+	)
 );
 
 const contentTransparency = 0.4;
@@ -176,8 +176,8 @@ export const conflictInput1Background = registerColor(
 	},
 	localize(
 		"mergeEditor.conflict.input1.background",
-		"The background color of decorations in input 1.",
-	),
+		"The background color of decorations in input 1."
+	)
 );
 
 export const conflictInput2Background = registerColor(
@@ -188,11 +188,11 @@ export const conflictInput2Background = registerColor(
 		hcDark: transparent(mergeIncomingHeaderBackground, contentTransparency),
 		hcLight: transparent(
 			mergeIncomingHeaderBackground,
-			contentTransparency,
+			contentTransparency
 		),
 	},
 	localize(
 		"mergeEditor.conflict.input2.background",
-		"The background color of decorations in input 2.",
-	),
+		"The background color of decorations in input 2."
+	)
 );

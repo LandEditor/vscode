@@ -52,13 +52,13 @@ export class ProgressBar extends Disposable {
 		this.workedVal = 0;
 
 		this.showDelayedScheduler = this._register(
-			new RunOnceScheduler(() => show(this.element), 0),
+			new RunOnceScheduler(() => show(this.element), 0)
 		);
 		this.longRunningScheduler = this._register(
 			new RunOnceScheduler(
 				() => this.infiniteLongRunning(),
-				ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD,
-			),
+				ProgressBar.LONG_RUNNING_INFINITE_THRESHOLD
+			)
 		);
 
 		this.create(container, options);
@@ -66,7 +66,7 @@ export class ProgressBar extends Disposable {
 
 	private create(
 		container: HTMLElement,
-		options?: IProgressBarOptions,
+		options?: IProgressBarOptions
 	): void {
 		this.element = document.createElement("div");
 		this.element.classList.add("monaco-progress-container");
@@ -88,7 +88,7 @@ export class ProgressBar extends Disposable {
 			CSS_ACTIVE,
 			CSS_INFINITE,
 			CSS_INFINITE_LONG_RUNNING,
-			CSS_DISCRETE,
+			CSS_DISCRETE
 		);
 
 		this.workedVal = 0;
@@ -148,7 +148,7 @@ export class ProgressBar extends Disposable {
 		this.element.classList.remove(
 			CSS_DISCRETE,
 			CSS_DONE,
-			CSS_INFINITE_LONG_RUNNING,
+			CSS_INFINITE_LONG_RUNNING
 		);
 		this.element.classList.add(CSS_ACTIVE, CSS_INFINITE);
 
@@ -207,7 +207,7 @@ export class ProgressBar extends Disposable {
 		this.element.classList.remove(
 			CSS_INFINITE,
 			CSS_INFINITE_LONG_RUNNING,
-			CSS_DONE,
+			CSS_DONE
 		);
 		this.element.classList.add(CSS_ACTIVE, CSS_DISCRETE);
 		this.element.setAttribute("aria-valuenow", value.toString());

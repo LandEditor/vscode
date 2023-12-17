@@ -10,7 +10,7 @@ import { IEditorGroupsService } from "vs/workbench/services/editor/common/editor
 import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 export async function clearChatEditor(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): Promise<void> {
 	const editorService = accessor.get(IEditorService);
 	const editorGroupsService = accessor.get(IEditorGroupsService);
@@ -35,7 +35,7 @@ export async function clearChatEditor(
 					},
 				},
 			],
-			editorGroupsService.activeGroup,
+			editorGroupsService.activeGroup
 		);
 	}
 }

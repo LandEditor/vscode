@@ -27,7 +27,7 @@ export class BufferLogger extends AbstractMessageLogger {
 		this._register(
 			this.onDidChangeLogLevel((level) => {
 				this._logger?.setLevel(level);
-			}),
+			})
 		);
 	}
 

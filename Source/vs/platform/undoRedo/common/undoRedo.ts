@@ -87,7 +87,7 @@ export interface UriComparisonKeyComputer {
 export class ResourceEditStackSnapshot {
 	constructor(
 		public readonly resource: URI,
-		public readonly elements: number[],
+		public readonly elements: number[]
 	) {}
 }
 
@@ -142,7 +142,7 @@ export interface IUndoRedoService {
 	 */
 	registerUriComparisonKeyComputer(
 		scheme: string,
-		uriComparisonKeyComputer: UriComparisonKeyComputer,
+		uriComparisonKeyComputer: UriComparisonKeyComputer
 	): IDisposable;
 
 	/**
@@ -158,7 +158,7 @@ export interface IUndoRedoService {
 	pushElement(
 		element: IUndoRedoElement,
 		group?: UndoRedoGroup,
-		source?: UndoRedoSource,
+		source?: UndoRedoSource
 	): void;
 
 	/**
@@ -179,7 +179,7 @@ export interface IUndoRedoService {
 	setElementsValidFlag(
 		resource: URI,
 		isValid: boolean,
-		filter: (element: IUndoRedoElement) => boolean,
+		filter: (element: IUndoRedoElement) => boolean
 	): void;
 
 	/**

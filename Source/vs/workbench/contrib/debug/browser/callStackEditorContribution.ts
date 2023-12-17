@@ -43,8 +43,8 @@ export const topStackFrameColor = registerColor(
 	},
 	localize(
 		"topStackFrameLineHighlight",
-		"Background color for the highlight of line at the top stack frame position.",
-	),
+		"Background color for the highlight of line at the top stack frame position."
+	)
 );
 export const focusedStackFrameColor = registerColor(
 	"editor.focusedStackFrameHighlightBackground",
@@ -56,8 +56,8 @@ export const focusedStackFrameColor = registerColor(
 	},
 	localize(
 		"focusedStackFrameLineHighlight",
-		"Background color for the highlight of line at focused stack frame position.",
-	),
+		"Background color for the highlight of line at focused stack frame position."
+	)
 );
 const stickiness = TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges;
 
@@ -100,7 +100,7 @@ const FOCUSED_STACK_FRAME_DECORATION: IModelDecorationOptions = {
 export function createDecorationsForStackFrame(
 	stackFrame: IStackFrame,
 	isFocusedSession: boolean,
-	noCharactersBefore: boolean,
+	noCharactersBefore: boolean
 ): IModelDeltaDecoration[] {
 	// only show decorations for the currently focused thread.
 	const result: IModelDeltaDecoration[] = [];
@@ -108,13 +108,13 @@ export function createDecorationsForStackFrame(
 		stackFrame.range.startLineNumber,
 		stackFrame.range.startColumn,
 		stackFrame.range.startLineNumber,
-		Constants.MAX_SAFE_SMALL_INTEGER,
+		Constants.MAX_SAFE_SMALL_INTEGER
 	);
 	const range = new Range(
 		stackFrame.range.startLineNumber,
 		stackFrame.range.startColumn,
 		stackFrame.range.startLineNumber,
-		stackFrame.range.startColumn + 1,
+		stackFrame.range.startColumn + 1
 	);
 
 	// compute how to decorate the editor. Different decorations are used if this is a top stack frame, focused stack frame,
@@ -174,20 +174,29 @@ export class CallStackEditorContribution
 	constructor(
 		private readonly editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@ILogService private readonly logService: ILogService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 
-		const setDecorations = () => this.decorations.set(this.createCallStackDecorations());
-		this._register(Event.any(this.debugService.getViewModel().onDidFocusStackFrame, this.debugService.getModel().onDidChangeCallStack)(() => {
-			setDecorations();
-		}));
-		this._register(this.editor.onDidChangeModel(e => {
-			if (e.newModelUrl) {
+		const setDecorations = () =>
+			this.decorations.set(this.createCallStackDecorations());
+		this._register(
+			Event.any(
+				this.debugService.getViewModel().onDidFocusStackFrame,
+				this.debugService.getModel().onDidChangeCallStack
+			)(() => {
 				setDecorations();
-			}
-		}));
+			})
+		);
+		this._register(
+			this.editor.onDidChangeModel((e) => {
+				if (e.newModelUrl) {
+					setDecorations();
+				}
+			})
+		);
 		setDecorations();
 	}
 
@@ -226,7 +235,7 @@ export class CallStackEditorContribution
 								candidateStackFrame &&
 								this.uriIdentityService.extUri.isEqual(
 									candidateStackFrame.source.uri,
-									editor.getModel()?.uri,
+									editor.getModel()?.uri
 								)
 							) {
 								if (
@@ -236,7 +245,7 @@ export class CallStackEditorContribution
 										1
 								) {
 									this.logService.warn(
-										`CallStackEditorContribution: invalid stack frame line number: ${candidateStackFrame.range.startLineNumber}`,
+										`CallStackEditorContribution: invalid stack frame line number: ${candidateStackFrame.range.startLineNumber}`
 									);
 									return;
 								}
@@ -246,15 +255,15 @@ export class CallStackEditorContribution
 										.getModel()
 										.getLineFirstNonWhitespaceColumn(
 											candidateStackFrame.range
-												.startLineNumber,
+												.startLineNumber
 										) >=
 									candidateStackFrame.range.startColumn;
 								decorations.push(
 									...createDecorationsForStackFrame(
 										candidateStackFrame,
 										isSessionFocused,
-										noCharactersBefore,
-									),
+										noCharactersBefore
+									)
 								);
 							}
 						});
@@ -266,7 +275,7 @@ export class CallStackEditorContribution
 		return distinct(
 			decorations,
 			(d) =>
-				`${d.options.className} ${d.options.glyphMarginClassName} ${d.range.startLineNumber} ${d.range.startColumn}`,
+				`${d.options.className} ${d.options.glyphMarginClassName} ${d.range.startLineNumber} ${d.range.startColumn}`
 		);
 	}
 

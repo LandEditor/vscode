@@ -51,7 +51,7 @@ export class CodeLensModel {
 export async function getCodeLensModel(
 	registry: LanguageFeatureRegistry<CodeLensProvider>,
 	model: ITextModel,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<CodeLensModel> {
 	const provider = registry.ordered(model);
 	const providerRanks = new Map<CodeLensProvider, number>();
@@ -62,7 +62,7 @@ export async function getCodeLensModel(
 
 		try {
 			const list = await Promise.resolve(
-				provider.provideCodeLenses(model, token),
+				provider.provideCodeLenses(model, token)
 			);
 			if (list) {
 				result.add(list, provider);
@@ -138,11 +138,11 @@ CommandsRegistry.registerCommand(
 								item.provider.resolveCodeLens(
 									model,
 									item.symbol,
-									CancellationToken.None,
-								),
+									CancellationToken.None
+								)
 							).then((symbol) =>
-								result.push(symbol || item.symbol),
-							),
+								result.push(symbol || item.symbol)
+							)
 						);
 					}
 				}
@@ -157,5 +157,5 @@ CommandsRegistry.registerCommand(
 				// dispose the results
 				setTimeout(() => disposables.dispose(), 100);
 			});
-	},
+	}
 );

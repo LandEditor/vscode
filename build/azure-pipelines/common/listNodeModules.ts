@@ -16,7 +16,7 @@ const ROOT = path.join(__dirname, "../../../");
 function findNodeModulesFiles(
 	location: string,
 	inNodeModules: boolean,
-	result: string[],
+	result: string[]
 ) {
 	const entries = fs.readdirSync(path.join(ROOT, location));
 	for (const entry of entries) {
@@ -37,7 +37,7 @@ function findNodeModulesFiles(
 			findNodeModulesFiles(
 				entryPath,
 				inNodeModules || entry === "node_modules",
-				result,
+				result
 			);
 		} else {
 			if (inNodeModules) {

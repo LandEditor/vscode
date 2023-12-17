@@ -57,16 +57,16 @@ export class GettingStartedIndexList<
 		this.itemCount = 0;
 		this.list = $("ul");
 		this.scrollbar = this._register(
-			new DomScrollableElement(this.list, {}),
+			new DomScrollableElement(this.list, {})
 		);
 		this._register(
-			this.onDidChangeEntries(() => this.scrollbar.scanDomNode()),
+			this.onDidChangeEntries(() => this.scrollbar.scanDomNode())
 		);
 		this.domElement = $(
 			".index-list." + options.klass,
 			{},
 			$("h2", {}, options.title),
-			this.scrollbar.getDomNode(),
+			this.scrollbar.getDomNode()
 		);
 
 		this._register(
@@ -74,7 +74,7 @@ export class GettingStartedIndexList<
 				if (e.affectsSome(this.contextKeysToWatch)) {
 					this.rerender();
 				}
-			}),
+			})
 		);
 	}
 
@@ -124,7 +124,7 @@ export class GettingStartedIndexList<
 		}
 
 		const activeEntries = entryList.filter(
-			(e) => !e.when || this.contextService.contextMatchesRules(e.when),
+			(e) => !e.when || this.contextService.contextMatchesRules(e.when)
 		);
 		const limitedEntries = activeEntries.slice(0, this.options.limit);
 

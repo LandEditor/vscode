@@ -102,7 +102,7 @@ export interface IWorkbench {
 				| IProgressNotificationOptions
 				| IProgressWindowOptions
 				| IProgressCompositeOptions,
-			task: (progress: IProgress<IProgressStep>) => Promise<R>,
+			task: (progress: IProgress<IProgressStep>) => Promise<R>
 		): Promise<R>;
 
 		/**
@@ -412,7 +412,7 @@ export interface IWorkspaceProvider {
 	 */
 	open(
 		workspace: IWorkspace,
-		options?: { reuse?: boolean; payload?: object },
+		options?: { reuse?: boolean; payload?: object }
 	): Promise<boolean>;
 }
 
@@ -472,7 +472,7 @@ export interface ITunnelProvider {
 export interface ITunnelFactory {
 	(
 		tunnelOptions: ITunnelOptions,
-		tunnelCreationOptions: TunnelCreationOptions,
+		tunnelCreationOptions: TunnelCreationOptions
 	): Promise<ITunnel> | undefined;
 }
 
@@ -786,7 +786,7 @@ export interface ISettingsSyncOptions {
 	 */
 	enablementHandler?(
 		enablement: boolean,
-		authenticationProvider: string,
+		authenticationProvider: string
 	): void;
 
 	/**
@@ -868,6 +868,6 @@ export interface IRemoteResourceRequest {
 	respondWith(
 		statusCode: number,
 		body: Uint8Array,
-		headers: Record<string, string>,
+		headers: Record<string, string>
 	): void;
 }

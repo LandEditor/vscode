@@ -11,7 +11,7 @@ export class OpenTsServerLogCommand implements Command {
 	public readonly id = "typescript.openTsServerLog";
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {

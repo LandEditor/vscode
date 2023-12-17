@@ -11,33 +11,33 @@ updateGrammar.update(
 	"syntaxes/Bibtex.tmLanguage.json",
 	"syntaxes/Bibtex.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );
 updateGrammar.update(
 	"jlelong/vscode-latex-basics",
 	"syntaxes/LaTeX.tmLanguage.json",
 	"syntaxes/LaTeX.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );
 updateGrammar.update(
 	"jlelong/vscode-latex-basics",
 	"syntaxes/TeX.tmLanguage.json",
 	"syntaxes/TeX.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );
 updateGrammar.update(
 	"jlelong/vscode-latex-basics",
 	"syntaxes/cpp-grammar-bailout.tmLanguage.json",
 	"syntaxes/cpp-grammar-bailout.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );
 updateGrammar.update(
 	"jlelong/vscode-latex-basics",
 	"syntaxes/markdown-latex-combined.tmLanguage.json",
 	"syntaxes/markdown-latex-combined.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );

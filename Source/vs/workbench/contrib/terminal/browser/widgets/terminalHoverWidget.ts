@@ -36,14 +36,15 @@ export class TerminalHover extends Disposable implements ITerminalWidget {
 		private readonly _actions: IHoverAction[] | undefined,
 		private readonly _linkHandler: (url: string) => any,
 		@IHoverService private readonly _hoverService: IHoverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
 
 	attach(container: HTMLElement): void {
 		const showLinkHover = this._configurationService.getValue(
-			TerminalSettingId.ShowLinkHover,
+			TerminalSettingId.ShowLinkHover
 		);
 		if (!showLinkHover) {
 			return;
@@ -73,7 +74,7 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 
 	constructor(
 		container: HTMLElement,
-		private readonly _options: ILinkHoverTargetOptions,
+		private readonly _options: ILinkHoverTargetOptions
 	) {
 		super();
 
@@ -88,10 +89,10 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 			(this._options.viewportRange.end.y >
 			this._options.viewportRange.start.y
 				? this._options.terminalDimensions.width -
-				  this._options.viewportRange.start.x
+					this._options.viewportRange.start.x
 				: this._options.viewportRange.end.x -
-				  this._options.viewportRange.start.x +
-				  1) * this._options.cellDimensions.width;
+					this._options.viewportRange.start.x +
+					1) * this._options.cellDimensions.width;
 		const topTarget = $("div.terminal-hover-target.hoverHighlight");
 		topTarget.style.left = `${
 			this._options.viewportRange.start.x *
@@ -160,8 +161,8 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 							down = true;
 							this._options.modifierDownCallback!();
 						}
-					},
-				),
+					}
+				)
 			);
 			this._register(
 				dom.addDisposableListener(
@@ -172,8 +173,8 @@ class CellHoverTarget extends Widget implements IHoverTarget {
 							down = false;
 							this._options.modifierUpCallback!();
 						}
-					},
-				),
+					}
+				)
 			);
 		}
 

@@ -32,10 +32,10 @@ export interface IWorkspaceIdentityService {
 	_serviceBrand: undefined;
 	matches(
 		folders: IWorkspaceStateFolder[],
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<((obj: any) => any) | false>;
 	getWorkspaceStateFolders(
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<IWorkspaceStateFolder[]>;
 }
 
@@ -43,12 +43,14 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 	declare _serviceBrand: undefined;
 
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IEditSessionIdentityService private readonly editSessionIdentityService: IEditSessionIdentityService
-	) { }
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IEditSessionIdentityService
+		private readonly editSessionIdentityService: IEditSessionIdentityService
+	) {}
 
 	async getWorkspaceStateFolders(
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<IWorkspaceStateFolder[]> {
 		const workspaceStateFolders: IWorkspaceStateFolder[] = [];
 
@@ -57,7 +59,7 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 			const workspaceFolderIdentity =
 				await this.editSessionIdentityService.getEditSessionIdentifier(
 					workspaceFolder,
-					cancellationToken,
+					cancellationToken
 				);
 			if (!workspaceFolderIdentity) {
 				continue;
@@ -73,7 +75,7 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 
 	async matches(
 		incomingWorkspaceFolders: IWorkspaceStateFolder[],
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<((value: any) => any) | false> {
 		const incomingToCurrentWorkspaceFolderUris: { [key: string]: string } =
 			{};
@@ -97,14 +99,14 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 			const workspaceFolderIdentity =
 				await this.editSessionIdentityService.getEditSessionIdentifier(
 					workspaceFolder,
-					cancellationToken,
+					cancellationToken
 				);
 			if (!workspaceFolderIdentity) {
 				continue;
 			}
 			currentWorkspaceFoldersToIdentities.set(
 				workspaceFolder,
-				workspaceFolderIdentity,
+				workspaceFolderIdentity
 			);
 		}
 
@@ -128,14 +130,14 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 			// Unhappy case: compare the identity of the current workspace folder to all incoming workspace folder identities
 			let hasCompleteMatch = false;
 			for (const [incomingIdentity, incomingFolder] of Object.entries(
-				incomingIdentitiesToIncomingWorkspaceFolders,
+				incomingIdentitiesToIncomingWorkspaceFolders
 			)) {
 				if (
 					(await this.editSessionIdentityService.provideEditSessionIdentityMatch(
 						currentWorkspaceFolder,
 						currentWorkspaceFolderIdentity,
 						incomingIdentity,
-						cancellationToken,
+						cancellationToken
 					)) === EditSessionIdentityMatch.Complete
 				) {
 					incomingToCurrentWorkspaceFolderUris[incomingFolder] =
@@ -155,7 +157,7 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 		const convertUri = (uriToConvert: URI) => {
 			// Figure out which current folder the incoming URI is a child of
 			for (const incomingFolderUriKey of Object.keys(
-				incomingToCurrentWorkspaceFolderUris,
+				incomingToCurrentWorkspaceFolderUris
 			)) {
 				const incomingFolderUri = URI.parse(incomingFolderUriKey);
 				if (isEqualOrParent(incomingFolderUri, uriToConvert)) {
@@ -167,14 +169,14 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 					// Compute the relative file path section of the uri to convert relative to the folder it came from
 					const relativeFilePath = relativePath(
 						incomingFolderUri,
-						uriToConvert,
+						uriToConvert
 					);
 
 					// Reparent the relative file path under the current workspace folder it belongs to
 					if (relativeFilePath) {
 						return joinPath(
 							URI.parse(currentWorkspaceFolderUri),
-							relativeFilePath,
+							relativeFilePath
 						);
 					}
 				}
@@ -222,5 +224,5 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 registerSingleton(
 	IWorkspaceIdentityService,
 	WorkspaceIdentityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -26,7 +26,7 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			title: {
 				value: localize(
 					"notebook.toggleCellToolbarPosition",
-					"Toggle Cell Toolbar Position",
+					"Toggle Cell Toolbar Position"
 				),
 				original: "Toggle Cell Toolbar Position",
 			},
@@ -57,14 +57,14 @@ export class ToggleCellToolbarPositionAction extends Action2 {
 			const newConfig = this.togglePosition(viewType, toolbarPosition);
 			await configurationService.updateValue(
 				NotebookSetting.cellToolbarLocation,
-				newConfig,
+				newConfig
 			);
 		}
 	}
 
 	togglePosition(
 		viewType: string,
-		toolbarPosition: string | { [key: string]: string },
+		toolbarPosition: string | { [key: string]: string }
 	): { [key: string]: string } {
 		if (typeof toolbarPosition === "string") {
 			// legacy

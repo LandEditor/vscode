@@ -145,7 +145,7 @@ export class Button extends Disposable implements IButton {
 					}
 
 					this._onDidClick.fire(e);
-				}),
+				})
 			);
 		});
 
@@ -167,7 +167,7 @@ export class Button extends Disposable implements IButton {
 				if (eventHandled) {
 					EventHelper.stop(event, true);
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -175,13 +175,13 @@ export class Button extends Disposable implements IButton {
 				if (!this._element.classList.contains("disabled")) {
 					this.updateBackground(true);
 				}
-			}),
+			})
 		);
 
 		this._register(
 			addDisposableListener(this._element, EventType.MOUSE_OUT, (e) => {
 				this.updateBackground(false); // restore standard styles
-			}),
+			})
 		);
 
 		// Also set hover background when button is focused for feedback
@@ -191,14 +191,14 @@ export class Button extends Disposable implements IButton {
 				if (this.enabled) {
 					this.updateBackground(true);
 				}
-			}),
+			})
 		);
 		this._register(
 			this.focusTracker.onDidBlur(() => {
 				if (this.enabled) {
 					this.updateBackground(false);
 				}
-			}),
+			})
 		);
 	}
 
@@ -362,7 +362,7 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 
 	readonly element: HTMLElement;
 	private readonly _onDidClick = this._register(
-		new Emitter<Event | undefined>(),
+		new Emitter<Event | undefined>()
 	);
 	readonly onDidClick = this._onDidClick.event;
 
@@ -381,13 +381,13 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 				renderStringAsPlaintext(this.button.label),
 				undefined,
 				true,
-				async () => this._onDidClick.fire(undefined),
-			),
+				async () => this._onDidClick.fire(undefined)
+			)
 		);
 
 		this.separatorContainer = document.createElement("div");
 		this.separatorContainer.classList.add(
-			"monaco-button-dropdown-separator",
+			"monaco-button-dropdown-separator"
 		);
 
 		this.separator = document.createElement("div");
@@ -412,11 +412,11 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 				...options,
 				title: false,
 				supportIcons: true,
-			}),
+			})
 		);
 		this.dropdownButton.element.title = localize(
 			"button dropdown more actions",
-			"More Actions...",
+			"More Actions..."
 		);
 		this.dropdownButton.element.setAttribute("aria-haspopup", "true");
 		this.dropdownButton.element.setAttribute("aria-expanded", "false");
@@ -434,14 +434,14 @@ export class ButtonWithDropdown extends Disposable implements IButton {
 					onHide: () =>
 						this.dropdownButton.element.setAttribute(
 							"aria-expanded",
-							"false",
+							"false"
 						),
 				});
 				this.dropdownButton.element.setAttribute(
 					"aria-expanded",
-					"true",
+					"true"
 				);
-			}),
+			})
 		);
 	}
 
@@ -486,7 +486,7 @@ export class ButtonWithDescription implements IButtonWithDescription {
 
 	constructor(
 		container: HTMLElement,
-		private readonly options: IButtonOptions,
+		private readonly options: IButtonOptions
 	) {
 		this._element = document.createElement("div");
 		this._element.classList.add("monaco-description-button");
@@ -563,7 +563,7 @@ export class ButtonBar {
 
 	addButton(options: IButtonOptions): IButton {
 		const button = this._buttonStore.add(
-			new Button(this.container, options),
+			new Button(this.container, options)
 		);
 		this.pushButton(button);
 		return button;
@@ -571,7 +571,7 @@ export class ButtonBar {
 
 	addButtonWithDescription(options: IButtonOptions): IButtonWithDescription {
 		const button = this._buttonStore.add(
-			new ButtonWithDescription(this.container, options),
+			new ButtonWithDescription(this.container, options)
 		);
 		this.pushButton(button);
 		return button;
@@ -579,7 +579,7 @@ export class ButtonBar {
 
 	addButtonWithDropdown(options: IButtonWithDropdownOptions): IButton {
 		const button = this._buttonStore.add(
-			new ButtonWithDropdown(this.container, options),
+			new ButtonWithDropdown(this.container, options)
 		);
 		this.pushButton(button);
 		return button;
@@ -610,7 +610,7 @@ export class ButtonBar {
 					this._buttons[buttonIndexToFocus].focus();
 					EventHelper.stop(e, true);
 				}
-			}),
+			})
 		);
 	}
 }

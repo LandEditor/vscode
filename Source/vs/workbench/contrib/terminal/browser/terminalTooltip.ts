@@ -33,7 +33,7 @@ export function getInstanceHoverInfo(instance: ITerminalInstance): {
 			shellProcessString +
 			shellIntegrationString +
 			statusString,
-		{ supportThemeIcons: true },
+		{ supportThemeIcons: true }
 	);
 
 	return { content, actions };
@@ -41,7 +41,7 @@ export function getInstanceHoverInfo(instance: ITerminalInstance): {
 
 export function getShellIntegrationTooltip(
 	instance: ITerminalInstance,
-	markdown: boolean,
+	markdown: boolean
 ): string {
 	const shellIntegrationCapabilities: TerminalCapability[] = [];
 	if (instance.capabilities.has(TerminalCapability.CommandDetection)) {
@@ -56,7 +56,7 @@ export function getShellIntegrationTooltip(
 			markdown ? "\n\n---\n\n" : "\n\n"
 		}${localize(
 			"shellIntegration.enabled",
-			"Shell integration activated",
+			"Shell integration activated"
 		)}`;
 	} else {
 		if (instance.shellLaunchConfig.ignoreShellIntegration) {
@@ -64,7 +64,7 @@ export function getShellIntegrationTooltip(
 				markdown ? "\n\n---\n\n" : "\n\n"
 			}${localize(
 				"launchFailed.exitCodeOnlyShellIntegration",
-				"The terminal process failed to launch. Disabling shell integration with terminal.integrated.shellIntegration.enabled might help.",
+				"The terminal process failed to launch. Disabling shell integration with terminal.integrated.shellIntegration.enabled might help."
 			)}`;
 		} else {
 			if (instance.usedShellIntegrationInjection) {
@@ -72,7 +72,7 @@ export function getShellIntegrationTooltip(
 					markdown ? "\n\n---\n\n" : "\n\n"
 				}${localize(
 					"shellIntegration.activationFailed",
-					"Shell integration failed to activate",
+					"Shell integration failed to activate"
 				)}`;
 			}
 		}
@@ -82,7 +82,7 @@ export function getShellIntegrationTooltip(
 
 export function getShellProcessTooltip(
 	instance: ITerminalInstance,
-	markdown: boolean,
+	markdown: boolean
 ): string {
 	const lines: string[] = [];
 
@@ -97,15 +97,15 @@ export function getShellProcessTooltip(
 				},
 				"Process ID ({0}): {1}",
 				"PID",
-				instance.processId,
-			) + "\n",
+				instance.processId
+			) + "\n"
 		);
 	}
 
 	if (instance.shellLaunchConfig.executable) {
 		let commandLine = instance.shellLaunchConfig.executable;
 		const args = asArray(
-			instance.injectedArgs || instance.shellLaunchConfig.args || [],
+			instance.injectedArgs || instance.shellLaunchConfig.args || []
 		)
 			.map((x) => `'${x}'`)
 			.join(" ");
@@ -117,8 +117,8 @@ export function getShellProcessTooltip(
 			localize(
 				"shellProcessTooltip.commandLine",
 				"Command line: {0}",
-				commandLine,
-			),
+				commandLine
+			)
 		);
 	}
 

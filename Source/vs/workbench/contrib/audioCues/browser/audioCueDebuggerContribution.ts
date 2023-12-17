@@ -29,7 +29,7 @@ export class AudioCueLineDebuggerContribution
 {
 	constructor(
 		@IDebugService debugService: IDebugService,
-		@IAudioCueService private readonly audioCueService: AudioCueService,
+		@IAudioCueService private readonly audioCueService: AudioCueService
 	) {
 		super();
 
@@ -37,36 +37,51 @@ export class AudioCueLineDebuggerContribution
 			audioCueService.onEnabledChanged(AudioCue.onDebugBreak),
 			() => audioCueService.isEnabled(AudioCue.onDebugBreak)
 		);
-		this._register(autorunWithStore((reader, store) => {
-			/** @description subscribe to debug sessions */
-			if (!isEnabled.read(reader)) {
-				return;
-			}
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description subscribe to debug sessions */
+				if (!isEnabled.read(reader)) {
+					return;
+				}
 
-			const sessionDisposables = new Map<IDebugSession, IDisposable>();
-			store.add(toDisposable(() => {
-				sessionDisposables.forEach(d => d.dispose());
-				sessionDisposables.clear();
-			}));
-
-			store.add(
-				debugService.onDidNewSession((session) =>
-					sessionDisposables.set(session, this.handleSession(session))
-				)
-			);
-
-			store.add(debugService.onDidEndSession(({ session }) => {
-				sessionDisposables.get(session)?.dispose();
-				sessionDisposables.delete(session);
-			}));
-
-			debugService
-				.getModel()
-				.getSessions()
-				.forEach((session) =>
-					sessionDisposables.set(session, this.handleSession(session))
+				const sessionDisposables = new Map<
+					IDebugSession,
+					IDisposable
+				>();
+				store.add(
+					toDisposable(() => {
+						sessionDisposables.forEach((d) => d.dispose());
+						sessionDisposables.clear();
+					})
 				);
-		}));
+
+				store.add(
+					debugService.onDidNewSession((session) =>
+						sessionDisposables.set(
+							session,
+							this.handleSession(session)
+						)
+					)
+				);
+
+				store.add(
+					debugService.onDidEndSession(({ session }) => {
+						sessionDisposables.get(session)?.dispose();
+						sessionDisposables.delete(session);
+					})
+				);
+
+				debugService
+					.getModel()
+					.getSessions()
+					.forEach((session) =>
+						sessionDisposables.set(
+							session,
+							this.handleSession(session)
+						)
+					);
+			})
+		);
 	}
 
 	private handleSession(session: IDebugSession): IDisposable {

@@ -70,10 +70,15 @@ export class ReplacePreviewContentProvider
 	implements ITextModelContentProvider, IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService
 	) {
-		this.textModelResolverService.registerTextModelContentProvider(network.Schemas.internal, this);
+		this.textModelResolverService.registerTextModelContentProvider(
+			network.Schemas.internal,
+			this
+		);
 	}
 
 	provideTextContent(uri: URI): Promise<ITextModel> | null {
@@ -90,9 +95,11 @@ class ReplacePreviewModel extends Disposable {
 	constructor(
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@IReplaceService private readonly replaceService: IReplaceService,
-		@ISearchViewModelWorkbenchService private readonly searchWorkbenchService: ISearchViewModelWorkbenchService
+		@ISearchViewModelWorkbenchService
+		private readonly searchWorkbenchService: ISearchViewModelWorkbenchService
 	) {
 		super();
 	}
@@ -104,20 +111,20 @@ class ReplacePreviewModel extends Disposable {
 				.matches()
 				.filter(
 					(match) =>
-						match.resource.toString() === fileResource.toString(),
+						match.resource.toString() === fileResource.toString()
 				)[0]
 		);
 		const ref = this._register(
 			await this.textModelResolverService.createModelReference(
-				fileResource,
-			),
+				fileResource
+			)
 		);
 		const sourceModel = ref.object.textEditorModel;
 		const sourceModelLanguageId = sourceModel.getLanguageId();
 		const replacePreviewModel = this.modelService.createModel(
 			createTextBufferFactoryFromSnapshot(sourceModel.createSnapshot()),
 			this.languageService.createById(sourceModelLanguageId),
-			replacePreviewUri,
+			replacePreviewUri
 		);
 		this._register(
 			fileMatch.onChange(({ forceUpdateModel }) =>
@@ -125,17 +132,17 @@ class ReplacePreviewModel extends Disposable {
 					sourceModel,
 					replacePreviewModel,
 					fileMatch,
-					forceUpdateModel,
-				),
-			),
+					forceUpdateModel
+				)
+			)
 		);
 		this._register(
 			this.searchWorkbenchService.searchModel.onReplaceTermChanged(() =>
-				this.update(sourceModel, replacePreviewModel, fileMatch),
-			),
+				this.update(sourceModel, replacePreviewModel, fileMatch)
+			)
 		);
 		this._register(
-			fileMatch.onDispose(() => replacePreviewModel.dispose()),
+			fileMatch.onDispose(() => replacePreviewModel.dispose())
 		); // TODO@Sandeep we should not dispose a model directly but rather the reference (depends on https://github.com/microsoft/vscode/issues/17073)
 		this._register(replacePreviewModel.onWillDispose(() => this.dispose()));
 		this._register(sourceModel.onWillDispose(() => this.dispose()));
@@ -146,7 +153,7 @@ class ReplacePreviewModel extends Disposable {
 		sourceModel: ITextModel,
 		replacePreviewModel: ITextModel,
 		fileMatch: FileMatch,
-		override: boolean = false,
+		override: boolean = false
 	): void {
 		if (!sourceModel.isDisposed() && !replacePreviewModel.isDisposed()) {
 			this.replaceService.updateReplacePreview(fileMatch, override);
@@ -160,32 +167,34 @@ export class ReplaceService implements IReplaceService {
 	private static readonly REPLACE_SAVE_SOURCE =
 		SaveSourceRegistry.registerSource(
 			"searchReplace.source",
-			nls.localize("searchReplace.source", "Search and Replace"),
+			nls.localize("searchReplace.source", "Search and Replace")
 		);
 
 	constructor(
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@IBulkEditService private readonly bulkEditorService: IBulkEditService,
 		@ILabelService private readonly labelService: ILabelService,
-		@INotebookEditorModelResolverService private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService
-	) { }
+		@INotebookEditorModelResolverService
+		private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService
+	) {}
 
 	replace(match: Match): Promise<any>;
 	replace(
 		files: FileMatch[],
-		progress?: IProgress<IProgressStep>,
+		progress?: IProgress<IProgressStep>
 	): Promise<any>;
 	replace(
 		match: FileMatchOrMatch,
 		progress?: IProgress<IProgressStep>,
-		resource?: URI,
+		resource?: URI
 	): Promise<any>;
 	async replace(
 		arg: any,
 		progress: IProgress<IProgressStep> | undefined = undefined,
-		resource: URI | null = null,
+		resource: URI | null = null
 	): Promise<any> {
 		const edits = this.createEdits(arg, resource);
 		await this.bulkEditorService.apply(edits, { progress });
@@ -200,7 +209,7 @@ export class ReplaceService implements IReplaceService {
 					try {
 						ref =
 							await this.notebookEditorModelResolverService.resolve(
-								notebookResource,
+								notebookResource
 							);
 						await ref.object.save({
 							source: ReplaceService.REPLACE_SAVE_SOURCE,
@@ -224,7 +233,7 @@ export class ReplaceService implements IReplaceService {
 		element: FileMatchOrMatch,
 		preserveFocus?: boolean,
 		sideBySide?: boolean,
-		pinned?: boolean,
+		pinned?: boolean
 	): Promise<any> {
 		const fileMatch = element instanceof Match ? element.parent() : element;
 
@@ -235,11 +244,11 @@ export class ReplaceService implements IReplaceService {
 				"fileReplaceChanges",
 				"{0} ↔ {1} (Replace Preview)",
 				fileMatch.name(),
-				fileMatch.name(),
+				fileMatch.name()
 			),
 			description: this.labelService.getUriLabel(
 				dirname(fileMatch.resource),
-				{ relative: true },
+				{ relative: true }
 			),
 			options: {
 				preserveFocus,
@@ -258,7 +267,7 @@ export class ReplaceService implements IReplaceService {
 			if (element instanceof Match && editorControl) {
 				editorControl.revealLineInCenter(
 					element.range().startLineNumber,
-					ScrollType.Immediate,
+					ScrollType.Immediate
 				);
 			}
 		}
@@ -266,15 +275,15 @@ export class ReplaceService implements IReplaceService {
 
 	async updateReplacePreview(
 		fileMatch: FileMatch,
-		override: boolean = false,
+		override: boolean = false
 	): Promise<void> {
 		const replacePreviewUri = toReplaceResource(fileMatch.resource);
 		const [sourceModelRef, replaceModelRef] = await Promise.all([
 			this.textModelResolverService.createModelReference(
-				fileMatch.resource,
+				fileMatch.resource
 			),
 			this.textModelResolverService.createModelReference(
-				replacePreviewUri,
+				replacePreviewUri
 			),
 		]);
 		const sourceModel = sourceModelRef.object.textEditorModel;
@@ -297,7 +306,7 @@ export class ReplaceService implements IReplaceService {
 
 	private applyEditsToPreview(
 		fileMatch: FileMatch,
-		replaceModel: ITextModel,
+		replaceModel: ITextModel
 	): void {
 		const resourceEdits = this.createEdits(fileMatch, replaceModel.uri);
 		const modelEdits: ISingleEditOperation[] = [];
@@ -305,22 +314,22 @@ export class ReplaceService implements IReplaceService {
 			modelEdits.push(
 				EditOperation.replaceMove(
 					Range.lift(resourceEdit.textEdit.range),
-					resourceEdit.textEdit.text,
-				),
+					resourceEdit.textEdit.text
+				)
 			);
 		}
 		replaceModel.pushEditOperations(
 			[],
 			modelEdits.sort((a, b) =>
-				Range.compareRangesUsingStarts(a.range, b.range),
+				Range.compareRangesUsingStarts(a.range, b.range)
 			),
-			() => [],
+			() => []
 		);
 	}
 
 	private createEdits(
 		arg: FileMatchOrMatch | FileMatch[],
-		resource: URI | null = null,
+		resource: URI | null = null
 	): ResourceTextEdit[] {
 		const edits: ResourceTextEdit[] = [];
 
@@ -333,14 +342,14 @@ export class ReplaceService implements IReplaceService {
 						this.createEdit(
 							match,
 							match.replaceString,
-							match.cell?.uri,
-						),
+							match.cell?.uri
+						)
 					);
 				}
 			} else {
 				const match = <Match>arg;
 				edits.push(
-					this.createEdit(match, match.replaceString, resource),
+					this.createEdit(match, match.replaceString, resource)
 				);
 			}
 		}
@@ -357,8 +366,8 @@ export class ReplaceService implements IReplaceService {
 						...fileMatch
 							.matches()
 							.flatMap((match) =>
-								this.createEdits(match, resource),
-							),
+								this.createEdits(match, resource)
+							)
 					);
 				}
 			});
@@ -369,14 +378,14 @@ export class ReplaceService implements IReplaceService {
 	private createEdit(
 		match: Match,
 		text: string,
-		resource: URI | null = null,
+		resource: URI | null = null
 	): ResourceTextEdit {
 		const fileMatch: FileMatch = match.parent();
 		return new ResourceTextEdit(
 			resource ?? fileMatch.resource,
 			{ range: match.range(), text },
 			undefined,
-			undefined,
+			undefined
 		);
 	}
 }

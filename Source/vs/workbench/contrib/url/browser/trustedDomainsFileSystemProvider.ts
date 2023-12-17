@@ -72,7 +72,7 @@ function computeTrustedDomainContent(
 	trustedDomains: string[],
 	userTrustedDomains: string[],
 	workspaceTrustedDomains: string[],
-	configuring?: string,
+	configuring?: string
 ) {
 	let content = CONFIG_HELP_TEXT_PRE;
 
@@ -127,7 +127,8 @@ export class TrustedDomainsFileSystemProvider
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		this.fileService.registerProvider(TRUSTED_DOMAINS_SCHEMA, this);
 	}
@@ -139,7 +140,7 @@ export class TrustedDomainsFileSystemProvider
 	async readFile(resource: URI): Promise<Uint8Array> {
 		let trustedDomainsContent = this.storageService.get(
 			TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 
 		const configuring: string | undefined = resource.fragment;
@@ -167,7 +168,7 @@ export class TrustedDomainsFileSystemProvider
 				trustedDomains,
 				userDomains,
 				workspaceDomains,
-				configuring,
+				configuring
 			);
 		}
 
@@ -178,7 +179,7 @@ export class TrustedDomainsFileSystemProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions,
+		opts: IFileWriteOptions
 	): Promise<void> {
 		try {
 			const trustedDomainsContent = VSBuffer.wrap(content).toString();
@@ -188,13 +189,13 @@ export class TrustedDomainsFileSystemProvider
 				TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
 				trustedDomainsContent,
 				StorageScope.APPLICATION,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			this.storageService.store(
 				TRUSTED_DOMAINS_STORAGE_KEY,
 				JSON.stringify(trustedDomains) || "",
 				StorageScope.APPLICATION,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 		} catch (err) {}
 

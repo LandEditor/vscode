@@ -54,11 +54,11 @@ export class SearchService implements IRawSearchService {
 	private caches: { [cacheKey: string]: Cache } = Object.create(null);
 
 	constructor(
-		private readonly processType: IFileSearchStats["type"] = "searchProcess",
+		private readonly processType: IFileSearchStats["type"] = "searchProcess"
 	) {}
 
 	fileSearch(
-		config: IRawFileQuery,
+		config: IRawFileQuery
 	): Event<ISerializedSearchProgressItem | ISerializedSearchComplete> {
 		let promise: CancelablePromise<ISerializedSearchSuccess>;
 
@@ -72,7 +72,7 @@ export class SearchService implements IRawSearchService {
 						FileSearchEngine,
 						query,
 						(p) => emitter.fire(p),
-						token,
+						token
 					);
 				});
 
@@ -82,7 +82,7 @@ export class SearchService implements IRawSearchService {
 						emitter.fire({
 							type: "error",
 							error: { message: err.message, stack: err.stack },
-						}),
+						})
 				);
 			},
 			onDidRemoveLastListener: () => {
@@ -94,7 +94,7 @@ export class SearchService implements IRawSearchService {
 	}
 
 	textSearch(
-		rawQuery: IRawTextQuery,
+		rawQuery: IRawTextQuery
 	): Event<ISerializedSearchProgressItem | ISerializedSearchComplete> {
 		let promise: CancelablePromise<ISerializedSearchComplete>;
 
@@ -107,7 +107,7 @@ export class SearchService implements IRawSearchService {
 					return this.ripgrepTextSearch(
 						query,
 						(p) => emitter.fire(p),
-						token,
+						token
 					);
 				});
 
@@ -117,7 +117,7 @@ export class SearchService implements IRawSearchService {
 						emitter.fire({
 							type: "error",
 							error: { message: err.message, stack: err.stack },
-						}),
+						})
 				);
 			},
 			onDidRemoveLastListener: () => {
@@ -131,7 +131,7 @@ export class SearchService implements IRawSearchService {
 	private ripgrepTextSearch(
 		config: ITextQuery,
 		progressCallback: IProgressCallback,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ISerializedSearchSuccess> {
 		config.maxFileSize = this.getPlatformFileLimits().maxFileSize;
 		const engine = new TextSearchEngineAdapter(config);
@@ -148,13 +148,13 @@ export class SearchService implements IRawSearchService {
 	doFileSearch(
 		config: IFileQuery,
 		progressCallback: IProgressCallback,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISerializedSearchSuccess> {
 		return this.doFileSearchWithEngine(
 			FileSearchEngine,
 			config,
 			progressCallback,
-			token,
+			token
 		);
 	}
 
@@ -163,19 +163,19 @@ export class SearchService implements IRawSearchService {
 		config: IFileQuery,
 		progressCallback: IProgressCallback,
 		token?: CancellationToken,
-		batchSize = SearchService.BATCH_SIZE,
+		batchSize = SearchService.BATCH_SIZE
 	): Promise<ISerializedSearchSuccess> {
 		let resultCount = 0;
 		const fileProgressCallback: IFileProgressCallback = (progress) => {
 			if (Array.isArray(progress)) {
 				resultCount += progress.length;
 				progressCallback(
-					progress.map((m) => this.rawMatchToSearchItem(m)),
+					progress.map((m) => this.rawMatchToSearchItem(m))
 				);
 			} else if ((<IRawFileMatch>progress).relativePath) {
 				resultCount++;
 				progressCallback(
-					this.rawMatchToSearchItem(<IRawFileMatch>progress),
+					this.rawMatchToSearchItem(<IRawFileMatch>progress)
 				);
 			} else {
 				progressCallback(<IProgressMessage>progress);
@@ -186,7 +186,7 @@ export class SearchService implements IRawSearchService {
 			let sortedSearch = this.trySortedSearchFromCache(
 				config,
 				fileProgressCallback,
-				token,
+				token
 			);
 			if (!sortedSearch) {
 				const walkerConfig = config.maxResults
@@ -198,19 +198,19 @@ export class SearchService implements IRawSearchService {
 					config,
 					progressCallback,
 					fileProgressCallback,
-					token,
+					token
 				);
 			}
 
 			return new Promise<ISerializedSearchSuccess>((c, e) => {
 				sortedSearch!.then(([result, rawMatches]) => {
 					const serializedMatches = rawMatches.map((rawMatch) =>
-						this.rawMatchToSearchItem(rawMatch),
+						this.rawMatchToSearchItem(rawMatch)
 					);
 					this.sendProgress(
 						serializedMatches,
 						progressCallback,
-						batchSize,
+						batchSize
 					);
 					c(result);
 				}, e);
@@ -223,7 +223,7 @@ export class SearchService implements IRawSearchService {
 			engine,
 			fileProgressCallback,
 			batchSize,
-			token,
+			token
 		).then((complete) => {
 			return <ISerializedSearchSuccess>{
 				limitHit: complete.limitHit,
@@ -252,7 +252,7 @@ export class SearchService implements IRawSearchService {
 		config: IFileQuery,
 		progressCallback: IProgressCallback,
 		fileProgressCallback: IFileProgressCallback,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<[ISerializedSearchSuccess, IRawFileMatch[]]> {
 		const emitter = new Emitter<IFileSearchProgressItem>();
 
@@ -290,7 +290,7 @@ export class SearchService implements IRawSearchService {
 				},
 				(err) => {
 					delete cache.resultsToSearchCache[config.filePattern || ""];
-				},
+				}
 			);
 
 			allResultsPromise = this.preventCancellation(allResultsPromise);
@@ -345,7 +345,7 @@ export class SearchService implements IRawSearchService {
 	private trySortedSearchFromCache(
 		config: IFileQuery,
 		progressCallback: IFileProgressCallback,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<[ISerializedSearchSuccess, IRawFileMatch[]]> | undefined {
 		const cache = config.cacheKey && this.caches[config.cacheKey];
 		if (!cache) {
@@ -356,7 +356,7 @@ export class SearchService implements IRawSearchService {
 			cache,
 			config.filePattern || "",
 			progressCallback,
-			token,
+			token
 		);
 		if (cached) {
 			return cached.then(([result, results, cacheStats]) => {
@@ -365,7 +365,7 @@ export class SearchService implements IRawSearchService {
 					config,
 					results,
 					cache.scorerCache,
-					token,
+					token
 				).then<[ISerializedSearchSuccess, IRawFileMatch[]]>(
 					(sortedResults) => {
 						const sortingTime = sortSW.elapsed();
@@ -388,7 +388,7 @@ export class SearchService implements IRawSearchService {
 							} as ISerializedSearchSuccess,
 							sortedResults,
 						];
-					},
+					}
 				);
 			});
 		}
@@ -399,7 +399,7 @@ export class SearchService implements IRawSearchService {
 		config: IFileQuery,
 		results: IRawFileMatch[],
 		scorerCache: FuzzyScorerCache,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<IRawFileMatch[]> {
 		// we use the same compare function that is used later when showing the results using fuzzy scoring
 		// this is very important because we are also limiting the number of results by config.maxResults
@@ -413,7 +413,7 @@ export class SearchService implements IRawSearchService {
 				query,
 				true,
 				FileMatchItemAccessor,
-				scorerCache,
+				scorerCache
 			);
 
 		const maxResults =
@@ -426,7 +426,7 @@ export class SearchService implements IRawSearchService {
 	private sendProgress(
 		results: ISerializedFileMatch[],
 		progressCb: IProgressCallback,
-		batchSize: number,
+		batchSize: number
 	) {
 		if (batchSize && batchSize > 0) {
 			for (let i = 0; i < results.length; i += batchSize) {
@@ -441,7 +441,7 @@ export class SearchService implements IRawSearchService {
 		cache: Cache,
 		searchValue: string,
 		progressCallback: IFileProgressCallback,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<
 		[ISearchEngineSuccess, IRawFileMatch[], ICachedSearchStats]
 	> | null {
@@ -524,7 +524,7 @@ export class SearchService implements IRawSearchService {
 		engine: ISearchEngine<IRawFileMatch>,
 		progressCallback: IFileProgressCallback,
 		batchSize: number,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchEngineSuccess> {
 		return new Promise<ISearchEngineSuccess>((c, e) => {
 			let batch: IRawFileMatch[] = [];
@@ -565,7 +565,7 @@ export class SearchService implements IRawSearchService {
 						});
 						c(complete);
 					}
-				},
+				}
 			);
 		});
 	}
@@ -580,7 +580,7 @@ export class SearchService implements IRawSearchService {
 	 * TODO@rob - Is this really needed?
 	 */
 	private preventCancellation<C>(
-		promise: CancelablePromise<C>,
+		promise: CancelablePromise<C>
 	): CancelablePromise<C> {
 		return new (class implements CancelablePromise<C> {
 			get [Symbol.toStringTag]() {
@@ -597,7 +597,7 @@ export class SearchService implements IRawSearchService {
 				reject?:
 					| ((reason: any) => TResult2 | Promise<TResult2>)
 					| undefined
-					| null,
+					| null
 			): Promise<TResult1 | TResult2> {
 				return promise.then(resolve, reject);
 			}
@@ -642,7 +642,7 @@ const FileMatchItemAccessor = new (class
 })();
 
 function reviveQuery<U extends IRawQuery>(
-	rawQuery: U,
+	rawQuery: U
 ): U extends IRawTextQuery ? ITextQuery : IFileQuery {
 	return {
 		...(<any>rawQuery), // TODO
@@ -653,14 +653,14 @@ function reviveQuery<U extends IRawQuery>(
 			extraFileResources:
 				rawQuery.extraFileResources &&
 				rawQuery.extraFileResources.map((components) =>
-					URI.revive(components),
+					URI.revive(components)
 				),
 		},
 	};
 }
 
 function reviveFolderQuery(
-	rawFolderQuery: IFolderQuery<UriComponents>,
+	rawFolderQuery: IFolderQuery<UriComponents>
 ): IFolderQuery<URI> {
 	return {
 		...rawFolderQuery,

@@ -22,7 +22,7 @@ declare module "vscode" {
 
 	export interface SpeechProvider {
 		provideSpeechToTextSession(
-			token: CancellationToken,
+			token: CancellationToken
 		): SpeechToTextSession;
 	}
 
@@ -32,7 +32,7 @@ declare module "vscode" {
 		 */
 		export function registerSpeechProvider(
 			id: string,
-			provider: SpeechProvider,
+			provider: SpeechProvider
 		): Disposable;
 	}
 }

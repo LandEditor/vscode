@@ -23,7 +23,7 @@ function addSettingMapping(settingId: string, colorId: string) {
 
 export function convertSettings(
 	oldSettings: ITextMateThemingRule[],
-	result: { textMateRules: ITextMateThemingRule[]; colors: IColorMap },
+	result: { textMateRules: ITextMateThemingRule[]; colors: IColorMap }
 ): void {
 	for (const rule of oldSettings) {
 		result.textMateRules.push(rule);
@@ -63,7 +63,7 @@ addSettingMapping("selection", colorRegistry.editorSelectionBackground);
 addSettingMapping("inactiveSelection", colorRegistry.editorInactiveSelection);
 addSettingMapping(
 	"selectionHighlightColor",
-	colorRegistry.editorSelectionHighlight,
+	colorRegistry.editorSelectionHighlight
 );
 addSettingMapping("findMatchHighlight", colorRegistry.editorFindMatchHighlight);
 addSettingMapping("currentFindMatchHighlight", colorRegistry.editorFindMatch);
@@ -71,16 +71,16 @@ addSettingMapping("hoverHighlight", colorRegistry.editorHoverHighlight);
 addSettingMapping("wordHighlight", "editor.wordHighlightBackground"); // inlined to avoid editor/contrib dependenies
 addSettingMapping(
 	"wordHighlightStrong",
-	"editor.wordHighlightStrongBackground",
+	"editor.wordHighlightStrongBackground"
 );
 addSettingMapping("findRangeHighlight", colorRegistry.editorFindRangeHighlight);
 addSettingMapping(
 	"findMatchHighlight",
-	"peekViewResult.matchHighlightBackground",
+	"peekViewResult.matchHighlightBackground"
 );
 addSettingMapping(
 	"referenceHighlight",
-	"peekViewEditor.matchHighlightBackground",
+	"peekViewEditor.matchHighlightBackground"
 );
 addSettingMapping("lineHighlight", editorColorRegistry.editorLineHighlight);
 addSettingMapping("rangeHighlight", editorColorRegistry.editorRangeHighlight);

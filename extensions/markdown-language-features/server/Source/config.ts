@@ -22,7 +22,7 @@ const defaultConfig: LsConfiguration = {
 };
 
 export function getLsConfiguration(
-	overrides: Partial<LsConfiguration>,
+	overrides: Partial<LsConfiguration>
 ): LsConfiguration {
 	return {
 		...defaultConfig,

@@ -29,7 +29,7 @@ const forwardButton =
 const backButton = header.querySelector<HTMLButtonElement>(".back-button")!;
 const reloadButton = header.querySelector<HTMLButtonElement>(".reload-button")!;
 const openExternalButton = header.querySelector<HTMLButtonElement>(
-	".open-external-button",
+	".open-external-button"
 )!;
 
 window.addEventListener("message", (e) => {
@@ -98,7 +98,7 @@ onceDocumentLoaded(() => {
 			// There does not appear to be any way to reliably do this except modifying the url
 			url.searchParams.append(
 				"vscodeBrowserReqId",
-				Date.now().toString(),
+				Date.now().toString()
 			);
 
 			iframe.src = url.toString();

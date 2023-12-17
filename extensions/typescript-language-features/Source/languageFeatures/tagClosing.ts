@@ -29,7 +29,7 @@ class TagClosing extends Disposable {
 		vscode.workspace.onDidChangeTextDocument(
 			(event) => this.onDidChangeTextDocument(event),
 			null,
-			this._disposables,
+			this._disposables
 		);
 	}
 
@@ -98,9 +98,9 @@ class TagClosing extends Disposable {
 							lastChange.range.start.translate({
 								characterDelta: -1,
 							}),
-							lastChange.range.start,
-						),
-				  )
+							lastChange.range.start
+						)
+					)
 				: "";
 		if (priorCharacter === ">") {
 			return;
@@ -119,22 +119,22 @@ class TagClosing extends Disposable {
 				addedLines.length <= 1
 					? lastChange.range.start.translate({
 							characterDelta: lastChange.text.length,
-					  })
+						})
 					: new vscode.Position(
 							lastChange.range.start.line + addedLines.length - 1,
-							addedLines[addedLines.length - 1].length,
-					  );
+							addedLines[addedLines.length - 1].length
+						);
 
 			const args: Proto.JsxClosingTagRequestArgs =
 				typeConverters.Position.toFileLocationRequestArgs(
 					filepath,
-					position,
+					position
 				);
 			this._cancel = new vscode.CancellationTokenSource();
 			const response = await this.client.execute(
 				"jsxClosingTag",
 				args,
-				this._cancel.token,
+				this._cancel.token
 			);
 			if (response.type !== "response" || !response.body) {
 				return;
@@ -157,14 +157,14 @@ class TagClosing extends Disposable {
 			) {
 				activeEditor.insertSnippet(
 					this.getTagSnippet(insertion),
-					this.getInsertionPositions(activeEditor, position),
+					this.getInsertionPositions(activeEditor, position)
 				);
 			}
 		}, 100);
 	}
 
 	private getTagSnippet(
-		closingTag: Proto.TextInsertion,
+		closingTag: Proto.TextInsertion
 	): vscode.SnippetString {
 		const snippet = new vscode.SnippetString();
 		snippet.appendPlaceholder("", 0);
@@ -174,7 +174,7 @@ class TagClosing extends Disposable {
 
 	private getInsertionPositions(
 		editor: vscode.TextEditor,
-		position: vscode.Position,
+		position: vscode.Position
 	) {
 		const activeSelectionPositions = editor.selections.map((s) => s.active);
 		return activeSelectionPositions.some((p) => p.isEqual(position))
@@ -185,7 +185,7 @@ class TagClosing extends Disposable {
 
 function requireActiveDocumentSetting(
 	selector: vscode.DocumentSelector,
-	language: LanguageDescription,
+	language: LanguageDescription
 ) {
 	return new Condition(
 		() => {
@@ -202,22 +202,22 @@ function requireActiveDocumentSetting(
 			return vscode.Disposable.from(
 				vscode.window.onDidChangeActiveTextEditor(handler),
 				vscode.workspace.onDidOpenTextDocument(handler),
-				vscode.workspace.onDidChangeConfiguration(handler),
+				vscode.workspace.onDidChangeConfiguration(handler)
 			);
-		},
+		}
 	);
 }
 
 export function register(
 	selector: DocumentSelector,
 	language: LanguageDescription,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
 			requireMinVersion(client, TagClosing.minVersion),
 			requireActiveDocumentSetting(selector.syntax, language),
 		],
-		() => new TagClosing(client),
+		() => new TagClosing(client)
 	);
 }

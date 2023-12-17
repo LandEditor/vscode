@@ -29,7 +29,8 @@ export class InlineChatServiceImpl implements IInlineChatService {
 	}
 
 	constructor(@IContextKeyService contextKeyService: IContextKeyService) {
-		this._ctxHasProvider = CTX_INLINE_CHAT_HAS_PROVIDER.bindTo(contextKeyService);
+		this._ctxHasProvider =
+			CTX_INLINE_CHAT_HAS_PROVIDER.bindTo(contextKeyService);
 	}
 
 	addProvider(provider: IInlineChatSessionProvider): IDisposable {

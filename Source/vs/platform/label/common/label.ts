@@ -30,7 +30,7 @@ export interface ILabelService {
 			relative?: boolean;
 			noPrefix?: boolean;
 			separator?: "/" | "\\";
-		},
+		}
 	): string;
 	getUriBasenameLabel(resource: URI): string;
 	getWorkspaceLabel(
@@ -39,7 +39,7 @@ export interface ILabelService {
 			| ISingleFolderWorkspaceIdentifier
 			| URI
 			| IWorkspace,
-		options?: { verbose: Verbosity },
+		options?: { verbose: Verbosity }
 	): string;
 	getHostLabel(scheme: string, authority?: string): string;
 	getHostTooltip(scheme: string, authority?: string): string | undefined;

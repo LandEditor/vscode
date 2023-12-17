@@ -35,14 +35,20 @@ class UserDataSyncReportIssueContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IProductService private readonly productService: IProductService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IHostService private readonly hostService: IHostService,
+		@IHostService private readonly hostService: IHostService
 	) {
 		super();
-		this._register(userDataAutoSyncService.onError(error => this.onAutoSyncError(error)));
+		this._register(
+			userDataAutoSyncService.onError((error) =>
+				this.onAutoSyncError(error)
+			)
+		);
 	}
 
 	private onAutoSyncError(error: UserDataSyncError): void {
@@ -57,8 +63,8 @@ class UserDataSyncReportIssueContribution
 								],
 							},
 							"Settings sync is suspended temporarily because the current device is making too many requests. Please reload {0} to resume.",
-							this.productService.nameLong,
-					  )
+							this.productService.nameLong
+						)
 					: localize(
 							{
 								key: "local too many requests - restart",
@@ -67,8 +73,8 @@ class UserDataSyncReportIssueContribution
 								],
 							},
 							"Settings sync is suspended temporarily because the current device is making too many requests. Please restart {0} to resume.",
-							this.productService.nameLong,
-					  );
+							this.productService.nameLong
+						);
 				this.notificationService.notify({
 					severity: Severity.Error,
 					message,
@@ -81,8 +87,8 @@ class UserDataSyncReportIssueContribution
 								true,
 								() =>
 									this.commandService.executeCommand(
-										SHOW_SYNC_LOG_COMMAND_ID,
-									),
+										SHOW_SYNC_LOG_COMMAND_ID
+									)
 							),
 							new Action(
 								"Restart",
@@ -91,7 +97,7 @@ class UserDataSyncReportIssueContribution
 									: localize("restart", "Restart"),
 								undefined,
 								true,
-								() => this.hostService.restart(),
+								() => this.hostService.restart()
 							),
 						],
 					},
@@ -103,15 +109,15 @@ class UserDataSyncReportIssueContribution
 					? localize(
 							"operationId",
 							"Operation Id: {0}",
-							error.operationId,
-					  )
+							error.operationId
+						)
 					: undefined;
 				const message = localize(
 					{
 						key: "server too many requests",
 						comment: ["Settings Sync is the name of the feature"],
 					},
-					"Settings sync is disabled because the current device is making too many requests. Please wait for 10 minutes and turn on sync.",
+					"Settings sync is disabled because the current device is making too many requests. Please wait for 10 minutes and turn on sync."
 				);
 				this.notificationService.notify({
 					severity: Severity.Error,
@@ -122,8 +128,8 @@ class UserDataSyncReportIssueContribution
 						? localize(
 								"settings sync",
 								"Settings Sync. Operation Id: {0}",
-								error.operationId,
-						  )
+								error.operationId
+							)
 						: undefined,
 					actions: {
 						primary: [
@@ -134,8 +140,8 @@ class UserDataSyncReportIssueContribution
 								true,
 								() =>
 									this.commandService.executeCommand(
-										SHOW_SYNC_LOG_COMMAND_ID,
-									),
+										SHOW_SYNC_LOG_COMMAND_ID
+									)
 							),
 						],
 					},
@@ -147,17 +153,17 @@ class UserDataSyncReportIssueContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncWorkbenchContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncTrigger,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataSyncReportIssueContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

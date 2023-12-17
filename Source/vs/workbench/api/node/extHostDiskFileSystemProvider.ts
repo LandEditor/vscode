@@ -13,8 +13,9 @@ import { isLinux } from "vs/base/common/platform";
 
 export class ExtHostDiskFileSystemProvider {
 	constructor(
-		@IExtHostConsumerFileSystem extHostConsumerFileSystem: IExtHostConsumerFileSystem,
-		@ILogService logService: ILogService,
+		@IExtHostConsumerFileSystem
+		extHostConsumerFileSystem: IExtHostConsumerFileSystem,
+		@ILogService logService: ILogService
 	) {
 		// Register disk file system provider so that certain
 		// file operations can execute fast within the extension
@@ -22,7 +23,7 @@ export class ExtHostDiskFileSystemProvider {
 		extHostConsumerFileSystem.addFileSystemProvider(
 			Schemas.file,
 			new DiskFileSystemProviderAdapter(logService),
-			{ isCaseSensitive: isLinux },
+			{ isCaseSensitive: isLinux }
 		);
 	}
 }
@@ -60,7 +61,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 	writeFile(
 		uri: vscode.Uri,
 		content: Uint8Array,
-		options: { readonly create: boolean; readonly overwrite: boolean },
+		options: { readonly create: boolean; readonly overwrite: boolean }
 	): Promise<void> {
 		return this.impl.writeFile(uri, content, {
 			...options,
@@ -71,7 +72,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 
 	delete(
 		uri: vscode.Uri,
-		options: { readonly recursive: boolean },
+		options: { readonly recursive: boolean }
 	): Promise<void> {
 		return this.impl.delete(uri, {
 			...options,
@@ -83,7 +84,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 	rename(
 		oldUri: vscode.Uri,
 		newUri: vscode.Uri,
-		options: { readonly overwrite: boolean },
+		options: { readonly overwrite: boolean }
 	): Promise<void> {
 		return this.impl.rename(oldUri, newUri, options);
 	}
@@ -91,7 +92,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 	copy(
 		source: vscode.Uri,
 		destination: vscode.Uri,
-		options: { readonly overwrite: boolean },
+		options: { readonly overwrite: boolean }
 	): Promise<void> {
 		return this.impl.copy(source, destination, options);
 	}
@@ -106,7 +107,7 @@ class DiskFileSystemProviderAdapter implements vscode.FileSystemProvider {
 		options: {
 			readonly recursive: boolean;
 			readonly excludes: readonly string[];
-		},
+		}
 	): vscode.Disposable {
 		throw new Error("Method not implemented.");
 	}

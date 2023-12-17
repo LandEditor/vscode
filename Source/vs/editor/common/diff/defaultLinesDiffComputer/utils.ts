@@ -10,7 +10,10 @@ import { DetailedLineRangeMapping } from "vs/editor/common/diff/rangeMapping";
 export class Array2D<T> {
 	private readonly array: T[] = [];
 
-	constructor(public readonly width: number, public readonly height: number) {
+	constructor(
+		public readonly width: number,
+		public readonly height: number
+	) {
 		this.array = new Array<T>(width * height);
 	}
 
@@ -44,7 +47,7 @@ export class LineRangeFragment {
 	constructor(
 		public readonly range: LineRange,
 		public readonly lines: string[],
-		public readonly source: DetailedLineRangeMapping,
+		public readonly source: DetailedLineRangeMapping
 	) {
 		let counter = 0;
 		for (
@@ -71,11 +74,11 @@ export class LineRangeFragment {
 		let sumDifferences = 0;
 		const maxLength = Math.max(
 			this.histogram.length,
-			other.histogram.length,
+			other.histogram.length
 		);
 		for (let i = 0; i < maxLength; i++) {
 			sumDifferences += Math.abs(
-				(this.histogram[i] ?? 0) - (other.histogram[i] ?? 0),
+				(this.histogram[i] ?? 0) - (other.histogram[i] ?? 0)
 			);
 		}
 		return 1 - sumDifferences / (this.totalCount + other.totalCount);

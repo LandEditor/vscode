@@ -26,7 +26,7 @@ export abstract class ResizableContentWidget
 	readonly suppressMouseDown: boolean = false;
 
 	protected readonly _resizableNode = this._register(
-		new ResizableHTMLElement(),
+		new ResizableHTMLElement()
 	);
 	protected _contentPosition: IContentWidgetPosition | null = null;
 
@@ -34,7 +34,7 @@ export abstract class ResizableContentWidget
 
 	constructor(
 		protected readonly _editor: ICodeEditor,
-		minimumSize: dom.IDimension = new dom.Dimension(10, 10),
+		minimumSize: dom.IDimension = new dom.Dimension(10, 10)
 	) {
 		super();
 		this._resizableNode.domNode.style.position = "absolute";
@@ -44,17 +44,17 @@ export abstract class ResizableContentWidget
 		this._register(
 			this._resizableNode.onDidResize((e) => {
 				this._resize(
-					new dom.Dimension(e.dimension.width, e.dimension.height),
+					new dom.Dimension(e.dimension.width, e.dimension.height)
 				);
 				if (e.done) {
 					this._isResizing = false;
 				}
-			}),
+			})
 		);
 		this._register(
 			this._resizableNode.onDidWillResize(() => {
 				this._isResizing = true;
-			}),
+			})
 		);
 	}
 
@@ -79,7 +79,7 @@ export abstract class ResizableContentWidget
 	}
 
 	protected _availableVerticalSpaceAbove(
-		position: IPosition,
+		position: IPosition
 	): number | undefined {
 		const editorDomNode = this._editor.getDomNode();
 		const mouseBox = this._editor.getScrolledVisiblePosition(position);
@@ -91,7 +91,7 @@ export abstract class ResizableContentWidget
 	}
 
 	protected _availableVerticalSpaceBelow(
-		position: IPosition,
+		position: IPosition
 	): number | undefined {
 		const editorDomNode = this._editor.getDomNode();
 		const mouseBox = this._editor.getScrolledVisiblePosition(position);
@@ -106,19 +106,19 @@ export abstract class ResizableContentWidget
 
 	protected _findPositionPreference(
 		widgetHeight: number,
-		showAtPosition: IPosition,
+		showAtPosition: IPosition
 	): ContentWidgetPositionPreference | undefined {
 		const maxHeightBelow = Math.min(
 			this._availableVerticalSpaceBelow(showAtPosition) ?? Infinity,
-			widgetHeight,
+			widgetHeight
 		);
 		const maxHeightAbove = Math.min(
 			this._availableVerticalSpaceAbove(showAtPosition) ?? Infinity,
-			widgetHeight,
+			widgetHeight
 		);
 		const maxHeight = Math.min(
 			Math.max(maxHeightAbove, maxHeightBelow),
-			widgetHeight,
+			widgetHeight
 		);
 		const height = Math.min(widgetHeight, maxHeight);
 		let renderingAbove: ContentWidgetPositionPreference;

@@ -25,7 +25,7 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 		});
 	} catch (e) {
 		window.showErrorMessage(
-			`HTTPS_PROXY environment variable ignored: ${e.message}`,
+			`HTTPS_PROXY environment variable ignored: ${e.message}`
 		);
 		return globalAgent;
 	}
@@ -76,7 +76,7 @@ export async function getOctokitGraphql(): Promise<graphql> {
 
 			if (!session) {
 				throw new AuthenticationError(
-					"No GitHub authentication session available.",
+					"No GitHub authentication session available."
 				);
 			}
 

@@ -20,17 +20,30 @@ import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
 export class UserDataProfilesHandler extends Disposable {
 	constructor(
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
-		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesService: IUserDataProfilesMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService
 	) {
 		super();
-		this._register(lifecycleMainService.onWillLoadWindow(e => {
-			if (e.reason === LoadReason.LOAD) {
-				this.unsetProfileForWorkspace(e.window);
-			}
-		}));
-		this._register(lifecycleMainService.onBeforeCloseWindow(window => this.unsetProfileForWorkspace(window)));
-		this._register(new RunOnceScheduler(() => this.cleanUpEmptyWindowAssociations(), 30 * 1000 /* after 30s */)).schedule();
+		this._register(
+			lifecycleMainService.onWillLoadWindow((e) => {
+				if (e.reason === LoadReason.LOAD) {
+					this.unsetProfileForWorkspace(e.window);
+				}
+			})
+		);
+		this._register(
+			lifecycleMainService.onBeforeCloseWindow((window) =>
+				this.unsetProfileForWorkspace(window)
+			)
+		);
+		this._register(
+			new RunOnceScheduler(
+				() => this.cleanUpEmptyWindowAssociations(),
+				30 * 1000 /* after 30s */
+			)
+		).schedule();
 	}
 
 	private async unsetProfileForWorkspace(window: ICodeWindow): Promise<void> {
@@ -40,7 +53,7 @@ export class UserDataProfilesHandler extends Disposable {
 		if (profile?.isTransient) {
 			this.userDataProfilesService.unsetWorkspace(
 				workspace,
-				profile.isTransient,
+				profile.isTransient
 			);
 			if (profile.isTransient) {
 				await this.userDataProfilesService.cleanUpTransientProfiles();
@@ -53,7 +66,7 @@ export class UserDataProfilesHandler extends Disposable {
 			window.openedWorkspace ??
 			toWorkspaceIdentifier(
 				window.backupPath,
-				window.isExtensionDevelopmentHost,
+				window.isExtensionDevelopmentHost
 			)
 		);
 	}
@@ -71,14 +84,14 @@ export class UserDataProfilesHandler extends Disposable {
 			if (
 				openedWorkspaces.some(
 					(openedWorkspace) =>
-						openedWorkspace.id === associatedEmptyWindow.id,
+						openedWorkspace.id === associatedEmptyWindow.id
 				)
 			) {
 				continue;
 			}
 			this.userDataProfilesService.unsetWorkspace(
 				associatedEmptyWindow,
-				false,
+				false
 			);
 		}
 	}

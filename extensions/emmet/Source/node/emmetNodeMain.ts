@@ -15,10 +15,10 @@ export function activate(context: vscode.ExtensionContext) {
 			"editor.emmet.action.updateImageSize",
 			() => {
 				return import("../updateImageSize").then((uis) =>
-					uis.updateImageSize(),
+					uis.updateImageSize()
 				);
-			},
-		),
+			}
+		)
 	);
 
 	setHomeDir(vscode.Uri.file(homedir()));

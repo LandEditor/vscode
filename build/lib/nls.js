@@ -67,7 +67,7 @@ function nls() {
 			if (!f.sourceMap) {
 				return this.emit(
 					"error",
-					new Error(`File ${f.relative} does not have sourcemaps.`),
+					new Error(`File ${f.relative} does not have sourcemaps.`)
 				);
 			}
 			let source = f.sourceMap.sources[0];
@@ -75,8 +75,8 @@ function nls() {
 				return this.emit(
 					"error",
 					new Error(
-						`File ${f.relative} does not have a source in the source map.`,
-					),
+						`File ${f.relative} does not have a source in the source map.`
+					)
 				);
 			}
 			const root = f.sourceMap.sourceRoot;
@@ -88,12 +88,12 @@ function nls() {
 				return this.emit(
 					"error",
 					new Error(
-						`File ${f.relative} does not have the original content in the source map.`,
-					),
+						`File ${f.relative} does not have the original content in the source map.`
+					)
 				);
 			}
 			_nls.patchFiles(f, typescript).forEach((f) => this.emit("data", f));
-		}),
+		})
 	);
 	return (0, event_stream_1.duplex)(input, output);
 }
@@ -152,7 +152,7 @@ var _nls;
 		if (
 			!ts.textSpanContainsTextSpan(
 				{ start: node.pos, length: node.end - node.pos },
-				textSpan,
+				textSpan
 			)
 		) {
 			return CollectStepResult.No;
@@ -167,22 +167,22 @@ var _nls;
 			ts,
 			Object.assign(clone(options), { noResolve: true }),
 			filename,
-			contents,
+			contents
 		);
 		const service = ts.createLanguageService(serviceHost);
 		const sourceFile = ts.createSourceFile(
 			filename,
 			contents,
 			ts.ScriptTarget.ES5,
-			true,
+			true
 		);
 		// all imports
 		const imports = lazy(
 			collect(ts, sourceFile, (n) =>
 				isImportNode(ts, n)
 					? CollectStepResult.YesAndRecurse
-					: CollectStepResult.NoAndRecurse,
-			),
+					: CollectStepResult.NoAndRecurse
+			)
 		);
 		// import nls = require('vs/nls');
 		const importEqualsDeclarations = imports
@@ -191,17 +191,17 @@ var _nls;
 			.filter(
 				(d) =>
 					d.moduleReference.kind ===
-					ts.SyntaxKind.ExternalModuleReference,
+					ts.SyntaxKind.ExternalModuleReference
 			)
 			.filter(
-				(d) => d.moduleReference.expression.getText() === "'vs/nls'",
+				(d) => d.moduleReference.expression.getText() === "'vs/nls'"
 			);
 		// import ... from 'vs/nls';
 		const importDeclarations = imports
 			.filter((n) => n.kind === ts.SyntaxKind.ImportDeclaration)
 			.map((n) => n)
 			.filter(
-				(d) => d.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral,
+				(d) => d.moduleSpecifier.kind === ts.SyntaxKind.StringLiteral
 			)
 			.filter((d) => d.moduleSpecifier.getText() === "'vs/nls'")
 			.filter((d) => !!d.importClause && !!d.importClause.namedBindings);
@@ -211,7 +211,7 @@ var _nls;
 			.map((d) => ({
 				start: ts.getLineAndCharacterOfPosition(
 					sourceFile,
-					d.getStart(),
+					d.getStart()
 				),
 				end: ts.getLineAndCharacterOfPosition(sourceFile, d.getEnd()),
 			}));
@@ -224,7 +224,7 @@ var _nls;
 						d.importClause.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamespaceImport
-					),
+					)
 			)
 			.map((d) => d.importClause.namedBindings.name)
 			.concat(importEqualsDeclarations.map((d) => d.name))
@@ -235,12 +235,8 @@ var _nls;
 			// find the deepest call expressions AST nodes that contain those references
 			.map((r) =>
 				collect(ts, sourceFile, (n) =>
-					isCallExpressionWithinTextSpanCollectStep(
-						ts,
-						r.textSpan,
-						n,
-					),
-				),
+					isCallExpressionWithinTextSpanCollectStep(ts, r.textSpan, n)
+				)
 			)
 			.map((a) => lazy(a).last())
 			.filter((n) => !!n)
@@ -250,7 +246,7 @@ var _nls;
 				(n) =>
 					n.expression.kind ===
 						ts.SyntaxKind.PropertyAccessExpression &&
-					n.expression.name.getText() === functionName,
+					n.expression.name.getText() === functionName
 			);
 		// `localize` named imports
 		const allLocalizeImportDeclarations = importDeclarations
@@ -261,7 +257,7 @@ var _nls;
 						d.importClause.namedBindings &&
 						d.importClause.namedBindings.kind ===
 							ts.SyntaxKind.NamedImports
-					),
+					)
 			)
 			.map((d) => [].concat(d.importClause.namedBindings.elements))
 			.flatten();
@@ -275,10 +271,10 @@ var _nls;
 		const namedLocalizeReferences = allLocalizeImportDeclarations
 			.filter(
 				(d) =>
-					d.propertyName && d.propertyName.getText() === functionName,
+					d.propertyName && d.propertyName.getText() === functionName
 			)
 			.map((n) =>
-				service.getReferencesAtPosition(filename, n.name.pos + 1),
+				service.getReferencesAtPosition(filename, n.name.pos + 1)
 			)
 			.flatten()
 			.filter((r) => !r.isWriteAccess);
@@ -287,12 +283,8 @@ var _nls;
 			.concat(namedLocalizeReferences)
 			.map((r) =>
 				collect(ts, sourceFile, (n) =>
-					isCallExpressionWithinTextSpanCollectStep(
-						ts,
-						r.textSpan,
-						n,
-					),
-				),
+					isCallExpressionWithinTextSpanCollectStep(ts, r.textSpan, n)
+				)
 			)
 			.map((a) => lazy(a).last())
 			.filter((n) => !!n)
@@ -307,22 +299,22 @@ var _nls;
 				keySpan: {
 					start: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[0].getStart(),
+						a[0].getStart()
 					),
 					end: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[0].getEnd(),
+						a[0].getEnd()
 					),
 				},
 				key: a[0].getText(),
 				valueSpan: {
 					start: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[1].getStart(),
+						a[1].getStart()
 					),
 					end: ts.getLineAndCharacterOfPosition(
 						sourceFile,
-						a[1].getEnd(),
+						a[1].getEnd()
 					),
 				},
 				value: a[1].getText(),
@@ -397,7 +389,7 @@ var _nls;
 		const firstLine = model.get(0);
 		const patchedFirstLine = firstLine.replace(
 			/(['"])vs\/nls\1/g,
-			`$1vs/nls!${moduleId}$1`,
+			`$1vs/nls!${moduleId}$1`
 		);
 		model.set(0, patchedFirstLine);
 		return model.toString();
@@ -447,7 +439,7 @@ var _nls;
 				smg.addMapping({ source, name: m.name, original, generated });
 			},
 			null,
-			sm.SourceMapConsumer.GENERATED_ORDER,
+			sm.SourceMapConsumer.GENERATED_ORDER
 		);
 		if (source) {
 			smg.setSourceContent(source, smc.sourceContentFor(source));
@@ -458,7 +450,7 @@ var _nls;
 		const { localizeCalls, nlsExpressions } = analyze(
 			ts,
 			typescript,
-			"localize",
+			"localize"
 		);
 		const {
 			localizeCalls: localize2Calls,
@@ -470,17 +462,17 @@ var _nls;
 		const nlsKeys = template(
 			localizeCalls
 				.map((lc) => lc.key)
-				.concat(localize2Calls.map((lc) => lc.key)),
+				.concat(localize2Calls.map((lc) => lc.key))
 		);
 		const nls = template(
 			localizeCalls
 				.map((lc) => lc.value)
-				.concat(localize2Calls.map((lc) => lc.value)),
+				.concat(localize2Calls.map((lc) => lc.value))
 		);
 		const smc = new sm.SourceMapConsumer(sourcemap);
 		const positionFrom = mappedPositionFrom.bind(
 			null,
-			sourcemap.sources[0],
+			sourcemap.sources[0]
 		);
 		let i = 0;
 		// build patches
@@ -492,10 +484,10 @@ var _nls;
 			.flatten()
 			.map((c) => {
 				const start = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.start)),
+					smc.generatedPositionFor(positionFrom(c.range.start))
 				);
 				const end = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.end)),
+					smc.generatedPositionFor(positionFrom(c.range.end))
 				);
 				return { span: { start, end }, content: c.content };
 			});
@@ -504,10 +496,10 @@ var _nls;
 			.flatten()
 			.map((c) => {
 				const start = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.start)),
+					smc.generatedPositionFor(positionFrom(c.range.start))
 				);
 				const end = lcFrom(
-					smc.generatedPositionFor(positionFrom(c.range.end)),
+					smc.generatedPositionFor(positionFrom(c.range.end))
 				);
 				return { span: { start, end }, content: c.content };
 			});
@@ -519,7 +511,7 @@ var _nls;
 			javascript = javascript.replace(/^define\(.*$/m, (line) => {
 				return line.replace(
 					/(['"])vs\/nls\1/g,
-					`$1vs/nls!${moduleId}$1`,
+					`$1vs/nls!${moduleId}$1`
 				);
 			});
 		}
@@ -537,7 +529,7 @@ var _nls;
 			moduleId,
 			typescript,
 			javascriptFile.contents.toString(),
-			javascriptFile.sourceMap,
+			javascriptFile.sourceMap
 		);
 		const result = [fileFrom(javascriptFile, javascript)];
 		result[0].sourceMap = sourcemap;
@@ -546,8 +538,8 @@ var _nls;
 				fileFrom(
 					javascriptFile,
 					nlsKeys,
-					javascriptFile.path.replace(/\.js$/, ".nls.keys.js"),
-				),
+					javascriptFile.path.replace(/\.js$/, ".nls.keys.js")
+				)
 			);
 		}
 		if (nls) {
@@ -555,8 +547,8 @@ var _nls;
 				fileFrom(
 					javascriptFile,
 					nls,
-					javascriptFile.path.replace(/\.js$/, ".nls.js"),
-				),
+					javascriptFile.path.replace(/\.js$/, ".nls.js")
+				)
 			);
 		}
 		return result;

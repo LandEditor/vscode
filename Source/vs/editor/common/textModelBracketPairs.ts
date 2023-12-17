@@ -30,12 +30,12 @@ export interface IBracketPairsTextModelPart {
 	 * The result is sorted by the start position.
 	 */
 	getBracketPairsInRangeWithMinIndentation(
-		range: IRange,
+		range: IRange
 	): CallbackIterable<BracketPairWithMinIndentationInfo>;
 
 	getBracketsInRange(
 		range: IRange,
-		onlyColorizedBrackets?: boolean,
+		onlyColorizedBrackets?: boolean
 	): CallbackIterable<BracketInfo>;
 
 	/**
@@ -47,7 +47,7 @@ export interface IBracketPairsTextModelPart {
 	findMatchingBracketUp(
 		bracket: string,
 		position: IPosition,
-		maxDuration?: number,
+		maxDuration?: number
 	): Range | null;
 
 	/**
@@ -70,7 +70,7 @@ export interface IBracketPairsTextModelPart {
 	 */
 	findEnclosingBrackets(
 		position: IPosition,
-		maxDuration?: number,
+		maxDuration?: number
 	): [Range, Range] | null;
 
 	/**
@@ -80,7 +80,7 @@ export interface IBracketPairsTextModelPart {
 	 */
 	matchBracket(
 		position: IPosition,
-		maxDuration?: number,
+		maxDuration?: number
 	): [Range, Range] | null;
 }
 
@@ -95,7 +95,7 @@ export class BracketInfo {
 		/** 0-based level */
 		public readonly nestingLevel: number,
 		public readonly nestingLevelOfEqualBracketType: number,
-		public readonly isInvalid: boolean,
+		public readonly isInvalid: boolean
 	) {}
 }
 
@@ -107,7 +107,7 @@ export class BracketPairInfo {
 		/** 0-based */
 		public readonly nestingLevel: number,
 		public readonly nestingLevelOfEqualBracketType: number,
-		private readonly bracketPairNode: PairAstNode,
+		private readonly bracketPairNode: PairAstNode
 	) {}
 
 	public get openingBracketInfo(): OpeningBracketKind {
@@ -136,7 +136,7 @@ export class BracketPairWithMinIndentationInfo extends BracketPairInfo {
 		/**
 		 * -1 if not requested, otherwise the size of the minimum indentation in the bracket pair in terms of visible columns.
 		 */
-		public readonly minVisibleColumnIndentation: number,
+		public readonly minVisibleColumnIndentation: number
 	) {
 		super(
 			range,
@@ -144,7 +144,7 @@ export class BracketPairWithMinIndentationInfo extends BracketPairInfo {
 			closingBracketRange,
 			nestingLevel,
 			nestingLevelOfEqualBracketType,
-			bracketPairNode,
+			bracketPairNode
 		);
 	}
 }

@@ -61,18 +61,19 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 	}
 
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IProductService productService: IProductService,
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super();
 
 		if (supportsTelemetry(productService, environmentService)) {
 			const isInternal = isInternalTelemetry(
 				productService,
-				configurationService,
+				configurationService
 			);
 			const channel =
 				sharedProcessService.getChannel("telemetryAppender");
@@ -88,7 +89,7 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 					environmentService.sqmId,
 					isInternal,
 					process,
-					environmentService.remoteAuthority,
+					environmentService.remoteAuthority
 				),
 				piiPaths: getPiiPathsFromEnvironment(environmentService),
 				sendErrorTelemetry: true,
@@ -98,8 +99,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 				new BaseTelemetryService(
 					config,
 					configurationService,
-					productService,
-				),
+					productService
+				)
 			);
 		} else {
 			this.impl = NullTelemetryService;
@@ -142,5 +143,5 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 registerSingleton(
 	ITelemetryService,
 	TelemetryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

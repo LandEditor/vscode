@@ -16,25 +16,29 @@ import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteA
 
 export class ElectronTerminalProfileResolverService extends BaseTerminalProfileResolverService {
 	constructor(
-		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
+		@IConfigurationResolverService
+		configurationResolverService: IConfigurationResolverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHistoryService historyService: IHistoryService,
 		@ITerminalLogService logService: ITerminalLogService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
-		@ITerminalProfileService terminalProfileService: ITerminalProfileService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
+		@ITerminalProfileService
+		terminalProfileService: ITerminalProfileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@ITerminalInstanceService terminalInstanceService: ITerminalInstanceService,
+		@ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService
 	) {
 		super(
 			{
 				getDefaultSystemShell: async (remoteAuthority, platform) => {
 					const backend =
 						await terminalInstanceService.getBackend(
-							remoteAuthority,
+							remoteAuthority
 						);
 					if (!backend) {
 						throw new ErrorNoTelemetry(
-							`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`,
+							`Cannot get default system shell when there is no backend for remote authority '${remoteAuthority}'`
 						);
 					}
 					return backend.getDefaultSystemShell(platform);
@@ -42,11 +46,11 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 				getEnvironment: async (remoteAuthority) => {
 					const backend =
 						await terminalInstanceService.getBackend(
-							remoteAuthority,
+							remoteAuthority
 						);
 					if (!backend) {
 						throw new ErrorNoTelemetry(
-							`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`,
+							`Cannot get environment when there is no backend for remote authority '${remoteAuthority}'`
 						);
 					}
 					return backend.getEnvironment();
@@ -58,7 +62,7 @@ export class ElectronTerminalProfileResolverService extends BaseTerminalProfileR
 			logService,
 			terminalProfileService,
 			workspaceContextService,
-			remoteAgentService,
+			remoteAgentService
 		);
 	}
 }

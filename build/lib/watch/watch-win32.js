@@ -82,7 +82,7 @@ module.exports = function (pattern, options) {
 		: es.mapSync(function (f) {
 				f.base = options.base;
 				return f;
-		  });
+			});
 	return watcher
 		.pipe(filter(["**", "!.git{,/**}"])) // ignore all things git
 		.pipe(filter(pattern))
@@ -110,7 +110,7 @@ module.exports = function (pattern, options) {
 						cb(undefined, file);
 					});
 				});
-			}),
+			})
 		)
 		.pipe(rebase);
 };

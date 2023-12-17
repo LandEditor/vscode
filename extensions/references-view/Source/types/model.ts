@@ -18,7 +18,7 @@ export class TypesTreeInput implements SymbolTreeInput<TypeItem> {
 
 	constructor(
 		readonly location: vscode.Location,
-		readonly direction: TypeHierarchyDirection,
+		readonly direction: TypeHierarchyDirection
 	) {
 		this.title =
 			direction === TypeHierarchyDirection.Supertypes
@@ -31,8 +31,8 @@ export class TypesTreeInput implements SymbolTreeInput<TypeItem> {
 			vscode.commands.executeCommand<vscode.TypeHierarchyItem[]>(
 				"vscode.prepareTypeHierarchy",
 				this.location.uri,
-				this.location.range.start,
-			),
+				this.location.range.start
+			)
 		);
 		const model = new TypesModel(this.direction, items ?? []);
 		const provider = new TypeItemDataProvider(model);
@@ -73,7 +73,7 @@ export class TypeItem {
 	constructor(
 		readonly model: TypesModel,
 		readonly item: vscode.TypeHierarchyItem,
-		readonly parent: TypeItem | undefined,
+		readonly parent: TypeItem | undefined
 	) {}
 
 	remove(): void {
@@ -94,7 +94,7 @@ class TypesModel
 
 	constructor(
 		readonly direction: TypeHierarchyDirection,
-		items: vscode.TypeHierarchyItem[],
+		items: vscode.TypeHierarchyItem[]
 	) {
 		this.roots = items.map((item) => new TypeItem(this, item, undefined));
 	}
@@ -135,14 +135,14 @@ class TypesModel
 	location(currentType: TypeItem) {
 		return new vscode.Location(
 			currentType.item.uri,
-			currentType.item.range,
+			currentType.item.range
 		);
 	}
 
 	nearest(uri: vscode.Uri, _position: vscode.Position): TypeItem | undefined {
 		return (
 			this.roots.find(
-				(item) => item.item.uri.toString() === uri.toString(),
+				(item) => item.item.uri.toString() === uri.toString()
 			) ?? this.roots[0]
 		);
 	}
@@ -173,7 +173,7 @@ class TypesModel
 
 	getEditorHighlights(
 		currentType: TypeItem,
-		uri: vscode.Uri,
+		uri: vscode.Uri
 	): vscode.Range[] | undefined {
 		return currentType.item.uri.toString() === uri.toString()
 			? [currentType.item.selectionRange]
@@ -198,7 +198,7 @@ class TypeItemDataProvider implements vscode.TreeDataProvider<TypeItem> {
 
 	constructor(private _model: TypesModel) {
 		this._modelListener = _model.onDidChange((e) =>
-			this._emitter.fire(e instanceof TypeItem ? e : undefined),
+			this._emitter.fire(e instanceof TypeItem ? e : undefined)
 		);
 	}
 

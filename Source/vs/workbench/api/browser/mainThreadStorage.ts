@@ -38,21 +38,33 @@ export class MainThreadStorage implements MainThreadStorageShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IExtensionStorageService private readonly _extensionStorageService: IExtensionStorageService,
+		@IExtensionStorageService
+		private readonly _extensionStorageService: IExtensionStorageService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ILogService private readonly _logService: ILogService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostStorage);
 
-		this._storageListener.add(this._storageService.onDidChangeValue(StorageScope.PROFILE, undefined, this._storageListener)(e => {
-			if (this._sharedStorageKeysToWatch.has(e.key)) {
-				const rawState = this._extensionStorageService.getExtensionStateRaw(e.key, true);
-				if (typeof rawState === 'string') {
-					this._proxy.$acceptValue(true, e.key, rawState);
+		this._storageListener.add(
+			this._storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				undefined,
+				this._storageListener
+			)((e) => {
+				if (this._sharedStorageKeysToWatch.has(e.key)) {
+					const rawState =
+						this._extensionStorageService.getExtensionStateRaw(
+							e.key,
+							true
+						);
+					if (typeof rawState === "string") {
+						this._proxy.$acceptValue(true, e.key, rawState);
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	dispose(): void {
@@ -61,7 +73,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 
 	async $initializeExtensionStorage(
 		shared: boolean,
-		extensionId: string,
+		extensionId: string
 	): Promise<string | undefined> {
 		await this.checkAndMigrateExtensionStorage(extensionId, shared);
 
@@ -70,33 +82,33 @@ export class MainThreadStorage implements MainThreadStorageShape {
 		}
 		return this._extensionStorageService.getExtensionStateRaw(
 			extensionId,
-			shared,
+			shared
 		);
 	}
 
 	async $setValue(
 		shared: boolean,
 		key: string,
-		value: object,
+		value: object
 	): Promise<void> {
 		this._extensionStorageService.setExtensionState(key, value, shared);
 	}
 
 	$registerExtensionStorageKeysToSync(
 		extension: IExtensionIdWithVersion,
-		keys: string[],
+		keys: string[]
 	): void {
 		this._extensionStorageService.setKeysForSync(extension, keys);
 	}
 
 	private async checkAndMigrateExtensionStorage(
 		extensionId: string,
-		shared: boolean,
+		shared: boolean
 	): Promise<void> {
 		try {
 			let sourceExtensionId =
 				this._extensionStorageService.getSourceExtensionToMigrate(
-					extensionId,
+					extensionId
 				);
 
 			// TODO: @sandy081 - Remove it after 6 months
@@ -121,11 +133,11 @@ export class MainThreadStorage implements MainThreadStorageShape {
 					sourceExtensionId !== sourceExtensionId.toLowerCase() &&
 					this._extensionStorageService.getExtensionState(
 						sourceExtensionId.toLowerCase(),
-						shared,
+						shared
 					) &&
 					!this._extensionStorageService.getExtensionState(
 						sourceExtensionId,
-						shared,
+						shared
 					)
 				) {
 					sourceExtensionId = sourceExtensionId.toLowerCase();
@@ -134,7 +146,7 @@ export class MainThreadStorage implements MainThreadStorageShape {
 					sourceExtensionId,
 					extensionId,
 					shared,
-					this._instantiationService,
+					this._instantiationService
 				);
 			}
 		} catch (error) {

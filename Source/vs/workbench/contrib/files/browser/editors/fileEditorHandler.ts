@@ -56,14 +56,14 @@ export class FileEditorInputSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditorInput: string,
+		serializedEditorInput: string
 	): FileEditorInput {
 		return instantiationService.invokeFunction((accessor) => {
 			const serializedFileEditorInput: ISerializedFileEditorInput =
 				JSON.parse(serializedEditorInput);
 			const resource = URI.revive(serializedFileEditorInput.resourceJSON);
 			const preferredResource = URI.revive(
-				serializedFileEditorInput.preferredResourceJSON,
+				serializedFileEditorInput.preferredResourceJSON
 			);
 			const name = serializedFileEditorInput.name;
 			const description = serializedFileEditorInput.description;
@@ -94,8 +94,10 @@ export class FileEditorWorkingCopyEditorHandler
 	implements IWorkbenchContribution, IWorkingCopyEditorHandler
 {
 	constructor(
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
 		@IFileService private readonly fileService: IFileService
 	) {
 		super();

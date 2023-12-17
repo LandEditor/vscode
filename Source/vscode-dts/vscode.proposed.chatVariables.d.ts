@@ -32,7 +32,7 @@ declare module "vscode" {
 		resolve(
 			name: string,
 			context: ChatVariableContext,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<ChatVariableValue[]>;
 	}
 
@@ -40,7 +40,7 @@ declare module "vscode" {
 		export function registerVariable(
 			name: string,
 			description: string,
-			resolver: ChatVariableResolver,
+			resolver: ChatVariableResolver
 		): Disposable;
 	}
 }

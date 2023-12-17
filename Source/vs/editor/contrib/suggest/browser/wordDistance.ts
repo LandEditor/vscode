@@ -21,7 +21,7 @@ export abstract class WordDistance {
 
 	static async create(
 		service: IEditorWorkerService,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<WordDistance> {
 		if (!editor.getOption(EditorOption.suggest).localityBonus) {
 			return WordDistance.None;
@@ -41,7 +41,7 @@ export abstract class WordDistance {
 		const [ranges] =
 			await new BracketSelectionRangeProvider().provideSelectionRanges(
 				model,
-				[position],
+				[position]
 			);
 		if (ranges.length === 0) {
 			return WordDistance.None;
@@ -49,7 +49,7 @@ export abstract class WordDistance {
 
 		const wordRanges = await service.computeWordRanges(
 			model.uri,
-			ranges[0].range,
+			ranges[0].range
 		);
 		if (!wordRanges) {
 			return WordDistance.None;
@@ -78,7 +78,7 @@ export abstract class WordDistance {
 				const idx = binarySearch(
 					wordLines,
 					Range.fromPositions(anchor),
-					Range.compareRangesUsingStarts,
+					Range.compareRangesUsingStarts
 				);
 				const bestWordRange =
 					idx >= 0

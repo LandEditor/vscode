@@ -16,7 +16,7 @@ import {
 
 function parseAndValidate(
 	cmdLineArgs: string[],
-	reportWarnings: boolean,
+	reportWarnings: boolean
 ): NativeParsedArgs {
 	const onMultipleValues = (id: string, val: string) => {
 		console.warn(
@@ -24,8 +24,8 @@ function parseAndValidate(
 				"multipleValues",
 				"Option '{0}' is defined more than once. Using value '{1}'.",
 				id,
-				val,
-			),
+				val
+			)
 		);
 	};
 	const onEmptyValue = (id: string) => {
@@ -33,8 +33,8 @@ function parseAndValidate(
 			localize(
 				"emptyValue",
 				"Option '{0}' requires a non empty value. Ignoring the option.",
-				id,
-			),
+				id
+			)
 		);
 	};
 	const onDeprecatedOption = (deprecatedOption: string, message: string) => {
@@ -43,8 +43,8 @@ function parseAndValidate(
 				"deprecatedArgument",
 				"Option '{0}' is deprecated: {1}",
 				deprecatedOption,
-				message,
-			),
+				message
+			)
 		);
 	};
 	const getSubcommandReporter = (command: string) => ({
@@ -55,8 +55,8 @@ function parseAndValidate(
 						"unknownSubCommandOption",
 						"Warning: '{0}' is not in the list of known options for subcommand '{1}'",
 						id,
-						command,
-					),
+						command
+					)
 				);
 			}
 		},
@@ -75,8 +75,8 @@ function parseAndValidate(
 				localize(
 					"unknownOption",
 					"Warning: '{0}' is not in the list of known options, but still passed to Electron/Chromium.",
-					id,
-				),
+					id
+				)
 			);
 		},
 		onMultipleValues,
@@ -88,7 +88,7 @@ function parseAndValidate(
 	const args = parseArgs(
 		cmdLineArgs,
 		OPTIONS,
-		reportWarnings ? errorReporter : undefined,
+		reportWarnings ? errorReporter : undefined
 	);
 	if (args.goto) {
 		args._.forEach((arg) =>
@@ -96,9 +96,9 @@ function parseAndValidate(
 				/^(\w:)?[^:]+(:\d*){0,2}:?$/.test(arg),
 				localize(
 					"gotoValidation",
-					"Arguments in `--goto` mode should be in the format of `FILE(:LINE(:CHARACTER))`.",
-				),
-			),
+					"Arguments in `--goto` mode should be in the format of `FILE(:LINE(:CHARACTER))`."
+				)
+			)
 		);
 	}
 

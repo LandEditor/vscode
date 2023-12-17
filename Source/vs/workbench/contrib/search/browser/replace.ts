@@ -28,7 +28,7 @@ export interface IReplaceService {
 	 */
 	replace(
 		files: FileMatch[],
-		progress?: IProgress<IProgressStep>,
+		progress?: IProgress<IProgressStep>
 	): Promise<any>;
 
 	/**
@@ -38,7 +38,7 @@ export interface IReplaceService {
 		element: FileMatchOrMatch,
 		preserveFocus?: boolean,
 		sideBySide?: boolean,
-		pinned?: boolean,
+		pinned?: boolean
 	): Promise<any>;
 
 	/**

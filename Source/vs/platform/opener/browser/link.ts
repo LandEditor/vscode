@@ -84,7 +84,7 @@ export class Link extends Disposable {
 		container: HTMLElement,
 		private _link: ILinkDescriptor,
 		options: ILinkOptions = {},
-		@IOpenerService openerService: IOpenerService,
+		@IOpenerService openerService: IOpenerService
 	) {
 		super();
 
@@ -97,8 +97,8 @@ export class Link extends Disposable {
 					href: _link.href,
 					title: _link.title,
 				},
-				_link.label,
-			),
+				_link.label
+			)
 		);
 
 		this.el.setAttribute("role", "button");
@@ -107,17 +107,17 @@ export class Link extends Disposable {
 		const onKeyPress = this._register(new DomEmitter(this.el, "keypress"));
 		const onEnterPress = Event.chain(onKeyPress.event, ($) =>
 			$.map((e) => new StandardKeyboardEvent(e)).filter(
-				(e) => e.keyCode === KeyCode.Enter,
-			),
+				(e) => e.keyCode === KeyCode.Enter
+			)
 		);
 		const onTap = this._register(
-			new DomEmitter(this.el, TouchEventType.Tap),
+			new DomEmitter(this.el, TouchEventType.Tap)
 		).event;
 		this._register(Gesture.addTarget(this.el));
 		const onOpen = Event.any<EventLike>(
 			onClickEmitter.event,
 			onEnterPress,
-			onTap,
+			onTap
 		);
 
 		this._register(
@@ -135,7 +135,7 @@ export class Link extends Disposable {
 						allowCommands: true,
 					});
 				}
-			}),
+			})
 		);
 
 		this.enabled = true;

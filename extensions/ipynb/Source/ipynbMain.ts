@@ -45,8 +45,8 @@ export function activate(context: vscode.ExtensionContext) {
 				cellContentMetadata: {
 					attachments: true,
 				},
-			} as vscode.NotebookDocumentContentOptions,
-		),
+			} as vscode.NotebookDocumentContentOptions
+		)
 	);
 
 	context.subscriptions.push(
@@ -60,7 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 			cellContentMetadata: {
 				attachments: true,
 			},
-		} as vscode.NotebookDocumentContentOptions),
+		} as vscode.NotebookDocumentContentOptions)
 	);
 
 	vscode.languages.registerCodeLensProvider(
@@ -80,11 +80,11 @@ export function activate(context: vscode.ExtensionContext) {
 						title: "Open in Notebook Editor",
 						command: "ipynb.openIpynbInNotebookEditor",
 						arguments: [document.uri],
-					},
+					}
 				);
 				return [codelens];
 			},
-		},
+		}
 	);
 
 	context.subscriptions.push(
@@ -93,7 +93,7 @@ export function activate(context: vscode.ExtensionContext) {
 			const cell = new vscode.NotebookCellData(
 				vscode.NotebookCellKind.Code,
 				"",
-				language,
+				language
 			);
 			const data = new vscode.NotebookData([cell]);
 			data.metadata = {
@@ -106,10 +106,10 @@ export function activate(context: vscode.ExtensionContext) {
 			};
 			const doc = await vscode.workspace.openNotebookDocument(
 				"jupyter-notebook",
-				data,
+				data
 			);
 			await vscode.window.showNotebookDocument(doc);
-		}),
+		})
 	);
 
 	context.subscriptions.push(
@@ -121,14 +121,14 @@ export function activate(context: vscode.ExtensionContext) {
 					uri.toString()
 				) {
 					await vscode.commands.executeCommand(
-						"workbench.action.closeActiveEditor",
+						"workbench.action.closeActiveEditor"
 					);
 				}
 				const document =
 					await vscode.workspace.openNotebookDocument(uri);
 				await vscode.window.showNotebookDocument(document);
-			},
-		),
+			}
+		)
 	);
 
 	context.subscriptions.push(notebookImagePasteSetup());
@@ -146,13 +146,13 @@ export function activate(context: vscode.ExtensionContext) {
 		vscode.commands.executeCommand(
 			"setContext",
 			"jupyterEnabled",
-			vscode.extensions.getExtension("ms-toolsai.jupyter"),
+			vscode.extensions.getExtension("ms-toolsai.jupyter")
 		);
 	});
 	vscode.commands.executeCommand(
 		"setContext",
 		"jupyterEnabled",
-		vscode.extensions.getExtension("ms-toolsai.jupyter"),
+		vscode.extensions.getExtension("ms-toolsai.jupyter")
 	);
 
 	return {
@@ -161,10 +161,10 @@ export function activate(context: vscode.ExtensionContext) {
 		},
 		setNotebookMetadata: async (
 			resource: vscode.Uri,
-			metadata: Partial<NotebookMetadata>,
+			metadata: Partial<NotebookMetadata>
 		): Promise<boolean> => {
 			const document = vscode.workspace.notebookDocuments.find(
-				(doc) => doc.uri.toString() === resource.toString(),
+				(doc) => doc.uri.toString() === resource.toString()
 			);
 			if (!document) {
 				return false;
@@ -190,7 +190,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 function exportNotebook(
 	notebook: vscode.NotebookData,
-	serializer: NotebookSerializer,
+	serializer: NotebookSerializer
 ): string {
 	return serializer.serializeNotebookToString(notebook);
 }

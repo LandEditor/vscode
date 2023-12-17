@@ -12,7 +12,7 @@ export class ReloadPlugins implements Command {
 
 	public constructor(
 		private readonly _webviewManager: MarkdownPreviewManager,
-		private readonly _engine: MarkdownItEngine,
+		private readonly _engine: MarkdownItEngine
 	) {}
 
 	public execute(): void {

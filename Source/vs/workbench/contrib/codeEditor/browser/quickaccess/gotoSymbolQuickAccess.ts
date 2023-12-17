@@ -71,14 +71,18 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IOutlineService private readonly outlineService: IOutlineService,
-		@IOutlineModelService outlineModelService: IOutlineModelService,
+		@IOutlineModelService outlineModelService: IOutlineModelService
 	) {
 		super(languageFeaturesService, outlineModelService, {
-			openSideBySideDirection: () => this.configuration.openSideBySideDirection
+			openSideBySideDirection: () =>
+				this.configuration.openSideBySideDirection,
 		});
 	}
 
@@ -118,7 +122,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 			keyMods: IKeyMods;
 			forceSideBySide?: boolean;
 			preserveFocus?: boolean;
-		},
+		}
 	): void {
 		// Check for sideBySide use
 		if (
@@ -140,7 +144,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 
 			this.editorGroupService.sideGroup.openEditor(
 				this.editorService.activeEditor,
-				editorOptions,
+				editorOptions
 			);
 		}
 
@@ -161,7 +165,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 		filter: string,
 		options: { extraContainerLabel?: string },
 		disposables: DisposableStore,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<IGotoSymbolQuickPickItem | IQuickPickSeparator>> {
 		// If the registry does not know the model, we wait for as long as
 		// the registry knows it. This helps in cases where a language
@@ -180,14 +184,14 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 			this.getDocumentSymbols(model, token),
 			prepareQuery(filter),
 			options,
-			token,
+			token
 		);
 	}
 
 	//#endregion
 
 	protected override provideWithoutTextEditor(
-		picker: IQuickPick<IGotoSymbolQuickPickItem>,
+		picker: IQuickPick<IGotoSymbolQuickPickItem>
 	): IDisposable {
 		if (this.canPickWithOutlineService()) {
 			return this.doGetOutlinePicks(picker);
@@ -198,13 +202,13 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 	private canPickWithOutlineService(): boolean {
 		return this.editorService.activeEditorPane
 			? this.outlineService.canCreateOutline(
-					this.editorService.activeEditorPane,
-			  )
+					this.editorService.activeEditorPane
+				)
 			: false;
 	}
 
 	private doGetOutlinePicks(
-		picker: IQuickPick<IGotoSymbolQuickPickItem>,
+		picker: IQuickPick<IGotoSymbolQuickPickItem>
 	): IDisposable {
 		const pane = this.editorService.activeEditorPane;
 		if (!pane) {
@@ -236,7 +240,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						if (picker.selectedItems.length === 0) {
 							viewState.dispose();
 						}
-					}),
+					})
 				);
 
 				const entries =
@@ -253,7 +257,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 							ariaLabel: entry.ariaLabel,
 							iconClasses: entry.iconClasses,
 						};
-					},
+					}
 				);
 
 				disposables.add(
@@ -264,10 +268,10 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 							outline.reveal(
 								entries[entry.index].element,
 								{},
-								false,
+								false
 							);
 						}
-					}),
+					})
 				);
 
 				const updatePickerItems = () => {
@@ -285,7 +289,7 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 							item.label,
 							item.label.toLowerCase(),
 							0,
-							{ firstMatchCanBeWeak: true, boostFullMatch: true },
+							{ firstMatchCanBeWeak: true, boostFullMatch: true }
 						);
 						if (!score) {
 							return false;
@@ -315,12 +319,12 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 						const [entry] = picker.activeItems;
 						if (entry && entries[entry.index]) {
 							previewDisposable.value = outline.preview(
-								entries[entry.index].element,
+								entries[entry.index].element
 							);
 						} else {
 							previewDisposable.clear();
 						}
-					}),
+					})
 				);
 			})
 			.catch((err) => {
@@ -348,7 +352,7 @@ class GotoSymbolAction extends Action2 {
 						key: "miGotoSymbolInEditor",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Go to &&Symbol in Editor...",
+					"Go to &&Symbol in Editor..."
 				),
 				original: "Go to Symbol in Editor...",
 			},
@@ -356,7 +360,7 @@ class GotoSymbolAction extends Action2 {
 			keybinding: {
 				when: ContextKeyExpr.and(
 					accessibleViewIsShown.negate(),
-					accessibilityHelpIsShown.negate(),
+					accessibilityHelpIsShown.negate()
 				),
 				weight: KeybindingWeight.WorkbenchContrib,
 				primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO,
@@ -383,20 +387,20 @@ class GotoSymbolAction extends Action2 {
 registerAction2(GotoSymbolAction);
 
 Registry.as<IQuickAccessRegistry>(
-	QuickaccessExtensions.Quickaccess,
+	QuickaccessExtensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: GotoSymbolQuickAccessProvider,
 	prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX,
 	contextKey: "inFileSymbolsPicker",
 	placeholder: localize(
 		"gotoSymbolQuickAccessPlaceholder",
-		"Type the name of a symbol to go to.",
+		"Type the name of a symbol to go to."
 	),
 	helpEntries: [
 		{
 			description: localize(
 				"gotoSymbolQuickAccess",
-				"Go to Symbol in Editor",
+				"Go to Symbol in Editor"
 			),
 			prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX,
 			commandId: GotoSymbolAction.ID,
@@ -405,7 +409,7 @@ Registry.as<IQuickAccessRegistry>(
 		{
 			description: localize(
 				"gotoSymbolByCategoryQuickAccess",
-				"Go to Symbol in Editor by Category",
+				"Go to Symbol in Editor by Category"
 			),
 			prefix: AbstractGotoSymbolQuickAccessProvider.PREFIX_BY_CATEGORY,
 		},

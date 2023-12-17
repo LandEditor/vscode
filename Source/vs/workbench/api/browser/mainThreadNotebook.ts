@@ -61,8 +61,9 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookCellStatusBarService private readonly _cellStatusBarService: INotebookCellStatusBarService,
-		@ILogService private readonly _logService: ILogService,
+		@INotebookCellStatusBarService
+		private readonly _cellStatusBarService: INotebookCellStatusBarService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebook);
 	}
@@ -77,7 +78,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 		extension: NotebookExtensionDescription,
 		viewType: string,
 		options: TransientOptions,
-		data: INotebookContributionData | undefined,
+		data: INotebookContributionData | undefined
 	): void {
 		const disposables = new DisposableStore();
 
@@ -88,7 +89,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 				{
 					options,
 					dataToNotebook: async (
-						data: VSBuffer,
+						data: VSBuffer
 					): Promise<NotebookData> => {
 						const sw = new StopWatch();
 						let result: NotebookData;
@@ -105,7 +106,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							const dto = await this._proxy.$dataToNotebook(
 								handle,
 								data,
-								CancellationToken.None,
+								CancellationToken.None
 							);
 							result = NotebookDto.fromNotebookDataDto(dto.value);
 						}
@@ -114,7 +115,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							{
 								viewType,
 								extensionId: extension.id.value,
-							},
+							}
 						);
 						return result;
 					},
@@ -123,16 +124,16 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 						const result = this._proxy.$notebookToData(
 							handle,
 							new SerializableObjectWithBuffers(
-								NotebookDto.toNotebookDataDto(data),
+								NotebookDto.toNotebookDataDto(data)
 							),
-							CancellationToken.None,
+							CancellationToken.None
 						);
 						this._logService.trace(
 							`[NotebookSerializer] notebookToData DONE after ${sw.elapsed()}`,
 							{
 								viewType,
 								extensionId: extension.id.value,
-							},
+							}
 						);
 						return result;
 					},
@@ -142,7 +143,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							uri,
 							versionId,
 							options,
-							token,
+							token
 						);
 						return {
 							...stat,
@@ -153,14 +154,14 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 					searchInNotebooks: async (
 						textQuery,
 						token,
-						allPriorityInfo,
+						allPriorityInfo
 					): Promise<{
 						results: INotebookFileMatchNoModel<URI>[];
 						limitHit: boolean;
 					}> => {
 						const contributedType =
 							this._notebookService.getContributedNotebookType(
-								viewType,
+								viewType
 							);
 						if (!contributedType) {
 							return { results: [], limitHit: false };
@@ -190,7 +191,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							...(allPriorityInfo.get(viewType) ?? []),
 						]);
 						const otherEditorsPriorityInfo = Array.from(
-							allPriorityInfo.keys(),
+							allPriorityInfo.keys()
 						).flatMap((key) => {
 							if (key !== viewType) {
 								return allPriorityInfo.get(key) ?? [];
@@ -204,7 +205,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 								textQuery,
 								thisPriorityInfo,
 								otherEditorsPriorityInfo,
-								token,
+								token
 							);
 						const revivedResults: INotebookFileMatchNoModel<URI>[] =
 							searchComplete.results.map((result) => {
@@ -212,7 +213,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 								return {
 									resource,
 									cellResults: result.cellResults.map((e) =>
-										revive(e),
+										revive(e)
 									),
 								};
 							});
@@ -221,16 +222,16 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 							limitHit: searchComplete.limitHit,
 						};
 					},
-				},
-			),
+				}
+			)
 		);
 
 		if (data) {
 			disposables.add(
 				this._notebookService.registerContributedNotebookType(
 					viewType,
-					data,
-				),
+					data
+				)
 			);
 		}
 		this._notebookSerializer.set(handle, disposables);
@@ -240,7 +241,7 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 			{
 				viewType,
 				extensionId: extension.id.value,
-			},
+			}
 		);
 	}
 
@@ -260,28 +261,28 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 	async $registerNotebookCellStatusBarItemProvider(
 		handle: number,
 		eventHandle: number | undefined,
-		viewType: string,
+		viewType: string
 	): Promise<void> {
 		const that = this;
 		const provider: INotebookCellStatusBarItemProvider = {
 			async provideCellStatusBarItems(
 				uri: URI,
 				index: number,
-				token: CancellationToken,
+				token: CancellationToken
 			) {
 				const result =
 					await that._proxy.$provideNotebookCellStatusBarItems(
 						handle,
 						uri,
 						index,
-						token,
+						token
 					);
 				return {
 					items: result?.items ?? [],
 					dispose() {
 						if (result) {
 							that._proxy.$releaseNotebookCellStatusBarItems(
-								result.cacheId,
+								result.cacheId
 							);
 						}
 					},
@@ -298,14 +299,14 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 
 		const disposable =
 			this._cellStatusBarService.registerCellStatusBarItemProvider(
-				provider,
+				provider
 			);
 		this._notebookCellStatusBarRegistrations.set(handle, disposable);
 	}
 
 	async $unregisterNotebookCellStatusBarItemProvider(
 		handle: number,
-		eventHandle: number | undefined,
+		eventHandle: number | undefined
 	): Promise<void> {
 		const unregisterThing = (handle: number) => {
 			const entry = this._notebookCellStatusBarRegistrations.get(handle);
@@ -337,9 +338,9 @@ CommandsRegistry.registerCommand(
 
 		const dto = await info.serializer.dataToNotebook(bytes);
 		return new SerializableObjectWithBuffers(
-			NotebookDto.toNotebookDataDto(dto),
+			NotebookDto.toNotebookDataDto(dto)
 		);
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -359,5 +360,5 @@ CommandsRegistry.registerCommand(
 		const data = NotebookDto.fromNotebookDataDto(dto.value);
 		const bytes = await info.serializer.notebookToData(data);
 		return bytes;
-	},
+	}
 );

@@ -9,7 +9,7 @@ import { ITextModel } from "vs/editor/common/model";
 
 export function invertLineRange(
 	range: LineRange,
-	model: ITextModel,
+	model: ITextModel
 ): LineRange[] {
 	if (range.isEmpty) {
 		return [];
@@ -22,8 +22,8 @@ export function invertLineRange(
 		result.push(
 			new LineRange(
 				range.endLineNumberExclusive,
-				model.getLineCount() + 1,
-			),
+				model.getLineCount() + 1
+			)
 		);
 	}
 	return result.filter((r) => !r.isEmpty);

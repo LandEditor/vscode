@@ -38,7 +38,7 @@ export class CallbackMap<R extends Proto.Response> {
 	public add(
 		seq: number,
 		callback: CallbackItem<ServerResponse.Response<R> | undefined>,
-		isAsync: boolean,
+		isAsync: boolean
 	) {
 		if (isAsync) {
 			this._asyncCallbacks.set(seq, callback);
@@ -48,7 +48,7 @@ export class CallbackMap<R extends Proto.Response> {
 	}
 
 	public fetch(
-		seq: number,
+		seq: number
 	): CallbackItem<ServerResponse.Response<R> | undefined> | undefined {
 		const callback =
 			this._callbacks.get(seq) || this._asyncCallbacks.get(seq);

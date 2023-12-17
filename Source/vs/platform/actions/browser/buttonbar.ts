@@ -49,20 +49,29 @@ export class WorkbenchButtonBar extends ButtonBar {
 	constructor(
 		container: HTMLElement,
 		private readonly _options: IWorkbenchButtonBarOptions | undefined,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(container);
 
 		this._actionRunner = this._store.add(new ActionRunner());
 		if (_options?.telemetrySource) {
-			this._actionRunner.onDidRun(e => {
-				telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
-					'workbenchActionExecuted',
-					{ id: e.action.id, from: _options.telemetrySource! }
-				);
-			}, undefined, this._store);
+			this._actionRunner.onDidRun(
+				(e) => {
+					telemetryService.publicLog2<
+						WorkbenchActionExecutedEvent,
+						WorkbenchActionExecutedClassification
+					>("workbenchActionExecuted", {
+						id: e.action.id,
+						from: _options.telemetrySource!,
+					});
+				},
+				undefined,
+				this._store
+			);
 		}
 	}
 
@@ -127,7 +136,7 @@ export class WorkbenchButtonBar extends ButtonBar {
 					"labelWithKeybinding",
 					"{0} ({1})",
 					action.label,
-					kb.getLabel(),
+					kb.getLabel()
 				);
 			} else {
 				btn.element.title = action.label;
@@ -149,14 +158,14 @@ export class MenuWorkbenchButtonBar extends WorkbenchButtonBar {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(
 			container,
 			options,
 			contextMenuService,
 			keybindingService,
-			telemetryService,
+			telemetryService
 		);
 
 		const menu = menuService.createMenu(menuId, contextKeyService);

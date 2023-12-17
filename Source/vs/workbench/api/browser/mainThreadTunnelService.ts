@@ -71,18 +71,33 @@ export class MainThreadTunnelService
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTunnelService);
-		this._register(tunnelService.onTunnelOpened(() => this._proxy.$onDidTunnelsChange()));
-		this._register(tunnelService.onTunnelClosed(() => this._proxy.$onDidTunnelsChange()));
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostTunnelService
+		);
+		this._register(
+			tunnelService.onTunnelOpened(() =>
+				this._proxy.$onDidTunnelsChange()
+			)
+		);
+		this._register(
+			tunnelService.onTunnelClosed(() =>
+				this._proxy.$onDidTunnelsChange()
+			)
+		);
 	}
 
 	private processFindingEnabled(): boolean {
@@ -97,7 +112,7 @@ export class MainThreadTunnelService
 	async $setRemoteTunnelService(processId: number): Promise<void> {
 		this.remoteExplorerService.namedProcesses.set(
 			processId,
-			"Code Extension Host",
+			"Code Extension Host"
 		);
 		if (this.remoteExplorerService.portsFeaturesEnabled) {
 			this._proxy.$registerCandidateFinder(this.processFindingEnabled());
@@ -105,9 +120,9 @@ export class MainThreadTunnelService
 			this._register(
 				this.remoteExplorerService.onEnabledPortsFeatures(() =>
 					this._proxy.$registerCandidateFinder(
-						this.processFindingEnabled(),
-					),
-				),
+						this.processFindingEnabled()
+					)
+				)
 			);
 		}
 		this._register(
@@ -117,24 +132,24 @@ export class MainThreadTunnelService
 					e.affectsConfiguration(PORT_AUTO_SOURCE_SETTING)
 				) {
 					return this._proxy.$registerCandidateFinder(
-						this.processFindingEnabled(),
+						this.processFindingEnabled()
 					);
 				}
-			}),
+			})
 		);
 		this._register(
 			this.tunnelService.onAddedTunnelProvider(() => {
 				return this._proxy.$registerCandidateFinder(
-					this.processFindingEnabled(),
+					this.processFindingEnabled()
 				);
-			}),
+			})
 		);
 	}
 
 	private _alreadyRegistered: boolean = false;
 	async $registerPortsAttributesProvider(
 		selector: PortAttributesSelector,
-		providerHandle: number,
+		providerHandle: number
 	): Promise<void> {
 		this.portsAttributesProviders.set(providerHandle, selector);
 		if (!this._alreadyRegistered) {
@@ -144,7 +159,7 @@ export class MainThreadTunnelService
 	}
 
 	async $unregisterPortsAttributesProvider(
-		providerHandle: number,
+		providerHandle: number
 	): Promise<void> {
 		this.portsAttributesProviders.delete(providerHandle);
 	}
@@ -153,7 +168,7 @@ export class MainThreadTunnelService
 		ports: number[],
 		pid: number | undefined,
 		commandLine: string | undefined,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ProvidedPortAttributes[]> {
 		if (this.portsAttributesProviders.size === 0) {
 			return [];
@@ -161,7 +176,7 @@ export class MainThreadTunnelService
 
 		// Check all the selectors to make sure it's worth going to the extension host.
 		const appropriateHandles = Array.from(
-			this.portsAttributesProviders.entries(),
+			this.portsAttributesProviders.entries()
 		)
 			.filter((entry) => {
 				const selector = entry[1];
@@ -172,8 +187,8 @@ export class MainThreadTunnelService
 				const portInRange = portRange
 					? ports.some(
 							(port) =>
-								portRange[0] <= port && port < portRange[1],
-					  )
+								portRange[0] <= port && port < portRange[1]
+						)
 					: true;
 				const commandMatches =
 					!selector.commandPattern ||
@@ -190,13 +205,13 @@ export class MainThreadTunnelService
 			ports,
 			pid,
 			commandLine,
-			token,
+			token
 		);
 	}
 
 	async $openTunnel(
 		tunnelOptions: TunnelOptions,
-		source: string,
+		source: string
 	): Promise<TunnelDto | undefined> {
 		const tunnel = await this.remoteExplorerService.forward({
 			remote: tunnelOptions.remoteAddress,
@@ -216,7 +231,7 @@ export class MainThreadTunnelService
 			tunnelOptions.localAddressPort !== undefined &&
 			tunnel.tunnelLocalPort !== undefined &&
 			this.tunnelService.isPortPrivileged(
-				tunnelOptions.localAddressPort,
+				tunnelOptions.localAddressPort
 			) &&
 			tunnel.tunnelLocalPort !== tunnelOptions.localAddressPort &&
 			this.tunnelService.canElevate
@@ -229,7 +244,7 @@ export class MainThreadTunnelService
 	private async elevationPrompt(
 		tunnelOptions: TunnelOptions,
 		tunnel: RemoteTunnel,
-		source: string,
+		source: string
 	) {
 		return this.notificationService.prompt(
 			Severity.Info,
@@ -238,14 +253,14 @@ export class MainThreadTunnelService
 				"The extension {0} has forwarded port {1}. You'll need to run as superuser to use port {2} locally.",
 				source,
 				tunnelOptions.remoteAddress.port,
-				tunnelOptions.localAddressPort,
+				tunnelOptions.localAddressPort
 			),
 			[
 				{
 					label: nls.localize(
 						"remote.tunnelsView.elevationButton",
 						"Use Port {0} as Sudo...",
-						tunnel.tunnelRemotePort,
+						tunnel.tunnelRemotePort
 					),
 					run: async () => {
 						this.elevateionRetry = true;
@@ -254,7 +269,7 @@ export class MainThreadTunnelService
 								host: tunnel.tunnelRemoteHost,
 								port: tunnel.tunnelRemotePort,
 							},
-							TunnelCloseReason.Other,
+							TunnelCloseReason.Other
 						);
 						await this.remoteExplorerService.forward({
 							remote: tunnelOptions.remoteAddress,
@@ -269,14 +284,14 @@ export class MainThreadTunnelService
 						this.elevateionRetry = false;
 					},
 				},
-			],
+			]
 		);
 	}
 
 	async $closeTunnel(remote: { host: string; port: number }): Promise<void> {
 		return this.remoteExplorerService.close(
 			remote,
-			TunnelCloseReason.Other,
+			TunnelCloseReason.Other
 		);
 	}
 
@@ -302,11 +317,11 @@ export class MainThreadTunnelService
 		const tunnelProvider: ITunnelProvider = {
 			forwardPort: (
 				tunnelOptions: TunnelOptions,
-				tunnelCreationOptions: TunnelCreationOptions,
+				tunnelCreationOptions: TunnelCreationOptions
 			) => {
 				const forward = this._proxy.$forwardPort(
 					tunnelOptions,
-					tunnelCreationOptions,
+					tunnelCreationOptions
 				);
 				return forward.then((tunnelOrError) => {
 					if (!tunnelOrError) {
@@ -316,7 +331,7 @@ export class MainThreadTunnelService
 					}
 					const tunnel = tunnelOrError;
 					this.logService.trace(
-						`ForwardedPorts: (MainThreadTunnelService) New tunnel established by tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`,
+						`ForwardedPorts: (MainThreadTunnelService) New tunnel established by tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`
 					);
 
 					return {
@@ -327,8 +342,8 @@ export class MainThreadTunnelService
 								? tunnel.localAddress
 								: makeAddress(
 										tunnel.localAddress.host,
-										tunnel.localAddress.port,
-								  ),
+										tunnel.localAddress.port
+									),
 						tunnelLocalPort:
 							typeof tunnel.localAddress !== "string"
 								? tunnel.localAddress.port
@@ -338,14 +353,14 @@ export class MainThreadTunnelService
 						protocol: tunnel.protocol ?? TunnelProtocol.Http,
 						dispose: async (silent?: boolean) => {
 							this.logService.trace(
-								`ForwardedPorts: (MainThreadTunnelService) Closing tunnel from tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`,
+								`ForwardedPorts: (MainThreadTunnelService) Closing tunnel from tunnel provider: ${tunnel?.remoteAddress.host}:${tunnel?.remoteAddress.port}`
 							);
 							return this._proxy.$closeTunnel(
 								{
 									host: tunnel.remoteAddress.host,
 									port: tunnel.remoteAddress.port,
 								},
-								silent,
+								silent
 							);
 						},
 					};
@@ -364,7 +379,7 @@ export class MainThreadTunnelService
 		this.remoteExplorerService.setCandidateFilter(
 			(candidates: CandidatePort[]): Promise<CandidatePort[]> => {
 				return this._proxy.$applyCandidateFilter(candidates);
-			},
+			}
 		);
 	}
 
@@ -376,7 +391,7 @@ export class MainThreadTunnelService
 				switch (source) {
 					case CandidatePortSource.None: {
 						Registry.as<IConfigurationRegistry>(
-							ConfigurationExtensions.Configuration,
+							ConfigurationExtensions.Configuration
 						).registerDefaultConfigurations([
 							{ overrides: { "remote.autoForwardPorts": false } },
 						]);
@@ -384,7 +399,7 @@ export class MainThreadTunnelService
 					}
 					case CandidatePortSource.Output: {
 						Registry.as<IConfigurationRegistry>(
-							ConfigurationExtensions.Configuration,
+							ConfigurationExtensions.Configuration
 						).registerDefaultConfigurations([
 							{
 								overrides: {

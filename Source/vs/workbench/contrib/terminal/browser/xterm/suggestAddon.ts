@@ -99,13 +99,14 @@ export class SuggestAddon
 	private readonly _onBell = this._register(new Emitter<void>());
 	readonly onBell = this._onBell.event;
 	private readonly _onAcceptedCompletion = this._register(
-		new Emitter<string>(),
+		new Emitter<string>()
 	);
 	readonly onAcceptedCompletion = this._onAcceptedCompletion.event;
 
 	constructor(
 		private readonly _terminalSuggestWidgetVisibleContextKey: IContextKey<boolean>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 	}
@@ -117,13 +118,13 @@ export class SuggestAddon
 				ShellIntegrationOscPs.VSCode,
 				(data) => {
 					return this._handleVSCodeSequence(data);
-				},
-			),
+				}
+			)
 		);
 		this._register(
 			xterm.onData((e) => {
 				this._handleTerminalInput(e);
-			}),
+			})
 		);
 	}
 
@@ -144,7 +145,7 @@ export class SuggestAddon
 					this._terminal,
 					data,
 					command,
-					args,
+					args
 				);
 				return true;
 			case VSCodeOscPt.CompletionsBash:
@@ -152,7 +153,7 @@ export class SuggestAddon
 					this._terminal,
 					data,
 					command,
-					args,
+					args
 				);
 				return true;
 			case VSCodeOscPt.CompletionsBashFirstWord:
@@ -160,7 +161,7 @@ export class SuggestAddon
 					this._terminal,
 					data,
 					command,
-					args,
+					args
 				);
 		}
 
@@ -172,7 +173,7 @@ export class SuggestAddon
 		terminal: Terminal,
 		data: string,
 		command: string,
-		args: string[],
+		args: string[]
 	): void {
 		// Nothing to handle if the terminal is not attached
 		if (!terminal.element || !this._enableWidget) {
@@ -193,8 +194,8 @@ export class SuggestAddon
 					args[0].length +
 					args[1].length +
 					args[2].length +
-					4 /*semi-colons*/,
-			),
+					4 /*semi-colons*/
+			)
 		);
 		if (!Array.isArray(completionList)) {
 			completionList = [completionList];
@@ -209,14 +210,14 @@ export class SuggestAddon
 
 		this._leadingLineContent = completions[0].completion.label.slice(
 			0,
-			replacementLength,
+			replacementLength
 		);
 		this._cursorIndexDelta = 0;
 		const model = new SimpleCompletionModel(
 			completions,
 			new LineContext(this._leadingLineContent, replacementIndex),
 			replacementIndex,
-			replacementLength,
+			replacementLength
 		);
 		if (completions.length === 1) {
 			const insertText =
@@ -240,7 +241,7 @@ export class SuggestAddon
 		terminal: Terminal,
 		data: string,
 		command: string,
-		args: string[],
+		args: string[]
 	): boolean {
 		const type = args[0];
 		const completionList: string[] = data
@@ -274,7 +275,7 @@ export class SuggestAddon
 					label,
 					icon: Codicon.symbolString,
 					detail: type,
-				}),
+				})
 			);
 		}
 		// Invalidate compound list cache
@@ -286,7 +287,7 @@ export class SuggestAddon
 		terminal: Terminal,
 		data: string,
 		command: string,
-		args: string[],
+		args: string[]
 	): void {
 		// Nothing to handle if the terminal is not attached
 		if (!terminal.element) {
@@ -306,7 +307,7 @@ export class SuggestAddon
 					args[0].length +
 					args[1].length +
 					args[2].length +
-					4 /*semi-colons*/,
+					4 /*semi-colons*/
 			)
 			.split(";");
 		// TODO: Create a trigger suggest command which encapsulates sendSequence and uses cached if available
@@ -353,13 +354,13 @@ export class SuggestAddon
 
 		this._leadingLineContent = completions[0].completion.label.slice(
 			0,
-			replacementLength,
+			replacementLength
 		);
 		const model = new SimpleCompletionModel(
 			completions,
 			new LineContext(this._leadingLineContent, replacementIndex),
 			replacementIndex,
-			replacementLength,
+			replacementLength
 		);
 		if (completions.length === 1) {
 			const insertText =
@@ -436,26 +437,26 @@ export class SuggestAddon
 					SimpleSuggestWidget,
 					dom.findParentWithClass(this._container!, "panel")!,
 					this._instantiationService.createInstance(
-						PersistedWidgetSize,
+						PersistedWidgetSize
 					),
-					{},
-				),
+					{}
+				)
 			);
 			this._suggestWidget.list.style(
 				getListStyles({
 					listInactiveFocusBackground:
 						editorSuggestWidgetSelectedBackground,
 					listInactiveFocusOutline: activeContrastBorder,
-				}),
+				})
 			);
 			this._suggestWidget.onDidSelect(async (e) =>
-				this.acceptSelectedSuggestion(e),
+				this.acceptSelectedSuggestion(e)
 			);
 			this._suggestWidget.onDidHide(() =>
-				this._terminalSuggestWidgetVisibleContextKey.set(false),
+				this._terminalSuggestWidgetVisibleContextKey.set(false)
 			);
 			this._suggestWidget.onDidShow(() =>
-				this._terminalSuggestWidgetVisibleContextKey.set(true),
+				this._terminalSuggestWidgetVisibleContextKey.set(true)
 			);
 		}
 		return this._suggestWidget;
@@ -478,7 +479,7 @@ export class SuggestAddon
 	}
 
 	acceptSelectedSuggestion(
-		suggestion?: Pick<ISimpleSelectedSuggestion, "item" | "model">,
+		suggestion?: Pick<ISimpleSelectedSuggestion, "item" | "model">
 	): void {
 		if (!suggestion) {
 			suggestion = this._suggestWidget?.getFocusedItem();
@@ -496,8 +497,8 @@ export class SuggestAddon
 							suggestion.model.replacementLength -
 								this._cursorIndexStart +
 								this._cursorIndexDelta,
-							0,
-						),
+							0
+						)
 					),
 					// Delete to remove additional input
 					"\x1b[3~".repeat(this._additionalInput?.length ?? 0),
@@ -505,7 +506,7 @@ export class SuggestAddon
 					"\x7F".repeat(suggestion.model.replacementLength),
 					// Write the completion
 					suggestion.item.completion.label,
-				].join(""),
+				].join("")
 			);
 
 			// Disable completions triggering the widget temporarily to avoid completion requests
@@ -555,7 +556,7 @@ export class SuggestAddon
 				this._additionalInput =
 					this._additionalInput.substring(
 						0,
-						this._cursorIndexDelta-- - 1,
+						this._cursorIndexDelta-- - 1
 					) + this._additionalInput.substring(this._cursorIndexDelta);
 			}
 		}
@@ -602,8 +603,8 @@ export class SuggestAddon
 					new LineContext(
 						this._leadingLineContent! +
 							(this._additionalInput ?? ""),
-						this._additionalInput?.length ?? 0,
-					),
+						this._additionalInput?.length ?? 0
+					)
 				);
 			}
 
@@ -631,7 +632,7 @@ export class SuggestAddon
 			// TODO: Layer breaker, unsafe and won't work for terminal editors
 			const panelElement = dom.findParentWithClass(
 				this._container!,
-				"panel",
+				"panel"
 			)!.offsetParent as HTMLElement;
 			const panelBox = panelElement.getBoundingClientRect();
 			this._suggestWidget?.showSuggestions(
@@ -650,7 +651,7 @@ export class SuggestAddon
 						this._terminal.buffer.active.cursorY *
 							dimensions.height,
 					height: dimensions.height,
-				},
+				}
 			);
 		} else {
 			this._additionalInput = undefined;
@@ -673,8 +674,7 @@ class PersistedWidgetSize {
 
 	constructor(
 		@IStorageService private readonly _storageService: IStorageService
-	) {
-	}
+	) {}
 
 	restore(): dom.Dimension | undefined {
 		const raw =
@@ -695,7 +695,7 @@ class PersistedWidgetSize {
 			this._key,
 			JSON.stringify(size),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 

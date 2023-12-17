@@ -38,7 +38,7 @@ export async function startVsCodeServer(connection: Connection) {
 	const configurationManager = new ConfigurationManager(connection);
 	const logger = new LogFunctionLogger(
 		connection.console.log.bind(connection.console),
-		configurationManager,
+		configurationManager
 	);
 
 	const parser = new (class implements md.IMdParser {
@@ -64,10 +64,10 @@ export async function startVsCodeServer(connection: Connection) {
 			config,
 			documents,
 			notebooks,
-			logger,
+			logger
 		);
 		workspace.workspaceFolders = (workspaceFolders ?? []).map((x) =>
-			URI.parse(x.uri),
+			URI.parse(x.uri)
 		);
 		return workspace;
 	};
@@ -97,7 +97,7 @@ export async function startServer(
 		logger: md.ILogger;
 		parser: md.IMdParser;
 		workspaceFactory: WorkspaceFactory;
-	},
+	}
 ) {
 	const { documents, notebooks } = serverConfig;
 
@@ -141,13 +141,13 @@ export async function startServer(
 			connection,
 			documents,
 			mdLs,
-			serverConfig.configurationManager,
+			serverConfig.configurationManager
 		);
 		registerDocumentHighlightSupport(
 			connection,
 			documents,
 			mdLs,
-			serverConfig.configurationManager,
+			serverConfig.configurationManager
 		);
 		registerValidateSupport(
 			connection,
@@ -155,7 +155,7 @@ export async function startServer(
 			documents,
 			mdLs,
 			serverConfig.configurationManager,
-			serverConfig.logger,
+			serverConfig.logger
 		);
 
 		return {
@@ -199,13 +199,13 @@ export async function startServer(
 				return [];
 			}
 			return mdLs!.getDocumentLinks(document, token);
-		},
+		}
 	);
 
 	connection.onDocumentLinkResolve(
 		async (link, token): Promise<lsp.DocumentLink | undefined> => {
 			return mdLs!.resolveDocumentLink(link, token);
-		},
+		}
 	);
 
 	connection.onDocumentSymbol(
@@ -217,9 +217,9 @@ export async function startServer(
 			return mdLs!.getDocumentSymbols(
 				document,
 				{ includeLinkDefinitions: true },
-				token,
+				token
 			);
-		},
+		}
 	);
 
 	connection.onFoldingRanges(
@@ -229,7 +229,7 @@ export async function startServer(
 				return [];
 			}
 			return mdLs!.getFoldingRanges(document, token);
-		},
+		}
 	);
 
 	connection.onSelectionRanges(
@@ -239,13 +239,13 @@ export async function startServer(
 				return [];
 			}
 			return mdLs!.getSelectionRanges(document, params.positions, token);
-		},
+		}
 	);
 
 	connection.onWorkspaceSymbol(
 		async (params, token): Promise<lsp.WorkspaceSymbol[]> => {
 			return mdLs!.getWorkspaceSymbols(params.query, token);
-		},
+		}
 	);
 
 	connection.onReferences(async (params, token): Promise<lsp.Location[]> => {
@@ -257,7 +257,7 @@ export async function startServer(
 			document,
 			params.position,
 			params.context,
-			token,
+			token
 		);
 	});
 
@@ -268,7 +268,7 @@ export async function startServer(
 				return undefined;
 			}
 			return mdLs!.getDefinition(document, params.position, token);
-		},
+		}
 	);
 
 	connection.onPrepareRename(async (params, token) => {
@@ -297,7 +297,7 @@ export async function startServer(
 			document,
 			params.position,
 			params.newName,
-			token,
+			token
 		);
 	});
 
@@ -313,7 +313,7 @@ export async function startServer(
 
 		if (
 			params.context.only?.some(
-				(kind) => kind === "source" || kind.startsWith("source."),
+				(kind) => kind === "source" || kind.startsWith("source.")
 			)
 		) {
 			const action: lsp.CodeAction = {
@@ -328,7 +328,7 @@ export async function startServer(
 			document,
 			params.range,
 			params.context,
-			token,
+			token
 		);
 	});
 
@@ -344,7 +344,7 @@ export async function startServer(
 				(await mdLs?.organizeLinkDefinitions(
 					document,
 					{ removeUnused: true },
-					token,
+					token
 				)) || [];
 			codeAction.edit = {
 				changes: {
@@ -361,7 +361,7 @@ export async function startServer(
 		protocol.getReferencesToFileInWorkspace,
 		async (params: { uri: string }, token: CancellationToken) => {
 			return mdLs!.getFileReferences(URI.parse(params.uri), token);
-		},
+		}
 	);
 
 	connection.onRequest(
@@ -372,7 +372,7 @@ export async function startServer(
 					oldUri: URI.parse(x.oldUri),
 					newUri: URI.parse(x.newUri),
 				})),
-				token,
+				token
 			);
 			if (!result) {
 				return result;
@@ -384,10 +384,10 @@ export async function startServer(
 					(rename) => ({
 						oldUri: rename.oldUri.toString(),
 						newUri: rename.newUri.toString(),
-					}),
+					})
 				),
 			};
-		},
+		}
 	);
 
 	connection.onRequest(
@@ -396,9 +396,9 @@ export async function startServer(
 			return mdLs!.resolveLinkTarget(
 				params.linkText,
 				URI.parse(params.uri),
-				token,
+				token
 			);
-		},
+		}
 	);
 
 	documents.listen(connection);
@@ -409,7 +409,7 @@ export async function startServer(
 function registerDynamicClientFeature(
 	config: ConfigurationManager,
 	isEnabled: (settings: Settings | undefined) => boolean,
-	register: () => Promise<Disposable>,
+	register: () => Promise<Disposable>
 ) {
 	let registration: Promise<IDisposable> | undefined;
 	function update() {
@@ -432,7 +432,7 @@ function registerCompletionsSupport(
 	connection: Connection,
 	documents: TextDocuments<md.ITextDocument>,
 	ls: md.IMdLanguageService,
-	config: ConfigurationManager,
+	config: ConfigurationManager
 ): IDisposable {
 	function getIncludeWorkspaceHeaderCompletions(): md.IncludeWorkspaceHeaderCompletions {
 		switch (
@@ -468,11 +468,11 @@ function registerCompletionsSupport(
 						includeWorkspaceHeaderCompletions:
 							getIncludeWorkspaceHeaderCompletions(),
 					} as any,
-					token,
+					token
 				);
 			}
 			return [];
-		},
+		}
 	);
 
 	return registerDynamicClientFeature(
@@ -485,9 +485,9 @@ function registerCompletionsSupport(
 			};
 			return connection.client.register(
 				CompletionRequest.type,
-				registrationOptions,
+				registrationOptions
 			);
-		},
+		}
 	);
 }
 
@@ -495,7 +495,7 @@ function registerDocumentHighlightSupport(
 	connection: Connection,
 	documents: TextDocuments<md.ITextDocument>,
 	mdLs: md.IMdLanguageService,
-	configurationManager: ConfigurationManager,
+	configurationManager: ConfigurationManager
 ) {
 	connection.onDocumentHighlight(async (params, token) => {
 		const settings = configurationManager.getSettings();
@@ -520,8 +520,8 @@ function registerDocumentHighlightSupport(
 			};
 			return connection.client.register(
 				DocumentHighlightRequest.type,
-				registrationOptions,
+				registrationOptions
 			);
-		},
+		}
 	);
 }

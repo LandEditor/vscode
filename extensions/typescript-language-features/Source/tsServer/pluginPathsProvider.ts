@@ -11,7 +11,7 @@ export class TypeScriptPluginPathsProvider {
 	public constructor(private configuration: TypeScriptServiceConfiguration) {}
 
 	public updateConfiguration(
-		configuration: TypeScriptServiceConfiguration,
+		configuration: TypeScriptServiceConfiguration
 	): void {
 		this.configuration = configuration;
 	}
@@ -37,7 +37,7 @@ export class TypeScriptPluginPathsProvider {
 
 		return (vscode.workspace.workspaceFolders || []).map(
 			(workspaceFolder) =>
-				path.join(workspaceFolder.uri.fsPath, pluginPath),
+				path.join(workspaceFolder.uri.fsPath, pluginPath)
 		);
 	}
 }

@@ -51,8 +51,8 @@ export class ExtHostWindow implements ExtHostWindowShape {
 	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadWindow);
 		this._proxy.$getInitialState().then(({ isFocused, isActive }) => {
-			this.onDidChangeWindowProperty('focused', isFocused);
-			this.onDidChangeWindowProperty('active', isActive);
+			this.onDidChangeWindowProperty("focused", isFocused);
+			this.onDidChangeWindowProperty("active", isActive);
 		});
 	}
 
@@ -66,7 +66,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 
 	onDidChangeWindowProperty(
 		property: keyof WindowState,
-		value: boolean,
+		value: boolean
 	): void {
 		if (value === this._state[property]) {
 			return;
@@ -78,7 +78,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 
 	openUri(
 		stringOrUri: string | URI,
-		options: IOpenUriOptions,
+		options: IOpenUriOptions
 	): Promise<boolean> {
 		let uriAsString: string | undefined;
 		if (typeof stringOrUri === "string") {

@@ -27,10 +27,11 @@ export class GettingStartedDetailsRenderer {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@ILanguageService private readonly languageService: ILanguageService,
-	) { }
+		@ILanguageService private readonly languageService: ILanguageService
+	) {}
 
 	async renderMarkdown(path: URI, base: URI): Promise<string> {
 		const content = await this.readAndCacheStepMarkdown(path, base);
@@ -214,7 +215,7 @@ export class GettingStartedDetailsRenderer {
 
 	private async readAndCacheStepMarkdown(
 		path: URI,
-		base: URI,
+		base: URI
 	): Promise<string> {
 		if (!this.mdCache.has(path)) {
 			const contents = await this.readContentsOfPath(path);
@@ -223,7 +224,7 @@ export class GettingStartedDetailsRenderer {
 				this.extensionService,
 				this.languageService,
 				true,
-				true,
+				true
 			);
 			this.mdCache.set(path, markdownContents);
 		}
@@ -232,7 +233,7 @@ export class GettingStartedDetailsRenderer {
 
 	private async readContentsOfPath(
 		path: URI,
-		useModuleId = true,
+		useModuleId = true
 	): Promise<string> {
 		try {
 			const moduleId = JSON.parse(path.query).moduleId;
@@ -255,7 +256,7 @@ export class GettingStartedDetailsRenderer {
 			const generalizedLocalizedPath = path.with({
 				path: path.path.replace(
 					/\.md$/,
-					`.nls.${generalizedLocale}.md`,
+					`.nls.${generalizedLocale}.md`
 				),
 			});
 
@@ -275,14 +276,14 @@ export class GettingStartedDetailsRenderer {
 				localizedFileExists
 					? localizedPath
 					: generalizedLocalizedFileExists
-					  ? generalizedLocalizedPath
-					  : path,
+						? generalizedLocalizedPath
+						: path
 			);
 
 			return bytes.value.toString();
 		} catch (e) {
 			this.notificationService.error(
-				"Error reading markdown document at `" + path + "`: " + e,
+				"Error reading markdown document at `" + path + "`: " + e
 			);
 			return "";
 		}
@@ -309,5 +310,5 @@ const transformUris = (content: string, base: URI): string =>
 					return `![${title}](${src})`;
 				}
 				return `![${title}](${transformUri(src, base)})`;
-			},
+			}
 		);

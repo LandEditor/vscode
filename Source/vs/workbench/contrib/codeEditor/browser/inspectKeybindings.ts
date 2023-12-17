@@ -18,7 +18,7 @@ class InspectKeyMap extends Action2 {
 			title: {
 				value: localize(
 					"workbench.action.inspectKeyMap",
-					"Inspect Key Mappings",
+					"Inspect Key Mappings"
 				),
 				original: "Inspect Key Mappings",
 			},
@@ -48,7 +48,7 @@ class InspectKeyMapJSON extends Action2 {
 			title: {
 				value: localize(
 					"workbench.action.inspectKeyMapJSON",
-					"Inspect Key Mappings (JSON)",
+					"Inspect Key Mappings (JSON)"
 				),
 				original: "Inspect Key Mappings (JSON)",
 			},

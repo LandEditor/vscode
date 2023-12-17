@@ -23,7 +23,10 @@ export interface IMainProcessService extends IRemoteService {}
 export class MainProcessService implements IMainProcessService {
 	declare readonly _serviceBrand: undefined;
 
-	constructor(private server: IPCServer, private router: StaticRouter) {}
+	constructor(
+		private server: IPCServer,
+		private router: StaticRouter
+	) {}
 
 	getChannel(channelName: string): IChannel {
 		return this.server.getChannel(channelName, this.router);
@@ -31,7 +34,7 @@ export class MainProcessService implements IMainProcessService {
 
 	registerChannel(
 		channelName: string,
-		channel: IServerChannel<string>,
+		channel: IServerChannel<string>
 	): void {
 		this.server.registerChannel(channelName, channel);
 	}

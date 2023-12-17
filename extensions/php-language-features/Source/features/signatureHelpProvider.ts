@@ -75,7 +75,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 	public provideSignatureHelp(
 		document: TextDocument,
 		position: Position,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Promise<SignatureHelp> | null {
 		const enable = workspace
 			.getConfiguration("php")
@@ -87,7 +87,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		const iterator = new BackwardIterator(
 			document,
 			position.character - 1,
-			position.line,
+			position.line
 		);
 
 		const paramCount = this.readArguments(iterator);
@@ -108,11 +108,11 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		}
 		const paramsString = entry.signature.substring(
 			0,
-			entry.signature.lastIndexOf(")") + 1,
+			entry.signature.lastIndexOf(")") + 1
 		);
 		const signatureInfo = new SignatureInformation(
 			ident + paramsString,
-			entry.description,
+			entry.description
 		);
 
 		const re = /\w*\s+\&?\$[\w_\.]+|void/g;
@@ -128,7 +128,7 @@ export default class PHPSignatureHelpProvider implements SignatureHelpProvider {
 		ret.activeSignature = 0;
 		ret.activeParameter = Math.min(
 			paramCount,
-			signatureInfo.parameters.length - 1,
+			signatureInfo.parameters.length - 1
 		);
 		return Promise.resolve(ret);
 	}

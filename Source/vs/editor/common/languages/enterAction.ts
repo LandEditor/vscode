@@ -20,16 +20,16 @@ export function getEnterAction(
 	autoIndent: EditorAutoIndentStrategy,
 	model: ITextModel,
 	range: Range,
-	languageConfigurationService: ILanguageConfigurationService,
+	languageConfigurationService: ILanguageConfigurationService
 ): CompleteEnterAction | null {
 	const scopedLineTokens = getScopedLineTokens(
 		model,
 		range.startLineNumber,
-		range.startColumn,
+		range.startColumn
 	);
 	const richEditSupport =
 		languageConfigurationService.getLanguageConfiguration(
-			scopedLineTokens.languageId,
+			scopedLineTokens.languageId
 		);
 	if (!richEditSupport) {
 		return null;
@@ -38,20 +38,20 @@ export function getEnterAction(
 	const scopedLineText = scopedLineTokens.getLineContent();
 	const beforeEnterText = scopedLineText.substr(
 		0,
-		range.startColumn - 1 - scopedLineTokens.firstCharOffset,
+		range.startColumn - 1 - scopedLineTokens.firstCharOffset
 	);
 
 	// selection support
 	let afterEnterText: string;
 	if (range.isEmpty()) {
 		afterEnterText = scopedLineText.substr(
-			range.startColumn - 1 - scopedLineTokens.firstCharOffset,
+			range.startColumn - 1 - scopedLineTokens.firstCharOffset
 		);
 	} else {
 		const endScopedLineTokens = getScopedLineTokens(
 			model,
 			range.endLineNumber,
-			range.endColumn,
+			range.endColumn
 		);
 		afterEnterText = endScopedLineTokens
 			.getLineContent()
@@ -63,7 +63,7 @@ export function getEnterAction(
 		// This is not the first line and the entire line belongs to this mode
 		const oneLineAboveScopedLineTokens = getScopedLineTokens(
 			model,
-			range.startLineNumber - 1,
+			range.startLineNumber - 1
 		);
 		if (
 			oneLineAboveScopedLineTokens.languageId ===
@@ -78,7 +78,7 @@ export function getEnterAction(
 		autoIndent,
 		previousLineText,
 		beforeEnterText,
-		afterEnterText,
+		afterEnterText
 	);
 	if (!enterResult) {
 		return null;
@@ -105,7 +105,7 @@ export function getEnterAction(
 	let indentation = getIndentationAtPosition(
 		model,
 		range.startLineNumber,
-		range.startColumn,
+		range.startColumn
 	);
 	if (removeText) {
 		indentation = indentation.substring(0, indentation.length - removeText);

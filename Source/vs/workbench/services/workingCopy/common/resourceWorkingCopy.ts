@@ -57,7 +57,9 @@ export abstract class ResourceWorkingCopy
 	) {
 		super();
 
-		this._register(this.fileService.onDidFilesChange(e => this.onDidFilesChange(e)));
+		this._register(
+			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e))
+		);
 	}
 
 	//#region Orphaned Tracking
@@ -79,7 +81,7 @@ export abstract class ResourceWorkingCopy
 		if (this.orphaned) {
 			const fileWorkingCopyResourceAdded = e.contains(
 				this.resource,
-				FileChangeType.ADDED,
+				FileChangeType.ADDED
 			);
 			if (fileWorkingCopyResourceAdded) {
 				newInOrphanModeGuess = false;
@@ -91,7 +93,7 @@ export abstract class ResourceWorkingCopy
 		else {
 			const fileWorkingCopyResourceDeleted = e.contains(
 				this.resource,
-				FileChangeType.DELETED,
+				FileChangeType.DELETED
 			);
 			if (fileWorkingCopyResourceDeleted) {
 				newInOrphanModeGuess = true;

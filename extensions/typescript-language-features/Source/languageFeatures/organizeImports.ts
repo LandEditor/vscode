@@ -59,7 +59,7 @@ class OrganizeImportsCommand implements Command {
 		public readonly id: string,
 		private readonly commandMetadata: OrganizeImportsCommandMetadata,
 		private readonly client: ITypeScriptServiceClient,
-		private readonly telemetryReporter: TelemetryReporter,
+		private readonly telemetryReporter: TelemetryReporter
 	) {}
 
 	public async execute(file?: string): Promise<any> {
@@ -77,8 +77,8 @@ class OrganizeImportsCommand implements Command {
 			if (!activeEditor) {
 				vscode.window.showErrorMessage(
 					vscode.l10n.t(
-						"Organize Imports failed. No resource provided.",
-					),
+						"Organize Imports failed. No resource provided."
+					)
 				);
 				return;
 			}
@@ -88,9 +88,7 @@ class OrganizeImportsCommand implements Command {
 			const openedFiledPath = this.client.toOpenTsFilePath(document);
 			if (!openedFiledPath) {
 				vscode.window.showErrorMessage(
-					vscode.l10n.t(
-						"Organize Imports failed. Unknown file type.",
-					),
+					vscode.l10n.t("Organize Imports failed. Unknown file type.")
 				);
 				return;
 			}
@@ -110,11 +108,11 @@ class OrganizeImportsCommand implements Command {
 				this.commandMetadata.mode ===
 				OrganizeImportsMode.SortAndCombine,
 			mode: typeConverters.OrganizeImportsMode.toProtocolOrganizeImportsMode(
-				this.commandMetadata.mode,
+				this.commandMetadata.mode
 			),
 		};
 		const response = await this.client.interruptGetErr(() =>
-			this.client.execute("organizeImports", args, nulToken),
+			this.client.execute("organizeImports", args, nulToken)
 		);
 		if (response.type !== "response" || !response.body) {
 			return;
@@ -123,7 +121,7 @@ class OrganizeImportsCommand implements Command {
 		if (response.body.length) {
 			const edits = typeConverters.WorkspaceEdit.fromFileCodeEdits(
 				this.client,
-				response.body,
+				response.body
 			);
 			return vscode.workspace.applyEdit(edits);
 		}
@@ -136,7 +134,7 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider {
 		private readonly commandMetadata: OrganizeImportsCommandMetadata,
 		commandManager: CommandManager,
 		private readonly fileConfigManager: FileConfigurationManager,
-		telemetryReporter: TelemetryReporter,
+		telemetryReporter: TelemetryReporter
 	) {
 		for (const id of commandMetadata.ids) {
 			commandManager.register(
@@ -144,8 +142,8 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider {
 					id,
 					commandMetadata,
 					client,
-					telemetryReporter,
-				),
+					telemetryReporter
+				)
 			);
 		}
 	}
@@ -154,7 +152,7 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider {
 		document: vscode.TextDocument,
 		_range: vscode.Range,
 		context: vscode.CodeActionContext,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): vscode.CodeAction[] {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -169,7 +167,7 @@ class ImportsCodeActionProvider implements vscode.CodeActionProvider {
 
 		const action = new vscode.CodeAction(
 			this.commandMetadata.title,
-			this.commandMetadata.kind,
+			this.commandMetadata.kind
 		);
 		action.command = {
 			title: "",
@@ -185,7 +183,7 @@ export function register(
 	client: ITypeScriptServiceClient,
 	commandManager: CommandManager,
 	fileConfigurationManager: FileConfigurationManager,
-	telemetryReporter: TelemetryReporter,
+	telemetryReporter: TelemetryReporter
 ): vscode.Disposable {
 	const disposables: vscode.Disposable[] = [];
 
@@ -199,7 +197,7 @@ export function register(
 				[
 					requireMinVersion(
 						client,
-						command.minVersion ?? API.defaultVersion,
+						command.minVersion ?? API.defaultVersion
 					),
 					requireSomeCapability(client, ClientCapability.Semantic),
 				],
@@ -209,17 +207,17 @@ export function register(
 						command,
 						commandManager,
 						fileConfigurationManager,
-						telemetryReporter,
+						telemetryReporter
 					);
 					return vscode.languages.registerCodeActionsProvider(
 						selector.semantic,
 						provider,
 						{
 							providedCodeActionKinds: [command.kind],
-						},
+						}
 					);
-				},
-			),
+				}
+			)
 		);
 	}
 

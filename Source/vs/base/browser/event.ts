@@ -13,12 +13,12 @@ export interface IDomEvent {
 	<K extends keyof HTMLElementEventMap>(
 		element: EventHandler,
 		type: K,
-		useCapture?: boolean,
+		useCapture?: boolean
 	): BaseEvent<HTMLElementEventMap[K]>;
 	(
 		element: EventHandler,
 		type: string,
-		useCapture?: boolean,
+		useCapture?: boolean
 	): BaseEvent<unknown>;
 }
 
@@ -46,12 +46,12 @@ export class DomEmitter<K extends keyof DOMEventMap> implements IDisposable {
 	constructor(
 		element: Window & typeof globalThis,
 		type: WindowEventMap,
-		useCapture?: boolean,
+		useCapture?: boolean
 	);
 	constructor(
 		element: Document,
 		type: DocumentEventMap,
-		useCapture?: boolean,
+		useCapture?: boolean
 	);
 	constructor(element: EventHandler, type: K, useCapture?: boolean);
 	constructor(element: EventHandler, type: K, useCapture?: boolean) {

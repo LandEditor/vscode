@@ -50,7 +50,7 @@ export class ContiguousTokensStore {
 	public getTokens(
 		topLevelLanguageId: string,
 		lineIndex: number,
-		lineText: string,
+		lineText: string
 	): LineTokens {
 		let rawLineTokens: Uint32Array | ArrayBuffer | null = null;
 		if (lineIndex < this._len) {
@@ -61,14 +61,14 @@ export class ContiguousTokensStore {
 			return new LineTokens(
 				toUint32Array(rawLineTokens),
 				lineText,
-				this._languageIdCodec,
+				this._languageIdCodec
 			);
 		}
 
 		const lineTokens = new Uint32Array(2);
 		lineTokens[0] = lineText.length;
 		lineTokens[1] = getDefaultMetadata(
-			this._languageIdCodec.encodeLanguageId(topLevelLanguageId),
+			this._languageIdCodec.encodeLanguageId(topLevelLanguageId)
 		);
 		return new LineTokens(lineTokens, lineText, this._languageIdCodec);
 	}
@@ -76,7 +76,7 @@ export class ContiguousTokensStore {
 	private static _massageTokens(
 		topLevelLanguageId: LanguageId,
 		lineTextLength: number,
-		_tokens: Uint32Array | ArrayBuffer | null,
+		_tokens: Uint32Array | ArrayBuffer | null
 	): Uint32Array | ArrayBuffer {
 		const tokens = _tokens ? toUint32Array(_tokens) : null;
 
@@ -142,7 +142,7 @@ export class ContiguousTokensStore {
 		this._lineTokens = arrays.arrayInsert(
 			this._lineTokens,
 			insertIndex,
-			lineTokens,
+			lineTokens
 		);
 		this._len += insertCount;
 	}
@@ -152,12 +152,12 @@ export class ContiguousTokensStore {
 		lineIndex: number,
 		lineTextLength: number,
 		_tokens: Uint32Array | ArrayBuffer | null,
-		checkEquality: boolean,
+		checkEquality: boolean
 	): boolean {
 		const tokens = ContiguousTokensStore._massageTokens(
 			this._languageIdCodec.encodeLanguageId(topLevelLanguageId),
 			lineTextLength,
-			_tokens,
+			_tokens
 		);
 		this._ensureLine(lineIndex);
 		const oldTokens = this._lineTokens[lineIndex];
@@ -171,7 +171,7 @@ export class ContiguousTokensStore {
 
 	private static _equals(
 		_a: Uint32Array | ArrayBuffer | null,
-		_b: Uint32Array | ArrayBuffer | null,
+		_b: Uint32Array | ArrayBuffer | null
 	) {
 		if (!_a || !_b) {
 			return !_a && !_b;
@@ -196,13 +196,13 @@ export class ContiguousTokensStore {
 	public acceptEdit(
 		range: IRange,
 		eolCount: number,
-		firstLineLength: number,
+		firstLineLength: number
 	): void {
 		this._acceptDeleteRange(range);
 		this._acceptInsertText(
 			new Position(range.startLineNumber, range.startColumn),
 			eolCount,
-			firstLineLength,
+			firstLineLength
 		);
 	}
 
@@ -221,14 +221,14 @@ export class ContiguousTokensStore {
 			this._lineTokens[firstLineIndex] = ContiguousTokensEditing.delete(
 				this._lineTokens[firstLineIndex],
 				range.startColumn - 1,
-				range.endColumn - 1,
+				range.endColumn - 1
 			);
 			return;
 		}
 
 		this._lineTokens[firstLineIndex] = ContiguousTokensEditing.deleteEnding(
 			this._lineTokens[firstLineIndex],
-			range.startColumn - 1,
+			range.startColumn - 1
 		);
 
 		const lastLineIndex = range.endLineNumber - 1;
@@ -236,27 +236,27 @@ export class ContiguousTokensStore {
 		if (lastLineIndex < this._len) {
 			lastLineTokens = ContiguousTokensEditing.deleteBeginning(
 				this._lineTokens[lastLineIndex],
-				range.endColumn - 1,
+				range.endColumn - 1
 			);
 		}
 
 		// Take remaining text on last line and append it to remaining text on first line
 		this._lineTokens[firstLineIndex] = ContiguousTokensEditing.append(
 			this._lineTokens[firstLineIndex],
-			lastLineTokens,
+			lastLineTokens
 		);
 
 		// Delete middle lines
 		this._deleteLines(
 			range.startLineNumber,
-			range.endLineNumber - range.startLineNumber,
+			range.endLineNumber - range.startLineNumber
 		);
 	}
 
 	private _acceptInsertText(
 		position: Position,
 		eolCount: number,
-		firstLineLength: number,
+		firstLineLength: number
 	): void {
 		if (eolCount === 0 && firstLineLength === 0) {
 			// Nothing to insert
@@ -273,19 +273,19 @@ export class ContiguousTokensStore {
 			this._lineTokens[lineIndex] = ContiguousTokensEditing.insert(
 				this._lineTokens[lineIndex],
 				position.column - 1,
-				firstLineLength,
+				firstLineLength
 			);
 			return;
 		}
 
 		this._lineTokens[lineIndex] = ContiguousTokensEditing.deleteEnding(
 			this._lineTokens[lineIndex],
-			position.column - 1,
+			position.column - 1
 		);
 		this._lineTokens[lineIndex] = ContiguousTokensEditing.insert(
 			this._lineTokens[lineIndex],
 			position.column - 1,
-			firstLineLength,
+			firstLineLength
 		);
 
 		this._insertLines(position.lineNumber, eolCount);
@@ -295,7 +295,7 @@ export class ContiguousTokensStore {
 
 	public setMultilineTokens(
 		tokens: ContiguousMultilineTokens[],
-		textModel: ITextModel,
+		textModel: ITextModel
 	): { changes: { fromLineNumber: number; toLineNumber: number }[] } {
 		if (tokens.length === 0) {
 			return { changes: [] };
@@ -319,7 +319,7 @@ export class ContiguousTokensStore {
 						lineNumber - 1,
 						textModel.getLineLength(lineNumber),
 						element.getLineTokens(lineNumber),
-						false,
+						false
 					);
 					maxChangedLineNumber = lineNumber;
 				} else {
@@ -328,7 +328,7 @@ export class ContiguousTokensStore {
 						lineNumber - 1,
 						textModel.getLineLength(lineNumber),
 						element.getLineTokens(lineNumber),
-						true,
+						true
 					);
 					if (lineHasChange) {
 						hasChange = true;

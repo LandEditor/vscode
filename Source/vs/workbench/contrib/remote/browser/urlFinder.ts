@@ -44,7 +44,7 @@ export class UrlFinder extends Disposable {
 
 	constructor(
 		terminalService: ITerminalService,
-		debugService: IDebugService,
+		debugService: IDebugService
 	) {
 		super();
 		// Terminal
@@ -54,13 +54,13 @@ export class UrlFinder extends Disposable {
 		this._register(
 			terminalService.onDidCreateInstance((instance) => {
 				this.registerTerminalInstance(instance);
-			}),
+			})
 		);
 		this._register(
 			terminalService.onDidDisposeInstance((instance) => {
 				this.listeners.get(instance)?.dispose();
 				this.listeners.delete(instance);
-			}),
+			})
 		);
 
 		// Debug
@@ -74,10 +74,10 @@ export class UrlFinder extends Disposable {
 						session.getId(),
 						session.onDidChangeReplElements(() => {
 							this.processNewReplElements(session);
-						}),
+						})
 					);
 				}
-			}),
+			})
 		);
 		this._register(
 			debugService.onDidEndSession(({ session }) => {
@@ -85,7 +85,7 @@ export class UrlFinder extends Disposable {
 					this.listeners.get(session.getId())?.dispose();
 					this.listeners.delete(session.getId());
 				}
-			}),
+			})
 		);
 	}
 
@@ -95,7 +95,7 @@ export class UrlFinder extends Disposable {
 				instance,
 				instance.onData((data) => {
 					this.processData(data);
-				}),
+				})
 			);
 		}
 	}
@@ -114,7 +114,7 @@ export class UrlFinder extends Disposable {
 
 		if (!oldReplPosition && replElements.length > 0) {
 			replElements.forEach((element) =>
-				this.processData(element.toString()),
+				this.processData(element.toString())
 			);
 		} else if (
 			oldReplPosition &&
@@ -160,8 +160,8 @@ export class UrlFinder extends Disposable {
 						serverUrl.port
 							? serverUrl.port
 							: portMatch
-							  ? portMatch[2]
-							  : "NaN",
+								? portMatch[2]
+								: "NaN"
 					);
 					if (
 						!isNaN(port) &&

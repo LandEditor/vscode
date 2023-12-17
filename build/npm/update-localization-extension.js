@@ -18,7 +18,7 @@ function update(options) {
 	let idOrPath = options._;
 	if (!idOrPath) {
 		throw new Error(
-			"Argument must be the location of the localization extension.",
+			"Argument must be the location of the localization extension."
 		);
 	}
 	let location = options.location;
@@ -38,7 +38,7 @@ function update(options) {
 			"..",
 			"vscode-loc",
 			"i18n",
-			`vscode-language-pack-${idOrPath}`,
+			`vscode-language-pack-${idOrPath}`
 		);
 	}
 	let locExtStat = fs.statSync(locExtFolder);
@@ -46,18 +46,18 @@ function update(options) {
 		throw new Error("No directory found at " + idOrPath);
 	}
 	let packageJSON = JSON.parse(
-		fs.readFileSync(path.join(locExtFolder, "package.json")).toString(),
+		fs.readFileSync(path.join(locExtFolder, "package.json")).toString()
 	);
 	let contributes = packageJSON["contributes"];
 	if (!contributes) {
 		throw new Error(
-			'The extension must define a "localizations" contribution in the "package.json"',
+			'The extension must define a "localizations" contribution in the "package.json"'
 		);
 	}
 	let localizations = contributes["localizations"];
 	if (!localizations) {
 		throw new Error(
-			'The extension must define a "localizations" contribution of type array in the "package.json"',
+			'The extension must define a "localizations" contribution of type array in the "package.json"'
 		);
 	}
 
@@ -68,7 +68,7 @@ function update(options) {
 			!localization.localizedLanguageName
 		) {
 			throw new Error(
-				'Each localization contribution must define "languageId", "languageName" and "localizedLanguageName" properties.',
+				'Each localization contribution must define "languageId", "languageName" and "localizedLanguageName" properties.'
 			);
 		}
 		let languageId = localization.languageId;
@@ -95,7 +95,7 @@ function update(options) {
 		}
 
 		console.log(
-			`Importing translations for ${languageId} form '${location}' to '${translationDataFolder}' ...`,
+			`Importing translations for ${languageId} form '${location}' to '${translationDataFolder}' ...`
 		);
 		let translationPaths = [];
 		gulp.src(
@@ -106,11 +106,11 @@ function update(options) {
 						externalExtensionsLocation,
 						extensionId,
 						languageId,
-						"*-new.xlf",
-					),
+						"*-new.xlf"
+					)
 				),
 			],
-			{ silent: false },
+			{ silent: false }
 		)
 			.pipe(i18n.prepareI18nPackFiles(translationPaths))
 			.on("error", (error) => {
@@ -136,7 +136,7 @@ function update(options) {
 					}
 					fs.writeFileSync(
 						path.join(locExtFolder, "package.json"),
-						JSON.stringify(packageJSON, null, "\t") + "\n",
+						JSON.stringify(packageJSON, null, "\t") + "\n"
 					);
 				}
 			});

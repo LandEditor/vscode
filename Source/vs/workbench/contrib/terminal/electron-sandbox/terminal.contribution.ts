@@ -26,26 +26,26 @@ import { LocalTerminalBackendContribution } from "vs/workbench/contrib/terminal/
 // Register services
 registerMainProcessRemoteService(
 	ILocalPtyService,
-	TerminalIpcChannels.LocalPty,
+	TerminalIpcChannels.LocalPty
 );
 registerSingleton(
 	ITerminalProfileResolverService,
 	ElectronTerminalProfileResolverService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // Register workbench contributions
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 
 // This contribution needs to be active during the Startup phase to be available when a remote resolver tries to open a local
 // terminal while connecting to the remote.
 workbenchRegistry.registerWorkbenchContribution(
 	LocalTerminalBackendContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 workbenchRegistry.registerWorkbenchContribution(
 	TerminalNativeContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

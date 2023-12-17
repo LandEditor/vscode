@@ -22,7 +22,7 @@ export class CursorContext {
 		model: ITextModel,
 		viewModel: ICursorSimpleModel,
 		coordinatesConverter: ICoordinatesConverter,
-		cursorConfig: CursorConfiguration,
+		cursorConfig: CursorConfiguration
 	) {
 		this.model = model;
 		this.viewModel = viewModel;

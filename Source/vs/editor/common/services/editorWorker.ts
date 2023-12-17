@@ -19,7 +19,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 import type { EditorSimpleWorker } from "vs/editor/common/services/editorSimpleWorker";
 
 export const IEditorWorkerService = createDecorator<IEditorWorkerService>(
-	"editorWorkerService",
+	"editorWorkerService"
 );
 
 export type DiffAlgorithmName = "legacy" | "advanced";
@@ -31,7 +31,7 @@ export interface IEditorWorkerService {
 	computedUnicodeHighlights(
 		uri: URI,
 		options: UnicodeHighlighterOptions,
-		range?: IRange,
+		range?: IRange
 	): Promise<IUnicodeHighlightsResult>;
 
 	/** Implementation in {@link EditorSimpleWorker.computeDiff} */
@@ -39,37 +39,37 @@ export interface IEditorWorkerService {
 		original: URI,
 		modified: URI,
 		options: IDocumentDiffProviderOptions,
-		algorithm: DiffAlgorithmName,
+		algorithm: DiffAlgorithmName
 	): Promise<IDocumentDiff | null>;
 
 	canComputeDirtyDiff(original: URI, modified: URI): boolean;
 	computeDirtyDiff(
 		original: URI,
 		modified: URI,
-		ignoreTrimWhitespace: boolean,
+		ignoreTrimWhitespace: boolean
 	): Promise<IChange[] | null>;
 
 	computeMoreMinimalEdits(
 		resource: URI,
 		edits: TextEdit[] | null | undefined,
-		pretty?: boolean,
+		pretty?: boolean
 	): Promise<TextEdit[] | undefined>;
 	computeHumanReadableDiff(
 		resource: URI,
-		edits: TextEdit[] | null | undefined,
+		edits: TextEdit[] | null | undefined
 	): Promise<TextEdit[] | undefined>;
 
 	canComputeWordRanges(resource: URI): boolean;
 	computeWordRanges(
 		resource: URI,
-		range: IRange,
+		range: IRange
 	): Promise<{ [word: string]: IRange[] } | null>;
 
 	canNavigateValueSet(resource: URI): boolean;
 	navigateValueSet(
 		resource: URI,
 		range: IRange,
-		up: boolean,
+		up: boolean
 	): Promise<IInplaceReplaceSupportResult | null>;
 }
 

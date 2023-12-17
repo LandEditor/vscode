@@ -40,26 +40,33 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 	private readonly cache: LanguagePacksCache;
 
 	constructor(
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super(extensionGalleryService);
-		this.cache = this._register(new LanguagePacksCache(environmentService, logService));
+		this.cache = this._register(
+			new LanguagePacksCache(environmentService, logService)
+		);
 		this.extensionManagementService.registerParticipant({
 			postInstall: async (extension: ILocalExtension): Promise<void> => {
 				return this.postInstallExtension(extension);
 			},
-			postUninstall: async (extension: ILocalExtension): Promise<void> => {
+			postUninstall: async (
+				extension: ILocalExtension
+			): Promise<void> => {
 				return this.postUninstallExtension(extension);
-			}
+			},
 		});
 	}
 
 	async getBuiltInExtensionTranslationsUri(
 		id: string,
-		language: string,
+		language: string
 	): Promise<URI | undefined> {
 		const packs = await this.cache.getLanguagePacks();
 		const pack = packs[language];
@@ -79,14 +86,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 				const languagePack = languagePacks[locale];
 				const baseQuickPick = this.createQuickPickItem(
 					locale,
-					languagePack.label,
+					languagePack.label
 				);
 				return {
 					...baseQuickPick,
 					extensionId:
 						languagePack.extensions[0].extensionIdentifier.id,
 				};
-			},
+			}
 		);
 		languages.push(this.createQuickPickItem("en", "English"));
 		languages.sort((a, b) => a.label.localeCompare(b.label));
@@ -94,7 +101,7 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 	}
 
 	private async postInstallExtension(
-		extension: ILocalExtension,
+		extension: ILocalExtension
 	): Promise<void> {
 		if (
 			extension &&
@@ -105,14 +112,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 		) {
 			this.logService.info(
 				"Adding language packs from the extension",
-				extension.identifier.id,
+				extension.identifier.id
 			);
 			await this.update();
 		}
 	}
 
 	private async postUninstallExtension(
-		extension: ILocalExtension,
+		extension: ILocalExtension
 	): Promise<void> {
 		const languagePacks = await this.cache.getLanguagePacks();
 		if (
@@ -122,14 +129,14 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 					languagePacks[language].extensions.some((e) =>
 						areSameExtensions(
 							e.extensionIdentifier,
-							extension.identifier,
-						),
-					),
+							extension.identifier
+						)
+					)
 			)
 		) {
 			this.logService.info(
 				"Removing language packs from the extension",
-				extension.identifier.id,
+				extension.identifier.id
 			);
 			await this.update();
 		}
@@ -152,11 +159,15 @@ class LanguagePacksCache extends Disposable {
 	private initializedCache: boolean | undefined;
 
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
-		this.languagePacksFilePath = join(environmentService.userDataPath, 'languagepacks.json');
+		this.languagePacksFilePath = join(
+			environmentService.userDataPath,
+			"languagepacks.json"
+		);
 		this.languagePacksFileLimiter = new Queue();
 	}
 
@@ -169,15 +180,15 @@ class LanguagePacksCache extends Disposable {
 	}
 
 	update(
-		extensions: ILocalExtension[],
+		extensions: ILocalExtension[]
 	): Promise<{ [language: string]: ILanguagePack }> {
 		return this.withLanguagePacks((languagePacks) => {
 			Object.keys(languagePacks).forEach(
-				(language) => delete languagePacks[language],
+				(language) => delete languagePacks[language]
 			);
 			this.createLanguagePacksFromExtensions(
 				languagePacks,
-				...extensions,
+				...extensions
 			);
 		}).then(() => this.languagePacks);
 	}
@@ -198,13 +209,13 @@ class LanguagePacksCache extends Disposable {
 			}
 		}
 		Object.keys(languagePacks).forEach((languageId) =>
-			this.updateHash(languagePacks[languageId]),
+			this.updateHash(languagePacks[languageId])
 		);
 	}
 
 	private createLanguagePacksFromExtension(
 		languagePacks: { [language: string]: ILanguagePack },
-		extension: ILocalExtension,
+		extension: ILocalExtension
 	): void {
 		const extensionIdentifier = extension.identifier;
 		const localizations =
@@ -235,8 +246,8 @@ class LanguagePacksCache extends Disposable {
 					(e) =>
 						areSameExtensions(
 							e.extensionIdentifier,
-							extensionIdentifier,
-						),
+							extensionIdentifier
+						)
 				)[0];
 				if (extensionInLanguagePack) {
 					extensionInLanguagePack.version =
@@ -250,7 +261,7 @@ class LanguagePacksCache extends Disposable {
 				for (const translation of localizationContribution.translations) {
 					languagePack.translations[translation.id] = join(
 						extension.location.fsPath,
-						translation.path,
+						translation.path
 					);
 				}
 			}
@@ -263,7 +274,7 @@ class LanguagePacksCache extends Disposable {
 			for (const extension of languagePack.extensions) {
 				md5.update(
 					extension.extensionIdentifier.uuid ||
-						extension.extensionIdentifier.id,
+						extension.extensionIdentifier.id
 				).update(extension.version); // CodeQL [SM01510] The extension UUID is not sensitive info and is not manually created by a user
 			}
 			languagePack.hash = md5.digest("hex");
@@ -273,7 +284,7 @@ class LanguagePacksCache extends Disposable {
 	private withLanguagePacks<T>(
 		fn: (languagePacks: {
 			[language: string]: ILanguagePack;
-		}) => T | null = () => null,
+		}) => T | null = () => null
 	): Promise<T> {
 		return this.languagePacksFileLimiter.queue(() => {
 			let result: T | null = null;
@@ -281,7 +292,7 @@ class LanguagePacksCache extends Disposable {
 				.then(undefined, (err) =>
 					err.code === "ENOENT"
 						? Promise.resolve("{}")
-						: Promise.reject(err),
+						: Promise.reject(err)
 				)
 				.then<{ [language: string]: ILanguagePack }>((raw) => {
 					try {
@@ -308,7 +319,7 @@ class LanguagePacksCache extends Disposable {
 				})
 				.then(
 					() => result,
-					(error) => this.logService.error(error),
+					(error) => this.logService.error(error)
 				);
 		});
 	}

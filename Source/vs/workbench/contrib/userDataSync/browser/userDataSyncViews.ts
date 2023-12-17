@@ -96,10 +96,14 @@ import { UserDataSyncConflictsViewPane } from "vs/workbench/contrib/userDataSync
 export class UserDataSyncDataViews extends Disposable {
 	constructor(
 		container: ViewContainer,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService
 	) {
 		super();
 		this.registerViews(container);
@@ -118,7 +122,7 @@ export class UserDataSyncDataViews extends Disposable {
 
 	private registerConflictsView(container: ViewContainer): void {
 		const viewsRegistry = Registry.as<IViewsRegistry>(
-			Extensions.ViewsRegistry,
+			Extensions.ViewsRegistry
 		);
 		const viewName = localize2("conflicts", "Conflicts");
 		viewsRegistry.registerViews(
@@ -127,24 +131,24 @@ export class UserDataSyncDataViews extends Disposable {
 					id: SYNC_CONFLICTS_VIEW_ID,
 					name: viewName,
 					ctorDescriptor: new SyncDescriptor(
-						UserDataSyncConflictsViewPane,
+						UserDataSyncConflictsViewPane
 					),
 					when: ContextKeyExpr.and(
 						CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW,
-						CONTEXT_HAS_CONFLICTS,
+						CONTEXT_HAS_CONFLICTS
 					),
 					canToggleVisibility: false,
 					canMoveView: false,
 					treeView: this.instantiationService.createInstance(
 						TreeView,
 						SYNC_CONFLICTS_VIEW_ID,
-						viewName.value,
+						viewName.value
 					),
 					collapsed: false,
 					order: 100,
 				},
 			],
-			container,
+			container
 		);
 	}
 
@@ -154,11 +158,11 @@ export class UserDataSyncDataViews extends Disposable {
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
 			id,
-			name.value,
+			name.value
 		);
 		const dataProvider = this.instantiationService.createInstance(
 			UserDataSyncMachinesViewDataProvider,
-			treeView,
+			treeView
 		);
 		treeView.showRefreshAction = true;
 		treeView.canSelectMany = true;
@@ -167,11 +171,11 @@ export class UserDataSyncDataViews extends Disposable {
 		this._register(
 			Event.any(
 				this.userDataSyncMachinesService.onDidChange,
-				this.userDataSyncService.onDidResetRemote,
-			)(() => treeView.refresh()),
+				this.userDataSyncService.onDidResetRemote
+			)(() => treeView.refresh())
 		);
 		const viewsRegistry = Registry.as<IViewsRegistry>(
-			Extensions.ViewsRegistry,
+			Extensions.ViewsRegistry
 		);
 		viewsRegistry.registerViews(
 			[
@@ -181,12 +185,12 @@ export class UserDataSyncDataViews extends Disposable {
 					ctorDescriptor: new SyncDescriptor(TreeViewPane),
 					when: ContextKeyExpr.and(
 						CONTEXT_SYNC_STATE.notEqualsTo(
-							SyncStatus.Uninitialized,
+							SyncStatus.Uninitialized
 						),
 						CONTEXT_ACCOUNT_STATE.isEqualTo(
-							AccountStatus.Available,
+							AccountStatus.Available
 						),
-						CONTEXT_ENABLE_ACTIVITY_VIEWS,
+						CONTEXT_ENABLE_ACTIVITY_VIEWS
 					),
 					canToggleVisibility: true,
 					canMoveView: false,
@@ -195,7 +199,7 @@ export class UserDataSyncDataViews extends Disposable {
 					order: 300,
 				},
 			],
-			container,
+			container
 		);
 
 		registerAction2(
@@ -205,13 +209,13 @@ export class UserDataSyncDataViews extends Disposable {
 						id: `workbench.actions.sync.editMachineName`,
 						title: localize(
 							"workbench.actions.sync.editMachineName",
-							"Edit Name",
+							"Edit Name"
 						),
 						icon: Codicon.edit,
 						menu: {
 							id: MenuId.ViewItemContext,
 							when: ContextKeyExpr.and(
-								ContextKeyExpr.equals("view", id),
+								ContextKeyExpr.equals("view", id)
 							),
 							group: "inline",
 						},
@@ -219,16 +223,16 @@ export class UserDataSyncDataViews extends Disposable {
 				}
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const changed = await dataProvider.rename(
-						handle.$treeItemHandle,
+						handle.$treeItemHandle
 					);
 					if (changed) {
 						await treeView.refresh();
 					}
 				}
-			},
+			}
 		);
 
 		registerAction2(
@@ -238,7 +242,7 @@ export class UserDataSyncDataViews extends Disposable {
 						id: `workbench.actions.sync.turnOffSyncOnMachine`,
 						title: localize(
 							"workbench.actions.sync.turnOffSyncOnMachine",
-							"Turn off Settings Sync",
+							"Turn off Settings Sync"
 						),
 						menu: {
 							id: MenuId.ViewItemContext,
@@ -246,8 +250,8 @@ export class UserDataSyncDataViews extends Disposable {
 								ContextKeyExpr.equals("view", id),
 								ContextKeyExpr.equals(
 									"viewItem",
-									"sync-machine",
-								),
+									"sync-machine"
+								)
 							),
 						},
 					});
@@ -255,25 +259,25 @@ export class UserDataSyncDataViews extends Disposable {
 				async run(
 					accessor: ServicesAccessor,
 					handle: TreeViewItemHandleArg,
-					selected?: TreeViewItemHandleArg[],
+					selected?: TreeViewItemHandleArg[]
 				): Promise<void> {
 					if (
 						await dataProvider.disable(
 							(selected || [handle]).map(
-								(handle) => handle.$treeItemHandle,
-							),
+								(handle) => handle.$treeItemHandle
+							)
 						)
 					) {
 						await treeView.refresh();
 					}
 				}
-			},
+			}
 		);
 	}
 
 	private registerActivityView(
 		container: ViewContainer,
-		remote: boolean,
+		remote: boolean
 	): void {
 		const id = `workbench.views.sync.${
 			remote ? "remote" : "local"
@@ -284,17 +288,17 @@ export class UserDataSyncDataViews extends Disposable {
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
 			id,
-			name.value,
+			name.value
 		);
 		treeView.showCollapseAllAction = true;
 		treeView.showRefreshAction = true;
 		treeView.dataProvider = remote
 			? this.instantiationService.createInstance(
-					RemoteUserDataSyncActivityViewDataProvider,
-			  )
+					RemoteUserDataSyncActivityViewDataProvider
+				)
 			: this.instantiationService.createInstance(
-					LocalUserDataSyncActivityViewDataProvider,
-			  );
+					LocalUserDataSyncActivityViewDataProvider
+				);
 
 		this._register(
 			Event.any(
@@ -302,11 +306,11 @@ export class UserDataSyncDataViews extends Disposable {
 					.onDidChangeResourceEnablement,
 				this.userDataSyncEnablementService.onDidChangeEnablement,
 				this.userDataSyncService.onDidResetLocal,
-				this.userDataSyncService.onDidResetRemote,
-			)(() => treeView.refresh()),
+				this.userDataSyncService.onDidResetRemote
+			)(() => treeView.refresh())
 		);
 		const viewsRegistry = Registry.as<IViewsRegistry>(
-			Extensions.ViewsRegistry,
+			Extensions.ViewsRegistry
 		);
 		viewsRegistry.registerViews(
 			[
@@ -316,12 +320,12 @@ export class UserDataSyncDataViews extends Disposable {
 					ctorDescriptor: new SyncDescriptor(TreeViewPane),
 					when: ContextKeyExpr.and(
 						CONTEXT_SYNC_STATE.notEqualsTo(
-							SyncStatus.Uninitialized,
+							SyncStatus.Uninitialized
 						),
 						CONTEXT_ACCOUNT_STATE.isEqualTo(
-							AccountStatus.Available,
+							AccountStatus.Available
 						),
-						CONTEXT_ENABLE_ACTIVITY_VIEWS,
+						CONTEXT_ENABLE_ACTIVITY_VIEWS
 					),
 					canToggleVisibility: true,
 					canMoveView: false,
@@ -331,7 +335,7 @@ export class UserDataSyncDataViews extends Disposable {
 					hideByDefault: !remote,
 				},
 			],
-			container,
+			container
 		);
 
 		this.registerDataViewActions(id);
@@ -341,23 +345,23 @@ export class UserDataSyncDataViews extends Disposable {
 		const id = `workbench.views.sync.externalActivity`;
 		const name = localize2(
 			"downloaded sync activity title",
-			"Sync Activity (Developer)",
+			"Sync Activity (Developer)"
 		);
 		const dataProvider = this.instantiationService.createInstance(
 			ExtractedUserDataSyncActivityViewDataProvider,
-			undefined,
+			undefined
 		);
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
 			id,
-			name.value,
+			name.value
 		);
 		treeView.showCollapseAllAction = false;
 		treeView.showRefreshAction = false;
 		treeView.dataProvider = dataProvider;
 
 		const viewsRegistry = Registry.as<IViewsRegistry>(
-			Extensions.ViewsRegistry,
+			Extensions.ViewsRegistry
 		);
 		viewsRegistry.registerViews(
 			[
@@ -373,7 +377,7 @@ export class UserDataSyncDataViews extends Disposable {
 					hideByDefault: false,
 				},
 			],
-			container,
+			container
 		);
 
 		this._register(
@@ -384,7 +388,7 @@ export class UserDataSyncDataViews extends Disposable {
 							id: `workbench.actions.sync.loadActivity`,
 							title: localize(
 								"workbench.actions.sync.loadActivity",
-								"Load Sync Activity",
+								"Load Sync Activity"
 							),
 							icon: Codicon.cloudUpload,
 							menu: {
@@ -400,7 +404,7 @@ export class UserDataSyncDataViews extends Disposable {
 						const result = await fileDialogService.showOpenDialog({
 							title: localize(
 								"select sync activity file",
-								"Select Sync Activity File or Folder",
+								"Select Sync Activity File or Folder"
 							),
 							canSelectFiles: true,
 							canSelectFolders: true,
@@ -412,8 +416,8 @@ export class UserDataSyncDataViews extends Disposable {
 						dataProvider.activityDataResource = result[0];
 						await treeView.refresh();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -425,7 +429,7 @@ export class UserDataSyncDataViews extends Disposable {
 						id: `workbench.actions.sync.resolveResource`,
 						title: localize(
 							"workbench.actions.sync.resolveResourceRef",
-							"Show raw JSON sync data",
+							"Show raw JSON sync data"
 						),
 						menu: {
 							id: MenuId.ViewItemContext,
@@ -433,15 +437,15 @@ export class UserDataSyncDataViews extends Disposable {
 								ContextKeyExpr.equals("view", viewId),
 								ContextKeyExpr.regex(
 									"viewItem",
-									/sync-resource-.*/i,
-								),
+									/sync-resource-.*/i
+								)
 							),
 						},
 					});
 				}
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const { resource } = <{ resource: string }>(
 						JSON.parse(handle.$treeItemHandle)
@@ -452,7 +456,7 @@ export class UserDataSyncDataViews extends Disposable {
 						options: { pinned: true },
 					});
 				}
-			},
+			}
 		);
 
 		registerAction2(
@@ -462,7 +466,7 @@ export class UserDataSyncDataViews extends Disposable {
 						id: `workbench.actions.sync.compareWithLocal`,
 						title: localize(
 							"workbench.actions.sync.compareWithLocal",
-							"Compare with Local",
+							"Compare with Local"
 						),
 						menu: {
 							id: MenuId.ViewItemContext,
@@ -470,15 +474,15 @@ export class UserDataSyncDataViews extends Disposable {
 								ContextKeyExpr.equals("view", viewId),
 								ContextKeyExpr.regex(
 									"viewItem",
-									/sync-associatedResource-.*/i,
-								),
+									/sync-associatedResource-.*/i
+								)
 							),
 						},
 					});
 				}
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const commandService = accessor.get(ICommandService);
 					const { resource, comparableResource } = <
@@ -499,7 +503,7 @@ export class UserDataSyncDataViews extends Disposable {
 									comment: ["remote as in file in cloud"],
 								},
 								"{0} (Remote)",
-								basename(remoteResource),
+								basename(remoteResource)
 							),
 							localize(
 								{
@@ -507,13 +511,13 @@ export class UserDataSyncDataViews extends Disposable {
 									comment: ["local as in file in disk"],
 								},
 								"{0} (Local)",
-								basename(localResource),
-							),
+								basename(localResource)
+							)
 						),
-						undefined,
+						undefined
 					);
 				}
-			},
+			}
 		);
 
 		registerAction2(
@@ -523,7 +527,7 @@ export class UserDataSyncDataViews extends Disposable {
 						id: `workbench.actions.sync.replaceCurrent`,
 						title: localize(
 							"workbench.actions.sync.replaceCurrent",
-							"Restore",
+							"Restore"
 						),
 						icon: Codicon.discard,
 						menu: {
@@ -532,8 +536,8 @@ export class UserDataSyncDataViews extends Disposable {
 								ContextKeyExpr.equals("view", viewId),
 								ContextKeyExpr.regex(
 									"viewItem",
-									/sync-resource-.*/i,
-								),
+									/sync-resource-.*/i
+								)
 							),
 							group: "inline",
 						},
@@ -541,7 +545,7 @@ export class UserDataSyncDataViews extends Disposable {
 				}
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const dialogService = accessor.get(IDialogService);
 					const userDataSyncService =
@@ -561,7 +565,7 @@ export class UserDataSyncDataViews extends Disposable {
 								],
 							},
 							"Would you like to replace your current {0} with selected?",
-							getSyncAreaLabel(syncResource),
+							getSyncAreaLabel(syncResource)
 						),
 						type: "info",
 						title: SYNC_TITLE.value,
@@ -573,7 +577,7 @@ export class UserDataSyncDataViews extends Disposable {
 						});
 					}
 				}
-			},
+			}
 		);
 	}
 
@@ -583,16 +587,16 @@ export class UserDataSyncDataViews extends Disposable {
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
 			id,
-			name.value,
+			name.value
 		);
 		const dataProvider = this.instantiationService.createInstance(
-			UserDataSyncTroubleshootViewDataProvider,
+			UserDataSyncTroubleshootViewDataProvider
 		);
 		treeView.showRefreshAction = true;
 		treeView.dataProvider = dataProvider;
 
 		const viewsRegistry = Registry.as<IViewsRegistry>(
-			Extensions.ViewsRegistry,
+			Extensions.ViewsRegistry
 		);
 		viewsRegistry.registerViews(
 			[
@@ -609,7 +613,7 @@ export class UserDataSyncDataViews extends Disposable {
 					hideByDefault: true,
 				},
 			],
-			container,
+			container
 		);
 	}
 }
@@ -639,13 +643,19 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 	>();
 
 	constructor(
-		@IUserDataSyncService protected readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncResourceProviderService protected readonly userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataAutoSyncService protected readonly userDataAutoSyncService: IUserDataAutoSyncService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IUserDataProfilesService protected readonly userDataProfilesService: IUserDataProfilesService,
-	) { }
+		@IUserDataSyncService
+		protected readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncResourceProviderService
+		protected readonly userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataAutoSyncService
+		protected readonly userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IUserDataProfilesService
+		protected readonly userDataProfilesService: IUserDataProfilesService
+	) {}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		try {
@@ -658,21 +668,21 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 					this.userDataProfilesService.defaultProfile.id
 			) {
 				let promise = this.syncResourceHandlesByProfile.get(
-					element.handle,
+					element.handle
 				);
 				if (!promise) {
 					this.syncResourceHandlesByProfile.set(
 						element.handle,
 						(promise = this.getSyncResourceHandles(
-							<T>(<ProfileTreeItem>element).profile,
-						)),
+							<T>(<ProfileTreeItem>element).profile
+						))
 					);
 				}
 				return await promise;
 			}
 			if ((<SyncResourceHandleTreeItem>element).syncResourceHandle) {
 				return await this.getChildrenForSyncResourceTreeItem(
-					<SyncResourceHandleTreeItem>element,
+					<SyncResourceHandleTreeItem>element
 				);
 			}
 			return [];
@@ -695,7 +705,7 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 								undefined,
 								true,
 								() =>
-									this.userDataSyncWorkbenchService.resetSyncedData(),
+									this.userDataSyncWorkbenchService.resetSyncedData()
 							),
 						],
 					},
@@ -742,18 +752,18 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 	}
 
 	protected async getChildrenForSyncResourceTreeItem(
-		element: SyncResourceHandleTreeItem,
+		element: SyncResourceHandleTreeItem
 	): Promise<ITreeItem[]> {
 		const syncResourceHandle = (<SyncResourceHandleTreeItem>element)
 			.syncResourceHandle;
 		const associatedResources =
 			await this.userDataSyncResourceProviderService.getAssociatedResources(
-				syncResourceHandle,
+				syncResourceHandle
 			);
 		const previousAssociatedResources = syncResourceHandle.previous
 			? await this.userDataSyncResourceProviderService.getAssociatedResources(
-					syncResourceHandle.previous,
-			  )
+					syncResourceHandle.previous
+				)
 			: [];
 		return associatedResources.map(({ resource, comparableResource }) => {
 			const handle = JSON.stringify({
@@ -761,8 +771,7 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 				comparableResource: comparableResource.toString(),
 			});
 			const previousResource = previousAssociatedResources.find(
-				(previous) =>
-					basename(previous.resource) === basename(resource),
+				(previous) => basename(previous.resource) === basename(resource)
 			)?.resource;
 			return {
 				handle,
@@ -780,42 +789,42 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 									"{0} ↔ {1}",
 									`${basename(resource)} (${fromNow(
 										syncResourceHandle.previous!.created,
-										true,
+										true
 									)})`,
 									`${basename(resource)} (${fromNow(
 										syncResourceHandle.created,
-										true,
-									)})`,
+										true
+									)})`
 								),
 								undefined,
 							],
-					  }
+						}
 					: {
 							id: API_OPEN_EDITOR_COMMAND_ID,
 							title: "",
 							arguments: [resource, undefined, undefined],
-					  },
+						},
 				contextValue: `sync-associatedResource-${syncResourceHandle.syncResource}`,
 			};
 		});
 	}
 
 	private async getSyncResourceHandles(
-		profile?: T,
+		profile?: T
 	): Promise<SyncResourceHandleTreeItem[]> {
 		const treeItems: SyncResourceHandleTreeItem[] = [];
 		const result = await Promise.all(
 			ALL_SYNC_RESOURCES.map(async (syncResource) => {
 				const resourceHandles = await this.getResourceHandles(
 					syncResource,
-					profile,
+					profile
 				);
 				return resourceHandles.map((resourceHandle, index) => ({
 					...resourceHandle,
 					syncResource,
 					previous: resourceHandles[index + 1],
 				}));
-			}),
+			})
 		);
 		const syncResourceHandles = result
 			.flat()
@@ -844,18 +853,18 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 	protected abstract getProfiles(): Promise<Profile[]>;
 	protected abstract getResourceHandles(
 		syncResource: SyncResource,
-		profile?: T,
+		profile?: T
 	): Promise<IResourceHandle[]>;
 }
 
 class LocalUserDataSyncActivityViewDataProvider extends UserDataSyncActivityViewDataProvider<ISyncUserDataProfile> {
 	protected getResourceHandles(
 		syncResource: SyncResource,
-		profile: ISyncUserDataProfile | undefined,
+		profile: ISyncUserDataProfile | undefined
 	): Promise<IResourceHandle[]> {
 		return this.userDataSyncResourceProviderService.getLocalSyncResourceHandles(
 			syncResource,
-			profile,
+			profile
 		);
 	}
 
@@ -875,14 +884,26 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 
 	constructor(
 		@IUserDataSyncService userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncResourceProviderService userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IUserDataSyncWorkbenchService userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncResourceProviderService
+		userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IUserDataSyncWorkbenchService
+		userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 		@INotificationService notificationService: INotificationService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService
 	) {
-		super(userDataSyncService, userDataSyncResourceProviderService, userDataAutoSyncService, userDataSyncWorkbenchService, notificationService, userDataProfilesService);
+		super(
+			userDataSyncService,
+			userDataSyncResourceProviderService,
+			userDataAutoSyncService,
+			userDataSyncWorkbenchService,
+			notificationService,
+			userDataProfilesService
+		);
 	}
 
 	override async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
@@ -902,11 +923,11 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 
 	protected getResourceHandles(
 		syncResource: SyncResource,
-		profile?: ISyncUserDataProfile,
+		profile?: ISyncUserDataProfile
 	): Promise<IResourceHandle[]> {
 		return this.userDataSyncResourceProviderService.getRemoteSyncResourceHandles(
 			syncResource,
-			profile,
+			profile
 		);
 	}
 
@@ -915,15 +936,15 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 	}
 
 	protected override async getChildrenForSyncResourceTreeItem(
-		element: SyncResourceHandleTreeItem,
+		element: SyncResourceHandleTreeItem
 	): Promise<ITreeItem[]> {
 		const children = await super.getChildrenForSyncResourceTreeItem(
-			element,
+			element
 		);
 		if (children.length) {
 			const machineId =
 				await this.userDataSyncResourceProviderService.getMachineId(
-					element.syncResourceHandle,
+					element.syncResourceHandle
 				);
 			if (machineId) {
 				const machines = await this.getMachines();
@@ -934,8 +955,8 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 								key: "current",
 								comment: ["Represents current machine"],
 							},
-							"Current",
-					  )
+							"Current"
+						)
 					: machine?.name;
 			}
 		}
@@ -951,15 +972,27 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 	constructor(
 		public activityDataResource: URI | undefined,
 		@IUserDataSyncService userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncResourceProviderService userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@IUserDataSyncWorkbenchService userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncResourceProviderService
+		userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncWorkbenchService
+		userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 		@INotificationService notificationService: INotificationService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
-		super(userDataSyncService, userDataSyncResourceProviderService, userDataAutoSyncService, userDataSyncWorkbenchService, notificationService, userDataProfilesService);
+		super(
+			userDataSyncService,
+			userDataSyncResourceProviderService,
+			userDataAutoSyncService,
+			userDataSyncWorkbenchService,
+			notificationService,
+			userDataProfilesService
+		);
 	}
 
 	override async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
@@ -969,7 +1002,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 				return [];
 			}
 			const stat = await this.fileService.resolve(
-				this.activityDataResource,
+				this.activityDataResource
 			);
 			if (stat.isDirectory) {
 				this.activityDataLocation = this.activityDataResource;
@@ -977,9 +1010,9 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 				this.activityDataLocation =
 					this.uriIdentityService.extUri.joinPath(
 						this.uriIdentityService.extUri.dirname(
-							this.activityDataResource,
+							this.activityDataResource
 						),
-						"remoteActivity",
+						"remoteActivity"
 					);
 				try {
 					await this.fileService.del(this.activityDataLocation, {
@@ -990,7 +1023,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 				}
 				await this.userDataSyncService.extractActivityData(
 					this.activityDataResource,
-					this.activityDataLocation,
+					this.activityDataLocation
 				);
 			}
 		}
@@ -999,31 +1032,31 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 
 	protected getResourceHandles(
 		syncResource: SyncResource,
-		profile: ISyncUserDataProfile | undefined,
+		profile: ISyncUserDataProfile | undefined
 	): Promise<IResourceHandle[]> {
 		return this.userDataSyncResourceProviderService.getLocalSyncResourceHandles(
 			syncResource,
 			profile,
-			this.activityDataLocation,
+			this.activityDataLocation
 		);
 	}
 
 	protected override async getProfiles(): Promise<ISyncUserDataProfile[]> {
 		return this.userDataSyncResourceProviderService.getLocalSyncedProfiles(
-			this.activityDataLocation,
+			this.activityDataLocation
 		);
 	}
 
 	protected override async getChildrenForSyncResourceTreeItem(
-		element: SyncResourceHandleTreeItem,
+		element: SyncResourceHandleTreeItem
 	): Promise<ITreeItem[]> {
 		const children = await super.getChildrenForSyncResourceTreeItem(
-			element,
+			element
 		);
 		if (children.length) {
 			const machineId =
 				await this.userDataSyncResourceProviderService.getMachineId(
-					element.syncResourceHandle,
+					element.syncResourceHandle
 				);
 			if (machineId) {
 				const machines = await this.getMachines();
@@ -1034,8 +1067,8 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 								key: "current",
 								comment: ["Represents current machine"],
 							},
-							"Current",
-					  )
+							"Current"
+						)
 					: machine?.name;
 			}
 		}
@@ -1046,7 +1079,7 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 		if (this.machinesPromise === undefined) {
 			this.machinesPromise =
 				this.userDataSyncResourceProviderService.getLocalSyncedMachines(
-					this.activityDataLocation,
+					this.activityDataLocation
 				);
 		}
 		return this.machinesPromise;
@@ -1058,13 +1091,16 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 
 	constructor(
 		private readonly treeView: TreeView,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-	) {
-	}
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService
+	) {}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
@@ -1085,8 +1121,8 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				description: isCurrent
 					? localize(
 							{ key: "current", comment: ["Current machine"] },
-							"Current",
-					  )
+							"Current"
+						)
 					: undefined,
 				themeIcon:
 					platform && isWebPlatform(platform)
@@ -1111,15 +1147,15 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 	async disable(machineIds: string[]): Promise<boolean> {
 		const machines = await this.getMachines();
 		const machinesToDisable = machines.filter(({ id }) =>
-			machineIds.includes(id),
+			machineIds.includes(id)
 		);
 		if (!machinesToDisable.length) {
 			throw new Error(
 				localize(
 					"not found",
 					"machine not found with id: {0}",
-					machineIds.join(","),
-				),
+					machineIds.join(",")
+				)
 			);
 		}
 
@@ -1129,16 +1165,16 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				machinesToDisable.length > 1
 					? localize(
 							"turn off sync on multiple machines",
-							"Are you sure you want to turn off sync on selected machines?",
-					  )
+							"Are you sure you want to turn off sync on selected machines?"
+						)
 					: localize(
 							"turn off sync on machine",
 							"Are you sure you want to turn off sync on {0}?",
-							machinesToDisable[0].name,
-					  ),
+							machinesToDisable[0].name
+						),
 			primaryButton: localize(
 				{ key: "turn off", comment: ["&& denotes a mnemonic"] },
-				"&&Turn off",
+				"&&Turn off"
 			),
 		});
 
@@ -1155,7 +1191,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 			.map((machine) => [machine.id, false]);
 		if (otherMachinesToDisable.length) {
 			await this.userDataSyncMachinesService.setEnablements(
-				otherMachinesToDisable,
+				otherMachinesToDisable
 			);
 		}
 
@@ -1165,11 +1201,11 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 	async rename(machineId: string): Promise<boolean> {
 		const disposableStore = new DisposableStore();
 		const inputBox = disposableStore.add(
-			this.quickInputService.createInputBox(),
+			this.quickInputService.createInputBox()
 		);
 		inputBox.placeholder = localize(
 			"placeholder",
-			"Enter the name of the machine",
+			"Enter the name of the machine"
 		);
 		inputBox.busy = true;
 		inputBox.show();
@@ -1182,8 +1218,8 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 				localize(
 					"not found",
 					"machine not found with id: {0}",
-					machineId,
-				),
+					machineId
+				)
 			);
 		}
 		inputBox.busy = false;
@@ -1192,7 +1228,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 			machineName = machineName.trim();
 			return machineName &&
 				!machines.some(
-					(m) => m.id !== machineId && m.name === machineName,
+					(m) => m.id !== machineId && m.name === machineName
 				)
 				? machineName
 				: null;
@@ -1201,14 +1237,14 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 			inputBox.onDidChangeValue(
 				() =>
 					(inputBox.validationMessage = validateMachineName(
-						inputBox.value,
+						inputBox.value
 					)
 						? ""
 						: localize(
 								"valid message",
-								"Machine name should be unique and not empty",
-						  )),
-			),
+								"Machine name should be unique and not empty"
+							))
+			)
 		);
 		return new Promise<boolean>((c, e) => {
 			disposableStore.add(
@@ -1219,7 +1255,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 						try {
 							await this.userDataSyncMachinesService.renameMachine(
 								machineId,
-								machineName,
+								machineName
 							);
 							c(true);
 						} catch (error) {
@@ -1228,7 +1264,7 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 					} else {
 						c(false);
 					}
-				}),
+				})
 			);
 		});
 	}
@@ -1239,11 +1275,13 @@ class UserDataSyncTroubleshootViewDataProvider
 {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) {
-	}
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
+	) {}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
@@ -1260,7 +1298,7 @@ class UserDataSyncTroubleshootViewDataProvider
 					label: {
 						label: localize(
 							"last sync states",
-							"Last Synced Remotes",
+							"Last Synced Remotes"
 						),
 					},
 					themeIcon: Codicon.folder,
@@ -1286,7 +1324,7 @@ class UserDataSyncTroubleshootViewDataProvider
 				undefined,
 				syncResource,
 				this.environmentService,
-				this.uriIdentityService.extUri,
+				this.uriIdentityService.extUri
 			);
 			if (await this.fileService.exists(resource)) {
 				result.push({
@@ -1321,15 +1359,15 @@ class UserDataSyncTroubleshootViewDataProvider
 				},
 				description: this.uriIdentityService.extUri.isEqual(
 					logFolder,
-					this.environmentService.logsHome,
+					this.environmentService.logsHome
 				)
 					? localize(
 							{
 								key: "current",
 								comment: ["Represents current log file"],
 							},
-							"Current",
-					  )
+							"Current"
+						)
 					: undefined,
 				command: {
 					id: API_OPEN_EDITOR_COMMAND_ID,

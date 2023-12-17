@@ -19,12 +19,12 @@ import {
 export class MainThreadWebviewManager extends Disposable {
 	constructor(
 		context: IExtHostContext,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
 		const webviews = this._register(
-			instantiationService.createInstance(MainThreadWebviews, context),
+			instantiationService.createInstance(MainThreadWebviews, context)
 		);
 		context.set(extHostProtocol.MainContext.MainThreadWebviews, webviews);
 
@@ -32,12 +32,12 @@ export class MainThreadWebviewManager extends Disposable {
 			instantiationService.createInstance(
 				MainThreadWebviewPanels,
 				context,
-				webviews,
-			),
+				webviews
+			)
 		);
 		context.set(
 			extHostProtocol.MainContext.MainThreadWebviewPanels,
-			webviewPanels,
+			webviewPanels
 		);
 
 		const customEditors = this._register(
@@ -45,24 +45,24 @@ export class MainThreadWebviewManager extends Disposable {
 				MainThreadCustomEditors,
 				context,
 				webviews,
-				webviewPanels,
-			),
+				webviewPanels
+			)
 		);
 		context.set(
 			extHostProtocol.MainContext.MainThreadCustomEditors,
-			customEditors,
+			customEditors
 		);
 
 		const webviewViews = this._register(
 			instantiationService.createInstance(
 				MainThreadWebviewsViews,
 				context,
-				webviews,
-			),
+				webviews
+			)
 		);
 		context.set(
 			extHostProtocol.MainContext.MainThreadWebviewViews,
-			webviewViews,
+			webviewViews
 		);
 	}
 }

@@ -20,7 +20,7 @@ class SleepResumeRepaintMinimap
 {
 	constructor(
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@INativeHostService nativeHostService: INativeHostService,
+		@INativeHostService nativeHostService: INativeHostService
 	) {
 		super();
 
@@ -29,14 +29,14 @@ class SleepResumeRepaintMinimap
 				codeEditorService
 					.listCodeEditors()
 					.forEach((editor) => editor.render(true));
-			}),
+			})
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	SleepResumeRepaintMinimap,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

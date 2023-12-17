@@ -28,7 +28,7 @@ export class TerminalProcessExtHostProxy
 	private readonly _onProcessData = this._register(new Emitter<string>());
 	readonly onProcessData: Event<string> = this._onProcessData.event;
 	private readonly _onProcessReady = this._register(
-		new Emitter<IProcessReadyEvent>(),
+		new Emitter<IProcessReadyEvent>()
 	);
 	get onProcessReady(): Event<IProcessReadyEvent> {
 		return this._onProcessReady.event;
@@ -45,7 +45,7 @@ export class TerminalProcessExtHostProxy
 	readonly onResize: Event<{ cols: number; rows: number }> =
 		this._onResize.event;
 	private readonly _onAcknowledgeDataEvent = this._register(
-		new Emitter<number>(),
+		new Emitter<number>()
 	);
 	readonly onAcknowledgeDataEvent: Event<number> =
 		this._onAcknowledgeDataEvent.event;
@@ -56,27 +56,27 @@ export class TerminalProcessExtHostProxy
 	private readonly _onRequestCwd = this._register(new Emitter<void>());
 	readonly onRequestCwd: Event<void> = this._onRequestCwd.event;
 	private readonly _onDidChangeProperty = this._register(
-		new Emitter<IProcessProperty<any>>(),
+		new Emitter<IProcessProperty<any>>()
 	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
 	private readonly _onProcessExit = this._register(
-		new Emitter<number | undefined>(),
+		new Emitter<number | undefined>()
 	);
 	readonly onProcessExit: Event<number | undefined> =
 		this._onProcessExit.event;
 
 	private _pendingInitialCwdRequests: ((
-		value: string | PromiseLike<string>,
+		value: string | PromiseLike<string>
 	) => void)[] = [];
 	private _pendingCwdRequests: ((
-		value: string | PromiseLike<string>,
+		value: string | PromiseLike<string>
 	) => void)[] = [];
 
 	constructor(
 		public instanceId: number,
 		private _cols: number,
 		private _rows: number,
-		@ITerminalService private readonly _terminalService: ITerminalService,
+		@ITerminalService private readonly _terminalService: ITerminalService
 	) {
 		super();
 	}
@@ -151,7 +151,7 @@ export class TerminalProcessExtHostProxy
 		return this._terminalService.requestStartExtensionTerminal(
 			this,
 			this._cols,
-			this._rows,
+			this._rows
 		);
 	}
 
@@ -199,14 +199,14 @@ export class TerminalProcessExtHostProxy
 	}
 
 	async refreshProperty<T extends ProcessPropertyType>(
-		type: T,
+		type: T
 	): Promise<any> {
 		// throws if called in extHostTerminalService
 	}
 
 	async updateProperty<T extends ProcessPropertyType>(
 		type: T,
-		value: IProcessPropertyMap[T],
+		value: IProcessPropertyMap[T]
 	): Promise<void> {
 		// throws if called in extHostTerminalService
 	}

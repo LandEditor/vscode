@@ -19,7 +19,7 @@ export interface ITextAreaWrapper {
 	setSelectionRange(
 		reason: string,
 		selectionStart: number,
-		selectionEnd: number,
+		selectionEnd: number
 	): void;
 }
 
@@ -50,7 +50,7 @@ export class TextAreaState {
 		/** the editor range in the view coordinate system that matches the selection inside `value` */
 		public readonly selection: Range | null,
 		/** the visible line count (wrapped, not necessarily matching \n characters) for the text in `value` before `selectionStart` */
-		public readonly newlineCountBeforeSelection: number | undefined,
+		public readonly newlineCountBeforeSelection: number | undefined
 	) {}
 
 	public toString(): string {
@@ -59,7 +59,7 @@ export class TextAreaState {
 
 	public static readFromTextArea(
 		textArea: ITextAreaWrapper,
-		previousState: TextAreaState | null,
+		previousState: TextAreaState | null
 	): TextAreaState {
 		const value = textArea.getValue();
 		const selectionStart = textArea.getSelectionStart();
@@ -68,7 +68,7 @@ export class TextAreaState {
 		if (previousState) {
 			const valueBeforeSelectionStart = value.substring(
 				0,
-				selectionStart,
+				selectionStart
 			);
 			const previousValueBeforeSelectionStart =
 				previousState.value.substring(0, previousState.selectionStart);
@@ -84,7 +84,7 @@ export class TextAreaState {
 			selectionStart,
 			selectionEnd,
 			null,
-			newlineCountBeforeSelection,
+			newlineCountBeforeSelection
 		);
 	}
 
@@ -97,14 +97,14 @@ export class TextAreaState {
 			this.value.length,
 			this.value.length,
 			null,
-			undefined,
+			undefined
 		);
 	}
 
 	public writeToTextArea(
 		reason: string,
 		textArea: ITextAreaWrapper,
-		select: boolean,
+		select: boolean
 	): void {
 		if (_debugComposition) {
 			console.log(`writeToTextArea ${reason}: ${this.toString()}`);
@@ -114,20 +114,20 @@ export class TextAreaState {
 			textArea.setSelectionRange(
 				reason,
 				this.selectionStart,
-				this.selectionEnd,
+				this.selectionEnd
 			);
 		}
 	}
 
 	public deduceEditorPosition(
-		offset: number,
+		offset: number
 	): [Position | null, number, number] {
 		if (offset <= this.selectionStart) {
 			const str = this.value.substring(offset, this.selectionStart);
 			return this._finishDeduceEditorPosition(
 				this.selection?.getStartPosition() ?? null,
 				str,
-				-1,
+				-1
 			);
 		}
 		if (offset >= this.selectionEnd) {
@@ -135,7 +135,7 @@ export class TextAreaState {
 			return this._finishDeduceEditorPosition(
 				this.selection?.getEndPosition() ?? null,
 				str,
-				1,
+				1
 			);
 		}
 		const str1 = this.value.substring(this.selectionStart, offset);
@@ -143,28 +143,28 @@ export class TextAreaState {
 			return this._finishDeduceEditorPosition(
 				this.selection?.getStartPosition() ?? null,
 				str1,
-				1,
+				1
 			);
 		}
 		const str2 = this.value.substring(offset, this.selectionEnd);
 		return this._finishDeduceEditorPosition(
 			this.selection?.getEndPosition() ?? null,
 			str2,
-			-1,
+			-1
 		);
 	}
 
 	private _finishDeduceEditorPosition(
 		anchor: Position | null,
 		deltaText: string,
-		signum: number,
+		signum: number
 	): [Position | null, number, number] {
 		let lineFeedCnt = 0;
 		let lastLineFeedIndex = -1;
 		while (
 			(lastLineFeedIndex = deltaText.indexOf(
 				"\n",
-				lastLineFeedIndex + 1,
+				lastLineFeedIndex + 1
 			)) !== -1
 		) {
 			lineFeedCnt++;
@@ -175,7 +175,7 @@ export class TextAreaState {
 	public static deduceInput(
 		previousState: TextAreaState,
 		currentState: TextAreaState,
-		couldBeEmojiInput: boolean,
+		couldBeEmojiInput: boolean
 	): ITypeData {
 		if (!previousState) {
 			// This is the EMPTY state
@@ -196,20 +196,20 @@ export class TextAreaState {
 		const prefixLength = Math.min(
 			strings.commonPrefixLength(previousState.value, currentState.value),
 			previousState.selectionStart,
-			currentState.selectionStart,
+			currentState.selectionStart
 		);
 		const suffixLength = Math.min(
 			strings.commonSuffixLength(previousState.value, currentState.value),
 			previousState.value.length - previousState.selectionEnd,
-			currentState.value.length - currentState.selectionEnd,
+			currentState.value.length - currentState.selectionEnd
 		);
 		const previousValue = previousState.value.substring(
 			prefixLength,
-			previousState.value.length - suffixLength,
+			previousState.value.length - suffixLength
 		);
 		const currentValue = currentState.value.substring(
 			prefixLength,
-			currentState.value.length - suffixLength,
+			currentState.value.length - suffixLength
 		);
 		const previousSelectionStart =
 			previousState.selectionStart - prefixLength;
@@ -220,10 +220,10 @@ export class TextAreaState {
 
 		if (_debugComposition) {
 			console.log(
-				`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`,
+				`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`
 			);
 			console.log(
-				`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`,
+				`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`
 			);
 		}
 
@@ -233,7 +233,7 @@ export class TextAreaState {
 				previousState.selectionStart - prefixLength;
 			if (_debugComposition) {
 				console.log(
-					`REMOVE PREVIOUS: ${replacePreviousCharacters} chars`,
+					`REMOVE PREVIOUS: ${replacePreviousCharacters} chars`
 				);
 			}
 
@@ -258,7 +258,7 @@ export class TextAreaState {
 
 	public static deduceAndroidCompositionInput(
 		previousState: TextAreaState,
-		currentState: TextAreaState,
+		currentState: TextAreaState
 	): ITypeData {
 		if (!previousState) {
 			// This is the EMPTY state
@@ -272,7 +272,7 @@ export class TextAreaState {
 
 		if (_debugComposition) {
 			console.log(
-				"------------------------deduceAndroidCompositionInput",
+				"------------------------deduceAndroidCompositionInput"
 			);
 			console.log(`PREVIOUS STATE: ${previousState.toString()}`);
 			console.log(`CURRENT STATE: ${currentState.toString()}`);
@@ -290,19 +290,19 @@ export class TextAreaState {
 
 		const prefixLength = Math.min(
 			strings.commonPrefixLength(previousState.value, currentState.value),
-			previousState.selectionEnd,
+			previousState.selectionEnd
 		);
 		const suffixLength = Math.min(
 			strings.commonSuffixLength(previousState.value, currentState.value),
-			previousState.value.length - previousState.selectionEnd,
+			previousState.value.length - previousState.selectionEnd
 		);
 		const previousValue = previousState.value.substring(
 			prefixLength,
-			previousState.value.length - suffixLength,
+			previousState.value.length - suffixLength
 		);
 		const currentValue = currentState.value.substring(
 			prefixLength,
-			currentState.value.length - suffixLength,
+			currentState.value.length - suffixLength
 		);
 		const previousSelectionStart =
 			previousState.selectionStart - prefixLength;
@@ -313,10 +313,10 @@ export class TextAreaState {
 
 		if (_debugComposition) {
 			console.log(
-				`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`,
+				`AFTER DIFFING PREVIOUS STATE: <${previousValue}>, selectionStart: ${previousSelectionStart}, selectionEnd: ${previousSelectionEnd}`
 			);
 			console.log(
-				`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`,
+				`AFTER DIFFING CURRENT STATE: <${currentValue}>, selectionStart: ${currentSelectionStart}, selectionEnd: ${currentSelectionEnd}`
 			);
 		}
 
@@ -332,7 +332,7 @@ export class TextAreaState {
 export class PagedScreenReaderStrategy {
 	private static _getPageOfLine(
 		lineNumber: number,
-		linesPerPage: number,
+		linesPerPage: number
 	): number {
 		return Math.floor((lineNumber - 1) / linesPerPage);
 	}
@@ -348,7 +348,7 @@ export class PagedScreenReaderStrategy {
 		model: ISimpleModel,
 		selection: Range,
 		linesPerPage: number,
-		trimLongText: boolean,
+		trimLongText: boolean
 	): TextAreaState {
 		// Chromium handles very poorly text even of a few thousand chars
 		// Cut text to avoid stalling the entire UI
@@ -356,26 +356,26 @@ export class PagedScreenReaderStrategy {
 
 		const selectionStartPage = PagedScreenReaderStrategy._getPageOfLine(
 			selection.startLineNumber,
-			linesPerPage,
+			linesPerPage
 		);
 		const selectionStartPageRange =
 			PagedScreenReaderStrategy._getRangeForPage(
 				selectionStartPage,
-				linesPerPage,
+				linesPerPage
 			);
 
 		const selectionEndPage = PagedScreenReaderStrategy._getPageOfLine(
 			selection.endLineNumber,
-			linesPerPage,
+			linesPerPage
 		);
 		const selectionEndPageRange =
 			PagedScreenReaderStrategy._getRangeForPage(
 				selectionEndPage,
-				linesPerPage,
+				linesPerPage
 			);
 
 		let pretextRange = selectionStartPageRange.intersectRanges(
-			new Range(1, 1, selection.startLineNumber, selection.startColumn),
+			new Range(1, 1, selection.startLineNumber, selection.startColumn)
 		)!;
 		if (
 			trimLongText &&
@@ -384,16 +384,16 @@ export class PagedScreenReaderStrategy {
 		) {
 			const pretextStart = model.modifyPosition(
 				pretextRange.getEndPosition(),
-				-LIMIT_CHARS,
+				-LIMIT_CHARS
 			);
 			pretextRange = Range.fromPositions(
 				pretextStart,
-				pretextRange.getEndPosition(),
+				pretextRange.getEndPosition()
 			);
 		}
 		const pretext = model.getValueInRange(
 			pretextRange,
-			EndOfLinePreference.LF,
+			EndOfLinePreference.LF
 		);
 
 		const lastLine = model.getLineCount();
@@ -403,8 +403,8 @@ export class PagedScreenReaderStrategy {
 				selection.endLineNumber,
 				selection.endColumn,
 				lastLine,
-				lastLineMaxColumn,
-			),
+				lastLineMaxColumn
+			)
 		)!;
 		if (
 			trimLongText &&
@@ -413,16 +413,16 @@ export class PagedScreenReaderStrategy {
 		) {
 			const posttextEnd = model.modifyPosition(
 				posttextRange.getStartPosition(),
-				LIMIT_CHARS,
+				LIMIT_CHARS
 			);
 			posttextRange = Range.fromPositions(
 				posttextRange.getStartPosition(),
-				posttextEnd,
+				posttextEnd
 			);
 		}
 		const posttext = model.getValueInRange(
 			posttextRange,
-			EndOfLinePreference.LF,
+			EndOfLinePreference.LF
 		);
 
 		let text: string;
@@ -454,7 +454,7 @@ export class PagedScreenReaderStrategy {
 			pretext.length,
 			pretext.length + text.length,
 			selection,
-			pretextRange.endLineNumber - pretextRange.startLineNumber,
+			pretextRange.endLineNumber - pretextRange.startLineNumber
 		);
 	}
 }

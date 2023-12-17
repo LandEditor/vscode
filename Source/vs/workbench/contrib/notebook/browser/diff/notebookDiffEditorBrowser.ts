@@ -54,24 +54,24 @@ export interface INotebookTextDiffEditor {
 		cellViewModel: IDiffNestedCellViewModel,
 		output: IInsetRenderOutput,
 		getOffset: () => number,
-		diffSide: DiffSide,
+		diffSide: DiffSide
 	): void;
 	showInset(
 		cellDiffViewModel: DiffElementViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
 		displayOutput: ICellOutputViewModel,
-		diffSide: DiffSide,
+		diffSide: DiffSide
 	): void;
 	removeInset(
 		cellDiffViewModel: DiffElementViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
 		output: ICellOutputViewModel,
-		diffSide: DiffSide,
+		diffSide: DiffSide
 	): void;
 	hideInset(
 		cellDiffViewModel: DiffElementViewModelBase,
 		cellViewModel: IDiffNestedCellViewModel,
-		output: ICellOutputViewModel,
+		output: ICellOutputViewModel
 	): void;
 	/**
 	 * Trigger the editor to scroll from scroll event programmatically
@@ -81,23 +81,23 @@ export interface INotebookTextDiffEditor {
 	getCellByInfo(cellInfo: ICommonCellInfo): IGenericCellViewModel;
 	focusNotebookCell(
 		cell: IGenericCellViewModel,
-		focus: "editor" | "container" | "output",
+		focus: "editor" | "container" | "output"
 	): Promise<void>;
 	focusNextNotebookCell(
 		cell: IGenericCellViewModel,
-		focus: "editor" | "container" | "output",
+		focus: "editor" | "container" | "output"
 	): Promise<void>;
 	updateOutputHeight(
 		cellInfo: ICommonCellInfo,
 		output: ICellOutputViewModel,
 		height: number,
-		isInit: boolean,
+		isInit: boolean
 	): void;
 	deltaCellOutputContainerClassNames(
 		diffSide: DiffSide,
 		cellId: string,
 		added: string[],
-		removed: string[],
+		removed: string[]
 	): void;
 	previousChange(): void;
 	nextChange(): void;
@@ -173,13 +173,13 @@ export interface CellDiffViewModelLayoutChangeEvent
 export const DIFF_CELL_MARGIN = 16;
 export const NOTEBOOK_DIFF_CELL_INPUT = new RawContextKey<boolean>(
 	"notebookDiffCellInputChanged",
-	false,
+	false
 );
 export const NOTEBOOK_DIFF_CELL_PROPERTY = new RawContextKey<boolean>(
 	"notebookDiffCellPropertyChanged",
-	false,
+	false
 );
 export const NOTEBOOK_DIFF_CELL_PROPERTY_EXPANDED = new RawContextKey<boolean>(
 	"notebookDiffCellPropertyExpanded",
-	false,
+	false
 );

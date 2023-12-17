@@ -19,7 +19,7 @@ export class ExtHostLoggerService extends BaseExtHostLoggerService {
 	protected override doCreateLogger(
 		resource: URI,
 		logLevel: LogLevel,
-		options?: ILoggerOptions,
+		options?: ILoggerOptions
 	): ILogger {
 		if (resource.scheme === Schemas.file) {
 			/* Create the logger in the Extension Host process to prevent loggers (log, output channels...) traffic  over IPC */
@@ -28,7 +28,7 @@ export class ExtHostLoggerService extends BaseExtHostLoggerService {
 				resource.fsPath,
 				!options?.donotRotate,
 				!!options?.donotUseFormatters,
-				logLevel,
+				logLevel
 			);
 		}
 		return super.doCreateLogger(resource, logLevel, options);

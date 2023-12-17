@@ -49,7 +49,7 @@ export class FoldingModel implements IDisposable {
 	constructor() {
 		this._regions = new FoldingRegions(
 			new Uint32Array(0),
-			new Uint32Array(0),
+			new Uint32Array(0)
 		);
 	}
 
@@ -69,7 +69,7 @@ export class FoldingModel implements IDisposable {
 		this._viewModelStore.add(
 			this._viewModel.onDidChangeViewCells(() => {
 				this.recompute();
-			}),
+			})
 		);
 
 		this._viewModelStore.add(
@@ -79,7 +79,7 @@ export class FoldingModel implements IDisposable {
 				}
 
 				const indexes = cellRangesToIndexes(
-					this._viewModel.getSelections(),
+					this._viewModel.getSelections()
 				);
 
 				let changed = false;
@@ -104,7 +104,7 @@ export class FoldingModel implements IDisposable {
 				if (changed) {
 					this._onDidFoldingRegionChanges.fire();
 				}
-			}),
+			})
 		);
 
 		this.recompute();
@@ -122,7 +122,7 @@ export class FoldingModel implements IDisposable {
 
 	getRegionsInside(
 		region: FoldingRegion | null,
-		filter?: RegionFilter | RegionFilterWithLevel,
+		filter?: RegionFilter | RegionFilterWithLevel
 	): FoldingRegion[] {
 		const result: FoldingRegion[] = [];
 		const index = region ? region.regionIndex + 1 : 0;
@@ -164,7 +164,7 @@ export class FoldingModel implements IDisposable {
 
 	getAllRegionsAtLine(
 		lineNumber: number,
-		filter?: (r: FoldingRegion, level: number) => boolean,
+		filter?: (r: FoldingRegion, level: number) => boolean
 	): FoldingRegion[] {
 		const result: FoldingRegion[] = [];
 		if (this._regions) {
@@ -209,8 +209,8 @@ export class FoldingModel implements IDisposable {
 				7,
 				...Array.from(
 					getMarkdownHeadersInCell(cell.getText()),
-					(header) => header.depth,
-				),
+					(header) => header.depth
+				)
 			);
 			if (minDepth < 7) {
 				// header 1 to 6
@@ -261,7 +261,7 @@ export class FoldingModel implements IDisposable {
 		while (collapsedIndex !== -1 && k < newRegions.length) {
 			// get the latest range
 			const decRange = viewModel.getTrackedRange(
-				this._foldingRangeDecorationIds[collapsedIndex],
+				this._foldingRangeDecorationIds[collapsedIndex]
 			);
 			if (decRange) {
 				const collasedStartIndex = decRange.start;
@@ -271,7 +271,7 @@ export class FoldingModel implements IDisposable {
 					if (collasedStartIndex >= startIndex) {
 						newRegions.setCollapsed(
 							k,
-							collasedStartIndex === startIndex,
+							collasedStartIndex === startIndex
 						);
 						k++;
 					} else {
@@ -302,16 +302,16 @@ export class FoldingModel implements IDisposable {
 			viewModel.setTrackedRange(
 				id,
 				null,
-				TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
-			),
+				TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+			)
 		);
 		this._foldingRangeDecorationIds = cellRanges
 			.map((region) =>
 				viewModel.setTrackedRange(
 					null,
 					region,
-					TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
-				),
+					TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+				)
 			)
 			.filter((str) => str !== null) as string[];
 
@@ -350,7 +350,7 @@ export class FoldingModel implements IDisposable {
 		while (k < state.length && i < this._regions.length) {
 			// get the latest range
 			const decRange = this._viewModel.getTrackedRange(
-				this._foldingRangeDecorationIds[i],
+				this._foldingRangeDecorationIds[i]
 			);
 			if (decRange) {
 				const collasedStartIndex = state[k].start;
@@ -360,7 +360,7 @@ export class FoldingModel implements IDisposable {
 					if (collasedStartIndex >= startIndex) {
 						this._regions.setCollapsed(
 							i,
-							collasedStartIndex === startIndex,
+							collasedStartIndex === startIndex
 						);
 						i++;
 					} else {
@@ -383,14 +383,14 @@ export class FoldingModel implements IDisposable {
 export function updateFoldingStateAtIndex(
 	foldingModel: FoldingModel,
 	index: number,
-	collapsed: boolean,
+	collapsed: boolean
 ) {
 	const range = foldingModel.regions.findRange(index + 1);
 	foldingModel.setCollapsed(range, collapsed);
 }
 
 export function* getMarkdownHeadersInCell(
-	cellContent: string,
+	cellContent: string
 ): Iterable<{ readonly depth: number; readonly text: string }> {
 	for (const token of marked.lexer(cellContent, { gfm: true })) {
 		if (token.type === "heading") {

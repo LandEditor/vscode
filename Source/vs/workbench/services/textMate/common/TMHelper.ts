@@ -22,7 +22,7 @@ export interface ITokenColorizationSetting {
 export function findMatchingThemeRule(
 	theme: IColorTheme,
 	scopes: string[],
-	onlyColorRules: boolean = true,
+	onlyColorRules: boolean = true
 ): ThemeRule | null {
 	for (let i = scopes.length - 1; i >= 0; i--) {
 		const parentScopes = scopes.slice(0, i);
@@ -31,7 +31,7 @@ export function findMatchingThemeRule(
 			theme,
 			scope,
 			parentScopes,
-			onlyColorRules,
+			onlyColorRules
 		);
 		if (r) {
 			return r;
@@ -44,7 +44,7 @@ function findMatchingThemeRule2(
 	theme: IColorTheme,
 	scope: string,
 	parentScopes: string[],
-	onlyColorRules: boolean,
+	onlyColorRules: boolean
 ): ThemeRule | null {
 	let result: ThemeRule | null = null;
 
@@ -92,7 +92,7 @@ export class ThemeRule {
 		this.scope = rawSelectorPieces[rawSelectorPieces.length - 1];
 		this.parentScopes = rawSelectorPieces.slice(
 			0,
-			rawSelectorPieces.length - 1,
+			rawSelectorPieces.length - 1
 		);
 	}
 
@@ -101,7 +101,7 @@ export class ThemeRule {
 			this.scope,
 			this.parentScopes,
 			scope,
-			parentScopes,
+			parentScopes
 		);
 	}
 
@@ -156,7 +156,7 @@ export class ThemeRule {
 		selectorScope: string,
 		selectorParentScopes: string[],
 		scope: string,
-		parentScopes: string[],
+		parentScopes: string[]
 	): boolean {
 		if (!this._matchesOne(selectorScope, scope)) {
 			return false;
@@ -168,7 +168,7 @@ export class ThemeRule {
 			if (
 				this._matchesOne(
 					selectorParentScopes[selectorParentIndex],
-					parentScopes[parentIndex],
+					parentScopes[parentIndex]
 				)
 			) {
 				selectorParentIndex--;

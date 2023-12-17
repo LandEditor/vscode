@@ -37,13 +37,21 @@ export class StandaloneCommandsQuickAccessProvider extends AbstractEditorCommand
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@ICommandService commandService: ICommandService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IDialogService dialogService: IDialogService
 	) {
-		super({ showAlias: false }, instantiationService, keybindingService, commandService, telemetryService, dialogService);
+		super(
+			{ showAlias: false },
+			instantiationService,
+			keybindingService,
+			commandService,
+			telemetryService,
+			dialogService
+		);
 	}
 
 	protected async getCommandPicks(): Promise<Array<ICommandQuickPick>> {
@@ -90,7 +98,7 @@ export class GotoLineAction extends EditorAction {
 registerEditorAction(GotoLineAction);
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess,
+	Extensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: StandaloneCommandsQuickAccessProvider,
 	prefix: StandaloneCommandsQuickAccessProvider.PREFIX,

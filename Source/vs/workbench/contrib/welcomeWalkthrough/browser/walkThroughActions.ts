@@ -21,7 +21,7 @@ export const WalkThroughArrowUp: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated(),
+		EditorContextKeys.editorTextFocus.toNegated()
 	),
 	primary: KeyCode.UpArrow,
 	handler: (accessor) => {
@@ -38,7 +38,7 @@ export const WalkThroughArrowDown: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated(),
+		EditorContextKeys.editorTextFocus.toNegated()
 	),
 	primary: KeyCode.DownArrow,
 	handler: (accessor) => {
@@ -55,7 +55,7 @@ export const WalkThroughPageUp: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated(),
+		EditorContextKeys.editorTextFocus.toNegated()
 	),
 	primary: KeyCode.PageUp,
 	handler: (accessor) => {
@@ -72,7 +72,7 @@ export const WalkThroughPageDown: ICommandAndKeybindingRule = {
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		WALK_THROUGH_FOCUS,
-		EditorContextKeys.editorTextFocus.toNegated(),
+		EditorContextKeys.editorTextFocus.toNegated()
 	),
 	primary: KeyCode.PageDown,
 	handler: (accessor) => {

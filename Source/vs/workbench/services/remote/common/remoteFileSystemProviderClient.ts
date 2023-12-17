@@ -26,7 +26,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 	static register(
 		remoteAgentService: IRemoteAgentService,
 		fileService: IFileService,
-		logService: ILogService,
+		logService: ILogService
 	): IDisposable {
 		const connection = remoteAgentService.getConnection();
 		if (!connection) {
@@ -48,19 +48,19 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 						disposables.add(
 							new RemoteFileSystemProviderClient(
 								environment,
-								connection,
-							),
-						),
+								connection
+							)
+						)
 					);
 				} else {
 					logService.error(
-						"Cannot register remote filesystem provider. Remote environment doesnot exist.",
+						"Cannot register remote filesystem provider. Remote environment doesnot exist."
 					);
 				}
 			} catch (error) {
 				logService.error(
 					"Cannot register remote filesystem provider. Error while fetching remote environment.",
-					getErrorMessage(error),
+					getErrorMessage(error)
 				);
 			}
 		})();
@@ -70,7 +70,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 				if (e.scheme === Schemas.vscodeRemote) {
 					e.join(environmentPromise);
 				}
-			}),
+			})
 		);
 
 		return disposables;
@@ -78,7 +78,7 @@ export class RemoteFileSystemProviderClient extends DiskFileSystemProviderClient
 
 	private constructor(
 		remoteAgentEnvironment: IRemoteAgentEnvironment,
-		connection: IRemoteAgentConnection,
+		connection: IRemoteAgentConnection
 	) {
 		super(connection.getChannel(REMOTE_FILE_SYSTEM_CHANNEL_NAME), {
 			pathCaseSensitive:

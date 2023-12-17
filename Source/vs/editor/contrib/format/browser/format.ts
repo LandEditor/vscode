@@ -53,7 +53,7 @@ import {
 export function getRealAndSyntheticDocumentFormattersOrdered(
 	documentFormattingEditProvider: LanguageFeatureRegistry<DocumentFormattingEditProvider>,
 	documentRangeFormattingEditProvider: LanguageFeatureRegistry<DocumentRangeFormattingEditProvider>,
-	model: ITextModel,
+	model: ITextModel
 ): DocumentFormattingEditProvider[] {
 	const result: DocumentFormattingEditProvider[] = [];
 	const seen = new ExtensionIdentifierSet();
@@ -84,7 +84,7 @@ export function getRealAndSyntheticDocumentFormattersOrdered(
 					model,
 					model.getFullModelRange(),
 					options,
-					token,
+					token
 				);
 			},
 		});
@@ -111,7 +111,7 @@ export interface IFormattingEditProviderSelector {
 		formatter: T[],
 		document: ITextModel,
 		mode: FormattingMode,
-		kind: FormattingKind,
+		kind: FormattingKind
 	): Promise<T | undefined>;
 }
 
@@ -120,7 +120,7 @@ export abstract class FormattingConflicts {
 		new LinkedList<IFormattingEditProviderSelector>();
 
 	static setFormatterSelector(
-		selector: IFormattingEditProviderSelector,
+		selector: IFormattingEditProviderSelector
 	): IDisposable {
 		const remove = FormattingConflicts._selectors.unshift(selector);
 		return { dispose: remove };
@@ -134,7 +134,7 @@ export abstract class FormattingConflicts {
 		formatter: T[],
 		document: ITextModel,
 		mode: FormattingMode,
-		kind: FormattingKind,
+		kind: FormattingKind
 	): Promise<T | undefined> {
 		if (formatter.length === 0) {
 			return undefined;
@@ -154,11 +154,12 @@ export async function formatDocumentRangesWithSelectedProvider(
 	mode: FormattingMode,
 	progress: IProgress<DocumentRangeFormattingEditProvider>,
 	token: CancellationToken,
-	userGesture: boolean,
+	userGesture: boolean
 ): Promise<void> {
 	const instaService = accessor.get(IInstantiationService);
 	const {
-		documentRangeFormattingEditProvider: documentRangeFormattingEditProviderRegistry,
+		documentRangeFormattingEditProvider:
+			documentRangeFormattingEditProviderRegistry,
 	} = accessor.get(ILanguageFeaturesService);
 	const model = isCodeEditor(editorOrModel)
 		? editorOrModel.getModel()
@@ -168,7 +169,7 @@ export async function formatDocumentRangesWithSelectedProvider(
 		provider,
 		model,
 		mode,
-		FormattingKind.Selection,
+		FormattingKind.Selection
 	);
 	if (selected) {
 		progress.report(selected);
@@ -178,7 +179,7 @@ export async function formatDocumentRangesWithSelectedProvider(
 			editorOrModel,
 			rangeOrRanges,
 			token,
-			userGesture,
+			userGesture
 		);
 	}
 }
@@ -189,12 +190,12 @@ export async function formatDocumentRangesWithProvider(
 	editorOrModel: ITextModel | IActiveCodeEditor,
 	rangeOrRanges: Range | Range[],
 	token: CancellationToken,
-	userGesture: boolean,
+	userGesture: boolean
 ): Promise<boolean> {
 	const workerService = accessor.get(IEditorWorkerService);
 	const logService = accessor.get(ILogService);
 	const accessibleNotificationService = accessor.get(
-		IAccessibleNotificationService,
+		IAccessibleNotificationService
 	);
 
 	let model: ITextModel;
@@ -205,7 +206,7 @@ export async function formatDocumentRangesWithProvider(
 			editorOrModel,
 			CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
 			undefined,
-			token,
+			token
 		);
 	} else {
 		model = editorOrModel;
@@ -216,7 +217,7 @@ export async function formatDocumentRangesWithProvider(
 	const ranges: Range[] = [];
 	let len = 0;
 	for (const range of asArray(rangeOrRanges).sort(
-		Range.compareRangesUsingStarts,
+		Range.compareRangesUsingStarts
 	)) {
 		if (
 			len > 0 &&
@@ -224,7 +225,7 @@ export async function formatDocumentRangesWithProvider(
 		) {
 			ranges[len - 1] = Range.fromPositions(
 				ranges[len - 1].getStartPosition(),
-				range.getEndPosition(),
+				range.getEndPosition()
 			);
 		} else {
 			len = ranges.push(range);
@@ -235,7 +236,7 @@ export async function formatDocumentRangesWithProvider(
 		logService.trace(
 			`[format][provideDocumentRangeFormattingEdits] (request)`,
 			provider.extensionId?.value,
-			range,
+			range
 		);
 
 		const result =
@@ -243,13 +244,13 @@ export async function formatDocumentRangesWithProvider(
 				model,
 				range,
 				model.getFormattingOptions(),
-				cts.token,
+				cts.token
 			)) || [];
 
 		logService.trace(
 			`[format][provideDocumentRangeFormattingEdits] (response)`,
 			provider.extensionId?.value,
-			result,
+			result
 		);
 
 		return result;
@@ -260,12 +261,9 @@ export async function formatDocumentRangesWithProvider(
 			return false;
 		}
 		// quick exit if the list of ranges are completely unrelated [O(n)]
-		const mergedA = a.reduce(
-			(acc, val) => {
-				return Range.plusRange(acc, val.range);
-			},
-			a[0].range,
-		);
+		const mergedA = a.reduce((acc, val) => {
+			return Range.plusRange(acc, val.range);
+		}, a[0].range);
 		if (
 			!b.some((x) => {
 				return Range.intersectRanges(mergedA, x.range);
@@ -293,19 +291,19 @@ export async function formatDocumentRangesWithProvider(
 			logService.trace(
 				`[format][provideDocumentRangeFormattingEdits] (request)`,
 				provider.extensionId?.value,
-				ranges,
+				ranges
 			);
 			const result =
 				(await provider.provideDocumentRangesFormattingEdits(
 					model,
 					ranges,
 					model.getFormattingOptions(),
-					cts.token,
+					cts.token
 				)) || [];
 			logService.trace(
 				`[format][provideDocumentRangeFormattingEdits] (response)`,
 				provider.extensionId?.value,
-				result,
+				result
 			);
 			rawEditsList.push(result);
 		} else {
@@ -325,7 +323,7 @@ export async function formatDocumentRangesWithProvider(
 						// Merge ranges i and j into a single range, recompute the associated edits
 						const mergedRange = Range.plusRange(
 							ranges[i],
-							ranges[j],
+							ranges[j]
 						);
 						const edits = await computeEdits(mergedRange);
 						ranges.splice(j, 1);
@@ -348,7 +346,7 @@ export async function formatDocumentRangesWithProvider(
 			}
 			const minimalEdits = await workerService.computeMoreMinimalEdits(
 				model.uri,
-				rawEdits,
+				rawEdits
 			);
 			if (minimalEdits) {
 				allEdits.push(...minimalEdits);
@@ -367,7 +365,7 @@ export async function formatDocumentRangesWithProvider(
 		FormattingEdit.execute(editorOrModel, allEdits, true);
 		editorOrModel.revealPositionInCenterIfOutsideViewport(
 			editorOrModel.getPosition(),
-			ScrollType.Immediate,
+			ScrollType.Immediate
 		);
 	} else {
 		// use model to apply edits
@@ -376,7 +374,7 @@ export async function formatDocumentRangesWithProvider(
 			range.startLineNumber,
 			range.startColumn,
 			range.endLineNumber,
-			range.endColumn,
+			range.endColumn
 		);
 		model.pushEditOperations(
 			[initialSelection],
@@ -397,18 +395,18 @@ export async function formatDocumentRangesWithProvider(
 								range.startLineNumber,
 								range.startColumn,
 								range.endLineNumber,
-								range.endColumn,
+								range.endColumn
 							),
 						];
 					}
 				}
 				return null;
-			},
+			}
 		);
 	}
 	accessibleNotificationService.notify(
 		AccessibleNotificationEvent.Format,
-		userGesture,
+		userGesture
 	);
 	return true;
 }
@@ -419,7 +417,7 @@ export async function formatDocumentWithSelectedProvider(
 	mode: FormattingMode,
 	progress: IProgress<DocumentFormattingEditProvider>,
 	token: CancellationToken,
-	userGesture?: boolean,
+	userGesture?: boolean
 ): Promise<void> {
 	const instaService = accessor.get(IInstantiationService);
 	const languageFeaturesService = accessor.get(ILanguageFeaturesService);
@@ -429,13 +427,13 @@ export async function formatDocumentWithSelectedProvider(
 	const provider = getRealAndSyntheticDocumentFormattersOrdered(
 		languageFeaturesService.documentFormattingEditProvider,
 		languageFeaturesService.documentRangeFormattingEditProvider,
-		model,
+		model
 	);
 	const selected = await FormattingConflicts.select(
 		provider,
 		model,
 		mode,
-		FormattingKind.File,
+		FormattingKind.File
 	);
 	if (selected) {
 		progress.report(selected);
@@ -445,7 +443,7 @@ export async function formatDocumentWithSelectedProvider(
 			editorOrModel,
 			mode,
 			token,
-			userGesture,
+			userGesture
 		);
 	}
 }
@@ -456,11 +454,11 @@ export async function formatDocumentWithProvider(
 	editorOrModel: ITextModel | IActiveCodeEditor,
 	mode: FormattingMode,
 	token: CancellationToken,
-	userGesture?: boolean,
+	userGesture?: boolean
 ): Promise<boolean> {
 	const workerService = accessor.get(IEditorWorkerService);
 	const accessibleNotificationService = accessor.get(
-		IAccessibleNotificationService,
+		IAccessibleNotificationService
 	);
 
 	let model: ITextModel;
@@ -471,7 +469,7 @@ export async function formatDocumentWithProvider(
 			editorOrModel,
 			CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
 			undefined,
-			token,
+			token
 		);
 	} else {
 		model = editorOrModel;
@@ -483,12 +481,12 @@ export async function formatDocumentWithProvider(
 		const rawEdits = await provider.provideDocumentFormattingEdits(
 			model,
 			model.getFormattingOptions(),
-			cts.token,
+			cts.token
 		);
 
 		edits = await workerService.computeMoreMinimalEdits(
 			model.uri,
-			rawEdits,
+			rawEdits
 		);
 
 		if (cts.token.isCancellationRequested) {
@@ -507,13 +505,13 @@ export async function formatDocumentWithProvider(
 		FormattingEdit.execute(
 			editorOrModel,
 			edits,
-			mode !== FormattingMode.Silent,
+			mode !== FormattingMode.Silent
 		);
 
 		if (mode !== FormattingMode.Silent) {
 			editorOrModel.revealPositionInCenterIfOutsideViewport(
 				editorOrModel.getPosition(),
-				ScrollType.Immediate,
+				ScrollType.Immediate
 			);
 		}
 	} else {
@@ -523,7 +521,7 @@ export async function formatDocumentWithProvider(
 			range.startLineNumber,
 			range.startColumn,
 			range.endLineNumber,
-			range.endColumn,
+			range.endColumn
 		);
 		model.pushEditOperations(
 			[initialSelection],
@@ -544,18 +542,18 @@ export async function formatDocumentWithProvider(
 								range.startLineNumber,
 								range.startColumn,
 								range.endLineNumber,
-								range.endColumn,
+								range.endColumn
 							),
 						];
 					}
 				}
 				return null;
-			},
+			}
 		);
 	}
 	accessibleNotificationService.notify(
 		AccessibleNotificationEvent.Format,
-		userGesture,
+		userGesture
 	);
 	return true;
 }
@@ -566,11 +564,11 @@ export async function getDocumentRangeFormattingEditsUntilResult(
 	model: ITextModel,
 	range: Range,
 	options: FormattingOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<TextEdit[] | undefined> {
 	const providers =
 		languageFeaturesService.documentRangeFormattingEditProvider.ordered(
-			model,
+			model
 		);
 	for (const provider of providers) {
 		const rawEdits = await Promise.resolve(
@@ -578,13 +576,13 @@ export async function getDocumentRangeFormattingEditsUntilResult(
 				model,
 				range,
 				options,
-				token,
-			),
+				token
+			)
 		).catch(onUnexpectedExternalError);
 		if (isNonEmptyArray(rawEdits)) {
 			return await workerService.computeMoreMinimalEdits(
 				model.uri,
-				rawEdits,
+				rawEdits
 			);
 		}
 	}
@@ -596,21 +594,21 @@ export async function getDocumentFormattingEditsUntilResult(
 	languageFeaturesService: ILanguageFeaturesService,
 	model: ITextModel,
 	options: FormattingOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<TextEdit[] | undefined> {
 	const providers = getRealAndSyntheticDocumentFormattersOrdered(
 		languageFeaturesService.documentFormattingEditProvider,
 		languageFeaturesService.documentRangeFormattingEditProvider,
-		model,
+		model
 	);
 	for (const provider of providers) {
 		const rawEdits = await Promise.resolve(
-			provider.provideDocumentFormattingEdits(model, options, token),
+			provider.provideDocumentFormattingEdits(model, options, token)
 		).catch(onUnexpectedExternalError);
 		if (isNonEmptyArray(rawEdits)) {
 			return await workerService.computeMoreMinimalEdits(
 				model.uri,
-				rawEdits,
+				rawEdits
 			);
 		}
 	}
@@ -624,7 +622,7 @@ export function getOnTypeFormattingEdits(
 	position: Position,
 	ch: string,
 	options: FormattingOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<TextEdit[] | null | undefined> {
 	const providers =
 		languageFeaturesService.onTypeFormattingEditProvider.ordered(model);
@@ -643,8 +641,8 @@ export function getOnTypeFormattingEdits(
 			position,
 			ch,
 			options,
-			token,
-		),
+			token
+		)
 	)
 		.catch(onUnexpectedExternalError)
 		.then((edits) => {
@@ -670,12 +668,12 @@ CommandsRegistry.registerCommand(
 				reference.object.textEditorModel,
 				Range.lift(range),
 				options,
-				CancellationToken.None,
+				CancellationToken.None
 			);
 		} finally {
 			reference.dispose();
 		}
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -694,12 +692,12 @@ CommandsRegistry.registerCommand(
 				languageFeaturesService,
 				reference.object.textEditorModel,
 				options,
-				CancellationToken.None,
+				CancellationToken.None
 			);
 		} finally {
 			reference.dispose();
 		}
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -722,10 +720,10 @@ CommandsRegistry.registerCommand(
 				Position.lift(position),
 				ch,
 				options,
-				CancellationToken.None,
+				CancellationToken.None
 			);
 		} finally {
 			reference.dispose();
 		}
-	},
+	}
 );

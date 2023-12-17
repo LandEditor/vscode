@@ -78,7 +78,7 @@ export class OutputViewPane extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(
 			options,
@@ -90,29 +90,29 @@ export class OutputViewPane extends ViewPane {
 			instantiationService,
 			openerService,
 			themeService,
-			telemetryService,
+			telemetryService
 		);
 		this.scrollLockContextKey = CONTEXT_OUTPUT_SCROLL_LOCK.bindTo(
-			this.contextKeyService,
+			this.contextKeyService
 		);
 
 		const editorInstantiationService = instantiationService.createChild(
 			new ServiceCollection([
 				IContextKeyService,
 				this.scopedContextKeyService,
-			]),
+			])
 		);
 		this.editor = editorInstantiationService.createInstance(OutputEditor);
 		this._register(
 			this.editor.onTitleAreaUpdate(() => {
 				this.updateTitle(this.editor.getTitle());
 				this.updateActions();
-			}),
+			})
 		);
 		this._register(
 			this.onDidChangeBodyVisibility(() =>
-				this.onDidChangeVisibility(this.isBodyVisible()),
-			),
+				this.onDidChangeVisibility(this.isBodyVisible())
+			)
 		);
 	}
 
@@ -144,7 +144,7 @@ export class OutputViewPane extends ViewPane {
 				if (!this.scrollLock) {
 					this.editor.revealLastLine();
 				}
-			}),
+			})
 		);
 		this._register(
 			codeEditor.onDidChangeCursorPosition((e) => {
@@ -154,7 +154,7 @@ export class OutputViewPane extends ViewPane {
 
 				if (
 					!this.configurationService.getValue(
-						"output.smartScroll.enabled",
+						"output.smartScroll.enabled"
 					)
 				) {
 					return;
@@ -166,7 +166,7 @@ export class OutputViewPane extends ViewPane {
 					const lastLine = model.getLineCount();
 					this.scrollLock = lastLine !== newPositionLine;
 				}
-			}),
+			})
 		);
 	}
 
@@ -194,9 +194,9 @@ export class OutputViewPane extends ViewPane {
 						this.createInput(channel),
 						{ preserveFocus: true },
 						Object.create(null),
-						token,
+						token
 					)
-					.then(() => this.editor),
+					.then(() => this.editor)
 			);
 		}
 	}
@@ -214,7 +214,7 @@ export class OutputViewPane extends ViewPane {
 			nls.localize("output model title", "{0} - Output", channel.label),
 			nls.localize("channel", "Output channel for '{0}'", channel.label),
 			undefined,
-			undefined,
+			undefined
 		);
 	}
 }
@@ -226,17 +226,31 @@ class OutputEditor extends AbstractTextResourceEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		super(OUTPUT_VIEW_ID, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorGroupService, editorService, fileService);
+		super(
+			OUTPUT_VIEW_ID,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorGroupService,
+			editorService,
+			fileService
+		);
 
-		this.resourceContext = this._register(instantiationService.createInstance(ResourceContextKey));
+		this.resourceContext = this._register(
+			instantiationService.createInstance(ResourceContextKey)
+		);
 	}
 
 	override getId(): string {
@@ -248,7 +262,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 	}
 
 	protected override getConfigurationOverrides(
-		configuration: IEditorConfiguration,
+		configuration: IEditorConfiguration
 	): ICodeEditorOptions {
 		const options = super.getConfigurationOverrides(configuration);
 		options.wordWrap = "on"; // all output editors wrap
@@ -293,7 +307,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 		input: TextResourceEditorInput,
 		options: ITextEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const focus = !(options && options.preserveFocus);
 		if (this.input && input.matches(this.input)) {
@@ -352,5 +366,5 @@ registerThemingParticipant(
 			}
 		`);
 		}
-	},
+	}
 );

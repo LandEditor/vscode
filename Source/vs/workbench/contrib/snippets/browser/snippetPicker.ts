@@ -21,7 +21,7 @@ import { ServicesAccessor } from "vs/platform/instantiation/common/instantiation
 
 export async function pickSnippet(
 	accessor: ServicesAccessor,
-	languageIdOrSnippets: string | Snippet[],
+	languageIdOrSnippets: string | Snippet[]
 ): Promise<Snippet | undefined> {
 	const snippetService = accessor.get(ISnippetsService);
 	const quickInputService = accessor.get(IQuickInputService);
@@ -61,7 +61,7 @@ export async function pickSnippet(
 					case SnippetSource.User:
 						label = nls.localize(
 							"sep.userSnippet",
-							"User Snippets",
+							"User Snippets"
 						);
 						break;
 					case SnippetSource.Extension:
@@ -70,7 +70,7 @@ export async function pickSnippet(
 					case SnippetSource.Workspace:
 						label = nls.localize(
 							"sep.workspaceSnippet",
-							"Workspace Snippets",
+							"Workspace Snippets"
 						);
 						break;
 				}
@@ -85,21 +85,21 @@ export async function pickSnippet(
 							iconClass: ThemeIcon.asClassName(Codicon.eyeClosed),
 							tooltip: nls.localize(
 								"disableSnippet",
-								"Hide from IntelliSense",
+								"Hide from IntelliSense"
 							),
 						},
 					];
 				} else {
 					pick.description = nls.localize(
 						"isDisabled",
-						"(hidden from IntelliSense)",
+						"(hidden from IntelliSense)"
 					);
 					pick.buttons = [
 						{
 							iconClass: ThemeIcon.asClassName(Codicon.eye),
 							tooltip: nls.localize(
 								"enable.snippet",
-								"Show in IntelliSense",
+								"Show in IntelliSense"
 							),
 						},
 					];
@@ -126,7 +126,7 @@ export async function pickSnippet(
 	if (!picker.items.length) {
 		picker.validationMessage = nls.localize(
 			"pick.noSnippetAvailable",
-			"No snippet available",
+			"No snippet available"
 		);
 	}
 	picker.show();

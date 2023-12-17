@@ -87,7 +87,7 @@ export class NotebookCellOutputTextModel
 
 	appendedSinceVersion(
 		versionId: number,
-		mime: string,
+		mime: string
 	): VSBuffer | undefined {
 		const bufferLength = this.versionedBufferLengths[mime]?.[versionId];
 		const output = this.outputs.find((output) => output.mime === mime);
@@ -121,7 +121,7 @@ export class NotebookCellOutputTextModel
 			this.outputs.length = 0;
 			mimeTypes.forEach((mime) => {
 				const compressionResult = compressOutputItemStreams(
-					mimeOutputs.get(mime)!,
+					mimeOutputs.get(mime)!
 				);
 				this.outputs.push({
 					mime,

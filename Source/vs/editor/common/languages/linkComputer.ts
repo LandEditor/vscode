@@ -150,7 +150,7 @@ let _classifier: CharacterClassifier<CharacterClass> | null = null;
 function getClassifier(): CharacterClassifier<CharacterClass> {
 	if (_classifier === null) {
 		_classifier = new CharacterClassifier<CharacterClass>(
-			CharacterClass.None,
+			CharacterClass.None
 		);
 
 		// allow-any-unicode-next-line
@@ -159,7 +159,7 @@ function getClassifier(): CharacterClassifier<CharacterClass> {
 		for (let i = 0; i < FORCE_TERMINATION_CHARACTERS.length; i++) {
 			_classifier.set(
 				FORCE_TERMINATION_CHARACTERS.charCodeAt(i),
-				CharacterClass.ForceTermination,
+				CharacterClass.ForceTermination
 			);
 		}
 
@@ -167,7 +167,7 @@ function getClassifier(): CharacterClassifier<CharacterClass> {
 		for (let i = 0; i < CANNOT_END_WITH_CHARACTERS.length; i++) {
 			_classifier.set(
 				CANNOT_END_WITH_CHARACTERS.charCodeAt(i),
-				CharacterClass.CannotEndIn,
+				CharacterClass.CannotEndIn
 			);
 		}
 	}
@@ -180,7 +180,7 @@ export class LinkComputer {
 		line: string,
 		lineNumber: number,
 		linkBeginIndex: number,
-		linkEndIndex: number,
+		linkEndIndex: number
 	): ILink {
 		// Do not allow to end link in certain characters...
 		let lastIncludedCharIndex = linkEndIndex - 1;
@@ -226,7 +226,7 @@ export class LinkComputer {
 
 	public static computeLinks(
 		model: ILinkComputerTarget,
-		stateMachine: StateMachine = getStateMachine(),
+		stateMachine: StateMachine = getStateMachine()
 	): ILink[] {
 		const classifier = getClassifier();
 
@@ -330,8 +330,8 @@ export class LinkComputer {
 								line,
 								i,
 								linkBeginIndex,
-								j,
-							),
+								j
+							)
 						);
 						resetStateMachine = true;
 					}
@@ -379,8 +379,8 @@ export class LinkComputer {
 						line,
 						i,
 						linkBeginIndex,
-						len,
-					),
+						len
+					)
 				);
 			}
 		}

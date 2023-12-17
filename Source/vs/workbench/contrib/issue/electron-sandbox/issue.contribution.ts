@@ -34,9 +34,7 @@ import { IIssueMainService, IssueType } from "vs/platform/issue/common/issue";
 //#region Issue Contribution
 
 class NativeIssueContribution extends BaseIssueContribution {
-	constructor(
-		@IProductService productService: IProductService
-	) {
+	constructor(@IProductService productService: IProductService) {
 		super(productService);
 
 		if (productService.reportIssueUrl) {
@@ -45,10 +43,10 @@ class NativeIssueContribution extends BaseIssueContribution {
 	}
 }
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(
 	NativeIssueContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 class ReportPerformanceIssueUsingReporterAction extends Action2 {
@@ -63,7 +61,7 @@ class ReportPerformanceIssueUsingReporterAction extends Action2 {
 						key: "reportPerformanceIssue",
 						comment: [`Here, 'issue' means problem or bug`],
 					},
-					"Report Performance Issue...",
+					"Report Performance Issue..."
 				),
 				original: "Report Performance Issue",
 			},
@@ -116,7 +114,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 				key: "miOpenProcessExplorerer",
 				comment: ["&& denotes a mnemonic"],
 			},
-			"Open &&Process Explorer",
+			"Open &&Process Explorer"
 		),
 	},
 	order: 2,
@@ -148,14 +146,14 @@ class StopTracing extends Action2 {
 			const { confirmed } = await dialogService.confirm({
 				message: localize(
 					"stopTracing.message",
-					"Tracing requires to launch with a '--trace' argument",
+					"Tracing requires to launch with a '--trace' argument"
 				),
 				primaryButton: localize(
 					{
 						key: "stopTracing.button",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Relaunch and Enable Tracing",
+					"&&Relaunch and Enable Tracing"
 				),
 			});
 
@@ -171,10 +169,10 @@ class StopTracing extends Action2 {
 				cancellable: false,
 				detail: localize(
 					"stopTracing.detail",
-					"This can take up to one minute to complete.",
+					"This can take up to one minute to complete."
 				),
 			},
-			() => issueService.stopTracing(),
+			() => issueService.stopTracing()
 		);
 	}
 }

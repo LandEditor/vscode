@@ -20,7 +20,8 @@ export class WebRecommendations extends ExtensionRecommendations {
 
 	constructor(
 		@IProductService private readonly productService: IProductService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService
 	) {
 		super();
 	}
@@ -43,10 +44,10 @@ export class WebRecommendations extends ExtensionRecommendations {
 							reasonText: localize(
 								"reason",
 								"This extension is recommended for {0} for the Web",
-								this.productService.nameLong,
+								this.productService.nameLong
 							),
 						},
-					},
+					}
 			);
 		}
 	}

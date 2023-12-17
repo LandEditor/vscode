@@ -30,16 +30,16 @@ export class BroadcastDataChannel<T> extends Disposable {
 						if (this.broadcastChannel) {
 							this.broadcastChannel.removeEventListener(
 								"message",
-								listener,
+								listener
 							);
 							this.broadcastChannel.close();
 						}
-					}),
+					})
 				);
 			} catch (error) {
 				console.warn(
 					"Error while creating broadcast channel. Falling back to localStorage.",
-					getErrorMessage(error),
+					getErrorMessage(error)
 				);
 			}
 		}
@@ -60,8 +60,8 @@ export class BroadcastDataChannel<T> extends Disposable {
 		mainWindow.addEventListener("storage", listener);
 		this._register(
 			toDisposable(() =>
-				mainWindow.removeEventListener("storage", listener),
-			),
+				mainWindow.removeEventListener("storage", listener)
+			)
 		);
 	}
 

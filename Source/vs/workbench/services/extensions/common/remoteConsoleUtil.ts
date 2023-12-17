@@ -9,7 +9,7 @@ import { ILogService } from "vs/platform/log/common/log";
 export function logRemoteEntry(
 	logService: ILogService,
 	entry: IRemoteConsoleLog,
-	label: string | null = null,
+	label: string | null = null
 ): void {
 	const args = parse(entry).args;
 	let firstArg = args.shift();
@@ -48,7 +48,7 @@ export function logRemoteEntry(
 export function logRemoteEntryIfError(
 	logService: ILogService,
 	entry: IRemoteConsoleLog,
-	label: string,
+	label: string
 ): void {
 	const args = parse(entry).args;
 	const firstArg = args.shift();

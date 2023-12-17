@@ -37,16 +37,16 @@ export function resolveWorkbenchCommonProperties(
 	remoteAuthority?: string,
 	productIdentifier?: string,
 	removeMachineId?: boolean,
-	resolveAdditionalProperties?: () => { [key: string]: any },
+	resolveAdditionalProperties?: () => { [key: string]: any }
 ): ICommonProperties {
 	const result: ICommonProperties = Object.create(null);
 	const firstSessionDate = storageService.get(
 		firstSessionDateStorageKey,
-		StorageScope.APPLICATION,
+		StorageScope.APPLICATION
 	)!;
 	const lastSessionDate = storageService.get(
 		lastSessionDateStorageKey,
-		StorageScope.APPLICATION,
+		StorageScope.APPLICATION
 	)!;
 
 	let machineId: string | undefined;
@@ -58,7 +58,7 @@ export function resolveWorkbenchCommonProperties(
 				machineIdKey,
 				machineId,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		}
 	} else {

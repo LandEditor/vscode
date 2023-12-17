@@ -26,7 +26,7 @@ export class SearchFindInput extends ContextScopedFindInput {
 		readonly contextMenuService: IContextMenuService,
 		readonly instantiationService: IInstantiationService,
 		readonly filters: NotebookFindFilters,
-		filterStartVisiblitity: boolean,
+		filterStartVisiblitity: boolean
 	) {
 		super(container, contextViewProvider, options, contextKeyService);
 		this._findFilter = this._register(
@@ -37,9 +37,9 @@ export class SearchFindInput extends ContextScopedFindInput {
 				options,
 				nls.localize(
 					"searchFindInputNotebookFilter.label",
-					"Notebook Find Filters",
-				),
-			),
+					"Notebook Find Filters"
+				)
+			)
 		);
 		this.inputBox.paddingRight =
 			(this.caseSensitive?.width() ?? 0) +

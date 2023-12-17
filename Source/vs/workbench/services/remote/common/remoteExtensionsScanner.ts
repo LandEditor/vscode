@@ -31,18 +31,23 @@ class RemoteExtensionsScannerService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IRemoteUserDataProfilesService private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IRemoteUserDataProfilesService
+		private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
 		@ILogService private readonly logService: ILogService,
-		@IActiveLanguagePackService private readonly activeLanguagePackService: IActiveLanguagePackService
-	) { }
+		@IActiveLanguagePackService
+		private readonly activeLanguagePackService: IActiveLanguagePackService
+	) {}
 
 	whenExtensionsReady(): Promise<void> {
 		return this.withChannel(
 			(channel) => channel.call("whenExtensionsReady"),
-			undefined,
+			undefined
 		);
 	}
 
@@ -56,9 +61,9 @@ class RemoteExtensionsScannerService
 					? undefined
 					: (
 							await this.remoteUserDataProfilesService.getRemoteProfile(
-								this.userDataProfileService.currentProfile,
+								this.userDataProfileService.currentProfile
 							)
-					  ).extensionsResource;
+						).extensionsResource;
 				const scannedExtensions = await channel.call<
 					IRelaxedExtensionDescription[]
 				>("scanExtensions", [
@@ -69,7 +74,7 @@ class RemoteExtensionsScannerService
 				]);
 				scannedExtensions.forEach((extension) => {
 					extension.extensionLocation = URI.revive(
-						extension.extensionLocation,
+						extension.extensionLocation
 					);
 				});
 				return scannedExtensions;
@@ -82,18 +87,18 @@ class RemoteExtensionsScannerService
 
 	async scanSingleExtension(
 		extensionLocation: URI,
-		isBuiltin: boolean,
+		isBuiltin: boolean
 	): Promise<IExtensionDescription | null> {
 		try {
 			return await this.withChannel(async (channel) => {
 				const extension =
 					await channel.call<IRelaxedExtensionDescription>(
 						"scanSingleExtension",
-						[extensionLocation, isBuiltin, platform.language],
+						[extensionLocation, isBuiltin, platform.language]
 					);
 				if (extension !== null) {
 					extension.extensionLocation = URI.revive(
-						extension.extensionLocation,
+						extension.extensionLocation
 					);
 					// ImplicitActivationEvents.updateManifest(extension);
 				}
@@ -107,7 +112,7 @@ class RemoteExtensionsScannerService
 
 	private withChannel<R>(
 		callback: (channel: IChannel) => Promise<R>,
-		fallback: R,
+		fallback: R
 	): Promise<R> {
 		const connection = this.remoteAgentService.getConnection();
 		if (!connection) {
@@ -115,7 +120,7 @@ class RemoteExtensionsScannerService
 		}
 		return connection.withChannel(
 			RemoteExtensionsScannerChannelName,
-			(channel) => callback(channel),
+			(channel) => callback(channel)
 		);
 	}
 }
@@ -123,5 +128,5 @@ class RemoteExtensionsScannerService
 registerSingleton(
 	IRemoteExtensionsScannerService,
 	RemoteExtensionsScannerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

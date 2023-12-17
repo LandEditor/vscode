@@ -11,5 +11,5 @@ vscodeGrammarUpdater.update(
 	"syntaxes/rust.tmLanguage.json",
 	"./syntaxes/rust.tmLanguage.json",
 	undefined,
-	"main",
+	"main"
 );

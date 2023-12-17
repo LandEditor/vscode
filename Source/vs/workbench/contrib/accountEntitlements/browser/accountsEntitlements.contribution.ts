@@ -80,22 +80,25 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 	private isInitialized = false;
 	private contextKey = new RawContextKey<boolean>(
 		configurationKey,
-		true,
+		true
 	).bindTo(this.contextService);
 
 	constructor(
 		@IContextKeyService readonly contextService: IContextKeyService,
 		@ICommandService readonly commandService: ICommandService,
 		@ITelemetryService readonly telemetryService: ITelemetryService,
-		@IAuthenticationService readonly authenticationService: IAuthenticationService,
+		@IAuthenticationService
+		readonly authenticationService: IAuthenticationService,
 		@IProductService readonly productService: IProductService,
 		@IStorageService readonly storageService: IStorageService,
-		@IExtensionManagementService readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		readonly extensionManagementService: IExtensionManagementService,
 		@IActivityService readonly activityService: IActivityService,
 		@IExtensionService readonly extensionService: IExtensionService,
-		@IConfigurationService readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		readonly configurationService: IConfigurationService,
 		@IContextKeyService readonly contextKeyService: IContextKeyService,
-		@IRequestService readonly requestService: IRequestService,
+		@IRequestService readonly requestService: IRequestService
 	) {
 		super();
 
@@ -104,20 +107,35 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 		}
 
 		// if previously shown, do not show again.
-		const showEntitlements = this.storageService.getBoolean(configurationKey, StorageScope.APPLICATION, true);
+		const showEntitlements = this.storageService.getBoolean(
+			configurationKey,
+			StorageScope.APPLICATION,
+			true
+		);
 		if (!showEntitlements) {
 			return;
 		}
 
-		const setting = this.configurationService.inspect<boolean>(configurationKey);
+		const setting =
+			this.configurationService.inspect<boolean>(configurationKey);
 		if (!setting.value) {
 			return;
 		}
 
-		this.extensionManagementService.getInstalled().then(exts => {
-			const installed = exts.find(value => ExtensionIdentifier.equals(value.identifier.id, this.productService.gitHubEntitlement!.extensionId));
+		this.extensionManagementService.getInstalled().then((exts) => {
+			const installed = exts.find((value) =>
+				ExtensionIdentifier.equals(
+					value.identifier.id,
+					this.productService.gitHubEntitlement!.extensionId
+				)
+			);
 			if (installed) {
-				this.storageService.store(configurationKey, false, StorageScope.APPLICATION, StorageTarget.MACHINE);
+				this.storageService.store(
+					configurationKey,
+					false,
+					StorageScope.APPLICATION,
+					StorageTarget.MACHINE
+				);
 				this.contextKey.set(false);
 				return;
 			} else {
@@ -133,20 +151,20 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					if (
 						ExtensionIdentifier.equals(
 							this.productService.gitHubEntitlement!.extensionId,
-							ext.identifier,
+							ext.identifier
 						)
 					) {
 						this.storageService.store(
 							configurationKey,
 							false,
 							StorageScope.APPLICATION,
-							StorageTarget.MACHINE,
+							StorageTarget.MACHINE
 						);
 						this.contextKey.set(false);
 						return;
 					}
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -165,7 +183,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 				) {
 					this.contextKey.set(false);
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -180,8 +198,8 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 							await this.authenticationService.getSessions(e.id);
 						this.onSessionChange(session[0]);
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -196,7 +214,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					Authorization: `Bearer ${session.accessToken}`,
 				},
 			},
-			CancellationToken.None,
+			CancellationToken.None
 		);
 
 		if (context.res.statusCode && context.res.statusCode !== 200) {
@@ -235,14 +253,14 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 		const menuTitle = orgs
 			? this.productService.gitHubEntitlement!.command.title.replace(
 					"{{org}}",
-					orgs[orgs.length - 1],
-			  )
+					orgs[orgs.length - 1]
+				)
 			: this.productService.gitHubEntitlement!.command
 					.titleWithoutPlaceHolder;
 
 		const badge = new NumberBadge(1, () => menuTitle);
 		const accountsMenuBadgeDisposable = this._register(
-			new MutableDisposable(),
+			new MutableDisposable()
 		);
 		accountsMenuBadgeDisposable.value =
 			this.activityService.showAccountsActivity({ badge });
@@ -283,7 +301,7 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					if (confirmation.confirmed) {
 						commandService.executeCommand(
 							productService.gitHubEntitlement!.command.action,
-							productService.gitHubEntitlement!.extensionId!,
+							productService.gitHubEntitlement!.extensionId!
 						);
 						telemetryService.publicLog2<
 							{ command: string },
@@ -307,27 +325,27 @@ class AccountsEntitlement extends Disposable implements IWorkbenchContribution {
 					accountsMenuBadgeDisposable.clear();
 					const contextKey = new RawContextKey<boolean>(
 						configurationKey,
-						true,
+						true
 					).bindTo(contextKeyService);
 					contextKey.set(false);
 					storageService.store(
 						configurationKey,
 						false,
 						StorageScope.APPLICATION,
-						StorageTarget.MACHINE,
+						StorageTarget.MACHINE
 					);
 				}
-			},
+			}
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(AccountsEntitlement, LifecyclePhase.Eventually);
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	...applicationConfigurationNodeBase,
@@ -339,7 +357,7 @@ configurationRegistry.registerConfiguration({
 			tags: ["experimental"],
 			description: localize(
 				"workbench.accounts.showEntitlements",
-				"When enabled, available entitlements for the account will be show in the accounts menu.",
+				"When enabled, available entitlements for the account will be show in the accounts menu."
 			),
 		},
 	},

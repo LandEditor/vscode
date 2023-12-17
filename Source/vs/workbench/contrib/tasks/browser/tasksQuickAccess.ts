@@ -43,24 +43,26 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
 		@ITaskService private _taskService: ITaskService,
-		@IConfigurationService private _configurationService: IConfigurationService,
+		@IConfigurationService
+		private _configurationService: IConfigurationService,
 		@IQuickInputService private _quickInputService: IQuickInputService,
-		@INotificationService private _notificationService: INotificationService,
+		@INotificationService
+		private _notificationService: INotificationService,
 		@IDialogService private _dialogService: IDialogService,
 		@IThemeService private _themeService: IThemeService,
 		@IStorageService private _storageService: IStorageService
 	) {
 		super(TasksQuickAccessProvider.PREFIX, {
 			noResultsPick: {
-				label: localize('noTaskResults', "No matching tasks")
-			}
+				label: localize("noTaskResults", "No matching tasks"),
+			},
 		});
 	}
 
 	protected async _getPicks(
 		filter: string,
 		disposables: DisposableStore,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<IPickerQuickAccessItem | IQuickPickSeparator>> {
 		if (token.isCancellationRequested) {
 			return [];
@@ -73,7 +75,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 			this._notificationService,
 			this._themeService,
 			this._dialogService,
-			this._storageService,
+			this._storageService
 		);
 		const topLevelPicks = await taskQuickPick.getTopLevelEntries();
 		const taskPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> =
@@ -119,10 +121,10 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 					const showResult = await taskQuickPick.show(
 						localize(
 							"TaskService.pickRunTask",
-							"Select the task to run",
+							"Select the task to run"
 						),
 						undefined,
-						task,
+						task
 					);
 					if (showResult) {
 						this._taskService.run(showResult, {
@@ -142,7 +144,7 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 	}
 
 	private async _toTask(
-		task: Task | ConfiguringTask,
+		task: Task | ConfiguringTask
 	): Promise<Task | undefined> {
 		if (!ConfiguringTask.is(task)) {
 			return task;

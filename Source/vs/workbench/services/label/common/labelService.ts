@@ -71,7 +71,7 @@ const resourceLabelFormattersExtPoint =
 		jsonSchema: {
 			description: localize(
 				"vscode.extension.contributes.resourceLabelFormatters",
-				"Contributes resource label formatting rules.",
+				"Contributes resource label formatting rules."
 			),
 			type: "array",
 			items: {
@@ -82,20 +82,20 @@ const resourceLabelFormattersExtPoint =
 						type: "string",
 						description: localize(
 							"vscode.extension.contributes.resourceLabelFormatters.scheme",
-							'URI scheme on which to match the formatter on. For example "file". Simple glob patterns are supported.',
+							'URI scheme on which to match the formatter on. For example "file". Simple glob patterns are supported.'
 						),
 					},
 					authority: {
 						type: "string",
 						description: localize(
 							"vscode.extension.contributes.resourceLabelFormatters.authority",
-							"URI authority on which to match the formatter on. Simple glob patterns are supported.",
+							"URI authority on which to match the formatter on. Simple glob patterns are supported."
 						),
 					},
 					formatting: {
 						description: localize(
 							"vscode.extension.contributes.resourceLabelFormatters.formatting",
-							"Rules for formatting uri resource labels.",
+							"Rules for formatting uri resource labels."
 						),
 						type: "object",
 						properties: {
@@ -103,35 +103,35 @@ const resourceLabelFormattersExtPoint =
 								type: "string",
 								description: localize(
 									"vscode.extension.contributes.resourceLabelFormatters.label",
-									"Label rules to display. For example: myLabel:/${path}. ${path}, ${scheme}, ${authority} and ${authoritySuffix} are supported as variables.",
+									"Label rules to display. For example: myLabel:/${path}. ${path}, ${scheme}, ${authority} and ${authoritySuffix} are supported as variables."
 								),
 							},
 							separator: {
 								type: "string",
 								description: localize(
 									"vscode.extension.contributes.resourceLabelFormatters.separator",
-									"Separator to be used in the uri label display. '/' or '' as an example.",
+									"Separator to be used in the uri label display. '/' or '' as an example."
 								),
 							},
 							stripPathStartingSeparator: {
 								type: "boolean",
 								description: localize(
 									"vscode.extension.contributes.resourceLabelFormatters.stripPathStartingSeparator",
-									"Controls whether `${path}` substitutions should have starting separator characters stripped.",
+									"Controls whether `${path}` substitutions should have starting separator characters stripped."
 								),
 							},
 							tildify: {
 								type: "boolean",
 								description: localize(
 									"vscode.extension.contributes.resourceLabelFormatters.tildify",
-									"Controls if the start of the uri label should be tildified when possible.",
+									"Controls if the start of the uri label should be tildified when possible."
 								),
 							},
 							workspaceSuffix: {
 								type: "string",
 								description: localize(
 									"vscode.extension.contributes.resourceLabelFormatters.formatting.workspaceSuffix",
-									"Suffix appended to the workspace label.",
+									"Suffix appended to the workspace label."
 								),
 							},
 						},
@@ -159,24 +159,32 @@ class ResourceLabelFormattersHandler implements IWorkbenchContribution {
 		resourceLabelFormattersExtPoint.setHandler((extensions, delta) => {
 			for (const added of delta.added) {
 				for (const untrustedFormatter of added.value) {
-
 					// We cannot trust that the formatter as it comes from an extension
 					// adheres to our interface, so for the required properties we fill
 					// in some defaults if missing.
 
 					const formatter = { ...untrustedFormatter };
-					if (typeof formatter.formatting.label !== 'string') {
-						formatter.formatting.label = '${authority}${path}';
+					if (typeof formatter.formatting.label !== "string") {
+						formatter.formatting.label = "${authority}${path}";
 					}
 					if (typeof formatter.formatting.separator !== `string`) {
 						formatter.formatting.separator = sep;
 					}
 
-					if (!isProposedApiEnabled(added.description, 'contribLabelFormatterWorkspaceTooltip') && formatter.formatting.workspaceTooltip) {
+					if (
+						!isProposedApiEnabled(
+							added.description,
+							"contribLabelFormatterWorkspaceTooltip"
+						) &&
+						formatter.formatting.workspaceTooltip
+					) {
 						formatter.formatting.workspaceTooltip = undefined; // workspaceTooltip is only proposed
 					}
 
-					this.formattersDisposables.set(formatter, labelService.registerFormatter(formatter));
+					this.formattersDisposables.set(
+						formatter,
+						labelService.registerFormatter(formatter)
+					);
 				}
 			}
 
@@ -189,10 +197,10 @@ class ResourceLabelFormattersHandler implements IWorkbenchContribution {
 	}
 }
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	ResourceLabelFormattersHandler,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 const FORMATTER_CACHE_SIZE = 50;
@@ -208,7 +216,7 @@ export class LabelService extends Disposable implements ILabelService {
 	private formatters: ResourceLabelFormatter[];
 
 	private readonly _onDidChangeFormatters = this._register(
-		new Emitter<IFormatterChangeEvent>({ leakWarningThreshold: 400 }),
+		new Emitter<IFormatterChangeEvent>({ leakWarningThreshold: 400 })
 	);
 	readonly onDidChangeFormatters = this._onDidChangeFormatters.event;
 
@@ -218,12 +226,15 @@ export class LabelService extends Disposable implements ILabelService {
 	private userHome: URI | undefined;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IPathService private readonly pathService: IPathService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 		@IStorageService storageService: IStorageService,
-		@ILifecycleService lifecycleService: ILifecycleService,
+		@ILifecycleService lifecycleService: ILifecycleService
 	) {
 		super();
 
@@ -232,10 +243,19 @@ export class LabelService extends Disposable implements ILabelService {
 		// and by taking the local `userHome` if we run on a local
 		// file scheme.
 		this.os = OS;
-		this.userHome = pathService.defaultUriScheme === Schemas.file ? this.pathService.userHome({ preferLocal: true }) : undefined;
+		this.userHome =
+			pathService.defaultUriScheme === Schemas.file
+				? this.pathService.userHome({ preferLocal: true })
+				: undefined;
 
-		const memento = this.storedFormattersMemento = new Memento('cachedResourceLabelFormatters2', storageService);
-		this.storedFormatters = memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
+		const memento = (this.storedFormattersMemento = new Memento(
+			"cachedResourceLabelFormatters2",
+			storageService
+		));
+		this.storedFormatters = memento.getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE
+		);
 		this.formatters = this.storedFormatters?.formatters?.slice() || [];
 
 		// Remote environment is potentially long running
@@ -271,7 +291,7 @@ export class LabelService extends Disposable implements ILabelService {
 				if (
 					match(
 						formatter.authority.toLowerCase(),
-						resource.authority.toLowerCase(),
+						resource.authority.toLowerCase()
 					) &&
 					(!bestResult ||
 						!bestResult.authority ||
@@ -295,7 +315,7 @@ export class LabelService extends Disposable implements ILabelService {
 			relative?: boolean;
 			noPrefix?: boolean;
 			separator?: "/" | "\\";
-		} = {},
+		} = {}
 	): string {
 		let formatting = this.findFormatting(resource);
 		if (formatting && options.separator) {
@@ -317,7 +337,7 @@ export class LabelService extends Disposable implements ILabelService {
 	private doGetUriLabel(
 		resource: URI,
 		formatting?: ResourceLabelFormatting,
-		options: { relative?: boolean; noPrefix?: boolean } = {},
+		options: { relative?: boolean; noPrefix?: boolean } = {}
 	): string {
 		if (!formatting) {
 			return getPathLabel(resource, {
@@ -332,9 +352,9 @@ export class LabelService extends Disposable implements ILabelService {
 								this.contextService.getWorkspace(),
 							getWorkspaceFolder: (resource) =>
 								this.contextService.getWorkspaceFolder(
-									resource,
+									resource
 								),
-					  }
+						}
 					: undefined,
 			});
 		}
@@ -357,7 +377,7 @@ export class LabelService extends Disposable implements ILabelService {
 					resource.path.startsWith(posix.sep)
 				) {
 					folder = this.contextService.getWorkspaceFolder(
-						firstFolder.uri.with({ path: resource.path }),
+						firstFolder.uri.with({ path: resource.path })
 					);
 				}
 			}
@@ -366,13 +386,13 @@ export class LabelService extends Disposable implements ILabelService {
 				const folderLabel = this.formatUri(
 					folder.uri,
 					formatting,
-					options.noPrefix,
+					options.noPrefix
 				);
 
 				let relativeLabel = this.formatUri(
 					resource,
 					formatting,
-					options.noPrefix,
+					options.noPrefix
 				);
 				let overlap = 0;
 				while (
@@ -435,7 +455,7 @@ export class LabelService extends Disposable implements ILabelService {
 			| IWorkspaceIdentifier
 			| ISingleFolderWorkspaceIdentifier
 			| URI,
-		options?: { verbose: Verbosity },
+		options?: { verbose: Verbosity }
 	): string {
 		if (isWorkspace(workspace)) {
 			const identifier = toWorkspaceIdentifier(workspace);
@@ -469,7 +489,7 @@ export class LabelService extends Disposable implements ILabelService {
 
 	private doGetWorkspaceLabel(
 		workspaceUri: URI,
-		options?: { verbose: Verbosity },
+		options?: { verbose: Verbosity }
 	): string {
 		// Workspace: Untitled
 		if (isUntitledWorkspace(workspaceUri, this.environmentService)) {
@@ -486,7 +506,7 @@ export class LabelService extends Disposable implements ILabelService {
 		if (filename.endsWith(WORKSPACE_EXTENSION)) {
 			filename = filename.substr(
 				0,
-				filename.length - WORKSPACE_EXTENSION.length - 1,
+				filename.length - WORKSPACE_EXTENSION.length - 1
 			);
 		}
 
@@ -499,7 +519,7 @@ export class LabelService extends Disposable implements ILabelService {
 				label = localize(
 					"workspaceNameVerbose",
 					"{0} (Workspace)",
-					this.getUriLabel(joinPath(dirname(workspaceUri), filename)),
+					this.getUriLabel(joinPath(dirname(workspaceUri), filename))
 				);
 				break;
 			case Verbosity.MEDIUM:
@@ -517,7 +537,7 @@ export class LabelService extends Disposable implements ILabelService {
 
 	private doGetSingleFolderWorkspaceLabel(
 		folderUri: URI,
-		options?: { verbose: Verbosity },
+		options?: { verbose: Verbosity }
 	): string {
 		let label: string;
 		switch (options?.verbose) {
@@ -562,7 +582,7 @@ export class LabelService extends Disposable implements ILabelService {
 		let replace = list.findIndex(
 			(f) =>
 				f.scheme === formatter.scheme &&
-				f.authority === formatter.authority,
+				f.authority === formatter.authority
 		);
 		if (replace === -1 && list.length >= FORMATTER_CACHE_SIZE) {
 			replace = FORMATTER_CACHE_SIZE - 1; // at max capacity, replace the last element
@@ -589,7 +609,7 @@ export class LabelService extends Disposable implements ILabelService {
 		return {
 			dispose: () => {
 				this.formatters = this.formatters.filter(
-					(f) => f !== formatter,
+					(f) => f !== formatter
 				);
 				this._onDidChangeFormatters.fire({ scheme: formatter.scheme });
 			},
@@ -599,7 +619,7 @@ export class LabelService extends Disposable implements ILabelService {
 	private formatUri(
 		resource: URI,
 		formatting: ResourceLabelFormatting,
-		forceNoTildify?: boolean,
+		forceNoTildify?: boolean
 	): string {
 		let label = formatting.label.replace(
 			labelMatchingRegexp,
@@ -620,8 +640,8 @@ export class LabelService extends Disposable implements ILabelService {
 							? resource.path.slice(
 									resource.path[0] === formatting.separator
 										? 1
-										: 0,
-							  )
+										: 0
+								)
 							: resource.path;
 					default: {
 						if (qsToken === "query") {
@@ -640,7 +660,7 @@ export class LabelService extends Disposable implements ILabelService {
 						return "";
 					}
 				}
-			},
+			}
 		);
 
 		// convert \c:\something => C:\something

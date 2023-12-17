@@ -54,7 +54,7 @@ export class NotebookVariableRenderer
 		element: ITreeNode<INotebookVariableElement, FuzzyScore>,
 		index: number,
 		templateData: { wrapper: HTMLElement },
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.wrapper.innerText = `${element.element.label} - ${element.element.value}`;
 	}
@@ -76,7 +76,7 @@ export class NotebookVariableAccessibilityProvider
 			"notebookVariableAriaLabel",
 			"Variable {0}, value {1}",
 			element.label,
-			element.value,
+			element.value
 		);
 	}
 }

@@ -21,5 +21,5 @@ export const ITreeViewsService =
 registerSingleton(
 	ITreeViewsService,
 	TreeviewsService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

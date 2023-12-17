@@ -30,7 +30,7 @@ import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegis
 
 export const SelectionAnchorSet = new RawContextKey(
 	"selectionAnchorSet",
-	false,
+	false
 );
 
 class SelectionAnchorController implements IEditorContribution {
@@ -38,7 +38,7 @@ class SelectionAnchorController implements IEditorContribution {
 
 	static get(editor: ICodeEditor): SelectionAnchorController | null {
 		return editor.getContribution<SelectionAnchorController>(
-			SelectionAnchorController.ID,
+			SelectionAnchorController.ID
 		);
 	}
 
@@ -48,12 +48,12 @@ class SelectionAnchorController implements IEditorContribution {
 
 	constructor(
 		private editor: ICodeEditor,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		this.selectionAnchorSetContextKey =
 			SelectionAnchorSet.bindTo(contextKeyService);
 		this.modelChangeListener = editor.onDidChangeModel(() =>
-			this.selectionAnchorSetContextKey.reset(),
+			this.selectionAnchorSetContextKey.reset()
 		);
 	}
 
@@ -71,10 +71,10 @@ class SelectionAnchorController implements IEditorContribution {
 						stickiness:
 							TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 						hoverMessage: new MarkdownString().appendText(
-							localize("selectionAnchor", "Selection Anchor"),
+							localize("selectionAnchor", "Selection Anchor")
 						),
 						className: "selection-anchor",
-					},
+					}
 				);
 			});
 			this.selectionAnchorSetContextKey.set(!!this.decorationId);
@@ -83,8 +83,8 @@ class SelectionAnchorController implements IEditorContribution {
 					"anchorSet",
 					"Anchor set at {0}:{1}",
 					position.lineNumber,
-					position.column,
-				),
+					position.column
+				)
 			);
 		}
 	}
@@ -108,7 +108,7 @@ class SelectionAnchorController implements IEditorContribution {
 			if (start) {
 				const end = this.editor.getPosition();
 				this.editor.setSelection(
-					Selection.fromPositions(start.getStartPosition(), end),
+					Selection.fromPositions(start.getStartPosition(), end)
 				);
 				this.cancelSelectionAnchor();
 			}
@@ -143,7 +143,7 @@ class SetSelectionAnchor extends EditorAction {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyB,
+					KeyMod.CtrlCmd | KeyCode.KeyB
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -176,7 +176,7 @@ class SelectFromAnchorToCursor extends EditorAction {
 			id: "editor.action.selectFromAnchorToCursor",
 			label: localize(
 				"selectFromAnchorToCursor",
-				"Select from Anchor to Cursor",
+				"Select from Anchor to Cursor"
 			),
 			alias: "Select from Anchor to Cursor",
 			precondition: SelectionAnchorSet,
@@ -184,7 +184,7 @@ class SelectFromAnchorToCursor extends EditorAction {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyK,
+					KeyMod.CtrlCmd | KeyCode.KeyK
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -219,7 +219,7 @@ class CancelSelectionAnchor extends EditorAction {
 registerEditorContribution(
 	SelectionAnchorController.ID,
 	SelectionAnchorController,
-	EditorContributionInstantiation.Lazy,
+	EditorContributionInstantiation.Lazy
 );
 registerEditorAction(SetSelectionAnchor);
 registerEditorAction(GoToSelectionAnchor);

@@ -69,12 +69,12 @@ export interface IKeybindingService {
 	 */
 	softDispatch(
 		keyboardEvent: IKeyboardEvent,
-		target: IContextKeyServiceTarget,
+		target: IContextKeyServiceTarget
 	): ResolutionResult;
 
 	dispatchByUserSettingsLabel(
 		userSettingsLabel: string,
-		target: IContextKeyServiceTarget,
+		target: IContextKeyServiceTarget
 	): void;
 
 	/**
@@ -89,7 +89,7 @@ export interface IKeybindingService {
 	 */
 	lookupKeybinding(
 		commandId: string,
-		context?: IContextKeyService,
+		context?: IContextKeyService
 	): ResolvedKeybinding | undefined;
 
 	getDefaultKeybindingsContent(): string;
@@ -107,7 +107,7 @@ export interface IKeybindingService {
 	mightProducePrintableCharacter(event: IKeyboardEvent): boolean;
 
 	registerSchemaContribution(
-		contribution: KeybindingsSchemaContribution,
+		contribution: KeybindingsSchemaContribution
 	): void;
 
 	toggleLogging(): boolean;

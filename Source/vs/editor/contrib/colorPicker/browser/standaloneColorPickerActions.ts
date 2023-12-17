@@ -25,14 +25,14 @@ export class ShowOrFocusStandaloneColorPicker extends EditorAction2 {
 			title: {
 				value: localize(
 					"showOrFocusStandaloneColorPicker",
-					"Show or Focus Standalone Color Picker",
+					"Show or Focus Standalone Color Picker"
 				),
 				mnemonicTitle: localize(
 					{
 						key: "mishowOrFocusStandaloneColorPicker",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Show or Focus Standalone Color Picker",
+					"&&Show or Focus Standalone Color Picker"
 				),
 				original: "Show or Focus Standalone Color Picker",
 			},
@@ -54,7 +54,7 @@ class HideStandaloneColorPicker extends EditorAction {
 					key: "hideColorPicker",
 					comment: ["Action that hides the color picker"],
 				},
-				"Hide the Color Picker",
+				"Hide the Color Picker"
 			),
 			alias: "Hide the Color Picker",
 			precondition:
@@ -81,7 +81,7 @@ class InsertColorWithStandaloneColorPicker extends EditorAction {
 						"Action that inserts color with standalone color picker",
 					],
 				},
-				"Insert Color with Standalone Color Picker",
+				"Insert Color with Standalone Color Picker"
 			),
 			alias: "Insert Color with Standalone Color Picker",
 			precondition:

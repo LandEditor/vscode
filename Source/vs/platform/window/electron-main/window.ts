@@ -79,7 +79,7 @@ export interface ICodeWindow extends IBaseWindow {
 
 	load(
 		config: INativeWindowConfiguration,
-		options?: { isReload?: boolean },
+		options?: { isReload?: boolean }
 	): void;
 	reload(cli?: NativeParsedArgs): void;
 
@@ -148,7 +148,7 @@ export interface IWindowState {
 }
 
 export const defaultWindowState = function (
-	mode = WindowMode.Normal,
+	mode = WindowMode.Normal
 ): IWindowState {
 	return {
 		width: 1024,

@@ -23,7 +23,7 @@ export class ElectronIPCMainProcessService
 		super();
 
 		this.mainProcessConnection = this._register(
-			new IPCElectronClient(`window:${windowId}`),
+			new IPCElectronClient(`window:${windowId}`)
 		);
 	}
 
@@ -33,7 +33,7 @@ export class ElectronIPCMainProcessService
 
 	registerChannel(
 		channelName: string,
-		channel: IServerChannel<string>,
+		channel: IServerChannel<string>
 	): void {
 		this.mainProcessConnection.registerChannel(channelName, channel);
 	}

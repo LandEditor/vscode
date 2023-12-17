@@ -22,26 +22,26 @@ import { applicationConfigurationNodeBase } from "vs/workbench/common/configurat
 // -- auto profiler
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(RendererProfiling, LifecyclePhase.Eventually);
 
 // -- startup profiler
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(StartupProfiler, LifecyclePhase.Restored);
 
 // -- startup timings
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(
 	NativeStartupTimings,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigExt.Configuration,
+	ConfigExt.Configuration
 ).registerConfiguration({
 	...applicationConfigurationNodeBase,
 	properties: {
@@ -51,7 +51,7 @@ Registry.as<IConfigurationRegistry>(
 			tags: ["experimental"],
 			markdownDescription: localize(
 				"experimental.rendererProfiling",
-				"When enabled slow renderers are automatically profiled",
+				"When enabled slow renderers are automatically profiled"
 			),
 		},
 	},

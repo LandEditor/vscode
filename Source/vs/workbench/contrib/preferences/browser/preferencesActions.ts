@@ -33,7 +33,7 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 	static readonly LABEL = {
 		value: nls.localize(
 			"configureLanguageBasedSettings",
-			"Configure Language Specific Settings...",
+			"Configure Language Specific Settings..."
 		),
 		original: "Configure Language Specific Settings...",
 	};
@@ -43,8 +43,10 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 		label: string,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService
 	) {
 		super(id, label);
 	}
@@ -57,7 +59,7 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 				const description: string = nls.localize(
 					"languageDescriptionConfigured",
 					"({0})",
-					languageId,
+					languageId
 				);
 				// construct a fake resource to be able to show nice icons if any
 				let fakeResource: URI | undefined;
@@ -77,11 +79,11 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 					iconClasses: getIconClasses(
 						this.modelService,
 						this.languageService,
-						fakeResource,
+						fakeResource
 					),
 					description,
 				} as IQuickPickItem;
-			},
+			}
 		);
 
 		await this.quickInputService
@@ -92,11 +94,11 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 				if (pick) {
 					const languageId =
 						this.languageService.getLanguageIdByLanguageName(
-							pick.label,
+							pick.label
 						);
 					if (typeof languageId === "string") {
 						return this.preferencesService.openLanguageSpecificSettings(
-							languageId,
+							languageId
 						);
 					}
 				}
@@ -110,7 +112,7 @@ CommandsRegistry.registerCommand({
 	id: "_getAllSettings",
 	handler: () => {
 		const configRegistry = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		);
 		const allSettings = configRegistry.getConfigurationProperties();
 		return allSettings;
@@ -148,7 +150,7 @@ CommandsRegistry.registerCommand("_getAllCommands", function (accessor) {
 				: undefined;
 			const label = category ? `${category}: ${title}` : title;
 			const keybinding = keybindingService.lookupKeybinding(
-				menuItem.command.id,
+				menuItem.command.id
 			);
 			actions.push({
 				command: menuItem.command.id,

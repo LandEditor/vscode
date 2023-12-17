@@ -109,7 +109,7 @@ export class Delayer<T> {
 
 	public trigger(
 		task: ITask<T>,
-		delay: number = this.defaultDelay,
+		delay: number = this.defaultDelay
 	): Promise<T | null> {
 		this._task = task;
 		if (delay >= 0) {
@@ -134,7 +134,7 @@ export class Delayer<T> {
 					this._timeout = null;
 					this._onSuccess?.(undefined);
 				},
-				delay >= 0 ? delay : this.defaultDelay,
+				delay >= 0 ? delay : this.defaultDelay
 			);
 		}
 

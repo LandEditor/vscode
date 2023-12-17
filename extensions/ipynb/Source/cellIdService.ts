@@ -24,7 +24,7 @@ export function ensureAllNewCellsHaveCellIds(context: ExtensionContext) {
 	workspace.onDidChangeNotebookDocument(
 		onDidChangeNotebookCells,
 		undefined,
-		context.subscriptions,
+		context.subscriptions
 	);
 }
 
@@ -64,7 +64,7 @@ function isCellIdRequired(
 	metadata: Pick<
 		Partial<nbformat.INotebookContent>,
 		"nbformat" | "nbformat_minor"
-	>,
+	>
 ) {
 	if ((metadata.nbformat || 0) >= 5) {
 		return true;

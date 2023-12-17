@@ -50,7 +50,7 @@ function createWordRegExp(allowInWords: string = ""): RegExp {
 export const DEFAULT_WORD_REGEXP = createWordRegExp();
 
 export function ensureValidWordDefinition(
-	wordDefinition?: RegExp | null,
+	wordDefinition?: RegExp | null
 ): RegExp {
 	let result: RegExp = DEFAULT_WORD_REGEXP;
 
@@ -100,7 +100,7 @@ export function getWordAtText(
 	wordDefinition: RegExp,
 	text: string,
 	textOffset: number,
-	config?: IGetWordAtTextConfig,
+	config?: IGetWordAtTextConfig
 ): IWordAtPosition | null {
 	// Ensure the regex has the 'g' flag, otherwise this will loop forever
 	wordDefinition = ensureValidWordDefinition(wordDefinition);
@@ -142,7 +142,7 @@ export function getWordAtText(
 			wordDefinition,
 			text,
 			pos,
-			prevRegexIndex,
+			prevRegexIndex
 		);
 
 		if (!thisMatch && match) {
@@ -176,7 +176,7 @@ function _findRegexMatchEnclosingPosition(
 	wordDefinition: RegExp,
 	text: string,
 	pos: number,
-	stopPos: number,
+	stopPos: number
 ): RegExpExecArray | null {
 	let match: RegExpExecArray | null;
 	while ((match = wordDefinition.exec(text))) {

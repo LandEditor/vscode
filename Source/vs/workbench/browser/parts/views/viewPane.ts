@@ -145,20 +145,20 @@ const viewPaneContainerExpandedIcon = registerIcon(
 	Codicon.chevronDown,
 	nls.localize(
 		"viewPaneContainerExpandedIcon",
-		"Icon for an expanded view pane container.",
-	),
+		"Icon for an expanded view pane container."
+	)
 );
 const viewPaneContainerCollapsedIcon = registerIcon(
 	"view-pane-container-collapsed",
 	Codicon.chevronRight,
 	nls.localize(
 		"viewPaneContainerCollapsedIcon",
-		"Icon for a collapsed view pane container.",
-	),
+		"Icon for a collapsed view pane container."
+	)
 );
 
 const viewsRegistry = Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry,
+	ViewContainerExtensions.ViewsRegistry
 );
 
 interface IItem {
@@ -185,21 +185,26 @@ class ViewWelcomeController {
 
 	private readonly disposables = new DisposableStore();
 	private readonly enabledDisposables = this.disposables.add(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private readonly renderDisposables = this.disposables.add(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 
 	constructor(
 		private readonly container: HTMLElement,
 		private readonly delegate: IViewWelcomeDelegate,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService
+		private instantiationService: IInstantiationService,
 		@IOpenerService protected openerService: IOpenerService,
 		@ITelemetryService protected telemetryService: ITelemetryService,
-		@IContextKeyService private contextKeyService: IContextKeyService,
+		@IContextKeyService private contextKeyService: IContextKeyService
 	) {
-		this.delegate.onDidChangeViewWelcomeState(this.onDidChangeViewWelcomeState, this, this.disposables);
+		this.delegate.onDidChangeViewWelcomeState(
+			this.onDidChangeViewWelcomeState,
+			this,
+			this.disposables
+		);
 		this.onDidChangeViewWelcomeState();
 	}
 
@@ -253,23 +258,23 @@ class ViewWelcomeController {
 				viewWelcomeContainer.remove();
 				this.scrollableElement = undefined;
 				this.element = undefined;
-			}),
+			})
 		);
 
 		this.contextKeyService.onDidChangeContext(
 			this.onDidChangeContext,
 			this,
-			this.enabledDisposables,
+			this.enabledDisposables
 		);
 		Event.chain(viewsRegistry.onDidChangeViewWelcomeContent, ($) =>
-			$.filter((id) => id === this.delegate.id),
+			$.filter((id) => id === this.delegate.id)
 		)(this.onDidChangeViewWelcomeContent, this, this.enabledDisposables);
 		this.onDidChangeViewWelcomeContent();
 	}
 
 	private onDidChangeViewWelcomeContent(): void {
 		const descriptors = viewsRegistry.getViewWelcomeContent(
-			this.delegate.id,
+			this.delegate.id
 		);
 
 		this.items = [];
@@ -280,8 +285,8 @@ class ViewWelcomeController {
 			} else {
 				const visible = descriptor.when
 					? this.contextKeyService.contextMatchesRules(
-							descriptor.when,
-					  )
+							descriptor.when
+						)
 					: true;
 				this.items.push({ descriptor, visible });
 			}
@@ -299,7 +304,7 @@ class ViewWelcomeController {
 			}
 
 			const visible = this.contextKeyService.contextMatchesRules(
-				item.descriptor.when,
+				item.descriptor.when
 			);
 
 			if (item.visible === visible) {
@@ -346,7 +351,7 @@ class ViewWelcomeController {
 					const node = linkedText.nodes[0];
 					const buttonContainer = append(
 						this.element!,
-						$(".button-container"),
+						$(".button-container")
 					);
 					const button = new Button(buttonContainer, {
 						title: node.title,
@@ -368,7 +373,7 @@ class ViewWelcomeController {
 							});
 						},
 						null,
-						this.renderDisposables,
+						this.renderDisposables
 					);
 					this.renderDisposables.add(button);
 
@@ -376,19 +381,19 @@ class ViewWelcomeController {
 						const updateEnablement = () =>
 							(button.enabled =
 								this.contextKeyService.contextMatchesRules(
-									precondition,
+									precondition
 								));
 						updateEnablement();
 
 						const keys = new Set(precondition.keys());
 						const onDidChangeContext = Event.filter(
 							this.contextKeyService.onDidChangeContext,
-							(e) => e.affectsSome(keys),
+							(e) => e.affectsSome(keys)
 						);
 						onDidChangeContext(
 							updateEnablement,
 							null,
-							this.renderDisposables,
+							this.renderDisposables
 						);
 					}
 				} else {
@@ -403,8 +408,8 @@ class ViewWelcomeController {
 									Link,
 									p,
 									node,
-									{},
-								),
+									{}
+								)
 							);
 
 							if (
@@ -414,19 +419,19 @@ class ViewWelcomeController {
 								const updateEnablement = () =>
 									(link.enabled =
 										this.contextKeyService.contextMatchesRules(
-											precondition,
+											precondition
 										));
 								updateEnablement();
 
 								const keys = new Set(precondition.keys());
 								const onDidChangeContext = Event.filter(
 									this.contextKeyService.onDidChangeContext,
-									(e) => e.affectsSome(keys),
+									(e) => e.affectsSome(keys)
 								);
 								onDidChangeContext(
 									updateEnablement,
 									null,
-									this.renderDisposables,
+									this.renderDisposables
 								);
 							}
 						}
@@ -473,7 +478,7 @@ export abstract class ViewPane extends Pane implements IView {
 		this._onDidChangeTitleArea.event;
 
 	protected _onDidChangeViewWelcomeState = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeViewWelcomeState: Event<void> =
 		this._onDidChangeViewWelcomeState.event;
@@ -511,28 +516,76 @@ export abstract class ViewPane extends Pane implements IView {
 		options: IViewPaneOptions,
 		@IKeybindingService protected keybindingService: IKeybindingService,
 		@IContextMenuService protected contextMenuService: IContextMenuService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IContextKeyService protected contextKeyService: IContextKeyService,
-		@IViewDescriptorService protected viewDescriptorService: IViewDescriptorService,
-		@IInstantiationService protected instantiationService: IInstantiationService,
+		@IViewDescriptorService
+		protected viewDescriptorService: IViewDescriptorService,
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
 		@IOpenerService protected openerService: IOpenerService,
 		@IThemeService protected themeService: IThemeService,
-		@ITelemetryService protected telemetryService: ITelemetryService,
+		@ITelemetryService protected telemetryService: ITelemetryService
 	) {
-		super({ ...options, ...{ orientation: viewDescriptorService.getViewLocationById(options.id) === ViewContainerLocation.Panel ? Orientation.HORIZONTAL : Orientation.VERTICAL } });
+		super({
+			...options,
+			...{
+				orientation:
+					viewDescriptorService.getViewLocationById(options.id) ===
+					ViewContainerLocation.Panel
+						? Orientation.HORIZONTAL
+						: Orientation.VERTICAL,
+			},
+		});
 
 		this.id = options.id;
 		this._title = options.title;
 		this._titleDescription = options.titleDescription;
 		this.showActions = options.showActions ?? ViewPaneShowActions.Default;
 
-		this.scopedContextKeyService = this._register(contextKeyService.createScoped(this.element));
-		this.scopedContextKeyService.createKey('view', this.id);
-		const viewLocationKey = this.scopedContextKeyService.createKey('viewLocation', ViewContainerLocationToString(viewDescriptorService.getViewLocationById(this.id)!));
-		this._register(Event.filter(viewDescriptorService.onDidChangeLocation, e => e.views.some(view => view.id === this.id))(() => viewLocationKey.set(ViewContainerLocationToString(viewDescriptorService.getViewLocationById(this.id)!))));
+		this.scopedContextKeyService = this._register(
+			contextKeyService.createScoped(this.element)
+		);
+		this.scopedContextKeyService.createKey("view", this.id);
+		const viewLocationKey = this.scopedContextKeyService.createKey(
+			"viewLocation",
+			ViewContainerLocationToString(
+				viewDescriptorService.getViewLocationById(this.id)!
+			)
+		);
+		this._register(
+			Event.filter(viewDescriptorService.onDidChangeLocation, (e) =>
+				e.views.some((view) => view.id === this.id)
+			)(() =>
+				viewLocationKey.set(
+					ViewContainerLocationToString(
+						viewDescriptorService.getViewLocationById(this.id)!
+					)
+				)
+			)
+		);
 
-		this.menuActions = this._register(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService])).createInstance(CompositeMenuActions, options.titleMenuId ?? MenuId.ViewTitle, MenuId.ViewTitleContext, { shouldForwardArgs: !options.donotForwardArgs, renderShortTitle: true }));
-		this._register(this.menuActions.onDidChange(() => this.updateActions()));
+		this.menuActions = this._register(
+			this.instantiationService
+				.createChild(
+					new ServiceCollection([
+						IContextKeyService,
+						this.scopedContextKeyService,
+					])
+				)
+				.createInstance(
+					CompositeMenuActions,
+					options.titleMenuId ?? MenuId.ViewTitle,
+					MenuId.ViewTitleContext,
+					{
+						shouldForwardArgs: !options.donotForwardArgs,
+						renderShortTitle: true,
+					}
+				)
+		);
+		this._register(
+			this.menuActions.onDidChange(() => this.updateActions())
+		);
 	}
 
 	override get headerVisible(): boolean {
@@ -587,9 +640,9 @@ export abstract class ViewPane extends Pane implements IView {
 			container,
 			$(
 				`.twisty-container${ThemeIcon.asCSSSelector(
-					this.getTwistyIcon(this.isExpanded()),
-				)}`,
-			),
+					this.getTwistyIcon(this.isExpanded())
+				)}`
+			)
 		);
 
 		this.renderHeaderTitle(container, this.title);
@@ -597,11 +650,11 @@ export abstract class ViewPane extends Pane implements IView {
 		const actions = append(container, $(".actions"));
 		actions.classList.toggle(
 			"show-always",
-			this.showActions === ViewPaneShowActions.Always,
+			this.showActions === ViewPaneShowActions.Always
 		);
 		actions.classList.toggle(
 			"show-expanded",
-			this.showActions === ViewPaneShowActions.WhenExpanded,
+			this.showActions === ViewPaneShowActions.WhenExpanded
 		);
 		this.toolbar = this.instantiationService.createInstance(
 			WorkbenchToolBar,
@@ -613,14 +666,14 @@ export abstract class ViewPane extends Pane implements IView {
 				ariaLabel: nls.localize(
 					"viewToolbarAriaLabel",
 					"{0} actions",
-					this.title,
+					this.title
 				),
 				getKeyBinding: (action) =>
 					this.keybindingService.lookupKeybinding(action.id),
 				renderDropdownAsChildElement: true,
 				actionRunner: this.getActionRunner(),
 				resetMenu: this.menuActions.menuId,
-			},
+			}
 		);
 
 		this._register(this.toolbar);
@@ -628,8 +681,8 @@ export abstract class ViewPane extends Pane implements IView {
 
 		this._register(
 			addDisposableListener(actions, EventType.CLICK, (e) =>
-				e.preventDefault(),
-			),
+				e.preventDefault()
+			)
 		);
 
 		const viewContainerModel =
@@ -639,8 +692,8 @@ export abstract class ViewPane extends Pane implements IView {
 				this.viewDescriptorService
 					.getViewContainerModel(viewContainerModel)
 					.onDidChangeContainerInfo(({ title }) =>
-						this.updateTitle(this.title),
-					),
+						this.updateTitle(this.title)
+					)
 			);
 		} else {
 			console.error(`View container model not found for view ${this.id}`);
@@ -648,13 +701,10 @@ export abstract class ViewPane extends Pane implements IView {
 
 		const onDidRelevantConfigurationChange = Event.filter(
 			this.configurationService.onDidChangeConfiguration,
-			(e) => e.affectsConfiguration(ViewPane.AlwaysShowActionsConfig),
+			(e) => e.affectsConfiguration(ViewPane.AlwaysShowActionsConfig)
 		);
 		this._register(
-			onDidRelevantConfigurationChange(
-				this.updateActionsVisibility,
-				this,
-			),
+			onDidRelevantConfigurationChange(this.updateActionsVisibility, this)
 		);
 		this.updateActionsVisibility();
 	}
@@ -668,13 +718,13 @@ export abstract class ViewPane extends Pane implements IView {
 		if (this.twistiesContainer) {
 			this.twistiesContainer.classList.remove(
 				...ThemeIcon.asClassNameArray(
-					this.getTwistyIcon(!this._expanded),
-				),
+					this.getTwistyIcon(!this._expanded)
+				)
 			);
 			this.twistiesContainer.classList.add(
 				...ThemeIcon.asClassNameArray(
-					this.getTwistyIcon(this._expanded),
-				),
+					this.getTwistyIcon(this._expanded)
+				)
 			);
 		}
 	}
@@ -692,7 +742,7 @@ export abstract class ViewPane extends Pane implements IView {
 		if (this.iconContainer) {
 			const fgColor = asCssValueWithDefault(
 				styles.headerForeground,
-				asCssVariable(foreground),
+				asCssVariable(foreground)
 			);
 			if (URI.isUri(icon)) {
 				// Apply background color to activity bar item provided with iconUrls
@@ -729,7 +779,7 @@ export abstract class ViewPane extends Pane implements IView {
 				mask-size: 24px;
 				-webkit-mask: ${asCSSUrl(icon)} no-repeat 50% 50%;
 				-webkit-mask-size: 16px;
-			`,
+			`
 			);
 		} else if (ThemeIcon.isThemeIcon(icon)) {
 			cssClass = ThemeIcon.asClassName(icon);
@@ -742,7 +792,7 @@ export abstract class ViewPane extends Pane implements IView {
 		const calculatedTitle = this.calculateTitle(title);
 		this.titleContainer = append(
 			container,
-			$("h3.title", { title: calculatedTitle }, calculatedTitle),
+			$("h3.title", { title: calculatedTitle }, calculatedTitle)
 		);
 
 		if (this._titleDescription) {
@@ -774,12 +824,12 @@ export abstract class ViewPane extends Pane implements IView {
 			this.titleDescriptionContainer.textContent = description ?? "";
 			this.titleDescriptionContainer.setAttribute(
 				"title",
-				description ?? "",
+				description ?? ""
 			);
 		} else if (description && this.titleContainer) {
 			this.titleDescriptionContainer = after(
 				this.titleContainer,
-				$("span.description", { title: description }, description),
+				$("span.description", { title: description }, description)
 			);
 		}
 	}
@@ -797,7 +847,7 @@ export abstract class ViewPane extends Pane implements IView {
 		const model =
 			this.viewDescriptorService.getViewContainerModel(viewContainer);
 		const viewDescriptor = this.viewDescriptorService.getViewDescriptorById(
-			this.id,
+			this.id
 		);
 		const isDefault =
 			this.viewDescriptorService.getDefaultContainerById(this.id) ===
@@ -822,8 +872,8 @@ export abstract class ViewPane extends Pane implements IView {
 				this.instantiationService,
 				this.openerService,
 				this.telemetryService,
-				this.contextKeyService,
-			),
+				this.contextKeyService
+			)
 		);
 	}
 
@@ -839,7 +889,7 @@ export abstract class ViewPane extends Pane implements IView {
 		if (this.progressBar === undefined) {
 			// Progress bar
 			this.progressBar = this._register(
-				new ProgressBar(this.element, defaultProgressBarStyles),
+				new ProgressBar(this.element, defaultProgressBarStyles)
 			);
 			this.progressBar.hide();
 		}
@@ -855,11 +905,11 @@ export abstract class ViewPane extends Pane implements IView {
 							that.onDidChangeBodyVisibility((isVisible) =>
 								isVisible
 									? this.onScopeOpened(that.id)
-									: this.onScopeClosed(that.id),
-							),
+									: this.onScopeClosed(that.id)
+							)
 						);
 					}
-				})(),
+				})()
 			);
 		}
 		return this.progressIndicator;
@@ -900,7 +950,7 @@ export abstract class ViewPane extends Pane implements IView {
 			}
 			this.toolbar.setActions(
 				prepareActions(primaryActions),
-				prepareActions(this.menuActions.getSecondaryActions()),
+				prepareActions(this.menuActions.getSecondaryActions())
 			);
 			this.toolbar.context = this.getActionsContext();
 		}
@@ -912,11 +962,11 @@ export abstract class ViewPane extends Pane implements IView {
 		}
 		const shouldAlwaysShowActions =
 			this.configurationService.getValue<boolean>(
-				"workbench.view.alwaysShowHeaderActions",
+				"workbench.view.alwaysShowHeaderActions"
 			);
 		this.headerContainer.classList.toggle(
 			"actions-always-visible",
-			shouldAlwaysShowActions,
+			shouldAlwaysShowActions
 		);
 	}
 
@@ -927,7 +977,7 @@ export abstract class ViewPane extends Pane implements IView {
 
 	getActionViewItem(
 		action: IAction,
-		options?: IDropdownMenuActionViewItemOptions,
+		options?: IDropdownMenuActionViewItemOptions
 	): IActionViewItem | undefined {
 		if (action.id === VIEWPANE_FILTER_ACTION.id) {
 			const that = this;
@@ -997,7 +1047,7 @@ export abstract class FilterViewPane extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(
 			options,
@@ -1009,7 +1059,7 @@ export abstract class FilterViewPane extends ViewPane {
 			instantiationService,
 			openerService,
 			themeService,
-			telemetryService,
+			telemetryService
 		);
 		this.filterWidget = this._register(
 			instantiationService
@@ -1017,9 +1067,9 @@ export abstract class FilterViewPane extends ViewPane {
 					new ServiceCollection([
 						IContextKeyService,
 						this.scopedContextKeyService,
-					]),
+					])
 				)
-				.createInstance(FilterWidget, options.filterOptions),
+				.createInstance(FilterWidget, options.filterOptions)
 		);
 	}
 
@@ -1031,7 +1081,7 @@ export abstract class FilterViewPane extends ViewPane {
 		super.renderBody(container);
 		this.filterContainer = append(
 			container,
-			$(".viewpane-filter-container"),
+			$(".viewpane-filter-container")
 		);
 	}
 

@@ -57,7 +57,7 @@ namespace SchemaAssociationNotification {
 
 namespace VSCodeContentRequest {
 	export const type: RequestType<string, string, any> = new RequestType(
-		"vscode/content",
+		"vscode/content"
 	);
 }
 
@@ -68,7 +68,7 @@ namespace SchemaContentChangeNotification {
 
 namespace ForceValidateRequest {
 	export const type: RequestType<string, Diagnostic[], any> = new RequestType(
-		"json/validate",
+		"json/validate"
 	);
 }
 
@@ -123,10 +123,10 @@ export interface RuntimeEnvironment {
 
 export function startServer(
 	connection: Connection,
-	runtime: RuntimeEnvironment,
+	runtime: RuntimeEnvironment
 ) {
 	function getSchemaRequestService(
-		handledSchemas: string[] = ["https", "http", "file"],
+		handledSchemas: string[] = ["https", "http", "file"]
 	) {
 		const builtInHandlers: {
 			[protocol: string]: RequestService | undefined;
@@ -151,7 +151,7 @@ export function startServer(
 				},
 				(error) => {
 					return Promise.reject(error.message);
-				},
+				}
 			);
 		};
 	}
@@ -213,20 +213,20 @@ export function startServer(
 
 		clientSnippetSupport = getClientCapability(
 			"textDocument.completion.completionItem.snippetSupport",
-			false,
+			false
 		);
 		dynamicFormatterRegistration =
 			getClientCapability(
 				"textDocument.rangeFormatting.dynamicRegistration",
-				false,
+				false
 			) && typeof initializationOptions.provideFormatter !== "boolean";
 		foldingRangeLimitDefault = getClientCapability(
 			"textDocument.foldingRange.rangeLimit",
-			Number.MAX_VALUE,
+			Number.MAX_VALUE
 		);
 		hierarchicalDocumentSymbolSupport = getClientCapability(
 			"textDocument.documentSymbol.hierarchicalDocumentSymbolSupport",
-			false,
+			false
 		);
 		formatterMaxNumberOfEdits =
 			initializationOptions.customCapabilities?.rangeFormatting
@@ -234,21 +234,21 @@ export function startServer(
 
 		const supportsDiagnosticPull = getClientCapability(
 			"textDocument.diagnostic",
-			undefined,
+			undefined
 		);
 		if (supportsDiagnosticPull === undefined) {
 			diagnosticsSupport = registerDiagnosticsPushSupport(
 				documents,
 				connection,
 				runtime,
-				validateTextDocument,
+				validateTextDocument
 			);
 		} else {
 			diagnosticsSupport = registerDiagnosticsPullSupport(
 				documents,
 				connection,
 				runtime,
-				validateTextDocument,
+				validateTextDocument
 			);
 		}
 
@@ -258,7 +258,7 @@ export function startServer(
 				? {
 						resolveProvider: false, // turn off resolving as the current language service doesn't do anything on resolve. Also fixes #91747
 						triggerCharacters: ['"', ":"],
-				  }
+					}
 				: undefined,
 			hoverProvider: true,
 			documentSymbolProvider: true,
@@ -321,7 +321,7 @@ export function startServer(
 		const settings = <Settings>change.settings;
 		runtime.configureHttpRequests?.(
 			settings?.http?.proxy,
-			!!settings.http?.proxyStrictSSL,
+			!!settings.http?.proxyStrictSSL
 		);
 		jsonConfigurationSettings = settings.json?.schemas;
 		validateEnabled = !!settings.json?.validate?.enable;
@@ -331,19 +331,19 @@ export function startServer(
 		const sanitizeLimitSetting = (settingValue: any) =>
 			Math.trunc(Math.max(settingValue, 0));
 		resultLimit = sanitizeLimitSetting(
-			settings.json?.resultLimit || Number.MAX_VALUE,
+			settings.json?.resultLimit || Number.MAX_VALUE
 		);
 		jsonFoldingRangeLimit = sanitizeLimitSetting(
-			settings.json?.jsonFoldingLimit || foldingRangeLimitDefault,
+			settings.json?.jsonFoldingLimit || foldingRangeLimitDefault
 		);
 		jsoncFoldingRangeLimit = sanitizeLimitSetting(
-			settings.json?.jsoncFoldingLimit || foldingRangeLimitDefault,
+			settings.json?.jsoncFoldingLimit || foldingRangeLimitDefault
 		);
 		jsonColorDecoratorLimit = sanitizeLimitSetting(
-			settings.json?.jsonColorDecoratorLimit || Number.MAX_VALUE,
+			settings.json?.jsonColorDecoratorLimit || Number.MAX_VALUE
 		);
 		jsoncColorDecoratorLimit = sanitizeLimitSetting(
-			settings.json?.jsoncColorDecoratorLimit || Number.MAX_VALUE,
+			settings.json?.jsoncColorDecoratorLimit || Number.MAX_VALUE
 		);
 
 		// dynamically enable & disable the formatter
@@ -358,17 +358,17 @@ export function startServer(
 					formatterRegistrations = [
 						connection.client.register(
 							DocumentRangeFormattingRequest.type,
-							{ documentSelector },
+							{ documentSelector }
 						),
 						connection.client.register(
 							DocumentFormattingRequest.type,
-							{ documentSelector },
+							{ documentSelector }
 						),
 					];
 				}
 			} else if (formatterRegistrations) {
 				formatterRegistrations.forEach((p) =>
-					p.then((r) => r.dispose()),
+					p.then((r) => r.dispose())
 				);
 				formatterRegistrations = null;
 			}
@@ -381,7 +381,7 @@ export function startServer(
 		(associations) => {
 			schemaAssociations = associations;
 			updateConfiguration();
-		},
+		}
 	);
 
 	// A schema has changed
@@ -401,7 +401,7 @@ export function startServer(
 			if (needsRevalidation) {
 				diagnosticsSupport?.requestRefresh();
 			}
-		},
+		}
 	);
 
 	// Retry schema validation on all open documents
@@ -444,7 +444,7 @@ export function startServer(
 			if (Array.isArray(schemaAssociations)) {
 				Array.prototype.push.apply(
 					languageSettings.schemas,
-					schemaAssociations,
+					schemaAssociations
 				);
 			} else {
 				for (const pattern in schemaAssociations) {
@@ -483,7 +483,7 @@ export function startServer(
 	}
 
 	async function validateTextDocument(
-		textDocument: TextDocument,
+		textDocument: TextDocument
 	): Promise<Diagnostic[]> {
 		if (textDocument.getText().length === 0) {
 			return []; // ignore empty documents
@@ -496,7 +496,7 @@ export function startServer(
 		return await languageService.doValidation(
 			textDocument,
 			jsonDocument,
-			documentSettings,
+			documentSettings
 		);
 	}
 
@@ -516,7 +516,7 @@ export function startServer(
 	const jsonDocuments = getLanguageModelCache<JSONDocument>(
 		10,
 		60,
-		(document) => languageService.parseJSONDocument(document),
+		(document) => languageService.parseJSONDocument(document)
 	);
 	documents.onDidClose((e) => {
 		jsonDocuments.onDocumentRemoved(e.document);
@@ -534,21 +534,21 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					textDocumentPosition.textDocument.uri,
+					textDocumentPosition.textDocument.uri
 				);
 				if (document) {
 					const jsonDocument = getJSONDocument(document);
 					return languageService.doComplete(
 						document,
 						textDocumentPosition.position,
-						jsonDocument,
+						jsonDocument
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing completions for ${textDocumentPosition.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -557,21 +557,21 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					textDocumentPositionParams.textDocument.uri,
+					textDocumentPositionParams.textDocument.uri
 				);
 				if (document) {
 					const jsonDocument = getJSONDocument(document);
 					return languageService.doHover(
 						document,
 						textDocumentPositionParams.position,
-						jsonDocument,
+						jsonDocument
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing hover for ${textDocumentPositionParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -580,7 +580,7 @@ export function startServer(
 			runtime,
 			() => {
 				const document = documents.get(
-					documentSymbolParams.textDocument.uri,
+					documentSymbolParams.textDocument.uri
 				);
 				if (document) {
 					const jsonDocument = getJSONDocument(document);
@@ -588,13 +588,13 @@ export function startServer(
 						return languageService.findDocumentSymbols2(
 							document,
 							jsonDocument,
-							{ resultLimit },
+							{ resultLimit }
 						);
 					} else {
 						return languageService.findDocumentSymbols(
 							document,
 							jsonDocument,
-							{ resultLimit },
+							{ resultLimit }
 						);
 					}
 				}
@@ -602,7 +602,7 @@ export function startServer(
 			},
 			[],
 			`Error while computing document symbols for ${documentSymbolParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -611,12 +611,12 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					codeActionParams.textDocument.uri,
+					codeActionParams.textDocument.uri
 				);
 				if (document) {
 					const sortCodeAction = CodeAction.create(
 						"Sort JSON",
-						CodeActionKind.Source.concat(".sort", ".json"),
+						CodeActionKind.Source.concat(".sort", ".json")
 					);
 					sortCodeAction.command = {
 						command: "json.sort",
@@ -628,14 +628,14 @@ export function startServer(
 			},
 			[],
 			`Error while computing code actions for ${codeActionParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
 	function onFormat(
 		textDocument: TextDocumentIdentifier,
 		range: Range | undefined,
-		options: FormattingOptions,
+		options: FormattingOptions
 	): TextEdit[] {
 		options.keepLines = keepLinesEnabled;
 		const document = documents.get(textDocument.uri);
@@ -643,7 +643,7 @@ export function startServer(
 			const edits = languageService.format(
 				document,
 				range ?? getFullRange(document),
-				options,
+				options
 			);
 			if (edits.length > formatterMaxNumberOfEdits) {
 				const newText = TextDocument.applyEdits(document, edits);
@@ -661,11 +661,11 @@ export function startServer(
 				onFormat(
 					formatParams.textDocument,
 					formatParams.range,
-					formatParams.options,
+					formatParams.options
 				),
 			[],
 			`Error while formatting range for ${formatParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -676,11 +676,11 @@ export function startServer(
 				onFormat(
 					formatParams.textDocument,
 					undefined,
-					formatParams.options,
+					formatParams.options
 				),
 			[],
 			`Error while formatting ${formatParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -698,14 +698,14 @@ export function startServer(
 					return languageService.findDocumentColors(
 						document,
 						jsonDocument,
-						{ resultLimit },
+						{ resultLimit }
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing document colors for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -720,14 +720,14 @@ export function startServer(
 						document,
 						jsonDocument,
 						params.color,
-						params.range,
+						params.range
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing color presentations for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -749,7 +749,7 @@ export function startServer(
 			},
 			null,
 			`Error while computing folding ranges for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -763,14 +763,14 @@ export function startServer(
 					return languageService.getSelectionRanges(
 						document,
 						params.positions,
-						jsonDocument,
+						jsonDocument
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing selection ranges for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -787,7 +787,7 @@ export function startServer(
 			},
 			[],
 			`Error while computing links for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -798,6 +798,6 @@ export function startServer(
 function getFullRange(document: TextDocument): Range {
 	return Range.create(
 		Position.create(0, 0),
-		document.positionAt(document.getText().length),
+		document.positionAt(document.getText().length)
 	);
 }

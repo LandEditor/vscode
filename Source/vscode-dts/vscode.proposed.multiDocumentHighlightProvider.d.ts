@@ -42,7 +42,7 @@ declare module "vscode" {
 			document: TextDocument,
 			position: Position,
 			otherDocuments: TextDocument[],
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<MultiDocumentHighlight[]>;
 	}
 
@@ -60,7 +60,7 @@ declare module "vscode" {
 		 */
 		export function registerMultiDocumentHighlightProvider(
 			selector: DocumentSelector,
-			provider: MultiDocumentHighlightProvider,
+			provider: MultiDocumentHighlightProvider
 		): Disposable;
 	}
 }

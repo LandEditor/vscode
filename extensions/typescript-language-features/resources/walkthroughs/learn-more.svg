@@ -9,8 +9,8 @@
 					<g>
 						<rect width="103" height="35" transform="translate(16 14)"
 							fill="var(--vscode-tab-activeBackground, #1E1E1E)" />
-						<rect x="28" y="28" width="79" height="7" rx="3.5" fill="var(--vscode-tab-inactiveForeground, #FFFFFF)"
-							fill-opacity="0.12" />
+						<rect x="28" y="28" width="79" height="7" rx="3.5"
+							fill="var(--vscode-tab-inactiveForeground, #FFFFFF)" fill-opacity="0.12" />
 					</g>
 				</g>
 			</g>
@@ -39,7 +39,8 @@
 					<g>
 						<g filter="url(#filter1_d_1720_12523)">
 							<g>
-								<mask style="mask-type:alpha" maskUnits="userSpaceOnUse" x="44" y="66" width="14" height="14">
+								<mask style="mask-type:alpha" maskUnits="userSpaceOnUse" x="44" y="66" width="14"
+									height="14">
 									<path fill-rule="evenodd" clip-rule="evenodd"
 										d="M53.9277 79.9044C54.1482 79.9903 54.3996 79.9848 54.6221 79.8777L57.5045 78.4908C57.8074 78.3451 58 78.0385 58 77.7022V68.2979C58 67.9616 57.8074 67.6551 57.5045 67.5093L54.6221 66.1224C54.3301 65.9818 53.9882 66.0162 53.7319 66.2026C53.6953 66.2292 53.6604 66.259 53.6277 66.2917L48.1097 71.3258L45.7062 69.5014C45.4825 69.3315 45.1695 69.3455 44.9617 69.5345L44.1908 70.2357C43.9366 70.4669 43.9364 70.8668 44.1902 71.0984L46.2746 73L44.1902 74.9017C43.9364 75.1333 43.9366 75.5332 44.1908 75.7644L44.9617 76.4656C45.1695 76.6546 45.4825 76.6685 45.7062 76.4987L48.1097 74.6743L53.6277 79.7084C53.7149 79.7957 53.8174 79.8615 53.9277 79.9044ZM54.5021 69.8219L50.3153 73L54.5021 76.1782V69.8219Z"
 										fill="#FFFFFF" />
@@ -68,8 +69,8 @@
 						</g>
 					</g>
 					<g>
-						<rect x="73" y="69" width="41" height="7" rx="3.5" fill="var(--vscode-list-deemphasizedForeground, #FFFFFF)"
-							fill-opacity="0.32" />
+						<rect x="73" y="69" width="41" height="7" rx="3.5"
+							fill="var(--vscode-list-deemphasizedForeground, #FFFFFF)" fill-opacity="0.32" />
 						<rect x="123" y="69" width="41" height="7" rx="3.5"
 							fill="var(--vscode-list-deemphasizedForeground, #FFFFFF)" fill-opacity="0.16" />
 						<rect x="173" y="69" width="55" height="7" rx="3.5"

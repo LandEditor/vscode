@@ -58,18 +58,19 @@ export class DiskFileSystemProvider
 	private readonly provider = this._register(
 		new DiskFileSystemProviderClient(
 			this.mainProcessService.getChannel(LOCAL_FILE_SYSTEM_CHANNEL_NAME),
-			{ pathCaseSensitive: isLinux, trash: true },
-		),
+			{ pathCaseSensitive: isLinux, trash: true }
+		)
 	);
 
 	constructor(
 		private readonly mainProcessService: IMainProcessService,
 		private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService,
-		logService: ILogService,
+		logService: ILogService
 	) {
 		super(logService, {
 			watcher: {
-				forceUniversal: true /* send all requests to universal watcher process */,
+				forceUniversal:
+					true /* send all requests to universal watcher process */,
 			},
 		});
 
@@ -79,10 +80,10 @@ export class DiskFileSystemProvider
 	private registerListeners(): void {
 		// Forward events from the embedded provider
 		this.provider.onDidChangeFile((changes) =>
-			this._onDidChangeFile.fire(changes),
+			this._onDidChangeFile.fire(changes)
 		);
 		this.provider.onDidWatchError((error) =>
-			this._onDidWatchError.fire(error),
+			this._onDidWatchError.fire(error)
 		);
 	}
 
@@ -114,7 +115,7 @@ export class DiskFileSystemProvider
 
 	readFile(
 		resource: URI,
-		opts?: IFileAtomicReadOptions,
+		opts?: IFileAtomicReadOptions
 	): Promise<Uint8Array> {
 		return this.provider.readFile(resource, opts);
 	}
@@ -122,7 +123,7 @@ export class DiskFileSystemProvider
 	readFileStream(
 		resource: URI,
 		opts: IFileReadStreamOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): ReadableStreamEvents<Uint8Array> {
 		return this.provider.readFileStream(resource, opts, token);
 	}
@@ -130,7 +131,7 @@ export class DiskFileSystemProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions,
+		opts: IFileWriteOptions
 	): Promise<void> {
 		return this.provider.writeFile(resource, content, opts);
 	}
@@ -148,7 +149,7 @@ export class DiskFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		return this.provider.read(fd, pos, data, offset, length);
 	}
@@ -158,7 +159,7 @@ export class DiskFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		return this.provider.write(fd, pos, data, offset, length);
 	}
@@ -198,13 +199,13 @@ export class DiskFileSystemProvider
 	protected createUniversalWatcher(
 		onChange: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean,
+		verboseLogging: boolean
 	): AbstractUniversalWatcherClient {
 		return new UniversalWatcherClient(
 			(changes) => onChange(changes),
 			(msg) => onLogMessage(msg),
 			verboseLogging,
-			this.utilityProcessWorkerWorkbenchService,
+			this.utilityProcessWorkerWorkbenchService
 		);
 	}
 

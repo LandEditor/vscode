@@ -16,7 +16,7 @@ import {
 } from "vs/platform/files/common/files";
 
 export const IElevatedFileService = createDecorator<IElevatedFileService>(
-	"elevatedFileService",
+	"elevatedFileService"
 );
 
 export interface IElevatedFileService {
@@ -34,6 +34,6 @@ export interface IElevatedFileService {
 	writeFileElevated(
 		resource: URI,
 		value: VSBuffer | VSBufferReadable | VSBufferReadableStream,
-		options?: IWriteFileOptions,
+		options?: IWriteFileOptions
 	): Promise<IFileStatWithMetadata>;
 }

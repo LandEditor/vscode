@@ -33,7 +33,7 @@ export class SyntaxRangeProvider implements RangeProvider {
 		private readonly providers: FoldingRangeProvider[],
 		readonly handleFoldingRangesChange: () => void,
 		private readonly foldingRangesLimit: FoldingLimitReporter,
-		private readonly fallbackRangeProvider: RangeProvider | undefined, // used when all providers return null
+		private readonly fallbackRangeProvider: RangeProvider | undefined // used when all providers return null
 	) {
 		this.disposables = new DisposableStore();
 		if (fallbackRangeProvider) {
@@ -43,19 +43,19 @@ export class SyntaxRangeProvider implements RangeProvider {
 		for (const provider of providers) {
 			if (typeof provider.onDidChange === "function") {
 				this.disposables.add(
-					provider.onDidChange(handleFoldingRangesChange),
+					provider.onDidChange(handleFoldingRangesChange)
 				);
 			}
 		}
 	}
 
 	compute(
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<FoldingRegions | null> {
 		return collectSyntaxRanges(
 			this.providers,
 			this.editorModel,
-			cancellationToken,
+			cancellationToken
 		).then((ranges) => {
 			if (ranges) {
 				const res = sanitizeRanges(ranges, this.foldingRangesLimit);
@@ -75,7 +75,7 @@ export class SyntaxRangeProvider implements RangeProvider {
 function collectSyntaxRanges(
 	providers: FoldingRangeProvider[],
 	model: ITextModel,
-	cancellationToken: CancellationToken,
+	cancellationToken: CancellationToken
 ): Promise<IFoldingRangeData[] | null> {
 	let rangeData: IFoldingRangeData[] | null = null;
 	const promises = providers.map((provider, i) => {
@@ -83,8 +83,8 @@ function collectSyntaxRanges(
 			provider.provideFoldingRanges(
 				model,
 				foldingContext,
-				cancellationToken,
-			),
+				cancellationToken
+			)
 		).then((ranges) => {
 			if (cancellationToken.isCancellationRequested) {
 				return;
@@ -135,7 +135,7 @@ class RangesCollector {
 		startLineNumber: number,
 		endLineNumber: number,
 		type: string | undefined,
-		nestingLevel: number,
+		nestingLevel: number
 	) {
 		if (
 			startLineNumber > MAX_LINE_NUMBER ||
@@ -205,7 +205,7 @@ class RangesCollector {
 
 export function sanitizeRanges(
 	rangeData: IFoldingRangeData[],
-	foldingRangesLimit: FoldingLimitReporter,
+	foldingRangesLimit: FoldingLimitReporter
 ): FoldingRegions {
 	const sorted = rangeData.sort((d1, d2) => {
 		let diff = d1.start - d2.start;
@@ -225,7 +225,7 @@ export function sanitizeRanges(
 				entry.start,
 				entry.end,
 				entry.kind && entry.kind.value,
-				previous.length,
+				previous.length
 			);
 		} else {
 			if (entry.start > top.start) {
@@ -236,7 +236,7 @@ export function sanitizeRanges(
 						entry.start,
 						entry.end,
 						entry.kind && entry.kind.value,
-						previous.length,
+						previous.length
 					);
 				} else {
 					if (entry.start > top.end) {
@@ -252,7 +252,7 @@ export function sanitizeRanges(
 						entry.start,
 						entry.end,
 						entry.kind && entry.kind.value,
-						previous.length,
+						previous.length
 					);
 				}
 			}

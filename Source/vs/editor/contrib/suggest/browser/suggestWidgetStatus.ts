@@ -25,7 +25,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 	protected override updateLabel() {
 		const kb = this._keybindingService.lookupKeybinding(
 			this._action.id,
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		if (!kb) {
 			return super.updateLabel();
@@ -35,7 +35,7 @@ class StatusBarViewItem extends MenuEntryActionViewItem {
 				{ key: "content", comment: ["A label", "A keybinding"] },
 				"{0} ({1})",
 				this._action.label,
-				StatusBarViewItem.symbolPrintEnter(kb),
+				StatusBarViewItem.symbolPrintEnter(kb)
 			);
 		}
 	}
@@ -57,18 +57,28 @@ export class SuggestWidgetStatus {
 		private readonly _menuId: MenuId,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IMenuService private _menuService: IMenuService,
-		@IContextKeyService private _contextKeyService: IContextKeyService,
+		@IContextKeyService private _contextKeyService: IContextKeyService
 	) {
-		this.element = dom.append(container, dom.$('.suggest-status-bar'));
+		this.element = dom.append(container, dom.$(".suggest-status-bar"));
 
-		const actionViewItemProvider = <IActionViewItemProvider>(action => {
-			return action instanceof MenuItemAction ? instantiationService.createInstance(StatusBarViewItem, action, undefined) : undefined;
+		const actionViewItemProvider = <IActionViewItemProvider>((action) => {
+			return action instanceof MenuItemAction
+				? instantiationService.createInstance(
+						StatusBarViewItem,
+						action,
+						undefined
+					)
+				: undefined;
 		});
-		this._leftActions = new ActionBar(this.element, { actionViewItemProvider });
-		this._rightActions = new ActionBar(this.element, { actionViewItemProvider });
+		this._leftActions = new ActionBar(this.element, {
+			actionViewItemProvider,
+		});
+		this._rightActions = new ActionBar(this.element, {
+			actionViewItemProvider,
+		});
 
-		this._leftActions.domNode.classList.add('left');
-		this._rightActions.domNode.classList.add('right');
+		this._leftActions.domNode.classList.add("left");
+		this._rightActions.domNode.classList.add("right");
 	}
 
 	dispose(): void {
@@ -81,7 +91,7 @@ export class SuggestWidgetStatus {
 	show(): void {
 		const menu = this._menuService.createMenu(
 			this._menuId,
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		const renderMenu = () => {
 			const left: IAction[] = [];

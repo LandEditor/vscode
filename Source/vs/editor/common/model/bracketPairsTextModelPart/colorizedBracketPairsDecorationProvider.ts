@@ -45,7 +45,7 @@ export class ColorizedBracketPairsDecorationProvider
 		this._register(
 			textModel.bracketPairs.onDidChange((e) => {
 				this.onDidChangeEmitter.fire();
-			}),
+			})
 		);
 	}
 
@@ -62,7 +62,7 @@ export class ColorizedBracketPairsDecorationProvider
 		range: Range,
 		ownerId?: number,
 		filterOutValidation?: boolean,
-		onlyMinimapDecorations?: boolean,
+		onlyMinimapDecorations?: boolean
 	): IModelDecoration[] {
 		if (onlyMinimapDecorations) {
 			// Bracket pair colorization decorations are not rendered in the minimap
@@ -86,7 +86,7 @@ export class ColorizedBracketPairsDecorationProvider
 					inlineClassName: this.colorProvider.getInlineClassName(
 						bracket,
 						this.colorizationOptions
-							.independentColorPoolPerBracketType,
+							.independentColorPoolPerBracketType
 					),
 				},
 				ownerId: 0,
@@ -99,7 +99,7 @@ export class ColorizedBracketPairsDecorationProvider
 
 	getAllDecorations(
 		ownerId?: number,
-		filterOutValidation?: boolean,
+		filterOutValidation?: boolean
 	): IModelDecoration[] {
 		if (ownerId === undefined) {
 			return [];
@@ -110,7 +110,7 @@ export class ColorizedBracketPairsDecorationProvider
 		return this.getDecorationsInRange(
 			new Range(1, 1, this.textModel.getLineCount(), 1),
 			ownerId,
-			filterOutValidation,
+			filterOutValidation
 		);
 	}
 }
@@ -121,7 +121,7 @@ class ColorProvider {
 
 	getInlineClassName(
 		bracket: BracketInfo,
-		independentColorPoolPerBracketType: boolean,
+		independentColorPoolPerBracketType: boolean
 	): string {
 		if (bracket.isInvalid) {
 			return this.unexpectedClosingBracketClassName;
@@ -129,7 +129,7 @@ class ColorProvider {
 		return this.getInlineClassNameOfLevel(
 			independentColorPoolPerBracketType
 				? bracket.nestingLevelOfEqualBracketType
-				: bracket.nestingLevel,
+				: bracket.nestingLevel
 		);
 	}
 
@@ -155,8 +155,8 @@ registerThemingParticipant((theme, collector) => {
 		`.monaco-editor .${
 			colorProvider.unexpectedClosingBracketClassName
 		} { color: ${theme.getColor(
-			editorBracketHighlightingUnexpectedBracketForeground,
-		)}; }`,
+			editorBracketHighlightingUnexpectedBracketForeground
+		)}; }`
 	);
 
 	const colorValues = colors
@@ -168,8 +168,8 @@ registerThemingParticipant((theme, collector) => {
 		const color = colorValues[level % colorValues.length];
 		collector.addRule(
 			`.monaco-editor .${colorProvider.getInlineClassNameOfLevel(
-				level,
-			)} { color: ${color}; }`,
+				level
+			)} { color: ${color}; }`
 		);
 	}
 });

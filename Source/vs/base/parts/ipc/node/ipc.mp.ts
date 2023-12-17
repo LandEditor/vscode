@@ -26,7 +26,7 @@ class Protocol implements IMessagePassingProtocol {
 	readonly onMessage = Event.fromNodeEventEmitter<VSBuffer>(
 		this.port,
 		"message",
-		(e: MessageEvent) => VSBuffer.wrap(e.data),
+		(e: MessageEvent) => VSBuffer.wrap(e.data)
 	);
 
 	constructor(private port: MessagePortMain) {
@@ -61,7 +61,7 @@ export interface IClientConnectionFilter {
  */
 export class Server extends IPCServer {
 	private static getOnDidClientConnect(
-		filter?: IClientConnectionFilter,
+		filter?: IClientConnectionFilter
 	): Event<ClientConnectionEvent> {
 		assertType(isUtilityProcess(process), "Electron Utility Process");
 
@@ -88,7 +88,7 @@ export class Server extends IPCServer {
 				// (https://github.com/electron/electron/blob/11-x-y/docs/api/message-port-main.md#event-close)
 				onDidClientDisconnect: Event.fromNodeEventEmitter(
 					port,
-					"close",
+					"close"
 				),
 			};
 
@@ -105,14 +105,14 @@ interface INodeMessagePortFragment {
 	on(event: "message", listener: (messageEvent: MessageEvent) => void): this;
 	removeListener(
 		event: "message",
-		listener: (messageEvent: MessageEvent) => void,
+		listener: (messageEvent: MessageEvent) => void
 	): this;
 }
 
 export function once(
 	port: INodeMessagePortFragment,
 	message: unknown,
-	callback: () => void,
+	callback: () => void
 ): void {
 	const listener = (e: MessageEvent) => {
 		if (e.data === message) {

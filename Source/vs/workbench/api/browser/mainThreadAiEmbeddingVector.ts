@@ -27,12 +27,13 @@ export class MainThreadAiEmbeddingVector
 {
 	private readonly _proxy: ExtHostAiEmbeddingVectorShape;
 	private readonly _registrations = this._register(
-		new DisposableMap<number>(),
+		new DisposableMap<number>()
 	);
 
 	constructor(
 		context: IExtHostContext,
-		@IAiEmbeddingVectorService private readonly _AiEmbeddingVectorService: IAiEmbeddingVectorService,
+		@IAiEmbeddingVectorService
+		private readonly _AiEmbeddingVectorService: IAiEmbeddingVectorService
 	) {
 		super();
 		this._proxy = context.getProxy(ExtHostContext.ExtHostAiEmbeddingVector);
@@ -42,12 +43,12 @@ export class MainThreadAiEmbeddingVector
 		const provider: IAiEmbeddingVectorProvider = {
 			provideAiEmbeddingVector: (
 				strings: string[],
-				token: CancellationToken,
+				token: CancellationToken
 			) => {
 				return this._proxy.$provideAiEmbeddingVector(
 					handle,
 					strings,
-					token,
+					token
 				);
 			},
 		};
@@ -55,8 +56,8 @@ export class MainThreadAiEmbeddingVector
 			handle,
 			this._AiEmbeddingVectorService.registerAiEmbeddingVectorProvider(
 				model,
-				provider,
-			),
+				provider
+			)
 		);
 	}
 

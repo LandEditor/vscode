@@ -88,7 +88,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						Constants.FileMatchOrMatchFocusKey,
+						Constants.FileMatchOrMatchFocusKey
 					),
 					primary: KeyCode.Delete,
 					mac: {
@@ -112,7 +112,7 @@ registerAction2(
 
 		run(
 			accessor: ServicesAccessor,
-			context: ISearchActionContext | undefined,
+			context: ISearchActionContext | undefined
 		): void {
 			const viewsService = accessor.get(IViewsService);
 			const configurationService = accessor.get(IConfigurationService);
@@ -135,8 +135,8 @@ registerAction2(
 				viewer,
 				element,
 				configurationService.getValue<ISearchConfigurationProperties>(
-					"search",
-				),
+					"search"
+				)
 			);
 			let focusElement = viewer.getFocus()[0] ?? undefined;
 
@@ -151,13 +151,13 @@ registerAction2(
 			let nextFocusElement;
 			const shouldRefocusMatch = shouldRefocus(
 				elementsToRemove,
-				focusElement,
+				focusElement
 			);
 			if (focusElement && shouldRefocusMatch) {
 				nextFocusElement = getElementToFocusAfterRemoved(
 					viewer,
 					focusElement,
-					elementsToRemove,
+					elementsToRemove
 				);
 			}
 
@@ -171,7 +171,7 @@ registerAction2(
 				if (!nextFocusElement) {
 					nextFocusElement = getLastNodeFromSameType(
 						viewer,
-						focusElement,
+						focusElement
 					);
 				}
 
@@ -179,17 +179,17 @@ registerAction2(
 					nextFocusElement &&
 					!arrayContainsElementOrParent(
 						nextFocusElement,
-						elementsToRemove,
+						elementsToRemove
 					)
 				) {
 					viewer.reveal(nextFocusElement);
 					viewer.setFocus(
 						[nextFocusElement],
-						getSelectionKeyboardEvent(),
+						getSelectionKeyboardEvent()
 					);
 					viewer.setSelection(
 						[nextFocusElement],
-						getSelectionKeyboardEvent(),
+						getSelectionKeyboardEvent()
 					);
 				}
 			} else if (!equals(viewer.getFocus(), viewer.getSelection())) {
@@ -199,7 +199,7 @@ registerAction2(
 			viewer.domFocus();
 			return;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -218,7 +218,7 @@ registerAction2(
 						Constants.SearchViewVisibleKey,
 						Constants.ReplaceActiveKey,
 						Constants.MatchFocusKey,
-						Constants.IsEditableItemKey,
+						Constants.IsEditableItemKey
 					),
 					primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.Digit1,
 				},
@@ -229,7 +229,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							Constants.ReplaceActiveKey,
 							Constants.MatchFocusKey,
-							Constants.IsEditableItemKey,
+							Constants.IsEditableItemKey
 						),
 						group: "search",
 						order: 1,
@@ -239,7 +239,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							Constants.ReplaceActiveKey,
 							Constants.MatchFocusKey,
-							Constants.IsEditableItemKey,
+							Constants.IsEditableItemKey
 						),
 						group: "inline",
 						order: 1,
@@ -250,11 +250,11 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			context: ISearchActionContext | undefined,
+			context: ISearchActionContext | undefined
 		): Promise<any> {
 			return performReplace(accessor, context);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -273,7 +273,7 @@ registerAction2(
 						Constants.SearchViewVisibleKey,
 						Constants.ReplaceActiveKey,
 						Constants.FileFocusKey,
-						Constants.IsEditableItemKey,
+						Constants.IsEditableItemKey
 					),
 					primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.Digit1,
 					secondary: [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter],
@@ -285,7 +285,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							Constants.ReplaceActiveKey,
 							Constants.FileFocusKey,
-							Constants.IsEditableItemKey,
+							Constants.IsEditableItemKey
 						),
 						group: "search",
 						order: 1,
@@ -295,7 +295,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							Constants.ReplaceActiveKey,
 							Constants.FileFocusKey,
-							Constants.IsEditableItemKey,
+							Constants.IsEditableItemKey
 						),
 						group: "inline",
 						order: 1,
@@ -306,11 +306,11 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			context: ISearchActionContext | undefined,
+			context: ISearchActionContext | undefined
 		): Promise<any> {
 			return performReplace(accessor, context);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -329,7 +329,7 @@ registerAction2(
 						Constants.SearchViewVisibleKey,
 						Constants.ReplaceActiveKey,
 						Constants.FolderFocusKey,
-						Constants.IsEditableItemKey,
+						Constants.IsEditableItemKey
 					),
 					primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.Digit1,
 					secondary: [KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Enter],
@@ -341,7 +341,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							Constants.ReplaceActiveKey,
 							Constants.FolderFocusKey,
-							Constants.IsEditableItemKey,
+							Constants.IsEditableItemKey
 						),
 						group: "search",
 						order: 1,
@@ -351,7 +351,7 @@ registerAction2(
 						when: ContextKeyExpr.and(
 							Constants.ReplaceActiveKey,
 							Constants.FolderFocusKey,
-							Constants.IsEditableItemKey,
+							Constants.IsEditableItemKey
 						),
 						group: "inline",
 						order: 1,
@@ -362,11 +362,11 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			context: ISearchActionContext | undefined,
+			context: ISearchActionContext | undefined
 		): Promise<any> {
 			return performReplace(accessor, context);
 		}
-	},
+	}
 );
 
 //#endregion
@@ -375,7 +375,7 @@ registerAction2(
 
 function performReplace(
 	accessor: ServicesAccessor,
-	context: ISearchActionContext | undefined,
+	context: ISearchActionContext | undefined
 ): void {
 	const configurationService = accessor.get(IConfigurationService);
 	const viewsService = accessor.get(IViewsService);
@@ -394,7 +394,7 @@ function performReplace(
 	const elementsToReplace = getElementsToOperateOn(
 		viewer,
 		element ?? undefined,
-		configurationService.getValue<ISearchConfigurationProperties>("search"),
+		configurationService.getValue<ISearchConfigurationProperties>("search")
 	);
 	let focusElement = viewer.getFocus()[0];
 
@@ -415,7 +415,7 @@ function performReplace(
 		nextFocusElement = getElementToFocusAfterRemoved(
 			viewer,
 			focusElement,
-			elementsToReplace,
+			elementsToReplace
 		);
 	}
 
@@ -435,7 +435,7 @@ function performReplace(
 			viewer.setFocus([nextFocusElement], getSelectionKeyboardEvent());
 			viewer.setSelection(
 				[nextFocusElement],
-				getSelectionKeyboardEvent(),
+				getSelectionKeyboardEvent()
 			);
 
 			if (nextFocusElement instanceof Match) {
@@ -464,7 +464,7 @@ function performReplace(
 
 function hasToOpenFile(
 	accessor: ServicesAccessor,
-	currBottomElem: RenderableMatch,
+	currBottomElem: RenderableMatch
 ): boolean {
 	if (!(currBottomElem instanceof Match)) {
 		return false;
@@ -510,7 +510,7 @@ function compareLevels(elem1: RenderableMatch, elem2: RenderableMatch) {
 export function getElementToFocusAfterRemoved(
 	viewer: WorkbenchCompressibleObjectTree<RenderableMatch>,
 	element: RenderableMatch,
-	elementsToRemove: RenderableMatch[],
+	elementsToRemove: RenderableMatch[]
 ): RenderableMatch | undefined {
 	const navigator: ITreeNavigator<any> = viewer.navigate(element);
 	if (element instanceof FolderMatch) {
@@ -519,7 +519,7 @@ export function getElementToFocusAfterRemoved(
 			(!(navigator.current() instanceof FolderMatch) ||
 				arrayContainsElementOrParent(
 					navigator.current(),
-					elementsToRemove,
+					elementsToRemove
 				))
 		) {}
 	} else if (element instanceof FileMatch) {
@@ -528,7 +528,7 @@ export function getElementToFocusAfterRemoved(
 			(!(navigator.current() instanceof FileMatch) ||
 				arrayContainsElementOrParent(
 					navigator.current(),
-					elementsToRemove,
+					elementsToRemove
 				))
 		) {
 			viewer.expand(navigator.current());
@@ -539,7 +539,7 @@ export function getElementToFocusAfterRemoved(
 			(!(navigator.current() instanceof Match) ||
 				arrayContainsElementOrParent(
 					navigator.current(),
-					elementsToRemove,
+					elementsToRemove
 				))
 		) {
 			viewer.expand(navigator.current());
@@ -553,7 +553,7 @@ export function getElementToFocusAfterRemoved(
  */
 export function getLastNodeFromSameType(
 	viewer: WorkbenchCompressibleObjectTree<RenderableMatch>,
-	element: RenderableMatch,
+	element: RenderableMatch
 ): RenderableMatch | undefined {
 	let lastElem: RenderableMatch | null = viewer.lastVisibleElement ?? null;
 

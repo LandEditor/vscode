@@ -61,18 +61,19 @@ interface OpenIssueReporterArgs {
 }
 
 export class BaseIssueContribution implements IWorkbenchContribution {
-	constructor(
-		@IProductService productService: IProductService
-	) {
+	constructor(@IProductService productService: IProductService) {
 		if (!productService.reportIssueUrl) {
 			return;
 		}
 
 		CommandsRegistry.registerCommand({
 			id: OpenIssueReporterActionId,
-			handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
+			handler: function (
+				accessor,
+				args?: string | [string] | OpenIssueReporterArgs
+			) {
 				const data: Partial<IssueReporterData> =
-					typeof args === 'string'
+					typeof args === "string"
 						? { extensionId: args }
 						: Array.isArray(args)
 							? { extensionId: args[0] }
@@ -80,14 +81,17 @@ export class BaseIssueContribution implements IWorkbenchContribution {
 
 				return accessor.get(IWorkbenchIssueService).openReporter(data);
 			},
-			metadata: OpenIssueReporterCommandMetadata
+			metadata: OpenIssueReporterCommandMetadata,
 		});
 
 		CommandsRegistry.registerCommand({
 			id: OpenIssueReporterApiId,
-			handler: function (accessor, args?: string | [string] | OpenIssueReporterArgs) {
+			handler: function (
+				accessor,
+				args?: string | [string] | OpenIssueReporterArgs
+			) {
 				const data: Partial<IssueReporterData> =
-					typeof args === 'string'
+					typeof args === "string"
 						? { extensionId: args }
 						: Array.isArray(args)
 							? { extensionId: args[0] }
@@ -95,27 +99,46 @@ export class BaseIssueContribution implements IWorkbenchContribution {
 
 				return accessor.get(IWorkbenchIssueService).openReporter(data);
 			},
-			metadata: OpenIssueReporterCommandMetadata
+			metadata: OpenIssueReporterCommandMetadata,
 		});
 
 		const reportIssue: ICommandAction = {
 			id: OpenIssueReporterActionId,
 			title: {
-				value: localize({ key: 'reportIssueInEnglish', comment: ['Translate this to "Report Issue in English" in all languages please!'] }, "Report Issue..."),
-				original: 'Report Issue...'
+				value: localize(
+					{
+						key: "reportIssueInEnglish",
+						comment: [
+							'Translate this to "Report Issue in English" in all languages please!',
+						],
+					},
+					"Report Issue..."
+				),
+				original: "Report Issue...",
 			},
-			category: Categories.Help
+			category: Categories.Help,
 		};
 
-		MenuRegistry.appendMenuItem(MenuId.CommandPalette, { command: reportIssue });
+		MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
+			command: reportIssue,
+		});
 
 		MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
-			group: '3_feedback',
+			group: "3_feedback",
 			command: {
 				id: OpenIssueReporterActionId,
-				title: localize({ key: 'miReportIssue', comment: ['&& denotes a mnemonic', 'Translate this to "Report Issue in English" in all languages please!'] }, "Report &&Issue")
+				title: localize(
+					{
+						key: "miReportIssue",
+						comment: [
+							"&& denotes a mnemonic",
+							'Translate this to "Report Issue in English" in all languages please!',
+						],
+					},
+					"Report &&Issue"
+				),
 			},
-			order: 3
+			order: 3,
 		});
 	}
 }

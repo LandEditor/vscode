@@ -37,14 +37,18 @@ export class CodeActionDocumentationContribution
 
 	constructor(
 		extensionPoint: IExtensionPoint<DocumentationExtensionPoint>,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 
-		this._register(languageFeaturesService.codeActionProvider.register('*', this));
+		this._register(
+			languageFeaturesService.codeActionProvider.register("*", this)
+		);
 
-		extensionPoint.setHandler(points => {
+		extensionPoint.setHandler((points) => {
 			this.contributions = [];
 			for (const documentation of points) {
 				if (!documentation.value.refactoring) {
@@ -52,7 +56,9 @@ export class CodeActionDocumentationContribution
 				}
 
 				for (const contribution of documentation.value.refactoring) {
-					const precondition = ContextKeyExpr.deserialize(contribution.when);
+					const precondition = ContextKeyExpr.deserialize(
+						contribution.when
+					);
 					if (!precondition) {
 						continue;
 					}
@@ -60,9 +66,8 @@ export class CodeActionDocumentationContribution
 					this.contributions.push({
 						title: contribution.title,
 						when: precondition,
-						command: contribution.command
+						command: contribution.command,
 					});
-
 				}
 			}
 		});
@@ -72,14 +77,14 @@ export class CodeActionDocumentationContribution
 		_model: ITextModel,
 		_range: Range | Selection,
 		context: languages.CodeActionContext,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Promise<languages.CodeActionList> {
 		return this.emptyCodeActionsList;
 	}
 
 	public _getAdditionalMenuItems(
 		context: languages.CodeActionContext,
-		actions: readonly languages.CodeAction[],
+		actions: readonly languages.CodeAction[]
 	): languages.Command[] {
 		if (context.only !== CodeActionKind.Refactor.value) {
 			if (
@@ -87,8 +92,8 @@ export class CodeActionDocumentationContribution
 					(action) =>
 						action.kind &&
 						CodeActionKind.Refactor.contains(
-							new CodeActionKind(action.kind),
-						),
+							new CodeActionKind(action.kind)
+						)
 				)
 			) {
 				return [];
@@ -97,7 +102,7 @@ export class CodeActionDocumentationContribution
 
 		return this.contributions
 			.filter((contribution) =>
-				this.contextKeyService.contextMatchesRules(contribution.when),
+				this.contextKeyService.contextMatchesRules(contribution.when)
 			)
 			.map((contribution) => {
 				return {

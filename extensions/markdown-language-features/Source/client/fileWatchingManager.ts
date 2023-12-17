@@ -36,13 +36,13 @@ export class FileWatcherManager {
 			create?: () => void;
 			change?: () => void;
 			delete?: () => void;
-		},
+		}
 	): void {
 		const watcher = vscode.workspace.createFileSystemWatcher(
 			new vscode.RelativePattern(uri, "*"),
 			!listeners.create,
 			!listeners.change,
-			!listeners.delete,
+			!listeners.delete
 		);
 		const parentDirWatchers: DirWatcherEntry[] = [];
 		this._fileWatchers.set(id, { watcher, dirWatchers: parentDirWatchers });
@@ -73,14 +73,14 @@ export class FileWatcherManager {
 				if (!parentDirWatcher) {
 					const glob = new vscode.RelativePattern(
 						Utils.dirname(dirUri),
-						Utils.basename(dirUri),
+						Utils.basename(dirUri)
 					);
 					const parentWatcher =
 						vscode.workspace.createFileSystemWatcher(
 							glob,
 							!listeners.create,
 							true,
-							!listeners.delete,
+							!listeners.delete
 						);
 					parentDirWatcher = { refCount: 0, watcher: parentWatcher };
 					this._dirWatchers.set(dirUri, parentDirWatcher);
@@ -100,7 +100,7 @@ export class FileWatcherManager {
 							} catch {
 								// Noop
 							}
-						}),
+						})
 					);
 				}
 
@@ -108,7 +108,7 @@ export class FileWatcherManager {
 					// When the parent dir is deleted, consider our file deleted too
 					// TODO: this fires if the file previously did not exist and then the parent is deleted
 					dirWatcher.listeners.push(
-						parentDirWatcher.watcher.onDidDelete(listeners.delete),
+						parentDirWatcher.watcher.onDidDelete(listeners.delete)
 					);
 				}
 

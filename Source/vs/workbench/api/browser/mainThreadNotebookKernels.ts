@@ -80,7 +80,7 @@ abstract class MainThreadKernel implements INotebookKernel {
 
 	constructor(
 		data: INotebookKernelDto2,
-		private _languageService: ILanguageService,
+		private _languageService: ILanguageService
 	) {
 		this.id = data.id;
 		this.viewType = data.notebookType;
@@ -140,18 +140,18 @@ abstract class MainThreadKernel implements INotebookKernel {
 
 	abstract executeNotebookCellsRequest(
 		uri: URI,
-		cellHandles: number[],
+		cellHandles: number[]
 	): Promise<void>;
 	abstract cancelNotebookCellExecution(
 		uri: URI,
-		cellHandles: number[],
+		cellHandles: number[]
 	): Promise<void>;
 	abstract provideVariables(
 		notebookUri: URI,
 		variableName: string | undefined,
 		kind: "named" | "indexed",
 		start: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): AsyncIterableObject<VariablesResult>;
 }
 
@@ -194,30 +194,52 @@ export class MainThreadNotebookKernels
 	constructor(
 		extHostContext: IExtHostContext,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 		@INotebookService private readonly _notebookService: INotebookService,
 		@INotebookEditorService notebookEditorService: INotebookEditorService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookKernels);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookKernels
+		);
 
-		notebookEditorService.listNotebookEditors().forEach(this._onEditorAdd, this);
-		notebookEditorService.onDidAddNotebookEditor(this._onEditorAdd, this, this._disposables);
-		notebookEditorService.onDidRemoveNotebookEditor(this._onEditorRemove, this, this._disposables);
+		notebookEditorService
+			.listNotebookEditors()
+			.forEach(this._onEditorAdd, this);
+		notebookEditorService.onDidAddNotebookEditor(
+			this._onEditorAdd,
+			this,
+			this._disposables
+		);
+		notebookEditorService.onDidRemoveNotebookEditor(
+			this._onEditorRemove,
+			this,
+			this._disposables
+		);
 
-		this._disposables.add(toDisposable(() => {
-			// EH shut down, complete all executions started by this EH
-			this._executions.forEach(e => {
-				e.complete({});
-			});
-			this._notebookExecutions.forEach(e => e.complete());
-		}));
+		this._disposables.add(
+			toDisposable(() => {
+				// EH shut down, complete all executions started by this EH
+				this._executions.forEach((e) => {
+					e.complete({});
+				});
+				this._notebookExecutions.forEach((e) => e.complete());
+			})
+		);
 
-		this._disposables.add(this._notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell) {
-				this._proxy.$cellExecutionChanged(e.notebook, e.cellHandle, e.changed?.state);
-			}
-		}));
+		this._disposables.add(
+			this._notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (e.type === NotebookExecutionType.cell) {
+					this._proxy.$cellExecutionChanged(
+						e.notebook,
+						e.cellHandle,
+						e.changed?.state
+					);
+				}
+			})
+		);
 	}
 
 	dispose(): void {
@@ -245,7 +267,7 @@ export class MainThreadNotebookKernels
 				return;
 			}
 			const { selected } = this._notebookKernelService.getMatchingKernel(
-				editor.textModel,
+				editor.textModel
 			);
 			if (!selected) {
 				return;
@@ -255,7 +277,7 @@ export class MainThreadNotebookKernels
 					this._proxy.$acceptKernelMessageFromRenderer(
 						handle,
 						editor.getId(),
-						e.message,
+						e.message
 					);
 					break;
 				}
@@ -271,7 +293,7 @@ export class MainThreadNotebookKernels
 	async $postMessage(
 		handle: number,
 		editorId: string | undefined,
-		message: any,
+		message: any
 	): Promise<boolean> {
 		const tuple = this._kernels.get(handle);
 		if (!tuple) {
@@ -323,13 +345,13 @@ export class MainThreadNotebookKernels
 		const kernel = new (class extends MainThreadKernel {
 			async executeNotebookCellsRequest(
 				uri: URI,
-				handles: number[],
+				handles: number[]
 			): Promise<void> {
 				await that._proxy.$executeCells(handle, uri, handles);
 			}
 			async cancelNotebookCellExecution(
 				uri: URI,
-				handles: number[],
+				handles: number[]
 			): Promise<void> {
 				await that._proxy.$cancelCells(handle, uri, handles);
 			}
@@ -338,7 +360,7 @@ export class MainThreadNotebookKernels
 				parentName: string | undefined,
 				kind: "named" | "indexed",
 				start: number,
-				token: CancellationToken,
+				token: CancellationToken
 			): AsyncIterableObject<VariablesResult> {
 				const requestId = `${handle}variables${that.variableRequestIndex++}`;
 				if (that.variableRequestMap.has(requestId)) {
@@ -356,7 +378,7 @@ export class MainThreadNotebookKernels
 						parentName,
 						kind,
 						start,
-						token,
+						token
 					)
 					.then(() => {
 						source.resolve();
@@ -377,13 +399,13 @@ export class MainThreadNotebookKernels
 					this._proxy.$acceptNotebookAssociation(
 						handle,
 						e.notebook,
-						false,
+						false
 					);
 				} else if (e.newKernel === kernel.id) {
 					this._proxy.$acceptNotebookAssociation(
 						handle,
 						e.notebook,
-						true,
+						true
 					);
 				}
 			});
@@ -413,14 +435,14 @@ export class MainThreadNotebookKernels
 	$updateNotebookPriority(
 		handle: number,
 		notebook: UriComponents,
-		value: number | undefined,
+		value: number | undefined
 	): void {
 		const tuple = this._kernels.get(handle);
 		if (tuple) {
 			this._notebookKernelService.updateKernelNotebookAffinity(
 				tuple[0],
 				URI.revive(notebook),
-				value,
+				value
 			);
 		}
 	}
@@ -431,7 +453,7 @@ export class MainThreadNotebookKernels
 		handle: number,
 		controllerId: string,
 		rawUri: UriComponents,
-		cellHandle: number,
+		cellHandle: number
 	): void {
 		const uri = URI.revive(rawUri);
 		const notebook = this._notebookService.getNotebookTextModel(uri);
@@ -442,13 +464,13 @@ export class MainThreadNotebookKernels
 		const kernel = this._notebookKernelService.getMatchingKernel(notebook);
 		if (!kernel.selected || kernel.selected.id !== controllerId) {
 			throw new Error(
-				`Kernel is not selected: ${kernel.selected?.id} !== ${controllerId}`,
+				`Kernel is not selected: ${kernel.selected?.id} !== ${controllerId}`
 			);
 		}
 		const execution =
 			this._notebookExecutionStateService.createCellExecution(
 				uri,
-				cellHandle,
+				cellHandle
 			);
 		execution.confirm();
 		this._executions.set(handle, execution);
@@ -456,13 +478,13 @@ export class MainThreadNotebookKernels
 
 	$updateExecution(
 		handle: number,
-		data: SerializableObjectWithBuffers<ICellExecuteUpdateDto[]>,
+		data: SerializableObjectWithBuffers<ICellExecuteUpdateDto[]>
 	): void {
 		const updates = data.value;
 		try {
 			const execution = this._executions.get(handle);
 			execution?.update(
-				updates.map(NotebookDto.fromCellExecuteUpdateDto),
+				updates.map(NotebookDto.fromCellExecuteUpdateDto)
 			);
 		} catch (e) {
 			onUnexpectedError(e);
@@ -471,12 +493,12 @@ export class MainThreadNotebookKernels
 
 	$completeExecution(
 		handle: number,
-		data: SerializableObjectWithBuffers<ICellExecutionCompleteDto>,
+		data: SerializableObjectWithBuffers<ICellExecutionCompleteDto>
 	): void {
 		try {
 			const execution = this._executions.get(handle);
 			execution?.complete(
-				NotebookDto.fromCellExecuteCompleteDto(data.value),
+				NotebookDto.fromCellExecuteCompleteDto(data.value)
 			);
 		} catch (e) {
 			onUnexpectedError(e);
@@ -490,7 +512,7 @@ export class MainThreadNotebookKernels
 	$createNotebookExecution(
 		handle: number,
 		controllerId: string,
-		rawUri: UriComponents,
+		rawUri: UriComponents
 	): void {
 		const uri = URI.revive(rawUri);
 		const notebook = this._notebookService.getNotebookTextModel(uri);
@@ -501,7 +523,7 @@ export class MainThreadNotebookKernels
 		const kernel = this._notebookKernelService.getMatchingKernel(notebook);
 		if (!kernel.selected || kernel.selected.id !== controllerId) {
 			throw new Error(
-				`Kernel is not selected: ${kernel.selected?.id} !== ${controllerId}`,
+				`Kernel is not selected: ${kernel.selected?.id} !== ${controllerId}`
 			);
 		}
 		const execution =
@@ -533,14 +555,14 @@ export class MainThreadNotebookKernels
 	// --- notebook kernel detection task
 	async $addKernelDetectionTask(
 		handle: number,
-		notebookType: string,
+		notebookType: string
 	): Promise<void> {
 		const kernelDetectionTask = new MainThreadKernelDetectionTask(
-			notebookType,
+			notebookType
 		);
 		const registration =
 			this._notebookKernelService.registerNotebookKernelDetectionTask(
-				kernelDetectionTask,
+				kernelDetectionTask
 			);
 		this._kernelDetectionTasks.set(handle, [
 			kernelDetectionTask,
@@ -561,14 +583,14 @@ export class MainThreadNotebookKernels
 	async $addKernelSourceActionProvider(
 		handle: number,
 		eventHandle: number,
-		notebookType: string,
+		notebookType: string
 	): Promise<void> {
 		const kernelSourceActionProvider: IKernelSourceActionProvider = {
 			viewType: notebookType,
 			provideKernelSourceActions: async () => {
 				const actions = await this._proxy.$provideKernelSourceActions(
 					handle,
-					CancellationToken.None,
+					CancellationToken.None
 				);
 
 				return actions.map((action) => {
@@ -595,7 +617,7 @@ export class MainThreadNotebookKernels
 			const emitter = new Emitter<void>();
 			this._kernelSourceActionProvidersEventRegistrations.set(
 				eventHandle,
-				emitter,
+				emitter
 			);
 			kernelSourceActionProvider.onDidChangeSourceActions = emitter.event;
 		}
@@ -603,7 +625,7 @@ export class MainThreadNotebookKernels
 		const registration =
 			this._notebookKernelService.registerKernelSourceActionProvider(
 				notebookType,
-				kernelSourceActionProvider,
+				kernelSourceActionProvider
 			);
 		this._kernelSourceActionProviders.set(handle, [
 			kernelSourceActionProvider,
@@ -613,7 +635,7 @@ export class MainThreadNotebookKernels
 
 	$removeKernelSourceActionProvider(
 		handle: number,
-		eventHandle: number,
+		eventHandle: number
 	): void {
 		const tuple = this._kernelSourceActionProviders.get(handle);
 		if (tuple) {
@@ -622,7 +644,7 @@ export class MainThreadNotebookKernels
 		}
 		if (typeof eventHandle === "number") {
 			this._kernelSourceActionProvidersEventRegistrations.delete(
-				eventHandle,
+				eventHandle
 			);
 		}
 	}
@@ -630,7 +652,7 @@ export class MainThreadNotebookKernels
 	$emitNotebookKernelSourceActionsChangeEvent(eventHandle: number): void {
 		const emitter =
 			this._kernelSourceActionProvidersEventRegistrations.get(
-				eventHandle,
+				eventHandle
 			);
 		if (emitter instanceof Emitter) {
 			emitter.fire(undefined);
@@ -639,7 +661,7 @@ export class MainThreadNotebookKernels
 
 	$variablesUpdated(notebookUri: UriComponents): void {
 		this._notebookKernelService.notifyVariablesChange(
-			URI.revive(notebookUri),
+			URI.revive(notebookUri)
 		);
 	}
 }

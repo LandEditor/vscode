@@ -50,15 +50,32 @@ export class RunToolbar extends CellContentPart {
 		readonly cellContainer: HTMLElement,
 		readonly runButtonContainer: HTMLElement,
 		@IMenuService menuService: IMenuService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this.primaryMenu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!, contextKeyService));
-		this.secondaryMenu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecuteToolbar, contextKeyService));
-		this.createRunCellToolbar(runButtonContainer, cellContainer, contextKeyService);
+		this.primaryMenu = this._register(
+			menuService.createMenu(
+				this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!,
+				contextKeyService
+			)
+		);
+		this.secondaryMenu = this._register(
+			menuService.createMenu(
+				this.notebookEditor.creationOptions.menuIds.cellExecuteToolbar,
+				contextKeyService
+			)
+		);
+		this.createRunCellToolbar(
+			runButtonContainer,
+			cellContainer,
+			contextKeyService
+		);
 		const updateActions = () => {
 			const actions = this.getCellToolbarActions(this.primaryMenu);
 			const primary = actions.primary[0]; // Only allow one primary action
@@ -67,7 +84,11 @@ export class RunToolbar extends CellContentPart {
 		updateActions();
 		this._register(this.primaryMenu.onDidChange(updateActions));
 		this._register(this.secondaryMenu.onDidChange(updateActions));
-		this._register(this.notebookEditor.notebookOptions.onDidChangeOptions(updateActions));
+		this._register(
+			this.notebookEditor.notebookOptions.onDidChangeOptions(
+				updateActions
+			)
+		);
 	}
 
 	override didRenderCell(element: ICellViewModel): void {
@@ -75,8 +96,8 @@ export class RunToolbar extends CellContentPart {
 			registerCellToolbarStickyScroll(
 				this.notebookEditor,
 				element,
-				this.runButtonContainer,
-			),
+				this.runButtonContainer
+			)
 		);
 
 		this.toolbar.context = <INotebookCellActionContext>{
@@ -99,7 +120,7 @@ export class RunToolbar extends CellContentPart {
 			menu,
 			{ shouldForwardArgs: true },
 			result,
-			(g) => /^inline/.test(g),
+			(g) => /^inline/.test(g)
 		);
 
 		return result;
@@ -108,7 +129,7 @@ export class RunToolbar extends CellContentPart {
 	private createRunCellToolbar(
 		container: HTMLElement,
 		cellContainer: HTMLElement,
-		contextKeyService: IContextKeyService,
+		contextKeyService: IContextKeyService
 	) {
 		const actionViewItemDisposables = this._register(new DisposableStore());
 		const dropdownAction = this._register(
@@ -116,17 +137,17 @@ export class RunToolbar extends CellContentPart {
 				"notebook.moreRunActions",
 				localize("notebook.moreRunActionsLabel", "More..."),
 				"codicon-chevron-down",
-				true,
-			),
+				true
+			)
 		);
 
 		const keybindingProvider = (action: IAction) =>
 			this.keybindingService.lookupKeybinding(
 				action.id,
-				executionContextKeyService,
+				executionContextKeyService
 			);
 		const executionContextKeyService = this._register(
-			getCodeCellExecutionContextKeyService(contextKeyService),
+			getCodeCellExecutionContextKeyService(contextKeyService)
 		);
 		this.toolbar = this._register(
 			new ToolBar(container, this.contextMenuService, {
@@ -141,7 +162,7 @@ export class RunToolbar extends CellContentPart {
 					}
 
 					const secondary = this.getCellToolbarActions(
-						this.secondaryMenu,
+						this.secondaryMenu
 					).secondary;
 					if (!secondary.length) {
 						return undefined;
@@ -156,31 +177,31 @@ export class RunToolbar extends CellContentPart {
 						this.contextMenuService,
 						{
 							getKeyBinding: keybindingProvider,
-						},
+						}
 					);
 					actionViewItemDisposables.add(
 						item.onDidChangeDropdownVisibility((visible) => {
 							cellContainer.classList.toggle(
 								"cell-run-toolbar-dropdown-active",
-								visible,
+								visible
 							);
-						}),
+						})
 					);
 
 					return item;
 				},
 				renderDropdownAsChildElement: true,
-			}),
+			})
 		);
 	}
 }
 
 export function getCodeCellExecutionContextKeyService(
-	contextKeyService: IContextKeyService,
+	contextKeyService: IContextKeyService
 ): IScopedContextKeyService {
 	// Create a fake ContextKeyService, and look up the keybindings within this context.
 	const executionContextKeyService = contextKeyService.createScoped(
-		document.createElement("div"),
+		document.createElement("div")
 	);
 	InputFocusedContext.bindTo(executionContextKeyService).set(true);
 	EditorContextKeys.editorTextFocus
@@ -191,7 +212,7 @@ export function getCodeCellExecutionContextKeyService(
 		.bindTo(executionContextKeyService)
 		.set(true);
 	NOTEBOOK_CELL_EXECUTION_STATE.bindTo(executionContextKeyService).set(
-		"idle",
+		"idle"
 	);
 	NOTEBOOK_CELL_LIST_FOCUSED.bindTo(executionContextKeyService).set(true);
 	NOTEBOOK_EDITOR_FOCUSED.bindTo(executionContextKeyService).set(true);

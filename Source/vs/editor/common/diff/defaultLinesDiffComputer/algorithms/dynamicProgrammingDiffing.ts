@@ -23,7 +23,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 		sequence1: ISequence,
 		sequence2: ISequence,
 		timeout: ITimeout = InfiniteTimeout.instance,
-		equalityScore?: (offset1: number, offset2: number) => number,
+		equalityScore?: (offset1: number, offset2: number) => number
 	): DiffAlgorithmResult {
 		if (sequence1.length === 0 || sequence2.length === 0) {
 			return DiffAlgorithmResult.trivial(sequence1, sequence2);
@@ -34,11 +34,11 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 		 */
 		const lcsLengths = new Array2D<number>(
 			sequence1.length,
-			sequence2.length,
+			sequence2.length
 		);
 		const directions = new Array2D<number>(
 			sequence1.length,
-			sequence2.length,
+			sequence2.length
 		);
 		const lengths = new Array2D<number>(sequence1.length, sequence2.length);
 
@@ -48,7 +48,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 				if (!timeout.isValid()) {
 					return DiffAlgorithmResult.trivialTimedOut(
 						sequence1,
-						sequence2,
+						sequence2
 					);
 				}
 
@@ -80,7 +80,7 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 				const newValue = Math.max(
 					horizontalLen,
 					verticalLen,
-					extendedSeqScore,
+					extendedSeqScore
 				);
 
 				if (newValue === extendedSeqScore) {
@@ -108,14 +108,14 @@ export class DynamicProgrammingDiffing implements IDiffAlgorithm {
 
 		function reportDecreasingAligningPositions(
 			s1: number,
-			s2: number,
+			s2: number
 		): void {
 			if (s1 + 1 !== lastAligningPosS1 || s2 + 1 !== lastAligningPosS2) {
 				result.push(
 					new SequenceDiff(
 						new OffsetRange(s1 + 1, lastAligningPosS1),
-						new OffsetRange(s2 + 1, lastAligningPosS2),
-					),
+						new OffsetRange(s2 + 1, lastAligningPosS2)
+					)
 				);
 			}
 			lastAligningPosS1 = s1;

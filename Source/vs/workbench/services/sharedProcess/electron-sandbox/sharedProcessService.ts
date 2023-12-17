@@ -54,19 +54,19 @@ export class SharedProcessService
 		// Acquire a message port connected to the shared process
 		mark("code/willConnectSharedProcess");
 		this.logService.trace(
-			"Renderer->SharedProcess#connect: before acquirePort",
+			"Renderer->SharedProcess#connect: before acquirePort"
 		);
 		const port = await acquirePort(
 			SharedProcessChannelConnection.request,
-			SharedProcessChannelConnection.response,
+			SharedProcessChannelConnection.response
 		);
 		mark("code/didConnectSharedProcess");
 		this.logService.trace(
-			"Renderer->SharedProcess#connect: connection established",
+			"Renderer->SharedProcess#connect: connection established"
 		);
 
 		return this._register(
-			new MessagePortClient(port, `window:${this.windowId}`),
+			new MessagePortClient(port, `window:${this.windowId}`)
 		);
 	}
 
@@ -79,17 +79,17 @@ export class SharedProcessService
 	getChannel(channelName: string): IChannel {
 		return getDelayedChannel(
 			this.withSharedProcessConnection.then((connection) =>
-				connection.getChannel(channelName),
-			),
+				connection.getChannel(channelName)
+			)
 		);
 	}
 
 	registerChannel(
 		channelName: string,
-		channel: IServerChannel<string>,
+		channel: IServerChannel<string>
 	): void {
 		this.withSharedProcessConnection.then((connection) =>
-			connection.registerChannel(channelName, channel),
+			connection.registerChannel(channelName, channel)
 		);
 	}
 
@@ -99,14 +99,14 @@ export class SharedProcessService
 
 		// Create a new port to the shared process
 		this.logService.trace(
-			"Renderer->SharedProcess#createRawConnection: before acquirePort",
+			"Renderer->SharedProcess#createRawConnection: before acquirePort"
 		);
 		const port = await acquirePort(
 			SharedProcessRawConnection.request,
-			SharedProcessRawConnection.response,
+			SharedProcessRawConnection.response
 		);
 		this.logService.trace(
-			"Renderer->SharedProcess#createRawConnection: connection established",
+			"Renderer->SharedProcess#createRawConnection: connection established"
 		);
 
 		return port;

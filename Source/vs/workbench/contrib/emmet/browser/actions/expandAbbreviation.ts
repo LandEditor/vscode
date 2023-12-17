@@ -17,7 +17,7 @@ class ExpandAbbreviationAction extends EmmetEditorAction {
 			id: "editor.emmet.action.expandAbbreviation",
 			label: nls.localize(
 				"expandAbbreviationAction",
-				"Emmet: Expand Abbreviation",
+				"Emmet: Expand Abbreviation"
 			),
 			alias: "Emmet: Expand Abbreviation",
 			precondition: EditorContextKeys.writable,
@@ -27,7 +27,7 @@ class ExpandAbbreviationAction extends EmmetEditorAction {
 				kbExpr: ContextKeyExpr.and(
 					EditorContextKeys.editorTextFocus,
 					EditorContextKeys.tabDoesNotMoveFocus,
-					ContextKeyExpr.has("config.emmet.triggerExpansionOnTab"),
+					ContextKeyExpr.has("config.emmet.triggerExpansionOnTab")
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -39,7 +39,7 @@ class ExpandAbbreviationAction extends EmmetEditorAction {
 						key: "miEmmetExpandAbbreviation",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Emmet: E&&xpand Abbreviation",
+					"Emmet: E&&xpand Abbreviation"
 				),
 				order: 3,
 			},

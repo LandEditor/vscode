@@ -70,7 +70,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 		action: IAction,
 		menuActionsOrProvider: readonly IAction[] | IActionProvider,
 		contextMenuProvider: IContextMenuProvider,
-		options: IDropdownMenuActionViewItemOptions = Object.create(null),
+		options: IDropdownMenuActionViewItemOptions = Object.create(null)
 	) {
 		super(null, action, options);
 
@@ -87,7 +87,7 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 		this.actionItem = container;
 
 		const labelRenderer: ILabelRenderer = (
-			el: HTMLElement,
+			el: HTMLElement
 		): IDisposable | null => {
 			this.element = append(el, $("a.action-label"));
 
@@ -132,13 +132,13 @@ export class DropdownMenuActionViewItem extends BaseActionViewItem {
 		};
 
 		this.dropdownMenu = this._register(
-			new DropdownMenu(container, options),
+			new DropdownMenu(container, options)
 		);
 		this._register(
 			this.dropdownMenu.onDidChangeVisibility((visible) => {
 				this.element?.setAttribute("aria-expanded", `${visible}`);
 				this._onDidChangeVisibility.fire(visible);
-			}),
+			})
 		);
 
 		this.dropdownMenu.menuOptions = {
@@ -213,7 +213,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 		context: unknown,
 		action: IAction,
 		options: IActionWithDropdownActionViewItemOptions,
-		private readonly contextMenuProvider: IContextMenuProvider,
+		private readonly contextMenuProvider: IContextMenuProvider
 	) {
 		super(context, action, options);
 	}
@@ -241,7 +241,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 			]).root;
 			separator.classList.toggle(
 				"prominent",
-				menuActionClassNames.includes("prominent"),
+				menuActionClassNames.includes("prominent")
 			);
 			append(this.element, separator);
 
@@ -250,8 +250,8 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 					this._register(
 						new Action(
 							"dropdownAction",
-							nls.localize("moreActions", "More Actions..."),
-						),
+							nls.localize("moreActions", "More Actions...")
+						)
 					),
 					menuActionsProvider,
 					this.contextMenuProvider,
@@ -259,12 +259,12 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 						classNames: [
 							"dropdown",
 							...ThemeIcon.asClassNameArray(
-								Codicon.dropDownButton,
+								Codicon.dropDownButton
 							),
 							...menuActionClassNames,
 						],
-					},
-				),
+					}
+				)
 			);
 			this.dropdownMenuActionViewItem.render(this.element);
 
@@ -295,7 +295,7 @@ export class ActionWithDropdownActionViewItem extends ActionViewItem {
 						event.preventDefault();
 						event.stopPropagation();
 					}
-				}),
+				})
 			);
 		}
 	}

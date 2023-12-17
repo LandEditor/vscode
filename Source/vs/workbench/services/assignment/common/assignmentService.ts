@@ -45,13 +45,13 @@ class MementoKeyValueStorage implements IKeyValueStorage {
 	constructor(private memento: Memento) {
 		this.mementoObj = memento.getMemento(
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
 	async getValue<T>(
 		key: string,
-		defaultValue?: T | undefined,
+		defaultValue?: T | undefined
 	): Promise<T | undefined> {
 		const value = await this.mementoObj[key];
 		return value || defaultValue;
@@ -67,7 +67,7 @@ class WorkbenchAssignmentServiceTelemetry implements IExperimentationTelemetry {
 	private _lastAssignmentContext: string | undefined;
 	constructor(
 		private telemetryService: ITelemetryService,
-		private productService: IProductService,
+		private productService: IProductService
 	) {}
 
 	get assignmentContext(): string[] | undefined {
@@ -111,26 +111,30 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IProductService productService: IProductService
 	) {
-
 		super(
 			telemetryService.machineId,
 			configurationService,
 			productService,
-			new WorkbenchAssignmentServiceTelemetry(telemetryService, productService),
-			new MementoKeyValueStorage(new Memento('experiment.service.memento', storageService))
+			new WorkbenchAssignmentServiceTelemetry(
+				telemetryService,
+				productService
+			),
+			new MementoKeyValueStorage(
+				new Memento("experiment.service.memento", storageService)
+			)
 		);
 	}
 
 	protected override get experimentsEnabled(): boolean {
 		return (
 			this.configurationService.getValue(
-				"workbench.enableExperiments",
+				"workbench.enableExperiments"
 			) === true
 		);
 	}
 
 	override async getTreatment<T extends string | number | boolean>(
-		name: string,
+		name: string
 	): Promise<T | undefined> {
 		const result = await super.getTreatment<T>(name);
 		type TASClientReadTreatmentData = {
@@ -183,10 +187,10 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 registerSingleton(
 	IWorkbenchAssignmentService,
 	WorkbenchAssignmentService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 const registry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 registry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
@@ -195,7 +199,7 @@ registry.registerConfiguration({
 			type: "boolean",
 			description: localize(
 				"workbench.enableExperiments",
-				"Fetches experiments to run from a Microsoft online service.",
+				"Fetches experiments to run from a Microsoft online service."
 			),
 			default: true,
 			scope: ConfigurationScope.APPLICATION,

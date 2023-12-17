@@ -37,7 +37,8 @@ export class DialogService extends Disposable implements IDialogService {
 	readonly onDidShowDialog = this.model.onDidShowDialog;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
@@ -57,7 +58,7 @@ export class DialogService extends Disposable implements IDialogService {
 	async confirm(confirmation: IConfirmation): Promise<IConfirmationResult> {
 		if (this.skipDialogs()) {
 			this.logService.trace(
-				"DialogService: refused to show confirmation dialog in tests.",
+				"DialogService: refused to show confirmation dialog in tests."
 			);
 
 			return { confirmed: true };
@@ -69,7 +70,7 @@ export class DialogService extends Disposable implements IDialogService {
 	}
 
 	prompt<T>(
-		prompt: IPromptWithCustomCancel<T>,
+		prompt: IPromptWithCustomCancel<T>
 	): Promise<IPromptResultWithCancel<T>>;
 	prompt<T>(prompt: IPromptWithDefaultCancel<T>): Promise<IPromptResult<T>>;
 	prompt<T>(prompt: IPrompt<T>): Promise<IPromptResult<T>>;
@@ -77,11 +78,11 @@ export class DialogService extends Disposable implements IDialogService {
 		prompt:
 			| IPrompt<T>
 			| IPromptWithCustomCancel<T>
-			| IPromptWithDefaultCancel<T>,
+			| IPromptWithDefaultCancel<T>
 	): Promise<IPromptResult<T> | IPromptResultWithCancel<T>> {
 		if (this.skipDialogs()) {
 			throw new Error(
-				`DialogService: refused to show dialog in tests. Contents: ${prompt.message}`,
+				`DialogService: refused to show dialog in tests. Contents: ${prompt.message}`
 			);
 		}
 
@@ -100,7 +101,7 @@ export class DialogService extends Disposable implements IDialogService {
 	async input(input: IInput): Promise<IInputResult> {
 		if (this.skipDialogs()) {
 			throw new Error(
-				"DialogService: refused to show input dialog in tests.",
+				"DialogService: refused to show input dialog in tests."
 			);
 		}
 
@@ -124,7 +125,7 @@ export class DialogService extends Disposable implements IDialogService {
 	async about(): Promise<void> {
 		if (this.skipDialogs()) {
 			throw new Error(
-				"DialogService: refused to show about dialog in tests.",
+				"DialogService: refused to show about dialog in tests."
 			);
 		}
 

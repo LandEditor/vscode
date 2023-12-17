@@ -23,7 +23,7 @@ export interface IAudioCueService {
 	readonly _serviceBrand: undefined;
 	playAudioCue(cue: AudioCue, options?: IAudioCueOptions): Promise<void>;
 	playAudioCues(
-		cues: (AudioCue | { cue: AudioCue; source: string })[],
+		cues: (AudioCue | { cue: AudioCue; source: string })[]
 	): Promise<void>;
 	isEnabled(cue: AudioCue): boolean;
 	onEnabledChanged(cue: AudioCue): Event<void>;
@@ -43,38 +43,40 @@ export class AudioCueService extends Disposable implements IAudioCueService {
 	private readonly screenReaderAttached = observableFromEvent(
 		this.accessibilityService.onDidChangeScreenReaderOptimized,
 		() =>
-			/** @description accessibilityService.onDidChangeScreenReaderOptimized */ this.accessibilityService.isScreenReaderOptimized(),
+			/** @description accessibilityService.onDidChangeScreenReaderOptimized */ this.accessibilityService.isScreenReaderOptimized()
 	);
 	private readonly sentTelemetry = new Set<string>();
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
 		super();
 	}
 
 	public async playAudioCue(
 		cue: AudioCue,
-		options: IAudioCueOptions = {},
+		options: IAudioCueOptions = {}
 	): Promise<void> {
 		if (this.isEnabled(cue)) {
 			this.sendAudioCueTelemetry(cue, options.source);
 			await this.playSound(
 				cue.sound.getSound(),
-				options.allowManyInParallel,
+				options.allowManyInParallel
 			);
 		}
 	}
 
 	public async playAudioCues(
-		cues: (AudioCue | { cue: AudioCue; source: string })[],
+		cues: (AudioCue | { cue: AudioCue; source: string })[]
 	): Promise<void> {
 		for (const cue of cues) {
 			this.sendAudioCueTelemetry(
 				"cue" in cue ? cue.cue : cue,
-				"source" in cue ? cue.source : undefined,
+				"source" in cue ? cue.source : undefined
 			);
 		}
 
@@ -83,16 +85,16 @@ export class AudioCueService extends Disposable implements IAudioCueService {
 			cues
 				.map((c) => ("cue" in c ? c.cue : c))
 				.filter((cue) => this.isEnabled(cue))
-				.map((cue) => cue.sound.getSound()),
+				.map((cue) => cue.sound.getSound())
 		);
 		await Promise.all(
-			Array.from(sounds).map((sound) => this.playSound(sound, true)),
+			Array.from(sounds).map((sound) => this.playSound(sound, true))
 		);
 	}
 
 	private sendAudioCueTelemetry(
 		cue: AudioCue,
-		source: string | undefined,
+		source: string | undefined
 	): void {
 		const isScreenReaderOptimized =
 			this.accessibilityService.isScreenReaderOptimized();
@@ -154,14 +156,14 @@ export class AudioCueService extends Disposable implements IAudioCueService {
 
 	public async playSound(
 		sound: Sound,
-		allowManyInParallel = false,
+		allowManyInParallel = false
 	): Promise<void> {
 		if (!allowManyInParallel && this.playingSounds.has(sound)) {
 			return;
 		}
 		this.playingSounds.add(sound);
 		const url = FileAccess.asBrowserUri(
-			`vs/platform/audioCues/browser/media/${sound.fileName}`,
+			`vs/platform/audioCues/browser/media/${sound.fileName}`
 		).toString(true);
 
 		try {
@@ -173,14 +175,14 @@ export class AudioCueService extends Disposable implements IAudioCueService {
 			} else {
 				const playedSound = await playAudio(
 					url,
-					this.getVolumeInPercent() / 100,
+					this.getVolumeInPercent() / 100
 				);
 				this.sounds.set(url, playedSound);
 			}
 		} catch (e) {
 			if (
 				!e.message.includes(
-					"play() can only be initiated by a user gesture",
+					"play() can only be initiated by a user gesture"
 				)
 			) {
 				// tracking this issue in #178642, no need to spam the console
@@ -202,7 +204,7 @@ export class AudioCueService extends Disposable implements IAudioCueService {
 								playSound();
 							}
 						}, milliseconds);
-					},
+					}
 				);
 			}
 		};
@@ -212,24 +214,24 @@ export class AudioCueService extends Disposable implements IAudioCueService {
 
 	private readonly obsoleteAudioCuesEnabled = observableFromEvent(
 		Event.filter(this.configurationService.onDidChangeConfiguration, (e) =>
-			e.affectsConfiguration("audioCues.enabled"),
+			e.affectsConfiguration("audioCues.enabled")
 		),
 		() =>
 			/** @description config: audioCues.enabled */ this.configurationService.getValue<
 				"on" | "off" | "auto"
-			>("audioCues.enabled"),
+			>("audioCues.enabled")
 	);
 
 	private readonly isEnabledCache = new Cache((cue: AudioCue) => {
 		const settingObservable = observableFromEvent(
 			Event.filter(
 				this.configurationService.onDidChangeConfiguration,
-				(e) => e.affectsConfiguration(cue.settingsKey),
+				(e) => e.affectsConfiguration(cue.settingsKey)
 			),
 			() =>
 				this.configurationService.getValue<"on" | "off" | "auto">(
-					cue.settingsKey,
-				),
+					cue.settingsKey
+				)
 		);
 		return derived((reader) => {
 			/** @description audio cue enabled */
@@ -394,12 +396,12 @@ export class AudioCue {
 		const soundSource = new SoundSource(
 			"randomOneOf" in options.sound
 				? options.sound.randomOneOf
-				: [options.sound],
+				: [options.sound]
 		);
 		const audioCue = new AudioCue(
 			soundSource,
 			options.name,
-			options.settingsKey,
+			options.settingsKey
 		);
 		AudioCue._audioCues.add(audioCue);
 		return audioCue;
@@ -422,7 +424,7 @@ export class AudioCue {
 	public static readonly foldedArea = AudioCue.register({
 		name: localize(
 			"audioCues.lineHasFoldedArea.name",
-			"Folded Area on Line",
+			"Folded Area on Line"
 		),
 		sound: Sound.foldedArea,
 		settingsKey: "audioCues.lineHasFoldedArea",
@@ -430,7 +432,7 @@ export class AudioCue {
 	public static readonly break = AudioCue.register({
 		name: localize(
 			"audioCues.lineHasBreakpoint.name",
-			"Breakpoint on Line",
+			"Breakpoint on Line"
 		),
 		sound: Sound.break,
 		settingsKey: "audioCues.lineHasBreakpoint",
@@ -438,7 +440,7 @@ export class AudioCue {
 	public static readonly inlineSuggestion = AudioCue.register({
 		name: localize(
 			"audioCues.lineHasInlineSuggestion.name",
-			"Inline Suggestion on Line",
+			"Inline Suggestion on Line"
 		),
 		sound: Sound.quickFixes,
 		settingsKey: "audioCues.lineHasInlineSuggestion",
@@ -453,7 +455,7 @@ export class AudioCue {
 	public static readonly onDebugBreak = AudioCue.register({
 		name: localize(
 			"audioCues.onDebugBreak.name",
-			"Debugger Stopped on Breakpoint",
+			"Debugger Stopped on Breakpoint"
 		),
 		sound: Sound.break,
 		settingsKey: "audioCues.onDebugBreak",
@@ -480,7 +482,7 @@ export class AudioCue {
 	public static readonly terminalCommandFailed = AudioCue.register({
 		name: localize(
 			"audioCues.terminalCommandFailed",
-			"Terminal Command Failed",
+			"Terminal Command Failed"
 		),
 		sound: Sound.error,
 		settingsKey: "audioCues.terminalCommandFailed",
@@ -495,7 +497,7 @@ export class AudioCue {
 	public static readonly notebookCellCompleted = AudioCue.register({
 		name: localize(
 			"audioCues.notebookCellCompleted",
-			"Notebook Cell Completed",
+			"Notebook Cell Completed"
 		),
 		sound: Sound.taskCompleted,
 		settingsKey: "audioCues.notebookCellCompleted",
@@ -534,7 +536,7 @@ export class AudioCue {
 	public static readonly chatResponseReceived = AudioCue.register({
 		name: localize(
 			"audioCues.chatResponseReceived",
-			"Chat Response Received",
+			"Chat Response Received"
 		),
 		settingsKey: "audioCues.chatResponseReceived",
 		sound: {
@@ -550,7 +552,7 @@ export class AudioCue {
 	public static readonly chatResponsePending = AudioCue.register({
 		name: localize(
 			"audioCues.chatResponsePending",
-			"Chat Response Pending",
+			"Chat Response Pending"
 		),
 		sound: Sound.chatResponsePending,
 		settingsKey: "audioCues.chatResponsePending",
@@ -577,6 +579,6 @@ export class AudioCue {
 	private constructor(
 		public readonly sound: SoundSource,
 		public readonly name: string,
-		public readonly settingsKey: string,
+		public readonly settingsKey: string
 	) {}
 }

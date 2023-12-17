@@ -62,7 +62,7 @@ function arrayToHash(array: string[]): { [name: string]: true } {
 
 function createKeywordMatcher(
 	arr: string[],
-	caseInsensitive: boolean = false,
+	caseInsensitive: boolean = false
 ): (str: string) => boolean {
 	if (caseInsensitive) {
 		arr = arr.map(function (x) {
@@ -115,7 +115,7 @@ function compileRegExp(lexer: monarchCommon.ILexerMin, str: string): RegExp {
 						"language definition does not contain attribute '" +
 							attr +
 							"', used at: " +
-							str,
+							str
 					);
 				} else {
 					throw monarchCommon.createError(
@@ -123,7 +123,7 @@ function compileRegExp(lexer: monarchCommon.ILexerMin, str: string): RegExp {
 						"attribute reference '" +
 							attr +
 							"' must be a string, used at: " +
-							str,
+							str
 					);
 				}
 			}
@@ -148,7 +148,7 @@ function selectScrutinee(
 	id: string,
 	matches: string[],
 	state: string,
-	num: number,
+	num: number
 ): string | null {
 	if (num < 0) {
 		return id;
@@ -171,7 +171,7 @@ function createGuard(
 	lexer: monarchCommon.ILexerMin,
 	ruleName: string,
 	tkey: string,
-	val: monarchCommon.FuzzyAction,
+	val: monarchCommon.FuzzyAction
 ): monarchCommon.IBranch {
 	// get the scrutinee and pattern
 	let scrut = -1; // -1: $!, 0-99: $n, 100+n: $Sn
@@ -210,7 +210,7 @@ function createGuard(
 		id: string,
 		matches: string[],
 		state: string,
-		eos: boolean,
+		eos: boolean
 	) => boolean;
 
 	// special case a regexp that matches just words
@@ -227,7 +227,7 @@ function createGuard(
 				"the @ match target '" +
 					pat +
 					"' is not defined, in rule: " +
-					ruleName,
+					ruleName
 			);
 		}
 		if (
@@ -240,7 +240,7 @@ function createGuard(
 				"the @ match target '" +
 					pat +
 					"' must be an array of strings, in rule: " +
-					ruleName,
+					ruleName
 			);
 		}
 		const inWords = createKeywordMatcher(words, lexer.ignoreCase);
@@ -264,9 +264,9 @@ function createGuard(
 							pat,
 							id,
 							matches,
-							state,
+							state
 						) +
-						"$",
+						"$"
 				);
 				return re.test(s);
 			};
@@ -286,7 +286,7 @@ function createGuard(
 					patx,
 					id,
 					matches,
-					state,
+					state
 				);
 				return op === "==" ? s === patexp : s !== patexp;
 			};
@@ -313,7 +313,7 @@ function createGuard(
 					id,
 					matches,
 					state,
-					eos,
+					eos
 				);
 			},
 		};
@@ -331,7 +331,7 @@ function createGuard(
 function compileAction(
 	lexer: monarchCommon.ILexerMin,
 	ruleName: string,
-	action: any,
+	action: any
 ): monarchCommon.FuzzyAction {
 	if (!action) {
 		return { token: "" };
@@ -342,7 +342,7 @@ function compileAction(
 			throw monarchCommon.createError(
 				lexer,
 				"a 'token' attribute must be of type string, in rule: " +
-					ruleName,
+					ruleName
 			);
 		} else {
 			// only copy specific typed fields (only happens once during compile Lexer)
@@ -359,7 +359,7 @@ function compileAction(
 					throw monarchCommon.createError(
 						lexer,
 						"a 'bracket' attribute must be either '@open' or '@close', in rule: " +
-							ruleName,
+							ruleName
 					);
 				}
 			}
@@ -368,7 +368,7 @@ function compileAction(
 					throw monarchCommon.createError(
 						lexer,
 						"the next state must be a string value in rule: " +
-							ruleName,
+							ruleName
 					);
 				} else {
 					let next: string = action.next;
@@ -386,8 +386,8 @@ function compileAction(
 										next,
 										"",
 										[],
-										"",
-									),
+										""
+									)
 								)
 							) {
 								throw monarchCommon.createError(
@@ -395,7 +395,7 @@ function compileAction(
 									"the next state '" +
 										action.next +
 										"' is not defined in rule: " +
-										ruleName,
+										ruleName
 								);
 							}
 						}
@@ -468,7 +468,7 @@ function compileAction(
 		throw monarchCommon.createError(
 			lexer,
 			"an action must be a string, an object with a 'token' or 'cases' attribute, or an array of actions; in rule: " +
-				ruleName,
+				ruleName
 		);
 	}
 }
@@ -496,7 +496,7 @@ class Rule implements monarchCommon.IRule {
 			throw monarchCommon.createError(
 				lexer,
 				"rules must start with a match string or regular expression: " +
-					this.name,
+					this.name
 			);
 		}
 
@@ -506,13 +506,13 @@ class Rule implements monarchCommon.IRule {
 			lexer,
 			"^(?:" +
 				(this.matchOnlyAtLineStart ? sregex.substr(1) : sregex) +
-				")",
+				")"
 		);
 	}
 
 	public setAction(
 		lexer: monarchCommon.ILexerMin,
-		act: monarchCommon.IAction,
+		act: monarchCommon.IAction
 	) {
 		this.action = compileAction(lexer, this.name, act);
 	}
@@ -529,7 +529,7 @@ class Rule implements monarchCommon.IRule {
  */
 export function compile(
 	languageId: string,
-	json: IMonarchLanguage,
+	json: IMonarchLanguage
 ): monarchCommon.ILexer {
 	if (!json || typeof json !== "object") {
 		throw new Error("Monarch: expecting a language definition object");
@@ -567,7 +567,7 @@ export function compile(
 	function addRules(
 		state: string,
 		newrules: monarchCommon.IRule[],
-		rules: any[],
+		rules: any[]
 	) {
 		for (const rule of rules) {
 			let include = rule.include;
@@ -575,7 +575,7 @@ export function compile(
 				if (typeof include !== "string") {
 					throw monarchCommon.createError(
 						lexer,
-						"an 'include' attribute must be a string at: " + state,
+						"an 'include' attribute must be a string at: " + state
 					);
 				}
 				if (include[0] === "@") {
@@ -587,13 +587,13 @@ export function compile(
 						"include target '" +
 							include +
 							"' is not defined at: " +
-							state,
+							state
 					);
 				}
 				addRules(
 					state + "." + include,
 					newrules,
-					json.tokenizer[include],
+					json.tokenizer[include]
 				);
 			} else {
 				const newrule = new Rule(state);
@@ -619,7 +619,7 @@ export function compile(
 							throw monarchCommon.createError(
 								lexer,
 								"a next state as the last element of a rule can only be given if the action is either an object or a string, at: " +
-									state,
+									state
 							);
 						}
 					} else {
@@ -630,7 +630,7 @@ export function compile(
 						throw monarchCommon.createError(
 							lexer,
 							"a rule must either be an array, or an object with a 'regex' or 'include' field at: " +
-								state,
+								state
 						);
 					}
 					if (rule.name) {
@@ -641,7 +641,7 @@ export function compile(
 					if (rule.matchOnlyAtStart) {
 						newrule.matchOnlyAtLineStart = bool(
 							rule.matchOnlyAtLineStart,
-							false,
+							false
 						);
 					}
 					newrule.setRegex(lexerMin, rule.regex);
@@ -657,7 +657,7 @@ export function compile(
 	if (!json.tokenizer || typeof json.tokenizer !== "object") {
 		throw monarchCommon.createError(
 			lexer,
-			"a language definition must define the 'tokenizer' attribute as an object",
+			"a language definition must define the 'tokenizer' attribute as an object"
 		);
 	}
 
@@ -680,7 +680,7 @@ export function compile(
 		if (!Array.isArray(<any>json.brackets)) {
 			throw monarchCommon.createError(
 				lexer,
-				"the 'brackets' attribute must be defined as an array",
+				"the 'brackets' attribute must be defined as an array"
 			);
 		}
 	} else {
@@ -702,7 +702,7 @@ export function compile(
 				lexer,
 				"open and close brackets in a 'brackets' attribute must be different: " +
 					desc.open +
-					"\n hint: use the 'bracket' attribute if matching on equal brackets is required.",
+					"\n hint: use the 'bracket' attribute if matching on equal brackets is required."
 			);
 		}
 		if (
@@ -718,7 +718,7 @@ export function compile(
 		} else {
 			throw monarchCommon.createError(
 				lexer,
-				"every element in the 'brackets' array must be a '{open,close,token}' object or array",
+				"every element in the 'brackets' array must be a '{open,close,token}' object or array"
 			);
 		}
 	}

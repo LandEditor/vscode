@@ -20,7 +20,7 @@ export function getLocale(extension: IGalleryExtension): string | undefined {
 }
 
 export const ILanguagePackService = createDecorator<ILanguagePackService>(
-	"languagePackService",
+	"languagePackService"
 );
 
 export interface ILanguagePackItem extends IQuickPickItem {
@@ -34,7 +34,7 @@ export interface ILanguagePackService {
 	getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
 	getBuiltInExtensionTranslationsUri(
 		id: string,
-		language: string,
+		language: string
 	): Promise<URI | undefined>;
 }
 
@@ -44,13 +44,16 @@ export abstract class LanguagePackBaseService
 {
 	declare readonly _serviceBrand: undefined;
 
-	constructor(@IExtensionGalleryService protected readonly extensionGalleryService: IExtensionGalleryService) {
+	constructor(
+		@IExtensionGalleryService
+		protected readonly extensionGalleryService: IExtensionGalleryService
+	) {
 		super();
 	}
 
 	abstract getBuiltInExtensionTranslationsUri(
 		id: string,
-		language: string,
+		language: string
 	): Promise<URI | undefined>;
 
 	abstract getInstalledLanguages(): Promise<Array<ILanguagePackItem>>;
@@ -66,7 +69,7 @@ export abstract class LanguagePackBaseService
 					text: 'category:"language packs"',
 					pageSize: 20,
 				},
-				timeout.token,
+				timeout.token
 			);
 		} catch (_) {
 			// This method is best effort. So, we ignore any errors.
@@ -76,7 +79,7 @@ export abstract class LanguagePackBaseService
 		const languagePackExtensions = result.firstPage.filter(
 			(e) =>
 				e.properties.localizedLanguages?.length &&
-				e.tags.some((t) => t.startsWith("lp-")),
+				e.tags.some((t) => t.startsWith("lp-"))
 		);
 		const allFromMarketplace: ILanguagePackItem[] =
 			languagePackExtensions.map((lp) => {
@@ -85,7 +88,7 @@ export abstract class LanguagePackBaseService
 				const baseQuickPick = this.createQuickPickItem(
 					locale,
 					languageName,
-					lp,
+					lp
 				);
 				return {
 					...baseQuickPick,
@@ -102,7 +105,7 @@ export abstract class LanguagePackBaseService
 	protected createQuickPickItem(
 		locale: string,
 		languageName?: string,
-		languagePack?: IGalleryExtension,
+		languagePack?: IGalleryExtension
 	): IQuickPickItem {
 		const label = languageName ?? locale;
 		let description: string | undefined;

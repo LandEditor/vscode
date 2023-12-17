@@ -38,7 +38,7 @@ import { SUPPORTED_CODE_ACTIONS } from "./codeActionModel";
 function contextKeyForSupportedActions(kind: CodeActionKind) {
 	return ContextKeyExpr.regex(
 		SUPPORTED_CODE_ACTIONS.keys()[0],
-		new RegExp("(\\s|^)" + escapeRegExpCharacters(kind.value) + "\\b"),
+		new RegExp("(\\s|^)" + escapeRegExpCharacters(kind.value) + "\\b")
 	);
 }
 
@@ -50,14 +50,14 @@ const argsSchema: IJSONSchema = {
 			type: "string",
 			description: nls.localize(
 				"args.schema.kind",
-				"Kind of the code action to run.",
+				"Kind of the code action to run."
 			),
 		},
 		apply: {
 			type: "string",
 			description: nls.localize(
 				"args.schema.apply",
-				"Controls when the returned actions are applied.",
+				"Controls when the returned actions are applied."
 			),
 			default: CodeActionAutoApply.IfSingle,
 			enum: [
@@ -68,15 +68,15 @@ const argsSchema: IJSONSchema = {
 			enumDescriptions: [
 				nls.localize(
 					"args.schema.apply.first",
-					"Always apply the first returned code action.",
+					"Always apply the first returned code action."
 				),
 				nls.localize(
 					"args.schema.apply.ifSingle",
-					"Apply the first returned code action if it is the only one.",
+					"Apply the first returned code action if it is the only one."
 				),
 				nls.localize(
 					"args.schema.apply.never",
-					"Do not apply the returned code actions.",
+					"Do not apply the returned code actions."
 				),
 			],
 		},
@@ -85,7 +85,7 @@ const argsSchema: IJSONSchema = {
 			default: false,
 			description: nls.localize(
 				"args.schema.preferred",
-				"Controls if only preferred code actions should be returned.",
+				"Controls if only preferred code actions should be returned."
 			),
 		},
 	},
@@ -96,7 +96,7 @@ function triggerCodeActionsForEditorSelection(
 	notAvailableMessage: string,
 	filter: CodeActionFilter | undefined,
 	autoApply: CodeActionAutoApply | undefined,
-	triggerAction: CodeActionTriggerSource = CodeActionTriggerSource.Default,
+	triggerAction: CodeActionTriggerSource = CodeActionTriggerSource.Default
 ): void {
 	if (editor.hasModel()) {
 		const controller = CodeActionController.get(editor);
@@ -104,7 +104,7 @@ function triggerCodeActionsForEditorSelection(
 			notAvailableMessage,
 			triggerAction,
 			filter,
-			autoApply,
+			autoApply
 		);
 	}
 }
@@ -117,7 +117,7 @@ export class QuickFixAction extends EditorAction {
 			alias: "Quick Fix...",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasCodeActionsProvider,
+				EditorContextKeys.hasCodeActionsProvider
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
@@ -132,11 +132,11 @@ export class QuickFixAction extends EditorAction {
 			editor,
 			nls.localize(
 				"editor.action.quickFix.noneMessage",
-				"No code actions available",
+				"No code actions available"
 			),
 			undefined,
 			undefined,
-			CodeActionTriggerSource.QuickFix,
+			CodeActionTriggerSource.QuickFix
 		);
 	}
 }
@@ -147,7 +147,7 @@ export class CodeActionCommand extends EditorCommand {
 			id: codeActionCommandId,
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasCodeActionsProvider,
+				EditorContextKeys.hasCodeActionsProvider
 			),
 			metadata: {
 				description: "Trigger a code action",
@@ -159,7 +159,7 @@ export class CodeActionCommand extends EditorCommand {
 	public runEditorCommand(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		userArgs: any,
+		userArgs: any
 	) {
 		const args = CodeActionCommandArgs.fromUser(userArgs, {
 			kind: CodeActionKind.Empty,
@@ -172,28 +172,28 @@ export class CodeActionCommand extends EditorCommand {
 					? nls.localize(
 							"editor.action.codeAction.noneMessage.preferred.kind",
 							"No preferred code actions for '{0}' available",
-							userArgs.kind,
-					  )
+							userArgs.kind
+						)
 					: nls.localize(
 							"editor.action.codeAction.noneMessage.kind",
 							"No code actions for '{0}' available",
-							userArgs.kind,
-					  )
+							userArgs.kind
+						)
 				: args.preferred
-				  ? nls.localize(
+					? nls.localize(
 							"editor.action.codeAction.noneMessage.preferred",
-							"No preferred code actions available",
-					  )
-				  : nls.localize(
+							"No preferred code actions available"
+						)
+					: nls.localize(
 							"editor.action.codeAction.noneMessage",
-							"No code actions available",
-					  ),
+							"No code actions available"
+						),
 			{
 				include: args.kind,
 				includeSourceActions: true,
 				onlyIncludePreferredActions: args.preferred,
 			},
-			args.apply,
+			args.apply
 		);
 	}
 }
@@ -206,7 +206,7 @@ export class RefactorAction extends EditorAction {
 			alias: "Refactor...",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasCodeActionsProvider,
+				EditorContextKeys.hasCodeActionsProvider
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
@@ -221,7 +221,7 @@ export class RefactorAction extends EditorAction {
 				order: 2,
 				when: ContextKeyExpr.and(
 					EditorContextKeys.writable,
-					contextKeyForSupportedActions(CodeActionKind.Refactor),
+					contextKeyForSupportedActions(CodeActionKind.Refactor)
 				),
 			},
 			metadata: {
@@ -234,7 +234,7 @@ export class RefactorAction extends EditorAction {
 	public run(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		userArgs: any,
+		userArgs: any
 	): void {
 		const args = CodeActionCommandArgs.fromUser(userArgs, {
 			kind: CodeActionKind.Refactor,
@@ -247,22 +247,22 @@ export class RefactorAction extends EditorAction {
 					? nls.localize(
 							"editor.action.refactor.noneMessage.preferred.kind",
 							"No preferred refactorings for '{0}' available",
-							userArgs.kind,
-					  )
+							userArgs.kind
+						)
 					: nls.localize(
 							"editor.action.refactor.noneMessage.kind",
 							"No refactorings for '{0}' available",
-							userArgs.kind,
-					  )
+							userArgs.kind
+						)
 				: args.preferred
-				  ? nls.localize(
+					? nls.localize(
 							"editor.action.refactor.noneMessage.preferred",
-							"No preferred refactorings available",
-					  )
-				  : nls.localize(
+							"No preferred refactorings available"
+						)
+					: nls.localize(
 							"editor.action.refactor.noneMessage",
-							"No refactorings available",
-					  ),
+							"No refactorings available"
+						),
 			{
 				include: CodeActionKind.Refactor.contains(args.kind)
 					? args.kind
@@ -270,7 +270,7 @@ export class RefactorAction extends EditorAction {
 				onlyIncludePreferredActions: args.preferred,
 			},
 			args.apply,
-			CodeActionTriggerSource.Refactor,
+			CodeActionTriggerSource.Refactor
 		);
 	}
 }
@@ -283,14 +283,14 @@ export class SourceAction extends EditorAction {
 			alias: "Source Action...",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasCodeActionsProvider,
+				EditorContextKeys.hasCodeActionsProvider
 			),
 			contextMenuOpts: {
 				group: "1_modification",
 				order: 2.1,
 				when: ContextKeyExpr.and(
 					EditorContextKeys.writable,
-					contextKeyForSupportedActions(CodeActionKind.Source),
+					contextKeyForSupportedActions(CodeActionKind.Source)
 				),
 			},
 			metadata: {
@@ -303,7 +303,7 @@ export class SourceAction extends EditorAction {
 	public run(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		userArgs: any,
+		userArgs: any
 	): void {
 		const args = CodeActionCommandArgs.fromUser(userArgs, {
 			kind: CodeActionKind.Source,
@@ -316,22 +316,22 @@ export class SourceAction extends EditorAction {
 					? nls.localize(
 							"editor.action.source.noneMessage.preferred.kind",
 							"No preferred source actions for '{0}' available",
-							userArgs.kind,
-					  )
+							userArgs.kind
+						)
 					: nls.localize(
 							"editor.action.source.noneMessage.kind",
 							"No source actions for '{0}' available",
-							userArgs.kind,
-					  )
+							userArgs.kind
+						)
 				: args.preferred
-				  ? nls.localize(
+					? nls.localize(
 							"editor.action.source.noneMessage.preferred",
-							"No preferred source actions available",
-					  )
-				  : nls.localize(
+							"No preferred source actions available"
+						)
+					: nls.localize(
 							"editor.action.source.noneMessage",
-							"No source actions available",
-					  ),
+							"No source actions available"
+						),
 			{
 				include: CodeActionKind.Source.contains(args.kind)
 					? args.kind
@@ -340,7 +340,7 @@ export class SourceAction extends EditorAction {
 				onlyIncludePreferredActions: args.preferred,
 			},
 			args.apply,
-			CodeActionTriggerSource.SourceAction,
+			CodeActionTriggerSource.SourceAction
 		);
 	}
 }
@@ -354,8 +354,8 @@ export class OrganizeImportsAction extends EditorAction {
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
 				contextKeyForSupportedActions(
-					CodeActionKind.SourceOrganizeImports,
-				),
+					CodeActionKind.SourceOrganizeImports
+				)
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
@@ -370,14 +370,14 @@ export class OrganizeImportsAction extends EditorAction {
 			editor,
 			nls.localize(
 				"editor.action.organize.noneMessage",
-				"No organize imports action available",
+				"No organize imports action available"
 			),
 			{
 				include: CodeActionKind.SourceOrganizeImports,
 				includeSourceActions: true,
 			},
 			CodeActionAutoApply.IfSingle,
-			CodeActionTriggerSource.OrganizeImports,
+			CodeActionTriggerSource.OrganizeImports
 		);
 	}
 }
@@ -390,7 +390,7 @@ export class FixAllAction extends EditorAction {
 			alias: "Fix All",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				contextKeyForSupportedActions(CodeActionKind.SourceFixAll),
+				contextKeyForSupportedActions(CodeActionKind.SourceFixAll)
 			),
 		});
 	}
@@ -404,7 +404,7 @@ export class FixAllAction extends EditorAction {
 				includeSourceActions: true,
 			},
 			CodeActionAutoApply.IfSingle,
-			CodeActionTriggerSource.FixAll,
+			CodeActionTriggerSource.FixAll
 		);
 	}
 }
@@ -417,7 +417,7 @@ export class AutoFixAction extends EditorAction {
 			alias: "Auto Fix...",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				contextKeyForSupportedActions(CodeActionKind.QuickFix),
+				contextKeyForSupportedActions(CodeActionKind.QuickFix)
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.textInputFocus,
@@ -435,14 +435,14 @@ export class AutoFixAction extends EditorAction {
 			editor,
 			nls.localize(
 				"editor.action.autoFix.noneMessage",
-				"No auto fixes available",
+				"No auto fixes available"
 			),
 			{
 				include: CodeActionKind.QuickFix,
 				onlyIncludePreferredActions: true,
 			},
 			CodeActionAutoApply.IfSingle,
-			CodeActionTriggerSource.AutoFix,
+			CodeActionTriggerSource.AutoFix
 		);
 	}
 }

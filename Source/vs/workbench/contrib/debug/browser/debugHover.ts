@@ -80,7 +80,7 @@ export const enum ShowDebugHoverResult {
 
 async function doFindExpression(
 	container: IExpressionContainer,
-	namesToFind: string[],
+	namesToFind: string[]
 ): Promise<IExpression | null> {
 	if (!container) {
 		return null;
@@ -102,14 +102,14 @@ async function doFindExpression(
 
 export async function findExpressionInStackFrame(
 	stackFrame: IStackFrame,
-	namesToFind: string[],
+	namesToFind: string[]
 ): Promise<IExpression | undefined> {
 	const scopes = await stackFrame.getScopes();
 	const nonExpensive = scopes.filter((s) => !s.expensive);
 	const expressions = coalesce(
 		await Promise.all(
-			nonExpensive.map((scope) => doFindExpression(scope, namesToFind)),
-		),
+			nonExpensive.map((scope) => doFindExpression(scope, namesToFind))
+		)
 	);
 
 	// only show if all expressions found have the same value
@@ -150,32 +150,41 @@ export class DebugHoverWidget implements IContentWidget {
 	constructor(
 		private editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService
 	) {
 		this.toDispose = [];
 
 		this._isVisible = false;
 		this.showAtPosition = null;
-		this.positionPreference = [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW];
-		this.debugHoverComputer = this.instantiationService.createInstance(DebugHoverComputer, this.editor);
+		this.positionPreference = [
+			ContentWidgetPositionPreference.ABOVE,
+			ContentWidgetPositionPreference.BELOW,
+		];
+		this.debugHoverComputer = this.instantiationService.createInstance(
+			DebugHoverComputer,
+			this.editor
+		);
 	}
 
 	private create(): void {
 		this.domNode = $(".debug-hover-widget");
 		this.complexValueContainer = dom.append(
 			this.domNode,
-			$(".complex-value"),
+			$(".complex-value")
 		);
 		this.complexValueTitle = dom.append(
 			this.complexValueContainer,
-			$(".title"),
+			$(".title")
 		);
 		this.treeContainer = dom.append(
 			this.complexValueContainer,
-			$(".debug-hover-tree"),
+			$(".debug-hover-tree")
 		);
 		this.treeContainer.setAttribute("role", "tree");
 		const tip = dom.append(this.complexValueContainer, $(".tip"));
@@ -187,7 +196,7 @@ export class DebugHoverWidget implements IContentWidget {
 				],
 			},
 			"Hold {0} key to switch to editor language hover",
-			isMacintosh ? "Option" : "Alt",
+			isMacintosh ? "Option" : "Alt"
 		);
 		const dataSource = new DebugHoverDataSource();
 		const linkeDetector =
@@ -201,7 +210,7 @@ export class DebugHoverWidget implements IContentWidget {
 				[
 					this.instantiationService.createInstance(
 						VariablesRenderer,
-						linkeDetector,
+						linkeDetector
 					),
 				],
 				dataSource,
@@ -217,7 +226,7 @@ export class DebugHoverWidget implements IContentWidget {
 					overrideStyles: {
 						listBackground: editorHoverBackground,
 					},
-				},
+				}
 			)
 		);
 
@@ -232,15 +241,15 @@ export class DebugHoverWidget implements IContentWidget {
 
 		this.editor.applyFontInfo(this.domNode);
 		this.domNode.style.backgroundColor = asCssVariable(
-			editorHoverBackground,
+			editorHoverBackground
 		);
 		this.domNode.style.border = `1px solid ${asCssVariable(
-			editorHoverBorder,
+			editorHoverBorder
 		)}`;
 		this.domNode.style.color = asCssVariable(editorHoverForeground);
 
 		this.toDispose.push(
-			this.tree.onContextMenu(async (e) => await this.onContextMenu(e)),
+			this.tree.onContextMenu(async (e) => await this.onContextMenu(e))
 		);
 
 		this.toDispose.push(
@@ -249,7 +258,7 @@ export class DebugHoverWidget implements IContentWidget {
 					// Don't do a layout in the middle of the async setInput
 					this.layoutTreeAndContainer();
 				}
-			}),
+			})
 		);
 		this.toDispose.push(
 			this.tree.onDidChangeContentWidth(() => {
@@ -257,7 +266,7 @@ export class DebugHoverWidget implements IContentWidget {
 					// Don't do a layout in the middle of the async setInput
 					this.layoutTreeAndContainer();
 				}
-			}),
+			})
 		);
 
 		this.registerListeners();
@@ -265,7 +274,7 @@ export class DebugHoverWidget implements IContentWidget {
 	}
 
 	private async onContextMenu(
-		e: ITreeContextMenuEvent<IExpression>,
+		e: ITreeContextMenuEvent<IExpression>
 	): Promise<void> {
 		const variable = e.element;
 		if (!(variable instanceof Variable) || !variable.value) {
@@ -277,7 +286,7 @@ export class DebugHoverWidget implements IContentWidget {
 			this.menuService,
 			this.contextMenuService,
 			MenuId.DebugHoverContext,
-			e,
+			e
 		);
 	}
 
@@ -290,8 +299,8 @@ export class DebugHoverWidget implements IContentWidget {
 					if (e.equals(KeyCode.Escape)) {
 						this.hide();
 					}
-				},
-			),
+				}
+			)
 		);
 		this.toDispose.push(
 			this.editor.onDidChangeConfiguration(
@@ -299,8 +308,8 @@ export class DebugHoverWidget implements IContentWidget {
 					if (e.hasChanged(EditorOption.fontInfo)) {
 						this.editor.applyFontInfo(this.domNode);
 					}
-				},
-			),
+				}
+			)
 		);
 
 		this.toDispose.push(
@@ -311,7 +320,7 @@ export class DebugHoverWidget implements IContentWidget {
 						await this.tree.updateChildren(e, false, true);
 						await this.tree.expand(e);
 					}
-				}),
+				})
 		);
 	}
 
@@ -337,7 +346,7 @@ export class DebugHoverWidget implements IContentWidget {
 
 	async showAt(
 		position: Position,
-		focus: boolean,
+		focus: boolean
 	): Promise<void | ShowDebugHoverResult> {
 		this.showCancellationSource?.cancel();
 		const cancellationSource = (this.showCancellationSource =
@@ -351,7 +360,7 @@ export class DebugHoverWidget implements IContentWidget {
 
 		const result = await this.debugHoverComputer.compute(
 			position,
-			cancellationSource.token,
+			cancellationSource.token
 		);
 		if (cancellationSource.token.isCancellationRequested) {
 			this.hide();
@@ -401,7 +410,7 @@ export class DebugHoverWidget implements IContentWidget {
 		position: Position,
 		expression: IExpression,
 		focus: boolean,
-		forceValueHover = false,
+		forceValueHover = false
 	): Promise<void> {
 		if (!this.domNode) {
 			this.create();
@@ -458,7 +467,7 @@ export class DebugHoverWidget implements IContentWidget {
 			const hoveredCharTop =
 				this.editor.getTopForLineNumber(
 					this.showAtPosition.lineNumber,
-					true,
+					true
 				) - this.editor.getScrollTop();
 			if (containerTop < hoveredCharTop) {
 				maxHeightToAvoidCursorOverlay = hoveredCharTop + editorTop - 22; // 22 is monaco top padding https://github.com/microsoft/vscode/blob/a1df2d7319382d42f66ad7f411af01e4cc49c80a/src/vs/editor/browser/viewParts/contentWidgets/contentWidgets.ts#L364
@@ -467,7 +476,7 @@ export class DebugHoverWidget implements IContentWidget {
 		const treeHeight = Math.min(
 			Math.max(266, this.editor.getLayoutInfo().height * 0.55),
 			this.tree.contentHeight + scrollBarHeight,
-			maxHeightToAvoidCursorOverlay,
+			maxHeightToAvoidCursorOverlay
 		);
 
 		const realTreeWidth = this.tree.contentWidth;
@@ -527,7 +536,7 @@ export class DebugHoverWidget implements IContentWidget {
 			? {
 					position: this.showAtPosition,
 					preference: this.positionPreference,
-			  }
+				}
 			: null;
 	}
 
@@ -553,7 +562,7 @@ class DebugHoverAccessibilityProvider
 			},
 			"{0}, value {1}, variables, debug",
 			element.name,
-			element.value,
+			element.value
 		);
 	}
 }
@@ -592,13 +601,14 @@ class DebugHoverComputer {
 	constructor(
 		private editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILogService private readonly logService: ILogService,
-	) { }
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	public async compute(
 		position: Position,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IDebugHoverComputeResult> {
 		const session = this.debugService.getViewModel().focusedSession;
 		if (!session || !this.editor.hasModel()) {
@@ -610,7 +620,7 @@ class DebugHoverComputer {
 			this.languageFeaturesService,
 			model,
 			position,
-			token,
+			token
 		);
 		if (!result) {
 			return { rangeChanged: false };
@@ -636,7 +646,7 @@ class DebugHoverComputer {
 			await expression.evaluate(
 				session,
 				this.debugService.getViewModel().focusedStackFrame,
-				"hover",
+				"hover"
 			);
 			return expression;
 		} else {
@@ -648,8 +658,8 @@ class DebugHoverComputer {
 					coalesce(
 						this._currentExpression
 							.split(".")
-							.map((word) => word.trim()),
-					),
+							.map((word) => word.trim())
+					)
 				);
 			}
 		}

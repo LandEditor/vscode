@@ -26,7 +26,7 @@ export class VscodeDevShareProvider
 		vscode.commands.executeCommand(
 			"setContext",
 			"github.hasGitHubRepo",
-			value,
+			value
 		);
 		this._hasGitHubRepositories = value;
 		this.ensureShareProviderRegistration();
@@ -46,14 +46,14 @@ export class VscodeDevShareProvider
 	private initializeGitHubRepoContext() {
 		if (
 			this.gitAPI.repositories.find((repo) =>
-				repositoryHasGitHubRemote(repo),
+				repositoryHasGitHubRemote(repo)
 			)
 		) {
 			this.hasGitHubRepositories = true;
 			vscode.commands.executeCommand(
 				"setContext",
 				"github.hasGitHubRepo",
-				true,
+				true
 			);
 		} else {
 			this.disposables.push(
@@ -63,23 +63,23 @@ export class VscodeDevShareProvider
 						vscode.commands.executeCommand(
 							"setContext",
 							"github.hasGitHubRepo",
-							true,
+							true
 						);
 						this.hasGitHubRepositories = true;
 					}
-				}),
+				})
 			);
 		}
 		this.disposables.push(
 			this.gitAPI.onDidCloseRepository(() => {
 				if (
 					!this.gitAPI.repositories.find((repo) =>
-						repositoryHasGitHubRemote(repo),
+						repositoryHasGitHubRemote(repo)
 					)
 				) {
 					this.hasGitHubRepositories = false;
 				}
-			}),
+			})
 		);
 	}
 
@@ -104,7 +104,7 @@ export class VscodeDevShareProvider
 
 	async provideShare(
 		item: vscode.ShareableItem,
-		_token: vscode.CancellationToken,
+		_token: vscode.CancellationToken
 	): Promise<vscode.Uri | undefined> {
 		const repository = getRepositoryForFile(this.gitAPI, item.resourceUri);
 		if (!repository) {
@@ -138,13 +138,13 @@ export class VscodeDevShareProvider
 			? encodeURIComponentExceptSlashes(repository.state.HEAD?.name)
 			: repository?.state.HEAD?.commit;
 		const filepathSegment = encodeURIComponentExceptSlashes(
-			item.resourceUri.path.substring(repository?.rootUri.path.length),
+			item.resourceUri.path.substring(repository?.rootUri.path.length)
 		);
 		const rangeSegment = getRangeSegment(item);
 		return vscode.Uri.parse(
 			`${this.getVscodeDevHost()}/${repo.owner}/${
 				repo.repo
-			}/blob/${blobSegment}${filepathSegment}${rangeSegment}`,
+			}/blob/${blobSegment}${filepathSegment}${rangeSegment}`
 		);
 	}
 
@@ -160,13 +160,13 @@ export class VscodeDevShareProvider
 function getRangeSegment(item: vscode.ShareableItem) {
 	if (item.resourceUri.scheme === "vscode-notebook-cell") {
 		const notebookEditor = vscode.window.visibleNotebookEditors.find(
-			(editor) => editor.notebook.uri.fsPath === item.resourceUri.fsPath,
+			(editor) => editor.notebook.uri.fsPath === item.resourceUri.fsPath
 		);
 		const cell = notebookEditor?.notebook
 			.getCells()
 			.find(
 				(cell) =>
-					cell.document.uri.fragment === item.resourceUri?.fragment,
+					cell.document.uri.fragment === item.resourceUri?.fragment
 			);
 		const cellIndex = cell?.index ?? notebookEditor?.selection.start;
 		return notebookCellRangeString(cellIndex, item.selection);

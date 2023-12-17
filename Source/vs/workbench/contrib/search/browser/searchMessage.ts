@@ -28,7 +28,7 @@ export const renderSearchMessage = (
 	openerService: IOpenerService,
 	commandService: ICommandService,
 	disposableStore: DisposableStore,
-	triggerSearch: () => void,
+	triggerSearch: () => void
 ): HTMLElement => {
 	const div = dom.$("div.providerMessage");
 	const linkedText = parseLinkedText(message.text);
@@ -39,11 +39,11 @@ export const renderSearchMessage = (
 				SeverityIcon.className(
 					message.type === TextSearchCompleteMessageType.Information
 						? Severity.Info
-						: Severity.Warning,
+						: Severity.Warning
 				)
 					.split(" ")
-					.join("."),
-		),
+					.join(".")
+		)
 	);
 
 	for (const node of linkedText.nodes) {
@@ -58,7 +58,7 @@ export const renderSearchMessage = (
 					const parsed = URI.parse(href, true);
 					if (parsed.scheme === Schemas.command && message.trusted) {
 						const result = await commandService.executeCommand(
-							parsed.path,
+							parsed.path
 						);
 						if ((result as any)?.triggerSearch) {
 							triggerSearch();
@@ -74,16 +74,16 @@ export const renderSearchMessage = (
 								nls.localize(
 									"unable to open trust",
 									"Unable to open command link from untrusted source: {0}",
-									href,
-								),
+									href
+								)
 							);
 						} else {
 							notificationService.error(
 								nls.localize(
 									"unable to open",
 									"Unable to open unknown link: {0}",
-									href,
-								),
+									href
+								)
 							);
 						}
 					}

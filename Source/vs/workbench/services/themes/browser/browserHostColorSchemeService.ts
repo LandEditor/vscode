@@ -20,7 +20,7 @@ export class BrowserHostColorSchemeService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidSchemeChangeEvent = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 
 	constructor() {
@@ -64,5 +64,5 @@ export class BrowserHostColorSchemeService
 registerSingleton(
 	IHostColorSchemeService,
 	BrowserHostColorSchemeService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

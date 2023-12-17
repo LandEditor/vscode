@@ -46,19 +46,19 @@ export class ShowAudioCueHelp extends Action2 {
 							audioCueService.isEnabled(cue)
 								? ""
 								: " (" + localize("disabled", "Disabled") + ")"
-					  }`
+						}`
 					: `${
 							audioCueService.isEnabled(cue)
 								? "$(check)"
 								: "     "
-					  } ${cue.name}`,
+						} ${cue.name}`,
 				audioCue: cue,
 				buttons: [
 					{
 						iconClass: ThemeIcon.asClassName(Codicon.settingsGear),
 						tooltip: localize(
 							"audioCues.help.settings",
-							"Enable/Disable Audio Cue",
+							"Enable/Disable Audio Cue"
 						),
 					},
 				],
@@ -71,7 +71,7 @@ export class ShowAudioCueHelp extends Action2 {
 			onDidFocus: (item) => {
 				audioCueService.playSound(
 					item.audioCue.sound.getSound(true),
-					true,
+					true
 				);
 			},
 			onDidTriggerItemButton: (context) => {
@@ -81,7 +81,7 @@ export class ShowAudioCueHelp extends Action2 {
 			},
 			placeHolder: localize(
 				"audioCues.help.placeholder",
-				"Select an audio cue to play",
+				"Select an audio cue to play"
 			),
 		});
 

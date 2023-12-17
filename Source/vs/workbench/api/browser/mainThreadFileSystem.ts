@@ -62,13 +62,32 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostFileSystem);
 
-		const infoProxy = extHostContext.getProxy(ExtHostContext.ExtHostFileSystemInfo);
+		const infoProxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostFileSystemInfo
+		);
 
 		for (const entry of _fileService.listCapabilities()) {
-			infoProxy.$acceptProviderInfos(URI.from({ scheme: entry.scheme, path: '/dummy' }), entry.capabilities);
+			infoProxy.$acceptProviderInfos(
+				URI.from({ scheme: entry.scheme, path: "/dummy" }),
+				entry.capabilities
+			);
 		}
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderRegistrations(e => infoProxy.$acceptProviderInfos(URI.from({ scheme: e.scheme, path: '/dummy' }), e.provider?.capabilities ?? null)));
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderCapabilities(e => infoProxy.$acceptProviderInfos(URI.from({ scheme: e.scheme, path: '/dummy' }), e.provider.capabilities)));
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderRegistrations((e) =>
+				infoProxy.$acceptProviderInfos(
+					URI.from({ scheme: e.scheme, path: "/dummy" }),
+					e.provider?.capabilities ?? null
+				)
+			)
+		);
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderCapabilities((e) =>
+				infoProxy.$acceptProviderInfos(
+					URI.from({ scheme: e.scheme, path: "/dummy" }),
+					e.provider.capabilities
+				)
+			)
+		);
 	}
 
 	dispose(): void {
@@ -80,7 +99,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 		handle: number,
 		scheme: string,
 		capabilities: FileSystemProviderCapabilities,
-		readonlyMessage?: IMarkdownString,
+		readonlyMessage?: IMarkdownString
 	): Promise<void> {
 		this._fileProvider.set(
 			handle,
@@ -90,8 +109,8 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 				capabilities,
 				readonlyMessage,
 				handle,
-				this._proxy,
-			),
+				this._proxy
+			)
 		);
 	}
 
@@ -142,14 +161,14 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 								[
 									child.name,
 									MainThreadFileSystem._asFileType(child),
-								] as [string, FileType],
-					  );
+								] as [string, FileType]
+						);
 			})
 			.catch(MainThreadFileSystem._handleError);
 	}
 
 	private static _asFileType(
-		stat: IFileStat | IFileStatWithPartialMetadata,
+		stat: IFileStat | IFileStatWithPartialMetadata
 	): FileType {
 		let res = 0;
 		if (stat.isFile) {
@@ -180,7 +199,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	$rename(
 		source: UriComponents,
 		target: UriComponents,
-		opts: IFileOverwriteOptions,
+		opts: IFileOverwriteOptions
 	): Promise<void> {
 		return this._fileService
 			.move(URI.revive(source), URI.revive(target), opts.overwrite)
@@ -191,7 +210,7 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 	$copy(
 		source: UriComponents,
 		target: UriComponents,
-		opts: IFileOverwriteOptions,
+		opts: IFileOverwriteOptions
 	): Promise<void> {
 		return this._fileService
 			.copy(URI.revive(source), URI.revive(target), opts.overwrite)
@@ -264,7 +283,7 @@ class RemoteFileSystemProvider
 		capabilities: FileSystemProviderCapabilities,
 		public readonly readOnlyMessage: IMarkdownString | undefined,
 		private readonly _handle: number,
-		private readonly _proxy: ExtHostFileSystemShape,
+		private readonly _proxy: ExtHostFileSystemShape
 	) {
 		this.capabilities = capabilities;
 		this._registration = fileService.registerProvider(scheme, this);
@@ -285,7 +304,7 @@ class RemoteFileSystemProvider
 
 	$onFileSystemChange(changes: IFileChangeDto[]): void {
 		this._onDidChange.fire(
-			changes.map(RemoteFileSystemProvider._createFileChange),
+			changes.map(RemoteFileSystemProvider._createFileChange)
 		);
 	}
 
@@ -312,13 +331,13 @@ class RemoteFileSystemProvider
 	writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions,
+		opts: IFileWriteOptions
 	): Promise<void> {
 		return this._proxy.$writeFile(
 			this._handle,
 			resource,
 			VSBuffer.wrap(content),
-			opts,
+			opts
 		);
 	}
 
@@ -337,7 +356,7 @@ class RemoteFileSystemProvider
 	rename(
 		resource: URI,
 		target: URI,
-		opts: IFileOverwriteOptions,
+		opts: IFileOverwriteOptions
 	): Promise<void> {
 		return this._proxy.$rename(this._handle, resource, target, opts);
 	}
@@ -345,7 +364,7 @@ class RemoteFileSystemProvider
 	copy(
 		resource: URI,
 		target: URI,
-		opts: IFileOverwriteOptions,
+		opts: IFileOverwriteOptions
 	): Promise<void> {
 		return this._proxy.$copy(this._handle, resource, target, opts);
 	}
@@ -363,7 +382,7 @@ class RemoteFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		return this._proxy
 			.$read(this._handle, fd, pos, length)
@@ -378,13 +397,13 @@ class RemoteFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		return this._proxy.$write(
 			this._handle,
 			fd,
 			pos,
-			VSBuffer.wrap(data).slice(offset, offset + length),
+			VSBuffer.wrap(data).slice(offset, offset + length)
 		);
 	}
 }

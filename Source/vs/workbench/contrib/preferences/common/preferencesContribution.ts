@@ -49,7 +49,7 @@ import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/c
 
 const schemaRegistry =
 	Registry.as<JSONContributionRegistry.IJSONContributionRegistry>(
-		JSONContributionRegistry.Extensions.JSONContribution,
+		JSONContributionRegistry.Extensions.JSONContribution
 	);
 
 export class PreferencesContribution implements IWorkbenchContribution {
@@ -58,20 +58,31 @@ export class PreferencesContribution implements IWorkbenchContribution {
 
 	constructor(
 		@IModelService private readonly modelService: IModelService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService
 	) {
-		this.settingsListener = this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(USE_SPLIT_JSON_SETTING) || e.affectsConfiguration(DEFAULT_SETTINGS_EDITOR_SETTING)) {
-				this.handleSettingsEditorRegistration();
-			}
-		});
+		this.settingsListener =
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(USE_SPLIT_JSON_SETTING) ||
+					e.affectsConfiguration(DEFAULT_SETTINGS_EDITOR_SETTING)
+				) {
+					this.handleSettingsEditorRegistration();
+				}
+			});
 		this.handleSettingsEditorRegistration();
 
 		this.start();
@@ -85,7 +96,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 		if (
 			!!this.configurationService.getValue(USE_SPLIT_JSON_SETTING) ||
 			!!this.configurationService.getValue(
-				DEFAULT_SETTINGS_EDITOR_SETTING,
+				DEFAULT_SETTINGS_EDITOR_SETTING
 			)
 		) {
 			this.editorOpeningListener =
@@ -95,7 +106,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 						id: SideBySideEditorInput.ID,
 						label: nls.localize(
 							"splitSettingsEditorLabel",
-							"Split Settings Editor",
+							"Split Settings Editor"
 						),
 						priority: RegisteredEditorPriority.builtin,
 					},
@@ -110,13 +121,13 @@ export class PreferencesContribution implements IWorkbenchContribution {
 								isEqual(
 									resource,
 									this.userDataProfileService.currentProfile
-										.settingsResource,
+										.settingsResource
 								)
 							) {
 								return {
 									editor: this.preferencesService.createSplitJsonEditorInput(
 										ConfigurationTarget.USER_LOCAL,
-										resource,
+										resource
 									),
 									options,
 								};
@@ -133,14 +144,14 @@ export class PreferencesContribution implements IWorkbenchContribution {
 									isEqual(
 										resource,
 										folders[0].toResource(
-											FOLDER_SETTINGS_PATH,
-										),
+											FOLDER_SETTINGS_PATH
+										)
 									)
 								) {
 									return {
 										editor: this.preferencesService.createSplitJsonEditorInput(
 											ConfigurationTarget.WORKSPACE,
-											resource,
+											resource
 										),
 										options,
 									};
@@ -157,14 +168,14 @@ export class PreferencesContribution implements IWorkbenchContribution {
 										isEqual(
 											resource,
 											folder.toResource(
-												FOLDER_SETTINGS_PATH,
-											),
+												FOLDER_SETTINGS_PATH
+											)
 										)
 									) {
 										return {
 											editor: this.preferencesService.createSplitJsonEditorInput(
 												ConfigurationTarget.WORKSPACE_FOLDER,
-												resource,
+												resource
 											),
 											options,
 										};
@@ -174,12 +185,12 @@ export class PreferencesContribution implements IWorkbenchContribution {
 
 							return {
 								editor: this.textEditorService.createTextEditor(
-									{ resource },
+									{ resource }
 								),
 								options,
 							};
 						},
-					},
+					}
 				);
 		}
 	}
@@ -189,7 +200,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 			"vscode",
 			{
 				provideTextContent: async (
-					uri: URI,
+					uri: URI
 				): Promise<ITextModel | null> => {
 					if (uri.scheme !== "vscode") {
 						return null;
@@ -199,20 +210,20 @@ export class PreferencesContribution implements IWorkbenchContribution {
 					}
 					return this.preferencesService.resolveModel(uri);
 				},
-			},
+			}
 		);
 	}
 
 	private getSchemaModel(uri: URI): ITextModel {
 		let schema =
 			schemaRegistry.getSchemaContributions().schemas[uri.toString()] ??
-			{} /* Use empty schema if not yet registered */;
+			{}; /* Use empty schema if not yet registered */
 		const modelContent = JSON.stringify(schema);
 		const languageSelection = this.languageService.createById("jsonc");
 		const model = this.modelService.createModel(
 			modelContent,
 			languageSelection,
-			uri,
+			uri
 		);
 		const disposables = new DisposableStore();
 		disposables.add(
@@ -224,7 +235,7 @@ export class PreferencesContribution implements IWorkbenchContribution {
 						];
 					model.setValue(JSON.stringify(schema));
 				}
-			}),
+			})
 		);
 		disposables.add(model.onWillDispose(() => disposables.dispose()));
 		return model;
@@ -244,7 +255,7 @@ registry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"enableNaturalLanguageSettingsSearch",
-				"Controls whether to enable the natural language search mode for settings. The natural language search is provided by a Microsoft online service.",
+				"Controls whether to enable the natural language search mode for settings. The natural language search is provided by a Microsoft online service."
 			),
 			default: true,
 			scope: ConfigurationScope.WINDOW,
@@ -256,16 +267,16 @@ registry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"settingsSearchTocBehavior.hide",
-					"Hide the Table of Contents while searching.",
+					"Hide the Table of Contents while searching."
 				),
 				nls.localize(
 					"settingsSearchTocBehavior.filter",
-					"Filter the Table of Contents to just categories that have matching settings. Clicking on a category will filter the results to that category.",
+					"Filter the Table of Contents to just categories that have matching settings. Clicking on a category will filter the results to that category."
 				),
 			],
 			description: nls.localize(
 				"settingsSearchTocBehavior",
-				"Controls the behavior of the Settings editor Table of Contents while searching. If this setting is being changed in the Settings editor, the setting will take effect after the search query is modified.",
+				"Controls the behavior of the Settings editor Table of Contents while searching. If this setting is being changed in the Settings editor, the setting will take effect after the search query is modified."
 			),
 			default: "filter",
 			scope: ConfigurationScope.WINDOW,

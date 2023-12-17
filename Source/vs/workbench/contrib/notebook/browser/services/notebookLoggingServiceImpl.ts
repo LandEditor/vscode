@@ -19,11 +19,13 @@ export class NotebookLoggingService
 	static ID: string = "notebook";
 	private readonly _logger: ILogger;
 
-	constructor(
-		@ILoggerService loggerService: ILoggerService,
-	) {
+	constructor(@ILoggerService loggerService: ILoggerService) {
 		super();
-		this._logger = this._register(loggerService.createLogger(logChannelId, { name: nls.localize('renderChannelName', "Notebook rendering") }));
+		this._logger = this._register(
+			loggerService.createLogger(logChannelId, {
+				name: nls.localize("renderChannelName", "Notebook rendering"),
+			})
+		);
 	}
 
 	debug(category: string, output: string): void {

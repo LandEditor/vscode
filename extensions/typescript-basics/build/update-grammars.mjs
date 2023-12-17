@@ -13,7 +13,7 @@ function removeDom(grammar) {
 		if (
 			pattern.match &&
 			(/\b(HTMLElement|ATTRIBUTE_NODE|stopImmediatePropagation)\b/g.test(
-				pattern.match,
+				pattern.match
 			) ||
 				/\bJSON\b/g.test(pattern.match) ||
 				/\bMath\b/g.test(pattern.match))
@@ -52,9 +52,9 @@ function removeNodeTypes(grammar) {
 					(capture) =>
 						capture.name &&
 						(capture.name.startsWith(
-							"support.variable.object.process",
+							"support.variable.object.process"
 						) ||
-							capture.name.startsWith("support.class.console")),
+							capture.name.startsWith("support.class.console"))
 				)
 			) {
 				return false;
@@ -93,7 +93,7 @@ function adaptToJavaScript(grammar, replacementScope) {
 		if (typeof rule.contentName === "string") {
 			rule.contentName = rule.contentName.replace(
 				/\.tsx/g,
-				replacementScope,
+				replacementScope
 			);
 		}
 		for (var property in rule) {
@@ -115,23 +115,23 @@ update(
 	tsGrammarRepo,
 	"TypeScript.tmLanguage",
 	"./syntaxes/TypeScript.tmLanguage.json",
-	(grammar) => patchGrammar(grammar),
+	(grammar) => patchGrammar(grammar)
 );
 update(
 	tsGrammarRepo,
 	"TypeScriptReact.tmLanguage",
 	"./syntaxes/TypeScriptReact.tmLanguage.json",
-	(grammar) => patchGrammar(grammar),
+	(grammar) => patchGrammar(grammar)
 );
 update(
 	tsGrammarRepo,
 	"TypeScriptReact.tmLanguage",
 	"../javascript/syntaxes/JavaScript.tmLanguage.json",
-	(grammar) => adaptToJavaScript(patchGrammar(grammar), ".js"),
+	(grammar) => adaptToJavaScript(patchGrammar(grammar), ".js")
 );
 update(
 	tsGrammarRepo,
 	"TypeScriptReact.tmLanguage",
 	"../javascript/syntaxes/JavaScriptReact.tmLanguage.json",
-	(grammar) => adaptToJavaScript(patchGrammar(grammar), ".js.jsx"),
+	(grammar) => adaptToJavaScript(patchGrammar(grammar), ".js.jsx")
 );

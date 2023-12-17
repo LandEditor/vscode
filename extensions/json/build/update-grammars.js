@@ -17,7 +17,7 @@ function adaptJSON(grammar, name, replacementScope, replaceeScope = "json") {
 		if (typeof rule.contentName === "string") {
 			rule.contentName = rule.contentName.replace(
 				regex,
-				replacementScope,
+				replacementScope
 			);
 		}
 		for (var property in rule) {
@@ -38,19 +38,19 @@ var tsGrammarRepo = "microsoft/vscode-JSON.tmLanguage";
 updateGrammar.update(
 	tsGrammarRepo,
 	"JSON.tmLanguage",
-	"./syntaxes/JSON.tmLanguage.json",
+	"./syntaxes/JSON.tmLanguage.json"
 );
 updateGrammar.update(
 	tsGrammarRepo,
 	"JSON.tmLanguage",
 	"./syntaxes/JSONC.tmLanguage.json",
-	(grammar) => adaptJSON(grammar, "JSON with Comments", ".json.comments"),
+	(grammar) => adaptJSON(grammar, "JSON with Comments", ".json.comments")
 );
 updateGrammar.update(
 	tsGrammarRepo,
 	"JSON.tmLanguage",
 	"./syntaxes/JSONL.tmLanguage.json",
-	(grammar) => adaptJSON(grammar, "JSON Lines", ".json.lines"),
+	(grammar) => adaptJSON(grammar, "JSON Lines", ".json.lines")
 );
 
 updateGrammar.update(
@@ -62,6 +62,6 @@ updateGrammar.update(
 			grammar,
 			"Snippets",
 			".json.comments.snippets",
-			"json.comments",
-		),
+			"json.comments"
+		)
 );

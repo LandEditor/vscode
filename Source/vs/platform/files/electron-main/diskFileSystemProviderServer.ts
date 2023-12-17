@@ -31,7 +31,7 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 	constructor(
 		provider: DiskFileSystemProvider,
 		logService: ILogService,
-		private readonly environmentService: IEnvironmentService,
+		private readonly environmentService: IEnvironmentService
 	) {
 		super(provider, logService);
 	}
@@ -42,7 +42,7 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 
 	protected override transformIncoming(
 		uriTransformer: IURITransformer,
-		_resource: UriComponents,
+		_resource: UriComponents
 	): URI {
 		return URI.revive(_resource);
 	}
@@ -52,7 +52,7 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 	protected override async delete(
 		uriTransformer: IURITransformer,
 		_resource: UriComponents,
-		opts: IFileDeleteOptions,
+		opts: IFileDeleteOptions
 	): Promise<void> {
 		if (!opts.useTrash) {
 			return super.delete(uriTransformer, _resource, opts);
@@ -68,14 +68,14 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 					? localize(
 							"binFailed",
 							"Failed to move '{0}' to the recycle bin",
-							basename(filePath),
-					  )
+							basename(filePath)
+						)
 					: localize(
 							"trashFailed",
 							"Failed to move '{0}' to the trash",
-							basename(filePath),
-					  ),
-				FileSystemProviderErrorCode.Unknown,
+							basename(filePath)
+						),
+				FileSystemProviderErrorCode.Unknown
 			);
 		}
 	}
@@ -86,13 +86,13 @@ export class DiskFileSystemProviderChannel extends AbstractDiskFileSystemProvide
 
 	protected createSessionFileWatcher(
 		uriTransformer: IURITransformer,
-		emitter: Emitter<IFileChange[] | string>,
+		emitter: Emitter<IFileChange[] | string>
 	): ISessionFileWatcher {
 		return new SessionFileWatcher(
 			uriTransformer,
 			emitter,
 			this.logService,
-			this.environmentService,
+			this.environmentService
 		);
 	}
 
@@ -103,12 +103,12 @@ class SessionFileWatcher extends AbstractSessionFileWatcher {
 	override watch(
 		req: number,
 		resource: URI,
-		opts: IWatchOptions,
+		opts: IWatchOptions
 	): IDisposable {
 		if (opts.recursive) {
 			throw createFileSystemProviderError(
 				"Recursive file watching is not supported from main process for performance reasons.",
-				FileSystemProviderErrorCode.Unavailable,
+				FileSystemProviderErrorCode.Unavailable
 			);
 		}
 

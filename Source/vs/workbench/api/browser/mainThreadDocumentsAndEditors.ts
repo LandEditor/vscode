@@ -72,7 +72,7 @@ class DocumentAndEditorStateDelta {
 		readonly removedEditors: TextEditorSnapshot[],
 		readonly addedEditors: TextEditorSnapshot[],
 		readonly oldActiveEditor: string | null | undefined,
-		readonly newActiveEditor: string | null | undefined,
+		readonly newActiveEditor: string | null | undefined
 	) {
 		this.isEmpty =
 			this.removedDocuments.length === 0 &&
@@ -104,7 +104,7 @@ class DocumentAndEditorStateDelta {
 class DocumentAndEditorState {
 	static compute(
 		before: DocumentAndEditorState | undefined,
-		after: DocumentAndEditorState,
+		after: DocumentAndEditorState
 	): DocumentAndEditorStateDelta {
 		if (!before) {
 			return new DocumentAndEditorStateDelta(
@@ -113,7 +113,7 @@ class DocumentAndEditorState {
 				[],
 				[...after.textEditors.values()],
 				undefined,
-				after.activeEditor,
+				after.activeEditor
 			);
 		}
 		const documentDelta = diffSets(before.documents, after.documents);
@@ -133,14 +133,14 @@ class DocumentAndEditorState {
 			editorDelta.removed,
 			editorDelta.added,
 			oldActiveEditor,
-			newActiveEditor,
+			newActiveEditor
 		);
 	}
 
 	constructor(
 		readonly documents: Set<ITextModel>,
 		readonly textEditors: Map<string, TextEditorSnapshot>,
-		readonly activeEditor: string | null | undefined,
+		readonly activeEditor: string | null | undefined
 	) {
 		//
 	}
@@ -158,23 +158,69 @@ class MainThreadDocumentAndEditorStateComputer {
 	private _activeEditorOrder: ActiveEditorOrder = ActiveEditorOrder.Editor;
 
 	constructor(
-		private readonly _onDidChangeState: (delta: DocumentAndEditorStateDelta) => void,
+		private readonly _onDidChangeState: (
+			delta: DocumentAndEditorStateDelta
+		) => void,
 		@IModelService private readonly _modelService: IModelService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly _paneCompositeService: IPaneCompositePartService
 	) {
-		this._modelService.onModelAdded(this._updateStateOnModelAdd, this, this._toDispose);
-		this._modelService.onModelRemoved(_ => this._updateState(), this, this._toDispose);
-		this._editorService.onDidActiveEditorChange(_ => this._updateState(), this, this._toDispose);
+		this._modelService.onModelAdded(
+			this._updateStateOnModelAdd,
+			this,
+			this._toDispose
+		);
+		this._modelService.onModelRemoved(
+			(_) => this._updateState(),
+			this,
+			this._toDispose
+		);
+		this._editorService.onDidActiveEditorChange(
+			(_) => this._updateState(),
+			this,
+			this._toDispose
+		);
 
-		this._codeEditorService.onCodeEditorAdd(this._onDidAddEditor, this, this._toDispose);
-		this._codeEditorService.onCodeEditorRemove(this._onDidRemoveEditor, this, this._toDispose);
-		this._codeEditorService.listCodeEditors().forEach(this._onDidAddEditor, this);
+		this._codeEditorService.onCodeEditorAdd(
+			this._onDidAddEditor,
+			this,
+			this._toDispose
+		);
+		this._codeEditorService.onCodeEditorRemove(
+			this._onDidRemoveEditor,
+			this,
+			this._toDispose
+		);
+		this._codeEditorService
+			.listCodeEditors()
+			.forEach(this._onDidAddEditor, this);
 
-		Event.filter(this._paneCompositeService.onDidPaneCompositeOpen, event => event.viewContainerLocation === ViewContainerLocation.Panel)(_ => this._activeEditorOrder = ActiveEditorOrder.Panel, undefined, this._toDispose);
-		Event.filter(this._paneCompositeService.onDidPaneCompositeClose, event => event.viewContainerLocation === ViewContainerLocation.Panel)(_ => this._activeEditorOrder = ActiveEditorOrder.Editor, undefined, this._toDispose);
-		this._editorService.onDidVisibleEditorsChange(_ => this._activeEditorOrder = ActiveEditorOrder.Editor, undefined, this._toDispose);
+		Event.filter(
+			this._paneCompositeService.onDidPaneCompositeOpen,
+			(event) =>
+				event.viewContainerLocation === ViewContainerLocation.Panel
+		)(
+			(_) => (this._activeEditorOrder = ActiveEditorOrder.Panel),
+			undefined,
+			this._toDispose
+		);
+		Event.filter(
+			this._paneCompositeService.onDidPaneCompositeClose,
+			(event) =>
+				event.viewContainerLocation === ViewContainerLocation.Panel
+		)(
+			(_) => (this._activeEditorOrder = ActiveEditorOrder.Editor),
+			undefined,
+			this._toDispose
+		);
+		this._editorService.onDidVisibleEditorsChange(
+			(_) => (this._activeEditorOrder = ActiveEditorOrder.Editor),
+			undefined,
+			this._toDispose
+		);
 
 		this._updateState();
 	}
@@ -190,8 +236,8 @@ class MainThreadDocumentAndEditorStateComputer {
 			combinedDisposable(
 				e.onDidChangeModel(() => this._updateState()),
 				e.onDidFocusEditorText(() => this._updateState()),
-				e.onDidFocusEditorWidget(() => this._updateState(e)),
-			),
+				e.onDidFocusEditorWidget(() => this._updateState(e))
+			)
 		);
 		this._updateState();
 	}
@@ -220,7 +266,7 @@ class MainThreadDocumentAndEditorStateComputer {
 		this._currentState = new DocumentAndEditorState(
 			this._currentState.documents.add(model),
 			this._currentState.textEditors,
-			this._currentState.activeEditor,
+			this._currentState.activeEditor
 		);
 
 		this._onDidChangeState(
@@ -230,8 +276,8 @@ class MainThreadDocumentAndEditorStateComputer {
 				[],
 				[],
 				undefined,
-				undefined,
-			),
+				undefined
+			)
 		);
 	}
 
@@ -303,11 +349,11 @@ class MainThreadDocumentAndEditorStateComputer {
 		const newState = new DocumentAndEditorState(
 			models,
 			editors,
-			activeEditor,
+			activeEditor
 		);
 		const delta = DocumentAndEditorState.compute(
 			this._currentState,
-			newState,
+			newState
 		);
 		if (!delta.isEmpty) {
 			this._currentState = newState;
@@ -317,7 +363,7 @@ class MainThreadDocumentAndEditorStateComputer {
 
 	private _getActiveEditorFromPanel(): IEditor | undefined {
 		const panel = this._paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Panel,
+			ViewContainerLocation.Panel
 		);
 		if (panel instanceof AbstractTextEditor) {
 			const control = panel.getControl();
@@ -356,25 +402,67 @@ export class MainThreadDocumentsAndEditors {
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IFileService fileService: IFileService,
 		@ITextModelService textModelResolverService: ITextModelService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IWorkingCopyFileService
+		workingCopyFileService: IWorkingCopyFileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 		@IPathService pathService: IPathService,
 		@IConfigurationService configurationService: IConfigurationService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocumentsAndEditors);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostDocumentsAndEditors
+		);
 
-		this._mainThreadDocuments = this._toDispose.add(new MainThreadDocuments(extHostContext, this._modelService, this._textFileService, fileService, textModelResolverService, environmentService, uriIdentityService, workingCopyFileService, pathService));
-		extHostContext.set(MainContext.MainThreadDocuments, this._mainThreadDocuments);
+		this._mainThreadDocuments = this._toDispose.add(
+			new MainThreadDocuments(
+				extHostContext,
+				this._modelService,
+				this._textFileService,
+				fileService,
+				textModelResolverService,
+				environmentService,
+				uriIdentityService,
+				workingCopyFileService,
+				pathService
+			)
+		);
+		extHostContext.set(
+			MainContext.MainThreadDocuments,
+			this._mainThreadDocuments
+		);
 
-		this._mainThreadEditors = this._toDispose.add(new MainThreadTextEditors(this, extHostContext, codeEditorService, this._editorService, this._editorGroupService, configurationService));
-		extHostContext.set(MainContext.MainThreadTextEditors, this._mainThreadEditors);
+		this._mainThreadEditors = this._toDispose.add(
+			new MainThreadTextEditors(
+				this,
+				extHostContext,
+				codeEditorService,
+				this._editorService,
+				this._editorGroupService,
+				configurationService
+			)
+		);
+		extHostContext.set(
+			MainContext.MainThreadTextEditors,
+			this._mainThreadEditors
+		);
 
 		// It is expected that the ctor of the state computer calls our `_onDelta`.
-		this._toDispose.add(new MainThreadDocumentAndEditorStateComputer(delta => this._onDelta(delta), _modelService, codeEditorService, this._editorService, paneCompositeService));
+		this._toDispose.add(
+			new MainThreadDocumentAndEditorStateComputer(
+				(delta) => this._onDelta(delta),
+				_modelService,
+				codeEditorService,
+				this._editorService,
+				paneCompositeService
+			)
+		);
 	}
 
 	dispose(): void {
@@ -397,7 +485,7 @@ export class MainThreadDocumentsAndEditors {
 				{ onGainedFocus() {}, onLostFocus() {} },
 				this._mainThreadDocuments,
 				this._modelService,
-				this._clipboardService,
+				this._clipboardService
 			);
 
 			this._textEditors.set(apiEditor.id, mainThreadEditor);
@@ -431,13 +519,13 @@ export class MainThreadDocumentsAndEditors {
 		if (delta.addedDocuments.length > 0) {
 			empty = false;
 			extHostDelta.addedDocuments = delta.addedDocuments.map((m) =>
-				this._toModelAddData(m),
+				this._toModelAddData(m)
 			);
 		}
 		if (delta.addedEditors.length > 0) {
 			empty = false;
 			extHostDelta.addedEditors = addedEditors.map((e) =>
-				this._toTextEditorAddData(e),
+				this._toTextEditorAddData(e)
 			);
 		}
 
@@ -448,20 +536,20 @@ export class MainThreadDocumentsAndEditors {
 			// second update dependent document/editor states
 			removedDocuments.forEach(
 				this._mainThreadDocuments.handleModelRemoved,
-				this._mainThreadDocuments,
+				this._mainThreadDocuments
 			);
 			delta.addedDocuments.forEach(
 				this._mainThreadDocuments.handleModelAdded,
-				this._mainThreadDocuments,
+				this._mainThreadDocuments
 			);
 
 			removedEditors.forEach(
 				this._mainThreadEditors.handleTextEditorRemoved,
-				this._mainThreadEditors,
+				this._mainThreadEditors
 			);
 			addedEditors.forEach(
 				this._mainThreadEditors.handleTextEditorAdded,
-				this._mainThreadEditors,
+				this._mainThreadEditors
 			);
 		}
 	}
@@ -478,7 +566,7 @@ export class MainThreadDocumentsAndEditors {
 	}
 
 	private _toTextEditorAddData(
-		textEditor: MainThreadTextEditor,
+		textEditor: MainThreadTextEditor
 	): ITextEditorAddData {
 		const props = textEditor.getProperties();
 		return {
@@ -492,13 +580,13 @@ export class MainThreadDocumentsAndEditors {
 	}
 
 	private _findEditorPosition(
-		editor: MainThreadTextEditor,
+		editor: MainThreadTextEditor
 	): EditorGroupColumn | undefined {
 		for (const editorPane of this._editorService.visibleEditorPanes) {
 			if (editor.matches(editorPane)) {
 				return editorGroupToColumn(
 					this._editorGroupService,
-					editorPane.group,
+					editorPane.group
 				);
 			}
 		}

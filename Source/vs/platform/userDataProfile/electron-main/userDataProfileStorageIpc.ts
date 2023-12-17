@@ -38,7 +38,7 @@ export class ProfileStorageChangesListenerChannel
 	constructor(
 		private readonly storageMainService: IStorageMainService,
 		private readonly userDataProfilesService: IUserDataProfilesService,
-		private readonly logService: ILogService,
+		private readonly logService: ILogService
 	) {
 		super();
 		const disposable = this._register(new MutableDisposable<IDisposable>());
@@ -49,13 +49,13 @@ export class ProfileStorageChangesListenerChannel
 					(disposable.value = this.registerStorageChangeListeners()),
 				// Stop listening to profile storage changes when no one is listening
 				onDidRemoveLastListener: () => (disposable.value = undefined),
-			}),
+			})
 		);
 	}
 
 	private registerStorageChangeListeners(): IDisposable {
 		this.logService.debug(
-			"ProfileStorageChangesListenerChannel#registerStorageChangeListeners",
+			"ProfileStorageChangesListenerChannel#registerStorageChangeListeners"
 		);
 		const disposables = new DisposableStore();
 		disposables.add(
@@ -69,8 +69,8 @@ export class ProfileStorageChangesListenerChannel
 					}
 					return keys;
 				},
-				100,
-			)((keys) => this.onDidChangeApplicationStorage(keys)),
+				100
+			)((keys) => this.onDidChangeApplicationStorage(keys))
 		);
 		disposables.add(
 			Event.debounce(
@@ -86,7 +86,7 @@ export class ProfileStorageChangesListenerChannel
 								}
 						  >
 						| undefined,
-					e,
+					e
 				) => {
 					if (!changes) {
 						changes = new Map<
@@ -106,21 +106,21 @@ export class ProfileStorageChangesListenerChannel
 								profile: e.profile,
 								keys: [],
 								storage: e.storage,
-							}),
+							})
 						);
 					}
 					profileChanges.keys.push(e.key);
 					return changes;
 				},
-				100,
-			)((keys) => this.onDidChangeProfileStorage(keys)),
+				100
+			)((keys) => this.onDidChangeProfileStorage(keys))
 		);
 		return disposables;
 	}
 
 	private onDidChangeApplicationStorage(keys: string[]): void {
 		const targetChangedProfiles: IUserDataProfile[] = keys.includes(
-			TARGET_KEY,
+			TARGET_KEY
 		)
 			? [this.userDataProfilesService.defaultProfile]
 			: [];
@@ -128,7 +128,7 @@ export class ProfileStorageChangesListenerChannel
 		keys = keys.filter((key) => key !== TARGET_KEY);
 		if (keys.length) {
 			const keyTargets = loadKeyTargets(
-				this.storageMainService.applicationStorage.storage,
+				this.storageMainService.applicationStorage.storage
 			);
 			profileStorageValueChanges.push({
 				profile: this.userDataProfilesService.defaultProfile,
@@ -146,7 +146,7 @@ export class ProfileStorageChangesListenerChannel
 		changes: Map<
 			string,
 			{ profile: IUserDataProfile; keys: string[]; storage: IStorageMain }
-		>,
+		>
 	): void {
 		const targetChangedProfiles: IUserDataProfile[] = [];
 		const profileStorageValueChanges = new Map<
@@ -158,11 +158,11 @@ export class ProfileStorageChangesListenerChannel
 				targetChangedProfiles.push(profileChanges.profile);
 			}
 			const keys = profileChanges.keys.filter(
-				(key) => key !== TARGET_KEY,
+				(key) => key !== TARGET_KEY
 			);
 			if (keys.length) {
 				const keyTargets = loadKeyTargets(
-					profileChanges.storage.storage,
+					profileChanges.storage.storage
 				);
 				profileStorageValueChanges.set(profileId, {
 					profile: profileChanges.profile,
@@ -181,7 +181,7 @@ export class ProfileStorageChangesListenerChannel
 
 	private triggerEvents(
 		targetChanges: IUserDataProfile[],
-		valueChanges: IProfileStorageValueChanges[],
+		valueChanges: IProfileStorageValueChanges[]
 	): void {
 		if (targetChanges.length || valueChanges.length) {
 			this._onDidChange.fire({ valueChanges, targetChanges });
@@ -191,7 +191,7 @@ export class ProfileStorageChangesListenerChannel
 	listen(
 		_: unknown,
 		event: string,
-		arg: IBaseSerializableStorageRequest,
+		arg: IBaseSerializableStorageRequest
 	): Event<any> {
 		switch (event) {
 			case "onDidChange":

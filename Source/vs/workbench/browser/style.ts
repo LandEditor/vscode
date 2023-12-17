@@ -19,14 +19,14 @@ registerThemingParticipant((theme, collector) => {
 	// Background (helps for subpixel-antialiasing on Windows)
 	const workbenchBackground = WORKBENCH_BACKGROUND(theme);
 	collector.addRule(
-		`.monaco-workbench { background-color: ${workbenchBackground}; }`,
+		`.monaco-workbench { background-color: ${workbenchBackground}; }`
 	);
 
 	// Selection (do NOT remove - https://github.com/microsoft/vscode/issues/169662)
 	const windowSelectionBackground = theme.getColor(selectionBackground);
 	if (windowSelectionBackground) {
 		collector.addRule(
-			`.monaco-workbench ::selection { background-color: ${windowSelectionBackground}; }`,
+			`.monaco-workbench ::selection { background-color: ${windowSelectionBackground}; }`
 		);
 	}
 
@@ -36,7 +36,7 @@ registerThemingParticipant((theme, collector) => {
 		if (titleBackground) {
 			const metaElementId = "monaco-workbench-meta-theme-color";
 			let metaElement = mainWindow.document.getElementById(
-				metaElementId,
+				metaElementId
 			) as HTMLMetaElement | null;
 			if (!metaElement) {
 				metaElement = createMetaElement();
@@ -80,5 +80,5 @@ registerThemingParticipant((theme, collector) => {
 export const DEFAULT_FONT_FAMILY = isWindows
 	? '"Segoe WPC", "Segoe UI", sans-serif'
 	: isMacintosh
-	  ? "-apple-system, BlinkMacSystemFont, sans-serif"
-	  : 'system-ui, "Ubuntu", "Droid Sans", sans-serif';
+		? "-apple-system, BlinkMacSystemFont, sans-serif"
+		: 'system-ui, "Ubuntu", "Droid Sans", sans-serif';

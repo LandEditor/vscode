@@ -52,13 +52,13 @@ export class ReplacePattern {
 
 	public buildReplaceString(
 		matches: string[] | null,
-		preserveCase?: boolean,
+		preserveCase?: boolean
 	): string {
 		if (this._state.kind === ReplacePatternKind.StaticValue) {
 			if (preserveCase) {
 				return buildReplaceStringWithCasePreserved(
 					matches,
-					this._state.staticValue,
+					this._state.staticValue
 				);
 			} else {
 				return this._state.staticValue;
@@ -77,7 +77,7 @@ export class ReplacePattern {
 			// match index ReplacePiece
 			let match: string = ReplacePattern._substitute(
 				piece.matchIndex,
-				matches,
+				matches
 			);
 			if (piece.caseOps !== null && piece.caseOps.length > 0) {
 				const repl: string[] = [];
@@ -121,7 +121,7 @@ export class ReplacePattern {
 
 	private static _substitute(
 		matchIndex: number,
-		matches: string[] | null,
+		matches: string[] | null
 	): string {
 		if (matches === null) {
 			return "";
@@ -167,7 +167,7 @@ export class ReplacePiece {
 	private constructor(
 		staticValue: string | null,
 		matchIndex: number,
-		caseOps: string[] | null,
+		caseOps: string[] | null
 	) {
 		this.staticValue = staticValue;
 		this.matchIndex = matchIndex;
@@ -196,7 +196,7 @@ class ReplacePieceBuilder {
 
 	public emitUnchanged(toCharIndex: number): void {
 		this._emitStatic(
-			this._source.substring(this._lastCharIndex, toCharIndex),
+			this._source.substring(this._lastCharIndex, toCharIndex)
 		);
 		this._lastCharIndex = toCharIndex;
 	}
@@ -216,11 +216,11 @@ class ReplacePieceBuilder {
 	public emitMatchIndex(
 		index: number,
 		toCharIndex: number,
-		caseOps: string[],
+		caseOps: string[]
 	): void {
 		if (this._currentStaticPiece.length !== 0) {
 			this._result[this._resultLen++] = ReplacePiece.staticValue(
-				this._currentStaticPiece,
+				this._currentStaticPiece
 			);
 			this._currentStaticPiece = "";
 		}
@@ -232,7 +232,7 @@ class ReplacePieceBuilder {
 		this.emitUnchanged(this._source.length);
 		if (this._currentStaticPiece.length !== 0) {
 			this._result[this._resultLen++] = ReplacePiece.staticValue(
-				this._currentStaticPiece,
+				this._currentStaticPiece
 			);
 			this._currentStaticPiece = "";
 		}

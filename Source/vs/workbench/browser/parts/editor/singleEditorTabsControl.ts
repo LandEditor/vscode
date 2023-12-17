@@ -81,15 +81,15 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			this.instantiationService.createInstance(
 				ResourceLabel,
 				labelContainer,
-				undefined,
-			),
+				undefined
+			)
 		).element;
 		this._register(
 			addDisposableListener(
 				this.editorLabel.element,
 				EventType.CLICK,
-				(e) => this.onTitleLabelClick(e),
-			),
+				(e) => this.onTitleLabelClick(e)
+			)
 		);
 
 		// Breadcrumbs
@@ -107,20 +107,20 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 						breadcrumbsBackground: Color.transparent.toString(),
 					},
 					showPlaceholder: false,
-				},
-			),
+				}
+			)
 		);
 		this._register(
 			this.breadcrumbsControlFactory.onDidEnablementChange(() =>
-				this.handleBreadcrumbsEnablementChange(),
-			),
+				this.handleBreadcrumbsEnablementChange()
+			)
 		);
 		titleContainer.classList.toggle(
 			"breadcrumbs",
-			Boolean(this.breadcrumbsControl),
+			Boolean(this.breadcrumbsControl)
 		);
 		this._register(
-			toDisposable(() => titleContainer.classList.remove("breadcrumbs")),
+			toDisposable(() => titleContainer.classList.remove("breadcrumbs"))
 		); // important to remove because the container is a shared dom node
 
 		// Create editor actions toolbar
@@ -136,7 +136,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				onDragStart: (e) => {
 					isNewWindowOperation = this.onGroupDragStart(
 						e,
-						titleContainer,
+						titleContainer
 					);
 				},
 				onDrag: (e) => {
@@ -147,24 +147,24 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 						e,
 						lastDragEvent,
 						titleContainer,
-						isNewWindowOperation,
+						isNewWindowOperation
 					);
 				},
-			}),
+			})
 		);
 
 		// Pin on double click
 		this._register(
 			addDisposableListener(titleContainer, EventType.DBLCLICK, (e) =>
-				this.onTitleDoubleClick(e),
-			),
+				this.onTitleDoubleClick(e)
+			)
 		);
 
 		// Detect mouse click
 		this._register(
 			addDisposableListener(titleContainer, EventType.AUXCLICK, (e) =>
-				this.onTitleAuxClick(e),
-			),
+				this.onTitleAuxClick(e)
+			)
 		);
 
 		// Detect touch
@@ -172,8 +172,8 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 			addDisposableListener(
 				titleContainer,
 				TouchEventType.Tap,
-				(e: GestureEvent) => this.onTitleTap(e),
-			),
+				(e: GestureEvent) => this.onTitleTap(e)
+			)
 		);
 
 		// Context Menu
@@ -187,10 +187,10 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 						this.onTabContextMenu(
 							this.tabsModel.activeEditor,
 							e,
-							titleContainer,
+							titleContainer
 						);
 					}
-				}),
+				})
 			);
 		}
 	}
@@ -212,7 +212,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		if (e.button === 1 /* Middle Button */ && this.tabsModel.activeEditor) {
 			EventHelper.stop(
 				e,
-				true /* for https://github.com/microsoft/vscode/issues/56715 */,
+				true /* for https://github.com/microsoft/vscode/issues/56715 */
 			);
 
 			if (
@@ -220,7 +220,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 					this.tabsModel,
 					this.tabsModel.activeEditor,
 					EditorCloseMethod.MOUSE,
-					this.groupsView.partOptions,
+					this.groupsView.partOptions
 				)
 			) {
 				this.groupView.closeEditor(this.tabsModel.activeEditor);
@@ -260,7 +260,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 	private doHandleOpenEditor(): boolean {
 		const activeEditorChanged = this.ifActiveEditorChanged(() =>
-			this.redraw(),
+			this.redraw()
 		);
 		if (!activeEditorChanged) {
 			this.ifActiveEditorPropertiesChanged(() => this.redraw());
@@ -284,7 +284,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
-		targetIndex: number,
+		targetIndex: number
 	): void {
 		this.ifActiveEditorChanged(() => this.redraw());
 	}
@@ -327,7 +327,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 
 	override updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions,
+		newOptions: IEditorPartOptions
 	): void {
 		super.updateOptions(oldOptions, newOptions);
 
@@ -347,7 +347,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		const titleContainer = assertIsDefined(this.titleContainer);
 		titleContainer.classList.toggle(
 			"breadcrumbs",
-			Boolean(this.breadcrumbsControl),
+			Boolean(this.breadcrumbsControl)
 		);
 
 		this.redraw();
@@ -402,7 +402,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				this.breadcrumbsControl.update();
 				this.breadcrumbsControl.domNode.classList.toggle(
 					"preview",
-					!isEditorPinned,
+					!isEditorPinned
 				);
 			} else {
 				this.breadcrumbsControl.hide();
@@ -412,7 +412,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 		// Clear if there is no editor
 		const [titleContainer, editorLabel] = assertAllDefined(
 			this.titleContainer,
-			this.editorLabel,
+			this.editorLabel
 		);
 		if (!editor) {
 			titleContainer.classList.remove("dirty");
@@ -457,7 +457,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 					title,
 					italic: !isEditorPinned,
 					extraClasses: ["single-tab", "title-label"].concat(
-						editor.getLabelExtraClasses(),
+						editor.getLabelExtraClasses()
 					),
 					fileDecorations: {
 						colors: Boolean(options.decorations?.colors),
@@ -465,7 +465,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 					},
 					icon: editor.getIcon(),
 					hideIcon: options.showIcons === false,
-				},
+				}
 			);
 
 			if (isGroupActive) {
@@ -493,7 +493,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 	}
 
 	protected override prepareEditorActions(
-		editorActions: IToolbarActions,
+		editorActions: IToolbarActions
 	): IToolbarActions {
 		const isGroupActive = this.groupsView.activeGroup === this.groupView;
 
@@ -508,7 +508,7 @@ export class SingleEditorTabsControl extends EditorTabsControl {
 				primary: editorActions.primary.filter(
 					(action) =>
 						action.id === CLOSE_EDITOR_COMMAND_ID ||
-						action.id === UNLOCK_GROUP_COMMAND_ID,
+						action.id === UNLOCK_GROUP_COMMAND_ID
 				),
 				secondary: editorActions.secondary,
 			};

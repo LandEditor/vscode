@@ -40,30 +40,30 @@ import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle
 import { KeybindingsRegistry } from "vs/platform/keybinding/common/keybindingsRegistry";
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		WalkThroughPart,
 		WalkThroughPart.ID,
-		localize("walkThrough.editor.label", "Playground"),
+		localize("walkThrough.editor.label", "Playground")
 	),
-	[new SyncDescriptor(WalkThroughInput)],
+	[new SyncDescriptor(WalkThroughInput)]
 );
 
 registerAction2(EditorWalkThroughAction);
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(
 	EditorWalkThroughInputSerializer.ID,
-	EditorWalkThroughInputSerializer,
+	EditorWalkThroughInputSerializer
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	WalkThroughSnippetContentProvider,
-	LifecyclePhase.Ready /* cannot be on a later phase because an editor might need this on startup */,
+	LifecyclePhase.Ready /* cannot be on a later phase because an editor might need this on startup */
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule(WalkThroughArrowUp);
@@ -80,7 +80,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarHelpMenu, {
 		id: "workbench.action.showInteractivePlayground",
 		title: localize(
 			{ key: "miPlayground", comment: ["&& denotes a mnemonic"] },
-			"Editor Playgrou&&nd",
+			"Editor Playgrou&&nd"
 		),
 	},
 	order: 3,

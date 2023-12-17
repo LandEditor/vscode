@@ -32,12 +32,12 @@ import { Registry } from "vs/platform/registry/common/platform";
 registerEditorContribution(
 	CodeActionController.ID,
 	CodeActionController,
-	EditorContributionInstantiation.Eventually,
+	EditorContributionInstantiation.Eventually
 );
 registerEditorContribution(
 	LightBulbWidget.ID,
 	LightBulbWidget,
-	EditorContributionInstantiation.Lazy,
+	EditorContributionInstantiation.Lazy
 );
 registerEditorAction(QuickFixAction);
 registerEditorAction(RefactorAction);
@@ -48,7 +48,7 @@ registerEditorAction(FixAllAction);
 registerEditorCommand(new CodeActionCommand());
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration({
 	...editorConfigurationBaseNode,
 	properties: {
@@ -57,7 +57,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			description: nls.localize(
 				"showCodeActionHeaders",
-				"Enable/disable showing group headers in the Code Action menu.",
+				"Enable/disable showing group headers in the Code Action menu."
 			),
 			default: true,
 		},
@@ -65,7 +65,7 @@ Registry.as<IConfigurationRegistry>(
 });
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration({
 	...editorConfigurationBaseNode,
 	properties: {
@@ -74,7 +74,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			description: nls.localize(
 				"includeNearbyQuickFixes",
-				"Enable/disable showing nearest Quick Fix within a line when not currently on a diagnostic.",
+				"Enable/disable showing nearest Quick Fix within a line when not currently on a diagnostic."
 			),
 			default: true,
 		},

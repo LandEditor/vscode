@@ -44,7 +44,7 @@ export function getLocalHistoryDateFormatter(): ILocalHistoryDateFormatter {
 export const LOCAL_HISTORY_MENU_CONTEXT_VALUE = "localHistory:item";
 export const LOCAL_HISTORY_MENU_CONTEXT_KEY = ContextKeyExpr.equals(
 	"timelineItem",
-	LOCAL_HISTORY_MENU_CONTEXT_VALUE,
+	LOCAL_HISTORY_MENU_CONTEXT_VALUE
 );
 
 export const LOCAL_HISTORY_ICON_ENTRY = registerIcon(
@@ -52,14 +52,14 @@ export const LOCAL_HISTORY_ICON_ENTRY = registerIcon(
 	Codicon.circleOutline,
 	localize(
 		"localHistoryIcon",
-		"Icon for a local history entry in the timeline view.",
-	),
+		"Icon for a local history entry in the timeline view."
+	)
 );
 export const LOCAL_HISTORY_ICON_RESTORE = registerIcon(
 	"localHistory-restore",
 	Codicon.check,
 	localize(
 		"localHistoryRestore",
-		"Icon for restoring contents of a local history entry.",
-	),
+		"Icon for restoring contents of a local history entry."
+	)
 );

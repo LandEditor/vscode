@@ -35,7 +35,7 @@ export class IPadShowKeyboard
 		this.widget = null;
 		if (isIOS) {
 			this._register(
-				editor.onDidChangeConfiguration(() => this.update()),
+				editor.onDidChangeConfiguration(() => this.update())
 			);
 			this.update();
 		}
@@ -77,12 +77,12 @@ class ShowKeyboardWidget extends Disposable implements IOverlayWidget {
 		this._register(
 			dom.addDisposableListener(this._domNode, "touchstart", (e) => {
 				this.editor.focus();
-			}),
+			})
 		);
 		this._register(
 			dom.addDisposableListener(this._domNode, "focus", (e) => {
 				this.editor.focus();
-			}),
+			})
 		);
 
 		this.editor.addOverlayWidget(this);
@@ -113,5 +113,5 @@ class ShowKeyboardWidget extends Disposable implements IOverlayWidget {
 registerEditorContribution(
 	IPadShowKeyboard.ID,
 	IPadShowKeyboard,
-	EditorContributionInstantiation.Eventually,
+	EditorContributionInstantiation.Eventually
 );

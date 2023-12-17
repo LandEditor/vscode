@@ -11,13 +11,13 @@ const iconStartMarker = "$(";
 
 const iconsRegex = new RegExp(
 	`\\$\\(${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?\\)`,
-	"g",
+	"g"
 ); // no capturing groups
 
 const escapeIconsRegex = new RegExp(`(\\\\)?${iconsRegex.source}`, "g");
 export function escapeIcons(text: string): string {
 	return text.replace(escapeIconsRegex, (match, escaped) =>
-		escaped ? match : `\\${match}`,
+		escaped ? match : `\\${match}`
 	);
 }
 
@@ -29,7 +29,7 @@ export function markdownEscapeEscapedIcons(text: string): string {
 
 const stripIconsRegex = new RegExp(
 	`(\\s)?(\\\\)?${iconsRegex.source}(\\s)?`,
-	"g",
+	"g"
 );
 
 /**
@@ -43,7 +43,7 @@ export function stripIcons(text: string): string {
 	return text.replace(
 		stripIconsRegex,
 		(match, preWhitespace, escaped, postWhitespace) =>
-			escaped ? match : preWhitespace || postWhitespace || "",
+			escaped ? match : preWhitespace || postWhitespace || ""
 	);
 }
 
@@ -67,7 +67,7 @@ export interface IParsedLabelWithIcons {
 
 const _parseIconsRegex = new RegExp(
 	`\\$\\(${ThemeIcon.iconNameCharacter}+\\)`,
-	"g",
+	"g"
 );
 
 /**
@@ -103,7 +103,7 @@ export function parseLabelWithIcons(input: string): IParsedLabelWithIcons {
 export function matchesFuzzyIconAware(
 	query: string,
 	target: IParsedLabelWithIcons,
-	enableSeparateSubstringMatching = false,
+	enableSeparateSubstringMatching = false
 ): IMatch[] | null {
 	const { text, iconOffsets } = target;
 
@@ -122,7 +122,7 @@ export function matchesFuzzyIconAware(
 	const matches = matchesFuzzy(
 		query,
 		wordToMatchAgainstWithoutIconsTrimmed,
-		enableSeparateSubstringMatching,
+		enableSeparateSubstringMatching
 	);
 
 	// Map matches back to offsets with icon and trimming
@@ -132,7 +132,7 @@ export function matchesFuzzyIconAware(
 				iconOffsets[
 					match.start + leadingWhitespaceOffset
 				] /* icon offsets at index */ +
-				leadingWhitespaceOffset /* overall leading whitespace offset */;
+				leadingWhitespaceOffset; /* overall leading whitespace offset */
 			match.start += iconOffset;
 			match.end += iconOffset;
 		}

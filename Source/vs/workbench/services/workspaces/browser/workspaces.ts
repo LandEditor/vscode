@@ -15,7 +15,7 @@ import { hash } from "vs/base/common/hash";
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 export function getWorkspaceIdentifier(
-	workspaceUri: URI,
+	workspaceUri: URI
 ): IWorkspaceIdentifier {
 	return {
 		id: getWorkspaceId(workspaceUri),
@@ -28,7 +28,7 @@ export function getWorkspaceIdentifier(
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 export function getSingleFolderWorkspaceIdentifier(
-	folderUri: URI,
+	folderUri: URI
 ): ISingleFolderWorkspaceIdentifier {
 	return {
 		id: getWorkspaceId(folderUri),

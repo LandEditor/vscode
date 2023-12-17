@@ -25,7 +25,7 @@ export class ObjectPool<
 			const values = [...this._unused.values()];
 			obj =
 				values.find(
-					(obj) => this._itemData.get(obj)!.getId() === data.getId(),
+					(obj) => this._itemData.get(obj)!.getId() === data.getId()
 				) ?? values[0];
 			this._unused.delete(obj);
 			this._itemData.set(obj, data);

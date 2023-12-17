@@ -37,7 +37,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 			title: {
 				value: localize(
 					"merge.dev.copyState",
-					"Copy Merge Editor State as JSON",
+					"Copy Merge Editor State as JSON"
 				),
 				original: "Copy Merge Editor State as JSON",
 			},
@@ -57,7 +57,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 				name: localize("mergeEditor.name", "Merge Editor"),
 				message: localize(
 					"mergeEditor.noActiveMergeEditor",
-					"No active merge editor",
+					"No active merge editor"
 				),
 			});
 			return;
@@ -81,7 +81,7 @@ export class MergeEditorCopyContentsToJSON extends Action2 {
 			name: localize("mergeEditor.name", "Merge Editor"),
 			message: localize(
 				"mergeEditor.successfullyCopiedMergeEditorContents",
-				"Successfully copied merge editor state",
+				"Successfully copied merge editor state"
 			),
 		});
 	}
@@ -95,7 +95,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			title: {
 				value: localize(
 					"merge.dev.saveContentsToFolder",
-					"Save Merge Editor State to Folder",
+					"Save Merge Editor State to Folder"
 				),
 				original: "Save Merge Editor State to Folder",
 			},
@@ -117,7 +117,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 				name: localize("mergeEditor.name", "Merge Editor"),
 				message: localize(
 					"mergeEditor.noActiveMergeEditor",
-					"No active merge editor",
+					"No active merge editor"
 				),
 			});
 			return;
@@ -133,7 +133,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			canSelectMany: false,
 			title: localize(
 				"mergeEditor.selectFolderToSaveTo",
-				"Select folder to save to",
+				"Select folder to save to"
 			),
 		});
 		if (!result) {
@@ -143,14 +143,14 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 
 		const extension =
 			languageService.getExtensions(
-				model.resultTextModel.getLanguageId(),
+				model.resultTextModel.getLanguageId()
 			)[0] || "";
 
 		async function write(fileName: string, source: string) {
 			await fileService.writeFile(
 				URI.joinPath(targetDir, fileName + extension),
 				VSBuffer.fromString(source),
-				{},
+				{}
 			);
 		}
 
@@ -166,7 +166,7 @@ export class MergeEditorSaveContentsToFolder extends Action2 {
 			name: localize("mergeEditor.name", "Merge Editor"),
 			message: localize(
 				"mergeEditor.successfullySavedMergeEditorContentsToFolder",
-				"Successfully saved merge editor state to folder",
+				"Successfully saved merge editor state to folder"
 			),
 		});
 	}
@@ -180,7 +180,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 			title: {
 				value: localize(
 					"merge.dev.loadContentsFromFolder",
-					"Load Merge Editor State from Folder",
+					"Load Merge Editor State from Folder"
 				),
 				original: "Load Merge Editor State from Folder",
 			},
@@ -191,7 +191,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 
 	async run(
 		accessor: ServicesAccessor,
-		args?: { folderUri?: URI; resultState?: "initial" | "current" },
+		args?: { folderUri?: URI; resultState?: "initial" | "current" }
 	) {
 		const dialogService = accessor.get(IFileDialogService);
 		const editorService = accessor.get(IEditorService);
@@ -210,7 +210,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 				canSelectMany: false,
 				title: localize(
 					"mergeEditor.selectFolderToSaveTo",
-					"Select folder to save to",
+					"Select folder to save to"
 				),
 			});
 			if (!result) {
@@ -230,14 +230,14 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 
 		const shouldOpenInitial = await promptOpenInitial(
 			quickInputService,
-			args.resultState,
+			args.resultState
 		);
 
 		const baseUri = findFile("base");
 		const input1Uri = findFile("input1");
 		const input2Uri = findFile("input2");
 		const resultUri = findFile(
-			shouldOpenInitial ? "initialResult" : "result",
+			shouldOpenInitial ? "initialResult" : "result"
 		);
 
 		const input: IResourceMergeEditorInput = {
@@ -262,7 +262,7 @@ export class MergeEditorLoadContentsFromFolder extends Action2 {
 
 async function promptOpenInitial(
 	quickInputService: IQuickInputService,
-	resultStateOverride?: "initial" | "current",
+	resultStateOverride?: "initial" | "current"
 ) {
 	if (resultStateOverride) {
 		return resultStateOverride === "initial";
@@ -272,7 +272,7 @@ async function promptOpenInitial(
 			{ label: "result", result: false },
 			{ label: "initial result", result: true },
 		],
-		{ canPickMany: false },
+		{ canPickMany: false }
 	);
 	return result?.result;
 }

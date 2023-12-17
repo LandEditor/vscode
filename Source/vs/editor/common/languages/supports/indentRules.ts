@@ -32,7 +32,7 @@ export class IndentRulesSupport {
 			if (
 				this._indentationRules.increaseIndentPattern &&
 				resetGlobalRegex(
-					this._indentationRules.increaseIndentPattern,
+					this._indentationRules.increaseIndentPattern
 				) &&
 				this._indentationRules.increaseIndentPattern.test(text)
 			) {

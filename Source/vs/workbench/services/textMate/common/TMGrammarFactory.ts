@@ -50,7 +50,7 @@ export class TMGrammarFactory extends Disposable {
 		host: ITMGrammarFactoryHost,
 		grammarDefinitions: IValidGrammarDefinition[],
 		vscodeTextmate: typeof import("vscode-textmate"),
-		onigLib: Promise<IOnigLib>,
+		onigLib: Promise<IOnigLib>
 	) {
 		super();
 		this._host = host;
@@ -67,7 +67,7 @@ export class TMGrammarFactory extends Disposable {
 						this._scopeRegistry.getGrammarDefinition(scopeName);
 					if (!grammarDefinition) {
 						this._host.logTrace(
-							`No grammar found for scope ${scopeName}`,
+							`No grammar found for scope ${scopeName}`
 						);
 						return null;
 					}
@@ -76,12 +76,12 @@ export class TMGrammarFactory extends Disposable {
 						const content = await this._host.readFile(location);
 						return vscodeTextmate.parseRawGrammar(
 							content,
-							location.path,
+							location.path
 						);
 					} catch (e) {
 						this._host.logError(
 							`Unable to load and parse grammar for scope ${scopeName} from ${location}`,
-							e,
+							e
 						);
 						return null;
 					}
@@ -98,7 +98,7 @@ export class TMGrammarFactory extends Disposable {
 					}
 					return injections;
 				},
-			}),
+			})
 		);
 
 		for (const validGrammar of grammarDefinitions) {
@@ -122,7 +122,7 @@ export class TMGrammarFactory extends Disposable {
 								injectedEmbeddedLanguages = [];
 						}
 						injectedEmbeddedLanguages.push(
-							validGrammar.embeddedLanguages,
+							validGrammar.embeddedLanguages
 						);
 					}
 				}
@@ -131,7 +131,7 @@ export class TMGrammarFactory extends Disposable {
 			if (validGrammar.language) {
 				this._languageToScope.set(
 					validGrammar.language,
-					validGrammar.scopeName,
+					validGrammar.scopeName
 				);
 			}
 		}
@@ -151,7 +151,7 @@ export class TMGrammarFactory extends Disposable {
 
 	public async createGrammar(
 		languageId: string,
-		encodedLanguageId: number,
+		encodedLanguageId: number
 	): Promise<ICreateGrammarResult> {
 		const scopeName = this._languageToScope.get(languageId);
 		if (typeof scopeName !== "string") {
@@ -193,7 +193,7 @@ export class TMGrammarFactory extends Disposable {
 						grammarDefinition.balancedBracketSelectors,
 					unbalancedBracketSelectors:
 						grammarDefinition.unbalancedBracketSelectors,
-				},
+				}
 			);
 		} catch (err) {
 			if (

@@ -74,10 +74,12 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 
 	private readonly modelsToDispose = new Set<string>();
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@INotebookService private readonly _notebookService: INotebookService,
 		@ILogService private readonly _logService: ILogService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -98,7 +100,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 		key: string,
 		viewType: string,
 		hasAssociatedFilePath: boolean,
-		limits?: IFileReadLimits,
+		limits?: IFileReadLimits
 	): Promise<IResolvedNotebookEditorModel> {
 		// Untrack as being disposed
 		this.modelsToDispose.delete(key);
@@ -113,7 +115,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 			const factory = new NotebookFileWorkingCopyModelFactory(
 				viewType,
 				this._notebookService,
-				this._configurationService,
+				this._configurationService
 			);
 			workingCopyManager = <
 				IFileWorkingCopyManager<
@@ -125,12 +127,12 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 					FileWorkingCopyManager,
 					workingCopyTypeId,
 					factory,
-					factory,
+					factory
 				)
 			));
 			this._workingCopyManagers.set(
 				workingCopyTypeId,
-				workingCopyManager,
+				workingCopyManager
 			);
 		}
 		const model = this._instantiationService.createInstance(
@@ -138,7 +140,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 			uri,
 			hasAssociatedFilePath,
 			viewType,
-			workingCopyManager,
+			workingCopyManager
 		);
 		const result = await model.load({ limits });
 
@@ -151,7 +153,7 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 			result,
 			combinedDisposable(
 				result.onDidSave(() =>
-					this._onDidSaveNotebook.fire(result.resource),
+					this._onDidSaveNotebook.fire(result.resource)
 				),
 				result.onDidChangeDirty(() => {
 					const isDirty = result.isDirty();
@@ -168,15 +170,15 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 
 					this._onDidChangeDirty.fire(result);
 				}),
-				toDisposable(() => onDirtyAutoReference?.dispose()),
-			),
+				toDisposable(() => onDirtyAutoReference?.dispose())
+			)
 		);
 		return result;
 	}
 
 	protected destroyReferencedObject(
 		key: string,
-		object: Promise<IResolvedNotebookEditorModel>,
+		object: Promise<IResolvedNotebookEditorModel>
 	): void {
 		this.modelsToDispose.add(key);
 
@@ -228,10 +230,14 @@ export class NotebookModelResolverServiceImpl
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService
 	) {
-		this._data = instantiationService.createInstance(NotebookModelReferenceCollection);
+		this._data = instantiationService.createInstance(
+			NotebookModelReferenceCollection
+		);
 		this.onDidSaveNotebook = this._data.onDidSaveNotebook;
 		this.onDidChangeDirty = this._data.onDidChangeDirty;
 	}
@@ -247,17 +253,17 @@ export class NotebookModelResolverServiceImpl
 	async resolve(
 		resource: URI,
 		viewType?: string,
-		limits?: IFileReadLimits,
+		limits?: IFileReadLimits
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
 	async resolve(
 		resource: IUntitledNotebookResource,
 		viewType: string,
-		limits?: IFileReadLimits,
+		limits?: IFileReadLimits
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
 	async resolve(
 		arg0: URI | IUntitledNotebookResource,
 		viewType?: string,
-		limits?: IFileReadLimits,
+		limits?: IFileReadLimits
 	): Promise<IReference<IResolvedNotebookEditorModel>> {
 		let resource: URI;
 		let hasAssociatedFilePath = false;
@@ -266,7 +272,7 @@ export class NotebookModelResolverServiceImpl
 		} else {
 			if (!arg0.untitledResource) {
 				const info = this._notebookService.getContributedNotebookType(
-					assertIsDefined(viewType),
+					assertIsDefined(viewType)
 				);
 				if (!info) {
 					throw new Error("UNKNOWN view type: " + viewType);
@@ -300,7 +306,7 @@ export class NotebookModelResolverServiceImpl
 
 		if (resource.scheme === CellUri.scheme) {
 			throw new Error(
-				`CANNOT open a cell-uri as notebook. Tried with ${resource.toString()}`,
+				`CANNOT open a cell-uri as notebook. Tried with ${resource.toString()}`
 			);
 		}
 
@@ -316,7 +322,7 @@ export class NotebookModelResolverServiceImpl
 				const providers =
 					this._notebookService.getContributedNotebookTypes(resource);
 				const exclusiveProvider = providers.find(
-					(provider) => provider.exclusive,
+					(provider) => provider.exclusive
 				);
 				viewType = exclusiveProvider?.id || providers[0]?.id;
 			}
@@ -329,7 +335,7 @@ export class NotebookModelResolverServiceImpl
 		if (existingViewType && existingViewType !== viewType) {
 			await this._onWillFailWithConflict.fireAsync(
 				{ resource, viewType },
-				CancellationToken.None,
+				CancellationToken.None
 			);
 
 			// check again, listener should have done cleanup
@@ -337,7 +343,7 @@ export class NotebookModelResolverServiceImpl
 				this._notebookService.getNotebookTextModel(resource)?.viewType;
 			if (existingViewType2 && existingViewType2 !== viewType) {
 				throw new Error(
-					`A notebook with view type '${existingViewType2}' already exists for '${resource}', CANNOT create another notebook with view type ${viewType}`,
+					`A notebook with view type '${existingViewType2}' already exists for '${resource}', CANNOT create another notebook with view type ${viewType}`
 				);
 			}
 		}
@@ -346,7 +352,7 @@ export class NotebookModelResolverServiceImpl
 			resource.toString(),
 			viewType,
 			hasAssociatedFilePath,
-			limits,
+			limits
 		);
 		try {
 			const model = await reference.object;

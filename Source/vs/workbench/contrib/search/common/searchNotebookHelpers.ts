@@ -27,7 +27,7 @@ export interface INotebookCellMatchNoModel<U extends UriComponents = URI> {
 }
 
 export function isINotebookFileMatchNoModel(
-	object: IFileMatch,
+	object: IFileMatch
 ): object is INotebookFileMatchNoModel {
 	return "cellResults" in object;
 }
@@ -36,7 +36,7 @@ export const rawCellPrefix = "rawCell#";
 
 export function genericCellMatchesToTextSearchMatches(
 	contentMatches: FindMatch[],
-	buffer: IReadonlyTextBuffer,
+	buffer: IReadonlyTextBuffer
 ) {
 	let previousEndLine = -1;
 	const contextGroupings: FindMatch[][] = [];
@@ -73,9 +73,9 @@ export function genericCellMatchesToTextSearchMatches(
 						m.range.startLineNumber - 1,
 						m.range.startColumn - 1,
 						m.range.endLineNumber - 1,
-						m.range.endColumn - 1,
-					),
-			),
+						m.range.endColumn - 1
+					)
+			)
 		);
 	});
 

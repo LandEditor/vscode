@@ -44,8 +44,9 @@ export class DiffEditorItemTemplate
 		DocumentDiffItemViewModel | undefined
 	>(this, undefined);
 
-	private readonly _collapsed = derived(this, (reader) =>
-		this._viewModel.read(reader)?.collapsed.read(reader),
+	private readonly _collapsed = derived(
+		this,
+		(reader) => this._viewModel.read(reader)?.collapsed.read(reader)
 	);
 
 	private readonly _contentHeight = observableValue<number>(this, 500);
@@ -108,9 +109,9 @@ export class DiffEditorItemTemplate
 							flexDirection: "column",
 						},
 					},
-					[h("div.editorContainer@editor", { style: { flex: "1" } })],
+					[h("div.editorContainer@editor", { style: { flex: "1" } })]
 				),
-			],
+			]
 		),
 	]);
 
@@ -121,30 +122,30 @@ export class DiffEditorItemTemplate
 			{
 				overflowWidgetsDomNode: this._overflowWidgetsDomNode,
 			},
-			{},
-		),
+			{}
+		)
 	);
 
 	private readonly isModifedFocused = isFocused(
-		this.editor.getModifiedEditor(),
+		this.editor.getModifiedEditor()
 	);
 	private readonly isOriginalFocused = isFocused(
-		this.editor.getOriginalEditor(),
+		this.editor.getOriginalEditor()
 	);
 	public readonly isFocused = derived(
 		this,
 		(reader) =>
 			this.isModifedFocused.read(reader) ||
-			this.isOriginalFocused.read(reader),
+			this.isOriginalFocused.read(reader)
 	);
 
 	private readonly _resourceLabel = this._workbenchUIElementFactory
 		.createResourceLabel
 		? this._register(
 				this._workbenchUIElementFactory.createResourceLabel(
-					this._elements.title,
-				),
-		  )
+					this._elements.title
+				)
+			)
 		: undefined;
 
 	private readonly _outerEditorHeight: number;
@@ -153,56 +154,98 @@ export class DiffEditorItemTemplate
 		private readonly _container: HTMLElement,
 		private readonly _overflowWidgetsDomNode: HTMLElement,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
 		const btn = new Button(this._elements.collapseButton, {});
 
-		this._register(autorun(reader => {
-			btn.element.className = '';
-			btn.icon = this._collapsed.read(reader) ? Codicon.chevronRight : Codicon.chevronDown;
-		}));
-		this._register(btn.onDidClick(() => {
-			this._viewModel.get()?.collapsed.set(!this._collapsed.get(), undefined);
-		}));
+		this._register(
+			autorun((reader) => {
+				btn.element.className = "";
+				btn.icon = this._collapsed.read(reader)
+					? Codicon.chevronRight
+					: Codicon.chevronDown;
+			})
+		);
+		this._register(
+			btn.onDidClick(() => {
+				this._viewModel
+					.get()
+					?.collapsed.set(!this._collapsed.get(), undefined);
+			})
+		);
 
-		this._register(autorun(reader => {
-			this._elements.editor.style.display = this._collapsed.read(reader) ? 'none' : 'block';
-		}));
+		this._register(
+			autorun((reader) => {
+				this._elements.editor.style.display = this._collapsed.read(
+					reader
+				)
+					? "none"
+					: "block";
+			})
+		);
 
-		this.editor.getModifiedEditor().onDidLayoutChange(e => {
-			const width = this.editor.getModifiedEditor().getLayoutInfo().contentWidth;
+		this.editor.getModifiedEditor().onDidLayoutChange((e) => {
+			const width = this.editor
+				.getModifiedEditor()
+				.getLayoutInfo().contentWidth;
 			this._modifiedWidth.set(width, undefined);
 		});
 
-		this.editor.getOriginalEditor().onDidLayoutChange(e => {
-			const width = this.editor.getOriginalEditor().getLayoutInfo().contentWidth;
+		this.editor.getOriginalEditor().onDidLayoutChange((e) => {
+			const width = this.editor
+				.getOriginalEditor()
+				.getLayoutInfo().contentWidth;
 			this._originalWidth.set(width, undefined);
 		});
 
-		this._register(this.editor.onDidContentSizeChange(e => {
-			globalTransaction(tx => {
-				this._contentHeight.set(e.contentHeight, tx);
-				this._modifiedContentWidth.set(this.editor.getModifiedEditor().getContentWidth(), tx);
-				this._originalContentWidth.set(this.editor.getOriginalEditor().getContentWidth(), tx);
-			});
-		}));
+		this._register(
+			this.editor.onDidContentSizeChange((e) => {
+				globalTransaction((tx) => {
+					this._contentHeight.set(e.contentHeight, tx);
+					this._modifiedContentWidth.set(
+						this.editor.getModifiedEditor().getContentWidth(),
+						tx
+					);
+					this._originalContentWidth.set(
+						this.editor.getOriginalEditor().getContentWidth(),
+						tx
+					);
+				});
+			})
+		);
 
-		this._register(autorun(reader => {
-			const isFocused = this.isFocused.read(reader);
-			this._elements.root.classList.toggle('focused', isFocused);
-		}));
+		this._register(
+			autorun((reader) => {
+				const isFocused = this.isFocused.read(reader);
+				this._elements.root.classList.toggle("focused", isFocused);
+			})
+		);
 
 		this._container.appendChild(this._elements.root);
 		this._outerEditorHeight = 38;
 
-		this._register(this._instantiationService.createInstance(MenuWorkbenchToolBar, this._elements.actions, MenuId.MultiDiffEditorFileToolbar, {
-			actionRunner: this._register(new ActionRunnerWithContext(() => (this._viewModel.get()?.diffEditorViewModel?.model.modified.uri))),
-			menuOptions: {
-				shouldForwardArgs: true,
-			}
-		}));
+		this._register(
+			this._instantiationService.createInstance(
+				MenuWorkbenchToolBar,
+				this._elements.actions,
+				MenuId.MultiDiffEditorFileToolbar,
+				{
+					actionRunner: this._register(
+						new ActionRunnerWithContext(
+							() =>
+								this._viewModel.get()?.diffEditorViewModel
+									?.model.modified.uri
+						)
+					),
+					menuOptions: {
+						shouldForwardArgs: true,
+					},
+				}
+			)
+		);
 	}
 
 	public setScrollLeft(left: number): void {
@@ -220,7 +263,7 @@ export class DiffEditorItemTemplate
 
 	public setData(data: TemplateData): void {
 		function updateOptions(
-			options: IDiffEditorOptions,
+			options: IDiffEditorOptions
 		): IDiffEditorOptions {
 			return {
 				...options,
@@ -245,14 +288,14 @@ export class DiffEditorItemTemplate
 			this._dataStore.add(
 				value.onOptionsDidChange(() => {
 					this.editor.updateOptions(
-						updateOptions(value.options ?? {}),
+						updateOptions(value.options ?? {})
 					);
-				}),
+				})
 			);
 		}
 		globalTransaction((tx) => {
 			this._resourceLabel?.setUri(
-				data.viewModel.diffEditorViewModel.model.modified.uri,
+				data.viewModel.diffEditorViewModel.model.modified.uri
 			);
 			this._dataStore.clear();
 			this._viewModel.set(data.viewModel, tx);
@@ -267,7 +310,7 @@ export class DiffEditorItemTemplate
 		verticalRange: OffsetRange,
 		width: number,
 		editorScroll: number,
-		viewPort: OffsetRange,
+		viewPort: OffsetRange
 	): void {
 		this._elements.root.style.visibility = "visible";
 		this._elements.root.style.top = `${verticalRange.start}px`;
@@ -280,8 +323,8 @@ export class DiffEditorItemTemplate
 			0,
 			Math.min(
 				verticalRange.length - this._headerHeight,
-				viewPort.start - verticalRange.start,
-			),
+				viewPort.start - verticalRange.start
+			)
 		);
 		this._elements.header.style.transform = `translateY(${delta}px)`;
 
@@ -295,7 +338,7 @@ export class DiffEditorItemTemplate
 
 		this._elements.header.classList.toggle(
 			"shadow",
-			delta > 0 || editorScroll > 0,
+			delta > 0 || editorScroll > 0
 		);
 	}
 
@@ -313,6 +356,6 @@ function isFocused(editor: ICodeEditor): IObservable<boolean> {
 			store.add(editor.onDidBlurEditorWidget(() => h(false)));
 			return store;
 		},
-		() => editor.hasWidgetFocus(),
+		() => editor.hasWidgetFocus()
 	);
 }

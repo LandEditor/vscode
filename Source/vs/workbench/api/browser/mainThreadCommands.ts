@@ -36,11 +36,15 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService private readonly _extensionService: IExtensionService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostCommands);
 
-		this._generateCommandsDocumentationRegistration = CommandsRegistry.registerCommand('_generateCommandsDocumentation', () => this._generateCommandsDocumentation());
+		this._generateCommandsDocumentationRegistration =
+			CommandsRegistry.registerCommand(
+				"_generateCommandsDocumentation",
+				() => this._generateCommandsDocumentation()
+			);
 	}
 
 	dispose() {
@@ -76,7 +80,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 					.then((result) => {
 						return revive(result);
 					});
-			}),
+			})
 		);
 	}
 
@@ -96,7 +100,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 	async $executeCommand<T>(
 		id: string,
 		args: any[] | SerializableObjectWithBuffers<any[]>,
-		retry: boolean,
+		retry: boolean
 	): Promise<T | undefined> {
 		if (args instanceof SerializableObjectWithBuffers) {
 			args = args.value;
@@ -119,7 +123,7 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 // --- command doc
 
 function _generateMarkdown(
-	description: string | Dto<ICommandMetadata> | ICommandMetadata,
+	description: string | Dto<ICommandMetadata> | ICommandMetadata
 ): string {
 	if (typeof description === "string") {
 		return description;
@@ -127,7 +131,7 @@ function _generateMarkdown(
 		const descriptionString = isString(description.description)
 			? description.description
 			: // Our docs website is in English, so keep the original here.
-			  description.description.original;
+				description.description.original;
 		const parts = [descriptionString];
 		parts.push("\n\n");
 		if (description.args) {

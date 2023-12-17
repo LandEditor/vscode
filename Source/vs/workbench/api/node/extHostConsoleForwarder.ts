@@ -15,7 +15,7 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostInitDataService initData: IExtHostInitDataService,
+		@IExtHostInitDataService initData: IExtHostInitDataService
 	) {
 		super(extHostRpc, initData);
 
@@ -26,7 +26,7 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 	protected override _nativeConsoleLogMessage(
 		method: "log" | "info" | "warn" | "error" | "debug",
 		original: (...args: any[]) => void,
-		args: IArguments,
+		args: IArguments
 	) {
 		const stream =
 			method === "error" || method === "warn"
@@ -47,7 +47,7 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 	 */
 	private _wrapStream(
 		streamName: "stdout" | "stderr",
-		severity: "log" | "warn" | "error",
+		severity: "log" | "warn" | "error"
 	) {
 		const stream = process[streamName];
 		const original = stream.write;
@@ -59,10 +59,10 @@ export class ExtHostConsoleForwarder extends AbstractExtHostConsoleForwarder {
 			get:
 				() =>
 				(
-				chunk: Uint8Array | string,
-				encoding?: BufferEncoding,
-				callback?: (err?: Error) => void,
-			) => {
+					chunk: Uint8Array | string,
+					encoding?: BufferEncoding,
+					callback?: (err?: Error) => void
+				) => {
 					if (!this._isMakingConsoleCall) {
 						buf += (chunk as any).toString(encoding);
 						const eol =

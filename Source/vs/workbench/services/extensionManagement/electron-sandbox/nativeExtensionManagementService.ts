@@ -35,12 +35,14 @@ export class NativeExtensionManagementService
 {
 	constructor(
 		channel: IChannel,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
 		@IDownloadService private readonly downloadService: IDownloadService,
-		@INativeWorkbenchEnvironmentService private readonly nativeEnvironmentService: INativeWorkbenchEnvironmentService,
-		@ILogService private readonly logService: ILogService,
+		@INativeWorkbenchEnvironmentService
+		private readonly nativeEnvironmentService: INativeWorkbenchEnvironmentService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super(channel, userDataProfileService, uriIdentityService);
 	}
@@ -56,14 +58,14 @@ export class NativeExtensionManagementService
 			applicationScoped ||
 			this.uriIdentityService.extUri.isEqual(
 				this.userDataProfileService.currentProfile.extensionsResource,
-				profileLocation,
+				profileLocation
 			)
 		);
 	}
 
 	override async install(
 		vsix: URI,
-		options?: InstallVSIXOptions,
+		options?: InstallVSIXOptions
 	): Promise<ILocalExtension> {
 		const { location, cleanup } = await this.downloadVsix(vsix);
 		try {
@@ -74,7 +76,7 @@ export class NativeExtensionManagementService
 	}
 
 	private async downloadVsix(
-		vsix: URI,
+		vsix: URI
 	): Promise<{ location: URI; cleanup: () => Promise<void> }> {
 		if (vsix.scheme === Schemas.file) {
 			return { location: vsix, async cleanup() {} };
@@ -82,7 +84,7 @@ export class NativeExtensionManagementService
 		this.logService.trace("Downloading extension from", vsix.toString());
 		const location = joinPath(
 			this.nativeEnvironmentService.extensionsDownloadLocation,
-			generateUuid(),
+			generateUuid()
 		);
 		await this.downloadService.download(vsix, location);
 		this.logService.info("Downloaded extension to", location.toString());
@@ -99,32 +101,32 @@ export class NativeExtensionManagementService
 	protected override async switchExtensionsProfile(
 		previousProfileLocation: URI,
 		currentProfileLocation: URI,
-		preserveExtensions?: ExtensionIdentifier[],
+		preserveExtensions?: ExtensionIdentifier[]
 	): Promise<DidChangeProfileEvent> {
 		if (this.nativeEnvironmentService.remoteAuthority) {
 			const previousInstalledExtensions = await this.getInstalled(
 				ExtensionType.User,
-				previousProfileLocation,
+				previousProfileLocation
 			);
 			const resolverExtension = previousInstalledExtensions.find((e) =>
 				isResolverExtension(
 					e.manifest,
-					this.nativeEnvironmentService.remoteAuthority,
-				),
+					this.nativeEnvironmentService.remoteAuthority
+				)
 			);
 			if (resolverExtension) {
 				if (!preserveExtensions) {
 					preserveExtensions = [];
 				}
 				preserveExtensions.push(
-					new ExtensionIdentifier(resolverExtension.identifier.id),
+					new ExtensionIdentifier(resolverExtension.identifier.id)
 				);
 			}
 		}
 		return super.switchExtensionsProfile(
 			previousProfileLocation,
 			currentProfileLocation,
-			preserveExtensions,
+			preserveExtensions
 		);
 	}
 }

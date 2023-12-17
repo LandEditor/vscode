@@ -34,9 +34,9 @@ const foldBackground = registerColor(
 	},
 	localize(
 		"foldBackgroundBackground",
-		"Background color behind folded ranges. The color must not be opaque so as not to hide underlying decorations.",
+		"Background color behind folded ranges. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 registerColor(
 	"editorGutter.foldingControlForeground",
@@ -48,8 +48,8 @@ registerColor(
 	},
 	localize(
 		"editorGutter.foldingControlForeground",
-		"Color of the folding control in the editor gutter.",
-	),
+		"Color of the folding control in the editor gutter."
+	)
 );
 
 export const foldingExpandedIcon = registerIcon(
@@ -57,32 +57,32 @@ export const foldingExpandedIcon = registerIcon(
 	Codicon.chevronDown,
 	localize(
 		"foldingExpandedIcon",
-		"Icon for expanded ranges in the editor glyph margin.",
-	),
+		"Icon for expanded ranges in the editor glyph margin."
+	)
 );
 export const foldingCollapsedIcon = registerIcon(
 	"folding-collapsed",
 	Codicon.chevronRight,
 	localize(
 		"foldingCollapsedIcon",
-		"Icon for collapsed ranges in the editor glyph margin.",
-	),
+		"Icon for collapsed ranges in the editor glyph margin."
+	)
 );
 export const foldingManualCollapsedIcon = registerIcon(
 	"folding-manual-collapsed",
 	foldingCollapsedIcon,
 	localize(
 		"foldingManualCollapedIcon",
-		"Icon for manually collapsed ranges in the editor glyph margin.",
-	),
+		"Icon for manually collapsed ranges in the editor glyph margin."
+	)
 );
 export const foldingManualExpandedIcon = registerIcon(
 	"folding-manual-expanded",
 	foldingExpandedIcon,
 	localize(
 		"foldingManualExpandedIcon",
-		"Icon for manually expanded ranges in the editor glyph margin.",
-	),
+		"Icon for manually expanded ranges in the editor glyph margin."
+	)
 );
 
 const foldedBackgroundMinimap = {
@@ -120,7 +120,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			afterContentClassName: "inline-folded",
 			isWholeLine: true,
 			firstLineDecorationClassName: ThemeIcon.asClassName(
-				foldingManualCollapsedIcon,
+				foldingManualCollapsedIcon
 			),
 		});
 
@@ -134,7 +134,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			minimap: foldedBackgroundMinimap,
 			isWholeLine: true,
 			firstLineDecorationClassName: ThemeIcon.asClassName(
-				foldingManualCollapsedIcon,
+				foldingManualCollapsedIcon
 			),
 		});
 
@@ -192,7 +192,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 			stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 			isWholeLine: true,
 			firstLineDecorationClassName: ThemeIcon.asClassName(
-				foldingManualExpandedIcon,
+				foldingManualExpandedIcon
 			),
 		});
 
@@ -218,7 +218,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 	getDecorationOption(
 		isCollapsed: boolean,
 		isHidden: boolean,
-		isManual: boolean,
+		isManual: boolean
 	): IModelDecorationOptions {
 		if (isHidden) {
 			// is inside another collapsed region
@@ -238,8 +238,8 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 					? FoldingDecorationProvider.MANUALLY_COLLAPSED_HIGHLIGHTED_VISUAL_DECORATION
 					: FoldingDecorationProvider.MANUALLY_COLLAPSED_VISUAL_DECORATION
 				: this.showFoldingHighlights
-				  ? FoldingDecorationProvider.COLLAPSED_HIGHLIGHTED_VISUAL_DECORATION
-				  : FoldingDecorationProvider.COLLAPSED_VISUAL_DECORATION;
+					? FoldingDecorationProvider.COLLAPSED_HIGHLIGHTED_VISUAL_DECORATION
+					: FoldingDecorationProvider.COLLAPSED_VISUAL_DECORATION;
 		} else if (this.showFoldingControls === "mouseover") {
 			return isManual
 				? FoldingDecorationProvider.MANUALLY_EXPANDED_AUTO_HIDE_VISUAL_DECORATION
@@ -252,7 +252,7 @@ export class FoldingDecorationProvider implements IDecorationProvider {
 	}
 
 	changeDecorations<T>(
-		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T,
+		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T
 	): T {
 		return this.editor.changeDecorations(callback);
 	}

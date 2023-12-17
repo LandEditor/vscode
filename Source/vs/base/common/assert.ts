@@ -22,7 +22,7 @@ import { BugIndicatingError, onUnexpectedError } from "vs/base/common/errors";
 export function ok(value?: unknown, message?: string) {
 	if (!value) {
 		throw new Error(
-			message ? `Assertion failed (${message})` : "Assertion Failed",
+			message ? `Assertion failed (${message})` : "Assertion Failed"
 		);
 	}
 }
@@ -52,7 +52,7 @@ export function assertFn(condition: () => boolean): void {
 
 export function checkAdjacentItems<T>(
 	items: readonly T[],
-	predicate: (item1: T, item2: T) => boolean,
+	predicate: (item1: T, item2: T) => boolean
 ): boolean {
 	let i = 0;
 	while (i < items.length - 1) {

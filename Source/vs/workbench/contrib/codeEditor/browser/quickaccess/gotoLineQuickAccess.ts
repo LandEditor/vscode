@@ -32,8 +32,10 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -61,7 +63,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 			keyMods: IKeyMods;
 			forceSideBySide?: boolean;
 			preserveFocus?: boolean;
-		},
+		}
 	): void {
 		// Check for sideBySide use
 		if (
@@ -83,7 +85,7 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 
 			this.editorGroupService.sideGroup.openEditor(
 				this.editorService.activeEditor,
-				editorOptions,
+				editorOptions
 			);
 		}
 
@@ -124,13 +126,13 @@ class GotoLineAction extends Action2 {
 registerAction2(GotoLineAction);
 
 Registry.as<IQuickAccessRegistry>(
-	QuickaccesExtensions.Quickaccess,
+	QuickaccesExtensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: GotoLineQuickAccessProvider,
 	prefix: AbstractGotoLineQuickAccessProvider.PREFIX,
 	placeholder: localize(
 		"gotoLineQuickAccessPlaceholder",
-		"Type the line number and optional column to go to (e.g. 42:5 for line 42 and column 5).",
+		"Type the line number and optional column to go to (e.g. 42:5 for line 42 and column 5)."
 	),
 	helpEntries: [
 		{

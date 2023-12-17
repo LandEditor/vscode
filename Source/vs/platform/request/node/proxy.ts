@@ -10,7 +10,7 @@ export type Agent = any;
 
 function getSystemProxyURI(
 	requestURL: Url,
-	env: typeof process.env,
+	env: typeof process.env
 ): string | null {
 	if (requestURL.protocol === "http:") {
 		return env.HTTP_PROXY || env.http_proxy || null;
@@ -35,7 +35,7 @@ export interface IOptions {
 export async function getProxyAgent(
 	rawRequestURL: string,
 	env: typeof process.env,
-	options: IOptions = {},
+	options: IOptions = {}
 ): Promise<Agent> {
 	const requestURL = parseUrl(rawRequestURL);
 	const proxyURL = options.proxyUrl || getSystemProxyURI(requestURL, env);
@@ -65,6 +65,6 @@ export async function getProxyAgent(
 		? new (await import("http-proxy-agent")).HttpProxyAgent(proxyURL, opts)
 		: new (await import("https-proxy-agent")).HttpsProxyAgent(
 				proxyURL,
-				opts,
-		  );
+				opts
+			);
 }

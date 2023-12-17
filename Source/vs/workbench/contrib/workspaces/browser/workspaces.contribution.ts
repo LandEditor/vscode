@@ -61,10 +61,13 @@ export class WorkspacesFinderContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IFileService private readonly fileService: IFileService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IHostService private readonly hostService: IHostService,
 		@IStorageService private readonly storageService: IStorageService
 	) {
@@ -88,7 +91,7 @@ export class WorkspacesFinderContribution
 		).children?.map((child) => child.name);
 		if (Array.isArray(rootFileNames)) {
 			const workspaceFiles = rootFileNames.filter(
-				hasWorkspaceFileExtension,
+				hasWorkspaceFileExtension
 			);
 			if (workspaceFiles.length > 0) {
 				this.doHandleWorkspaceFiles(folder.uri, workspaceFiles);
@@ -116,7 +119,7 @@ export class WorkspacesFinderContribution
 					},
 					"This folder contains a workspace file '{0}'. Do you want to open it? [Learn more]({1}) about workspace files.",
 					workspaceFile,
-					"https://go.microsoft.com/fwlink/?linkid=2025315",
+					"https://go.microsoft.com/fwlink/?linkid=2025315"
 				),
 				[
 					{
@@ -126,7 +129,7 @@ export class WorkspacesFinderContribution
 								{
 									workspaceUri: joinPath(
 										folder,
-										workspaceFile,
+										workspaceFile
 									),
 								},
 							]),
@@ -137,7 +140,7 @@ export class WorkspacesFinderContribution
 					priority: !this.storageService.isNew(StorageScope.WORKSPACE)
 						? NotificationPriority.SILENT
 						: undefined, // https://github.com/microsoft/vscode/issues/125315
-				},
+				}
 			);
 		}
 
@@ -151,7 +154,7 @@ export class WorkspacesFinderContribution
 						comment: ['{Locked="]({0})"}'],
 					},
 					"This folder contains multiple workspace files. Do you want to open one? [Learn more]({0}) about workspace files.",
-					"https://go.microsoft.com/fwlink/?linkid=2025315",
+					"https://go.microsoft.com/fwlink/?linkid=2025315"
 				),
 				[
 					{
@@ -163,14 +166,14 @@ export class WorkspacesFinderContribution
 										(workspace) =>
 											({
 												label: workspace,
-											}) as IQuickPickItem,
+											}) as IQuickPickItem
 									),
 									{
 										placeHolder: localize(
 											"selectToOpen",
-											"Select a workspace to open",
+											"Select a workspace to open"
 										),
-									},
+									}
 								)
 								.then((pick) => {
 									if (pick) {
@@ -178,7 +181,7 @@ export class WorkspacesFinderContribution
 											{
 												workspaceUri: joinPath(
 													folder,
-													pick.label,
+													pick.label
 												),
 											},
 										]);
@@ -192,17 +195,17 @@ export class WorkspacesFinderContribution
 					priority: !this.storageService.isNew(StorageScope.WORKSPACE)
 						? NotificationPriority.SILENT
 						: undefined, // https://github.com/microsoft/vscode/issues/125315
-				},
+				}
 			);
 		}
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	WorkspacesFinderContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 
 // Render "Open Workspace" button in *.code-workspace files
@@ -221,10 +224,10 @@ registerAction2(
 					id: MenuId.EditorContent,
 					when: ContextKeyExpr.and(
 						ResourceContextKey.Extension.isEqualTo(
-							WORKSPACE_SUFFIX,
+							WORKSPACE_SUFFIX
 						),
 						ActiveEditorContext.isEqualTo(TEXT_FILE_EDITOR_ID),
-						TemporaryWorkspaceContext.toNegated(),
+						TemporaryWorkspaceContext.toNegated()
 					),
 				},
 			});
@@ -247,8 +250,8 @@ registerAction2(
 					notificationService.info(
 						localize(
 							"alreadyOpen",
-							"This workspace is already open.",
-						),
+							"This workspace is already open."
+						)
 					);
 
 					return; // workspace already opened
@@ -257,5 +260,5 @@ registerAction2(
 
 			return hostService.openWindow([{ workspaceUri: uri }]);
 		}
-	},
+	}
 );

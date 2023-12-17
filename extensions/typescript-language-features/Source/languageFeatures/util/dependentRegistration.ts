@@ -16,7 +16,7 @@ export class Condition extends Disposable {
 
 	constructor(
 		private readonly getValue: () => boolean,
-		onUpdate: (handler: () => void) => void,
+		onUpdate: (handler: () => void) => void
 	) {
 		super();
 		this._value = this.getValue();
@@ -35,7 +35,7 @@ export class Condition extends Disposable {
 	}
 
 	private readonly _onDidChange = this._register(
-		new vscode.EventEmitter<void>(),
+		new vscode.EventEmitter<void>()
 	);
 	public readonly onDidChange = this._onDidChange.event;
 }
@@ -45,7 +45,7 @@ class ConditionalRegistration {
 
 	public constructor(
 		private readonly conditions: readonly Condition[],
-		private readonly doRegister: () => vscode.Disposable,
+		private readonly doRegister: () => vscode.Disposable
 	) {
 		for (const condition of conditions) {
 			condition.onDidChange(() => this.update());
@@ -71,24 +71,24 @@ class ConditionalRegistration {
 
 export function conditionalRegistration(
 	conditions: readonly Condition[],
-	doRegister: () => vscode.Disposable,
+	doRegister: () => vscode.Disposable
 ): vscode.Disposable {
 	return new ConditionalRegistration(conditions, doRegister);
 }
 
 export function requireMinVersion(
 	client: ITypeScriptServiceClient,
-	minVersion: API,
+	minVersion: API
 ) {
 	return new Condition(
 		() => client.apiVersion.gte(minVersion),
-		client.onTsServerStarted,
+		client.onTsServerStarted
 	);
 }
 
 export function requireGlobalConfiguration(
 	section: string,
-	configValue: string,
+	configValue: string
 ) {
 	return new Condition(() => {
 		const config = vscode.workspace.getConfiguration(section, null);
@@ -103,8 +103,8 @@ export function requireSomeCapability(
 	return new Condition(
 		() =>
 			capabilities.some((requiredCapability) =>
-				client.capabilities.has(requiredCapability),
+				client.capabilities.has(requiredCapability)
 			),
-		client.onDidChangeCapabilities,
+		client.onDidChangeCapabilities
 	);
 }

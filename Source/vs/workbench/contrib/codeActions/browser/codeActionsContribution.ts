@@ -37,20 +37,20 @@ const createCodeActionsAutoSave = (description: string): IJSONSchema => {
 		enumDescriptions: [
 			nls.localize(
 				"alwaysSave",
-				"Triggers Code Actions on explicit saves and auto saves triggered by window or focus changes.",
+				"Triggers Code Actions on explicit saves and auto saves triggered by window or focus changes."
 			),
 			nls.localize(
 				"explicitSave",
-				"Triggers Code Actions only when explicitly saved",
+				"Triggers Code Actions only when explicitly saved"
 			),
 			nls.localize("neverSave", "Never triggers Code Actions on save"),
 			nls.localize(
 				"explicitSaveBoolean",
-				'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "explicit".',
+				'Triggers Code Actions only when explicitly saved. This value will be deprecated in favor of "explicit".'
 			),
 			nls.localize(
 				"neverSaveBoolean",
-				'Never triggers Code Actions on save. This value will be deprecated in favor of "never".',
+				'Never triggers Code Actions on save. This value will be deprecated in favor of "never".'
 			),
 		],
 		default: true,
@@ -62,8 +62,8 @@ const codeActionsOnSaveDefaultProperties = Object.freeze<IJSONSchemaMap>({
 	"source.fixAll": createCodeActionsAutoSave(
 		nls.localize(
 			"codeActionsOnSave.fixAll",
-			"Controls whether auto fix action should be run on file save.",
-		),
+			"Controls whether auto fix action should be run on file save."
+		)
 	),
 });
 
@@ -83,7 +83,7 @@ const codeActionsOnSaveSchema: IConfigurationPropertySchema = {
 	],
 	markdownDescription: nls.localize(
 		"editor.codeActionsOnSave",
-		'Run Code Actions for the editor on save. Code Actions must be specified and the editor must not be shutting down. Example: `"source.organizeImports": "explicit" `',
+		'Run Code Actions for the editor on save. Code Actions must be specified and the editor must not be shutting down. Example: `"source.organizeImports": "explicit" `'
 	),
 	type: ["object", "array"],
 	additionalProperties: {
@@ -108,12 +108,12 @@ export class CodeActionsContribution
 	private _contributedCodeActions: CodeActionsExtensionPoint[] = [];
 
 	private readonly _onDidChangeContributions = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 
 	constructor(
 		codeActionsExtensionPoint: IExtensionPoint<CodeActionsExtensionPoint[]>,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
 		super();
 
@@ -132,33 +132,33 @@ export class CodeActionsContribution
 	}
 
 	private updateConfigurationSchema(
-		codeActionContributions: readonly CodeActionsExtensionPoint[],
+		codeActionContributions: readonly CodeActionsExtensionPoint[]
 	) {
 		const newProperties: IJSONSchemaMap = {
 			...codeActionsOnSaveDefaultProperties,
 		};
 		for (const [sourceAction, props] of this.getSourceActions(
-			codeActionContributions,
+			codeActionContributions
 		)) {
 			newProperties[sourceAction] = createCodeActionsAutoSave(
 				nls.localize(
 					"codeActionsOnSave.generic",
 					"Controls whether '{0}' actions should be run on file save.",
-					props.title,
-				),
+					props.title
+				)
 			);
 		}
 		codeActionsOnSaveSchema.properties = newProperties;
 		Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		).notifyConfigurationSchemaUpdated(editorConfiguration);
 	}
 
 	private getSourceActions(
-		contributions: readonly CodeActionsExtensionPoint[],
+		contributions: readonly CodeActionsExtensionPoint[]
 	) {
 		const defaultKinds = Object.keys(
-			codeActionsOnSaveDefaultProperties,
+			codeActionsOnSaveDefaultProperties
 		).map((value) => new CodeActionKind(value));
 		const sourceActions = new Map<string, { readonly title: string }>();
 		for (const contribution of contributions) {
@@ -168,7 +168,7 @@ export class CodeActionsContribution
 					CodeActionKind.Source.contains(kind) &&
 					// Exclude any we already included by default
 					!defaultKinds.some((defaultKind) =>
-						defaultKind.contains(kind),
+						defaultKind.contains(kind)
 					)
 				) {
 					sourceActions.set(kind.value, action);
@@ -181,7 +181,7 @@ export class CodeActionsContribution
 	private getSchemaAdditions(): IJSONSchema[] {
 		const conditionalSchema = (
 			command: string,
-			actions: readonly ContributedCodeAction[],
+			actions: readonly ContributedCodeAction[]
 		): IJSONSchema => {
 			return {
 				if: {
@@ -199,12 +199,12 @@ export class CodeActionsContribution
 									anyOf: [
 										{
 											enum: actions.map(
-												(action) => action.kind,
+												(action) => action.kind
 											),
 											enumDescriptions: actions.map(
 												(action) =>
 													action.description ??
-													action.title,
+													action.title
 											),
 										},
 										{ type: "string" },
@@ -218,10 +218,10 @@ export class CodeActionsContribution
 		};
 
 		const getActions = (
-			ofKind: CodeActionKind,
+			ofKind: CodeActionKind
 		): ContributedCodeAction[] => {
 			const allActions = this._contributedCodeActions.flatMap(
-				(desc) => desc.actions,
+				(desc) => desc.actions
 			);
 
 			const out = new Map<string, ContributedCodeAction>();
@@ -239,15 +239,15 @@ export class CodeActionsContribution
 		return [
 			conditionalSchema(
 				codeActionCommandId,
-				getActions(CodeActionKind.Empty),
+				getActions(CodeActionKind.Empty)
 			),
 			conditionalSchema(
 				refactorCommandId,
-				getActions(CodeActionKind.Refactor),
+				getActions(CodeActionKind.Refactor)
 			),
 			conditionalSchema(
 				sourceActionCommandId,
-				getActions(CodeActionKind.Source),
+				getActions(CodeActionKind.Source)
 			),
 		];
 	}

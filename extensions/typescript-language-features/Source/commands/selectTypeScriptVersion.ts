@@ -12,7 +12,7 @@ export class SelectTypeScriptVersionCommand implements Command {
 	public readonly id = SelectTypeScriptVersionCommand.id;
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {

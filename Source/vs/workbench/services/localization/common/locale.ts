@@ -7,14 +7,14 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 import { ILanguagePackItem } from "vs/platform/languagePacks/common/languagePacks";
 
 export const ILocaleService = createDecorator<ILocaleService>(
-	"localizationService",
+	"localizationService"
 );
 
 export interface ILocaleService {
 	readonly _serviceBrand: undefined;
 	setLocale(
 		languagePackItem: ILanguagePackItem,
-		skipDialog?: boolean,
+		skipDialog?: boolean
 	): Promise<void>;
 	clearLocalePreference(): Promise<void>;
 }

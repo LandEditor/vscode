@@ -27,7 +27,8 @@ import { ICommandService } from "vs/platform/commands/common/commands";
 export class MainThreadMessageService implements MainThreadMessageServiceShape {
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IDialogService private readonly _dialogService: IDialogService
 	) {
@@ -46,7 +47,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			title: string;
 			isCloseAffordance: boolean;
 			handle: number;
-		}[],
+		}[]
 	): Promise<number | undefined> {
 		if (options.modal) {
 			return this._showModalMessage(
@@ -54,7 +55,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 				message,
 				options.detail,
 				commands,
-				options.useCustom,
+				options.useCustom
 			);
 		} else {
 			return this._showMessage(severity, message, commands, options);
@@ -69,7 +70,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			isCloseAffordance: boolean;
 			handle: number;
 		}[],
-		options: MainThreadMessageOptions,
+		options: MainThreadMessageOptions
 	): Promise<number | undefined> {
 		return new Promise<number | undefined>((resolve) => {
 			const primaryActions: IAction[] = commands.map((command) =>
@@ -81,7 +82,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 						resolve(command.handle);
 						return Promise.resolve();
 					},
-				}),
+				})
 			);
 
 			let source: string | { label: string; id: string } | undefined;
@@ -90,7 +91,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 					label: nls.localize(
 						"extensionSource",
 						"{0} (Extension)",
-						options.source.label,
+						options.source.label
 					),
 					id: options.source.identifier.value,
 				};
@@ -107,15 +108,15 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 						id: options.source.identifier.value,
 						label: nls.localize(
 							"manageExtension",
-							"Manage Extension",
+							"Manage Extension"
 						),
 						run: () => {
 							return this._commandService.executeCommand(
 								"_extensions.manage",
-								options.source!.identifier.value,
+								options.source!.identifier.value
 							);
 						},
-					}),
+					})
 				);
 			}
 
@@ -146,7 +147,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			isCloseAffordance: boolean;
 			handle: number;
 		}[],
-		useCustom?: boolean,
+		useCustom?: boolean
 	): Promise<number | undefined> {
 		const buttons: IPromptButton<number>[] = [];
 		let cancelButton: IPromptButton<number | undefined> | undefined =
@@ -175,7 +176,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 				cancelButton = {
 					label: nls.localize(
 						{ key: "ok", comment: ["&& denotes a mnemonic"] },
-						"&&OK",
+						"&&OK"
 					),
 					run: () => undefined,
 				};

@@ -27,13 +27,15 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 	static PREFIX = "?";
 
 	private readonly registry = Registry.as<IQuickAccessRegistry>(
-		Extensions.Quickaccess,
+		Extensions.Quickaccess
 	);
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService
-	) { }
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService
+	) {}
 
 	provide(picker: IQuickPick<IHelpQuickAccessPickItem>): IDisposable {
 		const disposables = new DisposableStore();
@@ -47,7 +49,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 						preserveValue: true,
 					});
 				}
-			}),
+			})
 		);
 
 		// Also open a picker when we detect the user typed the exact
@@ -55,7 +57,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 		disposables.add(
 			picker.onDidChangeValue((value) => {
 				const providerDescriptor = this.registry.getQuickAccessProvider(
-					value.substr(HelpQuickAccessProvider.PREFIX.length),
+					value.substr(HelpQuickAccessProvider.PREFIX.length)
 				);
 				if (
 					providerDescriptor &&
@@ -64,15 +66,15 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 				) {
 					this.quickInputService.quickAccess.show(
 						providerDescriptor.prefix,
-						{ preserveValue: true },
+						{ preserveValue: true }
 					);
 				}
-			}),
+			})
 		);
 
 		// Fill in all providers
 		picker.items = this.getQuickAccessProviders().filter(
-			(p) => p.prefix !== HelpQuickAccessProvider.PREFIX,
+			(p) => p.prefix !== HelpQuickAccessProvider.PREFIX
 		);
 
 		return disposables;
@@ -82,7 +84,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 		const providers: IHelpQuickAccessPickItem[] = this.registry
 			.getQuickAccessProviders()
 			.sort((providerA, providerB) =>
-				providerA.prefix.localeCompare(providerB.prefix),
+				providerA.prefix.localeCompare(providerB.prefix)
 			)
 			.flatMap((provider) => this.createPicks(provider));
 
@@ -90,25 +92,25 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 	}
 
 	private createPicks(
-		provider: IQuickAccessProviderDescriptor,
+		provider: IQuickAccessProviderDescriptor
 	): IHelpQuickAccessPickItem[] {
 		return provider.helpEntries.map((helpEntry) => {
 			const prefix = helpEntry.prefix || provider.prefix;
-			const label = prefix || "\u2026" /* ... */;
+			const label = prefix || "\u2026"; /* ... */
 
 			return {
 				prefix,
 				label,
 				keybinding: helpEntry.commandId
 					? this.keybindingService.lookupKeybinding(
-							helpEntry.commandId,
-					  )
+							helpEntry.commandId
+						)
 					: undefined,
 				ariaLabel: localize(
 					"helpPickAriaLabel",
 					"{0}, {1}",
 					label,
-					helpEntry.description,
+					helpEntry.description
 				),
 				description: helpEntry.description,
 			};

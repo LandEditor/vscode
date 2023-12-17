@@ -92,7 +92,7 @@ var graph;
 			callback(node.data);
 			const nodes = inwards ? node.outgoing : node.incoming;
 			collections.forEach(nodes, (entry) =>
-				this._traverse(entry.value, inwards, seen, callback),
+				this._traverse(entry.value, inwards, seen, callback)
 			);
 		}
 		inertEdge(from, to) {

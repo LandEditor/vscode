@@ -41,7 +41,7 @@ export class FileDialogService
 	@memoize
 	private get fileSystemProvider(): HTMLFileSystemProvider {
 		return this.fileService.getProvider(
-			Schemas.file,
+			Schemas.file
 		) as HTMLFileSystemProvider;
 	}
 
@@ -56,28 +56,28 @@ export class FileDialogService
 			return super.pickFileFolderAndOpenSimplified(
 				schema,
 				options,
-				false,
+				false
 			);
 		}
 
 		throw new Error(
 			localize(
 				"pickFolderAndOpen",
-				"Can't open folders, try adding a folder to the workspace instead.",
-			),
+				"Can't open folders, try adding a folder to the workspace instead."
+			)
 		);
 	}
 
 	protected override addFileSchemaIfNeeded(
 		schema: string,
-		isFolder: boolean,
+		isFolder: boolean
 	): string[] {
 		return schema === Schemas.untitled
 			? [Schemas.file]
 			: schema !== Schemas.file &&
 				  (!isFolder || schema !== Schemas.vscodeRemote)
-			  ? [schema, Schemas.file]
-			  : [schema];
+				? [schema, Schemas.file]
+				: [schema];
 	}
 
 	async pickFileAndOpen(options: IPickAndOpenOptions): Promise<void> {
@@ -134,8 +134,8 @@ export class FileDialogService
 		throw new Error(
 			localize(
 				"pickFolderAndOpen",
-				"Can't open folders, try adding a folder to the workspace instead.",
-			),
+				"Can't open folders, try adding a folder to the workspace instead."
+			)
 		);
 	}
 
@@ -155,14 +155,14 @@ export class FileDialogService
 		throw new Error(
 			localize(
 				"pickWorkspaceAndOpen",
-				"Can't open workspaces, try adding a folder to the workspace instead.",
-			),
+				"Can't open workspaces, try adding a folder to the workspace instead."
+			)
 		);
 	}
 
 	async pickFileToSave(
 		defaultUri: URI,
-		availableFileSystems?: string[],
+		availableFileSystems?: string[]
 	): Promise<URI | undefined> {
 		const schema = this.getFileSystemSchema({
 			defaultUri,
@@ -171,7 +171,7 @@ export class FileDialogService
 
 		const options = this.getPickFileToSaveDialogOptions(
 			defaultUri,
-			availableFileSystems,
+			availableFileSystems
 		);
 		if (this.shouldUseSimplified(schema)) {
 			return super.pickFileToSaveSimplified(schema, options);
@@ -202,7 +202,7 @@ export class FileDialogService
 	}
 
 	private getFilePickerTypes(
-		filters?: FileFilter[],
+		filters?: FileFilter[]
 	): FilePickerAcceptType[] | undefined {
 		return filters
 			?.filter((filter) => {
@@ -218,13 +218,13 @@ export class FileDialogService
 					(ext) =>
 						ext.indexOf("-") < 0 &&
 						ext.indexOf("*") < 0 &&
-						ext.indexOf("_") < 0,
+						ext.indexOf("_") < 0
 				);
 				accept[
 					getMediaOrTextMime(`fileName.${filter.extensions[0]}`) ??
 						"text/plain"
 				] = extensions.map((ext) =>
-					ext.startsWith(".") ? ext : `.${ext}`,
+					ext.startsWith(".") ? ext : `.${ext}`
 				);
 				return {
 					description: filter.name,
@@ -234,7 +234,7 @@ export class FileDialogService
 	}
 
 	async showSaveDialog(
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): Promise<URI | undefined> {
 		const schema = this.getFileSystemSchema(options);
 
@@ -270,7 +270,7 @@ export class FileDialogService
 	}
 
 	async showOpenDialog(
-		options: IOpenDialogOptions,
+		options: IOpenDialogOptions
 	): Promise<URI[] | undefined> {
 		const schema = this.getFileSystemSchema(options);
 
@@ -299,7 +299,7 @@ export class FileDialogService
 					WebFileSystemAccess.isFileSystemFileHandle(handle[0])
 				) {
 					uri = await this.fileSystemProvider.registerFileHandle(
-						handle[0],
+						handle[0]
 					);
 				}
 			} else {
@@ -308,7 +308,7 @@ export class FileDialogService
 				});
 				uri =
 					await this.fileSystemProvider.registerDirectoryHandle(
-						handle,
+						handle
 					);
 			}
 		} catch (error) {
@@ -319,7 +319,7 @@ export class FileDialogService
 	}
 
 	private async showUnsupportedBrowserWarning(
-		context: "save" | "open",
+		context: "save" | "open"
 	): Promise<undefined> {
 		// When saving, try to just download the contents
 		// of the active text editor if any as a workaround
@@ -330,7 +330,7 @@ export class FileDialogService
 			if (activeTextModel) {
 				triggerDownload(
 					VSBuffer.fromString(activeTextModel.getValue()).buffer,
-					basename(activeTextModel.uri),
+					basename(activeTextModel.uri)
 				);
 				return;
 			}
@@ -342,22 +342,22 @@ export class FileDialogService
 			{
 				label: localize(
 					{ key: "openRemote", comment: ["&& denotes a mnemonic"] },
-					"&&Open Remote...",
+					"&&Open Remote..."
 				),
 				run: async () => {
 					await this.commandService.executeCommand(
-						"workbench.action.remote.showMenu",
+						"workbench.action.remote.showMenu"
 					);
 				},
 			},
 			{
 				label: localize(
 					{ key: "learnMore", comment: ["&& denotes a mnemonic"] },
-					"&&Learn More",
+					"&&Learn More"
 				),
 				run: async () => {
 					await this.openerService.open(
-						"https://aka.ms/VSCodeWebLocalFileSystemAccess",
+						"https://aka.ms/VSCodeWebLocalFileSystemAccess"
 					);
 				},
 			},
@@ -366,7 +366,7 @@ export class FileDialogService
 			buttons.push({
 				label: localize(
 					{ key: "openFiles", comment: ["&& denotes a mnemonic"] },
-					"Open &&Files...",
+					"Open &&Files..."
 				),
 				run: async () => {
 					const files = await triggerUpload();
@@ -374,7 +374,7 @@ export class FileDialogService
 						const filesData = (
 							await this.instantiationService.invokeFunction(
 								(accessor) =>
-									extractFileListData(accessor, files),
+									extractFileListData(accessor, files)
 							)
 						).filter((fileData) => !fileData.isDirectory);
 						if (filesData.length > 0) {
@@ -385,7 +385,7 @@ export class FileDialogService
 										contents: fileData.contents?.toString(),
 										options: { pinned: true },
 									};
-								}),
+								})
 							);
 						}
 					}
@@ -397,11 +397,11 @@ export class FileDialogService
 			type: Severity.Warning,
 			message: localize(
 				"unsupportedBrowserMessage",
-				"Opening Local Folders is Unsupported",
+				"Opening Local Folders is Unsupported"
 			),
 			detail: localize(
 				"unsupportedBrowserDetail",
-				"Your browser doesn't support opening local folders.\nYou can either open single files or open a remote repository.",
+				"Your browser doesn't support opening local folders.\nYou can either open single files or open a remote repository."
 			),
 			buttons,
 		});
@@ -411,7 +411,7 @@ export class FileDialogService
 
 	private shouldUseSimplified(scheme: string): boolean {
 		return ![Schemas.file, Schemas.vscodeUserData, Schemas.tmp].includes(
-			scheme,
+			scheme
 		);
 	}
 }
@@ -419,5 +419,5 @@ export class FileDialogService
 registerSingleton(
 	IFileDialogService,
 	FileDialogService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

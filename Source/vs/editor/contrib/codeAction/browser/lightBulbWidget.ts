@@ -46,7 +46,7 @@ namespace LightBulbState {
 			public readonly actions: CodeActionSet,
 			public readonly trigger: CodeActionTrigger,
 			public readonly editorPosition: IPosition,
-			public readonly widgetPosition: IContentWidgetPosition,
+			public readonly widgetPosition: IContentWidgetPosition
 		) {}
 	}
 
@@ -66,7 +66,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			readonly y: number;
 			readonly actions: CodeActionSet;
 			readonly trigger: CodeActionTrigger;
-		}>(),
+		}>()
 	);
 	public readonly onClick = this._onClick.event;
 
@@ -78,84 +78,126 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@ICommandService commandService: ICommandService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@ICommandService commandService: ICommandService
 	) {
 		super();
 
-		this._domNode = dom.$('div.lightBulbWidget');
+		this._domNode = dom.$("div.lightBulbWidget");
 
 		this._register(Gesture.ignoreTarget(this._domNode));
 
 		this._editor.addContentWidget(this);
 
-		this._register(this._editor.onDidChangeModelContent(_ => {
-			// cancel when the line in question has been removed
-			const editorModel = this._editor.getModel();
-			if (this.state.type !== LightBulbState.Type.Showing || !editorModel || this.state.editorPosition.lineNumber >= editorModel.getLineCount()) {
-				this.hide();
-			}
-		}));
-
-		this._register(dom.addStandardDisposableGenericMouseDownListener(this._domNode, e => {
-			if (this.state.type !== LightBulbState.Type.Showing) {
-				return;
-			}
-
-			if (
-				this.state.actions.allAIFixes
-				&& this.state.actions.validActions.length === 1
-			) {
-				const action = this.state.actions.validActions[0].action;
-				const id = action.command?.id;
-				if (id) {
-					let args = action.command?.arguments;
-					if (id === 'inlineChat.start' && args && args.length === 1) {
-						args = [{ ...args[0], autoSend: false }];
-					}
-					commandService.executeCommand(id, ...(args || []));
-					e.preventDefault();
-					return;
+		this._register(
+			this._editor.onDidChangeModelContent((_) => {
+				// cancel when the line in question has been removed
+				const editorModel = this._editor.getModel();
+				if (
+					this.state.type !== LightBulbState.Type.Showing ||
+					!editorModel ||
+					this.state.editorPosition.lineNumber >=
+						editorModel.getLineCount()
+				) {
+					this.hide();
 				}
-			}
-			// Make sure that focus / cursor location is not lost when clicking widget icon
-			this._editor.focus();
-			e.preventDefault();
+			})
+		);
 
-			// a bit of extra work to make sure the menu
-			// doesn't cover the line-text
-			const { top, height } = dom.getDomNodePagePosition(this._domNode);
-			const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+		this._register(
+			dom.addStandardDisposableGenericMouseDownListener(
+				this._domNode,
+				(e) => {
+					if (this.state.type !== LightBulbState.Type.Showing) {
+						return;
+					}
 
-			let pad = Math.floor(lineHeight / 3);
-			if (this.state.widgetPosition.position !== null && this.state.widgetPosition.position.lineNumber < this.state.editorPosition.lineNumber) {
-				pad += lineHeight;
-			}
+					if (
+						this.state.actions.allAIFixes &&
+						this.state.actions.validActions.length === 1
+					) {
+						const action =
+							this.state.actions.validActions[0].action;
+						const id = action.command?.id;
+						if (id) {
+							let args = action.command?.arguments;
+							if (
+								id === "inlineChat.start" &&
+								args &&
+								args.length === 1
+							) {
+								args = [{ ...args[0], autoSend: false }];
+							}
+							commandService.executeCommand(id, ...(args || []));
+							e.preventDefault();
+							return;
+						}
+					}
+					// Make sure that focus / cursor location is not lost when clicking widget icon
+					this._editor.focus();
+					e.preventDefault();
 
-			this._onClick.fire({
-				x: e.posx,
-				y: top + height + pad,
-				actions: this.state.actions,
-				trigger: this.state.trigger,
-			});
-		}));
+					// a bit of extra work to make sure the menu
+					// doesn't cover the line-text
+					const { top, height } = dom.getDomNodePagePosition(
+						this._domNode
+					);
+					const lineHeight = this._editor.getOption(
+						EditorOption.lineHeight
+					);
 
-		this._register(dom.addDisposableListener(this._domNode, 'mouseenter', (e: MouseEvent) => {
-			if ((e.buttons & 1) !== 1) {
-				return;
-			}
-			// mouse enters lightbulb while the primary/left button
-			// is being pressed -> hide the lightbulb
-			this.hide();
-		}));
+					let pad = Math.floor(lineHeight / 3);
+					if (
+						this.state.widgetPosition.position !== null &&
+						this.state.widgetPosition.position.lineNumber <
+							this.state.editorPosition.lineNumber
+					) {
+						pad += lineHeight;
+					}
 
+					this._onClick.fire({
+						x: e.posx,
+						y: top + height + pad,
+						actions: this.state.actions,
+						trigger: this.state.trigger,
+					});
+				}
+			)
+		);
 
-		this._register(Event.runAndSubscribe(this._keybindingService.onDidUpdateKeybindings, () => {
-			this._preferredKbLabel = this._keybindingService.lookupKeybinding(autoFixCommandId)?.getLabel() ?? undefined;
-			this._quickFixKbLabel = this._keybindingService.lookupKeybinding(quickFixCommandId)?.getLabel() ?? undefined;
+		this._register(
+			dom.addDisposableListener(
+				this._domNode,
+				"mouseenter",
+				(e: MouseEvent) => {
+					if ((e.buttons & 1) !== 1) {
+						return;
+					}
+					// mouse enters lightbulb while the primary/left button
+					// is being pressed -> hide the lightbulb
+					this.hide();
+				}
+			)
+		);
 
-			this._updateLightBulbTitleAndIcon();
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				this._keybindingService.onDidUpdateKeybindings,
+				() => {
+					this._preferredKbLabel =
+						this._keybindingService
+							.lookupKeybinding(autoFixCommandId)
+							?.getLabel() ?? undefined;
+					this._quickFixKbLabel =
+						this._keybindingService
+							.lookupKeybinding(quickFixCommandId)
+							?.getLabel() ?? undefined;
+
+					this._updateLightBulbTitleAndIcon();
+				}
+			)
+		);
 	}
 
 	override dispose(): void {
@@ -180,7 +222,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 	public update(
 		actions: CodeActionSet,
 		trigger: CodeActionTrigger,
-		atPosition: IPosition,
+		atPosition: IPosition
 	) {
 		if (actions.validActions.length <= 0) {
 			return this.hide();
@@ -227,7 +269,7 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 				return this.hide();
 			}
 			effectiveColumnNumber = /^\S\s*$/.test(
-				model.getLineContent(effectiveLineNumber),
+				model.getLineContent(effectiveLineNumber)
 			)
 				? 2
 				: 1;
@@ -298,19 +340,19 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 			this.title = nls.localize(
 				"codeActionAutoRun",
 				"Run: {0}",
-				this.state.actions.validActions[0].action.title,
+				this.state.actions.validActions[0].action.title
 			);
 		} else if (autoFix && this._preferredKbLabel) {
 			this.title = nls.localize(
 				"preferredcodeActionWithKb",
 				"Show Code Actions. Preferred Quick Fix Available ({0})",
-				this._preferredKbLabel,
+				this._preferredKbLabel
 			);
 		} else if (!autoFix && this._quickFixKbLabel) {
 			this.title = nls.localize(
 				"codeActionWithKb",
 				"Show Code Actions ({0})",
-				this._quickFixKbLabel,
+				this._quickFixKbLabel
 			);
 		} else if (!autoFix) {
 			this.title = nls.localize("codeAction", "Show Code Actions");

@@ -53,7 +53,7 @@ export interface IWorkbenchContributionsRegistry {
 	 */
 	registerWorkbenchContribution<Services extends BrandedService[]>(
 		contribution: IWorkbenchContributionSignature<Services>,
-		phase: LifecyclePhase,
+		phase: LifecyclePhase
 	): void;
 
 	/**
@@ -86,7 +86,7 @@ class WorkbenchContributionsRegistry
 
 	registerWorkbenchContribution(
 		contribution: IConstructorSignature<IWorkbenchContribution>,
-		phase: LifecyclePhase = LifecyclePhase.Starting,
+		phase: LifecyclePhase = LifecyclePhase.Starting
 	): void {
 		// Instantiate directly if we are already matching the provided phase
 		if (
@@ -101,7 +101,7 @@ class WorkbenchContributionsRegistry
 				this.logService,
 				this.environmentService,
 				contribution,
-				phase,
+				phase
 			);
 		}
 
@@ -119,7 +119,7 @@ class WorkbenchContributionsRegistry
 
 	start(accessor: ServicesAccessor): void {
 		const instantiationService = (this.instantiationService = accessor.get(
-			IInstantiationService,
+			IInstantiationService
 		));
 		const lifecycleService = (this.lifecycleService =
 			accessor.get(ILifecycleService));
@@ -138,7 +138,7 @@ class WorkbenchContributionsRegistry
 				lifecycleService,
 				logService,
 				environmentService,
-				phase,
+				phase
 			);
 		}
 	}
@@ -148,7 +148,7 @@ class WorkbenchContributionsRegistry
 		lifecycleService: ILifecycleService,
 		logService: ILogService,
 		environmentService: IEnvironmentService,
-		phase: LifecyclePhase,
+		phase: LifecyclePhase
 	): void {
 		// Instantiate contributions directly when phase is already reached
 		if (lifecycleService.phase >= phase) {
@@ -156,7 +156,7 @@ class WorkbenchContributionsRegistry
 				instantiationService,
 				logService,
 				environmentService,
-				phase,
+				phase
 			);
 		}
 
@@ -169,8 +169,8 @@ class WorkbenchContributionsRegistry
 						instantiationService,
 						logService,
 						environmentService,
-						phase,
-					),
+						phase
+					)
 				);
 		}
 	}
@@ -179,7 +179,7 @@ class WorkbenchContributionsRegistry
 		instantiationService: IInstantiationService,
 		logService: ILogService,
 		environmentService: IEnvironmentService,
-		phase: LifecyclePhase,
+		phase: LifecyclePhase
 	): Promise<void> {
 		const contributions = this.contributions.get(phase);
 		if (contributions) {
@@ -199,7 +199,7 @@ class WorkbenchContributionsRegistry
 							logService,
 							environmentService,
 							contribution,
-							phase,
+							phase
 						);
 					}
 
@@ -225,7 +225,7 @@ class WorkbenchContributionsRegistry
 						instantiationService,
 						logService,
 						environmentService,
-						phase,
+						phase
 					);
 
 					break;
@@ -239,7 +239,7 @@ class WorkbenchContributionsRegistry
 		instantiationService: IInstantiationService,
 		logService: ILogService,
 		environmentService: IEnvironmentService,
-		phase: LifecyclePhase,
+		phase: LifecyclePhase
 	): void {
 		mark(`code/willCreateWorkbenchContributions/${phase}`);
 
@@ -254,7 +254,7 @@ class WorkbenchContributionsRegistry
 					logService,
 					environmentService,
 					contribution,
-					phase,
+					phase
 				);
 				if (idle.timeRemaining() < 1) {
 					// time is up -> reschedule
@@ -280,7 +280,7 @@ class WorkbenchContributionsRegistry
 		logService: ILogService,
 		environmentService: IEnvironmentService,
 		contribution: IConstructorSignature<IWorkbenchContribution>,
-		phase: LifecyclePhase,
+		phase: LifecyclePhase
 	): void {
 		const now: number | undefined =
 			phase < LifecyclePhase.Restored ? Date.now() : undefined;
@@ -290,7 +290,7 @@ class WorkbenchContributionsRegistry
 		} catch (error) {
 			logService.error(
 				`Unable to create workbench contribution ${contribution.name}.`,
-				error,
+				error
 			);
 		}
 
@@ -301,7 +301,7 @@ class WorkbenchContributionsRegistry
 			const time = Date.now() - now;
 			if (time > 20) {
 				logService.warn(
-					`Workbench contribution ${contribution.name} blocked restore phase by ${time}ms.`,
+					`Workbench contribution ${contribution.name} blocked restore phase by ${time}ms.`
 				);
 			}
 		}

@@ -22,14 +22,17 @@ export class BrowserWorkingCopyBackupTracker
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyBackupService
+		workingCopyBackupService: IWorkingCopyBackupService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@ILogService logService: ILogService,
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService editorService: IEditorService,
-		@IEditorGroupsService editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService editorGroupService: IEditorGroupsService
 	) {
 		super(
 			workingCopyBackupService,
@@ -39,7 +42,7 @@ export class BrowserWorkingCopyBackupTracker
 			filesConfigurationService,
 			workingCopyEditorService,
 			editorService,
-			editorGroupService,
+			editorGroupService
 		);
 	}
 
@@ -63,7 +66,7 @@ export class BrowserWorkingCopyBackupTracker
 			if (
 				!this.workingCopyBackupService.hasBackupSync(
 					modifiedWorkingCopy,
-					this.getContentVersion(modifiedWorkingCopy),
+					this.getContentVersion(modifiedWorkingCopy)
 				)
 			) {
 				this.logService.warn("Unload veto: pending backups");

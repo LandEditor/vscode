@@ -34,7 +34,7 @@ declare module "vscode" {
 		export function registerDiffInformationCommand(
 			command: string,
 			callback: (diff: LineChange[], ...args: any[]) => any,
-			thisArg?: any,
+			thisArg?: any
 		): Disposable;
 	}
 }

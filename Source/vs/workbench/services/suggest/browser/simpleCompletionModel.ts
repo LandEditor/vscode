@@ -21,7 +21,7 @@ export interface ISimpleCompletionStats {
 export class LineContext {
 	constructor(
 		readonly leadingLineContent: string,
-		readonly characterCountDelta: number,
+		readonly characterCountDelta: number
 	) {}
 }
 
@@ -47,7 +47,7 @@ export class SimpleCompletionModel {
 		private readonly _items: SimpleCompletionItem[],
 		private _lineContext: LineContext,
 		readonly replacementIndex: number,
-		readonly replacementLength: number,
+		readonly replacementLength: number
 	) {}
 
 	get items(): SimpleCompletionItem[] {
@@ -184,7 +184,7 @@ export class SimpleCompletionModel {
 						item.completion.label,
 						item.labelLow,
 						0,
-						this._fuzzyScoreOptions,
+						this._fuzzyScoreOptions
 					);
 					if (!match) {
 						continue; // NO match
@@ -210,8 +210,8 @@ export class SimpleCompletionModel {
 				? quickSelect(
 						labelLengths.length - 0.85,
 						labelLengths,
-						(a, b) => a - b,
-				  )
+						(a, b) => a - b
+					)
 				: 0,
 		};
 	}

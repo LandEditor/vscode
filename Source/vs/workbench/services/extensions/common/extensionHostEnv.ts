@@ -68,7 +68,7 @@ function clean(env: IProcessEnvironment): void {
  */
 export function writeExtHostConnection(
 	connection: ExtHostConnection,
-	env: IProcessEnvironment,
+	env: IProcessEnvironment
 ): void {
 	// Avoid having two different keys that might introduce amiguity or problems.
 	clean(env);
@@ -79,12 +79,12 @@ export function writeExtHostConnection(
  * Read `connection` from `env` and clean up `env`.
  */
 export function readExtHostConnection(
-	env: IProcessEnvironment,
+	env: IProcessEnvironment
 ): ExtHostConnection {
 	if (env[IPCExtHostConnection.ENV_KEY]) {
 		return cleanAndReturn(
 			env,
-			new IPCExtHostConnection(env[IPCExtHostConnection.ENV_KEY]!),
+			new IPCExtHostConnection(env[IPCExtHostConnection.ENV_KEY]!)
 		);
 	}
 	if (env[SocketExtHostConnection.ENV_KEY]) {
@@ -98,7 +98,7 @@ export function readExtHostConnection(
 
 function cleanAndReturn(
 	env: IProcessEnvironment,
-	result: ExtHostConnection,
+	result: ExtHostConnection
 ): ExtHostConnection {
 	clean(env);
 	return result;

@@ -31,7 +31,7 @@ export interface ICompletionStats {
 export class LineContext {
 	constructor(
 		readonly leadingLineContent: string,
-		readonly characterCountDelta: number,
+		readonly characterCountDelta: number
 	) {}
 }
 
@@ -70,7 +70,7 @@ export class CompletionModel {
 		fuzzyScoreOptions:
 			| FuzzyScoreOptions
 			| undefined = FuzzyScoreOptions.default,
-		readonly clipboardText: string | undefined = undefined,
+		readonly clipboardText: string | undefined = undefined
 	) {
 		this._items = items;
 		this._column = column;
@@ -235,7 +235,7 @@ export class CompletionModel {
 						item.completion.filterText,
 						item.filterTextLow!,
 						0,
-						this._fuzzyScoreOptions,
+						this._fuzzyScoreOptions
 					);
 					if (!match) {
 						continue; // NO match
@@ -243,7 +243,7 @@ export class CompletionModel {
 					if (
 						compareIgnoreCase(
 							item.completion.filterText,
-							item.textLabel,
+							item.textLabel
 						) === 0
 					) {
 						// filterText and label are actually the same -> use good highlights
@@ -257,7 +257,7 @@ export class CompletionModel {
 							wordPos,
 							item.textLabel,
 							item.labelLow,
-							0,
+							0
 						);
 						item.score[0] = match[0]; // use score from filterText
 					}
@@ -270,7 +270,7 @@ export class CompletionModel {
 						item.textLabel,
 						item.labelLow,
 						0,
-						this._fuzzyScoreOptions,
+						this._fuzzyScoreOptions
 					);
 					if (!match) {
 						continue; // NO match
@@ -282,7 +282,7 @@ export class CompletionModel {
 			item.idx = i;
 			item.distance = this._wordDistance.distance(
 				item.position,
-				item.completion,
+				item.completion
 			);
 			target.push(item as StrictCompletionItem);
 
@@ -297,15 +297,15 @@ export class CompletionModel {
 				? quickSelect(
 						labelLengths.length - 0.85,
 						labelLengths,
-						(a, b) => a - b,
-				  )
+						(a, b) => a - b
+					)
 				: 0,
 		};
 	}
 
 	private static _compareCompletionItems(
 		a: StrictCompletionItem,
-		b: StrictCompletionItem,
+		b: StrictCompletionItem
 	): number {
 		if (a.score[0] > b.score[0]) {
 			return -1;
@@ -326,7 +326,7 @@ export class CompletionModel {
 
 	private static _compareCompletionItemsSnippetsDown(
 		a: StrictCompletionItem,
-		b: StrictCompletionItem,
+		b: StrictCompletionItem
 	): number {
 		if (a.completion.kind !== b.completion.kind) {
 			if (a.completion.kind === CompletionItemKind.Snippet) {
@@ -340,7 +340,7 @@ export class CompletionModel {
 
 	private static _compareCompletionItemsSnippetsUp(
 		a: StrictCompletionItem,
-		b: StrictCompletionItem,
+		b: StrictCompletionItem
 	): number {
 		if (a.completion.kind !== b.completion.kind) {
 			if (a.completion.kind === CompletionItemKind.Snippet) {

@@ -44,38 +44,68 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		@IStorageService private readonly _storageService: IStorageService,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IProductService private readonly _productService: IProductService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IAuthenticationService
+		private readonly _authenticationService: IAuthenticationService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustService: IWorkspaceTrustManagementService
 	) {
-		this._openerService.registerValidator({ shouldOpen: (uri, options) => this.validateLink(uri, options) });
-
-		this._readAuthenticationTrustedDomainsResult = new WindowIdleValue(mainWindow, () =>
-			this._instantiationService.invokeFunction(readAuthenticationTrustedDomains));
-		this._authenticationService.onDidRegisterAuthenticationProvider(() => {
-			this._readAuthenticationTrustedDomainsResult?.dispose();
-			this._readAuthenticationTrustedDomainsResult = new WindowIdleValue(mainWindow, () =>
-				this._instantiationService.invokeFunction(readAuthenticationTrustedDomains));
+		this._openerService.registerValidator({
+			shouldOpen: (uri, options) => this.validateLink(uri, options),
 		});
 
-		this._readWorkspaceTrustedDomainsResult = new WindowIdleValue(mainWindow, () =>
-			this._instantiationService.invokeFunction(readWorkspaceTrustedDomains));
+		this._readAuthenticationTrustedDomainsResult = new WindowIdleValue(
+			mainWindow,
+			() =>
+				this._instantiationService.invokeFunction(
+					readAuthenticationTrustedDomains
+				)
+		);
+		this._authenticationService.onDidRegisterAuthenticationProvider(() => {
+			this._readAuthenticationTrustedDomainsResult?.dispose();
+			this._readAuthenticationTrustedDomainsResult = new WindowIdleValue(
+				mainWindow,
+				() =>
+					this._instantiationService.invokeFunction(
+						readAuthenticationTrustedDomains
+					)
+			);
+		});
+
+		this._readWorkspaceTrustedDomainsResult = new WindowIdleValue(
+			mainWindow,
+			() =>
+				this._instantiationService.invokeFunction(
+					readWorkspaceTrustedDomains
+				)
+		);
 		this._workspaceContextService.onDidChangeWorkspaceFolders(() => {
 			this._readWorkspaceTrustedDomainsResult?.dispose();
-			this._readWorkspaceTrustedDomainsResult = new WindowIdleValue(mainWindow, () =>
-				this._instantiationService.invokeFunction(readWorkspaceTrustedDomains));
+			this._readWorkspaceTrustedDomainsResult = new WindowIdleValue(
+				mainWindow,
+				() =>
+					this._instantiationService.invokeFunction(
+						readWorkspaceTrustedDomains
+					)
+			);
 		});
 	}
 
 	async validateLink(
 		resource: URI | string,
-		openOptions?: OpenOptions,
+		openOptions?: OpenOptions
 	): Promise<boolean> {
 		if (
 			!matchesScheme(resource, Schemas.http) &&
@@ -88,7 +118,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 			openOptions?.fromWorkspace &&
 			this._workspaceTrustService.isWorkspaceTrusted() &&
 			!this._configurationService.getValue(
-				"workbench.trustedDomains.promptInTrustedWorkspace",
+				"workbench.trustedDomains.promptInTrustedWorkspace"
 			)
 		) {
 			return true;
@@ -129,7 +159,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 			const remainingLength = Math.max(0, 60 - formattedLink.length);
 			const linkTailLengthToKeep = Math.min(
 				Math.max(5, remainingLength),
-				linkTail.length,
+				linkTail.length
 			);
 
 			if (linkTailLengthToKeep === linkTail.length) {
@@ -141,7 +171,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 					linkTail.charAt(0) +
 					"..." +
 					linkTail.substring(
-						linkTail.length - linkTailLengthToKeep + 1,
+						linkTail.length - linkTailLengthToKeep + 1
 					);
 			}
 
@@ -150,7 +180,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 				message: localize(
 					"openExternalLinkAt",
 					"Do you want {0} to open the external website?",
-					this._productService.nameShort,
+					this._productService.nameShort
 				),
 				detail:
 					typeof originalResource === "string"
@@ -160,20 +190,20 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 					{
 						label: localize(
 							{ key: "open", comment: ["&& denotes a mnemonic"] },
-							"&&Open",
+							"&&Open"
 						),
 						run: () => true,
 					},
 					{
 						label: localize(
 							{ key: "copy", comment: ["&& denotes a mnemonic"] },
-							"&&Copy",
+							"&&Copy"
 						),
 						run: () => {
 							this._clipboardService.writeText(
 								typeof originalResource === "string"
 									? originalResource
-									: resourceUri.toString(true),
+									: resourceUri.toString(true)
 							);
 							return false;
 						},
@@ -184,7 +214,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 								key: "configureTrustedDomains",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"Configure &&Trusted Domains",
+							"Configure &&Trusted Domains"
 						),
 						run: async () => {
 							const pickedDomains =
@@ -195,7 +225,7 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 									this._quickInputService,
 									this._storageService,
 									this._editorService,
-									this._telemetryService,
+									this._telemetryService
 								);
 							// Trust all domains
 							if (pickedDomains.indexOf("*") !== -1) {

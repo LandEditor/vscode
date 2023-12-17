@@ -17,7 +17,7 @@ export class KeymapRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IProductService private readonly productService: IProductService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
 	}
@@ -32,7 +32,7 @@ export class KeymapRecommendations extends ExtensionRecommendations {
 							reasonId: ExtensionRecommendationReason.Application,
 							reasonText: "",
 						},
-					},
+					}
 			);
 		}
 	}

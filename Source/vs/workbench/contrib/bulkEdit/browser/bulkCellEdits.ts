@@ -50,7 +50,7 @@ export class ResourceNotebookCellEdit
 			edit.resource,
 			edit.cellEdit,
 			edit.notebookVersionId,
-			edit.metadata,
+			edit.metadata
 		);
 	}
 
@@ -61,7 +61,7 @@ export class ResourceNotebookCellEdit
 			| IDocumentMetadataEdit
 			| ICellReplaceEdit,
 		readonly notebookVersionId: number | undefined = undefined,
-		metadata?: WorkspaceEditMetadata,
+		metadata?: WorkspaceEditMetadata
 	) {
 		super(metadata);
 	}
@@ -75,16 +75,22 @@ export class BulkCellEdits {
 		private readonly _token: CancellationToken,
 		private readonly _edits: ResourceNotebookCellEdit[],
 		@IEditorService private readonly _editorService: IEditorService,
-		@INotebookEditorModelResolverService private readonly _notebookModelService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelService: INotebookEditorModelResolverService
 	) {
-		this._edits = this._edits.map(e => {
+		this._edits = this._edits.map((e) => {
 			if (e.resource.scheme === CellUri.scheme) {
 				const uri = CellUri.parse(e.resource)?.notebook;
 				if (!uri) {
 					throw new Error(`Invalid notebook URI: ${e.resource}`);
 				}
 
-				return new ResourceNotebookCellEdit(uri, e.cellEdit, e.notebookVersionId, e.metadata);
+				return new ResourceNotebookCellEdit(
+					uri,
+					e.cellEdit,
+					e.notebookVersionId,
+					e.metadata
+				);
 			} else {
 				return e;
 			}
@@ -94,7 +100,7 @@ export class BulkCellEdits {
 	async apply(): Promise<readonly URI[]> {
 		const resources: URI[] = [];
 		const editsByNotebook = groupBy(this._edits, (a, b) =>
-			compare(a.resource.toString(), b.resource.toString()),
+			compare(a.resource.toString(), b.resource.toString())
 		);
 
 		for (const group of editsByNotebook) {
@@ -103,7 +109,7 @@ export class BulkCellEdits {
 			}
 			const [first] = group;
 			const ref = await this._notebookModelService.resolve(
-				first.resource,
+				first.resource
 			);
 
 			// check state
@@ -113,7 +119,7 @@ export class BulkCellEdits {
 			) {
 				ref.dispose();
 				throw new Error(
-					`Notebook '${first.resource}' has changed in the meantime`,
+					`Notebook '${first.resource}' has changed in the meantime`
 				);
 			}
 
@@ -121,7 +127,7 @@ export class BulkCellEdits {
 			const edits = group.map((entry) => entry.cellEdit);
 			const computeUndo = !ref.object.isReadonly();
 			const editor = getNotebookEditorFromEditorPane(
-				this._editorService.activeEditorPane,
+				this._editorService.activeEditorPane
 			);
 			const initialSelectionState: ISelectionState | undefined =
 				editor?.textModel?.uri.toString() ===
@@ -130,7 +136,7 @@ export class BulkCellEdits {
 							kind: SelectionStateType.Index,
 							focus: editor.getFocus(),
 							selections: editor.getSelections(),
-					  }
+						}
 					: undefined;
 			ref.object.notebook.applyEdits(
 				edits,
@@ -138,7 +144,7 @@ export class BulkCellEdits {
 				initialSelectionState,
 				() => undefined,
 				this._undoRedoGroup,
-				computeUndo,
+				computeUndo
 			);
 			ref.dispose();
 

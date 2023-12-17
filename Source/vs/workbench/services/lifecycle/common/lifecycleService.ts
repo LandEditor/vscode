@@ -35,12 +35,12 @@ export abstract class AbstractLifecycleService
 	declare readonly _serviceBrand: undefined;
 
 	protected readonly _onBeforeShutdown = this._register(
-		new Emitter<InternalBeforeShutdownEvent>(),
+		new Emitter<InternalBeforeShutdownEvent>()
 	);
 	readonly onBeforeShutdown = this._onBeforeShutdown.event;
 
 	protected readonly _onWillShutdown = this._register(
-		new Emitter<WillShutdownEvent>(),
+		new Emitter<WillShutdownEvent>()
 	);
 	readonly onWillShutdown = this._onWillShutdown.event;
 
@@ -48,7 +48,7 @@ export abstract class AbstractLifecycleService
 	readonly onDidShutdown = this._onDidShutdown.event;
 
 	protected readonly _onBeforeShutdownError = this._register(
-		new Emitter<BeforeShutdownErrorEvent>(),
+		new Emitter<BeforeShutdownErrorEvent>()
 	);
 	readonly onBeforeShutdownError = this._onBeforeShutdownError.event;
 
@@ -79,9 +79,14 @@ export abstract class AbstractLifecycleService
 		this._startupKind = this.resolveStartupKind();
 
 		// Save shutdown reason to retrieve on next startup
-		this.storageService.onWillSaveState(e => {
+		this.storageService.onWillSaveState((e) => {
 			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				this.storageService.store(AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY, this.shutdownReason, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+				this.storageService.store(
+					AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY,
+					this.shutdownReason,
+					StorageScope.WORKSPACE,
+					StorageTarget.MACHINE
+				);
 			}
 		});
 	}
@@ -90,11 +95,11 @@ export abstract class AbstractLifecycleService
 		// Retrieve and reset last shutdown reason
 		const lastShutdownReason = this.storageService.getNumber(
 			AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 		this.storageService.remove(
 			AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 
 		// Convert into startup kind
@@ -111,7 +116,7 @@ export abstract class AbstractLifecycleService
 		}
 
 		this.logService.trace(
-			`[lifecycle] starting up (startup kind: ${startupKind})`,
+			`[lifecycle] starting up (startup kind: ${startupKind})`
 		);
 
 		return startupKind;

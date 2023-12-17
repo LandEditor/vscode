@@ -25,7 +25,7 @@ import {
 import { isProposedApiEnabled } from "vs/workbench/services/extensions/common/extensions";
 
 const viewsRegistry = Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry,
+	ViewContainerExtensions.ViewsRegistry
 );
 
 export class ViewsWelcomeContribution
@@ -55,10 +55,10 @@ export class ViewsWelcomeContribution
 				for (const welcome of contribution.value) {
 					const { group, order } = parseGroupAndOrder(
 						welcome,
-						contribution,
+						contribution
 					);
 					const precondition = ContextKeyExpr.deserialize(
-						welcome.enablement,
+						welcome.enablement
 					);
 
 					const id = ViewIdentifierMap[welcome.view] ?? welcome.view;
@@ -81,7 +81,7 @@ export class ViewsWelcomeContribution
 			for (const [id, viewContentMap] of welcomesByViewId) {
 				const disposables = viewsRegistry.registerViewWelcomeContent2(
 					id,
-					viewContentMap,
+					viewContentMap
 				);
 
 				for (const [welcome, disposable] of disposables) {
@@ -94,7 +94,7 @@ export class ViewsWelcomeContribution
 
 function parseGroupAndOrder(
 	welcome: ViewWelcome,
-	contribution: IExtensionPointUser<ViewsWelcomeExtensionPoint>,
+	contribution: IExtensionPointUser<ViewsWelcomeExtensionPoint>
 ): { group: string | undefined; order: number | undefined } {
 	let group: string | undefined;
 	let order: number | undefined;
@@ -102,15 +102,15 @@ function parseGroupAndOrder(
 		if (
 			!isProposedApiEnabled(
 				contribution.description,
-				"contribViewsWelcome",
+				"contribViewsWelcome"
 			)
 		) {
 			contribution.collector.warn(
 				nls.localize(
 					"ViewsWelcomeExtensionPoint.proposedAPI",
 					"The viewsWelcome contribution in '{0}' requires 'enabledApiProposals: [\"contribViewsWelcome\"]' in order to use the 'group' proposed property.",
-					contribution.description.identifier.value,
-				),
+					contribution.description.identifier.value
+				)
 			);
 			return { group, order };
 		}

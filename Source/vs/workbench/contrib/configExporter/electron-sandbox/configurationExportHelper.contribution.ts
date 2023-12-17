@@ -17,17 +17,18 @@ import { DefaultConfigurationExportHelper } from "vs/workbench/contrib/configExp
 export class ExtensionPoints implements IWorkbenchContribution {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService
 	) {
 		// Config Exporter
 		if (environmentService.args["export-default-configuration"]) {
 			instantiationService.createInstance(
-				DefaultConfigurationExportHelper,
+				DefaultConfigurationExportHelper
 			);
 		}
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(ExtensionPoints, LifecyclePhase.Restored);

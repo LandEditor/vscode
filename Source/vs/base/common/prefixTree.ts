@@ -40,7 +40,7 @@ export class WellDefinedPrefixTree<V> {
 	insert(
 		key: Iterable<string>,
 		value: V,
-		onNode?: (n: IPrefixTreeNode<V>) => void,
+		onNode?: (n: IPrefixTreeNode<V>) => void
 	): void {
 		this.opNode(key, (n) => (n._value = value), onNode);
 	}
@@ -50,7 +50,7 @@ export class WellDefinedPrefixTree<V> {
 		this.opNode(
 			key,
 			(n) =>
-				(n._value = mutate(n._value === unset ? undefined : n._value)),
+				(n._value = mutate(n._value === unset ? undefined : n._value))
 		);
 	}
 
@@ -154,7 +154,7 @@ export class WellDefinedPrefixTree<V> {
 	private opNode(
 		key: Iterable<string>,
 		fn: (node: Node<V>) => void,
-		onDescend?: (node: Node<V>) => void,
+		onDescend?: (node: Node<V>) => void
 	): void {
 		let node = this.root;
 		for (const part of key) {

@@ -27,7 +27,7 @@ class Entry {
 		} else {
 			if (this.totalCount === 1) {
 				return `Stats for '${ansiColors.grey(this.name)}': ${Math.round(
-					this.totalSize / 1204,
+					this.totalSize / 1204
 				)}KB`;
 			} else {
 				const count =
@@ -35,7 +35,7 @@ class Entry {
 						? ansiColors.green(this.totalCount.toString())
 						: ansiColors.red(this.totalCount.toString());
 				return `Stats for '${ansiColors.grey(
-					this.name,
+					this.name
 				)}': ${count} files, ${Math.round(this.totalSize / 1204)}KB`;
 			}
 		}
@@ -65,8 +65,8 @@ function createStatsStream(group, log) {
 				if (entry.totalCount === 1) {
 					fancyLog(
 						`Stats for '${ansiColors.grey(
-							entry.name,
-						)}': ${Math.round(entry.totalSize / 1204)}KB`,
+							entry.name
+						)}': ${Math.round(entry.totalSize / 1204)}KB`
 					);
 				} else {
 					const count =
@@ -75,15 +75,15 @@ function createStatsStream(group, log) {
 							: ansiColors.red(entry.totalCount.toString());
 					fancyLog(
 						`Stats for '${ansiColors.grey(
-							entry.name,
+							entry.name
 						)}': ${count} files, ${Math.round(
-							entry.totalSize / 1204,
-						)}KB`,
+							entry.totalSize / 1204
+						)}KB`
 					);
 				}
 			}
 			this.emit("end");
-		},
+		}
 	);
 }
 exports.createStatsStream = createStatsStream;

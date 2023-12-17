@@ -58,7 +58,7 @@ export async function serveError(
 	req: http.IncomingMessage,
 	res: http.ServerResponse,
 	errorCode: number,
-	errorMessage: string,
+	errorMessage: string
 ): Promise<void> {
 	res.writeHead(errorCode, { "Content-Type": "text/plain" });
 	res.end(errorMessage);
@@ -79,14 +79,14 @@ export async function serveFile(
 	logService: ILogService,
 	req: http.IncomingMessage,
 	res: http.ServerResponse,
-	responseHeaders: Record<string, string>,
+	responseHeaders: Record<string, string>
 ): Promise<void> {
 	try {
 		const stat = await Promises.stat(filePath); // throws an error if file doesn't exist
 		if (cacheControl === CacheControl.ETAG) {
 			// Check if file modified since
 			const etag = `W/"${[stat.ino, stat.size, stat.mtime.getTime()].join(
-				"-",
+				"-"
 			)}"`; // weak validator (https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/ETag)
 			if (req.headers["if-none-match"] === etag) {
 				res.writeHead(304);
@@ -133,12 +133,18 @@ export class WebClientServer {
 
 	constructor(
 		private readonly _connectionToken: ServerConnectionToken,
-		@IServerEnvironmentService private readonly _environmentService: IServerEnvironmentService,
+		@IServerEnvironmentService
+		private readonly _environmentService: IServerEnvironmentService,
 		@ILogService private readonly _logService: ILogService,
 		@IRequestService private readonly _requestService: IRequestService,
-		@IProductService private readonly _productService: IProductService,
+		@IProductService private readonly _productService: IProductService
 	) {
-		this._webExtensionResourceUrlTemplate = this._productService.extensionsGallery?.resourceUrlTemplate ? URI.parse(this._productService.extensionsGallery.resourceUrlTemplate) : undefined;
+		this._webExtensionResourceUrlTemplate = this._productService
+			.extensionsGallery?.resourceUrlTemplate
+			? URI.parse(
+					this._productService.extensionsGallery.resourceUrlTemplate
+				)
+			: undefined;
 		const serverRootPath = getRemoteServerRootPath(_productService);
 		this._staticRoute = `${serverRootPath}/static`;
 		this._callbackRoute = `${serverRootPath}/callback`;
@@ -153,7 +159,7 @@ export class WebClientServer {
 	async handle(
 		req: http.IncomingMessage,
 		res: http.ServerResponse,
-		parsedUrl: url.UrlWithParsedQuery,
+		parsedUrl: url.UrlWithParsedQuery
 	): Promise<void> {
 		try {
 			const pathname = parsedUrl.pathname!;
@@ -194,14 +200,14 @@ export class WebClientServer {
 	private async _handleStatic(
 		req: http.IncomingMessage,
 		res: http.ServerResponse,
-		parsedUrl: url.UrlWithParsedQuery,
+		parsedUrl: url.UrlWithParsedQuery
 	): Promise<void> {
 		const headers: Record<string, string> = Object.create(null);
 
 		// Strip the this._staticRoute from the path
 		const normalizedPathname = decodeURIComponent(parsedUrl.pathname!); // support paths that are uri-encoded (e.g. spaces => %20)
 		const relativeFilePath = normalizedPathname.substring(
-			this._staticRoute.length + 1,
+			this._staticRoute.length + 1
 		);
 
 		const filePath = join(APP_ROOT, relativeFilePath); // join also normalizes the path
@@ -217,7 +223,7 @@ export class WebClientServer {
 			this._logService,
 			req,
 			res,
-			headers,
+			headers
 		);
 	}
 
@@ -232,21 +238,21 @@ export class WebClientServer {
 	private async _handleWebExtensionResource(
 		req: http.IncomingMessage,
 		res: http.ServerResponse,
-		parsedUrl: url.UrlWithParsedQuery,
+		parsedUrl: url.UrlWithParsedQuery
 	): Promise<void> {
 		if (!this._webExtensionResourceUrlTemplate) {
 			return serveError(
 				req,
 				res,
 				500,
-				"No extension gallery service configured.",
+				"No extension gallery service configured."
 			);
 		}
 
 		// Strip `/web-extension-resource/` from the path
 		const normalizedPathname = decodeURIComponent(parsedUrl.pathname!); // support paths that are uri-encoded (e.g. spaces => %20)
 		const path = normalize(
-			normalizedPathname.substring(this._webExtensionRoute.length + 1),
+			normalizedPathname.substring(this._webExtensionRoute.length + 1)
 		);
 		const uri = URI.parse(path).with({
 			scheme: this._webExtensionResourceUrlTemplate.scheme,
@@ -256,7 +262,7 @@ export class WebClientServer {
 
 		if (
 			this._getResourceURLTemplateAuthority(
-				this._webExtensionResourceUrlTemplate,
+				this._webExtensionResourceUrlTemplate
 			) !== this._getResourceURLTemplateAuthority(uri)
 		) {
 			return serveError(req, res, 403, "Request Forbidden");
@@ -282,7 +288,7 @@ export class WebClientServer {
 				url: uri.toString(true),
 				headers,
 			},
-			CancellationToken.None,
+			CancellationToken.None
 		);
 
 		const status = context.res.statusCode || 500;
@@ -297,7 +303,7 @@ export class WebClientServer {
 				req,
 				res,
 				status,
-				text || `Request failed with status ${status}`,
+				text || `Request failed with status ${status}`
 			);
 		}
 
@@ -323,7 +329,7 @@ export class WebClientServer {
 	private async _handleRoot(
 		req: http.IncomingMessage,
 		res: http.ServerResponse,
-		parsedUrl: url.UrlWithParsedQuery,
+		parsedUrl: url.UrlWithParsedQuery
 	): Promise<void> {
 		const queryConnectionToken = parsedUrl.query[connectionTokenQueryName];
 		if (typeof queryConnectionToken === "string") {
@@ -336,7 +342,7 @@ export class WebClientServer {
 				{
 					sameSite: "lax",
 					maxAge: 60 * 60 * 24 * 7 /* 1 week */,
-				},
+				}
 			);
 
 			const newQuery = Object.create(null);
@@ -363,8 +369,8 @@ export class WebClientServer {
 		const remoteAuthority = useTestResolver
 			? "test+test"
 			: getFirstHeader("x-original-host") ||
-			  getFirstHeader("x-forwarded-host") ||
-			  req.headers.host;
+				getFirstHeader("x-forwarded-host") ||
+				req.headers.host;
 		if (!remoteAuthority) {
 			return serveError(req, res, 400, `Bad request.`);
 		}
@@ -390,7 +396,7 @@ export class WebClientServer {
 		const filePath = FileAccess.asFileUri(
 			this._environmentService.isBuilt
 				? "vs/code/browser/workbench/workbench.html"
-				: "vs/code/browser/workbench/workbench-dev.html",
+				: "vs/code/browser/workbench/workbench-dev.html"
 		).fsPath;
 		const authSessionInfo =
 			!this._environmentService.isBuilt &&
@@ -401,7 +407,7 @@ export class WebClientServer {
 						accessToken:
 							this._environmentService.args["github-auth"],
 						scopes: [["user:email"], ["repo"]],
-				  }
+					}
 				: undefined;
 
 		const productConfiguration = <Partial<IProductConfiguration>>{
@@ -417,7 +423,7 @@ export class WebClientServer {
 									path: `${this._webExtensionRoute}/${this._webExtensionResourceUrlTemplate.authority}${this._webExtensionResourceUrlTemplate.path}`,
 								})
 								.toString(true),
-				  }
+					}
 				: undefined,
 		};
 
@@ -426,9 +432,9 @@ export class WebClientServer {
 				const productOverrides = JSON.parse(
 					(
 						await Promises.readFile(
-							join(APP_ROOT, "product.overrides.json"),
+							join(APP_ROOT, "product.overrides.json")
 						)
-					).toString(),
+					).toString()
 				);
 				Object.assign(productConfiguration, productOverrides);
 			} catch (err) {
@@ -455,10 +461,10 @@ export class WebClientServer {
 			enableWorkspaceTrust:
 				!this._environmentService.args["disable-workspace-trust"],
 			folderUri: resolveWorkspaceURI(
-				this._environmentService.args["default-folder"],
+				this._environmentService.args["default-folder"]
 			),
 			workspaceUri: resolveWorkspaceURI(
-				this._environmentService.args["default-workspace"],
+				this._environmentService.args["default-workspace"]
 			),
 			productConfiguration,
 			callbackRoute: this._callbackRoute,
@@ -474,7 +480,7 @@ export class WebClientServer {
 			WORKBENCH_NLS_BASE_URL: nlsBaseUrl
 				? `${nlsBaseUrl}${!nlsBaseUrl.endsWith("/") ? "/" : ""}${
 						this._productService.commit
-				  }/${this._productService.version}/`
+					}/${this._productService.version}/`
 				: "",
 		};
 
@@ -491,10 +497,10 @@ export class WebClientServer {
 					(
 						await Promises.readFile(
 							FileAccess.asFileUri(
-								`${builtinExtensionsPath}/${extensionPath}/package.json`,
-							).fsPath,
+								`${builtinExtensionsPath}/${extensionPath}/package.json`
+							).fsPath
 						)
-					).toString(),
+					).toString()
 				);
 				bundledExtensions.push({ extensionPath, packageJSON });
 			}
@@ -508,7 +514,7 @@ export class WebClientServer {
 			).toString();
 			data = workbenchTemplate.replace(
 				/\{\{([^}]+)\}\}/g,
-				(_, key) => values[key] ?? "undefined",
+				(_, key) => values[key] ?? "undefined"
 			);
 		} catch (e) {
 			res.writeHead(404, { "Content-Type": "text/plain" });
@@ -523,7 +529,7 @@ export class WebClientServer {
 			"img-src 'self' https: data: blob:;",
 			"media-src 'self';",
 			`script-src 'self' 'unsafe-eval' ${this._getScriptCspHashes(
-				data,
+				data
 			).join(" ")} '${webWorkerExtensionHostIframeScriptSHA}' ${
 				useTestResolver ? "" : `http://${remoteAuthority}`
 			};`, // the sha is the same as in src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html
@@ -550,7 +556,7 @@ export class WebClientServer {
 				{
 					sameSite: "lax",
 					maxAge: 60 * 60 * 24 * 7 /* 1 week */,
-				},
+				}
 			);
 		}
 
@@ -583,7 +589,7 @@ export class WebClientServer {
 	 */
 	private async _handleCallback(res: http.ServerResponse): Promise<void> {
 		const filePath = FileAccess.asFileUri(
-			"vs/code/browser/workbench/callback.html",
+			"vs/code/browser/workbench/callback.html"
 		).fsPath;
 		const data = (await Promises.readFile(filePath)).toString();
 		const cspDirectives = [

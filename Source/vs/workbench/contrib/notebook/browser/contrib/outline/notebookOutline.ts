@@ -94,7 +94,7 @@ class NotebookOutlineTemplate {
 		readonly container: HTMLElement,
 		readonly iconClass: HTMLElement,
 		readonly iconLabel: IconLabel,
-		readonly decoration: HTMLElement,
+		readonly decoration: HTMLElement
 	) {}
 }
 
@@ -105,8 +105,9 @@ class NotebookOutlineRenderer
 
 	constructor(
 		@IThemeService private readonly _themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-	) { }
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
+	) {}
 
 	renderTemplate(container: HTMLElement): NotebookOutlineTemplate {
 		container.classList.add("notebook-outline-element", "show-file-icons");
@@ -120,7 +121,7 @@ class NotebookOutlineRenderer
 			container,
 			iconClass,
 			iconLabel,
-			decoration,
+			decoration
 		);
 	}
 
@@ -128,7 +129,7 @@ class NotebookOutlineRenderer
 		node: ITreeNode<OutlineEntry, FuzzyScore>,
 		_index: number,
 		template: NotebookOutlineTemplate,
-		_height: number | undefined,
+		_height: number | undefined
 	): void {
 		const extraClasses: string[] = [];
 		const options: IIconLabelValueOptions = {
@@ -144,9 +145,7 @@ class NotebookOutlineRenderer
 		) {
 			template.iconClass.className = "";
 			extraClasses.push(
-				...getIconClassesForLanguageId(
-					node.element.cell.language ?? "",
-				),
+				...getIconClassesForLanguageId(node.element.cell.language ?? "")
 			);
 		} else {
 			template.iconClass.className =
@@ -162,10 +161,10 @@ class NotebookOutlineRenderer
 		template.decoration.innerText = "";
 		if (markerInfo) {
 			const problem = this._configurationService.getValue(
-				"problems.visibility",
+				"problems.visibility"
 			);
 			const useBadges = this._configurationService.getValue(
-				OutlineConfigKeys.problemsBadges,
+				OutlineConfigKeys.problemsBadges
 			);
 
 			if (!useBadges || !problem) {
@@ -184,26 +183,26 @@ class NotebookOutlineRenderer
 				.getColor(
 					markerInfo.topSev === MarkerSeverity.Error
 						? listErrorForeground
-						: listWarningForeground,
+						: listWarningForeground
 				);
 			if (problem === undefined) {
 				return;
 			}
 			const useColors = this._configurationService.getValue(
-				OutlineConfigKeys.problemsColors,
+				OutlineConfigKeys.problemsColors
 			);
 			if (!useColors || !problem) {
 				template.container.style.removeProperty(
-					"--outline-element-color",
+					"--outline-element-color"
 				);
 				template.decoration.style.setProperty(
 					"--outline-element-color",
-					color?.toString() ?? "inherit",
+					color?.toString() ?? "inherit"
 				);
 			} else {
 				template.container.style.setProperty(
 					"--outline-element-color",
-					color?.toString() ?? "inherit",
+					color?.toString() ?? "inherit"
 				);
 			}
 		}
@@ -229,7 +228,7 @@ class NotebookNavigationLabelProvider
 	implements IKeyboardNavigationLabelProvider<OutlineEntry>
 {
 	getKeyboardNavigationLabel(
-		element: OutlineEntry,
+		element: OutlineEntry
 	):
 		| { toString(): string | undefined }
 		| { toString(): string | undefined }[]
@@ -254,7 +253,7 @@ class NotebookQuickPickProvider implements IQuickPickDataSource<OutlineEntry> {
 	constructor(
 		private _getEntries: () => OutlineEntry[],
 		@IThemeService private readonly _themeService: IThemeService
-	) { }
+	) {}
 
 	getQuickPickElements(): IQuickPickOutlineElement<OutlineEntry>[] {
 		const bucket: OutlineEntry[] = [];
@@ -286,7 +285,7 @@ class NotebookQuickPickProvider implements IQuickPickDataSource<OutlineEntry> {
 class NotebookComparator implements IOutlineComparator<OutlineEntry> {
 	private readonly _collator = new WindowIdleValue<Intl.Collator>(
 		mainWindow,
-		() => new Intl.Collator(undefined, { numeric: true }),
+		() => new Intl.Collator(undefined, { numeric: true })
 	);
 
 	compareByPosition(a: OutlineEntry, b: OutlineEntry): number {
@@ -332,7 +331,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 		_target: OutlineTarget,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IConfigurationService _configurationService: IConfigurationService,
+		@IConfigurationService _configurationService: IConfigurationService
 	) {
 		const installSelectionListener = () => {
 			const notebookEditor = _editor.getControl();
@@ -343,30 +342,53 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 			} else {
 				this._outlineProvider?.dispose();
 				this._localDisposables.clear();
-				this._outlineProvider = instantiationService.createInstance(NotebookCellOutlineProvider, notebookEditor, _target);
-				this._localDisposables.add(this._outlineProvider.onDidChange(e => {
-					this._onDidChange.fire(e);
-				}));
+				this._outlineProvider = instantiationService.createInstance(
+					NotebookCellOutlineProvider,
+					notebookEditor,
+					_target
+				);
+				this._localDisposables.add(
+					this._outlineProvider.onDidChange((e) => {
+						this._onDidChange.fire(e);
+					})
+				);
 			}
 		};
 
-		this._dispoables.add(_editor.onDidChangeModel(() => {
-			installSelectionListener();
-		}));
+		this._dispoables.add(
+			_editor.onDidChangeModel(() => {
+				installSelectionListener();
+			})
+		);
 
 		installSelectionListener();
-		const treeDataSource: IDataSource<this, OutlineEntry> = { getChildren: parent => parent instanceof NotebookCellOutline ? (this._outlineProvider?.entries ?? []) : parent.children };
+		const treeDataSource: IDataSource<this, OutlineEntry> = {
+			getChildren: (parent) =>
+				parent instanceof NotebookCellOutline
+					? this._outlineProvider?.entries ?? []
+					: parent.children,
+		};
 		const delegate = new NotebookOutlineVirtualDelegate();
-		const renderers = [instantiationService.createInstance(NotebookOutlineRenderer)];
+		const renderers = [
+			instantiationService.createInstance(NotebookOutlineRenderer),
+		];
 		const comparator = new NotebookComparator();
 
 		const options: IWorkbenchDataTreeOptions<OutlineEntry, FuzzyScore> = {
-			collapseByDefault: _target === OutlineTarget.Breadcrumbs || (_target === OutlineTarget.OutlinePane && _configurationService.getValue(OutlineConfigKeys.collapseItems) === OutlineConfigCollapseItemsValues.Collapsed),
+			collapseByDefault:
+				_target === OutlineTarget.Breadcrumbs ||
+				(_target === OutlineTarget.OutlinePane &&
+					_configurationService.getValue(
+						OutlineConfigKeys.collapseItems
+					) === OutlineConfigCollapseItemsValues.Collapsed),
 			expandOnlyOnTwistieClick: true,
 			multipleSelectionSupport: false,
 			accessibilityProvider: new NotebookOutlineAccessibility(),
-			identityProvider: { getId: element => element.cell.uri.toString() },
-			keyboardNavigationLabelProvider: new NotebookNavigationLabelProvider()
+			identityProvider: {
+				getId: (element) => element.cell.uri.toString(),
+			},
+			keyboardNavigationLabelProvider:
+				new NotebookNavigationLabelProvider(),
 		};
 
 		this.config = {
@@ -379,14 +401,17 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						candidate = candidate.parent;
 					}
 					return result;
-				}
+				},
 			},
-			quickPickDataSource: instantiationService.createInstance(NotebookQuickPickProvider, () => (this._outlineProvider?.entries ?? [])),
+			quickPickDataSource: instantiationService.createInstance(
+				NotebookQuickPickProvider,
+				() => this._outlineProvider?.entries ?? []
+			),
 			treeDataSource,
 			delegate,
 			renderers,
 			comparator,
-			options
+			options,
 		};
 	}
 
@@ -403,7 +428,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 	async reveal(
 		entry: OutlineEntry,
 		options: IEditorOptions,
-		sideBySide: boolean,
+		sideBySide: boolean
 	): Promise<void> {
 		await this._editorService.openEditor(
 			{
@@ -415,7 +440,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 					selection: entry.position,
 				} as INotebookEditorOptions,
 			},
-			sideBySide ? SIDE_GROUP : undefined,
+			sideBySide ? SIDE_GROUP : undefined
 		);
 	}
 
@@ -442,7 +467,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 						outputClassName: "nb-symbolHighlight",
 					},
 				},
-			],
+			]
 		);
 
 		let editorDecorations: ICellModelDecorations[];
@@ -466,7 +491,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 
 				editorDecorations = accessor.deltaDecorations(
 					[],
-					[deltaDecoration],
+					[deltaDecoration]
 				);
 			}
 		});
@@ -507,8 +532,10 @@ export class NotebookOutlineCreator
 
 	constructor(
 		@IOutlineService outlineService: IOutlineService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		const reg = outlineService.registerOutlineCreator(this);
 		this.dispose = () => reg.dispose();
@@ -521,16 +548,16 @@ export class NotebookOutlineCreator
 	async createOutline(
 		editor: NotebookEditor,
 		target: OutlineTarget,
-		cancelToken: CancellationToken,
+		cancelToken: CancellationToken
 	): Promise<IOutline<OutlineEntry> | undefined> {
 		const outline = this._instantiationService.createInstance(
 			NotebookCellOutline,
 			editor,
-			target,
+			target
 		);
 
 		const showAllSymbols = this._configurationService.getValue<boolean>(
-			NotebookSetting.gotoSymbolsAllSymbols,
+			NotebookSetting.gotoSymbolsAllSymbols
 		);
 		if (target === OutlineTarget.QuickPick && showAllSymbols) {
 			await outline.setFullSymbols(cancelToken);
@@ -540,14 +567,14 @@ export class NotebookOutlineCreator
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	NotebookOutlineCreator,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	id: "notebook",
 	order: 100,
@@ -558,7 +585,7 @@ Registry.as<IConfigurationRegistry>(
 			default: false,
 			markdownDescription: localize(
 				"outline.showCodeCells",
-				"When enabled notebook outline shows code cells.",
+				"When enabled notebook outline shows code cells."
 			),
 		},
 		"notebook.breadcrumbs.showCodeCells": {
@@ -566,7 +593,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			markdownDescription: localize(
 				"breadcrumbs.showCodeCells",
-				"When enabled notebook breadcrumbs contain code cells.",
+				"When enabled notebook breadcrumbs contain code cells."
 			),
 		},
 		[NotebookSetting.gotoSymbolsAllSymbols]: {
@@ -574,7 +601,7 @@ Registry.as<IConfigurationRegistry>(
 			default: true,
 			markdownDescription: localize(
 				"notebook.gotoSymbols.showAllSymbols",
-				"When enabled the Go to Symbol Quick Pick will display full code symbols from the notebook, as well as Markdown headers.",
+				"When enabled the Go to Symbol Quick Pick will display full code symbols from the notebook, as well as Markdown headers."
 			),
 		},
 	},

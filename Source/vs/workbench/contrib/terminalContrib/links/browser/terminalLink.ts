@@ -42,17 +42,26 @@ export class TerminalLink extends DisposableStore implements ILink {
 		readonly text: string,
 		readonly actions: IHoverAction[] | undefined,
 		private readonly _viewportY: number,
-		private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => Promise<void>,
-		private readonly _tooltipCallback: (link: TerminalLink, viewportRange: IViewportRange, modifierDownCallback?: () => void, modifierUpCallback?: () => void) => void,
+		private readonly _activateCallback: (
+			event: MouseEvent | undefined,
+			uri: string
+		) => Promise<void>,
+		private readonly _tooltipCallback: (
+			link: TerminalLink,
+			viewportRange: IViewportRange,
+			modifierDownCallback?: () => void,
+			modifierUpCallback?: () => void
+		) => void,
 		private readonly _isHighConfidenceLink: boolean,
 		readonly label: string | undefined,
 		private readonly _type: TerminalLinkType,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 		this.decorations = {
 			pointerCursor: false,
-			underline: this._isHighConfidenceLink
+			underline: this._isHighConfidenceLink,
 		};
 	}
 
@@ -80,14 +89,14 @@ export class TerminalLink extends DisposableStore implements ILink {
 				if (!e.repeat && this._isModifierDown(e)) {
 					this._enableDecorations();
 				}
-			}),
+			})
 		);
 		this._hoverListeners.add(
 			dom.addDisposableListener(d, "keyup", (e) => {
 				if (!e.repeat && !this._isModifierDown(e)) {
 					this._disableDecorations();
 				}
-			}),
+			})
 		);
 
 		// Listen for when the terminal renders on the same line as the link
@@ -97,7 +106,7 @@ export class TerminalLink extends DisposableStore implements ILink {
 				if (viewportRangeY >= e.start && viewportRangeY <= e.end) {
 					this._onInvalidated.fire();
 				}
-			}),
+			})
 		);
 
 		// Only show the tooltip and highlight for high confidence links (not word/search workspace
@@ -112,7 +121,7 @@ export class TerminalLink extends DisposableStore implements ILink {
 						: undefined,
 					this._isHighConfidenceLink
 						? () => this._disableDecorations()
-						: undefined,
+						: undefined
 				);
 				// Clear out scheduler until next hover event
 				this._tooltipScheduler?.dispose();
@@ -141,7 +150,7 @@ export class TerminalLink extends DisposableStore implements ILink {
 					origin.y = e.pageY;
 					this._tooltipScheduler?.schedule();
 				}
-			}),
+			})
 		);
 	}
 

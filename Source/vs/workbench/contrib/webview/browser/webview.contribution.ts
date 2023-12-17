@@ -29,7 +29,7 @@ const PRIORITY = 100;
 
 function overrideCommandForWebview(
 	command: MultiCommand | undefined,
-	f: (webview: IWebview) => void,
+	f: (webview: IWebview) => void
 ) {
 	command?.addImplementation(PRIORITY, "webview", (accessor) => {
 		const webviewService = accessor.get(IWebviewService);

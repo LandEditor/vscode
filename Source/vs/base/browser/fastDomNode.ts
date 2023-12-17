@@ -296,7 +296,7 @@ export class FastDomNode<T extends HTMLElement> {
 			| "size"
 			| "layout"
 			| "style"
-			| "paint",
+			| "paint"
 	): void {
 		if (this._contain === contain) {
 			return;
@@ -327,7 +327,7 @@ function numberAsPixels(value: number | string): string {
 }
 
 export function createFastDomNode<T extends HTMLElement>(
-	domNode: T,
+	domNode: T
 ): FastDomNode<T> {
 	return new FastDomNode(domNode);
 }

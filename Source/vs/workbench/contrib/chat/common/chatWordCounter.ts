@@ -13,7 +13,7 @@ export interface IWordCountResult {
 
 export function getNWords(
 	str: string,
-	numWordsToCount: number,
+	numWordsToCount: number
 ): IWordCountResult {
 	let wordCount = numWordsToCount;
 	let i = 0;

@@ -42,7 +42,7 @@ export class ScrollSynchronizer extends Disposable {
 		private readonly input2View: InputCodeEditorView,
 		private readonly baseView: IObservable<BaseCodeEditorView | undefined>,
 		private readonly inputResultView: ResultCodeEditorView,
-		private readonly layout: IObservable<IMergeEditorLayout>,
+		private readonly layout: IObservable<IMergeEditorLayout>
 	) {
 		super();
 
@@ -53,13 +53,13 @@ export class ScrollSynchronizer extends Disposable {
 
 			this.input2View.editor.setScrollTop(
 				this.input1View.editor.getScrollTop(),
-				ScrollType.Immediate,
+				ScrollType.Immediate
 			);
 
 			if (this.shouldAlignResult) {
 				this.inputResultView.editor.setScrollTop(
 					this.input1View.editor.getScrollTop(),
-					ScrollType.Immediate,
+					ScrollType.Immediate
 				);
 			} else {
 				const mappingInput1Result =
@@ -67,7 +67,7 @@ export class ScrollSynchronizer extends Disposable {
 				this.synchronizeScrolling(
 					this.input1View.editor,
 					this.inputResultView.editor,
-					mappingInput1Result,
+					mappingInput1Result
 				);
 			}
 
@@ -78,17 +78,17 @@ export class ScrollSynchronizer extends Disposable {
 						.get()
 						?.editor.setScrollTop(
 							this.input1View.editor.getScrollTop(),
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 				} else {
 					const mapping = new DocumentLineRangeMap(
 						this.model!.baseInput1Diffs.get(),
-						-1,
+						-1
 					).reverse();
 					this.synchronizeScrolling(
 						this.input1View.editor,
 						baseView.editor,
-						mapping,
+						mapping
 					);
 				}
 			}
@@ -105,19 +105,19 @@ export class ScrollSynchronizer extends Disposable {
 							.get()
 							?.editor.setScrollLeft(
 								c.scrollLeft,
-								ScrollType.Immediate,
+								ScrollType.Immediate
 							);
 						this.input2View.editor.setScrollLeft(
 							c.scrollLeft,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 						this.inputResultView.editor.setScrollLeft(
 							c.scrollLeft,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 					}
-				}),
-			),
+				})
+			)
 		);
 
 		this._store.add(
@@ -130,13 +130,13 @@ export class ScrollSynchronizer extends Disposable {
 					if (c.scrollTopChanged) {
 						this.input1View.editor.setScrollTop(
 							c.scrollTop,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 
 						if (this.shouldAlignResult) {
 							this.inputResultView.editor.setScrollTop(
 								this.input2View.editor.getScrollTop(),
-								ScrollType.Immediate,
+								ScrollType.Immediate
 							);
 						} else {
 							const mappingInput2Result =
@@ -144,7 +144,7 @@ export class ScrollSynchronizer extends Disposable {
 							this.synchronizeScrolling(
 								this.input2View.editor,
 								this.inputResultView.editor,
-								mappingInput2Result,
+								mappingInput2Result
 							);
 						}
 
@@ -155,17 +155,17 @@ export class ScrollSynchronizer extends Disposable {
 									.get()
 									?.editor.setScrollTop(
 										c.scrollTop,
-										ScrollType.Immediate,
+										ScrollType.Immediate
 									);
 							} else {
 								const mapping = new DocumentLineRangeMap(
 									this.model!.baseInput2Diffs.get(),
-									-1,
+									-1
 								).reverse();
 								this.synchronizeScrolling(
 									this.input2View.editor,
 									baseView.editor,
-									mapping,
+									mapping
 								);
 							}
 						}
@@ -175,19 +175,19 @@ export class ScrollSynchronizer extends Disposable {
 							.get()
 							?.editor.setScrollLeft(
 								c.scrollLeft,
-								ScrollType.Immediate,
+								ScrollType.Immediate
 							);
 						this.input1View.editor.setScrollLeft(
 							c.scrollLeft,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 						this.inputResultView.editor.setScrollLeft(
 							c.scrollLeft,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 					}
-				}),
-			),
+				})
+			)
 		);
 		this._store.add(
 			this.inputResultView.editor.onDidScrollChange(
@@ -196,11 +196,11 @@ export class ScrollSynchronizer extends Disposable {
 						if (this.shouldAlignResult) {
 							this.input1View.editor.setScrollTop(
 								c.scrollTop,
-								ScrollType.Immediate,
+								ScrollType.Immediate
 							);
 							this.input2View.editor.setScrollTop(
 								c.scrollTop,
-								ScrollType.Immediate,
+								ScrollType.Immediate
 							);
 						} else {
 							const mapping1 =
@@ -208,7 +208,7 @@ export class ScrollSynchronizer extends Disposable {
 							this.synchronizeScrolling(
 								this.inputResultView.editor,
 								this.input1View.editor,
-								mapping1,
+								mapping1
 							);
 
 							const mapping2 =
@@ -216,7 +216,7 @@ export class ScrollSynchronizer extends Disposable {
 							this.synchronizeScrolling(
 								this.inputResultView.editor,
 								this.input2View.editor,
-								mapping2,
+								mapping2
 							);
 						}
 
@@ -226,7 +226,7 @@ export class ScrollSynchronizer extends Disposable {
 							this.synchronizeScrolling(
 								this.inputResultView.editor,
 								baseView.editor,
-								baseMapping,
+								baseMapping
 							);
 						}
 					}
@@ -235,19 +235,19 @@ export class ScrollSynchronizer extends Disposable {
 							.get()
 							?.editor?.setScrollLeft(
 								c.scrollLeft,
-								ScrollType.Immediate,
+								ScrollType.Immediate
 							);
 						this.input1View.editor.setScrollLeft(
 							c.scrollLeft,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 						this.input2View.editor.setScrollLeft(
 							c.scrollLeft,
-							ScrollType.Immediate,
+							ScrollType.Immediate
 						);
 					}
-				}),
-			),
+				})
+			)
 		);
 
 		this._store.add(
@@ -265,33 +265,33 @@ export class ScrollSynchronizer extends Disposable {
 									if (this.shouldAlignBase) {
 										this.input1View.editor.setScrollTop(
 											c.scrollTop,
-											ScrollType.Immediate,
+											ScrollType.Immediate
 										);
 										this.input2View.editor.setScrollTop(
 											c.scrollTop,
-											ScrollType.Immediate,
+											ScrollType.Immediate
 										);
 									} else {
 										const baseInput1Mapping =
 											new DocumentLineRangeMap(
 												this.model!.baseInput1Diffs.get(),
-												-1,
+												-1
 											);
 										this.synchronizeScrolling(
 											baseView.editor,
 											this.input1View.editor,
-											baseInput1Mapping,
+											baseInput1Mapping
 										);
 
 										const baseInput2Mapping =
 											new DocumentLineRangeMap(
 												this.model!.baseInput2Diffs.get(),
-												-1,
+												-1
 											);
 										this.synchronizeScrolling(
 											baseView.editor,
 											this.input2View.editor,
-											baseInput2Mapping,
+											baseInput2Mapping
 										);
 									}
 
@@ -300,35 +300,35 @@ export class ScrollSynchronizer extends Disposable {
 									this.synchronizeScrolling(
 										baseView.editor,
 										this.inputResultView.editor,
-										baseMapping,
+										baseMapping
 									);
 								}
 								if (c.scrollLeftChanged) {
 									this.inputResultView.editor.setScrollLeft(
 										c.scrollLeft,
-										ScrollType.Immediate,
+										ScrollType.Immediate
 									);
 									this.input1View.editor.setScrollLeft(
 										c.scrollLeft,
-										ScrollType.Immediate,
+										ScrollType.Immediate
 									);
 									this.input2View.editor.setScrollLeft(
 										c.scrollLeft,
-										ScrollType.Immediate,
+										ScrollType.Immediate
 									);
 								}
-							}),
-						),
+							})
+						)
 					);
 				}
-			}),
+			})
 		);
 	}
 
 	private synchronizeScrolling(
 		scrollingEditor: CodeEditorWidget,
 		targetEditor: CodeEditorWidget,
-		mapping: DocumentLineRangeMap | undefined,
+		mapping: DocumentLineRangeMap | undefined
 	) {
 		if (!mapping) {
 			return;
@@ -345,23 +345,23 @@ export class ScrollSynchronizer extends Disposable {
 		const targetRange = result.outputRange;
 
 		const resultStartTopPx = targetEditor.getTopForLineNumber(
-			targetRange.startLineNumber,
+			targetRange.startLineNumber
 		);
 		const resultEndPx = targetEditor.getTopForLineNumber(
-			targetRange.endLineNumberExclusive,
+			targetRange.endLineNumberExclusive
 		);
 
 		const sourceStartTopPx = scrollingEditor.getTopForLineNumber(
-			sourceRange.startLineNumber,
+			sourceRange.startLineNumber
 		);
 		const sourceEndPx = scrollingEditor.getTopForLineNumber(
-			sourceRange.endLineNumberExclusive,
+			sourceRange.endLineNumberExclusive
 		);
 
 		const factor = Math.min(
 			(scrollingEditor.getScrollTop() - sourceStartTopPx) /
 				(sourceEndPx - sourceStartTopPx),
-			1,
+			1
 		);
 		const resultScrollPosition =
 			resultStartTopPx + (resultEndPx - resultStartTopPx) * factor;

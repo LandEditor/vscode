@@ -60,13 +60,13 @@ export interface IDraggedResourceEditorInput
 }
 
 export function extractEditorsDropData(
-	e: DragEvent,
+	e: DragEvent
 ): Array<IDraggedResourceEditorInput> {
 	const editors: IDraggedResourceEditorInput[] = [];
 	if (e.dataTransfer && e.dataTransfer.types.length > 0) {
 		// Data Transfer: Code Editors
 		const rawEditorsData = e.dataTransfer.getData(
-			CodeDataTransfers.EDITORS,
+			CodeDataTransfers.EDITORS
 		);
 		if (rawEditorsData) {
 			try {
@@ -80,12 +80,12 @@ export function extractEditorsDropData(
 		else {
 			try {
 				const rawResourcesData = e.dataTransfer.getData(
-					DataTransfers.RESOURCES,
+					DataTransfers.RESOURCES
 				);
 				editors.push(
 					...createDraggedEditorInputFromRawResourcesData(
-						rawResourcesData,
-					),
+						rawResourcesData
+					)
 				);
 			} catch (error) {
 				// Invalid transfer
@@ -104,7 +104,7 @@ export function extractEditorsDropData(
 					try {
 						editors.push({
 							resource: URI.file(
-								(file as FileAdditionalNativeProperties).path!,
+								(file as FileAdditionalNativeProperties).path!
 							),
 							isExternal: true,
 							allowWorkspaceOpen: true,
@@ -135,7 +135,7 @@ export function extractEditorsDropData(
 
 		// Workbench contributions
 		const contributions = Registry.as<IDragAndDropContributionRegistry>(
-			Extensions.DragAndDropContribution,
+			Extensions.DragAndDropContribution
 		).getAll();
 		for (const contribution of contributions) {
 			const data = e.dataTransfer.getData(contribution.dataFormatKey);
@@ -169,7 +169,7 @@ export function extractEditorsDropData(
 
 export async function extractEditorsAndFilesDropData(
 	accessor: ServicesAccessor,
-	e: DragEvent,
+	e: DragEvent
 ): Promise<Array<IDraggedResourceEditorInput>> {
 	const editors = extractEditorsDropData(e);
 
@@ -179,7 +179,7 @@ export async function extractEditorsAndFilesDropData(
 		if (files) {
 			const instantiationService = accessor.get(IInstantiationService);
 			const filesData = await instantiationService.invokeFunction(
-				(accessor) => extractFilesDropData(accessor, e),
+				(accessor) => extractFilesDropData(accessor, e)
 			);
 			for (const fileData of filesData) {
 				editors.push({
@@ -196,7 +196,7 @@ export async function extractEditorsAndFilesDropData(
 }
 
 export function createDraggedEditorInputFromRawResourcesData(
-	rawResourcesData: string | undefined,
+	rawResourcesData: string | undefined
 ): IDraggedResourceEditorInput[] {
 	const editors: IDraggedResourceEditorInput[] = [];
 
@@ -206,7 +206,7 @@ export function createDraggedEditorInputFromRawResourcesData(
 			if (resourceRaw.indexOf(":") > 0) {
 				// mitigate https://github.com/microsoft/vscode/issues/124946
 				const { selection, uri } = extractSelection(
-					URI.parse(resourceRaw),
+					URI.parse(resourceRaw)
 				);
 				editors.push({ resource: uri, options: { selection } });
 			}
@@ -224,7 +224,7 @@ interface IFileTransferData {
 
 async function extractFilesDropData(
 	accessor: ServicesAccessor,
-	event: DragEvent,
+	event: DragEvent
 ): Promise<IFileTransferData[]> {
 	// Try to extract via `FileSystemHandle`
 	if (WebFileSystemAccess.supported(mainWindow)) {
@@ -245,7 +245,7 @@ async function extractFilesDropData(
 
 async function extractFileTransferData(
 	accessor: ServicesAccessor,
-	items: DataTransferItemList,
+	items: DataTransferItemList
 ): Promise<IFileTransferData[]> {
 	const fileSystemProvider = accessor
 		.get(IFileService)
@@ -274,7 +274,7 @@ async function extractFileTransferData(
 						result.complete({
 							resource:
 								await fileSystemProvider.registerFileHandle(
-									handle,
+									handle
 								),
 							isDirectory: false,
 						});
@@ -284,7 +284,7 @@ async function extractFileTransferData(
 						result.complete({
 							resource:
 								await fileSystemProvider.registerDirectoryHandle(
-									handle,
+									handle
 								),
 							isDirectory: true,
 						});
@@ -303,7 +303,7 @@ async function extractFileTransferData(
 
 export async function extractFileListData(
 	accessor: ServicesAccessor,
-	files: FileList,
+	files: FileList
 ): Promise<IFileTransferData[]> {
 	const dialogService = accessor.get(IDialogService);
 
@@ -317,8 +317,8 @@ export async function extractFileListData(
 				dialogService.warn(
 					localize(
 						"fileTooLarge",
-						"File is too large to open as untitled editor. Please upload it first into the file explorer and then try again.",
-					),
+						"File is too large to open as untitled editor. Please upload it first into the file explorer and then try again."
+					)
 				);
 				continue;
 			}
@@ -411,7 +411,7 @@ interface IDragAndDropContribution {
 	getEditorInputs(data: string): IDraggedResourceEditorInput[];
 	setData(
 		resources: IResourceStat[],
-		event: DragMouseEvent | DragEvent,
+		event: DragMouseEvent | DragEvent
 	): void;
 }
 
@@ -426,7 +426,7 @@ class DragAndDropContributionRegistry
 	register(contribution: IDragAndDropContribution): void {
 		if (this._contributions.has(contribution.dataFormatKey)) {
 			throw new Error(
-				`A drag and drop contributiont with key '${contribution.dataFormatKey}' was already registered.`,
+				`A drag and drop contributiont with key '${contribution.dataFormatKey}' was already registered.`
 			);
 		}
 		this._contributions.set(contribution.dataFormatKey, contribution);
@@ -443,7 +443,7 @@ export const Extensions = {
 
 Registry.add(
 	Extensions.DragAndDropContribution,
-	new DragAndDropContributionRegistry(),
+	new DragAndDropContributionRegistry()
 );
 
 //#endregion

@@ -39,43 +39,43 @@ import { SignService } from "vs/platform/sign/node/signService";
 registerSingleton(
 	IExtHostExtensionService,
 	ExtHostExtensionService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	ILoggerService,
 	ExtHostLoggerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ILogService,
-	new SyncDescriptor(ExtHostLogService, [false], true),
+	new SyncDescriptor(ExtHostLogService, [false], true)
 );
 registerSingleton(ISignService, SignService, InstantiationType.Delayed);
 registerSingleton(
 	IExtensionStoragePaths,
 	ExtensionStoragePaths,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 
 registerSingleton(
 	IExtHostDebugService,
 	ExtHostDebugService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(IExtHostSearch, NativeExtHostSearch, InstantiationType.Eager);
 registerSingleton(IExtHostTask, ExtHostTask, InstantiationType.Eager);
 registerSingleton(
 	IExtHostTerminalService,
 	ExtHostTerminalService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostTunnelService,
 	NodeExtHostTunnelService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 registerSingleton(
 	IExtHostVariableResolverProvider,
 	NodeExtHostVariableResolverProviderService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

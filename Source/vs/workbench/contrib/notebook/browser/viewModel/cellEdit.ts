@@ -29,7 +29,7 @@ export interface IViewCellEditingDelegate extends ITextCellEditingDelegate {
 		language: string,
 		type: CellKind,
 		metadata: NotebookCellMetadata | undefined,
-		outputs: IOutputDto[],
+		outputs: IOutputDto[]
 	): BaseCellViewModel;
 }
 
@@ -47,7 +47,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 		private inverseRange: Range,
 		private insertContent: string,
 		private removedCell: BaseCellViewModel,
-		private editingDelegate: IViewCellEditingDelegate,
+		private editingDelegate: IViewCellEditingDelegate
 	) {
 		this._deletedRawCell = this.removedCell.model;
 	}
@@ -58,7 +58,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 			!this.editingDelegate.createCellViewModel
 		) {
 			throw new Error(
-				"Notebook Insert Cell not implemented for Undo/Redo",
+				"Notebook Insert Cell not implemented for Undo/Redo"
 			);
 		}
 
@@ -71,7 +71,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 		this.cell.setSelections(this.selections);
 
 		const cell = this.editingDelegate.createCellViewModel(
-			this._deletedRawCell,
+			this._deletedRawCell
 		);
 		if (this.direction === "above") {
 			this.editingDelegate.insertCell(this.index, this._deletedRawCell, {
@@ -93,7 +93,7 @@ export class JoinCellEdit implements IResourceUndoRedoElement {
 	async redo(): Promise<void> {
 		if (!this.editingDelegate.deleteCell) {
 			throw new Error(
-				"Notebook Delete Cell not implemented for Undo/Redo",
+				"Notebook Delete Cell not implemented for Undo/Redo"
 			);
 		}
 

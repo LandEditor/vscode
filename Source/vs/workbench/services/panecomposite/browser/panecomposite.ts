@@ -31,14 +31,14 @@ export interface IPaneCompositePartService {
 	openPaneComposite(
 		id: string | undefined,
 		viewContainerLocation: ViewContainerLocation,
-		focus?: boolean,
+		focus?: boolean
 	): Promise<IPaneComposite | undefined>;
 
 	/**
 	 * Returns the current active viewlet if any.
 	 */
 	getActivePaneComposite(
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): IPaneComposite | undefined;
 
 	/**
@@ -46,28 +46,28 @@ export interface IPaneCompositePartService {
 	 */
 	getPaneComposite(
 		id: string,
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): PaneCompositeDescriptor | undefined;
 
 	/**
 	 * Returns all enabled viewlets
 	 */
 	getPaneComposites(
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): PaneCompositeDescriptor[];
 
 	/**
 	 * Returns id of pinned view containers following the visual order.
 	 */
 	getPinnedPaneCompositeIds(
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): string[];
 
 	/**
 	 * Returns id of visible view containers following the visual order.
 	 */
 	getVisiblePaneCompositeIds(
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): string[];
 
 	/**
@@ -75,7 +75,7 @@ export interface IPaneCompositePartService {
 	 */
 	getProgressIndicator(
 		id: string,
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): IProgressIndicator | undefined;
 
 	/**
@@ -87,6 +87,6 @@ export interface IPaneCompositePartService {
 	 * Return the last active viewlet id.
 	 */
 	getLastActivePaneCompositeId(
-		viewContainerLocation: ViewContainerLocation,
+		viewContainerLocation: ViewContainerLocation
 	): string;
 }

@@ -26,7 +26,7 @@ export class ReplaceAllCommand implements ICommand {
 	constructor(
 		editorSelection: Selection,
 		ranges: Range[],
-		replaceStrings: string[],
+		replaceStrings: string[]
 	) {
 		this._editorSelection = editorSelection;
 		this._ranges = ranges;
@@ -36,7 +36,7 @@ export class ReplaceAllCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder,
+		builder: IEditOperationBuilder
 	): void {
 		if (this._ranges.length > 0) {
 			// Collect all edit operations
@@ -78,13 +78,13 @@ export class ReplaceAllCommand implements ICommand {
 		}
 
 		this._trackedEditorSelectionId = builder.trackSelection(
-			this._editorSelection,
+			this._editorSelection
 		);
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData,
+		helper: ICursorStateComputerData
 	): Selection {
 		return helper.getTrackedSelection(this._trackedEditorSelectionId!);
 	}

@@ -30,7 +30,7 @@ export class KeyboardLayoutMainService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<IKeyboardLayoutData>(),
+		new Emitter<IKeyboardLayoutData>()
 	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
@@ -47,7 +47,9 @@ export class KeyboardLayoutMainService
 		// perf: automatically trigger initialize after windows
 		// have opened so that we can do this work in parallel
 		// to the window load.
-		lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen).then(() => this._initialize());
+		lifecycleMainService
+			.when(LifecycleMainPhase.AfterWindowOpen)
+			.then(() => this._initialize());
 	}
 
 	private _initialize(): Promise<void> {
@@ -80,7 +82,7 @@ export class KeyboardLayoutMainService
 }
 
 function readKeyboardLayoutData(
-	nativeKeymapMod: typeof nativeKeymap,
+	nativeKeymapMod: typeof nativeKeymap
 ): IKeyboardLayoutData {
 	const keyboardMapping = nativeKeymapMod.getKeyMap();
 	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();

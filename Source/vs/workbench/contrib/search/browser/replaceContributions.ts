@@ -22,12 +22,12 @@ export function registerContributions(): void {
 	registerSingleton(
 		IReplaceService,
 		ReplaceService,
-		InstantiationType.Delayed,
+		InstantiationType.Delayed
 	);
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	).registerWorkbenchContribution(
 		ReplacePreviewContentProvider,
-		LifecyclePhase.Starting,
+		LifecyclePhase.Starting
 	);
 }

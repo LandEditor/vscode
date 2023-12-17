@@ -32,8 +32,8 @@ export class FileStorage extends Disposable {
 		new ThrottledDelayer<void>(
 			this.saveStrategy === SaveStrategy.IMMEDIATE
 				? 0
-				: 100 /* buffer saves over a short time */,
-		),
+				: 100 /* buffer saves over a short time */
+		)
 	);
 
 	private initializing: Promise<void> | undefined = undefined;
@@ -43,7 +43,7 @@ export class FileStorage extends Disposable {
 		private readonly storagePath: URI,
 		private readonly saveStrategy: SaveStrategy,
 		private readonly logService: ILogService,
-		private readonly fileService: IFileService,
+		private readonly fileService: IFileService
 	) {
 		super();
 	}
@@ -85,7 +85,7 @@ export class FileStorage extends Disposable {
 
 	setItem(
 		key: string,
-		data?: object | string | number | boolean | undefined | null,
+		data?: object | string | number | boolean | undefined | null
 	): void {
 		this.setItems([{ key, data }]);
 	}
@@ -94,7 +94,7 @@ export class FileStorage extends Disposable {
 		items: readonly {
 			key: string;
 			data?: object | string | number | boolean | undefined | null;
-		}[],
+		}[]
 	): void {
 		let save = false;
 
@@ -159,7 +159,7 @@ export class FileStorage extends Disposable {
 			await this.fileService.writeFile(
 				this.storagePath,
 				VSBuffer.fromString(serializedDatabase),
-				{ atomic: { postfix: ".vsctmp" } },
+				{ atomic: { postfix: ".vsctmp" } }
 			);
 			this.lastSavedStorageContents = serializedDatabase;
 		} catch (error) {
@@ -171,7 +171,7 @@ export class FileStorage extends Disposable {
 		if (!this.closing) {
 			this.closing = this.flushDelayer.trigger(
 				() => this.doSave(),
-				0 /* as soon as possible */,
+				0 /* as soon as possible */
 			);
 		}
 
@@ -191,7 +191,7 @@ export class StateReadonlyService
 		saveStrategy: SaveStrategy,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@ILogService logService: ILogService,
-		@IFileService fileService: IFileService,
+		@IFileService fileService: IFileService
 	) {
 		super();
 
@@ -200,8 +200,8 @@ export class StateReadonlyService
 				environmentService.stateResource,
 				saveStrategy,
 				logService,
-				fileService,
-			),
+				fileService
+			)
 		);
 	}
 
@@ -224,7 +224,7 @@ export class StateService
 
 	setItem(
 		key: string,
-		data?: object | string | number | boolean | undefined | null,
+		data?: object | string | number | boolean | undefined | null
 	): void {
 		this.fileStorage.setItem(key, data);
 	}
@@ -233,7 +233,7 @@ export class StateService
 		items: readonly {
 			key: string;
 			data?: object | string | number | boolean | undefined | null;
-		}[],
+		}[]
 	): void {
 		this.fileStorage.setItems(items);
 	}

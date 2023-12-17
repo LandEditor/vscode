@@ -12,7 +12,7 @@ import product from "vs/platform/product/common/product";
 
 const metaData = path.join(
 	FileAccess.asFileUri("").fsPath,
-	"nls.metadata.json",
+	"nls.metadata.json"
 );
 const _cache: Map<string, Promise<lp.NLSConfiguration>> = new Map();
 
@@ -22,7 +22,7 @@ function exists(file: string) {
 
 export function getNLSConfiguration(
 	language: string,
-	userDataPath: string,
+	userDataPath: string
 ): Promise<lp.NLSConfiguration> {
 	return exists(metaData).then((fileExists) => {
 		if (!fileExists || !product.commit) {
@@ -44,7 +44,7 @@ export function getNLSConfiguration(
 					userDataPath,
 					metaData,
 					language,
-					language,
+					language
 				)
 				.then((value) => {
 					if (InternalNLSConfiguration.is(value)) {
@@ -60,7 +60,7 @@ export function getNLSConfiguration(
 
 export namespace InternalNLSConfiguration {
 	export function is(
-		value: lp.NLSConfiguration,
+		value: lp.NLSConfiguration
 	): value is lp.InternalNLSConfiguration {
 		const candidate: lp.InternalNLSConfiguration =
 			value as lp.InternalNLSConfiguration;

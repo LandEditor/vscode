@@ -24,7 +24,7 @@ class EmptyDuplex extends Duplex {
 	_write(
 		_chunk: any,
 		_encoding: string,
-		callback: (err?: Error) => void,
+		callback: (err?: Error) => void
 	): void {
 		callback();
 	}
@@ -53,7 +53,7 @@ export function create(
 		transpileOnlyIncludesDts?: boolean;
 		transpileWithSwc?: boolean;
 	},
-	onError: (message: string) => void = _defaultOnError,
+	onError: (message: string) => void = _defaultOnError
 ): IncrementalCompiler {
 	function printDiagnostic(diag: ts.Diagnostic | Error): void {
 		if (diag instanceof Error) {
@@ -62,7 +62,7 @@ export function create(
 			onError(ts.flattenDiagnosticMessageText(diag.messageText, "\n"));
 		} else {
 			const lineAndCh = diag.file.getLineAndCharacterOfPosition(
-				diag.start,
+				diag.start
 			);
 			onError(
 				strings.format(
@@ -70,8 +70,8 @@ export function create(
 					diag.file.fileName,
 					lineAndCh.line + 1,
 					lineAndCh.character + 1,
-					ts.flattenDiagnosticMessageText(diag.messageText, "\n"),
-				),
+					ts.flattenDiagnosticMessageText(diag.messageText, "\n")
+				)
 			);
 		}
 	}
@@ -86,7 +86,7 @@ export function create(
 		parsed.config,
 		ts.sys,
 		dirname(projectPath),
-		existingOptions,
+		existingOptions
 	);
 	if (cmdLine.errors.length > 0) {
 		cmdLine.errors.forEach(printDiagnostic);
@@ -102,7 +102,7 @@ export function create(
 	// FULL COMPILE stream doing transpile, syntax and semantic diagnostics
 	function createCompileStream(
 		builder: builder.ITypeScriptBuilder,
-		token?: builder.CancellationToken,
+		token?: builder.CancellationToken
 	): Readable & Writable {
 		return through(
 			function (this: through.ThroughStream, file: Vinyl) {
@@ -119,18 +119,18 @@ export function create(
 					.build((file) => this.queue(file), printDiagnostic, token)
 					.catch((e) => console.error(e))
 					.then(() => this.queue(null));
-			},
+			}
 		);
 	}
 
 	// TRANSPILE ONLY stream doing just TS to JS conversion
 	function createTranspileStream(
-		transpiler: ITranspiler,
+		transpiler: ITranspiler
 	): Readable & Writable {
 		return through(
 			function (
 				this: through.ThroughStream & { queue(a: any): void },
-				file: Vinyl,
+				file: Vinyl
 			) {
 				// give the file to the compiler
 				if (file.isStream()) {
@@ -158,7 +158,7 @@ export function create(
 					this.queue(null);
 					transpiler.onOutfile = undefined;
 				});
-			},
+			}
 		);
 	}
 
@@ -172,7 +172,7 @@ export function create(
 		const _builder = builder.createTypeScriptBuilder(
 			{ logFn },
 			projectPath,
-			cmdLine,
+			cmdLine
 		);
 		result = <any>(
 			((token: builder.CancellationToken) =>
@@ -199,7 +199,7 @@ export function create(
 							stat: statSync(path),
 							cwd: opts && opts.cwd,
 							base: (opts && opts.base) || dirname(projectPath),
-						}),
+						})
 					);
 				}
 				if (_pos >= _fileNames.length) {

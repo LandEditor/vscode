@@ -25,22 +25,22 @@ const ignoreUnusualLineTerminators = "ignoreUnusualLineTerminators";
 function writeIgnoreState(
 	codeEditorService: ICodeEditorService,
 	model: ITextModel,
-	state: boolean,
+	state: boolean
 ): void {
 	codeEditorService.setModelProperty(
 		model.uri,
 		ignoreUnusualLineTerminators,
-		state,
+		state
 	);
 }
 
 function readIgnoreState(
 	codeEditorService: ICodeEditorService,
-	model: ITextModel,
+	model: ITextModel
 ): boolean | undefined {
 	return codeEditorService.getModelProperty(
 		model.uri,
-		ignoreUnusualLineTerminators,
+		ignoreUnusualLineTerminators
 	);
 }
 
@@ -56,29 +56,40 @@ export class UnusualLineTerminatorsDetector
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService
 	) {
 		super();
 
-		this._config = this._editor.getOption(EditorOption.unusualLineTerminators);
-		this._register(this._editor.onDidChangeConfiguration((e) => {
-			if (e.hasChanged(EditorOption.unusualLineTerminators)) {
-				this._config = this._editor.getOption(EditorOption.unusualLineTerminators);
+		this._config = this._editor.getOption(
+			EditorOption.unusualLineTerminators
+		);
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.unusualLineTerminators)) {
+					this._config = this._editor.getOption(
+						EditorOption.unusualLineTerminators
+					);
+					this._checkForUnusualLineTerminators();
+				}
+			})
+		);
+
+		this._register(
+			this._editor.onDidChangeModel(() => {
 				this._checkForUnusualLineTerminators();
-			}
-		}));
+			})
+		);
 
-		this._register(this._editor.onDidChangeModel(() => {
-			this._checkForUnusualLineTerminators();
-		}));
-
-		this._register(this._editor.onDidChangeModelContent((e) => {
-			if (e.isUndoing) {
-				// skip checking in case of undoing
-				return;
-			}
-			this._checkForUnusualLineTerminators();
-		}));
+		this._register(
+			this._editor.onDidChangeModelContent((e) => {
+				if (e.isUndoing) {
+					// skip checking in case of undoing
+					return;
+				}
+				this._checkForUnusualLineTerminators();
+			})
+		);
 
 		this._checkForUnusualLineTerminators();
 	}
@@ -122,27 +133,27 @@ export class UnusualLineTerminatorsDetector
 			result = await this._dialogService.confirm({
 				title: nls.localize(
 					"unusualLineTerminators.title",
-					"Unusual Line Terminators",
+					"Unusual Line Terminators"
 				),
 				message: nls.localize(
 					"unusualLineTerminators.message",
-					"Detected unusual line terminators",
+					"Detected unusual line terminators"
 				),
 				detail: nls.localize(
 					"unusualLineTerminators.detail",
 					"The file '{0}' contains one or more unusual line terminator characters, like Line Separator (LS) or Paragraph Separator (PS).\n\nIt is recommended to remove them from the file. This can be configured via `editor.unusualLineTerminators`.",
-					basename(model.uri),
+					basename(model.uri)
 				),
 				primaryButton: nls.localize(
 					{
 						key: "unusualLineTerminators.fix",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Remove Unusual Line Terminators",
+					"&&Remove Unusual Line Terminators"
 				),
 				cancelButton: nls.localize(
 					"unusualLineTerminators.ignore",
-					"Ignore",
+					"Ignore"
 				),
 			});
 		} finally {
@@ -162,5 +173,5 @@ export class UnusualLineTerminatorsDetector
 registerEditorContribution(
 	UnusualLineTerminatorsDetector.ID,
 	UnusualLineTerminatorsDetector,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );

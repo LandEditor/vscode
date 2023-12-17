@@ -30,7 +30,7 @@ async function _execute(task) {
 			`Finished`,
 			ansiColors.cyan(name),
 			"after",
-			ansiColors.magenta(_renderTime(elapsedNanoseconds / 1e6)),
+			ansiColors.magenta(_renderTime(elapsedNanoseconds / 1e6))
 		);
 	}
 }
@@ -90,7 +90,7 @@ function define(name, task) {
 			// => generate a fake task function
 			return define(
 				name,
-				series(task, () => Promise.resolve()),
+				series(task, () => Promise.resolve())
 			);
 		}
 		lastTask.taskName = name;

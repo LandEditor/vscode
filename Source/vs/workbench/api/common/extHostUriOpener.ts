@@ -35,18 +35,18 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 		extensionId: ExtensionIdentifier,
 		id: string,
 		opener: vscode.ExternalUriOpener,
-		metadata: vscode.ExternalUriOpenerMetadata,
+		metadata: vscode.ExternalUriOpenerMetadata
 	): vscode.Disposable {
 		if (this._openers.has(id)) {
 			throw new Error(`Opener with id '${id}' already registered`);
 		}
 
 		const invalidScheme = metadata.schemes.find(
-			(scheme) => !ExtHostUriOpeners.supportedSchemes.has(scheme),
+			(scheme) => !ExtHostUriOpeners.supportedSchemes.has(scheme)
 		);
 		if (invalidScheme) {
 			throw new Error(
-				`Scheme '${invalidScheme}' is not supported. Only http and https are currently supported.`,
+				`Scheme '${invalidScheme}' is not supported. Only http and https are currently supported.`
 			);
 		}
 
@@ -55,7 +55,7 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 			id,
 			metadata.schemes,
 			extensionId,
-			metadata.label,
+			metadata.label
 		);
 
 		return toDisposable(() => {
@@ -67,7 +67,7 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 	async $canOpenUri(
 		id: string,
 		uriComponents: UriComponents,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<languages.ExternalUriOpenerPriority> {
 		const opener = this._openers.get(id);
 		if (!opener) {
@@ -81,7 +81,7 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 	async $openUri(
 		id: string,
 		context: { resolvedUri: UriComponents; sourceUri: UriComponents },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const opener = this._openers.get(id);
 		if (!opener) {
@@ -93,7 +93,7 @@ export class ExtHostUriOpeners implements ExtHostUriOpenersShape {
 			{
 				sourceUri: URI.revive(context.sourceUri),
 			},
-			token,
+			token
 		);
 	}
 }

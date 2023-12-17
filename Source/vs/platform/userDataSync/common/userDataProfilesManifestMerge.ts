@@ -37,7 +37,7 @@ export function merge(
 	local: IUserDataProfile[],
 	remote: ISyncUserDataProfile[] | null,
 	lastSync: ISyncUserDataProfile[] | null,
-	ignored: string[],
+	ignored: string[]
 ): IMergeResult {
 	const localResult: {
 		added: ISyncUserDataProfile[];
@@ -99,7 +99,7 @@ export function merge(
 		for (const id of baseToRemote.updated) {
 			// Remote wins always
 			localResult.updated.push(
-				remote.find((profile) => profile.id === id)!,
+				remote.find((profile) => profile.id === id)!
 			);
 		}
 
@@ -108,7 +108,7 @@ export function merge(
 			// Not there in remote
 			if (!baseToRemote.added.includes(id)) {
 				remoteResult.added.push(
-					local.find((profile) => profile.id === id)!,
+					local.find((profile) => profile.id === id)!
 				);
 			}
 		}
@@ -123,7 +123,7 @@ export function merge(
 			// If not updated in remote
 			if (!baseToRemote.updated.includes(id)) {
 				remoteResult.updated.push(
-					local.find((profile) => profile.id === id)!,
+					local.find((profile) => profile.id === id)!
 				);
 			}
 		}
@@ -151,7 +151,7 @@ export function merge(
 function compare(
 	from: IUserDataProfileInfo[] | null,
 	to: IUserDataProfileInfo[],
-	ignoredProfiles: string[],
+	ignoredProfiles: string[]
 ): { added: string[]; removed: string[]; updated: string[] } {
 	from = from ? from.filter(({ id }) => !ignoredProfiles.includes(id)) : [];
 	to = to.filter(({ id }) => !ignoredProfiles.includes(id));

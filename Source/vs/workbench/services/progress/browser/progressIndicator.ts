@@ -20,7 +20,7 @@ export class EditorProgressIndicator
 {
 	constructor(
 		private readonly progressBar: ProgressBar,
-		private readonly group: IEditorGroupView,
+		private readonly group: IEditorGroupView
 	) {
 		super();
 
@@ -41,7 +41,7 @@ export class EditorProgressIndicator
 				) {
 					this.progressBar.stop().hide();
 				}
-			}),
+			})
 		);
 	}
 
@@ -64,7 +64,7 @@ export class EditorProgressIndicator
 	private doShow(total: number, delay?: number): IProgressRunner;
 	private doShow(
 		infiniteOrTotal: true | number,
-		delay?: number,
+		delay?: number
 	): IProgressRunner {
 		if (typeof infiniteOrTotal === "boolean") {
 			this.progressBar.infinite().show(delay);
@@ -106,7 +106,7 @@ export class EditorProgressIndicator
 
 	private async doShowWhile(
 		promise: Promise<unknown>,
-		delay?: number,
+		delay?: number
 	): Promise<void> {
 		try {
 			this.progressBar.infinite().show(delay);
@@ -139,7 +139,7 @@ namespace ProgressIndicatorState {
 		constructor(
 			readonly whilePromise: Promise<unknown>,
 			readonly whileStart: number,
-			readonly whileDelay: number,
+			readonly whileDelay: number
 		) {}
 	}
 
@@ -148,7 +148,7 @@ namespace ProgressIndicatorState {
 
 		constructor(
 			readonly total: number | undefined,
-			readonly worked: number | undefined,
+			readonly worked: number | undefined
 		) {}
 	}
 
@@ -181,7 +181,7 @@ export class ScopedProgressIndicator
 
 	constructor(
 		private readonly progressBar: ProgressBar,
-		private readonly scope: IProgressScope,
+		private readonly scope: IProgressScope
 	) {
 		super();
 
@@ -196,7 +196,7 @@ export class ScopedProgressIndicator
 				} else {
 					this.onDidScopeDeactivate();
 				}
-			}),
+			})
 		);
 	}
 
@@ -253,7 +253,7 @@ export class ScopedProgressIndicator
 		} else {
 			this.progressState = new ProgressIndicatorState.Work(
 				infiniteOrTotal,
-				undefined,
+				undefined
 			);
 		}
 
@@ -281,7 +281,7 @@ export class ScopedProgressIndicator
 					total,
 					this.progressState.type === ProgressIndicatorState.Type.Work
 						? this.progressState.worked
-						: undefined,
+						: undefined
 				);
 
 				if (this.scope.isActive) {
@@ -301,7 +301,7 @@ export class ScopedProgressIndicator
 							ProgressIndicatorState.Type.Work &&
 						typeof this.progressState.worked === "number"
 							? this.progressState.worked + worked
-							: worked,
+							: worked
 					);
 
 					if (this.scope.isActive) {
@@ -336,7 +336,7 @@ export class ScopedProgressIndicator
 		this.progressState = new ProgressIndicatorState.While(
 			promise,
 			delay || 0,
-			Date.now(),
+			Date.now()
 		);
 
 		try {
@@ -380,7 +380,10 @@ export abstract class AbstractProgressScope
 		return this._isActive;
 	}
 
-	constructor(private scopeId: string, private _isActive: boolean) {
+	constructor(
+		private scopeId: string,
+		private _isActive: boolean
+	) {
 		super();
 	}
 

@@ -181,7 +181,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 	get instances(): ITerminalInstance[] {
 		return this._terminalGroupService.instances.concat(
-			this._terminalEditorService.instances,
+			this._terminalEditorService.instances
 		);
 	}
 	get detachedInstances(): Iterable<IDetachedTerminalInstance> {
@@ -192,7 +192,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	private _reconnectedTerminals: Map<string, ITerminalInstance[]> = new Map();
 	getReconnectedTerminals(
-		reconnectionOwner: string,
+		reconnectionOwner: string
 	): ITerminalInstance[] | undefined {
 		return this._reconnectedTerminals.get(reconnectionOwner);
 	}
@@ -221,31 +221,31 @@ export class TerminalService extends Disposable implements ITerminalService {
 	private _editingTerminal: ITerminalInstance | undefined;
 
 	private readonly _onDidCreateInstance = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	get onDidCreateInstance(): Event<ITerminalInstance> {
 		return this._onDidCreateInstance.event;
 	}
 	private readonly _onDidChangeInstanceDimensions = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	get onDidChangeInstanceDimensions(): Event<ITerminalInstance> {
 		return this._onDidChangeInstanceDimensions.event;
 	}
 	private readonly _onDidRegisterProcessSupport = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	get onDidRegisterProcessSupport(): Event<void> {
 		return this._onDidRegisterProcessSupport.event;
 	}
 	private readonly _onDidChangeConnectionState = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	get onDidChangeConnectionState(): Event<void> {
 		return this._onDidChangeConnectionState.event;
 	}
 	private readonly _onDidRequestStartExtensionTerminal = this._register(
-		new Emitter<IStartExtensionTerminalRequest>(),
+		new Emitter<IStartExtensionTerminalRequest>()
 	);
 	get onDidRequestStartExtensionTerminal(): Event<IStartExtensionTerminalRequest> {
 		return this._onDidRequestStartExtensionTerminal.event;
@@ -253,31 +253,31 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	// ITerminalInstanceHost events
 	private readonly _onDidDisposeInstance = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	get onDidDisposeInstance(): Event<ITerminalInstance> {
 		return this._onDidDisposeInstance.event;
 	}
 	private readonly _onDidFocusInstance = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	get onDidFocusInstance(): Event<ITerminalInstance> {
 		return this._onDidFocusInstance.event;
 	}
 	private readonly _onDidChangeActiveInstance = this._register(
-		new Emitter<ITerminalInstance | undefined>(),
+		new Emitter<ITerminalInstance | undefined>()
 	);
 	get onDidChangeActiveInstance(): Event<ITerminalInstance | undefined> {
 		return this._onDidChangeActiveInstance.event;
 	}
 	private readonly _onDidChangeInstances = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	get onDidChangeInstances(): Event<void> {
 		return this._onDidChangeInstances.event;
 	}
 	private readonly _onDidChangeInstanceCapability = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	get onDidChangeInstanceCapability(): Event<ITerminalInstance> {
 		return this._onDidChangeInstanceCapability.event;
@@ -285,7 +285,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	// Terminal view events
 	private readonly _onDidChangeActiveGroup = this._register(
-		new Emitter<ITerminalGroup | undefined>(),
+		new Emitter<ITerminalGroup | undefined>()
 	);
 	get onDidChangeActiveGroup(): Event<ITerminalGroup | undefined> {
 		return this._onDidChangeActiveGroup.event;
@@ -300,12 +300,12 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 	@memoize get onAnyInstanceMaximumDimensionsChange() {
 		return this.createOnInstanceEvent((e) =>
-			Event.map(e.onMaximumDimensionsChanged, () => e, e.store),
+			Event.map(e.onMaximumDimensionsChanged, () => e, e.store)
 		);
 	}
 	@memoize get onAnyInstancePrimaryStatusChange() {
 		return this.createOnInstanceEvent((e) =>
-			Event.map(e.statusList.onDidChangePrimaryStatus, () => e, e.store),
+			Event.map(e.statusList.onDidChangePrimaryStatus, () => e, e.store)
 		);
 	}
 	@memoize get onAnyInstanceProcessIdReady() {
@@ -320,37 +320,57 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	constructor(
 		@IContextKeyService private _contextKeyService: IContextKeyService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IDialogService private _dialogService: IDialogService,
-		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private _instantiationService: IInstantiationService,
 		@IRemoteAgentService private _remoteAgentService: IRemoteAgentService,
 		@IViewsService private _viewsService: IViewsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ITimerService private readonly _timerService: ITimerService
 	) {
 		super();
 
-		this._configHelper = this._register(this._instantiationService.createInstance(TerminalConfigHelper));
+		this._configHelper = this._register(
+			this._instantiationService.createInstance(TerminalConfigHelper)
+		);
 		// the below avoids having to poll routinely.
 		// we update detected profiles when an instance is created so that,
 		// for example, we detect if you've installed a pwsh
-		this.onDidCreateInstance(() => this._terminalProfileService.refreshAvailableProfiles());
+		this.onDidCreateInstance(() =>
+			this._terminalProfileService.refreshAvailableProfiles()
+		);
 		this._forwardInstanceHostEvents(this._terminalGroupService);
 		this._forwardInstanceHostEvents(this._terminalEditorService);
-		this._terminalGroupService.onDidChangeActiveGroup(this._onDidChangeActiveGroup.fire, this._onDidChangeActiveGroup);
-		this._terminalInstanceService.onDidCreateInstance(instance => {
+		this._terminalGroupService.onDidChangeActiveGroup(
+			this._onDidChangeActiveGroup.fire,
+			this._onDidChangeActiveGroup
+		);
+		this._terminalInstanceService.onDidCreateInstance((instance) => {
 			this._initInstanceListeners(instance);
 			this._onDidCreateInstance.fire(instance);
 		});
@@ -358,44 +378,72 @@ export class TerminalService extends Disposable implements ITerminalService {
 		// Hide the panel if there are no more instances, provided that VS Code is not shutting
 		// down. When shutting down the panel is locked in place so that it is restored upon next
 		// launch.
-		this._terminalGroupService.onDidChangeActiveInstance(instance => {
+		this._terminalGroupService.onDidChangeActiveInstance((instance) => {
 			if (!instance && !this._isShuttingDown) {
 				this._terminalGroupService.hidePanel();
 			}
 			if (instance?.shellType) {
-				this._terminalShellTypeContextKey.set(instance.shellType.toString());
+				this._terminalShellTypeContextKey.set(
+					instance.shellType.toString()
+				);
 			} else if (!instance) {
 				this._terminalShellTypeContextKey.reset();
 			}
 		});
 
 		this._handleInstanceContextKeys();
-		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
-		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
-		this._processSupportContextKey.set(!isWeb || this._remoteAgentService.getConnection() !== null);
-		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
-		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
-		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
+		this._terminalShellTypeContextKey =
+			TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+		this._processSupportContextKey =
+			TerminalContextKeys.processSupported.bindTo(
+				this._contextKeyService
+			);
+		this._processSupportContextKey.set(
+			!isWeb || this._remoteAgentService.getConnection() !== null
+		);
+		this._terminalHasBeenCreated =
+			TerminalContextKeys.terminalHasBeenCreated.bindTo(
+				this._contextKeyService
+			);
+		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(
+			this._contextKeyService
+		);
+		this._terminalEditorActive =
+			TerminalContextKeys.terminalEditorActive.bindTo(
+				this._contextKeyService
+			);
 
-		this.onDidChangeActiveInstance(instance => {
-			this._terminalEditorActive.set(!!instance?.target && instance.target === TerminalLocation.Editor);
+		this.onDidChangeActiveInstance((instance) => {
+			this._terminalEditorActive.set(
+				!!instance?.target &&
+					instance.target === TerminalLocation.Editor
+			);
 		});
 
-		_lifecycleService.onBeforeShutdown(async e => e.veto(this._onBeforeShutdown(e.reason), 'veto.terminal'));
-		_lifecycleService.onWillShutdown(e => this._onWillShutdown(e));
+		_lifecycleService.onBeforeShutdown(async (e) =>
+			e.veto(this._onBeforeShutdown(e.reason), "veto.terminal")
+		);
+		_lifecycleService.onWillShutdown((e) => this._onWillShutdown(e));
 
 		this.initializePrimaryBackend();
 
 		// Create async as the class depends on `this`
-		timeout(0).then(() => this._register(this._instantiationService.createInstance(TerminalEditorStyle, mainWindow.document.head)));
+		timeout(0).then(() =>
+			this._register(
+				this._instantiationService.createInstance(
+					TerminalEditorStyle,
+					mainWindow.document.head
+				)
+			)
+		);
 	}
 
 	async showProfileQuickPick(
 		type: "setDefault" | "createInstance",
-		cwd?: string | URI,
+		cwd?: string | URI
 	): Promise<ITerminalInstance | undefined> {
 		const quickPick = this._instantiationService.createInstance(
-			TerminalProfileQuickpick,
+			TerminalProfileQuickpick
 		);
 		const result = await quickPick.showAndGetResult(type);
 		if (!result) {
@@ -419,7 +467,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 						location: !!(keyMods?.alt && activeInstance)
 							? { splitActiveTerminal: true }
 							: this.defaultLocation,
-					},
+					}
 				);
 				return;
 			} else if (result.config && "profileName" in result.config) {
@@ -451,7 +499,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	async initializePrimaryBackend() {
 		mark("code/terminal/willGetTerminalBackend");
 		this._primaryBackend = await this._terminalInstanceService.getBackend(
-			this._environmentService.remoteAuthority,
+			this._environmentService.remoteAuthority
 		);
 		mark("code/terminal/didGetTerminalBackend");
 		const enableTerminalReconnection =
@@ -467,7 +515,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 		this._primaryBackend?.onDidRequestDetach(async (e) => {
 			const instanceToDetach = this.getInstanceFromResource(
-				getTerminalUri(e.workspaceId, e.instanceId),
+				getTerminalUri(e.workspaceId, e.instanceId)
 			);
 			if (instanceToDetach) {
 				const persistentProcessId =
@@ -479,7 +527,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 				) {
 					if (instanceToDetach.target === TerminalLocation.Editor) {
 						this._terminalEditorService.detachInstance(
-							instanceToDetach,
+							instanceToDetach
 						);
 					} else {
 						this._terminalGroupService
@@ -487,17 +535,17 @@ export class TerminalService extends Disposable implements ITerminalService {
 							?.removeInstance(instanceToDetach);
 					}
 					await instanceToDetach.detachProcessAndDispose(
-						TerminalExitReason.User,
+						TerminalExitReason.User
 					);
 					await this._primaryBackend?.acceptDetachInstanceReply(
 						e.requestId,
-						persistentProcessId,
+						persistentProcessId
 					);
 				} else {
 					// will get rejected without a persistentProcessId to attach to
 					await this._primaryBackend?.acceptDetachInstanceReply(
 						e.requestId,
-						undefined,
+						undefined
 					);
 				}
 			}
@@ -518,30 +566,30 @@ export class TerminalService extends Disposable implements ITerminalService {
 			mark("code/terminal/willReplay");
 			const instances =
 				(await this._reconnectedTerminalGroups?.then((groups) =>
-					groups.map((e) => e.terminalInstances).flat(),
+					groups.map((e) => e.terminalInstances).flat()
 				)) ?? [];
 			await Promise.all(
 				instances.map(
 					(e) =>
 						new Promise<void>((r) =>
-							Event.once(e.onProcessReplayComplete)(r),
-						),
-				),
+							Event.once(e.onProcessReplayComplete)(r)
+						)
+				)
 			);
 			mark("code/terminal/didReplay");
 			mark("code/terminal/willGetPerformanceMarks");
 			await Promise.all(
 				Array.from(
-					this._terminalInstanceService.getRegisteredBackends(),
+					this._terminalInstanceService.getRegisteredBackends()
 				).map(async (backend) => {
 					this._timerService.setPerformanceMarks(
 						backend.remoteAuthority === undefined
 							? "localPtyHost"
 							: "remotePtyHost",
-						await backend.getPerformanceMarks(),
+						await backend.getPerformanceMarks()
 					);
 					backend.setReady();
-				}),
+				})
 			);
 			mark("code/terminal/didGetPerformanceMarks");
 			this._whenConnected.complete();
@@ -555,14 +603,14 @@ export class TerminalService extends Disposable implements ITerminalService {
 	private _forwardInstanceHostEvents(host: ITerminalInstanceHost) {
 		host.onDidChangeInstances(
 			this._onDidChangeInstances.fire,
-			this._onDidChangeInstances,
+			this._onDidChangeInstances
 		);
 		host.onDidDisposeInstance(
 			this._onDidDisposeInstance.fire,
-			this._onDidDisposeInstance,
+			this._onDidDisposeInstance
 		);
 		host.onDidChangeActiveInstance((instance) =>
-			this._evaluateActiveInstance(host, instance),
+			this._evaluateActiveInstance(host, instance)
 		);
 		host.onDidFocusInstance((instance) => {
 			this._onDidFocusInstance.fire(instance);
@@ -576,7 +624,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	private _evaluateActiveInstance(
 		host: ITerminalInstanceHost,
-		instance: ITerminalInstance | undefined,
+		instance: ITerminalInstance | undefined
 	) {
 		// Track the latest active terminal for each host so that when one becomes undefined, the
 		// TerminalService's active terminal is set to the last active terminal from the other host.
@@ -620,25 +668,25 @@ export class TerminalService extends Disposable implements ITerminalService {
 	async createContributedTerminalProfile(
 		extensionIdentifier: string,
 		id: string,
-		options: ICreateContributedTerminalProfileOptions,
+		options: ICreateContributedTerminalProfileOptions
 	): Promise<void> {
 		await this._extensionService.activateByEvent(`onTerminalProfile:${id}`);
 
 		const profileProvider =
 			this._terminalProfileService.getContributedProfileProvider(
 				extensionIdentifier,
-				id,
+				id
 			);
 		if (!profileProvider) {
 			this._notificationService.error(
-				`No terminal profile provider registered for id "${id}"`,
+				`No terminal profile provider registered for id "${id}"`
 			);
 			return;
 		}
 		try {
 			await profileProvider.createContributedTerminalProfile(options);
 			this._terminalGroupService.setActiveInstanceByIndex(
-				this._terminalGroupService.instances.length - 1,
+				this._terminalGroupService.instances.length - 1
 			);
 			await this._terminalGroupService.activeInstance?.focusWhenReady();
 		} catch (e) {
@@ -717,20 +765,20 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	private _recreateTerminalGroups(
-		layoutInfo?: ITerminalsLayoutInfo,
+		layoutInfo?: ITerminalsLayoutInfo
 	): Promise<ITerminalGroup[]> {
 		const groupPromises: Promise<ITerminalGroup | undefined>[] = [];
 		let activeGroup: Promise<ITerminalGroup | undefined> | undefined;
 		if (layoutInfo) {
 			for (const tabLayout of layoutInfo.tabs) {
 				const terminalLayouts = tabLayout.terminals.filter(
-					(t) => t.terminal && t.terminal.isOrphan,
+					(t) => t.terminal && t.terminal.isOrphan
 				);
 				if (terminalLayouts.length) {
 					this._restoredGroupCount += terminalLayouts.length;
 					const promise = this._recreateTerminalGroup(
 						tabLayout,
-						terminalLayouts,
+						terminalLayouts
 					);
 					groupPromises.push(promise);
 					if (tabLayout.isActive) {
@@ -739,7 +787,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 					const activeInstance = this.instances.find(
 						(t) =>
 							t.shellLaunchConfig.attachPersistentProcess?.id ===
-							tabLayout.activePersistentProcessId,
+							tabLayout.activePersistentProcessId
 					);
 					if (activeInstance) {
 						this.setActiveInstance(activeInstance);
@@ -748,18 +796,18 @@ export class TerminalService extends Disposable implements ITerminalService {
 			}
 			if (layoutInfo.tabs.length) {
 				activeGroup?.then(
-					(group) => (this._terminalGroupService.activeGroup = group),
+					(group) => (this._terminalGroupService.activeGroup = group)
 				);
 			}
 		}
 		return Promise.all(groupPromises).then(
-			(result) => result.filter((e) => !!e) as ITerminalGroup[],
+			(result) => result.filter((e) => !!e) as ITerminalGroup[]
 		);
 	}
 
 	private async _recreateTerminalGroup(
 		tabLayout: IRawTerminalTabLayoutInfo<IPtyHostAttachTarget | null>,
-		terminalLayouts: IRawTerminalInstanceLayoutInfo<IPtyHostAttachTarget | null>[],
+		terminalLayouts: IRawTerminalInstanceLayoutInfo<IPtyHostAttachTarget | null>[]
 	): Promise<ITerminalGroup | undefined> {
 		let lastInstance: Promise<ITerminalInstance> | undefined;
 		for (const terminalLayout of terminalLayouts) {
@@ -772,7 +820,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 				continue;
 			}
 			mark(
-				`code/terminal/willRecreateTerminal/${attachPersistentProcess.id}-${attachPersistentProcess.pid}`,
+				`code/terminal/willRecreateTerminal/${attachPersistentProcess.id}-${attachPersistentProcess.pid}`
 			);
 			lastInstance = this.createTerminal({
 				config: { attachPersistentProcess },
@@ -782,14 +830,14 @@ export class TerminalService extends Disposable implements ITerminalService {
 			});
 			lastInstance.then(() =>
 				mark(
-					`code/terminal/didRecreateTerminal/${attachPersistentProcess.id}-${attachPersistentProcess.pid}`,
-				),
+					`code/terminal/didRecreateTerminal/${attachPersistentProcess.id}-${attachPersistentProcess.pid}`
+				)
 			);
 		}
 		const group = lastInstance?.then((instance) => {
 			const g = this._terminalGroupService.getGroupForInstance(instance);
 			g?.resizePanes(
-				tabLayout.terminals.map((terminal) => terminal.relativeSize),
+				tabLayout.terminals.map((terminal) => terminal.relativeSize)
 			);
 			return g;
 		});
@@ -804,16 +852,16 @@ export class TerminalService extends Disposable implements ITerminalService {
 		// terminal ID will be stale and the process will be leaked.
 		this.onAnyInstanceProcessIdReady(() => this._saveState());
 		this.onAnyInstanceTitleChange((instance) =>
-			this._updateTitle(instance),
+			this._updateTitle(instance)
 		);
 		this.onAnyInstanceIconChange((e) =>
-			this._updateIcon(e.instance, e.userInitiated),
+			this._updateIcon(e.instance, e.userInitiated)
 		);
 	}
 
 	private _handleInstanceContextKeys(): void {
 		const terminalIsOpenContext = TerminalContextKeys.isOpen.bindTo(
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		const updateTerminalContextKeys = () => {
 			terminalIsOpenContext.set(this.instances.length > 0);
@@ -858,7 +906,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	setEditable(
 		instance: ITerminalInstance,
-		data?: IEditableData | null,
+		data?: IEditableData | null
 	): void {
 		if (!data) {
 			this._editable = undefined;
@@ -867,7 +915,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 		}
 		const pane =
 			this._viewsService.getActiveViewWithId<TerminalViewPane>(
-				TERMINAL_VIEW_ID,
+				TERMINAL_VIEW_ID
 			);
 		const isEditing = this.isEditable(instance);
 		pane?.terminalTabbedView?.setEditable(isEditing);
@@ -889,7 +937,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	requestStartExtensionTerminal(
 		proxy: ITerminalProcessExtHostProxy,
 		cols: number,
-		rows: number,
+		rows: number
 	): Promise<ITerminalLaunchError | undefined> {
 		// The initial request came from the extension host, no need to wait for it
 		return new Promise<ITerminalLaunchError | undefined>((callback) => {
@@ -903,7 +951,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	private _onBeforeShutdown(
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): boolean | Promise<boolean> {
 		// Never veto on web as this would block all windows from being closed. This disables
 		// process revive as we can't handle it on shutdown.
@@ -915,7 +963,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	private async _onBeforeShutdownAsync(
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): Promise<boolean> {
 		if (this.instances.length === 0) {
 			// No terminal instances, don't veto
@@ -959,7 +1007,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			// Swallow as exceptions should not cause a veto to prevent shutdown
 			this._logService.warn(
 				"Exception occurred during terminal shutdown",
-				err,
+				err
 			);
 		}
 
@@ -999,7 +1047,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	private async _onBeforeShutdownConfirmation(
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): Promise<boolean> {
 		// veto if configured to show confirmation and the user chose not to exit
 		const veto = await this._showTerminalCloseConfirmation();
@@ -1043,7 +1091,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			return;
 		}
 		const tabs = this._terminalGroupService.groups.map((g) =>
-			g.getLayoutInfo(g === this._terminalGroupService.activeGroup),
+			g.getLayoutInfo(g === this._terminalGroupService.activeGroup)
 		);
 		const state: ITerminalsLayoutInfoById = { tabs };
 		this._primaryBackend?.setTerminalLayoutInfo(state);
@@ -1064,13 +1112,13 @@ export class TerminalService extends Disposable implements ITerminalService {
 			this._primaryBackend?.updateTitle(
 				instance.persistentProcessId,
 				instance.staticTitle,
-				TitleEventSource.Api,
+				TitleEventSource.Api
 			);
 		} else {
 			this._primaryBackend?.updateTitle(
 				instance.persistentProcessId,
 				instance.title,
-				instance.titleSource,
+				instance.titleSource
 			);
 		}
 	}
@@ -1078,7 +1126,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	@debounce(500)
 	private _updateIcon(
 		instance: ITerminalInstance,
-		userInitiated: boolean,
+		userInitiated: boolean
 	): void {
 		if (
 			!this.configHelper.config.enablePersistentSessions ||
@@ -1093,13 +1141,13 @@ export class TerminalService extends Disposable implements ITerminalService {
 			instance.persistentProcessId,
 			userInitiated,
 			instance.icon,
-			instance.color,
+			instance.color
 		);
 	}
 
 	refreshActiveGroup(): void {
 		this._onDidChangeActiveGroup.fire(
-			this._terminalGroupService.activeGroup,
+			this._terminalGroupService.activeGroup
 		);
 	}
 
@@ -1125,7 +1173,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	getInstanceFromResource(
-		resource: URI | undefined,
+		resource: URI | undefined
 	): ITerminalInstance | undefined {
 		return getInstanceFromResource(this.instances, resource);
 	}
@@ -1150,7 +1198,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	async moveToTerminalView(
 		source?: ITerminalInstance | URI,
 		target?: ITerminalInstance,
-		side?: "before" | "after",
+		side?: "before" | "after"
 	): Promise<void> {
 		if (URI.isUri(source)) {
 			source = this.getInstanceFromResource(source);
@@ -1191,7 +1239,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 		// Fire events
 		this._onDidChangeInstances.fire();
 		this._onDidChangeActiveGroup.fire(
-			this._terminalGroupService.activeGroup,
+			this._terminalGroupService.activeGroup
 		);
 	}
 
@@ -1208,10 +1256,10 @@ export class TerminalService extends Disposable implements ITerminalService {
 			}),
 			instance.onDidFocus(
 				this._onDidChangeActiveInstance.fire,
-				this._onDidChangeActiveInstance,
+				this._onDidChangeActiveInstance
 			),
 			instance.onRequestAddInstanceToGroup(
-				async (e) => await this._addInstanceToGroup(instance, e),
+				async (e) => await this._addInstanceToGroup(instance, e)
 			),
 		];
 		instance.onDisposed(() => dispose(instanceDisposables));
@@ -1219,7 +1267,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	private async _addInstanceToGroup(
 		instance: ITerminalInstance,
-		e: IRequestAddInstanceToGroupEvent,
+		e: IRequestAddInstanceToGroupEvent
 	): Promise<void> {
 		const terminalIdentifier = parseTerminalUri(e.uri);
 		if (terminalIdentifier.instanceId === undefined) {
@@ -1234,7 +1282,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			const attachPersistentProcess =
 				await this._primaryBackend?.requestDetachInstance(
 					terminalIdentifier.workspaceId,
-					terminalIdentifier.instanceId,
+					terminalIdentifier.instanceId
 				);
 			if (attachPersistentProcess) {
 				sourceInstance = await this.createTerminal({
@@ -1244,7 +1292,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 				this._terminalGroupService.moveInstance(
 					sourceInstance,
 					instance,
-					e.side,
+					e.side
 				);
 				return;
 			}
@@ -1252,20 +1300,20 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 		// View terminals
 		sourceInstance = this._terminalGroupService.getInstanceFromResource(
-			e.uri,
+			e.uri
 		);
 		if (sourceInstance) {
 			this._terminalGroupService.moveInstance(
 				sourceInstance,
 				instance,
-				e.side,
+				e.side
 			);
 			return;
 		}
 
 		// Terminal editors
 		sourceInstance = this._terminalEditorService.getInstanceFromResource(
-			e.uri,
+			e.uri
 		);
 		if (sourceInstance) {
 			this.moveToTerminalView(sourceInstance, instance, e.side);
@@ -1292,26 +1340,26 @@ export class TerminalService extends Disposable implements ITerminalService {
 		});
 		if (terminalIndex === -1) {
 			throw new Error(
-				`Terminal with ID ${terminalId} does not exist (has it already been disposed?)`,
+				`Terminal with ID ${terminalId} does not exist (has it already been disposed?)`
 			);
 		}
 		return terminalIndex;
 	}
 
 	protected async _showTerminalCloseConfirmation(
-		singleTerminal?: boolean,
+		singleTerminal?: boolean
 	): Promise<boolean> {
 		let message: string;
 		if (this.instances.length === 1 || singleTerminal) {
 			message = nls.localize(
 				"terminalService.terminalCloseConfirmationSingular",
-				"Do you want to terminate the active terminal session?",
+				"Do you want to terminate the active terminal session?"
 			);
 		} else {
 			message = nls.localize(
 				"terminalService.terminalCloseConfirmationPlural",
 				"Do you want to terminate the {0} active terminal sessions?",
-				this.instances.length,
+				this.instances.length
 			);
 		}
 		const { confirmed } = await this._dialogService.confirm({
@@ -1319,7 +1367,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			message,
 			primaryButton: nls.localize(
 				{ key: "terminate", comment: ["&& denotes a mnemonic"] },
-				"&&Terminate",
+				"&&Terminate"
 			),
 		});
 		return !confirmed;
@@ -1333,7 +1381,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	async getInstanceHost(
-		location: ITerminalLocationOptions | undefined,
+		location: ITerminalLocationOptions | undefined
 	): Promise<ITerminalInstanceHost> {
 		if (location) {
 			if (location === TerminalLocation.Editor) {
@@ -1355,7 +1403,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	async createTerminal(
-		options?: ICreateTerminalOptions,
+		options?: ICreateTerminalOptions
 	): Promise<ITerminalInstance> {
 		// Await the initialization of available profiles as long as this is not a pty terminal or a
 		// local terminal in a remote workspace as profile won't be used in those cases and these
@@ -1388,13 +1436,13 @@ export class TerminalService extends Disposable implements ITerminalService {
 			config && "extensionIdentifier" in config
 				? {}
 				: this._terminalInstanceService.convertProfileToShellLaunchConfig(
-						config || {},
-				  );
+						config || {}
+					);
 
 		// Get the contributed profile if it was provided
 		const contributedProfile = await this._getContributedProfile(
 			shellLaunchConfig,
-			options,
+			options
 		);
 
 		const splitActiveTerminal =
@@ -1402,15 +1450,15 @@ export class TerminalService extends Disposable implements ITerminalService {
 			"splitActiveTerminal" in options.location
 				? options.location.splitActiveTerminal
 				: typeof options?.location === "object"
-				  ? "parentTerminal" in options.location
-				  : false;
+					? "parentTerminal" in options.location
+					: false;
 
 		await this._resolveCwd(shellLaunchConfig, splitActiveTerminal, options);
 
 		// Launch the contributed profile
 		if (contributedProfile) {
 			const resolvedLocation = await this.resolveLocation(
-				options?.location,
+				options?.location
 			);
 			let location:
 				| TerminalLocation
@@ -1437,7 +1485,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 					color: contributedProfile.color,
 					location,
 					cwd: shellLaunchConfig.cwd,
-				},
+				}
 			);
 			const instanceHost =
 				resolvedLocation === TerminalLocation.Editor
@@ -1455,19 +1503,19 @@ export class TerminalService extends Disposable implements ITerminalService {
 			!this.isProcessSupportRegistered
 		) {
 			throw new Error(
-				"Could not create terminal when process support is not registered",
+				"Could not create terminal when process support is not registered"
 			);
 		}
 		if (shellLaunchConfig.hideFromUser) {
 			const instance = this._terminalInstanceService.createInstance(
 				shellLaunchConfig,
-				TerminalLocation.Panel,
+				TerminalLocation.Panel
 			);
 			this._backgroundedTerminalInstances.push(instance);
 			this._backgroundedTerminalDisposables.set(instance.instanceId, [
 				instance.onDisposed(
 					this._onDidDisposeInstance.fire,
-					this._onDidDisposeInstance,
+					this._onDidDisposeInstance
 				),
 			]);
 			this._terminalHasBeenCreated.set(true);
@@ -1488,23 +1536,23 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	private async _getContributedProfile(
 		shellLaunchConfig: IShellLaunchConfig,
-		options?: ICreateTerminalOptions,
+		options?: ICreateTerminalOptions
 	): Promise<IExtensionTerminalProfile | undefined> {
 		if (options?.config && "extensionIdentifier" in options.config) {
 			return options.config;
 		}
 
 		return this._terminalProfileService.getContributedDefaultProfile(
-			shellLaunchConfig,
+			shellLaunchConfig
 		);
 	}
 
 	async createDetachedTerminal(
-		options: IDetachedXTermOptions,
+		options: IDetachedXTermOptions
 	): Promise<IDetachedTerminalInstance> {
 		const ctor = await TerminalInstance.getXtermConstructor(
 			this._keybindingService,
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		const xterm = this._instantiationService.createInstance(
 			XtermTerminal,
@@ -1515,7 +1563,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			options.colorProvider,
 			options.capabilities || new TerminalCapabilityStore(),
 			"",
-			false,
+			false
 		);
 
 		if (options.readonly) {
@@ -1525,7 +1573,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 		const instance = new DetachedTerminal(
 			xterm,
 			options,
-			this._instantiationService,
+			this._instantiationService
 		);
 		this._detachedXterms.add(instance);
 		const l = xterm.onDidDispose(() => {
@@ -1539,7 +1587,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	private async _resolveCwd(
 		shellLaunchConfig: IShellLaunchConfig,
 		splitActiveTerminal: boolean,
-		options?: ICreateTerminalOptions,
+		options?: ICreateTerminalOptions
 	): Promise<void> {
 		const cwd = shellLaunchConfig.cwd;
 		if (!cwd) {
@@ -1560,7 +1608,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 					this.configHelper,
 					parent,
 					this._workspaceContextService.getWorkspace().folders,
-					this._commandService,
+					this._commandService
 				);
 			}
 		}
@@ -1569,7 +1617,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	private _splitTerminal(
 		shellLaunchConfig: IShellLaunchConfig,
 		location: TerminalLocation,
-		parent: ITerminalInstance,
+		parent: ITerminalInstance
 	): ITerminalInstance {
 		let instance;
 		// Use the URI from the base instance if it exists, this will correctly split local terminals
@@ -1590,14 +1638,14 @@ export class TerminalService extends Disposable implements ITerminalService {
 		) {
 			instance = this._terminalEditorService.splitInstance(
 				parent,
-				shellLaunchConfig,
+				shellLaunchConfig
 			);
 		} else {
 			const group =
 				this._terminalGroupService.getGroupForInstance(parent);
 			if (!group) {
 				throw new Error(
-					`Cannot split a terminal without a group ${parent}`,
+					`Cannot split a terminal without a group ${parent}`
 				);
 			}
 			shellLaunchConfig.parentTerminalId = parent.instanceId;
@@ -1612,14 +1660,14 @@ export class TerminalService extends Disposable implements ITerminalService {
 			return;
 		}
 		const reconnectedTerminals = this._reconnectedTerminals.get(
-			instance.reconnectionProperties.ownerId,
+			instance.reconnectionProperties.ownerId
 		);
 		if (reconnectedTerminals) {
 			reconnectedTerminals.push(instance);
 		} else {
 			this._reconnectedTerminals.set(
 				instance.reconnectionProperties.ownerId,
-				[instance],
+				[instance]
 			);
 		}
 	}
@@ -1627,14 +1675,14 @@ export class TerminalService extends Disposable implements ITerminalService {
 	private _createTerminal(
 		shellLaunchConfig: IShellLaunchConfig,
 		location: TerminalLocation,
-		options?: ICreateTerminalOptions,
+		options?: ICreateTerminalOptions
 	): ITerminalInstance {
 		let instance;
 		const editorOptions = this._getEditorOptions(options?.location);
 		if (location === TerminalLocation.Editor) {
 			instance = this._terminalInstanceService.createInstance(
 				shellLaunchConfig,
-				TerminalLocation.Editor,
+				TerminalLocation.Editor
 			);
 			this._terminalEditorService.openEditor(instance, editorOptions);
 		} else {
@@ -1648,7 +1696,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	async resolveLocation(
-		location?: ITerminalLocationOptions,
+		location?: ITerminalLocationOptions
 	): Promise<TerminalLocation | undefined> {
 		if (location && typeof location === "object") {
 			if ("parentTerminal" in location) {
@@ -1670,7 +1718,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	private async _getSplitParent(
-		location?: ITerminalLocationOptions,
+		location?: ITerminalLocationOptions
 	): Promise<ITerminalInstance | undefined> {
 		if (
 			location &&
@@ -1689,7 +1737,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	private _getEditorOptions(
-		location?: ITerminalLocationOptions,
+		location?: ITerminalLocationOptions
 	): TerminalEditorLocation | undefined {
 		if (
 			location &&
@@ -1699,7 +1747,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			location.viewColumn = columnToEditorGroup(
 				this._editorGroupsService,
 				this._configurationService,
-				location.viewColumn,
+				location.viewColumn
 			);
 			return location;
 		}
@@ -1719,9 +1767,9 @@ export class TerminalService extends Disposable implements ITerminalService {
 						"localTerminalVirtualWorkspace",
 						"This shell is open to a {0}local{1} folder, NOT to the virtual folder",
 						"\x1b[3m",
-						"\x1b[23m",
+						"\x1b[23m"
 					),
-					{ excludeLeadingNewLine: true, loudFormatting: true },
+					{ excludeLeadingNewLine: true, loudFormatting: true }
 				);
 				shellLaunchConfig.type = "Local";
 			} else if (this._remoteAgentService.getConnection()) {
@@ -1730,9 +1778,9 @@ export class TerminalService extends Disposable implements ITerminalService {
 						"localTerminalRemote",
 						"This shell is running on your {0}local{1} machine, NOT on the connected remote machine",
 						"\x1b[3m",
-						"\x1b[23m",
+						"\x1b[23m"
 					),
-					{ excludeLeadingNewLine: true, loudFormatting: true },
+					{ excludeLeadingNewLine: true, loudFormatting: true }
 				);
 				shellLaunchConfig.type = "Local";
 			}
@@ -1742,10 +1790,10 @@ export class TerminalService extends Disposable implements ITerminalService {
 	protected _showBackgroundTerminal(instance: ITerminalInstance): void {
 		this._backgroundedTerminalInstances.splice(
 			this._backgroundedTerminalInstances.indexOf(instance),
-			1,
+			1
 		);
 		const disposables = this._backgroundedTerminalDisposables.get(
-			instance.instanceId,
+			instance.instanceId
 		);
 		if (disposables) {
 			dispose(disposables);
@@ -1764,7 +1812,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	async setContainers(
 		panelContainer: HTMLElement,
-		terminalContainer: HTMLElement,
+		terminalContainer: HTMLElement
 	): Promise<void> {
 		this._configHelper.panelContainer = panelContainer;
 		this._terminalGroupService.setContainer(terminalContainer);
@@ -1779,28 +1827,28 @@ export class TerminalService extends Disposable implements ITerminalService {
 	}
 
 	createOnInstanceEvent<T>(
-		getEvent: (instance: ITerminalInstance) => Event<T>,
+		getEvent: (instance: ITerminalInstance) => Event<T>
 	): Event<T> {
 		return this._register(
 			new DynamicListEventMultiplexer(
 				this.instances,
 				this.onDidCreateInstance,
 				this.onDidDisposeInstance,
-				getEvent,
-			),
+				getEvent
+			)
 		).event;
 	}
 
 	createOnInstanceCapabilityEvent<T extends TerminalCapability, K>(
 		capabilityId: T,
-		getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>,
+		getEvent: (capability: ITerminalCapabilityImplMap[T]) => Event<K>
 	): IDynamicListEventMultiplexer<{ instance: ITerminalInstance; data: K }> {
 		return createInstanceCapabilityEventMultiplexer(
 			this.instances,
 			this.onDidCreateInstance,
 			this.onDidDisposeInstance,
 			capabilityId,
-			getEvent,
+			getEvent
 		);
 	}
 }
@@ -1812,26 +1860,27 @@ class TerminalEditorStyle extends Themable {
 		container: HTMLElement,
 		@ITerminalService private readonly _terminalService: ITerminalService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
 		@IEditorService private readonly _editorService: IEditorService
 	) {
 		super(_themeService);
 		this._registerListeners();
 		this._styleElement = dom.createStyleSheet(container);
-		this._register(toDisposable(() => container.removeChild(this._styleElement)));
+		this._register(
+			toDisposable(() => container.removeChild(this._styleElement))
+		);
 		this.updateStyles();
 	}
 
 	private _registerListeners(): void {
 		this._register(
 			this._terminalService.onAnyInstanceIconChange(() =>
-				this.updateStyles(),
-			),
+				this.updateStyles()
+			)
 		);
 		this._register(
-			this._terminalService.onDidCreateInstance(() =>
-				this.updateStyles(),
-			),
+			this._terminalService.onDidCreateInstance(() => this.updateStyles())
 		);
 		this._register(
 			this._editorService.onDidActiveEditorChange(() => {
@@ -1841,7 +1890,7 @@ class TerminalEditorStyle extends Themable {
 				) {
 					this.updateStyles();
 				}
-			}),
+			})
 		);
 		this._register(
 			this._editorService.onDidCloseEditor(() => {
@@ -1851,12 +1900,12 @@ class TerminalEditorStyle extends Themable {
 				) {
 					this.updateStyles();
 				}
-			}),
+			})
 		);
 		this._register(
 			this._terminalProfileService.onDidChangeAvailableProfiles(() =>
-				this.updateStyles(),
-			),
+				this.updateStyles()
+			)
 		);
 	}
 
@@ -1905,7 +1954,7 @@ class TerminalEditorStyle extends Themable {
 							`{content: '${
 								def.fontCharacter
 							}' !important; font-family: ${dom.asCSSPropertyValue(
-								def.font?.id ?? "codicon",
+								def.font?.id ?? "codicon"
 							)} !important;}`;
 					}
 				}

@@ -33,8 +33,10 @@ export class TextInputActionsProvider
 	private textInputActions: IAction[] = [];
 
 	constructor(
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IClipboardService private readonly clipboardService: IClipboardService
 	) {
 		super();
@@ -52,14 +54,14 @@ export class TextInputActionsProvider
 				localize("undo", "Undo"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("undo"),
+				async () => getActiveDocument().execCommand("undo")
 			),
 			new Action(
 				"redo",
 				localize("redo", "Redo"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("redo"),
+				async () => getActiveDocument().execCommand("redo")
 			),
 			new Separator(),
 
@@ -69,14 +71,14 @@ export class TextInputActionsProvider
 				localize("cut", "Cut"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("cut"),
+				async () => getActiveDocument().execCommand("cut")
 			),
 			new Action(
 				"editor.action.clipboardCopyAction",
 				localize("copy", "Copy"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("copy"),
+				async () => getActiveDocument().execCommand("copy")
 			),
 			new Action(
 				"editor.action.clipboardPasteAction",
@@ -102,10 +104,10 @@ export class TextInputActionsProvider
 
 							element.value = `${element.value.substring(
 								0,
-								selectionStart,
+								selectionStart
 							)}${clipboardText}${element.value.substring(
 								selectionEnd,
-								element.value.length,
+								element.value.length
 							)}`;
 							element.selectionStart =
 								selectionStart + clipboardText.length;
@@ -114,11 +116,11 @@ export class TextInputActionsProvider
 								new Event("input", {
 									bubbles: true,
 									cancelable: true,
-								}),
+								})
 							);
 						}
 					}
-				},
+				}
 			),
 			new Separator(),
 
@@ -128,8 +130,8 @@ export class TextInputActionsProvider
 				localize("selectAll", "Select All"),
 				undefined,
 				true,
-				async () => getActiveDocument().execCommand("selectAll"),
-			),
+				async () => getActiveDocument().execCommand("selectAll")
+			)
 		);
 	}
 
@@ -141,15 +143,15 @@ export class TextInputActionsProvider
 				({ container, disposables }) => {
 					disposables.add(
 						addDisposableListener(container, "contextmenu", (e) =>
-							this.onContextMenu(getWindow(container), e),
-						),
+							this.onContextMenu(getWindow(container), e)
+						)
 					);
 				},
 				{
 					container: this.layoutService.mainContainer,
 					disposables: this._store,
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -180,5 +182,5 @@ export class TextInputActionsProvider
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(TextInputActionsProvider, LifecyclePhase.Ready);

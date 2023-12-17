@@ -14,13 +14,13 @@ import "./userDataProfileActions";
 import { UserDataProfilePreviewContribution } from "vs/workbench/contrib/userDataProfile/browser/userDataProfilePreview";
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataProfilesWorkbenchContribution,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UserDataProfilePreviewContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

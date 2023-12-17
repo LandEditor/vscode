@@ -31,7 +31,7 @@ export class EmptyView extends ViewPane {
 	static readonly ID: string = "workbench.explorer.emptyView";
 	static readonly NAME: ILocalizedString = nls.localize2(
 		"noWorkspace",
-		"No Folder Opened",
+		"No Folder Opened"
 	);
 	private _disposed: boolean = false;
 
@@ -42,17 +42,35 @@ export class EmptyView extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILabelService private labelService: ILabelService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IOpenerService openerService: IOpenerService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService
+		);
 
-		this._register(this.contextService.onDidChangeWorkbenchState(() => this.refreshTitle()));
-		this._register(this.labelService.onDidChangeFormatters(() => this.refreshTitle()));
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(() =>
+				this.refreshTitle()
+			)
+		);
+		this._register(
+			this.labelService.onDidChangeFormatters(() => this.refreshTitle())
+		);
 	}
 
 	override shouldShowWelcome(): boolean {
@@ -73,9 +91,9 @@ export class EmptyView extends ViewPane {
 								allowWorkspaceOpen:
 									!isWeb ||
 									isTemporaryWorkspace(
-										this.contextService.getWorkspace(),
+										this.contextService.getWorkspace()
 									),
-							},
+							}
 						);
 					dropHandler.handleDrop(e, getWindow(container));
 				},
@@ -98,7 +116,7 @@ export class EmptyView extends ViewPane {
 						e.dataTransfer.dropEffect = "copy";
 					}
 				},
-			}),
+			})
 		);
 
 		this.refreshTitle();

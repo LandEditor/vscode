@@ -24,7 +24,7 @@ export class CharacterPairSupport {
 	constructor(config: LanguageConfiguration) {
 		if (config.autoClosingPairs) {
 			this._autoClosingPairs = config.autoClosingPairs.map(
-				(el) => new StandardAutoClosingPairConditional(el),
+				(el) => new StandardAutoClosingPairConditional(el)
 			);
 		} else if (config.brackets) {
 			this._autoClosingPairs = config.brackets.map(
@@ -32,7 +32,7 @@ export class CharacterPairSupport {
 					new StandardAutoClosingPairConditional({
 						open: b[0],
 						close: b[1],
-					}),
+					})
 			);
 		} else {
 			this._autoClosingPairs = [];
@@ -48,7 +48,7 @@ export class CharacterPairSupport {
 				new StandardAutoClosingPairConditional({
 					open: docComment.open,
 					close: docComment.close || "",
-				}),
+				})
 			);
 		}
 

@@ -31,10 +31,10 @@ export class OutlineEntry {
 		return this.isExecuting && this.isPaused
 			? executingStateIcon
 			: this.isExecuting
-			  ? ThemeIcon.modify(executingStateIcon, "spin")
-			  : this.cell.cellKind === CellKind.Markup
-				  ? Codicon.markdown
-				  : Codicon.code;
+				? ThemeIcon.modify(executingStateIcon, "spin")
+				: this.cell.cellKind === CellKind.Markup
+					? Codicon.markdown
+					: Codicon.code;
 	}
 
 	constructor(
@@ -45,7 +45,7 @@ export class OutlineEntry {
 		readonly isExecuting: boolean,
 		readonly isPaused: boolean,
 		readonly range?: IRange,
-		readonly symbolKind?: SymbolKind,
+		readonly symbolKind?: SymbolKind
 	) {}
 
 	addChild(entry: OutlineEntry) {
@@ -114,7 +114,7 @@ export class OutlineEntry {
 
 	find(
 		cell: ICellViewModel,
-		parents: OutlineEntry[],
+		parents: OutlineEntry[]
 	): OutlineEntry | undefined {
 		if (cell.id === this.cell.id) {
 			return this;

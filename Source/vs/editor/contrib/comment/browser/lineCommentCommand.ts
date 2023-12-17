@@ -74,7 +74,7 @@ export class LineCommentCommand implements ICommand {
 		type: Type,
 		insertSpace: boolean,
 		ignoreEmptyLines: boolean,
-		ignoreFirstLine?: boolean,
+		ignoreFirstLine?: boolean
 	) {
 		this._selection = selection;
 		this._tabSize = tabSize;
@@ -95,14 +95,14 @@ export class LineCommentCommand implements ICommand {
 		model: ITextModel,
 		startLineNumber: number,
 		endLineNumber: number,
-		languageConfigurationService: ILanguageConfigurationService,
+		languageConfigurationService: ILanguageConfigurationService
 	): ILinePreflightData[] | null {
 		model.tokenization.tokenizeIfCheap(startLineNumber);
 		const languageId = model.getLanguageIdAtPosition(startLineNumber, 1);
 
 		const config =
 			languageConfigurationService.getLanguageConfiguration(
-				languageId,
+				languageId
 			).comments;
 		const commentStr = config ? config.lineCommentToken : null;
 		if (!commentStr) {
@@ -139,7 +139,7 @@ export class LineCommentCommand implements ICommand {
 		startLineNumber: number,
 		ignoreEmptyLines: boolean,
 		ignoreFirstLine: boolean,
-		languageConfigurationService: ILanguageConfigurationService,
+		languageConfigurationService: ILanguageConfigurationService
 	): IPreflightData {
 		let onlyWhitespaceLines = true;
 
@@ -182,7 +182,7 @@ export class LineCommentCommand implements ICommand {
 				!BlockCommentCommand._haystackHasNeedleAtOffset(
 					lineContent,
 					lineData.commentStr,
-					lineContentStartOffset,
+					lineContentStartOffset
 				)
 			) {
 				if (type === Type.Toggle) {
@@ -237,13 +237,13 @@ export class LineCommentCommand implements ICommand {
 		endLineNumber: number,
 		ignoreEmptyLines: boolean,
 		ignoreFirstLine: boolean,
-		languageConfigurationService: ILanguageConfigurationService,
+		languageConfigurationService: ILanguageConfigurationService
 	): IPreflightData {
 		const lines = LineCommentCommand._gatherPreflightCommentStrings(
 			model,
 			startLineNumber,
 			endLineNumber,
-			languageConfigurationService,
+			languageConfigurationService
 		);
 		if (lines === null) {
 			return {
@@ -259,7 +259,7 @@ export class LineCommentCommand implements ICommand {
 			startLineNumber,
 			ignoreEmptyLines,
 			ignoreFirstLine,
-			languageConfigurationService,
+			languageConfigurationService
 		);
 	}
 
@@ -270,31 +270,31 @@ export class LineCommentCommand implements ICommand {
 		model: ISimpleModel,
 		builder: IEditOperationBuilder,
 		data: IPreflightDataSupported,
-		s: Selection,
+		s: Selection
 	): void {
 		let ops: ISingleEditOperation[];
 
 		if (data.shouldRemoveComments) {
 			ops = LineCommentCommand._createRemoveLineCommentsOperations(
 				data.lines,
-				s.startLineNumber,
+				s.startLineNumber
 			);
 		} else {
 			LineCommentCommand._normalizeInsertionPoint(
 				model,
 				data.lines,
 				s.startLineNumber,
-				this._tabSize,
+				this._tabSize
 			);
 			ops = this._createAddLineCommentsOperations(
 				data.lines,
-				s.startLineNumber,
+				s.startLineNumber
 			);
 		}
 
 		const cursorPosition = new Position(
 			s.positionLineNumber,
-			s.positionColumn,
+			s.positionColumn
 		);
 
 		for (let i = 0, len = ops.length; i < len; i++) {
@@ -304,7 +304,7 @@ export class LineCommentCommand implements ICommand {
 				Range.getStartPosition(ops[i].range).equals(cursorPosition)
 			) {
 				const lineContent = model.getLineContent(
-					cursorPosition.lineNumber,
+					cursorPosition.lineNumber
 				);
 				if (lineContent.length + 1 === cursorPosition.column) {
 					this._deltaColumn = (ops[i].text || "").length;
@@ -319,7 +319,7 @@ export class LineCommentCommand implements ICommand {
 		model: ITextModel,
 		s: Selection,
 		startToken: string,
-		endToken: string,
+		endToken: string
 	): ISingleEditOperation[] | null {
 		let startLineNumber = s.startLineNumber;
 		let endLineNumber = s.endLineNumber;
@@ -328,7 +328,7 @@ export class LineCommentCommand implements ICommand {
 			endToken.length +
 			Math.max(
 				model.getLineFirstNonWhitespaceColumn(s.startLineNumber),
-				s.startColumn,
+				s.startColumn
 			);
 
 		let startTokenIndex = model
@@ -392,10 +392,10 @@ export class LineCommentCommand implements ICommand {
 					startLineNumber,
 					startTokenIndex + startToken.length + 1,
 					endLineNumber,
-					endTokenIndex + 1,
+					endTokenIndex + 1
 				),
 				startToken,
-				endToken,
+				endToken
 			);
 		}
 
@@ -408,13 +408,13 @@ export class LineCommentCommand implements ICommand {
 	private _executeBlockComment(
 		model: ITextModel,
 		builder: IEditOperationBuilder,
-		s: Selection,
+		s: Selection
 	): void {
 		model.tokenization.tokenizeIfCheap(s.startLineNumber);
 		const languageId = model.getLanguageIdAtPosition(s.startLineNumber, 1);
 		const config =
 			this.languageConfigurationService.getLanguageConfiguration(
-				languageId,
+				languageId
 			).comments;
 		if (
 			!config ||
@@ -432,7 +432,7 @@ export class LineCommentCommand implements ICommand {
 			model,
 			s,
 			startToken,
-			endToken,
+			endToken
 		);
 		if (!ops) {
 			if (s.isEmpty()) {
@@ -448,25 +448,25 @@ export class LineCommentCommand implements ICommand {
 						s.startLineNumber,
 						firstNonWhitespaceIndex + 1,
 						s.startLineNumber,
-						lineContent.length + 1,
+						lineContent.length + 1
 					),
 					startToken,
 					endToken,
-					this._insertSpace,
+					this._insertSpace
 				);
 			} else {
 				ops = BlockCommentCommand._createAddBlockCommentOperations(
 					new Range(
 						s.startLineNumber,
 						model.getLineFirstNonWhitespaceColumn(
-							s.startLineNumber,
+							s.startLineNumber
 						),
 						s.endLineNumber,
-						model.getLineMaxColumn(s.endLineNumber),
+						model.getLineMaxColumn(s.endLineNumber)
 					),
 					startToken,
 					endToken,
-					this._insertSpace,
+					this._insertSpace
 				);
 			}
 
@@ -483,7 +483,7 @@ export class LineCommentCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder,
+		builder: IEditOperationBuilder
 	): void {
 		let s = this._selection;
 		this._moveEndPositionDown = false;
@@ -494,9 +494,9 @@ export class LineCommentCommand implements ICommand {
 					s.startLineNumber,
 					model.getLineMaxColumn(s.startLineNumber),
 					s.startLineNumber + 1,
-					1,
+					1
 				),
-				s.startLineNumber === model.getLineCount() ? "" : "\n",
+				s.startLineNumber === model.getLineCount() ? "" : "\n"
 			);
 			this._selectionId = builder.trackSelection(s);
 			return;
@@ -506,7 +506,7 @@ export class LineCommentCommand implements ICommand {
 			this._moveEndPositionDown = true;
 			s = s.setEndPosition(
 				s.endLineNumber - 1,
-				model.getLineMaxColumn(s.endLineNumber - 1),
+				model.getLineMaxColumn(s.endLineNumber - 1)
 			);
 		}
 
@@ -518,7 +518,7 @@ export class LineCommentCommand implements ICommand {
 			s.endLineNumber,
 			this._ignoreEmptyLines,
 			this._ignoreFirstLine,
-			this.languageConfigurationService,
+			this.languageConfigurationService
 		);
 
 		if (data.supported) {
@@ -530,7 +530,7 @@ export class LineCommentCommand implements ICommand {
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData,
+		helper: ICursorStateComputerData
 	): Selection {
 		let result = helper.getTrackedSelection(this._selectionId!);
 
@@ -542,7 +542,7 @@ export class LineCommentCommand implements ICommand {
 			result.selectionStartLineNumber,
 			result.selectionStartColumn + this._deltaColumn,
 			result.positionLineNumber,
-			result.positionColumn + this._deltaColumn,
+			result.positionColumn + this._deltaColumn
 		);
 	}
 
@@ -551,7 +551,7 @@ export class LineCommentCommand implements ICommand {
 	 */
 	public static _createRemoveLineCommentsOperations(
 		lines: ILinePreflightData[],
-		startLineNumber: number,
+		startLineNumber: number
 	): ISingleEditOperation[] {
 		const res: ISingleEditOperation[] = [];
 
@@ -570,9 +570,9 @@ export class LineCommentCommand implements ICommand {
 						startLineNumber + i,
 						lineData.commentStrOffset +
 							lineData.commentStrLength +
-							1,
-					),
-				),
+							1
+					)
+				)
 			);
 		}
 
@@ -584,7 +584,7 @@ export class LineCommentCommand implements ICommand {
 	 */
 	private _createAddLineCommentsOperations(
 		lines: ILinePreflightData[],
-		startLineNumber: number,
+		startLineNumber: number
 	): ISingleEditOperation[] {
 		const res: ISingleEditOperation[] = [];
 		const afterCommentStr = this._insertSpace ? " " : "";
@@ -600,10 +600,10 @@ export class LineCommentCommand implements ICommand {
 				EditOperation.insert(
 					new Position(
 						startLineNumber + i,
-						lineData.commentStrOffset + 1,
+						lineData.commentStrOffset + 1
 					),
-					lineData.commentStr + afterCommentStr,
-				),
+					lineData.commentStr + afterCommentStr
+				)
 			);
 		}
 
@@ -614,7 +614,7 @@ export class LineCommentCommand implements ICommand {
 		currentVisibleColumn: number,
 		tabSize: number,
 		isTab: boolean,
-		columnSize: number,
+		columnSize: number
 	): number {
 		if (isTab) {
 			return (
@@ -632,7 +632,7 @@ export class LineCommentCommand implements ICommand {
 		model: ISimpleModel,
 		lines: IInsertionPoint[],
 		startLineNumber: number,
-		tabSize: number,
+		tabSize: number
 	): void {
 		let minVisibleColumn = Constants.MAX_SAFE_SMALL_INTEGER;
 		let j: number;
@@ -655,7 +655,7 @@ export class LineCommentCommand implements ICommand {
 					currentVisibleColumn,
 					tabSize,
 					lineContent.charCodeAt(j) === CharCode.Tab,
-					1,
+					1
 				);
 			}
 
@@ -683,7 +683,7 @@ export class LineCommentCommand implements ICommand {
 					currentVisibleColumn,
 					tabSize,
 					lineContent.charCodeAt(j) === CharCode.Tab,
-					1,
+					1
 				);
 			}
 

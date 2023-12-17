@@ -53,7 +53,7 @@
 		const windowConfigIpcChannel = parseArgv("vscode-window-config");
 		if (!windowConfigIpcChannel) {
 			throw new Error(
-				"Preload: did not find expected vscode-window-config in renderer process arguments list.",
+				"Preload: did not find expected vscode-window-config in renderer process arguments list."
 			);
 		}
 
@@ -78,7 +78,7 @@
 			return resolvedConfiguration;
 		} catch (error) {
 			throw new Error(
-				`Preload: unable to fetch vscode-window-config: ${error}`,
+				`Preload: unable to fetch vscode-window-config: ${error}`
 			);
 		}
 	})();
@@ -206,7 +206,7 @@
 				if (validateIPC(responseChannel)) {
 					const responseListener = (
 						/** @type {IpcRendererEvent} */ e,
-						/** @type {string} */ responseNonce,
+						/** @type {string} */ responseNonce
 					) => {
 						// validate that the nonce from the response is the same
 						// as when requested. and if so, use `postMessage` to
@@ -279,8 +279,8 @@
 					process.execPath.substr(
 						0,
 						process.execPath.lastIndexOf(
-							process.platform === "win32" ? "\\" : "/",
-						),
+							process.platform === "win32" ? "\\" : "/"
+						)
 					)
 				);
 			},

@@ -812,7 +812,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * @return The contribution or null if contribution not found.
 	 */
 	getContribution<T extends editorCommon.IEditorContribution>(
-		id: string,
+		id: string
 	): T | null;
 
 	/**
@@ -845,7 +845,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * Gets a specific editor option.
 	 */
 	getOption<T extends EditorOption>(
-		id: T,
+		id: T
 	): FindComputedEditorOptionValueById<T>;
 
 	/**
@@ -908,21 +908,21 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	setScrollLeft(
 		newScrollLeft: number,
-		scrollType?: editorCommon.ScrollType,
+		scrollType?: editorCommon.ScrollType
 	): void;
 	/**
 	 * Change the scrollTop of the editor's viewport.
 	 */
 	setScrollTop(
 		newScrollTop: number,
-		scrollType?: editorCommon.ScrollType,
+		scrollType?: editorCommon.ScrollType
 	): void;
 	/**
 	 * Change the scroll position of the editor's viewport.
 	 */
 	setScrollPosition(
 		position: editorCommon.INewScrollPosition,
-		scrollType?: editorCommon.ScrollType,
+		scrollType?: editorCommon.ScrollType
 	): void;
 	/**
 	 * Check if the editor is currently scrolling towards a different scroll position.
@@ -944,7 +944,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	executeCommand(
 		source: string | null | undefined,
-		command: editorCommon.ICommand,
+		command: editorCommon.ICommand
 	): void;
 
 	/**
@@ -967,7 +967,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	executeEdits(
 		source: string | null | undefined,
 		edits: IIdentifiedSingleEditOperation[],
-		endCursorState?: ICursorStateComputer | Selection[],
+		endCursorState?: ICursorStateComputer | Selection[]
 	): boolean;
 
 	/**
@@ -977,7 +977,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	executeCommands(
 		source: string | null | undefined,
-		commands: (editorCommon.ICommand | null)[],
+		commands: (editorCommon.ICommand | null)[]
 	): void;
 
 	/**
@@ -1002,7 +1002,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	deltaDecorations(
 		oldDecorations: string[],
-		newDecorations: IModelDeltaDecoration[],
+		newDecorations: IModelDeltaDecoration[]
 	): string[];
 
 	/**
@@ -1016,7 +1016,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	setDecorationsByType(
 		description: string,
 		decorationTypeKey: string,
-		ranges: editorCommon.IDecorationOptions[],
+		ranges: editorCommon.IDecorationOptions[]
 	): void;
 
 	/**
@@ -1145,7 +1145,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * Change the view zones. View zones are lost when a new model is attached to the editor.
 	 */
 	changeViewZones(
-		callback: (accessor: IViewZoneChangeAccessor) => void,
+		callback: (accessor: IViewZoneChangeAccessor) => void
 	): void;
 
 	/**
@@ -1168,7 +1168,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 */
 	getTargetAtClientPoint(
 		clientX: number,
-		clientY: number,
+		clientY: number
 	): IMouseTarget | null;
 
 	/**
@@ -1179,7 +1179,7 @@ export interface ICodeEditor extends editorCommon.IEditor {
 	 * Warning: the results of this method are inaccurate for positions that are outside the current editor viewport.
 	 */
 	getScrolledVisiblePosition(
-		position: IPosition,
+		position: IPosition
 	): { top: number; left: number; height: number } | null;
 
 	/**
@@ -1322,7 +1322,7 @@ export interface IDiffEditor extends editorCommon.IEditor {
 	getModel(): editorCommon.IDiffEditorModel | null;
 
 	createViewModel(
-		model: editorCommon.IDiffEditorModel,
+		model: editorCommon.IDiffEditorModel
 	): editorCommon.IDiffEditorViewModel;
 
 	/**
@@ -1337,7 +1337,7 @@ export interface IDiffEditor extends editorCommon.IEditor {
 		model:
 			| editorCommon.IDiffEditorModel
 			| editorCommon.IDiffEditorViewModel
-			| null,
+			| null
 	): void;
 
 	/**
@@ -1421,7 +1421,7 @@ export function isDiffEditor(thing: unknown): thing is IDiffEditor {
  *@internal
  */
 export function isCompositeEditor(
-	thing: unknown,
+	thing: unknown
 ): thing is editorCommon.ICompositeCodeEditor {
 	return (
 		!!thing &&

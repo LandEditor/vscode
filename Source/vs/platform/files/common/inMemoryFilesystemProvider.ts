@@ -101,10 +101,10 @@ export class InMemoryFileSystemProvider
 		if (readonly !== isReadonly) {
 			this._capabilities = readonly
 				? FileSystemProviderCapabilities.Readonly |
-				  FileSystemProviderCapabilities.PathCaseSensitive |
-				  FileSystemProviderCapabilities.FileReadWrite
+					FileSystemProviderCapabilities.PathCaseSensitive |
+					FileSystemProviderCapabilities.FileReadWrite
 				: FileSystemProviderCapabilities.FileReadWrite |
-				  FileSystemProviderCapabilities.PathCaseSensitive;
+					FileSystemProviderCapabilities.PathCaseSensitive;
 			this._onDidChangeCapabilities.fire();
 		}
 	}
@@ -133,7 +133,7 @@ export class InMemoryFileSystemProvider
 		}
 		throw createFileSystemProviderError(
 			"file not found",
-			FileSystemProviderErrorCode.FileNotFound,
+			FileSystemProviderErrorCode.FileNotFound
 		);
 	}
 
@@ -142,7 +142,7 @@ export class InMemoryFileSystemProvider
 
 		const stream = newWriteableStream<Uint8Array>(
 			(data) =>
-				VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer,
+				VSBuffer.concat(data.map((data) => VSBuffer.wrap(data))).buffer
 		);
 		stream.end(data);
 
@@ -152,7 +152,7 @@ export class InMemoryFileSystemProvider
 	async writeFile(
 		resource: URI,
 		content: Uint8Array,
-		opts: IFileWriteOptions,
+		opts: IFileWriteOptions
 	): Promise<void> {
 		const basename = resources.basename(resource);
 		const parent = this._lookupParentDirectory(resource);
@@ -160,19 +160,19 @@ export class InMemoryFileSystemProvider
 		if (entry instanceof Directory) {
 			throw createFileSystemProviderError(
 				"file is directory",
-				FileSystemProviderErrorCode.FileIsADirectory,
+				FileSystemProviderErrorCode.FileIsADirectory
 			);
 		}
 		if (!entry && !opts.create) {
 			throw createFileSystemProviderError(
 				"file not found",
-				FileSystemProviderErrorCode.FileNotFound,
+				FileSystemProviderErrorCode.FileNotFound
 			);
 		}
 		if (entry && opts.create && !opts.overwrite) {
 			throw createFileSystemProviderError(
 				"file exists already",
-				FileSystemProviderErrorCode.FileExists,
+				FileSystemProviderErrorCode.FileExists
 			);
 		}
 		if (!entry) {
@@ -197,7 +197,7 @@ export class InMemoryFileSystemProvider
 		}
 		throw createFileSystemProviderError(
 			"file not found",
-			FileSystemProviderErrorCode.FileNotFound,
+			FileSystemProviderErrorCode.FileNotFound
 		);
 	}
 
@@ -211,13 +211,13 @@ export class InMemoryFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
 				`No file with that descriptor open`,
-				FileSystemProviderErrorCode.Unavailable,
+				FileSystemProviderErrorCode.Unavailable
 			);
 		}
 
@@ -231,13 +231,13 @@ export class InMemoryFileSystemProvider
 		pos: number,
 		data: Uint8Array,
 		offset: number,
-		length: number,
+		length: number
 	): Promise<number> {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
 			throw createFileSystemProviderError(
 				`No file with that descriptor open`,
-				FileSystemProviderErrorCode.Unavailable,
+				FileSystemProviderErrorCode.Unavailable
 			);
 		}
 
@@ -251,12 +251,12 @@ export class InMemoryFileSystemProvider
 	async rename(
 		from: URI,
 		to: URI,
-		opts: IFileOverwriteOptions,
+		opts: IFileOverwriteOptions
 	): Promise<void> {
 		if (!opts.overwrite && this._lookup(to, true)) {
 			throw createFileSystemProviderError(
 				"file exists already",
-				FileSystemProviderErrorCode.FileExists,
+				FileSystemProviderErrorCode.FileExists
 			);
 		}
 
@@ -272,7 +272,7 @@ export class InMemoryFileSystemProvider
 
 		this._fireSoon(
 			{ type: FileChangeType.DELETED, resource: from },
-			{ type: FileChangeType.ADDED, resource: to },
+			{ type: FileChangeType.ADDED, resource: to }
 		);
 	}
 
@@ -286,7 +286,7 @@ export class InMemoryFileSystemProvider
 			parent.size -= 1;
 			this._fireSoon(
 				{ type: FileChangeType.UPDATED, resource: dirname },
-				{ resource, type: FileChangeType.DELETED },
+				{ resource, type: FileChangeType.DELETED }
 			);
 		}
 	}
@@ -295,7 +295,7 @@ export class InMemoryFileSystemProvider
 		if (this._lookup(resource, true)) {
 			throw createFileSystemProviderError(
 				"file exists already",
-				FileSystemProviderErrorCode.FileExists,
+				FileSystemProviderErrorCode.FileExists
 			);
 		}
 
@@ -309,7 +309,7 @@ export class InMemoryFileSystemProvider
 		parent.size += 1;
 		this._fireSoon(
 			{ type: FileChangeType.UPDATED, resource: dirname },
-			{ type: FileChangeType.ADDED, resource },
+			{ type: FileChangeType.ADDED, resource }
 		);
 	}
 
@@ -332,7 +332,7 @@ export class InMemoryFileSystemProvider
 				if (!silent) {
 					throw createFileSystemProviderError(
 						"file not found",
-						FileSystemProviderErrorCode.FileNotFound,
+						FileSystemProviderErrorCode.FileNotFound
 					);
 				} else {
 					return undefined;
@@ -350,7 +350,7 @@ export class InMemoryFileSystemProvider
 		}
 		throw createFileSystemProviderError(
 			"file not a directory",
-			FileSystemProviderErrorCode.FileNotADirectory,
+			FileSystemProviderErrorCode.FileNotADirectory
 		);
 	}
 
@@ -361,7 +361,7 @@ export class InMemoryFileSystemProvider
 		}
 		throw createFileSystemProviderError(
 			"file is a directory",
-			FileSystemProviderErrorCode.FileIsADirectory,
+			FileSystemProviderErrorCode.FileIsADirectory
 		);
 	}
 
@@ -373,7 +373,7 @@ export class InMemoryFileSystemProvider
 	// --- manage file events
 
 	private readonly _onDidChangeFile = this._register(
-		new Emitter<readonly IFileChange[]>(),
+		new Emitter<readonly IFileChange[]>()
 	);
 	readonly onDidChangeFile: Event<readonly IFileChange[]> =
 		this._onDidChangeFile.event;

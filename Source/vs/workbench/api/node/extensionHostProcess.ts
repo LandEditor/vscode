@@ -91,7 +91,7 @@ const args = minimist(process.argv.slice(2), {
 	Module._load = function (request: string) {
 		if (request === "natives") {
 			throw new Error(
-				'Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).',
+				'Either the extension or an NPM dependency is using the [unsupported "natives" node module](https://go.microsoft.com/fwlink/?linkid=871887).'
 			);
 		}
 
@@ -108,7 +108,7 @@ function patchProcess(allowExit: boolean) {
 			nativeExit(code);
 		} else {
 			const err = new Error(
-				"An extension called process.exit() and this was prevented.",
+				"An extension called process.exit() and this was prevented."
 			);
 			console.warn(err.stack);
 		}
@@ -117,7 +117,7 @@ function patchProcess(allowExit: boolean) {
 	// override Electron's process.crash() method
 	process.crash = function () {
 		const err = new Error(
-			"An extension called process.crash() and this was prevented.",
+			"An extension called process.crash() and this was prevented."
 		);
 		console.warn(err.stack);
 	};
@@ -167,7 +167,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				const port = ports[0];
 				const onMessage = new BufferedEmitter<VSBuffer>();
 				port.on("message", (e) =>
-					onMessage.fire(VSBuffer.wrap(e.data)),
+					onMessage.fire(VSBuffer.wrap(e.data))
 				);
 				port.on("close", () => {
 					onTerminate("renderer closed the MessagePort");
@@ -181,7 +181,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 			};
 
 			process.parentPort.on("message", (e: Electron.MessageEvent) =>
-				withPorts(e.ports),
+				withPorts(e.ports)
 			);
 		});
 	} else if (extHostConnection.type === ExtHostConnectionType.Socket) {
@@ -198,18 +198,18 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 				ProtocolConstants.ReconnectionShortGraceTime;
 			const disconnectRunner1 = new ProcessTimeRunOnceScheduler(
 				() => onTerminate("renderer disconnected for too long (1)"),
-				reconnectionGraceTime,
+				reconnectionGraceTime
 			);
 			const disconnectRunner2 = new ProcessTimeRunOnceScheduler(
 				() => onTerminate("renderer disconnected for too long (2)"),
-				reconnectionShortGraceTime,
+				reconnectionShortGraceTime
 			);
 
 			process.on(
 				"message",
 				(
 					msg: IExtHostSocketMessage | IExtHostReduceGraceTimeMessage,
-					handle: net.Socket,
+					handle: net.Socket
 				) => {
 					if (msg && msg.type === "VSCODE_EXTHOST_IPC_SOCKET") {
 						// Disable Nagle's algorithm. We also do this on the server process,
@@ -217,20 +217,20 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 						handle.setNoDelay(true);
 
 						const initialDataChunk = VSBuffer.wrap(
-							Buffer.from(msg.initialDataChunk, "base64"),
+							Buffer.from(msg.initialDataChunk, "base64")
 						);
 						let socket: NodeSocket | WebSocketNodeSocket;
 						if (msg.skipWebSocketFrames) {
 							socket = new NodeSocket(handle, "extHost-socket");
 						} else {
 							const inflateBytes = VSBuffer.wrap(
-								Buffer.from(msg.inflateBytes, "base64"),
+								Buffer.from(msg.inflateBytes, "base64")
 							);
 							socket = new WebSocketNodeSocket(
 								new NodeSocket(handle, "extHost-socket"),
 								msg.permessageDeflate,
 								inflateBytes,
-								false,
+								false
 							);
 						}
 						if (protocol) {
@@ -239,7 +239,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							disconnectRunner2.cancel();
 							protocol.beginAcceptReconnection(
 								socket,
-								initialDataChunk,
+								initialDataChunk
 							);
 							protocol.endAcceptReconnection();
 							protocol.sendResume();
@@ -251,7 +251,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							});
 							protocol.sendResume();
 							protocol.onDidDispose(() =>
-								onTerminate("renderer disconnected"),
+								onTerminate("renderer disconnected")
 							);
 							resolve(protocol);
 
@@ -275,7 +275,7 @@ function _createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 							disconnectRunner2.schedule();
 						}
 					}
-				},
+				}
 			);
 
 			// Now that we have managed to install a message listener, ask the other side to send us the socket
@@ -341,7 +341,7 @@ async function createExtHostProtocol(): Promise<IMessagePassingProtocol> {
 }
 
 function connectToRenderer(
-	protocol: IMessagePassingProtocol,
+	protocol: IMessagePassingProtocol
 ): Promise<IRendererConnection> {
 	return new Promise<IRendererConnection>((c) => {
 		// Listen init data message
@@ -375,12 +375,12 @@ function connectToRenderer(
 							epermErrors++;
 							if (epermErrors >= 3) {
 								onTerminate(
-									`parent process ${initData.parentPid} does not exist anymore (3 x EPERM): ${e.message} (code: ${e.code}) (errno: ${e.errno})`,
+									`parent process ${initData.parentPid} does not exist anymore (3 x EPERM): ${e.message} (code: ${e.code}) (errno: ${e.errno})`
 								);
 							}
 						} else {
 							onTerminate(
-								`parent process ${initData.parentPid} does not exist anymore: ${e.message} (code: ${e.code}) (errno: ${e.errno})`,
+								`parent process ${initData.parentPid} does not exist anymore: ${e.message} (code: ${e.code}) (errno: ${e.errno})`
 							);
 						}
 					}
@@ -425,7 +425,7 @@ async function startExtensionHostProcess(): Promise<void> {
 					unhandledPromises.splice(idx, 1);
 					if (!isCancellationError(e)) {
 						console.warn(
-							`rejected promise not handled within 1 second: ${e}`,
+							`rejected promise not handled within 1 second: ${e}`
 						);
 						if (e && e.stack) {
 							console.warn(`stack trace: ${e.stack}`);
@@ -467,7 +467,7 @@ async function startExtensionHostProcess(): Promise<void> {
 			: undefined;
 	initData.environment.skipWorkspaceStorageLock = boolean(
 		args.skipWorkspaceStorageLock,
-		false,
+		false
 	);
 
 	// host abstraction
@@ -495,7 +495,7 @@ async function startExtensionHostProcess(): Promise<void> {
 		renderer.protocol,
 		initData,
 		hostUtils,
-		uriTransformer,
+		uriTransformer
 	);
 
 	// rewrite onTerminate-function to be a proper shutdown

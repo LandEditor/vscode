@@ -39,7 +39,7 @@ class ExtHostWebviewView extends Disposable implements vscode.WebviewView {
 		viewType: string,
 		title: string | undefined,
 		webview: ExtHostWebview,
-		isVisible: boolean,
+		isVisible: boolean
 	) {
 		super();
 
@@ -169,10 +169,10 @@ export class ExtHostWebviewViews
 
 	constructor(
 		mainContext: extHostProtocol.IMainContext,
-		private readonly _extHostWebview: ExtHostWebviews,
+		private readonly _extHostWebview: ExtHostWebviews
 	) {
 		this._proxy = mainContext.getProxy(
-			extHostProtocol.MainContext.MainThreadWebviewViews,
+			extHostProtocol.MainContext.MainThreadWebviewViews
 		);
 	}
 
@@ -182,11 +182,11 @@ export class ExtHostWebviewViews
 		provider: vscode.WebviewViewProvider,
 		webviewOptions?: {
 			retainContextWhenHidden?: boolean;
-		},
+		}
 	): vscode.Disposable {
 		if (this._viewProviders.has(viewType)) {
 			throw new Error(
-				`View provider for '${viewType}' already registered`,
+				`View provider for '${viewType}' already registered`
 			);
 		}
 
@@ -199,7 +199,7 @@ export class ExtHostWebviewViews
 					webviewOptions?.retainContextWhenHidden,
 				serializeBuffersForPostMessage:
 					shouldSerializeBuffersForPostMessage(extension),
-			},
+			}
 		);
 
 		return new extHostTypes.Disposable(() => {
@@ -213,7 +213,7 @@ export class ExtHostWebviewViews
 		viewType: string,
 		title: string | undefined,
 		state: any,
-		cancellation: CancellationToken,
+		cancellation: CancellationToken
 	): Promise<void> {
 		const entry = this._viewProviders.get(viewType);
 		if (!entry) {
@@ -227,7 +227,7 @@ export class ExtHostWebviewViews
 			{
 				/* todo */
 			},
-			extension,
+			extension
 		);
 		const revivedView = new ExtHostWebviewView(
 			webviewHandle,
@@ -235,7 +235,7 @@ export class ExtHostWebviewViews
 			viewType,
 			title,
 			webview,
-			true,
+			true
 		);
 
 		this._webviewViews.set(webviewHandle, revivedView);
@@ -245,7 +245,7 @@ export class ExtHostWebviewViews
 
 	async $onDidChangeWebviewViewVisibility(
 		webviewHandle: string,
-		visible: boolean,
+		visible: boolean
 	) {
 		const webviewView = this.getWebviewView(webviewHandle);
 		webviewView._setVisible(visible);

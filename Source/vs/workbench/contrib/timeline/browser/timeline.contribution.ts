@@ -48,12 +48,12 @@ import { ILocalizedString } from "vs/platform/action/common/action";
 const timelineViewIcon = registerIcon(
 	"timeline-view-icon",
 	Codicon.history,
-	localize("timelineViewIcon", "View icon of the timeline view."),
+	localize("timelineViewIcon", "View icon of the timeline view.")
 );
 const timelineOpenIcon = registerIcon(
 	"timeline-open",
 	Codicon.history,
-	localize("timelineOpenIcon", "Icon for the open timeline action."),
+	localize("timelineOpenIcon", "Icon for the open timeline action.")
 );
 
 export class TimelinePaneDescriptor implements IViewDescriptor {
@@ -74,7 +74,7 @@ export class TimelinePaneDescriptor implements IViewDescriptor {
 
 // Configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	id: "timeline",
@@ -87,7 +87,7 @@ configurationRegistry.registerConfiguration({
 			default: null,
 			markdownDescription: localize(
 				"timeline.pageSize",
-				"The number of items to show in the Timeline view by default and when loading more items. Setting to `null` (the default) will automatically choose a page size based on the visible area of the Timeline view.",
+				"The number of items to show in the Timeline view by default and when loading more items. Setting to `null` (the default) will automatically choose a page size based on the visible area of the Timeline view."
 			),
 		},
 		"timeline.pageOnScroll": {
@@ -95,7 +95,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: localize(
 				"timeline.pageOnScroll",
-				"Experimental. Controls whether the Timeline view will load the next page of items when you scroll to the end of the list.",
+				"Experimental. Controls whether the Timeline view will load the next page of items when you scroll to the end of the list."
 			),
 		},
 	},
@@ -103,7 +103,7 @@ configurationRegistry.registerConfiguration({
 
 Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 	[new TimelinePaneDescriptor()],
-	VIEW_CONTAINER,
+	VIEW_CONTAINER
 );
 
 namespace OpenTimelineAction {
@@ -120,7 +120,7 @@ namespace OpenTimelineAction {
 
 CommandsRegistry.registerCommand(
 	OpenTimelineAction.ID,
-	OpenTimelineAction.handler(),
+	OpenTimelineAction.handler()
 );
 
 MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
@@ -134,14 +134,14 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	when: ContextKeyExpr.and(
 		ExplorerFolderContext.toNegated(),
 		ResourceContextKey.HasResource,
-		TimelineHasProviderContext,
+		TimelineHasProviderContext
 	),
 });
 
 const timelineFilter = registerIcon(
 	"timeline-filter",
 	Codicon.filter,
-	localize("timelineFilter", "Icon for the filter timeline action."),
+	localize("timelineFilter", "Icon for the filter timeline action.")
 );
 
 MenuRegistry.appendMenuItem(MenuId.TimelineTitle, <ISubmenuItem>{

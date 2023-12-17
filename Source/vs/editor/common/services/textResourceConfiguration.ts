@@ -14,7 +14,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const ITextResourceConfigurationService =
 	createDecorator<ITextResourceConfigurationService>(
-		"textResourceConfigurationService",
+		"textResourceConfigurationService"
 	);
 
 export interface ITextResourceConfigurationChangeEvent {
@@ -55,7 +55,7 @@ export interface ITextResourceConfigurationService {
 	getValue<T>(
 		resource: URI | undefined,
 		position?: IPosition,
-		section?: string,
+		section?: string
 	): T;
 
 	/**
@@ -69,7 +69,7 @@ export interface ITextResourceConfigurationService {
 	inspect<T>(
 		resource: URI | undefined,
 		position: IPosition | null,
-		section: string,
+		section: string
 	): IConfigurationValue<Readonly<T>>;
 
 	/**
@@ -88,13 +88,13 @@ export interface ITextResourceConfigurationService {
 		resource: URI,
 		key: string,
 		value: any,
-		configurationTarget?: ConfigurationTarget,
+		configurationTarget?: ConfigurationTarget
 	): Promise<void>;
 }
 
 export const ITextResourcePropertiesService =
 	createDecorator<ITextResourcePropertiesService>(
-		"textResourcePropertiesService",
+		"textResourcePropertiesService"
 	);
 
 export interface ITextResourcePropertiesService {

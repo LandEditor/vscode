@@ -65,19 +65,19 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebook.diff.switchToText",
-						"Open Text Diff Editor",
+						"Open Text Diff Editor"
 					),
 					original: "Open Text Diff Editor",
 				},
 				precondition: ActiveEditorContext.isEqualTo(
-					NotebookTextDiffEditor.ID,
+					NotebookTextDiffEditor.ID
 				),
 				menu: [
 					{
 						id: MenuId.EditorTitle,
 						group: "navigation",
 						when: ActiveEditorContext.isEqualTo(
-							NotebookTextDiffEditor.ID,
+							NotebookTextDiffEditor.ID
 						),
 					},
 				],
@@ -106,7 +106,7 @@ registerAction2(
 				});
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -116,7 +116,7 @@ registerAction2(
 				id: "notebook.diff.cell.revertMetadata",
 				title: localize(
 					"notebook.diff.cell.revertMetadata",
-					"Revert Metadata",
+					"Revert Metadata"
 				),
 				icon: revertIcon,
 				f1: false,
@@ -129,7 +129,7 @@ registerAction2(
 		}
 		run(
 			accessor: ServicesAccessor,
-			context?: { cell: DiffElementViewModelBase },
+			context?: { cell: DiffElementViewModelBase }
 		) {
 			if (!context) {
 				return;
@@ -144,7 +144,7 @@ registerAction2(
 
 			modified.textModel.metadata = original.metadata;
 		}
-	},
+	}
 );
 
 // registerAction2(class extends Action2 {
@@ -177,7 +177,7 @@ registerAction2(
 				id: "notebook.diff.cell.switchOutputRenderingStyleToText",
 				title: localize(
 					"notebook.diff.cell.switchOutputRenderingStyleToText",
-					"Switch Output Rendering",
+					"Switch Output Rendering"
 				),
 				icon: renderOutputIcon,
 				f1: false,
@@ -189,7 +189,7 @@ registerAction2(
 		}
 		run(
 			accessor: ServicesAccessor,
-			context?: { cell: DiffElementViewModelBase },
+			context?: { cell: DiffElementViewModelBase }
 		) {
 			if (!context) {
 				return;
@@ -197,7 +197,7 @@ registerAction2(
 
 			context.cell.renderOutput = !context.cell.renderOutput;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -207,7 +207,7 @@ registerAction2(
 				id: "notebook.diff.cell.revertOutputs",
 				title: localize(
 					"notebook.diff.cell.revertOutputs",
-					"Revert Outputs",
+					"Revert Outputs"
 				),
 				icon: revertIcon,
 				f1: false,
@@ -220,7 +220,7 @@ registerAction2(
 		}
 		run(
 			accessor: ServicesAccessor,
-			context?: { cell: DiffElementViewModelBase },
+			context?: { cell: DiffElementViewModelBase }
 		) {
 			if (!context) {
 				return;
@@ -235,7 +235,7 @@ registerAction2(
 
 			const modifiedCellIndex =
 				context.cell.mainDocumentTextModel.cells.indexOf(
-					modified.textModel,
+					modified.textModel
 				);
 			if (modifiedCellIndex === -1) {
 				return;
@@ -253,10 +253,10 @@ registerAction2(
 				undefined,
 				() => undefined,
 				undefined,
-				true,
+				true
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -266,7 +266,7 @@ registerAction2(
 				id: "notebook.diff.cell.revertInput",
 				title: localize(
 					"notebook.diff.cell.revertInput",
-					"Revert Input",
+					"Revert Input"
 				),
 				icon: revertIcon,
 				f1: false,
@@ -279,7 +279,7 @@ registerAction2(
 		}
 		run(
 			accessor: ServicesAccessor,
-			context?: { cell: DiffElementViewModelBase },
+			context?: { cell: DiffElementViewModelBase }
 		) {
 			if (!context) {
 				return;
@@ -300,10 +300,10 @@ registerAction2(
 						text: original.textModel.getValue(),
 					}),
 				],
-				{ quotableLabel: "Revert Notebook Cell Content Change" },
+				{ quotableLabel: "Revert Notebook Cell Content Change" }
 			);
 		}
-	},
+	}
 );
 
 class ToggleRenderAction extends Action2 {
@@ -314,7 +314,7 @@ class ToggleRenderAction extends Action2 {
 		toggled: ContextKeyExpression | undefined,
 		order: number,
 		private readonly toggleOutputs?: boolean,
-		private readonly toggleMetadata?: boolean,
+		private readonly toggleMetadata?: boolean
 	) {
 		super({
 			id: id,
@@ -337,21 +337,21 @@ class ToggleRenderAction extends Action2 {
 
 		if (this.toggleOutputs !== undefined) {
 			const oldValue = configurationService.getValue(
-				"notebook.diff.ignoreOutputs",
+				"notebook.diff.ignoreOutputs"
 			);
 			configurationService.updateValue(
 				"notebook.diff.ignoreOutputs",
-				!oldValue,
+				!oldValue
 			);
 		}
 
 		if (this.toggleMetadata !== undefined) {
 			const oldValue = configurationService.getValue(
-				"notebook.diff.ignoreMetadata",
+				"notebook.diff.ignoreMetadata"
 			);
 			configurationService.updateValue(
 				"notebook.diff.ignoreMetadata",
-				!oldValue,
+				!oldValue
 			);
 		}
 	}
@@ -365,21 +365,21 @@ registerAction2(
 				{
 					value: localize(
 						"notebook.diff.showOutputs",
-						"Show Outputs Differences",
+						"Show Outputs Differences"
 					),
 					original: "Show Outputs Differences",
 				},
 				ActiveEditorContext.isEqualTo(NotebookTextDiffEditor.ID),
 				ContextKeyExpr.notEquals(
 					"config.notebook.diff.ignoreOutputs",
-					true,
+					true
 				),
 				2,
 				true,
-				undefined,
+				undefined
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -390,21 +390,21 @@ registerAction2(
 				{
 					value: localize(
 						"notebook.diff.showMetadata",
-						"Show Metadata Differences",
+						"Show Metadata Differences"
 					),
 					original: "Show Metadata Differences",
 				},
 				ActiveEditorContext.isEqualTo(NotebookTextDiffEditor.ID),
 				ContextKeyExpr.notEquals(
 					"config.notebook.diff.ignoreMetadata",
-					true,
+					true
 				),
 				1,
 				undefined,
-				true,
+				true
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -414,7 +414,7 @@ registerAction2(
 				id: "notebook.diff.action.previous",
 				title: localize(
 					"notebook.diff.action.previous.title",
-					"Show Previous Change",
+					"Show Previous Change"
 				),
 				icon: previousChangeIcon,
 				f1: false,
@@ -422,14 +422,14 @@ registerAction2(
 					primary: KeyMod.Shift | KeyMod.Alt | KeyCode.F3,
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ActiveEditorContext.isEqualTo(
-						NotebookTextDiffEditor.ID,
+						NotebookTextDiffEditor.ID
 					),
 				},
 				menu: {
 					id: MenuId.EditorTitle,
 					group: "navigation",
 					when: ActiveEditorContext.isEqualTo(
-						NotebookTextDiffEditor.ID,
+						NotebookTextDiffEditor.ID
 					),
 				},
 			});
@@ -448,7 +448,7 @@ registerAction2(
 				| undefined;
 			editor?.previousChange();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -458,7 +458,7 @@ registerAction2(
 				id: "notebook.diff.action.next",
 				title: localize(
 					"notebook.diff.action.next.title",
-					"Show Next Change",
+					"Show Next Change"
 				),
 				icon: nextChangeIcon,
 				f1: false,
@@ -466,14 +466,14 @@ registerAction2(
 					primary: KeyMod.Alt | KeyCode.F3,
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ActiveEditorContext.isEqualTo(
-						NotebookTextDiffEditor.ID,
+						NotebookTextDiffEditor.ID
 					),
 				},
 				menu: {
 					id: MenuId.EditorTitle,
 					group: "navigation",
 					when: ActiveEditorContext.isEqualTo(
-						NotebookTextDiffEditor.ID,
+						NotebookTextDiffEditor.ID
 					),
 				},
 			});
@@ -492,11 +492,11 @@ registerAction2(
 				| undefined;
 			editor?.nextChange();
 		}
-	},
+	}
 );
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	id: "notebook",
 	order: 100,
@@ -507,7 +507,7 @@ Registry.as<IConfigurationRegistry>(
 			default: false,
 			markdownDescription: localize(
 				"notebook.diff.ignoreMetadata",
-				"Hide Metadata Differences",
+				"Hide Metadata Differences"
 			),
 		},
 		"notebook.diff.ignoreOutputs": {
@@ -515,7 +515,7 @@ Registry.as<IConfigurationRegistry>(
 			default: false,
 			markdownDescription: localize(
 				"notebook.diff.ignoreOutputs",
-				"Hide Outputs Differences",
+				"Hide Outputs Differences"
 			),
 		},
 	},

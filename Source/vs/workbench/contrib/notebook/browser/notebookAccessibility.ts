@@ -26,110 +26,110 @@ export function getAccessibilityHelpText(accessor: ServicesAccessor): string {
 	content.push(
 		localize(
 			"notebook.overview",
-			"The notebook view is a collection of code and markdown cells. Code cells can be executed and will produce output directly below the cell.",
-		),
+			"The notebook view is a collection of code and markdown cells. Code cells can be executed and will produce output directly below the cell."
+		)
 	);
 	content.push(
 		descriptionForCommand(
 			"notebook.cell.edit",
 			localize(
 				"notebook.cell.edit",
-				"The Edit Cell command ({0}) will focus on the cell input.",
+				"The Edit Cell command ({0}) will focus on the cell input."
 			),
 			localize(
 				"notebook.cell.editNoKb",
-				"The Edit Cell command will focus on the cell input and is currently not triggerable by a keybinding.",
+				"The Edit Cell command will focus on the cell input and is currently not triggerable by a keybinding."
 			),
-			keybindingService,
-		),
+			keybindingService
+		)
 	);
 	content.push(
 		descriptionForCommand(
 			"notebook.cell.quitEdit",
 			localize(
 				"notebook.cell.quitEdit",
-				"The Quit Edit command ({0}) will set focus on the cell container. The default (Escape) key may need to be pressed twice first exit the virtual cursor if active.",
+				"The Quit Edit command ({0}) will set focus on the cell container. The default (Escape) key may need to be pressed twice first exit the virtual cursor if active."
 			),
 			localize(
 				"notebook.cell.quitEditNoKb",
-				"The Quit Edit command will set focus on the cell container and is currently not triggerable by a keybinding.",
+				"The Quit Edit command will set focus on the cell container and is currently not triggerable by a keybinding."
 			),
-			keybindingService,
-		),
+			keybindingService
+		)
 	);
 	content.push(
 		descriptionForCommand(
 			"notebook.cell.focusInOutput",
 			localize(
 				"notebook.cell.focusInOutput",
-				"The Focus Output command ({0}) will set focus in the cell's output.",
+				"The Focus Output command ({0}) will set focus in the cell's output."
 			),
 			localize(
 				"notebook.cell.focusInOutputNoKb",
-				"The Quit Edit command will set focus in the cell's output and is currently not triggerable by a keybinding.",
+				"The Quit Edit command will set focus in the cell's output and is currently not triggerable by a keybinding."
 			),
-			keybindingService,
-		),
+			keybindingService
+		)
 	);
 	content.push(
 		descriptionForCommand(
 			"notebook.focusNextEditor",
 			localize(
 				"notebook.focusNextEditor",
-				"The Focus Next Cell Editor command ({0}) will set focus in the next cell's editor.",
+				"The Focus Next Cell Editor command ({0}) will set focus in the next cell's editor."
 			),
 			localize(
 				"notebook.focusNextEditorNoKb",
-				"The Focus Next Cell Editor command will set focus in the next cell's editor and is currently not triggerable by a keybinding.",
+				"The Focus Next Cell Editor command will set focus in the next cell's editor and is currently not triggerable by a keybinding."
 			),
-			keybindingService,
-		),
+			keybindingService
+		)
 	);
 	content.push(
 		descriptionForCommand(
 			"notebook.focusPreviousEditor",
 			localize(
 				"notebook.focusPreviousEditor",
-				"The Focus Previous Cell Editor command ({0}) will set focus in the previous cell's editor.",
+				"The Focus Previous Cell Editor command ({0}) will set focus in the previous cell's editor."
 			),
 			localize(
 				"notebook.focusPreviousEditorNoKb",
-				"The Focus Previous Cell Editor command will set focus in the previous cell's editor and is currently not triggerable by a keybinding.",
+				"The Focus Previous Cell Editor command will set focus in the previous cell's editor and is currently not triggerable by a keybinding."
 			),
-			keybindingService,
-		),
+			keybindingService
+		)
 	);
 	content.push(
 		localize(
 			"notebook.cellNavigation",
-			"The up and down arrows will also move focus between cells while focused on the outer cell container.",
-		),
+			"The up and down arrows will also move focus between cells while focused on the outer cell container."
+		)
 	);
 	content.push(
 		descriptionForCommand(
 			"notebook.cell.executeAndFocusContainer",
 			localize(
 				"notebook.cell.executeAndFocusContainer",
-				"The Execute Cell command ({0}) executes the cell that currently has focus.",
+				"The Execute Cell command ({0}) executes the cell that currently has focus."
 			),
 			localize(
 				"notebook.cell.executeAndFocusContainerNoKb",
-				"The Execute Cell command executes the cell that currently has focus and is currently not triggerable by a keybinding.",
+				"The Execute Cell command executes the cell that currently has focus and is currently not triggerable by a keybinding."
 			),
-			keybindingService,
-		),
+			keybindingService
+		)
 	);
 	content.push(
 		localize(
 			"notebook.cell.insertCodeCellBelowAndFocusContainer",
-			"The Insert Cell Above/Below commands will create new empty code cells",
-		),
+			"The Insert Cell Above/Below commands will create new empty code cells"
+		)
 	);
 	content.push(
 		localize(
 			"notebook.changeCellType",
-			"The Change Cell to Code/Markdown commands are used to switch between cell types.",
-		),
+			"The Change Cell to Code/Markdown commands are used to switch between cell types."
+		)
 	);
 
 	return content.join("\n\n");
@@ -139,7 +139,7 @@ function descriptionForCommand(
 	commandId: string,
 	msg: string,
 	noKbMsg: string,
-	keybindingService: IKeybindingService,
+	keybindingService: IKeybindingService
 ): string {
 	const kb = keybindingService.lookupKeybinding(commandId);
 	if (kb) {
@@ -150,7 +150,7 @@ function descriptionForCommand(
 
 export async function runAccessibilityHelpAction(
 	accessor: ServicesAccessor,
-	editor: ICodeEditor | IVisibleEditorPane,
+	editor: ICodeEditor | IVisibleEditorPane
 ): Promise<void> {
 	const accessibleViewService = accessor.get(IAccessibleViewService);
 	const helpText = getAccessibilityHelpText(accessor);
@@ -167,7 +167,7 @@ export async function runAccessibilityHelpAction(
 
 export function showAccessibleOutput(
 	accessibleViewService: IAccessibleViewService,
-	editorService: IEditorService,
+	editorService: IEditorService
 ) {
 	const activePane = editorService.activeEditorPane;
 	const notebookEditor = getNotebookEditorFromEditorPane(activePane);
@@ -187,16 +187,16 @@ export function showAccessibleOutput(
 		const outputTextModel = viewCell.model.outputs[i];
 		const [mimeTypes, pick] = outputViewModel.resolveMimeTypes(
 			notebookEditor.textModel,
-			undefined,
+			undefined
 		);
 		const mimeType = mimeTypes[pick].mimeType;
 		let buffer = outputTextModel.outputs.find(
-			(output) => output.mime === mimeType,
+			(output) => output.mime === mimeType
 		);
 
 		if (!buffer || mimeType.startsWith("image")) {
 			buffer = outputTextModel.outputs.find(
-				(output) => !output.mime.startsWith("image"),
+				(output) => !output.mime.startsWith("image")
 			);
 		}
 
@@ -220,7 +220,7 @@ export function showAccessibleOutput(
 			viewCell.outputsViewModels.length > 1
 				? `Cell output ${i + 1} of ${
 						viewCell.outputsViewModels.length
-				  }\n`
+					}\n`
 				: "";
 		outputContent = outputContent.concat(`${index}${text}\n`);
 	}

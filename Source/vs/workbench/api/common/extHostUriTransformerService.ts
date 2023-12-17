@@ -12,7 +12,7 @@ export interface IURITransformerService extends IURITransformer {
 }
 
 export const IURITransformerService = createDecorator<IURITransformerService>(
-	"IURITransformerService",
+	"IURITransformerService"
 );
 
 export class URITransformerService implements IURITransformerService {

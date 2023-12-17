@@ -19,12 +19,12 @@ export function getSemanticTokenLegend() {
 export function* getSemanticTokens(
 	jsLanguageService: ts.LanguageService,
 	document: TextDocument,
-	fileName: string,
+	fileName: string
 ): Iterable<SemanticTokenData> {
 	const { spans } = jsLanguageService.getEncodedSemanticClassifications(
 		fileName,
 		{ start: 0, length: document.getText().length },
-		"2020" as ts.SemanticClassificationFormat,
+		"2020" as ts.SemanticClassificationFormat
 	);
 
 	for (let i = 0; i < spans.length; ) {
@@ -84,7 +84,7 @@ const enum TokenEncodingConsts {
 }
 
 function getTokenTypeFromClassification(
-	tsClassification: number,
+	tsClassification: number
 ): number | undefined {
 	if (tsClassification > TokenEncodingConsts.modifierMask) {
 		return (tsClassification >> TokenEncodingConsts.typeOffset) - 1;

@@ -30,13 +30,21 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		extHostContext: IExtHostContext,
 		@IHostService private readonly hostService: IHostService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IUserActivityService private readonly userActivityService: IUserActivityService,
+		@IUserActivityService
+		private readonly userActivityService: IUserActivityService
 	) {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostWindow);
 
-		Event.latch(hostService.onDidChangeFocus)
-			(this.proxy.$onDidChangeWindowFocus, this.proxy, this.disposables);
-		userActivityService.onDidChangeIsActive(this.proxy.$onDidChangeWindowActive, this.proxy, this.disposables);
+		Event.latch(hostService.onDidChangeFocus)(
+			this.proxy.$onDidChangeWindowFocus,
+			this.proxy,
+			this.disposables
+		);
+		userActivityService.onDidChangeIsActive(
+			this.proxy.$onDidChangeWindowActive,
+			this.proxy,
+			this.disposables
+		);
 	}
 
 	dispose(): void {
@@ -53,7 +61,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 	async $openUri(
 		uriComponents: UriComponents,
 		uriString: string | undefined,
-		options: IOpenUriOptions,
+		options: IOpenUriOptions
 	): Promise<boolean> {
 		const uri = URI.from(uriComponents);
 		let target: URI | string;
@@ -73,11 +81,11 @@ export class MainThreadWindow implements MainThreadWindowShape {
 
 	async $asExternalUri(
 		uriComponents: UriComponents,
-		options: IOpenUriOptions,
+		options: IOpenUriOptions
 	): Promise<UriComponents> {
 		const result = await this.openerService.resolveExternalUri(
 			URI.revive(uriComponents),
-			options,
+			options
 		);
 		return result.resolved;
 	}

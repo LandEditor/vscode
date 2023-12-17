@@ -33,19 +33,19 @@ import {
 
 export class NotebookCellTextModel extends Disposable implements ICell {
 	private readonly _onDidChangeOutputs = this._register(
-		new Emitter<NotebookCellOutputsSplice>(),
+		new Emitter<NotebookCellOutputsSplice>()
 	);
 	readonly onDidChangeOutputs: Event<NotebookCellOutputsSplice> =
 		this._onDidChangeOutputs.event;
 
 	private readonly _onDidChangeOutputItems = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeOutputItems: Event<void> =
 		this._onDidChangeOutputItems.event;
 
 	private readonly _onDidChangeContent = this._register(
-		new Emitter<"content" | "language" | "mime">(),
+		new Emitter<"content" | "language" | "mime">()
 	);
 	readonly onDidChangeContent: Event<"content" | "language" | "mime"> =
 		this._onDidChangeContent.event;
@@ -54,13 +54,13 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	readonly onDidChangeMetadata: Event<void> = this._onDidChangeMetadata.event;
 
 	private readonly _onDidChangeInternalMetadata = this._register(
-		new Emitter<CellInternalMetadataChangedEvent>(),
+		new Emitter<CellInternalMetadataChangedEvent>()
 	);
 	readonly onDidChangeInternalMetadata: Event<CellInternalMetadataChangedEvent> =
 		this._onDidChangeInternalMetadata.event;
 
 	private readonly _onDidChangeLanguage = this._register(
-		new Emitter<string>(),
+		new Emitter<string>()
 	);
 	readonly onDidChangeLanguage: Event<string> =
 		this._onDidChangeLanguage.event;
@@ -98,7 +98,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			...{
 				runStartTimeAdjustment: computeRunStartTimeAdjustment(
 					this._internalMetadata,
-					newInternalMetadata,
+					newInternalMetadata
 				),
 			},
 		};
@@ -117,7 +117,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			// 1. the language update is from workspace edit, checking if it's the same as text model's mode
 			this._textModel.getLanguageId() ===
 				this._languageService.getLanguageIdByLanguageName(
-					newLanguage,
+					newLanguage
 				) &&
 			// 2. the text model's mode might be the same as the `this.language`, even if the language friendly name is not the same, we should not trigger an update
 			this._textModel.getLanguageId() ===
@@ -172,7 +172,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		builder.acceptChunk(this._source);
 		const bufferFactory = builder.finish(true);
 		const { textBuffer, disposable } = bufferFactory.create(
-			model.DefaultEndOfLine.LF,
+			model.DefaultEndOfLine.LF
 		);
 		this._textBuffer = textBuffer;
 		this._register(disposable);
@@ -183,7 +183,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 				if (!this._textModel) {
 					this._onDidChangeContent.fire("content");
 				}
-			}),
+			})
 		);
 
 		return this._textBuffer;
@@ -199,7 +199,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	}
 
 	private readonly _textModelDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private _textModel: TextModel | undefined = undefined;
 	get textModel(): TextModel | undefined {
@@ -217,7 +217,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			this.setRegisteredLanguage(
 				this._languageService,
 				this._textModel.getLanguageId(),
-				this.language,
+				this.language
 			);
 
 			// Listen to language changes on the model
@@ -226,14 +226,14 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 					this.setRegisteredLanguage(
 						this._languageService,
 						e.newLanguage,
-						this.language,
-					),
-				),
+						this.language
+					)
+				)
 			);
 			this._textModelDisposables.add(
 				this._textModel.onWillDispose(
-					() => (this.textModel = undefined),
-				),
+					() => (this.textModel = undefined)
+				)
 			);
 			this._textModelDisposables.add(
 				this._textModel.onDidChangeContent(() => {
@@ -243,7 +243,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 							this._textModel.getAlternativeVersionId();
 					}
 					this._onDidChangeContent.fire("content");
-				}),
+				})
 			);
 
 			this._textModel._overwriteVersionId(this._versionId);
@@ -254,7 +254,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	private setRegisteredLanguage(
 		languageService: ILanguageService,
 		newLanguage: string,
-		currentLanguage: string,
+		currentLanguage: string
 	) {
 		// The language defined in the cell might not be supported in the editor so the text model might be using the default fallback
 		// If so let's not modify the language
@@ -283,11 +283,11 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		internalMetadata: NotebookCellInternalMetadata | undefined,
 		public readonly collapseState: NotebookCellCollapseState | undefined,
 		public readonly transientOptions: TransientOptions,
-		private readonly _languageService: ILanguageService,
+		private readonly _languageService: ILanguageService
 	) {
 		super();
 		this._outputs = outputs.map(
-			(op) => new NotebookCellOutputTextModel(op),
+			(op) => new NotebookCellOutputTextModel(op)
 		);
 		this._metadata = metadata ?? {};
 		this._internalMetadata = internalMetadata ?? {};
@@ -303,12 +303,12 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		if (eol === "\n") {
 			return this.textBuffer.getValueInRange(
 				fullRange,
-				model.EndOfLinePreference.LF,
+				model.EndOfLinePreference.LF
 			);
 		} else {
 			return this.textBuffer.getValueInRange(
 				fullRange,
-				model.EndOfLinePreference.CRLF,
+				model.EndOfLinePreference.CRLF
 			);
 		}
 	}
@@ -345,7 +345,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 							data: Array.from(output.data.buffer),
 						})),
 						metadata: op.metadata,
-				  })),
+					})),
 		]);
 		return this._hash;
 	}
@@ -376,7 +376,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			1,
 			1,
 			lineCount,
-			this.textBuffer.getLineLength(lineCount) + 1,
+			this.textBuffer.getLineLength(lineCount) + 1
 		);
 	}
 
@@ -384,7 +384,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 		if (splice.deleteCount > 0 && splice.newOutputs.length > 0) {
 			const commonLen = Math.min(
 				splice.deleteCount,
-				splice.newOutputs.length,
+				splice.newOutputs.length
 			);
 			// update
 			for (let i = 0; i < commonLen; i++) {
@@ -397,7 +397,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			const removed = this.outputs.splice(
 				splice.start + commonLen,
 				splice.deleteCount - commonLen,
-				...splice.newOutputs.slice(commonLen),
+				...splice.newOutputs.slice(commonLen)
 			);
 			removed.forEach((output) => output.dispose());
 			this._onDidChangeOutputs.fire({
@@ -409,7 +409,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			const removed = this.outputs.splice(
 				splice.start,
 				splice.deleteCount,
-				...splice.newOutputs,
+				...splice.newOutputs
 			);
 			removed.forEach((output) => output.dispose());
 			this._onDidChangeOutputs.fire(splice);
@@ -418,7 +418,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	replaceOutput(outputId: string, newOutputItem: ICellOutput) {
 		const outputIndex = this.outputs.findIndex(
-			(output) => output.outputId === outputId,
+			(output) => output.outputId === outputId
 		);
 
 		if (outputIndex < 0) {
@@ -440,10 +440,10 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 	changeOutputItems(
 		outputId: string,
 		append: boolean,
-		items: IOutputItemDto[],
+		items: IOutputItemDto[]
 	): boolean {
 		const outputIndex = this.outputs.findIndex(
-			(output) => output.outputId === outputId,
+			(output) => output.outputId === outputId
 		);
 
 		if (outputIndex < 0) {
@@ -466,7 +466,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 
 	private _outputNotEqualFastCheck(
 		left: ICellOutput[],
-		right: ICellOutput[],
+		right: ICellOutput[]
 	) {
 		if (left.length !== right.length) {
 			return false;
@@ -573,7 +573,7 @@ export class NotebookCellTextModel extends Disposable implements ICell {
 			false,
 			false,
 			true,
-			true,
+			true
 		);
 		emptyDisposedTextBuffer.dispose();
 		this._textBuffer = emptyDisposedTextBuffer;
@@ -598,7 +598,7 @@ export function cloneNotebookCellTextModel(cell: NotebookCellTextModel) {
 
 function computeRunStartTimeAdjustment(
 	oldMetadata: NotebookCellInternalMetadata,
-	newMetadata: NotebookCellInternalMetadata,
+	newMetadata: NotebookCellInternalMetadata
 ): number | undefined {
 	if (
 		oldMetadata.runStartTime !== newMetadata.runStartTime &&

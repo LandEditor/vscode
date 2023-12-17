@@ -46,7 +46,7 @@ export interface INotebookCellMatchWithModel
 }
 
 export function isINotebookFileMatchWithModel(
-	object: any,
+	object: any
 ): object is INotebookFileMatchWithModel {
 	return (
 		"cellResults" in object &&
@@ -56,23 +56,23 @@ export function isINotebookFileMatchWithModel(
 }
 
 export function isINotebookCellMatchWithModel(
-	object: any,
+	object: any
 ): object is INotebookCellMatchWithModel {
 	return "cell" in object;
 }
 
 export function contentMatchesToTextSearchMatches(
 	contentMatches: FindMatch[],
-	cell: ICellViewModel,
+	cell: ICellViewModel
 ): ITextSearchMatch[] {
 	return genericCellMatchesToTextSearchMatches(
 		contentMatches,
-		cell.textBuffer,
+		cell.textBuffer
 	);
 }
 
 export function webviewMatchesToTextSearchMatches(
-	webviewMatches: CellWebviewFindMatch[],
+	webviewMatches: CellWebviewFindMatch[]
 ): ITextSearchMatch[] {
 	return webviewMatches
 		.map((rawMatch) =>
@@ -83,12 +83,12 @@ export function webviewMatchesToTextSearchMatches(
 							0,
 							rawMatch.searchPreviewInfo.range.start,
 							0,
-							rawMatch.searchPreviewInfo.range.end,
+							rawMatch.searchPreviewInfo.range.end
 						),
 						undefined,
-						rawMatch.index,
-				  )
-				: undefined,
+						rawMatch.index
+					)
+				: undefined
 		)
 		.filter((e): e is ITextSearchMatch => !!e);
 }

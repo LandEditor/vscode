@@ -176,7 +176,7 @@ export class TreeViewPane extends ViewPane {
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@INotificationService notificationService: INotificationService,
+		@INotificationService notificationService: INotificationService
 	) {
 		super(
 			{
@@ -192,26 +192,26 @@ export class TreeViewPane extends ViewPane {
 			instantiationService,
 			openerService,
 			themeService,
-			telemetryService,
+			telemetryService
 		);
 		const { treeView } = <ITreeViewDescriptor>(
 			Registry.as<IViewsRegistry>(Extensions.ViewsRegistry).getView(
-				options.id,
+				options.id
 			)
 		);
 		this.treeView = treeView;
 		this._register(
-			this.treeView.onDidChangeActions(() => this.updateActions(), this),
+			this.treeView.onDidChangeActions(() => this.updateActions(), this)
 		);
 		this._register(
 			this.treeView.onDidChangeTitle((newTitle) =>
-				this.updateTitle(newTitle),
-			),
+				this.updateTitle(newTitle)
+			)
 		);
 		this._register(
 			this.treeView.onDidChangeDescription((newDescription) =>
-				this.updateTitleDescription(newDescription),
-			),
+				this.updateTitleDescription(newDescription)
+			)
 		);
 		this._register(
 			toDisposable(() => {
@@ -222,15 +222,15 @@ export class TreeViewPane extends ViewPane {
 				) {
 					this.treeView.setVisibility(false);
 				}
-			}),
+			})
 		);
 		this._register(
-			this.onDidChangeBodyVisibility(() => this.updateTreeVisibility()),
+			this.onDidChangeBodyVisibility(() => this.updateTreeVisibility())
 		);
 		this._register(
 			this.treeView.onDidChangeWelcomeState(() =>
-				this._onDidChangeViewWelcomeState.fire(),
-			),
+				this._onDidChangeViewWelcomeState.fire()
+			)
 		);
 		if (options.title !== this.treeView.title) {
 			this.updateTitle(this.treeView.title);
@@ -240,7 +240,7 @@ export class TreeViewPane extends ViewPane {
 		}
 		this._actionRunner = new MultipleSelectionActionRunner(
 			notificationService,
-			() => this.treeView.getSelection(),
+			() => this.treeView.getSelection()
 		);
 
 		this.updateTreeVisibility();
@@ -310,10 +310,10 @@ class Root implements ITreeItem {
 
 function isTreeCommandEnabled(
 	treeCommand: TreeCommand,
-	contextKeyService: IContextKeyService,
+	contextKeyService: IContextKeyService
 ): boolean {
 	const command = CommandsRegistry.getCommand(
-		treeCommand.originalId ? treeCommand.originalId : treeCommand.id,
+		treeCommand.originalId ? treeCommand.originalId : treeCommand.id
 	);
 	if (command) {
 		const commandAction = MenuRegistry.getCommand(command.id);
@@ -326,7 +326,7 @@ function isTreeCommandEnabled(
 }
 
 function isRenderedMessageValue(
-	messageValue: string | IMarkdownRenderResult | undefined,
+	messageValue: string | IMarkdownRenderResult | undefined
 ): messageValue is IMarkdownRenderResult {
 	return (
 		!!messageValue &&
@@ -338,12 +338,12 @@ function isRenderedMessageValue(
 
 const noDataProviderMessage = localize(
 	"no-dataprovider",
-	"There is no data provider registered that can provide view data.",
+	"There is no data provider registered that can provide view data."
 );
 
 export const RawCustomTreeViewContextKey = new RawContextKey<boolean>(
 	"customTreeView",
-	false,
+	false
 );
 
 class Tree extends WorkbenchAsyncDataTree<ITreeItem, ITreeItem, FuzzyScore> {}
@@ -382,12 +382,12 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 	private lastActive: ITreeItem;
 
 	private readonly _onDidExpandItem: Emitter<ITreeItem> = this._register(
-		new Emitter<ITreeItem>(),
+		new Emitter<ITreeItem>()
 	);
 	readonly onDidExpandItem: Event<ITreeItem> = this._onDidExpandItem.event;
 
 	private readonly _onDidCollapseItem: Emitter<ITreeItem> = this._register(
-		new Emitter<ITreeItem>(),
+		new Emitter<ITreeItem>()
 	);
 	readonly onDidCollapseItem: Event<ITreeItem> =
 		this._onDidCollapseItem.event;
@@ -396,7 +396,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		selection: readonly ITreeItem[];
 		focus: ITreeItem;
 	}> = this._register(
-		new Emitter<{ selection: readonly ITreeItem[]; focus: ITreeItem }>(),
+		new Emitter<{ selection: readonly ITreeItem[]; focus: ITreeItem }>()
 	);
 	readonly onDidChangeSelectionAndFocus: Event<{
 		selection: readonly ITreeItem[];
@@ -404,24 +404,24 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 	}> = this._onDidChangeSelectionAndFocus.event;
 
 	private readonly _onDidChangeVisibility: Emitter<boolean> = this._register(
-		new Emitter<boolean>(),
+		new Emitter<boolean>()
 	);
 	readonly onDidChangeVisibility: Event<boolean> =
 		this._onDidChangeVisibility.event;
 
 	private readonly _onDidChangeActions: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeActions: Event<void> = this._onDidChangeActions.event;
 
 	private readonly _onDidChangeWelcomeState: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeWelcomeState: Event<void> =
 		this._onDidChangeWelcomeState.event;
 
 	private readonly _onDidChangeTitle: Emitter<string> = this._register(
-		new Emitter<string>(),
+		new Emitter<string>()
 	);
 	readonly onDidChangeTitle: Event<string> = this._onDidChangeTitle.event;
 
@@ -436,23 +436,30 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		this._onDidChangeCheckboxState.event;
 
 	private readonly _onDidCompleteRefresh: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 
 	constructor(
 		readonly id: string,
 		private _title: string,
 		@IThemeService private readonly themeService: IThemeService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IProgressService protected readonly progressService: IProgressService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IActivityService private readonly activityService: IActivityService,
 		@ILogService private readonly logService: ILogService
 	) {
@@ -481,7 +488,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 
 		this.treeViewDnd = this.instantiationService.createInstance(
 			CustomTreeViewDragAndDrop,
-			this.id,
+			this.id
 		);
 		if (this._dragAndDropController) {
 			this.treeViewDnd.controller = this._dragAndDropController;
@@ -492,7 +499,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				if (e.affectsConfiguration("explorer.decorations")) {
 					this.doRefresh([this.root]); /** soft refresh **/
 				}
-			}),
+			})
 		);
 		this._register(
 			this.viewDescriptorService.onDidChangeLocation(
@@ -508,8 +515,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 							},
 						});
 					}
-				},
-			),
+				}
+			)
 		);
 		this.registerActions();
 
@@ -593,7 +600,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 					this._dataProvider.onDidChangeEmpty(() => {
 						this.updateCollapseAllToggle();
 						this._onDidChangeWelcomeState.fire();
-					}),
+					})
 				);
 			}
 			this.updateMessage();
@@ -664,7 +671,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			};
 			this._badgeActivity = this.activityService.showViewActivity(
 				this.id,
-				activity,
+				activity
 			);
 		}
 	}
@@ -711,11 +718,11 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				localize(
 					"treeView.enableCollapseAll",
 					"Whether the the tree view with id {0} enables collapse all.",
-					this.id,
-				),
+					this.id
+				)
 			);
 			this.collapseAllContext = this.collapseAllContextKey.bindTo(
-				this.contextKeyService,
+				this.contextKeyService
 			);
 		}
 		return true;
@@ -739,11 +746,11 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				localize(
 					"treeView.enableRefresh",
 					"Whether the tree view with id {0} enables refresh.",
-					this.id,
-				),
+					this.id
+				)
 			);
 			this.refreshContext = this.refreshContextKey.bindTo(
-				this.contextKeyService,
+				this.contextKeyService
 			);
 		}
 	}
@@ -771,7 +778,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 								id: MenuId.ViewTitle,
 								when: ContextKeyExpr.and(
 									ContextKeyExpr.equals("view", that.id),
-									that.refreshContextKey,
+									that.refreshContextKey
 								),
 								group: "navigation",
 								order: Number.MAX_SAFE_INTEGER - 1,
@@ -782,8 +789,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 					async run(): Promise<void> {
 						return that.refresh();
 					}
-				},
-			),
+				}
+			)
 		);
 		this._register(
 			registerAction2(
@@ -796,7 +803,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 								id: MenuId.ViewTitle,
 								when: ContextKeyExpr.and(
 									ContextKeyExpr.equals("view", that.id),
-									that.collapseAllContextKey,
+									that.collapseAllContextKey
 								),
 								group: "navigation",
 								order: Number.MAX_SAFE_INTEGER,
@@ -814,8 +821,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 							>(that.tree, true).run();
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -894,11 +901,11 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		this.updateMessage();
 		this.treeContainer = DOM.append(
 			this.domNode,
-			DOM.$(".customview-tree"),
+			DOM.$(".customview-tree")
 		);
 		this.treeContainer.classList.add(
 			"file-icon-themable-tree",
-			"show-file-icons",
+			"show-file-icons"
 		);
 		const focusTracker = this._register(DOM.trackFocus(this.domNode));
 		this._register(focusTracker.onDidFocus(() => (this.focused = true)));
@@ -908,13 +915,13 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 	protected createTree() {
 		const actionViewItemProvider = createActionViewItem.bind(
 			undefined,
-			this.instantiationService,
+			this.instantiationService
 		);
 		const treeMenus = this._register(
-			this.instantiationService.createInstance(TreeMenus, this.id),
+			this.instantiationService.createInstance(TreeMenus, this.id)
 		);
 		this.treeLabels = this._register(
-			this.instantiationService.createInstance(ResourceLabels, this),
+			this.instantiationService.createInstance(ResourceLabels, this)
 		);
 		const dataSource = this.instantiationService.createInstance(
 			TreeDataSource,
@@ -922,8 +929,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			<T>(task: Promise<T>) =>
 				this.progressService.withProgress(
 					{ location: this.id },
-					() => task,
-				),
+					() => task
+				)
 		);
 		const aligner = new Aligner(this.themeService);
 		const checkboxStateHandler = this._register(new CheckboxStateHandler());
@@ -935,12 +942,12 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			actionViewItemProvider,
 			aligner,
 			checkboxStateHandler,
-			() => this.manuallyManageCheckboxes,
+			() => this.manuallyManageCheckboxes
 		);
 		this._register(
 			renderer.onDidChangeCheckboxState((e) =>
-				this._onDidChangeCheckboxState.fire(e),
-			),
+				this._onDidChangeCheckboxState.fire(e)
+			)
 		);
 
 		const widgetAriaLabel = this._title;
@@ -994,8 +1001,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 							return item.label
 								? item.label.label
 								: item.resourceUri
-								  ? basename(URI.revive(item.resourceUri))
-								  : undefined;
+									? basename(URI.revive(item.resourceUri))
+									: undefined;
 						},
 					},
 					expandOnlyOnTwistieClick: (e: ITreeItem) => {
@@ -1021,26 +1028,26 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 								? PANEL_BACKGROUND
 								: SIDE_BAR_BACKGROUND,
 					},
-				},
-			) as WorkbenchAsyncDataTree<ITreeItem, ITreeItem, FuzzyScore>,
+				}
+			) as WorkbenchAsyncDataTree<ITreeItem, ITreeItem, FuzzyScore>
 		);
 		treeMenus.setContextKeyService(this.tree.contextKeyService);
 		aligner.tree = this.tree;
 		const actionRunner = new MultipleSelectionActionRunner(
 			this.notificationService,
-			() => this.tree!.getSelection(),
+			() => this.tree!.getSelection()
 		);
 		renderer.actionRunner = actionRunner;
 
 		this.tree.contextKeyService.createKey<boolean>(this.id, true);
 		const customTreeKey = RawCustomTreeViewContextKey.bindTo(
-			this.tree.contextKeyService,
+			this.tree.contextKeyService
 		);
 		customTreeKey.set(true);
 		this._register(
 			this.tree.onContextMenu((e) =>
-				this.onContextMenu(treeMenus, e, actionRunner),
-			),
+				this.onContextMenu(treeMenus, e, actionRunner)
+			)
 		);
 
 		this._register(
@@ -1051,7 +1058,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 					selection: this.lastSelection,
 					focus: this.lastActive,
 				});
-			}),
+			})
 		);
 		this._register(
 			this.tree.onDidChangeFocus((e) => {
@@ -1064,7 +1071,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 						focus: this.lastActive,
 					});
 				}
-			}),
+			})
 		);
 		this._register(
 			this.tree.onDidChangeCollapseState((e) => {
@@ -1080,7 +1087,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				} else {
 					this._onDidExpandItem.fire(element);
 				}
-			}),
+			})
 		);
 		this.tree.setInput(this.root).then(() => this.updateContentAreas());
 
@@ -1092,14 +1099,14 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				if (
 					e.browserEvent.target &&
 					(e.browserEvent.target as HTMLElement).classList.contains(
-						TreeItemCheckbox.checkboxClass,
+						TreeItemCheckbox.checkboxClass
 					)
 				) {
 					return;
 				}
 				const selection = this.tree!.getSelection();
 				const command = await this.resolveCommand(
-					selection.length === 1 ? selection[0] : undefined,
+					selection.length === 1 ? selection[0] : undefined
 				);
 
 				if (
@@ -1119,13 +1126,13 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 					try {
 						await this.commandService.executeCommand(
 							command.id,
-							...args,
+							...args
 						);
 					} catch (err) {
 						this.notificationService.error(err);
 					}
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -1133,12 +1140,12 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				if (this.tree?.hasNode(changed)) {
 					this.tree?.rerender(changed);
 				}
-			}),
+			})
 		);
 	}
 
 	private async resolveCommand(
-		element: ITreeItem | undefined,
+		element: ITreeItem | undefined
 	): Promise<TreeCommand | undefined> {
 		let command = element?.command;
 		if (element && !command) {
@@ -1153,7 +1160,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 	private onContextMenu(
 		treeMenus: TreeMenus,
 		treeEvent: ITreeContextMenuEvent<ITreeItem>,
-		actionRunner: MultipleSelectionActionRunner,
+		actionRunner: MultipleSelectionActionRunner
 	): void {
 		this.hoverService.hideHover();
 		const node: ITreeItem | null = treeEvent.element;
@@ -1177,7 +1184,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 
 			getActionViewItem: (action) => {
 				const keybinding = this.keybindingService.lookupKeybinding(
-					action.id,
+					action.id
 				);
 				if (keybinding) {
 					return new ActionViewItem(action, action, {
@@ -1222,7 +1229,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		if (isMarkdownString(message) && !this.markdownRenderer) {
 			this.markdownRenderer = this.instantiationService.createInstance(
 				MarkdownRenderer,
-				{},
+				{}
 			);
 		}
 		this._messageValue = isMarkdownString(message)
@@ -1272,7 +1279,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 		if (this.tree) {
 			const parentNode = this.tree.getHTMLElement();
 			const childNodes = ([] as HTMLElement[]).slice.call(
-				parentNode.querySelectorAll(".outline-item-label > a"),
+				parentNode.querySelectorAll(".outline-item-label > a")
 			);
 			return DOM.getLargestChildWidth(parentNode, childNodes);
 		}
@@ -1298,7 +1305,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				if (this.elementsToRefresh.length) {
 					const seen: Set<string> = new Set<string>();
 					this.elementsToRefresh.forEach((element) =>
-						seen.add(element.handle),
+						seen.add(element.handle)
 					);
 					for (const element of elements) {
 						if (!seen.has(element.handle)) {
@@ -1369,8 +1376,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			try {
 				await Promise.all(
 					elements.map((element) =>
-						tree.updateChildren(element, true, true),
-					),
+						tree.updateChildren(element, true, true)
+					)
 				);
 			} catch (e) {
 				// When multiple calls are made to refresh the tree in quick succession,
@@ -1383,7 +1390,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				oldSelection.length !== newSelection.length ||
 				oldSelection.some(
 					(value, index) =>
-						value.handle !== newSelection[index].handle,
+						value.handle !== newSelection[index].handle
 				)
 			) {
 				this.lastSelection = newSelection;
@@ -1410,8 +1417,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 				localize(
 					"treeView.toggleCollapseAll",
 					"Whether collapse all is toggled for the tree view with id {0}.",
-					this.id,
-				),
+					this.id
+				)
 			);
 			this.collapseAllToggleContext =
 				this.collapseAllToggleContextKey.bindTo(this.contextKeyService);
@@ -1427,8 +1434,8 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 					this.root.children.some(
 						(value) =>
 							value.collapsibleState !==
-							TreeItemCollapsibleState.None,
-					),
+							TreeItemCollapsibleState.None
+					)
 			);
 		}
 	}
@@ -1481,7 +1488,7 @@ class TreeViewDelegate implements IListVirtualDelegate<ITreeItem> {
 class TreeDataSource implements IAsyncDataSource<ITreeItem, ITreeItem> {
 	constructor(
 		private treeView: ITreeView,
-		private withProgress: <T>(task: Promise<T>) => Promise<T>,
+		private withProgress: <T>(task: Promise<T>) => Promise<T>
 	) {}
 
 	hasChildren(element: ITreeItem): boolean {
@@ -1497,7 +1504,7 @@ class TreeDataSource implements IAsyncDataSource<ITreeItem, ITreeItem> {
 			try {
 				result =
 					(await this.withProgress(
-						this.treeView.dataProvider.getChildren(element),
+						this.treeView.dataProvider.getChildren(element)
 					)) ?? [];
 			} catch (e) {
 				if (!(<string>e.message).startsWith("Bad progress location:")) {
@@ -1551,22 +1558,33 @@ class TreeRenderer
 		private checkboxStateHandler: CheckboxStateHandler,
 		private readonly manuallyManageCheckboxes: () => boolean,
 		@IThemeService private readonly themeService: IThemeService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@ITreeViewsService private readonly treeViewsService: ITreeViewsService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService
 	) {
 		super();
 		this._hoverDelegate = {
-			showHover: (options: IHoverDelegateOptions) => this.hoverService.showHover(options),
-			delay: <number>this.configurationService.getValue('workbench.hover.delay')
+			showHover: (options: IHoverDelegateOptions) =>
+				this.hoverService.showHover(options),
+			delay: <number>(
+				this.configurationService.getValue("workbench.hover.delay")
+			),
 		};
-		this._register(this.themeService.onDidFileIconThemeChange(() => this.rerender()));
-		this._register(this.themeService.onDidColorThemeChange(() => this.rerender()));
-		this._register(checkboxStateHandler.onDidChangeCheckboxState(items => {
-			this.updateCheckboxes(items);
-		}));
+		this._register(
+			this.themeService.onDidFileIconThemeChange(() => this.rerender())
+		);
+		this._register(
+			this.themeService.onDidColorThemeChange(() => this.rerender())
+		);
+		this._register(
+			checkboxStateHandler.onDidChangeCheckboxState((items) => {
+				this.updateCheckboxes(items);
+			})
+		);
 	}
 
 	get templateId(): string {
@@ -1587,11 +1605,11 @@ class TreeRenderer
 		});
 		const icon = DOM.prepend(
 			resourceLabel.element,
-			DOM.$(".custom-view-tree-node-item-icon"),
+			DOM.$(".custom-view-tree-node-item-icon")
 		);
 		const actionsContainer = DOM.append(
 			resourceLabel.element,
-			DOM.$(".actions"),
+			DOM.$(".actions")
 		);
 		const actionBar = new ActionBar(actionsContainer, {
 			actionViewItemProvider: this.actionViewItemProvider,
@@ -1610,7 +1628,7 @@ class TreeRenderer
 	private getHover(
 		label: string | undefined,
 		resource: URI | null,
-		node: ITreeItem,
+		node: ITreeItem
 	): string | ITooltipMarkdownString | undefined {
 		if (!(node instanceof ResolvableTreeItem) || !node.hasResolve) {
 			if (resource && !node.tooltip) {
@@ -1636,16 +1654,16 @@ class TreeRenderer
 				typeof node.tooltip === "string"
 					? node.tooltip
 					: (
-							token: CancellationToken,
-					  ): Promise<IMarkdownString | string | undefined> => {
+							token: CancellationToken
+						): Promise<IMarkdownString | string | undefined> => {
 							return new Promise<
 								IMarkdownString | string | undefined
 							>((resolve) => {
 								node.resolve(token).then(() =>
-									resolve(node.tooltip),
+									resolve(node.tooltip)
 								);
 							});
-					  },
+						},
 			markdownNotSupportedFallback: resource ? undefined : label ?? "", // Passing undefined as the fallback for a resource falls back to the old native hover
 		};
 	}
@@ -1653,22 +1671,22 @@ class TreeRenderer
 	renderElement(
 		element: ITreeNode<ITreeItem, FuzzyScore>,
 		index: number,
-		templateData: ITreeExplorerTemplateData,
+		templateData: ITreeExplorerTemplateData
 	): void {
 		const node = element.element;
 		const resource = node.resourceUri ? URI.revive(node.resourceUri) : null;
 		const treeItemLabel: ITreeItemLabel | undefined = node.label
 			? node.label
 			: resource
-			  ? { label: basename(resource) }
-			  : undefined;
+				? { label: basename(resource) }
+				: undefined;
 		const description = isString(node.description)
 			? node.description
 			: resource && node.description === true
-			  ? this.labelService.getUriLabel(dirname(resource), {
+				? this.labelService.getUriLabel(dirname(resource), {
 						relative: true,
-				  })
-			  : undefined;
+					})
+				: undefined;
 		const label = treeItemLabel ? treeItemLabel.label : undefined;
 		const matches =
 			treeItemLabel && treeItemLabel.highlights && label
@@ -1688,7 +1706,7 @@ class TreeRenderer
 							end = swap;
 						}
 						return { start, end };
-				  })
+					})
 				: undefined;
 		const icon =
 			this.themeService.getColorTheme().type === ColorScheme.LIGHT
@@ -1705,7 +1723,7 @@ class TreeRenderer
 		if (node.command) {
 			commandEnabled = isTreeCommandEnabled(
 				node.command,
-				this.contextKeyService,
+				this.contextKeyService
 			);
 		}
 
@@ -1726,7 +1744,7 @@ class TreeRenderer
 					title,
 					hideIcon: this.shouldHideResourceLabelIcon(
 						iconUrl,
-						node.themeIcon,
+						node.themeIcon
 					),
 					fileDecorations,
 					extraClasses: ["custom-view-tree-node-item-resourceLabel"],
@@ -1737,7 +1755,7 @@ class TreeRenderer
 					disabledCommand: !commandEnabled,
 					labelEscapeNewLines: true,
 					forceLabel: !!node.label,
-				},
+				}
 			);
 		} else {
 			templateData.resourceLabel.setResource(
@@ -1752,7 +1770,7 @@ class TreeRenderer
 					strikethrough: treeItemLabel?.strikethrough,
 					disabledCommand: !commandEnabled,
 					labelEscapeNewLines: true,
-				},
+				}
 			);
 		}
 
@@ -1794,7 +1812,7 @@ class TreeRenderer
 
 		const menuActions = this.menus.getResourceActions(
 			node,
-			templateData.elementDisposable,
+			templateData.elementDisposable
 		);
 		templateData.actionBar.push(menuActions.actions, {
 			icon: true,
@@ -1807,7 +1825,7 @@ class TreeRenderer
 		this.setAlignment(templateData.container, node);
 		this.treeViewsService.addRenderedTreeItemElement(
 			node,
-			templateData.container,
+			templateData.container
 		);
 
 		// remember rendered element, an element can be rendered multiple times
@@ -1834,7 +1852,7 @@ class TreeRenderer
 
 	private renderCheckbox(
 		node: ITreeItem,
-		templateData: ITreeExplorerTemplateData,
+		templateData: ITreeExplorerTemplateData
 	) {
 		if (node.checkbox) {
 			// The first time we find a checkbox we want to rerender the visible tree to adapt the alignment
@@ -1846,7 +1864,7 @@ class TreeRenderer
 				const checkbox = new TreeItemCheckbox(
 					templateData.checkboxContainer,
 					this.checkboxStateHandler,
-					this._hoverDelegate,
+					this._hoverDelegate
 				);
 				templateData.checkbox = checkbox;
 			}
@@ -1860,13 +1878,13 @@ class TreeRenderer
 	private setAlignment(container: HTMLElement, treeItem: ITreeItem) {
 		container.parentElement!.classList.toggle(
 			"align-icon-with-twisty",
-			!this._hasCheckbox && this.aligner.alignIconWithTwisty(treeItem),
+			!this._hasCheckbox && this.aligner.alignIconWithTwisty(treeItem)
 		);
 	}
 
 	private shouldHideResourceLabelIcon(
 		iconUrl: URI | undefined,
-		icon: ThemeIcon | undefined,
+		icon: ThemeIcon | undefined
 	): boolean {
 		// We always hide the resource label in favor of the iconUrl when it's provided.
 		// When `ThemeIcon` is provided, we hide the resource label icon in favor of it only if it's a not a file icon.
@@ -1875,7 +1893,7 @@ class TreeRenderer
 
 	private shouldShowThemeIcon(
 		hasResource: boolean,
-		icon: ThemeIcon | undefined,
+		icon: ThemeIcon | undefined
 	): icon is ThemeIcon {
 		if (!icon) {
 			return false;
@@ -1989,8 +2007,9 @@ class TreeRenderer
 		items.forEach((item) => {
 			const renderedItems = this._renderedElements.get(item.handle);
 			if (renderedItems) {
-				renderedItems.forEach((renderedItems) =>
-					renderedItems.rendered.checkbox?.render(item),
+				renderedItems.forEach(
+					(renderedItems) =>
+						renderedItems.rendered.checkbox?.render(item)
 				);
 			}
 		});
@@ -2000,14 +2019,14 @@ class TreeRenderer
 	disposeElement(
 		resource: ITreeNode<ITreeItem, FuzzyScore>,
 		index: number,
-		templateData: ITreeExplorerTemplateData,
+		templateData: ITreeExplorerTemplateData
 	): void {
 		templateData.elementDisposable.clear();
 
 		const itemRenders =
 			this._renderedElements.get(resource.element.handle) ?? [];
 		const renderedIndex = itemRenders.findIndex(
-			(renderedItem) => templateData === renderedItem.rendered,
+			(renderedItem) => templateData === renderedItem.rendered
 		);
 
 		if (renderedIndex < 0) {
@@ -2064,7 +2083,7 @@ class Aligner extends Disposable {
 						(c) =>
 							c.collapsibleState !==
 								TreeItemCollapsibleState.None &&
-							!this.hasIcon(c),
+							!this.hasIcon(c)
 					)
 				);
 			}
@@ -2073,7 +2092,7 @@ class Aligner extends Disposable {
 				parent.children.every(
 					(c) =>
 						c.collapsibleState === TreeItemCollapsibleState.None ||
-						!this.hasIcon(c),
+						!this.hasIcon(c)
 				)
 			);
 		} else {
@@ -2108,7 +2127,7 @@ class Aligner extends Disposable {
 class MultipleSelectionActionRunner extends ActionRunner {
 	constructor(
 		notificationService: INotificationService,
-		private getSelectedResources: () => ITreeItem[],
+		private getSelectedResources: () => ITreeItem[]
 	) {
 		super();
 		this._register(
@@ -2119,17 +2138,17 @@ class MultipleSelectionActionRunner extends ActionRunner {
 							"command-error",
 							"Error running command {1}: {0}. This is likely caused by the extension that contributes {1}.",
 							e.error.message,
-							e.action.id,
-						),
+							e.action.id
+						)
 					);
 				}
-			}),
+			})
 		);
 	}
 
 	protected override async runAction(
 		action: IAction,
-		context: TreeViewItemHandleArg | TreeViewPaneHandleArg,
+		context: TreeViewItemHandleArg | TreeViewPaneHandleArg
 	): Promise<void> {
 		const selection = this.getSelectedResources();
 		let selectionHandleArgs: TreeViewItemHandleArg[] | undefined =
@@ -2167,16 +2186,16 @@ class TreeMenus implements IDisposable {
 	constructor(
 		private id: string,
 		@IMenuService private readonly menuService: IMenuService
-	) { }
+	) {}
 
 	getResourceActions(
 		element: ITreeItem,
-		disposableStore: DisposableStore,
+		disposableStore: DisposableStore
 	): { menu?: IMenu; actions: IAction[] } {
 		const actions = this.getActions(
 			MenuId.ViewItemContext,
 			element,
-			disposableStore,
+			disposableStore
 		);
 		return { menu: actions.menu, actions: actions.primary };
 	}
@@ -2192,7 +2211,7 @@ class TreeMenus implements IDisposable {
 	private getActions(
 		menuId: MenuId,
 		element: ITreeItem,
-		listen?: DisposableStore,
+		listen?: DisposableStore
 	): { menu?: IMenu; primary: IAction[]; secondary: IAction[] } {
 		if (!this.contextKeyService) {
 			return { primary: [], secondary: [] };
@@ -2211,7 +2230,7 @@ class TreeMenus implements IDisposable {
 			menu,
 			{ shouldForwardArgs: true },
 			result,
-			"inline",
+			"inline"
 		);
 		if (listen) {
 			listen.add(menu.onDidChange(() => this._onDidChange.fire(element)));
@@ -2248,9 +2267,25 @@ export class CustomTreeView extends AbstractTreeView {
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IActivityService activityService: IActivityService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
-		super(id, title, themeService, instantiationService, commandService, configurationService, progressService, contextMenuService, keybindingService, notificationService, viewDescriptorService, hoverService, contextKeyService, activityService, logService);
+		super(
+			id,
+			title,
+			themeService,
+			instantiationService,
+			commandService,
+			configurationService,
+			progressService,
+			contextMenuService,
+			keybindingService,
+			notificationService,
+			viewDescriptorService,
+			hoverService,
+			contextKeyService,
+			activityService,
+			logService
+		);
 	}
 
 	protected activate() {
@@ -2283,7 +2318,7 @@ export class CustomTreeView extends AbstractTreeView {
 			this.createTree();
 			this.progressService
 				.withProgress({ location: this.id }, () =>
-					this.extensionService.activateByEvent(`onView:${this.id}`),
+					this.extensionService.activateByEvent(`onView:${this.id}`)
 				)
 				.then(() => timeout(2000))
 				.then(() => {
@@ -2319,9 +2354,12 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 	constructor(
 		private readonly treeId: string,
 		@ILabelService private readonly labelService: ILabelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITreeViewsDnDService private readonly treeViewsDragAndDropService: ITreeViewsDnDService,
-		@ILogService private readonly logService: ILogService) {
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITreeViewsDnDService
+		private readonly treeViewsDragAndDropService: ITreeViewsDnDService,
+		@ILogService private readonly logService: ILogService
+	) {
 		this.treeMimeType = `application/vnd.code.tree.${treeId.toLowerCase()}`;
 	}
 
@@ -2334,7 +2372,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 		dndController: ITreeViewDragAndDropController,
 		itemHandles: string[],
 		uuid: string,
-		dragCancellationToken: CancellationToken,
+		dragCancellationToken: CancellationToken
 	): Promise<VSDataTransfer | undefined> {
 		return dndController
 			.handleDrag(itemHandles, uuid, dragCancellationToken)
@@ -2345,7 +2383,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 						if (
 							item[0] !== this.treeMimeType &&
 							dndController.dragMimeTypes.findIndex(
-								(value) => value === item[0],
+								(value) => value === item[0]
 							) < 0
 						) {
 							unlistedTypes.push(item[0]);
@@ -2356,8 +2394,8 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 							`Drag and drop controller for tree ${
 								this.treeId
 							} adds the following data transfer types but does not declare them in dragMimeTypes: ${unlistedTypes.join(
-								", ",
-							)}`,
+								", "
+							)}`
 						);
 					}
 				}
@@ -2367,7 +2405,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 
 	private addExtensionProvidedTransferTypes(
 		originalEvent: DragEvent,
-		itemHandles: string[],
+		itemHandles: string[]
 	) {
 		if (!originalEvent.dataTransfer || !this.dndController) {
 			return;
@@ -2381,17 +2419,17 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 				this.dndController,
 				itemHandles,
 				uuid,
-				this.dragCancellationToken.token,
-			),
+				this.dragCancellationToken.token
+			)
 		);
 		this.treeItemsTransfer.setData(
 			[new DraggedTreeItemsIdentifier(uuid)],
-			DraggedTreeItemsIdentifier.prototype,
+			DraggedTreeItemsIdentifier.prototype
 		);
 		originalEvent.dataTransfer.clearData(Mimes.text);
 		if (
 			this.dndController.dragMimeTypes.find(
-				(element) => element === Mimes.uriList,
+				(element) => element === Mimes.uriList
 			)
 		) {
 			// Add the type that the editor knows
@@ -2404,12 +2442,12 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 
 	private addResourceInfoToTransfer(
 		originalEvent: DragEvent,
-		resources: URI[],
+		resources: URI[]
 	) {
 		if (resources.length && originalEvent.dataTransfer) {
 			// Apply some datatransfer types to allow for dragging the element outside of the application
 			this.instantiationService.invokeFunction((accessor) =>
-				fillEditorsDragData(accessor, resources, originalEvent),
+				fillEditorsDragData(accessor, resources, originalEvent)
 			);
 
 			// The only custom data transfer we set from the explorer is a file transfer
@@ -2420,7 +2458,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 			if (fileResources.length) {
 				originalEvent.dataTransfer.setData(
 					CodeDataTransfers.FILES,
-					JSON.stringify(fileResources),
+					JSON.stringify(fileResources)
 				);
 			}
 		}
@@ -2445,11 +2483,11 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 			this.addResourceInfoToTransfer(originalEvent, resources);
 			this.addExtensionProvidedTransferTypes(
 				originalEvent,
-				sourceInfo.itemHandles,
+				sourceInfo.itemHandles
 			);
 			originalEvent.dataTransfer.setData(
 				this.treeMimeType,
-				JSON.stringify(sourceInfo),
+				JSON.stringify(sourceInfo)
 			);
 		}
 	}
@@ -2457,11 +2495,11 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 	private debugLog(types: Set<string>) {
 		if (types.size) {
 			this.logService.debug(
-				`TreeView dragged mime types: ${Array.from(types).join(", ")}`,
+				`TreeView dragged mime types: ${Array.from(types).join(", ")}`
 			);
 		} else {
 			this.logService.debug(
-				`TreeView dragged with no supported mime types.`,
+				`TreeView dragged with no supported mime types.`
 			);
 		}
 	}
@@ -2470,10 +2508,10 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 		data: IDragAndDropData,
 		targetElement: ITreeItem,
 		targetIndex: number,
-		originalEvent: DragEvent,
+		originalEvent: DragEvent
 	): boolean | ITreeDragOverReaction {
 		const dataTransfer = toExternalVSDataTransfer(
-			originalEvent.dataTransfer!,
+			originalEvent.dataTransfer!
 		);
 
 		const types = new Set<string>(Array.from(dataTransfer, (x) => x[0]));
@@ -2508,7 +2546,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 				} else {
 					return dndController.dropMimeTypes.indexOf(value) >= 0;
 				}
-			},
+			}
 		);
 		if (dragContainersSupportedType) {
 			return {
@@ -2540,15 +2578,15 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 		return element.label
 			? element.label.label
 			: element.resourceUri
-			  ? this.labelService.getUriLabel(URI.revive(element.resourceUri))
-			  : undefined;
+				? this.labelService.getUriLabel(URI.revive(element.resourceUri))
+				: undefined;
 	}
 
 	async drop(
 		data: IDragAndDropData,
 		targetNode: ITreeItem | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent,
+		originalEvent: DragEvent
 	): Promise<void> {
 		const dndController = this.dndController;
 		if (!originalEvent.dataTransfer || !dndController) {
@@ -2561,13 +2599,13 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 			this.treeItemsTransfer.hasData(DraggedTreeItemsIdentifier.prototype)
 		) {
 			willDropUuid = this.treeItemsTransfer.getData(
-				DraggedTreeItemsIdentifier.prototype,
+				DraggedTreeItemsIdentifier.prototype
 			)![0].identifier;
 		}
 
 		const originalDataTransfer = toExternalVSDataTransfer(
 			originalEvent.dataTransfer,
-			true,
+			true
 		);
 
 		const outDataTransfer = new VSDataTransfer();
@@ -2577,7 +2615,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 				dndController.dropMimeTypes.includes(type) ||
 				(item.asFile() &&
 					dndController.dropMimeTypes.includes(
-						DataTransfers.FILES.toLowerCase(),
+						DataTransfers.FILES.toLowerCase()
 					))
 			) {
 				outDataTransfer.append(type, item);
@@ -2593,7 +2631,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 
 		const additionalDataTransfer =
 			await this.treeViewsDragAndDropService.removeDragOperationTransfer(
-				willDropUuid,
+				willDropUuid
 			);
 		if (additionalDataTransfer) {
 			for (const [type, item] of additionalDataTransfer) {
@@ -2606,7 +2644,7 @@ export class CustomTreeViewDragAndDrop implements ITreeDragAndDrop<ITreeItem> {
 			CancellationToken.None,
 			willDropUuid,
 			treeSourceInfo?.id,
-			treeSourceInfo?.itemHandles,
+			treeSourceInfo?.itemHandles
 		);
 	}
 

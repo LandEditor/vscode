@@ -37,7 +37,7 @@ export interface IEditOperationBuilder {
 	addEditOperation(
 		range: IRange,
 		text: string | null,
-		forceMoveMarkers?: boolean,
+		forceMoveMarkers?: boolean
 	): void;
 
 	/**
@@ -49,7 +49,7 @@ export interface IEditOperationBuilder {
 	addTrackedEditOperation(
 		range: IRange,
 		text: string | null,
-		forceMoveMarkers?: boolean,
+		forceMoveMarkers?: boolean
 	): void;
 
 	/**
@@ -63,7 +63,7 @@ export interface IEditOperationBuilder {
 	 */
 	trackSelection(
 		selection: Selection,
-		trackPreviousOnEmpty?: boolean,
+		trackPreviousOnEmpty?: boolean
 	): string;
 }
 
@@ -108,7 +108,7 @@ export interface ICommand {
 	 */
 	computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData,
+		helper: ICursorStateComputerData
 	): Selection;
 }
 
@@ -347,7 +347,7 @@ export interface IEditor {
 	 */
 	revealLineInCenterIfOutsideViewport(
 		lineNumber: number,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -371,7 +371,7 @@ export interface IEditor {
 	 */
 	revealPositionInCenterIfOutsideViewport(
 		position: IPosition,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -429,7 +429,7 @@ export interface IEditor {
 	revealLines(
 		startLineNumber: number,
 		endLineNumber: number,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -438,7 +438,7 @@ export interface IEditor {
 	revealLinesInCenter(
 		lineNumber: number,
 		endLineNumber: number,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -447,7 +447,7 @@ export interface IEditor {
 	revealLinesInCenterIfOutsideViewport(
 		lineNumber: number,
 		endLineNumber: number,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -457,7 +457,7 @@ export interface IEditor {
 	revealLinesNearTop(
 		lineNumber: number,
 		endLineNumber: number,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -480,7 +480,7 @@ export interface IEditor {
 	 */
 	revealRangeInCenterIfOutsideViewport(
 		range: IRange,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -495,7 +495,7 @@ export interface IEditor {
 	 */
 	revealRangeNearTopIfOutsideViewport(
 		range: IRange,
-		scrollType?: ScrollType,
+		scrollType?: ScrollType
 	): void;
 
 	/**
@@ -507,7 +507,7 @@ export interface IEditor {
 	trigger(
 		source: string | null | undefined,
 		handlerId: string,
-		payload: any,
+		payload: any
 	): void;
 
 	/**
@@ -531,7 +531,7 @@ export interface IEditor {
 	 * These decorations will be automatically cleared when the editor's model changes.
 	 */
 	createDecorationsCollection(
-		decorations?: IModelDeltaDecoration[],
+		decorations?: IModelDeltaDecoration[]
 	): IEditorDecorationsCollection;
 
 	/**
@@ -542,7 +542,7 @@ export interface IEditor {
 	 * @internal
 	 */
 	changeDecorations(
-		callback: (changeAccessor: IModelDecorationsChangeAccessor) => any,
+		callback: (changeAccessor: IModelDecorationsChangeAccessor) => any
 	): any;
 }
 

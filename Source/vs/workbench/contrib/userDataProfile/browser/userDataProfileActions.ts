@@ -43,7 +43,7 @@ class CreateTransientProfileAction extends Action2 {
 	static readonly TITLE = {
 		value: localize(
 			"create temporary profile",
-			"Create a Temporary Profile",
+			"Create a Temporary Profile"
 		),
 		original: "Create a Temporary Profile",
 	};
@@ -79,7 +79,7 @@ export class RenameProfileAction extends Action2 {
 			f1: true,
 			precondition: ContextKeyExpr.and(
 				PROFILES_ENABLEMENT_CONTEXT,
-				HAS_PROFILES_CONTEXT,
+				HAS_PROFILES_CONTEXT
 			),
 		});
 	}
@@ -89,7 +89,7 @@ export class RenameProfileAction extends Action2 {
 		const userDataProfileService = accessor.get(IUserDataProfileService);
 		const userDataProfilesService = accessor.get(IUserDataProfilesService);
 		const userDataProfileManagementService = accessor.get(
-			IUserDataProfileManagementService,
+			IUserDataProfileManagementService
 		);
 		const notificationService = accessor.get(INotificationService);
 
@@ -97,7 +97,7 @@ export class RenameProfileAction extends Action2 {
 			profile = await this.pickProfile(
 				quickInputService,
 				userDataProfileService,
-				userDataProfilesService,
+				userDataProfilesService
 			);
 		}
 
@@ -110,19 +110,19 @@ export class RenameProfileAction extends Action2 {
 			title: localize(
 				"select profile to rename",
 				"Rename {0}",
-				profile.name,
+				profile.name
 			),
 			validateInput: async (value: string) => {
 				if (
 					profile!.name !== value &&
 					userDataProfilesService.profiles.some(
-						(p) => p.name === value,
+						(p) => p.name === value
 					)
 				) {
 					return localize(
 						"profileExists",
 						"Profile with name {0} already exists.",
-						value,
+						value
 					);
 				}
 				return undefined;
@@ -142,10 +142,10 @@ export class RenameProfileAction extends Action2 {
 	private async pickProfile(
 		quickInputService: IQuickInputService,
 		userDataProfileService: IUserDataProfileService,
-		userDataProfilesService: IUserDataProfilesService,
+		userDataProfilesService: IUserDataProfilesService
 	): Promise<IUserDataProfile | undefined> {
 		const profiles = userDataProfilesService.profiles.filter(
-			(p) => !p.isDefault && !p.isTransient,
+			(p) => !p.isDefault && !p.isTransient
 		);
 		if (!profiles.length) {
 			return undefined;
@@ -163,9 +163,9 @@ export class RenameProfileAction extends Action2 {
 				title: localize("rename specific profile", "Rename Profile..."),
 				placeHolder: localize(
 					"pick profile to rename",
-					"Select Profile to Rename",
+					"Select Profile to Rename"
 				),
-			},
+			}
 		);
 		return pick?.profile;
 	}
@@ -185,7 +185,7 @@ registerAction2(
 				category: PROFILES_CATEGORY,
 				precondition: ContextKeyExpr.and(
 					PROFILES_ENABLEMENT_CONTEXT,
-					HAS_PROFILES_CONTEXT,
+					HAS_PROFILES_CONTEXT
 				),
 			});
 		}
@@ -198,7 +198,7 @@ registerAction2(
 
 			const menu = menuService.createMenu(
 				ProfilesMenu,
-				contextKeyService,
+				contextKeyService
 			);
 			const actions: IAction[] = [];
 			createAndFillInActionBarActions(menu, undefined, actions);
@@ -225,7 +225,7 @@ registerAction2(
 				}
 			}
 		}
-	},
+	}
 );
 
 // Developer Actions
@@ -248,7 +248,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor) {
 			return accessor.get(IUserDataProfilesService).cleanUp();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -259,7 +259,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"reset workspaces",
-						"Reset Workspace Profiles Associations",
+						"Reset Workspace Profiles Associations"
 					),
 					original: "Reset Workspace Profiles Associations",
 				},
@@ -271,9 +271,9 @@ registerAction2(
 
 		async run(accessor: ServicesAccessor) {
 			const userDataProfilesService = accessor.get(
-				IUserDataProfilesService,
+				IUserDataProfilesService
 			);
 			return userDataProfilesService.resetWorkspaces();
 		}
-	},
+	}
 );

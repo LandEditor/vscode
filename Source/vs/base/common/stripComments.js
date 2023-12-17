@@ -46,7 +46,7 @@
 						// We match a string
 						return match;
 					}
-				},
+				}
 			);
 		}
 		return {
@@ -67,7 +67,7 @@
 		module.exports = factory();
 	} else {
 		console.trace(
-			"strip comments defined in UNKNOWN context (neither requirejs or commonjs)",
+			"strip comments defined in UNKNOWN context (neither requirejs or commonjs)"
 		);
 	}
 })();

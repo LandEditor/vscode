@@ -73,7 +73,7 @@ registerAction2(
 				category: NOTEBOOK_ACTIONS_CATEGORY,
 				precondition: ContextKeyExpr.and(
 					NOTEBOOK_IS_ACTIVE_EDITOR,
-					NOTEBOOK_EDITOR_EDITABLE,
+					NOTEBOOK_EDITOR_EDITABLE
 				),
 				keybinding: {
 					when: EditorContextKeys.editorTextFocus.toNegated(),
@@ -88,7 +88,7 @@ registerAction2(
 					id: MenuId.EditorContext,
 					when: ContextKeyExpr.and(
 						EditorContextKeys.inCompositeEditor,
-						EditorContextKeys.hasDocumentFormattingProvider,
+						EditorContextKeys.hasDocumentFormattingProvider
 					),
 					group: "1_modification",
 					order: 1.3,
@@ -101,12 +101,12 @@ registerAction2(
 			const textModelService = accessor.get(ITextModelService);
 			const editorWorkerService = accessor.get(IEditorWorkerService);
 			const languageFeaturesService = accessor.get(
-				ILanguageFeaturesService,
+				ILanguageFeaturesService
 			);
 			const bulkEditService = accessor.get(IBulkEditService);
 
 			const editor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane,
+				editorService.activeEditorPane
 			);
 			if (!editor || !editor.hasModel()) {
 				return;
@@ -118,7 +118,7 @@ registerAction2(
 				const allCellEdits = await Promise.all(
 					notebook.cells.map(async (cell) => {
 						const ref = await textModelService.createModelReference(
-							cell.uri,
+							cell.uri
 						);
 						disposable.add(ref);
 
@@ -130,7 +130,7 @@ registerAction2(
 								languageFeaturesService,
 								model,
 								model.getOptions(),
-								CancellationToken.None,
+								CancellationToken.None
 							);
 
 						const edits: ResourceTextEdit[] = [];
@@ -141,8 +141,8 @@ registerAction2(
 									new ResourceTextEdit(
 										model.uri,
 										edit,
-										model.getVersionId(),
-									),
+										model.getVersionId()
+									)
 								);
 							}
 
@@ -150,7 +150,7 @@ registerAction2(
 						}
 
 						return [];
-					}),
+					})
 				);
 
 				await bulkEditService.apply(/* edit */ allCellEdits.flat(), {
@@ -161,7 +161,7 @@ registerAction2(
 				disposable.dispose();
 			}
 		}
-	},
+	}
 );
 
 // format cell
@@ -177,11 +177,11 @@ registerEditorAction(
 					NOTEBOOK_EDITOR_EDITABLE,
 					EditorContextKeys.inCompositeEditor,
 					EditorContextKeys.writable,
-					EditorContextKeys.hasDocumentFormattingProvider,
+					EditorContextKeys.hasDocumentFormattingProvider
 				),
 				kbOpts: {
 					kbExpr: ContextKeyExpr.and(
-						EditorContextKeys.editorTextFocus,
+						EditorContextKeys.editorTextFocus
 					),
 					primary: KeyMod.Shift | KeyMod.Alt | KeyCode.KeyF,
 					linux: {
@@ -198,7 +198,7 @@ registerEditorAction(
 
 		async run(
 			accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			if (editor.hasModel()) {
 				const instaService = accessor.get(IInstantiationService);
@@ -208,29 +208,31 @@ registerEditorAction(
 					FormattingMode.Explicit,
 					Progress.None,
 					CancellationToken.None,
-					true,
+					true
 				);
 			}
 		}
-	},
+	}
 );
 
 class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 	constructor(
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@INotebookService private readonly _notebookService: INotebookService,
-	) {
-	}
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@INotebookService private readonly _notebookService: INotebookService
+	) {}
 
 	async onWillExecuteCell(
-		executions: INotebookCellExecution[],
+		executions: INotebookCellExecution[]
 	): Promise<void> {
 		const enabled = this.configurationService.getValue<boolean>(
-			NotebookSetting.formatOnCellExecution,
+			NotebookSetting.formatOnCellExecution
 		);
 		if (!enabled) {
 			return;
@@ -241,7 +243,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 			const allCellEdits = await Promise.all(
 				executions.map(async (cellExecution) => {
 					const nbModel = this._notebookService.getNotebookTextModel(
-						cellExecution.notebook,
+						cellExecution.notebook
 					);
 					if (!nbModel) {
 						return [];
@@ -259,7 +261,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 
 					const ref =
 						await this.textModelService.createModelReference(
-							activeCell.uri,
+							activeCell.uri
 						);
 					disposable.add(ref);
 
@@ -272,7 +274,7 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 							this.languageFeaturesService,
 							model,
 							model.getOptions(),
-							CancellationToken.None,
+							CancellationToken.None
 						);
 
 					const edits: ResourceTextEdit[] = [];
@@ -284,15 +286,15 @@ class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 									new ResourceTextEdit(
 										model.uri,
 										edit,
-										model.getVersionId(),
-									),
-							),
+										model.getVersionId()
+									)
+							)
 						);
 						return edits;
 					}
 
 					return [];
-				}),
+				})
 			);
 
 			await this.bulkEditService.apply(/* edit */ allCellEdits.flat(), {
@@ -310,8 +312,10 @@ export class CellExecutionParticipantsContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotebookExecutionService private readonly notebookExecutionService: INotebookExecutionService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@INotebookExecutionService
+		private readonly notebookExecutionService: INotebookExecutionService
 	) {
 		super();
 		this.registerKernelExecutionParticipants();
@@ -321,18 +325,18 @@ export class CellExecutionParticipantsContribution
 		this._register(
 			this.notebookExecutionService.registerExecutionParticipant(
 				this.instantiationService.createInstance(
-					FormatOnCellExecutionParticipant,
-				),
-			),
+					FormatOnCellExecutionParticipant
+				)
+			)
 		);
 	}
 }
 
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchContributionsExtensions.Workbench,
+		WorkbenchContributionsExtensions.Workbench
 	);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	CellExecutionParticipantsContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

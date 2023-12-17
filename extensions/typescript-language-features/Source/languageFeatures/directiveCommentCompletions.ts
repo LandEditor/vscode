@@ -17,19 +17,19 @@ const tsDirectives: Directive[] = [
 	{
 		value: "@ts-check",
 		description: vscode.l10n.t(
-			"Enables semantic checking in a JavaScript file. Must be at the top of a file.",
+			"Enables semantic checking in a JavaScript file. Must be at the top of a file."
 		),
 	},
 	{
 		value: "@ts-nocheck",
 		description: vscode.l10n.t(
-			"Disables semantic checking in a JavaScript file. Must be at the top of a file.",
+			"Disables semantic checking in a JavaScript file. Must be at the top of a file."
 		),
 	},
 	{
 		value: "@ts-ignore",
 		description: vscode.l10n.t(
-			"Suppresses @ts-check errors on the next line of a file.",
+			"Suppresses @ts-check errors on the next line of a file."
 		),
 	},
 ];
@@ -39,7 +39,7 @@ const tsDirectives390: Directive[] = [
 	{
 		value: "@ts-expect-error",
 		description: vscode.l10n.t(
-			"Suppresses @ts-check errors on the next line of a file, expecting at least one to exist.",
+			"Suppresses @ts-check errors on the next line of a file, expecting at least one to exist."
 		),
 	},
 ];
@@ -52,7 +52,7 @@ class DirectiveCommentCompletionProvider
 	public provideCompletionItems(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		_token: vscode.CancellationToken,
+		_token: vscode.CancellationToken
 	): vscode.CompletionItem[] {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -70,17 +70,17 @@ class DirectiveCommentCompletionProvider
 			return directives.map((directive) => {
 				const item = new vscode.CompletionItem(
 					directive.value,
-					vscode.CompletionItemKind.Snippet,
+					vscode.CompletionItemKind.Snippet
 				);
 				item.detail = directive.description;
 				item.range = new vscode.Range(
 					position.line,
 					Math.max(
 						0,
-						position.character - (match[1] ? match[1].length : 0),
+						position.character - (match[1] ? match[1].length : 0)
 					),
 					position.line,
-					position.character,
+					position.character
 				);
 				return item;
 			});
@@ -91,11 +91,11 @@ class DirectiveCommentCompletionProvider
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return vscode.languages.registerCompletionItemProvider(
 		selector.syntax,
 		new DirectiveCommentCompletionProvider(client),
-		"@",
+		"@"
 	);
 }

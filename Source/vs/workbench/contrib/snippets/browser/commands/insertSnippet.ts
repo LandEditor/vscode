@@ -42,7 +42,7 @@ class Args {
 	private constructor(
 		public readonly snippet: string | undefined,
 		public readonly name: string | undefined,
-		public readonly langId: string | undefined,
+		public readonly langId: string | undefined
 	) {}
 }
 
@@ -53,7 +53,7 @@ export class InsertSnippetAction extends SnippetEditorAction {
 			title: {
 				value: nls.localize(
 					"snippet.suggestions.label",
-					"Insert Snippet",
+					"Insert Snippet"
 				),
 				original: "Insert Snippet",
 			},
@@ -87,7 +87,7 @@ export class InsertSnippetAction extends SnippetEditorAction {
 	async runEditorCommand(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		arg: any,
+		arg: any
 	) {
 		const languageService = accessor.get(ILanguageService);
 		const snippetService = accessor.get(ISnippetsService);
@@ -115,8 +115,8 @@ export class InsertSnippetAction extends SnippetEditorAction {
 							snippet,
 							"",
 							SnippetSource.User,
-							`random/${Math.random()}`,
-						),
+							`random/${Math.random()}`
+						)
 					);
 				}
 
@@ -147,16 +147,16 @@ export class InsertSnippetAction extends SnippetEditorAction {
 							includeNoPrefixSnippets: true,
 						})
 						.then((snippets) =>
-							snippets.find((snippet) => snippet.name === name),
+							snippets.find((snippet) => snippet.name === name)
 						)
 						.then(resolve, reject);
 				} else {
 					// let user pick a snippet
 					resolve(
-						instaService.invokeFunction(pickSnippet, languageId),
+						instaService.invokeFunction(pickSnippet, languageId)
 					);
 				}
-			},
+			}
 		);
 
 		if (!snippet) {

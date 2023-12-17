@@ -23,7 +23,7 @@ export class CellSearchModel extends Disposable {
 	constructor(
 		readonly _source: string,
 		private _inputTextBuffer: IReadonlyTextBuffer | undefined,
-		private _outputs: string[],
+		private _outputs: string[]
 	) {
 		super();
 	}
@@ -34,13 +34,13 @@ export class CellSearchModel extends Disposable {
 			1,
 			1,
 			lineCount,
-			this._getLineMaxColumn(buffer, lineCount),
+			this._getLineMaxColumn(buffer, lineCount)
 		);
 	}
 
 	private _getLineMaxColumn(
 		buffer: IReadonlyTextBuffer,
-		lineNumber: number,
+		lineNumber: number
 	): number {
 		if (lineNumber < 1 || lineNumber > buffer.getLineCount()) {
 			throw new Error("Illegal value for lineNumber");
@@ -54,7 +54,7 @@ export class CellSearchModel extends Disposable {
 			builder.acceptChunk(this._source);
 			const bufferFactory = builder.finish(true);
 			const { textBuffer, disposable } = bufferFactory.create(
-				DefaultEndOfLine.LF,
+				DefaultEndOfLine.LF
 			);
 			this._inputTextBuffer = textBuffer;
 			this._register(disposable);
@@ -70,7 +70,7 @@ export class CellSearchModel extends Disposable {
 				builder.acceptChunk(output);
 				const bufferFactory = builder.finish(true);
 				const { textBuffer, disposable } = bufferFactory.create(
-					DefaultEndOfLine.LF,
+					DefaultEndOfLine.LF
 				);
 				this._register(disposable);
 				return textBuffer;
@@ -90,7 +90,7 @@ export class CellSearchModel extends Disposable {
 			fullInputRange,
 			searchData,
 			true,
-			5000,
+			5000
 		);
 	}
 
@@ -106,7 +106,7 @@ export class CellSearchModel extends Disposable {
 					this._getFullModelRange(buffer),
 					searchData,
 					true,
-					5000,
+					5000
 				);
 				if (matches.length === 0) {
 					return undefined;

@@ -38,16 +38,16 @@ class TerminalSuggestContribution
 	static readonly ID = "terminal.suggest";
 
 	static get(
-		instance: ITerminalInstance,
+		instance: ITerminalInstance
 	): TerminalSuggestContribution | null {
 		return instance.getContribution<TerminalSuggestContribution>(
-			TerminalSuggestContribution.ID,
+			TerminalSuggestContribution.ID
 		);
 	}
 
 	private _addon: SuggestAddon | undefined;
 	private _terminalSuggestWidgetContextKeys: IReadableSet<string> = new Set(
-		TerminalContextKeys.suggestWidgetVisible.key,
+		TerminalContextKeys.suggestWidgetVisible.key
 	);
 	private _terminalSuggestWidgetVisibleContextKey: IContextKey<boolean>;
 
@@ -59,12 +59,17 @@ class TerminalSuggestContribution
 		private readonly _instance: ITerminalInstance,
 		_processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 		this.add(toDisposable(() => this._addon?.dispose()));
-		this._terminalSuggestWidgetVisibleContextKey = TerminalContextKeys.suggestWidgetVisible.bindTo(this._contextKeyService);
+		this._terminalSuggestWidgetVisibleContextKey =
+			TerminalContextKeys.suggestWidgetVisible.bindTo(
+				this._contextKeyService
+			);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
@@ -74,7 +79,7 @@ class TerminalSuggestContribution
 				if (e.affectsSome(this._terminalSuggestWidgetContextKeys)) {
 					this._loadSuggestAddon(xterm.raw);
 				}
-			}),
+			})
 		);
 	}
 
@@ -82,30 +87,28 @@ class TerminalSuggestContribution
 		if (this._terminalSuggestWidgetVisibleContextKey) {
 			this._addon = this._instantiationService.createInstance(
 				SuggestAddon,
-				this._terminalSuggestWidgetVisibleContextKey,
+				this._terminalSuggestWidgetVisibleContextKey
 			);
 			xterm.loadAddon(this._addon);
 			this._addon?.setPanel(
-				dom.findParentWithClass(xterm.element!, "panel")!,
+				dom.findParentWithClass(xterm.element!, "panel")!
 			);
 			this._addon?.setScreen(
-				xterm.element!.querySelector(".xterm-screen")!,
+				xterm.element!.querySelector(".xterm-screen")!
 			);
 			this.add(
-				this._instance.onDidBlur(() =>
-					this._addon?.hideSuggestWidget(),
-				),
+				this._instance.onDidBlur(() => this._addon?.hideSuggestWidget())
 			);
 			this.add(
 				this._addon.onAcceptedCompletion(async (text) => {
 					this._instance.focus();
 					this._instance.sendText(text, false);
-				}),
+				})
 			);
 			this.add(
 				this._instance.onDidSendText((text) => {
 					this._addon?.handleNonXtermData(text);
-				}),
+				})
 			);
 		}
 	}
@@ -113,7 +116,7 @@ class TerminalSuggestContribution
 
 registerTerminalContribution(
 	TerminalSuggestContribution.ID,
-	TerminalSuggestContribution,
+	TerminalSuggestContribution
 );
 
 // Actions
@@ -122,7 +125,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.selectPrevSuggestion",
-			"Select the Previous Suggestion",
+			"Select the Previous Suggestion"
 		),
 		original: "Select the Previous Suggestion",
 	},
@@ -130,11 +133,11 @@ registerActiveInstanceAction({
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated,
+			TerminalContextKeys.terminalHasBeenCreated
 		),
 		TerminalContextKeys.focus,
 		TerminalContextKeys.isOpen,
-		TerminalContextKeys.suggestWidgetVisible,
+		TerminalContextKeys.suggestWidgetVisible
 	),
 	keybinding: {
 		// Up is bound to other workbench keybindings that this needs to beat
@@ -143,7 +146,7 @@ registerActiveInstanceAction({
 	},
 	run: (activeInstance) =>
 		TerminalSuggestContribution.get(
-			activeInstance,
+			activeInstance
 		)?.addon?.selectPreviousSuggestion(),
 });
 
@@ -152,7 +155,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.selectPrevPageSuggestion",
-			"Select the Previous Page Suggestion",
+			"Select the Previous Page Suggestion"
 		),
 		original: "Select the Previous Page Suggestion",
 	},
@@ -160,11 +163,11 @@ registerActiveInstanceAction({
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated,
+			TerminalContextKeys.terminalHasBeenCreated
 		),
 		TerminalContextKeys.focus,
 		TerminalContextKeys.isOpen,
-		TerminalContextKeys.suggestWidgetVisible,
+		TerminalContextKeys.suggestWidgetVisible
 	),
 	keybinding: {
 		// Up is bound to other workbench keybindings that this needs to beat
@@ -173,7 +176,7 @@ registerActiveInstanceAction({
 	},
 	run: (activeInstance) =>
 		TerminalSuggestContribution.get(
-			activeInstance,
+			activeInstance
 		)?.addon?.selectPreviousPageSuggestion(),
 });
 
@@ -182,7 +185,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.selectNextSuggestion",
-			"Select the Next Suggestion",
+			"Select the Next Suggestion"
 		),
 		original: "Select the Next Suggestion",
 	},
@@ -190,11 +193,11 @@ registerActiveInstanceAction({
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated,
+			TerminalContextKeys.terminalHasBeenCreated
 		),
 		TerminalContextKeys.focus,
 		TerminalContextKeys.isOpen,
-		TerminalContextKeys.suggestWidgetVisible,
+		TerminalContextKeys.suggestWidgetVisible
 	),
 	keybinding: {
 		// Down is bound to other workbench keybindings that this needs to beat
@@ -203,7 +206,7 @@ registerActiveInstanceAction({
 	},
 	run: (activeInstance) =>
 		TerminalSuggestContribution.get(
-			activeInstance,
+			activeInstance
 		)?.addon?.selectNextSuggestion(),
 });
 
@@ -212,7 +215,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.selectNextPageSuggestion",
-			"Select the Next Page Suggestion",
+			"Select the Next Page Suggestion"
 		),
 		original: "Select the Next Page Suggestion",
 	},
@@ -220,11 +223,11 @@ registerActiveInstanceAction({
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated,
+			TerminalContextKeys.terminalHasBeenCreated
 		),
 		TerminalContextKeys.focus,
 		TerminalContextKeys.isOpen,
-		TerminalContextKeys.suggestWidgetVisible,
+		TerminalContextKeys.suggestWidgetVisible
 	),
 	keybinding: {
 		// Down is bound to other workbench keybindings that this needs to beat
@@ -233,7 +236,7 @@ registerActiveInstanceAction({
 	},
 	run: (activeInstance) =>
 		TerminalSuggestContribution.get(
-			activeInstance,
+			activeInstance
 		)?.addon?.selectNextPageSuggestion(),
 });
 
@@ -242,7 +245,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.acceptSelectedSuggestion",
-			"Accept Selected Suggestion",
+			"Accept Selected Suggestion"
 		),
 		original: "Accept Selected Suggestion",
 	},
@@ -250,11 +253,11 @@ registerActiveInstanceAction({
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated,
+			TerminalContextKeys.terminalHasBeenCreated
 		),
 		TerminalContextKeys.focus,
 		TerminalContextKeys.isOpen,
-		TerminalContextKeys.suggestWidgetVisible,
+		TerminalContextKeys.suggestWidgetVisible
 	),
 	keybinding: {
 		primary: KeyCode.Enter,
@@ -264,7 +267,7 @@ registerActiveInstanceAction({
 	},
 	run: (activeInstance) =>
 		TerminalSuggestContribution.get(
-			activeInstance,
+			activeInstance
 		)?.addon?.acceptSelectedSuggestion(),
 });
 
@@ -273,7 +276,7 @@ registerActiveInstanceAction({
 	title: {
 		value: localize(
 			"workbench.action.terminal.hideSuggestWidget",
-			"Hide Suggest Widget",
+			"Hide Suggest Widget"
 		),
 		original: "Hide Suggest Widget",
 	},
@@ -281,11 +284,11 @@ registerActiveInstanceAction({
 	precondition: ContextKeyExpr.and(
 		ContextKeyExpr.or(
 			TerminalContextKeys.processSupported,
-			TerminalContextKeys.terminalHasBeenCreated,
+			TerminalContextKeys.terminalHasBeenCreated
 		),
 		TerminalContextKeys.focus,
 		TerminalContextKeys.isOpen,
-		TerminalContextKeys.suggestWidgetVisible,
+		TerminalContextKeys.suggestWidgetVisible
 	),
 	keybinding: {
 		primary: KeyCode.Escape,
@@ -294,6 +297,6 @@ registerActiveInstanceAction({
 	},
 	run: (activeInstance) =>
 		TerminalSuggestContribution.get(
-			activeInstance,
+			activeInstance
 		)?.addon?.hideSuggestWidget(),
 });

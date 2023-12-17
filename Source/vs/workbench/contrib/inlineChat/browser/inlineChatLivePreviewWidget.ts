@@ -83,66 +83,103 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@ILogService private readonly _logService: ILogService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService
 	) {
-		super(editor, { showArrow: false, showFrame: false, isResizeable: false, isAccessible: true, allowUnlimitedHeight: true, showInHiddenAreas: true, keepEditorSelection: true, ordinal: 10000 + 1 });
+		super(editor, {
+			showArrow: false,
+			showFrame: false,
+			isResizeable: false,
+			isAccessible: true,
+			allowUnlimitedHeight: true,
+			showInHiddenAreas: true,
+			keepEditorSelection: true,
+			ordinal: 10000 + 1,
+		});
 		super.create();
 		assertType(editor.hasModel());
 
 		this._decorationCollection = editor.createDecorationsCollection();
 
-		const diffContributions = EditorExtensionsRegistry
-			.getEditorContributions()
-			.filter(c => c.id !== INLINE_CHAT_ID && c.id !== FoldingController.ID);
+		const diffContributions =
+			EditorExtensionsRegistry.getEditorContributions().filter(
+				(c) => c.id !== INLINE_CHAT_ID && c.id !== FoldingController.ID
+			);
 
-		this._diffEditor = instantiationService.createInstance(EmbeddedDiffEditorWidget, this._elements.domNode, {
-			scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false, ignoreHorizontalScrollbarInContentHeight: true, },
-			scrollBeyondLastLine: false,
-			renderMarginRevertIcon: true,
-			renderOverviewRuler: false,
-			rulers: undefined,
-			overviewRulerBorder: undefined,
-			overviewRulerLanes: 0,
-			diffAlgorithm: 'advanced',
-			splitViewDefaultRatio: 0.35,
-			padding: { top: 0, bottom: 0 },
-			folding: false,
-			diffCodeLens: false,
-			stickyScroll: { enabled: false },
-			minimap: { enabled: false },
-			isInEmbeddedEditor: true,
-			useInlineViewWhenSpaceIsLimited: false,
-			overflowWidgetsDomNode: editor.getOverflowWidgetsDomNode(),
-			onlyShowAccessibleDiffViewer: this.accessibilityService.isScreenReaderOptimized(),
-			...options
-		}, {
-			originalEditor: { contributions: diffContributions },
-			modifiedEditor: { contributions: diffContributions }
-		}, editor);
+		this._diffEditor = instantiationService.createInstance(
+			EmbeddedDiffEditorWidget,
+			this._elements.domNode,
+			{
+				scrollbar: {
+					useShadows: false,
+					alwaysConsumeMouseWheel: false,
+					ignoreHorizontalScrollbarInContentHeight: true,
+				},
+				scrollBeyondLastLine: false,
+				renderMarginRevertIcon: true,
+				renderOverviewRuler: false,
+				rulers: undefined,
+				overviewRulerBorder: undefined,
+				overviewRulerLanes: 0,
+				diffAlgorithm: "advanced",
+				splitViewDefaultRatio: 0.35,
+				padding: { top: 0, bottom: 0 },
+				folding: false,
+				diffCodeLens: false,
+				stickyScroll: { enabled: false },
+				minimap: { enabled: false },
+				isInEmbeddedEditor: true,
+				useInlineViewWhenSpaceIsLimited: false,
+				overflowWidgetsDomNode: editor.getOverflowWidgetsDomNode(),
+				onlyShowAccessibleDiffViewer:
+					this.accessibilityService.isScreenReaderOptimized(),
+				...options,
+			},
+			{
+				originalEditor: { contributions: diffContributions },
+				modifiedEditor: { contributions: diffContributions },
+			},
+			editor
+		);
 
 		this._disposables.add(this._diffEditor);
-		this._diffEditor.setModel({ original: this._session.textModel0, modified: editor.getModel() });
+		this._diffEditor.setModel({
+			original: this._session.textModel0,
+			modified: editor.getModel(),
+		});
 		this._diffEditor.updateOptions({
-			lineDecorationsWidth: editor.getLayoutInfo().decorationsWidth
+			lineDecorationsWidth: editor.getLayoutInfo().decorationsWidth,
 		});
 
 		if (onDidChangeDiff) {
-			this._disposables.add(this._diffEditor.onDidUpdateDiff(() => { onDidChangeDiff(); }));
+			this._disposables.add(
+				this._diffEditor.onDidUpdateDiff(() => {
+					onDidChangeDiff();
+				})
+			);
 
 			const render = this._disposables.add(new MutableDisposable());
-			this._disposables.add(this._diffEditor.onDidContentSizeChange(e => {
-				if (!this._isVisible || !e.contentHeightChanged) {
-					return;
-				}
-				render.value = runAtThisOrScheduleAtNextAnimationFrame(getWindow(this._diffEditor.getContainerDomNode()), () => {
-					const lineHeight = this.editor.getOption(EditorOption.lineHeight);
-					const heightInLines = e.contentHeight / lineHeight;
-					this._logService.debug(`[IE] relaying with ${heightInLines} lines height`);
-					this._relayout(heightInLines);
-				});
-			}));
+			this._disposables.add(
+				this._diffEditor.onDidContentSizeChange((e) => {
+					if (!this._isVisible || !e.contentHeightChanged) {
+						return;
+					}
+					render.value = runAtThisOrScheduleAtNextAnimationFrame(
+						getWindow(this._diffEditor.getContainerDomNode()),
+						() => {
+							const lineHeight = this.editor.getOption(
+								EditorOption.lineHeight
+							);
+							const heightInLines = e.contentHeight / lineHeight;
+							this._logService.debug(
+								`[IE] relaying with ${heightInLines} lines height`
+							);
+							this._relayout(heightInLines);
+						}
+					);
+				})
+			);
 		}
-
 
 		const doStyle = () => {
 			const theme = themeService.getColorTheme();
@@ -158,7 +195,10 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 			for (const [target, source] of overrides) {
 				const value = theme.getColor(source);
 				if (value) {
-					this._elements.domNode.style.setProperty(colorRegistry.asCssVariableName(target), String(value));
+					this._elements.domNode.style.setProperty(
+						colorRegistry.asCssVariableName(target),
+						String(value)
+					);
 				}
 			}
 		};
@@ -234,7 +274,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 					range: lineRangeAsRange(change.modified),
 					options,
 				};
-			}),
+			})
 		);
 	}
 
@@ -249,11 +289,11 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		this._hideEditorRanges(this.editor, [ranges.modifiedHidden]);
 		this._hideEditorRanges(
 			this._diffEditor.getOriginalEditor(),
-			ranges.originalDiffHidden,
+			ranges.originalDiffHidden
 		);
 		this._hideEditorRanges(
 			this._diffEditor.getModifiedEditor(),
-			ranges.modifiedDiffHidden,
+			ranges.modifiedDiffHidden
 		);
 
 		// this._diffEditor.revealLine(ranges.modifiedHidden.startLineNumber, ScrollType.Immediate);
@@ -265,7 +305,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 		super.show(ranges.anchor, heightInLines);
 		this._logService.debug(
-			`[IE] diff SHOWING at ${ranges.anchor} with ${heightInLines} (approx) lines height`,
+			`[IE] diff SHOWING at ${ranges.anchor} with ${heightInLines} (approx) lines height`
 		);
 	}
 
@@ -279,7 +319,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 	private _computeHiddenRanges(
 		model: ITextModel,
-		changes: readonly LineRangeMapping[],
+		changes: readonly LineRangeMapping[]
 	) {
 		let originalLineRange = changes[0].original;
 		let modifiedLineRange = changes[0].modified;
@@ -291,13 +331,13 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		if (originalLineRange.isEmpty) {
 			originalLineRange = new LineRange(
 				originalLineRange.startLineNumber,
-				originalLineRange.endLineNumberExclusive + 1,
+				originalLineRange.endLineNumberExclusive + 1
 			);
 		}
 
 		const originalDiffHidden = invertLineRange(
 			originalLineRange,
-			this._session.textModel0,
+			this._session.textModel0
 		);
 		const modifiedDiffHidden = invertLineRange(modifiedLineRange, model);
 
@@ -312,7 +352,7 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 	private _hideEditorRanges(
 		editor: ICodeEditor,
-		lineRanges: LineRange[],
+		lineRanges: LineRange[]
 	): void {
 		assertType(editor.hasModel());
 
@@ -321,8 +361,8 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 			// todo?
 			this._logService.debug(
 				`[IE] diff NOTHING to hide for ${editor.getId()} with ${String(
-					editor.getModel()?.uri,
-				)}`,
+					editor.getModel()?.uri
+				)}`
 			);
 			return;
 		}
@@ -338,8 +378,8 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 		editor.setHiddenAreas(hiddenRanges, this._hideId);
 		this._logService.debug(
 			`[IE] diff HIDING ${hiddenRanges} for ${editor.getId()} with ${String(
-				editor.getModel()?.uri,
-			)}`,
+				editor.getModel()?.uri
+			)}`
 		);
 	}
 
@@ -357,13 +397,13 @@ export class InlineChatLivePreviewWidget extends ZoneWidget {
 
 	protected override _doLayout(
 		heightInPixel: number,
-		widthInPixel: number,
+		widthInPixel: number
 	): void {
 		const newDim = new Dimension(widthInPixel, heightInPixel);
 		if (!Dimension.equals(this._dim, newDim)) {
 			this._dim = newDim;
 			this._diffEditor.layout(
-				this._dim.with(undefined, this._dim.height),
+				this._dim.with(undefined, this._dim.height)
 			);
 			this._logService.debug("[IE] diff LAYOUT", this._dim);
 		}
@@ -391,8 +431,9 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 		parentEditor: ICodeEditor,
 		@IInstantiationService instaService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IEditorService private readonly _editorService: IEditorService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IEditorService private readonly _editorService: IEditorService
 	) {
 		super(parentEditor, {
 			showArrow: false,
@@ -402,23 +443,38 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 			isResizeable: true,
 			isAccessible: true,
 			showInHiddenAreas: true,
-			ordinal: 10000 + 2
+			ordinal: 10000 + 2,
 		});
 		super.create();
 
-		this._name = instaService.createInstance(ResourceLabel, this._elements.name, { supportIcons: true });
+		this._name = instaService.createInstance(
+			ResourceLabel,
+			this._elements.name,
+			{ supportIcons: true }
+		);
 		this._elements.detail.appendChild(renderIcon(Codicon.circleFilled));
 
-		const contributions = EditorExtensionsRegistry
-			.getEditorContributions()
-			.filter(c => c.id !== INLINE_CHAT_ID);
+		const contributions =
+			EditorExtensionsRegistry.getEditorContributions().filter(
+				(c) => c.id !== INLINE_CHAT_ID
+			);
 
-		this._previewEditor = instaService.createInstance(EmbeddedCodeEditorWidget, this._elements.editor, {
-			scrollBeyondLastLine: false,
-			stickyScroll: { enabled: false },
-			minimap: { enabled: false },
-			scrollbar: { alwaysConsumeMouseWheel: false, useShadows: true, ignoreHorizontalScrollbarInContentHeight: true, },
-		}, { isSimpleWidget: true, contributions }, parentEditor);
+		this._previewEditor = instaService.createInstance(
+			EmbeddedCodeEditorWidget,
+			this._elements.editor,
+			{
+				scrollBeyondLastLine: false,
+				stickyScroll: { enabled: false },
+				minimap: { enabled: false },
+				scrollbar: {
+					alwaysConsumeMouseWheel: false,
+					useShadows: true,
+					ignoreHorizontalScrollbarInContentHeight: true,
+				},
+			},
+			{ isSimpleWidget: true, contributions },
+			parentEditor
+		);
 
 		const doStyle = () => {
 			const theme = themeService.getColorTheme();
@@ -430,7 +486,10 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 			for (const [target, source] of overrides) {
 				const value = theme.getColor(source);
 				if (value) {
-					this._elements.domNode.style.setProperty(colorRegistry.asCssVariableName(target), String(value));
+					this._elements.domNode.style.setProperty(
+						colorRegistry.asCssVariableName(target),
+						String(value)
+					);
 				}
 			}
 		};
@@ -459,7 +518,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 
 	async showCreation(
 		where: Position,
-		untitledTextModel: IUntitledTextEditorModel,
+		untitledTextModel: IUntitledTextEditorModel
 	): Promise<void> {
 		const store = new DisposableStore();
 		this._previewStore.value = store;
@@ -480,7 +539,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 			run: async () => {
 				const ids = this._editorService.findEditors(
 					untitledTextModel.resource,
-					{ supportSideBySide: SideBySideEditor.ANY },
+					{ supportSideBySide: SideBySideEditor.ANY }
 				);
 				await this._editorService.save(ids.slice(), {
 					saveAs: true,
@@ -505,14 +564,14 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 				untitledTextModel.onDidRevert,
 				untitledTextModel.onDidSave,
 				untitledTextModel.onDidChangeDirty,
-				untitledTextModel.onWillDispose,
-			)(() => this.hide()),
+				untitledTextModel.onWillDispose
+			)(() => this.hide())
 		);
 
 		await untitledTextModel.resolve();
 
 		const ref = await this._textModelResolverService.createModelReference(
-			untitledTextModel.resource,
+			untitledTextModel.resource
 		);
 		store.add(ref);
 
@@ -527,9 +586,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 
 		const maxLines = Math.max(
 			4,
-			Math.floor(
-				(this.editor.getLayoutInfo().height / lineHeight) * 0.33,
-			),
+			Math.floor((this.editor.getLayoutInfo().height / lineHeight) * 0.33)
 		);
 		const lines = Math.min(maxLines, model.getLineCount());
 
@@ -555,7 +612,7 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 
 	protected override _doLayout(
 		heightInPixel: number,
-		widthInPixel: number,
+		widthInPixel: number
 	): void {
 		const { lineNumbersLeft } = this.editor.getLayoutInfo();
 		this._elements.title.style.marginLeft = `${lineNumbersLeft}px`;
@@ -567,8 +624,8 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 				this._dim.with(
 					undefined,
 					this._dim.height -
-						InlineChatFileCreatePreviewWidget.TitleHeight,
-				),
+						InlineChatFileCreatePreviewWidget.TitleHeight
+				)
 			);
 		}
 	}
@@ -580,10 +637,9 @@ class ButtonBarWidget {
 	private readonly _store = new DisposableStore();
 
 	constructor(
-		@IContextMenuService private _contextMenuService: IContextMenuService,
+		@IContextMenuService private _contextMenuService: IContextMenuService
 	) {
 		this._buttonBar = new ButtonBar(this.domNode);
-
 	}
 
 	update(allActions: IAction[][]): void {

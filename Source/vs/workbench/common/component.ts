@@ -17,7 +17,7 @@ export class Component extends Themable {
 	constructor(
 		private readonly id: string,
 		themeService: IThemeService,
-		storageService: IStorageService,
+		storageService: IStorageService
 	) {
 		super(themeService);
 
@@ -31,7 +31,7 @@ export class Component extends Themable {
 
 				// Then save the memento into storage
 				this.memento.saveMemento();
-			}),
+			})
 		);
 	}
 
@@ -41,7 +41,7 @@ export class Component extends Themable {
 
 	protected getMemento(
 		scope: StorageScope,
-		target: StorageTarget,
+		target: StorageTarget
 	): MementoObject {
 		return this.memento.getMemento(scope, target);
 	}

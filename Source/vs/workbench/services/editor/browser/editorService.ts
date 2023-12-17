@@ -121,32 +121,32 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	//#region events
 
 	private readonly _onDidActiveEditorChange = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidActiveEditorChange = this._onDidActiveEditorChange.event;
 
 	private readonly _onDidVisibleEditorsChange = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidVisibleEditorsChange = this._onDidVisibleEditorsChange.event;
 
 	private readonly _onDidEditorsChange = this._register(
-		new Emitter<IEditorsChangeEvent>(),
+		new Emitter<IEditorsChangeEvent>()
 	);
 	readonly onDidEditorsChange = this._onDidEditorsChange.event;
 
 	private readonly _onDidCloseEditor = this._register(
-		new Emitter<IEditorCloseEvent>(),
+		new Emitter<IEditorCloseEvent>()
 	);
 	readonly onDidCloseEditor = this._onDidCloseEditor.event;
 
 	private readonly _onDidOpenEditorFail = this._register(
-		new Emitter<IEditorIdentifier>(),
+		new Emitter<IEditorIdentifier>()
 	);
 	readonly onDidOpenEditorFail = this._onDidOpenEditorFail.event;
 
 	private readonly _onDidMostRecentlyActiveEditorsChange = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidMostRecentlyActiveEditorsChange =
 		this._onDidMostRecentlyActiveEditorsChange.event;
@@ -157,21 +157,35 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	constructor(
 		editorGroupsContainer: IEditorGroupsContainer | undefined,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
 		@IHostService private readonly hostService: IHostService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService
 	) {
 		super();
 
-		this.editorGroupsContainer = editorGroupsContainer ?? editorGroupService;
-		this.editorsObserver = this._register(this.instantiationService.createInstance(EditorsObserver, this.editorGroupsContainer));
+		this.editorGroupsContainer =
+			editorGroupsContainer ?? editorGroupService;
+		this.editorsObserver = this._register(
+			this.instantiationService.createInstance(
+				EditorsObserver,
+				this.editorGroupsContainer
+			)
+		);
 
 		this.onConfigurationUpdated();
 
@@ -180,7 +194,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	createScoped(
 		editorGroupsContainer: IEditorGroupsContainer | "main",
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IEditorService {
 		return disposables.add(
 			new EditorService(
@@ -196,8 +210,8 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				this.editorResolverService,
 				this.workspaceTrustRequestService,
 				this.hostService,
-				this.textEditorService,
-			),
+				this.textEditorService
+			)
 		);
 	}
 
@@ -208,32 +222,32 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			this.editorGroupsContainer === this.editorGroupService
 		) {
 			this.editorGroupService.mainPart.whenReady.then(() =>
-				this.onEditorGroupsReady(),
+				this.onEditorGroupsReady()
 			);
 		} else {
 			this.onEditorGroupsReady();
 		}
 		this._register(
 			this.editorGroupsContainer.onDidChangeActiveGroup((group) =>
-				this.handleActiveEditorChange(group),
-			),
+				this.handleActiveEditorChange(group)
+			)
 		);
 		this._register(
 			this.editorGroupsContainer.onDidAddGroup((group) =>
-				this.registerGroupListeners(group as IEditorGroupView),
-			),
+				this.registerGroupListeners(group as IEditorGroupView)
+			)
 		);
 		this._register(
 			this.editorsObserver.onDidMostRecentlyActiveEditorsChange(() =>
-				this._onDidMostRecentlyActiveEditorsChange.fire(),
-			),
+				this._onDidMostRecentlyActiveEditorsChange.fire()
+			)
 		);
 
 		// Out of workspace file watchers
 		this._register(
 			this.onDidVisibleEditorsChange(() =>
-				this.handleVisibleEditorsChange(),
-			),
+				this.handleVisibleEditorsChange()
+			)
 		);
 
 		// File changes & operations
@@ -243,18 +257,18 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		// that the event ordering is random as well as might not carry all information needed.
 		this._register(
 			this.fileService.onDidRunOperation((e) =>
-				this.onDidRunFileOperation(e),
-			),
+				this.onDidRunFileOperation(e)
+			)
 		);
 		this._register(
-			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e)),
+			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e))
 		);
 
 		// Configuration
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
-				this.onConfigurationUpdated(e),
-			),
+				this.onConfigurationUpdated(e)
+			)
 		);
 	}
 
@@ -302,26 +316,26 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 		groupDisposables.add(
 			group.onDidModelChange((e) => {
 				this._onDidEditorsChange.fire({ groupId: group.id, event: e });
-			}),
+			})
 		);
 
 		groupDisposables.add(
 			group.onDidActiveEditorChange(() => {
 				this.handleActiveEditorChange(group);
 				this._onDidVisibleEditorsChange.fire();
-			}),
+			})
 		);
 
 		groupDisposables.add(
 			group.onDidCloseEditor((e) => {
 				this._onDidCloseEditor.fire(e);
-			}),
+			})
 		);
 
 		groupDisposables.add(
 			group.onDidOpenEditorFail((editor) => {
 				this._onDidOpenEditorFail.fire({ editor, groupId: group.id });
-			}),
+			})
 		);
 
 		Event.once(group.onWillDispose)(() => {
@@ -349,7 +363,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 						supportSideBySide: SideBySideEditor.SECONDARY,
 					}),
 				]),
-				(resource) => resource.toString(),
+				(resource) => resource.toString()
 			);
 
 			for (const resource of resources) {
@@ -397,7 +411,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			this.handleDeletedFile(
 				e.resource,
 				false,
-				e.target ? e.target.resource : undefined,
+				e.target ? e.target.resource : undefined
 			);
 		}
 	}
@@ -421,7 +435,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 					!resource ||
 					!this.uriIdentityService.extUri.isEqualOrParent(
 						resource,
-						source,
+						source
 					)
 				) {
 					continue; // not matching our resource
@@ -436,19 +450,19 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 						resource.path,
 						source.path,
 						this.uriIdentityService.extUri.ignorePathCasing(
-							resource,
-						),
+							resource
+						)
 					);
 					targetResource = joinPath(
 						target,
-						resource.path.substr(index + source.path.length + 1),
+						resource.path.substr(index + source.path.length + 1)
 					); // parent folder got moved
 				}
 
 				// Delegate rename() to editor instance
 				const moveResult = await editor.rename(
 					group.id,
-					targetResource,
+					targetResource
 				);
 				if (!moveResult) {
 					return; // not target - ignore
@@ -519,7 +533,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	private handleDeletedFile(
 		arg1: URI | FileChangesEvent,
 		isExternal: boolean,
-		movedTo?: URI,
+		movedTo?: URI
 	): void {
 		for (const editor of this.getAllNonDirtyEditors({
 			includeUntitled: false,
@@ -542,7 +556,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 						movedTo &&
 						this.uriIdentityService.extUri.isEqualOrParent(
 							resource,
-							movedTo,
+							movedTo
 						)
 					) {
 						return;
@@ -552,13 +566,13 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 					if (arg1 instanceof FileChangesEvent) {
 						matches = arg1.contains(
 							resource,
-							FileChangeType.DELETED,
+							FileChangeType.DELETED
 						);
 					} else {
 						matches =
 							this.uriIdentityService.extUri.isEqualOrParent(
 								resource,
-								arg1,
+								arg1
 							);
 					}
 
@@ -669,13 +683,13 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	get editors(): EditorInput[] {
 		return this.getEditors(EditorsOrder.SEQUENTIAL).map(
-			({ editor }) => editor,
+			({ editor }) => editor
 		);
 	}
 
 	getEditors(
 		order: EditorsOrder,
-		options?: { excludeSticky?: boolean },
+		options?: { excludeSticky?: boolean }
 	): IEditorIdentifier[] {
 		switch (order) {
 			// MRU
@@ -685,7 +699,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 						({ groupId, editor }) =>
 							!this.editorGroupsContainer
 								.getGroup(groupId)
-								?.isSticky(editor),
+								?.isSticky(editor)
 					);
 				}
 
@@ -696,12 +710,12 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				const editors: IEditorIdentifier[] = [];
 
 				for (const group of this.editorGroupsContainer.getGroups(
-					GroupsOrder.GRID_APPEARANCE,
+					GroupsOrder.GRID_APPEARANCE
 				)) {
 					editors.push(
 						...group
 							.getEditors(EditorsOrder.SEQUENTIAL, options)
-							.map((editor) => ({ editor, groupId: group.id })),
+							.map((editor) => ({ editor, groupId: group.id }))
 					);
 				}
 
@@ -719,8 +733,8 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	get visibleEditorPanes(): IVisibleEditorPane[] {
 		return coalesce(
 			this.editorGroupsContainer.groups.map(
-				(group) => group.activeEditorPane,
-			),
+				(group) => group.activeEditorPane
+			)
 		);
 	}
 
@@ -738,9 +752,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	get visibleEditors(): EditorInput[] {
 		return coalesce(
-			this.editorGroupsContainer.groups.map(
-				(group) => group.activeEditor,
-			),
+			this.editorGroupsContainer.groups.map((group) => group.activeEditor)
 		);
 	}
 
@@ -751,33 +763,33 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	openEditor(
 		editor: EditorInput,
 		options?: IEditorOptions,
-		group?: PreferredGroup,
+		group?: PreferredGroup
 	): Promise<IEditorPane | undefined>;
 	openEditor(
 		editor: IUntypedEditorInput,
-		group?: PreferredGroup,
+		group?: PreferredGroup
 	): Promise<IEditorPane | undefined>;
 	openEditor(
 		editor: IResourceEditorInput,
-		group?: PreferredGroup,
+		group?: PreferredGroup
 	): Promise<IEditorPane | undefined>;
 	openEditor(
 		editor: ITextResourceEditorInput | IUntitledTextResourceEditorInput,
-		group?: PreferredGroup,
+		group?: PreferredGroup
 	): Promise<IEditorPane | undefined>;
 	openEditor(
 		editor: IResourceDiffEditorInput,
-		group?: PreferredGroup,
+		group?: PreferredGroup
 	): Promise<ITextDiffEditorPane | undefined>;
 	openEditor(
 		editor: EditorInput | IUntypedEditorInput,
 		optionsOrPreferredGroup?: IEditorOptions | PreferredGroup,
-		preferredGroup?: PreferredGroup,
+		preferredGroup?: PreferredGroup
 	): Promise<IEditorPane | undefined>;
 	async openEditor(
 		editor: EditorInput | IUntypedEditorInput,
 		optionsOrPreferredGroup?: IEditorOptions | PreferredGroup,
-		preferredGroup?: PreferredGroup,
+		preferredGroup?: PreferredGroup
 	): Promise<IEditorPane | undefined> {
 		let typedEditor: EditorInput | undefined = undefined;
 		let options = isEditorInput(editor)
@@ -794,7 +806,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			const resolvedEditor =
 				await this.editorResolverService.resolveEditor(
 					editor,
-					preferredGroup,
+					preferredGroup
 				);
 
 			if (resolvedEditor === ResolvedStatus.ABORT) {
@@ -822,7 +834,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			const findGroupResult = this.instantiationService.invokeFunction(
 				findGroup,
 				{ editor: typedEditor, options },
-				preferredGroup,
+				preferredGroup
 			);
 			if (findGroupResult instanceof Promise) {
 				[group, activation] = await findGroupResult;
@@ -846,22 +858,22 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	openEditors(
 		editors: EditorInputWithOptions[],
 		group?: PreferredGroup,
-		options?: IOpenEditorsOptions,
+		options?: IOpenEditorsOptions
 	): Promise<IEditorPane[]>;
 	openEditors(
 		editors: IUntypedEditorInput[],
 		group?: PreferredGroup,
-		options?: IOpenEditorsOptions,
+		options?: IOpenEditorsOptions
 	): Promise<IEditorPane[]>;
 	openEditors(
 		editors: Array<EditorInputWithOptions | IUntypedEditorInput>,
 		group?: PreferredGroup,
-		options?: IOpenEditorsOptions,
+		options?: IOpenEditorsOptions
 	): Promise<IEditorPane[]>;
 	async openEditors(
 		editors: Array<EditorInputWithOptions | IUntypedEditorInput>,
 		preferredGroup?: PreferredGroup,
-		options?: IOpenEditorsOptions,
+		options?: IOpenEditorsOptions
 	): Promise<IEditorPane[]> {
 		// Pass all editors to trust service to determine if
 		// we should proceed with opening the editors if we
@@ -887,7 +899,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				const resolvedEditor =
 					await this.editorResolverService.resolveEditor(
 						editor,
-						preferredGroup,
+						preferredGroup
 					);
 
 				if (resolvedEditor === ResolvedStatus.ABORT) {
@@ -906,12 +918,11 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				typedEditor = isEditorInputWithOptions(editor)
 					? editor
 					: {
-							editor:
-								await this.textEditorService.resolveTextEditor(
-									editor,
-								),
+							editor: await this.textEditorService.resolveTextEditor(
+								editor
+							),
 							options: editor.options,
-					  };
+						};
 			}
 
 			// If group still isn't defined because of a disabled override we resolve it
@@ -920,7 +931,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 					this.instantiationService.invokeFunction(
 						findGroup,
 						typedEditor,
-						preferredGroup,
+						preferredGroup
 					);
 				if (findGroupResult instanceof Promise) {
 					[group] = await findGroupResult;
@@ -949,14 +960,14 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	}
 
 	private async handleWorkspaceTrust(
-		editors: Array<EditorInputWithOptions | IUntypedEditorInput>,
+		editors: Array<EditorInputWithOptions | IUntypedEditorInput>
 	): Promise<boolean> {
 		const { resources, diffMode, mergeMode } =
 			this.extractEditorResources(editors);
 
 		const trustResult =
 			await this.workspaceTrustRequestService.requestOpenFilesTrust(
-				resources,
+				resources
 			);
 		switch (trustResult) {
 			case WorkspaceTrustUriResponse.Open:
@@ -964,7 +975,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			case WorkspaceTrustUriResponse.OpenInNewWindow:
 				await this.hostService.openWindow(
 					resources.map((resource) => ({ fileUri: resource })),
-					{ forceNewWindow: true, diffMode, mergeMode },
+					{ forceNewWindow: true, diffMode, mergeMode }
 				);
 				return false;
 			case WorkspaceTrustUriResponse.Cancel:
@@ -973,7 +984,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	}
 
 	private extractEditorResources(
-		editors: Array<EditorInputWithOptions | IUntypedEditorInput>,
+		editors: Array<EditorInputWithOptions | IUntypedEditorInput>
 	): { resources: URI[]; diffMode?: boolean; mergeMode?: boolean } {
 		const resources = new ResourceSet();
 		let diffMode = false;
@@ -984,7 +995,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			if (isEditorInputWithOptions(editor)) {
 				const resource = EditorResourceAccessor.getOriginalUri(
 					editor.editor,
-					{ supportSideBySide: SideBySideEditor.BOTH },
+					{ supportSideBySide: SideBySideEditor.BOTH }
 				);
 				if (URI.isUri(resource)) {
 					resources.add(resource);
@@ -1073,7 +1084,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	async closeEditor(
 		{ editor, groupId }: IEditorIdentifier,
-		options?: ICloseEditorOptions,
+		options?: ICloseEditorOptions
 	): Promise<void> {
 		const group = this.editorGroupsContainer.getGroup(groupId);
 
@@ -1086,7 +1097,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	async closeEditors(
 		editors: IEditorIdentifier[],
-		options?: ICloseEditorOptions,
+		options?: ICloseEditorOptions
 	): Promise<void> {
 		const mapGroupToEditors = new Map<IEditorGroup, EditorInput[]>();
 
@@ -1116,26 +1127,26 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	findEditors(
 		resource: URI,
-		options?: IFindEditorOptions,
+		options?: IFindEditorOptions
 	): readonly IEditorIdentifier[];
 	findEditors(
 		editor: IResourceEditorInputIdentifier,
-		options?: IFindEditorOptions,
+		options?: IFindEditorOptions
 	): readonly IEditorIdentifier[];
 	findEditors(
 		resource: URI,
 		options: IFindEditorOptions | undefined,
-		group: IEditorGroup | GroupIdentifier,
+		group: IEditorGroup | GroupIdentifier
 	): readonly EditorInput[];
 	findEditors(
 		editor: IResourceEditorInputIdentifier,
 		options: IFindEditorOptions | undefined,
-		group: IEditorGroup | GroupIdentifier,
+		group: IEditorGroup | GroupIdentifier
 	): EditorInput | undefined;
 	findEditors(
 		arg1: URI | IResourceEditorInputIdentifier,
 		options: IFindEditorOptions | undefined,
-		arg2?: IEditorGroup | GroupIdentifier,
+		arg2?: IEditorGroup | GroupIdentifier
 	):
 		| readonly IEditorIdentifier[]
 		| readonly EditorInput[]
@@ -1144,7 +1155,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	findEditors(
 		arg1: URI | IResourceEditorInputIdentifier,
 		options: IFindEditorOptions | undefined,
-		arg2?: IEditorGroup | GroupIdentifier,
+		arg2?: IEditorGroup | GroupIdentifier
 	):
 		| readonly IEditorIdentifier[]
 		| readonly EditorInput[]
@@ -1210,7 +1221,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			const result: IEditorIdentifier[] = [];
 
 			for (const group of this.editorGroupsContainer.getGroups(
-				GroupsOrder.MOST_RECENTLY_ACTIVE,
+				GroupsOrder.MOST_RECENTLY_ACTIVE
 			)) {
 				const editors: EditorInput[] = [];
 
@@ -1228,7 +1239,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				}
 
 				result.push(
-					...editors.map((editor) => ({ editor, groupId: group.id })),
+					...editors.map((editor) => ({ editor, groupId: group.id }))
 				);
 			}
 
@@ -1242,15 +1253,15 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	async replaceEditors(
 		replacements: IUntypedEditorReplacement[],
-		group: IEditorGroup | GroupIdentifier,
+		group: IEditorGroup | GroupIdentifier
 	): Promise<void>;
 	async replaceEditors(
 		replacements: IEditorReplacement[],
-		group: IEditorGroup | GroupIdentifier,
+		group: IEditorGroup | GroupIdentifier
 	): Promise<void>;
 	async replaceEditors(
 		replacements: Array<IEditorReplacement | IUntypedEditorReplacement>,
-		group: IEditorGroup | GroupIdentifier,
+		group: IEditorGroup | GroupIdentifier
 	): Promise<void> {
 		const targetGroup =
 			typeof group === "number"
@@ -1268,7 +1279,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				const resolvedEditor =
 					await this.editorResolverService.resolveEditor(
 						replacement.replacement,
-						targetGroup,
+						targetGroup
 					);
 
 				if (resolvedEditor === ResolvedStatus.ABORT) {
@@ -1293,8 +1304,8 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 					replacement: isEditorReplacement(replacement)
 						? replacement.replacement
 						: await this.textEditorService.resolveTextEditor(
-								replacement.replacement,
-						  ),
+								replacement.replacement
+							),
 					options: isEditorReplacement(replacement)
 						? replacement.options
 						: replacement.replacement.options,
@@ -1314,7 +1325,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	async save(
 		editors: IEditorIdentifier | IEditorIdentifier[],
-		options?: ISaveEditorsOptions,
+		options?: ISaveEditorsOptions
 	): Promise<ISaveEditorsResult> {
 		// Convert to array
 		if (!Array.isArray(editors)) {
@@ -1356,7 +1367,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 				// Save
 				return editor.save(groupId, options);
-			}),
+			})
 		);
 
 		// Editors to save sequentially
@@ -1388,11 +1399,11 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 			// current one.
 			if (!editor.matches(result)) {
 				const targetGroups = editor.hasCapability(
-					EditorInputCapabilities.Untitled,
+					EditorInputCapabilities.Untitled
 				)
 					? this.editorGroupsContainer.groups.map(
-							(group) => group.id,
-					  ) /* untitled replaces across all groups */
+							(group) => group.id
+						) /* untitled replaces across all groups */
 					: [groupId];
 				for (const targetGroup of targetGroups) {
 					if (result instanceof EditorInput) {
@@ -1404,7 +1415,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 									options: editorOptions,
 								},
 							],
-							targetGroup,
+							targetGroup
 						);
 					} else {
 						await this.replaceEditors(
@@ -1417,7 +1428,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 									},
 								},
 							],
-							targetGroup,
+							targetGroup
 						);
 					}
 				}
@@ -1435,7 +1446,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	async revert(
 		editors: IEditorIdentifier | IEditorIdentifier[],
-		options?: IRevertOptions,
+		options?: IRevertOptions
 	): Promise<boolean> {
 		// Convert to array
 		if (!Array.isArray(editors)) {
@@ -1452,7 +1463,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				this.editorGroupsContainer.getGroup(groupId)?.pinEditor(editor);
 
 				return editor.revert(groupId, options);
-			}),
+			})
 		);
 
 		return !uniqueEditors.some(({ editor }) => editor.isDirty());
@@ -1463,15 +1474,15 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	}
 
 	private getAllModifiedEditors(
-		options?: IBaseSaveRevertAllEditorOptions,
+		options?: IBaseSaveRevertAllEditorOptions
 	): IEditorIdentifier[] {
 		const editors: IEditorIdentifier[] = [];
 
 		for (const group of this.editorGroupsContainer.getGroups(
-			GroupsOrder.MOST_RECENTLY_ACTIVE,
+			GroupsOrder.MOST_RECENTLY_ACTIVE
 		)) {
 			for (const editor of group.getEditors(
-				EditorsOrder.MOST_RECENTLY_ACTIVE,
+				EditorsOrder.MOST_RECENTLY_ACTIVE
 			)) {
 				if (!editor.isModified()) {
 					continue;
@@ -1504,13 +1515,13 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 	}
 
 	private getUniqueEditors(
-		editors: IEditorIdentifier[],
+		editors: IEditorIdentifier[]
 	): IEditorIdentifier[] {
 		const uniqueEditors: IEditorIdentifier[] = [];
 		for (const { editor, groupId } of editors) {
 			if (
 				uniqueEditors.some((uniqueEditor) =>
-					uniqueEditor.editor.matches(editor),
+					uniqueEditor.editor.matches(editor)
 				)
 			) {
 				continue;
@@ -1529,7 +1540,7 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 		// Dispose remaining watchers if any
 		this.activeOutOfWorkspaceWatchers.forEach((disposable) =>
-			dispose(disposable),
+			dispose(disposable)
 		);
 		this.activeOutOfWorkspaceWatchers.clear();
 	}
@@ -1537,5 +1548,5 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 registerSingleton(
 	IEditorService,
-	new SyncDescriptor(EditorService, [undefined], false),
+	new SyncDescriptor(EditorService, [undefined], false)
 );

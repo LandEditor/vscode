@@ -69,13 +69,13 @@ export class Selection extends Range {
 		selectionStartLineNumber: number,
 		selectionStartColumn: number,
 		positionLineNumber: number,
-		positionColumn: number,
+		positionColumn: number
 	) {
 		super(
 			selectionStartLineNumber,
 			selectionStartColumn,
 			positionLineNumber,
-			positionColumn,
+			positionColumn
 		);
 		this.selectionStartLineNumber = selectionStartLineNumber;
 		this.selectionStartColumn = selectionStartColumn;
@@ -137,21 +137,21 @@ export class Selection extends Range {
 	 */
 	public override setEndPosition(
 		endLineNumber: number,
-		endColumn: number,
+		endColumn: number
 	): Selection {
 		if (this.getDirection() === SelectionDirection.LTR) {
 			return new Selection(
 				this.startLineNumber,
 				this.startColumn,
 				endLineNumber,
-				endColumn,
+				endColumn
 			);
 		}
 		return new Selection(
 			endLineNumber,
 			endColumn,
 			this.startLineNumber,
-			this.startColumn,
+			this.startColumn
 		);
 	}
 
@@ -168,7 +168,7 @@ export class Selection extends Range {
 	public getSelectionStart(): Position {
 		return new Position(
 			this.selectionStartLineNumber,
-			this.selectionStartColumn,
+			this.selectionStartColumn
 		);
 	}
 
@@ -177,21 +177,21 @@ export class Selection extends Range {
 	 */
 	public override setStartPosition(
 		startLineNumber: number,
-		startColumn: number,
+		startColumn: number
 	): Selection {
 		if (this.getDirection() === SelectionDirection.LTR) {
 			return new Selection(
 				startLineNumber,
 				startColumn,
 				this.endLineNumber,
-				this.endColumn,
+				this.endColumn
 			);
 		}
 		return new Selection(
 			this.endLineNumber,
 			this.endColumn,
 			startLineNumber,
-			startColumn,
+			startColumn
 		);
 	}
 
@@ -202,13 +202,13 @@ export class Selection extends Range {
 	 */
 	public static override fromPositions(
 		start: IPosition,
-		end: IPosition = start,
+		end: IPosition = start
 	): Selection {
 		return new Selection(
 			start.lineNumber,
 			start.column,
 			end.lineNumber,
-			end.column,
+			end.column
 		);
 	}
 
@@ -217,21 +217,21 @@ export class Selection extends Range {
 	 */
 	public static fromRange(
 		range: Range,
-		direction: SelectionDirection,
+		direction: SelectionDirection
 	): Selection {
 		if (direction === SelectionDirection.LTR) {
 			return new Selection(
 				range.startLineNumber,
 				range.startColumn,
 				range.endLineNumber,
-				range.endColumn,
+				range.endColumn
 			);
 		} else {
 			return new Selection(
 				range.endLineNumber,
 				range.endColumn,
 				range.startLineNumber,
-				range.startColumn,
+				range.startColumn
 			);
 		}
 	}
@@ -244,7 +244,7 @@ export class Selection extends Range {
 			sel.selectionStartLineNumber,
 			sel.selectionStartColumn,
 			sel.positionLineNumber,
-			sel.positionColumn,
+			sel.positionColumn
 		);
 	}
 
@@ -253,7 +253,7 @@ export class Selection extends Range {
 	 */
 	public static selectionsArrEqual(
 		a: ISelection[],
-		b: ISelection[],
+		b: ISelection[]
 	): boolean {
 		if ((a && !b) || (!a && b)) {
 			return false;
@@ -293,14 +293,14 @@ export class Selection extends Range {
 		startColumn: number,
 		endLineNumber: number,
 		endColumn: number,
-		direction: SelectionDirection,
+		direction: SelectionDirection
 	): Selection {
 		if (direction === SelectionDirection.LTR) {
 			return new Selection(
 				startLineNumber,
 				startColumn,
 				endLineNumber,
-				endColumn,
+				endColumn
 			);
 		}
 
@@ -308,7 +308,7 @@ export class Selection extends Range {
 			endLineNumber,
 			endColumn,
 			startLineNumber,
-			startColumn,
+			startColumn
 		);
 	}
 }

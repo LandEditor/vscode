@@ -28,7 +28,7 @@ export class RemoteAuthorityResolverService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeConnectionData = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	public readonly onDidChangeConnectionData =
 		this._onDidChangeConnectionData.event;
@@ -46,7 +46,7 @@ export class RemoteAuthorityResolverService
 
 	constructor(
 		@IProductService productService: IProductService,
-		private readonly remoteResourceLoader: ElectronRemoteResourceLoader,
+		private readonly remoteResourceLoader: ElectronRemoteResourceLoader
 	) {
 		super();
 		this._resolveAuthorityRequests = new Map<
@@ -58,7 +58,7 @@ export class RemoteAuthorityResolverService
 		this._canonicalURIProvider = null;
 
 		RemoteAuthorities.setServerRootPath(
-			getRemoteServerRootPath(productService),
+			getRemoteServerRootPath(productService)
 		);
 	}
 
@@ -66,7 +66,7 @@ export class RemoteAuthorityResolverService
 		if (!this._resolveAuthorityRequests.has(authority)) {
 			this._resolveAuthorityRequests.set(
 				authority,
-				new DeferredPromise(),
+				new DeferredPromise()
 			);
 		}
 		return this._resolveAuthorityRequests.get(authority)!.p;
@@ -82,7 +82,7 @@ export class RemoteAuthorityResolverService
 		const result = new DeferredPromise<URI>();
 		this._canonicalURIProvider?.(uri).then(
 			(uri) => result.complete(uri),
-			(err) => result.error(err),
+			(err) => result.error(err)
 		);
 		this._canonicalURIRequests.set(key, { input: uri, result });
 		return result.p;
@@ -112,11 +112,11 @@ export class RemoteAuthorityResolverService
 
 	_setResolvedAuthority(
 		resolvedAuthority: ResolvedAuthority,
-		options?: ResolvedOptions,
+		options?: ResolvedOptions
 	): void {
 		if (this._resolveAuthorityRequests.has(resolvedAuthority.authority)) {
 			const request = this._resolveAuthorityRequests.get(
-				resolvedAuthority.authority,
+				resolvedAuthority.authority
 			)!;
 			if (
 				resolvedAuthority.connectTo.type ===
@@ -125,17 +125,17 @@ export class RemoteAuthorityResolverService
 				RemoteAuthorities.set(
 					resolvedAuthority.authority,
 					resolvedAuthority.connectTo.host,
-					resolvedAuthority.connectTo.port,
+					resolvedAuthority.connectTo.port
 				);
 			} else {
 				RemoteAuthorities.setDelegate(
-					this.remoteResourceLoader.getResourceUriProvider(),
+					this.remoteResourceLoader.getResourceUriProvider()
 				);
 			}
 			if (resolvedAuthority.connectionToken) {
 				RemoteAuthorities.setConnectionToken(
 					resolvedAuthority.authority,
-					resolvedAuthority.connectionToken,
+					resolvedAuthority.connectionToken
 				);
 			}
 			request.complete({ authority: resolvedAuthority, options });
@@ -153,7 +153,7 @@ export class RemoteAuthorityResolverService
 
 	_setAuthorityConnectionToken(
 		authority: string,
-		connectionToken: string,
+		connectionToken: string
 	): void {
 		this._connectionTokens.set(authority, connectionToken);
 		RemoteAuthorities.setConnectionToken(authority, connectionToken);
@@ -165,7 +165,7 @@ export class RemoteAuthorityResolverService
 		this._canonicalURIRequests.forEach(({ result, input }) => {
 			this._canonicalURIProvider!(input).then(
 				(uri) => result.complete(uri),
-				(err) => result.error(err),
+				(err) => result.error(err)
 			);
 		});
 	}

@@ -23,5 +23,5 @@ export class IntegrityService implements IIntegrityService {
 registerSingleton(
 	IIntegrityService,
 	IntegrityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

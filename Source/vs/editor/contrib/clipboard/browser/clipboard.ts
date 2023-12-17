@@ -64,7 +64,7 @@ export const CutAction = supportsCut
 									secondary: [KeyMod.Shift | KeyCode.Delete],
 								},
 								weight: KeybindingWeight.EditorContrib,
-						  }
+							}
 						: undefined,
 				menuOpts: [
 					{
@@ -75,7 +75,7 @@ export const CutAction = supportsCut
 								key: "miCut",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"Cu&&t",
+							"Cu&&t"
 						),
 						order: 1,
 					},
@@ -84,7 +84,7 @@ export const CutAction = supportsCut
 						group: CLIPBOARD_CONTEXT_MENU_GROUP,
 						title: nls.localize(
 							"actions.clipboard.cutLabel",
-							"Cut",
+							"Cut"
 						),
 						when: EditorContextKeys.writable,
 						order: 1,
@@ -94,7 +94,7 @@ export const CutAction = supportsCut
 						group: "",
 						title: nls.localize(
 							"actions.clipboard.cutLabel",
-							"Cut",
+							"Cut"
 						),
 						order: 1,
 					},
@@ -103,14 +103,14 @@ export const CutAction = supportsCut
 						group: CLIPBOARD_CONTEXT_MENU_GROUP,
 						title: nls.localize(
 							"actions.clipboard.cutLabel",
-							"Cut",
+							"Cut"
 						),
 						when: EditorContextKeys.writable,
 						order: 1,
 					},
 				],
-			}),
-	  )
+			})
+		)
 	: undefined;
 
 export const CopyAction = supportsCopy
@@ -131,7 +131,7 @@ export const CopyAction = supportsCopy
 									],
 								},
 								weight: KeybindingWeight.EditorContrib,
-						  }
+							}
 						: undefined,
 				menuOpts: [
 					{
@@ -142,7 +142,7 @@ export const CopyAction = supportsCopy
 								key: "miCopy",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Copy",
+							"&&Copy"
 						),
 						order: 2,
 					},
@@ -151,7 +151,7 @@ export const CopyAction = supportsCopy
 						group: CLIPBOARD_CONTEXT_MENU_GROUP,
 						title: nls.localize(
 							"actions.clipboard.copyLabel",
-							"Copy",
+							"Copy"
 						),
 						order: 2,
 					},
@@ -160,7 +160,7 @@ export const CopyAction = supportsCopy
 						group: "",
 						title: nls.localize(
 							"actions.clipboard.copyLabel",
-							"Copy",
+							"Copy"
 						),
 						order: 1,
 					},
@@ -169,13 +169,13 @@ export const CopyAction = supportsCopy
 						group: CLIPBOARD_CONTEXT_MENU_GROUP,
 						title: nls.localize(
 							"actions.clipboard.copyLabel",
-							"Copy",
+							"Copy"
 						),
 						order: 2,
 					},
 				],
-			}),
-	  )
+			})
+		)
 	: undefined;
 
 MenuRegistry.appendMenuItem(MenuId.MenubarEditMenu, {
@@ -197,7 +197,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorContext, {
 	order: -1,
 	when: ContextKeyExpr.and(
 		ContextKeyExpr.notEquals("resourceScheme", "output"),
-		EditorContextKeys.editorTextFocus,
+		EditorContextKeys.editorTextFocus
 	),
 });
 MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
@@ -233,7 +233,7 @@ export const PasteAction = supportsPaste
 									secondary: [KeyMod.Shift | KeyCode.Insert],
 								},
 								weight: KeybindingWeight.EditorContrib,
-						  }
+							}
 						: undefined,
 				menuOpts: [
 					{
@@ -244,7 +244,7 @@ export const PasteAction = supportsPaste
 								key: "miPaste",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Paste",
+							"&&Paste"
 						),
 						order: 4,
 					},
@@ -253,7 +253,7 @@ export const PasteAction = supportsPaste
 						group: CLIPBOARD_CONTEXT_MENU_GROUP,
 						title: nls.localize(
 							"actions.clipboard.pasteLabel",
-							"Paste",
+							"Paste"
 						),
 						when: EditorContextKeys.writable,
 						order: 4,
@@ -263,7 +263,7 @@ export const PasteAction = supportsPaste
 						group: "",
 						title: nls.localize(
 							"actions.clipboard.pasteLabel",
-							"Paste",
+							"Paste"
 						),
 						order: 1,
 					},
@@ -272,14 +272,14 @@ export const PasteAction = supportsPaste
 						group: CLIPBOARD_CONTEXT_MENU_GROUP,
 						title: nls.localize(
 							"actions.clipboard.pasteLabel",
-							"Paste",
+							"Paste"
 						),
 						when: EditorContextKeys.writable,
 						order: 4,
 					},
 				],
-			}),
-	  )
+			})
+		)
 	: undefined;
 
 class ExecCommandCopyWithSyntaxHighlightingAction extends EditorAction {
@@ -288,7 +288,7 @@ class ExecCommandCopyWithSyntaxHighlightingAction extends EditorAction {
 			id: "editor.action.clipboardCopyWithSyntaxHighlightingAction",
 			label: nls.localize(
 				"actions.clipboard.copyWithSyntaxHighlightingLabel",
-				"Copy With Syntax Highlighting",
+				"Copy With Syntax Highlighting"
 			),
 			alias: "Copy With Syntax Highlighting",
 			precondition: undefined,
@@ -306,7 +306,7 @@ class ExecCommandCopyWithSyntaxHighlightingAction extends EditorAction {
 		}
 
 		const emptySelectionClipboard = editor.getOption(
-			EditorOption.emptySelectionClipboard,
+			EditorOption.emptySelectionClipboard
 		);
 
 		if (!emptySelectionClipboard && editor.getSelection().isEmpty()) {
@@ -322,7 +322,7 @@ class ExecCommandCopyWithSyntaxHighlightingAction extends EditorAction {
 
 function registerExecCommandImpl(
 	target: MultiCommand | undefined,
-	browserCommand: "cut" | "copy",
+	browserCommand: "cut" | "copy"
 ): void {
 	if (!target) {
 		return;
@@ -340,7 +340,7 @@ function registerExecCommandImpl(
 			if (focusedEditor && focusedEditor.hasTextFocus()) {
 				// Do not execute if there is no selection and empty selection clipboard is off
 				const emptySelectionClipboard = focusedEditor.getOption(
-					EditorOption.emptySelectionClipboard,
+					EditorOption.emptySelectionClipboard
 				);
 				const selection = focusedEditor.getSelection();
 				if (
@@ -356,7 +356,7 @@ function registerExecCommandImpl(
 				return true;
 			}
 			return false;
-		},
+		}
 	);
 
 	// 2. (default) handle case when focus is somewhere else.
@@ -366,7 +366,7 @@ function registerExecCommandImpl(
 		(accessor: ServicesAccessor, args: any) => {
 			getActiveDocument().execCommand(browserCommand);
 			return true;
-		},
+		}
 	);
 }
 
@@ -391,7 +391,7 @@ if (PasteAction) {
 				if (result) {
 					return (
 						CopyPasteController.get(
-							focusedEditor,
+							focusedEditor
 						)?.finishedPaste() ?? Promise.resolve()
 					);
 				} else if (platform.isWeb) {
@@ -401,7 +401,7 @@ if (PasteAction) {
 						if (clipboardText !== "") {
 							const metadata =
 								InMemoryClipboardMetadataManager.INSTANCE.get(
-									clipboardText,
+									clipboardText
 								);
 							let pasteOnNewLine = false;
 							let multicursorText: string[] | null = null;
@@ -409,7 +409,7 @@ if (PasteAction) {
 							if (metadata) {
 								pasteOnNewLine =
 									focusedEditor.getOption(
-										EditorOption.emptySelectionClipboard,
+										EditorOption.emptySelectionClipboard
 									) && !!metadata.isFromEmptySelection;
 								multicursorText =
 									typeof metadata.multicursorText !==
@@ -430,7 +430,7 @@ if (PasteAction) {
 				return true;
 			}
 			return false;
-		},
+		}
 	);
 
 	// 2. Paste: (default) handle case when focus is somewhere else.
@@ -440,7 +440,7 @@ if (PasteAction) {
 		(accessor: ServicesAccessor, args: any) => {
 			getActiveDocument().execCommand("paste");
 			return true;
-		},
+		}
 	);
 }
 

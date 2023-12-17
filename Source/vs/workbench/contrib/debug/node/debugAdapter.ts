@@ -40,7 +40,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 
 	protected connect(
 		readable: stream.Readable,
-		writable: stream.Writable,
+		writable: stream.Writable
 	): void {
 		this.outputStream = writable;
 		this.rawData = Buffer.allocUnsafe(0);
@@ -56,7 +56,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 				`Content-Length: ${Buffer.byteLength(json, "utf8")}${
 					StreamDebugAdapter.TWO_CRLF
 				}${json}`,
-				"utf8",
+				"utf8"
 			);
 		}
 	}
@@ -70,7 +70,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 					const message = this.rawData.toString(
 						"utf8",
 						0,
-						this.contentLength,
+						this.contentLength
 					);
 					this.rawData = this.rawData.slice(this.contentLength);
 					this.contentLength = -1;
@@ -79,11 +79,11 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 							this.acceptMessage(
 								<DebugProtocol.ProtocolMessage>(
 									JSON.parse(message)
-								),
+								)
 							);
 						} catch (e) {
 							this._onError.fire(
-								new Error((e.message || e) + "\n" + message),
+								new Error((e.message || e) + "\n" + message)
 							);
 						}
 					}
@@ -94,18 +94,18 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 				if (idx !== -1) {
 					const header = this.rawData.toString("utf8", 0, idx);
 					const lines = header.split(
-						StreamDebugAdapter.HEADER_LINESEPARATOR,
+						StreamDebugAdapter.HEADER_LINESEPARATOR
 					);
 					for (const h of lines) {
 						const kvPair = h.split(
-							StreamDebugAdapter.HEADER_FIELDSEPARATOR,
+							StreamDebugAdapter.HEADER_FIELDSEPARATOR
 						);
 						if (kvPair[0] === "Content-Length") {
 							this.contentLength = Number(kvPair[1]);
 						}
 					}
 					this.rawData = this.rawData.slice(
-						idx + StreamDebugAdapter.TWO_CRLF.length,
+						idx + StreamDebugAdapter.TWO_CRLF.length
 					);
 					continue;
 				}
@@ -119,7 +119,7 @@ export abstract class NetworkDebugAdapter extends StreamDebugAdapter {
 	protected socket?: net.Socket;
 
 	protected abstract createConnection(
-		connectionListener: () => void,
+		connectionListener: () => void
 	): net.Socket;
 
 	startSession(): Promise<void> {
@@ -171,7 +171,7 @@ export class SocketDebugAdapter extends NetworkDebugAdapter {
 		return net.createConnection(
 			this.adapterServer.port,
 			this.adapterServer.host || "127.0.0.1",
-			connectionListener,
+			connectionListener
 		);
 	}
 }
@@ -187,7 +187,7 @@ export class NamedPipeDebugAdapter extends NetworkDebugAdapter {
 	protected createConnection(connectionListener: () => void): net.Socket {
 		return net.createConnection(
 			this.adapterServer.path,
-			connectionListener,
+			connectionListener
 		);
 	}
 }
@@ -200,7 +200,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 
 	constructor(
 		private adapterExecutable: IDebugAdapterExecutable,
-		private debugType: string,
+		private debugType: string
 	) {
 		super();
 	}
@@ -220,8 +220,8 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 							nls.localize(
 								"debugAdapterBinNotFound",
 								"Debug adapter executable '{0}' does not exist.",
-								command,
-							),
+								command
+							)
 						);
 					}
 				} else {
@@ -239,8 +239,8 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 							comment: ["Adapter executable file not found"],
 						},
 						"Cannot determine executable for debug adapter '{0}'.",
-						this.debugType,
-					),
+						this.debugType
+					)
 				);
 			}
 
@@ -248,7 +248,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 			if (options.env && Object.keys(options.env).length > 0) {
 				env = objects.mixin(
 					objects.deepClone(process.env),
-					options.env,
+					options.env
 				);
 			}
 
@@ -263,7 +263,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 							? [
 									"-e",
 									"delete process.env.ELECTRON_RUN_AS_NODE;require(process.argv[1])",
-							  ]
+								]
 							: [],
 						silent: true,
 					};
@@ -276,8 +276,8 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 							nls.localize(
 								"unableToLaunchDebugAdapter",
 								"Unable to launch debug adapter from '{0}'.",
-								args[0],
-							),
+								args[0]
+							)
 						);
 					}
 					this.serverProcess = child;
@@ -285,8 +285,8 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 					throw new Error(
 						nls.localize(
 							"unableToLaunchDebugAdapterNoArgs",
-							"Unable to launch debug adapter.",
-						),
+							"Unable to launch debug adapter."
+						)
 					);
 				}
 			} else {
@@ -343,7 +343,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 						if (err) {
 							return e(err);
 						}
-					},
+					}
 				);
 				killer.on("exit", c);
 				killer.on("error", e);
@@ -356,7 +356,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 
 	private static extract(
 		platformContribution: IPlatformSpecificAdapterContribution,
-		extensionFolderPath: string,
+		extensionFolderPath: string
 	): IDebuggerContribution | undefined {
 		if (!platformContribution) {
 			return undefined;
@@ -368,7 +368,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 				// TODO
 				result.runtime = path.join(
 					extensionFolderPath,
-					platformContribution.runtime,
+					platformContribution.runtime
 				);
 			} else {
 				result.runtime = platformContribution.runtime;
@@ -381,7 +381,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 			if (!path.isAbsolute(platformContribution.program)) {
 				result.program = path.join(
 					extensionFolderPath,
-					platformContribution.program,
+					platformContribution.program
 				);
 			} else {
 				result.program = platformContribution.program;
@@ -396,31 +396,31 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 		if (contribution.win) {
 			result.win = ExecutableDebugAdapter.extract(
 				contribution.win,
-				extensionFolderPath,
+				extensionFolderPath
 			);
 		}
 		if (contribution.winx86) {
 			result.winx86 = ExecutableDebugAdapter.extract(
 				contribution.winx86,
-				extensionFolderPath,
+				extensionFolderPath
 			);
 		}
 		if (contribution.windows) {
 			result.windows = ExecutableDebugAdapter.extract(
 				contribution.windows,
-				extensionFolderPath,
+				extensionFolderPath
 			);
 		}
 		if (contribution.osx) {
 			result.osx = ExecutableDebugAdapter.extract(
 				contribution.osx,
-				extensionFolderPath,
+				extensionFolderPath
 			);
 		}
 		if (contribution.linux) {
 			result.linux = ExecutableDebugAdapter.extract(
 				contribution.linux,
-				extensionFolderPath,
+				extensionFolderPath
 			);
 		}
 		return result;
@@ -428,7 +428,7 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 
 	static platformAdapterExecutable(
 		extensionDescriptions: IExtensionDescription[],
-		debugType: string,
+		debugType: string
 	): IDebugAdapterExecutable | undefined {
 		let result: IDebuggerContribution = Object.create(null);
 		debugType = debugType.toLowerCase();
@@ -444,20 +444,20 @@ export class ExecutableDebugAdapter extends StreamDebugAdapter {
 						.filter(
 							(dbg) =>
 								typeof dbg.type === "string" &&
-								strings.equalsIgnoreCase(dbg.type, debugType),
+								strings.equalsIgnoreCase(dbg.type, debugType)
 						)
 						.forEach((dbg) => {
 							// extract relevant attributes and make them absolute where needed
 							const extractedDbg = ExecutableDebugAdapter.extract(
 								dbg,
-								ed.extensionLocation.fsPath,
+								ed.extensionLocation.fsPath
 							);
 
 							// merge
 							result = objects.mixin(
 								result,
 								extractedDbg,
-								ed.isBuiltin,
+								ed.isBuiltin
 							);
 						});
 				}

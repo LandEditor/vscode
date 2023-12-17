@@ -9,7 +9,7 @@ import { getRepositoryFromUrl, repositoryHasGitHubRemote } from "./util";
 
 export function isFileInRepo(
 	repository: Repository,
-	file: vscode.Uri,
+	file: vscode.Uri
 ): boolean {
 	return (
 		file.path.toLowerCase() === repository.rootUri.path.toLowerCase() ||
@@ -22,7 +22,7 @@ export function isFileInRepo(
 
 export function getRepositoryForFile(
 	gitAPI: GitAPI,
-	file: vscode.Uri,
+	file: vscode.Uri
 ): Repository | undefined {
 	for (const repository of gitAPI.repositories) {
 		if (isFileInRepo(repository, file)) {
@@ -74,7 +74,7 @@ function extractContext(context: LinkContext): {
 }
 
 function getFileAndPosition(
-	context: LinkContext,
+	context: LinkContext
 ): IFilePosition | INotebookPosition | undefined {
 	let range: vscode.Range | undefined;
 
@@ -123,7 +123,7 @@ function getRangeOrSelection(lineNumber: number | undefined) {
 		(!vscode.window.activeTextEditor ||
 			vscode.window.activeTextEditor.selection.isEmpty ||
 			!vscode.window.activeTextEditor.selection.contains(
-				new vscode.Position(lineNumber - 1, 0),
+				new vscode.Position(lineNumber - 1, 0)
 			))
 		? new vscode.Range(lineNumber - 1, 0, lineNumber - 1, 1)
 		: vscode.window.activeTextEditor?.selection;
@@ -142,7 +142,7 @@ export function rangeString(range: vscode.Range | undefined) {
 
 export function notebookCellRangeString(
 	index: number | undefined,
-	range: vscode.Range | undefined,
+	range: vscode.Range | undefined
 ) {
 	if (index === undefined) {
 		return "";
@@ -179,7 +179,7 @@ export async function getLink(
 	hostPrefix?: string,
 	linkType: "permalink" | "headlink" = "permalink",
 	context?: LinkContext,
-	useRange?: boolean,
+	useRange?: boolean
 ): Promise<string | undefined> {
 	hostPrefix = hostPrefix ?? "https://github.com";
 	const fileAndPosition = getFileAndPosition(context);
@@ -187,7 +187,7 @@ export async function getLink(
 
 	// Use the first repo if we cannot determine a repo from the uri.
 	const githubRepository = gitAPI.repositories.find((repo) =>
-		repositoryHasGitHubRemote(repo),
+		repositoryHasGitHubRemote(repo)
 	);
 	const gitRepo =
 		(fileUri ? getRepositoryForFile(gitAPI, fileUri) : githubRepository) ??
@@ -225,7 +225,7 @@ export async function getLink(
 				linkType === "headlink" && gitRepo.state.HEAD.name
 					? encodeURIComponentExceptSlashes(gitRepo.state.HEAD.name)
 					: gitRepo.state.HEAD?.commit
-		  }`
+			}`
 		: "";
 	const uriWithoutFileSegments = `${hostPrefix}/${repo.owner}/${repo.repo}${blobSegment}`;
 	if (!fileUri) {
@@ -233,25 +233,25 @@ export async function getLink(
 	}
 
 	const encodedFilePath = encodeURIComponentExceptSlashes(
-		fileUri.path.substring(gitRepo.rootUri.path.length),
+		fileUri.path.substring(gitRepo.rootUri.path.length)
 	);
 	const fileSegments =
 		fileAndPosition.type === LinkType.File
 			? useSelection
 				? `${encodedFilePath}${
 						useRange ? rangeString(fileAndPosition.range) : ""
-				  }`
+					}`
 				: ""
 			: useSelection
-			  ? `${encodedFilePath}${
+				? `${encodedFilePath}${
 						useRange
 							? notebookCellRangeString(
 									fileAndPosition.cellIndex,
-									fileAndPosition.range,
-							  )
+									fileAndPosition.range
+								)
 							: ""
-				  }`
-			  : "";
+					}`
+				: "";
 
 	return `${uriWithoutFileSegments}${fileSegments}`;
 }
@@ -259,7 +259,7 @@ export async function getLink(
 export function getBranchLink(
 	url: string,
 	branch: string,
-	hostPrefix: string = "https://github.com",
+	hostPrefix: string = "https://github.com"
 ) {
 	const repo = getRepositoryFromUrl(url);
 	if (!repo) {
@@ -278,7 +278,7 @@ export function getVscodeDevHost(): string {
 
 export async function ensurePublished(
 	repository: Repository,
-	file: vscode.Uri,
+	file: vscode.Uri
 ) {
 	await repository.status();
 
@@ -291,10 +291,10 @@ export async function ensurePublished(
 		const publishBranch = vscode.l10n.t("Publish Branch & Copy Link");
 		const selection = await vscode.window.showInformationMessage(
 			vscode.l10n.t(
-				"The current branch is not published to the remote. Would you like to publish your branch before copying a link?",
+				"The current branch is not published to the remote. Would you like to publish your branch before copying a link?"
 			),
 			{ modal: true },
-			publishBranch,
+			publishBranch
 		);
 		if (selection !== publishBranch) {
 			throw new vscode.CancellationError();
@@ -316,11 +316,11 @@ export async function ensurePublished(
 		const copyAnyway = vscode.l10n.t("Copy Anyway");
 		const selection = await vscode.window.showWarningMessage(
 			vscode.l10n.t(
-				"The current file has uncommitted changes. Please commit your changes before copying a link.",
+				"The current file has uncommitted changes. Please commit your changes before copying a link."
 			),
 			{ modal: true },
 			commitChanges,
-			copyAnyway,
+			copyAnyway
 		);
 
 		if (selection !== copyAnyway) {
@@ -332,10 +332,10 @@ export async function ensurePublished(
 		const pushCommits = vscode.l10n.t("Push Commits & Copy Link");
 		const selection = await vscode.window.showInformationMessage(
 			vscode.l10n.t(
-				"The current branch has unpublished commits. Would you like to push your commits before copying a link?",
+				"The current branch has unpublished commits. Would you like to push your commits before copying a link?"
 			),
 			{ modal: true },
-			pushCommits,
+			pushCommits
 		);
 		if (selection !== pushCommits) {
 			throw new vscode.CancellationError();
@@ -346,10 +346,10 @@ export async function ensurePublished(
 		const pull = vscode.l10n.t("Pull Changes & Copy Link");
 		const selection = await vscode.window.showInformationMessage(
 			vscode.l10n.t(
-				"The current branch is not up to date. Would you like to pull before copying a link?",
+				"The current branch is not up to date. Would you like to pull before copying a link?"
 			),
 			{ modal: true },
-			pull,
+			pull
 		);
 		if (selection !== pull) {
 			throw new vscode.CancellationError();

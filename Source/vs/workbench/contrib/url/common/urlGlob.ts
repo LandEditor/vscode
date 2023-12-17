@@ -14,7 +14,7 @@ export const testUrlMatchesGlob = (uri: URI, globUrl: string): boolean => {
 	url = normalize(url);
 
 	const memo = Array.from({ length: url.length + 1 }).map(() =>
-		Array.from({ length: globUrl.length + 1 }).map(() => undefined),
+		Array.from({ length: globUrl.length + 1 }).map(() => undefined)
 	);
 
 	if (/^[^./:]*:\/\//.test(globUrl)) {
@@ -34,7 +34,7 @@ const doUrlMatch = (
 	url: string,
 	globUrl: string,
 	urlOffset: number,
-	globUrlOffset: number,
+	globUrlOffset: number
 ): boolean => {
 	if (memo[urlOffset]?.[globUrlOffset] !== undefined) {
 		return memo[urlOffset][globUrlOffset]!;
@@ -57,7 +57,7 @@ const doUrlMatch = (
 	if (url[urlOffset] === globUrl[globUrlOffset]) {
 		// Exact match.
 		options.push(
-			doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1),
+			doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1)
 		);
 	}
 
@@ -65,11 +65,11 @@ const doUrlMatch = (
 		// Any subdomain match. Either consume one thing that's not a / or : and don't advance base or consume nothing and do.
 		if (!["/", ":"].includes(url[urlOffset])) {
 			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset),
+				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset)
 			);
 		}
 		options.push(
-			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2),
+			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2)
 		);
 	}
 
@@ -78,21 +78,15 @@ const doUrlMatch = (
 		if (urlOffset + 1 === url.length) {
 			// If we're at the end of the input url consume one from both.
 			options.push(
-				doUrlMatch(
-					memo,
-					url,
-					globUrl,
-					urlOffset + 1,
-					globUrlOffset + 1,
-				),
+				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset + 1)
 			);
 		} else {
 			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset),
+				doUrlMatch(memo, url, globUrl, urlOffset + 1, globUrlOffset)
 			);
 		}
 		options.push(
-			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 1),
+			doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 1)
 		);
 	}
 
@@ -104,11 +98,11 @@ const doUrlMatch = (
 				endPortIndex++;
 			} while (/[0-9]/.test(url[endPortIndex]));
 			options.push(
-				doUrlMatch(memo, url, globUrl, endPortIndex, globUrlOffset + 2),
+				doUrlMatch(memo, url, globUrl, endPortIndex, globUrlOffset + 2)
 			);
 		} else {
 			options.push(
-				doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2),
+				doUrlMatch(memo, url, globUrl, urlOffset, globUrlOffset + 2)
 			);
 		}
 	}

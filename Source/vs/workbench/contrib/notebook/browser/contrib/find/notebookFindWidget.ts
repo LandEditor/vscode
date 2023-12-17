@@ -65,16 +65,24 @@ export class NotebookFindContrib
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this.widget = new Lazy(() => this._register(this.instantiationService.createInstance(NotebookFindWidget, this.notebookEditor)));
+		this.widget = new Lazy(() =>
+			this._register(
+				this.instantiationService.createInstance(
+					NotebookFindWidget,
+					this.notebookEditor
+				)
+			)
+		);
 	}
 
 	show(
 		initialInput?: string,
-		options?: IShowNotebookFindWidgetOptions,
+		options?: IShowNotebookFindWidgetOptions
 	): Promise<void> {
 		return this.widget.value.show(initialInput, options);
 	}
@@ -105,7 +113,7 @@ class NotebookFindWidget
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IMenuService menuService: IMenuService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(
 			contextViewService,
@@ -114,24 +122,24 @@ class NotebookFindWidget
 			contextMenuService,
 			instantiationService,
 			new FindReplaceState<NotebookFindFilters>(),
-			_notebookEditor,
+			_notebookEditor
 		);
 		this._findModel = new FindModel(
 			this._notebookEditor,
 			this._state,
-			this._configurationService,
+			this._configurationService
 		);
 
 		DOM.append(this._notebookEditor.getDomNode(), this.getDomNode());
 		this._findWidgetFocused =
 			KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED.bindTo(
-				contextKeyService,
+				contextKeyService
 			);
 		this._register(
-			this._findInput.onKeyDown((e) => this._onFindInputKeyDown(e)),
+			this._findInput.onKeyDown((e) => this._onFindInputKeyDown(e))
 		);
 		this._register(
-			this._replaceInput.onKeyDown((e) => this._onReplaceInputKeyDown(e)),
+			this._replaceInput.onKeyDown((e) => this._onReplaceInputKeyDown(e))
 		);
 
 		this._register(
@@ -155,16 +163,16 @@ class NotebookFindWidget
 				this._replaceAllBtn.setEnabled(
 					matches.length > 0 &&
 						matches.find(
-							(match) => match.webviewMatches.length > 0,
-						) === undefined,
+							(match) => match.webviewMatches.length > 0
+						) === undefined
 				);
 
 				if (e.filters) {
 					this._findInput.updateFilterState(
-						this._state.filters?.isModified() ?? false,
+						this._state.filters?.isModified() ?? false
 					);
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -177,8 +185,8 @@ class NotebookFindWidget
 							? e.relatedTarget
 							: undefined;
 				},
-				true,
-			),
+				true
+			)
 		);
 	}
 
@@ -246,7 +254,7 @@ class NotebookFindWidget
 			const replacePattern = this.replacePattern;
 			const replaceString = replacePattern.buildReplaceString(
 				match.matches,
-				this._state.preserveCase,
+				this._state.preserveCase
 			);
 
 			const viewModel = this._notebookEditor.getViewModel();
@@ -276,8 +284,8 @@ class NotebookFindWidget
 				replaceStrings.push(
 					replacePattern.buildReplaceString(
 						matches,
-						this._state.preserveCase,
-					),
+						this._state.preserveCase
+					)
 				);
 			});
 		});
@@ -313,7 +321,7 @@ class NotebookFindWidget
 
 	override async show(
 		initialInput?: string,
-		options?: IShowNotebookFindWidgetOptions,
+		options?: IShowNotebookFindWidgetOptions
 	): Promise<void> {
 		const searchStringUpdate = this._state.searchString !== initialInput;
 		super.show(initialInput, options);
@@ -322,7 +330,7 @@ class NotebookFindWidget
 				searchString: initialInput ?? this._state.searchString,
 				isRevealed: true,
 			},
-			false,
+			false
 		);
 
 		if (typeof options?.matchIndex === "number") {
@@ -341,7 +349,7 @@ class NotebookFindWidget
 		if (this._showTimeout === null) {
 			if (this._hideTimeout !== null) {
 				DOM.getWindow(this.getDomNode()).clearTimeout(
-					this._hideTimeout,
+					this._hideTimeout
 				);
 				this._hideTimeout = null;
 				this._notebookEditor.removeClassName(FIND_HIDE_TRANSITION);
@@ -353,7 +361,7 @@ class NotebookFindWidget
 					this._notebookEditor.removeClassName(FIND_SHOW_TRANSITION);
 					this._showTimeout = null;
 				},
-				200,
+				200
 			);
 		} else {
 			// no op
@@ -368,14 +376,14 @@ class NotebookFindWidget
 				replaceString: initialReplaceInput ?? "",
 				isRevealed: true,
 			},
-			false,
+			false
 		);
 		this._replaceInput.select();
 
 		if (this._showTimeout === null) {
 			if (this._hideTimeout !== null) {
 				DOM.getWindow(this.getDomNode()).clearTimeout(
-					this._hideTimeout,
+					this._hideTimeout
 				);
 				this._hideTimeout = null;
 				this._notebookEditor.removeClassName(FIND_HIDE_TRANSITION);
@@ -387,7 +395,7 @@ class NotebookFindWidget
 					this._notebookEditor.removeClassName(FIND_SHOW_TRANSITION);
 					this._showTimeout = null;
 				},
-				200,
+				200
 			);
 		} else {
 			// no op
@@ -404,7 +412,7 @@ class NotebookFindWidget
 		if (this._hideTimeout === null) {
 			if (this._showTimeout !== null) {
 				DOM.getWindow(this.getDomNode()).clearTimeout(
-					this._showTimeout,
+					this._showTimeout
 				);
 				this._showTimeout = null;
 				this._notebookEditor.removeClassName(FIND_SHOW_TRANSITION);
@@ -414,7 +422,7 @@ class NotebookFindWidget
 				() => {
 					this._notebookEditor.removeClassName(FIND_HIDE_TRANSITION);
 				},
-				200,
+				200
 			);
 		} else {
 			// no op
@@ -469,7 +477,7 @@ class NotebookFindWidget
 			label = strings.format(
 				NLS_MATCHES_LOCATION,
 				matchesPosition,
-				matchesCount,
+				matchesCount
 			);
 		} else {
 			label = NLS_NO_RESULTS;
@@ -481,19 +489,19 @@ class NotebookFindWidget
 			this._getAriaLabel(
 				label,
 				this._state.currentMatch,
-				this._state.searchString,
-			),
+				this._state.searchString
+			)
 		);
 		MAX_MATCHES_COUNT_WIDTH = Math.max(
 			MAX_MATCHES_COUNT_WIDTH,
-			this._matchesCount.clientWidth,
+			this._matchesCount.clientWidth
 		);
 	}
 
 	private _getAriaLabel(
 		label: string,
 		currentMatch: Range | null,
-		searchString: string,
+		searchString: string
 	): string {
 		if (label === NLS_NO_RESULTS) {
 			return searchString === ""
@@ -502,8 +510,8 @@ class NotebookFindWidget
 						"ariaSearchNoResult",
 						"{0} found for '{1}'",
 						label,
-						searchString,
-				  );
+						searchString
+					);
 		}
 
 		// TODO@rebornix, aria for `cell ${index}, line {line}`
@@ -511,7 +519,7 @@ class NotebookFindWidget
 			"ariaSearchNoResultWithLineNumNoCurrentMatch",
 			"{0} found for '{1}'",
 			label,
-			searchString,
+			searchString
 		);
 	}
 	override dispose() {

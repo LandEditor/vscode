@@ -18,7 +18,7 @@ export class LineDecoration {
 		public readonly startColumn: number,
 		public readonly endColumn: number,
 		public readonly className: string,
-		public readonly type: InlineDecorationType,
+		public readonly type: InlineDecorationType
 	) {}
 
 	private static _equals(a: LineDecoration, b: LineDecoration): boolean {
@@ -47,7 +47,7 @@ export class LineDecoration {
 	public static extractWrapped(
 		arr: LineDecoration[],
 		startOffset: number,
-		endOffset: number,
+		endOffset: number
 	): LineDecoration[] {
 		if (arr.length === 0) {
 			return arr;
@@ -65,7 +65,7 @@ export class LineDecoration {
 				Math.max(1, dec.startColumn - startColumn + 1),
 				Math.min(lineLength + 1, dec.endColumn - startColumn + 1),
 				dec.className,
-				dec.type,
+				dec.type
 			);
 		}
 		return r;
@@ -75,7 +75,7 @@ export class LineDecoration {
 		lineDecorations: InlineDecoration[],
 		lineNumber: number,
 		minLineColumn: number,
-		maxLineColumn: number,
+		maxLineColumn: number
 	): LineDecoration[] {
 		if (lineDecorations.length === 0) {
 			return [];
@@ -119,7 +119,7 @@ export class LineDecoration {
 				startColumn,
 				endColumn,
 				d.inlineClassName,
-				d.type,
+				d.type
 			);
 		}
 
@@ -128,7 +128,7 @@ export class LineDecoration {
 
 	private static _typeCompare(
 		a: InlineDecorationType,
-		b: InlineDecorationType,
+		b: InlineDecorationType
 	): number {
 		const ORDER = [2, 0, 1, 3];
 		return ORDER[a] - ORDER[b];
@@ -166,7 +166,7 @@ export class DecorationSegment {
 		startOffset: number,
 		endOffset: number,
 		className: string,
-		metadata: number,
+		metadata: number
 	) {
 		this.startOffset = startOffset;
 		this.endOffset = endOffset;
@@ -199,7 +199,7 @@ class Stack {
 	public consumeLowerThan(
 		maxStopOffset: number,
 		nextStartOffset: number,
-		result: DecorationSegment[],
+		result: DecorationSegment[]
 	): number {
 		while (this.count > 0 && this.stopOffsets[0] < maxStopOffset) {
 			let i = 0;
@@ -218,8 +218,8 @@ class Stack {
 					nextStartOffset,
 					this.stopOffsets[i],
 					this.classNames.join(" "),
-					Stack._metadata(this.metadata),
-				),
+					Stack._metadata(this.metadata)
+				)
 			);
 			nextStartOffset = this.stopOffsets[i] + 1;
 
@@ -236,8 +236,8 @@ class Stack {
 					nextStartOffset,
 					maxStopOffset - 1,
 					this.classNames.join(" "),
-					Stack._metadata(this.metadata),
-				),
+					Stack._metadata(this.metadata)
+				)
 			);
 			nextStartOffset = maxStopOffset;
 		}
@@ -248,7 +248,7 @@ class Stack {
 	public insert(
 		stopOffset: number,
 		className: string,
-		metadata: number,
+		metadata: number
 	): void {
 		if (
 			this.count === 0 ||
@@ -280,7 +280,7 @@ export class LineDecorationsNormalizer {
 	 */
 	public static normalize(
 		lineContent: string,
-		lineDecorations: LineDecoration[],
+		lineDecorations: LineDecoration[]
 	): DecorationSegment[] {
 		if (lineDecorations.length === 0) {
 			return [];
@@ -300,8 +300,8 @@ export class LineDecorationsNormalizer {
 				d.type === InlineDecorationType.Before
 					? LinePartMetadata.PSEUDO_BEFORE
 					: d.type === InlineDecorationType.After
-					  ? LinePartMetadata.PSEUDO_AFTER
-					  : 0;
+						? LinePartMetadata.PSEUDO_AFTER
+						: 0;
 
 			// If the position would end up in the middle of a high-low surrogate pair, we move it to before the pair
 			if (startColumn > 1) {
@@ -324,7 +324,7 @@ export class LineDecorationsNormalizer {
 			nextStartOffset = stack.consumeLowerThan(
 				currentStartOffset,
 				nextStartOffset,
-				result,
+				result
 			);
 
 			if (stack.count === 0) {
@@ -336,7 +336,7 @@ export class LineDecorationsNormalizer {
 		stack.consumeLowerThan(
 			Constants.MAX_SAFE_SMALL_INTEGER,
 			nextStartOffset,
-			result,
+			result
 		);
 
 		return result;

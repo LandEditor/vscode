@@ -81,7 +81,7 @@ export class ViewLineOptions {
 		const options = config.options;
 		const fontInfo = options.get(EditorOption.fontInfo);
 		const experimentalWhitespaceRendering = options.get(
-			EditorOption.experimentalWhitespaceRendering,
+			EditorOption.experimentalWhitespaceRendering
 		);
 		if (experimentalWhitespaceRendering === "off") {
 			this.renderWhitespace = options.get(EditorOption.renderWhitespace);
@@ -90,7 +90,7 @@ export class ViewLineOptions {
 			this.renderWhitespace = "none";
 		}
 		this.renderControlCharacters = options.get(
-			EditorOption.renderControlCharacters,
+			EditorOption.renderControlCharacters
 		);
 		this.spaceWidth = fontInfo.spaceWidth;
 		this.middotWidth = fontInfo.middotWidth;
@@ -102,7 +102,7 @@ export class ViewLineOptions {
 			fontInfo.canUseHalfwidthRightwardsArrow;
 		this.lineHeight = options.get(EditorOption.lineHeight);
 		this.stopRenderingLineAfter = options.get(
-			EditorOption.stopRenderingLineAfter,
+			EditorOption.stopRenderingLineAfter
 		);
 		this.fontLigatures = options.get(EditorOption.fontLigatures);
 	}
@@ -152,7 +152,7 @@ export class ViewLine implements IVisibleLine {
 			this._renderedViewLine.domNode = createFastDomNode(domNode);
 		} else {
 			throw new Error(
-				"I have no rendered view line to set the dom node to...",
+				"I have no rendered view line to set the dom node to..."
 			);
 		}
 	}
@@ -185,7 +185,7 @@ export class ViewLine implements IVisibleLine {
 		lineNumber: number,
 		deltaTop: number,
 		viewportData: ViewportData,
-		sb: StringBuilder,
+		sb: StringBuilder
 	): boolean {
 		if (this._isMaybeInvalid === false) {
 			// it appears that nothing relevant has changed
@@ -200,7 +200,7 @@ export class ViewLine implements IVisibleLine {
 			lineData.inlineDecorations,
 			lineNumber,
 			lineData.minColumn,
-			lineData.maxColumn,
+			lineData.maxColumn
 		);
 
 		// Only send selection information when needed for rendering whitespace
@@ -235,8 +235,8 @@ export class ViewLine implements IVisibleLine {
 								startColumn,
 								endColumn,
 								"inline-selected-text",
-								InlineDecorationType.Regular,
-							),
+								InlineDecorationType.Regular
+							)
 						);
 					}
 					if (this._options.renderWhitespace === "selection") {
@@ -245,7 +245,7 @@ export class ViewLine implements IVisibleLine {
 						}
 
 						selectionsOnLine.push(
-							new LineRange(startColumn - 1, endColumn - 1),
+							new LineRange(startColumn - 1, endColumn - 1)
 						);
 					}
 				}
@@ -271,7 +271,7 @@ export class ViewLine implements IVisibleLine {
 			options.renderWhitespace,
 			options.renderControlCharacters,
 			options.fontLigatures !== EditorFontLigatures.OFF,
-			selectionsOnLine,
+			selectionsOnLine
 		);
 
 		if (
@@ -305,7 +305,7 @@ export class ViewLine implements IVisibleLine {
 			renderedViewLine = new FastRenderedViewLine(
 				this._renderedViewLine ? this._renderedViewLine.domNode : null,
 				renderLineInput,
-				output.characterMapping,
+				output.characterMapping
 			);
 		}
 
@@ -315,7 +315,7 @@ export class ViewLine implements IVisibleLine {
 				renderLineInput,
 				output.characterMapping,
 				output.containsRTL,
-				output.containsForeignElements,
+				output.containsForeignElements
 			);
 		}
 
@@ -378,7 +378,7 @@ export class ViewLine implements IVisibleLine {
 		lineNumber: number,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): VisibleRanges | null {
 		if (!this._renderedViewLine) {
 			return null;
@@ -386,11 +386,11 @@ export class ViewLine implements IVisibleLine {
 
 		startColumn = Math.min(
 			this._renderedViewLine.input.lineContent.length + 1,
-			Math.max(1, startColumn),
+			Math.max(1, startColumn)
 		);
 		endColumn = Math.min(
 			this._renderedViewLine.input.lineContent.length + 1,
-			Math.max(1, endColumn),
+			Math.max(1, endColumn)
 		);
 
 		const stopRenderingLineAfter =
@@ -426,7 +426,7 @@ export class ViewLine implements IVisibleLine {
 				lineNumber,
 				startColumn,
 				endColumn,
-				context,
+				context
 			);
 		if (horizontalRanges && horizontalRanges.length > 0) {
 			return new VisibleRanges(false, horizontalRanges);
@@ -437,7 +437,7 @@ export class ViewLine implements IVisibleLine {
 
 	public getColumnOfNodeOffset(
 		spanNode: HTMLElement,
-		offset: number,
+		offset: number
 	): number {
 		if (!this._renderedViewLine) {
 			return 1;
@@ -455,7 +455,7 @@ interface IRenderedViewLine {
 		lineNumber: number,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): FloatHorizontalRange[] | null;
 	getColumnOfNodeOffset(spanNode: HTMLElement, offset: number): number;
 }
@@ -486,12 +486,12 @@ class FastRenderedViewLine implements IRenderedViewLine {
 	constructor(
 		domNode: FastDomNode<HTMLElement> | null,
 		renderLineInput: RenderLineInput,
-		characterMapping: CharacterMapping,
+		characterMapping: CharacterMapping
 	) {
 		this.domNode = domNode;
 		this.input = renderLineInput;
 		const keyColumnCount = Math.floor(
-			renderLineInput.lineContent.length / Constants.MaxMonospaceDistance,
+			renderLineInput.lineContent.length / Constants.MaxMonospaceDistance
 		);
 		if (keyColumnCount > 0) {
 			this._keyColumnPixelOffsetCache = new Float32Array(keyColumnCount);
@@ -512,13 +512,13 @@ class FastRenderedViewLine implements IRenderedViewLine {
 			this.input.lineContent.length < Constants.MaxMonospaceDistance
 		) {
 			const horizontalOffset = this._characterMapping.getHorizontalOffset(
-				this._characterMapping.length,
+				this._characterMapping.length
 			);
 			return Math.round(this._charWidth * horizontalOffset);
 		}
 		if (this._cachedWidth === -1) {
 			this._cachedWidth = this._getReadingTarget(
-				this.domNode,
+				this.domNode
 			).offsetWidth;
 			context?.markDidDomLayout();
 		}
@@ -544,7 +544,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 			if (Math.abs(expectedWidth - actualWidth) >= 2) {
 				// more than 2px off
 				console.warn(
-					`monospace assumptions have been violated, therefore disabling monospace optimizations!`,
+					`monospace assumptions have been violated, therefore disabling monospace optimizations!`
 				);
 				monospaceAssumptionsAreValid = false;
 			}
@@ -558,7 +558,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 			this.input,
 			this._characterMapping,
 			false,
-			ForeignElementType.None,
+			ForeignElementType.None
 		);
 	}
 
@@ -566,22 +566,22 @@ class FastRenderedViewLine implements IRenderedViewLine {
 		lineNumber: number,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): FloatHorizontalRange[] | null {
 		const startPosition = this._getColumnPixelOffset(
 			lineNumber,
 			startColumn,
-			context,
+			context
 		);
 		const endPosition = this._getColumnPixelOffset(
 			lineNumber,
 			endColumn,
-			context,
+			context
 		);
 		return [
 			new FloatHorizontalRange(
 				startPosition,
-				endPosition - startPosition,
+				endPosition - startPosition
 			),
 		];
 	}
@@ -589,7 +589,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 	private _getColumnPixelOffset(
 		lineNumber: number,
 		column: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): number {
 		if (column <= Constants.MaxMonospaceDistance) {
 			const horizontalOffset =
@@ -609,7 +609,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 				keyColumnPixelOffset = this._actualReadPixelOffset(
 					lineNumber,
 					keyColumn,
-					context,
+					context
 				);
 				this._keyColumnPixelOffsetCache[keyColumnOrdinal] =
 					keyColumnPixelOffset;
@@ -634,7 +634,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 	}
 
 	private _getReadingTarget(
-		myDomNode: FastDomNode<HTMLElement>,
+		myDomNode: FastDomNode<HTMLElement>
 	): HTMLElement {
 		return <HTMLSpanElement>myDomNode.domNode.firstChild;
 	}
@@ -642,7 +642,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 	private _actualReadPixelOffset(
 		lineNumber: number,
 		column: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): number {
 		if (!this.domNode) {
 			return -1;
@@ -654,7 +654,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 			domPosition.charIndex,
 			domPosition.partIndex,
 			domPosition.charIndex,
-			context,
+			context
 		);
 		if (!r || r.length === 0) {
 			return -1;
@@ -664,7 +664,7 @@ class FastRenderedViewLine implements IRenderedViewLine {
 
 	public getColumnOfNodeOffset(
 		spanNode: HTMLElement,
-		offset: number,
+		offset: number
 	): number {
 		return getColumnOfNodeOffset(this._characterMapping, spanNode, offset);
 	}
@@ -692,7 +692,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		renderLineInput: RenderLineInput,
 		characterMapping: CharacterMapping,
 		containsRTL: boolean,
-		containsForeignElements: ForeignElementType,
+		containsForeignElements: ForeignElementType
 	) {
 		this.domNode = domNode;
 		this.input = renderLineInput;
@@ -707,7 +707,7 @@ class RenderedViewLine implements IRenderedViewLine {
 			this._characterMapping.length === 0 /* the line is empty */
 		) {
 			this._pixelOffsetCache = new Float32Array(
-				Math.max(2, this._characterMapping.length + 1),
+				Math.max(2, this._characterMapping.length + 1)
 			);
 			for (
 				let column = 0, len = this._characterMapping.length;
@@ -722,7 +722,7 @@ class RenderedViewLine implements IRenderedViewLine {
 	// --- Reading from the DOM methods
 
 	protected _getReadingTarget(
-		myDomNode: FastDomNode<HTMLElement>,
+		myDomNode: FastDomNode<HTMLElement>
 	): HTMLElement {
 		return <HTMLSpanElement>myDomNode.domNode.firstChild;
 	}
@@ -736,7 +736,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		}
 		if (this._cachedWidth === -1) {
 			this._cachedWidth = this._getReadingTarget(
-				this.domNode,
+				this.domNode
 			).offsetWidth;
 			context?.markDidDomLayout();
 		}
@@ -757,7 +757,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		lineNumber: number,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): FloatHorizontalRange[] | null {
 		if (!this.domNode) {
 			return null;
@@ -768,7 +768,7 @@ class RenderedViewLine implements IRenderedViewLine {
 				this.domNode,
 				lineNumber,
 				startColumn,
-				context,
+				context
 			);
 			if (startOffset === -1) {
 				return null;
@@ -778,7 +778,7 @@ class RenderedViewLine implements IRenderedViewLine {
 				this.domNode,
 				lineNumber,
 				endColumn,
-				context,
+				context
 			);
 			if (endOffset === -1) {
 				return null;
@@ -794,7 +794,7 @@ class RenderedViewLine implements IRenderedViewLine {
 			lineNumber,
 			startColumn,
 			endColumn,
-			context,
+			context
 		);
 	}
 
@@ -803,14 +803,14 @@ class RenderedViewLine implements IRenderedViewLine {
 		lineNumber: number,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): FloatHorizontalRange[] | null {
 		if (startColumn === endColumn) {
 			const pixelOffset = this._readPixelOffset(
 				domNode,
 				lineNumber,
 				startColumn,
-				context,
+				context
 			);
 			if (pixelOffset === -1) {
 				return null;
@@ -822,7 +822,7 @@ class RenderedViewLine implements IRenderedViewLine {
 				domNode,
 				startColumn,
 				endColumn,
-				context,
+				context
 			);
 		}
 	}
@@ -831,7 +831,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		domNode: FastDomNode<HTMLElement>,
 		lineNumber: number,
 		column: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): number {
 		if (this._characterMapping.length === 0) {
 			// This line has no content
@@ -869,7 +869,7 @@ class RenderedViewLine implements IRenderedViewLine {
 				domNode,
 				lineNumber,
 				column,
-				context,
+				context
 			);
 			this._pixelOffsetCache[column] = result;
 			return result;
@@ -879,7 +879,7 @@ class RenderedViewLine implements IRenderedViewLine {
 			domNode,
 			lineNumber,
 			column,
-			context,
+			context
 		);
 	}
 
@@ -887,7 +887,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		domNode: FastDomNode<HTMLElement>,
 		lineNumber: number,
 		column: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): number {
 		if (this._characterMapping.length === 0) {
 			// This line has no content
@@ -897,7 +897,7 @@ class RenderedViewLine implements IRenderedViewLine {
 				0,
 				0,
 				0,
-				context,
+				context
 			);
 			if (!r || r.length === 0) {
 				return -1;
@@ -922,7 +922,7 @@ class RenderedViewLine implements IRenderedViewLine {
 			domPosition.charIndex,
 			domPosition.partIndex,
 			domPosition.charIndex,
-			context,
+			context
 		);
 		if (!r || r.length === 0) {
 			return -1;
@@ -932,7 +932,7 @@ class RenderedViewLine implements IRenderedViewLine {
 			const horizontalOffset =
 				this._characterMapping.getHorizontalOffset(column);
 			const expectedResult = Math.round(
-				this.input.spaceWidth * horizontalOffset,
+				this.input.spaceWidth * horizontalOffset
 			);
 			if (Math.abs(expectedResult - result) <= 1) {
 				return expectedResult;
@@ -945,7 +945,7 @@ class RenderedViewLine implements IRenderedViewLine {
 		domNode: FastDomNode<HTMLElement>,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): FloatHorizontalRange[] | null {
 		if (startColumn === 1 && endColumn === this._characterMapping.length) {
 			// This branch helps IE with bidi text & gives a performance boost to other browsers when reading visible ranges for an entire line
@@ -963,7 +963,7 @@ class RenderedViewLine implements IRenderedViewLine {
 			startDomPosition.charIndex,
 			endDomPosition.partIndex,
 			endDomPosition.charIndex,
-			context,
+			context
 		);
 	}
 
@@ -972,7 +972,7 @@ class RenderedViewLine implements IRenderedViewLine {
 	 */
 	public getColumnOfNodeOffset(
 		spanNode: HTMLElement,
-		offset: number,
+		offset: number
 	): number {
 		return getColumnOfNodeOffset(this._characterMapping, spanNode, offset);
 	}
@@ -984,14 +984,14 @@ class WebKitRenderedViewLine extends RenderedViewLine {
 		lineNumber: number,
 		startColumn: number,
 		endColumn: number,
-		context: DomReadingContext,
+		context: DomReadingContext
 	): FloatHorizontalRange[] | null {
 		const output = super._readVisibleRangesForRange(
 			domNode,
 			lineNumber,
 			startColumn,
 			endColumn,
-			context,
+			context
 		);
 
 		if (
@@ -1012,7 +1012,7 @@ class WebKitRenderedViewLine extends RenderedViewLine {
 				domNode,
 				lineNumber,
 				endColumn,
-				context,
+				context
 			);
 			if (endPixelOffset !== -1) {
 				const lastRange = output[output.length - 1];
@@ -1032,7 +1032,7 @@ const createRenderedLine: (
 	renderLineInput: RenderLineInput,
 	characterMapping: CharacterMapping,
 	containsRTL: boolean,
-	containsForeignElements: ForeignElementType,
+	containsForeignElements: ForeignElementType
 ) => RenderedViewLine = (function () {
 	if (browser.isWebKit) {
 		return createWebKitRenderedLine;
@@ -1045,14 +1045,14 @@ function createWebKitRenderedLine(
 	renderLineInput: RenderLineInput,
 	characterMapping: CharacterMapping,
 	containsRTL: boolean,
-	containsForeignElements: ForeignElementType,
+	containsForeignElements: ForeignElementType
 ): RenderedViewLine {
 	return new WebKitRenderedViewLine(
 		domNode,
 		renderLineInput,
 		characterMapping,
 		containsRTL,
-		containsForeignElements,
+		containsForeignElements
 	);
 }
 
@@ -1061,21 +1061,21 @@ function createNormalRenderedLine(
 	renderLineInput: RenderLineInput,
 	characterMapping: CharacterMapping,
 	containsRTL: boolean,
-	containsForeignElements: ForeignElementType,
+	containsForeignElements: ForeignElementType
 ): RenderedViewLine {
 	return new RenderedViewLine(
 		domNode,
 		renderLineInput,
 		characterMapping,
 		containsRTL,
-		containsForeignElements,
+		containsForeignElements
 	);
 }
 
 export function getColumnOfNodeOffset(
 	characterMapping: CharacterMapping,
 	spanNode: HTMLElement,
-	offset: number,
+	offset: number
 ): number {
 	const spanNodeTextContentLength = spanNode.textContent!.length;
 
@@ -1087,6 +1087,6 @@ export function getColumnOfNodeOffset(
 
 	return characterMapping.getColumn(
 		new DomPosition(spanIndex, offset),
-		spanNodeTextContentLength,
+		spanNodeTextContentLength
 	);
 }

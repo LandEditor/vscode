@@ -59,7 +59,7 @@ export abstract class Part extends Component implements ISerializableView {
 		private options: IPartOptions,
 		themeService: IThemeService,
 		storageService: IStorageService,
-		protected readonly layoutService: IWorkbenchLayoutService,
+		protected readonly layoutService: IWorkbenchLayoutService
 	) {
 		super(id, themeService, storageService);
 
@@ -105,7 +105,7 @@ export abstract class Part extends Component implements ISerializableView {
 	 */
 	protected createTitleArea(
 		parent: HTMLElement,
-		options?: object,
+		options?: object
 	): HTMLElement | undefined {
 		return undefined;
 	}
@@ -122,7 +122,7 @@ export abstract class Part extends Component implements ISerializableView {
 	 */
 	protected createContentArea(
 		parent: HTMLElement,
-		options?: object,
+		options?: object
 	): HTMLElement | undefined {
 		return undefined;
 	}
@@ -139,7 +139,7 @@ export abstract class Part extends Component implements ISerializableView {
 	 */
 	protected layoutContents(
 		width: number,
-		height: number,
+		height: number
 	): ILayoutContentResult {
 		const partLayout = assertIsDefined(this.partLayout);
 
@@ -149,7 +149,7 @@ export abstract class Part extends Component implements ISerializableView {
 	//#region ISerializableView
 
 	protected _onDidChange = this._register(
-		new Emitter<IViewSize | undefined>(),
+		new Emitter<IViewSize | undefined>()
 	);
 	get onDidChange(): Event<IViewSize | undefined> {
 		return this._onDidChange.event;
@@ -180,7 +180,7 @@ class PartLayout {
 
 	constructor(
 		private options: IPartOptions,
-		private contentArea: HTMLElement | undefined,
+		private contentArea: HTMLElement | undefined
 	) {}
 
 	layout(width: number, height: number): ILayoutContentResult {
@@ -189,7 +189,7 @@ class PartLayout {
 		if (this.options.hasTitle) {
 			titleSize = new Dimension(
 				width,
-				Math.min(height, PartLayout.TITLE_HEIGHT),
+				Math.min(height, PartLayout.TITLE_HEIGHT)
 			);
 		} else {
 			titleSize = Dimension.None;
@@ -203,7 +203,7 @@ class PartLayout {
 		// Content Size: Width (Fill), Height (Variable)
 		const contentSize = new Dimension(
 			contentWidth,
-			height - titleSize.height,
+			height - titleSize.height
 		);
 
 		// Content

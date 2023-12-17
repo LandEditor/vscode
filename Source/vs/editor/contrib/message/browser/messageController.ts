@@ -49,8 +49,8 @@ export class MessageController implements IEditorContribution {
 		false,
 		nls.localize(
 			"messageVisible",
-			"Whether the editor is currently showing an inline message",
-		),
+			"Whether the editor is currently showing an inline message"
+		)
 	);
 
 	static get(editor: ICodeEditor): MessageController | null {
@@ -69,9 +69,9 @@ export class MessageController implements IEditorContribution {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IOpenerService private readonly _openerService: IOpenerService
 	) {
-
 		this._editor = editor;
-		this._visible = MessageController.MESSAGE_VISIBLE.bindTo(contextKeyService);
+		this._visible =
+			MessageController.MESSAGE_VISIBLE.bindTo(contextKeyService);
 	}
 
 	dispose(): void {
@@ -100,16 +100,16 @@ export class MessageController implements IEditorContribution {
 								url,
 								isMarkdownString(message)
 									? message.isTrusted
-									: undefined,
+									: undefined
 							),
 						disposables: this._messageListeners,
 					},
-			  })
+				})
 			: undefined;
 		this._messageWidget.value = new MessageWidget(
 			this._editor,
 			position,
-			typeof message === "string" ? message : this._message!.element,
+			typeof message === "string" ? message : this._message!.element
 		);
 
 		// close on blur (debounced to allow to tab into the message), cursor, model change, dispose
@@ -117,7 +117,7 @@ export class MessageController implements IEditorContribution {
 			Event.debounce(
 				this._editor.onDidBlurEditorText,
 				(last, event) => event,
-				0,
+				0
 			)(() => {
 				if (this._mouseOverMessage) {
 					return; // override when mouse over message
@@ -127,39 +127,39 @@ export class MessageController implements IEditorContribution {
 					this._messageWidget.value &&
 					dom.isAncestor(
 						dom.getActiveElement(),
-						this._messageWidget.value.getDomNode(),
+						this._messageWidget.value.getDomNode()
 					)
 				) {
 					return; // override when focus is inside the message
 				}
 
 				this.closeMessage();
-			}),
+			})
 		);
 		this._messageListeners.add(
-			this._editor.onDidChangeCursorPosition(() => this.closeMessage()),
+			this._editor.onDidChangeCursorPosition(() => this.closeMessage())
 		);
 		this._messageListeners.add(
-			this._editor.onDidDispose(() => this.closeMessage()),
+			this._editor.onDidDispose(() => this.closeMessage())
 		);
 		this._messageListeners.add(
-			this._editor.onDidChangeModel(() => this.closeMessage()),
+			this._editor.onDidChangeModel(() => this.closeMessage())
 		);
 		this._messageListeners.add(
 			dom.addDisposableListener(
 				this._messageWidget.value.getDomNode(),
 				dom.EventType.MOUSE_ENTER,
 				() => (this._mouseOverMessage = true),
-				true,
-			),
+				true
+			)
 		);
 		this._messageListeners.add(
 			dom.addDisposableListener(
 				this._messageWidget.value.getDomNode(),
 				dom.EventType.MOUSE_LEAVE,
 				() => (this._mouseOverMessage = false),
-				true,
-			),
+				true
+			)
 		);
 
 		// close on mouse move
@@ -177,13 +177,13 @@ export class MessageController implements IEditorContribution {
 						position.lineNumber - 3,
 						1,
 						e.target.position.lineNumber + 3,
-						1,
+						1
 					);
 				} else if (!bounds.containsPosition(e.target.position)) {
 					// check if position is still in bounds
 					this.closeMessage();
 				}
-			}),
+			})
 		);
 	}
 
@@ -192,14 +192,14 @@ export class MessageController implements IEditorContribution {
 		this._messageListeners.clear();
 		if (this._messageWidget.value) {
 			this._messageListeners.add(
-				MessageWidget.fadeOut(this._messageWidget.value),
+				MessageWidget.fadeOut(this._messageWidget.value)
 			);
 		}
 	}
 }
 
 const MessageCommand = EditorCommand.bindToContribution<MessageController>(
-	MessageController.get,
+	MessageController.get
 );
 
 registerEditorCommand(
@@ -211,7 +211,7 @@ registerEditorCommand(
 			weight: KeybindingWeight.EditorContrib + 30,
 			primary: KeyCode.Escape,
 		},
-	}),
+	})
 );
 
 class MessageWidget implements IContentWidget {
@@ -240,13 +240,13 @@ class MessageWidget implements IContentWidget {
 	constructor(
 		editor: ICodeEditor,
 		{ lineNumber, column }: IPosition,
-		text: HTMLElement | string,
+		text: HTMLElement | string
 	) {
 		this._editor = editor;
 		this._editor.revealLinesInCenterIfOutsideViewport(
 			lineNumber,
 			lineNumber,
-			ScrollType.Smooth,
+			ScrollType.Smooth
 		);
 		this._position = { lineNumber, column };
 
@@ -302,7 +302,7 @@ class MessageWidget implements IContentWidget {
 	afterRender(position: ContentWidgetPositionPreference | null): void {
 		this._domNode.classList.toggle(
 			"below",
-			position === ContentWidgetPositionPreference.BELOW,
+			position === ContentWidgetPositionPreference.BELOW
 		);
 	}
 }
@@ -310,5 +310,5 @@ class MessageWidget implements IContentWidget {
 registerEditorContribution(
 	MessageController.ID,
 	MessageController,
-	EditorContributionInstantiation.Lazy,
+	EditorContributionInstantiation.Lazy
 );

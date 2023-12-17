@@ -25,7 +25,7 @@ export interface IKeyboardConfig {
 }
 
 export function readKeyboardConfig(
-	configurationService: IConfigurationService,
+	configurationService: IConfigurationService
 ): IKeyboardConfig {
 	const keyboard = configurationService.getValue<
 		{ dispatch: any; mapAltGrToCtrlAlt: any } | undefined
@@ -39,7 +39,7 @@ export function readKeyboardConfig(
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigExtensions.Configuration,
+	ConfigExtensions.Configuration
 );
 const keyboardConfiguration: IConfigurationNode = {
 	id: "keyboard",
@@ -54,7 +54,7 @@ const keyboardConfiguration: IConfigurationNode = {
 			default: "code",
 			markdownDescription: nls.localize(
 				"dispatch",
-				"Controls the dispatching logic for key presses to use either `code` (recommended) or `keyCode`.",
+				"Controls the dispatching logic for key presses to use either `code` (recommended) or `keyCode`."
 			),
 			included:
 				OS === OperatingSystem.Macintosh ||
@@ -66,7 +66,7 @@ const keyboardConfiguration: IConfigurationNode = {
 			default: false,
 			markdownDescription: nls.localize(
 				"mapAltGrToCtrlAlt",
-				"Controls if the AltGraph+ modifier should be treated as Ctrl+Alt+.",
+				"Controls if the AltGraph+ modifier should be treated as Ctrl+Alt+."
 			),
 			included: OS === OperatingSystem.Windows,
 		},

@@ -26,12 +26,12 @@ export class CachedResponse<T extends Proto.Response> {
 	 */
 	public execute(
 		document: vscode.TextDocument,
-		resolve: Resolve<T>,
+		resolve: Resolve<T>
 	): Promise<ServerResponse.Response<T>> {
 		if (this.response && this.matches(document)) {
 			// Chain so that on cancellation we fall back to the next resolve
 			return (this.response = this.response.then((result) =>
-				result.type === "cancelled" ? resolve() : result,
+				result.type === "cancelled" ? resolve() : result
 			));
 		}
 		return this.reset(document, resolve);
@@ -46,7 +46,7 @@ export class CachedResponse<T extends Proto.Response> {
 
 	private async reset(
 		document: vscode.TextDocument,
-		resolve: Resolve<T>,
+		resolve: Resolve<T>
 	): Promise<ServerResponse.Response<T>> {
 		this.version = document.version;
 		this.document = document.uri.toString();

@@ -36,23 +36,23 @@ import { InlineChatAccessibleViewContribution } from "./inlineChatAccessibleView
 registerSingleton(
 	IInlineChatService,
 	InlineChatServiceImpl,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IInlineChatSessionService,
 	InlineChatSessionService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 registerEditorContribution(
 	INLINE_CHAT_ID,
 	InlineChatController,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // EAGER because of notebook dispose/create of editors
 registerEditorContribution(
 	INTERACTIVE_EDITOR_ACCESSIBILITY_HELP_ID,
 	InlineChatActions.InlineAccessibilityHelpContribution,
-	EditorContributionInstantiation.Eventually,
+	EditorContributionInstantiation.Eventually
 );
 
 registerAction2(InlineChatActions.StartSessionAction);
@@ -86,9 +86,9 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InlineChatNotebookContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InlineChatAccessibleViewContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

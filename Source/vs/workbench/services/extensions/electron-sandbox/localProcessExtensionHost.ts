@@ -95,13 +95,13 @@ export class ExtensionHostProcess {
 
 	constructor(
 		id: string,
-		private readonly _extensionHostStarter: IExtensionHostStarter,
+		private readonly _extensionHostStarter: IExtensionHostStarter
 	) {
 		this._id = id;
 	}
 
 	public start(
-		opts: IExtensionHostProcessOptions,
+		opts: IExtensionHostProcessOptions
 	): Promise<{ pid: number | undefined }> {
 		return this._extensionHostStarter.start(this._id, opts);
 	}
@@ -144,23 +144,35 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 
 	constructor(
 		public readonly runningLocation: LocalProcessRunningLocation,
-		public readonly startup: ExtensionHostStartup.EagerAutoStart | ExtensionHostStartup.EagerManualStart,
+		public readonly startup:
+			| ExtensionHostStartup.EagerAutoStart
+			| ExtensionHostStartup.EagerManualStart,
 		private readonly _initDataProvider: ILocalProcessExtensionHostDataProvider,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
-		@IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@IUserDataProfilesService
+		private readonly _userDataProfilesService: IUserDataProfilesService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
 		@ILoggerService private readonly _loggerService: ILoggerService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IExtensionHostDebugService private readonly _extensionHostDebugService: IExtensionHostDebugService,
+		@IExtensionHostDebugService
+		private readonly _extensionHostDebugService: IExtensionHostDebugService,
 		@IHostService private readonly _hostService: IHostService,
 		@IProductService private readonly _productService: IProductService,
-		@IShellEnvironmentService private readonly _shellEnvironmentService: IShellEnvironmentService,
-		@IExtensionHostStarter private readonly _extensionHostStarter: IExtensionHostStarter,
+		@IShellEnvironmentService
+		private readonly _shellEnvironmentService: IShellEnvironmentService,
+		@IExtensionHostStarter
+		private readonly _extensionHostStarter: IExtensionHostStarter
 	) {
 		const devOpts = parseExtensionDevOptions(this._environmentService);
 		this._isExtensionDevHost = devOpts.isExtensionDevHost;
@@ -175,17 +187,33 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		this._messageProtocol = null;
 
 		this._toDispose.add(this._onExit);
-		this._toDispose.add(this._lifecycleService.onWillShutdown(e => this._onWillShutdown(e)));
-		this._toDispose.add(this._extensionHostDebugService.onClose(event => {
-			if (this._isExtensionDevHost && this._environmentService.debugExtensionHost.debugId === event.sessionId) {
-				this._nativeHostService.closeWindow();
-			}
-		}));
-		this._toDispose.add(this._extensionHostDebugService.onReload(event => {
-			if (this._isExtensionDevHost && this._environmentService.debugExtensionHost.debugId === event.sessionId) {
-				this._hostService.reload();
-			}
-		}));
+		this._toDispose.add(
+			this._lifecycleService.onWillShutdown((e) =>
+				this._onWillShutdown(e)
+			)
+		);
+		this._toDispose.add(
+			this._extensionHostDebugService.onClose((event) => {
+				if (
+					this._isExtensionDevHost &&
+					this._environmentService.debugExtensionHost.debugId ===
+						event.sessionId
+				) {
+					this._nativeHostService.closeWindow();
+				}
+			})
+		);
+		this._toDispose.add(
+			this._extensionHostDebugService.onReload((event) => {
+				if (
+					this._isExtensionDevHost &&
+					this._environmentService.debugExtensionHost.debugId ===
+						event.sessionId
+				) {
+					this._hostService.reload();
+				}
+			})
+		);
 	}
 
 	public dispose(): void {
@@ -220,7 +248,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 
 		this._extensionHostProcess = new ExtensionHostProcess(
 			extensionHostCreationResult.id,
-			this._extensionHostStarter,
+			this._extensionHostStarter
 		);
 
 		const env = objects.mixin(processEnv, {
@@ -279,10 +307,10 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		// Catch all output coming from the extension host process
 		type Output = { data: string; format: string[] };
 		const onStdout = this._handleProcessOutputStream(
-			this._extensionHostProcess.onStdout,
+			this._extensionHostProcess.onStdout
 		);
 		const onStderr = this._handleProcessOutputStream(
-			this._extensionHostProcess.onStderr,
+			this._extensionHostProcess.onStderr
 		);
 		const onOutput = Event.any(
 			Event.map(onStdout.event, (o) => ({
@@ -292,7 +320,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 			Event.map(onStderr.event, (o) => ({
 				data: `%c${o}`,
 				format: ["color: red"],
-			})),
+			}))
 		);
 
 		// Debounce all output, so we can render it in the Chrome console as a group
@@ -303,10 +331,10 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 					? {
 							data: r.data + o.data,
 							format: [...r.format, ...o.format],
-					  }
+						}
 					: { data: o.data, format: o.format };
 			},
-			100,
+			100
 		);
 
 		// Print out extension host output
@@ -322,7 +350,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 					console.log(
 						`%c[Extension Host] %cdebugger inspector at devtools://devtools/bundled/inspector.html?experiments=true&v8only=true&ws=${inspectorUrlMatch[1]}`,
 						"color: blue",
-						"color:",
+						"color:"
 					);
 				}
 				if (!this._inspectPort) {
@@ -341,7 +369,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		// Lifecycle
 
 		this._extensionHostProcess.onExit(({ code, signal }) =>
-			this._onExtHostProcessExit(code, signal),
+			this._onExtHostProcessExit(code, signal)
 		);
 
 		// Notify debugger that we are ready to attach to the process if we run a development extension
@@ -354,7 +382,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 			) {
 				this._extensionHostDebugService.attachSession(
 					this._environmentService.debugExtensionHost.debugId,
-					portNumber,
+					portNumber
 				);
 			}
 			this._inspectPort = portNumber;
@@ -370,18 +398,18 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		) {
 			startupTimeoutHandle = setTimeout(() => {
 				this._logService.error(
-					`[LocalProcessExtensionHost]: Extension host did not start in 10 seconds (debugBrk: ${this._isExtensionDevDebugBrk})`,
+					`[LocalProcessExtensionHost]: Extension host did not start in 10 seconds (debugBrk: ${this._isExtensionDevDebugBrk})`
 				);
 
 				const msg = this._isExtensionDevDebugBrk
 					? nls.localize(
 							"extensionHost.startupFailDebug",
-							"Extension host did not start in 10 seconds, it might be stopped on the first line and needs a debugger to continue.",
-					  )
+							"Extension host did not start in 10 seconds, it might be stopped on the first line and needs a debugger to continue."
+						)
 					: nls.localize(
 							"extensionHost.startupFail",
-							"Extension host did not start in 10 seconds, that might be a problem.",
-					  );
+							"Extension host did not start in 10 seconds, that might be a problem."
+						);
 
 				this._notificationService.prompt(
 					Severity.Warning,
@@ -390,7 +418,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 						{
 							label: nls.localize(
 								"reloadWindow",
-								"Reload Window",
+								"Reload Window"
 							),
 							run: () => this._hostService.reload(),
 						},
@@ -398,7 +426,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 					{
 						sticky: true,
 						priority: NotificationPriority.URGENT,
-					},
+					}
 				);
 			}, 10000);
 		}
@@ -406,7 +434,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		// Initialize extension host process with hand shakes
 		const protocol = await this._establishProtocol(
 			this._extensionHostProcess,
-			opts,
+			opts
 		);
 		await this._performHandshake(protocol);
 		clearTimeout(startupTimeoutHandle);
@@ -428,7 +456,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 			expected,
 			10 /* try 10 ports */,
 			5000 /* try up to 5 seconds */,
-			2048 /* skip 2048 ports between attempts */,
+			2048 /* skip 2048 ports between attempts */
 		);
 
 		if (!this._isExtensionDevTestFromCli) {
@@ -436,27 +464,27 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 				console.warn(
 					"%c[Extension Host] %cCould not find a free port for debugging",
 					"color: blue",
-					"color:",
+					"color:"
 				);
 			} else {
 				if (port !== expected) {
 					console.warn(
 						`%c[Extension Host] %cProvided debugging port ${expected} is not free, using ${port} instead.`,
 						"color: blue",
-						"color:",
+						"color:"
 					);
 				}
 				if (this._isExtensionDevDebugBrk) {
 					console.warn(
 						`%c[Extension Host] %cSTOPPED on first line for debugging on port ${port}`,
 						"color: blue",
-						"color:",
+						"color:"
 					);
 				} else {
 					console.info(
 						`%c[Extension Host] %cdebugger listening on port ${port}`,
 						"color: blue",
-						"color:",
+						"color:"
 					);
 				}
 			}
@@ -467,7 +495,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 
 	private _establishProtocol(
 		extensionHostProcess: ExtensionHostProcess,
-		opts: IExtensionHostProcessOptions,
+		opts: IExtensionHostProcessOptions
 	): Promise<IMessagePassingProtocol> {
 		writeExtHostConnection(new MessagePortExtHostConnection(), opts.env);
 
@@ -475,13 +503,13 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		const portPromise = acquirePort(
 			undefined /* we trigger the request via service call! */,
 			opts.responseChannel,
-			opts.responseNonce,
+			opts.responseNonce
 		);
 
 		return new Promise<IMessagePassingProtocol>((resolve, reject) => {
 			const handle = setTimeout(() => {
 				reject(
-					"The local extension host took longer than 60s to connect.",
+					"The local extension host took longer than 60s to connect."
 				);
 			}, 60 * 1000);
 
@@ -490,7 +518,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 					toDisposable(() => {
 						// Close the message port when the extension host is disposed
 						port.close();
-					}),
+					})
 				);
 				clearTimeout(handle);
 
@@ -512,25 +540,25 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 						this.pid = pid;
 					}
 					this._logService.info(
-						`Started local extension host with pid ${pid}.`,
+						`Started local extension host with pid ${pid}.`
 					);
 					const duration = sw.elapsed();
 					if (platform.isCI) {
 						this._logService.info(
-							`IExtensionHostStarter.start() took ${duration} ms.`,
+							`IExtensionHostStarter.start() took ${duration} ms.`
 						);
 					}
 				},
 				(err) => {
 					// Starting the ext host process resulted in an error
 					reject(err);
-				},
+				}
 			);
 		});
 	}
 
 	private _performHandshake(
-		protocol: IMessagePassingProtocol,
+		protocol: IMessagePassingProtocol
 	): Promise<void> {
 		// 1) wait for the incoming `ready` event and send the initialization data.
 		// 2) wait for the incoming `initialized` event.
@@ -539,7 +567,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 			const installTimeoutCheck = () => {
 				timeoutHandle = setTimeout(() => {
 					reject(
-						"The local extension host took longer than 60s to send its ready message.",
+						"The local extension host took longer than 60s to send its ready message."
 					);
 				}, 60 * 1000);
 			};
@@ -560,7 +588,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 						installTimeoutCheck();
 
 						protocol.send(
-							VSBuffer.fromString(JSON.stringify(data)),
+							VSBuffer.fromString(JSON.stringify(data))
 						);
 					});
 					return;
@@ -580,7 +608,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 
 				console.error(
 					`received unexpected message during handshake phase from the extension host: `,
-					msg,
+					msg
 				);
 			});
 		});
@@ -607,7 +635,7 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 					this._environmentService.extHostTelemetryLogFile,
 				isExtensionTelemetryLoggingOnly: isLoggingOnly(
 					this._productService,
-					this._environmentService,
+					this._environmentService
 				),
 				appLanguage: platform.language,
 				extensionDevelopmentLocationURI:
@@ -629,16 +657,16 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 							configuration: workspace.configuration ?? undefined,
 							id: workspace.id,
 							name: this._labelService.getWorkspaceLabel(
-								workspace,
+								workspace
 							),
 							isUntitled: workspace.configuration
 								? isUntitledWorkspace(
 										workspace.configuration,
-										this._environmentService,
-								  )
+										this._environmentService
+									)
 								: false,
 							transient: workspace.transient,
-					  },
+						},
 			remote: {
 				authority: this._environmentService.remoteAuthority,
 				connectionData: null,
@@ -748,13 +776,13 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 			this._environmentService.debugExtensionHost.debugId
 		) {
 			this._extensionHostDebugService.terminateSession(
-				this._environmentService.debugExtensionHost.debugId,
+				this._environmentService.debugExtensionHost.debugId
 			);
 			event.join(timeout(100 /* wait a bit for IPC to get delivered */), {
 				id: "join.extensionDevelopment",
 				label: nls.localize(
 					"join.extensionDevelopment",
-					"Terminating extension debug session",
+					"Terminating extension debug session"
 				),
 			});
 		}

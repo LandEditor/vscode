@@ -53,17 +53,35 @@ export class NativeMenubarControl extends MenubarControl {
 		@IStorageService storageService: IStorageService,
 		@INotificationService notificationService: INotificationService,
 		@IPreferencesService preferencesService: IPreferencesService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@IMenubarService private readonly menubarService: IMenubarService,
 		@IHostService hostService: IHostService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@ICommandService commandService: ICommandService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@ICommandService commandService: ICommandService
 	) {
-		super(menuService, workspacesService, contextKeyService, keybindingService, configurationService, labelService, updateService, storageService, notificationService, preferencesService, environmentService, accessibilityService, hostService, commandService);
+		super(
+			menuService,
+			workspacesService,
+			contextKeyService,
+			keybindingService,
+			configurationService,
+			labelService,
+			updateService,
+			storageService,
+			notificationService,
+			preferencesService,
+			environmentService,
+			accessibilityService,
+			hostService,
+			commandService
+		);
 
 		(async () => {
-			this.recentlyOpened = await this.workspacesService.getRecentlyOpened();
+			this.recentlyOpened =
+				await this.workspacesService.getRecentlyOpened();
 
 			this.doUpdateMenubar();
 		})();
@@ -78,7 +96,7 @@ export class NativeMenubarControl extends MenubarControl {
 			const menu = this.menus[topLevelMenuName];
 			if (menu) {
 				this.mainMenuDisposables.add(
-					menu.onDidChange(() => this.updateMenubar()),
+					menu.onDidChange(() => this.updateMenubar())
 				);
 			}
 		}
@@ -96,7 +114,7 @@ export class NativeMenubarControl extends MenubarControl {
 		if (this.getMenubarMenus(menubarData)) {
 			this.menubarService.updateMenubar(
 				this.nativeHostService.windowId,
-				menubarData,
+				menubarData
 			);
 		}
 	}
@@ -115,12 +133,12 @@ export class NativeMenubarControl extends MenubarControl {
 				createAndFillInContextMenuActions(
 					menu,
 					{ shouldForwardArgs: true },
-					menuActions,
+					menuActions
 				);
 				this.populateMenuItems(
 					menuActions,
 					menubarMenu,
-					menubarData.keybindings,
+					menubarData.keybindings
 				);
 				if (menubarMenu.items.length === 0) {
 					return false; // Menus are incomplete
@@ -135,7 +153,7 @@ export class NativeMenubarControl extends MenubarControl {
 	private populateMenuItems(
 		menuActions: readonly IAction[],
 		menuToPopulate: IMenubarMenu,
-		keybindings: { [id: string]: IMenubarKeybinding | undefined },
+		keybindings: { [id: string]: IMenubarKeybinding | undefined }
 	) {
 		for (const menuItem of menuActions) {
 			if (menuItem instanceof Separator) {
@@ -149,7 +167,7 @@ export class NativeMenubarControl extends MenubarControl {
 					typeof menuItem.item.title === "string"
 						? menuItem.item.title
 						: menuItem.item.title.mnemonicTitle ??
-						  menuItem.item.title.value;
+							menuItem.item.title.value;
 
 				if (menuItem instanceof SubmenuItemAction) {
 					const submenu = { items: [] };
@@ -157,7 +175,7 @@ export class NativeMenubarControl extends MenubarControl {
 					this.populateMenuItems(
 						menuItem.actions,
 						submenu,
-						keybindings,
+						keybindings
 					);
 
 					if (submenu.items.length > 0) {
@@ -172,7 +190,7 @@ export class NativeMenubarControl extends MenubarControl {
 				} else {
 					if (menuItem.id === OpenRecentAction.ID) {
 						const actions = this.getOpenRecentActions().map(
-							this.transformOpenRecentAction,
+							this.transformOpenRecentAction
 						);
 						menuToPopulate.items.push(...actions);
 					}
@@ -198,7 +216,7 @@ export class NativeMenubarControl extends MenubarControl {
 					}
 
 					keybindings[menuItem.id] = this.getMenubarKeybinding(
-						menuItem.id,
+						menuItem.id
 					);
 					menuToPopulate.items.push(menubarMenuItem);
 				}
@@ -207,7 +225,7 @@ export class NativeMenubarControl extends MenubarControl {
 	}
 
 	private transformOpenRecentAction(
-		action: Separator | IOpenRecentAction,
+		action: Separator | IOpenRecentAction
 	): MenubarMenuItem {
 		if (action instanceof Separator) {
 			return { id: "vscode.menubar.separator" };
@@ -226,7 +244,7 @@ export class NativeMenubarControl extends MenubarControl {
 		const keybindings: { [id: string]: IMenubarKeybinding } = {};
 		if (isMacintosh) {
 			const keybinding = this.getMenubarKeybinding(
-				"workbench.action.quit",
+				"workbench.action.quit"
 			);
 			if (keybinding) {
 				keybindings["workbench.action.quit"] = keybinding;

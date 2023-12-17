@@ -44,7 +44,7 @@ import { RequestService, getRequestService } from "./requests";
 
 namespace CustomDataChangedNotification {
 	export const type: NotificationType<string[]> = new NotificationType(
-		"css/customDataChanged",
+		"css/customDataChanged"
 	);
 }
 
@@ -72,7 +72,7 @@ export interface RuntimeEnvironment {
 
 export function startServer(
 	connection: Connection,
-	runtime: RuntimeEnvironment,
+	runtime: RuntimeEnvironment
 ) {
 	// Create a text document manager.
 	const documents = new TextDocuments(TextDocument);
@@ -81,7 +81,7 @@ export function startServer(
 	documents.listen(connection);
 
 	const stylesheets = getLanguageModelCache<Stylesheet>(10, 60, (document) =>
-		getLanguageService(document).parseStylesheet(document),
+		getLanguageService(document).parseStylesheet(document)
 	);
 	documents.onDidClose((e) => {
 		stylesheets.onDocumentRemoved(e.document);
@@ -128,7 +128,7 @@ export function startServer(
 		requestService = getRequestService(
 			initializationOptions?.handledSchemas || ["file"],
 			connection,
-			runtime,
+			runtime
 		);
 
 		function getClientCapability<T>(name: string, def: T) {
@@ -144,15 +144,15 @@ export function startServer(
 		}
 		const snippetSupport = !!getClientCapability(
 			"textDocument.completion.completionItem.snippetSupport",
-			false,
+			false
 		);
 		scopedSettingsSupport = !!getClientCapability(
 			"workspace.configuration",
-			false,
+			false
 		);
 		foldingRangeLimit = getClientCapability(
 			"textDocument.foldingRange.rangeLimit",
-			Number.MAX_VALUE,
+			Number.MAX_VALUE
 		);
 
 		formatterMaxNumberOfEdits =
@@ -174,21 +174,21 @@ export function startServer(
 
 		const supportsDiagnosticPull = getClientCapability(
 			"textDocument.diagnostic",
-			undefined,
+			undefined
 		);
 		if (supportsDiagnosticPull === undefined) {
 			diagnosticsSupport = registerDiagnosticsPushSupport(
 				documents,
 				connection,
 				runtime,
-				validateTextDocument,
+				validateTextDocument
 			);
 		} else {
 			diagnosticsSupport = registerDiagnosticsPullSupport(
 				documents,
 				connection,
 				runtime,
-				validateTextDocument,
+				validateTextDocument
 			);
 		}
 
@@ -229,7 +229,7 @@ export function startServer(
 			connection.console.log(
 				"Document type is " +
 					document.languageId +
-					", using css instead.",
+					", using css instead."
 			);
 			service = languageServices["css"];
 		}
@@ -244,7 +244,7 @@ export function startServer(
 		delete documentSettings[e.document.uri];
 	});
 	function getDocumentSettings(
-		textDocument: TextDocument,
+		textDocument: TextDocument
 	): Thenable<LanguageSettings | undefined> {
 		if (scopedSettingsSupport) {
 			let promise = documentSettings[textDocument.uri];
@@ -282,7 +282,7 @@ export function startServer(
 	}
 
 	async function validateTextDocument(
-		textDocument: TextDocument,
+		textDocument: TextDocument
 	): Promise<Diagnostic[]> {
 		const settingsPromise = getDocumentSettings(textDocument);
 		const [settings] = await Promise.all([
@@ -294,7 +294,7 @@ export function startServer(
 		return getLanguageService(textDocument).doValidation(
 			textDocument,
 			stylesheet,
-			settings,
+			settings
 		);
 	}
 
@@ -304,10 +304,10 @@ export function startServer(
 				for (const lang in languageServices) {
 					languageServices[lang].setDataProviders(
 						true,
-						customDataProviders,
+						customDataProviders
 					);
 				}
-			},
+			}
 		);
 	}
 
@@ -316,7 +316,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					textDocumentPosition.textDocument.uri,
+					textDocumentPosition.textDocument.uri
 				);
 				if (document) {
 					const [settings] = await Promise.all([
@@ -326,21 +326,21 @@ export function startServer(
 					const styleSheet = stylesheets.get(document);
 					const documentContext = getDocumentContext(
 						document.uri,
-						workspaceFolders,
+						workspaceFolders
 					);
 					return getLanguageService(document).doComplete2(
 						document,
 						textDocumentPosition.position,
 						styleSheet,
 						documentContext,
-						settings?.completion,
+						settings?.completion
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing completions for ${textDocumentPosition.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -349,7 +349,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					textDocumentPosition.textDocument.uri,
+					textDocumentPosition.textDocument.uri
 				);
 				if (document) {
 					const [settings] = await Promise.all([
@@ -361,14 +361,14 @@ export function startServer(
 						document,
 						textDocumentPosition.position,
 						styleSheet,
-						settings?.hover,
+						settings?.hover
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing hover for ${textDocumentPosition.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -377,21 +377,21 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					documentSymbolParams.textDocument.uri,
+					documentSymbolParams.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
 					const stylesheet = stylesheets.get(document);
 					return getLanguageService(document).findDocumentSymbols2(
 						document,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing document symbols for ${documentSymbolParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -400,7 +400,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					documentDefinitionParams.textDocument.uri,
+					documentDefinitionParams.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
@@ -408,14 +408,14 @@ export function startServer(
 					return getLanguageService(document).findDefinition(
 						document,
 						documentDefinitionParams.position,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing definitions for ${documentDefinitionParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -424,7 +424,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					documentHighlightParams.textDocument.uri,
+					documentHighlightParams.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
@@ -432,14 +432,14 @@ export function startServer(
 					return getLanguageService(document).findDocumentHighlights(
 						document,
 						documentHighlightParams.position,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing document highlights for ${documentHighlightParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -448,26 +448,26 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					documentLinkParams.textDocument.uri,
+					documentLinkParams.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
 					const documentContext = getDocumentContext(
 						document.uri,
-						workspaceFolders,
+						workspaceFolders
 					);
 					const stylesheet = stylesheets.get(document);
 					return getLanguageService(document).findDocumentLinks2(
 						document,
 						stylesheet,
-						documentContext,
+						documentContext
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing document links for ${documentLinkParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -476,7 +476,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					referenceParams.textDocument.uri,
+					referenceParams.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
@@ -484,14 +484,14 @@ export function startServer(
 					return getLanguageService(document).findReferences(
 						document,
 						referenceParams.position,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing references for ${referenceParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -500,7 +500,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					codeActionParams.textDocument.uri,
+					codeActionParams.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
@@ -509,14 +509,14 @@ export function startServer(
 						document,
 						codeActionParams.range,
 						codeActionParams.context,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing code actions for ${codeActionParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -530,14 +530,14 @@ export function startServer(
 					const stylesheet = stylesheets.get(document);
 					return getLanguageService(document).findDocumentColors(
 						document,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing document colors for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -553,14 +553,14 @@ export function startServer(
 						document,
 						stylesheet,
 						params.color,
-						params.range,
+						params.range
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing color presentations for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -569,7 +569,7 @@ export function startServer(
 			runtime,
 			async () => {
 				const document = documents.get(
-					renameParameters.textDocument.uri,
+					renameParameters.textDocument.uri
 				);
 				if (document) {
 					await dataProvidersReady;
@@ -578,14 +578,14 @@ export function startServer(
 						document,
 						renameParameters.position,
 						renameParameters.newName,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing renames for ${renameParameters.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -598,14 +598,14 @@ export function startServer(
 					await dataProvidersReady;
 					return getLanguageService(document).getFoldingRanges(
 						document,
-						{ rangeLimit: foldingRangeLimit },
+						{ rangeLimit: foldingRangeLimit }
 					);
 				}
 				return null;
 			},
 			null,
 			`Error while computing folding ranges for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -622,28 +622,28 @@ export function startServer(
 					return getLanguageService(document).getSelectionRanges(
 						document,
 						positions,
-						stylesheet,
+						stylesheet
 					);
 				}
 				return [];
 			},
 			[],
 			`Error while computing selection ranges for ${params.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
 	async function onFormat(
 		textDocument: TextDocumentIdentifier,
 		range: Range | undefined,
-		options: FormattingOptions,
+		options: FormattingOptions
 	): Promise<TextEdit[]> {
 		const document = documents.get(textDocument.uri);
 		if (document) {
 			const edits = getLanguageService(document).format(
 				document,
 				range ?? getFullRange(document),
-				options,
+				options
 			);
 			if (edits.length > formatterMaxNumberOfEdits) {
 				const newText = TextDocument.applyEdits(document, edits);
@@ -661,11 +661,11 @@ export function startServer(
 				onFormat(
 					formatParams.textDocument,
 					formatParams.range,
-					formatParams.options,
+					formatParams.options
 				),
 			[],
 			`Error while formatting range for ${formatParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
@@ -676,17 +676,17 @@ export function startServer(
 				onFormat(
 					formatParams.textDocument,
 					undefined,
-					formatParams.options,
+					formatParams.options
 				),
 			[],
 			`Error while formatting ${formatParams.textDocument.uri}`,
-			token,
+			token
 		);
 	});
 
 	connection.onNotification(
 		CustomDataChangedNotification.type,
-		updateDataProviders,
+		updateDataProviders
 	);
 
 	// Listen on the connection
@@ -696,6 +696,6 @@ export function startServer(
 function getFullRange(document: TextDocument): Range {
 	return Range.create(
 		Position.create(0, 0),
-		document.positionAt(document.getText().length),
+		document.positionAt(document.getText().length)
 	);
 }

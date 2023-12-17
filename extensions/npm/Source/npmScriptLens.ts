@@ -53,8 +53,8 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 					language: "json",
 					pattern: "**/package.json",
 				},
-				this,
-			),
+				this
+			)
 		);
 	}
 
@@ -62,7 +62,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 	 * @inheritdoc
 	 */
 	public async provideCodeLenses(
-		document: TextDocument,
+		document: TextDocument
 	): Promise<CodeLens[]> {
 		if (this.lensLocation === "never") {
 			return [];
@@ -87,7 +87,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 
 		if (this.lensLocation === "all") {
 			const packageManager = await findPreferredPM(
-				Uri.joinPath(document.uri, "..").fsPath,
+				Uri.joinPath(document.uri, "..").fsPath
 			);
 			return tokens.scripts.map(
 				({ name, nameRange }) =>
@@ -99,7 +99,7 @@ export class NpmScriptLensProvider implements CodeLensProvider, Disposable {
 							workspace.getWorkspaceFolder(document.uri),
 							{ cwd },
 						],
-					}),
+					})
 			);
 		}
 

@@ -71,7 +71,7 @@ export const KnownSnippetVariableNames = Object.freeze<{ [key: string]: true }>(
 		RANDOM: true,
 		RANDOM_HEX: true,
 		UUID: true,
-	},
+	}
 );
 
 export class CompositeSnippetVariableResolver implements VariableResolver {
@@ -95,7 +95,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 		private readonly _model: ITextModel,
 		private readonly _selection: Selection,
 		private readonly _selectionIdx: number,
-		private readonly _overtypingCapturer: OvertypingCapturer | undefined,
+		private readonly _overtypingCapturer: OvertypingCapturer | undefined
 	) {
 		//
 	}
@@ -113,7 +113,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 			// If there was no selected text, try to get last overtyped text
 			if (!value && this._overtypingCapturer) {
 				const info = this._overtypingCapturer.getLastOvertypedInfo(
-					this._selectionIdx,
+					this._selectionIdx
 				);
 				if (info) {
 					value = info.value;
@@ -128,12 +128,12 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 				// extra indentation to the value
 
 				const line = this._model.getLineContent(
-					this._selection.startLineNumber,
+					this._selection.startLineNumber
 				);
 				const lineLeadingWhitespace = getLeadingWhitespace(
 					line,
 					0,
-					this._selection.startColumn - 1,
+					this._selection.startColumn - 1
 				);
 
 				let varLeadingWhitespace = lineLeadingWhitespace;
@@ -143,28 +143,28 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 					}
 					if (marker instanceof Text) {
 						varLeadingWhitespace = getLeadingWhitespace(
-							splitLines(marker.value).pop()!,
+							splitLines(marker.value).pop()!
 						);
 					}
 					return true;
 				});
 				const whitespaceCommonLength = commonPrefixLength(
 					varLeadingWhitespace,
-					lineLeadingWhitespace,
+					lineLeadingWhitespace
 				);
 
 				value = value.replace(
 					/(\r\n|\r|\n)(.*)/g,
 					(m, newline, rest) =>
 						`${newline}${varLeadingWhitespace.substr(
-							whitespaceCommonLength,
-						)}${rest}`,
+							whitespaceCommonLength
+						)}${rest}`
 				);
 			}
 			return value;
 		} else if (name === "TM_CURRENT_LINE") {
 			return this._model.getLineContent(
-				this._selection.positionLineNumber,
+				this._selection.positionLineNumber
 			);
 		} else if (name === "TM_CURRENT_WORD") {
 			const info = this._model.getWordAtPosition({
@@ -188,7 +188,7 @@ export class SelectionBasedVariableResolver implements VariableResolver {
 export class ModelBasedVariableResolver implements VariableResolver {
 	constructor(
 		private readonly _labelService: ILabelService,
-		private readonly _model: ITextModel,
+		private readonly _model: ITextModel
 	) {
 		//
 	}
@@ -233,7 +233,7 @@ export class ClipboardBasedVariableResolver implements VariableResolver {
 		private readonly _readClipboardText: IReadClipboardText,
 		private readonly _selectionIdx: number,
 		private readonly _selectionCount: number,
-		private readonly _spread: boolean,
+		private readonly _spread: boolean
 	) {
 		//
 	}
@@ -266,7 +266,8 @@ export class CommentBasedVariableResolver implements VariableResolver {
 	constructor(
 		private readonly _model: ITextModel,
 		private readonly _selection: Selection,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService
 	) {
 		//
 	}
@@ -274,11 +275,11 @@ export class CommentBasedVariableResolver implements VariableResolver {
 		const { name } = variable;
 		const langId = this._model.getLanguageIdAtPosition(
 			this._selection.selectionStartLineNumber,
-			this._selection.selectionStartColumn,
+			this._selection.selectionStartColumn
 		);
 		const config =
 			this._languageConfigurationService.getLanguageConfiguration(
-				langId,
+				langId
 			).comments;
 		if (!config) {
 			return undefined;
@@ -388,9 +389,7 @@ export class TimeBasedVariableResolver implements VariableResolver {
 
 export class WorkspaceBasedVariableResolver implements VariableResolver {
 	constructor(
-		private readonly _workspaceService:
-			| IWorkspaceContextService
-			| undefined,
+		private readonly _workspaceService: IWorkspaceContextService | undefined
 	) {
 		//
 	}
@@ -401,7 +400,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		}
 
 		const workspaceIdentifier = toWorkspaceIdentifier(
-			this._workspaceService.getWorkspace(),
+			this._workspaceService.getWorkspace()
 		);
 		if (isEmptyWorkspaceIdentifier(workspaceIdentifier)) {
 			return undefined;
@@ -418,7 +417,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 	private _resolveWorkspaceName(
 		workspaceIdentifier:
 			| IWorkspaceIdentifier
-			| ISingleFolderWorkspaceIdentifier,
+			| ISingleFolderWorkspaceIdentifier
 	): string | undefined {
 		if (isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return path.basename(workspaceIdentifier.uri.path);
@@ -428,7 +427,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		if (filename.endsWith(WORKSPACE_EXTENSION)) {
 			filename = filename.substr(
 				0,
-				filename.length - WORKSPACE_EXTENSION.length - 1,
+				filename.length - WORKSPACE_EXTENSION.length - 1
 			);
 		}
 		return filename;
@@ -436,7 +435,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 	private _resoveWorkspacePath(
 		workspaceIdentifier:
 			| IWorkspaceIdentifier
-			| ISingleFolderWorkspaceIdentifier,
+			| ISingleFolderWorkspaceIdentifier
 	): string | undefined {
 		if (isSingleFolderWorkspaceIdentifier(workspaceIdentifier)) {
 			return normalizeDriveLetter(workspaceIdentifier.uri.fsPath);
@@ -447,7 +446,7 @@ export class WorkspaceBasedVariableResolver implements VariableResolver {
 		if (folderpath.endsWith(filename)) {
 			folderpath = folderpath.substr(
 				0,
-				folderpath.length - filename.length - 1,
+				folderpath.length - filename.length - 1
 			);
 		}
 		return folderpath ? normalizeDriveLetter(folderpath) : "/";

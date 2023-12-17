@@ -49,40 +49,37 @@ import { KeybindingWeight } from "vs/platform/keybinding/common/keybindingsRegis
 const maximizeIcon = registerIcon(
 	"panel-maximize",
 	Codicon.chevronUp,
-	localize("maximizeIcon", "Icon to maximize a panel."),
+	localize("maximizeIcon", "Icon to maximize a panel.")
 );
 const restoreIcon = registerIcon(
 	"panel-restore",
 	Codicon.chevronDown,
-	localize("restoreIcon", "Icon to restore a panel."),
+	localize("restoreIcon", "Icon to restore a panel.")
 );
 const closeIcon = registerIcon(
 	"panel-close",
 	Codicon.close,
-	localize("closeIcon", "Icon to close a panel."),
+	localize("closeIcon", "Icon to close a panel.")
 );
 const panelIcon = registerIcon(
 	"panel-layout-icon",
 	Codicon.layoutPanel,
 	localize(
 		"togglePanelOffIcon",
-		"Icon to toggle the panel off when it is on.",
-	),
+		"Icon to toggle the panel off when it is on."
+	)
 );
 const panelOffIcon = registerIcon(
 	"panel-layout-icon-off",
 	Codicon.layoutPanelOff,
-	localize(
-		"togglePanelOnIcon",
-		"Icon to toggle the panel on when it is off.",
-	),
+	localize("togglePanelOnIcon", "Icon to toggle the panel on when it is off.")
 );
 
 export class TogglePanelAction extends Action2 {
 	static readonly ID = "workbench.action.togglePanel";
 	static readonly LABEL = localize(
 		"togglePanelVisibility",
-		"Toggle Panel Visibility",
+		"Toggle Panel Visibility"
 	);
 
 	constructor() {
@@ -100,7 +97,7 @@ export class TogglePanelAction extends Action2 {
 						key: "toggle panel mnemonic",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Panel",
+					"&&Panel"
 				),
 			},
 			f1: true,
@@ -128,7 +125,7 @@ export class TogglePanelAction extends Action2 {
 		const layoutService = accessor.get(IWorkbenchLayoutService);
 		layoutService.setPartHidden(
 			layoutService.isVisible(Parts.PANEL_PART),
-			Parts.PANEL_PART,
+			Parts.PANEL_PART
 		);
 	}
 }
@@ -155,7 +152,7 @@ registerAction2(
 		override async run(accessor: ServicesAccessor): Promise<void> {
 			const layoutService = accessor.get(IWorkbenchLayoutService);
 			const paneCompositeService = accessor.get(
-				IPaneCompositePartService,
+				IPaneCompositePartService
 			);
 
 			// Show panel
@@ -165,11 +162,11 @@ registerAction2(
 
 			// Focus into active panel
 			const panel = paneCompositeService.getActivePaneComposite(
-				ViewContainerLocation.Panel,
+				ViewContainerLocation.Panel
 			);
 			panel?.focus();
 		}
-	},
+	}
 );
 
 const PositionPanelActionId = {
@@ -198,7 +195,7 @@ function createPanelActionConfig<T>(
 	title: ICommandActionTitle,
 	shortLabel: string,
 	value: T,
-	when: ContextKeyExpression,
+	when: ContextKeyExpression
 ): PanelActionConfig<T> {
 	return {
 		id,
@@ -213,14 +210,14 @@ function createPositionPanelActionConfig(
 	id: string,
 	title: ICommandActionTitle,
 	shortLabel: string,
-	position: Position,
+	position: Position
 ): PanelActionConfig<Position> {
 	return createPanelActionConfig<Position>(
 		id,
 		title,
 		shortLabel,
 		position,
-		PanelPositionContext.notEqualsTo(positionToString(position)),
+		PanelPositionContext.notEqualsTo(positionToString(position))
 	);
 }
 
@@ -228,14 +225,14 @@ function createAlignmentPanelActionConfig(
 	id: string,
 	title: ICommandActionTitle,
 	shortLabel: string,
-	alignment: PanelAlignment,
+	alignment: PanelAlignment
 ): PanelActionConfig<PanelAlignment> {
 	return createPanelActionConfig<PanelAlignment>(
 		id,
 		title,
 		shortLabel,
 		alignment,
-		PanelAlignmentContext.notEqualsTo(alignment),
+		PanelAlignmentContext.notEqualsTo(alignment)
 	);
 }
 
@@ -247,7 +244,7 @@ const PositionPanelActionConfigs: PanelActionConfig<Position>[] = [
 			original: "Move Panel Left",
 		},
 		localize("positionPanelLeftShort", "Left"),
-		Position.LEFT,
+		Position.LEFT
 	),
 	createPositionPanelActionConfig(
 		PositionPanelActionId.RIGHT,
@@ -256,7 +253,7 @@ const PositionPanelActionConfigs: PanelActionConfig<Position>[] = [
 			original: "Move Panel Right",
 		},
 		localize("positionPanelRightShort", "Right"),
-		Position.RIGHT,
+		Position.RIGHT
 	),
 	createPositionPanelActionConfig(
 		PositionPanelActionId.BOTTOM,
@@ -265,7 +262,7 @@ const PositionPanelActionConfigs: PanelActionConfig<Position>[] = [
 			original: "Move Panel To Bottom",
 		},
 		localize("positionPanelBottomShort", "Bottom"),
-		Position.BOTTOM,
+		Position.BOTTOM
 	),
 ];
 
@@ -277,7 +274,7 @@ const AlignPanelActionConfigs: PanelActionConfig<PanelAlignment>[] = [
 			original: "Set Panel Alignment to Left",
 		},
 		localize("alignPanelLeftShort", "Left"),
-		"left",
+		"left"
 	),
 	createAlignmentPanelActionConfig(
 		AlignPanelActionId.RIGHT,
@@ -286,31 +283,31 @@ const AlignPanelActionConfigs: PanelActionConfig<PanelAlignment>[] = [
 			original: "Set Panel Alignment to Right",
 		},
 		localize("alignPanelRightShort", "Right"),
-		"right",
+		"right"
 	),
 	createAlignmentPanelActionConfig(
 		AlignPanelActionId.CENTER,
 		{
 			value: localize(
 				"alignPanelCenter",
-				"Set Panel Alignment to Center",
+				"Set Panel Alignment to Center"
 			),
 			original: "Set Panel Alignment to Center",
 		},
 		localize("alignPanelCenterShort", "Center"),
-		"center",
+		"center"
 	),
 	createAlignmentPanelActionConfig(
 		AlignPanelActionId.JUSTIFY,
 		{
 			value: localize(
 				"alignPanelJustify",
-				"Set Panel Alignment to Justify",
+				"Set Panel Alignment to Justify"
 			),
 			original: "Set Panel Alignment to Justify",
 		},
 		localize("alignPanelJustifyShort", "Justify"),
-		"justify",
+		"justify"
 	),
 ];
 
@@ -337,10 +334,10 @@ PositionPanelActionConfigs.forEach((positionPanelAction) => {
 			run(accessor: ServicesAccessor): void {
 				const layoutService = accessor.get(IWorkbenchLayoutService);
 				layoutService.setPanelPosition(
-					value === undefined ? Position.BOTTOM : value,
+					value === undefined ? Position.BOTTOM : value
 				);
 			}
-		},
+		}
 	);
 
 	MenuRegistry.appendMenuItem(MenuId.PanelPositionMenu, {
@@ -376,10 +373,10 @@ AlignPanelActionConfigs.forEach((alignPanelAction) => {
 			run(accessor: ServicesAccessor): void {
 				const layoutService = accessor.get(IWorkbenchLayoutService);
 				layoutService.setPanelAlignment(
-					value === undefined ? "center" : value,
+					value === undefined ? "center" : value
 				);
 			}
-		},
+		}
 	);
 
 	MenuRegistry.appendMenuItem(MenuId.PanelAlignmentMenu, {
@@ -404,14 +401,14 @@ class SwitchPanelViewAction extends Action2 {
 
 	override async run(
 		accessor: ServicesAccessor,
-		offset: number,
+		offset: number
 	): Promise<void> {
 		const paneCompositeService = accessor.get(IPaneCompositePartService);
 		const pinnedPanels = paneCompositeService.getVisiblePaneCompositeIds(
-			ViewContainerLocation.Panel,
+			ViewContainerLocation.Panel
 		);
 		const activePanel = paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Panel,
+			ViewContainerLocation.Panel
 		);
 		if (!activePanel) {
 			return;
@@ -430,7 +427,7 @@ class SwitchPanelViewAction extends Action2 {
 			await paneCompositeService.openPaneComposite(
 				targetPanelId,
 				ViewContainerLocation.Panel,
-				true,
+				true
 			);
 		}
 	}
@@ -448,7 +445,7 @@ registerAction2(
 		override run(accessor: ServicesAccessor): Promise<void> {
 			return super.run(accessor, -1);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -463,7 +460,7 @@ registerAction2(
 		override run(accessor: ServicesAccessor): Promise<void> {
 			return super.run(accessor, 1);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -474,7 +471,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"toggleMaximizedPanel",
-						"Toggle Maximized Panel",
+						"Toggle Maximized Panel"
 					),
 					original: "Toggle Maximized Panel",
 				},
@@ -485,7 +482,7 @@ registerAction2(
 				// the workbench grid currently prevents us from supporting panel maximization with non-center panel alignment
 				precondition: ContextKeyExpr.or(
 					PanelAlignmentContext.isEqualTo("center"),
-					PanelPositionContext.notEqualsTo("bottom"),
+					PanelPositionContext.notEqualsTo("bottom")
 				),
 				toggled: {
 					condition: PanelMaximizedContext,
@@ -500,7 +497,7 @@ registerAction2(
 						// the workbench grid currently prevents us from supporting panel maximization with non-center panel alignment
 						when: ContextKeyExpr.or(
 							PanelAlignmentContext.isEqualTo("center"),
-							PanelPositionContext.notEqualsTo("bottom"),
+							PanelPositionContext.notEqualsTo("bottom")
 						),
 					},
 				],
@@ -516,8 +513,8 @@ registerAction2(
 				notificationService.warn(
 					localize(
 						"panelMaxNotSupported",
-						"Maximizing the panel is only supported when it is center aligned.",
-					),
+						"Maximizing the panel is only supported when it is center aligned."
+					)
 				);
 				return;
 			}
@@ -532,7 +529,7 @@ registerAction2(
 				layoutService.toggleMaximizedPanel();
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -564,7 +561,7 @@ registerAction2(
 				.get(IWorkbenchLayoutService)
 				.setPartHidden(true, Parts.PANEL_PART);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -575,7 +572,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"closeSecondarySideBar",
-						"Close Secondary Side Bar",
+						"Close Secondary Side Bar"
 					),
 					original: "Close Secondary Side Bar",
 				},
@@ -599,7 +596,7 @@ registerAction2(
 				.get(IWorkbenchLayoutService)
 				.setPartHidden(true, Parts.AUXILIARYBAR_PART);
 		}
-	},
+	}
 );
 
 MenuRegistry.appendMenuItems([
@@ -616,12 +613,12 @@ MenuRegistry.appendMenuItems([
 			when: ContextKeyExpr.or(
 				ContextKeyExpr.equals(
 					"config.workbench.layoutControl.type",
-					"toggles",
+					"toggles"
 				),
 				ContextKeyExpr.equals(
 					"config.workbench.layoutControl.type",
-					"both",
-				),
+					"both"
+				)
 			),
 			order: 1,
 		},
@@ -641,8 +638,8 @@ MenuRegistry.appendMenuItems([
 				PanelVisibleContext,
 				ContextKeyExpr.equals(
 					"viewLocation",
-					ViewContainerLocationToString(ViewContainerLocation.Panel),
-				),
+					ViewContainerLocationToString(ViewContainerLocation.Panel)
+				)
 			),
 			order: 2,
 		},
@@ -653,7 +650,7 @@ class MoveViewsBetweenPanelsAction extends Action2 {
 	constructor(
 		private readonly source: ViewContainerLocation,
 		private readonly destination: ViewContainerLocation,
-		desc: Readonly<IAction2Options>,
+		desc: Readonly<IAction2Options>
 	) {
 		super(desc);
 	}
@@ -664,14 +661,14 @@ class MoveViewsBetweenPanelsAction extends Action2 {
 		const viewsService = accessor.get(IViewsService);
 
 		const srcContainers = viewDescriptorService.getViewContainersByLocation(
-			this.source,
+			this.source
 		);
 		const destContainers =
 			viewDescriptorService.getViewContainersByLocation(this.destination);
 
 		if (srcContainers.length) {
 			const activeViewContainer = viewsService.getVisibleViewContainer(
-				this.source,
+				this.source
 			);
 
 			srcContainers.forEach((viewContainer) =>
@@ -679,14 +676,14 @@ class MoveViewsBetweenPanelsAction extends Action2 {
 					viewContainer,
 					this.destination,
 					undefined,
-					this.desc.id,
-				),
+					this.desc.id
+				)
 			);
 			layoutService.setPartHidden(
 				false,
 				this.destination === ViewContainerLocation.Panel
 					? Parts.PANEL_PART
-					: Parts.AUXILIARYBAR_PART,
+					: Parts.AUXILIARYBAR_PART
 			);
 
 			if (activeViewContainer && destContainers.length === 0) {
@@ -706,7 +703,7 @@ class MovePanelToSidePanelAction extends MoveViewsBetweenPanelsAction {
 			title: {
 				value: localize(
 					"movePanelToSecondarySideBar",
-					"Move Panel Views To Secondary Side Bar",
+					"Move Panel Views To Secondary Side Bar"
 				),
 				original: "Move Panel Views To Secondary Side Bar",
 			},
@@ -724,7 +721,7 @@ export class MovePanelToSecondarySideBarAction extends MoveViewsBetweenPanelsAct
 			title: {
 				value: localize(
 					"movePanelToSecondarySideBar",
-					"Move Panel Views To Secondary Side Bar",
+					"Move Panel Views To Secondary Side Bar"
 				),
 				original: "Move Panel Views To Secondary Side Bar",
 			},
@@ -748,7 +745,7 @@ class MoveSidePanelToPanelAction extends MoveViewsBetweenPanelsAction {
 			title: {
 				value: localize(
 					"moveSidePanelToPanel",
-					"Move Secondary Side Bar Views To Panel",
+					"Move Secondary Side Bar Views To Panel"
 				),
 				original: "Move Secondary Side Bar Views To Panel",
 			},
@@ -767,7 +764,7 @@ export class MoveSecondarySideBarToPanelAction extends MoveViewsBetweenPanelsAct
 			title: {
 				value: localize(
 					"moveSidePanelToPanel",
-					"Move Secondary Side Bar Views To Panel",
+					"Move Secondary Side Bar Views To Panel"
 				),
 				original: "Move Secondary Side Bar Views To Panel",
 			},

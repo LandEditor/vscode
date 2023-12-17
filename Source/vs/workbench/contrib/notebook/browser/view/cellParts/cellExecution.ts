@@ -23,25 +23,36 @@ export class CellExecutionPart extends CellContentPart {
 	constructor(
 		private readonly _notebookEditor: INotebookEditorDelegate,
 		private readonly _executionOrderLabel: HTMLElement,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
 	) {
 		super();
 
-		this._register(this._notebookEditor.onDidChangeActiveKernel(() => {
-			if (this.currentCell) {
-				this.kernelDisposables.clear();
+		this._register(
+			this._notebookEditor.onDidChangeActiveKernel(() => {
+				if (this.currentCell) {
+					this.kernelDisposables.clear();
 
-				if (this._notebookEditor.activeKernel) {
-					this.kernelDisposables.add(this._notebookEditor.activeKernel.onDidChange(() => {
-						if (this.currentCell) {
-							this.updateExecutionOrder(this.currentCell.internalMetadata);
-						}
-					}));
+					if (this._notebookEditor.activeKernel) {
+						this.kernelDisposables.add(
+							this._notebookEditor.activeKernel.onDidChange(
+								() => {
+									if (this.currentCell) {
+										this.updateExecutionOrder(
+											this.currentCell.internalMetadata
+										);
+									}
+								}
+							)
+						);
+					}
+
+					this.updateExecutionOrder(
+						this.currentCell.internalMetadata
+					);
 				}
-
-				this.updateExecutionOrder(this.currentCell.internalMetadata);
-			}
-		}));
+			})
+		);
 	}
 
 	override didRenderCell(element: ICellViewModel): void {
@@ -50,7 +61,7 @@ export class CellExecutionPart extends CellContentPart {
 
 	private updateExecutionOrder(
 		internalMetadata: NotebookCellInternalMetadata,
-		forceClear = false,
+		forceClear = false
 	): void {
 		if (
 			this._notebookEditor.activeKernel?.implementsExecutionOrder ||
@@ -62,7 +73,7 @@ export class CellExecutionPart extends CellContentPart {
 				typeof internalMetadata.executionOrder !== "number" &&
 				!forceClear &&
 				!!this._notebookExecutionStateService.getCellExecution(
-					this.currentCell!.uri,
+					this.currentCell!.uri
 				)
 			) {
 				const renderingCell = this.currentCell;
@@ -71,12 +82,12 @@ export class CellExecutionPart extends CellContentPart {
 						if (this.currentCell === renderingCell) {
 							this.updateExecutionOrder(
 								this.currentCell!.internalMetadata,
-								true,
+								true
 							);
 						}
 					},
 					UPDATE_EXECUTION_ORDER_GRACE_PERIOD,
-					this.cellDisposables,
+					this.cellDisposables
 				);
 				return;
 			}
@@ -93,7 +104,7 @@ export class CellExecutionPart extends CellContentPart {
 
 	override updateState(
 		element: ICellViewModel,
-		e: CellViewModelStateChangeEvent,
+		e: CellViewModelStateChangeEvent
 	): void {
 		if (e.internalMetadataChanged) {
 			this.updateExecutionOrder(element.internalMetadata);

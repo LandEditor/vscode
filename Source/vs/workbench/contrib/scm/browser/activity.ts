@@ -47,7 +47,7 @@ function getCount(repository: ISCMRepository): number {
 	} else {
 		return repository.provider.groups.reduce<number>(
 			(r, g) => r + g.resources.length,
-			0,
+			0
 		);
 	}
 }
@@ -66,31 +66,56 @@ export class SCMStatusController implements IWorkbenchContribution {
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@IActivityService private readonly activityService: IActivityService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
-		this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
-		this.scmService.onDidRemoveRepository(this.onDidRemoveRepository, this, this.disposables);
+		this.scmService.onDidAddRepository(
+			this.onDidAddRepository,
+			this,
+			this.disposables
+		);
+		this.scmService.onDidRemoveRepository(
+			this.onDidRemoveRepository,
+			this,
+			this.disposables
+		);
 
-		const onDidChangeSCMCountBadge = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.countBadge'));
-		onDidChangeSCMCountBadge(this.renderActivityCount, this, this.disposables);
+		const onDidChangeSCMCountBadge = Event.filter(
+			configurationService.onDidChangeConfiguration,
+			(e) => e.affectsConfiguration("scm.countBadge")
+		);
+		onDidChangeSCMCountBadge(
+			this.renderActivityCount,
+			this,
+			this.disposables
+		);
 
 		for (const repository of this.scmService.repositories) {
 			this.onDidAddRepository(repository);
 		}
 
-		this.scmViewService.onDidFocusRepository(this.focusRepository, this, this.disposables);
+		this.scmViewService.onDidFocusRepository(
+			this.focusRepository,
+			this,
+			this.disposables
+		);
 		this.focusRepository(this.scmViewService.focusedRepository);
 
-		editorService.onDidActiveEditorChange(() => this.tryFocusRepositoryBasedOnActiveEditor(), this, this.disposables);
+		editorService.onDidActiveEditorChange(
+			() => this.tryFocusRepositoryBasedOnActiveEditor(),
+			this,
+			this.disposables
+		);
 		this.renderActivityCount();
 	}
 
 	private tryFocusRepositoryBasedOnActiveEditor(
-		repositories: Iterable<ISCMRepository> = this.scmService.repositories,
+		repositories: Iterable<ISCMRepository> = this.scmService.repositories
 	): boolean {
 		const resource = EditorResourceAccessor.getOriginalUri(
-			this.editorService.activeEditor,
+			this.editorService.activeEditor
 		);
 
 		if (!resource) {
@@ -109,7 +134,7 @@ export class SCMStatusController implements IWorkbenchContribution {
 
 			const path = this.uriIdentityService.extUri.relativePath(
 				root,
-				resource,
+				resource
 			);
 
 			if (path && !/^\.\./.test(path) && path.length < bestMatchLength) {
@@ -129,13 +154,13 @@ export class SCMStatusController implements IWorkbenchContribution {
 	private onDidAddRepository(repository: ISCMRepository): void {
 		const onDidChange = Event.any(
 			repository.provider.onDidChange,
-			repository.provider.onDidChangeResources,
+			repository.provider.onDidChangeResources
 		);
 		const changeDisposable = onDidChange(() => this.renderActivityCount());
 
 		const onDidRemove = Event.filter(
 			this.scmService.onDidRemoveRepository,
-			(e) => e === repository,
+			(e) => e === repository
 		);
 		const removeDisposable = onDidRemove(() => {
 			disposable.dispose();
@@ -145,7 +170,7 @@ export class SCMStatusController implements IWorkbenchContribution {
 
 		const disposable = combinedDisposable(
 			changeDisposable,
-			removeDisposable,
+			removeDisposable
 		);
 		this.repositoryDisposables.add(disposable);
 
@@ -171,7 +196,7 @@ export class SCMStatusController implements IWorkbenchContribution {
 		if (repository && repository.provider.onDidChangeStatusBarCommands) {
 			this.focusDisposable =
 				repository.provider.onDidChangeStatusBarCommands(() =>
-					this.renderStatusBar(repository),
+					this.renderStatusBar(repository)
 				);
 		}
 
@@ -190,7 +215,7 @@ export class SCMStatusController implements IWorkbenchContribution {
 		const label = repository.provider.rootUri
 			? `${basename(repository.provider.rootUri)} (${
 					repository.provider.label
-			  })`
+				})`
 			: repository.provider.label;
 
 		const disposables = new DisposableStore();
@@ -237,8 +262,8 @@ export class SCMStatusController implements IWorkbenchContribution {
 							statusbarEntry,
 							`status.scm.${index}`,
 							MainThreadStatusBarAlignment.LEFT,
-							10000,
-					  )
+							10000
+						)
 					: this.statusbarService.addEntry(
 							statusbarEntry,
 							`status.scm.${index}`,
@@ -247,8 +272,8 @@ export class SCMStatusController implements IWorkbenchContribution {
 								id: `status.scm.${index - 1}`,
 								alignment: MainThreadStatusBarAlignment.RIGHT,
 								compact: true,
-							},
-					  ),
+							}
+						)
 			);
 		}
 
@@ -266,7 +291,7 @@ export class SCMStatusController implements IWorkbenchContribution {
 			count = Iterable.reduce(
 				this.scmService.repositories,
 				(r, repository) => r + getCount(repository),
-				0,
+				0
 			);
 		} else if (countBadgeType === "focused" && this.focusedRepository) {
 			count = getCount(this.focusedRepository);
@@ -274,11 +299,11 @@ export class SCMStatusController implements IWorkbenchContribution {
 
 		if (count > 0) {
 			const badge = new NumberBadge(count, (num) =>
-				localize("scmPendingChangesBadge", "{0} pending changes", num),
+				localize("scmPendingChangesBadge", "{0} pending changes", num)
 			);
 			this.badgeDisposable.value = this.activityService.showViewActivity(
 				VIEW_PANE_ID,
-				{ badge },
+				{ badge }
 			);
 		} else {
 			this.badgeDisposable.value = undefined;
@@ -307,30 +332,45 @@ export class SCMActiveResourceContextKeyController
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IEditorService private readonly editorService: IEditorService,
 		@ISCMService private readonly scmService: ISCMService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
-		this.activeResourceHasChangesContextKey = contextKeyService.createKey('scmActiveResourceHasChanges', false);
-		this.activeResourceRepositoryContextKey = contextKeyService.createKey('scmActiveResourceRepository', undefined);
+		this.activeResourceHasChangesContextKey = contextKeyService.createKey(
+			"scmActiveResourceHasChanges",
+			false
+		);
+		this.activeResourceRepositoryContextKey = contextKeyService.createKey(
+			"scmActiveResourceRepository",
+			undefined
+		);
 
-		this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
+		this.scmService.onDidAddRepository(
+			this.onDidAddRepository,
+			this,
+			this.disposables
+		);
 
 		for (const repository of this.scmService.repositories) {
 			this.onDidAddRepository(repository);
 		}
 
-		editorService.onDidActiveEditorChange(this.updateContextKey, this, this.disposables);
+		editorService.onDidActiveEditorChange(
+			this.updateContextKey,
+			this,
+			this.disposables
+		);
 	}
 
 	private onDidAddRepository(repository: ISCMRepository): void {
 		const onDidChange = Event.any(
 			repository.provider.onDidChange,
-			repository.provider.onDidChangeResources,
+			repository.provider.onDidChangeResources
 		);
 		const changeDisposable = onDidChange(() => this.updateContextKey());
 
 		const onDidRemove = Event.filter(
 			this.scmService.onDidRemoveRepository,
-			(e) => e === repository,
+			(e) => e === repository
 		);
 		const removeDisposable = onDidRemove(() => {
 			disposable.dispose();
@@ -340,14 +380,14 @@ export class SCMActiveResourceContextKeyController
 
 		const disposable = combinedDisposable(
 			changeDisposable,
-			removeDisposable,
+			removeDisposable
 		);
 		this.repositoryDisposables.add(disposable);
 	}
 
 	private updateContextKey(): void {
 		const activeResource = EditorResourceAccessor.getOriginalUri(
-			this.editorService.activeEditor,
+			this.editorService.activeEditor
 		);
 
 		if (
@@ -361,13 +401,13 @@ export class SCMActiveResourceContextKeyController
 						r.provider.rootUri &&
 							this.uriIdentityService.extUri.isEqualOrParent(
 								activeResource,
-								r.provider.rootUri,
-							),
-					),
+								r.provider.rootUri
+							)
+					)
 			);
 
 			this.activeResourceRepositoryContextKey.set(
-				activeResourceRepository?.id,
+				activeResourceRepository?.id
 			);
 
 			for (const resourceGroup of activeResourceRepository?.provider
@@ -376,8 +416,8 @@ export class SCMActiveResourceContextKeyController
 					resourceGroup.resources.some((scmResource) =>
 						this.uriIdentityService.extUri.isEqual(
 							activeResource,
-							scmResource.sourceUri,
-						),
+							scmResource.sourceUri
+						)
 					)
 				) {
 					this.activeResourceHasChangesContextKey.set(true);

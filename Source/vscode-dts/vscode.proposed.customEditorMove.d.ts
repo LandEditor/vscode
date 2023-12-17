@@ -25,7 +25,7 @@ declare module "vscode" {
 		moveCustomTextEditor?(
 			newDocument: TextDocument,
 			existingWebviewPanel: WebviewPanel,
-			token: CancellationToken,
+			token: CancellationToken
 		): Thenable<void>;
 	}
 }

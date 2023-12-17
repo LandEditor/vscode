@@ -42,23 +42,35 @@ export class ExtHostTask extends ExtHostTaskBase {
 		@IExtHostWorkspace private readonly workspaceService: IExtHostWorkspace,
 		@IExtHostDocumentsAndEditors editorService: IExtHostDocumentsAndEditors,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
-		@IExtHostTerminalService extHostTerminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		extHostTerminalService: IExtHostTerminalService,
 		@ILogService logService: ILogService,
-		@IExtHostApiDeprecationService deprecationService: IExtHostApiDeprecationService,
-		@IExtHostVariableResolverProvider private readonly variableResolver: IExtHostVariableResolverProvider,
+		@IExtHostApiDeprecationService
+		deprecationService: IExtHostApiDeprecationService,
+		@IExtHostVariableResolverProvider
+		private readonly variableResolver: IExtHostVariableResolverProvider
 	) {
-		super(extHostRpc, initData, workspaceService, editorService, configurationService, extHostTerminalService, logService, deprecationService);
+		super(
+			extHostRpc,
+			initData,
+			workspaceService,
+			editorService,
+			configurationService,
+			extHostTerminalService,
+			logService,
+			deprecationService
+		);
 		if (initData.remote.isRemote && initData.remote.authority) {
 			this.registerTaskSystem(Schemas.vscodeRemote, {
 				scheme: Schemas.vscodeRemote,
 				authority: initData.remote.authority,
-				platform: process.platform
+				platform: process.platform,
 			});
 		} else {
 			this.registerTaskSystem(Schemas.file, {
 				scheme: Schemas.file,
-				authority: '',
-				platform: process.platform
+				authority: "",
+				platform: process.platform,
 			});
 		}
 		this._proxy.$registerSupportedExecutions(true, true, true);
@@ -66,7 +78,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 
 	public async executeTask(
 		extension: IExtensionDescription,
-		task: vscode.Task,
+		task: vscode.Task
 	): Promise<vscode.TaskExecution> {
 		const tTask = task as types.Task;
 
@@ -102,7 +114,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 			// Always get the task execution first to prevent timing issues when retrieving it later
 			const execution = await this.getTaskExecution(
 				await this._proxy.$getTaskExecution(dto),
-				task,
+				task
 			);
 			this._proxy.$executeTask(dto).catch(() => {
 				/* The error here isn't actionable. */
@@ -115,7 +127,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 		validTypes: { [key: string]: boolean },
 		taskIdPromises: Promise<void>[],
 		handler: HandlerData,
-		value: vscode.Task[] | null | undefined,
+		value: vscode.Task[] | null | undefined
 	): { tasks: tasks.ITaskDTO[]; extension: IExtensionDescription } {
 		const taskDTOs: tasks.ITaskDTO[] = [];
 		if (value) {
@@ -124,13 +136,13 @@ export class ExtHostTask extends ExtHostTaskBase {
 
 				if (!task.definition || !validTypes[task.definition.type]) {
 					this._logService.warn(
-						`The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`,
+						`The task [${task.source}, ${task.name}] uses an undefined task type. The task will be ignored in the future.`
 					);
 				}
 
 				const taskDTO: tasks.ITaskDTO | undefined = TaskDTO.from(
 					task,
-					handler.extension,
+					handler.extension
 				);
 				if (taskDTO) {
 					taskDTOs.push(taskDTO);
@@ -140,7 +152,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 						// We need the task id's pre-computed for custom task executions because when OnDidStartTask
 						// is invoked, we have to be able to map it back to our data.
 						taskIdPromises.push(
-							this.addCustomExecution(taskDTO, task, true),
+							this.addCustomExecution(taskDTO, task, true)
 						);
 					}
 				}
@@ -153,13 +165,13 @@ export class ExtHostTask extends ExtHostTaskBase {
 	}
 
 	protected async resolveTaskInternal(
-		resolvedTaskDTO: tasks.ITaskDTO,
+		resolvedTaskDTO: tasks.ITaskDTO
 	): Promise<tasks.ITaskDTO | undefined> {
 		return resolvedTaskDTO;
 	}
 
 	private async getAFolder(
-		workspaceFolders: vscode.WorkspaceFolder[] | undefined,
+		workspaceFolders: vscode.WorkspaceFolder[] | undefined
 	): Promise<IWorkspaceFolder> {
 		let folder =
 			workspaceFolders && workspaceFolders.length > 0
@@ -188,7 +200,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 		toResolve: {
 			process?: { name: string; cwd?: string; path?: string };
 			variables: string[];
-		},
+		}
 	): Promise<{ process?: string; variables: { [key: string]: string } }> {
 		const uri: URI = URI.revive(uriComponents);
 		const result = {
@@ -209,13 +221,13 @@ export class ExtHostTask extends ExtHostTaskBase {
 					toResource: () => {
 						throw new Error("Not implemented");
 					},
-			  }
+				}
 			: await this.getAFolder(workspaceFolders);
 
 		for (const variable of toResolve.variables) {
 			result.variables[variable] = await resolver.resolveAsync(
 				ws,
-				variable,
+				variable
 			);
 		}
 		if (toResolve.process !== undefined) {
@@ -231,7 +243,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 				toResolve.process.cwd !== undefined
 					? await resolver.resolveAsync(ws, toResolve.process.cwd)
 					: undefined,
-				paths,
+				paths
 			);
 		}
 		return result;
@@ -244,7 +256,7 @@ export class ExtHostTask extends ExtHostTaskBase {
 	public async $findExecutable(
 		command: string,
 		cwd?: string,
-		paths?: string[],
+		paths?: string[]
 	): Promise<string> {
 		return win32.findExecutable(command, cwd, paths);
 	}

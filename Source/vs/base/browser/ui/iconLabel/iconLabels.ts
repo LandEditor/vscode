@@ -8,10 +8,10 @@ import { ThemeIcon } from "vs/base/common/themables";
 
 const labelWithIconsRegex = new RegExp(
 	`(\\\\)?\\$\\((${ThemeIcon.iconNameExpression}(?:${ThemeIcon.iconModifierExpression})?)\\)`,
-	"g",
+	"g"
 );
 export function renderLabelWithIcons(
-	text: string,
+	text: string
 ): Array<HTMLSpanElement | string> {
 	const elements = new Array<HTMLSpanElement | string>();
 	let match: RegExpExecArray | null;

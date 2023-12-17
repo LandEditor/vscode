@@ -125,7 +125,7 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 							base:
 								(!config._emitWithoutBasePath &&
 									baseFor(
-										host.getScriptSnapshot(fileName),
+										host.getScriptSnapshot(fileName)
 									)) ||
 								undefined,
 						});
@@ -134,13 +134,13 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 							/\.js$/.test(file.name)
 						) {
 							const sourcemapFile = output.outputFiles.filter(
-								(f) => /\.js\.map$/.test(f.name),
+								(f) => /\.js\.map$/.test(f.name)
 							)[0];
 							if (sourcemapFile) {
 								const extname = path.extname(vinyl.relative);
 								const basename = path.basename(
 									vinyl.relative,
-									extname,
+									extname
 								);
 								const dirname = path.dirname(vinyl.relative);
 								const tsname =
@@ -150,7 +150,7 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 								let sourceMap = JSON.parse(sourcemapFile.text);
 								sourceMap.sources[0] = tsname.replace(
 									/\\/g,
-									"/",
+									"/"
 								);
 								// check for an "input source" map and combine them
 								// in step 1 we extract all line edit from the input source map, and
@@ -163,11 +163,11 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 								) {
 									const inputSMC =
 										new source_map_1.SourceMapConsumer(
-											snapshot.sourceMap,
+											snapshot.sourceMap
 										);
 									const tsSMC =
 										new source_map_1.SourceMapConsumer(
-											sourceMap,
+											sourceMap
 										);
 									let didChange = false;
 									const smg =
@@ -183,13 +183,13 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 										) {
 											// same line mapping
 											let array = lineEdits.get(
-												m.originalLine,
+												m.originalLine
 											);
 											if (!array) {
 												array = [];
 												lineEdits.set(
 													m.originalLine,
-													array,
+													array
 												);
 											}
 											array.push([
@@ -204,7 +204,7 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 									tsSMC.eachMapping((m) => {
 										didChange = true;
 										const edits = lineEdits.get(
-											m.originalLine,
+											m.originalLine
 										);
 										let originalColumnDelta = 0;
 										if (edits) {
@@ -236,11 +236,11 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 												consumer.sources.forEach(
 													(sourceFile) => {
 														smg._sources.add(
-															sourceFile,
+															sourceFile
 														);
 														const sourceContent =
 															consumer.sourceContentFor(
-																sourceFile,
+																sourceFile
 															);
 														if (
 															sourceContent !==
@@ -248,12 +248,12 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 														) {
 															smg.setSourceContent(
 																sourceFile,
-																sourceContent,
+																sourceContent
 															);
 														}
-													},
+													}
 												);
-											},
+											}
 										);
 										sourceMap = JSON.parse(smg.toString());
 										// const filename = '/Users/jrieken/Code/vscode/src2/' + vinyl.relative + '.map';
@@ -318,7 +318,7 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 							// remember when this was build
 							newLastBuildVersion.set(
 								fileName,
-								host.getScriptVersion(fileName),
+								host.getScriptVersion(fileName)
 							);
 							// remeber the signature
 							if (
@@ -364,13 +364,13 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 								delete oldErrors[fileName];
 								semanticCheckInfo.set(
 									fileName,
-									diagnostics.length,
+									diagnostics.length
 								);
 								if (diagnostics.length > 0) {
 									diagnostics.forEach((d) => onError(d));
 									newErrors[fileName] = diagnostics;
 								}
-							},
+							}
 						);
 					}
 				}
@@ -380,16 +380,16 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 						const fileName = filesWithChangedSignature.pop();
 						if (
 							!isExternalModule(
-								service.getProgram().getSourceFile(fileName),
+								service.getProgram().getSourceFile(fileName)
 							)
 						) {
 							_log(
 								"[check semantics*]",
 								fileName +
-									" is an internal module and it has changed shape -> check whatever hasn't been checked yet",
+									" is an internal module and it has changed shape -> check whatever hasn't been checked yet"
 							);
 							toBeCheckedSemantically.push(
-								...host.getScriptFileNames(),
+								...host.getScriptFileNames()
 							);
 							filesWithChangedSignature.length = 0;
 							dependentFiles.length = 0;
@@ -452,12 +452,12 @@ function createTypeScriptBuilder(config, projectFile, cmd) {
 			_log(
 				"[tsb]",
 				`time:  ${colors.yellow(
-					Date.now() - t1 + "ms",
+					Date.now() - t1 + "ms"
 				)} + \nmem:  ${colors.cyan(
-					Math.ceil(headNow / MB) + "MB",
+					Math.ceil(headNow / MB) + "MB"
 				)} ${colors.bgCyan(
-					"delta: " + Math.ceil((headNow - headUsed) / MB),
-				)}`,
+					"delta: " + Math.ceil((headNow - headUsed) / MB)
+				)}`
 			);
 			headUsed = headNow;
 		});
@@ -542,7 +542,7 @@ class LanguageServiceHost {
 	getScriptFileNames() {
 		const res = Object.keys(this._snapshots).filter(
 			(path) =>
-				this._filesInProject.has(path) || this._filesAdded.has(path),
+				this._filesInProject.has(path) || this._filesAdded.has(path)
 		);
 		return res;
 	}
@@ -565,7 +565,7 @@ class LanguageServiceHost {
 						contents: fs.readFileSync(filename),
 						base: this.getCompilationSettings().outDir,
 						stat: fs.statSync(filename),
-					}),
+					})
 				);
 				this.addScriptSnapshot(filename, result);
 			} catch (e) {
@@ -599,7 +599,7 @@ class LanguageServiceHost {
 			let match;
 			while (
 				(match = LanguageServiceHost._declareModule.exec(
-					snapshot.getText(0, snapshot.getLength()),
+					snapshot.getText(0, snapshot.getLength())
 				))
 			) {
 				let declaredModules = this._fileNameToDeclaredModule[filename];
@@ -641,7 +641,7 @@ class LanguageServiceHost {
 		const node = this._dependencies.lookup(filename);
 		if (node) {
 			utils.collections.forEach(node.incoming, (entry) =>
-				target.push(entry.key),
+				target.push(entry.key)
 			);
 		}
 	}
@@ -657,13 +657,13 @@ class LanguageServiceHost {
 		}
 		const info = ts.preProcessFile(
 			snapshot.getText(0, snapshot.getLength()),
-			true,
+			true
 		);
 		// (1) ///-references
 		info.referencedFiles.forEach((ref) => {
 			const resolvedPath = path.resolve(
 				path.dirname(filename),
-				ref.fileName,
+				ref.fileName
 			);
 			const normalizedPath = normalize(resolvedPath);
 			this._dependencies.inertEdge(filename, normalizedPath);
@@ -680,13 +680,13 @@ class LanguageServiceHost {
 				if (this.getScriptSnapshot(normalizedPath + ".ts")) {
 					this._dependencies.inertEdge(
 						filename,
-						normalizedPath + ".ts",
+						normalizedPath + ".ts"
 					);
 					found = true;
 				} else if (this.getScriptSnapshot(normalizedPath + ".d.ts")) {
 					this._dependencies.inertEdge(
 						filename,
-						normalizedPath + ".d.ts",
+						normalizedPath + ".d.ts"
 					);
 					found = true;
 				}
@@ -696,7 +696,7 @@ class LanguageServiceHost {
 					if (
 						this._fileNameToDeclaredModule[key] &&
 						~this._fileNameToDeclaredModule[key].indexOf(
-							ref.fileName,
+							ref.fileName
 						)
 					) {
 						this._dependencies.inertEdge(filename, key);

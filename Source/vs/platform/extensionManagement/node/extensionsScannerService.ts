@@ -22,14 +22,17 @@ export class ExtensionsScannerService
 	implements IExtensionsScannerService
 {
 	constructor(
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsProfileScannerService
+		extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IProductService productService: IProductService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(
 			URI.file(environmentService.builtinExtensionsPath),
@@ -43,7 +46,7 @@ export class ExtensionsScannerService
 			environmentService,
 			productService,
 			uriIdentityService,
-			instantiationService,
+			instantiationService
 		);
 	}
 }

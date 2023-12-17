@@ -7,7 +7,7 @@ import { RawContextKey } from "vs/platform/contextkey/common/contextkey";
 
 export const InSearchEditor = new RawContextKey<boolean>(
 	"inSearchEditor",
-	false,
+	false
 );
 
 export const SearchEditorScheme = "search-editor";

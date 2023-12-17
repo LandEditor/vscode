@@ -24,19 +24,19 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 
 	constructor(
 		modelService: IModelService,
-		languageConfigurationService: ILanguageConfigurationService,
+		languageConfigurationService: ILanguageConfigurationService
 	) {
 		this._editorWorkerClient = new EditorWorkerClient(
 			modelService,
 			false,
 			"editorWorkerService",
-			languageConfigurationService,
+			languageConfigurationService
 		);
 	}
 
 	async provideDocumentColors(
 		model: ITextModel,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Promise<IColorInformation[] | null> {
 		return this._editorWorkerClient.computeDefaultDocumentColors(model.uri);
 	}
@@ -44,7 +44,7 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 	provideColorPresentations(
 		_model: ITextModel,
 		colorInfo: IColorInformation,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): IColorPresentation[] {
 		const range = colorInfo.range;
 		const colorFromInfo: IColor = colorInfo.color;
@@ -54,8 +54,8 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 				Math.round(255 * colorFromInfo.red),
 				Math.round(255 * colorFromInfo.green),
 				Math.round(255 * colorFromInfo.blue),
-				alpha,
-			),
+				alpha
+			)
 		);
 
 		const rgb = alpha
@@ -88,8 +88,10 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 class DefaultDocumentColorProviderFeature extends Disposable {
 	constructor(
 		@IModelService _modelService: IModelService,
-		@ILanguageConfigurationService _languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		_languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		_languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 		this._register(
@@ -97,9 +99,9 @@ class DefaultDocumentColorProviderFeature extends Disposable {
 				"*",
 				new DefaultDocumentColorProvider(
 					_modelService,
-					_languageConfigurationService,
-				),
-			),
+					_languageConfigurationService
+				)
+			)
 		);
 	}
 }

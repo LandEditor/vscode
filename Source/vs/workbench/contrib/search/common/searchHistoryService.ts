@@ -21,7 +21,7 @@ export interface ISearchHistoryService {
 }
 
 export const ISearchHistoryService = createDecorator<ISearchHistoryService>(
-	"searchHistoryService",
+	"searchHistoryService"
 );
 
 export interface ISearchHistoryValues {
@@ -41,12 +41,12 @@ export class SearchHistoryService implements ISearchHistoryService {
 
 	constructor(
 		@IStorageService private readonly storageService: IStorageService
-	) { }
+	) {}
 
 	clearHistory(): void {
 		this.storageService.remove(
 			SearchHistoryService.SEARCH_HISTORY_KEY,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 		this._onDidClearHistory.fire();
 	}
@@ -55,7 +55,7 @@ export class SearchHistoryService implements ISearchHistoryService {
 		let result: ISearchHistoryValues | undefined;
 		const raw = this.storageService.get(
 			SearchHistoryService.SEARCH_HISTORY_KEY,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 
 		if (raw) {
@@ -73,14 +73,14 @@ export class SearchHistoryService implements ISearchHistoryService {
 		if (isEmptyObject(history)) {
 			this.storageService.remove(
 				SearchHistoryService.SEARCH_HISTORY_KEY,
-				StorageScope.WORKSPACE,
+				StorageScope.WORKSPACE
 			);
 		} else {
 			this.storageService.store(
 				SearchHistoryService.SEARCH_HISTORY_KEY,
 				JSON.stringify(history),
 				StorageScope.WORKSPACE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 		}
 	}

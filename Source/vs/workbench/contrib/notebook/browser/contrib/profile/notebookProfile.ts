@@ -58,12 +58,12 @@ const profiles = {
 
 async function applyProfile(
 	configService: IConfigurationService,
-	profile: Record<string, any>,
+	profile: Record<string, any>
 ): Promise<void> {
 	const promises = [];
 	for (const settingKey in profile) {
 		promises.push(
-			configService.updateValue(settingKey, profile[settingKey]),
+			configService.updateValue(settingKey, profile[settingKey])
 		);
 	}
 
@@ -91,7 +91,7 @@ registerAction2(
 			const configService = accessor.get(IConfigurationService);
 			return applyProfile(configService, profiles[args.profile]);
 		}
-	},
+	}
 );
 
 function isSetProfileArgs(args: unknown): args is ISetProfileArgs {
@@ -104,34 +104,61 @@ function isSetProfileArgs(args: unknown): args is ISetProfileArgs {
 }
 
 export class NotebookProfileContribution extends Disposable {
-	constructor(@IConfigurationService configService: IConfigurationService, @IWorkbenchAssignmentService private readonly experimentService: IWorkbenchAssignmentService) {
+	constructor(
+		@IConfigurationService configService: IConfigurationService,
+		@IWorkbenchAssignmentService
+		private readonly experimentService: IWorkbenchAssignmentService
+	) {
 		super();
 
 		if (this.experimentService) {
-			this.experimentService.getTreatment<NotebookProfileType.default | NotebookProfileType.jupyter | NotebookProfileType.colab>('notebookprofile').then(treatment => {
-				if (treatment === undefined) {
-					return;
-				} else {
-					// check if settings are already modified
-					const focusIndicator = configService.getValue(NotebookSetting.focusIndicator);
-					const insertToolbarPosition = configService.getValue(NotebookSetting.insertToolbarLocation);
-					const globalToolbar = configService.getValue(NotebookSetting.globalToolbar);
-					// const cellToolbarLocation = configService.getValue(NotebookSetting.cellToolbarLocation);
-					const compactView = configService.getValue(NotebookSetting.compactView);
-					const showCellStatusBar = configService.getValue(NotebookSetting.showCellStatusBar);
-					const consolidatedRunButton = configService.getValue(NotebookSetting.consolidatedRunButton);
-					if (focusIndicator === 'border'
-						&& insertToolbarPosition === 'both'
-						&& globalToolbar === false
-						// && cellToolbarLocation === undefined
-						&& compactView === true
-						&& showCellStatusBar === 'visible'
-						&& consolidatedRunButton === true
-					) {
-						applyProfile(configService, profiles[treatment] ?? profiles[NotebookProfileType.default]);
+			this.experimentService
+				.getTreatment<
+					| NotebookProfileType.default
+					| NotebookProfileType.jupyter
+					| NotebookProfileType.colab
+				>("notebookprofile")
+				.then((treatment) => {
+					if (treatment === undefined) {
+						return;
+					} else {
+						// check if settings are already modified
+						const focusIndicator = configService.getValue(
+							NotebookSetting.focusIndicator
+						);
+						const insertToolbarPosition = configService.getValue(
+							NotebookSetting.insertToolbarLocation
+						);
+						const globalToolbar = configService.getValue(
+							NotebookSetting.globalToolbar
+						);
+						// const cellToolbarLocation = configService.getValue(NotebookSetting.cellToolbarLocation);
+						const compactView = configService.getValue(
+							NotebookSetting.compactView
+						);
+						const showCellStatusBar = configService.getValue(
+							NotebookSetting.showCellStatusBar
+						);
+						const consolidatedRunButton = configService.getValue(
+							NotebookSetting.consolidatedRunButton
+						);
+						if (
+							focusIndicator === "border" &&
+							insertToolbarPosition === "both" &&
+							globalToolbar === false &&
+							// && cellToolbarLocation === undefined
+							compactView === true &&
+							showCellStatusBar === "visible" &&
+							consolidatedRunButton === true
+						) {
+							applyProfile(
+								configService,
+								profiles[treatment] ??
+									profiles[NotebookProfileType.default]
+							);
+						}
 					}
-				}
-			});
+				});
 		}
 	}
 }
@@ -140,5 +167,5 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	NotebookProfileContribution,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );

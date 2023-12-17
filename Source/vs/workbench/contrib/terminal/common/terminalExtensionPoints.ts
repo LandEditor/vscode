@@ -16,7 +16,7 @@ import { URI } from "vs/base/common/uri";
 // terminal extension point
 const terminalsExtPoint =
 	extensionsRegistry.ExtensionsRegistry.registerExtensionPoint<ITerminalContributions>(
-		terminalContributionsDescriptor,
+		terminalContributionsDescriptor
 	);
 
 export interface ITerminalContributionService {
@@ -27,7 +27,7 @@ export interface ITerminalContributionService {
 
 export const ITerminalContributionService =
 	createDecorator<ITerminalContributionService>(
-		"terminalContributionsService",
+		"terminalContributionsService"
 	);
 
 export class TerminalContributionService
@@ -64,7 +64,8 @@ export class TerminalContributionService
 function hasValidTerminalIcon(profile: ITerminalProfileContribution): boolean {
 	return (
 		!profile.icon ||
-		typeof profile.icon === "string" || URI.isUri(profile.icon) ||
+		typeof profile.icon === "string" ||
+		URI.isUri(profile.icon) ||
 		("light" in profile.icon &&
 			"dark" in profile.icon &&
 			URI.isUri(profile.icon.light) &&

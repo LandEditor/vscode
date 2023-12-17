@@ -144,8 +144,8 @@ const optimizeVSCodeTask = task.define(
 					out: "vs/code/electron-sandbox/processExplorer/processExplorer.js",
 				},
 			],
-		}),
-	),
+		})
+	)
 );
 gulp.task(optimizeVSCodeTask);
 
@@ -155,8 +155,8 @@ const minifyVSCodeTask = task.define(
 	task.series(
 		optimizeVSCodeTask,
 		util.rimraf("out-vscode-min"),
-		optimize.minifyTask("out-vscode", `${sourceMappingURLBase}/core`),
-	),
+		optimize.minifyTask("out-vscode", `${sourceMappingURLBase}/core`)
+	)
 );
 gulp.task(minifyVSCodeTask);
 
@@ -167,9 +167,9 @@ const core = task.define(
 		task.parallel(
 			gulp.task("minify-vscode"),
 			gulp.task("minify-vscode-reh"),
-			gulp.task("minify-vscode-reh-web"),
-		),
-	),
+			gulp.task("minify-vscode-reh-web")
+		)
+	)
 );
 gulp.task(core);
 
@@ -180,9 +180,9 @@ const corePr = task.define(
 		task.parallel(
 			gulp.task("minify-vscode"),
 			gulp.task("minify-vscode-reh"),
-			gulp.task("minify-vscode-reh-web"),
-		),
-	),
+			gulp.task("minify-vscode-reh-web")
+		)
+	)
 );
 gulp.task(corePr);
 
@@ -225,7 +225,7 @@ function packageTask(
 	arch,
 	sourceFolderName,
 	destinationFolderName,
-	opts,
+	opts
 ) {
 	opts = opts || {};
 
@@ -253,9 +253,9 @@ function packageTask(
 				rename(function (path) {
 					path.dirname = path.dirname.replace(
 						new RegExp("^" + out),
-						"out",
+						"out"
 					);
-				}),
+				})
 			)
 			.pipe(util.setExecutableBit(["**/*.sh"]));
 
@@ -276,7 +276,7 @@ function packageTask(
 				".build/extensions/**",
 				...platformSpecificBuiltInExtensionsExclusions,
 			],
-			{ base: ".build", dot: true },
+			{ base: ".build", dot: true }
 		);
 
 		const sources = es
@@ -311,7 +311,7 @@ function packageTask(
 
 		const license = gulp.src(
 			[product.licenseFileName, "ThirdPartyNotices.txt", "licenses/**"],
-			{ base: ".", allowEmpty: true },
+			{ base: ".", allowEmpty: true }
 		);
 
 		// TODO the API should be copied to `out` during compile, not here
@@ -325,7 +325,7 @@ function packageTask(
 		});
 
 		const jsFilter = util.filter(
-			(data) => !data.isDirectory() && /\.js$/.test(data.path),
+			(data) => !data.isDirectory() && /\.js$/.test(data.path)
 		);
 		const root = path.resolve(path.join(__dirname, ".."));
 		const productionDependencies = getProductionDependencies(root);
@@ -344,13 +344,13 @@ function packageTask(
 					"!**/package-lock.json",
 					"!**/yarn.lock",
 					"!**/*.js.map",
-				]),
+				])
 			)
 			.pipe(util.cleanNodeModules(path.join(__dirname, ".moduleignore")))
 			.pipe(
 				util.cleanNodeModules(
-					path.join(__dirname, `.moduleignore.${process.platform}`),
-				),
+					path.join(__dirname, `.moduleignore.${process.platform}`)
+				)
 			)
 			.pipe(jsFilter)
 			.pipe(util.rewriteSourceMappingURL(sourceMappingURLBase))
@@ -367,8 +367,8 @@ function packageTask(
 						"**/*.wasm",
 						"**/node-vsce-sign/bin/*",
 					],
-					"node_modules.asar",
-				),
+					"node_modules.asar"
+				)
 			);
 
 		let all = es.merge(
@@ -378,7 +378,7 @@ function packageTask(
 			api,
 			telemetry,
 			sources,
-			deps,
+			deps
 		);
 
 		if (platform === "win32") {
@@ -416,13 +416,13 @@ function packageTask(
 						"resources/win32/code_70x70.png",
 						"resources/win32/code_150x150.png",
 					],
-					{ base: "." },
-				),
+					{ base: "." }
+				)
 			);
 		} else if (platform === "linux") {
 			all = es.merge(
 				all,
-				gulp.src("resources/linux/code.png", { base: "." }),
+				gulp.src("resources/linux/code.png", { base: "." })
 			);
 		} else if (platform === "darwin") {
 			const shortcut = gulp
@@ -443,7 +443,7 @@ function packageTask(
 					platform,
 					arch: arch === "armhf" ? "arm" : arch,
 					ffmpegChromium: false,
-				}),
+				})
 			)
 			.pipe(filter(["**", "!LICENSE", "!version"], { dot: true }));
 
@@ -456,8 +456,8 @@ function packageTask(
 					.pipe(
 						rename(function (f) {
 							f.basename = product.applicationName;
-						}),
-					),
+						})
+					)
 			);
 
 			result = es.merge(
@@ -468,8 +468,8 @@ function packageTask(
 					.pipe(
 						rename(function (f) {
 							f.basename = "_" + product.applicationName;
-						}),
-					),
+						})
+					)
 			);
 		}
 
@@ -479,7 +479,7 @@ function packageTask(
 				gulp.src("resources/win32/bin/code.js", {
 					base: "resources/win32",
 					allowEmpty: true,
-				}),
+				})
 			);
 
 			result = es.merge(
@@ -492,8 +492,8 @@ function packageTask(
 					.pipe(
 						rename(function (f) {
 							f.basename = product.applicationName;
-						}),
-					),
+						})
+					)
 			);
 
 			result = es.merge(
@@ -510,16 +510,16 @@ function packageTask(
 					.pipe(
 						replace(
 							"@@SERVERDATAFOLDER@@",
-							product.serverDataFolderName || ".vscode-remote",
-						),
+							product.serverDataFolderName || ".vscode-remote"
+						)
 					)
 					.pipe(replace("@@QUALITY@@", quality))
 					.pipe(
 						rename(function (f) {
 							f.basename = product.applicationName;
 							f.extname = "";
-						}),
-					),
+						})
+					)
 			);
 
 			result = es.merge(
@@ -530,9 +530,9 @@ function packageTask(
 					})
 					.pipe(
 						rename(
-							product.nameShort + ".VisualElementsManifest.xml",
-						),
-					),
+							product.nameShort + ".VisualElementsManifest.xml"
+						)
+					)
 			);
 
 			result = es.merge(
@@ -541,13 +541,13 @@ function packageTask(
 					.src(".build/policies/win32/**", {
 						base: ".build/policies/win32",
 					})
-					.pipe(rename((f) => (f.dirname = `policies/${f.dirname}`))),
+					.pipe(rename((f) => (f.dirname = `policies/${f.dirname}`)))
 			);
 
 			if (quality === "insider") {
 				result = es.merge(
 					result,
-					gulp.src(".build/win32/appx/**", { base: ".build/win32" }),
+					gulp.src(".build/win32/appx/**", { base: ".build/win32" })
 				);
 			}
 		} else if (platform === "linux") {
@@ -557,7 +557,7 @@ function packageTask(
 					.src("resources/linux/bin/code.sh", { base: "." })
 					.pipe(replace("@@PRODNAME@@", product.nameLong))
 					.pipe(replace("@@APPNAME@@", product.applicationName))
-					.pipe(rename("bin/" + product.applicationName)),
+					.pipe(rename("bin/" + product.applicationName))
 			);
 		}
 
@@ -573,14 +573,14 @@ function patchWin32DependenciesTask(destinationFolderName) {
 		const packageJson = JSON.parse(
 			await fs.promises.readFile(
 				path.join(cwd, "resources", "app", "package.json"),
-				"utf8",
-			),
+				"utf8"
+			)
 		);
 		const product = JSON.parse(
 			await fs.promises.readFile(
 				path.join(cwd, "resources", "app", "product.json"),
-				"utf8",
-			),
+				"utf8"
+			)
 		);
 		const baseVersion = packageJson.version.replace(/-.*$/, "");
 
@@ -602,7 +602,7 @@ function patchWin32DependenciesTask(destinationFolderName) {
 						ProductVersion: packageJson.version,
 					},
 				});
-			}),
+			})
 		);
 	};
 }
@@ -627,7 +627,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 	const [vscode, vscodeMin] = ["", "min"].map((minified) => {
 		const sourceFolderName = `out-vscode${dashed(minified)}`;
 		const destinationFolderName = `VSCode${dashed(platform)}${dashed(
-			arch,
+			arch
 		)}`;
 
 		const tasks = [
@@ -637,7 +637,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 				arch,
 				sourceFolderName,
 				destinationFolderName,
-				opts,
+				opts
 			),
 		];
 
@@ -647,7 +647,7 @@ BUILD_TARGETS.forEach((buildTarget) => {
 
 		const vscodeTaskCI = task.define(
 			`vscode${dashed(platform)}${dashed(arch)}${dashed(minified)}-ci`,
-			task.series(...tasks),
+			task.series(...tasks)
 		);
 		gulp.task(vscodeTaskCI);
 
@@ -658,8 +658,8 @@ BUILD_TARGETS.forEach((buildTarget) => {
 				compileExtensionsBuildTask,
 				compileExtensionMediaBuildTask,
 				minified ? minifyVSCodeTask : optimizeVSCodeTask,
-				vscodeTaskCI,
-			),
+				vscodeTaskCI
+			)
 		);
 		gulp.task(vscodeTask);
 
@@ -714,17 +714,17 @@ gulp.task(
 								fileName: "nls.metadata.json",
 								jsonSpace: "",
 								concatArrays: true,
-							}),
+							})
 						)
 						.pipe(i18n.createXlfFilesForCoreBundle()),
 					gulp.src(pathToSetup).pipe(i18n.createXlfFilesForIsl()),
 					gulp
 						.src(pathToExtensions)
-						.pipe(i18n.createXlfFilesForExtensions()),
+						.pipe(i18n.createXlfFilesForExtensions())
 				)
 				.pipe(vfs.dest("../vscode-translations-export"));
-		}),
-	),
+		})
+	)
 );
 
 gulp.task("vscode-translations-import", function () {
@@ -740,13 +740,10 @@ gulp.task("vscode-translations-import", function () {
 			return gulp
 				.src(`${options.location}/${id}/vscode-setup/messages.xlf`)
 				.pipe(
-					i18n.prepareIslFiles(
-						language,
-						innoSetupConfig[language.id],
-					),
+					i18n.prepareIslFiles(language, innoSetupConfig[language.id])
 				)
 				.pipe(vfs.dest(`./build/win32/i18n`));
-		}),
+		})
 	);
 });
 

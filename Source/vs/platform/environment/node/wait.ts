@@ -8,7 +8,7 @@ import { tmpdir } from "os";
 import { randomPath } from "vs/base/common/extpath";
 
 export function createWaitMarkerFileSync(
-	verbose?: boolean,
+	verbose?: boolean
 ): string | undefined {
 	const randomWaitMarkerPath = randomPath(tmpdir());
 
@@ -16,7 +16,7 @@ export function createWaitMarkerFileSync(
 		writeFileSync(randomWaitMarkerPath, ""); // use built-in fs to avoid dragging in more dependencies
 		if (verbose) {
 			console.log(
-				`Marker file for --wait created: ${randomWaitMarkerPath}`,
+				`Marker file for --wait created: ${randomWaitMarkerPath}`
 			);
 		}
 		return randomWaitMarkerPath;

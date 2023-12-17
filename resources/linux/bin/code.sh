@@ -19,23 +19,22 @@ if grep -qi Microsoft /proc/version && [ -z "$DONT_PROMPT_WSL_INSTALL" ]; then
 	read -r YN
 	YN=$(printf '%s' "$YN" | tr '[:upper:]' '[:lower:]')
 	case "$YN" in
-		y | yes )
-		;;
-		* )
+		y | yes) ;;
+
+		*)
 			exit 1
-		;;
+			;;
 	esac
 	echo "To no longer see this prompt, start @@PRODNAME@@ with the environment variable DONT_PROMPT_WSL_INSTALL defined." 1>&2
 fi
 
 # If root, ensure that --user-data-dir or --file-write is specified
 if [ "$(id -u)" = "0" ]; then
-	for i in "$@"
-	do
+	for i in "$@"; do
 		case "$i" in
-			--user-data-dir | --user-data-dir=* | --file-write | tunnel | serve-web )
+			--user-data-dir | --user-data-dir=* | --file-write | tunnel | serve-web)
 				CAN_LAUNCH_AS_ROOT=1
-			;;
+				;;
 		esac
 	done
 	if [ -z $CAN_LAUNCH_AS_ROOT ]; then
@@ -48,7 +47,7 @@ if [ ! -L "$0" ]; then
 	# if path is not a symlink, find relatively
 	VSCODE_PATH="$(dirname "$0")/.."
 else
-	if command -v readlink >/dev/null; then
+	if command -v readlink > /dev/null; then
 		# if readlink exists, follow the symlink and find relatively
 		VSCODE_PATH="$(dirname "$(readlink -f "$0")")/.."
 	else

@@ -42,19 +42,21 @@ export class AuxiliaryEditorPart {
 
 	constructor(
 		private readonly editorPartsView: IEditorPartsView,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IAuxiliaryWindowService private readonly auxiliaryWindowService: IAuxiliaryWindowService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IAuxiliaryWindowService
+		private readonly auxiliaryWindowService: IAuxiliaryWindowService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@ITitleService private readonly titleService: ITitleService,
 		@IEditorService private readonly editorService: IEditorService
-	) {
-	}
+	) {}
 
 	async create(
 		label: string,
-		options?: IAuxiliaryWindowOpenOptions,
+		options?: IAuxiliaryWindowOpenOptions
 	): Promise<{
 		readonly part: AuxiliaryEditorPartImpl;
 		readonly instantiationService: IInstantiationService;
@@ -96,7 +98,7 @@ export class AuxiliaryEditorPart {
 
 		// Auxiliary Window
 		const auxiliaryWindow = disposables.add(
-			await this.auxiliaryWindowService.open(options),
+			await this.auxiliaryWindowService.open(options)
 		);
 
 		// Editor Part
@@ -111,8 +113,8 @@ export class AuxiliaryEditorPart {
 				AuxiliaryEditorPartImpl,
 				auxiliaryWindow.window.vscodeWindowId,
 				this.editorPartsView,
-				label,
-			),
+				label
+			)
 		);
 		disposables.add(this.editorPartsView.registerPart(editorPart));
 		editorPart.create(editorPartContainer, { restorePreviousState: false });
@@ -126,47 +128,47 @@ export class AuxiliaryEditorPart {
 			titlebarPart = disposables.add(
 				this.titleService.createAuxiliaryTitlebarPart(
 					auxiliaryWindow.container,
-					editorPart,
-				),
+					editorPart
+				)
 			);
 			disposables.add(
-				titlebarPart.onDidChange(() => updateEditorPartHeight(true)),
+				titlebarPart.onDidChange(() => updateEditorPartHeight(true))
 			);
 		} else {
 			disposables.add(
 				this.instantiationService.createInstance(
 					WindowTitle,
 					auxiliaryWindow.window,
-					editorPart,
-				),
+					editorPart
+				)
 			);
 		}
 
 		// Statusbar
 		const statusbarPart = disposables.add(
 			this.statusbarService.createAuxiliaryStatusbarPart(
-				auxiliaryWindow.container,
-			),
+				auxiliaryWindow.container
+			)
 		);
 		let statusBarVisible =
 			this.configurationService.getValue<boolean>(
-				AuxiliaryEditorPart.STATUS_BAR_VISIBILITY,
+				AuxiliaryEditorPart.STATUS_BAR_VISIBILITY
 			) !== false;
 		disposables.add(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(
-						AuxiliaryEditorPart.STATUS_BAR_VISIBILITY,
+						AuxiliaryEditorPart.STATUS_BAR_VISIBILITY
 					)
 				) {
 					statusBarVisible =
 						this.configurationService.getValue<boolean>(
-							AuxiliaryEditorPart.STATUS_BAR_VISIBILITY,
+							AuxiliaryEditorPart.STATUS_BAR_VISIBILITY
 						) !== false;
 
 					updateStatusbarVisibility(true);
 				}
-			}),
+			})
 		);
 
 		updateStatusbarVisibility(false);
@@ -174,8 +176,8 @@ export class AuxiliaryEditorPart {
 		// Lifecycle
 		const editorCloseListener = disposables.add(
 			Event.once(editorPart.onWillClose)(() =>
-				auxiliaryWindow.window.close(),
-			),
+				auxiliaryWindow.window.close()
+			)
 		);
 		disposables.add(
 			Event.once(auxiliaryWindow.onWillClose)(() => {
@@ -186,12 +188,12 @@ export class AuxiliaryEditorPart {
 				editorCloseListener.dispose();
 				editorPart.close();
 				disposables.dispose();
-			}),
+			})
 		);
 		disposables.add(
 			Event.once(this.lifecycleService.onDidShutdown)(() =>
-				disposables.dispose(),
-			),
+				disposables.dispose()
+			)
 		);
 
 		// Layout
@@ -203,7 +205,7 @@ export class AuxiliaryEditorPart {
 						dimension.width,
 						titlebarPartHeight,
 						0,
-						0,
+						0
 					);
 				}
 
@@ -213,16 +215,16 @@ export class AuxiliaryEditorPart {
 					dimension.width,
 					editorPartHeight,
 					titlebarPartHeight,
-					0,
+					0
 				);
 
 				statusbarPart.layout(
 					dimension.width,
 					statusbarPart.height,
 					dimension.height - statusbarPart.height,
-					0,
+					0
 				);
-			}),
+			})
 		);
 		auxiliaryWindow.layout();
 
@@ -233,14 +235,14 @@ export class AuxiliaryEditorPart {
 					IStatusbarService,
 					this.statusbarService.createScoped(
 						statusbarPart,
-						disposables,
+						disposables
 					),
 				],
 				[
 					IEditorService,
 					this.editorService.createScoped(editorPart, disposables),
-				],
-			),
+				]
+			)
 		);
 
 		return {
@@ -270,7 +272,7 @@ class AuxiliaryEditorPartImpl
 		@IStorageService storageService: IStorageService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IHostService hostService: IHostService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		const id = AuxiliaryEditorPartImpl.COUNTER++;
 		super(
@@ -284,13 +286,13 @@ class AuxiliaryEditorPartImpl
 			storageService,
 			layoutService,
 			hostService,
-			contextKeyService,
+			contextKeyService
 		);
 	}
 
 	override removeGroup(
 		group: number | IEditorGroupView,
-		preserveFocus?: boolean,
+		preserveFocus?: boolean
 	): void {
 		// Close aux window when last group removed
 		const groupView = this.assertGroupView(group);
@@ -310,7 +312,7 @@ class AuxiliaryEditorPartImpl
 
 		// Activate next group
 		const mostRecentlyActiveGroups = this.editorPartsView.getGroups(
-			GroupsOrder.MOST_RECENTLY_ACTIVE,
+			GroupsOrder.MOST_RECENTLY_ACTIVE
 		);
 		const nextActiveGroup = mostRecentlyActiveGroups[1]; // [0] will be the current group we are about to dispose
 		if (nextActiveGroup) {
@@ -348,7 +350,7 @@ class AuxiliaryEditorPartImpl
 		// Find the most recent group that is not locked
 		let targetGroup: IEditorGroupView | undefined = undefined;
 		for (const group of this.editorPartsView.mainPart.getGroups(
-			GroupsOrder.MOST_RECENTLY_ACTIVE,
+			GroupsOrder.MOST_RECENTLY_ACTIVE
 		)) {
 			if (!group.isLocked) {
 				targetGroup = group;
@@ -361,7 +363,7 @@ class AuxiliaryEditorPartImpl
 				this.editorPartsView.mainPart.activeGroup,
 				this.partOptions.openSideBySideDirection === "right"
 					? GroupDirection.RIGHT
-					: GroupDirection.DOWN,
+					: GroupDirection.DOWN
 			);
 		}
 

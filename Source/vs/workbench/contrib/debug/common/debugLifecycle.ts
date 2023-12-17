@@ -20,14 +20,17 @@ export class DebugLifecycle implements IWorkbenchContribution {
 	constructor(
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IDebugService private readonly debugService: IDebugService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IDialogService private readonly dialogService: IDialogService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IDialogService private readonly dialogService: IDialogService
 	) {
-		lifecycleService.onBeforeShutdown(async e => e.veto(this.shouldVetoShutdown(e.reason), 'veto.debug'));
+		lifecycleService.onBeforeShutdown(async (e) =>
+			e.veto(this.shouldVetoShutdown(e.reason), "veto.debug")
+		);
 	}
 
 	private shouldVetoShutdown(
-		_reason: ShutdownReason,
+		_reason: ShutdownReason
 	): boolean | Promise<boolean> {
 		const rootSessions = this.debugService
 			.getModel()
@@ -39,7 +42,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
 
 		const shouldConfirmOnExit =
 			this.configurationService.getValue<IDebugConfiguration>(
-				"debug",
+				"debug"
 			).confirmOnExit;
 		if (shouldConfirmOnExit === "never") {
 			return false;
@@ -49,18 +52,18 @@ export class DebugLifecycle implements IWorkbenchContribution {
 	}
 
 	private async showWindowCloseConfirmation(
-		numSessions: number,
+		numSessions: number
 	): Promise<boolean> {
 		let message: string;
 		if (numSessions === 1) {
 			message = nls.localize(
 				"debug.debugSessionCloseConfirmationSingular",
-				"There is an active debug session, are you sure you want to stop it?",
+				"There is an active debug session, are you sure you want to stop it?"
 			);
 		} else {
 			message = nls.localize(
 				"debug.debugSessionCloseConfirmationPlural",
-				"There are active debug sessions, are you sure you want to stop them?",
+				"There are active debug sessions, are you sure you want to stop them?"
 			);
 		}
 		const res = await this.dialogService.confirm({
@@ -68,7 +71,7 @@ export class DebugLifecycle implements IWorkbenchContribution {
 			type: "warning",
 			primaryButton: nls.localize(
 				{ key: "debug.stop", comment: ["&& denotes a mnemonic"] },
-				"&&Stop Debugging",
+				"&&Stop Debugging"
 			),
 		});
 		return !res.confirmed;

@@ -60,7 +60,7 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 			.getSelections()
 			.map((selection, index) => ({ selection, index, ignore: false }));
 		selections.sort((a, b) =>
-			Range.compareRangesUsingStarts(a.selection, b.selection),
+			Range.compareRangesUsingStarts(a.selection, b.selection)
 		);
 
 		// Remove selections that would result in copying the same line
@@ -88,8 +88,8 @@ abstract class AbstractCopyLinesAction extends EditorAction {
 				new CopyLinesCommand(
 					selection.selection,
 					this.down,
-					selection.ignore,
-				),
+					selection.ignore
+				)
 			);
 		}
 
@@ -126,7 +126,7 @@ class CopyLinesUpAction extends AbstractCopyLinesAction {
 						key: "miCopyLinesUp",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Copy Line Up",
+					"&&Copy Line Up"
 				),
 				order: 1,
 			},
@@ -161,7 +161,7 @@ class CopyLinesDownAction extends AbstractCopyLinesAction {
 						key: "miCopyLinesDown",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Co&&py Line Down",
+					"Co&&py Line Down"
 				),
 				order: 2,
 			},
@@ -184,7 +184,7 @@ export class DuplicateSelectionAction extends EditorAction {
 						key: "miDuplicateSelection",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Duplicate Selection",
+					"&&Duplicate Selection"
 				),
 				order: 5,
 			},
@@ -194,7 +194,7 @@ export class DuplicateSelectionAction extends EditorAction {
 	public run(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): void {
 		if (!editor.hasModel()) {
 			return;
@@ -212,13 +212,13 @@ export class DuplicateSelectionAction extends EditorAction {
 					selection.endLineNumber,
 					selection.endColumn,
 					selection.endLineNumber,
-					selection.endColumn,
+					selection.endColumn
 				);
 				commands.push(
 					new ReplaceCommandThatSelectsText(
 						insertSelection,
-						model.getValueInRange(selection),
-					),
+						model.getValueInRange(selection)
+					)
 				);
 			}
 		}
@@ -241,7 +241,7 @@ abstract class AbstractMoveLinesAction extends EditorAction {
 
 	public run(accessor: ServicesAccessor, editor: ICodeEditor): void {
 		const languageConfigurationService = accessor.get(
-			ILanguageConfigurationService,
+			ILanguageConfigurationService
 		);
 
 		const commands: ICommand[] = [];
@@ -254,8 +254,8 @@ abstract class AbstractMoveLinesAction extends EditorAction {
 					selection,
 					this.down,
 					autoIndent,
-					languageConfigurationService,
-				),
+					languageConfigurationService
+				)
 			);
 		}
 
@@ -286,7 +286,7 @@ class MoveLinesUpAction extends AbstractMoveLinesAction {
 						key: "miMoveLinesUp",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Mo&&ve Line Up",
+					"Mo&&ve Line Up"
 				),
 				order: 3,
 			},
@@ -315,7 +315,7 @@ class MoveLinesDownAction extends AbstractMoveLinesAction {
 						key: "miMoveLinesDown",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Move &&Line Down",
+					"Move &&Line Down"
 				),
 				order: 4,
 			},
@@ -339,7 +339,7 @@ export abstract class AbstractSortLinesAction extends EditorAction {
 				!SortLinesCommand.canRun(
 					editor.getModel(),
 					selection,
-					this.descending,
+					this.descending
 				)
 			) {
 				return;
@@ -374,7 +374,7 @@ export class SortLinesDescendingAction extends AbstractSortLinesAction {
 			id: "editor.action.sortLinesDescending",
 			label: nls.localize(
 				"lines.sortDescending",
-				"Sort Lines Descending",
+				"Sort Lines Descending"
 			),
 			alias: "Sort Lines Descending",
 			precondition: EditorContextKeys.writable,
@@ -388,7 +388,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 			id: "editor.action.removeDuplicateLines",
 			label: nls.localize(
 				"lines.deleteDuplicates",
-				"Delete Duplicate Lines",
+				"Delete Duplicate Lines"
 			),
 			alias: "Delete Duplicate Lines",
 			precondition: EditorContextKeys.writable,
@@ -433,7 +433,7 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 				selection.startLineNumber,
 				1,
 				selection.endLineNumber,
-				model.getLineMaxColumn(selection.endLineNumber),
+				model.getLineMaxColumn(selection.endLineNumber)
 			);
 
 			const adjustedSelectionStart =
@@ -442,11 +442,11 @@ export class DeleteDuplicateLinesAction extends EditorAction {
 				adjustedSelectionStart,
 				1,
 				adjustedSelectionStart + lines.length - 1,
-				lines[lines.length - 1].length,
+				lines[lines.length - 1].length
 			);
 
 			edits.push(
-				EditOperation.replace(selectionToReplace, lines.join("\n")),
+				EditOperation.replace(selectionToReplace, lines.join("\n"))
 			);
 			endCursorState.push(finalSelection);
 
@@ -471,7 +471,7 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 			id: TrimTrailingWhitespaceAction.ID,
 			label: nls.localize(
 				"lines.trimTrailingWhitespace",
-				"Trim Trailing Whitespace",
+				"Trim Trailing Whitespace"
 			),
 			alias: "Trim Trailing Whitespace",
 			precondition: EditorContextKeys.writable,
@@ -479,7 +479,7 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyX,
+					KeyMod.CtrlCmd | KeyCode.KeyX
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -489,7 +489,7 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 	public run(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): void {
 		let cursors: Position[] = [];
 		if (args.reason === "auto-save") {
@@ -497,7 +497,7 @@ export class TrimTrailingWhitespaceAction extends EditorAction {
 			// It is very convenient for the editor config extension to invoke this action.
 			// So, if we get a reason:'auto-save' passed in, let's preserve cursor positions.
 			cursors = (editor.getSelections() || []).map(
-				(s) => new Position(s.positionLineNumber, s.positionColumn),
+				(s) => new Position(s.positionLineNumber, s.positionColumn)
 			);
 		}
 
@@ -576,18 +576,18 @@ export class DeleteLinesAction extends EditorAction {
 						startLineNumber,
 						startColumn,
 						endLineNumber,
-						endColumn,
+						endColumn
 					),
-					"",
-				),
+					""
+				)
 			);
 			cursorState.push(
 				new Selection(
 					startLineNumber - linesDeleted,
 					op.positionColumn,
 					startLineNumber - linesDeleted,
-					op.positionColumn,
-				),
+					op.positionColumn
+				)
 			);
 			linesDeleted += op.endLineNumber - op.startLineNumber + 1;
 		}
@@ -598,7 +598,7 @@ export class DeleteLinesAction extends EditorAction {
 	}
 
 	private _getLinesToRemove(
-		editor: IActiveCodeEditor,
+		editor: IActiveCodeEditor
 	): IDeleteLinesOperation[] {
 		// Construct delete operations
 		const operations: IDeleteLinesOperation[] = editor
@@ -674,8 +674,8 @@ export class IndentLinesAction extends EditorAction {
 			TypeOperations.indent(
 				viewModel.cursorConfig,
 				editor.getModel(),
-				editor.getSelections(),
-			),
+				editor.getSelections()
+			)
 		);
 		editor.pushUndoStop();
 	}
@@ -727,8 +727,8 @@ export class InsertLineBeforeAction extends EditorAction {
 			TypeOperations.lineInsertBefore(
 				viewModel.cursorConfig,
 				editor.getModel(),
-				editor.getSelections(),
-			),
+				editor.getSelections()
+			)
 		);
 	}
 }
@@ -759,8 +759,8 @@ export class InsertLineAfterAction extends EditorAction {
 			TypeOperations.lineInsertAfter(
 				viewModel.cursorConfig,
 				editor.getModel(),
-				editor.getSelections(),
-			),
+				editor.getSelections()
+			)
 		);
 	}
 }
@@ -791,7 +791,7 @@ export abstract class AbstractDeleteAllToBoundaryAction extends EditorAction {
 
 		const endCursorState = this._getEndCursorState(
 			primaryCursor,
-			effectiveRanges,
+			effectiveRanges
 		);
 
 		const edits: ISingleEditOperation[] = effectiveRanges.map((range) => {
@@ -808,7 +808,7 @@ export abstract class AbstractDeleteAllToBoundaryAction extends EditorAction {
 	 */
 	protected abstract _getEndCursorState(
 		primaryCursor: Range,
-		rangesToDelete: Range[],
+		rangesToDelete: Range[]
 	): Selection[];
 
 	protected abstract _getRangesToDelete(editor: IActiveCodeEditor): Range[];
@@ -832,7 +832,7 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 
 	protected _getEndCursorState(
 		primaryCursor: Range,
-		rangesToDelete: Range[],
+		rangesToDelete: Range[]
 	): Selection[] {
 		let endPrimaryCursor: Selection | null = null;
 		const endCursorState: Selection[] = [];
@@ -846,14 +846,14 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 					newStartLine,
 					range.startColumn,
 					newStartLine,
-					range.startColumn,
+					range.startColumn
 				);
 			} else {
 				endCursor = new Selection(
 					range.startLineNumber,
 					range.startColumn,
 					range.startLineNumber,
-					range.startColumn,
+					range.startColumn
 				);
 			}
 
@@ -892,7 +892,7 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 				if (selection.startColumn === 1) {
 					const deleteFromLine = Math.max(
 						1,
-						selection.startLineNumber - 1,
+						selection.startLineNumber - 1
 					);
 					const deleteFromColumn =
 						selection.startLineNumber === 1
@@ -902,14 +902,14 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 						deleteFromLine,
 						deleteFromColumn,
 						selection.startLineNumber,
-						1,
+						1
 					);
 				} else {
 					return new Range(
 						selection.startLineNumber,
 						1,
 						selection.startLineNumber,
-						selection.startColumn,
+						selection.startColumn
 					);
 				}
 			} else {
@@ -917,7 +917,7 @@ export class DeleteAllLeftAction extends AbstractDeleteAllToBoundaryAction {
 					selection.startLineNumber,
 					1,
 					selection.endLineNumber,
-					selection.endColumn,
+					selection.endColumn
 				);
 			}
 		});
@@ -947,7 +947,7 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 
 	protected _getEndCursorState(
 		primaryCursor: Range,
-		rangesToDelete: Range[],
+		rangesToDelete: Range[]
 	): Selection[] {
 		let endPrimaryCursor: Selection | null = null;
 		const endCursorState: Selection[] = [];
@@ -957,7 +957,7 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 				range.startLineNumber - offset,
 				range.startColumn,
 				range.startLineNumber - offset,
-				range.startColumn,
+				range.startColumn
 			);
 
 			if (range.intersectRanges(primaryCursor)) {
@@ -995,14 +995,14 @@ export class DeleteAllRightAction extends AbstractDeleteAllToBoundaryAction {
 						sel.startLineNumber,
 						sel.startColumn,
 						sel.startLineNumber + 1,
-						1,
+						1
 					);
 				} else {
 					return new Range(
 						sel.startLineNumber,
 						sel.startColumn,
 						sel.startLineNumber,
-						maxColumn,
+						maxColumn
 					);
 				}
 			}
@@ -1068,7 +1068,7 @@ export class JoinLinesAction extends EditorAction {
 							previousValue.startLineNumber,
 							previousValue.startColumn,
 							currentValue.endLineNumber,
-							currentValue.endColumn,
+							currentValue.endColumn
 						);
 					}
 				} else {
@@ -1083,11 +1083,11 @@ export class JoinLinesAction extends EditorAction {
 							previousValue.startLineNumber,
 							previousValue.startColumn,
 							currentValue.endLineNumber,
-							currentValue.endColumn,
+							currentValue.endColumn
 						);
 					}
 				}
-			},
+			}
 		);
 
 		reducedSelections.push(lastSelection);
@@ -1146,21 +1146,21 @@ export class JoinLinesAction extends EditorAction {
 					if (
 						insertSpace &&
 						(trimmedLinesContent.charAt(
-							trimmedLinesContent.length - 1,
+							trimmedLinesContent.length - 1
 						) === " " ||
 							trimmedLinesContent.charAt(
-								trimmedLinesContent.length - 1,
+								trimmedLinesContent.length - 1
 							) === "\t")
 					) {
 						insertSpace = false;
 						trimmedLinesContent = trimmedLinesContent.replace(
 							/[\s\uFEFF\xA0]+$/g,
-							" ",
+							" "
 						);
 					}
 
 					const lineTextWithoutIndent = lineText.substr(
-						firstNonWhitespaceIdx - 1,
+						firstNonWhitespaceIdx - 1
 					);
 
 					trimmedLinesContent +=
@@ -1180,7 +1180,7 @@ export class JoinLinesAction extends EditorAction {
 				startLineNumber,
 				startColumn,
 				endLineNumber,
-				endColumn,
+				endColumn
 			);
 
 			if (!deleteSelection.isEmpty()) {
@@ -1190,42 +1190,42 @@ export class JoinLinesAction extends EditorAction {
 					edits.push(
 						EditOperation.replace(
 							deleteSelection,
-							trimmedLinesContent,
-						),
+							trimmedLinesContent
+						)
 					);
 					resultSelection = new Selection(
 						deleteSelection.startLineNumber - lineOffset,
 						trimmedLinesContent.length - columnDeltaOffset + 1,
 						startLineNumber - lineOffset,
-						trimmedLinesContent.length - columnDeltaOffset + 1,
+						trimmedLinesContent.length - columnDeltaOffset + 1
 					);
 				} else {
 					if (selection.startLineNumber === selection.endLineNumber) {
 						edits.push(
 							EditOperation.replace(
 								deleteSelection,
-								trimmedLinesContent,
-							),
+								trimmedLinesContent
+							)
 						);
 						resultSelection = new Selection(
 							selection.startLineNumber - lineOffset,
 							selection.startColumn,
 							selection.endLineNumber - lineOffset,
-							selection.endColumn,
+							selection.endColumn
 						);
 					} else {
 						edits.push(
 							EditOperation.replace(
 								deleteSelection,
-								trimmedLinesContent,
-							),
+								trimmedLinesContent
+							)
 						);
 						resultSelection = new Selection(
 							selection.startLineNumber - lineOffset,
 							selection.startColumn,
 							selection.startLineNumber - lineOffset,
 							trimmedLinesContent.length -
-								selectionEndPositionOffset,
+								selectionEndPositionOffset
 						);
 					}
 				}
@@ -1257,7 +1257,7 @@ export class TransposeAction extends EditorAction {
 			id: "editor.action.transpose",
 			label: nls.localize(
 				"editor.transpose",
-				"Transpose Characters around the Cursor",
+				"Transpose Characters around the Cursor"
 			),
 			alias: "Transpose Characters around the Cursor",
 			precondition: EditorContextKeys.writable,
@@ -1298,7 +1298,7 @@ export class TransposeAction extends EditorAction {
 					cursor.lineNumber,
 					Math.max(1, cursor.column - 1),
 					cursor.lineNumber + 1,
-					1,
+					1
 				);
 				const chars = model
 					.getValueInRange(deleteSelection)
@@ -1312,17 +1312,17 @@ export class TransposeAction extends EditorAction {
 							cursor.lineNumber,
 							Math.max(1, cursor.column - 1),
 							cursor.lineNumber + 1,
-							1,
+							1
 						),
-						chars,
-					),
+						chars
+					)
 				);
 			} else {
 				const deleteSelection = new Range(
 					cursor.lineNumber,
 					Math.max(1, cursor.column - 1),
 					cursor.lineNumber,
-					cursor.column + 1,
+					cursor.column + 1
 				);
 				const chars = model
 					.getValueInRange(deleteSelection)
@@ -1337,9 +1337,9 @@ export class TransposeAction extends EditorAction {
 							cursor.lineNumber,
 							cursor.column + 1,
 							cursor.lineNumber,
-							cursor.column + 1,
-						),
-					),
+							cursor.column + 1
+						)
+					)
 				);
 			}
 		}
@@ -1378,22 +1378,22 @@ export abstract class AbstractCaseAction extends EditorAction {
 					cursor.lineNumber,
 					word.startColumn,
 					cursor.lineNumber,
-					word.endColumn,
+					word.endColumn
 				);
 				const text = model.getValueInRange(wordRange);
 				textEdits.push(
 					EditOperation.replace(
 						wordRange,
-						this._modifyText(text, wordSeparators),
-					),
+						this._modifyText(text, wordSeparators)
+					)
 				);
 			} else {
 				const text = model.getValueInRange(selection);
 				textEdits.push(
 					EditOperation.replace(
 						selection,
-						this._modifyText(text, wordSeparators),
-					),
+						this._modifyText(text, wordSeparators)
+					)
 				);
 			}
 		}
@@ -1405,7 +1405,7 @@ export abstract class AbstractCaseAction extends EditorAction {
 
 	protected abstract _modifyText(
 		text: string,
-		wordSeparators: string,
+		wordSeparators: string
 	): string;
 }
 
@@ -1415,7 +1415,7 @@ export class UpperCaseAction extends AbstractCaseAction {
 			id: "editor.action.transformToUppercase",
 			label: nls.localize(
 				"editor.transformToUppercase",
-				"Transform to Uppercase",
+				"Transform to Uppercase"
 			),
 			alias: "Transform to Uppercase",
 			precondition: EditorContextKeys.writable,
@@ -1433,7 +1433,7 @@ export class LowerCaseAction extends AbstractCaseAction {
 			id: "editor.action.transformToLowercase",
 			label: nls.localize(
 				"editor.transformToLowercase",
-				"Transform to Lowercase",
+				"Transform to Lowercase"
 			),
 			alias: "Transform to Lowercase",
 			precondition: EditorContextKeys.writable,
@@ -1451,7 +1451,7 @@ class BackwardsCompatibleRegExp {
 
 	constructor(
 		private readonly _pattern: string,
-		private readonly _flags: string,
+		private readonly _flags: string
 	) {
 		this._actual = null;
 		this._evaluated = false;
@@ -1477,7 +1477,7 @@ class BackwardsCompatibleRegExp {
 export class TitleCaseAction extends AbstractCaseAction {
 	public static titleBoundary = new BackwardsCompatibleRegExp(
 		"(^|[^\\p{L}\\p{N}']|((^|\\P{L})'))\\p{L}",
-		"gmu",
+		"gmu"
 	);
 
 	constructor() {
@@ -1485,7 +1485,7 @@ export class TitleCaseAction extends AbstractCaseAction {
 			id: "editor.action.transformToTitlecase",
 			label: nls.localize(
 				"editor.transformToTitlecase",
-				"Transform to Title Case",
+				"Transform to Title Case"
 			),
 			alias: "Transform to Title Case",
 			precondition: EditorContextKeys.writable,
@@ -1507,11 +1507,11 @@ export class TitleCaseAction extends AbstractCaseAction {
 export class SnakeCaseAction extends AbstractCaseAction {
 	public static caseBoundary = new BackwardsCompatibleRegExp(
 		"(\\p{Ll})(\\p{Lu})",
-		"gmu",
+		"gmu"
 	);
 	public static singleLetters = new BackwardsCompatibleRegExp(
 		"(\\p{Lu}|\\p{N})(\\p{Lu})(\\p{Ll})",
-		"gmu",
+		"gmu"
 	);
 
 	constructor() {
@@ -1519,7 +1519,7 @@ export class SnakeCaseAction extends AbstractCaseAction {
 			id: "editor.action.transformToSnakecase",
 			label: nls.localize(
 				"editor.transformToSnakecase",
-				"Transform to Snake Case",
+				"Transform to Snake Case"
 			),
 			alias: "Transform to Snake Case",
 			precondition: EditorContextKeys.writable,
@@ -1548,7 +1548,7 @@ export class CamelCaseAction extends AbstractCaseAction {
 			id: "editor.action.transformToCamelcase",
 			label: nls.localize(
 				"editor.transformToCamelcase",
-				"Transform to Camel Case",
+				"Transform to Camel Case"
 			),
 			alias: "Transform to Camel Case",
 			precondition: EditorContextKeys.writable,
@@ -1569,7 +1569,7 @@ export class CamelCaseAction extends AbstractCaseAction {
 				.map(
 					(word: string) =>
 						word.substring(0, 1).toLocaleUpperCase() +
-						word.substring(1),
+						word.substring(1)
 				)
 				.join("")
 		);
@@ -1589,15 +1589,15 @@ export class KebabCaseAction extends AbstractCaseAction {
 
 	private static caseBoundary = new BackwardsCompatibleRegExp(
 		"(\\p{Ll})(\\p{Lu})",
-		"gmu",
+		"gmu"
 	);
 	private static singleLetters = new BackwardsCompatibleRegExp(
 		"(\\p{Lu}|\\p{N})(\\p{Lu}\\p{Ll})",
-		"gmu",
+		"gmu"
 	);
 	private static underscoreBoundary = new BackwardsCompatibleRegExp(
 		"(\\S)(_)(\\S)",
-		"gm",
+		"gm"
 	);
 
 	constructor() {
@@ -1605,7 +1605,7 @@ export class KebabCaseAction extends AbstractCaseAction {
 			id: "editor.action.transformToKebabcase",
 			label: nls.localize(
 				"editor.transformToKebabcase",
-				"Transform to Kebab Case",
+				"Transform to Kebab Case"
 			),
 			alias: "Transform to Kebab Case",
 			precondition: EditorContextKeys.writable,

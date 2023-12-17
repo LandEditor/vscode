@@ -26,21 +26,25 @@ import { ILabelService } from "vs/platform/label/common/label";
 export class StartupProfiler implements IWorkbenchContribution {
 	constructor(
 		@IDialogService private readonly _dialogService: IDialogService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IExtensionService extensionService: IExtensionService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IProductService private readonly _productService: IProductService,
 		@IFileService private readonly _fileService: IFileService,
-		@ILabelService private readonly _labelService: ILabelService,
+		@ILabelService private readonly _labelService: ILabelService
 	) {
 		// wait for everything to be ready
 		Promise.all([
 			lifecycleService.when(LifecyclePhase.Eventually),
-			extensionService.whenInstalledExtensionsRegistered()
+			extensionService.whenInstalledExtensionsRegistered(),
 		]).then(() => {
 			this._stopProfiling();
 		});
@@ -51,7 +55,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 			return;
 		}
 		const profileFilenamePrefix = URI.file(
-			this._environmentService.args["prof-startup-prefix"],
+			this._environmentService.args["prof-startup-prefix"]
 		);
 
 		const dir = dirname(profileFilenamePrefix);
@@ -64,7 +68,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 			.then(() =>
 				this._fileService.del(profileFilenamePrefix, {
 					recursive: true,
-				}),
+				})
 			) // (1) delete the file to tell the main process to stop profiling
 			.then(
 				() =>
@@ -82,12 +86,12 @@ export class StartupProfiler implements IWorkbenchContribution {
 								});
 						};
 						check();
-					}),
+					})
 			)
 			.then(() =>
 				this._fileService.del(profileFilenamePrefix, {
 					recursive: true,
-				}),
+				})
 			); // (3) finally delete the file again
 
 		markerFile
@@ -96,8 +100,8 @@ export class StartupProfiler implements IWorkbenchContribution {
 					return (
 						stat.children
 							? stat.children.filter((value) =>
-									value.resource.path.includes(prefix),
-							  )
+									value.resource.path.includes(prefix)
+								)
 							: []
 					).map((stat) => stat.resource);
 				});
@@ -106,7 +110,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 				const profileFiles = files.reduce(
 					(prev, cur) =>
 						`${prev}${this._labelService.getUriLabel(cur)}\n`,
-					"\n",
+					"\n"
 				);
 
 				return this._dialogService
@@ -114,19 +118,19 @@ export class StartupProfiler implements IWorkbenchContribution {
 						type: "info",
 						message: localize(
 							"prof.message",
-							"Successfully created profiles.",
+							"Successfully created profiles."
 						),
 						detail: localize(
 							"prof.detail",
 							"Please create an issue and manually attach the following files:\n{0}",
-							profileFiles,
+							profileFiles
 						),
 						primaryButton: localize(
 							{
 								key: "prof.restartAndFileIssue",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Create Issue and Restart",
+							"&&Create Issue and Restart"
 						),
 						cancelButton: localize("prof.restart", "Restart"),
 					})
@@ -134,10 +138,10 @@ export class StartupProfiler implements IWorkbenchContribution {
 						if (res.confirmed) {
 							Promise.all<any>([
 								this._nativeHostService.showItemInFolder(
-									files[0].fsPath,
+									files[0].fsPath
 								),
 								this._createPerfIssue(
-									files.map((file) => basename(file)),
+									files.map((file) => basename(file))
 								),
 							]).then(() => {
 								// keep window stable until restart is selected
@@ -146,12 +150,12 @@ export class StartupProfiler implements IWorkbenchContribution {
 										type: "info",
 										message: localize(
 											"prof.thanks",
-											"Thanks for helping us.",
+											"Thanks for helping us."
 										),
 										detail: localize(
 											"prof.detail.restart",
 											"A final restart is required to continue to use '{0}'. Again, thank you for your contribution.",
-											this._productService.nameLong,
+											this._productService.nameLong
 										),
 										primaryButton: localize(
 											{
@@ -160,7 +164,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 													"&& denotes a mnemonic",
 												],
 											},
-											"&&Restart",
+											"&&Restart"
 										),
 									})
 									.then((res) => {
@@ -187,11 +191,11 @@ export class StartupProfiler implements IWorkbenchContribution {
 		}
 
 		const ref = await this._textModelResolverService.createModelReference(
-			PerfviewInput.Uri,
+			PerfviewInput.Uri
 		);
 		try {
 			await this._clipboardService.writeText(
-				ref.object.textEditorModel.getValue(),
+				ref.object.textEditorModel.getValue()
 			);
 		} finally {
 			ref.dispose();
@@ -209,10 +213,8 @@ export class StartupProfiler implements IWorkbenchContribution {
 
 		this._openerService.open(
 			URI.parse(
-				`${baseUrl}${queryStringPrefix}body=${encodeURIComponent(
-					body,
-				)}`,
-			),
+				`${baseUrl}${queryStringPrefix}body=${encodeURIComponent(body)}`
+			)
 		);
 	}
 }

@@ -99,7 +99,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IExtensionService extensionService: IExtensionService,
 		@ICommandService private commandService: ICommandService,
-		@IMenuService menuService: IMenuService,
+		@IMenuService menuService: IMenuService
 	) {
 		super(
 			Parts.PANEL_PART,
@@ -107,8 +107,8 @@ export class PanelPart extends AbstractPaneCompositePart {
 			PanelPart.activePanelSettingsKey,
 			ActivePanelContext.bindTo(contextKeyService),
 			PanelFocusContext.bindTo(contextKeyService),
-			'panel',
-			'panel',
+			"panel",
+			"panel",
 			undefined,
 			notificationService,
 			storageService,
@@ -120,7 +120,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 			viewDescriptorService,
 			contextKeyService,
 			extensionService,
-			menuService,
+			menuService
 		);
 	}
 
@@ -169,13 +169,13 @@ export class PanelPart extends AbstractPaneCompositePart {
 				activeBackgroundColor: theme.getColor(PANEL_BACKGROUND), // Background color for overflow action
 				inactiveBackgroundColor: theme.getColor(PANEL_BACKGROUND), // Background color for overflow action
 				activeBorderBottomColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_BORDER,
+					PANEL_ACTIVE_TITLE_BORDER
 				),
 				activeForegroundColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_FOREGROUND,
+					PANEL_ACTIVE_TITLE_FOREGROUND
 				),
 				inactiveForegroundColor: theme.getColor(
-					PANEL_INACTIVE_TITLE_FOREGROUND,
+					PANEL_INACTIVE_TITLE_FOREGROUND
 				),
 				badgeBackground: theme.getColor(badgeBackground),
 				badgeForeground: theme.getColor(badgeForeground),
@@ -187,23 +187,23 @@ export class PanelPart extends AbstractPaneCompositePart {
 	private fillExtraContextMenuActions(actions: IAction[]): void {
 		const panelPositionMenu = this.menuService.createMenu(
 			MenuId.PanelPositionMenu,
-			this.contextKeyService,
+			this.contextKeyService
 		);
 		const panelAlignMenu = this.menuService.createMenu(
 			MenuId.PanelAlignmentMenu,
-			this.contextKeyService,
+			this.contextKeyService
 		);
 		const positionActions: IAction[] = [];
 		const alignActions: IAction[] = [];
 		createAndFillInContextMenuActions(
 			panelPositionMenu,
 			{ shouldForwardArgs: true },
-			{ primary: [], secondary: positionActions },
+			{ primary: [], secondary: positionActions }
 		);
 		createAndFillInContextMenuActions(
 			panelAlignMenu,
 			{ shouldForwardArgs: true },
-			{ primary: [], secondary: alignActions },
+			{ primary: [], secondary: alignActions }
 		);
 		panelAlignMenu.dispose();
 		panelPositionMenu.dispose();
@@ -214,22 +214,22 @@ export class PanelPart extends AbstractPaneCompositePart {
 				new SubmenuAction(
 					"workbench.action.panel.position",
 					localize("panel position", "Panel Position"),
-					positionActions,
+					positionActions
 				),
 				new SubmenuAction(
 					"workbench.action.panel.align",
 					localize("align panel", "Align Panel"),
-					alignActions,
+					alignActions
 				),
 				toAction({
 					id: TogglePanelAction.ID,
 					label: localize("hidePanel", "Hide Panel"),
 					run: () =>
 						this.commandService.executeCommand(
-							TogglePanelAction.ID,
+							TogglePanelAction.ID
 						),
 				}),
-			],
+			]
 		);
 	}
 
@@ -237,7 +237,7 @@ export class PanelPart extends AbstractPaneCompositePart {
 		width: number,
 		height: number,
 		top: number,
-		left: number,
+		left: number
 	): void {
 		let dimensions: Dimension;
 		if (this.layoutService.getPanelPosition() === Position.RIGHT) {

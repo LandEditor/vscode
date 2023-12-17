@@ -23,7 +23,7 @@ const tsLoaderOptions = {
 };
 
 function withNodeDefaults(
-	/**@type WebpackConfig & { context: string }*/ extConfig,
+	/**@type WebpackConfig & { context: string }*/ extConfig
 ) {
 	const defaultConfig = {
 		mode: "none", // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
@@ -62,7 +62,7 @@ function withNodeDefaults(
 							options: {
 								configFile: path.join(
 									extConfig.context,
-									"tsconfig.json",
+									"tsconfig.json"
 								),
 							},
 						},
@@ -128,7 +128,7 @@ function nodePlugins(context) {
 
 function withBrowserDefaults(
 	/**@type WebpackConfig & { context: string }*/ extConfig,
-	/** @type AdditionalBrowserConfig */ additionalOptions = {},
+	/** @type AdditionalBrowserConfig */ additionalOptions = {}
 ) {
 	/** @type WebpackConfig */
 	const defaultConfig = {
@@ -159,7 +159,7 @@ function withBrowserDefaults(
 									: {
 											configFile:
 												additionalOptions.configFile,
-									  }),
+										}),
 							},
 						},
 						{
@@ -168,7 +168,7 @@ function withBrowserDefaults(
 								configFile: path.join(
 									extConfig.context,
 									additionalOptions?.configFile ??
-										"tsconfig.json",
+										"tsconfig.json"
 								),
 							},
 						},

@@ -11,7 +11,7 @@ export class RestartTsServerCommand implements Command {
 	public readonly id = "typescript.restartTsServer";
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute() {

@@ -44,7 +44,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 
 	$registerTimelineProvider(provider: TimelineProviderDescriptor): void {
 		this.logService.trace(
-			`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`,
+			`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`
 		);
 
 		const proxy = this._proxy;
@@ -62,10 +62,10 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 			async provideTimeline(
 				uri: URI,
 				options: TimelineOptions,
-				token: CancellationToken,
+				token: CancellationToken
 			) {
 				return revive<Timeline>(
-					await proxy.$getTimeline(provider.id, uri, options, token),
+					await proxy.$getTimeline(provider.id, uri, options, token)
 				);
 			},
 			dispose() {
@@ -77,7 +77,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 
 	$unregisterTimelineProvider(id: string): void {
 		this.logService.trace(
-			`MainThreadTimeline#unregisterTimelineProvider: id=${id}`,
+			`MainThreadTimeline#unregisterTimelineProvider: id=${id}`
 		);
 
 		this._timelineService.unregisterTimelineProvider(id);
@@ -87,7 +87,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 		this.logService.trace(
 			`MainThreadTimeline#emitChangeEvent: id=${
 				e.id
-			}, uri=${e.uri?.toString(true)}`,
+			}, uri=${e.uri?.toString(true)}`
 		);
 
 		const emitter = this._providerEmitters.get(e.id!);

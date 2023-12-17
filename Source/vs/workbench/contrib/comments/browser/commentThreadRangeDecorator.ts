@@ -33,7 +33,7 @@ class CommentThreadRangeDecoration implements IModelDeltaDecoration {
 
 	constructor(
 		public readonly range: IRange,
-		public readonly options: ModelDecorationOptions,
+		public readonly options: ModelDecorationOptions
 	) {}
 }
 
@@ -69,17 +69,17 @@ export class CommentThreadRangeDecorator extends Disposable {
 		};
 
 		this.activeDecorationOptions = ModelDecorationOptions.createDynamic(
-			activeDecorationOptions,
+			activeDecorationOptions
 		);
 		this._register(
 			commentService.onDidChangeCurrentCommentThread((thread) => {
 				this.updateCurrent(thread);
-			}),
+			})
 		);
 		this._register(
 			commentService.onDidUpdateCommentThreads(() => {
 				this.updateCurrent(undefined);
-			}),
+			})
 		);
 	}
 
@@ -119,8 +119,8 @@ export class CommentThreadRangeDecorator extends Disposable {
 					newDecoration.push(
 						new CommentThreadRangeDecoration(
 							range,
-							this.activeDecorationOptions,
-						),
+							this.activeDecorationOptions
+						)
 					);
 				}
 			}
@@ -128,18 +128,18 @@ export class CommentThreadRangeDecorator extends Disposable {
 		this.editor.changeDecorations((changeAccessor) => {
 			this.activeDecorationIds = changeAccessor.deltaDecorations(
 				this.activeDecorationIds,
-				newDecoration,
+				newDecoration
 			);
 			newDecoration.forEach(
 				(decoration, index) =>
-					(decoration.id = this.decorationIds[index]),
+					(decoration.id = this.decorationIds[index])
 			);
 		});
 	}
 
 	public update(
 		editor: ICodeEditor | undefined,
-		commentInfos: ICommentInfo[],
+		commentInfos: ICommentInfo[]
 	) {
 		const model = editor?.getModel();
 		if (!editor || !model) {
@@ -170,7 +170,7 @@ export class CommentThreadRangeDecorator extends Disposable {
 				this.threadCollapseStateListeners.push(
 					thread.onDidChangeCollapsibleState(() => {
 						this.update(editor, commentInfos);
-					}),
+					})
 				);
 
 				if (
@@ -183,8 +183,8 @@ export class CommentThreadRangeDecorator extends Disposable {
 				commentThreadRangeDecorations.push(
 					new CommentThreadRangeDecoration(
 						range,
-						this.decorationOptions,
-					),
+						this.decorationOptions
+					)
 				);
 			});
 		}
@@ -192,11 +192,11 @@ export class CommentThreadRangeDecorator extends Disposable {
 		editor.changeDecorations((changeAccessor) => {
 			this.decorationIds = changeAccessor.deltaDecorations(
 				this.decorationIds,
-				commentThreadRangeDecorations,
+				commentThreadRangeDecorations
 			);
 			commentThreadRangeDecorations.forEach(
 				(decoration, index) =>
-					(decoration.id = this.decorationIds[index]),
+					(decoration.id = this.decorationIds[index])
 			);
 		});
 	}

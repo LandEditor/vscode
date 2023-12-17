@@ -24,7 +24,7 @@ export default class TypeScriptDefinitionProvider
 	public async provideDefinition(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DefinitionLink[] | vscode.Definition | undefined> {
 		const filepath = this.client.toOpenTsFilePath(document);
 		if (!filepath) {
@@ -33,12 +33,12 @@ export default class TypeScriptDefinitionProvider
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
-			position,
+			position
 		);
 		const response = await this.client.execute(
 			"definitionAndBoundSpan",
 			args,
-			token,
+			token
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -58,7 +58,7 @@ export default class TypeScriptDefinitionProvider
 			const sourceDefinitionsResponse = await this.client.execute(
 				"findSourceDefinition",
 				args,
-				token,
+				token
 			);
 			if (
 				sourceDefinitionsResponse.type === "response" &&
@@ -71,14 +71,14 @@ export default class TypeScriptDefinitionProvider
 		return definitions.map((location): vscode.DefinitionLink => {
 			const target = typeConverters.Location.fromTextSpan(
 				this.client.toResource(location.file),
-				location,
+				location
 			);
 			if (location.contextStart && location.contextEnd) {
 				return {
 					originSelectionRange: span,
 					targetRange: typeConverters.Range.fromLocations(
 						location.contextStart,
-						location.contextEnd,
+						location.contextEnd
 					),
 					targetUri: target.uri,
 					targetSelectionRange: target.range,
@@ -95,21 +95,21 @@ export default class TypeScriptDefinitionProvider
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
 			requireSomeCapability(
 				client,
 				ClientCapability.EnhancedSyntax,
-				ClientCapability.Semantic,
+				ClientCapability.Semantic
 			),
 		],
 		() => {
 			return vscode.languages.registerDefinitionProvider(
 				selector.syntax,
-				new TypeScriptDefinitionProvider(client),
+				new TypeScriptDefinitionProvider(client)
 			);
-		},
+		}
 	);
 }

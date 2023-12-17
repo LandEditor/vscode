@@ -49,7 +49,7 @@ function getExtensionSchemaAssociations() {
 					if (uri[0] === "." && uri[1] === "/") {
 						uri = Uri.joinPath(
 							extension.extensionUri,
-							uri,
+							uri
 						).toString(false);
 					}
 					associations.push({
@@ -69,7 +69,7 @@ function getExtensionSchemaAssociations() {
 						label: association.label,
 						detail: l10n.t(
 							"Configured by extension: {0}",
-							association.extension.id,
+							association.extension.id
 						),
 						uri: Uri.parse(association.fullUri),
 						buttons: [
@@ -82,7 +82,7 @@ function getExtensionSchemaAssociations() {
 							() =>
 								commands.executeCommand(
 									"workbench.extensions.action.showExtensionsWithIds",
-									[[association.extension.id]],
+									[[association.extension.id]]
 								),
 						],
 					};
@@ -117,7 +117,7 @@ function getSettingsSchemaAssociations(uri: string) {
 				let fullUri = uri;
 				if (uri[0] === "." && uri[1] === "/") {
 					fullUri = Uri.joinPath(workspaceFolder.uri, uri).toString(
-						false,
+						false
 					);
 				}
 				associations.push({ fullUri, workspaceFolder, label: uri });
@@ -132,7 +132,7 @@ function getSettingsSchemaAssociations(uri: string) {
 				let fullUri = uri;
 				if (workspaceFolder && uri[0] === "." && uri[1] === "/") {
 					fullUri = Uri.joinPath(workspaceFolder.uri, uri).toString(
-						false,
+						false
 					);
 				}
 				associations.push({
@@ -165,7 +165,7 @@ function getSettingsSchemaAssociations(uri: string) {
 									association.workspaceFolder
 										? "workbench.action.openWorkspaceSettingsFile"
 										: "workbench.action.openSettingsJson",
-									["json.schemas"],
+									["json.schemas"]
 								),
 						],
 					};
@@ -217,7 +217,7 @@ function showSchemaList(input: ShowSchemasInput) {
 				() =>
 					commands.executeCommand(
 						"workbench.action.openSettingsJson",
-						["json.schemas"],
+						["json.schemas"]
 					),
 			],
 		});
@@ -227,7 +227,7 @@ function showSchemaList(input: ShowSchemasInput) {
 	items.push({
 		label: l10n.t("Learn more about JSON schema configuration..."),
 		uri: Uri.parse(
-			"https://code.visualstudio.com/docs/languages/json#_json-schemas-and-settings",
+			"https://code.visualstudio.com/docs/languages/json#_json-schemas-and-settings"
 		),
 	});
 
@@ -259,18 +259,18 @@ function showSchemaList(input: ShowSchemasInput) {
 
 export function createLanguageStatusItem(
 	documentSelector: string[],
-	statusRequest: (uri: string) => Promise<JSONLanguageStatus>,
+	statusRequest: (uri: string) => Promise<JSONLanguageStatus>
 ): Disposable {
 	const statusItem = languages.createLanguageStatusItem(
 		"json.projectStatus",
-		documentSelector,
+		documentSelector
 	);
 	statusItem.name = l10n.t("JSON Validation Status");
 	statusItem.severity = LanguageStatusSeverity.Information;
 
 	const showSchemasCommand = commands.registerCommand(
 		"_json.showAssociatedSchemaList",
-		showSchemaList,
+		showSchemaList
 	);
 
 	const activeEditorListener = window.onDidChangeActiveTextEditor(() => {
@@ -297,7 +297,7 @@ export function createLanguageStatusItem(
 				} else {
 					statusItem.text = l10n.t("Schema Validated");
 					statusItem.detail = l10n.t(
-						"multiple JSON schemas configured",
+						"multiple JSON schemas configured"
 					);
 				}
 				statusItem.command = {
@@ -313,14 +313,14 @@ export function createLanguageStatusItem(
 			} catch (e) {
 				statusItem.text = l10n.t(
 					"Unable to compute used schemas: {0}",
-					e.message,
+					e.message
 				);
 				statusItem.detail = undefined;
 				statusItem.command = undefined;
 			}
 		} else {
 			statusItem.text = l10n.t(
-				"Unable to compute used schemas: No document",
+				"Unable to compute used schemas: No document"
 			);
 			statusItem.detail = undefined;
 			statusItem.command = undefined;
@@ -332,7 +332,7 @@ export function createLanguageStatusItem(
 	return Disposable.from(
 		statusItem,
 		activeEditorListener,
-		showSchemasCommand,
+		showSchemasCommand
 	);
 }
 
@@ -352,12 +352,12 @@ export function createLimitStatusItem(newItem: (limit: number) => Disposable) {
 					statusItem = newItem(limit);
 				}
 			}
-		}),
+		})
 	);
 	toDispose.push(
 		workspace.onDidCloseTextDocument((document) => {
 			activeLimits.delete(document);
-		}),
+		})
 	);
 
 	function update(document: TextDocument, limitApplied: number | false) {
@@ -398,18 +398,18 @@ const configureSettingsLabel = l10n.t("Configure");
 export function createDocumentSymbolsLimitItem(
 	documentSelector: string[],
 	settingId: string,
-	limit: number,
+	limit: number
 ): Disposable {
 	const statusItem = languages.createLanguageStatusItem(
 		"json.documentSymbolsStatus",
-		documentSelector,
+		documentSelector
 	);
 	statusItem.name = l10n.t("JSON Outline Status");
 	statusItem.severity = LanguageStatusSeverity.Warning;
 	statusItem.text = l10n.t("Outline");
 	statusItem.detail = l10n.t(
 		"only {0} document symbols shown for performance reasons",
-		limit,
+		limit
 	);
 	statusItem.command = {
 		command: openSettingsCommand,

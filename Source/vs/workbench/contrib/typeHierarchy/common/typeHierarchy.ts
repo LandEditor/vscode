@@ -48,15 +48,15 @@ export interface TypeHierarchyProvider {
 	prepareTypeHierarchy(
 		document: ITextModel,
 		position: IPosition,
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<TypeHierarchySession>;
 	provideSupertypes(
 		item: TypeHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<TypeHierarchyItem[]>;
 	provideSubtypes(
 		item: TypeHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<TypeHierarchyItem[]>;
 }
 
@@ -67,7 +67,7 @@ export class TypeHierarchyModel {
 	static async create(
 		model: ITextModel,
 		position: IPosition,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<TypeHierarchyModel | undefined> {
 		const [provider] = TypeHierarchyProviderRegistry.ordered(model);
 		if (!provider) {
@@ -76,7 +76,7 @@ export class TypeHierarchyModel {
 		const session = await provider.prepareTypeHierarchy(
 			model,
 			position,
-			token,
+			token
 		);
 		if (!session) {
 			return undefined;
@@ -85,7 +85,7 @@ export class TypeHierarchyModel {
 			session.roots.reduce((p, c) => p + c._sessionId, ""),
 			provider,
 			session.roots,
-			new RefCountedDisposable(session),
+			new RefCountedDisposable(session)
 		);
 	}
 
@@ -95,7 +95,7 @@ export class TypeHierarchyModel {
 		readonly id: string,
 		readonly provider: TypeHierarchyProvider,
 		readonly roots: TypeHierarchyItem[],
-		readonly ref: RefCountedDisposable,
+		readonly ref: RefCountedDisposable
 	) {
 		this.root = roots[0];
 	}
@@ -115,7 +115,7 @@ export class TypeHierarchyModel {
 
 	async provideSupertypes(
 		item: TypeHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<TypeHierarchyItem[]> {
 		try {
 			const result = await this.provider.provideSupertypes(item, token);
@@ -130,7 +130,7 @@ export class TypeHierarchyModel {
 
 	async provideSubtypes(
 		item: TypeHierarchyItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<TypeHierarchyItem[]> {
 		try {
 			const result = await this.provider.provideSubtypes(item, token);
@@ -170,7 +170,7 @@ CommandsRegistry.registerCommand(
 			const model = await TypeHierarchyModel.create(
 				textModel,
 				position,
-				CancellationToken.None,
+				CancellationToken.None
 			);
 			if (!model) {
 				return [];
@@ -187,7 +187,7 @@ CommandsRegistry.registerCommand(
 		} finally {
 			textModelReference?.dispose();
 		}
-	},
+	}
 );
 
 function isTypeHierarchyItemDto(obj: any): obj is TypeHierarchyItem {
@@ -215,7 +215,7 @@ CommandsRegistry.registerCommand(
 		}
 
 		return model.provideSupertypes(item, CancellationToken.None);
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -231,5 +231,5 @@ CommandsRegistry.registerCommand(
 		}
 
 		return model.provideSubtypes(item, CancellationToken.None);
-	},
+	}
 );

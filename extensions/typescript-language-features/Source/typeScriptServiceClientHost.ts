@@ -81,7 +81,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 				| undefined;
 			logger: Logger;
 		},
-		onCompletionAccepted: (item: vscode.CompletionItem) => void,
+		onCompletionAccepted: (item: vscode.CompletionItem) => void
 	) {
 		super();
 
@@ -89,15 +89,15 @@ export default class TypeScriptServiceClientHost extends Disposable {
 
 		const allModeIds = this.getAllModeIds(
 			descriptions,
-			services.pluginManager,
+			services.pluginManager
 		);
 		this.client = this._register(
 			new TypeScriptServiceClient(
 				context,
 				onCaseInsensitiveFileSystem,
 				services,
-				allModeIds,
-			),
+				allModeIds
+			)
 		);
 
 		this.client.onDiagnosticsReceived(
@@ -105,18 +105,18 @@ export default class TypeScriptServiceClientHost extends Disposable {
 				this.diagnosticsReceived(kind, resource, diagnostics);
 			},
 			null,
-			this._disposables,
+			this._disposables
 		);
 
 		this.client.onConfigDiagnosticsReceived(
 			(diag) => this.configFileDiagnosticsReceived(diag),
 			null,
-			this._disposables,
+			this._disposables
 		);
 		this.client.onResendModelsRequested(
 			() => this.populateService(),
 			null,
-			this._disposables,
+			this._disposables
 		);
 
 		this._register(new VersionStatus(this.client));
@@ -124,8 +124,8 @@ export default class TypeScriptServiceClientHost extends Disposable {
 			new IntellisenseStatus(
 				this.client,
 				services.commandManager,
-				services.activeJsTsEditorTracker,
-			),
+				services.activeJsTsEditorTracker
+			)
 		);
 		this._register(new AtaProgressReporter(this.client));
 		this.typingsStatus = this._register(new TypingsStatus(this.client));
@@ -134,8 +134,8 @@ export default class TypeScriptServiceClientHost extends Disposable {
 		this.fileConfigurationManager = this._register(
 			new FileConfigurationManager(
 				this.client,
-				onCaseInsensitiveFileSystem,
-			),
+				onCaseInsensitiveFileSystem
+			)
 		);
 
 		for (const description of descriptions) {
@@ -146,7 +146,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 				this.client.telemetryReporter,
 				this.typingsStatus,
 				this.fileConfigurationManager,
-				onCompletionAccepted,
+				onCompletionAccepted
 			);
 			this.languages.push(manager);
 			this._register(manager);
@@ -158,13 +158,13 @@ export default class TypeScriptServiceClientHost extends Disposable {
 				module.register(
 					this.client,
 					this.fileConfigurationManager,
-					(uri) => this.handles(uri),
-				),
-			),
+					(uri) => this.handles(uri)
+				)
+			)
 		);
 
 		import("./languageFeatures/workspaceSymbols").then((module) =>
-			this._register(module.register(this.client, allModeIds)),
+			this._register(module.register(this.client, allModeIds))
 		);
 
 		this.client.ensureServiceStarted();
@@ -182,7 +182,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 							isExternal: true,
 							standardFileExtensions: [],
 						},
-						onCompletionAccepted,
+						onCompletionAccepted
 					);
 				} else {
 					for (const language of plugin.languages) {
@@ -202,7 +202,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 						isExternal: true,
 						standardFileExtensions: [],
 					},
-					onCompletionAccepted,
+					onCompletionAccepted
 				);
 			}
 		});
@@ -214,7 +214,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 		vscode.workspace.onDidChangeConfiguration(
 			this.configurationChanged,
 			this,
-			this._disposables,
+			this._disposables
 		);
 		this.configurationChanged();
 		this._register(new LogLevelMonitor(context));
@@ -222,7 +222,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 
 	private registerExtensionLanguageProvider(
 		description: LanguageDescription,
-		onCompletionAccepted: (item: vscode.CompletionItem) => void,
+		onCompletionAccepted: (item: vscode.CompletionItem) => void
 	) {
 		const manager = new LanguageProvider(
 			this.client,
@@ -231,7 +231,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 			this.client.telemetryReporter,
 			this.typingsStatus,
 			this.fileConfigurationManager,
-			onCompletionAccepted,
+			onCompletionAccepted
 		);
 		this.languages.push(manager);
 		this._register(manager);
@@ -240,7 +240,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 
 	private getAllModeIds(
 		descriptions: LanguageDescription[],
-		pluginManager: PluginManager,
+		pluginManager: PluginManager
 	) {
 		return [
 			...descriptions.map((x) => x.languageIds),
@@ -271,12 +271,12 @@ export default class TypeScriptServiceClientHost extends Disposable {
 
 		this.reportStyleCheckAsWarnings = typescriptConfig.get(
 			"reportStyleChecksAsWarnings",
-			true,
+			true
 		);
 	}
 
 	private async findLanguage(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): Promise<LanguageProvider | undefined> {
 		try {
 			// First try finding language just based on the resource.
@@ -293,7 +293,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 			// be correct
 			const doc = await vscode.workspace.openTextDocument(resource);
 			return this.languages.find((language) =>
-				language.handlesDocument(doc),
+				language.handlesDocument(doc)
 			);
 		} catch {
 			return undefined;
@@ -317,20 +317,20 @@ export default class TypeScriptServiceClientHost extends Disposable {
 	private async diagnosticsReceived(
 		kind: DiagnosticKind,
 		resource: vscode.Uri,
-		diagnostics: Proto.Diagnostic[],
+		diagnostics: Proto.Diagnostic[]
 	): Promise<void> {
 		const language = await this.findLanguage(resource);
 		if (language) {
 			language.diagnosticsReceived(
 				kind,
 				resource,
-				this.createMarkerDatas(diagnostics, language.diagnosticSource),
+				this.createMarkerDatas(diagnostics, language.diagnosticSource)
 			);
 		}
 	}
 
 	private configFileDiagnosticsReceived(
-		event: Proto.ConfigFileDiagnosticEvent,
+		event: Proto.ConfigFileDiagnosticEvent
 	): void {
 		// See https://github.com/microsoft/TypeScript/issues/10384
 		const body = event.body;
@@ -354,41 +354,41 @@ export default class TypeScriptServiceClientHost extends Disposable {
 						const diagnostic = new vscode.Diagnostic(
 							range,
 							body.diagnostics[0].text,
-							this.getDiagnosticSeverity(tsDiag),
+							this.getDiagnosticSeverity(tsDiag)
 						);
 						diagnostic.source = language.diagnosticSource;
 						return diagnostic;
-					}),
+					})
 				);
-			},
+			}
 		);
 	}
 
 	private createMarkerDatas(
 		diagnostics: Proto.Diagnostic[],
-		source: string,
+		source: string
 	): (vscode.Diagnostic & {
 		reportUnnecessary: any;
 		reportDeprecated: any;
 	})[] {
 		return diagnostics.map((tsDiag) =>
-			this.tsDiagnosticToVsDiagnostic(tsDiag, source),
+			this.tsDiagnosticToVsDiagnostic(tsDiag, source)
 		);
 	}
 
 	private tsDiagnosticToVsDiagnostic(
 		diagnostic: Proto.Diagnostic,
-		source: string,
+		source: string
 	): vscode.Diagnostic & { reportUnnecessary: any; reportDeprecated: any } {
 		const { start, end, text } = diagnostic;
 		const range = new vscode.Range(
 			typeConverters.Position.fromLocation(start),
-			typeConverters.Position.fromLocation(end),
+			typeConverters.Position.fromLocation(end)
 		);
 		const converted = new vscode.Diagnostic(
 			range,
 			text,
-			this.getDiagnosticSeverity(diagnostic),
+			this.getDiagnosticSeverity(diagnostic)
 		);
 		converted.source = diagnostic.source || source;
 		if (diagnostic.code) {
@@ -405,11 +405,11 @@ export default class TypeScriptServiceClientHost extends Disposable {
 					return new vscode.DiagnosticRelatedInformation(
 						typeConverters.Location.fromTextSpan(
 							this.client.toResource(span.file),
-							span,
+							span
 						),
-						info.message,
+						info.message
 					);
-				}),
+				})
 			);
 		}
 		const tags: vscode.DiagnosticTag[] = [];
@@ -431,7 +431,7 @@ export default class TypeScriptServiceClientHost extends Disposable {
 	}
 
 	private getDiagnosticSeverity(
-		diagnostic: Proto.Diagnostic,
+		diagnostic: Proto.Diagnostic
 	): vscode.DiagnosticSeverity {
 		if (
 			this.reportStyleCheckAsWarnings &&

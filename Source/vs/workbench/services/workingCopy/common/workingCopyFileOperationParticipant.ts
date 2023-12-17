@@ -25,13 +25,14 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 	}
 
 	addFileOperationParticipant(
-		participant: IWorkingCopyFileOperationParticipant,
+		participant: IWorkingCopyFileOperationParticipant
 	): IDisposable {
 		const remove = this.participants.push(participant);
 
@@ -42,10 +43,10 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 		files: SourceTargetPair[],
 		operation: FileOperation,
 		undoInfo: IFileOperationUndoRedoInfo | undefined,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const timeout = this.configurationService.getValue<number>(
-			"files.participants.timeout",
+			"files.participants.timeout"
 		);
 		if (typeof timeout !== "number" || timeout <= 0) {
 			return; // disabled
@@ -59,7 +60,7 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 					operation,
 					undoInfo,
 					timeout,
-					token,
+					token
 				);
 			} catch (err) {
 				this.logService.warn(err);

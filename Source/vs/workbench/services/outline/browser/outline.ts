@@ -31,7 +31,7 @@ export interface IOutlineService {
 	createOutline(
 		editor: IEditorPane,
 		target: OutlineTarget,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IOutline<any> | undefined>;
 	registerOutlineCreator(creator: IOutlineCreator<any, any>): IDisposable;
 }
@@ -41,7 +41,7 @@ export interface IOutlineCreator<P extends IEditorPane, E> {
 	createOutline(
 		editor: P,
 		target: OutlineTarget,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IOutline<E> | undefined>;
 }
 
@@ -94,7 +94,7 @@ export interface IOutline<E> {
 	reveal(
 		entry: E,
 		options: IEditorOptions,
-		sideBySide: boolean,
+		sideBySide: boolean
 	): Promise<void> | void;
 	preview(entry: E): IDisposable;
 	captureViewState(): IDisposable;

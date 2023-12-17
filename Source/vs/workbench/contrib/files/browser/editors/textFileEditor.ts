@@ -79,29 +79,49 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IFileService fileService: IFileService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IEditorService editorService: IEditorService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IExplorerService private readonly explorerService: IExplorerService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IPathService private readonly pathService: IPathService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IPreferencesService protected readonly preferencesService: IPreferencesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IPreferencesService
+		protected readonly preferencesService: IPreferencesService,
 		@IHostService private readonly hostService: IHostService
 	) {
-		super(TextFileEditor.ID, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService, fileService);
+		super(
+			TextFileEditor.ID,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService,
+			fileService
+		);
 
 		// Clear view state for deleted files
-		this._register(this.fileService.onDidFilesChange(e => this.onDidFilesChange(e)));
+		this._register(
+			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e))
+		);
 
 		// Move view state for moved files
-		this._register(this.fileService.onDidRunOperation(e => this.onDidRunOperation(e)));
+		this._register(
+			this.fileService.onDidRunOperation((e) => this.onDidRunOperation(e))
+		);
 	}
 
 	private onDidFilesChange(e: FileChangesEvent): void {
@@ -115,7 +135,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			this.moveEditorViewState(
 				e.resource,
 				e.target.resource,
-				this.uriIdentityService.extUri,
+				this.uriIdentityService.extUri
 			);
 		}
 	}
@@ -136,7 +156,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		input: FileEditorInput,
 		options: IFileEditorInputOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		mark("code/willSetInputToTextFileEditor");
 
@@ -170,7 +190,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			if (!isTextEditorViewState(options?.viewState)) {
 				const editorViewState = this.loadEditorViewState(
 					input,
-					context,
+					context
 				);
 				if (editorViewState) {
 					if (options?.selection) {
@@ -192,7 +212,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 			// a resolved model might have more specific information about being
 			// readonly or not that the input did not have.
 			control.updateOptions(
-				this.getReadonlyConfiguration(textFileModel.isReadonly()),
+				this.getReadonlyConfiguration(textFileModel.isReadonly())
 			);
 
 			if (control.handleInitialized) {
@@ -208,7 +228,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 	protected async handleSetInputError(
 		error: Error,
 		input: FileEditorInput,
-		options: ITextEditorOptions | undefined,
+		options: ITextEditorOptions | undefined
 	): Promise<void> {
 		// Handle case where content appears to be binary
 		if (
@@ -232,10 +252,10 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					run: async () => {
 						return this.hostService.openWindow(
 							[{ folderUri: input.resource }],
-							{ forceNewWindow: true },
+							{ forceNewWindow: true }
 						);
 					},
-				}),
+				})
 			);
 
 			if (
@@ -249,25 +269,25 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 							await this.paneCompositeService.openPaneComposite(
 								VIEWLET_ID,
 								ViewContainerLocation.Sidebar,
-								true,
+								true
 							);
 
 							return this.explorerService.select(
 								input.preferredResource,
-								true,
+								true
 							);
 						},
-					}),
+					})
 				);
 			}
 
 			throw createEditorOpenError(
 				localize(
 					"fileIsDirectory",
-					"The file is not displayed in the text editor because it is a directory.",
+					"The file is not displayed in the text editor because it is a directory."
 				),
 				actions,
-				{ forceMessage: true },
+				{ forceMessage: true }
 			);
 		}
 
@@ -282,12 +302,12 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				message = localize(
 					"fileTooLargeForHeapErrorWithSize",
 					"The file is not displayed in the text editor because it is very large ({0}).",
-					ByteSize.formatSize(error.size),
+					ByteSize.formatSize(error.size)
 				);
 			} else {
 				message = localize(
 					"fileTooLargeForHeapErrorWithoutSize",
-					"The file is not displayed in the text editor because it is very large.",
+					"The file is not displayed in the text editor because it is very large."
 				);
 			}
 
@@ -296,7 +316,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				input,
 				options,
 				message,
-				this.preferencesService,
+				this.preferencesService
 			);
 		}
 
@@ -310,9 +330,9 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				new FileOperationError(
 					localize(
 						"unavailableResourceErrorEditorText",
-						"The editor could not be opened because the file was not found.",
+						"The editor could not be opened because the file was not found."
 					),
-					FileOperationResult.FILE_NOT_FOUND,
+					FileOperationResult.FILE_NOT_FOUND
 				),
 				[
 					toAction({
@@ -338,7 +358,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					// a link to a file that does not exist to scaffold it quickly.
 
 					allowDialog: true,
-				},
+				}
 			);
 
 			throw fileNotFoundError;
@@ -350,7 +370,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 
 	private openAsBinary(
 		input: FileEditorInput,
-		options: ITextEditorOptions | undefined,
+		options: ITextEditorOptions | undefined
 	): void {
 		const defaultBinaryEditor = this.configurationService.getValue<
 			string | undefined
@@ -382,14 +402,14 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 				group,
 				defaultBinaryEditor,
 				input,
-				editorOptions,
+				editorOptions
 			);
 		} else {
 			this.doOpenAsBinaryInSameEditor(
 				group,
 				defaultBinaryEditor,
 				input,
-				editorOptions,
+				editorOptions
 			);
 		}
 	}
@@ -398,7 +418,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		group: IEditorGroup,
 		editorId: string | undefined,
 		editor: FileEditorInput,
-		editorOptions: ITextEditorOptions,
+		editorOptions: ITextEditorOptions
 	): void {
 		this.editorService.replaceEditors(
 			[
@@ -410,7 +430,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 					},
 				},
 			],
-			group,
+			group
 		);
 	}
 
@@ -418,7 +438,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		group: IEditorGroup,
 		editorId: string | undefined,
 		editor: FileEditorInput,
-		editorOptions: ITextEditorOptions,
+		editorOptions: ITextEditorOptions
 	): void {
 		// Open binary as text
 		if (editorId === DEFAULT_EDITOR_ASSOCIATION.id) {
@@ -445,7 +465,7 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 
 	protected override createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions,
+		initialOptions: ICodeEditorOptions
 	): void {
 		mark("code/willCreateTextFileEditorControl");
 

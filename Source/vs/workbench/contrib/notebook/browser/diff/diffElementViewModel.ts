@@ -54,11 +54,11 @@ export abstract class DiffElementViewModelBase extends Disposable {
 	public metadataFoldingState: PropertyFoldingState;
 	public outputFoldingState: PropertyFoldingState;
 	protected _layoutInfoEmitter = this._register(
-		new Emitter<CellDiffViewModelLayoutChangeEvent>(),
+		new Emitter<CellDiffViewModelLayoutChangeEvent>()
 	);
 	onDidLayoutChange = this._layoutInfoEmitter.event;
 	protected _stateChangeEmitter = this._register(
-		new Emitter<{ renderOutput: boolean }>(),
+		new Emitter<{ renderOutput: boolean }>()
 	);
 	onDidStateChange = this._stateChangeEmitter.event;
 	protected _layoutInfo!: IDiffElementLayoutInfo;
@@ -160,7 +160,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 			metadataStatusHeight: number;
 			outputStatusHeight: number;
 			fontInfo: FontInfo | undefined;
-		},
+		}
 	) {
 		super();
 		const editorHeight = this._estimateEditorHeight(initData.fontInfo);
@@ -185,7 +185,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 		this._register(
 			this.editorEventDispatcher.onDidChangeLayout((e) => {
 				this._layoutInfoEmitter.fire({ outerWidth: true });
-			}),
+			})
 		);
 	}
 
@@ -261,8 +261,8 @@ export abstract class DiffElementViewModelBase extends Disposable {
 			delta.outputMetadataHeight !== undefined
 				? this._getOutputTotalHeight(
 						rawOutputHeight,
-						outputMetadataHeight,
-				  )
+						outputMetadataHeight
+					)
 				: this._layoutInfo.outputTotalHeight;
 
 		const totalHeight =
@@ -388,7 +388,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 		// const editorPadding = this.viewContext.notebookOptions.computeEditorPadding(this.internalMetadata);
 		const lineCount = Math.max(
 			this.original?.textModel.textBuffer.getLineCount() ?? 1,
-			this.modified?.textModel.textBuffer.getLineCount() ?? 1,
+			this.modified?.textModel.textBuffer.getLineCount() ?? 1
 		);
 		return (
 			lineCount * lineHeight +
@@ -400,7 +400,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 
 	private _getOutputTotalHeight(
 		rawOutputHeight: number,
-		metadataHeight: number,
+		metadataHeight: number
 	) {
 		if (this.outputFoldingState === PropertyFoldingState.Collapsed) {
 			return 0;
@@ -435,21 +435,21 @@ export abstract class DiffElementViewModelBase extends Disposable {
 	abstract getOutputOffsetInCell(diffSide: DiffSide, index: number): number;
 	abstract getOutputOffsetInContainer(
 		diffSide: DiffSide,
-		index: number,
+		index: number
 	): number;
 	abstract updateOutputHeight(
 		diffSide: DiffSide,
 		index: number,
-		height: number,
+		height: number
 	): void;
 	abstract getNestedCellViewModel(
-		diffSide: DiffSide,
+		diffSide: DiffSide
 	): DiffNestedCellViewModel;
 
 	getComputedCellContainerWidth(
 		layoutInfo: NotebookLayoutInfo,
 		diffEditor: boolean,
-		fullWidth: boolean,
+		fullWidth: boolean
 	) {
 		if (fullWidth) {
 			return (
@@ -483,7 +483,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 		viewState:
 			| editorCommon.ICodeEditorViewState
 			| editorCommon.IDiffEditorViewState
-			| null,
+			| null
 	) {
 		this._outputEditorViewState = viewState;
 	}
@@ -499,7 +499,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 		viewState:
 			| editorCommon.ICodeEditorViewState
 			| editorCommon.IDiffEditorViewState
-			| null,
+			| null
 	) {
 		this._metadataEditorViewState = viewState;
 	}
@@ -515,7 +515,7 @@ export abstract class DiffElementViewModelBase extends Disposable {
 		viewState:
 			| editorCommon.ICodeEditorViewState
 			| editorCommon.IDiffEditorViewState
-			| null,
+			| null
 	) {
 		this._sourceEditorViewState = viewState;
 	}
@@ -545,7 +545,7 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 			metadataStatusHeight: number;
 			outputStatusHeight: number;
 			fontInfo: FontInfo | undefined;
-		},
+		}
 	) {
 		super(
 			mainDocumentTextModel,
@@ -553,7 +553,7 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 			modified,
 			type,
 			editorEventDispatcher,
-			initData,
+			initData
 		);
 
 		this.original = original;
@@ -574,13 +574,13 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 		this._register(
 			this.original.onDidChangeOutputLayout(() => {
 				this._layout({ recomputeOutput: true });
-			}),
+			})
 		);
 
 		this._register(
 			this.modified.onDidChangeOutputLayout(() => {
 				this._layout({ recomputeOutput: true });
-			}),
+			})
 		);
 
 		this._register(
@@ -591,12 +591,12 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 					const cellMetadataKeys = [
 						...Object.keys(
 							mainDocumentTextModel.transientOptions
-								.cellContentMetadata,
+								.cellContentMetadata
 						),
 					];
 					const modifiedMedataRaw = Object.assign(
 						{},
-						this.modified.metadata,
+						this.modified.metadata
 					);
 					const originalCellMetadata = this.original.metadata;
 					for (const key of cellMetadataKeys) {
@@ -605,7 +605,7 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 
 					this.modified.textModel.metadata = modifiedMedataRaw;
 				}
-			}),
+			})
 		);
 	}
 
@@ -616,7 +616,7 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 
 		const ret = outputsEqual(
 			this.original?.outputs ?? [],
-			this.modified?.outputs ?? [],
+			this.modified?.outputs ?? []
 		);
 
 		if (ret === OutputComparison.Unchanged) {
@@ -638,15 +638,15 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 				getFormattedMetadataJSON(
 					this.mainDocumentTextModel,
 					this.original?.metadata || {},
-					this.original?.language,
-				),
+					this.original?.language
+				)
 			) !==
 			hash(
 				getFormattedMetadataJSON(
 					this.mainDocumentTextModel,
 					this.modified?.metadata ?? {},
-					this.modified?.language,
-				),
+					this.modified?.language
+				)
 			);
 		if (modified) {
 			return { reason: undefined };
@@ -674,7 +674,7 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 	getOutputOffsetInCell(diffSide: DiffSide, index: number) {
 		const offsetInOutputsContainer = this.getOutputOffsetInContainer(
 			diffSide,
-			index,
+			index
 		);
 
 		return (
@@ -705,7 +705,7 @@ export class SideBySideDiffElementViewModel extends DiffElementViewModelBase {
 	getRichOutputTotalHeight() {
 		return Math.max(
 			this.original.getOutputTotalHeight(),
-			this.modified.getOutputTotalHeight(),
+			this.modified.getOutputTotalHeight()
 		);
 	}
 
@@ -756,7 +756,7 @@ export class SingleSideDiffElementViewModel extends DiffElementViewModelBase {
 			metadataStatusHeight: number;
 			outputStatusHeight: number;
 			fontInfo: FontInfo | undefined;
-		},
+		}
 	) {
 		super(
 			mainDocumentTextModel,
@@ -764,14 +764,14 @@ export class SingleSideDiffElementViewModel extends DiffElementViewModelBase {
 			modified,
 			type,
 			editorEventDispatcher,
-			initData,
+			initData
 		);
 		this.type = type;
 
 		this._register(
 			this.cellViewModel!.onDidChangeOutputLayout(() => {
 				this._layout({ recomputeOutput: true });
-			}),
+			})
 		);
 	}
 
@@ -913,7 +913,7 @@ function outputsEqual(original: ICellOutput[], modified: ICellOutput[]) {
 export function getFormattedMetadataJSON(
 	documentTextModel: INotebookTextModel,
 	metadata: NotebookCellMetadata,
-	language?: string,
+	language?: string
 ) {
 	let filteredMetadata: { [key: string]: any } = {};
 
@@ -977,6 +977,6 @@ export function getFormattedOutputJSON(outputs: IOutputDto[]) {
 			};
 		}),
 		undefined,
-		"\t",
+		"\t"
 	);
 }

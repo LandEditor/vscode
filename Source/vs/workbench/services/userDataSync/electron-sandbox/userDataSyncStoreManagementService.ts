@@ -29,18 +29,18 @@ class UserDataSyncStoreManagementService
 		@IProductService productService: IProductService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IStorageService storageService: IStorageService,
-		@ISharedProcessService sharedProcessService: ISharedProcessService,
+		@ISharedProcessService sharedProcessService: ISharedProcessService
 	) {
 		super(productService, configurationService, storageService);
 		this.channelClient = this._register(
 			new UserDataSyncStoreManagementServiceChannelClient(
-				sharedProcessService.getChannel("userDataSyncStoreManagement"),
-			),
+				sharedProcessService.getChannel("userDataSyncStoreManagement")
+			)
 		);
 		this._register(
 			this.channelClient.onDidChangeUserDataSyncStore(() =>
-				this.updateUserDataSyncStore(),
-			),
+				this.updateUserDataSyncStore()
+			)
 		);
 	}
 
@@ -56,5 +56,5 @@ class UserDataSyncStoreManagementService
 registerSingleton(
 	IUserDataSyncStoreManagementService,
 	UserDataSyncStoreManagementService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

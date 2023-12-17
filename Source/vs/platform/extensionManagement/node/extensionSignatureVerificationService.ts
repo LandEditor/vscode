@@ -7,7 +7,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IExtensionSignatureVerificationService =
 	createDecorator<IExtensionSignatureVerificationService>(
-		"IExtensionSignatureVerificationService",
+		"IExtensionSignatureVerificationService"
 	);
 
 /**
@@ -29,7 +29,7 @@ export interface IExtensionSignatureVerificationService {
 	verify(
 		vsixFilePath: string,
 		signatureArchiveFilePath: string,
-		verbose: boolean,
+		verbose: boolean
 	): Promise<boolean>;
 }
 
@@ -37,7 +37,7 @@ declare module vsceSign {
 	export function verify(
 		vsixFilePath: string,
 		signatureArchiveFilePath: string,
-		verbose: boolean,
+		verbose: boolean
 	): Promise<boolean>;
 }
 
@@ -64,7 +64,7 @@ export class ExtensionSignatureVerificationService
 					const instance = <typeof vsceSign>obj;
 
 					return resolve(instance);
-				}, reject),
+				}, reject)
 			);
 		}
 
@@ -74,7 +74,7 @@ export class ExtensionSignatureVerificationService
 	public async verify(
 		vsixFilePath: string,
 		signatureArchiveFilePath: string,
-		verbose: boolean,
+		verbose: boolean
 	): Promise<boolean> {
 		let module: typeof vsceSign;
 

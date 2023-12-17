@@ -24,7 +24,7 @@ export class WorkbenchReferencesController extends ReferencesController {
 		@INotificationService notificationService: INotificationService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(
 			false,
@@ -34,7 +34,7 @@ export class WorkbenchReferencesController extends ReferencesController {
 			notificationService,
 			instantiationService,
 			storageService,
-			configurationService,
+			configurationService
 		);
 	}
 }
@@ -42,5 +42,5 @@ export class WorkbenchReferencesController extends ReferencesController {
 registerEditorContribution(
 	ReferencesController.ID,
 	WorkbenchReferencesController,
-	EditorContributionInstantiation.Lazy,
+	EditorContributionInstantiation.Lazy
 );

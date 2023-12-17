@@ -91,13 +91,13 @@ export class MarkupCellViewModel
 	}
 
 	protected readonly _onDidChangeLayout = this._register(
-		new Emitter<MarkupCellLayoutChangeEvent>(),
+		new Emitter<MarkupCellLayoutChangeEvent>()
 	);
 	readonly onDidChangeLayout = this._onDidChangeLayout.event;
 
 	get foldingState() {
 		return this.foldingDelegate.getFoldingState(
-			this.foldingDelegate.getCellIndex(this),
+			this.foldingDelegate.getCellIndex(this)
 		);
 	}
 
@@ -138,7 +138,7 @@ export class MarkupCellViewModel
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITextModelService textModelService: ITextModelService,
 		@IUndoRedoService undoRedoService: IUndoRedoService,
-		@ICodeEditorService codeEditorService: ICodeEditorService,
+		@ICodeEditorService codeEditorService: ICodeEditorService
 	) {
 		super(
 			viewType,
@@ -148,12 +148,12 @@ export class MarkupCellViewModel
 			configurationService,
 			textModelService,
 			undoRedoService,
-			codeEditorService,
+			codeEditorService
 		);
 
 		const { bottomToolbarGap } =
 			this.viewContext.notebookOptions.computeBottomToolbarDimensions(
-				this.viewType,
+				this.viewType
 			);
 
 		this._layoutInfo = {
@@ -163,8 +163,8 @@ export class MarkupCellViewModel
 			fontInfo: initialNotebookLayoutInfo?.fontInfo || null,
 			editorWidth: initialNotebookLayoutInfo?.width
 				? this.viewContext.notebookOptions.computeMarkdownCellEditorWidth(
-						initialNotebookLayoutInfo.width,
-				  )
+						initialNotebookLayoutInfo.width
+					)
 				: 0,
 			bottomToolbarOffset: bottomToolbarGap,
 			totalHeight: 100,
@@ -182,10 +182,10 @@ export class MarkupCellViewModel
 				if (e.foldingStateChanged) {
 					this._updateTotalHeight(
 						this._computeTotalHeight(),
-						CellLayoutContext.Fold,
+						CellLayoutContext.Fold
 					);
 				}
-			}),
+			})
 		);
 	}
 
@@ -194,7 +194,7 @@ export class MarkupCellViewModel
 			this.viewContext.notebookOptions.getLayoutConfiguration();
 		const { bottomToolbarGap } =
 			this.viewContext.notebookOptions.computeBottomToolbarDimensions(
-				this.viewType,
+				this.viewType
 			);
 		const foldHintHeight = this._computeFoldHintHeight();
 
@@ -213,7 +213,7 @@ export class MarkupCellViewModel
 			// Thus we make sure it's greater than 0
 			return Math.max(
 				1,
-				this._previewHeight + bottomToolbarGap + foldHintHeight,
+				this._previewHeight + bottomToolbarGap + foldHintHeight
 			);
 		}
 	}
@@ -265,13 +265,13 @@ export class MarkupCellViewModel
 			const editorWidth =
 				state.outerWidth !== undefined
 					? this.viewContext.notebookOptions.computeMarkdownCellEditorWidth(
-							state.outerWidth,
-					  )
+							state.outerWidth
+						)
 					: this._layoutInfo.editorWidth;
 			const totalHeight =
 				state.totalHeight === undefined
 					? this._layoutInfo.layoutState ===
-					  CellLayoutState.Uninitialized
+						CellLayoutState.Uninitialized
 						? 100
 						: this._layoutInfo.totalHeight
 					: state.totalHeight;
@@ -287,7 +287,7 @@ export class MarkupCellViewModel
 				bottomToolbarOffset:
 					this.viewContext.notebookOptions.computeBottomToolbarOffset(
 						totalHeight,
-						this.viewType,
+						this.viewType
 					),
 				totalHeight,
 				layoutState: CellLayoutState.Measured,
@@ -297,12 +297,12 @@ export class MarkupCellViewModel
 			const editorWidth =
 				state.outerWidth !== undefined
 					? this.viewContext.notebookOptions.computeMarkdownCellEditorWidth(
-							state.outerWidth,
-					  )
+							state.outerWidth
+						)
 					: this._layoutInfo.editorWidth;
 			const totalHeight =
 				this.viewContext.notebookOptions.computeCollapsedMarkdownCellHeight(
-					this.viewType,
+					this.viewType
 				);
 
 			state.totalHeight = totalHeight;
@@ -317,7 +317,7 @@ export class MarkupCellViewModel
 				bottomToolbarOffset:
 					this.viewContext.notebookOptions.computeBottomToolbarOffset(
 						totalHeight,
-						this.viewType,
+						this.viewType
 					),
 				totalHeight,
 				layoutState: CellLayoutState.Measured,
@@ -330,7 +330,7 @@ export class MarkupCellViewModel
 
 	override restoreEditorViewState(
 		editorViewStates: editorCommon.ICodeEditorViewState | null,
-		totalHeight?: number,
+		totalHeight?: number
 	) {
 		super.restoreEditorViewState(editorViewStates);
 		// we might already warmup the viewport so the cell has a total height computed
@@ -377,7 +377,7 @@ export class MarkupCellViewModel
 
 	startFind(
 		value: string,
-		options: INotebookSearchOptions,
+		options: INotebookSearchOptions
 	): CellFindMatch | null {
 		const matches = super.cellStartFind(value, options);
 

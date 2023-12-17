@@ -19,20 +19,23 @@ import { ExtensionsRegistry } from "vs/workbench/services/extensions/common/exte
 
 const extensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<ViewsWelcomeExtensionPoint>(
-		viewsWelcomeExtensionPointDescriptor,
+		viewsWelcomeExtensionPointDescriptor
 	);
 
 class WorkbenchConfigurationContribution {
 	constructor(
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-		instantiationService.createInstance(ViewsWelcomeContribution, extensionPoint);
+		instantiationService.createInstance(
+			ViewsWelcomeContribution,
+			extensionPoint
+		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	WorkbenchConfigurationContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

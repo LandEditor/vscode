@@ -26,7 +26,7 @@ import { TelemetryTrustedValue } from "vs/platform/telemetry/common/telemetryUti
 
 export function areSameExtensions(
 	a: IExtensionIdentifier,
-	b: IExtensionIdentifier,
+	b: IExtensionIdentifier
 ): boolean {
 	if (a.uuid && b.uuid) {
 		return a.uuid === b.uuid;
@@ -56,8 +56,8 @@ export class ExtensionKey {
 			? new ExtensionKey(
 					{ id: matches[1] },
 					matches[2],
-					(matches[4] as TargetPlatform) || undefined,
-			  )
+					(matches[4] as TargetPlatform) || undefined
+				)
 			: null;
 	}
 
@@ -66,7 +66,7 @@ export class ExtensionKey {
 	constructor(
 		identifier: IExtensionIdentifier,
 		readonly version: string,
-		readonly targetPlatform: TargetPlatform = TargetPlatform.UNDEFINED,
+		readonly targetPlatform: TargetPlatform = TargetPlatform.UNDEFINED
 	) {
 		this.id = identifier.id;
 	}
@@ -111,16 +111,16 @@ export function adoptToGalleryExtensionId(id: string): string {
 
 export function getGalleryExtensionId(
 	publisher: string | undefined,
-	name: string,
+	name: string
 ): string {
 	return adoptToGalleryExtensionId(
-		getExtensionId(publisher ?? UNDEFINED_PUBLISHER, name),
+		getExtensionId(publisher ?? UNDEFINED_PUBLISHER, name)
 	);
 }
 
 export function groupByExtension<T>(
 	extensions: T[],
-	getExtensionIdentifier: (t: T) => IExtensionIdentifier,
+	getExtensionIdentifier: (t: T) => IExtensionIdentifier
 ): T[][] {
 	const byExtension: T[][] = [];
 	const findGroup = (extension: T) => {
@@ -129,8 +129,8 @@ export function groupByExtension<T>(
 				group.some((e) =>
 					areSameExtensions(
 						getExtensionIdentifier(e),
-						getExtensionIdentifier(extension),
-					),
+						getExtensionIdentifier(extension)
+					)
 				)
 			) {
 				return group;
@@ -150,7 +150,7 @@ export function groupByExtension<T>(
 }
 
 export function getLocalExtensionTelemetryData(
-	extension: ILocalExtension,
+	extension: ILocalExtension
 ): any {
 	return {
 		id: extension.identifier.id,
@@ -182,7 +182,7 @@ export function getLocalExtensionTelemetryData(
 	}
 */
 export function getGalleryExtensionTelemetryData(
-	extension: IGalleryExtension,
+	extension: IGalleryExtension
 ): any {
 	return {
 		id: new TelemetryTrustedValue(extension.identifier.id),
@@ -205,7 +205,7 @@ export const BetterMergeId = new ExtensionIdentifier("pprice.better-merge");
 
 export function getExtensionDependencies(
 	installedExtensions: ReadonlyArray<IExtension>,
-	extension: IExtension,
+	extension: IExtension
 ): IExtension[] {
 	const dependencies: IExtension[] = [];
 	const extensions = extension.manifest.extensionDependencies?.slice(0) ?? [];
@@ -218,12 +218,12 @@ export function getExtensionDependencies(
 			dependencies.every((e) => !areSameExtensions(e.identifier, { id }))
 		) {
 			const ext = installedExtensions.filter((e) =>
-				areSameExtensions(e.identifier, { id }),
+				areSameExtensions(e.identifier, { id })
 			);
 			if (ext.length === 1) {
 				dependencies.push(ext[0]);
 				extensions.push(
-					...(ext[0].manifest.extensionDependencies?.slice(0) ?? []),
+					...(ext[0].manifest.extensionDependencies?.slice(0) ?? [])
 				);
 			}
 		}
@@ -234,7 +234,7 @@ export function getExtensionDependencies(
 
 async function isAlpineLinux(
 	fileService: IFileService,
-	logService: ILogService,
+	logService: ILogService
 ): Promise<boolean> {
 	if (!isLinux) {
 		return false;
@@ -242,20 +242,20 @@ async function isAlpineLinux(
 	let content: string | undefined;
 	try {
 		const fileContent = await fileService.readFile(
-			URI.file("/etc/os-release"),
+			URI.file("/etc/os-release")
 		);
 		content = fileContent.value.toString();
 	} catch (error) {
 		try {
 			const fileContent = await fileService.readFile(
-				URI.file("/usr/lib/os-release"),
+				URI.file("/usr/lib/os-release")
 			);
 			content = fileContent.value.toString();
 		} catch (error) {
 			/* Ignore */
 			logService.debug(
 				`Error while getting the os-release file.`,
-				getErrorMessage(error),
+				getErrorMessage(error)
 			);
 		}
 	}
@@ -267,12 +267,12 @@ async function isAlpineLinux(
 
 export async function computeTargetPlatform(
 	fileService: IFileService,
-	logService: ILogService,
+	logService: ILogService
 ): Promise<TargetPlatform> {
 	const alpineLinux = await isAlpineLinux(fileService, logService);
 	const targetPlatform = getTargetPlatform(
 		alpineLinux ? "alpine" : platform,
-		arch,
+		arch
 	);
 	logService.debug("ComputeTargetPlatform:", targetPlatform);
 	return targetPlatform;

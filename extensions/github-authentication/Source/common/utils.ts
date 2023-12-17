@@ -7,13 +7,13 @@ import { EventEmitter, Event, Disposable } from "vscode";
 
 export function filterEvent<T>(
 	event: Event<T>,
-	filter: (e: T) => boolean,
+	filter: (e: T) => boolean
 ): Event<T> {
 	return (listener, thisArgs = null, disposables?) =>
 		event(
 			(e) => filter(e) && listener.call(thisArgs, e),
 			null,
-			disposables,
+			disposables
 		);
 }
 
@@ -25,7 +25,7 @@ export function onceEvent<T>(event: Event<T>): Event<T> {
 				return listener.call(thisArgs, e);
 			},
 			null,
-			disposables,
+			disposables
 		);
 
 		return result;
@@ -36,7 +36,7 @@ export interface PromiseAdapter<T, U> {
 	(
 		value: T,
 		resolve: (value: U | PromiseLike<U>) => void,
-		reject: (reason: any) => void,
+		reject: (reason: any) => void
 	): any;
 }
 
@@ -59,7 +59,7 @@ const passthrough = (value: any, resolve: (value?: any) => void) =>
  */
 export function promiseFromEvent<T, U>(
 	event: Event<T>,
-	adapter: PromiseAdapter<T, U> = passthrough,
+	adapter: PromiseAdapter<T, U> = passthrough
 ): { promise: Promise<U>; cancel: EventEmitter<void> } {
 	let subscription: Disposable;
 	const cancel = new EventEmitter<void>();
@@ -69,7 +69,7 @@ export function promiseFromEvent<T, U>(
 			subscription = event((value: T) => {
 				try {
 					Promise.resolve(adapter(value, resolve, reject)).catch(
-						reject,
+						reject
 					);
 				} catch (error) {
 					reject(error);
@@ -83,7 +83,7 @@ export function promiseFromEvent<T, U>(
 			(error) => {
 				subscription.dispose();
 				throw error;
-			},
+			}
 		),
 		cancel,
 	};
@@ -92,7 +92,7 @@ export function promiseFromEvent<T, U>(
 export function arrayEquals<T>(
 	one: ReadonlyArray<T> | undefined,
 	other: ReadonlyArray<T> | undefined,
-	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b,
+	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b
 ): boolean {
 	if (one === other) {
 		return true;

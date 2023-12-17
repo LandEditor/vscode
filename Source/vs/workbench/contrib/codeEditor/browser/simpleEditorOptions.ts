@@ -15,7 +15,7 @@ import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
 import { IConfigurationService } from "vs/platform/configuration/common/configuration";
 
 export function getSimpleEditorOptions(
-	configurationService: IConfigurationService,
+	configurationService: IConfigurationService
 ): IEditorOptions {
 	return {
 		wordWrap: "on",

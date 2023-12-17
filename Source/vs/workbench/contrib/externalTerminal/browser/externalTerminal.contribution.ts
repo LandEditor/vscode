@@ -49,7 +49,7 @@ const OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID = "openInIntegratedTerminal";
 
 function registerOpenTerminalCommand(
 	id: string,
-	explorerKind: "integrated" | "external",
+	explorerKind: "integrated" | "external"
 ) {
 	CommandsRegistry.registerCommand({
 		id: id,
@@ -58,7 +58,7 @@ function registerOpenTerminalCommand(
 			const editorService = accessor.get(IEditorService);
 			const fileService = accessor.get(IFileService);
 			const integratedTerminalService = accessor.get(
-				IIntegratedTerminalService,
+				IIntegratedTerminalService
 			);
 			const remoteAgentService = accessor.get(IRemoteAgentService);
 			const terminalGroupService = accessor.get(ITerminalGroupService);
@@ -66,7 +66,7 @@ function registerOpenTerminalCommand(
 				undefined;
 			try {
 				externalTerminalService = accessor.get(
-					IExternalTerminalService,
+					IExternalTerminalService
 				);
 			} catch {}
 
@@ -74,7 +74,7 @@ function registerOpenTerminalCommand(
 				resource,
 				accessor.get(IListService),
 				editorService,
-				accessor.get(IExplorerService),
+				accessor.get(IExplorerService)
 			);
 			return fileService
 				.resolveAll(resources.map((r) => ({ resource: r })))
@@ -87,7 +87,7 @@ function registerOpenTerminalCommand(
 						remoteAgentService.getConnection() ||
 						explorerKind === "integrated";
 					const targets = distinct(
-						stats.filter((data) => data.success),
+						stats.filter((data) => data.success)
 					);
 					if (useIntegratedTerminal) {
 						// TODO: Use uri for cwd in createterminal
@@ -123,7 +123,7 @@ function registerOpenTerminalCommand(
 									cwd.path === dirname(resource.path))
 							) {
 								integratedTerminalService.setActiveInstance(
-									instance,
+									instance
 								);
 								terminalGroupService.showPanel(true);
 							}
@@ -133,12 +133,12 @@ function registerOpenTerminalCommand(
 							targets.map(({ stat }) =>
 								stat!.isDirectory
 									? stat!.resource.fsPath
-									: dirname(stat!.resource.fsPath),
-							),
+									: dirname(stat!.resource.fsPath)
+							)
 						).forEach((cwd) => {
 							externalTerminalService!.openTerminal(
 								config.terminal.external,
-								cwd,
+								cwd
 							);
 						});
 					}
@@ -150,7 +150,7 @@ function registerOpenTerminalCommand(
 registerOpenTerminalCommand(OPEN_IN_TERMINAL_COMMAND_ID, "external");
 registerOpenTerminalCommand(
 	OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID,
-	"integrated",
+	"integrated"
 );
 
 export class ExternalTerminalContribution
@@ -161,46 +161,76 @@ export class ExternalTerminalContribution
 	private _openInTerminalMenuItem: IMenuItem;
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 
 		const shouldShowIntegratedOnLocal = ContextKeyExpr.and(
 			ResourceContextKey.Scheme.isEqualTo(Schemas.file),
-			ContextKeyExpr.or(ContextKeyExpr.equals('config.terminal.explorerKind', 'integrated'), ContextKeyExpr.equals('config.terminal.explorerKind', 'both')));
-
+			ContextKeyExpr.or(
+				ContextKeyExpr.equals(
+					"config.terminal.explorerKind",
+					"integrated"
+				),
+				ContextKeyExpr.equals("config.terminal.explorerKind", "both")
+			)
+		);
 
 		const shouldShowExternalKindOnLocal = ContextKeyExpr.and(
 			ResourceContextKey.Scheme.isEqualTo(Schemas.file),
-			ContextKeyExpr.or(ContextKeyExpr.equals('config.terminal.explorerKind', 'external'), ContextKeyExpr.equals('config.terminal.explorerKind', 'both')));
+			ContextKeyExpr.or(
+				ContextKeyExpr.equals(
+					"config.terminal.explorerKind",
+					"external"
+				),
+				ContextKeyExpr.equals("config.terminal.explorerKind", "both")
+			)
+		);
 
 		this._openInIntegratedTerminalMenuItem = {
-			group: 'navigation',
+			group: "navigation",
 			order: 30,
 			command: {
 				id: OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID,
-				title: nls.localize('scopedConsoleAction.Integrated', "Open in Integrated Terminal")
+				title: nls.localize(
+					"scopedConsoleAction.Integrated",
+					"Open in Integrated Terminal"
+				),
 			},
-			when: ContextKeyExpr.or(shouldShowIntegratedOnLocal, ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeRemote))
+			when: ContextKeyExpr.or(
+				shouldShowIntegratedOnLocal,
+				ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeRemote)
+			),
 		};
 
-
 		this._openInTerminalMenuItem = {
-			group: 'navigation',
+			group: "navigation",
 			order: 31,
 			command: {
 				id: OPEN_IN_TERMINAL_COMMAND_ID,
-				title: nls.localize('scopedConsoleAction.external', "Open in External Terminal")
+				title: nls.localize(
+					"scopedConsoleAction.external",
+					"Open in External Terminal"
+				),
 			},
-			when: shouldShowExternalKindOnLocal
+			when: shouldShowExternalKindOnLocal,
 		};
 
+		MenuRegistry.appendMenuItem(
+			MenuId.ExplorerContext,
+			this._openInTerminalMenuItem
+		);
+		MenuRegistry.appendMenuItem(
+			MenuId.ExplorerContext,
+			this._openInIntegratedTerminalMenuItem
+		);
 
-		MenuRegistry.appendMenuItem(MenuId.ExplorerContext, this._openInTerminalMenuItem);
-		MenuRegistry.appendMenuItem(MenuId.ExplorerContext, this._openInIntegratedTerminalMenuItem);
-
-		this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('terminal.explorerKind') || e.affectsConfiguration('terminal.external')) {
+		this._configurationService.onDidChangeConfiguration((e) => {
+			if (
+				e.affectsConfiguration("terminal.explorerKind") ||
+				e.affectsConfiguration("terminal.external")
+			) {
 				this._refreshOpenInTerminalMenuItemTitle();
 			}
 		});
@@ -225,15 +255,15 @@ export class ExternalTerminalContribution
 		if (this.isWindows()) {
 			this._openInTerminalMenuItem.command.title = nls.localize(
 				"scopedConsoleAction.wt",
-				"Open in Windows Terminal",
+				"Open in Windows Terminal"
 			);
 		}
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	ExternalTerminalContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

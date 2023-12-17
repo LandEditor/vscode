@@ -20,7 +20,7 @@ declare module "vscode" {
 		 */
 		export function registerEditSessionIdentityProvider(
 			scheme: string,
-			provider: EditSessionIdentityProvider,
+			provider: EditSessionIdentityProvider
 		): Disposable;
 	}
 
@@ -33,7 +33,7 @@ declare module "vscode" {
 		 */
 		provideEditSessionIdentity(
 			workspaceFolder: WorkspaceFolder,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<string>;
 
 		/**
@@ -46,7 +46,7 @@ declare module "vscode" {
 		provideEditSessionIdentityMatch(
 			identity1: string,
 			identity2: string,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<EditSessionIdentityMatch>;
 	}
 

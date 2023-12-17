@@ -44,19 +44,21 @@ export class LaunchMainService implements ILaunchMainService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@IURLService private readonly urlService: IURLService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-	) { }
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
+	) {}
 
 	async start(
 		args: NativeParsedArgs,
-		userEnv: IProcessEnvironment,
+		userEnv: IProcessEnvironment
 	): Promise<void> {
 		this.logService.trace(
 			"Received data from other instance: ",
 			args,
-			userEnv,
+			userEnv
 		);
 
 		// macOS: Electron > 7.x changed its behaviour to not
@@ -82,7 +84,7 @@ export class LaunchMainService implements ILaunchMainService {
 				const window = firstOrDefault(
 					await this.windowsMainService.openEmptyWindow({
 						context: OpenContext.DESKTOP,
-					}),
+					})
 				);
 				if (window) {
 					whenWindowReady = window.ready();
@@ -115,7 +117,7 @@ export class LaunchMainService implements ILaunchMainService {
 					} catch (err) {
 						return null;
 					}
-				}),
+				})
 			);
 		}
 
@@ -124,7 +126,7 @@ export class LaunchMainService implements ILaunchMainService {
 
 	private async startOpenWindow(
 		args: NativeParsedArgs,
-		userEnv: IProcessEnvironment,
+		userEnv: IProcessEnvironment
 	): Promise<void> {
 		const context = isLaunchedFromCli(userEnv)
 			? OpenContext.CLI
@@ -151,7 +153,7 @@ export class LaunchMainService implements ILaunchMainService {
 		if (!!args.extensionDevelopmentPath) {
 			await this.windowsMainService.openExtensionDevelopmentHostWindow(
 				args.extensionDevelopmentPath,
-				baseConfig,
+				baseConfig
 			);
 		}
 
@@ -181,7 +183,7 @@ export class LaunchMainService implements ILaunchMainService {
 				>("window");
 				const openWithoutArgumentsInNewWindowConfig =
 					windowConfig?.openWithoutArgumentsInNewWindow ||
-					"default" /* default */;
+					"default"; /* default */
 				switch (openWithoutArgumentsInNewWindowConfig) {
 					case "on":
 						openNewWindow = true;
@@ -210,7 +212,7 @@ export class LaunchMainService implements ILaunchMainService {
 				if (lastActive) {
 					this.windowsMainService.openExistingWindow(
 						lastActive,
-						baseConfig,
+						baseConfig
 					);
 
 					usedWindows = [lastActive];
@@ -247,14 +249,14 @@ export class LaunchMainService implements ILaunchMainService {
 				whenDeleted(waitMarkerFileURI.fsPath),
 			]).then(
 				() => undefined,
-				() => undefined,
+				() => undefined
 			);
 		}
 	}
 
 	async getMainProcessId(): Promise<number> {
 		this.logService.trace(
-			"Received request for process ID from other instance.",
+			"Received request for process ID from other instance."
 		);
 
 		return process.pid;

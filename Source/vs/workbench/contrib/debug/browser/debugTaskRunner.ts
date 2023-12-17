@@ -44,7 +44,7 @@ import { ICommandService } from "vs/platform/commands/common/commands";
 
 function once(
 	match: (e: ITaskEvent) => boolean,
-	event: Event<ITaskEvent>,
+	event: Event<ITaskEvent>
 ): Event<ITaskEvent> {
 	return (listener, thisArgs = null, disposables?) => {
 		const result = event(
@@ -55,7 +55,7 @@ function once(
 				}
 			},
 			null,
-			disposables,
+			disposables
 		);
 		return result;
 	};
@@ -74,12 +74,13 @@ export class DebugTaskRunner {
 	constructor(
 		@ITaskService private readonly taskService: ITaskService,
 		@IMarkerService private readonly markerService: IMarkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IViewsService private readonly viewsService: IViewsService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ICommandService private readonly commandService: ICommandService
-	) { }
+	) {}
 
 	cancel(): void {
 		this.canceled = true;
@@ -87,7 +88,7 @@ export class DebugTaskRunner {
 
 	async runTaskAndCheckErrors(
 		root: IWorkspaceFolder | IWorkspace | undefined,
-		taskId: string | ITaskIdentifier | undefined,
+		taskId: string | ITaskIdentifier | undefined
 	): Promise<TaskRunResult> {
 		try {
 			this.canceled = false;
@@ -104,13 +105,13 @@ export class DebugTaskRunner {
 				? this.markerService.read({
 						severities: MarkerSeverity.Error,
 						take: 2,
-				  }).length
+					}).length
 				: 0;
 			const successExitCode = taskSummary && taskSummary.exitCode === 0;
 			const failureExitCode = taskSummary && taskSummary.exitCode !== 0;
 			const onTaskErrors =
 				this.configurationService.getValue<IDebugConfiguration>(
-					"debug",
+					"debug"
 				).onTaskErrors;
 			if (
 				successExitCode ||
@@ -134,26 +135,27 @@ export class DebugTaskRunner {
 					? nls.localize(
 							"preLaunchTaskErrors",
 							"Errors exist after running preLaunchTask '{0}'.",
-							taskLabel,
-					  )
+							taskLabel
+						)
 					: errorCount === 1
-					  ? nls.localize(
+						? nls.localize(
 								"preLaunchTaskError",
 								"Error exists after running preLaunchTask '{0}'.",
-								taskLabel,
-						  )
-					  : taskSummary && typeof taskSummary.exitCode === "number"
-						  ? nls.localize(
+								taskLabel
+							)
+						: taskSummary &&
+							  typeof taskSummary.exitCode === "number"
+							? nls.localize(
 									"preLaunchTaskExitCode",
 									"The preLaunchTask '{0}' terminated with exit code {1}.",
 									taskLabel,
-									taskSummary.exitCode,
-							  )
-						  : nls.localize(
+									taskSummary.exitCode
+								)
+							: nls.localize(
 									"preLaunchTaskTerminated",
 									"The preLaunchTask '{0}' terminated.",
-									taskLabel,
-							  );
+									taskLabel
+								);
 
 			enum DebugChoice {
 				DebugAnyway = 1,
@@ -171,7 +173,7 @@ export class DebugTaskRunner {
 									key: "debugAnyway",
 									comment: ["&& denotes a mnemonic"],
 								},
-								"&&Debug Anyway",
+								"&&Debug Anyway"
 							),
 							run: () => DebugChoice.DebugAnyway,
 						},
@@ -181,7 +183,7 @@ export class DebugTaskRunner {
 									key: "showErrors",
 									comment: ["&& denotes a mnemonic"],
 								},
-								"&&Show Errors",
+								"&&Show Errors"
 							),
 							run: () => DebugChoice.ShowErrors,
 						},
@@ -193,7 +195,7 @@ export class DebugTaskRunner {
 					checkbox: {
 						label: nls.localize(
 							"remember",
-							"Remember my choice in user settings",
+							"Remember my choice in user settings"
 						),
 					},
 				});
@@ -206,8 +208,8 @@ export class DebugTaskRunner {
 					result === DebugChoice.DebugAnyway
 						? "debugAnyway"
 						: abort
-						  ? "abort"
-						  : "showErrors",
+							? "abort"
+							: "showErrors"
 				);
 			}
 
@@ -226,8 +228,8 @@ export class DebugTaskRunner {
 				this.storageService.get(
 					DEBUG_TASK_ERROR_CHOICE_KEY,
 					StorageScope.WORKSPACE,
-					"{}",
-				),
+					"{}"
+				)
 			);
 
 			let choice = -1;
@@ -250,7 +252,7 @@ export class DebugTaskRunner {
 										key: "debugAnyway",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Debug Anyway",
+									"&&Debug Anyway"
 								),
 								run: () => DebugChoice.DebugAnyway,
 							},
@@ -265,7 +267,7 @@ export class DebugTaskRunner {
 						checkbox: {
 							label: nls.localize(
 								"rememberTask",
-								"Remember my choice for this task",
+								"Remember my choice for this task"
 							),
 						},
 					});
@@ -276,7 +278,7 @@ export class DebugTaskRunner {
 						DEBUG_TASK_ERROR_CHOICE_KEY,
 						JSON.stringify(choiceMap),
 						StorageScope.WORKSPACE,
-						StorageTarget.MACHINE,
+						StorageTarget.MACHINE
 					);
 				}
 			}
@@ -293,7 +295,7 @@ export class DebugTaskRunner {
 
 	async runTask(
 		root: IWorkspace | IWorkspaceFolder | undefined,
-		taskId: string | ITaskIdentifier | undefined,
+		taskId: string | ITaskIdentifier | undefined
 	): Promise<ITaskSummary | null> {
 		if (!taskId) {
 			return Promise.resolve(null);
@@ -304,9 +306,9 @@ export class DebugTaskRunner {
 					nls.localize(
 						"invalidTaskReference",
 						"Task '{0}' can not be referenced from a launch configuration that is in a different workspace folder.",
-						typeof taskId === "string" ? taskId : taskId.type,
-					),
-				),
+						typeof taskId === "string" ? taskId : taskId.type
+					)
+				)
 			);
 		}
 		// run a task before starting a debug session
@@ -317,12 +319,12 @@ export class DebugTaskRunner {
 					? nls.localize(
 							"DebugTaskNotFoundWithTaskId",
 							"Could not find the task '{0}'.",
-							taskId,
-					  )
+							taskId
+						)
 					: nls.localize(
 							"DebugTaskNotFound",
-							"Could not find the specified task.",
-					  );
+							"Could not find the specified task."
+						);
 			return Promise.reject(
 				createErrorWithActions(errorMessage, [
 					new Action(
@@ -332,10 +334,10 @@ export class DebugTaskRunner {
 						true,
 						() =>
 							this.commandService.executeCommand(
-								DEBUG_CONFIGURE_COMMAND_ID,
-							),
+								DEBUG_CONFIGURE_COMMAND_ID
+							)
 					),
-				]),
+				])
 			);
 		}
 
@@ -360,9 +362,9 @@ export class DebugTaskRunner {
 				c(
 					e.kind === TaskEventKind.ProcessEnded
 						? { exitCode: e.exitCode }
-						: null,
+						: null
 				);
-			}),
+			})
 		);
 
 		const promise: Promise<ITaskSummary | null> = this.taskService
@@ -383,7 +385,7 @@ export class DebugTaskRunner {
 						(e.kind === TaskEventKind.Active ||
 							e.kind === TaskEventKind.DependsOnStarted) &&
 						getTaskKey(e.__task) === taskKey,
-					this.taskService.onDidStateChange,
+					this.taskService.onDidStateChange
 				)(() => {
 					// Task is active, so everything seems to be fine, no need to prompt after 10 seconds
 					// Use case being a slow running task should not be prompted even though it takes more than 10 seconds
@@ -403,10 +405,10 @@ export class DebugTaskRunner {
 					(e) =>
 						e.kind === TaskEventKind.AcquiredInput &&
 						getTaskKey(e.__task) === taskKey,
-					this.taskService.onDidStateChange,
+					this.taskService.onDidStateChange
 				)(() => {
 					resolve();
-				}),
+				})
 			);
 
 			promise.then(
@@ -414,7 +416,7 @@ export class DebugTaskRunner {
 					taskStarted = true;
 					c(result);
 				},
-				(error) => e(error),
+				(error) => e(error)
 			);
 
 			waitForInput.then(() => {
@@ -429,13 +431,13 @@ export class DebugTaskRunner {
 								? nls.localize(
 										"taskNotTrackedWithTaskId",
 										"The task '{0}' cannot be tracked. Make sure to have a problem matcher defined.",
-										taskId,
-								  )
+										taskId
+									)
 								: nls.localize(
 										"taskNotTracked",
 										"The task '{0}' cannot be tracked. Make sure to have a problem matcher defined.",
-										JSON.stringify(taskId),
-								  );
+										JSON.stringify(taskId)
+									);
 						e({ severity: severity.Error, message: errorMessage });
 					}
 				}, waitTime);

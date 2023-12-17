@@ -61,7 +61,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 	private readonly recordDisposables = this._register(new DisposableStore());
 
 	private _onKeybinding = this._register(
-		new Emitter<ResolvedKeybinding[] | null>(),
+		new Emitter<ResolvedKeybinding[] | null>()
 	);
 	readonly onKeybinding: Event<ResolvedKeybinding[] | null> =
 		this._onKeybinding.event;
@@ -81,7 +81,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 		@IContextViewService contextViewService: IContextViewService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
 		super(
 			parent,
@@ -89,7 +89,7 @@ export class KeybindingsSearchWidget extends SearchWidget {
 			contextViewService,
 			instantiationService,
 			contextKeyService,
-			keybindingService,
+			keybindingService
 		);
 
 		this._register(toDisposable(() => this.stopRecordingKeys()));
@@ -109,15 +109,15 @@ export class KeybindingsSearchWidget extends SearchWidget {
 				this.inputBox.inputElement,
 				dom.EventType.KEY_DOWN,
 				(e: KeyboardEvent) =>
-					this._onKeyDown(new StandardKeyboardEvent(e)),
-			),
+					this._onKeyDown(new StandardKeyboardEvent(e))
+			)
 		);
 		this.recordDisposables.add(
 			dom.addDisposableListener(
 				this.inputBox.inputElement,
 				dom.EventType.BLUR,
-				() => this._onBlur.fire(),
-			),
+				() => this._onBlur.fire()
+			)
 		);
 		this.recordDisposables.add(
 			dom.addDisposableListener(
@@ -126,8 +126,8 @@ export class KeybindingsSearchWidget extends SearchWidget {
 				() => {
 					// Prevent other characters from showing up
 					this.setInputValue(this._inputValue);
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -215,39 +215,73 @@ export class DefineKeybindingWidget extends Widget {
 	onDidChange: Event<string> = this._onDidChange.event;
 
 	private _onShowExistingKeybindings = this._register(
-		new Emitter<string | null>(),
+		new Emitter<string | null>()
 	);
 	readonly onShowExistingKeybidings: Event<string | null> =
 		this._onShowExistingKeybindings.event;
 
 	constructor(
 		parent: HTMLElement | null,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this._domNode = createFastDomNode(document.createElement('div'));
-		this._domNode.setDisplay('none');
-		this._domNode.setClassName('defineKeybindingWidget');
+		this._domNode = createFastDomNode(document.createElement("div"));
+		this._domNode.setDisplay("none");
+		this._domNode.setClassName("defineKeybindingWidget");
 		this._domNode.setWidth(DefineKeybindingWidget.WIDTH);
 		this._domNode.setHeight(DefineKeybindingWidget.HEIGHT);
 
-		const message = nls.localize('defineKeybinding.initial', "Press desired key combination and then press ENTER.");
-		dom.append(this._domNode.domNode, dom.$('.message', undefined, message));
+		const message = nls.localize(
+			"defineKeybinding.initial",
+			"Press desired key combination and then press ENTER."
+		);
+		dom.append(
+			this._domNode.domNode,
+			dom.$(".message", undefined, message)
+		);
 
-		this._domNode.domNode.style.backgroundColor = asCssVariable(editorWidgetBackground);
-		this._domNode.domNode.style.color = asCssVariable(editorWidgetForeground);
-		this._domNode.domNode.style.boxShadow = `0 2px 8px ${asCssVariable(widgetShadow)}`;
+		this._domNode.domNode.style.backgroundColor = asCssVariable(
+			editorWidgetBackground
+		);
+		this._domNode.domNode.style.color = asCssVariable(
+			editorWidgetForeground
+		);
+		this._domNode.domNode.style.boxShadow = `0 2px 8px ${asCssVariable(
+			widgetShadow
+		)}`;
 
-		this._keybindingInputWidget = this._register(this.instantiationService.createInstance(KeybindingsSearchWidget, this._domNode.domNode, { ariaLabel: message, history: [], inputBoxStyles: defaultInputBoxStyles }));
+		this._keybindingInputWidget = this._register(
+			this.instantiationService.createInstance(
+				KeybindingsSearchWidget,
+				this._domNode.domNode,
+				{
+					ariaLabel: message,
+					history: [],
+					inputBoxStyles: defaultInputBoxStyles,
+				}
+			)
+		);
 		this._keybindingInputWidget.startRecordingKeys();
-		this._register(this._keybindingInputWidget.onKeybinding(keybinding => this.onKeybinding(keybinding)));
+		this._register(
+			this._keybindingInputWidget.onKeybinding((keybinding) =>
+				this.onKeybinding(keybinding)
+			)
+		);
 		this._register(this._keybindingInputWidget.onEnter(() => this.hide()));
-		this._register(this._keybindingInputWidget.onEscape(() => this.clearOrHide()));
-		this._register(this._keybindingInputWidget.onBlur(() => this.onCancel()));
+		this._register(
+			this._keybindingInputWidget.onEscape(() => this.clearOrHide())
+		);
+		this._register(
+			this._keybindingInputWidget.onBlur(() => this.onCancel())
+		);
 
-		this._outputNode = dom.append(this._domNode.domNode, dom.$('.output'));
-		this._showExistingKeybindingsNode = dom.append(this._domNode.domNode, dom.$('.existing'));
+		this._outputNode = dom.append(this._domNode.domNode, dom.$(".output"));
+		this._showExistingKeybindingsNode = dom.append(
+			this._domNode.domNode,
+			dom.$(".existing")
+		);
 
 		if (parent) {
 			dom.append(parent, this._domNode.domNode);
@@ -285,12 +319,12 @@ export class DefineKeybindingWidget extends Widget {
 
 	layout(layout: dom.Dimension): void {
 		const top = Math.round(
-			(layout.height - DefineKeybindingWidget.HEIGHT) / 2,
+			(layout.height - DefineKeybindingWidget.HEIGHT) / 2
 		);
 		this._domNode.setTop(top);
 
 		const left = Math.round(
-			(layout.width - DefineKeybindingWidget.WIDTH) / 2,
+			(layout.width - DefineKeybindingWidget.WIDTH) / 2
 		);
 		this._domNode.setLeft(left);
 	}
@@ -303,13 +337,13 @@ export class DefineKeybindingWidget extends Widget {
 					? nls.localize(
 							"defineKeybinding.oneExists",
 							"1 existing command has this keybinding",
-							numberOfExisting,
-					  )
+							numberOfExisting
+						)
 					: nls.localize(
 							"defineKeybinding.existing",
 							"{0} existing commands have this keybinding",
-							numberOfExisting,
-					  );
+							numberOfExisting
+						);
 			dom.append(existingElement, document.createTextNode(text));
 			aria.alert(text);
 			this._showExistingKeybindingsNode.appendChild(existingElement);
@@ -321,7 +355,7 @@ export class DefineKeybindingWidget extends Widget {
 			};
 			existingElement.onclick = () => {
 				this._onShowExistingKeybindings.fire(
-					this.getUserSettingsLabel(),
+					this.getUserSettingsLabel()
 				);
 			};
 		}
@@ -335,7 +369,7 @@ export class DefineKeybindingWidget extends Widget {
 		const firstLabel = new KeybindingLabel(
 			this._outputNode,
 			OS,
-			defaultKeybindingLabelStyles,
+			defaultKeybindingLabelStyles
 		);
 		firstLabel.set(this._chords?.[0] ?? undefined);
 
@@ -343,13 +377,13 @@ export class DefineKeybindingWidget extends Widget {
 			for (let i = 1; i < this._chords.length; i++) {
 				this._outputNode.appendChild(
 					document.createTextNode(
-						nls.localize("defineKeybinding.chordsTo", "chord to"),
-					),
+						nls.localize("defineKeybinding.chordsTo", "chord to")
+					)
 				);
 				const chordLabel = new KeybindingLabel(
 					this._outputNode,
 					OS,
-					defaultKeybindingLabelStyles,
+					defaultKeybindingLabelStyles
 				);
 				chordLabel.set(this._chords[i]);
 			}
@@ -404,12 +438,12 @@ export class DefineKeybindingOverlayWidget
 
 	constructor(
 		private _editor: ICodeEditor,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
 		this._widget = this._register(
-			instantiationService.createInstance(DefineKeybindingWidget, null),
+			instantiationService.createInstance(DefineKeybindingWidget, null)
 		);
 		this._editor.addOverlayWidget(this);
 	}
@@ -437,12 +471,12 @@ export class DefineKeybindingOverlayWidget
 		if (this._editor.hasModel()) {
 			this._editor.revealPositionInCenterIfOutsideViewport(
 				this._editor.getPosition(),
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 		}
 		const layoutInfo = this._editor.getLayoutInfo();
 		this._widget.layout(
-			new dom.Dimension(layoutInfo.width, layoutInfo.height),
+			new dom.Dimension(layoutInfo.width, layoutInfo.height)
 		);
 		return this._widget.define();
 	}

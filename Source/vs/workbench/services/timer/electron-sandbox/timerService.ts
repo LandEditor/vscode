@@ -34,13 +34,16 @@ import { IPaneCompositePartService } from "vs/workbench/services/panecomposite/b
 
 export class TimerService extends AbstractTimerService {
 	constructor(
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IExtensionService extensionService: IExtensionService,
 		@IUpdateService updateService: IUpdateService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
 		@IEditorService editorService: IEditorService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -48,8 +51,18 @@ export class TimerService extends AbstractTimerService {
 		@IProductService private readonly _productService: IProductService,
 		@IStorageService private readonly _storageService: IStorageService
 	) {
-		super(lifecycleService, contextService, extensionService, updateService, paneCompositeService, editorService, accessibilityService, telemetryService, layoutService);
-		this.setPerformanceMarks('main', _environmentService.window.perfMarks);
+		super(
+			lifecycleService,
+			contextService,
+			extensionService,
+			updateService,
+			paneCompositeService,
+			editorService,
+			accessibilityService,
+			telemetryService,
+			layoutService
+		);
+		this.setPerformanceMarks("main", _environmentService.window.perfMarks);
 	}
 
 	protected _isInitialStartup(): boolean {
@@ -59,7 +72,7 @@ export class TimerService extends AbstractTimerService {
 		return didUseCachedData(
 			this._productService,
 			this._storageService,
-			this._environmentService,
+			this._environmentService
 		);
 	}
 	protected _getWindowCount(): Promise<number> {
@@ -67,7 +80,7 @@ export class TimerService extends AbstractTimerService {
 	}
 
 	protected async _extendStartupInfo(
-		info: Writeable<IStartupMetrics>,
+		info: Writeable<IStartupMetrics>
 	): Promise<void> {
 		try {
 			const [
@@ -131,7 +144,7 @@ let _didUseCachedData: boolean | undefined = undefined;
 export function didUseCachedData(
 	productService: IProductService,
 	storageService: IStorageService,
-	environmentService: INativeWorkbenchEnvironmentService,
+	environmentService: INativeWorkbenchEnvironmentService
 ): boolean {
 	// browser code loading: only a guess based on
 	// this being the first start with the commit
@@ -145,7 +158,7 @@ export function didUseCachedData(
 		} else if (
 			storageService.get(
 				lastRunningCommitStorageKey,
-				StorageScope.APPLICATION,
+				StorageScope.APPLICATION
 			) === productService.commit
 		) {
 			_didUseCachedData = true; // subsequent start on same commit, assume cached data is there
@@ -154,7 +167,7 @@ export function didUseCachedData(
 				lastRunningCommitStorageKey,
 				productService.commit,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 			_didUseCachedData = false; // first time start on commit, assume cached data is not yet there
 		}

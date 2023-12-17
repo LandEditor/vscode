@@ -24,7 +24,7 @@ import {
 
 export const showStartEntryInWeb = new RawContextKey<boolean>(
 	"showRemoteStartEntryInWeb",
-	false,
+	false
 );
 export class RemoteStartEntry
 	extends Disposable
@@ -39,16 +39,20 @@ export class RemoteStartEntry
 	constructor(
 		@ICommandService private readonly commandService: ICommandService,
 		@IProductService private readonly productService: IProductService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService) {
-
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService
+	) {
 		super();
 
-		const remoteExtensionTips = this.productService.remoteExtensionTips?.['tunnel'];
-		this.startCommand = remoteExtensionTips?.startEntry?.startCommand ?? '';
-		this.remoteExtensionId = remoteExtensionTips?.extensionId ?? '';
+		const remoteExtensionTips =
+			this.productService.remoteExtensionTips?.["tunnel"];
+		this.startCommand = remoteExtensionTips?.startEntry?.startCommand ?? "";
+		this.remoteExtensionId = remoteExtensionTips?.extensionId ?? "";
 
 		this._init();
 		this.registerActions();
@@ -72,7 +76,7 @@ export class RemoteStartEntry
 						title: {
 							value: nls.localize(
 								"remote.showWebStartEntryActions",
-								"Show Remote Start Entry for web",
+								"Show Remote Start Entry for web"
 							),
 							original: "Show Remote Start Entry for web",
 						},
@@ -83,7 +87,7 @@ export class RemoteStartEntry
 				async run(): Promise<void> {
 					await startEntry.showWebRemoteStartActions();
 				}
-			},
+			}
 		);
 	}
 
@@ -95,7 +99,7 @@ export class RemoteStartEntry
 						if (
 							ExtensionIdentifier.equals(
 								this.remoteExtensionId,
-								ext.identifier.id,
+								ext.identifier.id
 							)
 						) {
 							if (
@@ -111,8 +115,8 @@ export class RemoteStartEntry
 							}
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -123,8 +127,8 @@ export class RemoteStartEntry
 		).find((value) =>
 			ExtensionIdentifier.equals(
 				value.identifier.id,
-				this.remoteExtensionId,
-			),
+				this.remoteExtensionId
+			)
 		);
 		if (installed) {
 			if (this.extensionEnablementService.isEnabled(installed)) {

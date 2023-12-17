@@ -64,7 +64,7 @@ export type RenderLabelWithFallback =
 	| "dynamic";
 
 export function convertConfiguration(
-	value: RenderLabelWithFallback,
+	value: RenderLabelWithFallback
 ): RenderLabel {
 	switch (value) {
 		case true:
@@ -96,7 +96,7 @@ class WorkbenchAlwaysLabelStrategy implements IActionLayoutStrategy {
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
 		readonly editorToolbar: NotebookEditorWorkbenchToolbar,
-		readonly instantiationService: IInstantiationService,
+		readonly instantiationService: IInstantiationService
 	) {}
 
 	actionProvider(action: IAction): ActionViewItem | undefined {
@@ -105,7 +105,7 @@ class WorkbenchAlwaysLabelStrategy implements IActionLayoutStrategy {
 			return this.instantiationService.createInstance(
 				NotebooKernelActionViewItem,
 				action,
-				this.notebookEditor,
+				this.notebookEditor
 			);
 		}
 
@@ -113,8 +113,8 @@ class WorkbenchAlwaysLabelStrategy implements IActionLayoutStrategy {
 			? this.instantiationService.createInstance(
 					ActionViewWithLabel,
 					action,
-					undefined,
-			  )
+					undefined
+				)
 			: undefined;
 	}
 
@@ -128,7 +128,7 @@ class WorkbenchAlwaysLabelStrategy implements IActionLayoutStrategy {
 		const actionOutput = workbenchCalculateActions(
 			initialPrimaryActions,
 			initialSecondaryActions,
-			leftToolbarContainerMaxWidth,
+			leftToolbarContainerMaxWidth
 		);
 		return {
 			primaryActions: actionOutput.primaryActions.map((a) => a.action),
@@ -141,7 +141,7 @@ class WorkbenchNeverLabelStrategy implements IActionLayoutStrategy {
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
 		readonly editorToolbar: NotebookEditorWorkbenchToolbar,
-		readonly instantiationService: IInstantiationService,
+		readonly instantiationService: IInstantiationService
 	) {}
 
 	actionProvider(action: IAction): ActionViewItem | undefined {
@@ -150,7 +150,7 @@ class WorkbenchNeverLabelStrategy implements IActionLayoutStrategy {
 			return this.instantiationService.createInstance(
 				NotebooKernelActionViewItem,
 				action,
-				this.notebookEditor,
+				this.notebookEditor
 			);
 		}
 
@@ -158,8 +158,8 @@ class WorkbenchNeverLabelStrategy implements IActionLayoutStrategy {
 			? this.instantiationService.createInstance(
 					MenuEntryActionViewItem,
 					action,
-					undefined,
-			  )
+					undefined
+				)
 			: undefined;
 	}
 
@@ -173,7 +173,7 @@ class WorkbenchNeverLabelStrategy implements IActionLayoutStrategy {
 		const actionOutput = workbenchCalculateActions(
 			initialPrimaryActions,
 			initialSecondaryActions,
-			leftToolbarContainerMaxWidth,
+			leftToolbarContainerMaxWidth
 		);
 		return {
 			primaryActions: actionOutput.primaryActions.map((a) => a.action),
@@ -186,7 +186,7 @@ class WorkbenchDynamicLabelStrategy implements IActionLayoutStrategy {
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
 		readonly editorToolbar: NotebookEditorWorkbenchToolbar,
-		readonly instantiationService: IInstantiationService,
+		readonly instantiationService: IInstantiationService
 	) {}
 
 	actionProvider(action: IAction): ActionViewItem | undefined {
@@ -195,28 +195,28 @@ class WorkbenchDynamicLabelStrategy implements IActionLayoutStrategy {
 			return this.instantiationService.createInstance(
 				NotebooKernelActionViewItem,
 				action,
-				this.notebookEditor,
+				this.notebookEditor
 			);
 		}
 
 		const a = this.editorToolbar.primaryActions.find(
-			(a) => a.action.id === action.id,
+			(a) => a.action.id === action.id
 		);
 		if (!a || a.renderLabel) {
 			return action instanceof MenuItemAction
 				? this.instantiationService.createInstance(
 						ActionViewWithLabel,
 						action,
-						undefined,
-				  )
+						undefined
+					)
 				: undefined;
 		} else {
 			return action instanceof MenuItemAction
 				? this.instantiationService.createInstance(
 						MenuEntryActionViewItem,
 						action,
-						undefined,
-				  )
+						undefined
+					)
 				: undefined;
 		}
 	}
@@ -231,7 +231,7 @@ class WorkbenchDynamicLabelStrategy implements IActionLayoutStrategy {
 		const actionOutput = workbenchDynamicCalculateActions(
 			initialPrimaryActions,
 			initialSecondaryActions,
-			leftToolbarContainerMaxWidth,
+			leftToolbarContainerMaxWidth
 		);
 		return {
 			primaryActions: actionOutput.primaryActions.map((a) => a.action),
@@ -267,7 +267,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		}
 	}
 	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<boolean>(),
+		new Emitter<boolean>()
 	);
 	onDidChangeVisibility: Event<boolean> = this._onDidChangeVisibility.event;
 
@@ -284,13 +284,18 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		readonly contextKeyService: IContextKeyService,
 		readonly notebookOptions: NotebookOptions,
 		readonly domNode: HTMLElement,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IWorkbenchAssignmentService private readonly experimentService: IWorkbenchAssignmentService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IWorkbenchAssignmentService
+		private readonly experimentService: IWorkbenchAssignmentService
 	) {
 		super();
 
@@ -298,11 +303,13 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		this._secondaryActions = [];
 		this._buildBody();
 
-		this._register(Event.debounce<void, void>(
-			this.editorService.onDidActiveEditorChange,
-			(last, _current) => last,
-			200
-		)(this._updatePerEditorChange, this));
+		this._register(
+			Event.debounce<void, void>(
+				this.editorService.onDidActiveEditorChange,
+				(last, _current) => last,
+				200
+			)(this._updatePerEditorChange, this)
+		);
 
 		this._registerNotebookActionsToolbar();
 	}
@@ -310,7 +317,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 	private _buildBody() {
 		this._notebookTopLeftToolbarContainer = document.createElement("div");
 		this._notebookTopLeftToolbarContainer.classList.add(
-			"notebook-toolbar-left",
+			"notebook-toolbar-left"
 		);
 		this._leftToolbarScrollable = new DomScrollableElement(
 			this._notebookTopLeftToolbarContainer,
@@ -320,14 +327,14 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				horizontalScrollbarSize: 3,
 				useShadows: false,
 				scrollYToX: true,
-			},
+			}
 		);
 		this._register(this._leftToolbarScrollable);
 
 		DOM.append(this.domNode, this._leftToolbarScrollable.getDomNode());
 		this._notebookTopRightToolbarContainer = document.createElement("div");
 		this._notebookTopRightToolbarContainer.classList.add(
-			"notebook-toolbar-right",
+			"notebook-toolbar-right"
 		);
 		DOM.append(this.domNode, this._notebookTopRightToolbarContainer);
 	}
@@ -350,8 +357,8 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		this._notebookGlobalActionsMenu = this._register(
 			this.menuService.createMenu(
 				this.notebookEditor.creationOptions.menuIds.notebookToolbar,
-				this.contextKeyService,
-			),
+				this.contextKeyService
+			)
 		);
 		this._register(this._notebookGlobalActionsMenu);
 
@@ -359,8 +366,8 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 			this.notebookOptions.getDisplayOptions().globalToolbar;
 		this._renderLabel = this._convertConfiguration(
 			this.configurationService.getValue(
-				NotebookSetting.globalToolbarShowLabel,
-			),
+				NotebookSetting.globalToolbarShowLabel
+			)
 		);
 		this._updateStrategy();
 
@@ -375,29 +382,29 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				return this.instantiationService.createInstance(
 					NotebooKernelActionViewItem,
 					action,
-					this.notebookEditor,
+					this.notebookEditor
 				);
 			}
 
 			if (this._renderLabel !== RenderLabel.Never) {
 				const a = this._primaryActions.find(
-					(a) => a.action.id === action.id,
+					(a) => a.action.id === action.id
 				);
 				if (a && a.renderLabel) {
 					return action instanceof MenuItemAction
 						? this.instantiationService.createInstance(
 								ActionViewWithLabel,
 								action,
-								undefined,
-						  )
+								undefined
+							)
 						: undefined;
 				} else {
 					return action instanceof MenuItemAction
 						? this.instantiationService.createInstance(
 								MenuEntryActionViewItem,
 								action,
-								undefined,
-						  )
+								undefined
+							)
 						: undefined;
 				}
 			} else {
@@ -405,8 +412,8 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 					? this.instantiationService.createInstance(
 							MenuEntryActionViewItem,
 							action,
-							undefined,
-					  )
+							undefined
+						)
 					: undefined;
 			}
 		};
@@ -425,7 +432,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		this._notebookLeftToolbar = this.instantiationService.createInstance(
 			WorkbenchToolBar,
 			this._notebookTopLeftToolbarContainer,
-			leftToolbarOptions,
+			leftToolbarOptions
 		);
 
 		this._register(this._notebookLeftToolbar);
@@ -439,7 +446,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 					this.keybindingService.lookupKeybinding(action.id),
 				actionViewItemProvider: actionProvider,
 				renderDropdownAsChildElement: true,
-			},
+			}
 		);
 		this._register(this._notebookRightToolbar);
 		this._notebookRightToolbar.context = context;
@@ -459,7 +466,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				if (this.notebookEditor.isVisible) {
 					this._showNotebookActionsinEditorToolbar();
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -473,8 +480,8 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 						}, 0);
 						deferredUpdate = undefined;
 					}
-				},
-			),
+				}
+			)
 		);
 
 		this._register(
@@ -484,20 +491,20 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 						this.notebookOptions.getDisplayOptions().globalToolbar;
 					this._showNotebookActionsinEditorToolbar();
 				}
-			}),
+			})
 		);
 
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (
 					e.affectsConfiguration(
-						NotebookSetting.globalToolbarShowLabel,
+						NotebookSetting.globalToolbarShowLabel
 					)
 				) {
 					this._renderLabel = this._convertConfiguration(
 						this.configurationService.getValue<RenderLabelWithFallback>(
-							NotebookSetting.globalToolbarShowLabel,
-						),
+							NotebookSetting.globalToolbarShowLabel
+						)
 					);
 					this._updateStrategy();
 					const oldElement = this._notebookLeftToolbar.getElement();
@@ -508,7 +515,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 						this.instantiationService.createInstance(
 							WorkbenchToolBar,
 							this._notebookTopLeftToolbarContainer,
-							leftToolbarOptions,
+							leftToolbarOptions
 						);
 
 					this._register(this._notebookLeftToolbar);
@@ -516,7 +523,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 					this._showNotebookActionsinEditorToolbar();
 					return;
 				}
-			}),
+			})
 		);
 
 		if (this.experimentService) {
@@ -540,21 +547,21 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				this._strategy = new WorkbenchAlwaysLabelStrategy(
 					this.notebookEditor,
 					this,
-					this.instantiationService,
+					this.instantiationService
 				);
 				break;
 			case RenderLabel.Never:
 				this._strategy = new WorkbenchNeverLabelStrategy(
 					this.notebookEditor,
 					this,
-					this.instantiationService,
+					this.instantiationService
 				);
 				break;
 			case RenderLabel.Dynamic:
 				this._strategy = new WorkbenchDynamicLabelStrategy(
 					this.notebookEditor,
 					this,
-					this.instantiationService,
+					this.instantiationService
 				);
 				break;
 		}
@@ -608,7 +615,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		});
 		this.domNode.style.display = "flex";
 		const primaryLeftGroups = groups.filter((group) =>
-			/^navigation/.test(group[0]),
+			/^navigation/.test(group[0])
 		);
 		const primaryActions: IAction[] = [];
 		primaryLeftGroups
@@ -630,7 +637,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				}
 			});
 		const primaryRightGroup = groups.find((group) =>
-			/^status/.test(group[0]),
+			/^status/.test(group[0])
 		);
 		const primaryRightActions = primaryRightGroup
 			? primaryRightGroup[1]
@@ -638,7 +645,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		const secondaryActions = groups
 			.filter(
 				(group) =>
-					!/^navigation/.test(group[0]) && !/^status/.test(group[0]),
+					!/^navigation/.test(group[0]) && !/^status/.test(group[0])
 			)
 			.reduce((prev: (MenuItemAction | SubmenuItemAction)[], curr) => {
 				prev.push(...curr[1]);
@@ -675,7 +682,7 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 			const action = toolbar.getItemAction(i);
 			if (action && action.id !== "toolbar.toggle.more") {
 				const existing = this._primaryActions.find(
-					(a) => a.action.id === action.id,
+					(a) => a.action.id === action.id
 				);
 				if (existing) {
 					existing.size = toolbar.getItemWidth(i);
@@ -717,11 +724,11 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 				/** toolbar left margin */ ACTION_PADDING -
 				/** toolbar right margin */ ACTION_PADDING;
 			const calculatedActions = this._strategy.calculateActions(
-				leftToolbarContainerMaxWidth,
+				leftToolbarContainerMaxWidth
 			);
 			this._notebookLeftToolbar.setActions(
 				calculatedActions.primaryActions,
-				calculatedActions.secondaryActions,
+				calculatedActions.secondaryActions
 			);
 		}
 	}
@@ -754,20 +761,20 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 export function workbenchCalculateActions(
 	initialPrimaryActions: IActionModel[],
 	initialSecondaryActions: IAction[],
-	leftToolbarContainerMaxWidth: number,
+	leftToolbarContainerMaxWidth: number
 ): { primaryActions: IActionModel[]; secondaryActions: IAction[] } {
 	return actionOverflowHelper(
 		initialPrimaryActions,
 		initialSecondaryActions,
 		leftToolbarContainerMaxWidth,
-		false,
+		false
 	);
 }
 
 export function workbenchDynamicCalculateActions(
 	initialPrimaryActions: IActionModel[],
 	initialSecondaryActions: IAction[],
-	leftToolbarContainerMaxWidth: number,
+	leftToolbarContainerMaxWidth: number
 ): { primaryActions: IActionModel[]; secondaryActions: IAction[] } {
 	if (initialPrimaryActions.length === 0) {
 		return {
@@ -778,7 +785,7 @@ export function workbenchDynamicCalculateActions(
 
 	// find true length of array, add 1 for each primary actions, ignoring an item when size = 0
 	const visibleActionLength = initialPrimaryActions.filter(
-		(action) => action.size !== 0,
+		(action) => action.size !== 0
 	).length;
 
 	// step 1: try to fit all primary actions
@@ -795,7 +802,7 @@ export function workbenchDynamicCalculateActions(
 			initialPrimaryActions,
 			initialSecondaryActions,
 			leftToolbarContainerMaxWidth,
-			false,
+			false
 		);
 	}
 
@@ -812,7 +819,7 @@ export function workbenchDynamicCalculateActions(
 			initialPrimaryActions,
 			initialSecondaryActions,
 			leftToolbarContainerMaxWidth,
-			true,
+			true
 		);
 	}
 
@@ -832,7 +839,7 @@ export function workbenchDynamicCalculateActions(
 				(remainingItems.length === 0
 					? 0
 					: remainingItems.length * ICON_ONLY_ACTION_WIDTH +
-					  (remainingItems.length - 1) * ACTION_PADDING);
+						(remainingItems.length - 1) * ACTION_PADDING);
 			if (newTotalSum <= leftToolbarContainerMaxWidth) {
 				lastActionWithLabel = i;
 			}
@@ -850,7 +857,7 @@ export function workbenchDynamicCalculateActions(
 			initialPrimaryActions,
 			initialSecondaryActions,
 			leftToolbarContainerMaxWidth,
-			true,
+			true
 		);
 	}
 
@@ -873,7 +880,7 @@ function actionOverflowHelper(
 	initialPrimaryActions: IActionModel[],
 	initialSecondaryActions: IAction[],
 	leftToolbarContainerMaxWidth: number,
-	iconOnly: boolean,
+	iconOnly: boolean
 ): { primaryActions: IActionModel[]; secondaryActions: IAction[] } {
 	const renderActions: IActionModel[] = [];
 	const overflow: IAction[] = [];
@@ -963,7 +970,7 @@ function actionOverflowHelper(
 	if (iconOnly) {
 		// if icon only mode, don't render both (+ code) and (+ markdown) buttons. remove of markdown action
 		const markdownIndex = renderActions.findIndex(
-			(a) => a.action.id === "notebook.cell.insertMarkdownCellBelow",
+			(a) => a.action.id === "notebook.cell.insertMarkdownCellBelow"
 		);
 		if (markdownIndex !== -1) {
 			renderActions.splice(markdownIndex, 1);

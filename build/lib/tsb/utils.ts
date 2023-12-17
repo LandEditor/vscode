@@ -8,7 +8,7 @@ export module collections {
 
 	export function lookup<T>(
 		collection: { [keys: string]: T },
-		key: string,
+		key: string
 	): T | null {
 		if (hasOwnProperty.call(collection, key)) {
 			return collection[key];
@@ -19,7 +19,7 @@ export module collections {
 	export function insert<T>(
 		collection: { [keys: string]: T },
 		key: string,
-		value: T,
+		value: T
 	): void {
 		collection[key] = value;
 	}
@@ -27,7 +27,7 @@ export module collections {
 	export function lookupOrInsert<T>(
 		collection: { [keys: string]: T },
 		key: string,
-		value: T,
+		value: T
 	): T {
 		if (hasOwnProperty.call(collection, key)) {
 			return collection[key];
@@ -39,7 +39,7 @@ export module collections {
 
 	export function forEach<T>(
 		collection: { [keys: string]: T },
-		callback: (entry: { key: string; value: T }) => void,
+		callback: (entry: { key: string; value: T }) => void
 	): void {
 		for (const key in collection) {
 			if (hasOwnProperty.call(collection, key)) {
@@ -53,7 +53,7 @@ export module collections {
 
 	export function contains(
 		collection: { [keys: string]: any },
-		key: string,
+		key: string
 	): boolean {
 		return hasOwnProperty.call(collection, key);
 	}
@@ -100,7 +100,7 @@ export module graph {
 		traverse(
 			start: T,
 			inwards: boolean,
-			callback: (data: T) => void,
+			callback: (data: T) => void
 		): void {
 			const startNode = this.lookup(start);
 			if (!startNode) {
@@ -113,7 +113,7 @@ export module graph {
 			node: Node<T>,
 			inwards: boolean,
 			seen: { [key: string]: boolean },
-			callback: (data: T) => void,
+			callback: (data: T) => void
 		): void {
 			const key = this._hashFn(node.data);
 			if (collections.contains(seen, key)) {
@@ -123,7 +123,7 @@ export module graph {
 			callback(node.data);
 			const nodes = inwards ? node.outgoing : node.incoming;
 			collections.forEach(nodes, (entry) =>
-				this._traverse(entry.value, inwards, seen, callback),
+				this._traverse(entry.value, inwards, seen, callback)
 			);
 		}
 

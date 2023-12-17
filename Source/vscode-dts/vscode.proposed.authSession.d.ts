@@ -10,7 +10,7 @@ declare module "vscode" {
 		 */
 		export function hasSession(
 			providerId: string,
-			scopes: readonly string[],
+			scopes: readonly string[]
 		): Thenable<boolean>;
 	}
 }

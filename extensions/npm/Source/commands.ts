@@ -22,13 +22,13 @@ export function runSelectedScript(context: vscode.ExtensionContext) {
 	const script = findScriptAtPosition(
 		editor.document,
 		contents,
-		editor.selection.anchor,
+		editor.selection.anchor
 	);
 	if (script) {
 		runScript(context, script, document);
 	} else {
 		const message = vscode.l10n.t(
-			"Could not find a valid npm script at the selection.",
+			"Could not find a valid npm script at the selection."
 		);
 		vscode.window.showErrorMessage(message);
 	}
@@ -36,7 +36,7 @@ export function runSelectedScript(context: vscode.ExtensionContext) {
 
 export async function selectAndRunScriptFromFolder(
 	context: vscode.ExtensionContext,
-	selectedFolders: vscode.Uri[],
+	selectedFolders: vscode.Uri[]
 ) {
 	if (selectedFolders.length === 0) {
 		return;
@@ -45,7 +45,7 @@ export async function selectAndRunScriptFromFolder(
 
 	const taskList: IFolderTaskItem[] = await detectNpmScriptsForFolder(
 		context,
-		selectedFolder,
+		selectedFolder
 	);
 
 	if (taskList && taskList.length > 0) {
@@ -60,13 +60,13 @@ export async function selectAndRunScriptFromFolder(
 				quickPick.onDidAccept(() => {
 					toDispose.forEach((d) => d.dispose());
 					c(quickPick.selectedItems[0]);
-				}),
+				})
 			);
 			toDispose.push(
 				quickPick.onDidHide(() => {
 					toDispose.forEach((d) => d.dispose());
 					c(undefined);
-				}),
+				})
 			);
 		});
 		quickPick.show();
@@ -78,7 +78,7 @@ export async function selectAndRunScriptFromFolder(
 	} else {
 		vscode.window.showInformationMessage(
 			`No npm scripts found in ${selectedFolder.fsPath}`,
-			{ modal: true },
+			{ modal: true }
 		);
 	}
 }

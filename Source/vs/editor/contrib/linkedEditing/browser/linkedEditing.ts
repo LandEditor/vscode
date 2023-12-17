@@ -74,7 +74,7 @@ import "vs/css!./linkedEditing";
 
 export const CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>(
 	"LinkedEditingInputVisible",
-	false,
+	false
 );
 
 const DECORATION_CLASS_NAME = "linked-editing-decoration";
@@ -93,7 +93,7 @@ export class LinkedEditingContribution
 
 	static get(editor: ICodeEditor): LinkedEditingContribution | null {
 		return editor.getContribution<LinkedEditingContribution>(
-			LinkedEditingContribution.ID,
+			LinkedEditingContribution.ID
 		);
 	}
 
@@ -125,16 +125,24 @@ export class LinkedEditingContribution
 	constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService
 	) {
 		super();
 		this._editor = editor;
 		this._providers = languageFeaturesService.linkedEditingRangeProvider;
 		this._enabled = false;
-		this._visibleContextKey = CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
-		this._debounceInformation = languageFeatureDebounceService.for(this._providers, 'Linked Editing', { max: 200 });
+		this._visibleContextKey =
+			CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
+		this._debounceInformation = languageFeatureDebounceService.for(
+			this._providers,
+			"Linked Editing",
+			{ max: 200 }
+		);
 
 		this._currentDecorations = this._editor.createDecorationsCollection();
 		this._languageWordPattern = null;
@@ -149,15 +157,26 @@ export class LinkedEditingContribution
 		this._currentRequestPosition = null;
 		this._currentRequestModelVersion = null;
 
-		this._register(this._editor.onDidChangeModel(() => this.reinitialize(true)));
+		this._register(
+			this._editor.onDidChangeModel(() => this.reinitialize(true))
+		);
 
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.linkedEditing) || e.hasChanged(EditorOption.renameOnType)) {
-				this.reinitialize(false);
-			}
-		}));
-		this._register(this._providers.onDidChange(() => this.reinitialize(false)));
-		this._register(this._editor.onDidChangeModelLanguage(() => this.reinitialize(true)));
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (
+					e.hasChanged(EditorOption.linkedEditing) ||
+					e.hasChanged(EditorOption.renameOnType)
+				) {
+					this.reinitialize(false);
+				}
+			})
+		);
+		this._register(
+			this._providers.onDidChange(() => this.reinitialize(false))
+		);
+		this._register(
+			this._editor.onDidChangeModelLanguage(() => this.reinitialize(true))
+		);
 
 		this.reinitialize(true);
 	}
@@ -190,29 +209,29 @@ export class LinkedEditingContribution
 						this.languageConfigurationService
 							.getLanguageConfiguration(model.getLanguageId())
 							.getWordDefinition();
-				},
-			),
+				}
+			)
 		);
 
 		const rangeUpdateScheduler = new Delayer(
-			this._debounceInformation.get(model),
+			this._debounceInformation.get(model)
 		);
 		const triggerRangeUpdate = () => {
 			this._rangeUpdateTriggerPromise = rangeUpdateScheduler.trigger(
 				() => this.updateRanges(),
-				this._debounceDuration ?? this._debounceInformation.get(model),
+				this._debounceDuration ?? this._debounceInformation.get(model)
 			);
 		};
 		const rangeSyncScheduler = new Delayer(0);
 		const triggerRangeSync = (token: number) => {
 			this._rangeSyncTriggerPromise = rangeSyncScheduler.trigger(() =>
-				this._syncRanges(token),
+				this._syncRanges(token)
 			);
 		};
 		this._localToDispose.add(
 			this._editor.onDidChangeCursorPosition(() => {
 				triggerRangeUpdate();
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onDidChangeModelContent((e) => {
@@ -223,7 +242,7 @@ export class LinkedEditingContribution
 						if (
 							referenceRange &&
 							e.changes.every((c) =>
-								referenceRange.intersectRanges(c.range),
+								referenceRange.intersectRanges(c.range)
 							)
 						) {
 							triggerRangeSync(this._syncRangesToken);
@@ -232,7 +251,7 @@ export class LinkedEditingContribution
 					}
 				}
 				triggerRangeUpdate();
-			}),
+			})
 		);
 		this._localToDispose.add({
 			dispose: () => {
@@ -292,7 +311,7 @@ export class LinkedEditingContribution
 
 				const commonPrefixLength = strings.commonPrefixLength(
 					oldValue,
-					newValue,
+					newValue
 				);
 				rangeStartColumn += commonPrefixLength;
 				oldValue = oldValue.substr(commonPrefixLength);
@@ -300,16 +319,16 @@ export class LinkedEditingContribution
 
 				const commonSuffixLength = strings.commonSuffixLength(
 					oldValue,
-					newValue,
+					newValue
 				);
 				rangeEndColumn -= commonSuffixLength;
 				oldValue = oldValue.substr(
 					0,
-					oldValue.length - commonSuffixLength,
+					oldValue.length - commonSuffixLength
 				);
 				newValue = newValue.substr(
 					0,
-					newValue.length - commonSuffixLength,
+					newValue.length - commonSuffixLength
 				);
 
 				if (
@@ -321,7 +340,7 @@ export class LinkedEditingContribution
 							mirrorRange.startLineNumber,
 							rangeStartColumn,
 							mirrorRange.endLineNumber,
-							rangeEndColumn,
+							rangeEndColumn
 						),
 						text: newValue,
 					});
@@ -416,7 +435,7 @@ export class LinkedEditingContribution
 					this._providers,
 					model,
 					position,
-					token,
+					token
 				);
 				this._debounceInformation.update(model, sw.elapsed());
 				if (request !== this._currentRequest) {
@@ -458,7 +477,7 @@ export class LinkedEditingContribution
 					(range) => ({
 						range: range,
 						options: LinkedEditingContribution.DECORATION,
-					}),
+					})
 				);
 				this._visibleContextKey.set(true);
 				this._currentDecorations.set(decorations);
@@ -512,7 +531,7 @@ export class LinkedEditingAction extends EditorAction {
 			alias: "Start Linked Editing",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasRenameProvider,
+				EditorContextKeys.hasRenameProvider
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
@@ -524,7 +543,7 @@ export class LinkedEditingAction extends EditorAction {
 
 	override runCommand(
 		accessor: ServicesAccessor,
-		args: [URI, IPosition],
+		args: [URI, IPosition]
 	): void | Promise<void> {
 		const editorService = accessor.get(ICodeEditorService);
 		const [uri, pos] = (Array.isArray(args) && args) || [
@@ -536,7 +555,7 @@ export class LinkedEditingAction extends EditorAction {
 			return editorService
 				.openCodeEditor(
 					{ resource: uri },
-					editorService.getActiveCodeEditor(),
+					editorService.getActiveCodeEditor()
 				)
 				.then((editor) => {
 					if (!editor) {
@@ -564,7 +583,7 @@ export class LinkedEditingAction extends EditorAction {
 
 const LinkedEditingCommand =
 	EditorCommand.bindToContribution<LinkedEditingContribution>(
-		LinkedEditingContribution.get,
+		LinkedEditingContribution.get
 	);
 registerEditorCommand(
 	new LinkedEditingCommand({
@@ -577,14 +596,14 @@ registerEditorCommand(
 			primary: KeyCode.Escape,
 			secondary: [KeyMod.Shift | KeyCode.Escape],
 		},
-	}),
+	})
 );
 
 function getLinkedEditingRanges(
 	providers: LanguageFeatureRegistry<LinkedEditingRangeProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LinkedEditingRanges | undefined | null> {
 	const orderedByScore = providers.ordered(model);
 
@@ -597,14 +616,14 @@ function getLinkedEditingRanges(
 				return await provider.provideLinkedEditingRanges(
 					model,
 					position,
-					token,
+					token
 				);
 			} catch (e) {
 				onUnexpectedExternalError(e);
 				return undefined;
 			}
 		}),
-		(result) => !!result && arrays.isNonEmptyArray(result?.ranges),
+		(result) => !!result && arrays.isNonEmptyArray(result?.ranges)
 	);
 }
 
@@ -618,28 +637,28 @@ export const editorLinkedEditingBackground = registerColor(
 	},
 	nls.localize(
 		"editorLinkedEditingBackground",
-		"Background color when the editor auto renames on type.",
-	),
+		"Background color when the editor auto renames on type."
+	)
 );
 
 registerModelAndPositionCommand(
 	"_executeLinkedEditingProvider",
 	(_accessor, model, position) => {
 		const { linkedEditingRangeProvider } = _accessor.get(
-			ILanguageFeaturesService,
+			ILanguageFeaturesService
 		);
 		return getLinkedEditingRanges(
 			linkedEditingRangeProvider,
 			model,
 			position,
-			CancellationToken.None,
+			CancellationToken.None
 		);
-	},
+	}
 );
 
 registerEditorContribution(
 	LinkedEditingContribution.ID,
 	LinkedEditingContribution,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );
 registerEditorAction(LinkedEditingAction);

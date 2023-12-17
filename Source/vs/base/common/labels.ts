@@ -55,7 +55,7 @@ export interface IUserHomeProvider {
 
 export function getPathLabel(
 	resource: URI,
-	formatting: IPathLabelFormatting,
+	formatting: IPathLabelFormatting
 ): string {
 	const { os, tildify: tildifier, relative: relatifier } = formatting;
 
@@ -104,14 +104,14 @@ export function getPathLabel(
 	// normalize
 	const pathLib = os === OperatingSystem.Windows ? win32 : posix;
 	return pathLib.normalize(
-		normalizeDriveLetter(absolutePath, os === OperatingSystem.Windows),
+		normalizeDriveLetter(absolutePath, os === OperatingSystem.Windows)
 	);
 }
 
 function getRelativePathLabel(
 	resource: URI,
 	relativePathProvider: IRelativePathProvider,
-	os: OperatingSystem,
+	os: OperatingSystem
 ): string | undefined {
 	const pathLib = os === OperatingSystem.Windows ? win32 : posix;
 	const extUriLib =
@@ -167,7 +167,7 @@ function getRelativePathLabel(
 
 export function normalizeDriveLetter(
 	path: string,
-	isWindowsOS: boolean = isWindows,
+	isWindowsOS: boolean = isWindows
 ): string {
 	if (hasDriveLetter(path, isWindowsOS)) {
 		return path.charAt(0).toUpperCase() + path.slice(1);
@@ -256,7 +256,7 @@ const unc = "\\\\";
 const home = "~";
 export function shorten(
 	paths: string[],
-	pathSeparator: string = sep,
+	pathSeparator: string = sep
 ): string[] {
 	const shortenedPaths: string[] = new Array(paths.length);
 
@@ -283,26 +283,26 @@ export function shorten(
 		if (trimmedPath.indexOf(unc) === 0) {
 			prefix = trimmedPath.substr(
 				0,
-				trimmedPath.indexOf(unc) + unc.length,
+				trimmedPath.indexOf(unc) + unc.length
 			);
 			trimmedPath = trimmedPath.substr(
-				trimmedPath.indexOf(unc) + unc.length,
+				trimmedPath.indexOf(unc) + unc.length
 			);
 		} else if (trimmedPath.indexOf(pathSeparator) === 0) {
 			prefix = trimmedPath.substr(
 				0,
-				trimmedPath.indexOf(pathSeparator) + pathSeparator.length,
+				trimmedPath.indexOf(pathSeparator) + pathSeparator.length
 			);
 			trimmedPath = trimmedPath.substr(
-				trimmedPath.indexOf(pathSeparator) + pathSeparator.length,
+				trimmedPath.indexOf(pathSeparator) + pathSeparator.length
 			);
 		} else if (trimmedPath.indexOf(home) === 0) {
 			prefix = trimmedPath.substr(
 				0,
-				trimmedPath.indexOf(home) + home.length,
+				trimmedPath.indexOf(home) + home.length
 			);
 			trimmedPath = trimmedPath.substr(
-				trimmedPath.indexOf(home) + home.length,
+				trimmedPath.indexOf(home) + home.length
 			);
 		}
 
@@ -422,7 +422,7 @@ export function template(
 	template: string,
 	values: {
 		[key: string]: string | ISeparator | undefined | null;
-	} = Object.create(null),
+	} = Object.create(null)
 ): string {
 	const segments: ISegment[] = [];
 
@@ -488,7 +488,7 @@ export function template(
 						segment &&
 						(segment.type === Type.VARIABLE ||
 							segment.type === Type.TEXT) &&
-						segment.value.length > 0,
+						segment.value.length > 0
 				);
 			}
 
@@ -507,7 +507,7 @@ export function template(
  */
 export function mnemonicMenuLabel(
 	label: string,
-	forceDisableMnemonics?: boolean,
+	forceDisableMnemonics?: boolean
 ): string {
 	if (isMacintosh || forceDisableMnemonics) {
 		return label
@@ -526,7 +526,7 @@ export function mnemonicMenuLabel(
  */
 export function mnemonicButtonLabel(
 	label: string,
-	forceDisableMnemonics?: boolean,
+	forceDisableMnemonics?: boolean
 ): string {
 	if (isMacintosh || forceDisableMnemonics) {
 		return label.replace(/\(&&\w\)|&&/g, "");
@@ -551,11 +551,11 @@ export function splitRecentLabel(recentLabel: string) {
 		// label with workspace suffix
 		const lastIndexOfSquareBracket = recentLabel.lastIndexOf(
 			" [",
-			recentLabel.length - 2,
+			recentLabel.length - 2
 		);
 		if (lastIndexOfSquareBracket !== -1) {
 			const split = splitName(
-				recentLabel.substring(0, lastIndexOfSquareBracket),
+				recentLabel.substring(0, lastIndexOfSquareBracket)
 			);
 			return {
 				name: split.name,

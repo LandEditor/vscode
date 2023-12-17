@@ -72,7 +72,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 	// functional.
 	private readonly extensionRegistrationRace = raceTimeout(
 		this.extensionService.whenInstalledExtensionsRegistered(),
-		800,
+		800
 	);
 
 	private useAiRelatedInfo = false;
@@ -98,22 +98,37 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		@ICommandService commandService: ICommandService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IDialogService dialogService: IDialogService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@IProductService private readonly productService: IProductService,
-		@IAiRelatedInformationService private readonly aiRelatedInformationService: IAiRelatedInformationService,
+		@IAiRelatedInformationService
+		private readonly aiRelatedInformationService: IAiRelatedInformationService,
 		@IChatService private readonly chatService: IChatService
 	) {
-		super({
-			showAlias: !Language.isDefaultVariant(),
-			noResultsPick: () => ({
-				label: localize('noCommandResults', "No matching commands"),
-				commandId: ''
-			}),
-		}, instantiationService, keybindingService, commandService, telemetryService, dialogService);
+		super(
+			{
+				showAlias: !Language.isDefaultVariant(),
+				noResultsPick: () => ({
+					label: localize("noCommandResults", "No matching commands"),
+					commandId: "",
+				}),
+			},
+			instantiationService,
+			keybindingService,
+			commandService,
+			telemetryService,
+			dialogService
+		);
 
-		this._register(configurationService.onDidChangeConfiguration((e) => this.updateOptions(e)));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) =>
+				this.updateOptions(e)
+			)
+		);
 		this.updateOptions();
 	}
 
@@ -147,7 +162,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 	}
 
 	protected async getCommandPicks(
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<ICommandQuickPick>> {
 		// wait for extensions registration or 800ms once
 		await this.extensionRegistrationRace;
@@ -166,7 +181,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 					iconClass: ThemeIcon.asClassName(Codicon.gear),
 					tooltip: localize(
 						"configure keybinding",
-						"Configure Keybinding",
+						"Configure Keybinding"
 					),
 				},
 			],
@@ -181,7 +196,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 
 	protected hasAdditionalCommandPicks(
 		filter: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): boolean {
 		if (
 			!this.useAiRelatedInfo ||
@@ -199,7 +214,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
 		filter: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<ICommandQuickPick | IQuickPickSeparator>> {
 		if (!this.hasAdditionalCommandPicks(filter, token)) {
 			return [];
@@ -211,13 +226,13 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			// Wait a bit to see if the user is still typing
 			await timeout(
 				CommandsQuickAccessProvider.AI_RELATED_INFORMATION_DEBOUNCE,
-				token,
+				token
 			);
 			additionalPicks = await this.getRelatedInformationPicks(
 				allPicks,
 				picksSoFar,
 				filter,
-				token,
+				token
 			);
 		} catch (e) {
 			return [];
@@ -236,7 +251,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 					"askXInChat",
 					"Ask {0}: {1}",
 					info.displayName,
-					filter,
+					filter
 				),
 				commandId:
 					this.configuration.experimental.askChatLocation ===
@@ -254,13 +269,13 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		allPicks: ICommandQuickPick[],
 		picksSoFar: ICommandQuickPick[],
 		filter: string,
-		token: CancellationToken,
+		token: CancellationToken
 	) {
 		const relatedInformation =
 			(await this.aiRelatedInformationService.getRelatedInformation(
 				filter,
 				[RelatedInformationType.CommandInformation],
-				token,
+				token
 			)) as CommandInformationResult[];
 
 		// Sort by weight descending to get the most relevant results first
@@ -283,7 +298,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			const pick = allPicks.find(
 				(p) =>
 					p.commandId === info.command &&
-					!setOfPicksSoFar.has(p.commandId),
+					!setOfPicksSoFar.has(p.commandId)
 			);
 			if (pick) {
 				additionalPicks.push(pick);
@@ -300,16 +315,16 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			this.editorGroupService.activeGroup.scopedContextKeyService;
 		const globalCommandsMenu = this.menuService.createMenu(
 			MenuId.CommandPalette,
-			scopedContextKeyService,
+			scopedContextKeyService
 		);
 		const globalCommandsMenuActions = globalCommandsMenu
 			.getActions()
 			.reduce(
 				(r, [, actions]) => [...r, ...actions],
-				<Array<MenuItemAction | SubmenuItemAction | string>>[],
+				<Array<MenuItemAction | SubmenuItemAction | string>>[]
 			)
 			.filter(
-				(action) => action instanceof MenuItemAction && action.enabled,
+				(action) => action instanceof MenuItemAction && action.enabled
 			) as MenuItemAction[];
 
 		for (const action of globalCommandsMenuActions) {
@@ -329,7 +344,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 					"commandWithCategory",
 					"{0}: {1}",
 					category,
-					label,
+					label
 				);
 			}
 
@@ -357,10 +372,10 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 				isLocalizedString(metadataDescription)
 					? metadataDescription
 					: // TODO: this type will eventually not be a string and when that happens, this should simplified.
-					  {
+						{
 							value: metadataDescription,
 							original: metadataDescription,
-					  };
+						};
 			globalCommandPicks.push({
 				commandId: action.item.id,
 				commandAlias,
@@ -426,7 +441,7 @@ export class ClearCommandHistoryAction extends Action2 {
 
 		const commandHistoryLength =
 			CommandsHistory.getConfiguredCommandHistoryLength(
-				configurationService,
+				configurationService
 			);
 		if (commandHistoryLength > 0) {
 			// Ask for confirmation
@@ -434,18 +449,18 @@ export class ClearCommandHistoryAction extends Action2 {
 				type: "warning",
 				message: localize(
 					"confirmClearMessage",
-					"Do you want to clear the history of recently used commands?",
+					"Do you want to clear the history of recently used commands?"
 				),
 				detail: localize(
 					"confirmClearDetail",
-					"This action is irreversible!",
+					"This action is irreversible!"
 				),
 				primaryButton: localize(
 					{
 						key: "clearButtonLabel",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Clear",
+					"&&Clear"
 				),
 			});
 

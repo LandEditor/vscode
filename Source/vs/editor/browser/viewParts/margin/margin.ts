@@ -31,7 +31,7 @@ export class Margin extends ViewPart {
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._canUseLayerHinting = !options.get(
-			EditorOption.disableLayerHinting,
+			EditorOption.disableLayerHinting
 		);
 		this._contentLeft = layoutInfo.contentLeft;
 		this._glyphMarginLeft = layoutInfo.glyphMarginLeft;
@@ -44,7 +44,7 @@ export class Margin extends ViewPart {
 		this._domNode.setAttribute("aria-hidden", "true");
 
 		this._glyphMarginBackgroundDomNode = createFastDomNode(
-			document.createElement("div"),
+			document.createElement("div")
 		);
 		this._glyphMarginBackgroundDomNode.setClassName(Margin.CLASS_NAME);
 
@@ -62,13 +62,13 @@ export class Margin extends ViewPart {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
 		this._canUseLayerHinting = !options.get(
-			EditorOption.disableLayerHinting,
+			EditorOption.disableLayerHinting
 		);
 		this._contentLeft = layoutInfo.contentLeft;
 		this._glyphMarginLeft = layoutInfo.glyphMarginLeft;
@@ -77,7 +77,7 @@ export class Margin extends ViewPart {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return super.onScrollChanged(e) || e.scrollTopChanged;
 	}

@@ -11,7 +11,7 @@ import { RequestService } from "./requests";
 
 export function fetchDataProviders(
 	dataPaths: string[],
-	requestService: RequestService,
+	requestService: RequestService
 ): Promise<ICSSDataProvider[]> {
 	const providers = dataPaths.map(async (p) => {
 		try {

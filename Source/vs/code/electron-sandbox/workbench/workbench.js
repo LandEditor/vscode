@@ -72,10 +72,10 @@
 						context?.clearRect(0, 0, canvas.width, canvas.height);
 						canvas.remove();
 					},
-					{ timeout: 50 },
+					{ timeout: 50 }
 				);
 			},
-		},
+		}
 	);
 
 	//#region Helpers
@@ -206,7 +206,7 @@
 				splash.style.border = "1px solid var(--window-border-color)";
 				splash.style.setProperty(
 					"--window-border-color",
-					colorInfo.windowBorder,
+					colorInfo.windowBorder
 				);
 
 				if (layoutInfo.windowBorderRadius) {
@@ -219,14 +219,14 @@
 				layoutInfo.sideBarWidth,
 				window.innerWidth -
 					(layoutInfo.activityBarWidth +
-						layoutInfo.editorPartMinWidth),
+						layoutInfo.editorPartMinWidth)
 			);
 
 			// part: title
 			const titleDiv = document.createElement("div");
 			titleDiv.setAttribute(
 				"style",
-				`position: absolute; width: 100%; left: 0; top: 0; height: ${layoutInfo.titleBarHeight}px; background-color: ${colorInfo.titleBarBackground}; -webkit-app-region: drag;`,
+				`position: absolute; width: 100%; left: 0; top: 0; height: ${layoutInfo.titleBarHeight}px; background-color: ${colorInfo.titleBarBackground}; -webkit-app-region: drag;`
 			);
 			splash.appendChild(titleDiv);
 
@@ -234,7 +234,7 @@
 			const activityDiv = document.createElement("div");
 			activityDiv.setAttribute(
 				"style",
-				`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: 0; width: ${layoutInfo.activityBarWidth}px; background-color: ${colorInfo.activityBarBackground};`,
+				`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: 0; width: ${layoutInfo.activityBarWidth}px; background-color: ${colorInfo.activityBarBackground};`
 			);
 			splash.appendChild(activityDiv);
 
@@ -244,7 +244,7 @@
 				const sideDiv = document.createElement("div");
 				sideDiv.setAttribute(
 					"style",
-					`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: ${layoutInfo.activityBarWidth}px; width: ${layoutInfo.sideBarWidth}px; background-color: ${colorInfo.sideBarBackground};`,
+					`position: absolute; height: calc(100% - ${layoutInfo.titleBarHeight}px); top: ${layoutInfo.titleBarHeight}px; ${layoutInfo.sideBarSide}: ${layoutInfo.activityBarWidth}px; width: ${layoutInfo.sideBarWidth}px; background-color: ${colorInfo.sideBarBackground};`
 				);
 				splash.appendChild(sideDiv);
 			}
@@ -259,7 +259,7 @@
 					configuration.workspace
 						? colorInfo.statusBarBackground
 						: colorInfo.statusBarNoFolderBackground
-				};`,
+				};`
 			);
 			splash.appendChild(statusDiv);
 

@@ -24,7 +24,7 @@ export interface CallbackTask extends BaseTask {
 export type Task = PromiseTask | StreamTask | CallbackTask;
 
 function _isPromise(
-	p: Promise<void> | NodeJS.ReadWriteStream,
+	p: Promise<void> | NodeJS.ReadWriteStream
 ): p is Promise<void> {
 	if (typeof (<any>p).then === "function") {
 		return true;
@@ -50,7 +50,7 @@ async function _execute(task: Task): Promise<void> {
 			`Finished`,
 			ansiColors.cyan(name),
 			"after",
-			ansiColors.magenta(_renderTime(elapsedNanoseconds / 1e6)),
+			ansiColors.magenta(_renderTime(elapsedNanoseconds / 1e6))
 		);
 	}
 }
@@ -117,7 +117,7 @@ export function define(name: string, task: Task): Task {
 			// => generate a fake task function
 			return define(
 				name,
-				series(task, () => Promise.resolve()),
+				series(task, () => Promise.resolve())
 			);
 		}
 

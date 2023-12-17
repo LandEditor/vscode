@@ -114,57 +114,125 @@ export class MainThreadTerminalService
 	constructor(
 		private readonly _extHostContext: IExtHostContext,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalLinkProviderService private readonly _terminalLinkProviderService: ITerminalLinkProviderService,
-		@ITerminalQuickFixService private readonly _terminalQuickFixService: ITerminalQuickFixService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IEnvironmentVariableService private readonly _environmentVariableService: IEnvironmentVariableService,
+		@ITerminalLinkProviderService
+		private readonly _terminalLinkProviderService: ITerminalLinkProviderService,
+		@ITerminalQuickFixService
+		private readonly _terminalQuickFixService: ITerminalQuickFixService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IEnvironmentVariableService
+		private readonly _environmentVariableService: IEnvironmentVariableService,
 		@ILogService private readonly _logService: ILogService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService
 	) {
-		this._proxy = _extHostContext.getProxy(ExtHostContext.ExtHostTerminalService);
+		this._proxy = _extHostContext.getProxy(
+			ExtHostContext.ExtHostTerminalService
+		);
 
 		// ITerminalService listeners
-		this._store.add(_terminalService.onDidCreateInstance((instance) => {
-			this._onTerminalOpened(instance);
-			this._onInstanceDimensionsChanged(instance);
-		}));
+		this._store.add(
+			_terminalService.onDidCreateInstance((instance) => {
+				this._onTerminalOpened(instance);
+				this._onInstanceDimensionsChanged(instance);
+			})
+		);
 
-		this._store.add(_terminalService.onDidDisposeInstance(instance => this._onTerminalDisposed(instance)));
-		this._store.add(_terminalService.onAnyInstanceProcessIdReady(instance => this._onTerminalProcessIdReady(instance)));
-		this._store.add(_terminalService.onDidChangeInstanceDimensions(instance => this._onInstanceDimensionsChanged(instance)));
-		this._store.add(_terminalService.onAnyInstanceMaximumDimensionsChange(instance => this._onInstanceMaximumDimensionsChanged(instance)));
-		this._store.add(_terminalService.onDidRequestStartExtensionTerminal(e => this._onRequestStartExtensionTerminal(e)));
-		this._store.add(_terminalService.onDidChangeActiveInstance(instance => this._onActiveTerminalChanged(instance ? instance.instanceId : null)));
-		this._store.add(_terminalService.onAnyInstanceTitleChange(instance => instance && this._onTitleChanged(instance.instanceId, instance.title)));
-		this._store.add(_terminalService.onAnyInstanceDataInput(instance => this._proxy.$acceptTerminalInteraction(instance.instanceId)));
-		this._store.add(_terminalService.onAnyInstanceSelectionChange(instance => this._proxy.$acceptTerminalSelection(instance.instanceId, instance.selection)));
+		this._store.add(
+			_terminalService.onDidDisposeInstance((instance) =>
+				this._onTerminalDisposed(instance)
+			)
+		);
+		this._store.add(
+			_terminalService.onAnyInstanceProcessIdReady((instance) =>
+				this._onTerminalProcessIdReady(instance)
+			)
+		);
+		this._store.add(
+			_terminalService.onDidChangeInstanceDimensions((instance) =>
+				this._onInstanceDimensionsChanged(instance)
+			)
+		);
+		this._store.add(
+			_terminalService.onAnyInstanceMaximumDimensionsChange((instance) =>
+				this._onInstanceMaximumDimensionsChanged(instance)
+			)
+		);
+		this._store.add(
+			_terminalService.onDidRequestStartExtensionTerminal((e) =>
+				this._onRequestStartExtensionTerminal(e)
+			)
+		);
+		this._store.add(
+			_terminalService.onDidChangeActiveInstance((instance) =>
+				this._onActiveTerminalChanged(
+					instance ? instance.instanceId : null
+				)
+			)
+		);
+		this._store.add(
+			_terminalService.onAnyInstanceTitleChange(
+				(instance) =>
+					instance &&
+					this._onTitleChanged(instance.instanceId, instance.title)
+			)
+		);
+		this._store.add(
+			_terminalService.onAnyInstanceDataInput((instance) =>
+				this._proxy.$acceptTerminalInteraction(instance.instanceId)
+			)
+		);
+		this._store.add(
+			_terminalService.onAnyInstanceSelectionChange((instance) =>
+				this._proxy.$acceptTerminalSelection(
+					instance.instanceId,
+					instance.selection
+				)
+			)
+		);
 
 		// Set initial ext host state
 		for (const instance of this._terminalService.instances) {
 			this._onTerminalOpened(instance);
-			instance.processReady.then(() => this._onTerminalProcessIdReady(instance));
+			instance.processReady.then(() =>
+				this._onTerminalProcessIdReady(instance)
+			);
 		}
 		const activeInstance = this._terminalService.activeInstance;
 		if (activeInstance) {
 			this._proxy.$acceptActiveTerminalChanged(activeInstance.instanceId);
 		}
 		if (this._environmentVariableService.collections.size > 0) {
-			const collectionAsArray = [...this._environmentVariableService.collections.entries()];
-			const serializedCollections: [string, ISerializableEnvironmentVariableCollection][] = collectionAsArray.map(e => {
+			const collectionAsArray = [
+				...this._environmentVariableService.collections.entries(),
+			];
+			const serializedCollections: [
+				string,
+				ISerializableEnvironmentVariableCollection,
+			][] = collectionAsArray.map((e) => {
 				return [e[0], serializeEnvironmentVariableCollection(e[1].map)];
 			});
-			this._proxy.$initEnvironmentVariableCollections(serializedCollections);
+			this._proxy.$initEnvironmentVariableCollections(
+				serializedCollections
+			);
 		}
 
-		remoteAgentService.getEnvironment().then(async env => {
+		remoteAgentService.getEnvironment().then(async (env) => {
 			this._os = env?.os || OS;
 			this._updateDefaultProfile();
 		});
-		this._store.add(this._terminalProfileService.onDidChangeAvailableProfiles(() => this._updateDefaultProfile()));
+		this._store.add(
+			this._terminalProfileService.onDidChangeAvailableProfiles(() =>
+				this._updateDefaultProfile()
+			)
+		);
 	}
 
 	public dispose(): void {
@@ -193,12 +261,12 @@ export class MainThreadTerminalService
 				allowAutomationShell: true,
 			});
 		this._proxy.$acceptDefaultProfile(
-			...(await Promise.all([defaultProfile, defaultAutomationProfile])),
+			...(await Promise.all([defaultProfile, defaultAutomationProfile]))
 		);
 	}
 
 	private async _getTerminalInstance(
-		id: ExtHostTerminalIdentifier,
+		id: ExtHostTerminalIdentifier
 	): Promise<ITerminalInstance | undefined> {
 		if (typeof id === "string") {
 			return this._extHostTerminals.get(id);
@@ -208,7 +276,7 @@ export class MainThreadTerminalService
 
 	public async $createTerminal(
 		extHostTerminalId: string,
-		launchConfig: TerminalLaunchConfig,
+		launchConfig: TerminalLaunchConfig
 	): Promise<void> {
 		const shellLaunchConfig: IShellLaunchConfig = {
 			name: launchConfig.name,
@@ -232,7 +300,7 @@ export class MainThreadTerminalService
 							id,
 							cols,
 							rows,
-							this._terminalService,
+							this._terminalService
 						)
 				: undefined,
 			extHostTerminalId,
@@ -246,18 +314,18 @@ export class MainThreadTerminalService
 				const terminal = await this._terminalService.createTerminal({
 					config: shellLaunchConfig,
 					location: await this._deserializeParentTerminal(
-						launchConfig.location,
+						launchConfig.location
 					),
 				});
 				r(terminal);
-			},
+			}
 		);
 		this._extHostTerminals.set(extHostTerminalId, terminal);
 		const terminalInstance = await terminal;
 		this._store.add(
 			terminalInstance.onDisposed(() => {
 				this._extHostTerminals.delete(extHostTerminalId);
-			}),
+			})
 		);
 	}
 
@@ -266,7 +334,7 @@ export class MainThreadTerminalService
 			| TerminalLocation
 			| TerminalEditorLocationOptions
 			| { parentTerminal: ExtHostTerminalIdentifier }
-			| { splitActiveTerminal: boolean; location?: TerminalLocation },
+			| { splitActiveTerminal: boolean; location?: TerminalLocation }
 	): Promise<
 		| TerminalLocation
 		| TerminalEditorLocationOptions
@@ -276,7 +344,7 @@ export class MainThreadTerminalService
 	> {
 		if (typeof location === "object" && "parentTerminal" in location) {
 			const parentTerminal = await this._extHostTerminals.get(
-				location.parentTerminal.toString(),
+				location.parentTerminal.toString()
 			);
 			return parentTerminal ? { parentTerminal } : undefined;
 		}
@@ -285,14 +353,14 @@ export class MainThreadTerminalService
 
 	public async $show(
 		id: ExtHostTerminalIdentifier,
-		preserveFocus: boolean,
+		preserveFocus: boolean
 	): Promise<void> {
 		const terminalInstance = await this._getTerminalInstance(id);
 		if (terminalInstance) {
 			this._terminalService.setActiveInstance(terminalInstance);
 			if (terminalInstance.target === TerminalLocation.Editor) {
 				await this._terminalEditorService.revealActiveEditor(
-					preserveFocus,
+					preserveFocus
 				);
 			} else {
 				await this._terminalGroupService.showPanel(!preserveFocus);
@@ -314,14 +382,14 @@ export class MainThreadTerminalService
 
 	public async $dispose(id: ExtHostTerminalIdentifier): Promise<void> {
 		(await this._getTerminalInstance(id))?.dispose(
-			TerminalExitReason.Extension,
+			TerminalExitReason.Extension
 		);
 	}
 
 	public async $sendText(
 		id: ExtHostTerminalIdentifier,
 		text: string,
-		shouldExecute: boolean,
+		shouldExecute: boolean
 	): Promise<void> {
 		const instance = await this._getTerminalInstance(id);
 		await instance?.sendText(text, shouldExecute);
@@ -329,7 +397,7 @@ export class MainThreadTerminalService
 
 	public $sendProcessExit(
 		terminalId: number,
-		exitCode: number | undefined,
+		exitCode: number | undefined
 	): void {
 		this._terminalProcessProxies.get(terminalId)?.emitExit(exitCode);
 	}
@@ -341,7 +409,7 @@ export class MainThreadTerminalService
 					TerminalDataEventTracker,
 					(id, data) => {
 						this._onTerminalData(id, data);
-					},
+					}
 				);
 			// Send initial events if they exist
 			for (const instance of this._terminalService.instances) {
@@ -364,7 +432,7 @@ export class MainThreadTerminalService
 		const multiplexer =
 			this._terminalService.createOnInstanceCapabilityEvent(
 				TerminalCapability.CommandDetection,
-				(capability) => capability.onCommandFinished,
+				(capability) => capability.onCommandFinished
 			);
 		multiplexer.event((e) => {
 			this._onDidExecuteCommand(e.instance.instanceId, {
@@ -386,7 +454,7 @@ export class MainThreadTerminalService
 		this._linkProvider?.dispose();
 		this._linkProvider =
 			this._terminalLinkProviderService.registerLinkProvider(
-				new ExtensionTerminalLinkProvider(this._proxy),
+				new ExtensionTerminalLinkProvider(this._proxy)
 			);
 	}
 
@@ -401,7 +469,7 @@ export class MainThreadTerminalService
 
 	public $registerProfileProvider(
 		id: string,
-		extensionIdentifier: string,
+		extensionIdentifier: string
 	): void {
 		// Proxy profile provider requests through the extension host
 		this._profileProviders.set(
@@ -413,11 +481,11 @@ export class MainThreadTerminalService
 					createContributedTerminalProfile: async (options) => {
 						return this._proxy.$createContributedProfileTerminal(
 							id,
-							options,
+							options
 						);
 					},
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -428,7 +496,7 @@ export class MainThreadTerminalService
 
 	public async $registerQuickFixProvider(
 		id: string,
-		extensionId: string,
+		extensionId: string
 	): Promise<void> {
 		this._quickFixProviders.set(
 			id,
@@ -437,7 +505,7 @@ export class MainThreadTerminalService
 					terminalCommand,
 					lines,
 					options,
-					token,
+					token
 				) => {
 					if (token.isCancellationRequested) {
 						return;
@@ -448,11 +516,11 @@ export class MainThreadTerminalService
 					) {
 						options.outputMatcher.length = 40;
 						this._logService.warn(
-							"Cannot exceed output matcher length of 40",
+							"Cannot exceed output matcher length of 40"
 						);
 					}
 					const commandLineMatch = terminalCommand.command.match(
-						options.commandLineMatcher,
+						options.commandLineMatcher
 					);
 					if (!commandLineMatch || !lines) {
 						return;
@@ -462,7 +530,7 @@ export class MainThreadTerminalService
 					if (outputMatcher) {
 						outputMatch = getOutputMatchForLines(
 							lines,
-							outputMatcher,
+							outputMatcher
 						);
 					}
 					if (!outputMatch) {
@@ -479,11 +547,11 @@ export class MainThreadTerminalService
 							await this._proxy.$provideTerminalQuickFixes(
 								id,
 								matchResult,
-								token,
+								token
 							);
 						if (result && Array.isArray(result)) {
 							return result.map((r) =>
-								parseQuickFix(id, extensionId, r),
+								parseQuickFix(id, extensionId, r)
 							);
 						} else if (result) {
 							return parseQuickFix(id, extensionId, result);
@@ -491,7 +559,7 @@ export class MainThreadTerminalService
 					}
 					return;
 				},
-			}),
+			})
 		);
 	}
 
@@ -510,7 +578,7 @@ export class MainThreadTerminalService
 
 	private _onDidExecuteCommand(
 		terminalId: number,
-		command: ITerminalCommandDto,
+		command: ITerminalCommandDto
 	): void {
 		this._proxy.$acceptDidExecuteCommand(terminalId, command);
 	}
@@ -523,7 +591,7 @@ export class MainThreadTerminalService
 		this._proxy.$acceptTerminalClosed(
 			terminalInstance.instanceId,
 			terminalInstance.exitCode,
-			terminalInstance.exitReason ?? TerminalExitReason.Unknown,
+			terminalInstance.exitReason ?? TerminalExitReason.Unknown
 		);
 	}
 
@@ -542,19 +610,19 @@ export class MainThreadTerminalService
 			terminalInstance.instanceId,
 			extHostTerminalId,
 			terminalInstance.title,
-			shellLaunchConfigDto,
+			shellLaunchConfigDto
 		);
 	}
 
 	private _onTerminalProcessIdReady(
-		terminalInstance: ITerminalInstance,
+		terminalInstance: ITerminalInstance
 	): void {
 		if (terminalInstance.processId === undefined) {
 			return;
 		}
 		this._proxy.$acceptTerminalProcessId(
 			terminalInstance.instanceId,
-			terminalInstance.processId,
+			terminalInstance.processId
 		);
 	}
 
@@ -562,22 +630,22 @@ export class MainThreadTerminalService
 		this._proxy.$acceptTerminalDimensions(
 			instance.instanceId,
 			instance.cols,
-			instance.rows,
+			instance.rows
 		);
 	}
 
 	private _onInstanceMaximumDimensionsChanged(
-		instance: ITerminalInstance,
+		instance: ITerminalInstance
 	): void {
 		this._proxy.$acceptTerminalMaximumDimensions(
 			instance.instanceId,
 			instance.maxCols,
-			instance.maxRows,
+			instance.maxRows
 		);
 	}
 
 	private _onRequestStartExtensionTerminal(
-		request: IStartExtensionTerminalRequest,
+		request: IStartExtensionTerminalRequest
 	): void {
 		const proxy = request.proxy;
 		this._terminalProcessProxies.set(proxy.instanceId, proxy);
@@ -589,7 +657,7 @@ export class MainThreadTerminalService
 				? {
 						columns: request.cols,
 						rows: request.rows,
-				  }
+					}
 				: undefined;
 
 		this._proxy
@@ -597,16 +665,16 @@ export class MainThreadTerminalService
 			.then(request.callback);
 
 		proxy.onInput((data) =>
-			this._proxy.$acceptProcessInput(proxy.instanceId, data),
+			this._proxy.$acceptProcessInput(proxy.instanceId, data)
 		);
 		proxy.onShutdown((immediate) =>
-			this._proxy.$acceptProcessShutdown(proxy.instanceId, immediate),
+			this._proxy.$acceptProcessShutdown(proxy.instanceId, immediate)
 		);
 		proxy.onRequestCwd(() =>
-			this._proxy.$acceptProcessRequestCwd(proxy.instanceId),
+			this._proxy.$acceptProcessRequestCwd(proxy.instanceId)
 		);
 		proxy.onRequestInitialCwd(() =>
-			this._proxy.$acceptProcessRequestInitialCwd(proxy.instanceId),
+			this._proxy.$acceptProcessRequestInitialCwd(proxy.instanceId)
 		);
 	}
 
@@ -618,7 +686,7 @@ export class MainThreadTerminalService
 		terminalId: number,
 		pid: number,
 		cwd: string,
-		windowsPty: IProcessReadyWindowsPty | undefined,
+		windowsPty: IProcessReadyWindowsPty | undefined
 	): void {
 		this._terminalProcessProxies
 			.get(terminalId)
@@ -627,7 +695,7 @@ export class MainThreadTerminalService
 
 	public $sendProcessProperty(
 		terminalId: number,
-		property: IProcessProperty<any>,
+		property: IProcessProperty<any>
 	): void {
 		if (property.type === ProcessPropertyType.Title) {
 			const instance =
@@ -643,7 +711,7 @@ export class MainThreadTerminalService
 		extensionIdentifier: string,
 		persistent: boolean,
 		collection: ISerializableEnvironmentVariableCollection | undefined,
-		descriptionMap: ISerializableEnvironmentDescriptionMap,
+		descriptionMap: ISerializableEnvironmentDescriptionMap
 	): void {
 		if (collection) {
 			const translatedCollection = {
@@ -654,7 +722,7 @@ export class MainThreadTerminalService
 			};
 			this._environmentVariableService.set(
 				extensionIdentifier,
-				translatedCollection,
+				translatedCollection
 			);
 		} else {
 			this._environmentVariableService.delete(extensionIdentifier);
@@ -675,19 +743,29 @@ class TerminalDataEventTracker extends Disposable {
 	) {
 		super();
 
-		this._register(this._bufferer = new TerminalDataBufferer(this._callback));
+		this._register(
+			(this._bufferer = new TerminalDataBufferer(this._callback))
+		);
 
 		for (const instance of this._terminalService.instances) {
 			this._registerInstance(instance);
 		}
-		this._register(this._terminalService.onDidCreateInstance(instance => this._registerInstance(instance)));
-		this._register(this._terminalService.onDidDisposeInstance(instance => this._bufferer.stopBuffering(instance.instanceId)));
+		this._register(
+			this._terminalService.onDidCreateInstance((instance) =>
+				this._registerInstance(instance)
+			)
+		);
+		this._register(
+			this._terminalService.onDidDisposeInstance((instance) =>
+				this._bufferer.stopBuffering(instance.instanceId)
+			)
+		);
 	}
 
 	private _registerInstance(instance: ITerminalInstance): void {
 		// Buffer data events to reduce the amount of messages going to the extension host
 		this._register(
-			this._bufferer.startBuffering(instance.instanceId, instance.onData),
+			this._bufferer.startBuffering(instance.instanceId, instance.onData)
 		);
 	}
 }
@@ -697,12 +775,12 @@ class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
 
 	async provideLinks(
 		instance: ITerminalInstance,
-		line: string,
+		line: string
 	): Promise<ITerminalLink[] | undefined> {
 		const proxy = this._proxy;
 		const extHostLinks = await proxy.$provideLinks(
 			instance.instanceId,
-			line,
+			line
 		);
 		return extHostLinks.map((dto) => ({
 			id: dto.id,
@@ -716,7 +794,7 @@ class ExtensionTerminalLinkProvider implements ITerminalExternalLinkProvider {
 
 export function getOutputMatchForLines(
 	lines: string[],
-	outputMatcher: ITerminalOutputMatcher,
+	outputMatcher: ITerminalOutputMatcher
 ): ITerminalOutputMatch | undefined {
 	const match: RegExpMatchArray | null | undefined = lines
 		.join("\n")
@@ -727,7 +805,7 @@ export function getOutputMatchForLines(
 function parseQuickFix(
 	id: string,
 	source: string,
-	fix: TerminalQuickFix,
+	fix: TerminalQuickFix
 ): ITerminalQuickFix {
 	let type = TerminalQuickFixType.TerminalCommand;
 	if ("uri" in fix) {

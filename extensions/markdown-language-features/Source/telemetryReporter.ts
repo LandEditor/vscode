@@ -17,7 +17,7 @@ export interface TelemetryReporter {
 		eventName: string,
 		properties?: {
 			[key: string]: string;
-		},
+		}
 	): void;
 }
 
@@ -42,7 +42,7 @@ class ExtensionReporter implements TelemetryReporter {
 		eventName: string,
 		properties?: {
 			[key: string]: string;
-		},
+		}
 	) {
 		this._reporter.sendTelemetryEvent(eventName, properties);
 	}
@@ -59,7 +59,7 @@ export function loadDefaultTelemetryReporter(): TelemetryReporter {
 
 function getPackageInfo(): IPackageInfo | null {
 	const extension = vscode.extensions.getExtension(
-		"Microsoft.vscode-markdown",
+		"Microsoft.vscode-markdown"
 	);
 	if (extension && extension.packageJSON) {
 		return {

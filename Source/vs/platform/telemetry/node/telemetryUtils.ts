@@ -11,7 +11,7 @@ import { machineIdKey, sqmIdKey } from "vs/platform/telemetry/common/telemetry";
 
 export async function resolveMachineId(
 	stateService: IStateReadService,
-	logService: ILogService,
+	logService: ILogService
 ): Promise<string> {
 	// We cache the machineId for faster lookups
 	// and resolve it only once initially if not cached or we need to replace the macOS iBridge device
@@ -30,7 +30,7 @@ export async function resolveMachineId(
 
 export async function resolveSqmId(
 	stateService: IStateReadService,
-	logService: ILogService,
+	logService: ILogService
 ): Promise<string> {
 	let sqmId = stateService.getItem<string>(sqmIdKey);
 	if (typeof sqmId !== "string") {

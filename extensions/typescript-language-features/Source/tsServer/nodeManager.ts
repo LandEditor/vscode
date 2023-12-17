@@ -18,7 +18,7 @@ export class NodeVersionManager extends Disposable {
 
 	public constructor(
 		private configuration: TypeScriptServiceConfiguration,
-		private readonly workspaceState: vscode.Memento,
+		private readonly workspaceState: vscode.Memento
 	) {
 		super();
 
@@ -51,13 +51,13 @@ export class NodeVersionManager extends Disposable {
 							this.updateActiveVersion(workspaceVersion);
 						}
 					}
-				}),
+				})
 			);
 		}
 	}
 
 	private readonly _onDidPickNewVersion = this._register(
-		new vscode.EventEmitter<void>(),
+		new vscode.EventEmitter<void>()
 	);
 	public readonly onDidPickNewVersion = this._onDidPickNewVersion.event;
 
@@ -66,7 +66,7 @@ export class NodeVersionManager extends Disposable {
 	}
 
 	public async updateConfiguration(
-		nextConfiguration: TypeScriptServiceConfiguration,
+		nextConfiguration: TypeScriptServiceConfiguration
 	) {
 		const oldConfiguration = this.configuration;
 		this.configuration = nextConfiguration;
@@ -97,7 +97,7 @@ export class NodeVersionManager extends Disposable {
 		const workspaceVersion = this.configuration.localNodePath;
 		if (workspaceVersion === null) {
 			throw new Error(
-				"Could not prompt to use workspace Node installation because no workspace Node installation is specified",
+				"Could not prompt to use workspace Node installation because no workspace Node installation is specified"
 			);
 		}
 
@@ -108,11 +108,11 @@ export class NodeVersionManager extends Disposable {
 		const result = await vscode.window.showInformationMessage(
 			vscode.l10n.t(
 				"This workspace wants to use the Node installation at '{0}' to run TS Server. Would you like to use it?",
-				workspaceVersion,
+				workspaceVersion
 			),
 			allow,
 			disallow,
-			dismiss,
+			dismiss
 		);
 
 		let version = undefined;
@@ -127,7 +127,7 @@ export class NodeVersionManager extends Disposable {
 			case dismiss:
 				await this.setUseWorkspaceNodeState(
 					undefined,
-					workspaceVersion,
+					workspaceVersion
 				);
 				break;
 		}
@@ -152,11 +152,11 @@ export class NodeVersionManager extends Disposable {
 	private canUseWorkspaceNode(nodeVersion: string): boolean | undefined {
 		const lastKnownWorkspaceNode =
 			this.workspaceState.get<LastKnownWorkspaceNodeState>(
-				lastKnownWorkspaceNodeStorageKey,
+				lastKnownWorkspaceNodeStorageKey
 			);
 		if (lastKnownWorkspaceNode === nodeVersion) {
 			return this.workspaceState.get<UseWorkspaceNodeState>(
-				useWorkspaceNodeStorageKey,
+				useWorkspaceNodeStorageKey
 			);
 		}
 		return undefined;
@@ -164,11 +164,11 @@ export class NodeVersionManager extends Disposable {
 
 	private async setUseWorkspaceNodeState(
 		allow: boolean | undefined,
-		nodeVersion: string,
+		nodeVersion: string
 	) {
 		await this.workspaceState.update(
 			lastKnownWorkspaceNodeStorageKey,
-			nodeVersion,
+			nodeVersion
 		);
 		await this.workspaceState.update(useWorkspaceNodeStorageKey, allow);
 	}

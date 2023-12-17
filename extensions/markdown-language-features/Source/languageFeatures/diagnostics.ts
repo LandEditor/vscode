@@ -24,12 +24,12 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 
 	public static register(
 		selector: vscode.DocumentSelector,
-		commandManager: CommandManager,
+		commandManager: CommandManager
 	): vscode.Disposable {
 		const reg = vscode.languages.registerCodeActionsProvider(
 			selector,
 			new AddToIgnoreLinksQuickFixProvider(),
-			AddToIgnoreLinksQuickFixProvider._metadata,
+			AddToIgnoreLinksQuickFixProvider._metadata
 		);
 		const commandReg = commandManager.register({
 			id: AddToIgnoreLinksQuickFixProvider._addToIgnoreLinksCommandId,
@@ -37,14 +37,14 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 				const settingId = "validate.ignoredLinks";
 				const config = vscode.workspace.getConfiguration(
 					"markdown",
-					resource,
+					resource
 				);
 				const paths = new Set(config.get<string[]>(settingId, []));
 				paths.add(path);
 				config.update(
 					settingId,
 					[...paths],
-					vscode.ConfigurationTarget.WorkspaceFolder,
+					vscode.ConfigurationTarget.WorkspaceFolder
 				);
 			},
 		});
@@ -55,7 +55,7 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 		document: vscode.TextDocument,
 		_range: vscode.Range | vscode.Selection,
 		context: vscode.CodeActionContext,
-		_token: vscode.CancellationToken,
+		_token: vscode.CancellationToken
 	): vscode.ProviderResult<(vscode.CodeAction | vscode.Command)[]> {
 		const fixes: vscode.CodeAction[] = [];
 
@@ -70,9 +70,9 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 						const fix = new vscode.CodeAction(
 							vscode.l10n.t(
 								"Exclude '{0}' from link validation.",
-								hrefText,
+								hrefText
 							),
-							vscode.CodeActionKind.QuickFix,
+							vscode.CodeActionKind.QuickFix
 						);
 
 						fix.command = {
@@ -94,7 +94,7 @@ class AddToIgnoreLinksQuickFixProvider implements vscode.CodeActionProvider {
 
 export function registerDiagnosticSupport(
 	selector: vscode.DocumentSelector,
-	commandManager: CommandManager,
+	commandManager: CommandManager
 ): vscode.Disposable {
 	return AddToIgnoreLinksQuickFixProvider.register(selector, commandManager);
 }

@@ -15,7 +15,7 @@ import { IExtHostConsumerFileSystem } from "vs/workbench/api/common/extHostFileS
 import { URI } from "vs/base/common/uri";
 
 export const IExtensionStoragePaths = createDecorator<IExtensionStoragePaths>(
-	"IExtensionStoragePaths",
+	"IExtensionStoragePaths"
 );
 
 export interface IExtensionStoragePaths {
@@ -38,17 +38,20 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 	constructor(
 		@IExtHostInitDataService initData: IExtHostInitDataService,
 		@ILogService protected readonly _logService: ILogService,
-		@IExtHostConsumerFileSystem private readonly _extHostFileSystem: IExtHostConsumerFileSystem
+		@IExtHostConsumerFileSystem
+		private readonly _extHostFileSystem: IExtHostConsumerFileSystem
 	) {
 		this._workspace = initData.workspace ?? undefined;
 		this._environment = initData.environment;
-		this.whenReady = this._getOrCreateWorkspaceStoragePath().then(value => this._value = value);
+		this.whenReady = this._getOrCreateWorkspaceStoragePath().then(
+			(value) => (this._value = value)
+		);
 	}
 
 	protected async _getWorkspaceStorageURI(storageName: string): Promise<URI> {
 		return URI.joinPath(
 			this._environment.workspaceStorageHome,
-			storageName,
+			storageName
 		);
 	}
 
@@ -63,7 +66,7 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 			await this._extHostFileSystem.value.stat(storageUri);
 			this._logService.trace(
 				"[ExtHostStorage] storage dir already exists",
-				storageUri,
+				storageUri
 			);
 			return storageUri;
 		} catch {
@@ -73,7 +76,7 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 		try {
 			this._logService.trace(
 				"[ExtHostStorage] creating dir and metadata-file",
-				storageUri,
+				storageUri
 			);
 			await this._extHostFileSystem.value.createDirectory(storageUri);
 			await this._extHostFileSystem.value.writeFile(
@@ -83,14 +86,14 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 						{
 							id: this._workspace.id,
 							configuration: URI.revive(
-								this._workspace.configuration,
+								this._workspace.configuration
 							)?.toString(),
 							name: this._workspace.name,
 						},
 						undefined,
-						2,
-					),
-				),
+						2
+					)
+				)
 			);
 			return storageUri;
 		} catch (e) {
@@ -109,7 +112,7 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 	globalValue(extension: IExtensionDescription): URI {
 		return URI.joinPath(
 			this._environment.globalStorageHome,
-			extension.identifier.value.toLowerCase(),
+			extension.identifier.value.toLowerCase()
 		);
 	}
 

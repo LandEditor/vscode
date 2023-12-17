@@ -67,24 +67,24 @@ export class ViewZoneManager extends Disposable {
 	private readonly _originalScrollTop: IObservable<number>;
 	private readonly _originalScrollOffset = observableValue<number, boolean>(
 		this,
-		0,
+		0
 	);
 	private readonly _originalScrollOffsetAnimated = animatedObservable(
 		this._targetWindow,
 		this._originalScrollOffset,
-		this._store,
+		this._store
 	);
 
 	private readonly _modifiedTopPadding = observableValue(this, 0);
 	private readonly _modifiedScrollTop: IObservable<number>;
 	private readonly _modifiedScrollOffset = observableValue<number, boolean>(
 		this,
-		0,
+		0
 	);
 	private readonly _modifiedScrollOffsetAnimated = animatedObservable(
 		this._targetWindow,
 		this._modifiedScrollOffset,
-		this._store,
+		this._store
 	);
 
 	public readonly viewZones: IObservable<{
@@ -95,43 +95,88 @@ export class ViewZoneManager extends Disposable {
 	constructor(
 		private readonly _targetWindow: Window,
 		private readonly _editors: DiffEditorEditors,
-		private readonly _diffModel: IObservable<DiffEditorViewModel | undefined>,
+		private readonly _diffModel: IObservable<
+			DiffEditorViewModel | undefined
+		>,
 		private readonly _options: DiffEditorOptions,
 		private readonly _diffEditorWidget: DiffEditorWidget,
 		private readonly _canIgnoreViewZoneUpdateEvent: () => boolean,
 		private readonly _origViewZonesToIgnore: Set<string>,
 		private readonly _modViewZonesToIgnore: Set<string>,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService
 	) {
 		super();
 
-		const state = observableValue('invalidateAlignmentsState', 0);
+		const state = observableValue("invalidateAlignmentsState", 0);
 
-		const updateImmediately = this._register(new RunOnceScheduler(() => {
-			state.set(state.get() + 1, undefined);
-		}, 0));
+		const updateImmediately = this._register(
+			new RunOnceScheduler(() => {
+				state.set(state.get() + 1, undefined);
+			}, 0)
+		);
 
-		this._register(this._editors.original.onDidChangeViewZones((_args) => { if (!this._canIgnoreViewZoneUpdateEvent()) { updateImmediately.schedule(); } }));
-		this._register(this._editors.modified.onDidChangeViewZones((_args) => { if (!this._canIgnoreViewZoneUpdateEvent()) { updateImmediately.schedule(); } }));
-		this._register(this._editors.original.onDidChangeConfiguration((args) => {
-			if (args.hasChanged(EditorOption.wrappingInfo) || args.hasChanged(EditorOption.lineHeight)) { updateImmediately.schedule(); }
-		}));
-		this._register(this._editors.modified.onDidChangeConfiguration((args) => {
-			if (args.hasChanged(EditorOption.wrappingInfo) || args.hasChanged(EditorOption.lineHeight)) { updateImmediately.schedule(); }
-		}));
+		this._register(
+			this._editors.original.onDidChangeViewZones((_args) => {
+				if (!this._canIgnoreViewZoneUpdateEvent()) {
+					updateImmediately.schedule();
+				}
+			})
+		);
+		this._register(
+			this._editors.modified.onDidChangeViewZones((_args) => {
+				if (!this._canIgnoreViewZoneUpdateEvent()) {
+					updateImmediately.schedule();
+				}
+			})
+		);
+		this._register(
+			this._editors.original.onDidChangeConfiguration((args) => {
+				if (
+					args.hasChanged(EditorOption.wrappingInfo) ||
+					args.hasChanged(EditorOption.lineHeight)
+				) {
+					updateImmediately.schedule();
+				}
+			})
+		);
+		this._register(
+			this._editors.modified.onDidChangeConfiguration((args) => {
+				if (
+					args.hasChanged(EditorOption.wrappingInfo) ||
+					args.hasChanged(EditorOption.lineHeight)
+				) {
+					updateImmediately.schedule();
+				}
+			})
+		);
 
-		const originalModelTokenizationCompleted = this._diffModel.map(m =>
-			m ? observableFromEvent(m.model.original.onDidChangeTokens, () => m.model.original.tokenization.backgroundTokenizationState === BackgroundTokenizationState.Completed) : undefined
-		).map((m, reader) => m?.read(reader));
+		const originalModelTokenizationCompleted = this._diffModel
+			.map((m) =>
+				m
+					? observableFromEvent(
+							m.model.original.onDidChangeTokens,
+							() =>
+								m.model.original.tokenization
+									.backgroundTokenizationState ===
+								BackgroundTokenizationState.Completed
+						)
+					: undefined
+			)
+			.map((m, reader) => m?.read(reader));
 
 		const alignments = derived<ILineRangeAlignment[] | null>((reader) => {
 			/** @description alignments */
 			const diffModel = this._diffModel.read(reader);
 			const diff = diffModel?.diff.read(reader);
-			if (!diffModel || !diff) { return null; }
+			if (!diffModel || !diff) {
+				return null;
+			}
 			state.read(reader);
-			const renderSideBySide = this._options.renderSideBySide.read(reader);
+			const renderSideBySide =
+				this._options.renderSideBySide.read(reader);
 			const innerHunkAlignment = renderSideBySide;
 			return computeRangeAlignment(
 				this._editors.original,
@@ -143,31 +188,44 @@ export class ViewZoneManager extends Disposable {
 			);
 		});
 
-		const alignmentsSyncedMovedText = derived<ILineRangeAlignment[] | null>((reader) => {
-			/** @description alignmentsSyncedMovedText */
-			const syncedMovedText = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
-			if (!syncedMovedText) { return null; }
-			state.read(reader);
-			const mappings = syncedMovedText.changes.map(c => new DiffMapping(c));
-			// TODO dont include alignments outside syncedMovedText
-			return computeRangeAlignment(
-				this._editors.original,
-				this._editors.modified,
-				mappings,
-				this._origViewZonesToIgnore,
-				this._modViewZonesToIgnore,
-				true
-			);
-		});
+		const alignmentsSyncedMovedText = derived<ILineRangeAlignment[] | null>(
+			(reader) => {
+				/** @description alignmentsSyncedMovedText */
+				const syncedMovedText = this._diffModel
+					.read(reader)
+					?.movedTextToCompare.read(reader);
+				if (!syncedMovedText) {
+					return null;
+				}
+				state.read(reader);
+				const mappings = syncedMovedText.changes.map(
+					(c) => new DiffMapping(c)
+				);
+				// TODO dont include alignments outside syncedMovedText
+				return computeRangeAlignment(
+					this._editors.original,
+					this._editors.modified,
+					mappings,
+					this._origViewZonesToIgnore,
+					this._modViewZonesToIgnore,
+					true
+				);
+			}
+		);
 
 		function createFakeLinesDiv(): HTMLElement {
-			const r = document.createElement('div');
-			r.className = 'diagonal-fill';
+			const r = document.createElement("div");
+			r.className = "diagonal-fill";
 			return r;
 		}
 
-		const alignmentViewZonesDisposables = this._register(new DisposableStore());
-		this.viewZones = derivedWithStore<{ orig: IObservableViewZone[]; mod: IObservableViewZone[] }>(this, (reader, store) => {
+		const alignmentViewZonesDisposables = this._register(
+			new DisposableStore()
+		);
+		this.viewZones = derivedWithStore<{
+			orig: IObservableViewZone[];
+			mod: IObservableViewZone[];
+		}>(this, (reader, store) => {
 			alignmentViewZonesDisposables.clear();
 
 			const alignmentsVal = alignments.read(reader) || [];
@@ -179,7 +237,7 @@ export class ViewZoneManager extends Disposable {
 			if (modifiedTopPaddingVal > 0) {
 				modViewZones.push({
 					afterLineNumber: 0,
-					domNode: document.createElement('div'),
+					domNode: document.createElement("div"),
 					heightInPx: modifiedTopPaddingVal,
 					showInHiddenAreas: true,
 					suppressMouseDown: true,
@@ -189,69 +247,126 @@ export class ViewZoneManager extends Disposable {
 			if (originalTopPaddingVal > 0) {
 				origViewZones.push({
 					afterLineNumber: 0,
-					domNode: document.createElement('div'),
+					domNode: document.createElement("div"),
 					heightInPx: originalTopPaddingVal,
 					showInHiddenAreas: true,
 					suppressMouseDown: true,
 				});
 			}
 
-			const renderSideBySide = this._options.renderSideBySide.read(reader);
+			const renderSideBySide =
+				this._options.renderSideBySide.read(reader);
 
-			const deletedCodeLineBreaksComputer = !renderSideBySide ? this._editors.modified._getViewModel()?.createLineBreaksComputer() : undefined;
+			const deletedCodeLineBreaksComputer = !renderSideBySide
+				? this._editors.modified
+						._getViewModel()
+						?.createLineBreaksComputer()
+				: undefined;
 			if (deletedCodeLineBreaksComputer) {
 				for (const a of alignmentsVal) {
 					if (a.diff) {
-						for (let i = a.originalRange.startLineNumber; i < a.originalRange.endLineNumberExclusive; i++) {
-							deletedCodeLineBreaksComputer?.addRequest(this._editors.original.getModel()!.getLineContent(i), null, null);
+						for (
+							let i = a.originalRange.startLineNumber;
+							i < a.originalRange.endLineNumberExclusive;
+							i++
+						) {
+							deletedCodeLineBreaksComputer?.addRequest(
+								this._editors.original
+									.getModel()!
+									.getLineContent(i),
+								null,
+								null
+							);
 						}
 					}
 				}
 			}
 
-			const lineBreakData = deletedCodeLineBreaksComputer?.finalize() ?? [];
+			const lineBreakData =
+				deletedCodeLineBreaksComputer?.finalize() ?? [];
 			let lineBreakDataIdx = 0;
 
-			const modLineHeight = this._editors.modified.getOption(EditorOption.lineHeight);
+			const modLineHeight = this._editors.modified.getOption(
+				EditorOption.lineHeight
+			);
 
-			const syncedMovedText = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
+			const syncedMovedText = this._diffModel
+				.read(reader)
+				?.movedTextToCompare.read(reader);
 
-			const mightContainNonBasicASCII = this._editors.original.getModel()?.mightContainNonBasicASCII() ?? false;
-			const mightContainRTL = this._editors.original.getModel()?.mightContainRTL() ?? false;
-			const renderOptions = RenderOptions.fromEditor(this._editors.modified);
+			const mightContainNonBasicASCII =
+				this._editors.original
+					.getModel()
+					?.mightContainNonBasicASCII() ?? false;
+			const mightContainRTL =
+				this._editors.original.getModel()?.mightContainRTL() ?? false;
+			const renderOptions = RenderOptions.fromEditor(
+				this._editors.modified
+			);
 
 			for (const a of alignmentsVal) {
 				if (a.diff && !renderSideBySide) {
 					if (!a.originalRange.isEmpty) {
 						originalModelTokenizationCompleted.read(reader); // Update view-zones once tokenization completes
 
-						const deletedCodeDomNode = document.createElement('div');
-						deletedCodeDomNode.classList.add('view-lines', 'line-delete', 'monaco-mouse-cursor-text');
+						const deletedCodeDomNode =
+							document.createElement("div");
+						deletedCodeDomNode.classList.add(
+							"view-lines",
+							"line-delete",
+							"monaco-mouse-cursor-text"
+						);
 						const source = new LineSource(
-							a.originalRange.mapToLineArray(l => this._editors.original.getModel()!.tokenization.getLineTokens(l)),
-							a.originalRange.mapToLineArray(_ => lineBreakData[lineBreakDataIdx++]),
+							a.originalRange.mapToLineArray((l) =>
+								this._editors.original
+									.getModel()!
+									.tokenization.getLineTokens(l)
+							),
+							a.originalRange.mapToLineArray(
+								(_) => lineBreakData[lineBreakDataIdx++]
+							),
 							mightContainNonBasicASCII,
-							mightContainRTL,
+							mightContainRTL
 						);
 						const decorations: InlineDecoration[] = [];
 						for (const i of a.diff.innerChanges || []) {
-							decorations.push(new InlineDecoration(
-								i.originalRange.delta(-(a.diff.original.startLineNumber - 1)),
-								diffDeleteDecoration.className!,
-								InlineDecorationType.Regular
-							));
+							decorations.push(
+								new InlineDecoration(
+									i.originalRange.delta(
+										-(a.diff.original.startLineNumber - 1)
+									),
+									diffDeleteDecoration.className!,
+									InlineDecorationType.Regular
+								)
+							);
 						}
-						const result = renderLines(source, renderOptions, decorations, deletedCodeDomNode);
+						const result = renderLines(
+							source,
+							renderOptions,
+							decorations,
+							deletedCodeDomNode
+						);
 
-						const marginDomNode = document.createElement('div');
-						marginDomNode.className = 'inline-deleted-margin-view-zone';
+						const marginDomNode = document.createElement("div");
+						marginDomNode.className =
+							"inline-deleted-margin-view-zone";
 						applyFontInfo(marginDomNode, renderOptions.fontInfo);
 
 						if (this._options.renderIndicators.read(reader)) {
 							for (let i = 0; i < result.heightInLines; i++) {
-								const marginElement = document.createElement('div');
-								marginElement.className = `delete-sign ${ThemeIcon.asClassName(diffRemoveIcon)}`;
-								marginElement.setAttribute('style', `position:absolute;top:${i * modLineHeight}px;width:${renderOptions.lineDecorationsWidth}px;height:${modLineHeight}px;right:0;`);
+								const marginElement =
+									document.createElement("div");
+								marginElement.className = `delete-sign ${ThemeIcon.asClassName(
+									diffRemoveIcon
+								)}`;
+								marginElement.setAttribute(
+									"style",
+									`position:absolute;top:${
+										i * modLineHeight
+									}px;width:${
+										renderOptions.lineDecorationsWidth
+									}px;height:${modLineHeight}px;right:0;`
+								);
 								marginDomNode.appendChild(marginElement);
 							}
 						}
@@ -267,7 +382,7 @@ export class ViewZoneManager extends Disposable {
 								result.viewLineCounts,
 								this._editors.original.getModel()!,
 								this._contextMenuService,
-								this._clipboardService,
+								this._clipboardService
 							)
 						);
 
@@ -276,7 +391,8 @@ export class ViewZoneManager extends Disposable {
 							// Account for wrapped lines in the (collapsed) original editor (which doesn't wrap lines).
 							if (count > 1) {
 								origViewZones.push({
-									afterLineNumber: a.originalRange.startLineNumber + i,
+									afterLineNumber:
+										a.originalRange.startLineNumber + i,
 									domNode: createFakeLinesDiv(),
 									heightInPx: (count - 1) * modLineHeight,
 									showInHiddenAreas: true,
@@ -286,22 +402,26 @@ export class ViewZoneManager extends Disposable {
 						}
 
 						modViewZones.push({
-							afterLineNumber: a.modifiedRange.startLineNumber - 1,
+							afterLineNumber:
+								a.modifiedRange.startLineNumber - 1,
 							domNode: deletedCodeDomNode,
 							heightInPx: result.heightInLines * modLineHeight,
 							minWidthInPx: result.minWidthInPx,
 							marginDomNode,
-							setZoneId(id) { zoneId = id; },
+							setZoneId(id) {
+								zoneId = id;
+							},
 							showInHiddenAreas: true,
 							suppressMouseDown: true,
 						});
 					}
 
-					const marginDomNode = document.createElement('div');
-					marginDomNode.className = 'gutter-delete';
+					const marginDomNode = document.createElement("div");
+					marginDomNode.className = "gutter-delete";
 
 					origViewZones.push({
-						afterLineNumber: a.originalRange.endLineNumberExclusive - 1,
+						afterLineNumber:
+							a.originalRange.endLineNumberExclusive - 1,
 						domNode: createFakeLinesDiv(),
 						heightInPx: a.modifiedHeightInPx,
 						marginDomNode,
@@ -311,40 +431,68 @@ export class ViewZoneManager extends Disposable {
 				} else {
 					const delta = a.modifiedHeightInPx - a.originalHeightInPx;
 					if (delta > 0) {
-						if (syncedMovedText?.lineRangeMapping.original.delta(-1).deltaLength(2).contains(a.originalRange.endLineNumberExclusive - 1)) {
+						if (
+							syncedMovedText?.lineRangeMapping.original
+								.delta(-1)
+								.deltaLength(2)
+								.contains(
+									a.originalRange.endLineNumberExclusive - 1
+								)
+						) {
 							continue;
 						}
 
 						origViewZones.push({
-							afterLineNumber: a.originalRange.endLineNumberExclusive - 1,
+							afterLineNumber:
+								a.originalRange.endLineNumberExclusive - 1,
 							domNode: createFakeLinesDiv(),
 							heightInPx: delta,
 							showInHiddenAreas: true,
 							suppressMouseDown: true,
 						});
 					} else {
-						if (syncedMovedText?.lineRangeMapping.modified.delta(-1).deltaLength(2).contains(a.modifiedRange.endLineNumberExclusive - 1)) {
+						if (
+							syncedMovedText?.lineRangeMapping.modified
+								.delta(-1)
+								.deltaLength(2)
+								.contains(
+									a.modifiedRange.endLineNumberExclusive - 1
+								)
+						) {
 							continue;
 						}
 
 						function createViewZoneMarginArrow(): HTMLElement {
-							const arrow = document.createElement('div');
-							arrow.className = 'arrow-revert-change ' + ThemeIcon.asClassName(Codicon.arrowRight);
-							store.add(addDisposableListener(arrow, 'mousedown', e => e.stopPropagation()));
-							store.add(addDisposableListener(arrow, 'click', e => {
-								e.stopPropagation();
-								_diffEditorWidget.revert(a.diff!);
-							}));
-							return $('div', {}, arrow);
+							const arrow = document.createElement("div");
+							arrow.className =
+								"arrow-revert-change " +
+								ThemeIcon.asClassName(Codicon.arrowRight);
+							store.add(
+								addDisposableListener(arrow, "mousedown", (e) =>
+									e.stopPropagation()
+								)
+							);
+							store.add(
+								addDisposableListener(arrow, "click", (e) => {
+									e.stopPropagation();
+									_diffEditorWidget.revert(a.diff!);
+								})
+							);
+							return $("div", {}, arrow);
 						}
 
 						let marginDomNode: HTMLElement | undefined = undefined;
-						if (a.diff && a.diff.modified.isEmpty && this._options.shouldRenderRevertArrows.read(reader)) {
+						if (
+							a.diff &&
+							a.diff.modified.isEmpty &&
+							this._options.shouldRenderRevertArrows.read(reader)
+						) {
 							marginDomNode = createViewZoneMarginArrow();
 						}
 
 						modViewZones.push({
-							afterLineNumber: a.modifiedRange.endLineNumberExclusive - 1,
+							afterLineNumber:
+								a.modifiedRange.endLineNumberExclusive - 1,
 							domNode: createFakeLinesDiv(),
 							heightInPx: -delta,
 							marginDomNode,
@@ -356,8 +504,14 @@ export class ViewZoneManager extends Disposable {
 			}
 
 			for (const a of alignmentsSyncedMovedText.read(reader) ?? []) {
-				if (!syncedMovedText?.lineRangeMapping.original.intersect(a.originalRange)
-					|| !syncedMovedText?.lineRangeMapping.modified.intersect(a.modifiedRange)) {
+				if (
+					!syncedMovedText?.lineRangeMapping.original.intersect(
+						a.originalRange
+					) ||
+					!syncedMovedText?.lineRangeMapping.modified.intersect(
+						a.modifiedRange
+					)
+				) {
 					// ignore unrelated alignments outside the synced moved text
 					continue;
 				}
@@ -365,7 +519,8 @@ export class ViewZoneManager extends Disposable {
 				const delta = a.modifiedHeightInPx - a.originalHeightInPx;
 				if (delta > 0) {
 					origViewZones.push({
-						afterLineNumber: a.originalRange.endLineNumberExclusive - 1,
+						afterLineNumber:
+							a.originalRange.endLineNumberExclusive - 1,
 						domNode: createFakeLinesDiv(),
 						heightInPx: delta,
 						showInHiddenAreas: true,
@@ -373,7 +528,8 @@ export class ViewZoneManager extends Disposable {
 					});
 				} else {
 					modViewZones.push({
-						afterLineNumber: a.modifiedRange.endLineNumberExclusive - 1,
+						afterLineNumber:
+							a.modifiedRange.endLineNumberExclusive - 1,
 						domNode: createFakeLinesDiv(),
 						heightInPx: -delta,
 						showInHiddenAreas: true,
@@ -386,23 +542,35 @@ export class ViewZoneManager extends Disposable {
 		});
 
 		let ignoreChange = false;
-		this._register(this._editors.original.onDidScrollChange(e => {
-			if (e.scrollLeftChanged && !ignoreChange) {
-				ignoreChange = true;
-				this._editors.modified.setScrollLeft(e.scrollLeft);
-				ignoreChange = false;
-			}
-		}));
-		this._register(this._editors.modified.onDidScrollChange(e => {
-			if (e.scrollLeftChanged && !ignoreChange) {
-				ignoreChange = true;
-				this._editors.original.setScrollLeft(e.scrollLeft);
-				ignoreChange = false;
-			}
-		}));
+		this._register(
+			this._editors.original.onDidScrollChange((e) => {
+				if (e.scrollLeftChanged && !ignoreChange) {
+					ignoreChange = true;
+					this._editors.modified.setScrollLeft(e.scrollLeft);
+					ignoreChange = false;
+				}
+			})
+		);
+		this._register(
+			this._editors.modified.onDidScrollChange((e) => {
+				if (e.scrollLeftChanged && !ignoreChange) {
+					ignoreChange = true;
+					this._editors.original.setScrollLeft(e.scrollLeft);
+					ignoreChange = false;
+				}
+			})
+		);
 
-		this._originalScrollTop = observableFromEvent(this._editors.original.onDidScrollChange, () => /** @description original.getScrollTop */ this._editors.original.getScrollTop());
-		this._modifiedScrollTop = observableFromEvent(this._editors.modified.onDidScrollChange, () => /** @description modified.getScrollTop */ this._editors.modified.getScrollTop());
+		this._originalScrollTop = observableFromEvent(
+			this._editors.original.onDidScrollChange,
+			() =>
+				/** @description original.getScrollTop */ this._editors.original.getScrollTop()
+		);
+		this._modifiedScrollTop = observableFromEvent(
+			this._editors.modified.onDidScrollChange,
+			() =>
+				/** @description modified.getScrollTop */ this._editors.modified.getScrollTop()
+		);
 
 		// origExtraHeight + origOffset - origScrollTop = modExtraHeight + modOffset - modScrollTop
 
@@ -412,57 +580,98 @@ export class ViewZoneManager extends Disposable {
 		// origOffset - modOffset = heightOfLines(1..Y) - heightOfLines(1..X)
 		// origScrollTop >= 0, modScrollTop >= 0
 
-		this._register(autorun(reader => {
-			/** @description update scroll modified */
-			const newScrollTopModified = this._originalScrollTop.read(reader)
-				- (this._originalScrollOffsetAnimated.get() - this._modifiedScrollOffsetAnimated.read(reader))
-				- (this._originalTopPadding.get() - this._modifiedTopPadding.read(reader));
-			if (newScrollTopModified !== this._editors.modified.getScrollTop()) {
-				this._editors.modified.setScrollTop(newScrollTopModified, ScrollType.Immediate);
-			}
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description update scroll modified */
+				const newScrollTopModified =
+					this._originalScrollTop.read(reader) -
+					(this._originalScrollOffsetAnimated.get() -
+						this._modifiedScrollOffsetAnimated.read(reader)) -
+					(this._originalTopPadding.get() -
+						this._modifiedTopPadding.read(reader));
+				if (
+					newScrollTopModified !==
+					this._editors.modified.getScrollTop()
+				) {
+					this._editors.modified.setScrollTop(
+						newScrollTopModified,
+						ScrollType.Immediate
+					);
+				}
+			})
+		);
 
-		this._register(autorun(reader => {
-			/** @description update scroll original */
-			const newScrollTopOriginal = this._modifiedScrollTop.read(reader)
-				- (this._modifiedScrollOffsetAnimated.get() - this._originalScrollOffsetAnimated.read(reader))
-				- (this._modifiedTopPadding.get() - this._originalTopPadding.read(reader));
-			if (newScrollTopOriginal !== this._editors.original.getScrollTop()) {
-				this._editors.original.setScrollTop(newScrollTopOriginal, ScrollType.Immediate);
-			}
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description update scroll original */
+				const newScrollTopOriginal =
+					this._modifiedScrollTop.read(reader) -
+					(this._modifiedScrollOffsetAnimated.get() -
+						this._originalScrollOffsetAnimated.read(reader)) -
+					(this._modifiedTopPadding.get() -
+						this._originalTopPadding.read(reader));
+				if (
+					newScrollTopOriginal !==
+					this._editors.original.getScrollTop()
+				) {
+					this._editors.original.setScrollTop(
+						newScrollTopOriginal,
+						ScrollType.Immediate
+					);
+				}
+			})
+		);
 
+		this._register(
+			autorun((reader) => {
+				/** @description update editor top offsets */
+				const m = this._diffModel
+					.read(reader)
+					?.movedTextToCompare.read(reader);
 
-		this._register(autorun(reader => {
-			/** @description update editor top offsets */
-			const m = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
+				let deltaOrigToMod = 0;
+				if (m) {
+					const trueTopOriginal =
+						this._editors.original.getTopForLineNumber(
+							m.lineRangeMapping.original.startLineNumber,
+							true
+						) - this._originalTopPadding.get();
+					const trueTopModified =
+						this._editors.modified.getTopForLineNumber(
+							m.lineRangeMapping.modified.startLineNumber,
+							true
+						) - this._modifiedTopPadding.get();
+					deltaOrigToMod = trueTopModified - trueTopOriginal;
+				}
 
-			let deltaOrigToMod = 0;
-			if (m) {
-				const trueTopOriginal = this._editors.original.getTopForLineNumber(m.lineRangeMapping.original.startLineNumber, true) - this._originalTopPadding.get();
-				const trueTopModified = this._editors.modified.getTopForLineNumber(m.lineRangeMapping.modified.startLineNumber, true) - this._modifiedTopPadding.get();
-				deltaOrigToMod = trueTopModified - trueTopOriginal;
-			}
-
-			if (deltaOrigToMod > 0) {
-				this._modifiedTopPadding.set(0, undefined);
-				this._originalTopPadding.set(deltaOrigToMod, undefined);
-			} else if (deltaOrigToMod < 0) {
-				this._modifiedTopPadding.set(-deltaOrigToMod, undefined);
-				this._originalTopPadding.set(0, undefined);
-			} else {
-				setTimeout(() => {
+				if (deltaOrigToMod > 0) {
 					this._modifiedTopPadding.set(0, undefined);
+					this._originalTopPadding.set(deltaOrigToMod, undefined);
+				} else if (deltaOrigToMod < 0) {
+					this._modifiedTopPadding.set(-deltaOrigToMod, undefined);
 					this._originalTopPadding.set(0, undefined);
-				}, 400);
-			}
+				} else {
+					setTimeout(() => {
+						this._modifiedTopPadding.set(0, undefined);
+						this._originalTopPadding.set(0, undefined);
+					}, 400);
+				}
 
-			if (this._editors.modified.hasTextFocus()) {
-				this._originalScrollOffset.set(this._modifiedScrollOffset.get() - deltaOrigToMod, undefined, true);
-			} else {
-				this._modifiedScrollOffset.set(this._originalScrollOffset.get() + deltaOrigToMod, undefined, true);
-			}
-		}));
+				if (this._editors.modified.hasTextFocus()) {
+					this._originalScrollOffset.set(
+						this._modifiedScrollOffset.get() - deltaOrigToMod,
+						undefined,
+						true
+					);
+				} else {
+					this._modifiedScrollOffset.set(
+						this._originalScrollOffset.get() + deltaOrigToMod,
+						undefined,
+						true
+					);
+				}
+			})
+		);
 	}
 }
 
@@ -487,19 +696,19 @@ function computeRangeAlignment(
 	diffs: readonly DiffMapping[],
 	originalEditorAlignmentViewZones: ReadonlySet<string>,
 	modifiedEditorAlignmentViewZones: ReadonlySet<string>,
-	innerHunkAlignment: boolean,
+	innerHunkAlignment: boolean
 ): ILineRangeAlignment[] {
 	const originalLineHeightOverrides = new ArrayQueue(
 		getAdditionalLineHeights(
 			originalEditor,
-			originalEditorAlignmentViewZones,
-		),
+			originalEditorAlignmentViewZones
+		)
 	);
 	const modifiedLineHeightOverrides = new ArrayQueue(
 		getAdditionalLineHeights(
 			modifiedEditor,
-			modifiedEditorAlignmentViewZones,
-		),
+			modifiedEditorAlignmentViewZones
+		)
 	);
 
 	const origLineHeight = originalEditor.getOption(EditorOption.lineHeight);
@@ -512,7 +721,7 @@ function computeRangeAlignment(
 
 	function handleAlignmentsOutsideOfDiffs(
 		untilOriginalLineNumberExclusive: number,
-		untilModifiedLineNumberExclusive: number,
+		untilModifiedLineNumberExclusive: number
 	) {
 		while (true) {
 			let origNext = originalLineHeightOverrides.peek();
@@ -577,7 +786,7 @@ function computeRangeAlignment(
 		const c = m.lineRangeMapping;
 		handleAlignmentsOutsideOfDiffs(
 			c.original.startLineNumber,
-			c.modified.startLineNumber,
+			c.modified.startLineNumber
 		);
 
 		let first = true;
@@ -586,7 +795,7 @@ function computeRangeAlignment(
 
 		function emitAlignment(
 			origLineNumberExclusive: number,
-			modLineNumberExclusive: number,
+			modLineNumberExclusive: number
 		) {
 			if (
 				origLineNumberExclusive < lastOrigLineNumber ||
@@ -604,11 +813,11 @@ function computeRangeAlignment(
 			}
 			const originalRange = new LineRange(
 				lastOrigLineNumber,
-				origLineNumberExclusive,
+				origLineNumberExclusive
 			);
 			const modifiedRange = new LineRange(
 				lastModLineNumber,
-				modLineNumberExclusive,
+				modLineNumberExclusive
 			);
 			if (originalRange.isEmpty && modifiedRange.isEmpty) {
 				return;
@@ -648,7 +857,7 @@ function computeRangeAlignment(
 					// There is some unmodified text on this line before the diff
 					emitAlignment(
 						i.originalRange.startLineNumber,
-						i.modifiedRange.startLineNumber,
+						i.modifiedRange.startLineNumber
 					);
 				}
 				if (
@@ -660,7 +869,7 @@ function computeRangeAlignment(
 					// // There is some unmodified text on this line after the diff
 					emitAlignment(
 						i.originalRange.endLineNumber,
-						i.modifiedRange.endLineNumber,
+						i.modifiedRange.endLineNumber
 					);
 				}
 			}
@@ -668,7 +877,7 @@ function computeRangeAlignment(
 
 		emitAlignment(
 			c.original.endLineNumberExclusive,
-			c.modified.endLineNumberExclusive,
+			c.modified.endLineNumberExclusive
 		);
 
 		lastOriginalLineNumber = c.original.endLineNumberExclusive;
@@ -686,7 +895,7 @@ interface AdditionalLineHeightInfo {
 
 function getAdditionalLineHeights(
 	editor: CodeEditorWidget,
-	viewZonesToIgnore: ReadonlySet<string>,
+	viewZonesToIgnore: ReadonlySet<string>
 ): readonly AdditionalLineHeightInfo[] {
 	const viewZoneHeights: { lineNumber: number; heightInPx: number }[] = [];
 	const wrappingZoneHeights: { lineNumber: number; heightInPx: number }[] =
@@ -716,8 +925,8 @@ function getAdditionalLineHeights(
 			w.afterLineNumber === 0
 				? 0
 				: coordinatesConverter.convertViewPositionToModelPosition(
-						new Position(w.afterLineNumber, 1),
-				  ).lineNumber;
+						new Position(w.afterLineNumber, 1)
+					).lineNumber;
 		viewZoneHeights.push({
 			lineNumber: modelLineNumber,
 			heightInPx: w.height,
@@ -731,7 +940,7 @@ function getAdditionalLineHeights(
 		(v1, v2) => ({
 			lineNumber: v1.lineNumber,
 			heightInPx: v1.heightInPx + v2.heightInPx,
-		}),
+		})
 	);
 
 	return result;

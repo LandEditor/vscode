@@ -139,7 +139,7 @@ export class SimpleSuggestWidgetItemRenderer
 	renderElement(
 		element: SimpleCompletionItem,
 		index: number,
-		data: ISimpleSuggestionTemplateData,
+		data: ISimpleSuggestionTemplateData
 	): void {
 		const { completion } = element;
 		data.root.id = getAriaId(index);
@@ -179,9 +179,7 @@ export class SimpleSuggestWidgetItemRenderer
 		data.iconContainer.className = "";
 		data.iconContainer.classList.add(
 			"suggest-icon",
-			...ThemeIcon.asClassNameArray(
-				completion.icon || Codicon.symbolText,
-			),
+			...ThemeIcon.asClassNameArray(completion.icon || Codicon.symbolText)
 		);
 		// }
 

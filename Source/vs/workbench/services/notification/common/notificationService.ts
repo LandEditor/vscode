@@ -50,17 +50,17 @@ export class NotificationService
 	readonly model = this._register(new NotificationsModel());
 
 	private readonly _onDidAddNotification = this._register(
-		new Emitter<INotification>(),
+		new Emitter<INotification>()
 	);
 	readonly onDidAddNotification = this._onDidAddNotification.event;
 
 	private readonly _onDidRemoveNotification = this._register(
-		new Emitter<INotification>(),
+		new Emitter<INotification>()
 	);
 	readonly onDidRemoveNotification = this._onDidRemoveNotification.event;
 
 	private readonly _onDidChangeDoNotDisturbMode = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeDoNotDisturbMode =
 		this._onDidChangeDoNotDisturbMode.event;
@@ -89,7 +89,7 @@ export class NotificationService
 									? {
 											id: e.item.sourceId,
 											label: e.item.source,
-									  }
+										}
 									: e.item.source,
 							priority: e.item.priority,
 						};
@@ -105,7 +105,7 @@ export class NotificationService
 						break;
 					}
 				}
-			}),
+			})
 		);
 	}
 
@@ -116,7 +116,7 @@ export class NotificationService
 	private _doNotDisturbMode = this.storageService.getBoolean(
 		NotificationService.DND_SETTINGS_KEY,
 		StorageScope.APPLICATION,
-		false,
+		false
 	);
 
 	get doNotDisturbMode() {
@@ -132,7 +132,7 @@ export class NotificationService
 			NotificationService.DND_SETTINGS_KEY,
 			enabled,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 		this._doNotDisturbMode = enabled;
 
@@ -216,10 +216,10 @@ export class NotificationService
 							id,
 							true,
 							scope,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
-					},
-				),
+					}
+				)
 			);
 
 			// Insert as primary or secondary action
@@ -265,7 +265,7 @@ export class NotificationService
 		severity: Severity,
 		message: string,
 		choices: IPromptChoice[],
-		options?: IPromptOptions,
+		options?: IPromptOptions
 	): INotificationHandle {
 		const toDispose = new DisposableStore();
 
@@ -287,7 +287,7 @@ export class NotificationService
 						id,
 						true,
 						scope,
-						StorageTarget.USER,
+						StorageTarget.USER
 					),
 				isSecondary: options.neverShowAgain.isSecondary,
 			};
@@ -308,7 +308,7 @@ export class NotificationService
 		choices.forEach((choice, index) => {
 			const action = new ChoiceAction(
 				`workbench.dialog.choice.${index}`,
-				choice,
+				choice
 			);
 			if (!choice.isSecondary) {
 				primaryActions.push(action);
@@ -325,7 +325,7 @@ export class NotificationService
 					if (!choice.keepOpen) {
 						handle.close();
 					}
-				}),
+				})
 			);
 
 			toDispose.add(action);
@@ -363,7 +363,7 @@ export class NotificationService
 
 	status(
 		message: NotificationMessage,
-		options?: IStatusMessageOptions,
+		options?: IStatusMessageOptions
 	): IDisposable {
 		return this.model.showStatusMessage(message, options);
 	}
@@ -372,5 +372,5 @@ export class NotificationService
 registerSingleton(
 	INotificationService,
 	NotificationService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

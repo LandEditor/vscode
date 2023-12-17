@@ -17,14 +17,14 @@ export function localizeManifest(
 	logger: ILogger,
 	extensionManifest: IExtensionManifest,
 	translations: ITranslations,
-	fallbackTranslations?: ITranslations,
+	fallbackTranslations?: ITranslations
 ): IExtensionManifest {
 	try {
 		replaceNLStrings(
 			logger,
 			extensionManifest,
 			translations,
-			fallbackTranslations,
+			fallbackTranslations
 		);
 	} catch (error) {
 		logger.error(error?.message ?? error);
@@ -41,12 +41,12 @@ function replaceNLStrings(
 	logger: ILogger,
 	extensionManifest: IExtensionManifest,
 	messages: ITranslations,
-	originalMessages?: ITranslations,
+	originalMessages?: ITranslations
 ): void {
 	const processEntry = (
 		obj: any,
 		key: string | number,
-		command?: boolean,
+		command?: boolean
 	) => {
 		const value = obj[key];
 		if (isString(value)) {
@@ -76,8 +76,8 @@ function replaceNLStrings(
 							`[${extensionManifest.name}]: ${localize(
 								"missingNLSKey",
 								"Couldn't find message for key {0}.",
-								messageKey,
-							)}`,
+								messageKey
+							)}`
 						);
 					}
 					return;

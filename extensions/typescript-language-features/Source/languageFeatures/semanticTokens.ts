@@ -22,7 +22,7 @@ const CONTENT_LENGTH_LIMIT = 100000;
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
@@ -34,9 +34,9 @@ export function register(
 			return vscode.languages.registerDocumentRangeSemanticTokensProvider(
 				selector.semantic,
 				provider,
-				provider.getLegend(),
+				provider.getLegend()
 			);
-		},
+		}
 	);
 }
 
@@ -53,7 +53,7 @@ class DocumentSemanticTokensProvider
 
 	public async provideDocumentSemanticTokens(
 		document: vscode.TextDocument,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.SemanticTokens | null> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file || document.getText().length > CONTENT_LENGTH_LIMIT) {
@@ -62,14 +62,14 @@ class DocumentSemanticTokensProvider
 		return this.provideSemanticTokens(
 			document,
 			{ file, start: 0, length: document.getText().length },
-			token,
+			token
 		);
 	}
 
 	public async provideDocumentRangeSemanticTokens(
 		document: vscode.TextDocument,
 		range: vscode.Range,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.SemanticTokens | null> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (
@@ -85,14 +85,14 @@ class DocumentSemanticTokensProvider
 		return this.provideSemanticTokens(
 			document,
 			{ file, start, length },
-			token,
+			token
 		);
 	}
 
 	private async provideSemanticTokens(
 		document: vscode.TextDocument,
 		requestArg: Proto.EncodedSemanticClassificationsRequestArgs,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.SemanticTokens | null> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -107,7 +107,7 @@ class DocumentSemanticTokensProvider
 			token,
 			{
 				cancelOnResourceChange: document.uri,
-			},
+			}
 		);
 		if (response.type !== "response" || !response.body) {
 			return null;
@@ -161,7 +161,7 @@ class DocumentSemanticTokensProvider
 					startCharacter,
 					endCharacter - startCharacter,
 					tokenType,
-					tokenModifiers,
+					tokenModifiers
 				);
 			}
 		}
@@ -218,7 +218,7 @@ const enum TokenEncodingConsts {
 }
 
 function getTokenTypeFromClassification(
-	tsClassification: number,
+	tsClassification: number
 ): number | undefined {
 	if (tsClassification > TokenEncodingConsts.modifierMask) {
 		return (tsClassification >> TokenEncodingConsts.typeOffset) - 1;

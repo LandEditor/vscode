@@ -35,8 +35,8 @@ export class NotificationsAlerts extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.model.onDidChangeNotification((e) =>
-				this.onDidChangeNotification(e),
-			),
+				this.onDidChangeNotification(e)
+			)
 		);
 	}
 
@@ -53,8 +53,8 @@ export class NotificationsAlerts extends Disposable {
 					console.error(
 						toErrorMessage(
 							e.item.message.linkedText.toString(),
-							true,
-						),
+							true
+						)
 					);
 				}
 			}
@@ -84,19 +84,19 @@ export class NotificationsAlerts extends Disposable {
 			alertText = localize(
 				"alertErrorMessage",
 				"Error: {0}",
-				notification.message.linkedText.toString(),
+				notification.message.linkedText.toString()
 			);
 		} else if (notification.severity === Severity.Warning) {
 			alertText = localize(
 				"alertWarningMessage",
 				"Warning: {0}",
-				notification.message.linkedText.toString(),
+				notification.message.linkedText.toString()
 			);
 		} else {
 			alertText = localize(
 				"alertInfoMessage",
 				"Info: {0}",
-				notification.message.linkedText.toString(),
+				notification.message.linkedText.toString()
 			);
 		}
 

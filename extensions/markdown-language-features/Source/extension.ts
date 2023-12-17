@@ -32,7 +32,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 function startServer(
 	context: vscode.ExtensionContext,
-	parser: IMdParser,
+	parser: IMdParser
 ): Promise<MdLanguageClient> {
 	const clientMain =
 		vscode.extensions.getExtension("vscode.markdown-language-features")

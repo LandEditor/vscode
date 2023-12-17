@@ -78,7 +78,7 @@ class DoubleResourceMap<V> {
 
 		return Iterable.map(
 			Iterable.concat(...this._byOwner.values()),
-			(map) => map[1],
+			(map) => map[1]
 		);
 	}
 }
@@ -209,7 +209,7 @@ export class MarkerService implements IMarkerService {
 	private static _toMarker(
 		owner: string,
 		resource: URI,
-		data: IMarkerData,
+		data: IMarkerData
 	): IMarker | undefined {
 		let {
 			code,
@@ -274,7 +274,7 @@ export class MarkerService implements IMarkerService {
 				const marker = MarkerService._toMarker(
 					owner,
 					resource,
-					markerData,
+					markerData
 				);
 				if (!marker) {
 					// filter bad markers
@@ -306,7 +306,7 @@ export class MarkerService implements IMarkerService {
 			resource?: URI;
 			severities?: number;
 			take?: number;
-		} = Object.create(null),
+		} = Object.create(null)
 	): IMarker[] {
 		let { owner, resource, severities, take } = filter;
 

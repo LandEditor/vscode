@@ -16,6 +16,6 @@ export interface IDownloadService {
 	download(
 		uri: URI,
 		to: URI,
-		cancellationToken?: CancellationToken,
+		cancellationToken?: CancellationToken
 	): Promise<void>;
 }

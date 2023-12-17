@@ -42,14 +42,14 @@ function getProviderStorageKey(provider: ISCMProvider): string {
 
 function getRepositoryName(
 	workspaceContextService: IWorkspaceContextService,
-	repository: ISCMRepository,
+	repository: ISCMRepository
 ): string {
 	if (!repository.provider.rootUri) {
 		return repository.provider.label;
 	}
 
 	const folder = workspaceContextService.getWorkspaceFolder(
-		repository.provider.rootUri,
+		repository.provider.rootUri
 	);
 	return folder?.uri.toString() === repository.provider.rootUri.toString()
 		? folder.name
@@ -59,7 +59,7 @@ function getRepositoryName(
 export const RepositoryContextKeys = {
 	RepositorySortKey: new RawContextKey<ISCMRepositorySortKey>(
 		"scmRepositorySortKey",
-		ISCMRepositorySortKey.DiscoveryTime,
+		ISCMRepositorySortKey.DiscoveryTime
 	),
 };
 
@@ -127,7 +127,7 @@ export class SCMViewService implements ISCMViewService {
 					added.add(repositoryView.repository);
 				}
 				repositoryView.selectionIndex = visibleRepositories.indexOf(
-					repositoryView.repository,
+					repositoryView.repository
 				);
 			}
 		}
@@ -144,7 +144,7 @@ export class SCMViewService implements ISCMViewService {
 		) {
 			this.focus(
 				this._repositories.find((r) => r.selectionIndex !== -1)
-					?.repository,
+					?.repository
 			);
 		}
 	}
@@ -188,8 +188,8 @@ export class SCMViewService implements ISCMViewService {
 			undefined,
 			undefined,
 			undefined,
-			this.disposables,
-		),
+			this.disposables
+		)
 	);
 
 	get focusedRepository(): ISCMRepository | undefined {
@@ -206,30 +206,52 @@ export class SCMViewService implements ISCMViewService {
 		@ISCMService scmService: ISCMService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService
 	) {
 		this.menus = instantiationService.createInstance(SCMMenus);
 
 		try {
-			this.previousState = JSON.parse(storageService.get('scm:view:visibleRepositories', StorageScope.WORKSPACE, ''));
+			this.previousState = JSON.parse(
+				storageService.get(
+					"scm:view:visibleRepositories",
+					StorageScope.WORKSPACE,
+					""
+				)
+			);
 		} catch {
 			// noop
 		}
 
-		this._repositoriesSortKey = this.previousState?.sortKey ?? this.getViewSortOrder();
-		this._sortKeyContextKey = RepositoryContextKeys.RepositorySortKey.bindTo(contextKeyService);
+		this._repositoriesSortKey =
+			this.previousState?.sortKey ?? this.getViewSortOrder();
+		this._sortKeyContextKey =
+			RepositoryContextKeys.RepositorySortKey.bindTo(contextKeyService);
 		this._sortKeyContextKey.set(this._repositoriesSortKey);
 
-		scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
-		scmService.onDidRemoveRepository(this.onDidRemoveRepository, this, this.disposables);
+		scmService.onDidAddRepository(
+			this.onDidAddRepository,
+			this,
+			this.disposables
+		);
+		scmService.onDidRemoveRepository(
+			this.onDidRemoveRepository,
+			this,
+			this.disposables
+		);
 
 		for (const repository of scmService.repositories) {
 			this.onDidAddRepository(repository);
 		}
 
-		storageService.onWillSaveState(this.onWillSaveState, this, this.disposables);
+		storageService.onWillSaveState(
+			this.onWillSaveState,
+			this,
+			this.disposables
+		);
 	}
 
 	private onDidAddRepository(repository: ISCMRepository): void {
@@ -248,7 +270,7 @@ export class SCMViewService implements ISCMViewService {
 
 		if (this.previousState) {
 			const index = this.previousState.all.indexOf(
-				getProviderStorageKey(repository.provider),
+				getProviderStorageKey(repository.provider)
 			);
 
 			if (index === -1) {
@@ -279,7 +301,7 @@ export class SCMViewService implements ISCMViewService {
 				if (this.didSelectRepository) {
 					this.insertRepositoryView(
 						this._repositories,
-						repositoryView,
+						repositoryView
 					);
 					this._onDidChangeRepositories.fire({
 						added: Iterable.empty(),
@@ -322,7 +344,7 @@ export class SCMViewService implements ISCMViewService {
 		}
 
 		const repositoriesIndex = this._repositories.findIndex(
-			(r) => r.repository === repository,
+			(r) => r.repository === repository
 		);
 
 		if (repositoriesIndex === -1) {
@@ -402,7 +424,7 @@ export class SCMViewService implements ISCMViewService {
 		}
 
 		this._repositories.forEach(
-			(r) => (r.focused = r.repository === repository),
+			(r) => (r.focused = r.repository === repository)
 		);
 
 		if (this._repositories.find((r) => r.focused)) {
@@ -412,7 +434,7 @@ export class SCMViewService implements ISCMViewService {
 
 	private compareRepositories(
 		op1: ISCMRepositoryView,
-		op2: ISCMRepositoryView,
+		op2: ISCMRepositoryView
 	): number {
 		// Sort by discovery time
 		if (this._repositoriesSortKey === ISCMRepositorySortKey.DiscoveryTime) {
@@ -427,18 +449,18 @@ export class SCMViewService implements ISCMViewService {
 		) {
 			return comparePaths(
 				op1.repository.provider.rootUri.fsPath,
-				op2.repository.provider.rootUri.fsPath,
+				op2.repository.provider.rootUri.fsPath
 			);
 		}
 
 		// Sort by name, path
 		const name1 = getRepositoryName(
 			this.workspaceContextService,
-			op1.repository,
+			op1.repository
 		);
 		const name2 = getRepositoryName(
 			this.workspaceContextService,
-			op2.repository,
+			op2.repository
 		);
 
 		const nameComparison = compareFileNames(name1, name2);
@@ -449,7 +471,7 @@ export class SCMViewService implements ISCMViewService {
 		) {
 			return comparePaths(
 				op1.repository.provider.rootUri.fsPath,
-				op2.repository.provider.rootUri.fsPath,
+				op2.repository.provider.rootUri.fsPath
 			);
 		}
 
@@ -480,12 +502,12 @@ export class SCMViewService implements ISCMViewService {
 
 	private insertRepositoryView(
 		repositories: ISCMRepositoryView[],
-		repositoryView: ISCMRepositoryView,
+		repositoryView: ISCMRepositoryView
 	): void {
 		const index = binarySearch(
 			repositories,
 			repositoryView,
-			this.compareRepositories.bind(this),
+			this.compareRepositories.bind(this)
 		);
 		repositories.splice(index < 0 ? ~index : index, 0, repositoryView);
 	}
@@ -497,10 +519,10 @@ export class SCMViewService implements ISCMViewService {
 		}
 
 		const all = this.repositories.map((r) =>
-			getProviderStorageKey(r.provider),
+			getProviderStorageKey(r.provider)
 		);
 		const visible = this.visibleRepositories.map((r) =>
-			all.indexOf(getProviderStorageKey(r.provider)),
+			all.indexOf(getProviderStorageKey(r.provider))
 		);
 		const raw = JSON.stringify({
 			all,
@@ -512,7 +534,7 @@ export class SCMViewService implements ISCMViewService {
 			"scm:view:visibleRepositories",
 			raw,
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 

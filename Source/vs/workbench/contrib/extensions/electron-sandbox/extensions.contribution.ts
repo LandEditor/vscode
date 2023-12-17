@@ -65,19 +65,19 @@ import { ExtensionsAutoProfiler } from "vs/workbench/contrib/extensions/electron
 registerSingleton(
 	IExtensionHostProfileService,
 	ExtensionHostProfileService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // Running Extensions Editor
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		RuntimeExtensionsEditor,
 		RuntimeExtensionsEditor.ID,
-		localize("runtimeExtension", "Running Extensions"),
+		localize("runtimeExtension", "Running Extensions")
 	),
-	[new SyncDescriptor(RuntimeExtensionsInput)],
+	[new SyncDescriptor(RuntimeExtensionsInput)]
 );
 
 class RuntimeExtensionsInputSerializer implements IEditorSerializer {
@@ -93,24 +93,25 @@ class RuntimeExtensionsInputSerializer implements IEditorSerializer {
 }
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(
 	RuntimeExtensionsInput.ID,
-	RuntimeExtensionsInputSerializer,
+	RuntimeExtensionsInputSerializer
 );
 
 // Global actions
 
 class ExtensionsContributions implements IWorkbenchContribution {
 	constructor(
-		@IExtensionRecommendationNotificationService extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
-		@ISharedProcessService sharedProcessService: ISharedProcessService,
+		@IExtensionRecommendationNotificationService
+		extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
+		@ISharedProcessService sharedProcessService: ISharedProcessService
 	) {
 		sharedProcessService.registerChannel(
 			"extensionRecommendationNotification",
 			new ExtensionRecommendationNotificationServiceChannel(
-				extensionRecommendationNotificationService,
-			),
+				extensionRecommendationNotificationService
+			)
 		);
 		registerAction2(OpenExtensionsFolderAction);
 		registerAction2(CleanUpExtensionsFolderAction);
@@ -118,19 +119,19 @@ class ExtensionsContributions implements IWorkbenchContribution {
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	ExtensionsContributions,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchRegistry.registerWorkbenchContribution(
 	ExtensionsAutoProfiler,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteExtensionsInitializerContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 // Register Commands
 
@@ -139,7 +140,7 @@ CommandsRegistry.registerCommand(
 	(accessor: ServicesAccessor) => {
 		const instantiationService = accessor.get(IInstantiationService);
 		instantiationService.createInstance(DebugExtensionHostAction).run();
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -150,10 +151,10 @@ CommandsRegistry.registerCommand(
 			.createInstance(
 				StartExtensionHostProfileAction,
 				StartExtensionHostProfileAction.ID,
-				StartExtensionHostProfileAction.LABEL,
+				StartExtensionHostProfileAction.LABEL
 			)
 			.run();
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -164,10 +165,10 @@ CommandsRegistry.registerCommand(
 			.createInstance(
 				StopExtensionHostProfileAction,
 				StopExtensionHostProfileAction.ID,
-				StopExtensionHostProfileAction.LABEL,
+				StopExtensionHostProfileAction.LABEL
 			)
 			.run();
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -178,10 +179,10 @@ CommandsRegistry.registerCommand(
 			.createInstance(
 				SaveExtensionHostProfileAction,
 				SaveExtensionHostProfileAction.ID,
-				SaveExtensionHostProfileAction.LABEL,
+				SaveExtensionHostProfileAction.LABEL
 			)
 			.run();
-	},
+	}
 );
 
 // Running extensions
@@ -205,7 +206,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	group: "navigation",
 	when: ContextKeyExpr.and(
 		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID),
-		CONTEXT_PROFILE_SESSION_STATE.notEqualsTo("running"),
+		CONTEXT_PROFILE_SESSION_STATE.notEqualsTo("running")
 	),
 });
 
@@ -218,7 +219,7 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	group: "navigation",
 	when: ContextKeyExpr.and(
 		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID),
-		CONTEXT_PROFILE_SESSION_STATE.isEqualTo("running"),
+		CONTEXT_PROFILE_SESSION_STATE.isEqualTo("running")
 	),
 });
 
@@ -231,6 +232,6 @@ MenuRegistry.appendMenuItem(MenuId.EditorTitle, {
 	},
 	group: "navigation",
 	when: ContextKeyExpr.and(
-		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID),
+		ActiveEditorContext.isEqualTo(RuntimeExtensionsEditor.ID)
 	),
 });

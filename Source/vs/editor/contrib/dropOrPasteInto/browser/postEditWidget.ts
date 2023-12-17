@@ -70,9 +70,11 @@ class PostEditWidget extends Disposable implements IContentWidget {
 		private readonly range: Range,
 		private readonly edits: EditSet,
 		private readonly onSelectNewEdit: (editIndex: number) => void,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 
@@ -85,17 +87,26 @@ class PostEditWidget extends Disposable implements IContentWidget {
 		this.editor.addContentWidget(this);
 		this.editor.layoutContentWidget(this);
 
-		this._register(toDisposable((() => this.editor.removeContentWidget(this))));
+		this._register(
+			toDisposable(() => this.editor.removeContentWidget(this))
+		);
 
-		this._register(this.editor.onDidChangeCursorPosition(e => {
-			if (!range.containsPosition(e.position)) {
-				this.dispose();
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeCursorPosition((e) => {
+				if (!range.containsPosition(e.position)) {
+					this.dispose();
+				}
+			})
+		);
 
-		this._register(Event.runAndSubscribe(_keybindingService.onDidUpdateKeybindings, () => {
-			this._updateButtonTitle();
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				_keybindingService.onDidUpdateKeybindings,
+				() => {
+					this._updateButtonTitle();
+				}
+			)
+		);
 	}
 
 	private _updateButtonTitle() {
@@ -112,14 +123,14 @@ class PostEditWidget extends Disposable implements IContentWidget {
 		this.button = this._register(
 			new Button(this.domNode, {
 				supportIcons: true,
-			}),
+			})
 		);
 		this.button.label = "$(insert)";
 
 		this._register(
 			dom.addDisposableListener(this.domNode, dom.EventType.CLICK, () =>
-				this.showSelector(),
-			),
+				this.showSelector()
+			)
 		);
 	}
 
@@ -155,7 +166,7 @@ class PostEditWidget extends Disposable implements IContentWidget {
 								return this.onSelectNewEdit(i);
 							}
 						},
-					}),
+					})
 				);
 			},
 		});
@@ -164,7 +175,7 @@ class PostEditWidget extends Disposable implements IContentWidget {
 
 export class PostEditWidgetManager extends Disposable {
 	private readonly _currentWidget = this._register(
-		new MutableDisposable<PostEditWidget>(),
+		new MutableDisposable<PostEditWidget>()
 	);
 
 	constructor(
@@ -172,22 +183,25 @@ export class PostEditWidgetManager extends Disposable {
 		private readonly _editor: ICodeEditor,
 		private readonly _visibleContext: RawContextKey<boolean>,
 		private readonly _showCommand: ShowCommand,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IBulkEditService private readonly _bulkEditService: IBulkEditService
 	) {
 		super();
 
-		this._register(Event.any(
-			_editor.onDidChangeModel,
-			_editor.onDidChangeModelContent,
-		)(() => this.clear()));
+		this._register(
+			Event.any(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelContent
+			)(() => this.clear())
+		);
 	}
 
 	public async applyEditAndShowIfNeeded(
 		ranges: readonly Range[],
 		edits: EditSet,
 		canShowWidget: boolean,
-		token: CancellationToken,
+		token: CancellationToken
 	) {
 		const model = this._editor.getModel();
 		if (!model || !ranges.length) {
@@ -216,13 +230,13 @@ export class PostEditWidgetManager extends Disposable {
 									range,
 									text: edit.insertText,
 									insertAsSnippet: false,
-							  }
+								}
 							: {
 									range,
 									text: edit.insertText.snippet,
 									insertAsSnippet: true,
-							  },
-					),
+								}
+					)
 			);
 		}
 
@@ -248,7 +262,7 @@ export class PostEditWidgetManager extends Disposable {
 							TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 					},
 				},
-			],
+			]
 		);
 
 		let editResult: IBulkEditResult;
@@ -256,7 +270,7 @@ export class PostEditWidgetManager extends Disposable {
 		try {
 			editResult = await this._bulkEditService.apply(
 				combinedWorkspaceEdit,
-				{ editor: this._editor, token },
+				{ editor: this._editor, token }
 			);
 			editRange = model.getDecorationRange(editTrackingDecoration[0]);
 		} finally {
@@ -285,9 +299,9 @@ export class PostEditWidgetManager extends Disposable {
 							allEdits: edits.allEdits,
 						},
 						canShowWidget,
-						token,
+						token
 					);
-				},
+				}
 			);
 		}
 	}
@@ -295,7 +309,7 @@ export class PostEditWidgetManager extends Disposable {
 	public show(
 		range: Range,
 		edits: EditSet,
-		onDidSelectEdit: (newIndex: number) => void,
+		onDidSelectEdit: (newIndex: number) => void
 	) {
 		this.clear();
 
@@ -309,7 +323,7 @@ export class PostEditWidgetManager extends Disposable {
 					this._showCommand,
 					range,
 					edits,
-					onDidSelectEdit,
+					onDidSelectEdit
 				);
 		}
 	}

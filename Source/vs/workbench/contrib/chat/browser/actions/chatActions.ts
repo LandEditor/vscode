@@ -97,7 +97,7 @@ class OpenChatGlobalAction extends Action2 {
 
 	override async run(
 		accessor: ServicesAccessor,
-		opts?: string | IChatViewOpenOptions,
+		opts?: string | IChatViewOpenOptions
 	): Promise<void> {
 		opts = typeof opts === "string" ? { query: opts } : opts;
 
@@ -108,7 +108,7 @@ class OpenChatGlobalAction extends Action2 {
 			return;
 		}
 		const chatWidget = await chatWidgetService.revealViewForProvider(
-			providers[0].id,
+			providers[0].id
 		);
 		if (!chatWidget) {
 			return;
@@ -138,7 +138,7 @@ export class ChatSubmitSecondaryAgentEditorAction extends EditorAction2 {
 						"Send input from the chat input box to the secondary agent",
 					],
 				},
-				"Submit to Secondary Agent",
+				"Submit to Secondary Agent"
 			),
 			precondition: CONTEXT_IN_CHAT_INPUT,
 			keybinding: {
@@ -151,7 +151,7 @@ export class ChatSubmitSecondaryAgentEditorAction extends EditorAction2 {
 
 	runEditorCommand(
 		accessor: ServicesAccessor,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): void | Promise<void> {
 		const editorUri = editor.getModel()?.uri;
 		if (editorUri) {
@@ -165,7 +165,7 @@ export class ChatSubmitSecondaryAgentEditorAction extends EditorAction2 {
 			widgetService
 				.getWidgetByInputUri(editorUri)
 				?.acceptInputWithPrefix(
-					`${chatAgentLeader}${secondaryAgent.id}`,
+					`${chatAgentLeader}${secondaryAgent.id}`
 				);
 		}
 	}
@@ -182,7 +182,7 @@ export class ChatSubmitEditorAction extends EditorAction2 {
 					key: "actions.chat.submit",
 					comment: ["Apply input from the chat input box"],
 				},
-				"Submit",
+				"Submit"
 			),
 			precondition: CONTEXT_IN_CHAT_INPUT,
 			keybinding: {
@@ -195,7 +195,7 @@ export class ChatSubmitEditorAction extends EditorAction2 {
 
 	runEditorCommand(
 		accessor: ServicesAccessor,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): void | Promise<void> {
 		const editorUri = editor.getModel()?.uri;
 		if (editorUri) {
@@ -219,7 +219,7 @@ export function registerChatActions() {
 					title: {
 						value: localize(
 							"interactiveSession.clearHistory.label",
-							"Clear Input History",
+							"Clear Input History"
 						),
 						original: "Clear Input History",
 					},
@@ -232,7 +232,7 @@ export function registerChatActions() {
 				const historyService = accessor.get(IChatWidgetHistoryService);
 				historyService.clearHistory();
 			}
-		},
+		}
 	);
 
 	registerAction2(
@@ -243,13 +243,13 @@ export function registerChatActions() {
 					title: {
 						value: localize(
 							"actions.interactiveSession.focus",
-							"Focus Chat List",
+							"Focus Chat List"
 						),
 						original: "Focus Chat List",
 					},
 					precondition: ContextKeyExpr.and(
 						CONTEXT_IN_CHAT_INPUT,
-						CONTEXT_CHAT_INPUT_CURSOR_AT_TOP,
+						CONTEXT_CHAT_INPUT_CURSOR_AT_TOP
 					),
 					category: CHAT_CATEGORY,
 					keybinding: {
@@ -262,7 +262,7 @@ export function registerChatActions() {
 
 			runEditorCommand(
 				accessor: ServicesAccessor,
-				editor: ICodeEditor,
+				editor: ICodeEditor
 			): void | Promise<void> {
 				const editorUri = editor.getModel()?.uri;
 				if (editorUri) {
@@ -272,7 +272,7 @@ export function registerChatActions() {
 						?.focusLastMessage();
 				}
 			}
-		},
+		}
 	);
 
 	class ChatAccessibilityHelpContribution extends Disposable {
@@ -294,25 +294,25 @@ export function registerChatActions() {
 						runAccessibilityHelpAction(
 							accessor,
 							codeEditor ?? undefined,
-							"panelChat",
+							"panelChat"
 						);
 					},
 					ContextKeyExpr.or(
 						CONTEXT_IN_CHAT_SESSION,
 						CONTEXT_RESPONSE,
-						CONTEXT_REQUEST,
-					),
-				),
+						CONTEXT_REQUEST
+					)
+				)
 			);
 		}
 	}
 
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	);
 	workbenchRegistry.registerWorkbenchContribution(
 		ChatAccessibilityHelpContribution,
-		LifecyclePhase.Eventually,
+		LifecyclePhase.Eventually
 	);
 
 	registerAction2(
@@ -323,7 +323,7 @@ export function registerChatActions() {
 					title: {
 						value: localize(
 							"interactiveSession.focusInput.label",
-							"Focus Chat Input",
+							"Focus Chat Input"
 						),
 						original: "Focus Chat Input",
 					},
@@ -333,7 +333,7 @@ export function registerChatActions() {
 						weight: KeybindingWeight.WorkbenchContrib,
 						when: ContextKeyExpr.and(
 							CONTEXT_IN_CHAT_SESSION,
-							CONTEXT_IN_CHAT_INPUT.negate(),
+							CONTEXT_IN_CHAT_INPUT.negate()
 						),
 					},
 				});
@@ -342,14 +342,14 @@ export function registerChatActions() {
 				const widgetService = accessor.get(IChatWidgetService);
 				widgetService.lastFocusedWidget?.focusInput();
 			}
-		},
+		}
 	);
 }
 
 export function getOpenChatEditorAction(
 	id: string,
 	label: string,
-	when?: string,
+	when?: string
 ) {
 	return class OpenChatEditor extends Action2 {
 		constructor() {
@@ -359,7 +359,7 @@ export function getOpenChatEditorAction(
 					value: localize(
 						"interactiveSession.open",
 						"Open Editor ({0})",
-						label,
+						label
 					),
 					original: `Open Editor (${label})`,
 				},
@@ -384,7 +384,7 @@ export function getOpenChatEditorAction(
 
 const getHistoryChatActionDescriptorForViewTitle = (
 	viewId: string,
-	providerId: string,
+	providerId: string
 ): Readonly<IAction2Options> & { viewId: string } => ({
 	viewId,
 	id: `workbench.action.chat.${providerId}.history`,
@@ -408,7 +408,7 @@ export function getHistoryAction(viewId: string, providerId: string) {
 	return class HistoryAction extends ViewAction<ChatViewPane> {
 		constructor() {
 			super(
-				getHistoryChatActionDescriptorForViewTitle(viewId, providerId),
+				getHistoryChatActionDescriptorForViewTitle(viewId, providerId)
 			);
 		}
 
@@ -428,16 +428,16 @@ export function getHistoryAction(viewId: string, providerId: string) {
 								iconClass: ThemeIcon.asClassName(Codicon.x),
 								tooltip: localize(
 									"interactiveSession.history.delete",
-									"Delete",
+									"Delete"
 								),
 							},
 						],
-					},
+					}
 			);
 			const selection = await quickInputService.pick(picks, {
 				placeHolder: localize(
 					"interactiveSession.history.pick",
-					"Switch to chat session",
+					"Switch to chat session"
 				),
 				onDidTriggerItemButton: (context) => {
 					chatService.removeHistoryEntry(context.item.chat.sessionId);
@@ -451,7 +451,7 @@ export function getHistoryAction(viewId: string, providerId: string) {
 					const viewId =
 						chatContribService.getViewIdForProvider(provider);
 					const view = (await viewsService.openView(
-						viewId,
+						viewId
 					)) as ChatViewPane;
 					view.loadSession(sessionId);
 				}

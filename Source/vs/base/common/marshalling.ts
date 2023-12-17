@@ -36,10 +36,10 @@ function replacer(key: string, value: any): any {
 type Deserialize<T> = T extends UriComponents
 	? URI
 	: T extends VSBuffer
-	  ? VSBuffer
-	  : T extends object
-		  ? Revived<T>
-		  : T;
+		? VSBuffer
+		: T extends object
+			? Revived<T>
+			: T;
 
 export type Revived<T> = { [K in keyof T]: Deserialize<T[K]> };
 

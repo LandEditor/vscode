@@ -34,7 +34,7 @@ export class ColorPickerHeader extends Disposable {
 		container: HTMLElement,
 		private readonly model: ColorPickerModel,
 		themeService: IThemeService,
-		private showingStandaloneColorPicker: boolean = false,
+		private showingStandaloneColorPicker: boolean = false
 	) {
 		super();
 
@@ -45,21 +45,21 @@ export class ColorPickerHeader extends Disposable {
 		dom.append(this._pickedColorNode, $("span.codicon.codicon-color-mode"));
 		this._pickedColorPresentation = dom.append(
 			this._pickedColorNode,
-			document.createElement("span"),
+			document.createElement("span")
 		);
 		this._pickedColorPresentation.classList.add(
-			"picked-color-presentation",
+			"picked-color-presentation"
 		);
 
 		const tooltip = localize(
 			"clickToToggleColorOptions",
-			"Click to toggle color options (rgb/hsl/hex)",
+			"Click to toggle color options (rgb/hsl/hex)"
 		);
 		this._pickedColorNode.setAttribute("title", tooltip);
 
 		this._originalColorNode = dom.append(
 			this._domNode,
-			$(".original-color"),
+			$(".original-color")
 		);
 		this._originalColorNode.style.backgroundColor =
 			Color.Format.CSS.format(this.model.originalColor) || "";
@@ -71,15 +71,15 @@ export class ColorPickerHeader extends Disposable {
 			themeService.onDidColorThemeChange((theme) => {
 				this.backgroundColor =
 					theme.getColor(editorHoverBackground) || Color.white;
-			}),
+			})
 		);
 
 		this._register(
 			dom.addDisposableListener(
 				this._pickedColorNode,
 				dom.EventType.CLICK,
-				() => this.model.selectNextColorPresentation(),
-			),
+				() => this.model.selectNextColorPresentation()
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -88,12 +88,12 @@ export class ColorPickerHeader extends Disposable {
 				() => {
 					this.model.color = this.model.originalColor;
 					this.model.flushColor();
-				},
-			),
+				}
+			)
 		);
 		this._register(model.onDidChangeColor(this.onDidChangeColor, this));
 		this._register(
-			model.onDidChangePresentation(this.onDidChangePresentation, this),
+			model.onDidChangePresentation(this.onDidChangePresentation, this)
 		);
 		this._pickedColorNode.style.backgroundColor =
 			Color.Format.CSS.format(model.color) || "";
@@ -101,7 +101,7 @@ export class ColorPickerHeader extends Disposable {
 			"light",
 			model.color.rgba.a < 0.5
 				? this.backgroundColor.isLighter()
-				: model.color.isLighter(),
+				: model.color.isLighter()
 		);
 
 		this.onDidChangeColor(this.model.color);
@@ -136,7 +136,7 @@ export class ColorPickerHeader extends Disposable {
 			"light",
 			color.rgba.a < 0.5
 				? this.backgroundColor.isLighter()
-				: color.isLighter(),
+				: color.isLighter()
 		);
 		this.onDidChangePresentation();
 	}
@@ -173,17 +173,17 @@ class CloseButton extends Disposable {
 							Codicon.close,
 							localize(
 								"closeIcon",
-								"Icon to close the color picker",
-							),
-						),
-					),
-			),
+								"Icon to close the color picker"
+							)
+						)
+					)
+			)
 		);
 		closeButton.classList.add("close-icon");
 		this._register(
 			dom.addDisposableListener(this._button, dom.EventType.CLICK, () => {
 				this._onClicked.fire();
-			}),
+			})
 		);
 	}
 }
@@ -199,7 +199,7 @@ export class ColorPickerBody extends Disposable {
 		container: HTMLElement,
 		private readonly model: ColorPickerModel,
 		private pixelRatio: number,
-		isStandaloneColorPicker: boolean = false,
+		isStandaloneColorPicker: boolean = false
 	) {
 		super();
 
@@ -209,36 +209,36 @@ export class ColorPickerBody extends Disposable {
 		this._saturationBox = new SaturationBox(
 			this._domNode,
 			this.model,
-			this.pixelRatio,
+			this.pixelRatio
 		);
 		this._register(this._saturationBox);
 		this._register(
 			this._saturationBox.onDidChange(
 				this.onDidSaturationValueChange,
-				this,
-			),
+				this
+			)
 		);
 		this._register(
-			this._saturationBox.onColorFlushed(this.flushColor, this),
+			this._saturationBox.onColorFlushed(this.flushColor, this)
 		);
 
 		this._opacityStrip = new OpacityStrip(
 			this._domNode,
 			this.model,
-			isStandaloneColorPicker,
+			isStandaloneColorPicker
 		);
 		this._register(this._opacityStrip);
 		this._register(
-			this._opacityStrip.onDidChange(this.onDidOpacityChange, this),
+			this._opacityStrip.onDidChange(this.onDidOpacityChange, this)
 		);
 		this._register(
-			this._opacityStrip.onColorFlushed(this.flushColor, this),
+			this._opacityStrip.onColorFlushed(this.flushColor, this)
 		);
 
 		this._hueStrip = new HueStrip(
 			this._domNode,
 			this.model,
-			isStandaloneColorPicker,
+			isStandaloneColorPicker
 		);
 		this._register(this._hueStrip);
 		this._register(this._hueStrip.onDidChange(this.onDidHueChange, this));
@@ -246,7 +246,7 @@ export class ColorPickerBody extends Disposable {
 
 		if (isStandaloneColorPicker) {
 			this._insertButton = this._register(
-				new InsertButton(this._domNode),
+				new InsertButton(this._domNode)
 			);
 			this._domNode.classList.add("standalone-colorpicker");
 		}
@@ -259,7 +259,10 @@ export class ColorPickerBody extends Disposable {
 	private onDidSaturationValueChange({
 		s,
 		v,
-	}: { s: number; v: number }): void {
+	}: {
+		s: number;
+		v: number;
+	}): void {
 		const hsva = this.model.color.hsva;
 		this.model.color = new Color(new HSVA(hsva.h, s, v, hsva.a));
 	}
@@ -274,7 +277,7 @@ export class ColorPickerBody extends Disposable {
 		const h = (1 - value) * 360;
 
 		this.model.color = new Color(
-			new HSVA(h === 360 ? 0 : h, hsva.s, hsva.v, hsva.a),
+			new HSVA(h === 360 ? 0 : h, hsva.s, hsva.v, hsva.a)
 		);
 	}
 
@@ -323,7 +326,7 @@ class SaturationBox extends Disposable {
 	constructor(
 		container: HTMLElement,
 		private readonly model: ColorPickerModel,
-		private pixelRatio: number,
+		private pixelRatio: number
 	) {
 		super();
 
@@ -345,11 +348,11 @@ class SaturationBox extends Disposable {
 			dom.addDisposableListener(
 				this._domNode,
 				dom.EventType.POINTER_DOWN,
-				(e) => this.onPointerDown(e),
-			),
+				(e) => this.onPointerDown(e)
+			)
 		);
 		this._register(
-			this.model.onDidChangeColor(this.onDidChangeColor, this),
+			this.model.onDidChangeColor(this.onDidChangeColor, this)
 		);
 		this.monitor = null;
 	}
@@ -380,9 +383,9 @@ class SaturationBox extends Disposable {
 			(event) =>
 				this.onDidChangePosition(
 					event.pageX - origin.left,
-					event.pageY - origin.top,
+					event.pageY - origin.top
 				),
-			() => null,
+			() => null
 		);
 
 		const pointerUpListener = dom.addDisposableListener(
@@ -396,7 +399,7 @@ class SaturationBox extends Disposable {
 					this.monitor = null;
 				}
 			},
-			true,
+			true
 		);
 	}
 
@@ -428,7 +431,7 @@ class SaturationBox extends Disposable {
 			0,
 			0,
 			this._canvas.width,
-			0,
+			0
 		);
 		whiteGradient.addColorStop(0, "rgba(255, 255, 255, 1)");
 		whiteGradient.addColorStop(0.5, "rgba(255, 255, 255, 0.5)");
@@ -438,7 +441,7 @@ class SaturationBox extends Disposable {
 			0,
 			0,
 			0,
-			this._canvas.height,
+			this._canvas.height
 		);
 		blackGradient.addColorStop(0, "rgba(0, 0, 0, 0)");
 		blackGradient.addColorStop(1, "rgba(0, 0, 0, 1)");
@@ -482,7 +485,7 @@ abstract class Strip extends Disposable {
 	constructor(
 		container: HTMLElement,
 		protected model: ColorPickerModel,
-		showingStandaloneColorPicker: boolean = false,
+		showingStandaloneColorPicker: boolean = false
 	) {
 		super();
 		if (showingStandaloneColorPicker) {
@@ -499,8 +502,8 @@ abstract class Strip extends Disposable {
 			dom.addDisposableListener(
 				this.domNode,
 				dom.EventType.POINTER_DOWN,
-				(e) => this.onPointerDown(e),
-			),
+				(e) => this.onPointerDown(e)
+			)
 		);
 		this._register(model.onDidChangeColor(this.onDidChangeColor, this));
 		this.layout();
@@ -535,7 +538,7 @@ abstract class Strip extends Disposable {
 			e.pointerId,
 			e.buttons,
 			(event) => this.onDidChangeTop(event.pageY - origin.top),
-			() => null,
+			() => null
 		);
 
 		const pointerUpListener = dom.addDisposableListener(
@@ -547,7 +550,7 @@ abstract class Strip extends Disposable {
 				monitor.stopMonitoring(true);
 				this.domNode.classList.remove("grabbing");
 			},
-			true,
+			true
 		);
 	}
 
@@ -569,7 +572,7 @@ class OpacityStrip extends Strip {
 	constructor(
 		container: HTMLElement,
 		model: ColorPickerModel,
-		showingStandaloneColorPicker: boolean = false,
+		showingStandaloneColorPicker: boolean = false
 	) {
 		super(container, model, showingStandaloneColorPicker);
 		this.domNode.classList.add("opacity-strip");
@@ -595,7 +598,7 @@ class HueStrip extends Strip {
 	constructor(
 		container: HTMLElement,
 		model: ColorPickerModel,
-		showingStandaloneColorPicker: boolean = false,
+		showingStandaloneColorPicker: boolean = false
 	) {
 		super(container, model, showingStandaloneColorPicker);
 		this.domNode.classList.add("hue-strip");
@@ -619,7 +622,7 @@ export class InsertButton extends Disposable {
 		this._register(
 			dom.addDisposableListener(this._button, dom.EventType.CLICK, () => {
 				this._onClicked.fire();
-			}),
+			})
 		);
 	}
 
@@ -642,7 +645,7 @@ export class ColorPickerWidget
 		readonly model: ColorPickerModel,
 		private pixelRatio: number,
 		themeService: IThemeService,
-		standaloneColorPicker: boolean = false,
+		standaloneColorPicker: boolean = false
 	) {
 		super();
 
@@ -656,16 +659,16 @@ export class ColorPickerWidget
 				element,
 				this.model,
 				themeService,
-				standaloneColorPicker,
-			),
+				standaloneColorPicker
+			)
 		);
 		this.body = this._register(
 			new ColorPickerBody(
 				element,
 				this.model,
 				this.pixelRatio,
-				standaloneColorPicker,
-			),
+				standaloneColorPicker
+			)
 		);
 	}
 

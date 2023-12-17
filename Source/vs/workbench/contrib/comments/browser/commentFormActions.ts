@@ -17,7 +17,7 @@ export class CommentFormActions implements IDisposable {
 	constructor(
 		private container: HTMLElement,
 		private actionHandler: (action: IAction) => void,
-		private readonly maxActions?: number,
+		private readonly maxActions?: number
 	) {}
 
 	setActions(menu: IMenu, hasOnlySecondaryActions: boolean = false) {
@@ -43,7 +43,7 @@ export class CommentFormActions implements IDisposable {
 
 				this._toDispose.add(button);
 				this._toDispose.add(
-					button.onDidClick(() => this.actionHandler(action)),
+					button.onDidClick(() => this.actionHandler(action))
 				);
 
 				button.enabled = action.enabled;
@@ -53,7 +53,7 @@ export class CommentFormActions implements IDisposable {
 					this._buttonElements.length >= this.maxActions
 				) {
 					console.warn(
-						`An extension has contributed more than the allowable number of actions to a comments menu.`,
+						`An extension has contributed more than the allowable number of actions to a comments menu.`
 					);
 					return;
 				}

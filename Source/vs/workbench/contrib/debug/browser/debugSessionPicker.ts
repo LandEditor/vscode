@@ -22,7 +22,7 @@ import { ICommandService } from "vs/platform/commands/common/commands";
 
 export async function showDebugSessionMenu(
 	accessor: ServicesAccessor,
-	selectAndStartID: string,
+	selectAndStartID: string
 ) {
 	const quickInputService = accessor.get(IQuickInputService);
 	const debugService = accessor.get(IDebugService);
@@ -39,7 +39,7 @@ export async function showDebugSessionMenu(
 			false;
 	quickPick.placeholder = nls.localize(
 		"moveFocusedView.selectView",
-		"Search debug sessions by name",
+		"Search debug sessions by name"
 	);
 
 	const pickItems = _getPicksAndActiveItem(
@@ -47,7 +47,7 @@ export async function showDebugSessionMenu(
 		selectAndStartID,
 		debugService,
 		viewsService,
-		commandService,
+		commandService
 	);
 	quickPick.items = pickItems.picks;
 	quickPick.activeItems = pickItems.activeItems;
@@ -59,9 +59,9 @@ export async function showDebugSessionMenu(
 				selectAndStartID,
 				debugService,
 				viewsService,
-				commandService,
+				commandService
 			).picks;
-		}),
+		})
 	);
 	localDisposableStore.add(
 		quickPick.onDidAccept(() => {
@@ -69,7 +69,7 @@ export async function showDebugSessionMenu(
 			selectedItem.accept();
 			quickPick.hide();
 			localDisposableStore.dispose();
-		}),
+		})
 	);
 	quickPick.show();
 }
@@ -79,7 +79,7 @@ function _getPicksAndActiveItem(
 	selectAndStartID: string,
 	debugService: IDebugService,
 	viewsService: IViewsService,
-	commandService: ICommandService,
+	commandService: ICommandService
 ): {
 	picks: Array<IPickerDebugItem | IQuickPickSeparator>;
 	activeItems: Array<IPickerDebugItem>;
@@ -112,7 +112,7 @@ function _getPicksAndActiveItem(
 				filter,
 				debugService,
 				viewsService,
-				commandService,
+				commandService
 			);
 			if (pick) {
 				debugConsolePicks.push(pick);
@@ -129,7 +129,7 @@ function _getPicksAndActiveItem(
 
 	const createDebugSessionLabel = nls.localize(
 		"workbench.action.debug.startDebug",
-		"Start a New Debug Session",
+		"Start a New Debug Session"
 	);
 	debugConsolePicks.push({
 		label: `$(plus) ${createDebugSessionLabel}`,
@@ -158,7 +158,7 @@ function _getSessionInfo(session: IDebugSession): {
 			"workbench.action.debug.spawnFrom",
 			"Session {0} spawned from {1}",
 			label,
-			parentName,
+			parentName
 		);
 		description = parentName;
 	}
@@ -171,7 +171,7 @@ function _createPick(
 	filter: string,
 	debugService: IDebugService,
 	viewsService: IViewsService,
-	commandService: ICommandService,
+	commandService: ICommandService
 ): IPickerDebugItem | undefined {
 	const pickInfo = _getSessionInfo(session);
 	const highlights = matchesFuzzy(filter, pickInfo.label, true);

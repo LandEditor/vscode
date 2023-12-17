@@ -46,11 +46,13 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IProductService private readonly productService: IProductService,
-		@IWorkbenchAssignmentService tasExperimentService: IWorkbenchAssignmentService,
+		@IWorkbenchAssignmentService
+		tasExperimentService: IWorkbenchAssignmentService
 	) {
 		super();
 
@@ -60,7 +62,11 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 			return;
 		}
 
-		const skipSurvey = storageService.get(SKIP_SURVEY_KEY, StorageScope.APPLICATION, '');
+		const skipSurvey = storageService.get(
+			SKIP_SURVEY_KEY,
+			StorageScope.APPLICATION,
+			""
+		);
 		if (skipSurvey) {
 			return;
 		}
@@ -81,7 +87,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 				| "accept"
 				| "remindLater"
 				| "neverShowAgain"
-				| "cancelled",
+				| "cancelled"
 		) => {
 			/* __GDPR__
 			"cesSurvey:popup" : {
@@ -96,15 +102,15 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 
 		const message =
 			(await this.tasExperimentService?.getTreatment<string>(
-				"CESSurveyMessage",
+				"CESSurveyMessage"
 			)) ??
 			nls.localize(
 				"cesSurveyQuestion",
-				"Got a moment to help the VS Code team? Please tell us about your experience with VS Code so far.",
+				"Got a moment to help the VS Code team? Please tell us about your experience with VS Code so far."
 			);
 		const button =
 			(await this.tasExperimentService?.getTreatment<string>(
-				"CESSurveyButton",
+				"CESSurveyButton"
 			)) ?? nls.localize("giveFeedback", "Give Feedback");
 
 		const notification = this.notificationService.prompt(
@@ -118,18 +124,17 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 						let surveyUrl = `${
 							this.productService.cesSurveyUrl
 						}?o=${encodeURIComponent(
-							platform,
+							platform
 						)}&v=${encodeURIComponent(
-							this.productService.version,
+							this.productService.version
 						)}&m=${encodeURIComponent(
-							this.telemetryService.machineId,
+							this.telemetryService.machineId
 						)}`;
 
 						const usedParams = this.productService.surveys
 							?.filter(
 								(surveyData) =>
-									surveyData.surveyId &&
-									surveyData.languageId,
+									surveyData.surveyId && surveyData.languageId
 							)
 							// Counts provided by contrib/surveys/browser/languageSurveys
 							.filter(
@@ -137,14 +142,14 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 									this.storageService.getNumber(
 										`${surveyData.surveyId}.editedCount`,
 										StorageScope.APPLICATION,
-										0,
-									) > 0,
+										0
+									) > 0
 							)
 							.map(
 								(surveyData) =>
 									`${encodeURIComponent(
-										surveyData.languageId,
-									)}Lang=1`,
+										surveyData.languageId
+									)}Lang=1`
 							)
 							.join("&");
 						if (usedParams) {
@@ -162,7 +167,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 							REMIND_LATER_DATE_KEY,
 							new Date().toUTCString(),
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 						this.schedulePrompt();
 					},
@@ -174,7 +179,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 					sendTelemetry("cancelled");
 					this.skipSurvey();
 				},
-			},
+			}
 		);
 
 		await Event.toPromise(notification.onDidClose);
@@ -185,7 +190,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 		const remindLaterDate = this.storageService.get(
 			REMIND_LATER_DATE_KEY,
 			StorageScope.APPLICATION,
-			"",
+			""
 		);
 		if (remindLaterDate) {
 			const timeToRemind =
@@ -223,7 +228,7 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 			async () => {
 				await this.promptUser();
 			},
-			Math.max(waitTimeToShowSurvey, MIN_WAIT_TIME_TO_SHOW_SURVEY),
+			Math.max(waitTimeToShowSurvey, MIN_WAIT_TIME_TO_SHOW_SURVEY)
 		);
 	}
 
@@ -232,17 +237,17 @@ class CESContribution extends Disposable implements IWorkbenchContribution {
 			SKIP_SURVEY_KEY,
 			this.productService.version,
 			StorageScope.APPLICATION,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 	}
 }
 
 if (language === "en") {
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	);
 	workbenchRegistry.registerWorkbenchContribution(
 		CESContribution,
-		LifecyclePhase.Restored,
+		LifecyclePhase.Restored
 	);
 }

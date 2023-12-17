@@ -72,7 +72,7 @@ export function getNodeFileFS(): FileSystemProvider {
 							} else {
 								return [stat.name, FileType.Unknown];
 							}
-						}),
+						})
 					);
 				});
 			});

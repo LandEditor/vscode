@@ -81,16 +81,23 @@ export class IssueMainService implements IIssueMainService {
 
 	constructor(
 		private userEnv: IProcessEnvironment,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@ILogService private readonly logService: ILogService,
-		@IDiagnosticsService private readonly diagnosticsService: IDiagnosticsService,
-		@IDiagnosticsMainService private readonly diagnosticsMainService: IDiagnosticsMainService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
-		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
+		@IDiagnosticsService
+		private readonly diagnosticsService: IDiagnosticsService,
+		@IDiagnosticsMainService
+		private readonly diagnosticsMainService: IDiagnosticsMainService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
+		@IProtocolMainService
+		private readonly protocolMainService: IProtocolMainService,
 		@IProductService private readonly productService: IProductService,
 		@IStateService private readonly stateService: IStateService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService
 	) {
 		this.registerListeners();
 	}
@@ -153,7 +160,7 @@ export class IssueMainService implements IIssueMainService {
 					from,
 					args,
 				});
-			},
+			}
 		);
 
 		validatedIpcMain.on("vscode:closeProcessExplorer", (event) => {
@@ -192,12 +199,12 @@ export class IssueMainService implements IIssueMainService {
 
 				const issueReporterWindowConfigUrl =
 					issueReporterDisposables.add(
-						this.protocolMainService.createIPCObjectUrl<IssueReporterWindowConfiguration>(),
+						this.protocolMainService.createIPCObjectUrl<IssueReporterWindowConfiguration>()
 					);
 				const position = this.getWindowPosition(
 					this.issueReporterParentWindow,
 					700,
-					800,
+					800
 				);
 
 				this.issueReporterWindow = this.createBrowserWindow(
@@ -209,7 +216,7 @@ export class IssueMainService implements IIssueMainService {
 						zoomLevel: data.zoomLevel,
 						alwaysOnTop: false,
 					},
-					"issue-reporter",
+					"issue-reporter"
 				);
 
 				// Store into config object URL
@@ -232,8 +239,8 @@ export class IssueMainService implements IIssueMainService {
 					FileAccess.asBrowserUri(
 						`vs/code/electron-sandbox/issue/issueReporter${
 							this.environmentMainService.isBuilt ? "" : "-dev"
-						}.html`,
-					).toString(true),
+						}.html`
+					).toString(true)
 				);
 
 				this.issueReporterWindow.on("close", () => {
@@ -266,20 +273,20 @@ export class IssueMainService implements IIssueMainService {
 
 				const processExplorerWindowConfigUrl =
 					processExplorerDisposables.add(
-						this.protocolMainService.createIPCObjectUrl<ProcessExplorerWindowConfiguration>(),
+						this.protocolMainService.createIPCObjectUrl<ProcessExplorerWindowConfiguration>()
 					);
 
 				const savedPosition = this.stateService.getItem<IWindowState>(
 					processExplorerWindowState,
-					undefined,
+					undefined
 				);
 				const position = isStrictWindowState(savedPosition)
 					? savedPosition
 					: this.getWindowPosition(
 							this.processExplorerParentWindow,
 							800,
-							500,
-					  );
+							500
+						);
 
 				this.processExplorerWindow = this.createBrowserWindow(
 					position,
@@ -290,7 +297,7 @@ export class IssueMainService implements IIssueMainService {
 						zoomLevel: data.zoomLevel,
 						alwaysOnTop: true,
 					},
-					"process-explorer",
+					"process-explorer"
 				);
 
 				// Store into config object URL
@@ -306,8 +313,8 @@ export class IssueMainService implements IIssueMainService {
 					FileAccess.asBrowserUri(
 						`vs/code/electron-sandbox/processExplorer/processExplorer${
 							this.environmentMainService.isBuilt ? "" : "-dev"
-						}.html`,
-					).toString(true),
+						}.html`
+					).toString(true)
 				);
 
 				this.processExplorerWindow.on("close", () => {
@@ -341,7 +348,7 @@ export class IssueMainService implements IIssueMainService {
 					};
 					this.stateService.setItem(
 						processExplorerWindowState,
-						state,
+						state
 					);
 				};
 
@@ -363,8 +370,8 @@ export class IssueMainService implements IIssueMainService {
 		const path = await contentTracing.stopRecording(
 			`${randomPath(
 				this.environmentMainService.userHome.fsPath,
-				this.productService.applicationName,
-			)}.trace.txt`,
+				this.productService.applicationName
+			)}.trace.txt`
 		);
 
 		// Inform user to report an issue
@@ -373,21 +380,21 @@ export class IssueMainService implements IIssueMainService {
 				type: "info",
 				message: localize(
 					"trace.message",
-					"Successfully created the trace file",
+					"Successfully created the trace file"
 				),
 				detail: localize(
 					"trace.detail",
 					"Please create an issue and manually attach the following file:\n{0}",
-					path,
+					path
 				),
 				buttons: [
 					localize(
 						{ key: "trace.ok", comment: ["&& denotes a mnemonic"] },
-						"&&OK",
+						"&&OK"
 					),
 				],
 			},
-			BrowserWindow.getFocusedWindow() ?? undefined,
+			BrowserWindow.getFocusedWindow() ?? undefined
 		);
 
 		// Show item in explorer
@@ -420,7 +427,7 @@ export class IssueMainService implements IIssueMainService {
 		]);
 		const msg = await this.diagnosticsService.getSystemInfo(
 			info,
-			remoteData,
+			remoteData
 		);
 		return msg;
 	}
@@ -436,12 +443,12 @@ export class IssueMainService implements IIssueMainService {
 			]);
 			return await this.diagnosticsService.getPerformanceInfo(
 				info,
-				remoteData,
+				remoteData
 			);
 		} catch (error) {
 			this.logService.warn(
 				"issueService#getPerformanceInfo ",
-				error.message,
+				error.message
 			);
 
 			throw error;
@@ -453,7 +460,7 @@ export class IssueMainService implements IIssueMainService {
 			try {
 				await this.nativeHostMainService.reload(
 					this.issueReporterParentWindow.id,
-					{ disableExtensions: true },
+					{ disableExtensions: true }
 				);
 			} catch (error) {
 				this.logService.error(error);
@@ -468,17 +475,17 @@ export class IssueMainService implements IIssueMainService {
 					type: "warning",
 					message: localize(
 						"confirmCloseIssueReporter",
-						"Your input will not be saved. Are you sure you want to close this window?",
+						"Your input will not be saved. Are you sure you want to close this window?"
 					),
 					buttons: [
 						localize(
 							{ key: "yes", comment: ["&& denotes a mnemonic"] },
-							"&&Yes",
+							"&&Yes"
 						),
 						localize("cancel", "Cancel"),
 					],
 				},
-				this.issueReporterWindow,
+				this.issueReporterWindow
 			);
 
 			if (response === 0) {
@@ -497,17 +504,17 @@ export class IssueMainService implements IIssueMainService {
 					type: "warning",
 					message: localize(
 						"issueReporterWriteToClipboard",
-						"There is too much data to send to GitHub directly. The data will be copied to the clipboard, please paste it into the GitHub issue page that is opened.",
+						"There is too much data to send to GitHub directly. The data will be copied to the clipboard, please paste it into the GitHub issue page that is opened."
 					),
 					buttons: [
 						localize(
 							{ key: "ok", comment: ["&& denotes a mnemonic"] },
-							"&&OK",
+							"&&OK"
 						),
 						localize("cancel", "Cancel"),
 					],
 				},
-				this.issueReporterWindow,
+				this.issueReporterWindow
 			);
 
 			return response === 0;
@@ -521,7 +528,7 @@ export class IssueMainService implements IIssueMainService {
 			throw new Error("Issue reporter window not available");
 		}
 		const window = this.windowsMainService.getWindowById(
-			this.issueReporterParentWindow.id,
+			this.issueReporterParentWindow.id
 		);
 		if (!window) {
 			throw new Error("Window not found");
@@ -537,7 +544,7 @@ export class IssueMainService implements IIssueMainService {
 			window.sendWhenReady(
 				"vscode:triggerIssueUriRequestHandler",
 				cts.token,
-				{ replyChannel, extensionId },
+				{ replyChannel, extensionId }
 			);
 
 			validatedIpcMain.once(replyChannel, (_: unknown, data: string) => {
@@ -572,7 +579,7 @@ export class IssueMainService implements IIssueMainService {
 				await timeout(5000);
 				cts.cancel();
 				resolve(
-					"Error: Extension timed out waiting for issue reporter data",
+					"Error: Extension timed out waiting for issue reporter data"
 				);
 			} finally {
 				validatedIpcMain.removeHandler(replyChannel);
@@ -598,7 +605,7 @@ export class IssueMainService implements IIssueMainService {
 				await timeout(5000);
 				cts.cancel();
 				resolve(
-					"Error: Extension timed out waiting for issue reporter template",
+					"Error: Extension timed out waiting for issue reporter template"
 				);
 			} finally {
 				validatedIpcMain.removeHandler(replyChannel);
@@ -608,7 +615,7 @@ export class IssueMainService implements IIssueMainService {
 
 	async $getReporterStatus(
 		extensionId: string,
-		extensionName: string,
+		extensionName: string
 	): Promise<boolean[]> {
 		const defaultResult = [false, false];
 		const window = this.issueReporterWindowCheck();
@@ -623,16 +630,16 @@ export class IssueMainService implements IIssueMainService {
 			new Promise((resolve) =>
 				validatedIpcMain.once(
 					"vscode:triggerReporterStatusResponse",
-					(_: unknown, data: boolean[]) => resolve(data),
-				),
+					(_: unknown, data: boolean[]) => resolve(data)
+				)
 			),
 			2000,
 			() => {
 				this.logService.error(
-					"Error: Extension timed out waiting for reporter status",
+					"Error: Extension timed out waiting for reporter status"
 				);
 				cts.cancel();
-			},
+			}
 		);
 		return (result ?? defaultResult) as boolean[];
 	}
@@ -669,7 +676,7 @@ export class IssueMainService implements IIssueMainService {
 		position: IWindowState,
 		ipcObjectUrl: IIPCObjectUrl<T>,
 		options: IBrowserWindowOptions,
-		windowKind: string,
+		windowKind: string
 	): BrowserWindow {
 		const window = new BrowserWindow({
 			fullscreen: false,
@@ -687,7 +694,7 @@ export class IssueMainService implements IIssueMainService {
 				IssueMainService.DEFAULT_BACKGROUND_COLOR,
 			webPreferences: {
 				preload: FileAccess.asFileUri(
-					"vs/base/parts/sandbox/electron-sandbox/preload.js",
+					"vs/base/parts/sandbox/electron-sandbox/preload.js"
 				).fsPath,
 				additionalArguments: [
 					`--vscode-window-config=${ipcObjectUrl.resource.toString()}`,
@@ -714,7 +721,7 @@ export class IssueMainService implements IIssueMainService {
 	private getWindowPosition(
 		parentWindow: BrowserWindow,
 		defaultWidth: number,
-		defaultHeight: number,
+		defaultHeight: number
 	): IStrictWindowState {
 		// We want the new window to open on the same display that the parent is in
 		let displayToUse: Display | undefined;
@@ -736,7 +743,7 @@ export class IssueMainService implements IIssueMainService {
 			// if we have a last active window, use that display for the new window
 			if (!displayToUse && parentWindow) {
 				displayToUse = screen.getDisplayMatching(
-					parentWindow.getBounds(),
+					parentWindow.getBounds()
 				);
 			}
 

@@ -65,7 +65,7 @@ export class ExtensionActivationTimes {
 		false,
 		-1,
 		-1,
-		-1,
+		-1
 	);
 
 	public readonly startup: boolean;
@@ -77,7 +77,7 @@ export class ExtensionActivationTimes {
 		startup: boolean,
 		codeLoadingTime: number,
 		activateCallTime: number,
-		activateResolvedTime: number,
+		activateResolvedTime: number
 	) {
 		this.startup = startup;
 		this.codeLoadingTime = codeLoadingTime;
@@ -117,7 +117,7 @@ export class ExtensionActivationTimesBuilder {
 			this._startup,
 			this._delta(this._codeLoadingStart, this._codeLoadingStop),
 			this._delta(this._activateCallStart, this._activateCallStop),
-			this._delta(this._activateResolveStart, this._activateResolveStop),
+			this._delta(this._activateResolveStart, this._activateResolveStop)
 		);
 	}
 
@@ -160,7 +160,7 @@ export class ActivatedExtension {
 		activationTimes: ExtensionActivationTimes,
 		module: IExtensionModule,
 		exports: IExtensionAPI | undefined,
-		subscriptions: IDisposable[],
+		subscriptions: IDisposable[]
 	) {
 		this.activationFailed = activationFailed;
 		this.activationFailedError = activationFailedError;
@@ -179,7 +179,7 @@ export class EmptyExtension extends ActivatedExtension {
 			activationTimes,
 			{ activate: undefined, deactivate: undefined },
 			undefined,
-			[],
+			[]
 		);
 	}
 }
@@ -192,7 +192,7 @@ export class HostExtension extends ActivatedExtension {
 			ExtensionActivationTimes.NONE,
 			{ activate: undefined, deactivate: undefined },
 			undefined,
-			[],
+			[]
 		);
 	}
 }
@@ -205,7 +205,7 @@ class FailedExtension extends ActivatedExtension {
 			ExtensionActivationTimes.NONE,
 			{ activate: undefined, deactivate: undefined },
 			undefined,
-			[],
+			[]
 		);
 	}
 }
@@ -214,11 +214,11 @@ export interface IExtensionsActivatorHost {
 	onExtensionActivationError(
 		extensionId: ExtensionIdentifier,
 		error: Error | null,
-		missingExtensionDependency: MissingExtensionDependency | null,
+		missingExtensionDependency: MissingExtensionDependency | null
 	): void;
 	actualActivateExtension(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason,
+		reason: ExtensionActivationReason
 	): Promise<ActivatedExtension>;
 }
 
@@ -272,12 +272,12 @@ export class ExtensionsActivator implements IDisposable {
 	}
 
 	public getActivatedExtension(
-		extensionId: ExtensionIdentifier,
+		extensionId: ExtensionIdentifier
 	): ActivatedExtension {
 		const op = this._operations.get(extensionId);
 		if (!op || !op.value) {
 			throw new Error(
-				`Extension '${extensionId.value}' is not known or not activated`,
+				`Extension '${extensionId.value}' is not known or not activated`
 			);
 		}
 		return op.value;
@@ -285,7 +285,7 @@ export class ExtensionsActivator implements IDisposable {
 
 	public async activateByEvent(
 		activationEvent: string,
-		startup: boolean,
+		startup: boolean
 	): Promise<void> {
 		if (this._alreadyActivatedEvents[activationEvent]) {
 			return;
@@ -293,13 +293,13 @@ export class ExtensionsActivator implements IDisposable {
 
 		const activateExtensions =
 			this._registry.getExtensionDescriptionsForActivationEvent(
-				activationEvent,
+				activationEvent
 			);
 		await this._activateExtensions(
 			activateExtensions.map((e) => ({
 				id: e.identifier,
 				reason: { startup, extensionId: e.identifier, activationEvent },
-			})),
+			}))
 		);
 
 		this._alreadyActivatedEvents[activationEvent] = true;
@@ -307,7 +307,7 @@ export class ExtensionsActivator implements IDisposable {
 
 	public activateById(
 		extensionId: ExtensionIdentifier,
-		reason: ExtensionActivationReason,
+		reason: ExtensionActivationReason
 	): Promise<void> {
 		const desc = this._registry.getExtensionDescription(extensionId);
 		if (!desc) {
@@ -317,7 +317,7 @@ export class ExtensionsActivator implements IDisposable {
 	}
 
 	private async _activateExtensions(
-		extensions: ActivationIdAndReason[],
+		extensions: ActivationIdAndReason[]
 	): Promise<void> {
 		const operations = extensions
 			.filter((p) => !this.isActivated(p.id))
@@ -330,7 +330,7 @@ export class ExtensionsActivator implements IDisposable {
 	 * We don't need to worry about dependency loops because they are handled by the registry.
 	 */
 	private _handleActivationRequest(
-		currentActivation: ActivationIdAndReason,
+		currentActivation: ActivationIdAndReason
 	): ActivationOperation {
 		if (this._operations.has(currentActivation.id)) {
 			return this._operations.get(currentActivation.id)!;
@@ -341,28 +341,28 @@ export class ExtensionsActivator implements IDisposable {
 				currentActivation,
 				null,
 				[],
-				null,
+				null
 			);
 		}
 
 		const currentExtension = this._registry.getExtensionDescription(
-			currentActivation.id,
+			currentActivation.id
 		);
 		if (!currentExtension) {
 			// Error condition 0: unknown extension
 			const error = new Error(
-				`Cannot activate unknown extension '${currentActivation.id.value}'`,
+				`Cannot activate unknown extension '${currentActivation.id.value}'`
 			);
 			const result = this._createAndSaveOperation(
 				currentActivation,
 				null,
 				[],
-				new FailedExtension(error),
+				new FailedExtension(error)
 			);
 			this._host.onExtensionActivationError(
 				currentActivation.id,
 				error,
-				new MissingExtensionDependency(currentActivation.id.value),
+				new MissingExtensionDependency(currentActivation.id.value)
 			);
 			return result;
 		}
@@ -391,7 +391,7 @@ export class ExtensionsActivator implements IDisposable {
 						id: this._globalRegistry.getExtensionDescription(depId)!
 							.identifier,
 						reason: currentActivation.reason,
-					}),
+					})
 				);
 				continue;
 			}
@@ -408,7 +408,7 @@ export class ExtensionsActivator implements IDisposable {
 					this._handleActivationRequest({
 						id: depDesc.identifier,
 						reason: currentActivation.reason,
-					}),
+					})
 				);
 				continue;
 			}
@@ -418,18 +418,18 @@ export class ExtensionsActivator implements IDisposable {
 				currentExtension.displayName ||
 				currentExtension.identifier.value;
 			const error = new Error(
-				`Cannot activate the '${currentExtensionFriendlyName}' extension because it depends on unknown extension '${depId}'`,
+				`Cannot activate the '${currentExtensionFriendlyName}' extension because it depends on unknown extension '${depId}'`
 			);
 			const result = this._createAndSaveOperation(
 				currentActivation,
 				currentExtension.displayName,
 				[],
-				new FailedExtension(error),
+				new FailedExtension(error)
 			);
 			this._host.onExtensionActivationError(
 				currentExtension.identifier,
 				error,
-				new MissingExtensionDependency(depId),
+				new MissingExtensionDependency(depId)
 			);
 			return result;
 		}
@@ -438,7 +438,7 @@ export class ExtensionsActivator implements IDisposable {
 			currentActivation,
 			currentExtension.displayName,
 			deps,
-			null,
+			null
 		);
 	}
 
@@ -446,7 +446,7 @@ export class ExtensionsActivator implements IDisposable {
 		activation: ActivationIdAndReason,
 		displayName: string | null | undefined,
 		deps: ActivationOperation[],
-		value: ActivatedExtension | null,
+		value: ActivatedExtension | null
 	): ActivationOperation {
 		const operation = new ActivationOperation(
 			activation.id,
@@ -455,24 +455,24 @@ export class ExtensionsActivator implements IDisposable {
 			deps,
 			value,
 			this._host,
-			this._logService,
+			this._logService
 		);
 		this._operations.set(activation.id, operation);
 		return operation;
 	}
 
 	private _isHostExtension(
-		extensionId: ExtensionIdentifier | string,
+		extensionId: ExtensionIdentifier | string
 	): boolean {
 		return ExtensionDescriptionRegistry.isHostExtension(
 			extensionId,
 			this._registry,
-			this._globalRegistry,
+			this._globalRegistry
 		);
 	}
 
 	private _isResolvedExtension(
-		extensionId: ExtensionIdentifier | string,
+		extensionId: ExtensionIdentifier | string
 	): boolean {
 		const extensionDescription =
 			this._globalRegistry.getExtensionDescription(extensionId);
@@ -542,14 +542,14 @@ class ActivationOperation {
 				if (dep.value && dep.value.activationFailed) {
 					// Error condition 2: a dependency has already failed activation
 					const error = new Error(
-						`Cannot activate the '${this.friendlyName}' extension because its dependency '${dep.friendlyName}' failed to activate`,
+						`Cannot activate the '${this.friendlyName}' extension because its dependency '${dep.friendlyName}' failed to activate`
 					);
 					(<any>error).detail = dep.value.activationFailedError;
 					this._value = new FailedExtension(error);
 					this._host.onExtensionActivationError(
 						this._id,
 						error,
-						null,
+						null
 					);
 					return;
 				}
@@ -568,7 +568,7 @@ class ActivationOperation {
 		try {
 			this._value = await this._host.actualActivateExtension(
 				this._id,
-				this._reason,
+				this._reason
 			);
 		} catch (err) {
 			const error = new Error();
@@ -595,7 +595,7 @@ class ActivationOperation {
 
 			this._host.onExtensionActivationError(this._id, error, null);
 			this._logService.error(
-				`Activating extension ${this._id.value} failed due to an error:`,
+				`Activating extension ${this._id.value} failed due to an error:`
 			);
 			this._logService.error(err);
 		}

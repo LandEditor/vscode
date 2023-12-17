@@ -10,7 +10,7 @@ export class Keychain {
 	constructor(
 		private readonly context: vscode.ExtensionContext,
 		private readonly serviceId: string,
-		private readonly Logger: Log,
+		private readonly Logger: Log
 	) {}
 
 	async setToken(token: string): Promise<void> {

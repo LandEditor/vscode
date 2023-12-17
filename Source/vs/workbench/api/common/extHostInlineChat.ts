@@ -44,7 +44,7 @@ class ProviderWrapper {
 
 	constructor(
 		readonly extension: Readonly<IRelaxedExtensionDescription>,
-		readonly provider: vscode.InteractiveEditorSessionProvider,
+		readonly provider: vscode.InteractiveEditorSessionProvider
 	) {}
 }
 
@@ -68,7 +68,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		mainContext: IMainContext,
 		extHostCommands: ExtHostCommands,
 		private readonly _documents: ExtHostDocuments,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadInlineChat);
 
@@ -112,8 +112,8 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 									: undefined,
 								initialSelection: v.initialSelection
 									? typeConvert.Selection.from(
-											v.initialSelection,
-									  )
+											v.initialSelection
+										)
 									: undefined,
 								message: v.message,
 								autoSend: v.autoSend,
@@ -121,18 +121,18 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 									? typeConvert.Position.from(v.position)
 									: undefined,
 							};
-						},
+						}
 					),
 				],
-				ApiCommandResult.Void,
-			),
+				ApiCommandResult.Void
+			)
 		);
 	}
 
 	registerProvider(
 		extension: Readonly<IRelaxedExtensionDescription>,
 		provider: vscode.InteractiveEditorSessionProvider,
-		metadata?: vscode.InteractiveEditorSessionProviderMetadata,
+		metadata?: vscode.InteractiveEditorSessionProviderMetadata
 	): vscode.Disposable {
 		const wrapper = new ProviderWrapper(extension, provider);
 		this._inputProvider.set(wrapper.handle, wrapper);
@@ -143,7 +143,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 			typeof provider.handleInteractiveEditorResponseFeedback ===
 				"function",
 			typeof provider.provideFollowups === "function",
-			metadata?.supportReportIssue ?? false,
+			metadata?.supportReportIssue ?? false
 		);
 		return toDisposable(() => {
 			this._proxy.$unregisterInteractiveEditorProvider(wrapper.handle);
@@ -155,12 +155,12 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		handle: number,
 		uri: UriComponents,
 		range: ISelection,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IInlineChatSession | undefined> {
 		const entry = this._inputProvider.get(handle);
 		if (!entry) {
 			this._logService.warn(
-				"CANNOT prepare session because the PROVIDER IS GONE",
+				"CANNOT prepare session because the PROVIDER IS GONE"
 			);
 			return undefined;
 		}
@@ -169,7 +169,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		const selection = typeConvert.Selection.to(range);
 		const session = await entry.provider.prepareInteractiveEditorSession(
 			{ document, selection },
-			token,
+			token
 		);
 		if (!session) {
 			return undefined;
@@ -177,7 +177,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 
 		if (session.wholeRange && !session.wholeRange.contains(selection)) {
 			throw new Error(
-				`InteractiveEditorSessionProvider returned a wholeRange that does not contain the selection.`,
+				`InteractiveEditorSessionProvider returned a wholeRange that does not contain the selection.`
 			);
 		}
 
@@ -203,7 +203,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		handle: number,
 		item: IInlineChatSession,
 		request: IInlineChatRequest,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IInlineChatResponseDto | undefined> {
 		const entry = this._inputProvider.get(handle);
 		if (!entry) {
@@ -228,7 +228,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 				report: async (value) => {
 					if (!request.live && value.edits?.length) {
 						throw new Error(
-							"Progress reporting is only supported for live sessions",
+							"Progress reporting is only supported for live sessions"
 						);
 					}
 					if (done || token.isCancellationRequested) {
@@ -241,7 +241,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 						slashCommand: value.slashCommand?.command,
 						markdownFragment:
 							extHostTypes.MarkdownString.isMarkdownString(
-								value.content,
+								value.content
 							)
 								? value.content.value
 								: value.content,
@@ -254,8 +254,8 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 				sessionData.session,
 				apiRequest,
 				progress,
-				token,
-			),
+				token
+			)
 		);
 
 		let res:
@@ -309,7 +309,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 				id,
 				type: InlineChatResponseType.EditorEdit,
 				edits: (<vscode.TextEdit[]>edits).map(
-					typeConvert.TextEdit.from,
+					typeConvert.TextEdit.from
 				),
 				message,
 			};
@@ -320,7 +320,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		handle: number,
 		sessionId: number,
 		responseId: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatReplyFollowup[] | undefined> {
 		const entry = this._inputProvider.get(handle);
 		const sessionData = this._inputSessions.get(sessionId);
@@ -330,8 +330,8 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 				entry.provider.provideFollowups(
 					sessionData.session,
 					response,
-					token,
-				),
+					token
+				)
 			);
 			const followups = await raceCancellation(task, token);
 			return followups?.map(typeConvert.ChatReplyFollowup.from);
@@ -343,7 +343,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 		handle: number,
 		sessionId: number,
 		responseId: number,
-		kind: InlineChatResponseFeedbackKind,
+		kind: InlineChatResponseFeedbackKind
 	): void {
 		const entry = this._inputProvider.get(handle);
 		const sessionData = this._inputSessions.get(sessionId);
@@ -354,7 +354,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 			entry.provider.handleInteractiveEditorResponseFeedback?.(
 				sessionData.session,
 				response,
-				apiKind,
+				apiKind
 			);
 		}
 	}
@@ -364,7 +364,7 @@ export class ExtHostInteractiveEditor implements ExtHostInlineChatShape {
 	}
 
 	private static _isEditResponse(
-		thing: any,
+		thing: any
 	): thing is vscode.InteractiveEditorResponse {
 		return (
 			typeof thing === "object" &&

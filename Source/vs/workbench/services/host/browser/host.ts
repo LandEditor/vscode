@@ -79,7 +79,7 @@ export interface IHostService {
 	 */
 	openWindow(
 		toOpen: IWindowOpenable[],
-		options?: IOpenWindowOptions,
+		options?: IOpenWindowOptions
 	): Promise<void>;
 
 	/**

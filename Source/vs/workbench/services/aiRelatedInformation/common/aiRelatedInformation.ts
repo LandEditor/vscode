@@ -9,7 +9,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IAiRelatedInformationService =
 	createDecorator<IAiRelatedInformationService>(
-		"IAiRelatedInformationService",
+		"IAiRelatedInformationService"
 	);
 
 export enum RelatedInformationType {
@@ -45,17 +45,17 @@ export interface IAiRelatedInformationService {
 	getRelatedInformation(
 		query: string,
 		types: RelatedInformationType[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<RelatedInformationResult[]>;
 	registerAiRelatedInformationProvider(
 		type: RelatedInformationType,
-		provider: IAiRelatedInformationProvider,
+		provider: IAiRelatedInformationProvider
 	): IDisposable;
 }
 
 export interface IAiRelatedInformationProvider {
 	provideAiRelatedInformation(
 		query: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<RelatedInformationResult[]>;
 }

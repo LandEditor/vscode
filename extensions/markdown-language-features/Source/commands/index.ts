@@ -34,30 +34,30 @@ export function registerMarkdownCommands(
 	previewManager: MarkdownPreviewManager,
 	telemetryReporter: TelemetryReporter,
 	cspArbiter: ContentSecurityPolicyArbiter,
-	engine: MarkdownItEngine,
+	engine: MarkdownItEngine
 ): vscode.Disposable {
 	const previewSecuritySelector = new PreviewSecuritySelector(
 		cspArbiter,
-		previewManager,
+		previewManager
 	);
 
 	commandManager.register(new CopyImageCommand(previewManager));
 	commandManager.register(
-		new ShowPreviewCommand(previewManager, telemetryReporter),
+		new ShowPreviewCommand(previewManager, telemetryReporter)
 	);
 	commandManager.register(
-		new ShowPreviewToSideCommand(previewManager, telemetryReporter),
+		new ShowPreviewToSideCommand(previewManager, telemetryReporter)
 	);
 	commandManager.register(
-		new ShowLockedPreviewToSideCommand(previewManager, telemetryReporter),
+		new ShowLockedPreviewToSideCommand(previewManager, telemetryReporter)
 	);
 	commandManager.register(new ShowSourceCommand(previewManager));
 	commandManager.register(new RefreshPreviewCommand(previewManager, engine));
 	commandManager.register(
 		new ShowPreviewSecuritySelectorCommand(
 			previewSecuritySelector,
-			previewManager,
-		),
+			previewManager
+		)
 	);
 	commandManager.register(new ToggleLockCommand(previewManager));
 	commandManager.register(new RenderDocument(engine));

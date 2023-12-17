@@ -45,7 +45,7 @@ export class TextFileSaveParticipant extends Disposable {
 	participate(
 		model: ITextFileEditorModel,
 		context: { reason: SaveReason },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const cts = new CancellationTokenSource(token);
 
@@ -55,7 +55,7 @@ export class TextFileSaveParticipant extends Disposable {
 					title: localize(
 						"saveParticipants",
 						"Saving '{0}'",
-						model.name,
+						model.name
 					),
 					location: ProgressLocation.Notification,
 					cancellable: true,
@@ -78,7 +78,7 @@ export class TextFileSaveParticipant extends Disposable {
 								model,
 								context,
 								progress,
-								cts.token,
+								cts.token
 							);
 							await raceCancellation(promise, cts.token);
 						} catch (err) {
@@ -92,7 +92,7 @@ export class TextFileSaveParticipant extends Disposable {
 				() => {
 					// user cancel
 					cts.cancel();
-				},
+				}
 			)
 			.finally(() => {
 				cts.dispose();

@@ -58,7 +58,7 @@ export class UserDataSycnUtilServiceChannel implements IServerChannel {
 				return this.service.resolveUserBindings(args[0]);
 			case "resolveFormattingOptions":
 				return this.service.resolveFormattingOptions(
-					URI.revive(args[0]),
+					URI.revive(args[0])
 				);
 		}
 		throw new Error("Invalid call");
@@ -75,7 +75,7 @@ export class UserDataSyncUtilServiceClient implements IUserDataSyncUtilService {
 	}
 
 	async resolveUserBindings(
-		userbindings: string[],
+		userbindings: string[]
 	): Promise<IStringDictionary<string>> {
 		return this.channel.call("resolveUserKeybindings", [userbindings]);
 	}
@@ -141,7 +141,7 @@ export class UserDataSyncStoreManagementServiceChannel
 	implements IServerChannel
 {
 	constructor(
-		private readonly service: IUserDataSyncStoreManagementService,
+		private readonly service: IUserDataSyncStoreManagementService
 	) {}
 
 	listen(_: unknown, event: string): Event<any> {
@@ -169,7 +169,7 @@ export class UserDataSyncStoreManagementServiceChannelClient extends Disposable 
 	constructor(private readonly channel: IChannel) {
 		super();
 		this.onDidChangeUserDataSyncStore = this.channel.listen<void>(
-			"onDidChangeUserDataSyncStore",
+			"onDidChangeUserDataSyncStore"
 		);
 	}
 
@@ -179,7 +179,7 @@ export class UserDataSyncStoreManagementServiceChannelClient extends Disposable 
 
 	async getPreviousUserDataSyncStore(): Promise<IUserDataSyncStore> {
 		const userDataSyncStore = await this.channel.call<IUserDataSyncStore>(
-			"getPreviousUserDataSyncStore",
+			"getPreviousUserDataSyncStore"
 		);
 		return this.revive(userDataSyncStore);
 	}

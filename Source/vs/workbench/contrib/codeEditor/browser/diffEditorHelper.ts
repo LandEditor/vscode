@@ -56,53 +56,93 @@ class DiffEditorHelperContribution
 
 	constructor(
 		private readonly _diffEditor: IDiffEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService
 	) {
 		super();
 
 		this._register(createScreenReaderHelp());
 
-		const isEmbeddedDiffEditor = this._diffEditor instanceof EmbeddedDiffEditorWidget;
+		const isEmbeddedDiffEditor =
+			this._diffEditor instanceof EmbeddedDiffEditorWidget;
 
 		if (!isEmbeddedDiffEditor) {
-			const computationResult = observableFromEvent(e => this._diffEditor.onDidUpdateDiff(e), () => /** @description diffEditor.diffComputationResult */ this._diffEditor.getDiffComputationResult());
-			const onlyWhiteSpaceChange = computationResult.map(r => r && !r.identical && r.changes2.length === 0);
+			const computationResult = observableFromEvent(
+				(e) => this._diffEditor.onDidUpdateDiff(e),
+				() =>
+					/** @description diffEditor.diffComputationResult */ this._diffEditor.getDiffComputationResult()
+			);
+			const onlyWhiteSpaceChange = computationResult.map(
+				(r) => r && !r.identical && r.changes2.length === 0
+			);
 
-			this._register(autorunWithStore((reader, store) => {
-				/** @description update state */
-				if (onlyWhiteSpaceChange.read(reader)) {
-					const helperWidget = store.add(this._instantiationService.createInstance(
-						FloatingEditorClickWidget,
-						this._diffEditor.getModifiedEditor(),
-						localize('hintWhitespace', "Show Whitespace Differences"),
-						null
-					));
-					store.add(helperWidget.onClick(() => {
-						this._configurationService.updateValue('diffEditor.ignoreTrimWhitespace', false);
-					}));
-					helperWidget.render();
-				}
-			}));
+			this._register(
+				autorunWithStore((reader, store) => {
+					/** @description update state */
+					if (onlyWhiteSpaceChange.read(reader)) {
+						const helperWidget = store.add(
+							this._instantiationService.createInstance(
+								FloatingEditorClickWidget,
+								this._diffEditor.getModifiedEditor(),
+								localize(
+									"hintWhitespace",
+									"Show Whitespace Differences"
+								),
+								null
+							)
+						);
+						store.add(
+							helperWidget.onClick(() => {
+								this._configurationService.updateValue(
+									"diffEditor.ignoreTrimWhitespace",
+									false
+								);
+							})
+						);
+						helperWidget.render();
+					}
+				})
+			);
 
-			this._register(this._diffEditor.onDidUpdateDiff(() => {
-				const diffComputationResult = this._diffEditor.getDiffComputationResult();
+			this._register(
+				this._diffEditor.onDidUpdateDiff(() => {
+					const diffComputationResult =
+						this._diffEditor.getDiffComputationResult();
 
-				if (diffComputationResult && diffComputationResult.quitEarly) {
-					this._notificationService.prompt(
-						Severity.Warning,
-						localize('hintTimeout', "The diff algorithm was stopped early (after {0} ms.)", this._diffEditor.maxComputationTime),
-						[{
-							label: localize('removeTimeout', "Remove Limit"),
-							run: () => {
-								this._configurationService.updateValue('diffEditor.maxComputationTime', 0);
-							}
-						}],
-						{}
-					);
-				}
-			}));
+					if (
+						diffComputationResult &&
+						diffComputationResult.quitEarly
+					) {
+						this._notificationService.prompt(
+							Severity.Warning,
+							localize(
+								"hintTimeout",
+								"The diff algorithm was stopped early (after {0} ms.)",
+								this._diffEditor.maxComputationTime
+							),
+							[
+								{
+									label: localize(
+										"removeTimeout",
+										"Remove Limit"
+									),
+									run: () => {
+										this._configurationService.updateValue(
+											"diffEditor.maxComputationTime",
+											0
+										);
+									},
+								},
+							],
+							{}
+						);
+					}
+				})
+			);
 		}
 	}
 }
@@ -152,18 +192,18 @@ function createScreenReaderHelp(): IDisposable {
 					"msg2",
 					"View the next ({0}) or previous ({1}) diff in diff review mode, which is optimized for screen readers.",
 					next,
-					previous,
+					previous
 				),
 				localize(
 					"msg3",
 					"To control which audio cues should be played, the following settings can be configured: {0}.",
-					keys.join(", "),
+					keys.join(", ")
 				),
 			];
 			const commentCommandInfo = getCommentCommandInfo(
 				keybindingService,
 				contextKeyService,
-				codeEditor,
+				codeEditor
 			);
 			if (commentCommandInfo) {
 				content.push(commentCommandInfo);
@@ -178,17 +218,17 @@ function createScreenReaderHelp(): IDisposable {
 				options: { type: AccessibleViewType.Help },
 			});
 		},
-		ContextKeyEqualsExpr.create("isInDiffEditor", true),
+		ContextKeyEqualsExpr.create("isInDiffEditor", true)
 	);
 }
 
 registerDiffEditorContribution(
 	DiffEditorHelperContribution.ID,
-	DiffEditorHelperContribution,
+	DiffEditorHelperContribution
 );
 
 Registry.as<IConfigurationMigrationRegistry>(
-	Extensions.ConfigurationMigration,
+	Extensions.ConfigurationMigration
 ).registerConfigurationMigrations([
 	{
 		key: "diffEditor.experimental.collapseUnchangedRegions",

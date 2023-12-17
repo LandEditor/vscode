@@ -61,43 +61,54 @@ const telemetryOptOutStorageKey = "workbench.telemetryOptOutShown";
 
 export class StartupPageContribution implements IWorkbenchContribution {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IProductService private readonly productService: IProductService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IEditorResolverService editorResolverService: IEditorResolverService
 	) {
 		editorResolverService.registerEditor(
 			`${GettingStartedInput.RESOURCE.scheme}:/**`,
 			{
 				id: GettingStartedInput.ID,
-				label: localize('welcome.displayName', "Welcome Page"),
+				label: localize("welcome.displayName", "Welcome Page"),
 				priority: RegisteredEditorPriority.builtin,
 			},
 			{
 				singlePerResource: false,
-				canSupportResource: uri => uri.scheme === GettingStartedInput.RESOURCE.scheme,
+				canSupportResource: (uri) =>
+					uri.scheme === GettingStartedInput.RESOURCE.scheme,
 			},
 			{
 				createEditorInput: ({ resource, options }) => {
 					return {
-						editor: this.instantiationService.createInstance(GettingStartedInput, options as GettingStartedEditorOptions),
+						editor: this.instantiationService.createInstance(
+							GettingStartedInput,
+							options as GettingStartedEditorOptions
+						),
 						options: {
 							...options,
-							pinned: false
-						}
+							pinned: false,
+						},
 					};
-				}
+				},
 			}
 		);
 
@@ -114,14 +125,14 @@ export class StartupPageContribution implements IWorkbenchContribution {
 			!this.environmentService.skipWelcome &&
 			!this.storageService.get(
 				telemetryOptOutStorageKey,
-				StorageScope.PROFILE,
+				StorageScope.PROFILE
 			)
 		) {
 			this.storageService.store(
 				telemetryOptOutStorageKey,
 				true,
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			await this.openGettingStarted(true);
 			return;
@@ -134,7 +145,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 		const enabled = isStartupPageEnabled(
 			this.configurationService,
 			this.contextService,
-			this.environmentService,
+			this.environmentService
 		);
 		if (
 			enabled &&
@@ -168,7 +179,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 						!isStartupEditorDefaultReadme)
 				) {
 					this.logService.warn(
-						`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`,
+						`Warning: 'workbench.startupEditor: readme' setting ignored due to being set somewhere other than user or default settings (user=${startupEditorSetting.userValue}, default=${startupEditorSetting.defaultValue})`
 					);
 				}
 
@@ -190,7 +201,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 	private tryOpenWalkthroughForFolder(): boolean {
 		const toRestore = this.storageService.get(
 			restoreWalkthroughsConfigurationKey,
-			StorageScope.PROFILE,
+			StorageScope.PROFILE
 		);
 		if (!toRestore) {
 			return false;
@@ -213,7 +224,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 				});
 				this.storageService.remove(
 					restoreWalkthroughsConfigurationKey,
-					StorageScope.PROFILE,
+					StorageScope.PROFILE
 				);
 				return true;
 			}
@@ -238,18 +249,18 @@ export class StartupPageContribution implements IWorkbenchContribution {
 							: [];
 						const file =
 							files.find(
-								(file) => file.toLowerCase() === "readme.md",
+								(file) => file.toLowerCase() === "readme.md"
 							) ||
 							files.find((file) =>
-								file.toLowerCase().startsWith("readme"),
+								file.toLowerCase().startsWith("readme")
 							);
 						if (file) {
 							return joinPath(folderUri, file);
 						} else {
 							return undefined;
 						}
-					}),
-			),
+					})
+			)
 		);
 
 		if (!this.editorService.activeEditor) {
@@ -262,21 +273,21 @@ export class StartupPageContribution implements IWorkbenchContribution {
 							"markdown.showPreview",
 							null,
 							readmes.filter(isMarkDown),
-							{ locked: true },
+							{ locked: true }
 						)
 						.catch((error) => {
 							this.notificationService.error(
 								localize(
 									"startupPage.markdownPreviewError",
 									"Could not open markdown preview: {0}.\n\nPlease make sure the markdown extension is enabled.",
-									error.message,
-								),
+									error.message
+								)
 							);
 						}),
 					this.editorService.openEditors(
 						readmes
 							.filter((readme) => !isMarkDown(readme))
-							.map((readme) => ({ resource: readme })),
+							.map((readme) => ({ resource: readme }))
 					),
 				]);
 			} else {
@@ -294,7 +305,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 		if (
 			editor?.typeId === startupEditorTypeID ||
 			this.editorService.editors.some(
-				(e) => e.typeId === startupEditorTypeID,
+				(e) => e.typeId === startupEditorTypeID
 			)
 		) {
 			return;
@@ -318,7 +329,7 @@ export class StartupPageContribution implements IWorkbenchContribution {
 function isStartupPageEnabled(
 	configurationService: IConfigurationService,
 	contextService: IWorkspaceContextService,
-	environmentService: IWorkbenchEnvironmentService,
+	environmentService: IWorkbenchEnvironmentService
 ) {
 	if (environmentService.skipWelcome) {
 		return false;

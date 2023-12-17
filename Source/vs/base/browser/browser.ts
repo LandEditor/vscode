@@ -74,7 +74,7 @@ class DevicePixelRatioMonitor extends Disposable {
 		this._mediaQueryList?.removeEventListener("change", this._listener);
 
 		this._mediaQueryList = $window.matchMedia(
-			`(resolution: ${$window.devicePixelRatio}dppx)`,
+			`(resolution: ${$window.devicePixelRatio}dppx)`
 		);
 		this._mediaQueryList.addEventListener("change", this._listener);
 
@@ -104,7 +104,7 @@ class PixelRatioImpl extends Disposable {
 			dprMonitor.onDidChange(() => {
 				this._value = this._getPixelRatio();
 				this._onDidChange.fire(this._value);
-			}),
+			})
 		);
 	}
 
@@ -148,7 +148,7 @@ class PixelRatioFacade {
 
 export function addMatchMediaChangeListener(
 	query: string | MediaQueryList,
-	callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any,
+	callback: (this: MediaQueryList, ev: MediaQueryListEvent) => any
 ): void {
 	if (typeof query === "string") {
 		query = $window.matchMedia(query);
@@ -203,10 +203,10 @@ export const isAndroid = userAgent.indexOf("Android") >= 0;
 let standalone = false;
 if ($window.matchMedia) {
 	const standaloneMatchMedia = $window.matchMedia(
-		"(display-mode: standalone) or (display-mode: window-controls-overlay)",
+		"(display-mode: standalone) or (display-mode: window-controls-overlay)"
 	);
 	const fullScreenMatchMedia = $window.matchMedia(
-		"(display-mode: fullscreen)",
+		"(display-mode: fullscreen)"
 	);
 	standalone = standaloneMatchMedia.matches;
 	addMatchMediaChangeListener(standaloneMatchMedia, ({ matches }) => {

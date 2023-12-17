@@ -48,7 +48,7 @@ import { IEditorService } from "vs/workbench/services/editor/common/editorServic
 
 function getEditorFromContext(
 	editorService: IEditorService,
-	context?: KernelQuickPickContext,
+	context?: KernelQuickPickContext
 ): INotebookEditor | undefined {
 	let editor: INotebookEditor | undefined;
 	if (context !== undefined && "notebookEditorId" in context) {
@@ -58,14 +58,14 @@ function getEditorFromContext(
 				const notebookEditor =
 					getNotebookEditorFromEditorPane(editorPane);
 				return notebookEditor?.getId() === editorId;
-			},
+			}
 		);
 		editor = getNotebookEditorFromEditorPane(matchingEditor);
 	} else if (context !== undefined && "notebookEditor" in context) {
 		editor = context?.notebookEditor;
 	} else {
 		editor = getNotebookEditorFromEditorPane(
-			editorService.activeEditorPane,
+			editorService.activeEditorPane
 		);
 	}
 
@@ -81,7 +81,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebookActions.selectKernel",
-						"Select Notebook Kernel",
+						"Select Notebook Kernel"
 					),
 					original: "Select Notebook Kernel",
 				},
@@ -95,8 +95,8 @@ registerAction2(
 							NOTEBOOK_IS_ACTIVE_EDITOR,
 							ContextKeyExpr.notEquals(
 								"config.notebook.globalToolbar",
-								true,
-							),
+								true
+							)
 						),
 						group: "navigation",
 						order: -10,
@@ -105,7 +105,7 @@ registerAction2(
 						id: MenuId.NotebookToolbar,
 						when: ContextKeyExpr.equals(
 							"config.notebook.globalToolbar",
-							true,
+							true
 						),
 						group: "status",
 						order: -10,
@@ -120,7 +120,7 @@ registerAction2(
 				metadata: {
 					description: localize(
 						"notebookActions.selectKernel.args",
-						"Notebook Kernel Args",
+						"Notebook Kernel Args"
 					),
 					args: [
 						{
@@ -149,7 +149,7 @@ registerAction2(
 
 		async run(
 			accessor: ServicesAccessor,
-			context?: KernelQuickPickContext,
+			context?: KernelQuickPickContext
 		): Promise<boolean> {
 			const instantiationService = accessor.get(IInstantiationService);
 			const editorService = accessor.get(IEditorService);
@@ -197,11 +197,11 @@ registerAction2(
 				? `${extensionId}/${controllerId}`
 				: undefined;
 			const strategy = instantiationService.createInstance(
-				KernelPickerMRUStrategy,
+				KernelPickerMRUStrategy
 			);
 			return strategy.showQuickPick(editor, wantedKernelId);
 		}
-	},
+	}
 );
 
 export class NotebooKernelActionViewItem extends ActionViewItem {
@@ -209,22 +209,57 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 
 	constructor(
 		actualAction: IAction,
-		private readonly _editor: { onDidChangeModel: Event<void>; textModel: NotebookTextModel | undefined; scopedContextKeyService?: IContextKeyService } | INotebookEditor,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookKernelHistoryService private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
+		private readonly _editor:
+			| {
+					onDidChangeModel: Event<void>;
+					textModel: NotebookTextModel | undefined;
+					scopedContextKeyService?: IContextKeyService;
+			  }
+			| INotebookEditor,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookKernelHistoryService
+		private readonly _notebookKernelHistoryService: INotebookKernelHistoryService
 	) {
 		super(
 			undefined,
-			new Action('fakeAction', undefined, ThemeIcon.asClassName(selectKernelIcon), true, (event) => actualAction.run(event)),
+			new Action(
+				"fakeAction",
+				undefined,
+				ThemeIcon.asClassName(selectKernelIcon),
+				true,
+				(event) => actualAction.run(event)
+			),
 			{ label: false, icon: true }
 		);
 		this._register(_editor.onDidChangeModel(this._update, this));
-		this._register(_notebookKernelService.onDidAddKernel(this._update, this));
-		this._register(_notebookKernelService.onDidRemoveKernel(this._update, this));
-		this._register(_notebookKernelService.onDidChangeNotebookAffinity(this._update, this));
-		this._register(_notebookKernelService.onDidChangeSelectedNotebooks(this._update, this));
-		this._register(_notebookKernelService.onDidChangeSourceActions(this._update, this));
-		this._register(_notebookKernelService.onDidChangeKernelDetectionTasks(this._update, this));
+		this._register(
+			_notebookKernelService.onDidAddKernel(this._update, this)
+		);
+		this._register(
+			_notebookKernelService.onDidRemoveKernel(this._update, this)
+		);
+		this._register(
+			_notebookKernelService.onDidChangeNotebookAffinity(
+				this._update,
+				this
+			)
+		);
+		this._register(
+			_notebookKernelService.onDidChangeSelectedNotebooks(
+				this._update,
+				this
+			)
+		);
+		this._register(
+			_notebookKernelService.onDidChangeSourceActions(this._update, this)
+		);
+		this._register(
+			_notebookKernelService.onDidChangeKernelDetectionTasks(
+				this._update,
+				this
+			)
+		);
 	}
 
 	override render(container: HTMLElement): void {
@@ -256,7 +291,7 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 			notebook,
 			this._action,
 			this._notebookKernelService,
-			this._notebookKernelHistoryService,
+			this._notebookKernelHistoryService
 		);
 
 		this.updateClass();

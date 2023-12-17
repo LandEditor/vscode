@@ -39,24 +39,24 @@ export interface IChatResponseProvider {
 		messages: IChatMessage[],
 		options: { [name: string]: any },
 		progress: IProgress<IChatResponseFragment>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<any>;
 }
 
 export const IChatProviderService = createDecorator<IChatProviderService>(
-	"chatProviderService",
+	"chatProviderService"
 );
 
 export interface IChatProviderService {
 	readonly _serviceBrand: undefined;
 
 	lookupChatResponseProvider(
-		identifier: string,
+		identifier: string
 	): IChatResponseProviderMetadata | undefined;
 
 	registerChatResponseProvider(
 		identifier: string,
-		provider: IChatResponseProvider,
+		provider: IChatResponseProvider
 	): IDisposable;
 
 	fetchChatResponse(
@@ -64,7 +64,7 @@ export interface IChatProviderService {
 		messages: IChatMessage[],
 		options: { [name: string]: any },
 		progress: IProgress<IChatResponseFragment>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<any>;
 }
 
@@ -74,18 +74,18 @@ export class ChatProviderService implements IChatProviderService {
 	private readonly _providers: Map<string, IChatResponseProvider> = new Map();
 
 	lookupChatResponseProvider(
-		identifier: string,
+		identifier: string
 	): IChatResponseProviderMetadata | undefined {
 		return this._providers.get(identifier)?.metadata;
 	}
 
 	registerChatResponseProvider(
 		identifier: string,
-		provider: IChatResponseProvider,
+		provider: IChatResponseProvider
 	): IDisposable {
 		if (this._providers.has(identifier)) {
 			throw new Error(
-				`Chat response provider with identifier ${identifier} is already registered.`,
+				`Chat response provider with identifier ${identifier} is already registered.`
 			);
 		}
 		this._providers.set(identifier, provider);
@@ -97,12 +97,12 @@ export class ChatProviderService implements IChatProviderService {
 		messages: IChatMessage[],
 		options: { [name: string]: any },
 		progress: IProgress<IChatResponseFragment>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<any> {
 		const provider = this._providers.get(identifier);
 		if (!provider) {
 			throw new Error(
-				`Chat response provider with identifier ${identifier} is not registered.`,
+				`Chat response provider with identifier ${identifier} is not registered.`
 			);
 		}
 		return provider.provideChatResponse(messages, options, progress, token);

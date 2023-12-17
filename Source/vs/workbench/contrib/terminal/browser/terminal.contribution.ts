@@ -110,33 +110,33 @@ import { TerminalLogService } from "vs/platform/terminal/common/terminalLogServi
 registerSingleton(
 	ITerminalLogService,
 	TerminalLogService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(ITerminalService, TerminalService, InstantiationType.Delayed);
 registerSingleton(
 	ITerminalEditorService,
 	TerminalEditorService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ITerminalGroupService,
 	TerminalGroupService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ITerminalInstanceService,
 	TerminalInstanceService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ITerminalProfileService,
 	TerminalProfileService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // Register quick accesses
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(
-	QuickAccessExtensions.Quickaccess,
+	QuickAccessExtensions.Quickaccess
 );
 const inTerminalsPicker = "inTerminalPicker";
 quickAccessRegistry.registerQuickAccessProvider({
@@ -145,13 +145,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: inTerminalsPicker,
 	placeholder: nls.localize(
 		"tasksQuickAccessPlaceholder",
-		"Type the name of a terminal to open.",
+		"Type the name of a terminal to open."
 	),
 	helpEntries: [
 		{
 			description: nls.localize(
 				"tasksQuickAccessHelp",
-				"Show All Opened Terminals",
+				"Show All Opened Terminals"
 			),
 			commandId: TerminalCommandId.QuickOpenTerm,
 		},
@@ -163,7 +163,7 @@ CommandsRegistry.registerCommand({
 	id: quickAccessNavigateNextInTerminalPickerId,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigateNextInTerminalPickerId,
-		true,
+		true
 	),
 });
 const quickAccessNavigatePreviousInTerminalPickerId =
@@ -172,21 +172,21 @@ CommandsRegistry.registerCommand({
 	id: quickAccessNavigatePreviousInTerminalPickerId,
 	handler: getQuickNavigateHandler(
 		quickAccessNavigatePreviousInTerminalPickerId,
-		false,
+		false
 	),
 });
 
 // Register workbench contributions
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	TerminalMainContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchRegistry.registerWorkbenchContribution(
 	RemoteTerminalBackendContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 // Register configurations
@@ -195,20 +195,20 @@ registerTerminalConfiguration();
 
 // Register editor/dnd contributions
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(TerminalEditorInput.ID, TerminalInputSerializer);
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		TerminalEditor,
 		terminalEditorId,
-		terminalStrings.terminal,
+		terminalStrings.terminal
 	),
-	[new SyncDescriptor(TerminalEditorInput)],
+	[new SyncDescriptor(TerminalEditorInput)]
 );
 Registry.as<IDragAndDropContributionRegistry>(
-	DragAndDropExtensions.DragAndDropContribution,
+	DragAndDropExtensions.DragAndDropContribution
 ).register({
 	dataFormatKey: TerminalDataTransfers.Terminals,
 	getEditorInputs(data) {
@@ -225,16 +225,14 @@ Registry.as<IDragAndDropContributionRegistry>(
 	},
 	setData(resources, event) {
 		const terminalResources = resources.filter(
-			({ resource }) => resource.scheme === Schemas.vscodeTerminal,
+			({ resource }) => resource.scheme === Schemas.vscodeTerminal
 		);
 		if (terminalResources.length) {
 			event.dataTransfer?.setData(
 				TerminalDataTransfers.Terminals,
 				JSON.stringify(
-					terminalResources.map(({ resource }) =>
-						resource.toString(),
-					),
-				),
+					terminalResources.map(({ resource }) => resource.toString())
+				)
 			);
 		}
 	},
@@ -242,7 +240,7 @@ Registry.as<IDragAndDropContributionRegistry>(
 
 // Register views
 const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry,
+	ViewContainerExtensions.ViewContainersRegistry
 ).registerViewContainer(
 	{
 		id: TERMINAL_VIEW_ID,
@@ -257,10 +255,10 @@ const VIEW_CONTAINER = Registry.as<IViewContainersRegistry>(
 		order: 3,
 	},
 	ViewContainerLocation.Panel,
-	{ doNotRegisterOpenCommand: true, isDefault: true },
+	{ doNotRegisterOpenCommand: true, isDefault: true }
 );
 Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry,
+	ViewContainerExtensions.ViewsRegistry
 ).registerViews(
 	[
 		{
@@ -277,7 +275,7 @@ Registry.as<IViewsRegistry>(
 						key: "miToggleIntegratedTerminal",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Terminal",
+					"&&Terminal"
 				),
 				keybindings: {
 					primary: KeyMod.CtrlCmd | KeyCode.Backquote,
@@ -287,7 +285,7 @@ Registry.as<IViewsRegistry>(
 			},
 		},
 	],
-	VIEW_CONTAINER,
+	VIEW_CONTAINER
 );
 
 // Register actions
@@ -295,7 +293,7 @@ registerTerminalActions();
 
 function registerSendSequenceKeybinding(
 	text: string,
-	rule: { when?: ContextKeyExpression } & IKeybindings,
+	rule: { when?: ContextKeyExpression } & IKeybindings
 ): void {
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
 		id: TerminalCommandId.SendSequence,
@@ -328,12 +326,12 @@ if (isWindows) {
 				TerminalContextKeys.focus,
 				ContextKeyExpr.equals(
 					TerminalContextKeyStrings.ShellType,
-					WindowsShellType.PowerShell,
+					WindowsShellType.PowerShell
 				),
-				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+				CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 			),
 			primary: KeyMod.CtrlCmd | KeyCode.KeyV,
-		},
+		}
 	);
 }
 
@@ -346,10 +344,10 @@ registerSendSequenceKeybinding("\x1b[24~a", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell,
+			WindowsShellType.PowerShell
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.Space,
 	mac: { primary: KeyMod.WinCtrl | KeyCode.Space },
@@ -360,10 +358,10 @@ registerSendSequenceKeybinding("\x1b[24~b", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell,
+			WindowsShellType.PowerShell
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 	),
 	primary: KeyMod.Alt | KeyCode.Space,
 });
@@ -373,10 +371,10 @@ registerSendSequenceKeybinding("\x1b[24~c", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell,
+			WindowsShellType.PowerShell
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 	),
 	primary: KeyMod.Shift | KeyCode.Enter,
 });
@@ -386,10 +384,10 @@ registerSendSequenceKeybinding("\x1b[24~d", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell,
+			WindowsShellType.PowerShell
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate()
 	),
 	mac: { primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.RightArrow },
 });
@@ -399,14 +397,14 @@ registerSendSequenceKeybinding("\x1b[24~e", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell,
+			WindowsShellType.PowerShell
 		),
 		TerminalContextKeys.terminalShellIntegrationEnabled,
 		CONTEXT_ACCESSIBILITY_MODE_ENABLED.negate(),
 		ContextKeyExpr.equals(
 			`config.${TerminalSettingId.ShellIntegrationSuggestEnabled}`,
-			true,
-		),
+			true
+		)
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.Space,
 	mac: { primary: KeyMod.WinCtrl | KeyCode.Space },
@@ -419,8 +417,8 @@ registerSendSequenceKeybinding("\x1b[1;2H", {
 		TerminalContextKeys.focus,
 		ContextKeyExpr.equals(
 			TerminalContextKeyStrings.ShellType,
-			WindowsShellType.PowerShell,
-		),
+			WindowsShellType.PowerShell
+		)
 	),
 	mac: { primary: KeyMod.Shift | KeyMod.CtrlCmd | KeyCode.LeftArrow },
 });
@@ -429,7 +427,7 @@ registerSendSequenceKeybinding("\x1b[1;2H", {
 registerSendSequenceKeybinding("\x12", {
 	when: ContextKeyExpr.and(
 		TerminalContextKeys.focus,
-		CONTEXT_ACCESSIBILITY_MODE_ENABLED,
+		CONTEXT_ACCESSIBILITY_MODE_ENABLED
 	),
 	primary: KeyMod.CtrlCmd | KeyMod.Alt | KeyCode.KeyR,
 	mac: { primary: KeyMod.WinCtrl | KeyMod.Alt | KeyCode.KeyR },
@@ -450,7 +448,7 @@ if (isIOS) {
 			// ctrl+c
 			when: ContextKeyExpr.and(TerminalContextKeys.focus),
 			primary: KeyMod.WinCtrl | KeyCode.KeyC,
-		},
+		}
 	);
 }
 
@@ -460,7 +458,7 @@ registerSendSequenceKeybinding(
 	{
 		primary: KeyMod.CtrlCmd | KeyCode.Backspace,
 		mac: { primary: KeyMod.Alt | KeyCode.Backspace },
-	},
+	}
 );
 if (isWindows) {
 	// Delete word left: ctrl+h
@@ -472,11 +470,11 @@ if (isWindows) {
 				TerminalContextKeys.focus,
 				ContextKeyExpr.equals(
 					TerminalContextKeyStrings.ShellType,
-					WindowsShellType.CommandPrompt,
-				),
+					WindowsShellType.CommandPrompt
+				)
 			),
 			primary: KeyMod.CtrlCmd | KeyCode.Backspace,
-		},
+		}
 	);
 }
 // Delete word right: alt+d [27, 100]

@@ -104,7 +104,7 @@ export abstract class EditModeStrategy {
 
 	abstract makeProgressiveChanges(
 		edits: ISingleEditOperation[],
-		timings: ProgressingEditsOptions,
+		timings: ProgressingEditsOptions
 	): Promise<void>;
 
 	abstract makeChanges(edits: ISingleEditOperation[]): Promise<void>;
@@ -112,7 +112,7 @@ export abstract class EditModeStrategy {
 	abstract undoChanges(altVersionId: number): Promise<void>;
 
 	abstract renderChanges(
-		response: ReplyResponse,
+		response: ReplyResponse
 	): Promise<Position | undefined>;
 
 	abstract hasFocus(): boolean;
@@ -127,7 +127,7 @@ export class PreviewStrategy extends EditModeStrategy {
 	constructor(
 		private readonly _session: Session,
 		zone: InlineChatZoneWidget,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super(zone);
 
@@ -136,7 +136,7 @@ export class PreviewStrategy extends EditModeStrategy {
 		this._listener = Event.debounce(
 			_session.textModelN.onDidChangeContent.bind(_session.textModelN),
 			() => {},
-			350,
+			350
 		)((_) => {
 			if (
 				!_session.textModelN.isDisposed() &&
@@ -170,7 +170,7 @@ export class PreviewStrategy extends EditModeStrategy {
 				modelN.pushEditOperations(
 					null,
 					edits.map(TextEdit.asEditOperation),
-					() => null,
+					() => null
 				);
 			}
 			modelN.pushStackElement();
@@ -205,12 +205,12 @@ export class PreviewStrategy extends EditModeStrategy {
 	override async renderChanges(response: ReplyResponse): Promise<undefined> {
 		if (response.allLocalEdits.length > 0) {
 			const allEditOperation = response.allLocalEdits.map((edits) =>
-				edits.map(TextEdit.asEditOperation),
+				edits.map(TextEdit.asEditOperation)
 			);
 			await this._zone.widget.showEditsPreview(
 				this._session.textModel0,
 				this._session.textModelN,
-				allEditOperation,
+				allEditOperation
 			);
 		} else {
 			this._zone.widget.hideEditsPreview();
@@ -249,12 +249,19 @@ export class LivePreviewStrategy extends EditModeStrategy {
 		zone: InlineChatZoneWidget,
 		@IStorageService storageService: IStorageService,
 		@IBulkEditService bulkEditService: IBulkEditService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService
 	) {
 		super(zone);
 
-		this._previewZone = new Lazy(() => _instaService.createInstance(InlineChatFileCreatePreviewWidget, _editor));
+		this._previewZone = new Lazy(() =>
+			_instaService.createInstance(
+				InlineChatFileCreatePreviewWidget,
+				_editor
+			)
+		);
 	}
 
 	override dispose(): void {
@@ -320,7 +327,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 		this._editor.executeEdits(
 			"inline-chat-live",
 			edits,
-			cursorStateComputerAndInlineDiffCollection,
+			cursorStateComputerAndInlineDiffCollection
 		);
 	}
 
@@ -332,7 +339,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 
 	override async makeProgressiveChanges(
 		edits: ISingleEditOperation[],
-		opts: ProgressingEditsOptions,
+		opts: ProgressingEditsOptions
 	): Promise<void> {
 		// push undo stop before first edit
 		if (++this._editCount === 1) {
@@ -345,7 +352,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 			() => {
 				changeListener.dispose();
 				renderTask = this._updateDiffZones();
-			},
+			}
 		);
 
 		const durationInSec = opts.duration / 1000;
@@ -355,7 +362,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 			// console.log({ durationInSec, wordCount, speed: wordCount / durationInSec });
 			await performAsyncTextEdit(
 				this._session.textModelN,
-				asProgressiveEdit(edit, speed, opts.token),
+				asProgressiveEdit(edit, speed, opts.token)
 			);
 		}
 
@@ -372,7 +379,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 		) {
 			this._previewZone.value.showCreation(
 				this._session.wholeRange.value.getStartPosition().delta(-1),
-				response.untitledTextModel,
+				response.untitledTextModel
 			);
 		} else {
 			this._previewZone.value.hide();
@@ -408,7 +415,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 				maxComputationTimeMs: 5000,
 				computeMoves: false,
 			},
-			"advanced",
+			"advanced"
 		);
 		if (!diff || diff.changes.length === 0) {
 			for (const zone of this._diffZonePool) {
@@ -447,7 +454,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 			// they get merged into the same group
 			const last = tail(lastGroup);
 			const treshold = Math.ceil(
-				(change.modified.length + last.modified.length) * 0.75,
+				(change.modified.length + last.modified.length) * 0.75
 			);
 			if (
 				change.modified.startLineNumber -
@@ -471,7 +478,7 @@ export class LivePreviewStrategy extends EditModeStrategy {
 						mappingA.modified.equals(mappingB.modified)
 					);
 				});
-			},
+			}
 		);
 
 		if (beforeAndNowAreEqual) {
@@ -493,8 +500,8 @@ export class LivePreviewStrategy extends EditModeStrategy {
 					this._editor,
 					this._session,
 					{},
-					this._diffZonePool.length === 0 ? handleDiff : undefined,
-				),
+					this._diffZonePool.length === 0 ? handleDiff : undefined
+				)
 			);
 		}
 		for (let i = 0; i < groups.length; i++) {
@@ -522,7 +529,7 @@ export interface AsyncTextEdit {
 
 export async function performAsyncTextEdit(
 	model: ITextModel,
-	edit: AsyncTextEdit,
+	edit: AsyncTextEdit
 ) {
 	const [id] = model.deltaDecorations(
 		[],
@@ -535,7 +542,7 @@ export async function performAsyncTextEdit(
 						TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
 				},
 			},
-		],
+		]
 	);
 
 	let first = true;
@@ -547,7 +554,7 @@ export async function performAsyncTextEdit(
 		const range = model.getDecorationRange(id);
 		if (!range) {
 			throw new Error(
-				"FAILED to perform async replace edit because the anchor decoration was removed",
+				"FAILED to perform async replace edit because the anchor decoration was removed"
 			);
 		}
 
@@ -561,7 +568,7 @@ export async function performAsyncTextEdit(
 }
 
 export function asAsyncEdit(
-	edit: IIdentifiedSingleEditOperation,
+	edit: IIdentifiedSingleEditOperation
 ): AsyncTextEdit {
 	return {
 		range: edit.range,
@@ -572,7 +579,7 @@ export function asAsyncEdit(
 export function asProgressiveEdit(
 	edit: IIdentifiedSingleEditOperation,
 	wordsPerSec: number,
-	token: CancellationToken,
+	token: CancellationToken
 ): AsyncTextEdit {
 	wordsPerSec = Math.max(10, wordsPerSec);
 
@@ -592,7 +599,7 @@ export function asProgressiveEdit(
 				d.dispose();
 			}
 		},
-		1000 / wordsPerSec,
+		1000 / wordsPerSec
 	);
 
 	// cancel ASAP
@@ -630,16 +637,25 @@ export class LiveStrategy3 extends EditModeStrategy {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IStorageService protected _storageService: IStorageService,
 		@IBulkEditService protected readonly _bulkEditService: IBulkEditService,
-		@IEditorWorkerService protected readonly _editorWorkerService: IEditorWorkerService,
-		@IInstantiationService protected readonly _instaService: IInstantiationService,
+		@IEditorWorkerService
+		protected readonly _editorWorkerService: IEditorWorkerService,
+		@IInstantiationService
+		protected readonly _instaService: IInstantiationService
 	) {
 		super(zone);
-		this._ctxCurrentChangeHasDiff = CTX_INLINE_CHAT_CHANGE_HAS_DIFF.bindTo(contextKeyService);
-		this._ctxCurrentChangeShowsDiff = CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF.bindTo(contextKeyService);
+		this._ctxCurrentChangeHasDiff =
+			CTX_INLINE_CHAT_CHANGE_HAS_DIFF.bindTo(contextKeyService);
+		this._ctxCurrentChangeShowsDiff =
+			CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF.bindTo(contextKeyService);
 
-		this._modifiedRangesDecorations = this._editor.createDecorationsCollection();
-		this._previewZone = new Lazy(() => _instaService.createInstance(InlineChatFileCreatePreviewWidget, _editor));
-
+		this._modifiedRangesDecorations =
+			this._editor.createDecorationsCollection();
+		this._previewZone = new Lazy(() =>
+			_instaService.createInstance(
+				InlineChatFileCreatePreviewWidget,
+				_editor
+			)
+		);
 	}
 
 	override dispose(): void {
@@ -715,7 +731,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 		this._editor.executeEdits(
 			"inline-chat-live",
 			edits,
-			cursorStateComputerAndInlineDiffCollection,
+			cursorStateComputerAndInlineDiffCollection
 		);
 	}
 
@@ -730,7 +746,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 
 	override async makeProgressiveChanges(
 		edits: ISingleEditOperation[],
-		opts: ProgressingEditsOptions,
+		opts: ProgressingEditsOptions
 	): Promise<void> {
 		// push undo stop before first edit
 		if (++this._editCount === 1) {
@@ -740,7 +756,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 		const listener = this._session.textModelN.onDidChangeContent(
 			async () => {
 				await this._showDiff(false, false);
-			},
+			}
 		);
 
 		try {
@@ -751,7 +767,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 				// console.log({ durationInSec, wordCount, speed: wordCount / durationInSec });
 				await performAsyncTextEdit(
 					this._session.textModelN,
-					asProgressiveEdit(edit, speed, opts.token),
+					asProgressiveEdit(edit, speed, opts.token)
 				);
 			}
 		} finally {
@@ -768,7 +784,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 				maxComputationTimeMs: Number.MAX_SAFE_INTEGER,
 				computeMoves: false,
 			},
-			"advanced",
+			"advanced"
 		);
 
 		if (!diff || diff.changes.length === 0) {
@@ -795,8 +811,8 @@ export class LiveStrategy3 extends EditModeStrategy {
 						lastChange.original.join(thisChange.original),
 						lastChange.modified.join(thisChange.modified),
 						(lastChange.innerChanges ?? []).concat(
-							thisChange.innerChanges ?? [],
-						),
+							thisChange.innerChanges ?? []
+						)
 					);
 			} else {
 				mergedChanges.push(thisChange);
@@ -819,7 +835,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 
 	private async _showDiff(
 		isFinalChanges: boolean,
-		isAfterManualInteraction: boolean,
+		isAfterManualInteraction: boolean
 	): Promise<Position | undefined> {
 		const diff = await this._computeDiff();
 
@@ -860,17 +876,17 @@ export class LiveStrategy3 extends EditModeStrategy {
 						1,
 						modified.startLineNumber,
 						this._session.textModelN.getLineLength(
-							modified.startLineNumber,
-						),
-				  )
+							modified.startLineNumber
+						)
+					)
 				: new Range(
 						modified.startLineNumber,
 						1,
 						modified.endLineNumberExclusive - 1,
 						this._session.textModelN.getLineLength(
-							modified.endLineNumberExclusive - 1,
-						),
-				  );
+							modified.endLineNumberExclusive - 1
+						)
+					);
 
 			const hasBeenInteractedWith =
 				this._modifiedRangesThatHaveBeenInteractedWith.some((id) => {
@@ -907,11 +923,11 @@ export class LiveStrategy3 extends EditModeStrategy {
 			// original view zone
 			const source = new LineSource(
 				original.mapToLineArray((l) =>
-					this._session.textModel0.tokenization.getLineTokens(l),
+					this._session.textModel0.tokenization.getLineTokens(l)
 				),
 				[],
 				mightContainNonBasicASCII,
-				mightContainRTL,
+				mightContainRTL
 			);
 
 			const domNode = document.createElement("div");
@@ -925,13 +941,13 @@ export class LiveStrategy3 extends EditModeStrategy {
 							original.startLineNumber,
 							1,
 							original.startLineNumber,
-							1,
+							1
 						),
 						"",
-						InlineDecorationType.Regular,
+						InlineDecorationType.Regular
 					),
 				],
-				domNode,
+				domNode
 			);
 
 			let myViewZoneId: string = "";
@@ -956,7 +972,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 						class: ThemeIcon.asClassName(Codicon.check),
 						run: () => {
 							this._modifiedRangesThatHaveBeenInteractedWith.push(
-								id,
+								id
 							);
 							return this._showDiff(true, true);
 						},
@@ -970,19 +986,19 @@ export class LiveStrategy3 extends EditModeStrategy {
 							for (const innerChange of innerChanges!) {
 								const originalValue =
 									this._session.textModel0.getValueInRange(
-										innerChange.originalRange,
+										innerChange.originalRange
 									);
 								edits.push(
 									EditOperation.replace(
 										innerChange.modifiedRange,
-										originalValue,
-									),
+										originalValue
+									)
 								);
 							}
 							this._session.textModelN.pushEditOperations(
 								null,
 								edits,
-								() => null,
+								() => null
 							);
 							return this._showDiff(true, true);
 						},
@@ -991,7 +1007,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 				const toggleDiff = !original.isEmpty
 					? () => {
 							const scrollState = StableEditorScrollState.capture(
-								this._editor,
+								this._editor
 							);
 							if (!viewZoneIds.has(myViewZoneId)) {
 								this._editor.changeViewZones((accessor) => {
@@ -1007,13 +1023,13 @@ export class LiveStrategy3 extends EditModeStrategy {
 								this._ctxCurrentChangeShowsDiff.set(false);
 							}
 							scrollState.restore(this._editor);
-					  }
+						}
 					: undefined;
 
 				this._sessionStore.add(
 					this._session.textModelN.onDidChangeContent((e) => {
 						this._showDiff(true, true);
-					}),
+					})
 				);
 
 				const zoneLineNumber = this._zone.position!.lineNumber;
@@ -1038,7 +1054,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 			this._zone.widget.setExtraButtons(widgetData.actions);
 			this._zone.updatePositionAndHeight(widgetData.position);
 			this._editor.revealPositionInCenterIfOutsideViewport(
-				widgetData.position,
+				widgetData.position
 			);
 
 			this._updateSummaryMessage(diff.changes, widgetData.index);
@@ -1054,11 +1070,11 @@ export class LiveStrategy3 extends EditModeStrategy {
 			toDisposable(() => {
 				decorations.clear();
 				this._editor.changeViewZones((accessor) =>
-					viewZoneIds.forEach(accessor.removeZone, accessor),
+					viewZoneIds.forEach(accessor.removeZone, accessor)
 				);
 				viewZoneIds.clear();
 				this._zone.widget.setExtraButtons([]);
-			}),
+			})
 		);
 
 		if (isAfterManualInteraction && newDecorations.length === 0) {
@@ -1076,7 +1092,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 		) {
 			this._previewZone.value.showCreation(
 				this._session.wholeRange.value.getStartPosition().delta(-1),
-				response.untitledTextModel,
+				response.untitledTextModel
 			);
 		} else {
 			this._previewZone.value.hide();
@@ -1087,7 +1103,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 
 	protected _updateSummaryMessage(
 		mappings: readonly LineRangeMapping[],
-		index: number,
+		index: number
 	) {
 		const changesCount = mappings.length;
 		let message: string;
@@ -1101,7 +1117,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 				"lines.NM",
 				"{1} changes",
 				index + 1,
-				changesCount,
+				changesCount
 			);
 		}
 		this._zone.widget.updateStatus(message);
@@ -1118,7 +1134,7 @@ export class LiveStrategy3 extends EditModeStrategy {
 
 async function undoModelUntil(
 	model: ITextModel,
-	targetAltVersion: number,
+	targetAltVersion: number
 ): Promise<void> {
 	while (
 		targetAltVersion < model.getAlternativeVersionId() &&

@@ -25,7 +25,7 @@ export interface IPostCommitCommandsProviderRegistry {
 
 	getPostCommitCommandsProviders(): PostCommitCommandsProvider[];
 	registerPostCommitCommandsProvider(
-		provider: PostCommitCommandsProvider,
+		provider: PostCommitCommandsProvider
 	): Disposable;
 }
 
@@ -35,7 +35,7 @@ export class GitPostCommitCommandsProvider
 	getCommands(apiRepository: ApiRepository): Command[] {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(apiRepository.repository.root),
+			Uri.file(apiRepository.repository.root)
 		);
 
 		// Branch protection
@@ -57,10 +57,10 @@ export class GitPostCommitCommandsProvider
 		const icon = isCommitInProgress
 			? "$(sync~spin)"
 			: alwaysPrompt
-			  ? "$(lock)"
-			  : alwaysCommitToNewBranch
-				  ? "$(git-branch)"
-				  : undefined;
+				? "$(lock)"
+				: alwaysCommitToNewBranch
+					? "$(git-branch)"
+					: undefined;
 
 		// Tooltip (default)
 		let pushCommandTooltip = !alwaysCommitToNewBranch
@@ -120,7 +120,7 @@ export class CommitCommandsCenter {
 	constructor(
 		private readonly globalState: Memento,
 		private readonly repository: Repository,
-		private readonly postCommitCommandsProviderRegistry: IPostCommitCommandsProviderRegistry,
+		private readonly postCommitCommandsProviderRegistry: IPostCommitCommandsProviderRegistry
 	) {
 		const root = Uri.file(repository.root);
 
@@ -131,7 +131,7 @@ export class CommitCommandsCenter {
 				if (!config.get<boolean>("rememberPostCommitCommand")) {
 					await this.globalState.update(
 						this.getGlobalStateKey(),
-						undefined,
+						undefined
 					);
 				}
 			};
@@ -140,19 +140,19 @@ export class CommitCommandsCenter {
 					if (
 						e.affectsConfiguration(
 							"git.rememberPostCommitCommand",
-							root,
+							root
 						)
 					) {
 						onRememberPostCommitCommandChange();
 					}
-				}),
+				})
 			);
 			onRememberPostCommitCommandChange();
 
 			this.disposables.push(
 				postCommitCommandsProviderRegistry.onDidChangePostCommitCommandsProviders(
-					() => this._onDidChange.fire(),
-				),
+					() => this._onDidChange.fire()
+				)
 			);
 		});
 	}
@@ -164,12 +164,12 @@ export class CommitCommandsCenter {
 		const commandFromStorage = allCommands.find(
 			(c) =>
 				c.arguments?.length === 2 &&
-				c.arguments[1] === this.getPostCommitCommandStringFromStorage(),
+				c.arguments[1] === this.getPostCommitCommandStringFromStorage()
 		);
 		const commandFromSetting = allCommands.find(
 			(c) =>
 				c.arguments?.length === 2 &&
-				c.arguments[1] === this.getPostCommitCommandStringFromSetting(),
+				c.arguments[1] === this.getPostCommitCommandStringFromSetting()
 		);
 
 		return (
@@ -184,7 +184,7 @@ export class CommitCommandsCenter {
 
 		for (const provider of this.postCommitCommandsProviderRegistry.getPostCommitCommandsProviders()) {
 			const commands = provider.getCommands(
-				new ApiRepository(this.repository),
+				new ApiRepository(this.repository)
 			);
 			commandGroups.push(
 				(commands ?? []).map((c) => {
@@ -194,7 +194,7 @@ export class CommitCommandsCenter {
 						tooltip: c.tooltip,
 						arguments: [this.repository.sourceControl, c.command],
 					};
-				}),
+				})
 			);
 		}
 
@@ -206,7 +206,7 @@ export class CommitCommandsCenter {
 	}
 
 	async executePostCommitCommand(
-		command: string | null | undefined,
+		command: string | null | undefined
 	): Promise<void> {
 		try {
 			if (command === null) {
@@ -227,7 +227,7 @@ export class CommitCommandsCenter {
 			if (command !== null) {
 				await commands.executeCommand(
 					command!.toString(),
-					new ApiRepository(this.repository),
+					new ApiRepository(this.repository)
 				);
 			}
 		} catch (err) {
@@ -236,7 +236,7 @@ export class CommitCommandsCenter {
 			if (!this.isRememberPostCommitCommandEnabled()) {
 				await this.globalState.update(
 					this.getGlobalStateKey(),
-					undefined,
+					undefined
 				);
 				this._onDidChange.fire();
 			}
@@ -250,7 +250,7 @@ export class CommitCommandsCenter {
 	private getCommitCommands(): Command[] {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 
 		// Branch protection
@@ -268,16 +268,16 @@ export class CommitCommandsCenter {
 		const icon = alwaysPrompt
 			? "$(lock)"
 			: alwaysCommitToNewBranch
-			  ? "$(git-branch)"
-			  : undefined;
+				? "$(git-branch)"
+				: undefined;
 
 		// Tooltip (default)
 		const branch = this.repository.HEAD?.name;
 		let tooltip = alwaysCommitToNewBranch
 			? l10n.t("Commit Changes to New Branch")
 			: branch
-			  ? l10n.t('Commit Changes on "{0}"', branch)
-			  : l10n.t("Commit Changes");
+				? l10n.t('Commit Changes on "{0}"', branch)
+				: l10n.t("Commit Changes");
 
 		// Tooltip (in progress)
 		if (this.repository.operations.isRunning(OperationKind.Commit)) {
@@ -305,7 +305,7 @@ export class CommitCommandsCenter {
 	private getPostCommitCommandStringFromSetting(): string | undefined {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		const postCommitCommandSetting =
 			config.get<string>("postCommitCommand");
@@ -322,13 +322,13 @@ export class CommitCommandsCenter {
 
 	private async migratePostCommitCommandStorage(): Promise<void> {
 		const postCommitCommandString = this.globalState.get<string | null>(
-			this.repository.root,
+			this.repository.root
 		);
 
 		if (postCommitCommandString !== undefined) {
 			await this.globalState.update(
 				this.getGlobalStateKey(),
-				postCommitCommandString,
+				postCommitCommandString
 			);
 			await this.globalState.update(this.repository.root, undefined);
 		}
@@ -337,7 +337,7 @@ export class CommitCommandsCenter {
 	private isRememberPostCommitCommandEnabled(): boolean {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		return config.get<boolean>("rememberPostCommitCommand") === true;
 	}

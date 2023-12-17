@@ -11,6 +11,6 @@ export function applyDeprecatedVariableMessage(schema: IJSONSchema) {
 		schema.patternErrorMessage ||
 		nls.localize(
 			"deprecatedVariables",
-			"'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead.",
+			"'env.', 'config.' and 'command.' are deprecated, use 'env:', 'config:' and 'command:' instead."
 		);
 }

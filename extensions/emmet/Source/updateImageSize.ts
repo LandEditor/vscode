@@ -65,7 +65,7 @@ export function updateImageSize(): Promise<boolean> | undefined {
  */
 function updateImageSizeHTML(
 	editor: TextEditor,
-	position: Position,
+	position: Position
 ): Promise<TextEdit[]> {
 	const imageNode = getImageHTMLNode(editor, position);
 
@@ -94,10 +94,10 @@ function updateImageSizeHTML(
 
 function updateImageSizeStyleTag(
 	editor: TextEditor,
-	position: Position,
+	position: Position
 ): Promise<TextEdit[]> {
 	const getPropertyInsiderStyleTag = (
-		editor: TextEditor,
+		editor: TextEditor
 	): Property | null => {
 		const document = editor.document;
 		const rootNode = getRootNode(document, true);
@@ -130,7 +130,7 @@ function updateImageSizeStyleTag(
 
 function updateImageSizeCSSFile(
 	editor: TextEditor,
-	position: Position,
+	position: Position
 ): Promise<TextEdit[]> {
 	return updateImageSizeCSS(editor, position, getImageCSSNode);
 }
@@ -141,7 +141,7 @@ function updateImageSizeCSSFile(
 function updateImageSizeCSS(
 	editor: TextEditor,
 	position: Position,
-	fetchNode: (editor: TextEditor, position: Position) => Property | null,
+	fetchNode: (editor: TextEditor, position: Position) => Property | null
 ): Promise<TextEdit[]> {
 	const node = fetchNode(editor, position);
 	const src = node && getImageSrcCSS(editor, node, position);
@@ -177,7 +177,7 @@ function updateImageSizeCSS(
  */
 function getImageHTMLNode(
 	editor: TextEditor,
-	position: Position,
+	position: Position
 ): HtmlNode | null {
 	const document = editor.document;
 	const rootNode = getRootNode(document, true);
@@ -193,7 +193,7 @@ function getImageHTMLNode(
  */
 function getImageCSSNode(
 	editor: TextEditor,
-	position: Position,
+	position: Position
 ): Property | null {
 	const document = editor.document;
 	const rootNode = getRootNode(document, true);
@@ -220,7 +220,7 @@ function getImageSrcHTML(node: HtmlNode): string | undefined {
 function getImageSrcCSS(
 	editor: TextEditor,
 	node: Property | undefined,
-	position: Position,
+	position: Position
 ): string | undefined {
 	if (!node) {
 		return;
@@ -246,7 +246,7 @@ function updateHTMLTag(
 	editor: TextEditor,
 	node: HtmlNode,
 	width: number,
-	height: number,
+	height: number
 ): TextEdit[] {
 	const document = editor.document;
 	const srcAttr = getAttribute(node, "src");
@@ -270,10 +270,10 @@ function updateHTMLTag(
 				offsetRangeToVsRange(
 					document,
 					widthAttr.value.start,
-					widthAttr.value.end,
+					widthAttr.value.end
 				),
-				String(width),
-			),
+				String(width)
+			)
 		);
 	}
 	if (!heightAttr) {
@@ -284,10 +284,10 @@ function updateHTMLTag(
 				offsetRangeToVsRange(
 					document,
 					heightAttr.value.start,
-					heightAttr.value.end,
+					heightAttr.value.end
 				),
-				String(height),
-			),
+				String(height)
+			)
 		);
 	}
 	if (textToAdd) {
@@ -296,10 +296,10 @@ function updateHTMLTag(
 				offsetRangeToVsRange(
 					document,
 					endOfAttributes,
-					endOfAttributes,
+					endOfAttributes
 				),
-				textToAdd,
-			),
+				textToAdd
+			)
 		);
 	}
 
@@ -313,7 +313,7 @@ function updateCSSNode(
 	editor: TextEditor,
 	srcProp: Property,
 	width: number,
-	height: number,
+	height: number
 ): TextEdit[] {
 	const document = editor.document;
 	const rule = srcProp.parent;
@@ -329,8 +329,8 @@ function updateCSSNode(
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(document, srcProp.end, srcProp.end),
-				";",
-			),
+				";"
+			)
 		);
 	}
 
@@ -343,10 +343,10 @@ function updateCSSNode(
 				offsetRangeToVsRange(
 					document,
 					widthProp.valueToken.start,
-					widthProp.valueToken.end,
+					widthProp.valueToken.end
 				),
-				`${width}px`,
-			),
+				`${width}px`
+			)
 		);
 	}
 	if (!heightProp) {
@@ -357,18 +357,18 @@ function updateCSSNode(
 				offsetRangeToVsRange(
 					document,
 					heightProp.valueToken.start,
-					heightProp.valueToken.end,
+					heightProp.valueToken.end
 				),
-				`${height}px`,
-			),
+				`${height}px`
+			)
 		);
 	}
 	if (textToAdd) {
 		edits.push(
 			new TextEdit(
 				offsetRangeToVsRange(document, srcProp.end, srcProp.end),
-				textToAdd,
-			),
+				textToAdd
+			)
 		);
 	}
 
@@ -383,7 +383,7 @@ function getAttribute(node: HtmlNode, attrName: string): Attribute | undefined {
 	return (
 		node &&
 		node.attributes.find(
-			(attr) => attr.name.toString().toLowerCase() === attrName,
+			(attr) => attr.name.toString().toLowerCase() === attrName
 		)
 	);
 }
@@ -405,7 +405,7 @@ function getAttributeQuote(editor: TextEditor, attr: Attribute): string {
 function findUrlToken(
 	editor: TextEditor,
 	node: Property,
-	pos: Position,
+	pos: Position
 ): CssToken | undefined {
 	const offset = editor.document.offsetAt(pos);
 	for (let i = 0, il = (node as any).parsedValue.length, url; i < il; i++) {

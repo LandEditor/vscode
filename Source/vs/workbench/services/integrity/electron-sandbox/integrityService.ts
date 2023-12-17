@@ -52,7 +52,7 @@ class IntegrityStorage {
 	private _read(): IStorageData | null {
 		const jsonValue = this.storageService.get(
 			IntegrityStorage.KEY,
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 		if (!jsonValue) {
 			return null;
@@ -74,7 +74,7 @@ class IntegrityStorage {
 			IntegrityStorage.KEY,
 			JSON.stringify(this.value),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 }
@@ -86,7 +86,8 @@ export class IntegrityService implements IIntegrityService {
 	private _isPurePromise: Promise<IntegrityTestResult>;
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IStorageService storageService: IStorageService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IOpenerService private readonly openerService: IOpenerService,
@@ -97,7 +98,7 @@ export class IntegrityService implements IIntegrityService {
 
 		this._isPurePromise = this._isPure();
 
-		this.isPure().then(r => {
+		this.isPure().then((r) => {
 			if (r.isPure) {
 				return; // all is good
 			}
@@ -120,7 +121,7 @@ export class IntegrityService implements IIntegrityService {
 		const message = localize(
 			"integrity.prompt",
 			"Your {0} installation appears to be corrupt. Please reinstall.",
-			this.productService.nameShort,
+			this.productService.nameShort
 		);
 		if (checksumFailMoreInfoUrl) {
 			this.notificationService.prompt(
@@ -130,17 +131,17 @@ export class IntegrityService implements IIntegrityService {
 					{
 						label: localize(
 							"integrity.moreInformation",
-							"More Information",
+							"More Information"
 						),
 						run: () =>
 							this.openerService.open(
-								URI.parse(checksumFailMoreInfoUrl),
+								URI.parse(checksumFailMoreInfoUrl)
 							),
 					},
 					{
 						label: localize(
 							"integrity.dontShowAgain",
-							"Don't Show Again",
+							"Don't Show Again"
 						),
 						isSecondary: true,
 						run: () =>
@@ -153,7 +154,7 @@ export class IntegrityService implements IIntegrityService {
 				{
 					sticky: true,
 					priority: NotificationPriority.URGENT,
-				},
+				}
 			);
 		} else {
 			this.notificationService.notify({
@@ -177,9 +178,9 @@ export class IntegrityService implements IIntegrityService {
 			Object.keys(expectedChecksums).map((filename) =>
 				this._resolve(
 					<AppResourcePath>filename,
-					expectedChecksums[filename],
-				),
-			),
+					expectedChecksums[filename]
+				)
+			)
 		);
 
 		let isPure = true;
@@ -198,7 +199,7 @@ export class IntegrityService implements IIntegrityService {
 
 	private async _resolve(
 		filename: AppResourcePath,
-		expected: string,
+		expected: string
 	): Promise<ChecksumPair> {
 		const fileUri = FileAccess.asFileUri(filename);
 
@@ -208,7 +209,7 @@ export class IntegrityService implements IIntegrityService {
 			return IntegrityService._createChecksumPair(
 				fileUri,
 				checksum,
-				expected,
+				expected
 			);
 		} catch (error) {
 			return IntegrityService._createChecksumPair(fileUri, "", expected);
@@ -218,7 +219,7 @@ export class IntegrityService implements IIntegrityService {
 	private static _createChecksumPair(
 		uri: URI,
 		actual: string,
-		expected: string,
+		expected: string
 	): ChecksumPair {
 		return {
 			uri: uri,
@@ -232,5 +233,5 @@ export class IntegrityService implements IIntegrityService {
 registerSingleton(
 	IIntegrityService,
 	IntegrityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

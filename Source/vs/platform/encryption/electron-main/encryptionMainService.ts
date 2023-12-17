@@ -25,11 +25,12 @@ const safeStorage: typeof import("electron").safeStorage &
 export class EncryptionMainService implements IEncryptionMainService {
 	_serviceBrand: undefined;
 
-	constructor(
-		@ILogService private readonly logService: ILogService
-	) {
+	constructor(@ILogService private readonly logService: ILogService) {
 		// if this commandLine switch is set, the user has opted in to using basic text encryption
-		if (app.commandLine.getSwitchValue('password-store') === PasswordStoreCLIOption.basic) {
+		if (
+			app.commandLine.getSwitchValue("password-store") ===
+			PasswordStoreCLIOption.basic
+		) {
 			safeStorage.setUsePlainTextEncryption?.(true);
 		}
 	}
@@ -52,7 +53,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 			parsedValue = JSON.parse(value);
 			if (!parsedValue.data) {
 				throw new Error(
-					`[EncryptionMainService] Invalid encrypted value: ${value}`,
+					`[EncryptionMainService] Invalid encrypted value: ${value}`
 				);
 			}
 			const bufferToDecrypt = Buffer.from(parsedValue.data);
@@ -93,13 +94,13 @@ export class EncryptionMainService implements IEncryptionMainService {
 	async setUsePlainTextEncryption(): Promise<void> {
 		if (isWindows) {
 			throw new Error(
-				"Setting plain text encryption is not supported on Windows.",
+				"Setting plain text encryption is not supported on Windows."
 			);
 		}
 
 		if (isMacintosh) {
 			throw new Error(
-				"Setting plain text encryption is not supported on macOS.",
+				"Setting plain text encryption is not supported on macOS."
 			);
 		}
 

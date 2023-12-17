@@ -47,7 +47,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IExtensionService extensionService: IExtensionService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
+		@IViewDescriptorService viewDescriptorService: IViewDescriptorService
 	) {
 		super(
 			viewletId,
@@ -61,21 +61,21 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			themeService,
 			storageService,
 			contextService,
-			viewDescriptorService,
+			viewDescriptorService
 		);
 		this._register(
 			onDidChangeFilterValue((newFilterValue) => {
 				this.filterValue = newFilterValue;
 				this.onFilterChanged(newFilterValue);
-			}),
+			})
 		);
 
 		this._register(
 			this.viewContainerModel.onDidChangeActiveViewDescriptors(() => {
 				this.updateAllViews(
-					this.viewContainerModel.activeViewDescriptors,
+					this.viewContainerModel.activeViewDescriptors
 				);
-			}),
+			})
 		);
 	}
 
@@ -100,15 +100,15 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 	}
 
 	protected addConstantViewDescriptors(
-		constantViewDescriptors: IViewDescriptor[],
+		constantViewDescriptors: IViewDescriptor[]
 	) {
 		constantViewDescriptors.forEach((viewDescriptor) =>
-			this.constantViewDescriptors.set(viewDescriptor.id, viewDescriptor),
+			this.constantViewDescriptors.set(viewDescriptor.id, viewDescriptor)
 		);
 	}
 
 	protected abstract getFilterOn(
-		viewDescriptor: IViewDescriptor,
+		viewDescriptor: IViewDescriptor
 	): string | undefined;
 
 	protected abstract setFilter(viewDescriptor: IViewDescriptor): void;
@@ -118,10 +118,10 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 			this.updateAllViews(this.viewContainerModel.activeViewDescriptors);
 		}
 		this.getViewsNotForTarget(newFilterValue).forEach((item) =>
-			this.viewContainerModel.setVisible(item.id, false),
+			this.viewContainerModel.setVisible(item.id, false)
 		);
 		this.getViewsForTarget(newFilterValue).forEach((item) =>
-			this.viewContainerModel.setVisible(item.id, true),
+			this.viewContainerModel.setVisible(item.id, true)
 		);
 	}
 
@@ -130,7 +130,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		for (let i = 0; i < target.length; i++) {
 			if (this.allViews.has(target[i])) {
 				views.push(
-					...Array.from(this.allViews.get(target[i])!.values()),
+					...Array.from(this.allViews.get(target[i])!.values())
 				);
 			}
 		}
@@ -159,7 +159,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 	}
 
 	protected override onDidAddViewDescriptors(
-		added: IAddedViewDescriptorRef[],
+		added: IAddedViewDescriptorRef[]
 	): ViewPane[] {
 		const panes: ViewPane[] = super.onDidAddViewDescriptors(added);
 		for (let i = 0; i < added.length; i++) {
@@ -178,7 +178,7 @@ export abstract class FilterViewPaneContainer extends ViewPaneContainer {
 		const result = super.openView(id, focus);
 		if (result) {
 			const descriptorMap = Array.from(this.allViews.entries()).find(
-				(entry) => entry[1].has(id),
+				(entry) => entry[1].has(id)
 			);
 			if (
 				descriptorMap &&

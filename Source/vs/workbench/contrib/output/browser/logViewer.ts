@@ -23,11 +23,12 @@ export class LogViewer extends AbstractTextResourceEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
-		@IFileService fileService: IFileService,
+		@IFileService fileService: IFileService
 	) {
 		super(
 			LogViewer.LOG_VIEWER_EDITOR_ID,
@@ -38,12 +39,12 @@ export class LogViewer extends AbstractTextResourceEditor {
 			themeService,
 			editorGroupService,
 			editorService,
-			fileService,
+			fileService
 		);
 	}
 
 	protected override getConfigurationOverrides(
-		configuration: IEditorConfiguration,
+		configuration: IEditorConfiguration
 	): IEditorOptions {
 		const options = super.getConfigurationOverrides(configuration);
 		options.wordWrap = "off"; // all log viewers do not wrap

@@ -29,8 +29,8 @@ async function getLocationLinks<T>(
 	provide: (
 		provider: T,
 		model: ITextModel,
-		position: Position,
-	) => ProviderResult<LocationLink | LocationLink[]>,
+		position: Position
+	) => ProviderResult<LocationLink | LocationLink[]>
 ): Promise<LocationLink[]> {
 	const provider = registry.ordered(model);
 
@@ -42,9 +42,9 @@ async function getLocationLinks<T>(
 				(err) => {
 					onUnexpectedExternalError(err);
 					return undefined;
-				},
+				}
 			);
-		},
+		}
 	);
 
 	const values = await Promise.all(promises);
@@ -55,7 +55,7 @@ export function getDefinitionsAtPosition(
 	registry: LanguageFeatureRegistry<DefinitionProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LocationLink[]> {
 	return getLocationLinks(
 		model,
@@ -63,7 +63,7 @@ export function getDefinitionsAtPosition(
 		registry,
 		(provider, model, position) => {
 			return provider.provideDefinition(model, position, token);
-		},
+		}
 	);
 }
 
@@ -71,7 +71,7 @@ export function getDeclarationsAtPosition(
 	registry: LanguageFeatureRegistry<DeclarationProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LocationLink[]> {
 	return getLocationLinks(
 		model,
@@ -79,7 +79,7 @@ export function getDeclarationsAtPosition(
 		registry,
 		(provider, model, position) => {
 			return provider.provideDeclaration(model, position, token);
-		},
+		}
 	);
 }
 
@@ -87,7 +87,7 @@ export function getImplementationsAtPosition(
 	registry: LanguageFeatureRegistry<ImplementationProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LocationLink[]> {
 	return getLocationLinks(
 		model,
@@ -95,7 +95,7 @@ export function getImplementationsAtPosition(
 		registry,
 		(provider, model, position) => {
 			return provider.provideImplementation(model, position, token);
-		},
+		}
 	);
 }
 
@@ -103,7 +103,7 @@ export function getTypeDefinitionsAtPosition(
 	registry: LanguageFeatureRegistry<TypeDefinitionProvider>,
 	model: ITextModel,
 	position: Position,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LocationLink[]> {
 	return getLocationLinks(
 		model,
@@ -111,7 +111,7 @@ export function getTypeDefinitionsAtPosition(
 		registry,
 		(provider, model, position) => {
 			return provider.provideTypeDefinition(model, position, token);
-		},
+		}
 	);
 }
 
@@ -120,7 +120,7 @@ export function getReferencesAtPosition(
 	model: ITextModel,
 	position: Position,
 	compact: boolean,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LocationLink[]> {
 	return getLocationLinks(
 		model,
@@ -131,7 +131,7 @@ export function getReferencesAtPosition(
 				model,
 				position,
 				{ includeDeclaration: true },
-				token,
+				token
 			);
 			if (!compact || !result || result.length !== 2) {
 				return result;
@@ -140,7 +140,7 @@ export function getReferencesAtPosition(
 				model,
 				position,
 				{ includeDeclaration: false },
-				token,
+				token
 			);
 			if (
 				resultWithoutDeclaration &&
@@ -149,14 +149,14 @@ export function getReferencesAtPosition(
 				return resultWithoutDeclaration;
 			}
 			return result;
-		},
+		}
 	);
 }
 
 // -- API commands ----
 
 async function _sortedAndDeduped(
-	callback: () => Promise<LocationLink[]>,
+	callback: () => Promise<LocationLink[]>
 ): Promise<LocationLink[]> {
 	const rawLinks = await callback();
 	const model = new ReferencesModel(rawLinks, "");
@@ -173,10 +173,10 @@ registerModelAndPositionCommand(
 			languageFeaturesService.definitionProvider,
 			model,
 			position,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		return _sortedAndDeduped(() => promise);
-	},
+	}
 );
 
 registerModelAndPositionCommand(
@@ -187,10 +187,10 @@ registerModelAndPositionCommand(
 			languageFeaturesService.typeDefinitionProvider,
 			model,
 			position,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		return _sortedAndDeduped(() => promise);
-	},
+	}
 );
 
 registerModelAndPositionCommand(
@@ -201,10 +201,10 @@ registerModelAndPositionCommand(
 			languageFeaturesService.declarationProvider,
 			model,
 			position,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		return _sortedAndDeduped(() => promise);
-	},
+	}
 );
 
 registerModelAndPositionCommand(
@@ -216,10 +216,10 @@ registerModelAndPositionCommand(
 			model,
 			position,
 			false,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		return _sortedAndDeduped(() => promise);
-	},
+	}
 );
 
 registerModelAndPositionCommand(
@@ -230,8 +230,8 @@ registerModelAndPositionCommand(
 			languageFeaturesService.implementationProvider,
 			model,
 			position,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		return _sortedAndDeduped(() => promise);
-	},
+	}
 );

@@ -52,9 +52,9 @@ export class TOCTreeModel {
 
 	constructor(
 		private _viewState: ISettingsEditorViewState,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService
-	) {
-	}
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService
+	) {}
 
 	get settingsTreeRoot(): SettingsTreeGroupElement {
 		return this._settingsTreeRoot;
@@ -95,7 +95,7 @@ export class TOCTreeModel {
 			.filter((child) => child instanceof SettingsTreeGroupElement)
 			.reduce(
 				(acc, cur) => acc + (<SettingsTreeGroupElement>cur).count!,
-				0,
+				0
 			);
 
 		group.count = childCount + this.getGroupCount(group);
@@ -110,7 +110,7 @@ export class TOCTreeModel {
 			if (
 				this._currentSearchModel &&
 				!this._currentSearchModel.root.containsSetting(
-					child.setting.key,
+					child.setting.key
 				)
 			) {
 				return false;
@@ -137,7 +137,8 @@ interface ITOCEntryTemplate {
 }
 
 export class TOCRenderer
-	implements ITreeRenderer<SettingsTreeGroupElement, never, ITOCEntryTemplate>
+	implements
+		ITreeRenderer<SettingsTreeGroupElement, never, ITOCEntryTemplate>
 {
 	templateId = TOC_ENTRY_TEMPLATE_ID;
 
@@ -151,7 +152,7 @@ export class TOCRenderer
 	renderElement(
 		node: ITreeNode<SettingsTreeGroupElement>,
 		index: number,
-		template: ITOCEntryTemplate,
+		template: ITOCEntryTemplate
 	): void {
 		const element = node.element;
 		const count = element.count;
@@ -182,7 +183,7 @@ class TOCTreeDelegate implements IListVirtualDelegate<SettingsTreeElement> {
 
 export function createTOCIterator(
 	model: TOCTreeModel | SettingsTreeGroupElement,
-	tree: TOCTree,
+	tree: TOCTree
 ): Iterable<ITreeElement<SettingsTreeGroupElement>> {
 	const groupChildren = <SettingsTreeGroupElement[]>(
 		model.children.filter((c) => c instanceof SettingsTreeGroupElement)
@@ -190,7 +191,7 @@ export function createTOCIterator(
 
 	return Iterable.map(groupChildren, (g) => {
 		const hasGroupChildren = g.children.some(
-			(c) => c instanceof SettingsTreeGroupElement,
+			(c) => c instanceof SettingsTreeGroupElement
 		);
 
 		return {
@@ -216,7 +217,7 @@ class SettingsAccessibilityProvider
 					"A label for the table of contents for the full settings list",
 				],
 			},
-			"Settings Table of Contents",
+			"Settings Table of Contents"
 		);
 	}
 
@@ -250,13 +251,13 @@ export class TOCTree extends WorkbenchObjectTree<SettingsTreeGroupElement> {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IListService listService: IListService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		// test open mode
 
 		const filter = instantiationService.createInstance(
 			SettingsTreeFilter,
-			viewState,
+			viewState
 		);
 		const options: IWorkbenchObjectTreeOptions<
 			SettingsTreeGroupElement,
@@ -272,7 +273,7 @@ export class TOCTree extends WorkbenchObjectTree<SettingsTreeGroupElement> {
 			styleController: (id) =>
 				new DefaultStyleController(DOM.createStyleSheet(container), id),
 			accessibilityProvider: instantiationService.createInstance(
-				SettingsAccessibilityProvider,
+				SettingsAccessibilityProvider
 			),
 			collapseByDefault: true,
 			horizontalScrolling: false,
@@ -289,7 +290,7 @@ export class TOCTree extends WorkbenchObjectTree<SettingsTreeGroupElement> {
 			instantiationService,
 			contextKeyService,
 			listService,
-			configurationService,
+			configurationService
 		);
 
 		this.style(
@@ -310,7 +311,7 @@ export class TOCTree extends WorkbenchObjectTree<SettingsTreeGroupElement> {
 				listInactiveFocusOutline: editorBackground,
 				treeIndentGuidesStroke: undefined,
 				treeInactiveIndentGuidesStroke: undefined,
-			}),
+			})
 		);
 	}
 }

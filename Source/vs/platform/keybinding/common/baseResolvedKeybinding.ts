@@ -35,13 +35,13 @@ export abstract class BaseResolvedKeybinding<
 
 	public getLabel(): string | null {
 		return UILabelProvider.toLabel(this._os, this._chords, (keybinding) =>
-			this._getLabel(keybinding),
+			this._getLabel(keybinding)
 		);
 	}
 
 	public getAriaLabel(): string | null {
 		return AriaLabelProvider.toLabel(this._os, this._chords, (keybinding) =>
-			this._getAriaLabel(keybinding),
+			this._getAriaLabel(keybinding)
 		);
 	}
 
@@ -58,7 +58,7 @@ export abstract class BaseResolvedKeybinding<
 		return ElectronAcceleratorLabelProvider.toLabel(
 			this._os,
 			this._chords,
-			(keybinding) => this._getElectronAccelerator(keybinding),
+			(keybinding) => this._getElectronAccelerator(keybinding)
 		);
 	}
 
@@ -66,7 +66,7 @@ export abstract class BaseResolvedKeybinding<
 		return UserSettingsLabelProvider.toLabel(
 			this._os,
 			this._chords,
-			(keybinding) => this._getUserSettingsLabel(keybinding),
+			(keybinding) => this._getUserSettingsLabel(keybinding)
 		);
 	}
 
@@ -89,19 +89,19 @@ export abstract class BaseResolvedKeybinding<
 			keybinding.altKey,
 			keybinding.metaKey,
 			this._getLabel(keybinding),
-			this._getAriaLabel(keybinding),
+			this._getAriaLabel(keybinding)
 		);
 	}
 
 	public getDispatchChords(): (string | null)[] {
 		return this._chords.map((keybinding) =>
-			this._getChordDispatch(keybinding),
+			this._getChordDispatch(keybinding)
 		);
 	}
 
 	public getSingleModifierDispatchChords(): (SingleModifierChord | null)[] {
 		return this._chords.map((keybinding) =>
-			this._getSingleModifierChordDispatch(keybinding),
+			this._getSingleModifierChordDispatch(keybinding)
 		);
 	}
 
@@ -112,6 +112,6 @@ export abstract class BaseResolvedKeybinding<
 	protected abstract _isWYSIWYG(keybinding: T): boolean;
 	protected abstract _getChordDispatch(keybinding: T): string | null;
 	protected abstract _getSingleModifierChordDispatch(
-		keybinding: T,
+		keybinding: T
 	): SingleModifierChord | null;
 }

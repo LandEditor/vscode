@@ -72,7 +72,7 @@ export class TokenizationTextModelPart
 	implements ITokenizationTextModelPart
 {
 	private readonly _semanticTokens: SparseTokensStore = new SparseTokensStore(
-		this._languageService.languageIdCodec,
+		this._languageService.languageIdCodec
 	);
 
 	private readonly _onDidChangeLanguage: Emitter<IModelLanguageChangedEvent> =
@@ -95,8 +95,8 @@ export class TokenizationTextModelPart
 			this._languageService.languageIdCodec,
 			this._textModel,
 			() => this._languageId,
-			this._attachedViews,
-		),
+			this._attachedViews
+		)
 	);
 
 	constructor(
@@ -105,7 +105,7 @@ export class TokenizationTextModelPart
 		private readonly _textModel: TextModel,
 		private readonly _bracketPairsTextModelPart: BracketPairsTextModelPart,
 		private _languageId: string,
-		private readonly _attachedViews: AttachedViews,
+		private readonly _attachedViews: AttachedViews
 	) {
 		super();
 
@@ -114,19 +114,19 @@ export class TokenizationTextModelPart
 				if (e.affects(this._languageId)) {
 					this._onDidChangeLanguageConfiguration.fire({});
 				}
-			}),
+			})
 		);
 
 		this._register(
 			this.grammarTokens.onDidChangeTokens((e) => {
 				this._emitModelTokensChangedEvent(e);
-			}),
+			})
 		);
 
 		this._register(
 			this.grammarTokens.onDidChangeBackgroundTokenizationState((e) => {
 				this._bracketPairsTextModelPart.handleDidChangeBackgroundTokenizationState();
-			}),
+			})
 		);
 	}
 
@@ -145,7 +145,7 @@ export class TokenizationTextModelPart
 			// We don't have to do anything on an EOL change
 			for (const c of e.changes) {
 				const [eolCount, firstLineLength, lastLineLength] = countEOL(
-					c.text,
+					c.text
 				);
 
 				this._semanticTokens.acceptEdit(
@@ -153,7 +153,7 @@ export class TokenizationTextModelPart
 					eolCount,
 					firstLineLength,
 					lastLineLength,
-					c.text.length > 0 ? c.text.charCodeAt(0) : CharCode.Null,
+					c.text.length > 0 ? c.text.charCodeAt(0) : CharCode.Null
 				);
 			}
 		}
@@ -173,7 +173,7 @@ export class TokenizationTextModelPart
 		const syntacticTokens = this.grammarTokens.getLineTokens(lineNumber);
 		return this._semanticTokens.addSparseTokens(
 			lineNumber,
-			syntacticTokens,
+			syntacticTokens
 		);
 	}
 
@@ -222,24 +222,24 @@ export class TokenizationTextModelPart
 	public getTokenTypeIfInsertingCharacter(
 		lineNumber: number,
 		column: number,
-		character: string,
+		character: string
 	): StandardTokenType {
 		return this.grammarTokens.getTokenTypeIfInsertingCharacter(
 			lineNumber,
 			column,
-			character,
+			character
 		);
 	}
 
 	public tokenizeLineWithEdit(
 		position: IPosition,
 		length: number,
-		newText: string,
+		newText: string
 	): LineTokens | null {
 		return this.grammarTokens.tokenizeLineWithEdit(
 			position,
 			length,
-			newText,
+			newText
 		);
 	}
 
@@ -249,7 +249,7 @@ export class TokenizationTextModelPart
 
 	public setSemanticTokens(
 		tokens: SparseMultilineTokens[] | null,
-		isComplete: boolean,
+		isComplete: boolean
 	): void {
 		this._semanticTokens.set(tokens, isComplete);
 
@@ -274,13 +274,13 @@ export class TokenizationTextModelPart
 
 	public setPartialSemanticTokens(
 		range: Range,
-		tokens: SparseMultilineTokens[],
+		tokens: SparseMultilineTokens[]
 	): void {
 		if (this.hasCompleteSemanticTokens()) {
 			return;
 		}
 		const changedRange = this._textModel.validateRange(
-			this._semanticTokens.setPartial(range, tokens),
+			this._semanticTokens.setPartial(range, tokens)
 		);
 
 		this._emitModelTokensChangedEvent({
@@ -305,22 +305,22 @@ export class TokenizationTextModelPart
 		const lineContent = this._textModel.getLineContent(position.lineNumber);
 		const lineTokens = this.getLineTokens(position.lineNumber);
 		const tokenIndex = lineTokens.findTokenIndexAtOffset(
-			position.column - 1,
+			position.column - 1
 		);
 
 		// (1). First try checking right biased word
 		const [rbStartOffset, rbEndOffset] =
 			TokenizationTextModelPart._findLanguageBoundaries(
 				lineTokens,
-				tokenIndex,
+				tokenIndex
 			);
 		const rightBiasedWord = getWordAtText(
 			position.column,
 			this.getLanguageConfiguration(
-				lineTokens.getLanguageId(tokenIndex),
+				lineTokens.getLanguageId(tokenIndex)
 			).getWordDefinition(),
 			lineContent.substring(rbStartOffset, rbEndOffset),
-			rbStartOffset,
+			rbStartOffset
 		);
 		// Make sure the result touches the original passed in position
 		if (
@@ -337,15 +337,15 @@ export class TokenizationTextModelPart
 			const [lbStartOffset, lbEndOffset] =
 				TokenizationTextModelPart._findLanguageBoundaries(
 					lineTokens,
-					tokenIndex - 1,
+					tokenIndex - 1
 				);
 			const leftBiasedWord = getWordAtText(
 				position.column,
 				this.getLanguageConfiguration(
-					lineTokens.getLanguageId(tokenIndex - 1),
+					lineTokens.getLanguageId(tokenIndex - 1)
 				).getWordDefinition(),
 				lineContent.substring(lbStartOffset, lbEndOffset),
-				lbStartOffset,
+				lbStartOffset
 			);
 			// Make sure the result touches the original passed in position
 			if (
@@ -361,16 +361,16 @@ export class TokenizationTextModelPart
 	}
 
 	private getLanguageConfiguration(
-		languageId: string,
+		languageId: string
 	): ResolvedLanguageConfiguration {
 		return this._languageConfigurationService.getLanguageConfiguration(
-			languageId,
+			languageId
 		);
 	}
 
 	private static _findLanguageBoundaries(
 		lineTokens: LineTokens,
-		tokenIndex: number,
+		tokenIndex: number
 	): [number, number] {
 		const languageId = lineTokens.getLanguageId(tokenIndex);
 
@@ -409,7 +409,7 @@ export class TokenizationTextModelPart
 		return {
 			word: wordAtPosition.word.substr(
 				0,
-				position.column - wordAtPosition.startColumn,
+				position.column - wordAtPosition.startColumn
 			),
 			startColumn: wordAtPosition.startColumn,
 			endColumn: position.column,
@@ -426,11 +426,11 @@ export class TokenizationTextModelPart
 
 	public getLanguageIdAtPosition(lineNumber: number, column: number): string {
 		const position = this._textModel.validatePosition(
-			new Position(lineNumber, column),
+			new Position(lineNumber, column)
 		);
 		const lineTokens = this.getLineTokens(position.lineNumber);
 		return lineTokens.getLanguageId(
-			lineTokens.findTokenIndexAtOffset(position.column - 1),
+			lineTokens.findTokenIndexAtOffset(position.column - 1)
 		);
 	}
 
@@ -462,7 +462,7 @@ class GrammarTokens extends Disposable {
 	private _defaultBackgroundTokenizer: DefaultBackgroundTokenizer | null =
 		null;
 	private readonly _backgroundTokenizer = this._register(
-		new MutableDisposable<IBackgroundTokenizer>(),
+		new MutableDisposable<IBackgroundTokenizer>()
 	);
 
 	private readonly _tokens = new ContiguousTokensStore(this._languageIdCodec);
@@ -472,7 +472,7 @@ class GrammarTokens extends Disposable {
 		| undefined;
 
 	private readonly _debugBackgroundTokenizer = this._register(
-		new MutableDisposable<IBackgroundTokenizer>(),
+		new MutableDisposable<IBackgroundTokenizer>()
 	);
 
 	private _backgroundTokenizationState =
@@ -482,28 +482,28 @@ class GrammarTokens extends Disposable {
 	}
 
 	private readonly _onDidChangeBackgroundTokenizationState = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	/** @internal, should not be exposed by the text model! */
 	public readonly onDidChangeBackgroundTokenizationState: Event<void> =
 		this._onDidChangeBackgroundTokenizationState.event;
 
 	private readonly _onDidChangeTokens = this._register(
-		new Emitter<IModelTokensChangedEvent>(),
+		new Emitter<IModelTokensChangedEvent>()
 	);
 	/** @internal, should not be exposed by the text model! */
 	public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> =
 		this._onDidChangeTokens.event;
 
 	private readonly _attachedViewStates = this._register(
-		new DisposableMap<IAttachedView, AttachedViewHandler>(),
+		new DisposableMap<IAttachedView, AttachedViewHandler>()
 	);
 
 	constructor(
 		private readonly _languageIdCodec: ILanguageIdCodec,
 		private readonly _textModel: TextModel,
 		private getLanguageId: () => string,
-		attachedViews: AttachedViews,
+		attachedViews: AttachedViews
 	) {
 		super();
 
@@ -514,7 +514,7 @@ class GrammarTokens extends Disposable {
 					return;
 				}
 				this.resetTokenization();
-			}),
+			})
 		);
 
 		this.resetTokenization();
@@ -525,7 +525,7 @@ class GrammarTokens extends Disposable {
 					let existing = this._attachedViewStates.get(view);
 					if (!existing) {
 						existing = new AttachedViewHandler(() =>
-							this.refreshRanges(existing!.lineRanges),
+							this.refreshRanges(existing!.lineRanges)
 						);
 						this._attachedViewStates.set(view, existing);
 					}
@@ -533,7 +533,7 @@ class GrammarTokens extends Disposable {
 				} else {
 					this._attachedViewStates.deleteAndDispose(view);
 				}
-			}),
+			})
 		);
 	}
 
@@ -542,7 +542,7 @@ class GrammarTokens extends Disposable {
 		this._debugBackgroundTokens?.flush();
 		if (this._debugBackgroundStates) {
 			this._debugBackgroundStates = new TrackingTokenizationStateStore(
-				this._textModel.getLineCount(),
+				this._textModel.getLineCount()
 			);
 		}
 		if (fireTokenChangeEvent) {
@@ -564,7 +564,7 @@ class GrammarTokens extends Disposable {
 				return [null, null];
 			}
 			const tokenizationSupport = TokenizationRegistry.get(
-				this.getLanguageId(),
+				this.getLanguageId()
 			);
 			if (!tokenizationSupport) {
 				return [null, null];
@@ -585,7 +585,7 @@ class GrammarTokens extends Disposable {
 				this._textModel.getLineCount(),
 				tokenizationSupport,
 				this._textModel,
-				this._languageIdCodec,
+				this._languageIdCodec
 			);
 		} else {
 			this._tokenizer = null;
@@ -635,7 +635,7 @@ class GrammarTokens extends Disposable {
 				this._backgroundTokenizer.value =
 					tokenizationSupport.createBackgroundTokenizer(
 						this._textModel,
-						b,
+						b
 					);
 			}
 			if (
@@ -653,11 +653,11 @@ class GrammarTokens extends Disposable {
 				tokenizationSupport.createBackgroundTokenizer
 			) {
 				this._debugBackgroundTokens = new ContiguousTokensStore(
-					this._languageIdCodec,
+					this._languageIdCodec
 				);
 				this._debugBackgroundStates =
 					new TrackingTokenizationStateStore(
-						this._textModel.getLineCount(),
+						this._textModel.getLineCount()
 					);
 				this._debugBackgroundTokenizer.clear();
 				this._debugBackgroundTokenizer.value =
@@ -667,7 +667,7 @@ class GrammarTokens extends Disposable {
 							setTokens: (tokens) => {
 								this._debugBackgroundTokens?.setMultilineTokens(
 									tokens,
-									this._textModel,
+									this._textModel
 								);
 							},
 							backgroundTokenizationFinished() {
@@ -676,10 +676,10 @@ class GrammarTokens extends Disposable {
 							setEndState: (lineNumber, state) => {
 								this._debugBackgroundStates?.setEndState(
 									lineNumber,
-									state,
+									state
 								);
 							},
-						},
+						}
 					);
 			} else {
 				this._debugBackgroundTokens = undefined;
@@ -708,7 +708,7 @@ class GrammarTokens extends Disposable {
 				this._debugBackgroundTokens?.acceptEdit(
 					c.range,
 					eolCount,
-					firstLineLength,
+					firstLineLength
 				);
 			}
 			this._debugBackgroundStates?.acceptChanges(e.changes);
@@ -725,7 +725,7 @@ class GrammarTokens extends Disposable {
 	} {
 		const { changes } = this._tokens.setMultilineTokens(
 			tokens,
-			this._textModel,
+			this._textModel
 		);
 
 		if (changes.length > 0) {
@@ -740,7 +740,7 @@ class GrammarTokens extends Disposable {
 
 	private refreshAllVisibleLineTokens(): void {
 		const ranges = LineRange.joinMany(
-			[...this._attachedViewStates].map(([_, s]) => s.lineRanges),
+			[...this._attachedViewStates].map(([_, s]) => s.lineRanges)
 		);
 		this.refreshRanges(ranges);
 	}
@@ -749,7 +749,7 @@ class GrammarTokens extends Disposable {
 		for (const range of ranges) {
 			this.refreshRange(
 				range.startLineNumber,
-				range.endLineNumberExclusive - 1,
+				range.endLineNumberExclusive - 1
 			);
 		}
 	}
@@ -761,7 +761,7 @@ class GrammarTokens extends Disposable {
 
 		startLineNumber = Math.max(
 			1,
-			Math.min(this._textModel.getLineCount(), startLineNumber),
+			Math.min(this._textModel.getLineCount(), startLineNumber)
 		);
 		endLineNumber = Math.min(this._textModel.getLineCount(), endLineNumber);
 
@@ -769,7 +769,7 @@ class GrammarTokens extends Disposable {
 		const { heuristicTokens } = this._tokenizer.tokenizeHeuristically(
 			builder,
 			startLineNumber,
-			endLineNumber,
+			endLineNumber
 		);
 		const changedTokens = this.setTokens(builder.finalize());
 
@@ -780,7 +780,7 @@ class GrammarTokens extends Disposable {
 			for (const c of changedTokens.changes) {
 				this._backgroundTokenizer.value?.requestTokens(
 					c.fromLineNumber,
-					c.toLineNumber + 1,
+					c.toLineNumber + 1
 				);
 			}
 		}
@@ -813,7 +813,7 @@ class GrammarTokens extends Disposable {
 		const result = this._tokens.getTokens(
 			this._textModel.getLanguageId(),
 			lineNumber - 1,
-			lineText,
+			lineText
 		);
 		if (
 			this._debugBackgroundTokens &&
@@ -829,7 +829,7 @@ class GrammarTokens extends Disposable {
 				const backgroundResult = this._debugBackgroundTokens.getTokens(
 					this._textModel.getLanguageId(),
 					lineNumber - 1,
-					lineText,
+					lineText
 				);
 				if (
 					!result.equals(backgroundResult) &&
@@ -837,7 +837,7 @@ class GrammarTokens extends Disposable {
 						?.reportMismatchingTokens
 				) {
 					this._debugBackgroundTokenizer.value.reportMismatchingTokens(
-						lineNumber,
+						lineNumber
 					);
 				}
 			}
@@ -848,26 +848,26 @@ class GrammarTokens extends Disposable {
 	public getTokenTypeIfInsertingCharacter(
 		lineNumber: number,
 		column: number,
-		character: string,
+		character: string
 	): StandardTokenType {
 		if (!this._tokenizer) {
 			return StandardTokenType.Other;
 		}
 
 		const position = this._textModel.validatePosition(
-			new Position(lineNumber, column),
+			new Position(lineNumber, column)
 		);
 		this.forceTokenization(position.lineNumber);
 		return this._tokenizer.getTokenTypeIfInsertingCharacter(
 			position,
-			character,
+			character
 		);
 	}
 
 	public tokenizeLineWithEdit(
 		position: IPosition,
 		length: number,
-		newText: string,
+		newText: string
 	): LineTokens | null {
 		if (!this._tokenizer) {
 			return null;
@@ -878,7 +878,7 @@ class GrammarTokens extends Disposable {
 		return this._tokenizer.tokenizeLineWithEdit(
 			validatedPosition,
 			length,
-			newText,
+			newText
 		);
 	}
 
@@ -889,7 +889,7 @@ class GrammarTokens extends Disposable {
 
 class AttachedViewHandler extends Disposable {
 	private readonly runner = this._register(
-		new RunOnceScheduler(() => this.update(), 50),
+		new RunOnceScheduler(() => this.update(), 50)
 	);
 
 	private _computedLineRanges: readonly LineRange[] = [];
@@ -905,7 +905,7 @@ class AttachedViewHandler extends Disposable {
 	private update(): void {
 		if (
 			equals(this._computedLineRanges, this._lineRanges, (a, b) =>
-				a.equals(b),
+				a.equals(b)
 			)
 		) {
 			return;

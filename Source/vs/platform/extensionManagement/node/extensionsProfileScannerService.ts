@@ -14,12 +14,14 @@ import { URI } from "vs/base/common/uri";
 
 export class ExtensionsProfileScannerService extends AbstractExtensionsProfileScannerService {
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(
 			URI.file(environmentService.extensionsPath),
@@ -27,7 +29,7 @@ export class ExtensionsProfileScannerService extends AbstractExtensionsProfileSc
 			userDataProfilesService,
 			uriIdentityService,
 			telemetryService,
-			logService,
+			logService
 		);
 	}
 }

@@ -94,7 +94,7 @@ export class DisposableTracker implements IDisposableTracker {
 
 	private getRootParent(
 		data: DisposableInfo,
-		cache: Map<DisposableInfo, DisposableInfo>,
+		cache: Map<DisposableInfo, DisposableInfo>
 	): DisposableInfo {
 		const cacheValue = cache.get(data);
 		if (cacheValue) {
@@ -115,7 +115,7 @@ export class DisposableTracker implements IDisposableTracker {
 			.filter(
 				([, v]) =>
 					v.source !== null &&
-					!this.getRootParent(v, rootParentCache).isSingleton,
+					!this.getRootParent(v, rootParentCache).isSingleton
 			)
 			.flatMap(([k]) => k);
 
@@ -124,7 +124,7 @@ export class DisposableTracker implements IDisposableTracker {
 
 	computeLeakingDisposables(
 		maxReported = 10,
-		preComputedLeaks?: DisposableInfo[],
+		preComputedLeaks?: DisposableInfo[]
 	): { leaks: DisposableInfo[]; details: string } | undefined {
 		let uncoveredLeakingObjs: DisposableInfo[] | undefined;
 		if (preComputedLeaks) {
@@ -135,7 +135,7 @@ export class DisposableTracker implements IDisposableTracker {
 			const leakingObjects = [...this.livingDisposables.values()].filter(
 				(info) =>
 					info.source !== null &&
-					!this.getRootParent(info, rootParentCache).isSingleton,
+					!this.getRootParent(info, rootParentCache).isSingleton
 			);
 
 			if (leakingObjects.length === 0) {
@@ -160,14 +160,14 @@ export class DisposableTracker implements IDisposableTracker {
 		function getStackTracePath(leaking: DisposableInfo): string[] {
 			function removePrefix(
 				array: string[],
-				linesToRemove: (string | RegExp)[],
+				linesToRemove: (string | RegExp)[]
 			) {
 				while (
 					array.length > 0 &&
 					linesToRemove.some((regexp) =>
 						typeof regexp === "string"
 							? regexp === array[0]
-							: array[0].match(regexp),
+							: array[0].match(regexp)
 					)
 				) {
 					array.shift();
@@ -192,7 +192,7 @@ export class DisposableTracker implements IDisposableTracker {
 			for (let i = 0; i <= stackTracePath.length; i++) {
 				stackTraceStarts.add(
 					stackTracePath.slice(0, i).join("\n"),
-					leaking,
+					leaking
 				);
 			}
 		}
@@ -211,21 +211,21 @@ export class DisposableTracker implements IDisposableTracker {
 			for (let i = 0; i < stackTracePath.length; i++) {
 				let line = stackTracePath[i];
 				const starts = stackTraceStarts.get(
-					stackTracePath.slice(0, i + 1).join("\n"),
+					stackTracePath.slice(0, i + 1).join("\n")
 				);
 				line = `(shared with ${starts.size}/${uncoveredLeakingObjs.length} leaks) at ${line}`;
 
 				const prevStarts = stackTraceStarts.get(
-					stackTracePath.slice(0, i).join("\n"),
+					stackTracePath.slice(0, i).join("\n")
 				);
 				const continuations = groupBy(
 					[...prevStarts].map((d) => getStackTracePath(d)[i]),
-					(v) => v,
+					(v) => v
 				);
 				delete continuations[stackTracePath[i]];
 				for (const [cont, set] of Object.entries(continuations)) {
 					stackTraceFormattedLines.unshift(
-						`    - stacktraces of ${set.length} other leaks continue with ${cont}`,
+						`    - stacktraces of ${set.length} other leaks continue with ${cont}`
 					);
 				}
 
@@ -237,7 +237,7 @@ export class DisposableTracker implements IDisposableTracker {
 			}: ${
 				leaking.value.constructor.name
 			} ====================\n${stackTraceFormattedLines.join(
-				"\n",
+				"\n"
 			)}\n============================================================\n\n`;
 		}
 
@@ -288,7 +288,7 @@ if (TRACK_DISPOSABLES) {
 				}
 			}
 			markAsSingleton(disposable: IDisposable): void {}
-		})(),
+		})()
 	);
 }
 
@@ -303,14 +303,14 @@ export function markAsDisposed(disposable: IDisposable): void {
 
 function setParentOfDisposable(
 	child: IDisposable,
-	parent: IDisposable | null,
+	parent: IDisposable | null
 ): void {
 	disposableTracker?.setParent(child, parent);
 }
 
 function setParentOfDisposables(
 	children: IDisposable[],
-	parent: IDisposable | null,
+	parent: IDisposable | null
 ): void {
 	if (!disposableTracker) {
 		return;
@@ -347,7 +347,7 @@ export interface IDisposable {
  * Check if `thing` is {@link IDisposable disposable}.
  */
 export function isDisposable<E extends object>(
-	thing: E,
+	thing: E
 ): thing is E & IDisposable {
 	return (
 		typeof (<IDisposable>thing).dispose === "function" &&
@@ -360,7 +360,7 @@ export function isDisposable<E extends object>(
  */
 export function dispose<T extends IDisposable>(disposable: T): T;
 export function dispose<T extends IDisposable>(
-	disposable: T | undefined,
+	disposable: T | undefined
 ): T | undefined;
 export function dispose<
 	T extends IDisposable,
@@ -368,10 +368,10 @@ export function dispose<
 >(disposables: A): A;
 export function dispose<T extends IDisposable>(disposables: Array<T>): Array<T>;
 export function dispose<T extends IDisposable>(
-	disposables: ReadonlyArray<T>,
+	disposables: ReadonlyArray<T>
 ): ReadonlyArray<T>;
 export function dispose<T extends IDisposable>(
-	arg: T | Iterable<T> | undefined,
+	arg: T | Iterable<T> | undefined
 ): any {
 	if (Iterable.is(arg)) {
 		const errors: any[] = [];
@@ -391,7 +391,7 @@ export function dispose<T extends IDisposable>(
 		} else if (errors.length > 1) {
 			throw new AggregateError(
 				errors,
-				"Encountered errors while disposing of store",
+				"Encountered errors while disposing of store"
 			);
 		}
 
@@ -403,7 +403,7 @@ export function dispose<T extends IDisposable>(
 }
 
 export function disposeIfDisposable<T extends IDisposable | object>(
-	disposables: Array<T>,
+	disposables: Array<T>
 ): Array<T> {
 	for (const d of disposables) {
 		if (isDisposable(d)) {
@@ -507,8 +507,8 @@ export class DisposableStore implements IDisposable {
 			if (!DisposableStore.DISABLE_DISPOSED_WARNING) {
 				console.warn(
 					new Error(
-						"Trying to add a disposable to a DisposableStore that has already been disposed of. The added object will be leaked!",
-					).stack,
+						"Trying to add a disposable to a DisposableStore that has already been disposed of. The added object will be leaked!"
+					).stack
 				);
 			}
 		} else {
@@ -852,8 +852,8 @@ export class DisposableMap<K, V extends IDisposable = IDisposable>
 		if (this._isDisposed) {
 			console.warn(
 				new Error(
-					"Trying to add a disposable to a DisposableMap that has already been disposed of. The added object will be leaked!",
-				).stack,
+					"Trying to add a disposable to a DisposableMap that has already been disposed of. The added object will be leaked!"
+				).stack
 			);
 		}
 

@@ -12,11 +12,11 @@ let service: ts.LanguageService | undefined; // = ts.createLanguageService(new S
 function findRenameLocations(
 	projectPath: string,
 	fileName: string,
-	position: number,
+	position: number
 ): readonly ts.RenameLocation[] {
 	if (!service) {
 		service = ts.createLanguageService(
-			new StaticLanguageServiceHost(projectPath),
+			new StaticLanguageServiceHost(projectPath)
 		);
 	}
 

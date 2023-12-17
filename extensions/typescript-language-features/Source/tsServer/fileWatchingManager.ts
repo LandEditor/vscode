@@ -54,7 +54,7 @@ export class FileWatcherManager implements IDisposable {
 			create?: (uri: vscode.Uri) => void;
 			change?: (uri: vscode.Uri) => void;
 			delete?: (uri: vscode.Uri) => void;
-		},
+		}
 	): void {
 		this.logger.trace(`Creating file watcher for ${uri.toString()}`);
 
@@ -62,7 +62,7 @@ export class FileWatcherManager implements IDisposable {
 			new vscode.RelativePattern(uri, isRecursive ? "**" : "*"),
 			!listeners.create,
 			!listeners.change,
-			!listeners.delete,
+			!listeners.delete
 		);
 		const parentDirWatchers: DirWatcherEntry[] = [];
 		this._fileWatchers.set(id, {
@@ -96,18 +96,18 @@ export class FileWatcherManager implements IDisposable {
 				let parentDirWatcher = this._dirWatchers.get(dirUri);
 				if (!parentDirWatcher) {
 					this.logger.trace(
-						`Creating parent dir watcher for ${dirUri.toString()}`,
+						`Creating parent dir watcher for ${dirUri.toString()}`
 					);
 					const glob = new vscode.RelativePattern(
 						Utils.dirname(dirUri),
-						Utils.basename(dirUri),
+						Utils.basename(dirUri)
 					);
 					const parentWatcher =
 						vscode.workspace.createFileSystemWatcher(
 							glob,
 							!listeners.create,
 							true,
-							!listeners.delete,
+							!listeners.delete
 						);
 					parentDirWatcher = {
 						uri: dirUri,
@@ -131,7 +131,7 @@ export class FileWatcherManager implements IDisposable {
 							} catch {
 								// Noop
 							}
-						}),
+						})
 					);
 				}
 
@@ -139,7 +139,7 @@ export class FileWatcherManager implements IDisposable {
 					// When the parent dir is deleted, consider our file deleted too
 					// TODO: this fires if the file previously did not exist and then the parent is deleted
 					dirWatcher.listeners.push(
-						parentDirWatcher.watcher.onDidDelete(listeners.delete),
+						parentDirWatcher.watcher.onDidDelete(listeners.delete)
 					);
 				}
 
@@ -160,7 +160,7 @@ export class FileWatcherManager implements IDisposable {
 				if (dirWatcherEntry) {
 					if (--dirWatcherEntry.refCount <= 0) {
 						this.logger.trace(
-							`Deleting parent dir ${dirWatcherEntry.uri}`,
+							`Deleting parent dir ${dirWatcherEntry.uri}`
 						);
 						dirWatcherEntry.watcher.dispose();
 						this._dirWatchers.delete(dirWatcher.uri);

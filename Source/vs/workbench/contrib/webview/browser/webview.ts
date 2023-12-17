@@ -155,7 +155,7 @@ export interface WebviewContentOptions {
  */
 export function areWebviewContentOptionsEqual(
 	a: WebviewContentOptions,
-	b: WebviewContentOptions,
+	b: WebviewContentOptions
 ): boolean {
 	return (
 		a.allowMultipleAPIAcquire === b.allowMultipleAPIAcquire &&
@@ -167,7 +167,7 @@ export function areWebviewContentOptionsEqual(
 			b.portMapping,
 			(a, b) =>
 				a.extensionHostPort === b.extensionHostPort &&
-				a.webviewPort === b.webviewPort,
+				a.webviewPort === b.webviewPort
 		) &&
 		areEnableCommandUrisEqual(a, b)
 	);
@@ -175,7 +175,7 @@ export function areWebviewContentOptionsEqual(
 
 function areEnableCommandUrisEqual(
 	a: WebviewContentOptions,
-	b: WebviewContentOptions,
+	b: WebviewContentOptions
 ): boolean {
 	if (a.enableCommandUris === b.enableCommandUris) {
 		return true;
@@ -269,7 +269,7 @@ export interface IWebview extends IDisposable {
 
 	postMessage(
 		message: any,
-		transfer?: readonly ArrayBuffer[],
+		transfer?: readonly ArrayBuffer[]
 	): Promise<boolean>;
 
 	focus(): void;
@@ -336,7 +336,7 @@ export interface IOverlayWebview extends IWebview {
 	 */
 	claim(
 		claimant: any,
-		scopedContextKeyService: IContextKeyService | undefined,
+		scopedContextKeyService: IContextKeyService | undefined
 	): void;
 
 	/**
@@ -361,7 +361,7 @@ export interface IOverlayWebview extends IWebview {
 	layoutWebviewOverElement(
 		element: HTMLElement,
 		dimension?: Dimension,
-		clippingContainer?: HTMLElement,
+		clippingContainer?: HTMLElement
 	): void;
 }
 
@@ -376,18 +376,18 @@ export class WebviewOriginStore {
 
 	constructor(
 		rootStorageKey: string,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		this._memento = new Memento(rootStorageKey, storageService);
 		this._state = this._memento.getMemento(
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
 	public getOrigin(
 		viewType: string,
-		additionalKey: string | undefined,
+		additionalKey: string | undefined
 	): string {
 		const key = this._getKey(viewType, additionalKey);
 
@@ -404,7 +404,7 @@ export class WebviewOriginStore {
 
 	private _getKey(
 		viewType: string,
-		additionalKey: string | undefined,
+		additionalKey: string | undefined
 	): string {
 		return JSON.stringify({ viewType, key: additionalKey });
 	}
@@ -420,7 +420,7 @@ export class ExtensionKeyedWebviewOriginStore {
 
 	constructor(
 		rootStorageKey: string,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		this._store = new WebviewOriginStore(rootStorageKey, storageService);
 	}

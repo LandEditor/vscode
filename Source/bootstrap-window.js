@@ -48,7 +48,7 @@
 		// Await window configuration from preload
 		const timeout = setTimeout(() => {
 			console.error(
-				`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`,
+				`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`
 			);
 		}, 10000);
 		performance.mark("code/willWaitForWindowConfig");
@@ -75,7 +75,7 @@
 						forceEnableDeveloperKeybindings: false,
 						disallowReloadKeybinding: false,
 						removeDeveloperKeybindingsAfterLoad: false,
-				  };
+					};
 		const isDev = !!safeProcess.env["VSCODE_DEV"];
 		const enableDeveloperKeybindings =
 			isDev || forceEnableDeveloperKeybindings;
@@ -127,7 +127,7 @@
 					}
 					throw new Error(`Invalid script url: ${value}`);
 				},
-			},
+			}
 		);
 
 		// Teach the loader the location of the node modules we use in renderers
@@ -180,7 +180,7 @@
 				// Callback only after process environment is resolved
 				const callbackResult = resultCallback(
 					firstModule,
-					configuration,
+					configuration
 				);
 				if (callbackResult instanceof Promise) {
 					await callbackResult;

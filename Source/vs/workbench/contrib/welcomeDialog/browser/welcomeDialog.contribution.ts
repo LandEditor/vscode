@@ -47,11 +47,13 @@ class WelcomeDialogContribution
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextKeyService readonly contextService: IContextKeyService,
 		@ICodeEditorService readonly codeEditorService: ICodeEditorService,
-		@IInstantiationService readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		readonly instantiationService: IInstantiationService,
 		@ICommandService readonly commandService: ICommandService,
 		@ITelemetryService readonly telemetryService: ITelemetryService,
 		@IOpenerService readonly openerService: IOpenerService,
@@ -73,51 +75,70 @@ class WelcomeDialogContribution
 			return;
 		}
 
-		this._register(editorService.onDidActiveEditorChange(() => {
-			if (!this.isRendered) {
+		this._register(
+			editorService.onDidActiveEditorChange(() => {
+				if (!this.isRendered) {
+					const codeEditor = codeEditorService.getActiveCodeEditor();
+					if (codeEditor?.hasModel()) {
+						const scheduler = new RunOnceScheduler(() => {
+							const notificationsVisible =
+								contextService.contextMatchesRules(
+									ContextKeyExpr.deserialize(
+										"notificationCenterVisible"
+									)
+								) ||
+								contextService.contextMatchesRules(
+									ContextKeyExpr.deserialize(
+										"notificationToastsVisible"
+									)
+								);
+							if (
+								codeEditor ===
+									codeEditorService.getActiveCodeEditor() &&
+								!notificationsVisible
+							) {
+								this.isRendered = true;
 
-				const codeEditor = codeEditorService.getActiveCodeEditor();
-				if (codeEditor?.hasModel()) {
-					const scheduler = new RunOnceScheduler(() => {
-						const notificationsVisible = contextService.contextMatchesRules(ContextKeyExpr.deserialize('notificationCenterVisible')) ||
-							contextService.contextMatchesRules(ContextKeyExpr.deserialize('notificationToastsVisible'));
-						if (codeEditor === codeEditorService.getActiveCodeEditor() && !notificationsVisible) {
-							this.isRendered = true;
+								const welcomeWidget = new WelcomeWidget(
+									codeEditor,
+									instantiationService,
+									commandService,
+									telemetryService,
+									openerService
+								);
 
-							const welcomeWidget = new WelcomeWidget(
-								codeEditor,
-								instantiationService,
-								commandService,
-								telemetryService,
-								openerService);
+								welcomeWidget.render(
+									welcomeDialog.title,
+									welcomeDialog.message,
+									welcomeDialog.buttonText,
+									welcomeDialog.buttonCommand
+								);
+							}
+						}, 3000);
 
-							welcomeWidget.render(welcomeDialog.title,
-								welcomeDialog.message,
-								welcomeDialog.buttonText,
-								welcomeDialog.buttonCommand);
-						}
-					}, 3000);
-
-					this._register(codeEditor.onDidChangeModelContent((e) => {
-						if (!this.isRendered) {
-							scheduler.schedule();
-						}
-					}));
+						this._register(
+							codeEditor.onDidChangeModelContent((e) => {
+								if (!this.isRendered) {
+									scheduler.schedule();
+								}
+							})
+						);
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	WelcomeDialogContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	...applicationConfigurationNodeBase,
@@ -129,7 +150,7 @@ configurationRegistry.registerConfiguration({
 			tags: ["experimental"],
 			description: localize(
 				"workbench.welcome.dialog",
-				"When enabled, a welcome widget is shown in the editor",
+				"When enabled, a welcome widget is shown in the editor"
 			),
 		},
 	},

@@ -37,7 +37,7 @@ export abstract class TreeElement {
 
 	static findId(
 		candidate: DocumentSymbol | string,
-		container: TreeElement,
+		container: TreeElement
 	): string {
 		// complex id-computation which contains the origin/extension,
 		// the parent path, and some dedupe logic when names collide
@@ -61,7 +61,7 @@ export abstract class TreeElement {
 
 	static getElementById(
 		id: string,
-		element: TreeElement,
+		element: TreeElement
 	): TreeElement | undefined {
 		if (!id) {
 			return undefined;
@@ -110,7 +110,7 @@ export class OutlineElement extends TreeElement {
 	constructor(
 		readonly id: string,
 		public parent: TreeElement | undefined,
-		readonly symbol: DocumentSymbol,
+		readonly symbol: DocumentSymbol
 	) {
 		super();
 	}
@@ -123,7 +123,7 @@ export class OutlineGroup extends TreeElement {
 		readonly id: string,
 		public parent: TreeElement | undefined,
 		readonly label: string,
-		readonly order: number,
+		readonly order: number
 	) {
 		super();
 	}
@@ -136,7 +136,7 @@ export class OutlineGroup extends TreeElement {
 
 	private _getItemEnclosingPosition(
 		position: IPosition,
-		children: Map<string, OutlineElement>,
+		children: Map<string, OutlineElement>
 	): OutlineElement | undefined {
 		for (const [, item] of children) {
 			if (
@@ -160,7 +160,7 @@ export class OutlineGroup extends TreeElement {
 
 	private _updateMarker(
 		markers: IOutlineMarker[],
-		item: OutlineElement,
+		item: OutlineElement
 	): void {
 		item.marker = undefined;
 
@@ -168,7 +168,7 @@ export class OutlineGroup extends TreeElement {
 		const idx = binarySearch<IRange>(
 			markers,
 			item.symbol.range,
-			Range.compareRangesUsingStarts,
+			Range.compareRangesUsingStarts
 		);
 		let start: number;
 		if (idx < 0) {
@@ -225,7 +225,7 @@ export class OutlineModel extends TreeElement {
 	static create(
 		registry: LanguageFeatureRegistry<DocumentSymbolProvider>,
 		textModel: ITextModel,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<OutlineModel> {
 		const cts = new CancellationTokenSource(token);
 		const result = new OutlineModel(textModel.uri);
@@ -236,11 +236,11 @@ export class OutlineModel extends TreeElement {
 				id,
 				result,
 				provider.displayName ?? "Unknown Outline Provider",
-				index,
+				index
 			);
 
 			return Promise.resolve(
-				provider.provideDocumentSymbols(textModel, cts.token),
+				provider.provideDocumentSymbols(textModel, cts.token)
 			)
 				.then(
 					(result) => {
@@ -252,7 +252,7 @@ export class OutlineModel extends TreeElement {
 					(err) => {
 						onUnexpectedExternalError(err);
 						return group;
-					},
+					}
 				)
 				.then((group) => {
 					if (!TreeElement.empty(group)) {
@@ -289,7 +289,7 @@ export class OutlineModel extends TreeElement {
 
 	private static _makeOutlineElement(
 		info: DocumentSymbol,
-		container: OutlineGroup | OutlineElement,
+		container: OutlineGroup | OutlineElement
 	): void {
 		const id = TreeElement.findId(info, container);
 		const res = new OutlineElement(id, container, info);
@@ -362,7 +362,7 @@ export class OutlineModel extends TreeElement {
 
 	getItemEnclosingPosition(
 		position: IPosition,
-		context?: OutlineElement,
+		context?: OutlineElement
 	): OutlineElement | undefined {
 		let preferredGroup: OutlineGroup | undefined;
 		if (context) {
@@ -408,13 +408,13 @@ export class OutlineModel extends TreeElement {
 				roots.push(
 					...Iterable.map(
 						child.children.values(),
-						(child) => child.symbol,
-					),
+						(child) => child.symbol
+					)
 				);
 			}
 		}
 		return roots.sort((a, b) =>
-			Range.compareRangesUsingStarts(a.range, b.range),
+			Range.compareRangesUsingStarts(a.range, b.range)
 		);
 	}
 
@@ -426,19 +426,19 @@ export class OutlineModel extends TreeElement {
 			(a, b) =>
 				Position.compare(
 					Range.getStartPosition(a.range),
-					Range.getStartPosition(b.range),
+					Range.getStartPosition(b.range)
 				) ||
 				Position.compare(
 					Range.getEndPosition(b.range),
-					Range.getEndPosition(a.range),
-				),
+					Range.getEndPosition(a.range)
+				)
 		);
 	}
 
 	private static _flattenDocumentSymbols(
 		bucket: DocumentSymbol[],
 		entries: DocumentSymbol[],
-		overrideContainerLabel: string,
+		overrideContainerLabel: string
 	): void {
 		for (const entry of entries) {
 			bucket.push({
@@ -457,7 +457,7 @@ export class OutlineModel extends TreeElement {
 				OutlineModel._flattenDocumentSymbols(
 					bucket,
 					entry.children,
-					entry.name,
+					entry.name
 				);
 			}
 		}

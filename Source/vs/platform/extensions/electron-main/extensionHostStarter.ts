@@ -29,15 +29,16 @@ export class ExtensionHostStarter
 
 	constructor(
 		@ILogService private readonly _logService: ILogService,
-		@ILifecycleMainService private readonly _lifecycleMainService: ILifecycleMainService,
-		@IWindowsMainService private readonly _windowsMainService: IWindowsMainService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ILifecycleMainService
+		private readonly _lifecycleMainService: ILifecycleMainService,
+		@IWindowsMainService
+		private readonly _windowsMainService: IWindowsMainService,
+		@ITelemetryService private readonly _telemetryService: ITelemetryService
 	) {
-
 		// On shutdown: gracefully await extension host shutdowns
-		this._lifecycleMainService.onWillShutdown(e => {
+		this._lifecycleMainService.onWillShutdown((e) => {
 			this._shutdown = true;
-			e.join('extHostStarter', this._waitForAllExit(6000));
+			e.join("extHostStarter", this._waitForAllExit(6000));
 		});
 	}
 
@@ -78,12 +79,12 @@ export class ExtensionHostStarter
 			this._logService,
 			this._windowsMainService,
 			this._telemetryService,
-			this._lifecycleMainService,
+			this._lifecycleMainService
 		);
 		this._extHosts.set(id, extHost);
 		extHost.onExit(({ pid, code, signal }) => {
 			this._logService.info(
-				`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`,
+				`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`
 			);
 			setTimeout(() => {
 				extHost.dispose();
@@ -99,7 +100,7 @@ export class ExtensionHostStarter
 				try {
 					process.kill(pid, 0); // will throw if the process doesn't exist anymore.
 					this._logService.error(
-						`Extension host with pid ${pid} still exists, forcefully killing it...`,
+						`Extension host with pid ${pid} still exists, forcefully killing it...`
 					);
 					process.kill(pid);
 				} catch (er) {
@@ -112,7 +113,7 @@ export class ExtensionHostStarter
 
 	async start(
 		id: string,
-		opts: IExtensionHostProcessOptions,
+		opts: IExtensionHostProcessOptions
 	): Promise<{ pid: number | undefined }> {
 		if (this._shutdown) {
 			throw canceled();

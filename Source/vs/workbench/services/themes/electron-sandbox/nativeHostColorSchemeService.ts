@@ -29,7 +29,7 @@ export class NativeHostColorSchemeService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeColorScheme = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
@@ -37,27 +37,36 @@ export class NativeHostColorSchemeService
 	public highContrast: boolean;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IStorageService private storageService: IStorageService
 	) {
 		super();
 
 		// register listener with the OS
-		this._register(this.nativeHostService.onDidChangeColorScheme(scheme => this.update(scheme)));
+		this._register(
+			this.nativeHostService.onDidChangeColorScheme((scheme) =>
+				this.update(scheme)
+			)
+		);
 
-		const initial = this.getStoredValue() ?? environmentService.window.colorScheme;
+		const initial =
+			this.getStoredValue() ?? environmentService.window.colorScheme;
 		this.dark = initial.dark;
 		this.highContrast = initial.highContrast;
 
 		// fetch the actual value from the OS
-		this.nativeHostService.getOSColorScheme().then(scheme => this.update(scheme));
+		this.nativeHostService
+			.getOSColorScheme()
+			.then((scheme) => this.update(scheme));
 	}
 
 	private getStoredValue(): IColorScheme | undefined {
 		const stored = this.storageService.get(
 			NativeHostColorSchemeService.STORAGE_KEY,
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 		if (stored) {
 			try {
@@ -84,7 +93,7 @@ export class NativeHostColorSchemeService
 				NativeHostColorSchemeService.STORAGE_KEY,
 				JSON.stringify({ highContrast, dark }),
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 			this._onDidChangeColorScheme.fire();
 		}
@@ -94,5 +103,5 @@ export class NativeHostColorSchemeService
 registerSingleton(
 	IHostColorSchemeService,
 	NativeHostColorSchemeService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

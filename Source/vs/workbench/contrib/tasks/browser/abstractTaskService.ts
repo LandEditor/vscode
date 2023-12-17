@@ -206,7 +206,7 @@ export namespace ConfigureTaskAction {
 	export const ID = "workbench.action.tasks.configureTaskRunner";
 	export const TEXT = nls.localize(
 		"ConfigureTaskRunnerAction.label",
-		"Configure Task",
+		"Configure Task"
 	);
 }
 
@@ -266,14 +266,14 @@ class TaskMap {
 	}
 
 	public static getKey(
-		workspaceFolder: IWorkspace | IWorkspaceFolder | string,
+		workspaceFolder: IWorkspace | IWorkspaceFolder | string
 	): string {
 		let key: string | undefined;
 		if (Types.isString(workspaceFolder)) {
 			key = workspaceFolder;
 		} else {
 			const uri: URI | null | undefined = isWorkspaceFolder(
-				workspaceFolder,
+				workspaceFolder
 			)
 				? workspaceFolder.uri
 				: workspaceFolder.configuration;
@@ -283,7 +283,7 @@ class TaskMap {
 	}
 
 	public get(
-		workspaceFolder: IWorkspace | IWorkspaceFolder | string,
+		workspaceFolder: IWorkspace | IWorkspaceFolder | string
 	): Task[] {
 		const key = TaskMap.getKey(workspaceFolder);
 		let result: Task[] | undefined = this._store.get(key);
@@ -376,130 +376,207 @@ export abstract class AbstractTaskService
 	}
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IMarkerService protected readonly _markerService: IMarkerService,
 		@IOutputService protected readonly _outputService: IOutputService,
-		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly _paneCompositeService: IPaneCompositePartService,
 		@IViewsService private readonly _viewsService: IViewsService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@IFileService protected readonly _fileService: IFileService,
-		@IWorkspaceContextService protected readonly _contextService: IWorkspaceContextService,
-		@ITelemetryService protected readonly _telemetryService: ITelemetryService,
+		@IWorkspaceContextService
+		protected readonly _contextService: IWorkspaceContextService,
+		@ITelemetryService
+		protected readonly _telemetryService: ITelemetryService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
 		@IModelService protected readonly _modelService: IModelService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
-		@IConfigurationResolverService protected readonly _configurationResolverService: IConfigurationResolverService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
+		@IConfigurationResolverService
+		protected readonly _configurationResolverService: IConfigurationResolverService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IProgressService private readonly _progressService: IProgressService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IDialogService protected readonly _dialogService: IDialogService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IContextKeyService protected readonly _contextKeyService: IContextKeyService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IContextKeyService
+		protected readonly _contextKeyService: IContextKeyService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
 		@IPathService private readonly _pathService: IPathService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IPreferencesService private readonly _preferencesService: IPreferencesService,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
-		@IWorkspaceTrustRequestService private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IPreferencesService
+		private readonly _preferencesService: IPreferencesService,
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
+		@IWorkspaceTrustRequestService
+		private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@ILogService private readonly _logService: ILogService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
-		this._whenTaskSystemReady = Event.toPromise(this.onDidChangeTaskSystemInfo);
+		this._whenTaskSystemReady = Event.toPromise(
+			this.onDidChangeTaskSystemInfo
+		);
 		this._workspaceTasksPromise = undefined;
 		this._taskSystem = undefined;
 		this._taskSystemListeners = undefined;
-		this._outputChannel = this._outputService.getChannel(AbstractTaskService.OutputChannelId)!;
+		this._outputChannel = this._outputService.getChannel(
+			AbstractTaskService.OutputChannelId
+		)!;
 		this._providers = new Map<number, ITaskProvider>();
 		this._providerTypes = new Map<number, string>();
 		this._taskSystemInfos = new Map<string, ITaskSystemInfo[]>();
-		this._register(this._contextService.onDidChangeWorkspaceFolders(() => {
-			const folderSetup = this._computeWorkspaceFolderSetup();
-			if (this.executionEngine !== folderSetup[2]) {
-				this._disposeTaskSystemListeners();
-				this._taskSystem = undefined;
-			}
-			this._updateSetup(folderSetup);
-			return this._updateWorkspaceTasks(TaskRunSource.FolderOpen);
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration((e) => {
-			if (!e.affectsConfiguration('tasks') || (!this._taskSystem && !this._workspaceTasksPromise)) {
-				return;
-			}
-
-			if (!this._taskSystem || this._taskSystem instanceof TerminalTaskSystem) {
-				this._outputChannel.clear();
-			}
-
-			if (e.affectsConfiguration(TaskSettingId.Reconnection)) {
-				if (!this._configurationService.getValue(TaskSettingId.Reconnection)) {
-					this._persistentTasks?.clear();
-					this._storageService.remove(AbstractTaskService.PersistentTasks_Key, StorageScope.WORKSPACE);
+		this._register(
+			this._contextService.onDidChangeWorkspaceFolders(() => {
+				const folderSetup = this._computeWorkspaceFolderSetup();
+				if (this.executionEngine !== folderSetup[2]) {
+					this._disposeTaskSystemListeners();
+					this._taskSystem = undefined;
 				}
-			}
+				this._updateSetup(folderSetup);
+				return this._updateWorkspaceTasks(TaskRunSource.FolderOpen);
+			})
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					!e.affectsConfiguration("tasks") ||
+					(!this._taskSystem && !this._workspaceTasksPromise)
+				) {
+					return;
+				}
 
-			this._setTaskLRUCacheLimit();
-			return this._updateWorkspaceTasks(TaskRunSource.ConfigurationChange);
-		}));
+				if (
+					!this._taskSystem ||
+					this._taskSystem instanceof TerminalTaskSystem
+				) {
+					this._outputChannel.clear();
+				}
+
+				if (e.affectsConfiguration(TaskSettingId.Reconnection)) {
+					if (
+						!this._configurationService.getValue(
+							TaskSettingId.Reconnection
+						)
+					) {
+						this._persistentTasks?.clear();
+						this._storageService.remove(
+							AbstractTaskService.PersistentTasks_Key,
+							StorageScope.WORKSPACE
+						);
+					}
+				}
+
+				this._setTaskLRUCacheLimit();
+				return this._updateWorkspaceTasks(
+					TaskRunSource.ConfigurationChange
+				);
+			})
+		);
 		this._taskRunningState = TASK_RUNNING_STATE.bindTo(_contextKeyService);
 		this._onDidStateChange = this._register(new Emitter());
-		this._registerCommands().then(() => TaskCommandsRegistered.bindTo(this._contextKeyService).set(true));
-		ServerlessWebContext.bindTo(this._contextKeyService).set(Platform.isWeb && !remoteAgentService.getConnection()?.remoteAuthority);
-		this._configurationResolverService.contributeVariable('defaultBuildTask', async (): Promise<string | undefined> => {
-			let tasks = await this._getTasksForGroup(TaskGroup.Build);
-			if (tasks.length > 0) {
-				const defaults = this._getDefaultTasks(tasks);
-				if (defaults.length === 1) {
-					return defaults[0]._label;
-				} else if (defaults.length) {
-					tasks = defaults;
+		this._registerCommands().then(() =>
+			TaskCommandsRegistered.bindTo(this._contextKeyService).set(true)
+		);
+		ServerlessWebContext.bindTo(this._contextKeyService).set(
+			Platform.isWeb &&
+				!remoteAgentService.getConnection()?.remoteAuthority
+		);
+		this._configurationResolverService.contributeVariable(
+			"defaultBuildTask",
+			async (): Promise<string | undefined> => {
+				let tasks = await this._getTasksForGroup(TaskGroup.Build);
+				if (tasks.length > 0) {
+					const defaults = this._getDefaultTasks(tasks);
+					if (defaults.length === 1) {
+						return defaults[0]._label;
+					} else if (defaults.length) {
+						tasks = defaults;
+					}
 				}
-			}
 
-			let entry: ITaskQuickPickEntry | null | undefined;
-			if (tasks && tasks.length > 0) {
-				entry = await this._showQuickPick(tasks, nls.localize('TaskService.pickBuildTaskForLabel', 'Select the build task (there is no default build task defined)'));
-			}
+				let entry: ITaskQuickPickEntry | null | undefined;
+				if (tasks && tasks.length > 0) {
+					entry = await this._showQuickPick(
+						tasks,
+						nls.localize(
+							"TaskService.pickBuildTaskForLabel",
+							"Select the build task (there is no default build task defined)"
+						)
+					);
+				}
 
-			const task: Task | undefined | null = entry ? entry.task : undefined;
-			if (!task) {
-				return undefined;
+				const task: Task | undefined | null = entry
+					? entry.task
+					: undefined;
+				if (!task) {
+					return undefined;
+				}
+				return task._label;
 			}
-			return task._label;
-		});
-		this._lifecycleService.onBeforeShutdown(e => {
+		);
+		this._lifecycleService.onBeforeShutdown((e) => {
 			this._willRestart = e.reason !== ShutdownReason.RELOAD;
 		});
-		this._register(this.onDidStateChange(e => {
-			this._log(nls.localize('taskEvent', 'Task Event kind: {0}', e.kind), true);
-			if (e.kind === TaskEventKind.Changed) {
-				// no-op
-			} else if ((this._willRestart || (e.kind === TaskEventKind.Terminated && e.exitReason === TerminalExitReason.User)) && e.taskId) {
-				const key = e.__task.getKey();
-				if (key) {
-					this.removePersistentTask(key);
+		this._register(
+			this.onDidStateChange((e) => {
+				this._log(
+					nls.localize("taskEvent", "Task Event kind: {0}", e.kind),
+					true
+				);
+				if (e.kind === TaskEventKind.Changed) {
+					// no-op
+				} else if (
+					(this._willRestart ||
+						(e.kind === TaskEventKind.Terminated &&
+							e.exitReason === TerminalExitReason.User)) &&
+					e.taskId
+				) {
+					const key = e.__task.getKey();
+					if (key) {
+						this.removePersistentTask(key);
+					}
+				} else if (
+					e.kind === TaskEventKind.Start &&
+					e.__task &&
+					e.__task.getWorkspaceFolder()
+				) {
+					this._setPersistentTask(e.__task);
 				}
-			} else if (e.kind === TaskEventKind.Start && e.__task && e.__task.getWorkspaceFolder()) {
-				this._setPersistentTask(e.__task);
-			}
-		}));
-		this._waitForAllSupportedExecutions = new Promise(resolve => {
-			Event.once(this._onDidRegisterAllSupportedExecutions.event)(() => resolve());
+			})
+		);
+		this._waitForAllSupportedExecutions = new Promise((resolve) => {
+			Event.once(this._onDidRegisterAllSupportedExecutions.event)(() =>
+				resolve()
+			);
 		});
-		if (this._terminalService.getReconnectedTerminals('Task')?.length) {
+		if (this._terminalService.getReconnectedTerminals("Task")?.length) {
 			this._attemptTaskReconnection();
 		} else {
 			this._terminalService.whenConnected.then(() => {
-				if (this._terminalService.getReconnectedTerminals('Task')?.length) {
+				if (
+					this._terminalService.getReconnectedTerminals("Task")
+						?.length
+				) {
 					this._attemptTaskReconnection();
 				} else {
 					this._tasksReconnected = true;
@@ -513,26 +590,26 @@ export abstract class AbstractTaskService
 	public registerSupportedExecutions(
 		custom?: boolean,
 		shell?: boolean,
-		process?: boolean,
+		process?: boolean
 	) {
 		if (custom !== undefined) {
 			const customContext = CustomExecutionSupportedContext.bindTo(
-				this._contextKeyService,
+				this._contextKeyService
 			);
 			customContext.set(custom);
 		}
 		const isVirtual = !!VirtualWorkspaceContext.getValue(
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		if (shell !== undefined) {
 			const shellContext = ShellExecutionSupportedContext.bindTo(
-				this._contextKeyService,
+				this._contextKeyService
 			);
 			shellContext.set(shell && !isVirtual);
 		}
 		if (process !== undefined) {
 			const processContext = ProcessExecutionSupportedContext.bindTo(
-				this._contextKeyService,
+				this._contextKeyService
 			);
 			processContext.set(process && !isVirtual);
 		}
@@ -549,14 +626,14 @@ export abstract class AbstractTaskService
 			this._log(
 				nls.localize(
 					"TaskService.skippingReconnection",
-					"Startup kind not window reload, setting connected and removing persistent tasks",
+					"Startup kind not window reload, setting connected and removing persistent tasks"
 				),
-				true,
+				true
 			);
 			this._tasksReconnected = true;
 			this._storageService.remove(
 				AbstractTaskService.PersistentTasks_Key,
-				StorageScope.WORKSPACE,
+				StorageScope.WORKSPACE
 			);
 		}
 		if (
@@ -568,11 +645,11 @@ export abstract class AbstractTaskService
 					"TaskService.notConnecting",
 					"Setting tasks connected configured value {0}, tasks were already reconnected {1}",
 					this._configurationService.getValue(
-						TaskSettingId.Reconnection,
+						TaskSettingId.Reconnection
 					),
-					this._tasksReconnected,
+					this._tasksReconnected
 				),
-				true,
+				true
 			);
 			this._tasksReconnected = true;
 			return;
@@ -580,18 +657,18 @@ export abstract class AbstractTaskService
 		this._log(
 			nls.localize(
 				"TaskService.reconnecting",
-				"Reconnecting to running tasks...",
+				"Reconnecting to running tasks..."
 			),
-			true,
+			true
 		);
 		this.getWorkspaceTasks(TaskRunSource.Reconnect).then(async () => {
 			this._tasksReconnected = await this._reconnectTasks();
 			this._log(
 				nls.localize(
 					"TaskService.reconnected",
-					"Reconnected to running tasks.",
+					"Reconnected to running tasks."
 				),
-				true,
+				true
 			);
 			this._onDidReconnectToTasks.fire();
 		});
@@ -603,9 +680,9 @@ export abstract class AbstractTaskService
 			this._log(
 				nls.localize(
 					"TaskService.noTasks",
-					"No persistent tasks to reconnect.",
+					"No persistent tasks to reconnect."
 				),
-				true,
+				true
 			);
 			return true;
 		}
@@ -614,9 +691,9 @@ export abstract class AbstractTaskService
 			nls.localize(
 				"TaskService.reconnectingTasks",
 				"Reconnecting to {0} tasks...",
-				taskLabels,
+				taskLabels
 			),
-			true,
+			true
 		);
 		for (const task of tasks) {
 			if (ConfiguringTask.is(task)) {
@@ -655,7 +732,7 @@ export abstract class AbstractTaskService
 						isOptional: true,
 						description: nls.localize(
 							"runTask.arg",
-							"Filters the tasks shown in the quickpick",
+							"Filters the tasks shown in the quickpick"
 						),
 						schema: {
 							anyOf: [
@@ -663,7 +740,7 @@ export abstract class AbstractTaskService
 									type: "string",
 									description: nls.localize(
 										"runTask.label",
-										"The task's label or a term to filter by",
+										"The task's label or a term to filter by"
 									),
 								},
 								{
@@ -673,14 +750,14 @@ export abstract class AbstractTaskService
 											type: "string",
 											description: nls.localize(
 												"runTask.type",
-												"The contributed task type",
+												"The contributed task type"
 											),
 										},
 										task: {
 											type: "string",
 											description: nls.localize(
 												"runTask.task",
-												"The task's label or a term to filter by",
+												"The task's label or a term to filter by"
 											),
 										},
 									},
@@ -698,7 +775,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._reRunTaskCommand();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -707,7 +784,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runRestartTaskCommand(arg);
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -716,13 +793,13 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runTerminateCommand(arg);
 				}
-			},
+			}
 		);
 		CommandsRegistry.registerCommand(
 			"workbench.action.tasks.showLog",
 			() => {
 				this._showOutput(undefined, true);
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -731,7 +808,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runBuildCommand();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -740,7 +817,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runTestCommand();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -749,7 +826,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runConfigureTasks();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -758,7 +835,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runConfigureDefaultBuildTask();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -767,7 +844,7 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					this._runConfigureDefaultTestTask();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
@@ -776,15 +853,15 @@ export abstract class AbstractTaskService
 				if (await this._trust()) {
 					return this.runShowTasks();
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
 			"workbench.action.tasks.toggleProblems",
 			() =>
 				this._commandService.executeCommand(
-					Markers.TOGGLE_MARKERS_VIEW_ACTION_ID,
-				),
+					Markers.TOGGLE_MARKERS_VIEW_ACTION_ID
+				)
 		);
 
 		CommandsRegistry.registerCommand(
@@ -794,19 +871,19 @@ export abstract class AbstractTaskService
 				if (resource) {
 					this._openTaskFile(resource, TaskSourceKind.User);
 				}
-			},
+			}
 		);
 
 		CommandsRegistry.registerCommand(
 			"workbench.action.tasks.openWorkspaceFileTasks",
 			async () => {
 				const resource = this._getResourceForKind(
-					TaskSourceKind.WorkspaceFile,
+					TaskSourceKind.WorkspaceFile
 				);
 				if (resource) {
 					this._openTaskFile(resource, TaskSourceKind.WorkspaceFile);
 				}
-			},
+			}
 		);
 	}
 
@@ -843,7 +920,7 @@ export abstract class AbstractTaskService
 			this._showIgnoreMessage = !this._storageService.getBoolean(
 				AbstractTaskService.IgnoreTask010DonotShowAgain_key,
 				StorageScope.WORKSPACE,
-				false,
+				false
 			);
 		}
 		return this._showIgnoreMessage;
@@ -865,7 +942,7 @@ export abstract class AbstractTaskService
 	}
 
 	private async _activateTaskProviders(
-		type: string | undefined,
+		type: string | undefined
 	): Promise<void> {
 		// We need to first wait for extensions to be registered because we might read
 		// the `TaskDefinitionRegistry` in case `type` is `undefined`
@@ -873,14 +950,14 @@ export abstract class AbstractTaskService
 		await raceTimeout(
 			Promise.all(
 				this._getActivationEvents(type).map((activationEvent) =>
-					this._extensionService.activateByEvent(activationEvent),
-				),
+					this._extensionService.activateByEvent(activationEvent)
+				)
 			),
 			5000,
 			() =>
 				console.warn(
-					"Timed out activating extensions for task providers",
-				),
+					"Timed out activating extensions for task providers"
+				)
 		);
 	}
 
@@ -891,7 +968,7 @@ export abstract class AbstractTaskService
 			ExecutionEngine,
 			JsonSchemaVersion,
 			IWorkspace | undefined,
-		],
+		]
 	): void {
 		if (!setup) {
 			setup = this._computeWorkspaceFolderSetup();
@@ -903,7 +980,7 @@ export abstract class AbstractTaskService
 			} else {
 				const set: Set<string> = new Set();
 				this._ignoredWorkspaceFolders.forEach((folder) =>
-					set.add(folder.uri.toString()),
+					set.add(folder.uri.toString())
 				);
 				for (const folder of setup[1]) {
 					if (!set.has(folder.uri.toString())) {
@@ -921,7 +998,7 @@ export abstract class AbstractTaskService
 
 	protected _showOutput(
 		runSource: TaskRunSource = TaskRunSource.User,
-		userRequested?: boolean,
+		userRequested?: boolean
 	): void {
 		if (
 			!VirtualWorkspaceContext.getValue(this._contextKeyService) &&
@@ -935,7 +1012,7 @@ export abstract class AbstractTaskService
 					Severity.Warning,
 					nls.localize(
 						"taskServiceOutputPrompt",
-						"There are task errors. See the output for details.",
+						"There are task errors. See the output for details."
 					),
 					[
 						{
@@ -943,11 +1020,11 @@ export abstract class AbstractTaskService
 							run: () => {
 								this._outputService.showChannel(
 									this._outputChannel.id,
-									true,
+									true
 								);
 							},
 						},
-					],
+					]
 				);
 			}
 		}
@@ -962,7 +1039,7 @@ export abstract class AbstractTaskService
 
 	public registerTaskProvider(
 		provider: ITaskProvider,
-		type: string,
+		type: string
 	): IDisposable {
 		if (!provider) {
 			return {
@@ -1023,7 +1100,7 @@ export abstract class AbstractTaskService
 
 	public extensionCallbackTaskComplete(
 		task: Task,
-		result: number,
+		result: number
 	): Promise<void> {
 		if (!this._taskSystem) {
 			return Promise.resolve();
@@ -1037,8 +1114,8 @@ export abstract class AbstractTaskService
 	private async _findWorkspaceTasks(
 		predicate: (
 			task: ConfiguringTask | Task,
-			workspaceFolder: IWorkspaceFolder,
-		) => boolean,
+			workspaceFolder: IWorkspaceFolder
+		) => boolean
 	): Promise<(ConfiguringTask | Task)[]> {
 		const result: (ConfiguringTask | Task)[] = [];
 
@@ -1067,7 +1144,7 @@ export abstract class AbstractTaskService
 
 	private async _findWorkspaceTasksInGroup(
 		group: TaskGroup,
-		isDefault: boolean,
+		isDefault: boolean
 	): Promise<(ConfiguringTask | Task)[]> {
 		return this._findWorkspaceTasks((task) => {
 			const taskGroup = task.configurationProperties.group;
@@ -1085,7 +1162,7 @@ export abstract class AbstractTaskService
 		folder: IWorkspace | IWorkspaceFolder | string,
 		identifier: string | ITaskIdentifier,
 		compareId: boolean = false,
-		type: string | undefined = undefined,
+		type: string | undefined = undefined
 	): Promise<Task | undefined> {
 		if (!(await this._trust())) {
 			return;
@@ -1093,13 +1170,13 @@ export abstract class AbstractTaskService
 		const name = Types.isString(folder)
 			? folder
 			: isWorkspaceFolder(folder)
-			  ? folder.name
-			  : folder.configuration
-				  ? resources.basename(folder.configuration)
-				  : undefined;
+				? folder.name
+				: folder.configuration
+					? resources.basename(folder.configuration)
+					: undefined;
 		if (
 			this.ignoredWorkspaceFolders.some(
-				(ignored) => ignored.name === name,
+				(ignored) => ignored.name === name
 			)
 		) {
 			return Promise.reject(
@@ -1107,13 +1184,13 @@ export abstract class AbstractTaskService
 					nls.localize(
 						"TaskServer.folderIgnored",
 						"The folder {0} is ignored since it uses task version 0.1.0",
-						name,
-					),
-				),
+						name
+					)
+				)
 			);
 		}
 		const key: string | KeyedTaskIdentifier | undefined = !Types.isString(
-			identifier,
+			identifier
 		)
 			? TaskDefinition.createTaskIdentifier(identifier, console)
 			: identifier;
@@ -1134,10 +1211,10 @@ export abstract class AbstractTaskService
 					return false;
 				}
 				return task.matches(key, compareId);
-			},
+			}
 		);
 		matchedTasks.sort((task) =>
-			task._source.kind === TaskSourceKind.Extension ? 1 : -1,
+			task._source.kind === TaskSourceKind.Extension ? 1 : -1
 		);
 		if (matchedTasks.length > 0) {
 			// Nice, we found a configured task!
@@ -1160,13 +1237,13 @@ export abstract class AbstractTaskService
 		values = values
 			.filter((task) => task.matches(key, compareId))
 			.sort((task) =>
-				task._source.kind === TaskSourceKind.Extension ? 1 : -1,
+				task._source.kind === TaskSourceKind.Extension ? 1 : -1
 			);
 		return values.length > 0 ? values[0] : undefined;
 	}
 
 	public async tryResolveTask(
-		configuringTask: ConfiguringTask,
+		configuringTask: ConfiguringTask
 	): Promise<Task | undefined> {
 		if (!(await this._trust())) {
 			return;
@@ -1195,8 +1272,8 @@ export abstract class AbstractTaskService
 					nls.localize(
 						"TaskService.providerUnavailable",
 						"Warning: {0} tasks are unavailable in the current environment.",
-						configuringTask.configures.type,
-					),
+						configuringTask.configures.type
+					)
 				);
 			}
 			return;
@@ -1209,7 +1286,7 @@ export abstract class AbstractTaskService
 			if (resolvedTask && resolvedTask._id === configuringTask._id) {
 				return TaskConfig.createCustomTask(
 					resolvedTask,
-					configuringTask,
+					configuringTask
 				);
 			}
 		} catch (error) {
@@ -1222,7 +1299,7 @@ export abstract class AbstractTaskService
 			if (task._id === configuringTask._id) {
 				return TaskConfig.createCustomTask(
 					<ContributedTask>task,
-					configuringTask,
+					configuringTask
 				);
 			}
 		}
@@ -1231,7 +1308,7 @@ export abstract class AbstractTaskService
 	}
 
 	protected abstract _versionAndEngineCompatible(
-		filter?: ITaskFilter,
+		filter?: ITaskFilter
 	): boolean;
 
 	public async tasks(filter?: ITaskFilter): Promise<Task[]> {
@@ -1286,7 +1363,7 @@ export abstract class AbstractTaskService
 		return new TaskSorter(
 			this._contextService.getWorkspace()
 				? this._contextService.getWorkspace().folders
-				: [],
+				: []
 		);
 	}
 
@@ -1317,15 +1394,15 @@ export abstract class AbstractTaskService
 		}
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
-				QUICKOPEN_HISTORY_LIMIT_CONFIG,
+				QUICKOPEN_HISTORY_LIMIT_CONFIG
 			);
 		this._recentlyUsedTasksV1 = new LRUCache<string, string>(
-			quickOpenHistoryLimit,
+			quickOpenHistoryLimit
 		);
 
 		const storageValue = this._storageService.get(
 			AbstractTaskService.RecentlyUsedTasks_Key,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 		if (storageValue) {
 			try {
@@ -1343,7 +1420,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _getTasksFromStorage(
-		type: "persistent" | "historical",
+		type: "persistent" | "historical"
 	): LRUCache<string, string> {
 		return type === "persistent"
 			? this._getPersistentTasks()
@@ -1356,15 +1433,15 @@ export abstract class AbstractTaskService
 		}
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
-				QUICKOPEN_HISTORY_LIMIT_CONFIG,
+				QUICKOPEN_HISTORY_LIMIT_CONFIG
 			);
 		this._recentlyUsedTasks = new LRUCache<string, string>(
-			quickOpenHistoryLimit,
+			quickOpenHistoryLimit
 		);
 
 		const storageValue = this._storageService.get(
 			AbstractTaskService.RecentlyUsedTasks_KeyV2,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 		if (storageValue) {
 			try {
@@ -1387,9 +1464,9 @@ export abstract class AbstractTaskService
 				nls.localize(
 					"taskService.gettingCachedTasks",
 					"Returning cached tasks {0}",
-					this._persistentTasks.size,
+					this._persistentTasks.size
 				),
-				true,
+				true
 			);
 			return this._persistentTasks;
 		}
@@ -1397,7 +1474,7 @@ export abstract class AbstractTaskService
 		this._persistentTasks = new LRUCache<string, string>(10);
 		const storageValue = this._storageService.get(
 			AbstractTaskService.PersistentTasks_Key,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 		if (storageValue) {
 			try {
@@ -1423,13 +1500,13 @@ export abstract class AbstractTaskService
 		return {
 			folder: keyValue.folder,
 			isWorkspaceFile: keyValue.id?.endsWith(
-				TaskSourceKind.WorkspaceFile,
+				TaskSourceKind.WorkspaceFile
 			),
 		};
 	}
 
 	public async getSavedTasks(
-		type: "persistent" | "historical",
+		type: "persistent" | "historical"
 	): Promise<(Task | ConfiguringTask)[]> {
 		const folderMap: IStringDictionary<IWorkspaceFolder> =
 			Object.create(null);
@@ -1443,14 +1520,14 @@ export abstract class AbstractTaskService
 		this._log(
 			nls.localize(
 				"taskService.getSavedTasks",
-				"Fetching tasks from task storage.",
+				"Fetching tasks from task storage."
 			),
-			true,
+			true
 		);
 		function addTaskToMap(
 			map: Map<string, any>,
 			folder: string | undefined,
-			task: any,
+			task: any
 		) {
 			if (folder && !map.has(folder)) {
 				map.set(folder, []);
@@ -1474,25 +1551,25 @@ export abstract class AbstractTaskService
 						"Reading tasks from task storage, {0}, {1}, {2}",
 						key,
 						task,
-						folderInfo.folder,
+						folderInfo.folder
 					),
-					true,
+					true
 				);
 				addTaskToMap(
 					folderInfo.isWorkspaceFile
 						? workspaceToTaskMap
 						: folderToTasksMap,
 					folderInfo.folder,
-					task,
+					task
 				);
 			} catch (error) {
 				this._log(
 					nls.localize(
 						"taskService.getSavedTasks.error",
 						"Fetching a task from task storage failed: {0}.",
-						error,
+						error
 					),
-					true,
+					true
 				);
 			}
 		}
@@ -1502,7 +1579,7 @@ export abstract class AbstractTaskService
 		async function readTasks(
 			that: AbstractTaskService,
 			map: Map<string, any>,
-			isWorkspaceFile: boolean,
+			isWorkspaceFile: boolean
 		) {
 			for (const key of map.keys()) {
 				const custom: CustomTask[] = [];
@@ -1523,7 +1600,7 @@ export abstract class AbstractTaskService
 					custom,
 					customized,
 					taskConfigSource,
-					true,
+					true
 				);
 				custom.forEach((task) => {
 					const taskKey = task.getKey();
@@ -1548,18 +1625,18 @@ export abstract class AbstractTaskService
 					nls.localize(
 						"taskService.getSavedTasks.resolved",
 						"Resolved task {0}",
-						key,
+						key
 					),
-					true,
+					true
 				);
 			} else {
 				this._log(
 					nls.localize(
 						"taskService.getSavedTasks.unresolved",
 						"Unable to resolve task {0} ",
-						key,
+						key
 					),
-					true,
+					true
 				);
 			}
 		}
@@ -1578,9 +1655,9 @@ export abstract class AbstractTaskService
 			nls.localize(
 				"taskService.removePersistentTask",
 				"Removing persistent task {0}",
-				key,
+				key
 			),
-			true,
+			true
 		);
 		if (this._getTasksFromStorage("persistent").has(key)) {
 			this._getTasksFromStorage("persistent").delete(key);
@@ -1591,7 +1668,7 @@ export abstract class AbstractTaskService
 	private _setTaskLRUCacheLimit() {
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
-				QUICKOPEN_HISTORY_LIMIT_CONFIG,
+				QUICKOPEN_HISTORY_LIMIT_CONFIG
 			);
 		if (this._recentlyUsedTasks) {
 			this._recentlyUsedTasks.limit = quickOpenHistoryLimit;
@@ -1616,7 +1693,7 @@ export abstract class AbstractTaskService
 					custom,
 					customized,
 					TaskConfig.TaskConfigSource.TasksJson,
-					true,
+					true
 				);
 				for (const configuration in customized) {
 					key = customized[configuration].getKey()!;
@@ -1624,7 +1701,7 @@ export abstract class AbstractTaskService
 			}
 			this._getTasksFromStorage("historical").set(
 				key,
-				JSON.stringify(customizations),
+				JSON.stringify(customizations)
 			);
 			this._saveRecentlyUsedTasks();
 		}
@@ -1636,7 +1713,7 @@ export abstract class AbstractTaskService
 		}
 		const quickOpenHistoryLimit =
 			this._configurationService.getValue<number>(
-				QUICKOPEN_HISTORY_LIMIT_CONFIG,
+				QUICKOPEN_HISTORY_LIMIT_CONFIG
 			);
 		// setting history limit to 0 means no LRU sorting
 		if (quickOpenHistoryLimit === 0) {
@@ -1657,7 +1734,7 @@ export abstract class AbstractTaskService
 			AbstractTaskService.RecentlyUsedTasks_KeyV2,
 			JSON.stringify(keyValues),
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
@@ -1682,7 +1759,7 @@ export abstract class AbstractTaskService
 					custom,
 					customized,
 					TaskConfig.TaskConfigSource.TasksJson,
-					true,
+					true
 				);
 				for (const configuration in customized) {
 					key = customized[configuration].getKey()!;
@@ -1695,13 +1772,13 @@ export abstract class AbstractTaskService
 				nls.localize(
 					"taskService.setPersistentTask",
 					"Setting persistent task {0}",
-					key,
+					key
 				),
-				true,
+				true
 			);
 			this._getTasksFromStorage("persistent").set(
 				key,
-				JSON.stringify(customizations),
+				JSON.stringify(customizations)
 			);
 			this._savePersistentTasks();
 		}
@@ -1718,28 +1795,28 @@ export abstract class AbstractTaskService
 			nls.localize(
 				"savePersistentTask",
 				"Saving persistent tasks: {0}",
-				keys.join(", "),
+				keys.join(", ")
 			),
-			true,
+			true
 		);
 		this._storageService.store(
 			AbstractTaskService.PersistentTasks_Key,
 			JSON.stringify(keyValues),
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
 	private _openDocumentation(): void {
 		this._openerService.open(
 			URI.parse(
-				"https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher",
-			),
+				"https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher"
+			)
 		);
 	}
 
 	private async _findSingleWorkspaceTaskOfGroup(
-		group: TaskGroup,
+		group: TaskGroup
 	): Promise<ITaskSummary | undefined> {
 		const tasksOfGroup = await this._findWorkspaceTasksInGroup(group, true);
 		if (
@@ -1762,7 +1839,7 @@ export abstract class AbstractTaskService
 
 	private async _build(): Promise<ITaskSummary> {
 		const tryBuildShortcut = await this._findSingleWorkspaceTaskOfGroup(
-			TaskGroup.Build,
+			TaskGroup.Build
 		);
 		if (tryBuildShortcut) {
 			return tryBuildShortcut;
@@ -1772,7 +1849,7 @@ export abstract class AbstractTaskService
 
 	private async _runTest(): Promise<ITaskSummary> {
 		const tryTestShortcut = await this._findSingleWorkspaceTaskOfGroup(
-			TaskGroup.Test,
+			TaskGroup.Test
 		);
 		if (tryTestShortcut) {
 			return tryTestShortcut;
@@ -1782,12 +1859,12 @@ export abstract class AbstractTaskService
 	}
 
 	private async _getGroupedTasksAndExecute(
-		test?: boolean,
+		test?: boolean
 	): Promise<ITaskSummary> {
 		const tasks = await this._getGroupedTasks();
 		const runnable = this._createRunnableTask(
 			tasks,
-			test ? TaskGroup.Test : TaskGroup.Build,
+			test ? TaskGroup.Test : TaskGroup.Build
 		);
 		if (!runnable || !runnable.task) {
 			if (test) {
@@ -1796,18 +1873,18 @@ export abstract class AbstractTaskService
 						Severity.Info,
 						nls.localize(
 							"TaskService.noTestTask1",
-							"No test task defined. Mark a task with 'isTestCommand' in the tasks.json file.",
+							"No test task defined. Mark a task with 'isTestCommand' in the tasks.json file."
 						),
-						TaskErrors.NoTestTask,
+						TaskErrors.NoTestTask
 					);
 				} else {
 					throw new TaskError(
 						Severity.Info,
 						nls.localize(
 							"TaskService.noTestTask2",
-							"No test task defined. Mark a task with as a 'test' group in the tasks.json file.",
+							"No test task defined. Mark a task with as a 'test' group in the tasks.json file."
 						),
-						TaskErrors.NoTestTask,
+						TaskErrors.NoTestTask
 					);
 				}
 			} else {
@@ -1816,18 +1893,18 @@ export abstract class AbstractTaskService
 						Severity.Info,
 						nls.localize(
 							"TaskService.noBuildTask1",
-							"No build task defined. Mark a task with 'isBuildCommand' in the tasks.json file.",
+							"No build task defined. Mark a task with 'isBuildCommand' in the tasks.json file."
 						),
-						TaskErrors.NoBuildTask,
+						TaskErrors.NoBuildTask
 					);
 				} else {
 					throw new TaskError(
 						Severity.Info,
 						nls.localize(
 							"TaskService.noBuildTask2",
-							"No build task defined. Mark a task with as a 'build' group in the tasks.json file.",
+							"No build task defined. Mark a task with as a 'build' group in the tasks.json file."
 						),
-						TaskErrors.NoBuildTask,
+						TaskErrors.NoBuildTask
 					);
 				}
 			}
@@ -1837,7 +1914,7 @@ export abstract class AbstractTaskService
 			executeTaskResult = await this._executeTask(
 				runnable.task,
 				runnable.resolver,
-				TaskRunSource.User,
+				TaskRunSource.User
 			);
 		} catch (error) {
 			this._handleError(error);
@@ -1849,7 +1926,7 @@ export abstract class AbstractTaskService
 	public async run(
 		task: Task | undefined,
 		options?: IProblemMatcherRunOptions,
-		runSource: TaskRunSource = TaskRunSource.System,
+		runSource: TaskRunSource = TaskRunSource.System
 	): Promise<ITaskSummary | undefined> {
 		if (!(await this._trust())) {
 			return;
@@ -1859,9 +1936,9 @@ export abstract class AbstractTaskService
 				Severity.Info,
 				nls.localize(
 					"TaskServer.noTask",
-					"Task to execute is undefined",
+					"Task to execute is undefined"
 				),
-				TaskErrors.TaskNotFound,
+				TaskErrors.TaskNotFound
 			);
 		}
 		const resolver = this._createResolver();
@@ -1878,14 +1955,14 @@ export abstract class AbstractTaskService
 					executeTaskResult = await this._executeTask(
 						taskToExecute,
 						resolver,
-						runSource,
+						runSource
 					);
 				}
 			} else {
 				executeTaskResult = await this._executeTask(
 					task,
 					resolver,
-					runSource,
+					runSource
 				);
 			}
 			return executeTaskResult;
@@ -1897,14 +1974,14 @@ export abstract class AbstractTaskService
 
 	private _isProvideTasksEnabled(): boolean {
 		const settingValue = this._configurationService.getValue(
-			TaskSettingId.AutoDetect,
+			TaskSettingId.AutoDetect
 		);
 		return settingValue === "on";
 	}
 
 	private _isProblemMatcherPromptEnabled(type?: string): boolean {
 		const settingValue = this._configurationService.getValue(
-			PROBLEM_MATCHER_NEVER_CONFIG,
+			PROBLEM_MATCHER_NEVER_CONFIG
 		);
 		if (Types.isBoolean(settingValue)) {
 			return !settingValue;
@@ -1930,7 +2007,7 @@ export abstract class AbstractTaskService
 
 	private _shouldAttachProblemMatcher(task: Task): boolean {
 		const enabled = this._isProblemMatcherPromptEnabled(
-			this._getTypeForTask(task),
+			this._getTypeForTask(task)
 		);
 		if (enabled === false) {
 			return false;
@@ -1969,10 +2046,10 @@ export abstract class AbstractTaskService
 	}
 
 	private async _updateNeverProblemMatcherSetting(
-		type: string,
+		type: string
 	): Promise<void> {
 		const current = this._configurationService.getValue(
-			PROBLEM_MATCHER_NEVER_CONFIG,
+			PROBLEM_MATCHER_NEVER_CONFIG
 		);
 		if (current === true) {
 			return;
@@ -1986,12 +2063,12 @@ export abstract class AbstractTaskService
 		newValue[type] = true;
 		return this._configurationService.updateValue(
 			PROBLEM_MATCHER_NEVER_CONFIG,
-			newValue,
+			newValue
 		);
 	}
 
 	private async _attachProblemMatcher(
-		task: ContributedTask | CustomTask,
+		task: ContributedTask | CustomTask
 	): Promise<Task | undefined> {
 		interface IProblemMatcherPickEntry extends IQuickPickItem {
 			matcher: INamedProblemMatcher | undefined;
@@ -2041,14 +2118,14 @@ export abstract class AbstractTaskService
 			{
 				label: nls.localize(
 					"TaskService.attachProblemMatcher.continueWithout",
-					"Continue without scanning the task output",
+					"Continue without scanning the task output"
 				),
 				matcher: undefined,
 			},
 			{
 				label: nls.localize(
 					"TaskService.attachProblemMatcher.never",
-					"Never scan the task output for this task",
+					"Never scan the task output for this task"
 				),
 				matcher: undefined,
 				never: true,
@@ -2057,7 +2134,7 @@ export abstract class AbstractTaskService
 				label: nls.localize(
 					"TaskService.attachProblemMatcher.neverType",
 					"Never scan the task output for {0} tasks",
-					taskType,
+					taskType
 				),
 				matcher: undefined,
 				setting: taskType,
@@ -2065,16 +2142,16 @@ export abstract class AbstractTaskService
 			{
 				label: nls.localize(
 					"TaskService.attachProblemMatcher.learnMoreAbout",
-					"Learn more about scanning the task output",
+					"Learn more about scanning the task output"
 				),
 				matcher: undefined,
 				learnMore: true,
-			},
+			}
 		);
 		const problemMatcher = await this._quickInputService.pick(entries, {
 			placeHolder: nls.localize(
 				"selectProblemMatcher",
-				"Select for which kind of errors and warnings to scan the task output",
+				"Select for which kind of errors and warnings to scan the task output"
 			),
 		});
 		if (!problemMatcher) {
@@ -2098,7 +2175,7 @@ export abstract class AbstractTaskService
 				matcherReference,
 			];
 			const matcher = ProblemMatcherRegistry.get(
-				problemMatcher.matcher.name,
+				problemMatcher.matcher.name
 			);
 			if (matcher && matcher.watching !== undefined) {
 				properties.isBackground = true;
@@ -2109,7 +2186,7 @@ export abstract class AbstractTaskService
 		}
 		if (problemMatcher.setting) {
 			await this._updateNeverProblemMatcherSetting(
-				problemMatcher.setting,
+				problemMatcher.setting
 			);
 		}
 		return task;
@@ -2121,7 +2198,7 @@ export abstract class AbstractTaskService
 		groups.forEach((tasks) => {
 			for (const task of tasks) {
 				const configTaskGroup = TaskGroup.from(
-					task.configurationProperties.group,
+					task.configurationProperties.group
 				);
 				if (configTaskGroup?._id === group._id) {
 					result.push(task);
@@ -2153,14 +2230,14 @@ export abstract class AbstractTaskService
 
 	private async _formatTaskForJson(
 		resource: URI,
-		task: TaskConfig.ICustomTask | TaskConfig.IConfiguringTask,
+		task: TaskConfig.ICustomTask | TaskConfig.IConfiguringTask
 	): Promise<string> {
 		let reference: IReference<IResolvedTextEditorModel> | undefined;
 		let stringValue: string = "";
 		try {
 			reference =
 				await this._textModelResolverService.createModelReference(
-					resource,
+					resource
 				);
 			const model = reference.object.textEditorModel;
 			const { tabSize, insertSpaces } = model.getOptions();
@@ -2172,11 +2249,11 @@ export abstract class AbstractTaskService
 			});
 			const regex = new RegExp(
 				eol + (insertSpaces ? " ".repeat(tabSize) : "\\t"),
-				"g",
+				"g"
 			);
 			stringified = stringified.replace(
 				regex,
-				eol + (insertSpaces ? " ".repeat(tabSize * 3) : "\t\t\t"),
+				eol + (insertSpaces ? " ".repeat(tabSize * 3) : "\t\t\t")
 			);
 			const twoTabs = insertSpaces ? " ".repeat(tabSize * 2) : "\t\t";
 			stringValue =
@@ -2197,7 +2274,7 @@ export abstract class AbstractTaskService
 			| TaskConfig.IConfiguringTask
 			| string
 			| undefined,
-		configIndex: number = -1,
+		configIndex: number = -1
 	): Promise<boolean> {
 		if (resource === undefined) {
 			return Promise.resolve(false);
@@ -2213,12 +2290,12 @@ export abstract class AbstractTaskService
 			const json: TaskConfig.IExternalTaskRunnerConfiguration =
 				this._configurationService.getValue<TaskConfig.IExternalTaskRunnerConfiguration>(
 					"tasks",
-					{ resource },
+					{ resource }
 				);
 			if (json.tasks && json.tasks.length > configIndex) {
 				stringValue = await this._formatTaskForJson(
 					resource,
-					json.tasks[configIndex],
+					json.tasks[configIndex]
 				);
 			}
 		}
@@ -2251,7 +2328,7 @@ export abstract class AbstractTaskService
 						endLineNumber,
 						endColumn:
 							startLineNumber === endLineNumber ? undefined : 4,
-				  }
+					}
 				: undefined;
 
 		await this._editorService.openEditor({
@@ -2268,7 +2345,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _createCustomizableTask(
-		task: ContributedTask | CustomTask | ConfiguringTask,
+		task: ContributedTask | CustomTask | ConfiguringTask
 	): TaskConfig.ICustomTask | TaskConfig.IConfiguringTask | undefined {
 		let toCustomize:
 			| TaskConfig.ICustomTask
@@ -2284,17 +2361,17 @@ export abstract class AbstractTaskService
 			toCustomize = {};
 			const identifier: TaskConfig.ITaskIdentifier = Object.assign(
 				Object.create(null),
-				task.defines,
+				task.defines
 			);
 			delete identifier["_key"];
 			Object.keys(identifier).forEach(
-				(key) => ((<any>toCustomize)![key] = identifier[key]),
+				(key) => ((<any>toCustomize)![key] = identifier[key])
 			);
 			if (
 				task.configurationProperties.problemMatchers &&
 				task.configurationProperties.problemMatchers.length > 0 &&
 				Types.isStringArray(
-					task.configurationProperties.problemMatchers,
+					task.configurationProperties.problemMatchers
 				)
 			) {
 				toCustomize.problemMatcher =
@@ -2302,7 +2379,7 @@ export abstract class AbstractTaskService
 			}
 			if (task.configurationProperties.group) {
 				toCustomize.group = TaskConfig.GroupKind.to(
-					task.configurationProperties.group,
+					task.configurationProperties.group
 				);
 			}
 		}
@@ -2329,7 +2406,7 @@ export abstract class AbstractTaskService
 	public async customize(
 		task: ContributedTask | CustomTask | ConfiguringTask,
 		properties?: ICustomizationProperties,
-		openConfig?: boolean,
+		openConfig?: boolean
 	): Promise<void> {
 		if (!(await this._trust())) {
 			return;
@@ -2341,14 +2418,14 @@ export abstract class AbstractTaskService
 		}
 		const configuration = this._getConfiguration(
 			workspaceFolder,
-			task._source.kind,
+			task._source.kind
 		);
 		if (configuration.hasParseErrors) {
 			this._notificationService.warn(
 				nls.localize(
 					"customizeParseErrors",
-					"The current task configuration has errors. Please fix the errors first before customizing a task.",
-				),
+					"The current task configuration has errors. Please fix the errors first before customizing a task."
+				)
 			);
 			return Promise.resolve<void>(undefined);
 		}
@@ -2380,7 +2457,7 @@ export abstract class AbstractTaskService
 					"{",
 					nls.localize(
 						"tasksJsonComment",
-						"\t// See https://go.microsoft.com/fwlink/?LinkId=733558 \n\t// for the documentation about the tasks.json format",
+						"\t// See https://go.microsoft.com/fwlink/?LinkId=733558 \n\t// for the documentation about the tasks.json format"
 					),
 				].join("\n") + JSON.stringify(value, null, "\t").substr(1);
 			const editorConfig = this._configurationService.getValue<any>();
@@ -2388,8 +2465,7 @@ export abstract class AbstractTaskService
 				content = content.replace(
 					/(\n)(\t+)/g,
 					(_, s1, s2) =>
-						s1 +
-						" ".repeat(s2.length * editorConfig.editor.tabSize),
+						s1 + " ".repeat(s2.length * editorConfig.editor.tabSize)
 				);
 			}
 			await this._textFileService.create([
@@ -2407,7 +2483,7 @@ export abstract class AbstractTaskService
 						workspaceFolder,
 						"tasks.problemMatchers",
 						fileConfig.problemMatcher,
-						task._source.kind,
+						task._source.kind
 					);
 				} else if (properties.group !== undefined) {
 					fileConfig.group = properties.group;
@@ -2415,7 +2491,7 @@ export abstract class AbstractTaskService
 						workspaceFolder,
 						"tasks.group",
 						fileConfig.group,
-						task._source.kind,
+						task._source.kind
 					);
 				}
 			} else {
@@ -2431,7 +2507,7 @@ export abstract class AbstractTaskService
 					workspaceFolder,
 					"tasks.tasks",
 					fileConfig.tasks,
-					task._source.kind,
+					task._source.kind
 				);
 			}
 		}
@@ -2445,7 +2521,7 @@ export abstract class AbstractTaskService
 		workspaceFolder: IWorkspaceFolder,
 		key: string,
 		value: any,
-		source?: string,
+		source?: string
 	): Promise<void> | undefined {
 		let target: ConfigurationTarget | undefined = undefined;
 		switch (source) {
@@ -2473,7 +2549,7 @@ export abstract class AbstractTaskService
 				key,
 				value,
 				{ resource: workspaceFolder.uri },
-				target,
+				target
 			);
 		} else {
 			return undefined;
@@ -2486,9 +2562,9 @@ export abstract class AbstractTaskService
 			case TaskSourceKind.User: {
 				return resources.joinPath(
 					resources.dirname(
-						this._preferencesService.userSettingsResource,
+						this._preferencesService.userSettingsResource
 					),
-					"tasks.json",
+					"tasks.json"
 				);
 			}
 			case TaskSourceKind.WorkspaceFile: {
@@ -2503,7 +2579,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _getResourceForTask(
-		task: CustomTask | ConfiguringTask | ContributedTask,
+		task: CustomTask | ConfiguringTask | ContributedTask
 	): URI {
 		if (CustomTask.is(task)) {
 			let uri = this._getResourceForKind(task._source.kind);
@@ -2522,7 +2598,7 @@ export abstract class AbstractTaskService
 	}
 
 	public async openConfig(
-		task: CustomTask | ConfiguringTask | undefined,
+		task: CustomTask | ConfiguringTask | undefined
 	): Promise<boolean> {
 		let resource: URI | undefined;
 		if (task) {
@@ -2536,13 +2612,13 @@ export abstract class AbstractTaskService
 		return this._openEditorAtTask(
 			resource,
 			task ? task._label : undefined,
-			task ? task._source.config.index : -1,
+			task ? task._source.config.index : -1
 		);
 	}
 
 	private _createRunnableTask(
 		tasks: TaskMap,
-		group: TaskGroup,
+		group: TaskGroup
 	): { task: Task; resolver: ITaskResolver } | undefined {
 		interface IResolverData {
 			id: Map<string, Task>;
@@ -2569,7 +2645,7 @@ export abstract class AbstractTaskService
 				if (task.configurationProperties.identifier) {
 					data.identifier.set(
 						task.configurationProperties.identifier,
-						task,
+						task
 					);
 				}
 				if (group && task.configurationProperties.group === group) {
@@ -2584,7 +2660,7 @@ export abstract class AbstractTaskService
 		const resolver: ITaskResolver = {
 			resolve: async (uri: URI | string, alias: string) => {
 				const data = resolverData.get(
-					typeof uri === "string" ? uri : uri.toString(),
+					typeof uri === "string" ? uri : uri.toString()
 				);
 				if (!data) {
 					return undefined;
@@ -2601,8 +2677,8 @@ export abstract class AbstractTaskService
 				this._log(
 					nls.localize(
 						"moreThanOneBuildTask",
-						"There are many build tasks defined in the tasks.json. Executing the first one.",
-					),
+						"There are many build tasks defined in the tasks.json. Executing the first one."
+					)
 				);
 			}
 			return { task: workspaceTasks[0], resolver };
@@ -2632,7 +2708,7 @@ export abstract class AbstractTaskService
 						};
 					}),
 					name: id,
-				},
+				}
 			);
 			return { task, resolver };
 		}
@@ -2650,7 +2726,7 @@ export abstract class AbstractTaskService
 		async function quickResolve(
 			that: AbstractTaskService,
 			uri: URI | string,
-			identifier: string | ITaskIdentifier,
+			identifier: string | ITaskIdentifier
 		) {
 			const foundTasks = await that._findWorkspaceTasks(
 				(task: Task | ConfiguringTask): boolean => {
@@ -2674,13 +2750,13 @@ export abstract class AbstractTaskService
 						const searchIdentifier =
 							TaskDefinition.createTaskIdentifier(
 								identifier,
-								console,
+								console
 							);
 						return searchIdentifier && keyedIdentifier
 							? searchIdentifier._key === keyedIdentifier._key
 							: false;
 					}
-				},
+				}
 			);
 			if (foundTasks.length === 0) {
 				return undefined;
@@ -2711,18 +2787,18 @@ export abstract class AbstractTaskService
 							if (task.configurationProperties.identifier) {
 								data.identifier.set(
 									task.configurationProperties.identifier,
-									task,
+									task
 								);
 							}
 							const keyedIdentifier = task.getDefinition(true);
 							if (keyedIdentifier !== undefined) {
 								data.taskIdentifier.set(
 									keyedIdentifier._key,
-									task,
+									task
 								);
 							}
 						}
-					},
+					}
 				);
 			}
 			return resolverData;
@@ -2731,11 +2807,11 @@ export abstract class AbstractTaskService
 		async function fullResolve(
 			that: AbstractTaskService,
 			uri: URI | string,
-			identifier: string | ITaskIdentifier,
+			identifier: string | ITaskIdentifier
 		) {
 			const allResolverData = await getResolverData(that);
 			const data = allResolverData.get(
-				typeof uri === "string" ? uri : uri.toString(),
+				typeof uri === "string" ? uri : uri.toString()
 			);
 			if (!data) {
 				return undefined;
@@ -2748,7 +2824,7 @@ export abstract class AbstractTaskService
 			} else {
 				const key = TaskDefinition.createTaskIdentifier(
 					identifier,
-					console,
+					console
 				);
 				return key !== undefined
 					? data.taskIdentifier.get(key._key)
@@ -2759,7 +2835,7 @@ export abstract class AbstractTaskService
 		return {
 			resolve: async (
 				uri: URI | string,
-				identifier: string | ITaskIdentifier | undefined,
+				identifier: string | ITaskIdentifier | undefined
 			) => {
 				if (!identifier) {
 					return undefined;
@@ -2795,22 +2871,22 @@ export abstract class AbstractTaskService
 			const { confirmed } = await this._dialogService.confirm({
 				message: nls.localize(
 					"TaskSystem.saveBeforeRun.prompt.title",
-					"Save all editors?",
+					"Save all editors?"
 				),
 				detail: nls.localize(
 					"detail",
-					"Do you want to save all editors before running the task?",
+					"Do you want to save all editors before running the task?"
 				),
 				primaryButton: nls.localize(
 					{
 						key: "saveBeforeRun.save",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Save",
+					"&&Save"
 				),
 				cancelButton: nls.localize(
 					"saveBeforeRun.dontSave",
-					"Don't save",
+					"Don't save"
 				),
 			});
 
@@ -2825,7 +2901,7 @@ export abstract class AbstractTaskService
 	private async _executeTask(
 		task: Task,
 		resolver: ITaskResolver,
-		runSource: TaskRunSource,
+		runSource: TaskRunSource
 	): Promise<ITaskSummary> {
 		let taskToRun: Task = task;
 		if (await this._saveBeforeRun()) {
@@ -2836,8 +2912,8 @@ export abstract class AbstractTaskService
 			const taskType = CustomTask.is(task)
 				? task.customizes()?.type
 				: ContributedTask.is(task)
-				  ? task.type
-				  : undefined;
+					? task.type
+					: undefined;
 			// Since we save before running tasks, the task may have changed as part of the save.
 			// However, if the TaskRunSource is not User, then we shouldn't try to fetch the task again
 			// since this can cause a new'd task to get overwritten with a provided task.
@@ -2849,8 +2925,8 @@ export abstract class AbstractTaskService
 							taskFolder,
 							taskIdentifier,
 							false,
-							taskType,
-					  )
+							taskType
+						)
 					: task) ?? task;
 		}
 		await ProblemMatcherRegistry.onReady();
@@ -2866,7 +2942,7 @@ export abstract class AbstractTaskService
 
 	private async _handleExecuteResult(
 		executeResult: ITaskExecuteResult,
-		runSource?: TaskRunSource,
+		runSource?: TaskRunSource
 	): Promise<ITaskSummary> {
 		if (runSource === TaskRunSource.User) {
 			await this._setRecentlyUsedTask(executeResult.task);
@@ -2882,7 +2958,7 @@ export abstract class AbstractTaskService
 				// ignore, the task is already active, likely from being reconnected or from folder open.
 				this._logService.debug(
 					"Ignoring task that is already active",
-					executeResult.task,
+					executeResult.task
 				);
 				return executeResult.promise;
 			}
@@ -2891,11 +2967,11 @@ export abstract class AbstractTaskService
 					const message = nls.localize(
 						"TaskSystem.activeSame.noBackground",
 						"The task '{0}' is already active.",
-						executeResult.task.getQualifiedLabel(),
+						executeResult.task.getQualifiedLabel()
 					);
 					const lastInstance =
 						this._getTaskSystem().getLastInstance(
-							executeResult.task,
+							executeResult.task
 						) ?? executeResult.task;
 					this._notificationService.prompt(
 						Severity.Warning,
@@ -2904,19 +2980,19 @@ export abstract class AbstractTaskService
 							{
 								label: nls.localize(
 									"terminateTask",
-									"Terminate Task",
+									"Terminate Task"
 								),
 								run: () => this.terminate(lastInstance),
 							},
 							{
 								label: nls.localize(
 									"restartTask",
-									"Restart Task",
+									"Restart Task"
 								),
 								run: () => this._restart(lastInstance),
 							},
 						],
-						{ sticky: true },
+						{ sticky: true }
 					);
 				} else {
 					this._taskSystem?.revealTask(executeResult.task);
@@ -2926,9 +3002,9 @@ export abstract class AbstractTaskService
 					Severity.Warning,
 					nls.localize(
 						"TaskSystem.active",
-						"There is already a task running. Terminate it first before executing another task.",
+						"There is already a task running. Terminate it first before executing another task."
 					),
-					TaskErrors.RunningTask,
+					TaskErrors.RunningTask
 				);
 			}
 		}
@@ -2954,8 +3030,8 @@ export abstract class AbstractTaskService
 					"Failed to terminate and restart task {0}",
 					Types.isString(task)
 						? task
-						: task.configurationProperties.name,
-				),
+						: task.configurationProperties.name
+				)
 			);
 		}
 	}
@@ -3004,7 +3080,7 @@ export abstract class AbstractTaskService
 				} else if (this._taskSystemInfos.size > 0) {
 					const infos = Array.from(this._taskSystemInfos.entries());
 					const notFile = infos.filter(
-						(info) => info[0] !== Schemas.file,
+						(info) => info[0] !== Schemas.file
 					);
 					if (notFile.length > 0) {
 						return notFile[0][1][0];
@@ -3013,7 +3089,7 @@ export abstract class AbstractTaskService
 				} else {
 					return undefined;
 				}
-			},
+			}
 		);
 	}
 
@@ -3035,7 +3111,7 @@ export abstract class AbstractTaskService
 		await this._activateTaskProviders(filter?.type);
 		const validTypes: IStringDictionary<boolean> = Object.create(null);
 		TaskDefinitionRegistry.all().forEach(
-			(definition) => (validTypes[definition.taskType] = true),
+			(definition) => (validTypes[definition.taskType] = true)
 		);
 		validTypes["shell"] = true;
 		validTypes["process"] = true;
@@ -3057,7 +3133,7 @@ export abstract class AbstractTaskService
 						this._showOutput();
 					} else {
 						this._log(
-							"Unknown error received while collecting tasks from providers.",
+							"Unknown error received while collecting tasks from providers."
 						);
 						this._showOutput();
 					}
@@ -3099,10 +3175,10 @@ export abstract class AbstractTaskService
 													"unexpectedTaskType",
 													'The task provider for "{0}" tasks unexpectedly provided a task of type "{1}".\n',
 													this._providerTypes.get(
-														handle,
+														handle
 													),
-													task.type,
-												),
+													task.type
+												)
 											);
 											if (
 												task.type !== "shell" &&
@@ -3120,10 +3196,10 @@ export abstract class AbstractTaskService
 								// onTimeout
 								console.error(
 									"Timed out getting tasks from ",
-									providerType,
+									providerType
 								);
 								done(undefined);
-							},
+							}
 						);
 					}
 				}
@@ -3176,9 +3252,9 @@ export abstract class AbstractTaskService
 								new Set<string>();
 							if (configurations) {
 								Object.keys(
-									configurations.byIdentifier,
+									configurations.byIdentifier
 								).forEach((key) =>
-									unUsedConfigurations.add(key),
+									unUsedConfigurations.add(key)
 								);
 							}
 							for (const task of contributed) {
@@ -3192,14 +3268,14 @@ export abstract class AbstractTaskService
 										];
 									if (configuringTask) {
 										unUsedConfigurations.delete(
-											task.defines._key,
+											task.defines._key
 										);
 										result.add(
 											key,
 											TaskConfig.createCustomTask(
 												task,
-												configuringTask,
-											),
+												configuringTask
+											)
 										);
 									} else {
 										result.add(key, task);
@@ -3214,11 +3290,11 @@ export abstract class AbstractTaskService
 											key,
 											TaskConfig.createCustomTask(
 												task,
-												configuringTask,
-											),
+												configuringTask
+											)
 										);
 										customTasksToDelete.push(
-											configuringTask,
+											configuringTask
 										);
 									} else {
 										result.add(key, task);
@@ -3260,7 +3336,8 @@ export abstract class AbstractTaskService
 											return;
 										}
 
-										let requiredTaskProviderUnavailable: boolean = false;
+										let requiredTaskProviderUnavailable: boolean =
+											false;
 
 										for (const [handle, provider] of this
 											._providers) {
@@ -3273,17 +3350,18 @@ export abstract class AbstractTaskService
 												if (
 													providerType &&
 													!this._isTaskProviderEnabled(
-														providerType,
+														providerType
 													)
 												) {
-													requiredTaskProviderUnavailable = true;
+													requiredTaskProviderUnavailable =
+														true;
 													continue;
 												}
 
 												try {
 													const resolvedTask =
 														await provider.resolveTask(
-															configuringTask,
+															configuringTask
 														);
 													if (
 														resolvedTask &&
@@ -3294,8 +3372,8 @@ export abstract class AbstractTaskService
 															key,
 															TaskConfig.createCustomTask(
 																resolvedTask,
-																configuringTask,
-															),
+																configuringTask
+															)
 														);
 														return;
 													}
@@ -3311,8 +3389,8 @@ export abstract class AbstractTaskService
 													"TaskService.providerUnavailable",
 													"Warning: {0} tasks are unavailable in the current environment.",
 													configuringTask.configures
-														.type,
-												),
+														.type
+												)
 											);
 										} else {
 											this._log(
@@ -3325,13 +3403,13 @@ export abstract class AbstractTaskService
 														configuringTask._source
 															.config.element,
 														undefined,
-														4,
-													),
-												),
+														4
+													)
+												)
 											);
 											this._showOutput();
 										}
-									},
+									}
 								);
 
 							await Promise.all(unUsedConfigurationPromises);
@@ -3340,7 +3418,7 @@ export abstract class AbstractTaskService
 							result.add(key, ...contributed);
 						}
 					}
-				},
+				}
 			);
 
 			await Promise.all(customTasksPromises);
@@ -3365,7 +3443,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _getLegacyTaskConfigurations(
-		workspaceTasks: ITaskSet,
+		workspaceTasks: ITaskSet
 	): IStringDictionary<CustomTask> | undefined {
 		let result: IStringDictionary<CustomTask> | undefined;
 		function getResult(): IStringDictionary<CustomTask> {
@@ -3397,14 +3475,14 @@ export abstract class AbstractTaskService
 	}
 
 	public async getWorkspaceTasks(
-		runSource: TaskRunSource = TaskRunSource.User,
+		runSource: TaskRunSource = TaskRunSource.User
 	): Promise<Map<string, IWorkspaceFolderTaskResult>> {
 		if (!(await this._trust())) {
 			return new Map();
 		}
 		await raceTimeout(this._waitForAllSupportedExecutions, 2000, () => {
 			this._logService.warn(
-				"Timed out waiting for all supported executions",
+				"Timed out waiting for all supported executions"
 			);
 		});
 		await this._whenTaskSystemReady;
@@ -3415,7 +3493,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _updateWorkspaceTasks(
-		runSource: TaskRunSource = TaskRunSource.User,
+		runSource: TaskRunSource = TaskRunSource.User
 	): Promise<Map<string, IWorkspaceFolderTaskResult>> {
 		this._workspaceTasksPromise = this._computeWorkspaceTasks(runSource);
 		return this._workspaceTasksPromise;
@@ -3438,7 +3516,7 @@ export abstract class AbstractTaskService
 	}
 
 	protected async _computeWorkspaceTasks(
-		runSource: TaskRunSource = TaskRunSource.User,
+		runSource: TaskRunSource = TaskRunSource.User
 	): Promise<Map<string, IWorkspaceFolderTaskResult>> {
 		const promises: Promise<IWorkspaceFolderTaskResult | undefined>[] = [];
 		for (const folder of this.workspaceFolders) {
@@ -3456,7 +3534,7 @@ export abstract class AbstractTaskService
 		if (this._contextService.getWorkbenchState() !== WorkbenchState.EMPTY) {
 			const workspaceFileTasks = await this._computeWorkspaceFileTasks(
 				folder,
-				runSource,
+				runSource
 			);
 			if (
 				workspaceFileTasks &&
@@ -3465,7 +3543,7 @@ export abstract class AbstractTaskService
 			) {
 				result.set(
 					this._workspace.configuration.toString(),
-					workspaceFileTasks,
+					workspaceFileTasks
 				);
 			}
 		}
@@ -3482,14 +3560,14 @@ export abstract class AbstractTaskService
 			ShellExecutionSupportedContext.getValue(this._contextKeyService) ===
 				true &&
 			ProcessExecutionSupportedContext.getValue(
-				this._contextKeyService,
+				this._contextKeyService
 			) === true
 		);
 	}
 
 	private async _computeWorkspaceFolderTasks(
 		workspaceFolder: IWorkspaceFolder,
-		runSource: TaskRunSource = TaskRunSource.User,
+		runSource: TaskRunSource = TaskRunSource.User
 	): Promise<IWorkspaceFolderTaskResult> {
 		const workspaceFolderConfiguration =
 			this._executionEngine === ExecutionEngine.Process
@@ -3520,7 +3598,7 @@ export abstract class AbstractTaskService
 			workspaceFolderConfiguration.config!,
 			problemReporter,
 			TaskConfig.TaskConfigSource.TasksJson,
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		let hasErrors = false;
 		if (
@@ -3534,8 +3612,8 @@ export abstract class AbstractTaskService
 			problemReporter.fatal(
 				nls.localize(
 					"TaskSystem.configurationErrors",
-					"Error: the provided task configuration has validation errors and can't not be used. Please correct the errors first.",
-				),
+					"Error: the provided task configuration has validation errors and can't not be used. Please correct the errors first."
+				)
 			);
 			return {
 				workspaceFolder,
@@ -3568,7 +3646,7 @@ export abstract class AbstractTaskService
 
 	private _testParseExternalConfig(
 		config: TaskConfig.IExternalTaskRunnerConfiguration | undefined,
-		location: string,
+		location: string
 	): {
 		config: TaskConfig.IExternalTaskRunnerConfiguration | undefined;
 		hasParseErrors: boolean;
@@ -3595,8 +3673,8 @@ export abstract class AbstractTaskService
 							],
 						},
 						"Error: The content of the tasks json in {0} has syntax errors. Please correct them before executing a task.",
-						location,
-					),
+						location
+					)
 				);
 				this._showOutput();
 				return { config, hasParseErrors: true };
@@ -3616,21 +3694,21 @@ export abstract class AbstractTaskService
 
 	private async _computeWorkspaceFileTasks(
 		workspaceFolder: IWorkspaceFolder,
-		runSource: TaskRunSource = TaskRunSource.User,
+		runSource: TaskRunSource = TaskRunSource.User
 	): Promise<IWorkspaceFolderTaskResult> {
 		if (this._executionEngine === ExecutionEngine.Process) {
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
 		const workspaceFileConfig = this._getConfiguration(
 			workspaceFolder,
-			TaskSourceKind.WorkspaceFile,
+			TaskSourceKind.WorkspaceFile
 		);
 		const configuration = this._testParseExternalConfig(
 			workspaceFileConfig.config,
 			nls.localize(
 				"TasksSystem.locationWorkspaceConfig",
-				"workspace file",
-			),
+				"workspace file"
+			)
 		);
 		const customizedTasks: {
 			byIdentifier: IStringDictionary<ConfiguringTask>;
@@ -3645,7 +3723,7 @@ export abstract class AbstractTaskService
 			runSource,
 			custom,
 			customizedTasks.byIdentifier,
-			TaskConfig.TaskConfigSource.WorkspaceFile,
+			TaskConfig.TaskConfigSource.WorkspaceFile
 		);
 		const engine = configuration.config
 			? TaskConfig.ExecutionEngine.from(configuration.config)
@@ -3654,8 +3732,8 @@ export abstract class AbstractTaskService
 			this._notificationService.warn(
 				nls.localize(
 					"TaskSystem.versionWorkspaceFile",
-					"Only tasks version 2.0.0 permitted in workspace configuration files.",
-				),
+					"Only tasks version 2.0.0 permitted in workspace configuration files."
+				)
 			);
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
@@ -3669,18 +3747,18 @@ export abstract class AbstractTaskService
 
 	private async _computeUserTasks(
 		workspaceFolder: IWorkspaceFolder,
-		runSource: TaskRunSource = TaskRunSource.User,
+		runSource: TaskRunSource = TaskRunSource.User
 	): Promise<IWorkspaceFolderTaskResult> {
 		if (this._executionEngine === ExecutionEngine.Process) {
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
 		const userTasksConfig = this._getConfiguration(
 			workspaceFolder,
-			TaskSourceKind.User,
+			TaskSourceKind.User
 		);
 		const configuration = this._testParseExternalConfig(
 			userTasksConfig.config,
-			nls.localize("TasksSystem.locationUserConfig", "user settings"),
+			nls.localize("TasksSystem.locationUserConfig", "user settings")
 		);
 		const customizedTasks: {
 			byIdentifier: IStringDictionary<ConfiguringTask>;
@@ -3695,7 +3773,7 @@ export abstract class AbstractTaskService
 			runSource,
 			custom,
 			customizedTasks.byIdentifier,
-			TaskConfig.TaskConfigSource.User,
+			TaskConfig.TaskConfigSource.User
 		);
 		const engine = configuration.config
 			? TaskConfig.ExecutionEngine.from(configuration.config)
@@ -3704,8 +3782,8 @@ export abstract class AbstractTaskService
 			this._notificationService.warn(
 				nls.localize(
 					"TaskSystem.versionSettings",
-					"Only tasks version 2.0.0 permitted in user settings.",
-				),
+					"Only tasks version 2.0.0 permitted in user settings."
+				)
 			);
 			return this._emptyWorkspaceTaskResults(workspaceFolder);
 		}
@@ -3718,7 +3796,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _emptyWorkspaceTaskResults(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): IWorkspaceFolderTaskResult {
 		return {
 			workspaceFolder,
@@ -3735,7 +3813,7 @@ export abstract class AbstractTaskService
 		custom: CustomTask[],
 		customized: IStringDictionary<ConfiguringTask>,
 		source: TaskConfig.TaskConfigSource,
-		isRecentTask: boolean = false,
+		isRecentTask: boolean = false
 	): Promise<boolean> {
 		if (!config) {
 			return false;
@@ -3751,7 +3829,7 @@ export abstract class AbstractTaskService
 			problemReporter,
 			source,
 			this._contextKeyService,
-			isRecentTask,
+			isRecentTask
 		);
 		let hasErrors = false;
 		if (
@@ -3765,8 +3843,8 @@ export abstract class AbstractTaskService
 			problemReporter.fatal(
 				nls.localize(
 					"TaskSystem.configurationErrors",
-					"Error: the provided task configuration has validation errors and can't not be used. Please correct the errors first.",
-				),
+					"Error: the provided task configuration has validation errors and can't not be used. Please correct the errors first."
+				)
 			);
 			return hasErrors;
 		}
@@ -3786,7 +3864,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _computeConfiguration(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): Promise<IWorkspaceFolderConfigurationResult> {
 		const { config, hasParseErrors } =
 			this._getConfiguration(workspaceFolder);
@@ -3798,7 +3876,7 @@ export abstract class AbstractTaskService
 	}
 
 	protected abstract _computeLegacyConfiguration(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): Promise<IWorkspaceFolderConfigurationResult>;
 
 	private _computeWorkspaceFolderSetup(): [
@@ -3832,7 +3910,7 @@ export abstract class AbstractTaskService
 			*/
 			this._telemetryService.publicLog(
 				"taskService.engineVersion",
-				telemetryData,
+				telemetryData
 			);
 			schemaVersion = this._computeJsonSchemaVersion(workspaceFolder);
 		} else if (
@@ -3853,8 +3931,8 @@ export abstract class AbstractTaskService
 						nls.localize(
 							"taskService.ignoreingFolder",
 							"Ignoring task configurations for workspace folder {0}. Multi folder workspace task support requires that all folders use task version 2.0.0",
-							workspaceFolder.uri.fsPath,
-						),
+							workspaceFolder.uri.fsPath
+						)
 					);
 				}
 			}
@@ -3869,7 +3947,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _computeExecutionEngine(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): ExecutionEngine {
 		const { config } = this._getConfiguration(workspaceFolder);
 		if (!config) {
@@ -3879,7 +3957,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _computeJsonSchemaVersion(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): JsonSchemaVersion {
 		const { config } = this._getConfiguration(workspaceFolder);
 		if (!config) {
@@ -3890,7 +3968,7 @@ export abstract class AbstractTaskService
 
 	protected _getConfiguration(
 		workspaceFolder: IWorkspaceFolder,
-		source?: string,
+		source?: string
 	): {
 		config: TaskConfig.IExternalTaskRunnerConfiguration | undefined;
 		hasParseErrors: boolean;
@@ -3905,7 +3983,7 @@ export abstract class AbstractTaskService
 			const wholeConfig =
 				this._configurationService.inspect<TaskConfig.IExternalTaskRunnerConfiguration>(
 					"tasks",
-					{ resource: workspaceFolder.uri },
+					{ resource: workspaceFolder.uri }
 				);
 			switch (source) {
 				case TaskSourceKind.User: {
@@ -3919,7 +3997,7 @@ export abstract class AbstractTaskService
 				}
 				case TaskSourceKind.Workspace:
 					result = Objects.deepClone(
-						wholeConfig.workspaceFolderValue,
+						wholeConfig.workspaceFolderValue
 					);
 					break;
 				case TaskSourceKind.WorkspaceFile: {
@@ -3935,7 +4013,7 @@ export abstract class AbstractTaskService
 				}
 				default:
 					result = Objects.deepClone(
-						wholeConfig.workspaceFolderValue,
+						wholeConfig.workspaceFolderValue
 					);
 			}
 		}
@@ -3955,8 +4033,8 @@ export abstract class AbstractTaskService
 				this._log(
 					nls.localize(
 						"TaskSystem.invalidTaskJson",
-						"Error: The content of the tasks.json file has syntax errors. Please correct them before executing a task.",
-					),
+						"Error: The content of the tasks.json file has syntax errors. Please correct them before executing a task."
+					)
 				);
 				this._showOutput();
 				return { config: undefined, hasParseErrors: true };
@@ -3984,7 +4062,7 @@ export abstract class AbstractTaskService
 					() => {
 						thisCapture._runConfigureTasks();
 						return Promise.resolve(undefined);
-					},
+					}
 				);
 			}
 		})();
@@ -4009,8 +4087,8 @@ export abstract class AbstractTaskService
 								? ConfigureTaskAction.TEXT
 								: nls.localize(
 										"TerminateAction.label",
-										"Terminate Task",
-								  ),
+										"Terminate Task"
+									),
 							run: () => {
 								if (needsConfig) {
 									this._runConfigureTasks();
@@ -4019,7 +4097,7 @@ export abstract class AbstractTaskService
 								}
 							},
 						},
-					],
+					]
 				);
 			} else {
 				this._notificationService.notify({
@@ -4037,8 +4115,8 @@ export abstract class AbstractTaskService
 			this._notificationService.error(
 				nls.localize(
 					"TaskSystem.unknownError",
-					"An error has occurred while running a task. See task log for details.",
-				),
+					"An error has occurred while running a task. See task log for details."
+				)
 			);
 		}
 		if (showOutput) {
@@ -4048,7 +4126,7 @@ export abstract class AbstractTaskService
 
 	private _showDetail(): boolean {
 		return this._configurationService.getValue<boolean>(
-			QUICKOPEN_DETAIL_CONFIG,
+			QUICKOPEN_DETAIL_CONFIG
 		);
 	}
 
@@ -4057,7 +4135,7 @@ export abstract class AbstractTaskService
 		group: boolean = false,
 		sort: boolean = false,
 		selectedEntry?: ITaskQuickPickEntry,
-		includeRecents: boolean = true,
+		includeRecents: boolean = true
 	): Promise<ITaskQuickPickEntry[]> {
 		let encounteredTasks: { [key: string]: ITaskQuickPickEntry[] } = {};
 		if (tasks === undefined || tasks === null || tasks.length === 0) {
@@ -4090,7 +4168,7 @@ export abstract class AbstractTaskService
 		function fillEntries(
 			entries: QuickPickInput<ITaskQuickPickEntry>[],
 			tasks: Task[],
-			groupLabel: string,
+			groupLabel: string
 		): void {
 			if (tasks.length) {
 				entries.push({ type: "separator", label: groupLabel });
@@ -4102,7 +4180,7 @@ export abstract class AbstractTaskService
 						iconClass: ThemeIcon.asClassName(configureTaskIcon),
 						tooltip: nls.localize(
 							"configureTask",
-							"Configure Task",
+							"Configure Task"
 						),
 					},
 				];
@@ -4160,20 +4238,20 @@ export abstract class AbstractTaskService
 					fillEntries(
 						entries,
 						recent,
-						nls.localize("recentlyUsed", "recently used tasks"),
+						nls.localize("recentlyUsed", "recently used tasks")
 					);
 				}
 				configured = configured.sort((a, b) => sorter.compare(a, b));
 				fillEntries(
 					entries,
 					configured,
-					nls.localize("configured", "configured tasks"),
+					nls.localize("configured", "configured tasks")
 				);
 				detected = detected.sort((a, b) => sorter.compare(a, b));
 				fillEntries(
 					entries,
 					detected,
-					nls.localize("detected", "detected tasks"),
+					nls.localize("detected", "detected tasks")
 				);
 			}
 		} else {
@@ -4182,7 +4260,7 @@ export abstract class AbstractTaskService
 				tasks = tasks.sort((a, b) => sorter.compare(a, b));
 			}
 			entries = tasks.map<ITaskQuickPickEntry>((task) =>
-				TaskQuickPickEntry(task),
+				TaskQuickPickEntry(task)
 			);
 		}
 		encounteredTasks = {};
@@ -4192,7 +4270,7 @@ export abstract class AbstractTaskService
 		placeHolder: string,
 		defaultEntry?: ITaskQuickPickEntry,
 		type?: string,
-		name?: string,
+		name?: string
 	) {
 		return this._instantiationService
 			.createInstance(TaskQuickPick)
@@ -4207,7 +4285,7 @@ export abstract class AbstractTaskService
 		sort: boolean = false,
 		selectedEntry?: ITaskQuickPickEntry,
 		additionalEntries?: ITaskQuickPickEntry[],
-		name?: string,
+		name?: string
 	): Promise<ITaskQuickPickEntry | undefined | null> {
 		const resolvedTasks = await tasks;
 		const entries:
@@ -4217,10 +4295,10 @@ export abstract class AbstractTaskService
 				resolvedTasks,
 				group,
 				sort,
-				selectedEntry,
+				selectedEntry
 			),
 			200,
-			() => undefined,
+			() => undefined
 		);
 		if (!entries) {
 			return undefined;
@@ -4272,9 +4350,9 @@ export abstract class AbstractTaskService
 							resolve(undefined);
 						}
 						resolve(selectedEntry);
-					}),
+					})
 				);
-			},
+			}
 		);
 	}
 
@@ -4306,7 +4384,7 @@ export abstract class AbstractTaskService
 		}
 		this._storageService.remove(
 			AbstractTaskService.RecentlyUsedTasks_Key,
-			StorageScope.WORKSPACE,
+			StorageScope.WORKSPACE
 		);
 	}
 
@@ -4323,13 +4401,13 @@ export abstract class AbstractTaskService
 			nls.localize(
 				"TaskService.ignoredFolder",
 				"The following workspace folders are ignored since they use task version 0.1.0: {0}",
-				this.ignoredWorkspaceFolders.map((f) => f.name).join(", "),
+				this.ignoredWorkspaceFolders.map((f) => f.name).join(", ")
 			),
 			[
 				{
 					label: nls.localize(
 						"TaskService.notAgain",
-						"Don't Show Again",
+						"Don't Show Again"
 					),
 					isSecondary: true,
 					run: () => {
@@ -4337,12 +4415,12 @@ export abstract class AbstractTaskService
 							AbstractTaskService.IgnoreTask010DonotShowAgain_key,
 							true,
 							StorageScope.WORKSPACE,
-							StorageTarget.MACHINE,
+							StorageTarget.MACHINE
 						);
 						this._showIgnoreMessage = false;
 					},
 				},
-			],
+			]
 		);
 
 		return Promise.resolve(undefined);
@@ -4359,9 +4437,9 @@ export abstract class AbstractTaskService
 					{
 						message: nls.localize(
 							"TaskService.requestTrust",
-							"Listing and running tasks requires that some of the files in this workspace be executed as code.",
+							"Listing and running tasks requires that some of the files in this workspace be executed as code."
 						),
-					},
+					}
 				)) === true
 			);
 		}
@@ -4369,7 +4447,7 @@ export abstract class AbstractTaskService
 	}
 
 	private async _runTaskCommand(
-		filter?: string | ITaskIdentifier,
+		filter?: string | ITaskIdentifier
 	): Promise<void> {
 		if (!this._tasksReconnected) {
 			return;
@@ -4408,8 +4486,8 @@ export abstract class AbstractTaskService
 					(t) =>
 						t.configurationProperties.identifier === taskName ||
 						t.getDefinition(true)?.configurationProperties
-							?.identifier === taskName,
-			  );
+							?.identifier === taskName
+				);
 		if (!exactMatchTask) {
 			return this._doRunTaskCommand(tasks, type, taskName);
 		}
@@ -4419,7 +4497,7 @@ export abstract class AbstractTaskService
 				await this.run(
 					task,
 					{ attachProblemMatcher: true },
-					TaskRunSource.User,
+					TaskRunSource.User
 				);
 				return;
 			}
@@ -4469,7 +4547,7 @@ export abstract class AbstractTaskService
 	private _doRunTaskCommand(
 		tasks?: Task[],
 		type?: string,
-		name?: string,
+		name?: string
 	): void {
 		const pickThen = (task: Task | undefined | null) => {
 			if (task === undefined) {
@@ -4481,7 +4559,7 @@ export abstract class AbstractTaskService
 				this.run(
 					task,
 					{ attachProblemMatcher: true },
-					TaskRunSource.User,
+					TaskRunSource.User
 				).then(undefined, (reason) => {
 					// eat the error, it has already been surfaced to the user and we don't care about it here
 				});
@@ -4490,7 +4568,7 @@ export abstract class AbstractTaskService
 
 		const placeholder = nls.localize(
 			"TaskService.pickRunTask",
-			"Select the task to run",
+			"Select the task to run"
 		);
 
 		this._showIgnoredFoldersMessage().then(() => {
@@ -4509,7 +4587,7 @@ export abstract class AbstractTaskService
 							"$(plus) " +
 							nls.localize(
 								"TaskService.noEntryToRun",
-								"Configure a Task",
+								"Configure a Task"
 							),
 						task: null,
 					},
@@ -4517,7 +4595,7 @@ export abstract class AbstractTaskService
 					undefined,
 					undefined,
 					undefined,
-					name,
+					name
 				).then((entry) => {
 					return pickThen(entry ? entry.task : undefined);
 				});
@@ -4529,12 +4607,12 @@ export abstract class AbstractTaskService
 							"$(plus) " +
 							nls.localize(
 								"TaskService.noEntryToRun",
-								"Configure a Task",
+								"Configure a Task"
 							),
 						task: null,
 					},
 					type,
-					name,
+					name
 				).then(pickThen);
 			}
 		});
@@ -4568,7 +4646,7 @@ export abstract class AbstractTaskService
 	 */
 	private _getDefaultTasks(
 		tasks: Task[],
-		taskGlobsInList: boolean = false,
+		taskGlobsInList: boolean = false
 	): Task[] {
 		const defaults: Task[] = [];
 		for (const task of tasks) {
@@ -4598,7 +4676,7 @@ export abstract class AbstractTaskService
 			notFoundConfigure: string;
 		},
 		configure: () => void,
-		legacyCommand: () => void,
+		legacyCommand: () => void
 	): void {
 		if (this.schemaVersion === JsonSchemaVersion.V0_1_0) {
 			legacyCommand();
@@ -4614,13 +4692,13 @@ export abstract class AbstractTaskService
 			async function runSingleTask(
 				task: Task | undefined,
 				problemMatcherOptions: IProblemMatcherRunOptions | undefined,
-				that: AbstractTaskService,
+				that: AbstractTaskService
 			) {
 				that.run(task, problemMatcherOptions, TaskRunSource.User).then(
 					undefined,
 					(reason) => {
 						// eat the error, it has already been surfaced to the user and we don't care about it here
-					},
+					}
 				);
 			}
 			const chooseAndRunTask = (tasks: Task[]) => {
@@ -4632,7 +4710,7 @@ export abstract class AbstractTaskService
 							label: strings.notFoundConfigure,
 							task: null,
 						},
-						true,
+						true
 					).then((entry) => {
 						const task: Task | undefined | null = entry
 							? entry.task
@@ -4647,7 +4725,7 @@ export abstract class AbstractTaskService
 						runSingleTask(
 							task,
 							{ attachProblemMatcher: true },
-							this,
+							this
 						);
 					});
 				});
@@ -4655,7 +4733,7 @@ export abstract class AbstractTaskService
 			let globTasksDetected = false;
 			// First check for globs before checking for the default tasks of the task group
 			const absoluteURI = EditorResourceAccessor.getOriginalUri(
-				this._editorService.activeEditor,
+				this._editorService.activeEditor
 			);
 			if (absoluteURI) {
 				const workspaceFolder =
@@ -4669,7 +4747,7 @@ export abstract class AbstractTaskService
 								(task) =>
 									task.group &&
 									typeof task.group !== "string" &&
-									typeof task.group.isDefault === "string",
+									typeof task.group.isDefault === "string"
 							).length > 0;
 						// This will activate extensions, so only do so if necessary #185960
 						if (globTasksDetected) {
@@ -4677,8 +4755,8 @@ export abstract class AbstractTaskService
 							const relativePath = workspaceFolder?.uri
 								? resources.relativePath(
 										workspaceFolder.uri,
-										absoluteURI,
-								  ) ?? absoluteURI.path
+										absoluteURI
+									) ?? absoluteURI.path
 								: absoluteURI.path;
 
 							groupTasks = await this._findWorkspaceTasks(
@@ -4696,13 +4774,13 @@ export abstract class AbstractTaskService
 												taskGroup._id &&
 											glob.match(
 												currentTaskGroup.isDefault,
-												relativePath,
+												relativePath
 											)
 										);
 									}
 
 									return false;
-								},
+								}
 							);
 						}
 					}
@@ -4712,7 +4790,7 @@ export abstract class AbstractTaskService
 			if (!globTasksDetected && groupTasks.length === 0) {
 				groupTasks = await this._findWorkspaceTasksInGroup(
 					taskGroup,
-					true,
+					true
 				);
 			}
 
@@ -4723,7 +4801,7 @@ export abstract class AbstractTaskService
 						// then put globs in the defaults and everything else in none
 						const defaults = this._getDefaultTasks(
 							tasks,
-							areGlobTasks,
+							areGlobTasks
 						);
 						if (defaults.length === 1) {
 							runSingleTask(defaults[0], undefined, this);
@@ -4739,7 +4817,7 @@ export abstract class AbstractTaskService
 			};
 
 			const resolveTaskAndRun = (
-				taskGroupTask: Task | ConfiguringTask,
+				taskGroupTask: Task | ConfiguringTask
 			) => {
 				if (ConfiguringTask.is(taskGroupTask)) {
 					this.tryResolveTask(taskGroupTask).then((resolvedTask) => {
@@ -4766,7 +4844,7 @@ export abstract class AbstractTaskService
 			if (!groupTasks.length) {
 				groupTasks = await this._findWorkspaceTasksInGroup(
 					taskGroup,
-					false,
+					false
 				);
 			}
 
@@ -4790,19 +4868,19 @@ export abstract class AbstractTaskService
 			{
 				fetching: nls.localize(
 					"TaskService.fetchingBuildTasks",
-					"Fetching build tasks...",
+					"Fetching build tasks..."
 				),
 				select: nls.localize(
 					"TaskService.pickBuildTask",
-					"Select the build task to run",
+					"Select the build task to run"
 				),
 				notFoundConfigure: nls.localize(
 					"TaskService.noBuildTask",
-					"No build task to run found. Configure Build Task...",
+					"No build task to run found. Configure Build Task..."
 				),
 			},
 			this._runConfigureDefaultBuildTask,
-			this._build,
+			this._build
 		);
 	}
 
@@ -4812,19 +4890,19 @@ export abstract class AbstractTaskService
 			{
 				fetching: nls.localize(
 					"TaskService.fetchingTestTasks",
-					"Fetching test tasks...",
+					"Fetching test tasks..."
 				),
 				select: nls.localize(
 					"TaskService.pickTestTask",
-					"Select the test task to run",
+					"Select the test task to run"
 				),
 				notFoundConfigure: nls.localize(
 					"TaskService.noTestTaskTerminal",
-					"No test task to run found. Configure Tasks...",
+					"No test task to run found. Configure Tasks..."
 				),
 			},
 			this._runConfigureDefaultTestTask,
-			this._runTest,
+			this._runTest
 		);
 	}
 
@@ -4838,12 +4916,12 @@ export abstract class AbstractTaskService
 				promise || this.getActiveTasks(),
 				nls.localize(
 					"TaskService.taskToTerminate",
-					"Select a task to terminate",
+					"Select a task to terminate"
 				),
 				{
 					label: nls.localize(
 						"TaskService.noTaskRunning",
-						"No task is currently running",
+						"No task is currently running"
 					),
 					task: undefined,
 				},
@@ -4854,12 +4932,12 @@ export abstract class AbstractTaskService
 					{
 						label: nls.localize(
 							"TaskService.terminateAllRunningTasks",
-							"All Running Tasks",
+							"All Running Tasks"
 						),
 						id: "terminateAll",
 						task: undefined,
 					},
-				],
+				]
 			).then((entry) => {
 				if (entry && entry.id === "terminateAll") {
 					this._terminateAll();
@@ -4907,15 +4985,15 @@ export abstract class AbstractTaskService
 							this._notificationService.error(
 								nls.localize(
 									"TerminateAction.noProcess",
-									"The launched process doesn't exist anymore. If the task spawned background tasks exiting VS Code might result in orphaned processes.",
-								),
+									"The launched process doesn't exist anymore. If the task spawned background tasks exiting VS Code might result in orphaned processes."
+								)
 							);
 						} else {
 							this._notificationService.error(
 								nls.localize(
 									"TerminateAction.failed",
-									"Failed to terminate running task",
-								),
+									"Failed to terminate running task"
+								)
 							);
 						}
 					});
@@ -4948,17 +5026,17 @@ export abstract class AbstractTaskService
 				activeTasks,
 				nls.localize(
 					"TaskService.taskToRestart",
-					"Select the task to restart",
+					"Select the task to restart"
 				),
 				{
 					label: nls.localize(
 						"TaskService.noTaskToRestart",
-						"No task to restart",
+						"No task to restart"
 					),
 					task: null,
 				},
 				false,
-				true,
+				true
 			);
 			if (entry && entry.task) {
 				this._restart(entry.task);
@@ -4971,7 +5049,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _getTaskIdentifier(
-		filter?: string | ITaskIdentifier,
+		filter?: string | ITaskIdentifier
 	): string | KeyedTaskIdentifier | undefined {
 		let result: string | KeyedTaskIdentifier | undefined = undefined;
 		if (Types.isString(filter)) {
@@ -4983,7 +5061,7 @@ export abstract class AbstractTaskService
 	}
 
 	private _configHasTasks(
-		taskConfig?: TaskConfig.IExternalTaskRunnerConfiguration,
+		taskConfig?: TaskConfig.IExternalTaskRunnerConfiguration
 	): boolean {
 		return (
 			!!taskConfig && !!taskConfig.tasks && taskConfig.tasks.length > 0
@@ -4996,32 +5074,32 @@ export abstract class AbstractTaskService
 			.stat(resource)
 			.then(
 				(stat) => stat,
-				() => undefined,
+				() => undefined
 			)
 			.then(async (stat) => {
 				const fileExists: boolean = !!stat;
 				const configValue =
 					this._configurationService.inspect<TaskConfig.IExternalTaskRunnerConfiguration>(
-						"tasks",
+						"tasks"
 					);
 				let tasksExistInFile: boolean;
 				let target: ConfigurationTarget;
 				switch (taskSource) {
 					case TaskSourceKind.User:
 						tasksExistInFile = this._configHasTasks(
-							configValue.userValue,
+							configValue.userValue
 						);
 						target = ConfigurationTarget.USER;
 						break;
 					case TaskSourceKind.WorkspaceFile:
 						tasksExistInFile = this._configHasTasks(
-							configValue.workspaceValue,
+							configValue.workspaceValue
 						);
 						target = ConfigurationTarget.WORKSPACE;
 						break;
 					default:
 						tasksExistInFile = this._configHasTasks(
-							configValue.workspaceFolderValue,
+							configValue.workspaceFolderValue
 						);
 						target = ConfigurationTarget.WORKSPACE_FOLDER;
 				}
@@ -5031,7 +5109,7 @@ export abstract class AbstractTaskService
 						await this._quickInputService.pick(getTaskTemplates(), {
 							placeHolder: nls.localize(
 								"TaskService.template",
-								"Select a Task Template",
+								"Select a Task Template"
 							),
 						});
 					if (!pickTemplateResult) {
@@ -5046,8 +5124,8 @@ export abstract class AbstractTaskService
 							(_, s1, s2) =>
 								s1 +
 								" ".repeat(
-									s2.length * editorConfig.editor.tabSize,
-								),
+									s2.length * editorConfig.editor.tabSize
+								)
 						);
 					}
 					configFileCreated = true;
@@ -5064,7 +5142,7 @@ export abstract class AbstractTaskService
 						this._configurationService.updateValue(
 							"tasks",
 							json.parse(content),
-							target,
+							target
 						);
 					}
 					return stat?.resource;
@@ -5085,14 +5163,14 @@ export abstract class AbstractTaskService
 	}
 
 	private _isTaskEntry(
-		value: IQuickPickItem,
+		value: IQuickPickItem
 	): value is IQuickPickItem & { task: Task } {
 		const candidate: IQuickPickItem & { task: Task } = value as any;
 		return candidate && !!candidate.task;
 	}
 
 	private _isSettingEntry(
-		value: IQuickPickItem,
+		value: IQuickPickItem
 	): value is IQuickPickItem & { settingType: string } {
 		const candidate: IQuickPickItem & { settingType: string } =
 			value as any;
@@ -5125,7 +5203,7 @@ export abstract class AbstractTaskService
 		) {
 			this._openTaskFile(
 				selection.folder.toResource(".vscode/tasks.json"),
-				TaskSourceKind.Workspace,
+				TaskSourceKind.Workspace
 			);
 		} else {
 			const resource = this._getResourceForKind(TaskSourceKind.User);
@@ -5136,7 +5214,7 @@ export abstract class AbstractTaskService
 	}
 
 	public getTaskDescription(
-		task: Task | ConfiguringTask,
+		task: Task | ConfiguringTask
 	): string | undefined {
 		let description: string | undefined;
 		if (task._source.kind === TaskSourceKind.User) {
@@ -5172,18 +5250,18 @@ export abstract class AbstractTaskService
 						.stat(folder.toResource(".vscode/tasks.json"))
 						.then(
 							(stat) => stat,
-							() => undefined,
+							() => undefined
 						);
-				},
+				}
 			);
 
 		const createLabel = nls.localize(
 			"TaskService.createJsonFile",
-			"Create tasks.json file from template",
+			"Create tasks.json file from template"
 		);
 		const openLabel = nls.localize(
 			"TaskService.openJsonFile",
-			"Open tasks.json file",
+			"Open tasks.json file"
 		);
 		const tokenSource = new CancellationTokenSource();
 		const cancellationToken: CancellationToken = tokenSource.token;
@@ -5194,7 +5272,7 @@ export abstract class AbstractTaskService
 				let tasks = taskMap.all();
 				if (tasks.length > 0) {
 					tasks = tasks.sort((a, b) =>
-						a._label.localeCompare(b._label),
+						a._label.localeCompare(b._label)
 					);
 					for (const task of tasks) {
 						const entry = {
@@ -5208,7 +5286,7 @@ export abstract class AbstractTaskService
 						TaskQuickPick.applyColorStyles(
 							task,
 							entry,
-							this._themeService,
+							this._themeService
 						);
 						entries.push(entry);
 						if (!ContributedTask.is(task)) {
@@ -5265,7 +5343,7 @@ export abstract class AbstractTaskService
 
 		const entriesWithSettings = entries.then((resolvedEntries) => {
 			resolvedEntries.push(
-				...TaskQuickPick.allSettingEntries(this._configurationService),
+				...TaskQuickPick.allSettingEntries(this._configurationService)
 			);
 			return resolvedEntries;
 		});
@@ -5276,10 +5354,10 @@ export abstract class AbstractTaskService
 				{
 					placeHolder: nls.localize(
 						"TaskService.pickTask",
-						"Select a task to configure",
+						"Select a task to configure"
 					),
 				},
-				cancellationToken,
+				cancellationToken
 			)
 			.then(async (selection) => {
 				if (cancellationToken.isCancellationRequested) {
@@ -5306,7 +5384,7 @@ export abstract class AbstractTaskService
 				this._showIgnoredFoldersMessage().then(() => {
 					for (const task of tasks) {
 						const taskGroup: TaskGroup | undefined = TaskGroup.from(
-							task.configurationProperties.group,
+							task.configurationProperties.group
 						);
 						if (
 							taskGroup &&
@@ -5318,8 +5396,8 @@ export abstract class AbstractTaskService
 								"{0} is already marked as the default build task",
 								TaskQuickPick.getTaskLabelWithIcon(
 									task,
-									task.getQualifiedLabel(),
-								),
+									task.getQualifiedLabel()
+								)
 							);
 							selectedTask = task;
 							selectedEntry = {
@@ -5333,7 +5411,7 @@ export abstract class AbstractTaskService
 							TaskQuickPick.applyColorStyles(
 								task,
 								selectedEntry,
-								this._themeService,
+								this._themeService
 							);
 						} else {
 							const entry = {
@@ -5347,7 +5425,7 @@ export abstract class AbstractTaskService
 							TaskQuickPick.applyColorStyles(
 								task,
 								entry,
-								this._themeService,
+								this._themeService
 							);
 							entries.push(entry);
 						}
@@ -5364,10 +5442,10 @@ export abstract class AbstractTaskService
 							{
 								placeHolder: nls.localize(
 									"TaskService.pickTask",
-									"Select a task to configure",
+									"Select a task to configure"
 								),
 							},
-							cancellationToken,
+							cancellationToken
 						)
 						.then(async (entry) => {
 							if (cancellationToken.isCancellationRequested) {
@@ -5396,7 +5474,7 @@ export abstract class AbstractTaskService
 											isDefault: true,
 										},
 									},
-									true,
+									true
 								).then(() => {
 									if (
 										selectedTask &&
@@ -5406,7 +5484,7 @@ export abstract class AbstractTaskService
 										this.customize(
 											selectedTask,
 											{ group: "build" },
-											false,
+											false
 										);
 									}
 								});
@@ -5416,7 +5494,7 @@ export abstract class AbstractTaskService
 						.pick(entries, {
 							placeHolder: nls.localize(
 								"TaskService.pickDefaultBuildTask",
-								"Select the task to be used as the default build task",
+								"Select the task to be used as the default build task"
 							),
 						})
 						.then((entry) => {
@@ -5439,7 +5517,7 @@ export abstract class AbstractTaskService
 											isDefault: true,
 										},
 									},
-									true,
+									true
 								).then(() => {
 									if (
 										selectedTask &&
@@ -5449,7 +5527,7 @@ export abstract class AbstractTaskService
 										this.customize(
 											selectedTask,
 											{ group: "build" },
-											false,
+											false
 										);
 									}
 								});
@@ -5474,7 +5552,7 @@ export abstract class AbstractTaskService
 
 				for (const task of tasks) {
 					const taskGroup: TaskGroup | undefined = TaskGroup.from(
-						task.configurationProperties.group,
+						task.configurationProperties.group
 					);
 					if (
 						taskGroup &&
@@ -5490,7 +5568,7 @@ export abstract class AbstractTaskService
 						label: nls.localize(
 							"TaskService.defaultTestTaskExists",
 							"{0} is already marked as the default test task.",
-							selectedTask.getQualifiedLabel(),
+							selectedTask.getQualifiedLabel()
 						),
 						task: selectedTask,
 						detail: this._showDetail()
@@ -5504,12 +5582,12 @@ export abstract class AbstractTaskService
 						tasks,
 						nls.localize(
 							"TaskService.pickDefaultTestTask",
-							"Select the task to be used as the default test task",
+							"Select the task to be used as the default test task"
 						),
 						undefined,
 						true,
 						false,
-						selectedEntry,
+						selectedEntry
 					).then((entry) => {
 						const task: Task | undefined | null = entry
 							? entry.task
@@ -5524,7 +5602,7 @@ export abstract class AbstractTaskService
 							this.customize(
 								task,
 								{ group: { kind: "test", isDefault: true } },
-								true,
+								true
 							).then(() => {
 								if (
 									selectedTask &&
@@ -5534,7 +5612,7 @@ export abstract class AbstractTaskService
 									this.customize(
 										selectedTask,
 										{ group: "test" },
-										false,
+										false
 									);
 								}
 							});
@@ -5575,17 +5653,17 @@ export abstract class AbstractTaskService
 				activeTasksPromise,
 				nls.localize(
 					"TaskService.pickShowTask",
-					"Select the task to show its output",
+					"Select the task to show its output"
 				),
 				{
 					label: nls.localize(
 						"TaskService.noTaskIsRunning",
-						"No task is running",
+						"No task is running"
 					),
 					task: null,
 				},
 				false,
-				true,
+				true
 			).then((entry) => {
 				const task: Task | undefined | null = entry
 					? entry.task
@@ -5599,7 +5677,7 @@ export abstract class AbstractTaskService
 	}
 
 	private async _createTasksDotOld(
-		folder: IWorkspaceFolder,
+		folder: IWorkspaceFolder
 	): Promise<[URI, URI] | undefined> {
 		const tasksFile = folder.toResource(".vscode/tasks.json");
 		if (await this._fileService.exists(tasksFile)) {
@@ -5617,7 +5695,7 @@ export abstract class AbstractTaskService
 			windows?: ICommandUpgrade;
 			osx?: ICommandUpgrade;
 			linux?: ICommandUpgrade;
-		},
+		}
 	): TaskConfig.ICustomTask | TaskConfig.IConfiguringTask | undefined {
 		if (!CustomTask.is(task)) {
 			return;
@@ -5689,7 +5767,7 @@ export abstract class AbstractTaskService
 			task.command,
 			task.hasDefinedMatchers,
 			task.runOptions,
-			task.configurationProperties,
+			task.configurationProperties
 		);
 		const configTask = this._createCustomizableTask(tempTask);
 		if (configTask) {
@@ -5706,12 +5784,12 @@ export abstract class AbstractTaskService
 		if (!this._workspaceTrustManagementService.isWorkspaceTrusted()) {
 			this._register(
 				Event.once(
-					this._workspaceTrustManagementService.onDidChangeTrust,
+					this._workspaceTrustManagementService.onDidChangeTrust
 				)((isTrusted) => {
 					if (isTrusted) {
 						this._upgrade();
 					}
-				}),
+				})
 			);
 			return;
 		}
@@ -5733,25 +5811,25 @@ export abstract class AbstractTaskService
 			)[] = [];
 			const suppressTaskName = !!this._configurationService.getValue(
 				TasksSchemaProperties.SuppressTaskName,
-				{ resource: folder.uri },
+				{ resource: folder.uri }
 			);
 			const globalConfig = {
 				windows: <ICommandUpgrade>(
 					this._configurationService.getValue(
 						TasksSchemaProperties.Windows,
-						{ resource: folder.uri },
+						{ resource: folder.uri }
 					)
 				),
 				osx: <ICommandUpgrade>(
 					this._configurationService.getValue(
 						TasksSchemaProperties.Osx,
-						{ resource: folder.uri },
+						{ resource: folder.uri }
 					)
 				),
 				linux: <ICommandUpgrade>(
 					this._configurationService.getValue(
 						TasksSchemaProperties.Linux,
-						{ resource: folder.uri },
+						{ resource: folder.uri }
 					)
 				),
 			};
@@ -5759,7 +5837,7 @@ export abstract class AbstractTaskService
 				const configTask = this._upgradeTask(
 					task,
 					suppressTaskName,
-					globalConfig,
+					globalConfig
 				);
 				if (configTask) {
 					configTasks.push(configTask);
@@ -5772,37 +5850,37 @@ export abstract class AbstractTaskService
 			if (
 				this._configurationService.getValue(
 					TasksSchemaProperties.ShowOutput,
-					{ resource: folder.uri },
+					{ resource: folder.uri }
 				)
 			) {
 				await this._configurationService.updateValue(
 					TasksSchemaProperties.ShowOutput,
 					undefined,
-					{ resource: folder.uri },
+					{ resource: folder.uri }
 				);
 			}
 			if (
 				this._configurationService.getValue(
 					TasksSchemaProperties.IsShellCommand,
-					{ resource: folder.uri },
+					{ resource: folder.uri }
 				)
 			) {
 				await this._configurationService.updateValue(
 					TasksSchemaProperties.IsShellCommand,
 					undefined,
-					{ resource: folder.uri },
+					{ resource: folder.uri }
 				);
 			}
 			if (
 				this._configurationService.getValue(
 					TasksSchemaProperties.SuppressTaskName,
-					{ resource: folder.uri },
+					{ resource: folder.uri }
 				)
 			) {
 				await this._configurationService.updateValue(
 					TasksSchemaProperties.SuppressTaskName,
 					undefined,
-					{ resource: folder.uri },
+					{ resource: folder.uri }
 				);
 			}
 		}
@@ -5813,12 +5891,12 @@ export abstract class AbstractTaskService
 			fileDiffs.length === 1
 				? nls.localize(
 						"taskService.upgradeVersion",
-						"The deprecated tasks version 0.1.0 has been removed. Your tasks have been upgraded to version 2.0.0. Open the diff to review the upgrade.",
-				  )
+						"The deprecated tasks version 0.1.0 has been removed. Your tasks have been upgraded to version 2.0.0. Open the diff to review the upgrade."
+					)
 				: nls.localize(
 						"taskService.upgradeVersionPlural",
-						"The deprecated tasks version 0.1.0 has been removed. Your tasks have been upgraded to version 2.0.0. Open the diffs to review the upgrade.",
-				  ),
+						"The deprecated tasks version 0.1.0 has been removed. Your tasks have been upgraded to version 2.0.0. Open the diffs to review the upgrade."
+					),
 			[
 				{
 					label:
@@ -5826,8 +5904,8 @@ export abstract class AbstractTaskService
 							? nls.localize("taskService.openDiff", "Open diff")
 							: nls.localize(
 									"taskService.openDiffs",
-									"Open diffs",
-							  ),
+									"Open diffs"
+								),
 					run: async () => {
 						for (const upgrade of fileDiffs) {
 							await this._editorService.openEditor({
@@ -5837,7 +5915,7 @@ export abstract class AbstractTaskService
 						}
 					},
 				},
-			],
+			]
 		);
 	}
 }

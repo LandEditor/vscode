@@ -26,7 +26,7 @@ export function resolveWorkbenchCommonProperties(
 	sqmId: string,
 	isInternalTelemetry: boolean,
 	process: INodeProcess,
-	remoteAuthority?: string,
+	remoteAuthority?: string
 ): ICommonProperties {
 	const result = resolveCommonProperties(
 		release,
@@ -36,15 +36,15 @@ export function resolveWorkbenchCommonProperties(
 		version,
 		machineId,
 		sqmId,
-		isInternalTelemetry,
+		isInternalTelemetry
 	);
 	const firstSessionDate = storageService.get(
 		firstSessionDateStorageKey,
-		StorageScope.APPLICATION,
+		StorageScope.APPLICATION
 	)!;
 	const lastSessionDate = storageService.get(
 		lastSessionDateStorageKey,
-		StorageScope.APPLICATION,
+		StorageScope.APPLICATION
 	)!;
 
 	// __GDPR__COMMON__ "common.version.shell" : { "classification": "SystemMetaData", "purpose": "PerformanceAndHealth" }

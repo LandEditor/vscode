@@ -33,7 +33,7 @@ import {
 registerEditorContribution(
 	DropIntoEditorController.ID,
 	DropIntoEditorController,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 
 registerEditorCommand(
@@ -52,17 +52,17 @@ registerEditorCommand(
 		public override runEditorCommand(
 			_accessor: ServicesAccessor | null,
 			editor: ICodeEditor,
-			_args: any,
+			_args: any
 		) {
 			DropIntoEditorController.get(editor)?.changeDropType();
 		}
-	})(),
+	})()
 );
 
 registerEditorFeature(DefaultDropProvidersFeature);
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	...editorConfigurationBaseNode,
 	properties: {
@@ -71,7 +71,7 @@ Registry.as<IConfigurationRegistry>(
 			scope: ConfigurationScope.LANGUAGE_OVERRIDABLE,
 			description: nls.localize(
 				"defaultProviderDescription",
-				"Configures the default drop provider to use for content of a given mime type.",
+				"Configures the default drop provider to use for content of a given mime type."
 			),
 			default: {},
 			additionalProperties: {

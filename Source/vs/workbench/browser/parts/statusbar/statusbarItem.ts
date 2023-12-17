@@ -58,20 +58,20 @@ export class StatusbarEntryItem extends Disposable {
 	private entry: IStatusbarEntry | undefined = undefined;
 
 	private readonly foregroundListener = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 	private readonly backgroundListener = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 
 	private readonly commandMouseListener = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 	private readonly commandTouchListener = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 	private readonly commandKeyboardListener = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 	private readonly focusListener = this._register(new MutableDisposable());
 	private readonly focusOutListener = this._register(new MutableDisposable());
@@ -94,17 +94,18 @@ export class StatusbarEntryItem extends Disposable {
 		entry: IStatusbarEntry,
 		private readonly hoverDelegate: IHoverDelegate,
 		@ICommandService private readonly commandService: ICommandService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IThemeService private readonly themeService: IThemeService
 	) {
 		super();
 
 		// Label Container
-		this.labelContainer = document.createElement('a');
+		this.labelContainer = document.createElement("a");
 		this.labelContainer.tabIndex = -1; // allows screen readers to read title, but still prevents tab focus.
-		this.labelContainer.setAttribute('role', 'button');
-		this.labelContainer.className = 'statusbar-item-label';
+		this.labelContainer.setAttribute("role", "button");
+		this.labelContainer.className = "statusbar-item-label";
 		this._register(Gesture.addTarget(this.labelContainer)); // enable touch
 
 		// Label (with support for progress)
@@ -112,8 +113,8 @@ export class StatusbarEntryItem extends Disposable {
 		this.container.appendChild(this.labelContainer);
 
 		// Beak Container
-		this.beakContainer = document.createElement('div');
-		this.beakContainer.className = 'status-bar-item-beak-container';
+		this.beakContainer = document.createElement("div");
+		this.beakContainer.className = "status-bar-item-beak-container";
 		this.container.appendChild(this.beakContainer);
 
 		this.update(entry);
@@ -154,7 +155,7 @@ export class StatusbarEntryItem extends Disposable {
 				? {
 						markdown: entry.tooltip,
 						markdownNotSupportedFallback: undefined,
-				  }
+					}
 				: entry.tooltip;
 			if (this.hover) {
 				this.hover.update(hoverContents);
@@ -163,8 +164,8 @@ export class StatusbarEntryItem extends Disposable {
 					setupCustomHover(
 						this.hoverDelegate,
 						this.container,
-						hoverContents,
-					),
+						hoverContents
+					)
 				);
 			}
 			this.focusListener.value = addDisposableListener(
@@ -173,7 +174,7 @@ export class StatusbarEntryItem extends Disposable {
 				(e) => {
 					EventHelper.stop(e);
 					this.hover?.show(false);
-				},
+				}
 			);
 			this.focusOutListener.value = addDisposableListener(
 				this.labelContainer,
@@ -181,7 +182,7 @@ export class StatusbarEntryItem extends Disposable {
 				(e) => {
 					EventHelper.stop(e);
 					this.hover?.hide();
-				},
+				}
 			);
 		}
 
@@ -201,12 +202,12 @@ export class StatusbarEntryItem extends Disposable {
 				this.commandMouseListener.value = addDisposableListener(
 					this.labelContainer,
 					EventType.CLICK,
-					() => this.executeCommand(command),
+					() => this.executeCommand(command)
 				);
 				this.commandTouchListener.value = addDisposableListener(
 					this.labelContainer,
 					TouchEventType.Tap,
-					() => this.executeCommand(command),
+					() => this.executeCommand(command)
 				);
 				this.commandKeyboardListener.value = addDisposableListener(
 					this.labelContainer,
@@ -229,7 +230,7 @@ export class StatusbarEntryItem extends Disposable {
 
 							this.hover?.hide();
 						}
-					},
+					}
 				);
 
 				this.labelContainer.classList.remove("disabled");
@@ -263,7 +264,7 @@ export class StatusbarEntryItem extends Disposable {
 
 			this.container.classList.toggle(
 				"has-background-color",
-				hasBackgroundColor,
+				hasBackgroundColor
 			);
 		}
 
@@ -279,7 +280,7 @@ export class StatusbarEntryItem extends Disposable {
 		) {
 			this.container.classList.toggle(
 				"has-background-color",
-				hasBackgroundColor,
+				hasBackgroundColor
 			);
 			this.applyColor(this.container, entry.backgroundColor, true);
 		}
@@ -290,7 +291,7 @@ export class StatusbarEntryItem extends Disposable {
 
 	private isEqualTooltip(
 		{ tooltip }: IStatusbarEntry,
-		{ tooltip: otherTooltip }: IStatusbarEntry,
+		{ tooltip: otherTooltip }: IStatusbarEntry
 	) {
 		if (tooltip === undefined) {
 			return otherTooltip === undefined;
@@ -333,7 +334,7 @@ export class StatusbarEntryItem extends Disposable {
 	private applyColor(
 		container: HTMLElement,
 		color: string | ThemeColor | undefined,
-		isBackground?: boolean,
+		isBackground?: boolean
 	): void {
 		let colorResult: string | undefined = undefined;
 
@@ -359,7 +360,7 @@ export class StatusbarEntryItem extends Disposable {
 						} else {
 							container.style.color = colorValue ?? "";
 						}
-					},
+					}
 				);
 
 				if (isBackground) {
@@ -394,7 +395,7 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 		if (this.currentShowProgress !== showProgress) {
 			this.currentShowProgress = showProgress;
 			this.progressCodicon = renderIcon(
-				showProgress === "loading" ? spinningLoading : syncing,
+				showProgress === "loading" ? spinningLoading : syncing
 			);
 			this.text = this.currentText;
 		}

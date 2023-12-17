@@ -332,7 +332,7 @@ export class StandardAutoClosingPairConditional {
 
 	private _findNeutralCharacterInRange(
 		fromCharCode: number,
-		toCharCode: number,
+		toCharCode: number
 	): string | null {
 		for (let charCode = fromCharCode; charCode <= toCharCode; charCode++) {
 			const character = String.fromCharCode(charCode);
@@ -355,19 +355,19 @@ export class StandardAutoClosingPairConditional {
 			if (!this._neutralCharacter) {
 				this._neutralCharacter = this._findNeutralCharacterInRange(
 					CharCode.Digit0,
-					CharCode.Digit9,
+					CharCode.Digit9
 				);
 			}
 			if (!this._neutralCharacter) {
 				this._neutralCharacter = this._findNeutralCharacterInRange(
 					CharCode.a,
-					CharCode.z,
+					CharCode.z
 				);
 			}
 			if (!this._neutralCharacter) {
 				this._neutralCharacter = this._findNeutralCharacterInRange(
 					CharCode.A,
-					CharCode.Z,
+					CharCode.Z
 				);
 			}
 		}
@@ -432,28 +432,28 @@ export class AutoClosingPairs {
 			appendEntry(
 				this.autoClosingPairsOpenByStart,
 				pair.open.charAt(0),
-				pair,
+				pair
 			);
 			appendEntry(
 				this.autoClosingPairsOpenByEnd,
 				pair.open.charAt(pair.open.length - 1),
-				pair,
+				pair
 			);
 			appendEntry(
 				this.autoClosingPairsCloseByStart,
 				pair.close.charAt(0),
-				pair,
+				pair
 			);
 			appendEntry(
 				this.autoClosingPairsCloseByEnd,
 				pair.close.charAt(pair.close.length - 1),
-				pair,
+				pair
 			);
 			if (pair.close.length === 1 && pair.open.length === 1) {
 				appendEntry(
 					this.autoClosingPairsCloseSingleChar,
 					pair.close,
-					pair,
+					pair
 				);
 			}
 		}

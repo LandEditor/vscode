@@ -28,7 +28,7 @@ declare module "vscode" {
 			parent: Variable | undefined,
 			kind: NotebookVariablesRequestKind,
 			start: number,
-			token: CancellationToken,
+			token: CancellationToken
 		): AsyncIterable<VariablesResult>;
 	}
 

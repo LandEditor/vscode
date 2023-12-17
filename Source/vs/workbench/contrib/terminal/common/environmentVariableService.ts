@@ -50,27 +50,39 @@ export class EnvironmentVariableService
 	mergedCollection: IMergedEnvironmentVariableCollection;
 
 	private readonly _onDidChangeCollections = this._register(
-		new Emitter<IMergedEnvironmentVariableCollection>(),
+		new Emitter<IMergedEnvironmentVariableCollection>()
 	);
 	get onDidChangeCollections(): Event<IMergedEnvironmentVariableCollection> {
 		return this._onDidChangeCollections.event;
 	}
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IStorageService private readonly _storageService: IStorageService
 	) {
 		super();
 
-		this._storageService.remove(TerminalStorageKeys.DeprecatedEnvironmentVariableCollections, StorageScope.WORKSPACE);
-		const serializedPersistedCollections = this._storageService.get(TerminalStorageKeys.EnvironmentVariableCollections, StorageScope.WORKSPACE);
+		this._storageService.remove(
+			TerminalStorageKeys.DeprecatedEnvironmentVariableCollections,
+			StorageScope.WORKSPACE
+		);
+		const serializedPersistedCollections = this._storageService.get(
+			TerminalStorageKeys.EnvironmentVariableCollections,
+			StorageScope.WORKSPACE
+		);
 		if (serializedPersistedCollections) {
-			const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] = JSON.parse(serializedPersistedCollections);
-			collectionsJson.forEach(c => this.collections.set(c.extensionIdentifier, {
-				persistent: true,
-				map: deserializeEnvironmentVariableCollection(c.collection),
-				descriptionMap: deserializeEnvironmentDescriptionMap(c.description)
-			}));
+			const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] =
+				JSON.parse(serializedPersistedCollections);
+			collectionsJson.forEach((c) =>
+				this.collections.set(c.extensionIdentifier, {
+					persistent: true,
+					map: deserializeEnvironmentVariableCollection(c.collection),
+					descriptionMap: deserializeEnvironmentDescriptionMap(
+						c.description
+					),
+				})
+			);
 
 			// Asynchronously invalidate collections where extensions have been uninstalled, this is
 			// async to avoid making all functions on the service synchronous and because extensions
@@ -80,12 +92,16 @@ export class EnvironmentVariableService
 		this.mergedCollection = this._resolveMergedCollection();
 
 		// Listen for uninstalled/disabled extensions
-		this._register(this._extensionService.onDidChangeExtensions(() => this._invalidateExtensionCollections()));
+		this._register(
+			this._extensionService.onDidChangeExtensions(() =>
+				this._invalidateExtensionCollections()
+			)
+		);
 	}
 
 	set(
 		extensionIdentifier: string,
-		collection: IEnvironmentVariableCollectionWithPersistence,
+		collection: IEnvironmentVariableCollectionWithPersistence
 	): void {
 		this.collections.set(extensionIdentifier, collection);
 		this._updateCollections();
@@ -115,10 +131,10 @@ export class EnvironmentVariableService
 				collectionsJson.push({
 					extensionIdentifier,
 					collection: serializeEnvironmentVariableCollection(
-						this.collections.get(extensionIdentifier)!.map,
+						this.collections.get(extensionIdentifier)!.map
 					),
 					description: serializeEnvironmentDescriptionMap(
-						collection.descriptionMap,
+						collection.descriptionMap
 					),
 				});
 			}
@@ -128,7 +144,7 @@ export class EnvironmentVariableService
 			TerminalStorageKeys.EnvironmentVariableCollections,
 			stringifiedJson,
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
@@ -151,7 +167,7 @@ export class EnvironmentVariableService
 		let changes = false;
 		this.collections.forEach((_, extensionIdentifier) => {
 			const isExtensionRegistered = registeredExtensions.some(
-				(r) => r.identifier.value === extensionIdentifier,
+				(r) => r.identifier.value === extensionIdentifier
 			);
 			if (!isExtensionRegistered) {
 				this.collections.delete(extensionIdentifier);

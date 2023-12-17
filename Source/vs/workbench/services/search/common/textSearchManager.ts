@@ -54,12 +54,12 @@ export class TextSearchManager {
 		private query: ITextQuery,
 		private provider: TextSearchProvider,
 		private fileUtils: IFileUtils,
-		private processType: ITextSearchStats["type"],
+		private processType: ITextSearchStats["type"]
 	) {}
 
 	search(
 		onProgress: (matches: IFileMatch[]) => void,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ISearchCompleteStats> {
 		const folderQueries = this.query.folderQueries || [];
 		const tokenSource = new CancellationTokenSource(token);
@@ -86,7 +86,7 @@ export class TextSearchManager {
 
 						result = this.trimResultToSize(
 							result,
-							this.query.maxResults - this.resultCount,
+							this.query.maxResults - this.resultCount
 						);
 					}
 
@@ -104,16 +104,16 @@ export class TextSearchManager {
 					return this.searchInFolder(
 						fq,
 						(r) => onResult(r, i),
-						tokenSource.token,
+						tokenSource.token
 					);
-				}),
+				})
 			).then(
 				(results) => {
 					tokenSource.dispose();
 					this.collector!.flush();
 
 					const someFolderHitLImit = results.some(
-						(result) => !!result && !!result.limitHit,
+						(result) => !!result && !!result.limitHit
 					);
 					resolve({
 						limitHit: this.isLimitHit || someFolderHitLImit,
@@ -127,7 +127,7 @@ export class TextSearchManager {
 								} else {
 									return [result.message];
 								}
-							}),
+							})
 						),
 						stats: {
 							type: this.processType,
@@ -138,7 +138,7 @@ export class TextSearchManager {
 					tokenSource.dispose();
 					const errMsg = toErrorMessage(err);
 					reject(new Error(errMsg));
-				},
+				}
 			);
 		});
 	}
@@ -154,7 +154,7 @@ export class TextSearchManager {
 
 	private trimResultToSize(
 		result: TextSearchMatch,
-		size: number,
+		size: number
 	): TextSearchMatch {
 		const rangesArr = Array.isArray(result.ranges)
 			? result.ranges
@@ -176,7 +176,7 @@ export class TextSearchManager {
 	private async searchInFolder(
 		folderQuery: IFolderQuery<URI>,
 		onResult: (result: TextSearchResult) => void,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<TextSearchComplete | null | undefined> {
 		const queryTester = new QueryGlobTester(this.query, folderQuery);
 		const testingPs: Promise<void>[] = [];
@@ -190,21 +190,21 @@ export class TextSearchManager {
 					folderQuery.folder.scheme === Schemas.file
 						? hasSiblingPromiseFn(() => {
 								return this.fileUtils.readdir(
-									resources.dirname(result.uri),
+									resources.dirname(result.uri)
 								);
-						  })
+							})
 						: undefined;
 
 				const relativePath = resources.relativePath(
 					folderQuery.folder,
-					result.uri,
+					result.uri
 				);
 				if (relativePath) {
 					// This method is only async when the exclude contains sibling clauses
 					const included = queryTester.includedInQuery(
 						relativePath,
 						path.basename(relativePath),
-						hasSibling,
+						hasSibling
 					);
 					if (isThenable(included)) {
 						testingPs.push(
@@ -212,7 +212,7 @@ export class TextSearchManager {
 								if (isIncluded) {
 									onResult(result);
 								}
-							}),
+							})
 						);
 					} else if (included) {
 						onResult(result);
@@ -226,7 +226,7 @@ export class TextSearchManager {
 			patternInfoToQuery(this.query.contentPattern),
 			searchOptions,
 			progress,
-			token,
+			token
 		);
 		if (testingPs.length) {
 			await Promise.all(testingPs);
@@ -240,7 +240,7 @@ export class TextSearchManager {
 			if (Array.isArray(result.ranges)) {
 				if (!Array.isArray(result.preview.matches)) {
 					console.warn(
-						"INVALID - A text search provider match's`ranges` and`matches` properties must have the same type.",
+						"INVALID - A text search provider match's`ranges` and`matches` properties must have the same type."
 					);
 					return false;
 				}
@@ -250,14 +250,14 @@ export class TextSearchManager {
 					result.ranges.length
 				) {
 					console.warn(
-						"INVALID - A text search provider match's`ranges` and`matches` properties must have the same length.",
+						"INVALID - A text search provider match's`ranges` and`matches` properties must have the same length."
 					);
 					return false;
 				}
 			} else {
 				if (Array.isArray(result.preview.matches)) {
 					console.warn(
-						"INVALID - A text search provider match's`ranges` and`matches` properties must have the same length.",
+						"INVALID - A text search provider match's`ranges` and`matches` properties must have the same length."
 					);
 					return false;
 				}
@@ -268,15 +268,15 @@ export class TextSearchManager {
 	}
 
 	private getSearchOptionsForFolder(
-		fq: IFolderQuery<URI>,
+		fq: IFolderQuery<URI>
 	): TextSearchOptions {
 		const includes = resolvePatternsForProvider(
 			this.query.includePattern,
-			fq.includePattern,
+			fq.includePattern
 		);
 		const excludes = resolvePatternsForProvider(
 			this.query.excludePattern,
-			fq.excludePattern,
+			fq.excludePattern
 		);
 
 		const options = <TextSearchOptions>{
@@ -322,7 +322,7 @@ export class TextSearchResultsCollector {
 	constructor(private _onResult: (result: IFileMatch[]) => void) {
 		this._batchedCollector = new BatchedCollector<IFileMatch>(
 			512,
-			(items) => this.sendItems(items),
+			(items) => this.sendItems(items)
 		);
 	}
 
@@ -348,7 +348,7 @@ export class TextSearchResultsCollector {
 		}
 
 		this._currentFileMatch.results!.push(
-			extensionResultToFrontendResult(data),
+			extensionResultToFrontendResult(data)
 		);
 	}
 
@@ -371,7 +371,7 @@ export class TextSearchResultsCollector {
 }
 
 function extensionResultToFrontendResult(
-	data: TextSearchResult,
+	data: TextSearchResult
 ): ITextSearchResult {
 	// Warning: result from RipgrepTextSearchEH has fake Range. Don't depend on any other props beyond these...
 	if (extensionResultIsMatch(data)) {
@@ -401,7 +401,7 @@ function extensionResultToFrontendResult(
 }
 
 export function extensionResultIsMatch(
-	data: TextSearchResult,
+	data: TextSearchResult
 ): data is TextSearchMatch {
 	return !!(<TextSearchMatch>data).preview;
 }
@@ -425,7 +425,7 @@ export class BatchedCollector<T> {
 
 	constructor(
 		private maxBatchSize: number,
-		private cb: (items: T[]) => void,
+		private cb: (items: T[]) => void
 	) {}
 
 	addItem(item: T, size: number): void {

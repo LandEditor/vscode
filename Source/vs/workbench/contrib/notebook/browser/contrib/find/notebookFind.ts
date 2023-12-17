@@ -50,14 +50,14 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebookActions.hideFind",
-						"Hide Find in Notebook",
+						"Hide Find in Notebook"
 					),
 					original: "Hide Find in Notebook",
 				},
 				keybinding: {
 					when: ContextKeyExpr.and(
 						NOTEBOOK_EDITOR_FOCUSED,
-						KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED,
+						KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED
 					),
 					primary: KeyCode.Escape,
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -68,7 +68,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const editor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane,
+				editorService.activeEditorPane
 			);
 
 			if (!editor) {
@@ -76,12 +76,12 @@ registerAction2(
 			}
 
 			const controller = editor.getContribution<NotebookFindContrib>(
-				NotebookFindContrib.id,
+				NotebookFindContrib.id
 			);
 			controller.hide();
 			editor.focus();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -92,7 +92,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"notebookActions.findInNotebook",
-						"Find in Notebook",
+						"Find in Notebook"
 					),
 					original: "Find in Notebook",
 				},
@@ -101,9 +101,9 @@ registerAction2(
 						NOTEBOOK_EDITOR_FOCUSED,
 						ContextKeyExpr.or(
 							NOTEBOOK_IS_ACTIVE_EDITOR,
-							INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR,
+							INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR
 						),
-						EditorContextKeys.focus.toNegated(),
+						EditorContextKeys.focus.toNegated()
 					),
 					primary: KeyCode.KeyF | KeyMod.CtrlCmd,
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -114,7 +114,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const editor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane,
+				editorService.activeEditorPane
 			);
 
 			if (!editor) {
@@ -122,11 +122,11 @@ registerAction2(
 			}
 
 			const controller = editor.getContribution<NotebookFindContrib>(
-				NotebookFindContrib.id,
+				NotebookFindContrib.id
 			);
 			controller.show();
 		}
-	},
+	}
 );
 
 function notebookContainsTextModel(uri: URI, textModel: ITextModel) {
@@ -146,7 +146,7 @@ function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
 		const selectionSearchString = getSelectionSearchString(
 			editor,
 			opts.seedSearchStringFromSelection,
-			opts.seedSearchStringFromNonEmptySelection,
+			opts.seedSearchStringFromNonEmptySelection
 		);
 		if (selectionSearchString) {
 			return {
@@ -160,7 +160,7 @@ function getSearchStringOptions(editor: ICodeEditor, opts: IFindStartOptions) {
 	) {
 		const selectionSearchString = getSelectionSearchString(
 			editor,
-			opts.seedSearchStringFromSelection,
+			opts.seedSearchStringFromSelection
 		);
 		if (selectionSearchString) {
 			return {
@@ -178,7 +178,7 @@ StartFindAction.addImplementation(
 	(accessor: ServicesAccessor, codeEditor: ICodeEditor, args: any) => {
 		const editorService = accessor.get(IEditorService);
 		const editor = getNotebookEditorFromEditorPane(
-			editorService.activeEditorPane,
+			editorService.activeEditorPane
 		);
 
 		if (!editor) {
@@ -201,7 +201,7 @@ StartFindAction.addImplementation(
 				textEditor.hasModel() &&
 				notebookContainsTextModel(
 					editor.textModel.uri,
-					textEditor.getModel(),
+					textEditor.getModel()
 				)
 			) {
 				// the active text editor is in notebook editor
@@ -211,7 +211,7 @@ StartFindAction.addImplementation(
 		}
 
 		const controller = editor.getContribution<NotebookFindContrib>(
-			NotebookFindContrib.id,
+			NotebookFindContrib.id
 		);
 
 		const searchStringOptions = getSearchStringOptions(codeEditor, {
@@ -225,7 +225,7 @@ StartFindAction.addImplementation(
 				codeEditor.getOption(EditorOption.find)
 					.seedSearchStringFromSelection === "selection",
 			seedSearchStringFromGlobalClipboard: codeEditor.getOption(
-				EditorOption.find,
+				EditorOption.find
 			).globalFindClipboard,
 			shouldFocus: FindStartFocusAction.FocusFindInput,
 			shouldAnimate: true,
@@ -250,7 +250,7 @@ StartFindAction.addImplementation(
 
 		controller.show(searchStringOptions?.searchString, options);
 		return true;
-	},
+	}
 );
 
 StartFindReplaceAction.addImplementation(
@@ -258,7 +258,7 @@ StartFindReplaceAction.addImplementation(
 	(accessor: ServicesAccessor, codeEditor: ICodeEditor, args: any) => {
 		const editorService = accessor.get(IEditorService);
 		const editor = getNotebookEditorFromEditorPane(
-			editorService.activeEditorPane,
+			editorService.activeEditorPane
 		);
 
 		if (!editor) {
@@ -270,7 +270,7 @@ StartFindReplaceAction.addImplementation(
 		}
 
 		const controller = editor.getContribution<NotebookFindContrib>(
-			NotebookFindContrib.id,
+			NotebookFindContrib.id
 		);
 
 		const searchStringOptions = getSearchStringOptions(codeEditor, {
@@ -284,7 +284,7 @@ StartFindReplaceAction.addImplementation(
 				codeEditor.getOption(EditorOption.find)
 					.seedSearchStringFromSelection === "selection",
 			seedSearchStringFromGlobalClipboard: codeEditor.getOption(
-				EditorOption.find,
+				EditorOption.find
 			).globalFindClipboard,
 			shouldFocus: FindStartFocusAction.FocusFindInput,
 			shouldAnimate: true,
@@ -298,5 +298,5 @@ StartFindReplaceAction.addImplementation(
 		}
 
 		return false;
-	},
+	}
 );

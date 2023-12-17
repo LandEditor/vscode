@@ -61,12 +61,17 @@ export class NotebookCellOutlineProvider {
 		private readonly _editor: INotebookEditor,
 		private readonly _target: OutlineTarget,
 		@IThemeService themeService: IThemeService,
-		@INotebookExecutionStateService notebookExecutionStateService: INotebookExecutionStateService,
-		@IOutlineModelService private readonly _outlineModelService: IOutlineModelService,
+		@INotebookExecutionStateService
+		notebookExecutionStateService: INotebookExecutionStateService,
+		@IOutlineModelService
+		private readonly _outlineModelService: IOutlineModelService,
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
-		this._outlineEntryFactory = new NotebookOutlineEntryFactory(notebookExecutionStateService);
+		this._outlineEntryFactory = new NotebookOutlineEntryFactory(
+			notebookExecutionStateService
+		);
 
 		const selectionListener = new MutableDisposable();
 		this._dispoables.add(selectionListener);
@@ -77,28 +82,41 @@ export class NotebookCellOutlineProvider {
 				(last, _current) => last,
 				200
 			)(this._recomputeActive, this),
-			Event.debounce<INotebookViewCellsUpdateEvent, INotebookViewCellsUpdateEvent>(
+			Event.debounce<
+				INotebookViewCellsUpdateEvent,
+				INotebookViewCellsUpdateEvent
+			>(
 				_editor.onDidChangeViewCells,
 				(last, _current) => last ?? _current,
 				200
 			)(this._recomputeState, this)
 		);
 
-		this._dispoables.add(_configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('notebook.outline.showCodeCells')) {
-				this._recomputeState();
-			}
-		}));
+		this._dispoables.add(
+			_configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("notebook.outline.showCodeCells")) {
+					this._recomputeState();
+				}
+			})
+		);
 
-		this._dispoables.add(themeService.onDidFileIconThemeChange(() => {
-			this._onDidChange.fire({});
-		}));
+		this._dispoables.add(
+			themeService.onDidFileIconThemeChange(() => {
+				this._onDidChange.fire({});
+			})
+		);
 
-		this._dispoables.add(notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell && !!this._editor.textModel && e.affectsNotebook(this._editor.textModel?.uri)) {
-				this._recomputeState();
-			}
-		}));
+		this._dispoables.add(
+			notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (
+					e.type === NotebookExecutionType.cell &&
+					!!this._editor.textModel &&
+					e.affectsNotebook(this._editor.textModel?.uri)
+				) {
+					this._recomputeState();
+				}
+			})
+		);
 
 		this._recomputeState();
 	}
@@ -131,8 +149,8 @@ export class NotebookCellOutlineProvider {
 					this._outlineEntryFactory.cacheSymbols(
 						cell,
 						this._outlineModelService,
-						cancelToken,
-					),
+						cancelToken
+					)
 				);
 			}
 			await Promise.allSettled(promises);
@@ -161,18 +179,18 @@ export class NotebookCellOutlineProvider {
 		let includeCodeCells = true;
 		if (this._target === OutlineTarget.OutlinePane) {
 			includeCodeCells = this._configurationService.getValue<boolean>(
-				"notebook.outline.showCodeCells",
+				"notebook.outline.showCodeCells"
 			);
 		} else if (this._target === OutlineTarget.Breadcrumbs) {
 			includeCodeCells = this._configurationService.getValue<boolean>(
-				"notebook.breadcrumbs.showCodeCells",
+				"notebook.breadcrumbs.showCodeCells"
 			);
 		}
 
 		const notebookCells = notebookEditorWidget
 			.getViewModel()
 			.viewCells.filter(
-				(cell) => cell.cellKind === CellKind.Markup || includeCodeCells,
+				(cell) => cell.cellKind === CellKind.Markup || includeCodeCells
 			);
 
 		const entries: OutlineEntry[] = [];
@@ -180,15 +198,15 @@ export class NotebookCellOutlineProvider {
 			entries.push(
 				...this._outlineEntryFactory.getOutlineEntries(
 					cell,
-					entries.length,
-				),
+					entries.length
+				)
 			);
 			// send an event whenever any of the cells change
 			this._entriesDisposables.add(
 				cell.model.onDidChangeContent(() => {
 					this._recomputeState();
 					this._onDidChange.fire({});
-				}),
+				})
 			);
 		}
 
@@ -240,14 +258,14 @@ export class NotebookCellOutlineProvider {
 				}
 			};
 			const problem = this._configurationService.getValue(
-				"problems.visibility",
+				"problems.visibility"
 			);
 			if (problem === undefined) {
 				return;
 			}
 
 			const config = this._configurationService.getValue(
-				OutlineConfigKeys.problemsEnabled,
+				OutlineConfigKeys.problemsEnabled
 			);
 
 			if (problem && config) {
@@ -262,7 +280,7 @@ export class NotebookCellOutlineProvider {
 							e.some((uri) =>
 								notebookEditorWidget
 									.getCellsInRange()
-									.some((cell) => isEqual(cell.uri, uri)),
+									.some((cell) => isEqual(cell.uri, uri))
 							)
 						) {
 							doUpdateMarker(false);
@@ -285,7 +303,7 @@ export class NotebookCellOutlineProvider {
 					updateMarkerUpdater();
 					this._onDidChange.fire({});
 				}
-			}),
+			})
 		);
 
 		this._recomputeActive();
@@ -303,7 +321,7 @@ export class NotebookCellOutlineProvider {
 				notebookEditorWidget.getLength() > 0
 			) {
 				const cell = notebookEditorWidget.cellAt(
-					notebookEditorWidget.getFocus().start,
+					notebookEditorWidget.getFocus().start
 				);
 				if (cell) {
 					for (const entry of this._entries) {

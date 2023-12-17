@@ -29,12 +29,13 @@ export class MainThreadIssueReporter
 {
 	private readonly _proxy: ExtHostIssueReporterShape;
 	private readonly _registrations = this._register(
-		new DisposableMap<string>(),
+		new DisposableMap<string>()
 	);
 
 	constructor(
 		context: IExtHostContext,
-		@IWorkbenchIssueService private readonly _issueService: IWorkbenchIssueService
+		@IWorkbenchIssueService
+		private readonly _issueService: IWorkbenchIssueService
 	) {
 		super();
 		this._proxy = context.getProxy(ExtHostContext.ExtHostIssueReporter);
@@ -45,7 +46,7 @@ export class MainThreadIssueReporter
 			provideIssueUrl: async (token: CancellationToken) => {
 				const parts = await this._proxy.$getIssueReporterUri(
 					extensionId,
-					token,
+					token
 				);
 				return URI.from(parts);
 			},
@@ -54,8 +55,8 @@ export class MainThreadIssueReporter
 			extensionId,
 			this._issueService.registerIssueUriRequestHandler(
 				extensionId,
-				handler,
-			),
+				handler
+			)
 		);
 	}
 
@@ -68,21 +69,21 @@ export class MainThreadIssueReporter
 			provideIssueExtensionData: async (token: CancellationToken) => {
 				const parts = await this._proxy.$getIssueReporterData(
 					extensionId,
-					token,
+					token
 				);
 				return parts;
 			},
 			provideIssueExtensionTemplate: async (token: CancellationToken) => {
 				const parts = await this._proxy.$getIssueReporterTemplate(
 					extensionId,
-					token,
+					token
 				);
 				return parts;
 			},
 		};
 		this._registrations.set(
 			extensionId,
-			this._issueService.registerIssueDataProvider(extensionId, provider),
+			this._issueService.registerIssueDataProvider(extensionId, provider)
 		);
 	}
 

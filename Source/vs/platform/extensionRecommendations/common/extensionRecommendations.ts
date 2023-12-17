@@ -39,7 +39,7 @@ export const enum RecommendationsNotificationResult {
 
 export const IExtensionRecommendationNotificationService =
 	createDecorator<IExtensionRecommendationNotificationService>(
-		"IExtensionRecommendationNotificationService",
+		"IExtensionRecommendationNotificationService"
 	);
 
 export interface IExtensionRecommendationNotificationService {
@@ -49,7 +49,7 @@ export interface IExtensionRecommendationNotificationService {
 	hasToIgnoreRecommendationNotifications(): boolean;
 
 	promptImportantExtensionsInstallNotification(
-		recommendations: IExtensionRecommendations,
+		recommendations: IExtensionRecommendations
 	): Promise<RecommendationsNotificationResult>;
 	promptWorkspaceRecommendations(recommendations: string[]): Promise<void>;
 }

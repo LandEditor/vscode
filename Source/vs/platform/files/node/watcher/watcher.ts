@@ -21,15 +21,15 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 
 	readonly onDidChangeFile = Event.any(
 		this.recursiveWatcher.onDidChangeFile,
-		this.nonRecursiveWatcher.onDidChangeFile,
+		this.nonRecursiveWatcher.onDidChangeFile
 	);
 	readonly onDidLogMessage = Event.any(
 		this.recursiveWatcher.onDidLogMessage,
-		this.nonRecursiveWatcher.onDidLogMessage,
+		this.nonRecursiveWatcher.onDidLogMessage
 	);
 	readonly onDidError = Event.any(
 		this.recursiveWatcher.onDidError,
-		this.nonRecursiveWatcher.onDidError,
+		this.nonRecursiveWatcher.onDidError
 	);
 
 	async watch(requests: IUniversalWatchRequest[]): Promise<void> {

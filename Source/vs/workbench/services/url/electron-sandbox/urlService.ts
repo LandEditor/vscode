@@ -37,15 +37,21 @@ export class RelayURLService
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
 		@IOpenerService openerService: IOpenerService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IProductService productService: IProductService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super(productService);
 
-		this.urlService = ProxyChannel.toService<IURLService>(mainProcessService.getChannel('url'));
+		this.urlService = ProxyChannel.toService<IURLService>(
+			mainProcessService.getChannel("url")
+		);
 
-		mainProcessService.registerChannel('urlHandler', new URLHandlerChannel(this));
+		mainProcessService.registerChannel(
+			"urlHandler",
+			new URLHandlerChannel(this)
+		);
 		openerService.registerOpener(this);
 	}
 
@@ -55,11 +61,11 @@ export class RelayURLService
 		let query = uri.query;
 		if (!query) {
 			query = `windowId=${encodeURIComponent(
-				this.nativeHostService.windowId,
+				this.nativeHostService.windowId
 			)}`;
 		} else {
 			query += `&windowId=${encodeURIComponent(
-				this.nativeHostService.windowId,
+				this.nativeHostService.windowId
 			)}`;
 		}
 
@@ -68,7 +74,7 @@ export class RelayURLService
 
 	override async open(
 		resource: URI | string,
-		options?: IRelayOpenURLOptions,
+		options?: IRelayOpenURLOptions
 	): Promise<boolean> {
 		if (!matchesScheme(resource, this.productService.urlProtocol)) {
 			return false;
@@ -86,7 +92,7 @@ export class RelayURLService
 		if (result) {
 			this.logService.trace(
 				"URLService#handleURL(): handled",
-				uri.toString(true),
+				uri.toString(true)
 			);
 
 			await this.nativeHostService.focusWindow({
@@ -96,7 +102,7 @@ export class RelayURLService
 		} else {
 			this.logService.trace(
 				"URLService#handleURL(): not handled",
-				uri.toString(true),
+				uri.toString(true)
 			);
 		}
 

@@ -21,21 +21,21 @@ export interface ITextCellEditingDelegate {
 	insertCell?(
 		index: number,
 		cell: NotebookCellTextModel,
-		endSelections?: ISelectionState,
+		endSelections?: ISelectionState
 	): void;
 	deleteCell?(index: number, endSelections?: ISelectionState): void;
 	replaceCell?(
 		index: number,
 		count: number,
 		cells: NotebookCellTextModel[],
-		endSelections?: ISelectionState,
+		endSelections?: ISelectionState
 	): void;
 	moveCell?(
 		fromIndex: number,
 		length: number,
 		toIndex: number,
 		beforeSelections: ISelectionState | undefined,
-		endSelections?: ISelectionState,
+		endSelections?: ISelectionState
 	): void;
 	updateCellMetadata?(index: number, newMetadata: NotebookCellMetadata): void;
 }
@@ -52,7 +52,7 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 		private toIndex: number,
 		private editingDelegate: ITextCellEditingDelegate,
 		private beforedSelections: ISelectionState | undefined,
-		private endSelections: ISelectionState | undefined,
+		private endSelections: ISelectionState | undefined
 	) {}
 
 	undo(): void {
@@ -65,7 +65,7 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 			this.length,
 			this.fromIndex,
 			this.endSelections,
-			this.beforedSelections,
+			this.beforedSelections
 		);
 	}
 
@@ -79,7 +79,7 @@ export class MoveCellEdit implements IResourceUndoRedoElement {
 			this.length,
 			this.toIndex,
 			this.beforedSelections,
-			this.endSelections,
+			this.endSelections
 		);
 	}
 }
@@ -97,13 +97,13 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 		][],
 		private editingDelegate: ITextCellEditingDelegate,
 		private beforeHandles: ISelectionState | undefined,
-		private endHandles: ISelectionState | undefined,
+		private endHandles: ISelectionState | undefined
 	) {}
 
 	undo(): void {
 		if (!this.editingDelegate.replaceCell) {
 			throw new Error(
-				"Notebook Replace Cell not implemented for Undo/Redo",
+				"Notebook Replace Cell not implemented for Undo/Redo"
 			);
 		}
 
@@ -112,7 +112,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 				diff[0],
 				diff[2].length,
 				diff[1],
-				this.beforeHandles,
+				this.beforeHandles
 			);
 		});
 	}
@@ -120,7 +120,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 	redo(): void {
 		if (!this.editingDelegate.replaceCell) {
 			throw new Error(
-				"Notebook Replace Cell not implemented for Undo/Redo",
+				"Notebook Replace Cell not implemented for Undo/Redo"
 			);
 		}
 
@@ -129,7 +129,7 @@ export class SpliceCellsEdit implements IResourceUndoRedoElement {
 				diff[0],
 				diff[1].length,
 				diff[2],
-				this.endHandles,
+				this.endHandles
 			);
 		});
 	}
@@ -144,7 +144,7 @@ export class CellMetadataEdit implements IResourceUndoRedoElement {
 		readonly index: number,
 		readonly oldMetadata: NotebookCellMetadata,
 		readonly newMetadata: NotebookCellMetadata,
-		private editingDelegate: ITextCellEditingDelegate,
+		private editingDelegate: ITextCellEditingDelegate
 	) {}
 
 	undo(): void {

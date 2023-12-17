@@ -33,7 +33,7 @@ declare module "vscode" {
 		provideTunnel(
 			tunnelOptions: TunnelOptions,
 			tunnelCreationOptions: TunnelCreationOptions,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<Tunnel>;
 	}
 
@@ -44,7 +44,7 @@ declare module "vscode" {
 		 */
 		export function registerTunnelProvider(
 			provider: TunnelProvider,
-			information: TunnelInformation,
+			information: TunnelInformation
 		): Thenable<Disposable>;
 	}
 }

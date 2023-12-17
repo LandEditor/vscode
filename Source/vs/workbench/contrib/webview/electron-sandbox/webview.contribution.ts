@@ -15,7 +15,7 @@ import { ElectronWebviewService } from "vs/workbench/contrib/webview/electron-sa
 registerSingleton(
 	IWebviewService,
 	ElectronWebviewService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 registerAction2(webviewCommands.OpenWebviewDeveloperToolsAction);

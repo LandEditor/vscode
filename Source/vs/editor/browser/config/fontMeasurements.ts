@@ -149,11 +149,11 @@ export class FontMeasurementsImpl extends Disposable {
 						isMonospace: readConfig.isMonospace,
 						typicalHalfwidthCharacterWidth: Math.max(
 							readConfig.typicalHalfwidthCharacterWidth,
-							5,
+							5
 						),
 						typicalFullwidthCharacterWidth: Math.max(
 							readConfig.typicalFullwidthCharacterWidth,
-							5,
+							5
 						),
 						canUseHalfwidthRightwardsArrow:
 							readConfig.canUseHalfwidthRightwardsArrow,
@@ -162,7 +162,7 @@ export class FontMeasurementsImpl extends Disposable {
 						wsmiddotWidth: Math.max(readConfig.wsmiddotWidth, 5),
 						maxDigitWidth: Math.max(readConfig.maxDigitWidth, 5),
 					},
-					false,
+					false
 				);
 			}
 
@@ -175,7 +175,7 @@ export class FontMeasurementsImpl extends Disposable {
 		chr: string,
 		type: CharWidthRequestType,
 		all: CharWidthRequest[],
-		monospace: CharWidthRequest[] | null,
+		monospace: CharWidthRequest[] | null
 	): CharWidthRequest {
 		const result = new CharWidthRequest(chr, type);
 		all.push(result);
@@ -191,79 +191,79 @@ export class FontMeasurementsImpl extends Disposable {
 			"n",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const typicalFullwidthCharacter = this._createRequest(
 			"\uff4d",
 			CharWidthRequestType.Regular,
 			all,
-			null,
+			null
 		);
 		const space = this._createRequest(
 			" ",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit0 = this._createRequest(
 			"0",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit1 = this._createRequest(
 			"1",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit2 = this._createRequest(
 			"2",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit3 = this._createRequest(
 			"3",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit4 = this._createRequest(
 			"4",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit5 = this._createRequest(
 			"5",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit6 = this._createRequest(
 			"6",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit7 = this._createRequest(
 			"7",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit8 = this._createRequest(
 			"8",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const digit9 = this._createRequest(
 			"9",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 
 		// monospace test: used for whitespace rendering
@@ -271,13 +271,13 @@ export class FontMeasurementsImpl extends Disposable {
 			"→",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 		const halfwidthRightwardsArrow = this._createRequest(
 			"￫",
 			CharWidthRequestType.Regular,
 			all,
-			null,
+			null
 		);
 
 		// U+00B7 - MIDDLE DOT
@@ -285,7 +285,7 @@ export class FontMeasurementsImpl extends Disposable {
 			"·",
 			CharWidthRequestType.Regular,
 			all,
-			monospace,
+			monospace
 		);
 
 		// U+2E31 - WORD SEPARATOR MIDDLE DOT
@@ -293,7 +293,7 @@ export class FontMeasurementsImpl extends Disposable {
 			String.fromCharCode(0x2e31),
 			CharWidthRequestType.Regular,
 			all,
-			null,
+			null
 		);
 
 		// monospace test: some characters
@@ -303,19 +303,19 @@ export class FontMeasurementsImpl extends Disposable {
 				monospaceTestChars.charAt(i),
 				CharWidthRequestType.Regular,
 				all,
-				monospace,
+				monospace
 			);
 			this._createRequest(
 				monospaceTestChars.charAt(i),
 				CharWidthRequestType.Italic,
 				all,
-				monospace,
+				monospace
 			);
 			this._createRequest(
 				monospaceTestChars.charAt(i),
 				CharWidthRequestType.Bold,
 				all,
-				monospace,
+				monospace
 			);
 		}
 
@@ -331,7 +331,7 @@ export class FontMeasurementsImpl extends Disposable {
 			digit6.width,
 			digit7.width,
 			digit8.width,
-			digit9.width,
+			digit9.width
 		);
 
 		let isMonospace =
@@ -374,7 +374,7 @@ export class FontMeasurementsImpl extends Disposable {
 				wsmiddotWidth: wsmiddotWidth.width,
 				maxDigitWidth: maxDigitWidth,
 			},
-			true,
+			true
 		);
 	}
 }

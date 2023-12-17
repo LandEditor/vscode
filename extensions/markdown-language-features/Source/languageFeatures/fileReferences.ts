@@ -18,8 +18,8 @@ export class FindFileReferencesCommand implements Command {
 		if (!resource) {
 			vscode.window.showErrorMessage(
 				vscode.l10n.t(
-					"Find file references failed. No resource provided.",
-				),
+					"Find file references failed. No resource provided."
+				)
 			);
 			return;
 		}
@@ -33,12 +33,12 @@ export class FindFileReferencesCommand implements Command {
 				const locations = (
 					await this._client.getReferencesToFileInWorkspace(
 						resource!,
-						token,
+						token
 					)
 				).map((loc) => {
 					return new vscode.Location(
 						vscode.Uri.parse(loc.uri),
-						convertRange(loc.range),
+						convertRange(loc.range)
 					);
 				});
 
@@ -52,16 +52,16 @@ export class FindFileReferencesCommand implements Command {
 						"editor.action.showReferences",
 						resource,
 						new vscode.Position(0, 0),
-						locations,
+						locations
 					);
 				} finally {
 					await config.update(
 						"preferredLocation",
 						existingSetting?.workspaceFolderValue ??
-							existingSetting?.workspaceValue,
+							existingSetting?.workspaceValue
 					);
 				}
-			},
+			}
 		);
 	}
 }
@@ -71,13 +71,13 @@ export function convertRange(range: lsp.Range): vscode.Range {
 		range.start.line,
 		range.start.character,
 		range.end.line,
-		range.end.character,
+		range.end.character
 	);
 }
 
 export function registerFindFileReferenceSupport(
 	commandManager: CommandManager,
-	client: MdLanguageClient,
+	client: MdLanguageClient
 ): vscode.Disposable {
 	return commandManager.register(new FindFileReferencesCommand(client));
 }

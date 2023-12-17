@@ -24,20 +24,21 @@ export class MainThreadLocalization
 	constructor(
 		extHostContext: IExtHostContext,
 		@IFileService private readonly fileService: IFileService,
-		@ILanguagePackService private readonly languagePackService: ILanguagePackService
+		@ILanguagePackService
+		private readonly languagePackService: ILanguagePackService
 	) {
 		super();
 	}
 
 	async $fetchBuiltInBundleUri(
 		id: string,
-		language: string,
+		language: string
 	): Promise<URI | undefined> {
 		try {
 			const uri =
 				await this.languagePackService.getBuiltInExtensionTranslationsUri(
 					id,
-					language,
+					language
 				);
 			return uri;
 		} catch (e) {
@@ -47,7 +48,7 @@ export class MainThreadLocalization
 
 	async $fetchBundleContents(uriComponents: UriComponents): Promise<string> {
 		const contents = await this.fileService.readFile(
-			URI.revive(uriComponents),
+			URI.revive(uriComponents)
 		);
 		return contents.value.toString();
 	}

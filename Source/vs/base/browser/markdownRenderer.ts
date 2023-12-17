@@ -42,11 +42,11 @@ export interface MarkedOptions extends marked.MarkedOptions {
 export interface MarkdownRenderOptions extends FormattedTextRenderOptions {
 	readonly codeBlockRenderer?: (
 		languageId: string,
-		value: string,
+		value: string
 	) => Promise<HTMLElement>;
 	readonly codeBlockRendererSync?: (
 		languageId: string,
-		value: string,
+		value: string
 	) => HTMLElement;
 	readonly asyncRenderCallback?: () => void;
 	readonly fillInIncompleteTokens?: boolean;
@@ -56,7 +56,7 @@ const defaultMarkedRenderers = Object.freeze({
 	image: (
 		href: string | null,
 		title: string | null,
-		text: string,
+		text: string
 	): string => {
 		let dimensions: string[] = [];
 		let attributes: string[] = [];
@@ -120,7 +120,7 @@ const defaultMarkedRenderers = Object.freeze({
 export function renderMarkdown(
 	markdown: IMarkdownString,
 	options: MarkdownRenderOptions = {},
-	markedOptions: MarkedOptions = {},
+	markedOptions: MarkedOptions = {}
 ): { element: HTMLElement; dispose: () => void } {
 	const disposables = new DisposableStore();
 	let isDisposed = false;
@@ -189,7 +189,7 @@ export function renderMarkdown(
 			const id = defaultGenerator.nextId();
 			const value = options.codeBlockRendererSync!(
 				postProcessCodeBlockLanguageId(lang),
-				code,
+				code
 			);
 			syncCodeBlocks.push([id, value]);
 			return `<div class="code" data-code="${id}">${escape(code)}</div>`;
@@ -199,7 +199,7 @@ export function renderMarkdown(
 			const id = defaultGenerator.nextId();
 			const value = options.codeBlockRenderer!(
 				postProcessCodeBlockLanguageId(lang),
-				code,
+				code
 			);
 			codeBlocks.push(value.then((element) => [id, element]));
 			return `<div class="code" data-code="${id}">${escape(code)}</div>`;
@@ -208,7 +208,7 @@ export function renderMarkdown(
 
 	if (options.actionHandler) {
 		const _activateLink = function (
-			event: StandardMouseEvent | StandardKeyboardEvent,
+			event: StandardMouseEvent | StandardKeyboardEvent
 		): void {
 			let target: HTMLElement | null = event.target;
 			if (target.tagName !== "A") {
@@ -223,7 +223,7 @@ export function renderMarkdown(
 					if (markdown.baseUri) {
 						href = resolveWithBaseUri(
 							URI.from(markdown.baseUri),
-							href,
+							href
 						);
 					}
 					options.actionHandler!.callback(href, event);
@@ -235,25 +235,25 @@ export function renderMarkdown(
 			}
 		};
 		const onClick = options.actionHandler.disposables.add(
-			new DomEmitter(element, "click"),
+			new DomEmitter(element, "click")
 		);
 		const onAuxClick = options.actionHandler.disposables.add(
-			new DomEmitter(element, "auxclick"),
+			new DomEmitter(element, "auxclick")
 		);
 		options.actionHandler.disposables.add(
 			Event.any(
 				onClick.event,
-				onAuxClick.event,
+				onAuxClick.event
 			)((e) => {
 				const mouseEvent = new StandardMouseEvent(
 					DOM.getWindow(element),
-					e,
+					e
 				);
 				if (!mouseEvent.leftButton && !mouseEvent.middleButton) {
 					return;
 				}
 				_activateLink(mouseEvent);
-			}),
+			})
 		);
 		options.actionHandler.disposables.add(
 			DOM.addDisposableListener(element, "keydown", (e) => {
@@ -265,7 +265,7 @@ export function renderMarkdown(
 					return;
 				}
 				_activateLink(keyboardEvent);
-			}),
+			})
 		);
 	}
 
@@ -325,9 +325,9 @@ export function renderMarkdown(
 	const markdownHtmlDoc = htmlParser.parseFromString(
 		sanitizeRenderedMarkdown(
 			markdown,
-			renderedMarkdown,
+			renderedMarkdown
 		) as unknown as string,
-		"text/html",
+		"text/html"
 	);
 
 	markdownHtmlDoc.body.querySelectorAll("img").forEach((img) => {
@@ -361,7 +361,7 @@ export function renderMarkdown(
 			if (markdown.baseUri) {
 				resolvedHref = resolveWithBaseUri(
 					URI.from(markdown.baseUri),
-					href,
+					href
 				);
 			}
 			a.dataset.href = resolvedHref;
@@ -370,7 +370,7 @@ export function renderMarkdown(
 
 	element.innerHTML = sanitizeRenderedMarkdown(
 		markdown,
-		markdownHtmlDoc.body.innerHTML,
+		markdownHtmlDoc.body.innerHTML
 	) as unknown as string;
 
 	if (codeBlocks.length > 0) {
@@ -383,7 +383,7 @@ export function renderMarkdown(
 				element.querySelectorAll<HTMLDivElement>(`div[data-code]`);
 			for (const placeholderElement of placeholderElements) {
 				const renderedElement = renderedElements.get(
-					placeholderElement.dataset["code"] ?? "",
+					placeholderElement.dataset["code"] ?? ""
 				);
 				if (renderedElement) {
 					DOM.reset(placeholderElement, renderedElement);
@@ -397,7 +397,7 @@ export function renderMarkdown(
 			element.querySelectorAll<HTMLDivElement>(`div[data-code]`);
 		for (const placeholderElement of placeholderElements) {
 			const renderedElement = renderedElements.get(
-				placeholderElement.dataset["code"] ?? "",
+				placeholderElement.dataset["code"] ?? ""
 			);
 			if (renderedElement) {
 				DOM.reset(placeholderElement, renderedElement);
@@ -412,7 +412,7 @@ export function renderMarkdown(
 				DOM.addDisposableListener(img, "load", () => {
 					listener.dispose();
 					options.asyncRenderCallback!();
-				}),
+				})
 			);
 		}
 	}
@@ -453,7 +453,7 @@ function resolveWithBaseUri(baseUri: URI, href: string): string {
 
 function sanitizeRenderedMarkdown(
 	options: { isTrusted?: boolean | MarkdownStringTrustedOptions },
-	renderedMarkdown: string,
+	renderedMarkdown: string
 ): TrustedHTML {
 	const { config, allowedSchemes } = getSanitizerOptions(options);
 	dompurify.addHook("uponSanitizeAttribute", (element, e) => {
@@ -462,13 +462,13 @@ function sanitizeRenderedMarkdown(
 				if (e.attrName === "style") {
 					e.keepAttr =
 						/^(color\:(#[0-9a-fA-F]+|var\(--vscode(-[a-zA-Z]+)+\));)?(background-color\:(#[0-9a-fA-F]+|var\(--vscode(-[a-zA-Z]+)+\));)?$/.test(
-							e.attrValue,
+							e.attrValue
 						);
 					return;
 				} else if (e.attrName === "class") {
 					e.keepAttr =
 						/^codicon codicon-[a-z\-]+( codicon-modifier-[a-z\-]+)?$/.test(
-							e.attrValue,
+							e.attrValue
 						);
 					return;
 				}
@@ -597,7 +597,7 @@ const plainTextRenderer = new Lazy<marked.Renderer>(() => {
 	renderer.heading = (
 		text: string,
 		_level: 1 | 2 | 3 | 4 | 5 | 6,
-		_raw: string,
+		_raw: string
 	): string => {
 		return text + "\n";
 	};
@@ -624,7 +624,7 @@ const plainTextRenderer = new Lazy<marked.Renderer>(() => {
 		_flags: {
 			header: boolean;
 			align: "center" | "left" | "right" | null;
-		},
+		}
 	): string => {
 		return content + " ";
 	};
@@ -664,7 +664,7 @@ function mergeRawTokenText(tokens: marked.Token[]): string {
 }
 
 function completeSingleLinePattern(
-	token: marked.Tokens.ListItem | marked.Tokens.Paragraph,
+	token: marked.Tokens.ListItem | marked.Tokens.Paragraph
 ): marked.Token | undefined {
 	for (const subtoken of token.tokens) {
 		if (subtoken.type === "text") {
@@ -712,7 +712,7 @@ function completeSingleLinePattern(
 // }
 
 export function fillInIncompleteTokens(
-	tokens: marked.TokensList,
+	tokens: marked.TokensList
 ): marked.TokensList {
 	let i: number;
 	let newTokens: marked.Token[] | undefined;
@@ -791,10 +791,10 @@ function completeDoubleUnderscore(tokens: marked.Token): marked.Token {
 
 function completeWithString(
 	tokens: marked.Token[] | marked.Token,
-	closingString: string,
+	closingString: string
 ): marked.Token {
 	const mergedRawText = mergeRawTokenText(
-		Array.isArray(tokens) ? tokens : [tokens],
+		Array.isArray(tokens) ? tokens : [tokens]
 	);
 
 	// If it was completed correctly, this should be a single token.

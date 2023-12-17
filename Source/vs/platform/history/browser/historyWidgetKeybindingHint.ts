@@ -6,7 +6,7 @@
 import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
 
 export function showHistoryKeybindingHint(
-	keybindingService: IKeybindingService,
+	keybindingService: IKeybindingService
 ): boolean {
 	return (
 		keybindingService

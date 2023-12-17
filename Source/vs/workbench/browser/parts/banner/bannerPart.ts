@@ -71,7 +71,7 @@ export class BannerPart extends Part implements IBannerService {
 	}
 
 	private _onDidChangeSize = this._register(
-		new Emitter<{ width: number; height: number } | undefined>(),
+		new Emitter<{ width: number; height: number } | undefined>()
 	);
 	override get onDidChange() {
 		return this._onDidChangeSize.event;
@@ -91,12 +91,23 @@ export class BannerPart extends Part implements IBannerService {
 		@IThemeService themeService: IThemeService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IStorageService storageService: IStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
-		super(Parts.BANNER_PART, { hasTitle: false }, themeService, storageService, layoutService);
+		super(
+			Parts.BANNER_PART,
+			{ hasTitle: false },
+			themeService,
+			storageService,
+			layoutService
+		);
 
-		this.markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
+		this.markdownRenderer = this.instantiationService.createInstance(
+			MarkdownRenderer,
+			{}
+		);
 	}
 
 	protected override createContentArea(parent: HTMLElement): HTMLElement {
@@ -109,12 +120,12 @@ export class BannerPart extends Part implements IBannerService {
 				if (this.focusedActionIndex !== -1) {
 					this.focusActionLink();
 				}
-			}),
+			})
 		);
 
 		// Track focus
 		const scopedContextKeyService = this.contextKeyService.createScoped(
-			this.element,
+			this.element
 		);
 		BannerFocused.bindTo(scopedContextKeyService).set(true);
 
@@ -232,7 +243,7 @@ export class BannerPart extends Part implements IBannerService {
 
 		if (ThemeIcon.isThemeIcon(item.icon)) {
 			iconContainer.appendChild(
-				$(`div${ThemeIcon.asCSSSelector(item.icon)}`),
+				$(`div${ThemeIcon.asCSSSelector(item.icon)}`)
 			);
 		} else {
 			iconContainer.classList.add("custom-icon");
@@ -245,7 +256,7 @@ export class BannerPart extends Part implements IBannerService {
 		// Message
 		const messageContainer = append(
 			this.element,
-			$("div.message-container"),
+			$("div.message-container")
 		);
 		messageContainer.setAttribute("aria-hidden", "true");
 		messageContainer.appendChild(this.getBannerMessage(item.message));
@@ -253,7 +264,7 @@ export class BannerPart extends Part implements IBannerService {
 		// Message Actions
 		this.messageActionsContainer = append(
 			this.element,
-			$("div.message-actions-container"),
+			$("div.message-actions-container")
 		);
 		if (item.actions) {
 			for (const action of item.actions) {
@@ -262,8 +273,8 @@ export class BannerPart extends Part implements IBannerService {
 						Link,
 						this.messageActionsContainer,
 						{ ...action, tabIndex: -1 },
-						{},
-					),
+						{}
+					)
 				);
 			}
 		}
@@ -271,7 +282,7 @@ export class BannerPart extends Part implements IBannerService {
 		// Action
 		const actionBarContainer = append(
 			this.element,
-			$("div.action-container"),
+			$("div.action-container")
 		);
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
 		const closeAction = this._register(
@@ -280,8 +291,8 @@ export class BannerPart extends Part implements IBannerService {
 				"Close Banner",
 				ThemeIcon.asClassName(widgetClose),
 				true,
-				() => this.close(item),
-			),
+				() => this.close(item)
+			)
 		);
 		this.actionBar.push(closeAction, { icon: true, label: false });
 		this.actionBar.setFocusable(false);

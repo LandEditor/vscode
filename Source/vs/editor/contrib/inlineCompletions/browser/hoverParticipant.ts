@@ -37,7 +37,7 @@ export class InlineCompletionsHover implements IHoverPart {
 	constructor(
 		public readonly owner: IEditorHoverParticipant<InlineCompletionsHover>,
 		public readonly range: Range,
-		public readonly controller: InlineCompletionsController,
+		public readonly controller: InlineCompletionsController
 	) {}
 
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
@@ -58,11 +58,12 @@ export class InlineCompletionsHoverParticipant
 		private readonly _editor: ICodeEditor,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-	) {
-	}
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITelemetryService private readonly _telemetryService: ITelemetryService
+	) {}
 
 	suggestHoverAnchor(mouseEvent: IEditorMouseEvent): HoverAnchor | null {
 		const controller = InlineCompletionsController.get(this._editor);
@@ -83,12 +84,12 @@ export class InlineCompletionsHoverParticipant
 							.getModel()!
 							.validatePosition(
 								viewZoneData.positionBefore ||
-									viewZoneData.position,
-							),
+									viewZoneData.position
+							)
 					),
 					mouseEvent.event.posx,
 					mouseEvent.event.posy,
-					false,
+					false
 				);
 			}
 		}
@@ -101,7 +102,7 @@ export class InlineCompletionsHoverParticipant
 					target.range,
 					mouseEvent.event.posx,
 					mouseEvent.event.posy,
-					false,
+					false
 				);
 			}
 		}
@@ -118,7 +119,7 @@ export class InlineCompletionsHoverParticipant
 					target.range,
 					mouseEvent.event.posx,
 					mouseEvent.event.posy,
-					false,
+					false
 				);
 			}
 		}
@@ -127,7 +128,7 @@ export class InlineCompletionsHoverParticipant
 
 	computeSync(
 		anchor: HoverAnchor,
-		lineDecorations: IModelDecoration[],
+		lineDecorations: IModelDecoration[]
 	): InlineCompletionsHover[] {
 		if (
 			this._editor.getOption(EditorOption.inlineSuggest).showToolbar !==
@@ -145,7 +146,7 @@ export class InlineCompletionsHoverParticipant
 
 	renderHoverParts(
 		context: IEditorHoverRenderContext,
-		hoverParts: InlineCompletionsHover[],
+		hoverParts: InlineCompletionsHover[]
 	): IDisposable {
 		const disposableStore = new DisposableStore();
 		const part = hoverParts[0];
@@ -161,7 +162,7 @@ export class InlineCompletionsHoverParticipant
 		if (
 			this.accessibilityService.isScreenReaderOptimized() &&
 			!this._editor.getOption(
-				EditorOption.screenReaderAnnounceInlineSuggestion,
+				EditorOption.screenReaderAnnounceInlineSuggestion
 			)
 		) {
 			this.renderScreenReaderText(context, part, disposableStore);
@@ -179,8 +180,8 @@ export class InlineCompletionsHoverParticipant
 			model.selectedInlineCompletion.map(
 				(v) =>
 					/** @description commands */ v?.inlineCompletion.source
-						.inlineCompletions.commands ?? [],
-			),
+						.inlineCompletions.commands ?? []
+			)
 		);
 		context.fragment.appendChild(w.getDomNode());
 
@@ -194,20 +195,20 @@ export class InlineCompletionsHoverParticipant
 	private renderScreenReaderText(
 		context: IEditorHoverRenderContext,
 		part: InlineCompletionsHover,
-		disposableStore: DisposableStore,
+		disposableStore: DisposableStore
 	) {
 		const $ = dom.$;
 		const markdownHoverElement = $("div.hover-row.markdown-hover");
 		const hoverContentsElement = dom.append(
 			markdownHoverElement,
-			$("div.hover-contents", { ["aria-live"]: "assertive" }),
+			$("div.hover-contents", { ["aria-live"]: "assertive" })
 		);
 		const renderer = disposableStore.add(
 			new MarkdownRenderer(
 				{ editor: this._editor },
 				this._languageService,
-				this._openerService,
-			),
+				this._openerService
+			)
 		);
 		const render = (code: string) => {
 			disposableStore.add(
@@ -215,19 +216,19 @@ export class InlineCompletionsHoverParticipant
 					hoverContentsElement.className =
 						"hover-contents code-hover-contents";
 					context.onContentsChanged();
-				}),
+				})
 			);
 
 			const inlineSuggestionAvailable = nls.localize(
 				"inlineSuggestionFollows",
-				"Suggestion:",
+				"Suggestion:"
 			);
 			const renderedContents = disposableStore.add(
 				renderer.render(
 					new MarkdownString()
 						.appendText(inlineSuggestionAvailable)
-						.appendCodeblock("text", code),
-				),
+						.appendCodeblock("text", code)
+				)
 			);
 			hoverContentsElement.replaceChildren(renderedContents.element);
 		};
@@ -246,7 +247,7 @@ export class InlineCompletionsHoverParticipant
 				} else {
 					dom.reset(hoverContentsElement);
 				}
-			}),
+			})
 		);
 
 		context.fragment.appendChild(markdownHoverElement);

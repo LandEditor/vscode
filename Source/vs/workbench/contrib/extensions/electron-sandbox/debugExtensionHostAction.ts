@@ -17,24 +17,30 @@ export class DebugExtensionHostAction extends Action {
 	static readonly ID = "workbench.extensions.action.debugExtensionHost";
 	static readonly LABEL = nls.localize(
 		"debugExtensionHost",
-		"Start Debugging Extension Host",
+		"Start Debugging Extension Host"
 	);
 	static readonly CSS_CLASS = "debug-extension-host";
 
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IProductService private readonly productService: IProductService
 	) {
-		super(DebugExtensionHostAction.ID, DebugExtensionHostAction.LABEL, DebugExtensionHostAction.CSS_CLASS);
+		super(
+			DebugExtensionHostAction.ID,
+			DebugExtensionHostAction.LABEL,
+			DebugExtensionHostAction.CSS_CLASS
+		);
 	}
 
 	override async run(): Promise<any> {
 		const inspectPorts = await this._extensionService.getInspectPorts(
 			ExtensionHostKind.LocalProcess,
-			false,
+			false
 		);
 		if (inspectPorts.length === 0) {
 			const res = await this._dialogService.confirm({
@@ -42,11 +48,11 @@ export class DebugExtensionHostAction extends Action {
 				detail: nls.localize(
 					"restart2",
 					"In order to profile extensions a restart is required. Do you want to restart '{0}' now?",
-					this.productService.nameLong,
+					this.productService.nameLong
 				),
 				primaryButton: nls.localize(
 					{ key: "restart3", comment: ["&& denotes a mnemonic"] },
-					"&&Restart",
+					"&&Restart"
 				),
 			});
 			if (res.confirmed) {
@@ -61,7 +67,7 @@ export class DebugExtensionHostAction extends Action {
 		if (inspectPorts.length > 1) {
 			// TODO
 			console.warn(
-				`There are multiple extension hosts available for debugging. Picking the first one...`,
+				`There are multiple extension hosts available for debugging. Picking the first one...`
 			);
 		}
 
@@ -69,7 +75,7 @@ export class DebugExtensionHostAction extends Action {
 			type: "node",
 			name: nls.localize(
 				"debugExtensionHost.launch.name",
-				"Attach Extension Host",
+				"Attach Extension Host"
 			),
 			request: "attach",
 			port: inspectPorts[0],

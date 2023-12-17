@@ -25,7 +25,7 @@ export interface IWorkerFactory {
 	create(
 		moduleId: string,
 		callback: IWorkerCallback,
-		onErrorCallback: (err: any) => void,
+		onErrorCallback: (err: any) => void
 	): IWorker;
 }
 
@@ -38,7 +38,7 @@ export function logOnceWebWorkerWarning(err: any): void {
 	if (!webWorkerWarningLogged) {
 		webWorkerWarningLogged = true;
 		console.warn(
-			"Could not create web worker(s). Falling back to loading web worker code in main thread, which might cause UI freezes. Please see https://github.com/microsoft/monaco-editor#faq",
+			"Could not create web worker(s). Falling back to loading web worker code in main thread, which might cause UI freezes. Please see https://github.com/microsoft/monaco-editor#faq"
 		);
 	}
 	console.warn(err.message);
@@ -57,7 +57,7 @@ class RequestMessage {
 		public readonly vsWorker: number,
 		public readonly req: string,
 		public readonly method: string,
-		public readonly args: any[],
+		public readonly args: any[]
 	) {}
 }
 class ReplyMessage {
@@ -66,7 +66,7 @@ class ReplyMessage {
 		public readonly vsWorker: number,
 		public readonly seq: string,
 		public readonly res: any,
-		public readonly err: any,
+		public readonly err: any
 	) {}
 }
 class SubscribeEventMessage {
@@ -75,7 +75,7 @@ class SubscribeEventMessage {
 		public readonly vsWorker: number,
 		public readonly req: string,
 		public readonly eventName: string,
-		public readonly arg: any,
+		public readonly arg: any
 	) {}
 }
 class EventMessage {
@@ -83,14 +83,14 @@ class EventMessage {
 	constructor(
 		public readonly vsWorker: number,
 		public readonly req: string,
-		public readonly event: any,
+		public readonly event: any
 	) {}
 }
 class UnsubscribeEventMessage {
 	public readonly type = MessageType.UnsubscribeEvent;
 	constructor(
 		public readonly vsWorker: number,
-		public readonly req: string,
+		public readonly req: string
 	) {}
 }
 type Message =
@@ -154,8 +154,8 @@ class SimpleWorkerProtocol {
 						this._workerId,
 						req,
 						eventName,
-						arg,
-					),
+						arg
+					)
 				);
 			},
 			onDidRemoveLastListener: () => {
@@ -220,7 +220,7 @@ class SimpleWorkerProtocol {
 		const req = requestMessage.req;
 		const result = this._handler.handleMessage(
 			requestMessage.method,
-			requestMessage.args,
+			requestMessage.args
 		);
 		result.then(
 			(r) => {
@@ -236,10 +236,10 @@ class SimpleWorkerProtocol {
 						this._workerId,
 						req,
 						undefined,
-						transformErrorForSerialization(e),
-					),
+						transformErrorForSerialization(e)
+					)
 				);
-			},
+			}
 		);
 	}
 
@@ -247,7 +247,7 @@ class SimpleWorkerProtocol {
 		const req = msg.req;
 		const disposable = this._handler.handleEvent(
 			msg.eventName,
-			msg.arg,
+			msg.arg
 		)((event) => {
 			this._send(new EventMessage(this._workerId, req, event));
 		});
@@ -320,8 +320,8 @@ export class SimpleWorkerClient<W extends object, H extends object>
 					// in Firefox, web workers fail lazily :(
 					// we will reject the proxy
 					lazyProxyReject?.(err);
-				},
-			),
+				}
+			)
 		);
 
 		this._protocol = new SimpleWorkerProtocol({
@@ -332,16 +332,14 @@ export class SimpleWorkerClient<W extends object, H extends object>
 				if (typeof (host as any)[method] !== "function") {
 					return Promise.reject(
 						new Error(
-							"Missing method " +
-								method +
-								" on main thread host.",
-						),
+							"Missing method " + method + " on main thread host."
+						)
 					);
 				}
 
 				try {
 					return Promise.resolve(
-						(host as any)[method].apply(host, args),
+						(host as any)[method].apply(host, args)
 					);
 				} catch (e) {
 					return Promise.reject(e);
@@ -352,7 +350,7 @@ export class SimpleWorkerClient<W extends object, H extends object>
 					const event = (host as any)[eventName].call(host, arg);
 					if (typeof event !== "function") {
 						throw new Error(
-							`Missing dynamic event ${eventName} on main thread host.`,
+							`Missing dynamic event ${eventName} on main thread host.`
 						);
 					}
 					return event;
@@ -361,7 +359,7 @@ export class SimpleWorkerClient<W extends object, H extends object>
 					const event = (host as any)[eventName];
 					if (typeof event !== "function") {
 						throw new Error(
-							`Missing event ${eventName} on main thread host.`,
+							`Missing event ${eventName} on main thread host.`
 						);
 					}
 					return event;
@@ -402,7 +400,7 @@ export class SimpleWorkerClient<W extends object, H extends object>
 		// Create proxy to loaded code
 		const proxyMethodRequest = (
 			method: string,
-			args: any[],
+			args: any[]
 		): Promise<any> => {
 			return this._request(method, args);
 		};
@@ -418,14 +416,14 @@ export class SimpleWorkerClient<W extends object, H extends object>
 						createProxyObject<W>(
 							availableMethods,
 							proxyMethodRequest,
-							proxyListen,
-						),
+							proxyListen
+						)
 					);
 				},
 				(e) => {
 					reject(e);
 					this._onError("Worker failed to load " + moduleId, e);
-				},
+				}
 			);
 		});
 	}
@@ -468,7 +466,7 @@ function propertyIsDynamicEvent(name: string): boolean {
 function createProxyObject<T extends object>(
 	methodNames: string[],
 	invoke: (method: string, args: unknown[]) => unknown,
-	proxyListen: (eventName: string, arg: any) => Event<any>,
+	proxyListen: (eventName: string, arg: any) => Event<any>
 ): T {
 	const createProxyMethod = (method: string): (() => unknown) => {
 		return function () {
@@ -477,7 +475,7 @@ function createProxyObject<T extends object>(
 		};
 	};
 	const createProxyDynamicEvent = (
-		eventName: string,
+		eventName: string
 	): ((arg: any) => Event<any>) => {
 		return function (arg) {
 			return proxyListen(eventName, arg);
@@ -518,7 +516,7 @@ export class SimpleWorkerServer<H extends object> {
 
 	constructor(
 		postMessage: (msg: Message, transfer?: ArrayBuffer[]) => void,
-		requestHandlerFactory: IRequestHandlerFactory<H> | null,
+		requestHandlerFactory: IRequestHandlerFactory<H> | null
 	) {
 		this._requestHandlerFactory = requestHandlerFactory;
 		this._requestHandler = null;
@@ -543,7 +541,7 @@ export class SimpleWorkerServer<H extends object> {
 				<number>args[0],
 				<any>args[1],
 				<string>args[2],
-				<string[]>args[3],
+				<string[]>args[3]
 			);
 		}
 
@@ -552,13 +550,13 @@ export class SimpleWorkerServer<H extends object> {
 			typeof this._requestHandler[method] !== "function"
 		) {
 			return Promise.reject(
-				new Error("Missing requestHandler or method: " + method),
+				new Error("Missing requestHandler or method: " + method)
 			);
 		}
 
 		try {
 			return Promise.resolve(
-				this._requestHandler[method].apply(this._requestHandler, args),
+				this._requestHandler[method].apply(this._requestHandler, args)
 			);
 		} catch (e) {
 			return Promise.reject(e);
@@ -572,11 +570,11 @@ export class SimpleWorkerServer<H extends object> {
 		if (propertyIsDynamicEvent(eventName)) {
 			const event = (this._requestHandler as any)[eventName].call(
 				this._requestHandler,
-				arg,
+				arg
 			);
 			if (typeof event !== "function") {
 				throw new Error(
-					`Missing dynamic event ${eventName} on request handler.`,
+					`Missing dynamic event ${eventName} on request handler.`
 				);
 			}
 			return event;
@@ -585,7 +583,7 @@ export class SimpleWorkerServer<H extends object> {
 			const event = (this._requestHandler as any)[eventName];
 			if (typeof event !== "function") {
 				throw new Error(
-					`Missing event ${eventName} on request handler.`,
+					`Missing event ${eventName} on request handler.`
 				);
 			}
 			return event;
@@ -597,13 +595,13 @@ export class SimpleWorkerServer<H extends object> {
 		workerId: number,
 		loaderConfig: any,
 		moduleId: string,
-		hostMethods: string[],
+		hostMethods: string[]
 	): Promise<string[]> {
 		this._protocol.setWorkerId(workerId);
 
 		const proxyMethodRequest = (
 			method: string,
-			args: any[],
+			args: any[]
 		): Promise<any> => {
 			return this._protocol.sendMessage(method, args);
 		};
@@ -614,7 +612,7 @@ export class SimpleWorkerServer<H extends object> {
 		const hostProxy = createProxyObject<H>(
 			hostMethods,
 			proxyMethodRequest,
-			proxyListen,
+			proxyListen
 		);
 
 		if (this._requestHandlerFactory) {
@@ -665,7 +663,7 @@ export class SimpleWorkerServer<H extends object> {
 
 					resolve(getAllMethodNames(this._requestHandler));
 				},
-				reject,
+				reject
 			);
 		});
 	}
@@ -676,7 +674,7 @@ export class SimpleWorkerServer<H extends object> {
  * @skipMangle
  */
 export function create(
-	postMessage: (msg: Message, transfer?: ArrayBuffer[]) => void,
+	postMessage: (msg: Message, transfer?: ArrayBuffer[]) => void
 ): SimpleWorkerServer<any> {
 	return new SimpleWorkerServer(postMessage, null);
 }

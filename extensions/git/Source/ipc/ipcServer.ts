@@ -20,7 +20,7 @@ function getIPCHandlePath(id: string): string {
 	if (process.platform !== "darwin" && process.env["XDG_RUNTIME_DIR"]) {
 		return path.join(
 			process.env["XDG_RUNTIME_DIR"] as string,
-			`vscode-git-${id}.sock`,
+			`vscode-git-${id}.sock`
 		);
 	}
 
@@ -37,7 +37,7 @@ export async function createIPCServer(context?: string): Promise<IPCServer> {
 
 	if (!context) {
 		const buffer = await new Promise<Buffer>((c, e) =>
-			crypto.randomBytes(20, (err, buf) => (err ? e(err) : c(buf))),
+			crypto.randomBytes(20, (err, buf) => (err ? e(err) : c(buf)))
 		);
 		hash.update(buffer);
 	} else {
@@ -79,7 +79,10 @@ export class IPCServer
 		return this._ipcHandlePath;
 	}
 
-	constructor(private server: http.Server, private _ipcHandlePath: string) {
+	constructor(
+		private server: http.Server,
+		private _ipcHandlePath: string
+	) {
 		this.server.on("request", this.onRequest.bind(this));
 	}
 
@@ -90,7 +93,7 @@ export class IPCServer
 
 	private onRequest(
 		req: http.IncomingMessage,
-		res: http.ServerResponse,
+		res: http.ServerResponse
 	): void {
 		if (!req.url) {
 			console.warn(`Request lacks url`);
@@ -116,7 +119,7 @@ export class IPCServer
 				() => {
 					res.writeHead(500);
 					res.end();
-				},
+				}
 			);
 		});
 	}

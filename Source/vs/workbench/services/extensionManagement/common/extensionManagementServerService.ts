@@ -38,14 +38,14 @@ export class ExtensionManagementServerService
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@ILabelService labelService: ILabelService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		const remoteAgentConnection = remoteAgentService.getConnection();
 		if (remoteAgentConnection) {
 			const extensionManagementService =
 				instantiationService.createInstance(
 					RemoteExtensionManagementService,
-					remoteAgentConnection.getChannel<IChannel>("extensions"),
+					remoteAgentConnection.getChannel<IChannel>("extensions")
 				);
 			this.remoteExtensionManagementServer = {
 				id: "remote",
@@ -54,7 +54,7 @@ export class ExtensionManagementServerService
 					return (
 						labelService.getHostLabel(
 							Schemas.vscodeRemote,
-							remoteAgentConnection!.remoteAuthority,
+							remoteAgentConnection!.remoteAuthority
 						) || localize("remote", "Remote")
 					);
 				},
@@ -63,7 +63,7 @@ export class ExtensionManagementServerService
 		if (isWeb) {
 			const extensionManagementService =
 				instantiationService.createInstance(
-					WebExtensionManagementService,
+					WebExtensionManagementService
 				);
 			this.webExtensionManagementServer = {
 				id: "web",
@@ -74,7 +74,7 @@ export class ExtensionManagementServerService
 	}
 
 	getExtensionManagementServer(
-		extension: IExtension,
+		extension: IExtension
 	): IExtensionManagementServer {
 		if (extension.location.scheme === Schemas.vscodeRemote) {
 			return this.remoteExtensionManagementServer!;
@@ -86,7 +86,7 @@ export class ExtensionManagementServerService
 	}
 
 	getExtensionInstallLocation(
-		extension: IExtension,
+		extension: IExtension
 	): ExtensionInstallLocation | null {
 		const server = this.getExtensionManagementServer(extension);
 		return server === this.remoteExtensionManagementServer
@@ -98,5 +98,5 @@ export class ExtensionManagementServerService
 registerSingleton(
 	IExtensionManagementServerService,
 	ExtensionManagementServerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -58,13 +58,14 @@ import { basename } from "vs/base/common/path";
 const EDIT_SESSIONS_COUNT_KEY = "editSessionsCount";
 const EDIT_SESSIONS_COUNT_CONTEXT_KEY = new RawContextKey<number>(
 	EDIT_SESSIONS_COUNT_KEY,
-	0,
+	0
 );
 
 export class EditSessionsDataViews extends Disposable {
 	constructor(
 		container: ViewContainer,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 		this.registerViews(container);
@@ -75,16 +76,16 @@ export class EditSessionsDataViews extends Disposable {
 		const treeView = this.instantiationService.createInstance(
 			TreeView,
 			viewId,
-			EDIT_SESSIONS_TITLE.value,
+			EDIT_SESSIONS_TITLE.value
 		);
 		treeView.showCollapseAllAction = true;
 		treeView.showRefreshAction = true;
 		treeView.dataProvider = this.instantiationService.createInstance(
-			EditSessionDataViewDataProvider,
+			EditSessionDataViewDataProvider
 		);
 
 		const viewsRegistry = Registry.as<IViewsRegistry>(
-			Extensions.ViewsRegistry,
+			Extensions.ViewsRegistry
 		);
 		viewsRegistry.registerViews(
 			[
@@ -101,7 +102,7 @@ export class EditSessionsDataViews extends Disposable {
 					hideByDefault: true,
 				},
 			],
-			container,
+			container
 		);
 
 		viewsRegistry.registerViewWelcomeContent(viewId, {
@@ -110,8 +111,8 @@ export class EditSessionsDataViews extends Disposable {
 				"You have no stored changes in the cloud to display.\n{0}",
 				`[${localize(
 					"storeWorkingChangesTitle",
-					"Store Working Changes",
-				)}](command:workbench.editSessions.actions.store)`,
+					"Store Working Changes"
+				)}](command:workbench.editSessions.actions.store)`
 			),
 			when: ContextKeyExpr.equals(EDIT_SESSIONS_COUNT_KEY, 0),
 			order: 1,
@@ -124,7 +125,7 @@ export class EditSessionsDataViews extends Disposable {
 						id: "workbench.editSessions.actions.resume",
 						title: localize(
 							"workbench.editSessions.actions.resume.v2",
-							"Resume Working Changes",
+							"Resume Working Changes"
 						),
 						icon: Codicon.desktopDownload,
 						menu: {
@@ -133,8 +134,8 @@ export class EditSessionsDataViews extends Disposable {
 								ContextKeyExpr.equals("view", viewId),
 								ContextKeyExpr.regex(
 									"viewItem",
-									/edit-session/i,
-								),
+									/edit-session/i
+								)
 							),
 							group: "inline",
 						},
@@ -143,20 +144,20 @@ export class EditSessionsDataViews extends Disposable {
 
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const editSessionId = URI.parse(
-						handle.$treeItemHandle,
+						handle.$treeItemHandle
 					).path.substring(1);
 					const commandService = accessor.get(ICommandService);
 					await commandService.executeCommand(
 						"workbench.editSessions.actions.resumeLatest",
 						editSessionId,
-						true,
+						true
 					);
 					await treeView.refresh();
 				}
-			},
+			}
 		);
 
 		registerAction2(
@@ -166,7 +167,7 @@ export class EditSessionsDataViews extends Disposable {
 						id: "workbench.editSessions.actions.store",
 						title: localize(
 							"workbench.editSessions.actions.store.v2",
-							"Store Working Changes",
+							"Store Working Changes"
 						),
 						icon: Codicon.cloudUpload,
 					});
@@ -174,15 +175,15 @@ export class EditSessionsDataViews extends Disposable {
 
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const commandService = accessor.get(ICommandService);
 					await commandService.executeCommand(
-						"workbench.editSessions.actions.storeCurrent",
+						"workbench.editSessions.actions.storeCurrent"
 					);
 					await treeView.refresh();
 				}
-			},
+			}
 		);
 
 		registerAction2(
@@ -192,7 +193,7 @@ export class EditSessionsDataViews extends Disposable {
 						id: "workbench.editSessions.actions.delete",
 						title: localize(
 							"workbench.editSessions.actions.delete.v2",
-							"Delete Working Changes",
+							"Delete Working Changes"
 						),
 						icon: Codicon.trash,
 						menu: {
@@ -201,8 +202,8 @@ export class EditSessionsDataViews extends Disposable {
 								ContextKeyExpr.equals("view", viewId),
 								ContextKeyExpr.regex(
 									"viewItem",
-									/edit-session/i,
-								),
+									/edit-session/i
+								)
 							),
 							group: "inline",
 						},
@@ -211,24 +212,24 @@ export class EditSessionsDataViews extends Disposable {
 
 				async run(
 					accessor: ServicesAccessor,
-					handle: TreeViewItemHandleArg,
+					handle: TreeViewItemHandleArg
 				): Promise<void> {
 					const editSessionId = URI.parse(
-						handle.$treeItemHandle,
+						handle.$treeItemHandle
 					).path.substring(1);
 					const dialogService = accessor.get(IDialogService);
 					const editSessionStorageService = accessor.get(
-						IEditSessionsStorageService,
+						IEditSessionsStorageService
 					);
 					const result = await dialogService.confirm({
 						message: localize(
 							"confirm delete.v2",
 							"Are you sure you want to permanently delete your working changes with ref {0}?",
-							editSessionId,
+							editSessionId
 						),
 						detail: localize(
 							"confirm delete detail.v2",
-							" You cannot undo this action.",
+							" You cannot undo this action."
 						),
 						type: "warning",
 						title: EDIT_SESSIONS_TITLE.value,
@@ -236,12 +237,12 @@ export class EditSessionsDataViews extends Disposable {
 					if (result.confirmed) {
 						await editSessionStorageService.delete(
 							"editSessions",
-							editSessionId,
+							editSessionId
 						);
 						await treeView.refresh();
 					}
 				}
-			},
+			}
 		);
 
 		registerAction2(
@@ -251,7 +252,7 @@ export class EditSessionsDataViews extends Disposable {
 						id: "workbench.editSessions.actions.deleteAll",
 						title: localize(
 							"workbench.editSessions.actions.deleteAll",
-							"Delete All Working Changes from Cloud",
+							"Delete All Working Changes from Cloud"
 						),
 						icon: Codicon.trash,
 						menu: {
@@ -260,8 +261,8 @@ export class EditSessionsDataViews extends Disposable {
 								ContextKeyExpr.equals("view", viewId),
 								ContextKeyExpr.greater(
 									EDIT_SESSIONS_COUNT_KEY,
-									0,
-								),
+									0
+								)
 							),
 						},
 					});
@@ -270,16 +271,16 @@ export class EditSessionsDataViews extends Disposable {
 				async run(accessor: ServicesAccessor): Promise<void> {
 					const dialogService = accessor.get(IDialogService);
 					const editSessionStorageService = accessor.get(
-						IEditSessionsStorageService,
+						IEditSessionsStorageService
 					);
 					const result = await dialogService.confirm({
 						message: localize(
 							"confirm delete all",
-							"Are you sure you want to permanently delete all stored changes from the cloud?",
+							"Are you sure you want to permanently delete all stored changes from the cloud?"
 						),
 						detail: localize(
 							"confirm delete all detail",
-							" You cannot undo this action.",
+							" You cannot undo this action."
 						),
 						type: "warning",
 						title: EDIT_SESSIONS_TITLE.value,
@@ -287,12 +288,12 @@ export class EditSessionsDataViews extends Disposable {
 					if (result.confirmed) {
 						await editSessionStorageService.delete(
 							"editSessions",
-							null,
+							null
 						);
 						await treeView.refresh();
 					}
 				}
-			},
+			}
 		);
 	}
 }
@@ -301,12 +302,17 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 	private editSessionsCount;
 
 	constructor(
-		@IEditSessionsStorageService private readonly editSessionsStorageService: IEditSessionsStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IFileService private readonly fileService: IFileService,
+		@IEditSessionsStorageService
+		private readonly editSessionsStorageService: IEditSessionsStorageService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IFileService private readonly fileService: IFileService
 	) {
-		this.editSessionsCount = EDIT_SESSIONS_COUNT_CONTEXT_KEY.bindTo(this.contextKeyService);
+		this.editSessionsCount = EDIT_SESSIONS_COUNT_CONTEXT_KEY.bindTo(
+			this.contextKeyService
+		);
 	}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
@@ -341,7 +347,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 			});
 			const sessionData = await this.editSessionsStorageService.read(
 				"editSessions",
-				session.ref,
+				session.ref
 			);
 			if (!sessionData) {
 				continue;
@@ -353,16 +359,16 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 			const machineId = content.machine;
 			const machineName = machineId
 				? await this.editSessionsStorageService.getMachineById(
-						machineId,
-				  )
+						machineId
+					)
 				: undefined;
 			const description =
 				machineName === undefined
 					? fromNow(session.created, true)
 					: `${fromNow(
 							session.created,
-							true,
-					  )}\u00a0\u00a0\u2022\u00a0\u00a0${machineName}`;
+							true
+						)}\u00a0\u00a0\u2022\u00a0\u00a0${machineName}`;
 
 			editSessions.push({
 				handle: resource.toString(),
@@ -380,7 +386,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 	private async getEditSession(ref: string): Promise<ITreeItem[]> {
 		const data = await this.editSessionsStorageService.read(
 			"editSessions",
-			ref,
+			ref
 		);
 
 		if (!data) {
@@ -410,11 +416,11 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 
 	private async getEditSessionFolderContents(
 		ref: string,
-		folderName: string,
+		folderName: string
 	): Promise<ITreeItem[]> {
 		const data = await this.editSessionsStorageService.read(
 			"editSessions",
-			ref,
+			ref
 		);
 
 		if (!data) {
@@ -426,7 +432,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 			.getWorkspace()
 			.folders.find((folder) => folder.name === folderName);
 		const editSessionFolder = content.folders.find(
-			(folder) => folder.name === folderName,
+			(folder) => folder.name === folderName
 		);
 
 		if (!editSessionFolder) {
@@ -445,7 +451,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 					// find the corresponding file in the workspace
 					const localCopy = joinPath(
 						currentWorkspaceFolder.uri,
-						change.relativeFilePath,
+						change.relativeFilePath
 					);
 					if (
 						change.type === ChangeType.Addition &&
@@ -461,19 +467,19 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 								id: "vscode.diff",
 								title: localize(
 									"compare changes",
-									"Compare Changes",
+									"Compare Changes"
 								),
 								arguments: [
 									localCopy,
 									cloudChangeUri,
 									`${basename(
-										change.relativeFilePath,
+										change.relativeFilePath
 									)} (${localize(
 										"local copy",
-										"Local Copy",
+										"Local Copy"
 									)} \u2194 ${localize(
 										"cloud changes",
-										"Cloud Changes",
+										"Cloud Changes"
 									)})`,
 									undefined,
 								],
@@ -494,7 +500,7 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 						arguments: [cloudChangeUri, undefined, undefined],
 					},
 				};
-			}),
+			})
 		);
 	}
 }

@@ -34,7 +34,7 @@ export class GithubCredentialProviderManager {
 
 		if (enabled) {
 			this.providerDisposable = this.gitAPI.registerCredentialsProvider(
-				new GitHubCredentialProvider(),
+				new GitHubCredentialProvider()
 			);
 		} else {
 			this.providerDisposable.dispose();

@@ -47,7 +47,7 @@ export class DetachedTerminal
 	constructor(
 		private readonly _xterm: XtermTerminal,
 		options: IDetachedXTermOptions,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 		this._register(_xterm);
@@ -59,8 +59,8 @@ export class DetachedTerminal
 			if (this._contributions.has(desc.id)) {
 				onUnexpectedError(
 					new Error(
-						`Cannot have two terminal contributions with the same id ${desc.id}`,
-					),
+						`Cannot have two terminal contributions with the same id ${desc.id}`
+					)
 				);
 				continue;
 			}
@@ -74,7 +74,7 @@ export class DetachedTerminal
 					desc.ctor,
 					this,
 					options.processInfo,
-					this._widgets,
+					this._widgets
 				);
 				this._contributions.set(desc.id, contribution);
 				this._register(contribution);
@@ -114,7 +114,7 @@ export class DetachedTerminal
 
 	attachToElement(
 		container: HTMLElement,
-		options?: Partial<IXtermAttachToElementOptions> | undefined,
+		options?: Partial<IXtermAttachToElementOptions> | undefined
 	): void {
 		this.domElement = container;
 		const screenElement = this._xterm.attachToElement(container, options);

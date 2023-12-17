@@ -52,7 +52,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 		const { name: id, version, aiKey } = packageInfo;
 		const vscTelemetryReporter = new VsCodeTelemetryReporter(aiKey);
 		experimentTelemetryReporter = new ExperimentationTelemetryReporter(
-			vscTelemetryReporter,
+			vscTelemetryReporter
 		);
 		context.subscriptions.push(experimentTelemetryReporter);
 
@@ -62,7 +62,7 @@ export function activate(context: vscode.ExtensionContext): Api {
 			experimentTelemetryReporter,
 			id,
 			version,
-			context.globalState,
+			context.globalState
 		);
 	}
 
@@ -86,19 +86,19 @@ export function activate(context: vscode.ExtensionContext): Api {
 		},
 		(item) => {
 			onCompletionAccepted.fire(item);
-		},
+		}
 	);
 
 	registerBaseCommands(
 		commandManager,
 		lazyClientHost,
 		pluginManager,
-		activeJsTsEditorTracker,
+		activeJsTsEditorTracker
 	);
 
 	import("./task/taskProvider").then((module) => {
 		context.subscriptions.push(
-			module.register(lazyClientHost.map((x) => x.serviceClient)),
+			module.register(lazyClientHost.map((x) => x.serviceClient))
 		);
 	});
 
@@ -110,8 +110,8 @@ export function activate(context: vscode.ExtensionContext): Api {
 		lazilyActivateClient(
 			lazyClientHost,
 			pluginManager,
-			activeJsTsEditorTracker,
-		),
+			activeJsTsEditorTracker
+		)
 	);
 
 	return getExtensionApi(onCompletionAccepted.event, pluginManager);

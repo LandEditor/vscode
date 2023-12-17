@@ -17,7 +17,7 @@ require("../esbuild-webview-common").run(
 				"node_modules",
 				"vscode-codicons",
 				"dist",
-				"codicon.css",
+				"codicon.css"
 			),
 		},
 		srcDir,
@@ -28,5 +28,5 @@ require("../esbuild-webview-common").run(
 			},
 		},
 	},
-	process.argv,
+	process.argv
 );

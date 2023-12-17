@@ -42,9 +42,10 @@ export interface IActionViewItem extends IDisposable {
 }
 
 export interface IActionViewItemProvider {
-	(action: IAction, options: IActionViewItemOptions):
-		| IActionViewItem
-		| undefined;
+	(
+		action: IAction,
+		options: IActionViewItemOptions
+	): IActionViewItem | undefined;
 }
 
 export const enum ActionsOrientation {
@@ -87,7 +88,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 
 	private _actionRunner: IActionRunner;
 	private readonly _actionRunnerDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private _context: unknown;
 	private readonly _orientation: ActionsOrientation;
@@ -99,7 +100,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 	// View Items
 	viewItems: IActionViewItem[];
 	private readonly viewItemDisposables = this._register(
-		new DisposableMap<IActionViewItem>(),
+		new DisposableMap<IActionViewItem>()
 	);
 	private previouslyFocusedItem?: number;
 	protected focusedItem?: number;
@@ -120,7 +121,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 	private readonly _onDidCancel = this._register(
 		new Emitter<void>({
 			onWillAddFirstListener: () => (this.cancelHasListener = true),
-		}),
+		})
 	);
 	readonly onDidCancel = this._onDidCancel.event;
 	private cancelHasListener = false;
@@ -154,10 +155,10 @@ export class ActionBar extends Disposable implements IActionRunner {
 		}
 
 		this._actionRunnerDisposables.add(
-			this._actionRunner.onDidRun((e) => this._onDidRun.fire(e)),
+			this._actionRunner.onDidRun((e) => this._onDidRun.fire(e))
 		);
 		this._actionRunnerDisposables.add(
-			this._actionRunner.onWillRun((e) => this._onWillRun.fire(e)),
+			this._actionRunner.onWillRun((e) => this._onWillRun.fire(e))
 		);
 
 		this.viewItems = [];
@@ -238,8 +239,8 @@ export class ActionBar extends Disposable implements IActionRunner {
 						event.preventDefault();
 						event.stopPropagation();
 					}
-				},
-			),
+				}
+			)
 		);
 
 		this._register(
@@ -271,8 +272,8 @@ export class ActionBar extends Disposable implements IActionRunner {
 					) {
 						this.updateFocusedItem();
 					}
-				},
-			),
+				}
+			)
 		);
 
 		this.focusTracker = this._register(DOM.trackFocus(this.domNode));
@@ -287,11 +288,11 @@ export class ActionBar extends Disposable implements IActionRunner {
 					this.focusedItem = undefined;
 					this.triggerKeyDown = false;
 				}
-			}),
+			})
 		);
 
 		this._register(
-			this.focusTracker.onDidFocus(() => this.updateFocusedItem()),
+			this.focusTracker.onDidFocus(() => this.updateFocusedItem())
 		);
 
 		this.actionsList = document.createElement("ul");
@@ -301,7 +302,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		}
 		this.actionsList.setAttribute(
 			"role",
-			this.options.ariaRole || "toolbar",
+			this.options.ariaRole || "toolbar"
 		);
 
 		if (this.options.ariaLabel) {
@@ -317,7 +318,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		if (this.length() >= 1) {
 			this.actionsList.setAttribute(
 				"role",
-				this.options.ariaRole || "toolbar",
+				this.options.ariaRole || "toolbar"
 			);
 		} else {
 			this.actionsList.setAttribute("role", "presentation");
@@ -339,7 +340,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		this.focusable = focusable;
 		if (this.focusable) {
 			const firstEnabled = this.viewItems.find(
-				(vi) => vi instanceof BaseActionViewItem && vi.isEnabled(),
+				(vi) => vi instanceof BaseActionViewItem && vi.isEnabled()
 			);
 			if (firstEnabled instanceof BaseActionViewItem) {
 				firstEnabled.setFocusable(true);
@@ -393,10 +394,10 @@ export class ActionBar extends Disposable implements IActionRunner {
 		// start to forward events from the new listener
 		this._actionRunnerDisposables.clear();
 		this._actionRunnerDisposables.add(
-			this._actionRunner.onDidRun((e) => this._onDidRun.fire(e)),
+			this._actionRunner.onDidRun((e) => this._onDidRun.fire(e))
 		);
 		this._actionRunnerDisposables.add(
-			this._actionRunner.onWillRun((e) => this._onWillRun.fire(e)),
+			this._actionRunner.onWillRun((e) => this._onWillRun.fire(e))
 		);
 		this.viewItems.forEach((item) => (item.actionRunner = actionRunner));
 	}
@@ -408,7 +409,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 	hasAction(action: IAction): boolean {
 		return (
 			this.viewItems.findIndex(
-				(candidate) => candidate.action.id === action.id,
+				(candidate) => candidate.action.id === action.id
 			) !== -1
 		);
 	}
@@ -439,7 +440,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 
 	push(
 		arg: IAction | ReadonlyArray<IAction>,
-		options: IActionOptions = {},
+		options: IActionOptions = {}
 	): void {
 		const actions: ReadonlyArray<IAction> = Array.isArray(arg)
 			? arg
@@ -461,7 +462,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 			if (this.options.actionViewItemProvider) {
 				item = this.options.actionViewItemProvider(
 					action,
-					viewItemOptions,
+					viewItemOptions
 				);
 			}
 
@@ -469,7 +470,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 				item = new ActionViewItem(
 					this.context,
 					action,
-					viewItemOptions,
+					viewItemOptions
 				);
 			}
 
@@ -482,8 +483,8 @@ export class ActionBar extends Disposable implements IActionRunner {
 						DOM.EventType.CONTEXT_MENU,
 						(e: DOM.EventLike) => {
 							DOM.EventHelper.stop(e, true);
-						},
-					),
+						}
+					)
 				);
 			}
 
@@ -510,7 +511,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 			} else {
 				this.actionsList.insertBefore(
 					actionViewItemElement,
-					this.actionsList.children[index],
+					this.actionsList.children[index]
 				);
 				this.viewItems.splice(index, 0, item);
 				index++;
@@ -588,7 +589,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 
 		if (selectFirst && typeof this.focusedItem === "undefined") {
 			const firstEnabled = this.viewItems.findIndex((item) =>
-				item.isEnabled(),
+				item.isEnabled()
 			);
 			// Focus the first enabled item
 			this.focusedItem = firstEnabled === -1 ? undefined : firstEnabled;
@@ -677,7 +678,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 	protected updateFocus(
 		fromRight?: boolean,
 		preventScroll?: boolean,
-		forceFocus: boolean = false,
+		forceFocus: boolean = false
 	): void {
 		if (typeof this.focusedItem === "undefined") {
 			this.actionsList.focus({ preventScroll });

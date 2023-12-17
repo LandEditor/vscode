@@ -39,7 +39,7 @@ export const webviewGenericCspSource = `'self' https://*.${webviewResourceBaseHo
  */
 export function asWebviewUri(
 	resource: URI,
-	remoteInfo?: WebviewRemoteInfo,
+	remoteInfo?: WebviewRemoteInfo
 ): URI {
 	if (resource.scheme === Schemas.http || resource.scheme === Schemas.https) {
 		return resource;
@@ -61,7 +61,7 @@ export function asWebviewUri(
 	return URI.from({
 		scheme: Schemas.https,
 		authority: `${resource.scheme}+${encodeAuthority(
-			resource.authority,
+			resource.authority
 		)}.${webviewRootResourceAuthority}`,
 		path: resource.path,
 		fragment: resource.fragment,
@@ -85,6 +85,6 @@ function encodeAuthority(authority: string): string {
 
 export function decodeAuthority(authority: string) {
 	return authority.replace(/-([0-9a-f]{4})/g, (_, code) =>
-		String.fromCharCode(parseInt(code, 16)),
+		String.fromCharCode(parseInt(code, 16))
 	);
 }

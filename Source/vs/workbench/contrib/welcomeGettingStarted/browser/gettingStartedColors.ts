@@ -18,10 +18,7 @@ import { localize } from "vs/nls";
 export const welcomePageBackground = registerColor(
 	"welcomePage.background",
 	{ light: null, dark: null, hcDark: null, hcLight: null },
-	localize(
-		"welcomePage.background",
-		"Background color for the Welcome page.",
-	),
+	localize("welcomePage.background", "Background color for the Welcome page.")
 );
 
 export const welcomePageTileBackground = registerColor(
@@ -34,8 +31,8 @@ export const welcomePageTileBackground = registerColor(
 	},
 	localize(
 		"welcomePage.tileBackground",
-		"Background color for the tiles on the Welcome page.",
-	),
+		"Background color for the tiles on the Welcome page."
+	)
 );
 export const welcomePageTileHoverBackground = registerColor(
 	"welcomePage.tileHoverBackground",
@@ -47,8 +44,8 @@ export const welcomePageTileHoverBackground = registerColor(
 	},
 	localize(
 		"welcomePage.tileHoverBackground",
-		"Hover background color for the tiles on the Welcome.",
-	),
+		"Hover background color for the tiles on the Welcome."
+	)
 );
 export const welcomePageTileBorder = registerColor(
 	"welcomePage.tileBorder",
@@ -60,8 +57,8 @@ export const welcomePageTileBorder = registerColor(
 	},
 	localize(
 		"welcomePage.tileBorder",
-		"Border color for the tiles on the Welcome page.",
-	),
+		"Border color for the tiles on the Welcome page."
+	)
 );
 
 export const welcomePageProgressBackground = registerColor(
@@ -74,8 +71,8 @@ export const welcomePageProgressBackground = registerColor(
 	},
 	localize(
 		"welcomePage.progress.background",
-		"Foreground color for the Welcome page progress bars.",
-	),
+		"Foreground color for the Welcome page progress bars."
+	)
 );
 export const welcomePageProgressForeground = registerColor(
 	"welcomePage.progress.foreground",
@@ -87,8 +84,8 @@ export const welcomePageProgressForeground = registerColor(
 	},
 	localize(
 		"welcomePage.progress.foreground",
-		"Background color for the Welcome page progress bars.",
-	),
+		"Background color for the Welcome page progress bars."
+	)
 );
 
 export const walkthroughStepTitleForeground = registerColor(
@@ -96,6 +93,6 @@ export const walkthroughStepTitleForeground = registerColor(
 	{ light: "#000000", dark: "#ffffff", hcDark: null, hcLight: null },
 	localize(
 		"walkthrough.stepTitle.foreground",
-		"Foreground color of the heading of each walkthrough step",
-	),
+		"Foreground color of the heading of each walkthrough step"
+	)
 );

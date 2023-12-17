@@ -31,7 +31,7 @@ export class PointerEventHandler extends MouseHandler {
 	constructor(
 		context: ViewContext,
 		viewController: ViewController,
-		viewHelper: IPointerHandlerHelper,
+		viewHelper: IPointerHandlerHelper
 	) {
 		super(context, viewController, viewHelper);
 
@@ -40,15 +40,15 @@ export class PointerEventHandler extends MouseHandler {
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
 				EventType.Tap,
-				(e) => this.onTap(e),
-			),
+				(e) => this.onTap(e)
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
 				EventType.Change,
-				(e) => this.onChange(e),
-			),
+				(e) => this.onChange(e)
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -59,11 +59,11 @@ export class PointerEventHandler extends MouseHandler {
 						new EditorMouseEvent(
 							e,
 							false,
-							this.viewHelper.viewDomNode,
+							this.viewHelper.viewDomNode
 						),
-						false,
-					),
-			),
+						false
+					)
+			)
 		);
 
 		this._lastPointerType = "mouse";
@@ -82,35 +82,35 @@ export class PointerEventHandler extends MouseHandler {
 					} else {
 						this._lastPointerType = "pen";
 					}
-				},
-			),
+				}
+			)
 		);
 
 		// PonterEvents
 		const pointerEvents = new EditorPointerEventFactory(
-			this.viewHelper.viewDomNode,
+			this.viewHelper.viewDomNode
 		);
 
 		this._register(
 			pointerEvents.onPointerMove(this.viewHelper.viewDomNode, (e) =>
-				this._onMouseMove(e),
-			),
+				this._onMouseMove(e)
+			)
 		);
 		this._register(
 			pointerEvents.onPointerUp(this.viewHelper.viewDomNode, (e) =>
-				this._onMouseUp(e),
-			),
+				this._onMouseUp(e)
+			)
 		);
 		this._register(
 			pointerEvents.onPointerLeave(this.viewHelper.viewDomNode, (e) =>
-				this._onMouseLeave(e),
-			),
+				this._onMouseLeave(e)
+			)
 		);
 		this._register(
 			pointerEvents.onPointerDown(
 				this.viewHelper.viewDomNode,
-				(e, pointerId) => this._onMouseDown(e, pointerId),
-			),
+				(e, pointerId) => this._onMouseDown(e, pointerId)
+			)
 		);
 	}
 
@@ -118,7 +118,7 @@ export class PointerEventHandler extends MouseHandler {
 		if (
 			!event.initialTarget ||
 			!this.viewHelper.linesContentDomNode.contains(
-				<any>event.initialTarget,
+				<any>event.initialTarget
 			)
 		) {
 			return;
@@ -133,7 +133,7 @@ export class PointerEventHandler extends MouseHandler {
 		if (this._lastPointerType === "touch") {
 			this._context.viewModel.viewLayout.deltaScrollNow(
 				-event.translationX,
-				-event.translationY,
+				-event.translationY
 			);
 		}
 		if (this._lastPointerType === "pen") {
@@ -143,11 +143,11 @@ export class PointerEventHandler extends MouseHandler {
 
 	private _dispatchGesture(
 		event: GestureEvent,
-		inSelectionMode: boolean,
+		inSelectionMode: boolean
 	): void {
 		const target = this._createMouseTarget(
 			new EditorMouseEvent(event, false, this.viewHelper.viewDomNode),
-			false,
+			false
 		);
 		if (target.position) {
 			this.viewController.dispatchMouse({
@@ -172,7 +172,7 @@ export class PointerEventHandler extends MouseHandler {
 
 	protected override _onMouseDown(
 		e: EditorMouseEvent,
-		pointerId: number,
+		pointerId: number
 	): void {
 		if ((e.browserEvent as any).pointerType === "touch") {
 			return;
@@ -186,7 +186,7 @@ class TouchHandler extends MouseHandler {
 	constructor(
 		context: ViewContext,
 		viewController: ViewController,
-		viewHelper: IPointerHandlerHelper,
+		viewHelper: IPointerHandlerHelper
 	) {
 		super(context, viewController, viewHelper);
 
@@ -196,15 +196,15 @@ class TouchHandler extends MouseHandler {
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
 				EventType.Tap,
-				(e) => this.onTap(e),
-			),
+				(e) => this.onTap(e)
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
 				this.viewHelper.linesContentDomNode,
 				EventType.Change,
-				(e) => this.onChange(e),
-			),
+				(e) => this.onChange(e)
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -215,11 +215,11 @@ class TouchHandler extends MouseHandler {
 						new EditorMouseEvent(
 							e,
 							false,
-							this.viewHelper.viewDomNode,
+							this.viewHelper.viewDomNode
 						),
-						false,
-					),
-			),
+						false
+					)
+			)
 		);
 	}
 
@@ -230,7 +230,7 @@ class TouchHandler extends MouseHandler {
 
 		const target = this._createMouseTarget(
 			new EditorMouseEvent(event, false, this.viewHelper.viewDomNode),
-			false,
+			false
 		);
 
 		if (target.position) {
@@ -241,7 +241,7 @@ class TouchHandler extends MouseHandler {
 
 			this.viewController.moveTo(
 				target.position,
-				NavigationCommandRevealType.Minimal,
+				NavigationCommandRevealType.Minimal
 			);
 		}
 	}
@@ -249,7 +249,7 @@ class TouchHandler extends MouseHandler {
 	private onChange(e: GestureEvent): void {
 		this._context.viewModel.viewLayout.deltaScrollNow(
 			-e.translationX,
-			-e.translationY,
+			-e.translationY
 		);
 	}
 }
@@ -260,29 +260,29 @@ export class PointerHandler extends Disposable {
 	constructor(
 		context: ViewContext,
 		viewController: ViewController,
-		viewHelper: IPointerHandlerHelper,
+		viewHelper: IPointerHandlerHelper
 	) {
 		super();
 		const isPhone =
 			platform.isIOS || (platform.isAndroid && platform.isMobile);
 		if (isPhone && BrowserFeatures.pointerEvents) {
 			this.handler = this._register(
-				new PointerEventHandler(context, viewController, viewHelper),
+				new PointerEventHandler(context, viewController, viewHelper)
 			);
 		} else if (mainWindow.TouchEvent) {
 			this.handler = this._register(
-				new TouchHandler(context, viewController, viewHelper),
+				new TouchHandler(context, viewController, viewHelper)
 			);
 		} else {
 			this.handler = this._register(
-				new MouseHandler(context, viewController, viewHelper),
+				new MouseHandler(context, viewController, viewHelper)
 			);
 		}
 	}
 
 	public getTargetAtClientPoint(
 		clientX: number,
-		clientY: number,
+		clientY: number
 	): IMouseTarget | null {
 		return this.handler.getTargetAtClientPoint(clientX, clientY);
 	}

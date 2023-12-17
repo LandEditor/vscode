@@ -16,7 +16,7 @@ export const enum ExtensionHostKind {
 }
 
 export function extensionHostKindToString(
-	kind: ExtensionHostKind | null,
+	kind: ExtensionHostKind | null
 ): string {
 	if (kind === null) {
 		return "None";
@@ -38,7 +38,7 @@ export const enum ExtensionRunningPreference {
 }
 
 export function extensionRunningPreferenceToString(
-	preference: ExtensionRunningPreference,
+	preference: ExtensionRunningPreference
 ) {
 	switch (preference) {
 		case ExtensionRunningPreference.None:
@@ -56,7 +56,7 @@ export interface IExtensionHostKindPicker {
 		extensionKinds: ExtensionKind[],
 		isInstalledLocally: boolean,
 		isInstalledRemotely: boolean,
-		preference: ExtensionRunningPreference,
+		preference: ExtensionRunningPreference
 	): ExtensionHostKind | null;
 }
 
@@ -64,23 +64,23 @@ export function determineExtensionHostKinds(
 	_localExtensions: IExtensionDescription[],
 	_remoteExtensions: IExtensionDescription[],
 	getExtensionKind: (
-		extensionDescription: IExtensionDescription,
+		extensionDescription: IExtensionDescription
 	) => ExtensionKind[],
 	pickExtensionHostKind: (
 		extensionId: ExtensionIdentifier,
 		extensionKinds: ExtensionKind[],
 		isInstalledLocally: boolean,
 		isInstalledRemotely: boolean,
-		preference: ExtensionRunningPreference,
-	) => ExtensionHostKind | null,
+		preference: ExtensionRunningPreference
+	) => ExtensionHostKind | null
 ): Map<string, ExtensionHostKind | null> {
 	const localExtensions = toExtensionWithKind(
 		_localExtensions,
-		getExtensionKind,
+		getExtensionKind
 	);
 	const remoteExtensions = toExtensionWithKind(
 		_remoteExtensions,
-		getExtensionKind,
+		getExtensionKind
 	);
 
 	const allExtensions = new Map<string, ExtensionInfo>();
@@ -102,10 +102,10 @@ export function determineExtensionHostKinds(
 		const isInstalledRemotely = Boolean(ext.remote);
 
 		const isLocallyUnderDevelopment = Boolean(
-			ext.local && ext.local.isUnderDevelopment,
+			ext.local && ext.local.isUnderDevelopment
 		);
 		const isRemotelyUnderDevelopment = Boolean(
-			ext.remote && ext.remote.isUnderDevelopment,
+			ext.remote && ext.remote.isUnderDevelopment
 		);
 
 		let preference = ExtensionRunningPreference.None;
@@ -122,8 +122,8 @@ export function determineExtensionHostKinds(
 				ext.kind,
 				isInstalledLocally,
 				isInstalledRemotely,
-				preference,
-			),
+				preference
+			)
 		);
 	});
 
@@ -133,8 +133,8 @@ export function determineExtensionHostKinds(
 function toExtensionWithKind(
 	extensions: IExtensionDescription[],
 	getExtensionKind: (
-		extensionDescription: IExtensionDescription,
-	) => ExtensionKind[],
+		extensionDescription: IExtensionDescription
+	) => ExtensionKind[]
 ): Map<string, ExtensionWithKind> {
 	const result = new Map<string, ExtensionWithKind>();
 	extensions.forEach((desc) => {
@@ -147,7 +147,7 @@ function toExtensionWithKind(
 class ExtensionWithKind {
 	constructor(
 		public readonly desc: IExtensionDescription,
-		public readonly kind: ExtensionKind[],
+		public readonly kind: ExtensionKind[]
 	) {}
 
 	public get key(): string {
@@ -162,7 +162,7 @@ class ExtensionWithKind {
 class ExtensionInfo {
 	constructor(
 		public readonly local: ExtensionWithKind | null,
-		public readonly remote: ExtensionWithKind | null,
+		public readonly remote: ExtensionWithKind | null
 	) {}
 
 	public get key(): string {

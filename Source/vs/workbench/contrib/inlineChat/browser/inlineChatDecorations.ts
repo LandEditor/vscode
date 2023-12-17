@@ -53,16 +53,16 @@ const GUTTER_INLINE_CHAT_OPAQUE_ICON = registerIcon(
 	Codicon.sparkle,
 	localize(
 		"startInlineChatOpaqueIcon",
-		"Icon which spawns the inline chat from the gutter. It is half opaque by default and becomes completely opaque on hover.",
-	),
+		"Icon which spawns the inline chat from the gutter. It is half opaque by default and becomes completely opaque on hover."
+	)
 );
 const GUTTER_INLINE_CHAT_TRANSPARENT_ICON = registerIcon(
 	"inline-chat-transparent",
 	Codicon.sparkle,
 	localize(
 		"startInlineChatTransparentIcon",
-		"Icon which spawns the inline chat from the gutter. It is transparent by default and becomes opaque on hover.",
-	),
+		"Icon which spawns the inline chat from the gutter. It is transparent by default and becomes opaque on hover."
+	)
 );
 
 export class InlineChatDecorationsContribution
@@ -89,66 +89,97 @@ export class InlineChatDecorationsContribution
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IContextKeyService _contextKeyService: IContextKeyService,
-		@IInlineChatService private readonly _inlineChatService: IInlineChatService,
-		@IInlineChatSessionService private readonly _inlineChatSessionService: IInlineChatSessionService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IInlineChatService
+		private readonly _inlineChatService: IInlineChatService,
+		@IInlineChatSessionService
+		private readonly _inlineChatSessionService: IInlineChatSessionService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IDebugService private readonly _debugService: IDebugService
 	) {
 		super();
-		this._gutterDecorationTransparent = this._registerGutterDecoration(true);
+		this._gutterDecorationTransparent =
+			this._registerGutterDecoration(true);
 		this._gutterDecorationOpaque = this._registerGutterDecoration(false);
-		this._register(this._configurationService.onDidChangeConfiguration((e: IConfigurationChangeEvent) => {
-			if (!e.affectsConfiguration(InlineChatDecorationsContribution.GUTTER_SETTING_ID)) {
-				return;
-			}
-			this._onEnablementOrModelChanged();
-		}));
-		this._register(this._inlineChatSessionService.onWillStartSession((e) => {
-			if (e === this._editor) {
-				this._hasInlineChatSession = true;
+		this._register(
+			this._configurationService.onDidChangeConfiguration(
+				(e: IConfigurationChangeEvent) => {
+					if (
+						!e.affectsConfiguration(
+							InlineChatDecorationsContribution.GUTTER_SETTING_ID
+						)
+					) {
+						return;
+					}
+					this._onEnablementOrModelChanged();
+				}
+			)
+		);
+		this._register(
+			this._inlineChatSessionService.onWillStartSession((e) => {
+				if (e === this._editor) {
+					this._hasInlineChatSession = true;
+					this._onEnablementOrModelChanged();
+				}
+			})
+		);
+		this._register(
+			this._inlineChatSessionService.onDidEndSession((e) => {
+				if (e === this._editor) {
+					this._hasInlineChatSession = false;
+					this._onEnablementOrModelChanged();
+				}
+			})
+		);
+		this._register(
+			this._debugService.onDidNewSession((session) => {
+				this._debugSessions.add(session);
+				if (!this._hasActiveDebugSession) {
+					this._hasActiveDebugSession = true;
+					this._onEnablementOrModelChanged();
+				}
+			})
+		);
+		this._register(
+			this._debugService.onDidEndSession(({ session }) => {
+				this._debugSessions.delete(session);
+				if (this._debugSessions.size === 0) {
+					this._hasActiveDebugSession = false;
+					this._onEnablementOrModelChanged();
+				}
+			})
+		);
+		this._register(
+			this._inlineChatService.onDidChangeProviders(() =>
+				this._onEnablementOrModelChanged()
+			)
+		);
+		this._register(
+			this._editor.onDidChangeModel(() =>
+				this._onEnablementOrModelChanged()
+			)
+		);
+		this._register(
+			this._keybindingService.onDidUpdateKeybindings(() => {
+				this._updateDecorationHover();
 				this._onEnablementOrModelChanged();
-			}
-		}));
-		this._register(this._inlineChatSessionService.onDidEndSession((e) => {
-			if (e === this._editor) {
-				this._hasInlineChatSession = false;
-				this._onEnablementOrModelChanged();
-			}
-		}));
-		this._register(this._debugService.onDidNewSession((session) => {
-			this._debugSessions.add(session);
-			if (!this._hasActiveDebugSession) {
-				this._hasActiveDebugSession = true;
-				this._onEnablementOrModelChanged();
-			}
-		}));
-		this._register(this._debugService.onDidEndSession(({ session }) => {
-			this._debugSessions.delete(session);
-			if (this._debugSessions.size === 0) {
-				this._hasActiveDebugSession = false;
-				this._onEnablementOrModelChanged();
-			}
-		}));
-		this._register(this._inlineChatService.onDidChangeProviders(() => this._onEnablementOrModelChanged()));
-		this._register(this._editor.onDidChangeModel(() => this._onEnablementOrModelChanged()));
-		this._register(this._keybindingService.onDidUpdateKeybindings(() => {
-			this._updateDecorationHover();
-			this._onEnablementOrModelChanged();
-		}));
+			})
+		);
 		this._updateDecorationHover();
 		this._onEnablementOrModelChanged();
 	}
 
 	private _registerGutterDecoration(
-		isTransparent: boolean,
+		isTransparent: boolean
 	): ModelDecorationOptions {
 		return ModelDecorationOptions.register({
 			description: "inline-chat-decoration",
 			glyphMarginClassName: ThemeIcon.asClassName(
 				isTransparent
 					? GUTTER_INLINE_CHAT_TRANSPARENT_ICON
-					: GUTTER_INLINE_CHAT_OPAQUE_ICON,
+					: GUTTER_INLINE_CHAT_OPAQUE_ICON
 			),
 			glyphMargin: { position: GlyphMarginLane.Left },
 			stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
@@ -169,9 +200,9 @@ export class InlineChatDecorationsContribution
 				? localize(
 						"runWithKeybinding",
 						"Start Inline Chat ({0})",
-						keybinding,
-				  )
-				: LOCALIZED_START_INLINE_CHAT_STRING,
+						keybinding
+					)
+				: LOCALIZED_START_INLINE_CHAT_STRING
 		);
 		this._gutterDecorationTransparent.glyphMarginHoverMessage =
 			hoverMessage;
@@ -199,24 +230,24 @@ export class InlineChatDecorationsContribution
 		const editor = this._editor;
 		const decorationUpdateScheduler = new RunOnceScheduler(
 			() => this._onSelectionOrContentChanged(editor),
-			100,
+			100
 		);
 		this._localToDispose.add(decorationUpdateScheduler);
 		this._localToDispose.add(
 			this._debugService.getModel().onDidChangeBreakpoints(() => {
 				this._updateCurrentBreakpoints(editor.getModel().uri);
 				decorationUpdateScheduler.schedule();
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onDidChangeCursorSelection(() =>
-				decorationUpdateScheduler.schedule(),
-			),
+				decorationUpdateScheduler.schedule()
+			)
 		);
 		this._localToDispose.add(
 			this._editor.onDidChangeModelContent(() =>
-				decorationUpdateScheduler.schedule(),
-			),
+				decorationUpdateScheduler.schedule()
+			)
 		);
 		this._localToDispose.add(
 			this._editor.onMouseDown(async (e: IEditorMouseEvent) => {
@@ -225,18 +256,18 @@ export class InlineChatDecorationsContribution
 					showGutterIconMode === ShowGutterIcon.Always
 						? InlineChatDecorationsContribution.GUTTER_ICON_OPAQUE_CLASSNAME
 						: showGutterIconMode === ShowGutterIcon.MouseOver
-						  ? InlineChatDecorationsContribution.GUTTER_ICON_TRANSPARENT_CLASSNAME
-						  : undefined;
+							? InlineChatDecorationsContribution.GUTTER_ICON_TRANSPARENT_CLASSNAME
+							: undefined;
 				if (
 					!gutterDecorationClassName ||
 					!e.target.element?.classList.contains(
-						gutterDecorationClassName,
+						gutterDecorationClassName
 					)
 				) {
 					return;
 				}
 				InlineChatController.get(this._editor)?.run();
-			}),
+			})
 		);
 		this._localToDispose.add({
 			dispose: () => {
@@ -256,7 +287,7 @@ export class InlineChatDecorationsContribution
 
 		let isEnabled = false;
 		const hasBreakpoint = this._currentBreakpoints.some(
-			(bp) => bp.lineNumber === startLineNumber,
+			(bp) => bp.lineNumber === startLineNumber
 		);
 		if (!hasBreakpoint) {
 			const selectionIsEmpty = selection.isEmpty();
@@ -284,12 +315,12 @@ export class InlineChatDecorationsContribution
 				this._addGutterDecoration(startLineNumber);
 			} else {
 				const decorationRange = model.getDecorationRange(
-					this._gutterDecorationID,
+					this._gutterDecorationID
 				);
 				if (decorationRange?.startLineNumber !== startLineNumber) {
 					this._updateGutterDecoration(
 						this._gutterDecorationID,
-						startLineNumber,
+						startLineNumber
 					);
 				}
 			}
@@ -300,7 +331,7 @@ export class InlineChatDecorationsContribution
 
 	private _showGutterIconMode(): ShowGutterIcon {
 		return this._configurationService.getValue<ShowGutterIcon>(
-			InlineChatDecorationsContribution.GUTTER_SETTING_ID,
+			InlineChatDecorationsContribution.GUTTER_SETTING_ID
 		);
 	}
 
@@ -319,9 +350,9 @@ export class InlineChatDecorationsContribution
 					new Range(lineNumber, 0, lineNumber, 0),
 					showGutterIconMode === ShowGutterIcon.Always
 						? this._gutterDecorationOpaque
-						: this._gutterDecorationTransparent,
+						: this._gutterDecorationTransparent
 				);
-			},
+			}
 		);
 	}
 
@@ -329,7 +360,7 @@ export class InlineChatDecorationsContribution
 		this._editor.changeDecorations(
 			(accessor: IModelDecorationsChangeAccessor) => {
 				accessor.removeDecoration(decorationId);
-			},
+			}
 		);
 		this._gutterDecorationID = undefined;
 	}
@@ -339,9 +370,9 @@ export class InlineChatDecorationsContribution
 			(accessor: IModelDecorationsChangeAccessor) => {
 				accessor.changeDecoration(
 					decorationId,
-					new Range(lineNumber, 0, lineNumber, 0),
+					new Range(lineNumber, 0, lineNumber, 0)
 				);
-			},
+			}
 		);
 	}
 
@@ -355,7 +386,7 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 	({ lineNumber, editor, accessor }, result) => {
 		const inlineChatService = accessor.get(IInlineChatService);
 		const noProviders = Iterable.isEmpty(
-			inlineChatService.getAllProvider(),
+			inlineChatService.getAllProvider()
 		);
 		if (noProviders) {
 			return;
@@ -366,7 +397,7 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 				"inlineChat.configureShowGutterIcon",
 				localize(
 					"configureShowGutterIcon",
-					"Configure Inline Chat Icon",
+					"Configure Inline Chat Icon"
 				),
 				undefined,
 				true,
@@ -374,8 +405,8 @@ GutterActionsRegistry.registerGutterActionsGenerator(
 					preferencesService.openUserSettings({
 						query: "inlineChat.showGutterIcon",
 					});
-				},
-			),
+				}
+			)
 		);
-	},
+	}
 );

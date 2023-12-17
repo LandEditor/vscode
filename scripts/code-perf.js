@@ -29,7 +29,7 @@ async function main() {
 				args[runtimeArgIndex + 1] !== "desktop"
 			) {
 				console.error(
-					"Please provide the --build argument. It is an executable file for desktop or a URL for web",
+					"Please provide the --build argument. It is an executable file for desktop or a URL for web"
 				);
 				process.exit(1);
 			}
@@ -77,14 +77,14 @@ function getExePath(buildPath) {
 			break;
 		case "linux": {
 			const product = require(
-				path.join(buildPath, "resources", "app", "product.json"),
+				path.join(buildPath, "resources", "app", "product.json")
 			);
 			relativeExePath = product.applicationName;
 			break;
 		}
 		case "win32": {
 			const product = require(
-				path.join(buildPath, "resources", "app", "product.json"),
+				path.join(buildPath, "resources", "app", "product.json")
 			);
 			relativeExePath = `${product.nameShort}.exe`;
 			break;

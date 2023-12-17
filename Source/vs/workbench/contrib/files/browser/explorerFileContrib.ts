@@ -26,7 +26,7 @@ export interface IExplorerFileContribution extends IDisposable {
 export interface IExplorerFileContributionDescriptor {
 	create(
 		insta: IInstantiationService,
-		container: HTMLElement,
+		container: HTMLElement
 	): IExplorerFileContribution;
 }
 
@@ -54,7 +54,7 @@ class ExplorerFileContributionRegistry
 	public create(
 		insta: IInstantiationService,
 		container: HTMLElement,
-		store: DisposableStore,
+		store: DisposableStore
 	): IExplorerFileContribution[] {
 		return this.descriptors.map((d) => {
 			const i = d.create(insta, container);
@@ -68,5 +68,5 @@ export const explorerFileContribRegistry =
 	new ExplorerFileContributionRegistry();
 Registry.add(
 	ExplorerExtensions.FileContributionRegistry,
-	explorerFileContribRegistry,
+	explorerFileContribRegistry
 );

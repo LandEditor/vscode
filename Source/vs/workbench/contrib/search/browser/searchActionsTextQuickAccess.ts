@@ -23,7 +23,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"quickTextSearch",
-						"Quick Text Search (Experimental)",
+						"Quick Text Search (Experimental)"
 					),
 					original: "Quick Text Search (Experimental)",
 				},
@@ -34,16 +34,16 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			match: RenderableMatch | undefined,
+			match: RenderableMatch | undefined
 		): Promise<any> {
 			const quickInputService = accessor.get(IQuickInputService);
 			const searchText = getSearchText(accessor) ?? "";
 			quickInputService.quickAccess.show(
 				TEXT_SEARCH_QUICK_ACCESS_PREFIX + searchText,
-				{ preserveValue: !!searchText },
+				{ preserveValue: !!searchText }
 			);
 		}
-	},
+	}
 );
 
 function getSearchText(accessor: ServicesAccessor): string | null {
@@ -62,7 +62,7 @@ function getSearchText(accessor: ServicesAccessor): string | null {
 	// only happen if it would also happen for the search view
 	const seedSearchStringFromSelection =
 		configurationService.getValue<boolean>(
-			"editor.find.seedSearchStringFromSelection",
+			"editor.find.seedSearchStringFromSelection"
 		);
 	if (!seedSearchStringFromSelection) {
 		return null;

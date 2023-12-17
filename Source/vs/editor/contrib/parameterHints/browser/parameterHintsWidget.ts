@@ -46,18 +46,15 @@ const $ = dom.$;
 const parameterHintsNextIcon = registerIcon(
 	"parameter-hints-next",
 	Codicon.chevronDown,
-	nls.localize(
-		"parameterHintsNextIcon",
-		"Icon for show next parameter hint.",
-	),
+	nls.localize("parameterHintsNextIcon", "Icon for show next parameter hint.")
 );
 const parameterHintsPreviousIcon = registerIcon(
 	"parameter-hints-previous",
 	Codicon.chevronUp,
 	nls.localize(
 		"parameterHintsPreviousIcon",
-		"Icon for show previous parameter hint.",
-	),
+		"Icon for show previous parameter hint."
+	)
 );
 
 export class ParameterHintsWidget extends Disposable implements IContentWidget {
@@ -87,12 +84,12 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		private readonly model: ParameterHintsModel,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IOpenerService openerService: IOpenerService,
-		@ILanguageService languageService: ILanguageService,
+		@ILanguageService languageService: ILanguageService
 	) {
 		super();
 
 		this.markdownRenderer = this._register(
-			new MarkdownRenderer({ editor }, languageService, openerService),
+			new MarkdownRenderer({ editor }, languageService, openerService)
 		);
 
 		this.keyVisible = Context.Visible.bindTo(contextKeyService);
@@ -108,26 +105,26 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		const controls = dom.append(wrapper, $(".controls"));
 		const previous = dom.append(
 			controls,
-			$(".button" + ThemeIcon.asCSSSelector(parameterHintsPreviousIcon)),
+			$(".button" + ThemeIcon.asCSSSelector(parameterHintsPreviousIcon))
 		);
 		const overloads = dom.append(controls, $(".overloads"));
 		const next = dom.append(
 			controls,
-			$(".button" + ThemeIcon.asCSSSelector(parameterHintsNextIcon)),
+			$(".button" + ThemeIcon.asCSSSelector(parameterHintsNextIcon))
 		);
 
 		this._register(
 			dom.addDisposableListener(previous, "click", (e) => {
 				dom.EventHelper.stop(e);
 				this.previous();
-			}),
+			})
 		);
 
 		this._register(
 			dom.addDisposableListener(next, "click", (e) => {
 				dom.EventHelper.stop(e);
 				this.next();
-			}),
+			})
 		);
 
 		const body = $(".body");
@@ -158,7 +155,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				if (this.visible) {
 					this.editor.layoutContentWidget(this);
 				}
-			}),
+			})
 		);
 
 		const updateFont = () => {
@@ -177,12 +174,12 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		this._register(
 			Event.chain(
 				this.editor.onDidChangeConfiguration.bind(this.editor),
-				($) => $.filter((e) => e.hasChanged(EditorOption.fontInfo)),
-			)(updateFont),
+				($) => $.filter((e) => e.hasChanged(EditorOption.fontInfo))
+			)(updateFont)
 		);
 
 		this._register(
-			this.editor.onDidLayoutChange((e) => this.updateMaxHeight()),
+			this.editor.onDidLayoutChange((e) => this.updateMaxHeight())
 		);
 		this.updateMaxHeight();
 	}
@@ -274,7 +271,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 				documentation.textContent = activeParameter.documentation;
 			} else {
 				const renderedContents = this.renderMarkdownDocs(
-					activeParameter.documentation,
+					activeParameter.documentation
 				);
 				documentation.appendChild(renderedContents.element);
 			}
@@ -287,7 +284,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			dom.append(this.domNodes.docs, $("p", {}, signature.documentation));
 		} else {
 			const renderedContents = this.renderMarkdownDocs(
-				signature.documentation,
+				signature.documentation
 			);
 			dom.append(this.domNodes.docs, renderedContents.element);
 		}
@@ -300,7 +297,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		this.domNodes.overloads.textContent =
 			String(hints.activeSignature + 1).padStart(
 				hints.signatures.length.toString().length,
-				"0",
+				"0"
 			) +
 			"/" +
 			hints.signatures.length;
@@ -311,7 +308,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 			if (Array.isArray(param.label)) {
 				labelToAnnounce = signature.label.substring(
 					param.label[0],
-					param.label[1],
+					param.label[1]
 				);
 			} else {
 				labelToAnnounce = param.label;
@@ -343,14 +340,14 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 	}
 
 	private renderMarkdownDocs(
-		markdown: IMarkdownString | undefined,
+		markdown: IMarkdownString | undefined
 	): IMarkdownRenderResult {
 		const renderedContents = this.renderDisposeables.add(
 			this.markdownRenderer.render(markdown, {
 				asyncRenderCallback: () => {
 					this.domNodes?.scrollbar.scanDomNode();
 				},
-			}),
+			})
 		);
 		renderedContents.element.classList.add("markdown-docs");
 		return renderedContents;
@@ -358,7 +355,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 
 	private hasDocs(
 		signature: languages.SignatureInformation,
-		activeParameter: languages.ParameterInformation | undefined,
+		activeParameter: languages.ParameterInformation | undefined
 	): boolean {
 		if (
 			activeParameter &&
@@ -394,11 +391,11 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 	private renderParameters(
 		parent: HTMLElement,
 		signature: languages.SignatureInformation,
-		activeParameterIndex: number,
+		activeParameterIndex: number
 	): void {
 		const [start, end] = this.getParameterLabelOffsets(
 			signature,
-			activeParameterIndex,
+			activeParameterIndex
 		);
 
 		const beforeSpan = document.createElement("span");
@@ -416,7 +413,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 
 	private getParameterLabelOffsets(
 		signature: languages.SignatureInformation,
-		paramIdx: number,
+		paramIdx: number
 	): [number, number] {
 		const param = signature.parameters[paramIdx];
 		if (!param) {
@@ -428,7 +425,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		} else {
 			const regex = new RegExp(
 				`(\\W|^)${escapeRegExpCharacters(param.label)}(?=\\W|$)`,
-				"g",
+				"g"
 			);
 			regex.test(signature.label);
 			const idx = regex.lastIndex - param.label.length;
@@ -465,7 +462,7 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 		const maxHeight = `${height}px`;
 		this.domNodes.element.style.maxHeight = maxHeight;
 		const wrapper = this.domNodes.element.getElementsByClassName(
-			"phwrapper",
+			"phwrapper"
 		) as HTMLCollectionOf<HTMLElement>;
 		if (wrapper.length) {
 			wrapper[0].style.maxHeight = maxHeight;
@@ -483,6 +480,6 @@ registerColor(
 	},
 	nls.localize(
 		"editorHoverWidgetHighlightForeground",
-		"Foreground color of the active item in the parameter hint.",
-	),
+		"Foreground color of the active item in the parameter hint."
+	)
 );

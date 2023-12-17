@@ -16,7 +16,7 @@ export interface IOffsetRange {
 export class OffsetRange implements IOffsetRange {
 	public static addRange(
 		range: OffsetRange,
-		sortedRanges: OffsetRange[],
+		sortedRanges: OffsetRange[]
 	): void {
 		let i = 0;
 		while (
@@ -38,7 +38,7 @@ export class OffsetRange implements IOffsetRange {
 			const start = Math.min(range.start, sortedRanges[i].start);
 			const end = Math.max(
 				range.endExclusive,
-				sortedRanges[j - 1].endExclusive,
+				sortedRanges[j - 1].endExclusive
 			);
 			sortedRanges.splice(i, j - i, new OffsetRange(start, end));
 		}
@@ -46,7 +46,7 @@ export class OffsetRange implements IOffsetRange {
 
 	public static tryCreate(
 		start: number,
-		endExclusive: number,
+		endExclusive: number
 	): OffsetRange | undefined {
 		if (start > endExclusive) {
 			return undefined;
@@ -64,7 +64,7 @@ export class OffsetRange implements IOffsetRange {
 
 	constructor(
 		public readonly start: number,
-		public readonly endExclusive: number,
+		public readonly endExclusive: number
 	) {
 		if (start > endExclusive) {
 			throw new BugIndicatingError(`Invalid range: ${this.toString()}`);
@@ -119,7 +119,7 @@ export class OffsetRange implements IOffsetRange {
 	public join(other: OffsetRange): OffsetRange {
 		return new OffsetRange(
 			Math.min(this.start, other.start),
-			Math.max(this.endExclusive, other.endExclusive),
+			Math.max(this.endExclusive, other.endExclusive)
 		);
 	}
 
@@ -169,7 +169,7 @@ export class OffsetRange implements IOffsetRange {
 	public clip(value: number): number {
 		if (this.isEmpty) {
 			throw new BugIndicatingError(
-				`Invalid clipping range: ${this.toString()}`,
+				`Invalid clipping range: ${this.toString()}`
 			);
 		}
 		return Math.max(this.start, Math.min(this.endExclusive - 1, value));
@@ -184,7 +184,7 @@ export class OffsetRange implements IOffsetRange {
 	public clipCyclic(value: number): number {
 		if (this.isEmpty) {
 			throw new BugIndicatingError(
-				`Invalid clipping range: ${this.toString()}`,
+				`Invalid clipping range: ${this.toString()}`
 			);
 		}
 		if (value < this.start) {
@@ -235,7 +235,7 @@ export class OffsetRangeSet {
 			const start = Math.min(range.start, this._sortedRanges[i].start);
 			const end = Math.max(
 				range.endExclusive,
-				this._sortedRanges[j - 1].endExclusive,
+				this._sortedRanges[j - 1].endExclusive
 			);
 			this._sortedRanges.splice(i, j - i, new OffsetRange(start, end));
 		}

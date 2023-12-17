@@ -29,7 +29,7 @@ export interface ICustomEditorsExtensionPoint {
 const CustomEditorsContribution: IJSONSchema = {
 	description: nls.localize(
 		"contributes.customEditors",
-		"Contributed custom editors.",
+		"Contributed custom editors."
 	),
 	type: "array",
 	defaultSnippets: [
@@ -55,21 +55,21 @@ const CustomEditorsContribution: IJSONSchema = {
 				type: "string",
 				markdownDescription: nls.localize(
 					"contributes.viewType",
-					"Identifier for the custom editor. This must be unique across all custom editors, so we recommend including your extension id as part of `viewType`. The `viewType` is used when registering custom editors with `vscode.registerCustomEditorProvider` and in the `onCustomEditor:${id}` [activation event](https://code.visualstudio.com/api/references/activation-events).",
+					"Identifier for the custom editor. This must be unique across all custom editors, so we recommend including your extension id as part of `viewType`. The `viewType` is used when registering custom editors with `vscode.registerCustomEditorProvider` and in the `onCustomEditor:${id}` [activation event](https://code.visualstudio.com/api/references/activation-events)."
 				),
 			},
 			[Fields.displayName]: {
 				type: "string",
 				description: nls.localize(
 					"contributes.displayName",
-					"Human readable name of the custom editor. This is displayed to users when selecting which editor to use.",
+					"Human readable name of the custom editor. This is displayed to users when selecting which editor to use."
 				),
 			},
 			[Fields.selector]: {
 				type: "array",
 				description: nls.localize(
 					"contributes.selector",
-					"Set of globs that the custom editor is enabled for.",
+					"Set of globs that the custom editor is enabled for."
 				),
 				items: {
 					type: "object",
@@ -85,7 +85,7 @@ const CustomEditorsContribution: IJSONSchema = {
 							type: "string",
 							description: nls.localize(
 								"contributes.selector.filenamePattern",
-								"Glob that the custom editor is enabled for.",
+								"Glob that the custom editor is enabled for."
 							),
 						},
 					},
@@ -95,7 +95,7 @@ const CustomEditorsContribution: IJSONSchema = {
 				type: "string",
 				markdownDeprecationMessage: nls.localize(
 					"contributes.priority",
-					"Controls if the custom editor is enabled automatically when the user opens a file. This may be overridden by users using the `workbench.editorAssociations` setting.",
+					"Controls if the custom editor is enabled automatically when the user opens a file. This may be overridden by users using the `workbench.editorAssociations` setting."
 				),
 				enum: [
 					CustomEditorPriority.default,
@@ -104,11 +104,11 @@ const CustomEditorsContribution: IJSONSchema = {
 				markdownEnumDescriptions: [
 					nls.localize(
 						"contributes.priority.default",
-						"The editor is automatically used when the user opens a resource, provided that no other default custom editors are registered for that resource.",
+						"The editor is automatically used when the user opens a resource, provided that no other default custom editors are registered for that resource."
 					),
 					nls.localize(
 						"contributes.priority.option",
-						"The editor is not automatically used when the user opens a resource, but a user can switch to the editor using the `Reopen With` command.",
+						"The editor is not automatically used when the user opens a resource, but a user can switch to the editor using the `Reopen With` command."
 					),
 				],
 				default: "default",
@@ -124,7 +124,7 @@ export const customEditorsExtensionPoint =
 		jsonSchema: CustomEditorsContribution,
 		activationEventsGenerator: (
 			contribs: ICustomEditorsExtensionPoint[],
-			result: { push(item: string): void },
+			result: { push(item: string): void }
 		) => {
 			for (const contrib of contribs) {
 				const viewType = contrib[Fields.viewType];

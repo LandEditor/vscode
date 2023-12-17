@@ -64,33 +64,50 @@ export class TerminalEditor extends EditorPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IMenuService menuService: IMenuService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@IWorkbenchLayoutService private readonly _workbenchLayoutService: IWorkbenchLayoutService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@IWorkbenchLayoutService
+		private readonly _workbenchLayoutService: IWorkbenchLayoutService
 	) {
 		super(terminalEditorId, telemetryService, themeService, storageService);
-		this._dropdownMenu = this._register(menuService.createMenu(MenuId.TerminalNewDropdownContext, contextKeyService));
-		this._instanceMenu = this._register(menuService.createMenu(MenuId.TerminalInstanceContext, contextKeyService));
+		this._dropdownMenu = this._register(
+			menuService.createMenu(
+				MenuId.TerminalNewDropdownContext,
+				contextKeyService
+			)
+		);
+		this._instanceMenu = this._register(
+			menuService.createMenu(
+				MenuId.TerminalInstanceContext,
+				contextKeyService
+			)
+		);
 	}
 
 	override async setInput(
 		newInput: TerminalEditorInput,
 		options: IEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	) {
 		this._editorInput?.terminalInstance?.detachFromElement();
 		this._editorInput = newInput;
 		await super.setInput(newInput, options, context, token);
 		this._editorInput.terminalInstance?.attachToElement(
-			this._overflowGuardElement!,
+			this._overflowGuardElement!
 		);
 		if (this._lastDimension) {
 			this.layout(this._lastDimension);
@@ -99,8 +116,8 @@ export class TerminalEditor extends EditorPane {
 			this.isVisible() &&
 				this._workbenchLayoutService.isVisible(
 					Parts.EDITOR_PART,
-					dom.getWindow(this._editorInstanceElement),
-				),
+					dom.getWindow(this._editorInstanceElement)
+				)
 		);
 		if (this._editorInput.terminalInstance) {
 			// since the editor does not monitor focus changes, for ex. between the terminal
@@ -108,11 +125,11 @@ export class TerminalEditor extends EditorPane {
 			// when focus changes between them.
 			this._register(
 				this._editorInput.terminalInstance.onDidFocus(() =>
-					this._setActiveInstance(),
-				),
+					this._setActiveInstance()
+				)
 			);
 			this._editorInput.setCopyLaunchConfig(
-				this._editorInput.terminalInstance.shellLaunchConfig,
+				this._editorInput.terminalInstance.shellLaunchConfig
 			);
 		}
 	}
@@ -134,7 +151,7 @@ export class TerminalEditor extends EditorPane {
 			return;
 		}
 		this._terminalEditorService.setActiveInstance(
-			this._editorInput.terminalInstance,
+			this._editorInput.terminalInstance
 		);
 	}
 
@@ -148,7 +165,7 @@ export class TerminalEditor extends EditorPane {
 	protected createEditor(parent: HTMLElement): void {
 		this._editorInstanceElement = parent;
 		this._overflowGuardElement = dom.$(
-			".terminal-overflow-guard.terminal-editor",
+			".terminal-overflow-guard.terminal-editor"
 		);
 		this._editorInstanceElement.appendChild(this._overflowGuardElement);
 		this._registerListeners();
@@ -202,7 +219,7 @@ export class TerminalEditor extends EditorPane {
 									event,
 									this._editorInput?.terminalInstance,
 									this._instanceMenu,
-									this._contextMenuService,
+									this._contextMenuService
 								);
 								return;
 							}
@@ -220,7 +237,7 @@ export class TerminalEditor extends EditorPane {
 									this._notificationService.info(
 										`This browser doesn't support the clipboard.readText API needed to trigger a paste, try ${
 											isMacintosh ? "⌘" : "Ctrl"
-										}+V instead.`,
+										}+V instead.`
 									);
 								}
 							}
@@ -236,8 +253,8 @@ export class TerminalEditor extends EditorPane {
 							this._cancelContextMenu = true;
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -263,15 +280,15 @@ export class TerminalEditor extends EditorPane {
 								event,
 								this._editorInput?.terminalInstance,
 								this._instanceMenu,
-								this._contextMenuService,
+								this._contextMenuService
 							);
 						}
 						event.preventDefault();
 						event.stopImmediatePropagation();
 						this._cancelContextMenu = false;
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -290,8 +307,8 @@ export class TerminalEditor extends EditorPane {
 			visible &&
 				this._workbenchLayoutService.isVisible(
 					Parts.EDITOR_PART,
-					dom.getWindow(this._editorInstanceElement),
-				),
+					dom.getWindow(this._editorInstanceElement)
+				)
 		);
 	}
 
@@ -306,7 +323,7 @@ export class TerminalEditor extends EditorPane {
 						this._getDefaultProfileName(),
 						this._terminalProfileService.contributedProfiles,
 						this._terminalService,
-						this._dropdownMenu,
+						this._dropdownMenu
 					);
 					const button = this._instantiationService.createInstance(
 						DropdownWithPrimaryActionViewItem,
@@ -315,7 +332,7 @@ export class TerminalEditor extends EditorPane {
 						actions.dropdownMenuActions,
 						actions.className,
 						this._contextMenuService,
-						{},
+						{}
 					);
 					return button;
 				}

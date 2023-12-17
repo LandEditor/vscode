@@ -30,19 +30,19 @@ type ManualSyncTaskEvent<T> = { manualSyncTaskId: string; data: T };
 
 function reviewSyncResource(
 	syncResource: IUserDataSyncResource,
-	userDataProfilesService: IUserDataProfilesService,
+	userDataProfilesService: IUserDataProfilesService
 ): IUserDataSyncResource {
 	return {
 		...syncResource,
 		profile: reviveProfile(
 			syncResource.profile,
-			userDataProfilesService.profilesHome.scheme,
+			userDataProfilesService.profilesHome.scheme
 		),
 	};
 }
 
 function reviewSyncResourceHandle(
-	syncResourceHandle: ISyncResourceHandle,
+	syncResourceHandle: ISyncResourceHandle
 ): ISyncResourceHandle {
 	return {
 		created: syncResourceHandle.created,
@@ -62,7 +62,7 @@ export class UserDataSyncChannel implements IServerChannel {
 	constructor(
 		private readonly service: IUserDataSyncService,
 		private readonly userDataProfilesService: IUserDataProfilesService,
-		private readonly logService: ILogService,
+		private readonly logService: ILogService
 	) {}
 
 	listen(_: unknown, event: string): Event<any> {
@@ -104,7 +104,7 @@ export class UserDataSyncChannel implements IServerChannel {
 	private async _call(
 		context: any,
 		command: string,
-		args?: any,
+		args?: any
 	): Promise<any> {
 		switch (command) {
 			// sync
@@ -131,7 +131,7 @@ export class UserDataSyncChannel implements IServerChannel {
 					reviewSyncResource(args[0], this.userDataProfilesService),
 					URI.revive(args[1]),
 					args[2],
-					args[3],
+					args[3]
 				);
 			case "replace":
 				return this.service.replace(reviewSyncResourceHandle(args[0]));
@@ -142,7 +142,7 @@ export class UserDataSyncChannel implements IServerChannel {
 			case "extractActivityData":
 				return this.service.extractActivityData(
 					URI.revive(args[0]),
-					URI.revive(args[1]),
+					URI.revive(args[1])
 				);
 
 			case "createManualSyncTask":
@@ -152,7 +152,7 @@ export class UserDataSyncChannel implements IServerChannel {
 		// manual sync
 		if (command.startsWith("manualSync/")) {
 			const manualSyncTaskCommand = command.substring(
-				"manualSync/".length,
+				"manualSync/".length
 			);
 			const manualSyncTaskId = args[0];
 			const manualSyncTask = this.getManualSyncTask(manualSyncTaskId);
@@ -166,16 +166,16 @@ export class UserDataSyncChannel implements IServerChannel {
 						.apply()
 						.then(() =>
 							this.manualSyncTasks.delete(
-								this.createKey(manualSyncTask.id),
-							),
+								this.createKey(manualSyncTask.id)
+							)
 						);
 				case "stop":
 					return manualSyncTask
 						.stop()
 						.finally(() =>
 							this.manualSyncTasks.delete(
-								this.createKey(manualSyncTask.id),
-							),
+								this.createKey(manualSyncTask.id)
+							)
 						);
 			}
 		}
@@ -184,10 +184,10 @@ export class UserDataSyncChannel implements IServerChannel {
 	}
 
 	private getManualSyncTask(
-		manualSyncTaskId: string,
+		manualSyncTaskId: string
 	): IUserDataManualSyncTask {
 		const manualSyncTask = this.manualSyncTasks.get(
-			this.createKey(manualSyncTaskId),
+			this.createKey(manualSyncTaskId)
 		);
 		if (!manualSyncTask) {
 			throw new Error(`Manual sync taks not found: ${manualSyncTaskId}`);
@@ -199,7 +199,7 @@ export class UserDataSyncChannel implements IServerChannel {
 		const manualSyncTask = await this.service.createManualSyncTask();
 		this.manualSyncTasks.set(
 			this.createKey(manualSyncTask.id),
-			manualSyncTask,
+			manualSyncTask
 		);
 		return manualSyncTask.id;
 	}
@@ -222,7 +222,7 @@ export class UserDataSyncChannelClient
 		return this._status;
 	}
 	private _onDidChangeStatus: Emitter<SyncStatus> = this._register(
-		new Emitter<SyncStatus>(),
+		new Emitter<SyncStatus>()
 	);
 	readonly onDidChangeStatus: Event<SyncStatus> =
 		this._onDidChangeStatus.event;
@@ -236,7 +236,7 @@ export class UserDataSyncChannelClient
 		return this._conflicts;
 	}
 	private _onDidChangeConflicts = this._register(
-		new Emitter<IUserDataSyncResourceConflicts[]>(),
+		new Emitter<IUserDataSyncResourceConflicts[]>()
 	);
 	readonly onDidChangeConflicts = this._onDidChangeConflicts.event;
 
@@ -245,13 +245,13 @@ export class UserDataSyncChannelClient
 		return this._lastSyncTime;
 	}
 	private _onDidChangeLastSyncTime: Emitter<number> = this._register(
-		new Emitter<number>(),
+		new Emitter<number>()
 	);
 	readonly onDidChangeLastSyncTime: Event<number> =
 		this._onDidChangeLastSyncTime.event;
 
 	private _onSyncErrors = this._register(
-		new Emitter<IUserDataSyncResourceError[]>(),
+		new Emitter<IUserDataSyncResourceError[]>()
 	);
 	readonly onSyncErrors = this._onSyncErrors.event;
 
@@ -264,29 +264,69 @@ export class UserDataSyncChannelClient
 
 	constructor(
 		userDataSyncChannel: IChannel,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService
 	) {
 		super();
 		this.channel = {
-			call<T>(command: string, arg?: any, cancellationToken?: CancellationToken): Promise<T> {
-				return userDataSyncChannel.call(command, arg, cancellationToken)
-					.then(null, error => { throw UserDataSyncError.toUserDataSyncError(error); });
+			call<T>(
+				command: string,
+				arg?: any,
+				cancellationToken?: CancellationToken
+			): Promise<T> {
+				return userDataSyncChannel
+					.call(command, arg, cancellationToken)
+					.then(null, (error) => {
+						throw UserDataSyncError.toUserDataSyncError(error);
+					});
 			},
 			listen<T>(event: string, arg?: any): Event<T> {
 				return userDataSyncChannel.listen(event, arg);
-			}
+			},
 		};
-		this.channel.call<[SyncStatus, IUserDataSyncResourceConflicts[], number | undefined]>('_getInitialData').then(([status, conflicts, lastSyncTime]) => {
-			this.updateStatus(status);
-			this.updateConflicts(conflicts);
-			if (lastSyncTime) {
-				this.updateLastSyncTime(lastSyncTime);
-			}
-			this._register(this.channel.listen<SyncStatus>('onDidChangeStatus')(status => this.updateStatus(status)));
-			this._register(this.channel.listen<number>('onDidChangeLastSyncTime')(lastSyncTime => this.updateLastSyncTime(lastSyncTime)));
-		});
-		this._register(this.channel.listen<IUserDataSyncResourceConflicts[]>('onDidChangeConflicts')(conflicts => this.updateConflicts(conflicts)));
-		this._register(this.channel.listen<IUserDataSyncResourceError[]>('onSyncErrors')(errors => this._onSyncErrors.fire(errors.map(syncError => ({ ...syncError, error: UserDataSyncError.toUserDataSyncError(syncError.error) })))));
+		this.channel
+			.call<
+				[
+					SyncStatus,
+					IUserDataSyncResourceConflicts[],
+					number | undefined,
+				]
+			>("_getInitialData")
+			.then(([status, conflicts, lastSyncTime]) => {
+				this.updateStatus(status);
+				this.updateConflicts(conflicts);
+				if (lastSyncTime) {
+					this.updateLastSyncTime(lastSyncTime);
+				}
+				this._register(
+					this.channel.listen<SyncStatus>("onDidChangeStatus")(
+						(status) => this.updateStatus(status)
+					)
+				);
+				this._register(
+					this.channel.listen<number>("onDidChangeLastSyncTime")(
+						(lastSyncTime) => this.updateLastSyncTime(lastSyncTime)
+					)
+				);
+			});
+		this._register(
+			this.channel.listen<IUserDataSyncResourceConflicts[]>(
+				"onDidChangeConflicts"
+			)((conflicts) => this.updateConflicts(conflicts))
+		);
+		this._register(
+			this.channel.listen<IUserDataSyncResourceError[]>("onSyncErrors")(
+				(errors) =>
+					this._onSyncErrors.fire(
+						errors.map((syncError) => ({
+							...syncError,
+							error: UserDataSyncError.toUserDataSyncError(
+								syncError.error
+							),
+						}))
+					)
+			)
+		);
 	}
 
 	createSyncTask(): Promise<IUserDataSyncTask> {
@@ -302,18 +342,18 @@ export class UserDataSyncChannelClient
 				async call<T>(
 					command: string,
 					arg?: any,
-					cancellationToken?: CancellationToken,
+					cancellationToken?: CancellationToken
 				): Promise<T> {
 					return that.channel.call<T>(
 						`manualSync/${command}`,
 						[id, ...(Array.isArray(arg) ? arg : [arg])],
-						cancellationToken,
+						cancellationToken
 					);
 				},
 				listen<T>(): Event<T> {
 					throw new Error("not supported");
 				},
-			},
+			}
 		);
 		return manualSyncTaskChannelClient;
 	}
@@ -342,7 +382,7 @@ export class UserDataSyncChannelClient
 		syncResource: IUserDataSyncResource,
 		resource: URI,
 		content: string | null,
-		apply: boolean | { force: boolean },
+		apply: boolean | { force: boolean }
 	): Promise<void> {
 		return this.channel.call("accept", [
 			syncResource,
@@ -370,7 +410,7 @@ export class UserDataSyncChannelClient
 
 	extractActivityData(
 		activityDataResource: URI,
-		location: URI,
+		location: URI
 	): Promise<void> {
 		return this.channel.call("extractActivityData", [
 			activityDataResource,
@@ -384,14 +424,14 @@ export class UserDataSyncChannelClient
 	}
 
 	private async updateConflicts(
-		conflicts: IUserDataSyncResourceConflicts[],
+		conflicts: IUserDataSyncResourceConflicts[]
 	): Promise<void> {
 		// Revive URIs
 		this._conflicts = conflicts.map((syncConflict) => ({
 			syncResource: syncConflict.syncResource,
 			profile: reviveProfile(
 				syncConflict.profile,
-				this.userDataProfilesService.profilesHome.scheme,
+				this.userDataProfilesService.profilesHome.scheme
 			),
 			conflicts: syncConflict.conflicts.map((r) => ({
 				...r,
@@ -416,7 +456,10 @@ class ManualSyncTaskChannelClient
 	extends Disposable
 	implements IUserDataManualSyncTask
 {
-	constructor(readonly id: string, private readonly channel: IChannel) {
+	constructor(
+		readonly id: string,
+		private readonly channel: IChannel
+	) {
 		super();
 	}
 

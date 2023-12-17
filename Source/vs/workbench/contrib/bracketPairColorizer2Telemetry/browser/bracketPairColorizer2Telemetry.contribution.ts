@@ -17,8 +17,10 @@ import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle
 
 class BracketPairColorizer2TelemetryContribution {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
 		this.init().catch(onUnexpectedError);
@@ -29,7 +31,7 @@ class BracketPairColorizer2TelemetryContribution {
 
 		await this.extensionsWorkbenchService.queryLocal();
 		const extension = this.extensionsWorkbenchService.installed.find(
-			(e) => e.identifier.id === bracketPairColorizerId,
+			(e) => e.identifier.id === bracketPairColorizerId
 		);
 		if (
 			!extension ||
@@ -42,7 +44,7 @@ class BracketPairColorizer2TelemetryContribution {
 		const nativeBracketPairColorizationEnabledKey =
 			"editor.bracketPairColorization.enabled";
 		const nativeColorizationEnabled = !!this.configurationService.getValue(
-			nativeBracketPairColorizationEnabledKey,
+			nativeBracketPairColorizationEnabledKey
 		);
 
 		type BracketPairColorizer2InstalledClassification = {
@@ -67,8 +69,8 @@ class BracketPairColorizer2TelemetryContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	BracketPairColorizer2TelemetryContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

@@ -61,7 +61,7 @@ import { RemoteNameContext } from "vs/workbench/common/contextkeys";
 import { IsWebContext } from "vs/platform/contextkey/common/contextkeys";
 
 const ITroubleshootIssueService = createDecorator<ITroubleshootIssueService>(
-	"ITroubleshootIssueService",
+	"ITroubleshootIssueService"
 );
 
 interface ITroubleshootIssueService {
@@ -100,7 +100,10 @@ class TroubleShootState {
 		return undefined;
 	}
 
-	constructor(readonly stage: TroubleshootStage, readonly profile: string) {}
+	constructor(
+		readonly stage: TroubleshootStage,
+		readonly profile: string
+	) {}
 }
 
 class TroubleshootIssueService
@@ -114,20 +117,29 @@ class TroubleshootIssueService
 	private notificationHandle: INotificationHandle | undefined;
 
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileManagementService private readonly userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfileImportExportService private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileManagementService
+		private readonly userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfileImportExportService
+		private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IExtensionBisectService private readonly extensionBisectService: IExtensionBisectService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IWorkbenchIssueService private readonly issueService: IWorkbenchIssueService,
+		@IExtensionBisectService
+		private readonly extensionBisectService: IExtensionBisectService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchIssueService
+		private readonly issueService: IWorkbenchIssueService,
 		@IProductService private readonly productService: IProductService,
 		@IHostService private readonly hostService: IHostService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IOpenerService private readonly openerService: IOpenerService,
+		@IOpenerService private readonly openerService: IOpenerService
 	) {
 		super();
 	}
@@ -146,11 +158,11 @@ class TroubleshootIssueService
 			detail: localize(
 				"detail.start",
 				"Issue troubleshooting is a process to help you identify the cause for an issue. The cause for an issue can be a misconfiguration, due to an extension, or be {0} itself.\n\nDuring the process the window reloads repeatedly. Each time you must confirm if you are still seeing the issue.",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			primaryButton: localize(
 				{ key: "msg", comment: ["&& denotes a mnemonic"] },
-				"&&Troubleshoot Issue",
+				"&&Troubleshoot Issue"
 			),
 			custom: true,
 		});
@@ -163,7 +175,7 @@ class TroubleshootIssueService
 		await this.userDataProfileImportExportService.createTroubleshootProfile();
 		this.state = new TroubleShootState(
 			TroubleshootStage.EXTENSIONS,
-			originalProfile.id,
+			originalProfile.id
 		);
 		await this.resume();
 	}
@@ -203,7 +215,7 @@ class TroubleshootIssueService
 
 		const profile =
 			this.userDataProfilesService.profiles.find(
-				(p) => p.id === this.state?.profile,
+				(p) => p.id === this.state?.profile
 			) ?? this.userDataProfilesService.defaultProfile;
 		this.state = undefined;
 		await this.userDataProfileManagementService.switchProfile(profile);
@@ -213,13 +225,13 @@ class TroubleshootIssueService
 		if (
 			!(
 				await this.extensionManagementService.getInstalled(
-					ExtensionType.User,
+					ExtensionType.User
 				)
 			).length
 		) {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
-				this.state!.profile,
+				this.state!.profile
 			);
 			return;
 		}
@@ -227,20 +239,20 @@ class TroubleshootIssueService
 		const result = await this.askToReproduceIssue(
 			localize(
 				"profile.extensions.disabled",
-				"Issue troubleshooting is active and has temporarily disabled all installed extensions. Check if you can still reproduce the problem and proceed by selecting from these options.",
-			),
+				"Issue troubleshooting is active and has temporarily disabled all installed extensions. Check if you can still reproduce the problem and proceed by selecting from these options."
+			)
 		);
 		if (result === "good") {
 			const profile =
 				this.userDataProfilesService.profiles.find(
-					(p) => p.id === this.state!.profile,
+					(p) => p.id === this.state!.profile
 				) ?? this.userDataProfilesService.defaultProfile;
 			await this.reproduceIssueWithExtensionsBisect(profile);
 		}
 		if (result === "bad") {
 			this.state = new TroubleShootState(
 				TroubleshootStage.WORKBENCH,
-				this.state!.profile,
+				this.state!.profile
 			);
 		}
 		if (result === "stop") {
@@ -254,8 +266,8 @@ class TroubleshootIssueService
 		const result = await this.askToReproduceIssue(
 			localize(
 				"empty.profile",
-				"Issue troubleshooting is active and has temporarily reset your configurations to defaults. Check if you can still reproduce the problem and proceed by selecting from these options.",
-			),
+				"Issue troubleshooting is active and has temporarily reset your configurations to defaults. Check if you can still reproduce the problem and proceed by selecting from these options."
+			)
 		);
 		if (result === "stop") {
 			await this.stop();
@@ -264,8 +276,8 @@ class TroubleshootIssueService
 			await this.askToReportIssue(
 				localize(
 					"issue is with configuration",
-					'Issue troubleshooting has identified that the issue is caused by your configurations. Please report the issue by exporting your configurations using "Export Profile" command and share the file in the issue report.',
-				),
+					'Issue troubleshooting has identified that the issue is caused by your configurations. Please report the issue by exporting your configurations using "Export Profile" command and share the file in the issue report.'
+				)
 			);
 		}
 		if (result === "bad") {
@@ -273,19 +285,19 @@ class TroubleshootIssueService
 				localize(
 					"issue is in core",
 					"Issue troubleshooting has identified that the issue is with {0}.",
-					this.productService.nameLong,
-				),
+					this.productService.nameLong
+				)
 			);
 		}
 	}
 
 	private async reproduceIssueWithExtensionsBisect(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<void> {
 		await this.userDataProfileManagementService.switchProfile(profile);
 		const extensions = (
 			await this.extensionManagementService.getInstalled(
-				ExtensionType.User,
+				ExtensionType.User
 			)
 		).filter((ext) => this.extensionEnablementService.isEnabled(ext));
 		await this.extensionBisectService.start(extensions);
@@ -310,7 +322,7 @@ class TroubleshootIssueService
 				Severity.Info,
 				message,
 				[goodPrompt, badPrompt, stop],
-				{ sticky: true, priority: NotificationPriority.URGENT },
+				{ sticky: true, priority: NotificationPriority.URGENT }
 			);
 		});
 	}
@@ -324,12 +336,12 @@ class TroubleshootIssueService
 					type: Severity.Info,
 					message: localize(
 						"troubleshoot issue",
-						"Troubleshoot Issue",
+						"Troubleshoot Issue"
 					),
 					detail: localize(
 						"use insiders",
 						"This likely means that the issue has been addressed already and will be available in an upcoming release. You can safely use {0} insiders until the new stable version is available.",
-						this.productService.nameLong,
+						this.productService.nameLong
 					),
 					custom: true,
 				});
@@ -362,13 +374,13 @@ class TroubleshootIssueService
 			primaryButton: localize(
 				"download insiders",
 				"Download {0} Insiders",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			cancelButton: localize("report anyway", "Report Issue Anyway"),
 			detail: localize(
 				"ask to download insiders",
 				"Please try to download and reproduce the issue in {0} insiders.",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			custom: {
 				disableCloseAction: true,
@@ -380,7 +392,7 @@ class TroubleshootIssueService
 		}
 
 		const opened = await this.openerService.open(
-			URI.parse("https://aka.ms/vscode-insiders"),
+			URI.parse("https://aka.ms/vscode-insiders")
 		);
 		if (!opened) {
 			return undefined;
@@ -406,7 +418,7 @@ class TroubleshootIssueService
 			detail: localize(
 				"ask to reproduce issue",
 				"Please try to reproduce the issue in {0} insiders and confirm if the issue exists there.",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			custom: {
 				disableCloseAction: true,
@@ -421,7 +433,7 @@ class TroubleshootIssueService
 		if (this._state === undefined) {
 			const raw = this.storageService.get(
 				TroubleshootIssueService.storageKey,
-				StorageScope.PROFILE,
+				StorageScope.PROFILE
 			);
 			this._state = TroubleShootState.fromJSON(raw);
 		}
@@ -439,12 +451,12 @@ class TroubleshootIssueService
 				TroubleshootIssueService.storageKey,
 				JSON.stringify(state),
 				StorageScope.PROFILE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		} else {
 			this.storageService.remove(
 				TroubleshootIssueService.storageKey,
-				StorageScope.PROFILE,
+				StorageScope.PROFILE
 			);
 		}
 	}
@@ -453,22 +465,30 @@ class TroubleshootIssueService
 class IssueTroubleshootUi extends Disposable {
 	static ctxIsTroubleshootActive = new RawContextKey<boolean>(
 		"isIssueTroubleshootActive",
-		false,
+		false
 	);
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ITroubleshootIssueService private readonly troubleshootIssueService: ITroubleshootIssueService,
-		@IStorageService storageService: IStorageService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ITroubleshootIssueService
+		private readonly troubleshootIssueService: ITroubleshootIssueService,
+		@IStorageService storageService: IStorageService
 	) {
 		super();
 		this.updateContext();
 		if (troubleshootIssueService.isActive()) {
 			troubleshootIssueService.resume();
 		}
-		this._register(storageService.onDidChangeValue(StorageScope.PROFILE, TroubleshootIssueService.storageKey, this._register(new DisposableStore()))(() => {
-			this.updateContext();
-		}));
+		this._register(
+			storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				TroubleshootIssueService.storageKey,
+				this._register(new DisposableStore())
+			)(() => {
+				this.updateContext();
+			})
+		);
 	}
 
 	private updateContext(): void {
@@ -479,7 +499,7 @@ class IssueTroubleshootUi extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(IssueTroubleshootUi, LifecyclePhase.Restored);
 
 registerAction2(
@@ -490,7 +510,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"troubleshootIssue",
-						"Troubleshoot Issue...",
+						"Troubleshoot Issue..."
 					),
 					original: "Troubleshoot Issue...",
 				},
@@ -499,14 +519,14 @@ registerAction2(
 				precondition: ContextKeyExpr.and(
 					IssueTroubleshootUi.ctxIsTroubleshootActive.negate(),
 					RemoteNameContext.isEqualTo(""),
-					IsWebContext.negate(),
+					IsWebContext.negate()
 				),
 			});
 		}
 		run(accessor: ServicesAccessor): Promise<void> {
 			return accessor.get(ITroubleshootIssueService).start();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -527,11 +547,11 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			return accessor.get(ITroubleshootIssueService).stop();
 		}
-	},
+	}
 );
 
 registerSingleton(
 	ITroubleshootIssueService,
 	TroubleshootIssueService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -27,7 +27,7 @@ let client: BaseLanguageClient | undefined;
 export async function activate(context: ExtensionContext) {
 	const serverMain = Uri.joinPath(
 		context.extensionUri,
-		"server/dist/browser/jsonServerMain.js",
+		"server/dist/browser/jsonServerMain.js"
 	);
 	try {
 		const worker = new Worker(serverMain.toString());
@@ -36,7 +36,7 @@ export async function activate(context: ExtensionContext) {
 		const newLanguageClient: LanguageClientConstructor = (
 			id: string,
 			name: string,
-			clientOptions: LanguageClientOptions,
+			clientOptions: LanguageClientOptions
 		) => {
 			return new LanguageClient(id, name, clientOptions, worker);
 		};
@@ -44,7 +44,7 @@ export async function activate(context: ExtensionContext) {
 		const schemaRequests: SchemaRequestService = {
 			getContent(uri: string) {
 				return fetch(uri, { mode: "cors" }).then(function (
-					response: any,
+					response: any
 				) {
 					return response.text();
 				});

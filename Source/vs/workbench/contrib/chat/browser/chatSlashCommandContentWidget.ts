@@ -112,8 +112,8 @@ export class SlashCommandContentWidget
 			localize(
 				"exited slash command mode",
 				"Exited {0} mode",
-				this._lastSlashCommandText,
-			),
+				this._lastSlashCommandText
+			)
 		);
 	}
 }

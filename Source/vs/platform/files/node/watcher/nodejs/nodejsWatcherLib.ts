@@ -55,8 +55,8 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 				throttleDelay: 200, // ...resting for 200ms until we process events again...
 				maxBufferedWork: 10000, // ...but never buffering more than 10000 events in memory
 			},
-			(events) => this.onDidFilesChange(events),
-		),
+			(events) => this.onDidFilesChange(events)
+		)
 	);
 
 	// Aggregate file changes over FILE_CHANGES_HANDLER_DELAY
@@ -64,13 +64,13 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 	private readonly fileChangesAggregator = this._register(
 		new RunOnceWorker<IFileChange>(
 			(events) => this.handleFileChanges(events),
-			NodeJSFileWatcherLibrary.FILE_CHANGES_HANDLER_DELAY,
-		),
+			NodeJSFileWatcherLibrary.FILE_CHANGES_HANDLER_DELAY
+		)
 	);
 
 	private readonly excludes = parseWatcherPatterns(
 		this.request.path,
-		this.request.excludes,
+		this.request.excludes
 	);
 	private readonly includes = this.request.includes
 		? parseWatcherPatterns(this.request.path, this.request.includes)
@@ -84,7 +84,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		private request: INonRecursiveWatchRequest,
 		private onDidFilesChange: (changes: IFileChange[]) => void,
 		private onLogMessage?: (msg: ILogMessage) => void,
-		private verboseLogging?: boolean,
+		private verboseLogging?: boolean
 	) {
 		super();
 	}
@@ -110,7 +110,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 	}
 
 	private async normalizePath(
-		request: INonRecursiveWatchRequest,
+		request: INonRecursiveWatchRequest
 	): Promise<string> {
 		let realPath = request.path;
 
@@ -127,7 +127,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			// Correct watch path as needed
 			if (request.path !== realPath) {
 				this.trace(
-					`correcting a path to watch that seems to be a symbolic link or wrong casing (original: ${request.path}, real: ${realPath})`,
+					`correcting a path to watch that seems to be a symbolic link or wrong casing (original: ${request.path}, real: ${realPath})`
 				);
 			}
 		} catch (error) {
@@ -139,7 +139,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 	private async doWatch(
 		path: string,
-		isDirectory: boolean,
+		isDirectory: boolean
 	): Promise<IDisposable> {
 		// macOS: watching samba shares can crash VSCode so we do
 		// a simple check for the file path pointing to /Volumes
@@ -148,7 +148,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		// fixed or mitigated upstream.
 		if (isMacintosh && isEqualOrParent(path, "/Volumes/", true)) {
 			this.error(
-				`Refusing to watch ${path} for changes using fs.watch() for possibly being a network share where watching is unreliable and unstable.`,
+				`Refusing to watch ${path} for changes using fs.watch() for possibly being a network share where watching is unreliable and unstable.`
 			);
 
 			return Disposable.None;
@@ -168,7 +168,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 				toDisposable(() => {
 					watcher.removeAllListeners();
 					watcher.close();
-				}),
+				})
 			);
 
 			this.trace(`Started watching: '${path}'`);
@@ -192,12 +192,12 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						disposable.dispose();
 					}
 					mapPathToStatDisposable.clear();
-				}),
+				})
 			);
 
 			watcher.on("error", (code: number, signal: string) => {
 				this.error(
-					`Failed to watch ${path} for changes using fs.watch() (${code}, ${signal})`,
+					`Failed to watch ${path} for changes using fs.watch() (${code}, ${signal})`
 				);
 
 				// The watcher is no longer functional reliably
@@ -270,7 +270,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 								!(await Promises.exists(path))
 							) {
 								this.warn(
-									"Watcher shutdown because watched path got deleted",
+									"Watcher shutdown because watched path got deleted"
 								);
 
 								// The watcher is no longer functional reliably
@@ -285,7 +285,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							// because otherwise we would wrongly assume a file exists
 							// when it was renamed to same name but different case.
 							const fileExists = await this.existsChildStrictCase(
-								join(path, changedFileName),
+								join(path, changedFileName)
 							);
 
 							if (cts.token.isCancellationRequested) {
@@ -311,7 +311,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							this.onFileChange({
 								resource: joinPath(
 									requestResource,
-									changedFileName,
+									changedFileName
 								),
 								type,
 								cId: this.request.correlationId,
@@ -320,7 +320,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 						mapPathToStatDisposable.set(
 							changedFileName,
-							toDisposable(() => clearTimeout(timeoutHandle)),
+							toDisposable(() => clearTimeout(timeoutHandle))
 						);
 					}
 
@@ -339,7 +339,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						this.onFileChange({
 							resource: joinPath(
 								requestResource,
-								changedFileName,
+								changedFileName
 							),
 							type,
 							cId: this.request.correlationId,
@@ -386,11 +386,11 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 										type: FileChangeType.UPDATED,
 										cId: this.request.correlationId,
 									},
-									true /* skip excludes/includes (file is explicitly watched) */,
+									true /* skip excludes/includes (file is explicitly watched) */
 								);
 
 								disposables.add(
-									await this.doWatch(path, false),
+									await this.doWatch(path, false)
 								);
 							}
 
@@ -402,7 +402,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 										type: FileChangeType.DELETED,
 										cId: this.request.correlationId,
 									},
-									true /* skip excludes/includes (file is explicitly watched) */,
+									true /* skip excludes/includes (file is explicitly watched) */
 								);
 
 								// Important to flush the event delivery
@@ -418,7 +418,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						// and wire in a new disposable that tracks our timeout that is installed
 						disposables.clear();
 						disposables.add(
-							toDisposable(() => clearTimeout(timeoutHandle)),
+							toDisposable(() => clearTimeout(timeoutHandle))
 						);
 					}
 
@@ -430,7 +430,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 								type: FileChangeType.UPDATED,
 								cId: this.request.correlationId,
 							},
-							true /* skip excludes/includes (file is explicitly watched) */,
+							true /* skip excludes/includes (file is explicitly watched) */
 						);
 					}
 				}
@@ -441,7 +441,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 				!cts.token.isCancellationRequested
 			) {
 				this.error(
-					`Failed to watch ${path} for changes using fs.watch() (${error.toString()})`,
+					`Failed to watch ${path} for changes using fs.watch() (${error.toString()})`
 				);
 			}
 		}
@@ -454,7 +454,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 	private onFileChange(
 		event: IFileChange,
-		skipIncludeExcludeChecks = false,
+		skipIncludeExcludeChecks = false
 	): void {
 		if (this.cts.token.isCancellationRequested) {
 			return;
@@ -467,9 +467,9 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 					event.type === FileChangeType.ADDED
 						? "[ADDED]"
 						: event.type === FileChangeType.DELETED
-						  ? "[DELETED]"
-						  : "[CHANGED]"
-				} ${event.resource.fsPath}`,
+							? "[DELETED]"
+							: "[CHANGED]"
+				} ${event.resource.fsPath}`
 			);
 		}
 
@@ -489,7 +489,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		) {
 			if (this.verboseLogging) {
 				this.trace(
-					` >> ignored (not included) ${event.resource.fsPath}`,
+					` >> ignored (not included) ${event.resource.fsPath}`
 				);
 			}
 		} else {
@@ -509,9 +509,9 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							event.type === FileChangeType.ADDED
 								? "[ADDED]"
 								: event.type === FileChangeType.DELETED
-								  ? "[DELETED]"
-								  : "[CHANGED]"
-						} ${event.resource.fsPath}`,
+									? "[DELETED]"
+									: "[CHANGED]"
+						} ${event.resource.fsPath}`
 					);
 				}
 			}
@@ -523,12 +523,12 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			// Logging
 			if (!worked) {
 				this.warn(
-					`started ignoring events due to too many file change events at once (incoming: ${coalescedFileChanges.length}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`,
+					`started ignoring events due to too many file change events at once (incoming: ${coalescedFileChanges.length}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`
 				);
 			} else {
 				if (this.throttledFileChangesEmitter.pending > 0) {
 					this.trace(
-						`started throttling events due to large amount of file change events at once (pending: ${this.throttledFileChangesEmitter.pending}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`,
+						`started throttling events due to large amount of file change events at once (pending: ${this.throttledFileChangesEmitter.pending}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`
 					);
 				}
 			}
@@ -601,7 +601,7 @@ export async function watchFileContents(
 	onData: (chunk: Uint8Array) => void,
 	onReady: () => void,
 	token: CancellationToken,
-	bufferSize = 512,
+	bufferSize = 512
 ): Promise<void> {
 	const handle = await Promises.open(path, "r");
 	const buffer = Buffer.allocUnsafe(bufferSize);
@@ -635,7 +635,7 @@ export async function watchFileContents(
 								buffer,
 								0,
 								bufferSize,
-								null,
+								null
 							);
 							if (
 								!bytesRead ||

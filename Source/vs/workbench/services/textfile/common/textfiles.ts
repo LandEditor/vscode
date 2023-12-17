@@ -82,7 +82,7 @@ export interface ITextFileService extends IDisposable {
 	 */
 	save(
 		resource: URI,
-		options?: ITextFileSaveOptions,
+		options?: ITextFileSaveOptions
 	): Promise<URI | undefined>;
 
 	/**
@@ -96,7 +96,7 @@ export interface ITextFileService extends IDisposable {
 	saveAs(
 		resource: URI,
 		targetResource?: URI,
-		options?: ITextFileSaveAsOptions,
+		options?: ITextFileSaveAsOptions
 	): Promise<URI | undefined>;
 
 	/**
@@ -112,7 +112,7 @@ export interface ITextFileService extends IDisposable {
 	 */
 	read(
 		resource: URI,
-		options?: IReadTextFileOptions,
+		options?: IReadTextFileOptions
 	): Promise<ITextFileContent>;
 
 	/**
@@ -120,7 +120,7 @@ export interface ITextFileService extends IDisposable {
 	 */
 	readStream(
 		resource: URI,
-		options?: IReadTextFileOptions,
+		options?: IReadTextFileOptions
 	): Promise<ITextFileStreamContent>;
 
 	/**
@@ -129,7 +129,7 @@ export interface ITextFileService extends IDisposable {
 	write(
 		resource: URI,
 		value: string | ITextSnapshot,
-		options?: IWriteTextFileOptions,
+		options?: IWriteTextFileOptions
 	): Promise<IFileStatWithMetadata>;
 
 	/**
@@ -142,7 +142,7 @@ export interface ITextFileService extends IDisposable {
 			value?: string | ITextSnapshot;
 			options?: { overwrite?: boolean };
 		}[],
-		undoInfo?: IFileOperationUndoRedoInfo,
+		undoInfo?: IFileOperationUndoRedoInfo
 	): Promise<readonly IFileStatWithMetadata[]>;
 
 	/**
@@ -153,27 +153,27 @@ export interface ITextFileService extends IDisposable {
 	getEncodedReadable(
 		resource: URI,
 		value: ITextSnapshot,
-		options?: IWriteTextFileOptions,
+		options?: IWriteTextFileOptions
 	): Promise<VSBufferReadable>;
 	getEncodedReadable(
 		resource: URI,
 		value: string,
-		options?: IWriteTextFileOptions,
+		options?: IWriteTextFileOptions
 	): Promise<VSBuffer>;
 	getEncodedReadable(
 		resource: URI,
 		value?: ITextSnapshot,
-		options?: IWriteTextFileOptions,
+		options?: IWriteTextFileOptions
 	): Promise<VSBufferReadable | undefined>;
 	getEncodedReadable(
 		resource: URI,
 		value?: string,
-		options?: IWriteTextFileOptions,
+		options?: IWriteTextFileOptions
 	): Promise<VSBuffer | undefined>;
 	getEncodedReadable(
 		resource: URI,
 		value?: string | ITextSnapshot,
-		options?: IWriteTextFileOptions,
+		options?: IWriteTextFileOptions
 	): Promise<VSBuffer | VSBufferReadable | undefined>;
 
 	/**
@@ -185,7 +185,7 @@ export interface ITextFileService extends IDisposable {
 	getDecodedStream(
 		resource: URI,
 		value: VSBufferReadableStream,
-		options?: IReadTextFileEncodingOptions,
+		options?: IReadTextFileEncodingOptions
 	): Promise<ReadableStream<string>>;
 }
 
@@ -231,12 +231,12 @@ export const enum TextFileOperationResult {
 
 export class TextFileOperationError extends FileOperationError {
 	static isTextFileOperationError(
-		obj: unknown,
+		obj: unknown
 	): obj is TextFileOperationError {
 		return (
 			obj instanceof Error &&
 			!isUndefinedOrNull(
-				(obj as TextFileOperationError).textFileOperationResult,
+				(obj as TextFileOperationError).textFileOperationResult
 			)
 		);
 	}
@@ -246,7 +246,7 @@ export class TextFileOperationError extends FileOperationError {
 	constructor(
 		message: string,
 		public textFileOperationResult: TextFileOperationResult,
-		options?: IReadTextFileOptions & IWriteTextFileOptions,
+		options?: IReadTextFileOptions & IWriteTextFileOptions
 	) {
 		super(message, FileOperationResult.FILE_OTHER_ERROR);
 
@@ -258,7 +258,7 @@ export interface IResourceEncodings {
 	getPreferredReadEncoding(resource: URI): Promise<IResourceEncoding>;
 	getPreferredWriteEncoding(
 		resource: URI,
-		preferredEncoding?: string,
+		preferredEncoding?: string
 	): Promise<IResourceEncoding>;
 }
 
@@ -394,7 +394,7 @@ export interface ITextFileSaveParticipant {
 		model: ITextFileEditorModel,
 		context: { reason: SaveReason },
 		progress: IProgress<IProgressStep>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void>;
 }
 
@@ -431,7 +431,7 @@ export interface ITextFileEditorModelManager {
 	 */
 	resolve(
 		resource: URI,
-		options?: ITextFileEditorModelResolveOrCreateOptions,
+		options?: ITextFileEditorModelResolveOrCreateOptions
 	): Promise<ITextFileEditorModel>;
 
 	/**
@@ -445,7 +445,7 @@ export interface ITextFileEditorModelManager {
 	runSaveParticipants(
 		model: ITextFileEditorModel,
 		context: { reason: SaveReason },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void>;
 
 	/**
@@ -584,7 +584,7 @@ export interface ITextFileEditorModel
 }
 
 export function isTextFileEditorModel(
-	model: ITextEditorModel,
+	model: ITextEditorModel
 ): model is ITextFileEditorModel {
 	const candidate = model as ITextFileEditorModel;
 
@@ -594,7 +594,7 @@ export function isTextFileEditorModel(
 		candidate.save,
 		candidate.revert,
 		candidate.isDirty,
-		candidate.getLanguageId,
+		candidate.getLanguageId
 	);
 }
 
@@ -634,13 +634,13 @@ export function stringToSnapshot(value: string): ITextSnapshot {
 export function toBufferOrReadable(value: string): VSBuffer;
 export function toBufferOrReadable(value: ITextSnapshot): VSBufferReadable;
 export function toBufferOrReadable(
-	value: string | ITextSnapshot,
+	value: string | ITextSnapshot
 ): VSBuffer | VSBufferReadable;
 export function toBufferOrReadable(
-	value: string | ITextSnapshot | undefined,
+	value: string | ITextSnapshot | undefined
 ): VSBuffer | VSBufferReadable | undefined;
 export function toBufferOrReadable(
-	value: string | ITextSnapshot | undefined,
+	value: string | ITextSnapshot | undefined
 ): VSBuffer | VSBufferReadable | undefined {
 	if (typeof value === "undefined") {
 		return undefined;

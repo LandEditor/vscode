@@ -49,15 +49,22 @@ export class NativeAccessibilityService
 	private shouldAlwaysUnderlineAccessKeys: boolean | undefined = undefined;
 
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILayoutService _layoutService: ILayoutService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@INativeHostService private readonly nativeHostService: INativeHostService
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService
 	) {
 		super(contextKeyService, _layoutService, configurationService);
-		this.setAccessibilitySupport(environmentService.window.accessibilitySupport ? AccessibilitySupport.Enabled : AccessibilitySupport.Disabled);
+		this.setAccessibilitySupport(
+			environmentService.window.accessibilitySupport
+				? AccessibilitySupport.Enabled
+				: AccessibilitySupport.Disabled
+		);
 	}
 
 	override async alwaysUnderlineAccessKeys(): Promise<boolean> {
@@ -70,7 +77,7 @@ export class NativeAccessibilityService
 				await this.nativeHostService.windowsGetStringRegKey(
 					"HKEY_CURRENT_USER",
 					"Control Panel\\Accessibility\\Keyboard Preference",
-					"On",
+					"On"
 				);
 			this.shouldAlwaysUnderlineAccessKeys =
 				windowsKeyboardAccessibility === "1";
@@ -80,7 +87,7 @@ export class NativeAccessibilityService
 	}
 
 	override setAccessibilitySupport(
-		accessibilitySupport: AccessibilitySupport,
+		accessibilitySupport: AccessibilitySupport
 	): void {
 		super.setAccessibilitySupport(accessibilitySupport);
 
@@ -100,7 +107,7 @@ export class NativeAccessibilityService
 registerSingleton(
 	IAccessibilityService,
 	NativeAccessibilityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // On linux we do not automatically detect that a screen reader is detected, thus we have to implicitly notify the renderer to enable accessibility when user configures it in settings
@@ -108,29 +115,30 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
 	constructor(
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService
 	) {
 		const forceRendererAccessibility = () => {
 			if (accessibilityService.isScreenReaderOptimized()) {
 				jsonEditingService.write(
 					environmentService.argvResource,
 					[{ path: ["force-renderer-accessibility"], value: true }],
-					true,
+					true
 				);
 			}
 		};
 		forceRendererAccessibility();
 		accessibilityService.onDidChangeScreenReaderOptimized(
-			forceRendererAccessibility,
+			forceRendererAccessibility
 		);
 	}
 }
 
 if (isLinux) {
 	Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	).registerWorkbenchContribution(
 		LinuxAccessibilityContribution,
-		LifecyclePhase.Ready,
+		LifecyclePhase.Ready
 	);
 }

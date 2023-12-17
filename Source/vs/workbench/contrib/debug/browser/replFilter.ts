@@ -49,7 +49,7 @@ export class ReplFilter implements ITreeFilter<IReplElement> {
 
 	filter(
 		element: IReplElement,
-		parentVisibility: TreeVisibility,
+		parentVisibility: TreeVisibility
 	): TreeFilterResult<void> {
 		if (
 			element instanceof ReplEvaluationInput ||
@@ -80,7 +80,7 @@ export class ReplFilter implements ITreeFilter<IReplElement> {
 		return includeQueryPresent
 			? includeQueryMatched
 			: typeof parentVisibility !== "undefined"
-			  ? parentVisibility
-			  : TreeVisibility.Visible;
+				? parentVisibility
+				: TreeVisibility.Visible;
 	}
 }

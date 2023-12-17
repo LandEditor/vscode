@@ -77,27 +77,56 @@ export class CodeLensContribution implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService debounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		debounceService: ILanguageFeatureDebounceService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@ICodeLensCache private readonly _codeLensCache: ICodeLensCache
 	) {
-		this._provideCodeLensDebounce = debounceService.for(_languageFeaturesService.codeLensProvider, 'CodeLensProvide', { min: 250 });
-		this._resolveCodeLensesDebounce = debounceService.for(_languageFeaturesService.codeLensProvider, 'CodeLensResolve', { min: 250, salt: 'resolve' });
-		this._resolveCodeLensesScheduler = new RunOnceScheduler(() => this._resolveCodeLensesInViewport(), this._resolveCodeLensesDebounce.default());
+		this._provideCodeLensDebounce = debounceService.for(
+			_languageFeaturesService.codeLensProvider,
+			"CodeLensProvide",
+			{ min: 250 }
+		);
+		this._resolveCodeLensesDebounce = debounceService.for(
+			_languageFeaturesService.codeLensProvider,
+			"CodeLensResolve",
+			{ min: 250, salt: "resolve" }
+		);
+		this._resolveCodeLensesScheduler = new RunOnceScheduler(
+			() => this._resolveCodeLensesInViewport(),
+			this._resolveCodeLensesDebounce.default()
+		);
 
-		this._disposables.add(this._editor.onDidChangeModel(() => this._onModelChange()));
-		this._disposables.add(this._editor.onDidChangeModelLanguage(() => this._onModelChange()));
-		this._disposables.add(this._editor.onDidChangeConfiguration((e) => {
-			if (e.hasChanged(EditorOption.fontInfo) || e.hasChanged(EditorOption.codeLensFontSize) || e.hasChanged(EditorOption.codeLensFontFamily)) {
-				this._updateLensStyle();
-			}
-			if (e.hasChanged(EditorOption.codeLens)) {
-				this._onModelChange();
-			}
-		}));
-		this._disposables.add(_languageFeaturesService.codeLensProvider.onDidChange(this._onModelChange, this));
+		this._disposables.add(
+			this._editor.onDidChangeModel(() => this._onModelChange())
+		);
+		this._disposables.add(
+			this._editor.onDidChangeModelLanguage(() => this._onModelChange())
+		);
+		this._disposables.add(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (
+					e.hasChanged(EditorOption.fontInfo) ||
+					e.hasChanged(EditorOption.codeLensFontSize) ||
+					e.hasChanged(EditorOption.codeLensFontFamily)
+				) {
+					this._updateLensStyle();
+				}
+				if (e.hasChanged(EditorOption.codeLens)) {
+					this._onModelChange();
+				}
+			})
+		);
+		this._disposables.add(
+			_languageFeaturesService.codeLensProvider.onDidChange(
+				this._onModelChange,
+				this
+			)
+		);
 		this._onModelChange();
 
 		this._updateLensStyle();
@@ -114,7 +143,7 @@ export class CodeLensContribution implements IEditorContribution {
 		const lineHeightFactor = Math.max(
 			1.3,
 			this._editor.getOption(EditorOption.lineHeight) /
-				this._editor.getOption(EditorOption.fontSize),
+				this._editor.getOption(EditorOption.fontSize)
 		);
 		let fontSize = this._editor.getOption(EditorOption.codeLensFontSize);
 		if (!fontSize || fontSize < 5) {
@@ -130,7 +159,7 @@ export class CodeLensContribution implements IEditorContribution {
 	private _updateLensStyle(): void {
 		const { codeLensHeight, fontSize } = this._getLayoutInfo();
 		const fontFamily = this._editor.getOption(
-			EditorOption.codeLensFontFamily,
+			EditorOption.codeLensFontFamily
 		);
 		const editorFontInfo = this._editor.getOption(EditorOption.fontInfo);
 
@@ -138,19 +167,19 @@ export class CodeLensContribution implements IEditorContribution {
 
 		style.setProperty(
 			"--vscode-editorCodeLens-lineHeight",
-			`${codeLensHeight}px`,
+			`${codeLensHeight}px`
 		);
 		style.setProperty("--vscode-editorCodeLens-fontSize", `${fontSize}px`);
 		style.setProperty(
 			"--vscode-editorCodeLens-fontFeatureSettings",
-			editorFontInfo.fontFeatureSettings,
+			editorFontInfo.fontFeatureSettings
 		);
 
 		if (fontFamily) {
 			style.setProperty("--vscode-editorCodeLens-fontFamily", fontFamily);
 			style.setProperty(
 				"--vscode-editorCodeLens-fontFamilyDefault",
-				EDITOR_FONT_DEFAULTS.fontFamily,
+				EDITOR_FONT_DEFAULTS.fontFamily
 			);
 		}
 
@@ -205,18 +234,18 @@ export class CodeLensContribution implements IEditorContribution {
 						}
 					},
 					30 * 1000,
-					this._localToDispose,
+					this._localToDispose
 				);
 			}
 			return;
 		}
 
 		for (const provider of this._languageFeaturesService.codeLensProvider.all(
-			model,
+			model
 		)) {
 			if (typeof provider.onDidChange === "function") {
 				const registration = provider.onDidChange(() =>
-					scheduler.schedule(),
+					scheduler.schedule()
 				);
 				this._localToDispose.add(registration);
 			}
@@ -230,8 +259,8 @@ export class CodeLensContribution implements IEditorContribution {
 				getCodeLensModel(
 					this._languageFeaturesService.codeLensProvider,
 					model,
-					token,
-				),
+					token
+				)
 			);
 
 			this._getCodeLensModelPromise.then((result) => {
@@ -246,7 +275,7 @@ export class CodeLensContribution implements IEditorContribution {
 				// update moving average
 				const newDelay = this._provideCodeLensDebounce.update(
 					model,
-					Date.now() - t1,
+					Date.now() - t1
 				);
 				scheduler.delay = newDelay;
 
@@ -259,7 +288,7 @@ export class CodeLensContribution implements IEditorContribution {
 
 		this._localToDispose.add(scheduler);
 		this._localToDispose.add(
-			toDisposable(() => this._resolveCodeLensesScheduler.cancel()),
+			toDisposable(() => this._resolveCodeLensesScheduler.cancel())
 		);
 		this._localToDispose.add(
 			this._editor.onDidChangeModelContent(() => {
@@ -298,41 +327,41 @@ export class CodeLensContribution implements IEditorContribution {
 				this._resolveCodeLensesScheduler.cancel();
 				this._resolveCodeLensesPromise?.cancel();
 				this._resolveCodeLensesPromise = undefined;
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onDidFocusEditorWidget(() => {
 				scheduler.schedule();
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onDidBlurEditorText(() => {
 				scheduler.cancel();
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onDidScrollChange((e) => {
 				if (e.scrollTopChanged && this._lenses.length > 0) {
 					this._resolveCodeLensesInViewportSoon();
 				}
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onDidLayoutChange(() => {
 				this._resolveCodeLensesInViewportSoon();
-			}),
+			})
 		);
 		this._localToDispose.add(
 			toDisposable(() => {
 				if (this._editor.getModel()) {
 					const scrollState = StableEditorScrollState.capture(
-						this._editor,
+						this._editor
 					);
 					this._editor.changeDecorations((decorationsAccessor) => {
 						this._editor.changeViewZones((viewZonesAccessor) => {
 							this._disposeAllLenses(
 								decorationsAccessor,
-								viewZonesAccessor,
+								viewZonesAccessor
 							);
 						});
 					});
@@ -341,7 +370,7 @@ export class CodeLensContribution implements IEditorContribution {
 					// No accessors available
 					this._disposeAllLenses(undefined, undefined);
 				}
-			}),
+			})
 		);
 		this._localToDispose.add(
 			this._editor.onMouseDown((e) => {
@@ -355,29 +384,29 @@ export class CodeLensContribution implements IEditorContribution {
 				if (target?.tagName === "A") {
 					for (const lens of this._lenses) {
 						const command = lens.getCommand(
-							target as HTMLLinkElement,
+							target as HTMLLinkElement
 						);
 						if (command) {
 							this._commandService
 								.executeCommand(
 									command.id,
-									...(command.arguments || []),
+									...(command.arguments || [])
 								)
 								.catch((err) =>
-									this._notificationService.error(err),
+									this._notificationService.error(err)
 								);
 							break;
 						}
 					}
 				}
-			}),
+			})
 		);
 		scheduler.schedule();
 	}
 
 	private _disposeAllLenses(
 		decChangeAccessor: IModelDecorationsChangeAccessor | undefined,
-		viewZoneChangeAccessor: IViewZoneChangeAccessor | undefined,
+		viewZoneChangeAccessor: IViewZoneChangeAccessor | undefined
 	): void {
 		const helper = new CodeLensHelper();
 		for (const lens of this._lenses) {
@@ -443,13 +472,13 @@ export class CodeLensContribution implements IEditorContribution {
 					if (codeLensLineNumber < symbolsLineNumber) {
 						this._lenses[codeLensIndex].dispose(
 							helper,
-							viewZoneAccessor,
+							viewZoneAccessor
 						);
 						this._lenses.splice(codeLensIndex, 1);
 					} else if (codeLensLineNumber === symbolsLineNumber) {
 						this._lenses[codeLensIndex].updateCodeLensSymbols(
 							groups[groupsIndex],
-							helper,
+							helper
 						);
 						groupsIndex++;
 						codeLensIndex++;
@@ -463,8 +492,8 @@ export class CodeLensContribution implements IEditorContribution {
 								helper,
 								viewZoneAccessor,
 								layoutInfo.codeLensHeight,
-								() => this._resolveCodeLensesInViewportSoon(),
-							),
+								() => this._resolveCodeLensesInViewportSoon()
+							)
 						);
 						codeLensIndex++;
 						groupsIndex++;
@@ -475,7 +504,7 @@ export class CodeLensContribution implements IEditorContribution {
 				while (codeLensIndex < this._lenses.length) {
 					this._lenses[codeLensIndex].dispose(
 						helper,
-						viewZoneAccessor,
+						viewZoneAccessor
 					);
 					this._lenses.splice(codeLensIndex, 1);
 				}
@@ -489,8 +518,8 @@ export class CodeLensContribution implements IEditorContribution {
 							helper,
 							viewZoneAccessor,
 							layoutInfo.codeLensHeight,
-							() => this._resolveCodeLensesInViewportSoon(),
-						),
+							() => this._resolveCodeLensesInViewportSoon()
+						)
 					);
 					groupsIndex++;
 				}
@@ -537,7 +566,7 @@ export class CodeLensContribution implements IEditorContribution {
 		const resolvePromise = createCancelablePromise((token) => {
 			const promises = toResolve.map((request, i) => {
 				const resolvedSymbols = new Array<CodeLens | undefined | null>(
-					request.length,
+					request.length
 				);
 				const promises = request.map((request, i) => {
 					if (
@@ -548,8 +577,8 @@ export class CodeLensContribution implements IEditorContribution {
 							request.provider.resolveCodeLens(
 								model,
 								request.symbol,
-								token,
-							),
+								token
+							)
 						).then((symbol) => {
 							resolvedSymbols[i] = symbol;
 						}, onUnexpectedExternalError);
@@ -578,7 +607,7 @@ export class CodeLensContribution implements IEditorContribution {
 				// update moving average
 				const newDelay = this._resolveCodeLensesDebounce.update(
 					model,
-					Date.now() - t1,
+					Date.now() - t1
 				);
 				this._resolveCodeLensesScheduler.delay = newDelay;
 
@@ -596,7 +625,7 @@ export class CodeLensContribution implements IEditorContribution {
 				if (resolvePromise === this._resolveCodeLensesPromise) {
 					this._resolveCodeLensesPromise = undefined;
 				}
-			},
+			}
 		);
 	}
 
@@ -612,7 +641,7 @@ export class CodeLensContribution implements IEditorContribution {
 registerEditorContribution(
 	CodeLensContribution.ID,
 	CodeLensContribution,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );
 
 registerEditorAction(
@@ -623,7 +652,7 @@ registerEditorAction(
 				precondition: EditorContextKeys.hasCodeLensProvider,
 				label: localize(
 					"showLensOnLine",
-					"Show CodeLens Commands For Current Line",
+					"Show CodeLens Commands For Current Line"
 				),
 				alias: "Show CodeLens Commands For Current Line",
 			});
@@ -631,7 +660,7 @@ registerEditorAction(
 
 		async run(
 			accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			if (!editor.hasModel()) {
 				return;
@@ -644,7 +673,7 @@ registerEditorAction(
 			const lineNumber = editor.getSelection().positionLineNumber;
 			const codelensController =
 				editor.getContribution<CodeLensContribution>(
-					CodeLensContribution.ID,
+					CodeLensContribution.ID
 				);
 			if (!codelensController) {
 				return;
@@ -693,7 +722,7 @@ registerEditorAction(
 				const newLens = newModel?.lenses.find(
 					(lens) =>
 						lens.symbol.range.startLineNumber === lineNumber &&
-						lens.symbol.command?.title === command.title,
+						lens.symbol.command?.title === command.title
 				);
 				if (!newLens || !newLens.symbol.command) {
 					return;
@@ -704,11 +733,11 @@ registerEditorAction(
 			try {
 				await commandService.executeCommand(
 					command.id,
-					...(command.arguments || []),
+					...(command.arguments || [])
 				);
 			} catch (err) {
 				notificationService.error(err);
 			}
 		}
-	},
+	}
 );

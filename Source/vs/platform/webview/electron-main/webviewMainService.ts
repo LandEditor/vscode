@@ -23,12 +23,13 @@ export class WebviewMainService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onFoundInFrame = this._register(
-		new Emitter<FoundInFrameResult>(),
+		new Emitter<FoundInFrameResult>()
 	);
 	public onFoundInFrame = this._onFoundInFrame.event;
 
 	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService
 	) {
 		super();
 		this._register(new WebviewProtocolProvider());
@@ -36,7 +37,7 @@ export class WebviewMainService
 
 	public async setIgnoreMenuShortcuts(
 		id: WebviewWebContentsId | WebviewWindowId,
-		enabled: boolean,
+		enabled: boolean
 	): Promise<void> {
 		let contents: WebContents | undefined;
 
@@ -64,7 +65,7 @@ export class WebviewMainService
 		windowId: WebviewWindowId,
 		frameName: string,
 		text: string,
-		options: { findNext?: boolean; forward?: boolean },
+		options: { findNext?: boolean; forward?: boolean }
 	): Promise<void> {
 		const initialFrame = this.getFrameByName(windowId, frameName);
 
@@ -73,7 +74,7 @@ export class WebviewMainService
 			on(event: "found-in-frame", listener: Function): WebFrameMain;
 			removeListener(
 				event: "found-in-frame",
-				listener: Function,
+				listener: Function
 			): WebFrameMain;
 		};
 		const frame = initialFrame as unknown as WebFrameMainWithFindSupport;
@@ -84,7 +85,7 @@ export class WebviewMainService
 			});
 			const foundInFrameHandler = (
 				_: unknown,
-				result: FoundInFrameResult,
+				result: FoundInFrameResult
 			) => {
 				if (result.finalUpdate) {
 					this._onFoundInFrame.fire(result);
@@ -98,27 +99,27 @@ export class WebviewMainService
 	public async stopFindInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,
-		options: { keepSelection?: boolean },
+		options: { keepSelection?: boolean }
 	): Promise<void> {
 		const initialFrame = this.getFrameByName(windowId, frameName);
 
 		type WebFrameMainWithFindSupport = WebFrameMain & {
 			stopFindInFrame?(
-				stopOption: "keepSelection" | "clearSelection",
+				stopOption: "keepSelection" | "clearSelection"
 			): void;
 		};
 
 		const frame = initialFrame as unknown as WebFrameMainWithFindSupport;
 		if (typeof frame.stopFindInFrame === "function") {
 			frame.stopFindInFrame(
-				options.keepSelection ? "keepSelection" : "clearSelection",
+				options.keepSelection ? "keepSelection" : "clearSelection"
 			);
 		}
 	}
 
 	private getFrameByName(
 		windowId: WebviewWindowId,
-		frameName: string,
+		frameName: string
 	): WebFrameMain {
 		const window = this.windowsMainService.getWindowById(windowId.windowId);
 		if (!window?.win) {
@@ -127,7 +128,7 @@ export class WebviewMainService
 		const frame = window.win.webContents.mainFrame.framesInSubtree.find(
 			(frame) => {
 				return frame.name === frameName;
-			},
+			}
 		);
 		if (!frame) {
 			throw new Error(`Unknown frame: ${frameName}`);

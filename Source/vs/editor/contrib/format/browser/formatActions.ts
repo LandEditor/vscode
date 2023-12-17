@@ -59,18 +59,30 @@ export class FormatOnType implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IEditorWorkerService private readonly _workerService: IEditorWorkerService,
-		@IAccessibleNotificationService private readonly _accessibleNotificationService: IAccessibleNotificationService
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IEditorWorkerService
+		private readonly _workerService: IEditorWorkerService,
+		@IAccessibleNotificationService
+		private readonly _accessibleNotificationService: IAccessibleNotificationService
 	) {
-		this._disposables.add(_languageFeaturesService.onTypeFormattingEditProvider.onDidChange(this._update, this));
+		this._disposables.add(
+			_languageFeaturesService.onTypeFormattingEditProvider.onDidChange(
+				this._update,
+				this
+			)
+		);
 		this._disposables.add(_editor.onDidChangeModel(() => this._update()));
-		this._disposables.add(_editor.onDidChangeModelLanguage(() => this._update()));
-		this._disposables.add(_editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.formatOnType)) {
-				this._update();
-			}
-		}));
+		this._disposables.add(
+			_editor.onDidChangeModelLanguage(() => this._update())
+		);
+		this._disposables.add(
+			_editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.formatOnType)) {
+					this._update();
+				}
+			})
+		);
 		this._update();
 	}
 
@@ -98,7 +110,7 @@ export class FormatOnType implements IEditorContribution {
 		// no support
 		const [support] =
 			this._languageFeaturesService.onTypeFormattingEditProvider.ordered(
-				model,
+				model
 			);
 		if (!support || !support.autoFormatTriggerCharacters) {
 			return;
@@ -115,7 +127,7 @@ export class FormatOnType implements IEditorContribution {
 				if (triggerChars.has(lastCharCode)) {
 					this._trigger(String.fromCharCode(lastCharCode));
 				}
-			}),
+			})
 		);
 	}
 
@@ -165,7 +177,7 @@ export class FormatOnType implements IEditorContribution {
 			position,
 			ch,
 			model.getFormattingOptions(),
-			cts.token,
+			cts.token
 		)
 			.then((edits) => {
 				if (cts.token.isCancellationRequested) {
@@ -174,7 +186,7 @@ export class FormatOnType implements IEditorContribution {
 				if (isNonEmptyArray(edits)) {
 					this._accessibleNotificationService.notify(
 						AccessibleNotificationEvent.Format,
-						false,
+						false
 					);
 					FormattingEdit.execute(this._editor, edits, true);
 				}
@@ -193,13 +205,24 @@ class FormatOnPaste implements IEditorContribution {
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
-		this._callOnDispose.add(editor.onDidChangeConfiguration(() => this._update()));
+		this._callOnDispose.add(
+			editor.onDidChangeConfiguration(() => this._update())
+		);
 		this._callOnDispose.add(editor.onDidChangeModel(() => this._update()));
-		this._callOnDispose.add(editor.onDidChangeModelLanguage(() => this._update()));
-		this._callOnDispose.add(_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(this._update, this));
+		this._callOnDispose.add(
+			editor.onDidChangeModelLanguage(() => this._update())
+		);
+		this._callOnDispose.add(
+			_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(
+				this._update,
+				this
+			)
+		);
 	}
 
 	dispose(): void {
@@ -224,14 +247,14 @@ class FormatOnPaste implements IEditorContribution {
 		// no formatter
 		if (
 			!this._languageFeaturesService.documentRangeFormattingEditProvider.has(
-				this.editor.getModel(),
+				this.editor.getModel()
 			)
 		) {
 			return;
 		}
 
 		this._callOnModel.add(
-			this.editor.onDidPaste(({ range }) => this._trigger(range)),
+			this.editor.onDidPaste(({ range }) => this._trigger(range))
 		);
 	}
 
@@ -250,7 +273,7 @@ class FormatOnPaste implements IEditorContribution {
 				FormattingMode.Silent,
 				Progress.None,
 				CancellationToken.None,
-				false,
+				false
 			)
 			.catch(onUnexpectedError);
 	}
@@ -265,7 +288,7 @@ class FormatDocumentAction extends EditorAction {
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.notInCompositeEditor,
 				EditorContextKeys.writable,
-				EditorContextKeys.hasDocumentFormattingProvider,
+				EditorContextKeys.hasDocumentFormattingProvider
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
@@ -293,9 +316,9 @@ class FormatDocumentAction extends EditorAction {
 					FormattingMode.Explicit,
 					Progress.None,
 					CancellationToken.None,
-					true,
+					true
 				),
-				250,
+				250
 			);
 		}
 	}
@@ -309,13 +332,13 @@ class FormatSelectionAction extends EditorAction {
 			alias: "Format Selection",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				EditorContextKeys.hasDocumentSelectionFormattingProvider,
+				EditorContextKeys.hasDocumentSelectionFormattingProvider
 			),
 			kbOpts: {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyF,
+					KeyMod.CtrlCmd | KeyCode.KeyF
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -340,8 +363,8 @@ class FormatSelectionAction extends EditorAction {
 						range.startLineNumber,
 						1,
 						range.startLineNumber,
-						model.getLineMaxColumn(range.startLineNumber),
-				  )
+						model.getLineMaxColumn(range.startLineNumber)
+					)
 				: range;
 		});
 
@@ -354,9 +377,9 @@ class FormatSelectionAction extends EditorAction {
 				FormattingMode.Explicit,
 				Progress.None,
 				CancellationToken.None,
-				true,
+				true
 			),
-			250,
+			250
 		);
 	}
 }
@@ -364,12 +387,12 @@ class FormatSelectionAction extends EditorAction {
 registerEditorContribution(
 	FormatOnType.ID,
 	FormatOnType,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 registerEditorContribution(
 	FormatOnPaste.ID,
 	FormatOnPaste,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 registerEditorAction(FormatDocumentAction);
 registerEditorAction(FormatSelectionAction);

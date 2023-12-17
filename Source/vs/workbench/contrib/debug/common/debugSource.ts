@@ -23,7 +23,7 @@ import { ILogService } from "vs/platform/log/common/log";
 
 export const UNKNOWN_SOURCE_LABEL = nls.localize(
 	"unknownSource",
-	"Unknown Source",
+	"Unknown Source"
 );
 
 /**
@@ -48,7 +48,7 @@ export class Source {
 		raw_: DebugProtocol.Source | undefined,
 		sessionId: string,
 		uriIdentityService: IUriIdentityService,
-		logService: ILogService,
+		logService: ILogService
 	) {
 		let path: string;
 		if (raw_) {
@@ -66,7 +66,7 @@ export class Source {
 			path,
 			sessionId,
 			uriIdentityService,
-			logService,
+			logService
 		);
 	}
 
@@ -95,7 +95,7 @@ export class Source {
 		selection: IRange,
 		preserveFocus?: boolean,
 		sideBySide?: boolean,
-		pinned?: boolean,
+		pinned?: boolean
 	): Promise<IEditorPane | undefined> {
 		return !this.available
 			? Promise.resolve(undefined)
@@ -112,8 +112,8 @@ export class Source {
 							pinned,
 						},
 					},
-					sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
-			  );
+					sideBySide ? SIDE_GROUP : ACTIVE_GROUP
+				);
 	}
 
 	static getEncodedDebugData(modelUri: URI): {
@@ -168,7 +168,7 @@ export function getUriFromSource(
 	path: string | undefined,
 	sessionId: string,
 	uriIdentityService: IUriIdentityService,
-	logService: ILogService,
+	logService: ILogService
 ): URI {
 	const _getUriFromSource = (path: string | undefined) => {
 		if (
@@ -197,7 +197,7 @@ export function getUriFromSource(
 				scheme: DEBUG_SCHEME,
 				path,
 				query: `session=${sessionId}`,
-			}),
+			})
 		);
 	};
 

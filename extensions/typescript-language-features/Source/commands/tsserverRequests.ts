@@ -13,13 +13,13 @@ export class TSServerRequestCommand implements Command {
 	public readonly id = "typescript.tsserverRequest";
 
 	public constructor(
-		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>,
+		private readonly lazyClientHost: Lazy<TypeScriptServiceClientHost>
 	) {}
 
 	public execute(
 		requestID: keyof TypeScriptRequests,
 		args?: any,
-		config?: any,
+		config?: any
 	) {
 		// A cancellation token cannot be passed through the command infrastructure
 		const token = nulToken;
@@ -47,7 +47,7 @@ export class TSServerRequestCommand implements Command {
 			requestID,
 			args,
 			token,
-			config,
+			config
 		);
 	}
 }

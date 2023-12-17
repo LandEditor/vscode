@@ -47,25 +47,25 @@ export class DiffEditorDecorations extends Disposable {
 			DiffEditorViewModel | undefined
 		>,
 		private readonly _options: DiffEditorOptions,
-		widget: DiffEditorWidget,
+		widget: DiffEditorWidget
 	) {
 		super();
 
 		this._register(
-			new RevertButtonsFeature(_editors, _diffModel, _options, widget),
+			new RevertButtonsFeature(_editors, _diffModel, _options, widget)
 		);
 
 		this._register(
 			applyObservableDecorations(
 				this._editors.original,
-				this._decorations.map((d) => d?.originalDecorations || []),
-			),
+				this._decorations.map((d) => d?.originalDecorations || [])
+			)
 		);
 		this._register(
 			applyObservableDecorations(
 				this._editors.modified,
-				this._decorations.map((d) => d?.modifiedDecorations || []),
-			),
+				this._decorations.map((d) => d?.modifiedDecorations || [])
+			)
 		);
 	}
 
@@ -124,7 +124,7 @@ export class DiffEditorDecorations extends Disposable {
 						// Don't show empty markers outside the line range
 						if (
 							m.lineRangeMapping.original.contains(
-								i.originalRange.startLineNumber,
+								i.originalRange.startLineNumber
 							)
 						) {
 							originalDecorations.push({
@@ -138,7 +138,7 @@ export class DiffEditorDecorations extends Disposable {
 						}
 						if (
 							m.lineRangeMapping.modified.contains(
-								i.modifiedRange.startLineNumber,
+								i.modifiedRange.startLineNumber
 							)
 						) {
 							modifiedDecorations.push({
@@ -232,7 +232,7 @@ class RevertButtonsFeature extends Disposable {
 			DiffEditorViewModel | undefined
 		>,
 		private readonly _options: DiffEditorOptions,
-		private readonly _widget: DiffEditorWidget,
+		private readonly _widget: DiffEditorWidget
 	) {
 		super();
 
@@ -253,13 +253,13 @@ class RevertButtonsFeature extends Disposable {
 			}
 
 			const lineRanges = new LineRangeSet(
-				selections.map((s) => LineRange.fromRangeInclusive(s)),
+				selections.map((s) => LineRange.fromRangeInclusive(s))
 			);
 
 			const mappings = diff.mappings.filter(
 				(m) =>
 					m.lineRangeMapping.innerChanges &&
-					lineRanges.intersects(m.lineRangeMapping.modified),
+					lineRanges.intersects(m.lineRangeMapping.modified)
 			);
 
 			const result = mappings.map((mapping) => ({
@@ -267,8 +267,8 @@ class RevertButtonsFeature extends Disposable {
 				rangeMappings: mapping.lineRangeMapping.innerChanges!.filter(
 					(c) =>
 						selections.some((s) =>
-							Range.areIntersecting(c.modifiedRange, s),
-						),
+							Range.areIntersecting(c.modifiedRange, s)
+						)
 				),
 			}));
 			if (
@@ -310,7 +310,7 @@ class RevertButtonsFeature extends Disposable {
 						selections[selections.length - 1].positionLineNumber,
 						this._widget,
 						selectedDiffs_.flatMap((d) => d.rangeMappings),
-						true,
+						true
 					);
 					this._editors.modified.addGlyphMarginWidget(btn);
 					glyphWidgetsModified.push(btn);
@@ -328,7 +328,7 @@ class RevertButtonsFeature extends Disposable {
 							m.lineRangeMapping.modified.startLineNumber,
 							this._widget,
 							m.lineRangeMapping.innerChanges,
-							false,
+							false
 						);
 						this._editors.modified.addGlyphMarginWidget(btn);
 						glyphWidgetsModified.push(btn);
@@ -340,9 +340,9 @@ class RevertButtonsFeature extends Disposable {
 						for (const w of glyphWidgetsModified) {
 							this._editors.modified.removeGlyphMarginWidget(w);
 						}
-					}),
+					})
 				);
-			}),
+			})
 		);
 	}
 }
@@ -363,14 +363,14 @@ class RevertButton implements IGlyphMarginWidget {
 				? localize("revertSelectedChanges", "Revert Selected Changes")
 				: localize("revertChange", "Revert Change"),
 		},
-		[renderIcon(Codicon.arrowRight)],
+		[renderIcon(Codicon.arrowRight)]
 	).root;
 
 	constructor(
 		private readonly _lineNumber: number,
 		private readonly _widget: DiffEditorWidget,
 		private readonly _diffs: RangeMapping[],
-		private readonly _selection: boolean,
+		private readonly _selection: boolean
 	) {
 		this._domNode.onmousedown = (e) => {
 			// don't prevent context menu from showing up

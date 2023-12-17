@@ -36,14 +36,17 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
 		@IStorageService storageService: IStorageService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService
 	) {
 		super(
 			BinaryFileEditor.ID,
 			{
-				openInternal: (input, options) => this.openInternal(input, options)
+				openInternal: (input, options) =>
+					this.openInternal(input, options),
 			},
 			telemetryService,
 			themeService,
@@ -53,7 +56,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 
 	private async openInternal(
 		input: EditorInput,
-		options: IEditorOptions | undefined,
+		options: IEditorOptions | undefined
 	): Promise<void> {
 		if (input instanceof FileEditorInput && this.group?.activeEditor) {
 			// We operate on the active editor here to support re-opening
@@ -78,7 +81,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 							override: EditorResolution.PICK,
 						},
 					},
-					this.group,
+					this.group
 				);
 
 			if (resolvedEditor === ResolvedStatus.NONE) {
@@ -95,7 +98,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 					? [
 							resolvedEditor.editor.original,
 							resolvedEditor.editor.modified,
-					  ]
+						]
 					: [resolvedEditor.editor]) {
 					if (editor instanceof FileEditorInput) {
 						editor.setForceOpenAsText();

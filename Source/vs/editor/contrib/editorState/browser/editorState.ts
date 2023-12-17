@@ -43,8 +43,8 @@ export class EditorState {
 				? strings.format(
 						"{0}#{1}",
 						model.uri.toString(),
-						model.getVersionId(),
-				  )
+						model.getVersionId()
+					)
 				: null;
 		} else {
 			this.modelVersionId = null;
@@ -124,7 +124,7 @@ export class EditorStateCancellationTokenSource
 		editor: IActiveCodeEditor,
 		flags: CodeEditorStateFlag,
 		range?: IRange,
-		parent?: CancellationToken,
+		parent?: CancellationToken
 	) {
 		super(editor, parent);
 
@@ -134,7 +134,7 @@ export class EditorStateCancellationTokenSource
 					if (!range || !Range.containsPosition(range, e.position)) {
 						this.cancel();
 					}
-				}),
+				})
 			);
 		}
 		if (flags & CodeEditorStateFlag.Selection) {
@@ -143,7 +143,7 @@ export class EditorStateCancellationTokenSource
 					if (!range || !Range.containsRange(range, e.selection)) {
 						this.cancel();
 					}
-				}),
+				})
 			);
 		}
 		if (flags & CodeEditorStateFlag.Scroll) {
@@ -152,7 +152,7 @@ export class EditorStateCancellationTokenSource
 		if (flags & CodeEditorStateFlag.Value) {
 			this._listener.add(editor.onDidChangeModel((_) => this.cancel()));
 			this._listener.add(
-				editor.onDidChangeModelContent((_) => this.cancel()),
+				editor.onDidChangeModelContent((_) => this.cancel())
 			);
 		}
 	}

@@ -70,7 +70,7 @@ namespace snippetExt {
 	export function toValidSnippet(
 		extension: IExtensionPointUser<ISnippetsExtensionPoint[]>,
 		snippet: ISnippetsExtensionPoint,
-		languageService: ILanguageService,
+		languageService: ILanguageService
 	): IValidSnippetsExtensionPoint | null {
 		if (isFalsyOrWhitespace(snippet.path)) {
 			extension.collector.error(
@@ -78,8 +78,8 @@ namespace snippetExt {
 					"invalid.path.0",
 					"Expected string in `contributes.{0}.path`. Provided value: {1}",
 					extension.description.name,
-					String(snippet.path),
-				),
+					String(snippet.path)
+				)
 			);
 			return null;
 		}
@@ -93,8 +93,8 @@ namespace snippetExt {
 					"invalid.language.0",
 					"When omitting the language, the value of `contributes.{0}.path` must be a `.code-snippets`-file. Provided value: {1}",
 					extension.description.name,
-					String(snippet.path),
-				),
+					String(snippet.path)
+				)
 			);
 			return null;
 		}
@@ -108,8 +108,8 @@ namespace snippetExt {
 					"invalid.language",
 					"Unknown language in `contributes.{0}.language`. Provided value: {1}",
 					extension.description.name,
-					String(snippet.language),
-				),
+					String(snippet.language)
+				)
 			);
 			return null;
 		}
@@ -117,7 +117,7 @@ namespace snippetExt {
 		const extensionLocation = extension.description.extensionLocation;
 		const snippetLocation = resources.joinPath(
 			extensionLocation,
-			snippet.path,
+			snippet.path
 		);
 		if (!resources.isEqualOrParent(snippetLocation, extensionLocation)) {
 			extension.collector.error(
@@ -126,8 +126,8 @@ namespace snippetExt {
 					"Expected `contributes.{0}.path` ({1}) to be included inside extension's folder ({2}). This might make the extension non-portable.",
 					extension.description.name,
 					snippetLocation.path,
-					extensionLocation.path,
-				),
+					extensionLocation.path
+				)
 			);
 			return null;
 		}
@@ -141,7 +141,7 @@ namespace snippetExt {
 	export const snippetsContribution: IJSONSchema = {
 		description: localize(
 			"vscode.extension.contributes.snippets",
-			"Contributes snippets.",
+			"Contributes snippets."
 		),
 		type: "array",
 		defaultSnippets: [{ body: [{ language: "", path: "" }] }],
@@ -159,14 +159,14 @@ namespace snippetExt {
 				language: {
 					description: localize(
 						"vscode.extension.contributes.snippets-language",
-						"Language identifier for which this snippet is contributed to.",
+						"Language identifier for which this snippet is contributed to."
 					),
 					type: "string",
 				},
 				path: {
 					description: localize(
 						"vscode.extension.contributes.snippets-path",
-						"Path of the snippets file. The path is relative to the extension folder and typically starts with './snippets/'.",
+						"Path of the snippets file. The path is relative to the extension folder and typically starts with './snippets/'."
 					),
 					type: "string",
 				},
@@ -186,7 +186,7 @@ namespace snippetExt {
 function watch(
 	service: IFileService,
 	resource: URI,
-	callback: () => any,
+	callback: () => any
 ): IDisposable {
 	return combinedDisposable(
 		service.watch(resource),
@@ -194,7 +194,7 @@ function watch(
 			if (e.affects(resource)) {
 				callback();
 			}
-		}),
+		})
 	);
 }
 
@@ -204,14 +204,17 @@ class SnippetEnablement {
 	private readonly _ignored: Set<string>;
 
 	constructor(
-		@IStorageService private readonly _storageService: IStorageService,
+		@IStorageService private readonly _storageService: IStorageService
 	) {
-
-		const raw = _storageService.get(SnippetEnablement._key, StorageScope.PROFILE, '');
+		const raw = _storageService.get(
+			SnippetEnablement._key,
+			StorageScope.PROFILE,
+			""
+		);
 		let data: string[] | undefined;
 		try {
 			data = JSON.parse(raw);
-		} catch { }
+		} catch {}
 
 		this._ignored = isStringArray(data) ? new Set(data) : new Set();
 	}
@@ -234,7 +237,7 @@ class SnippetEnablement {
 				SnippetEnablement._key,
 				JSON.stringify(Array.from(this._ignored)),
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 		}
 	}
@@ -246,10 +249,13 @@ class SnippetUsageTimestamps {
 	private readonly _usages: Map<string, number>;
 
 	constructor(
-		@IStorageService private readonly _storageService: IStorageService,
+		@IStorageService private readonly _storageService: IStorageService
 	) {
-
-		const raw = _storageService.get(SnippetUsageTimestamps._key, StorageScope.PROFILE, '');
+		const raw = _storageService.get(
+			SnippetUsageTimestamps._key,
+			StorageScope.PROFILE,
+			""
+		);
 		let data: [string, number][] | undefined;
 		try {
 			data = JSON.parse(raw);
@@ -275,7 +281,7 @@ class SnippetUsageTimestamps {
 			SnippetUsageTimestamps._key,
 			JSON.stringify(all),
 			StorageScope.PROFILE,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 	}
 }
@@ -290,28 +296,46 @@ export class SnippetsService implements ISnippetsService {
 	private readonly _usageTimestamps: SnippetUsageTimestamps;
 
 	constructor(
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@IUserDataProfileService
+		private readonly _userDataProfileService: IUserDataProfileService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ILogService private readonly _logService: ILogService,
 		@IFileService private readonly _fileService: IFileService,
 		@ITextFileService private readonly _textfileService: ITextFileService,
-		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService
 	) {
-		this._pendingWork.push(Promise.resolve(lifecycleService.when(LifecyclePhase.Restored).then(() => {
-			this._initExtensionSnippets();
-			this._initUserSnippets();
-			this._initWorkspaceSnippets();
-		})));
+		this._pendingWork.push(
+			Promise.resolve(
+				lifecycleService.when(LifecyclePhase.Restored).then(() => {
+					this._initExtensionSnippets();
+					this._initUserSnippets();
+					this._initWorkspaceSnippets();
+				})
+			)
+		);
 
-		setSnippetSuggestSupport(new SnippetCompletionProvider(this._languageService, this, languageConfigurationService));
+		setSnippetSuggestSupport(
+			new SnippetCompletionProvider(
+				this._languageService,
+				this,
+				languageConfigurationService
+			)
+		);
 
-		this._enablement = instantiationService.createInstance(SnippetEnablement);
-		this._usageTimestamps = instantiationService.createInstance(SnippetUsageTimestamps);
+		this._enablement =
+			instantiationService.createInstance(SnippetEnablement);
+		this._usageTimestamps = instantiationService.createInstance(
+			SnippetUsageTimestamps
+		);
 	}
 
 	dispose(): void {
@@ -343,7 +367,7 @@ export class SnippetsService implements ISnippetsService {
 
 	async getSnippets(
 		languageId: string | undefined,
-		opts?: ISnippetGetOptions,
+		opts?: ISnippetGetOptions
 	): Promise<Snippet[]> {
 		await this._joinSnippets();
 
@@ -360,9 +384,9 @@ export class SnippetsService implements ISnippetsService {
 							.catch((err) =>
 								this._logService.error(
 									err,
-									file.location.toString(),
-								),
-							),
+									file.location.toString()
+								)
+							)
 					);
 				}
 			}
@@ -372,14 +396,14 @@ export class SnippetsService implements ISnippetsService {
 					file
 						.load()
 						.then((file) =>
-							insertInto(result, result.length, file.data),
+							insertInto(result, result.length, file.data)
 						)
 						.catch((err) =>
 							this._logService.error(
 								err,
-								file.location.toString(),
-							),
-						),
+								file.location.toString()
+							)
+						)
 				);
 			}
 		}
@@ -404,7 +428,7 @@ export class SnippetsService implements ISnippetsService {
 
 	private _filterAndSortSnippets(
 		snippets: Snippet[],
-		opts?: ISnippetGetOptions,
+		opts?: ISnippetGetOptions
 	): Snippet[] {
 		const result: Snippet[] = [];
 
@@ -432,11 +456,11 @@ export class SnippetsService implements ISnippetsService {
 			if (!opts?.noRecencySort) {
 				const val1 =
 					this._usageTimestamps.getUsageTimestamp(
-						a.snippetIdentifier,
+						a.snippetIdentifier
 					) ?? -1;
 				const val2 =
 					this._usageTimestamps.getUsageTimestamp(
-						b.snippetIdentifier,
+						b.snippetIdentifier
 					) ?? -1;
 				result = val2 - val1;
 			}
@@ -480,7 +504,7 @@ export class SnippetsService implements ISnippetsService {
 					const validContribution = snippetExt.toValidSnippet(
 						extension,
 						contribution,
-						this._languageService,
+						this._languageService
 					);
 					if (!validContribution) {
 						continue;
@@ -502,7 +526,7 @@ export class SnippetsService implements ISnippetsService {
 								: undefined,
 							extension.description,
 							this._fileService,
-							this._extensionResourceLoaderService,
+							this._extensionResourceLoaderService
 						);
 						this._files.set(file.location, file);
 
@@ -512,15 +536,15 @@ export class SnippetsService implements ISnippetsService {
 									// warn about bad tabstop/variable usage
 									if (
 										file.data.some(
-											(snippet) => snippet.isBogous,
+											(snippet) => snippet.isBogous
 										)
 									) {
 										extension.collector.warn(
 											localize(
 												"badVariableUse",
 												"One or more snippets from the extension '{0}' very likely confuse snippet-variables and snippet-placeholders (see https://code.visualstudio.com/docs/editor/userdefinedsnippets#_snippet-syntax for more details)",
-												extension.description.name,
-											),
+												extension.description.name
+											)
 										);
 									}
 								},
@@ -530,10 +554,10 @@ export class SnippetsService implements ISnippetsService {
 										localize(
 											"badFile",
 											'The snippet file "{0}" could not be read.',
-											file.location.toString(),
-										),
+											file.location.toString()
+										)
 									);
-								},
+								}
 							);
 						}
 					}
@@ -550,27 +574,27 @@ export class SnippetsService implements ISnippetsService {
 			this._pendingWork.push(
 				this._initWorkspaceFolderSnippets(
 					this._contextService.getWorkspace(),
-					disposables,
-				),
+					disposables
+				)
 			);
 		};
 		this._disposables.add(disposables);
 		this._disposables.add(
 			this._contextService.onDidChangeWorkspaceFolders(
-				updateWorkspaceSnippets,
-			),
+				updateWorkspaceSnippets
+			)
 		);
 		this._disposables.add(
 			this._contextService.onDidChangeWorkbenchState(
-				updateWorkspaceSnippets,
-			),
+				updateWorkspaceSnippets
+			)
 		);
 		updateWorkspaceSnippets();
 	}
 
 	private async _initWorkspaceFolderSnippets(
 		workspace: IWorkspace,
-		bucket: DisposableStore,
+		bucket: DisposableStore
 	): Promise<any> {
 		const promises = workspace.folders.map(async (folder) => {
 			const snippetFolder = folder.toResource(".vscode");
@@ -579,7 +603,7 @@ export class SnippetsService implements ISnippetsService {
 				this._initFolderSnippets(
 					SnippetSource.Workspace,
 					snippetFolder,
-					bucket,
+					bucket
 				);
 			} else {
 				// watch
@@ -589,10 +613,10 @@ export class SnippetsService implements ISnippetsService {
 							this._initFolderSnippets(
 								SnippetSource.Workspace,
 								snippetFolder,
-								bucket,
+								bucket
 							);
 						}
-					}),
+					})
 				);
 			}
 		});
@@ -609,7 +633,7 @@ export class SnippetsService implements ISnippetsService {
 			await this._initFolderSnippets(
 				SnippetSource.User,
 				userSnippetsFolder,
-				disposables,
+				disposables
 			);
 		};
 		this._disposables.add(disposables);
@@ -618,9 +642,9 @@ export class SnippetsService implements ISnippetsService {
 				e.join(
 					(async () => {
 						this._pendingWork.push(updateUserSnippets());
-					})(),
-				),
-			),
+					})()
+				)
+			)
 		);
 		await updateUserSnippets();
 	}
@@ -628,7 +652,7 @@ export class SnippetsService implements ISnippetsService {
 	private _initFolderSnippets(
 		source: SnippetSource,
 		folder: URI,
-		bucket: DisposableStore,
+		bucket: DisposableStore
 	): Promise<any> {
 		const disposables = new DisposableStore();
 		const addFolderSnippets = async () => {
@@ -640,13 +664,13 @@ export class SnippetsService implements ISnippetsService {
 				const stat = await this._fileService.resolve(folder);
 				for (const entry of stat.children || []) {
 					disposables.add(
-						this._addSnippetFile(entry.resource, source),
+						this._addSnippetFile(entry.resource, source)
 					);
 				}
 			} catch (err) {
 				this._logService.error(
 					`Failed snippets from folder '${folder.toString()}'`,
-					err,
+					err
 				);
 			}
 		};
@@ -656,7 +680,7 @@ export class SnippetsService implements ISnippetsService {
 				if (resources.isEqualOrParent(e.model.resource, folder)) {
 					addFolderSnippets();
 				}
-			}),
+			})
 		);
 		bucket.add(watch(this._fileService, folder, addFolderSnippets));
 		bucket.add(disposables);
@@ -675,8 +699,8 @@ export class SnippetsService implements ISnippetsService {
 					[langName],
 					undefined,
 					this._fileService,
-					this._extensionResourceLoaderService,
-				),
+					this._extensionResourceLoaderService
+				)
 			);
 		} else if (ext === ".code-snippets") {
 			this._files.set(
@@ -687,8 +711,8 @@ export class SnippetsService implements ISnippetsService {
 					undefined,
 					undefined,
 					this._fileService,
-					this._extensionResourceLoaderService,
-				),
+					this._extensionResourceLoaderService
+				)
 			);
 		}
 		return {
@@ -703,7 +727,7 @@ export interface ISimpleModel {
 
 export function getNonWhitespacePrefix(
 	model: ISimpleModel,
-	position: Position,
+	position: Position
 ): string {
 	/**
 	 * Do not analyze more characters

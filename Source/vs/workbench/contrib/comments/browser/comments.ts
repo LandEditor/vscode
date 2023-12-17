@@ -9,7 +9,7 @@ import { CommentsFilters } from "vs/workbench/contrib/comments/browser/commentsV
 
 export const CommentsViewFilterFocusContextKey = new RawContextKey<boolean>(
 	"commentsFilterFocus",
-	false,
+	false
 );
 
 export interface ICommentsView extends IView {

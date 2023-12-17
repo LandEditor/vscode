@@ -79,7 +79,7 @@ import {
 class CliMain extends Disposable {
 	constructor(
 		private readonly args: ServerParsedArgs,
-		private readonly remoteDataFolder: string,
+		private readonly remoteDataFolder: string
 	) {
 		super();
 
@@ -101,15 +101,15 @@ class CliMain extends Disposable {
 			if (isWindows) {
 				if (
 					configurationService.getValue(
-						"security.restrictUNCAccess",
+						"security.restrictUNCAccess"
 					) === false
 				) {
 					disableUNCAccessRestrictions();
 				} else {
 					addUNCHostToAllowlist(
 						configurationService.getValue(
-							"security.allowedUNCHosts",
-						),
+							"security.allowedUNCHosts"
+						)
 					);
 				}
 			}
@@ -118,8 +118,8 @@ class CliMain extends Disposable {
 				await this.doRun(
 					instantiationService.createInstance(
 						ExtensionManagementCLI,
-						new ConsoleLogger(logService.getLevel(), false),
-					),
+						new ConsoleLogger(logService.getLevel(), false)
+					)
 				);
 			} catch (error) {
 				logService.error(error);
@@ -137,13 +137,13 @@ class CliMain extends Disposable {
 
 		const environmentService = new ServerEnvironmentService(
 			this.args,
-			productService,
+			productService
 		);
 		services.set(IServerEnvironmentService, environmentService);
 
 		const loggerService = new LoggerService(
 			getLogLevel(environmentService),
-			environmentService.logsHome,
+			environmentService.logsHome
 		);
 		services.set(ILoggerService, loggerService);
 
@@ -151,12 +151,12 @@ class CliMain extends Disposable {
 			this._register(
 				loggerService.createLogger("remoteCLI", {
 					name: localize("remotecli", "Remote CLI"),
-				}),
-			),
+				})
+			)
 		);
 		services.set(ILogService, logService);
 		logService.trace(
-			`Remote configuration data at ${this.remoteDataFolder}`,
+			`Remote configuration data at ${this.remoteDataFolder}`
 		);
 		logService.trace("process arguments:", this.args);
 
@@ -165,7 +165,7 @@ class CliMain extends Disposable {
 		services.set(IFileService, fileService);
 		fileService.registerProvider(
 			Schemas.file,
-			this._register(new DiskFileSystemProvider(logService)),
+			this._register(new DiskFileSystemProvider(logService))
 		);
 
 		const uriIdentityService = new UriIdentityService(fileService);
@@ -177,8 +177,8 @@ class CliMain extends Disposable {
 				uriIdentityService,
 				environmentService,
 				fileService,
-				logService,
-			),
+				logService
+			)
 		);
 		services.set(IUserDataProfilesService, userDataProfilesService);
 
@@ -188,8 +188,8 @@ class CliMain extends Disposable {
 				userDataProfilesService.defaultProfile.settingsResource,
 				fileService,
 				new NullPolicyService(),
-				logService,
-			),
+				logService
+			)
 		);
 		services.set(IConfigurationService, configurationService);
 
@@ -204,40 +204,40 @@ class CliMain extends Disposable {
 		services.set(ITelemetryService, NullTelemetryService);
 		services.set(
 			IExtensionGalleryService,
-			new SyncDescriptor(ExtensionGalleryServiceWithNoStorageService),
+			new SyncDescriptor(ExtensionGalleryServiceWithNoStorageService)
 		);
 		services.set(
 			IExtensionsProfileScannerService,
-			new SyncDescriptor(ExtensionsProfileScannerService),
+			new SyncDescriptor(ExtensionsProfileScannerService)
 		);
 		services.set(
 			IExtensionsScannerService,
-			new SyncDescriptor(ExtensionsScannerService),
+			new SyncDescriptor(ExtensionsScannerService)
 		);
 		services.set(
 			IExtensionSignatureVerificationService,
-			new SyncDescriptor(ExtensionSignatureVerificationService),
+			new SyncDescriptor(ExtensionSignatureVerificationService)
 		);
 		services.set(
 			INativeServerExtensionManagementService,
-			new SyncDescriptor(ExtensionManagementService),
+			new SyncDescriptor(ExtensionManagementService)
 		);
 		services.set(
 			ILanguagePackService,
-			new SyncDescriptor(NativeLanguagePackService),
+			new SyncDescriptor(NativeLanguagePackService)
 		);
 
 		return new InstantiationService(services);
 	}
 
 	private async doRun(
-		extensionManagementCLI: ExtensionManagementCLI,
+		extensionManagementCLI: ExtensionManagementCLI
 	): Promise<void> {
 		// List Extensions
 		if (this.args["list-extensions"]) {
 			return extensionManagementCLI.listExtensions(
 				!!this.args["show-versions"],
-				this.args["category"],
+				this.args["category"]
 			);
 		}
 
@@ -253,10 +253,10 @@ class CliMain extends Disposable {
 			return extensionManagementCLI.installExtensions(
 				this.asExtensionIdOrVSIX(this.args["install-extension"] || []),
 				this.asExtensionIdOrVSIX(
-					this.args["install-builtin-extension"] || [],
+					this.args["install-builtin-extension"] || []
 				),
 				installOptions,
-				!!this.args["force"],
+				!!this.args["force"]
 			);
 		}
 
@@ -264,14 +264,14 @@ class CliMain extends Disposable {
 		else if (this.args["uninstall-extension"]) {
 			return extensionManagementCLI.uninstallExtensions(
 				this.asExtensionIdOrVSIX(this.args["uninstall-extension"]),
-				!!this.args["force"],
+				!!this.args["force"]
 			);
 		}
 
 		// Locate Extension
 		else if (this.args["locate-extension"]) {
 			return extensionManagementCLI.locateExtension(
-				this.args["locate-extension"],
+				this.args["locate-extension"]
 			);
 		}
 	}
@@ -280,7 +280,7 @@ class CliMain extends Disposable {
 		return inputs.map((input) =>
 			/\.vsix$/i.test(input)
 				? URI.file(isAbsolute(input) ? input : join(cwd(), input))
-				: input,
+				: input
 		);
 	}
 }
@@ -292,7 +292,7 @@ function eventuallyExit(code: number): void {
 export async function run(
 	args: ServerParsedArgs,
 	REMOTE_DATA_FOLDER: string,
-	optionDescriptions: OptionDescriptions<ServerParsedArgs>,
+	optionDescriptions: OptionDescriptions<ServerParsedArgs>
 ): Promise<void> {
 	if (args.help) {
 		const executable =
@@ -303,8 +303,8 @@ export async function run(
 				executable,
 				product.version,
 				optionDescriptions,
-				{ noInputFiles: true, noPipe: true },
-			),
+				{ noInputFiles: true, noPipe: true }
+			)
 		);
 		return;
 	}

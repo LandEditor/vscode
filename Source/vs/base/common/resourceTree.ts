@@ -42,7 +42,7 @@ class Node<T, C> implements IResourceNode<T, C> {
 		readonly relativePath: string,
 		readonly context: C,
 		public element: T | undefined = undefined,
-		readonly parent: IResourceNode<T, C> | undefined = undefined,
+		readonly parent: IResourceNode<T, C> | undefined = undefined
 	) {}
 
 	get(path: string): Node<T, C> | undefined {
@@ -96,7 +96,7 @@ export class ResourceTree<T extends NonNullable<any>, C> {
 	constructor(
 		context: C,
 		rootURI: URI = URI.file("/"),
-		private extUri: IExtUri = defaultExtUri,
+		private extUri: IExtUri = defaultExtUri
 	) {
 		this.root = new Node(rootURI, "", context);
 	}
@@ -119,7 +119,7 @@ export class ResourceTree<T extends NonNullable<any>, C> {
 					path,
 					this.root.context,
 					iterator.hasNext() ? undefined : element,
-					node,
+					node
 				);
 
 				node.set(name, child);

@@ -23,7 +23,7 @@ export class UserDataSyncEnablementService
 	}
 
 	override getResourceSyncStateVersion(
-		resource: SyncResource,
+		resource: SyncResource
 	): string | undefined {
 		return resource === SyncResource.Extensions
 			? this.workbenchEnvironmentService.options?.settingsSyncOptions
@@ -35,5 +35,5 @@ export class UserDataSyncEnablementService
 registerSingleton(
 	IUserDataSyncEnablementService,
 	UserDataSyncEnablementService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

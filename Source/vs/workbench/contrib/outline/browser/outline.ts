@@ -32,17 +32,17 @@ export interface IOutlinePane extends IView {
 
 export const ctxFollowsCursor = new RawContextKey<boolean>(
 	"outlineFollowsCursor",
-	false,
+	false
 );
 export const ctxFilterOnType = new RawContextKey<boolean>(
 	"outlineFiltersOnType",
-	false,
+	false
 );
 export const ctxSortMode = new RawContextKey<OutlineSortOrder>(
 	"outlineSortMode",
-	OutlineSortOrder.ByPosition,
+	OutlineSortOrder.ByPosition
 );
 export const ctxAllCollapsed = new RawContextKey<boolean>(
 	"outlineAllCollapsed",
-	false,
+	false
 );

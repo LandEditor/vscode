@@ -38,7 +38,7 @@ export class ReplOutputElement implements INestingReplElement {
 		public value: string,
 		public severity: severity,
 		public sourceData?: IReplElementSource,
-		public readonly expression?: IExpression,
+		public readonly expression?: IExpression
 	) {}
 
 	toString(includeSource = false): string {
@@ -88,7 +88,7 @@ export class ReplVariableElement implements INestingReplElement {
 	constructor(
 		public readonly expression: IExpression,
 		public readonly severity: severity,
-		public readonly sourceData?: IReplElementSource,
+		public readonly sourceData?: IReplElementSource
 	) {
 		this.hasChildren = expression.hasChildren;
 	}
@@ -114,7 +114,7 @@ export class RawObjectReplElement implements IExpression, INestingReplElement {
 		public name: string,
 		public valueObj: any,
 		public sourceData?: IReplElementSource,
-		public annotation?: string,
+		public annotation?: string
 	) {}
 
 	getId(): string {
@@ -157,8 +157,8 @@ export class RawObjectReplElement implements IExpression, INestingReplElement {
 						new RawObjectReplElement(
 							`${this.id}:${index}`,
 							String(index),
-							v,
-						),
+							v
+						)
 				);
 		} else if (isObject(this.valueObj)) {
 			result = Object.getOwnPropertyNames(this.valueObj)
@@ -168,8 +168,8 @@ export class RawObjectReplElement implements IExpression, INestingReplElement {
 						new RawObjectReplElement(
 							`${this.id}:${index}`,
 							key,
-							this.valueObj[key],
-						),
+							this.valueObj[key]
+						)
 				);
 		}
 
@@ -215,13 +215,13 @@ export class ReplEvaluationResult
 		expression: string,
 		session: IDebugSession | undefined,
 		stackFrame: IStackFrame | undefined,
-		context: string,
+		context: string
 	): Promise<boolean> {
 		const result = await super.evaluateExpression(
 			expression,
 			session,
 			stackFrame,
-			context,
+			context
 		);
 		this._available = result;
 
@@ -242,7 +242,7 @@ export class ReplGroup implements INestingReplElement {
 	constructor(
 		public name: string,
 		public autoExpand: boolean,
-		public sourceData?: IReplElementSource,
+		public sourceData?: IReplElementSource
 	) {
 		this.id = `replGroup:${ReplGroup.COUNTER++}`;
 	}
@@ -296,7 +296,7 @@ export class ReplGroup implements INestingReplElement {
 
 function areSourcesEqual(
 	first: IReplElementSource | undefined,
-	second: IReplElementSource | undefined,
+	second: IReplElementSource | undefined
 ): boolean {
 	if (!first && !second) {
 		return true;
@@ -333,7 +333,7 @@ export class ReplModel {
 	async addReplExpression(
 		session: IDebugSession,
 		stackFrame: IStackFrame | undefined,
-		name: string,
+		name: string
 	): Promise<void> {
 		this.addReplElement(new ReplEvaluationInput(name));
 		const result = new ReplEvaluationResult(name);
@@ -343,7 +343,7 @@ export class ReplModel {
 
 	appendToRepl(
 		session: IDebugSession,
-		{ output, expression, sev, source }: INewReplElementData,
+		{ output, expression, sev, source }: INewReplElementData
 	): void {
 		const clearAnsiSequence = "\u001b[2J";
 		const clearAnsiIndex = output.lastIndexOf(clearAnsiSequence);
@@ -355,7 +355,7 @@ export class ReplModel {
 				sev: severity.Ignore,
 			});
 			output = output.substring(
-				clearAnsiIndex + clearAnsiSequence.length,
+				clearAnsiIndex + clearAnsiSequence.length
 			);
 		}
 
@@ -370,9 +370,9 @@ export class ReplModel {
 							output,
 							sev,
 							source,
-							expression,
-					  )
-					: new ReplVariableElement(expression, sev, source),
+							expression
+						)
+					: new ReplVariableElement(expression, sev, source)
 			);
 			return;
 		}
@@ -386,7 +386,7 @@ export class ReplModel {
 		) {
 			const config =
 				this.configurationService.getValue<IDebugConfiguration>(
-					"debug",
+					"debug"
 				);
 			if (
 				previousElement.value === output &&
@@ -408,7 +408,7 @@ export class ReplModel {
 						getUniqueId(),
 						previousElement.value + output,
 						sev,
-						source,
+						source
 					);
 				this._onDidChangeElements.fire();
 				return;
@@ -420,7 +420,7 @@ export class ReplModel {
 			getUniqueId(),
 			output,
 			sev,
-			source,
+			source
 		);
 		this.addReplElement(element);
 	}
@@ -428,7 +428,7 @@ export class ReplModel {
 	startGroup(
 		name: string,
 		autoExpand: boolean,
-		sourceData?: IReplElementSource,
+		sourceData?: IReplElementSource
 	): void {
 		const group = new ReplGroup(name, autoExpand, sourceData);
 		this.addReplElement(group);
@@ -452,7 +452,7 @@ export class ReplModel {
 			if (this.replElements.length > MAX_REPL_LENGTH) {
 				this.replElements.splice(
 					0,
-					this.replElements.length - MAX_REPL_LENGTH,
+					this.replElements.length - MAX_REPL_LENGTH
 				);
 			}
 		}

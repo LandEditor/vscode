@@ -27,7 +27,7 @@ class TextualDocumentHighlightProvider
 		primaryModel: ITextModel,
 		position: Position,
 		otherModels: ITextModel[],
-		token: CancellationToken,
+		token: CancellationToken
 	): ProviderResult<ResourceMap<DocumentHighlight[]>> {
 		const result = new ResourceMap<DocumentHighlight[]>();
 
@@ -50,7 +50,7 @@ class TextualDocumentHighlightProvider
 				false,
 				true,
 				USUAL_WORD_SEPARATORS,
-				false,
+				false
 			);
 			const highlights = matches.map((m) => ({
 				range: m.range,
@@ -68,10 +68,16 @@ class TextualDocumentHighlightProvider
 
 export class TextualMultiDocumentHighlightFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 
-		this._register(languageFeaturesService.multiDocumentHighlightProvider.register('*', new TextualDocumentHighlightProvider()));
+		this._register(
+			languageFeaturesService.multiDocumentHighlightProvider.register(
+				"*",
+				new TextualDocumentHighlightProvider()
+			)
+		);
 	}
 }

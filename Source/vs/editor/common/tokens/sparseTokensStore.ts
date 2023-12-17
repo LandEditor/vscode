@@ -35,7 +35,7 @@ export class SparseTokensStore {
 
 	public set(
 		pieces: SparseMultilineTokens[] | null,
-		isComplete: boolean,
+		isComplete: boolean
 	): void {
 		this._pieces = pieces || [];
 		this._isComplete = isComplete;
@@ -115,7 +115,7 @@ export class SparseTokensStore {
 			this._pieces = arrays.arrayInsert(
 				this._pieces,
 				insertPosition.index,
-				pieces,
+				pieces
 			);
 		}
 
@@ -131,7 +131,7 @@ export class SparseTokensStore {
 
 	public addSparseTokens(
 		lineNumber: number,
-		aTokens: LineTokens,
+		aTokens: LineTokens
 	): LineTokens {
 		if (aTokens.getLineContent().length === 0) {
 			// Don't do anything for empty lines
@@ -146,7 +146,7 @@ export class SparseTokensStore {
 
 		const pieceIndex = SparseTokensStore._findFirstPieceWithLine(
 			pieces,
-			lineNumber,
+			lineNumber
 		);
 		const bTokens = pieces[pieceIndex].getLineTokens(lineNumber);
 
@@ -205,7 +205,7 @@ export class SparseTokensStore {
 			) {
 				emitToken(
 					aTokens.getEndOffset(aIndex),
-					aTokens.getMetadata(aIndex),
+					aTokens.getMetadata(aIndex)
 				);
 				aIndex++;
 			}
@@ -225,7 +225,7 @@ export class SparseTokensStore {
 			) {
 				emitToken(
 					aTokens.getEndOffset(aIndex),
-					(aTokens.getMetadata(aIndex) & aMask) | (bMetadata & bMask),
+					(aTokens.getMetadata(aIndex) & aMask) | (bMetadata & bMask)
 				);
 				aIndex++;
 			}
@@ -233,7 +233,7 @@ export class SparseTokensStore {
 			if (aIndex < aLen) {
 				emitToken(
 					bEndCharacter,
-					(aTokens.getMetadata(aIndex) & aMask) | (bMetadata & bMask),
+					(aTokens.getMetadata(aIndex) & aMask) | (bMetadata & bMask)
 				);
 				if (aTokens.getEndOffset(aIndex) === bEndCharacter) {
 					// `a` ends exactly at the same spot as `b`!
@@ -246,7 +246,7 @@ export class SparseTokensStore {
 				emitToken(
 					bEndCharacter,
 					(aTokens.getMetadata(aMergeIndex) & aMask) |
-						(bMetadata & bMask),
+						(bMetadata & bMask)
 				);
 			}
 		}
@@ -255,7 +255,7 @@ export class SparseTokensStore {
 		while (aIndex < aLen) {
 			emitToken(
 				aTokens.getEndOffset(aIndex),
-				aTokens.getMetadata(aIndex),
+				aTokens.getMetadata(aIndex)
 			);
 			aIndex++;
 		}
@@ -263,13 +263,13 @@ export class SparseTokensStore {
 		return new LineTokens(
 			new Uint32Array(result),
 			aTokens.getLineContent(),
-			this._languageIdCodec,
+			this._languageIdCodec
 		);
 	}
 
 	private static _findFirstPieceWithLine(
 		pieces: SparseMultilineTokens[],
-		lineNumber: number,
+		lineNumber: number
 	): number {
 		let low = 0;
 		let high = pieces.length - 1;
@@ -301,7 +301,7 @@ export class SparseTokensStore {
 		eolCount: number,
 		firstLineLength: number,
 		lastLineLength: number,
-		firstCharCode: number,
+		firstCharCode: number
 	): void {
 		for (const piece of this._pieces) {
 			piece.acceptEdit(
@@ -309,7 +309,7 @@ export class SparseTokensStore {
 				eolCount,
 				firstLineLength,
 				lastLineLength,
-				firstCharCode,
+				firstCharCode
 			);
 		}
 	}

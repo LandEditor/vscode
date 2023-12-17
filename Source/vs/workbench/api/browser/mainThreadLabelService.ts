@@ -23,7 +23,7 @@ export class MainThreadLabelService
 	implements MainThreadLabelServiceShape
 {
 	private readonly _resourceLabelFormatters = this._register(
-		new DisposableMap<number>(),
+		new DisposableMap<number>()
 	);
 
 	constructor(
@@ -35,7 +35,7 @@ export class MainThreadLabelService
 
 	$registerResourceLabelFormatter(
 		handle: number,
-		formatter: ResourceLabelFormatter,
+		formatter: ResourceLabelFormatter
 	): void {
 		// Dynamicily registered formatters should have priority over those contributed via package.json
 		formatter.priority = true;

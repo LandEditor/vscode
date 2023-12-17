@@ -20,7 +20,7 @@ import {
 export interface IOpenCallbacks {
 	openInternal: (
 		input: EditorInput,
-		options: IEditorOptions | undefined,
+		options: IEditorOptions | undefined
 	) => Promise<void>;
 }
 
@@ -41,7 +41,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 		private readonly callbacks: IOpenCallbacks,
 		telemetryService: ITelemetryService,
 		themeService: IThemeService,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		super(id, telemetryService, themeService, storageService);
 	}
@@ -54,7 +54,7 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 
 	protected async getContents(
 		input: EditorInput,
-		options: IEditorOptions,
+		options: IEditorOptions
 	): Promise<IEditorPlaceholderContents> {
 		const model = await input.resolve(options);
 
@@ -66,14 +66,14 @@ export abstract class BaseBinaryResourceEditor extends EditorPlaceholder {
 		// Update metadata
 		const size = model.getSize();
 		this.handleMetadataChanged(
-			typeof size === "number" ? ByteSize.formatSize(size) : "",
+			typeof size === "number" ? ByteSize.formatSize(size) : ""
 		);
 
 		return {
 			icon: "$(warning)",
 			label: localize(
 				"binaryError",
-				"The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding.",
+				"The file is not displayed in the text editor because it is either binary or uses an unsupported text encoding."
 			),
 			actions: [
 				{

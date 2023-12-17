@@ -38,14 +38,21 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
 		@ITextModelService private _resolverService: ITextModelService,
-		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
+		@ILanguageStatusService
+		private readonly _languageStatusService: ILanguageStatusService
 	) {
 		this._proxy = _extHostContext.getProxy(ExtHostContext.ExtHostLanguages);
 
-		this._proxy.$acceptLanguageIds(_languageService.getRegisteredLanguageIds());
-		this._disposables.add(_languageService.onDidChange(_ => {
-			this._proxy.$acceptLanguageIds(_languageService.getRegisteredLanguageIds());
-		}));
+		this._proxy.$acceptLanguageIds(
+			_languageService.getRegisteredLanguageIds()
+		);
+		this._disposables.add(
+			_languageService.onDidChange((_) => {
+				this._proxy.$acceptLanguageIds(
+					_languageService.getRegisteredLanguageIds()
+				);
+			})
+		);
 	}
 
 	dispose(): void {
@@ -55,11 +62,11 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 
 	async $changeLanguage(
 		resource: UriComponents,
-		languageId: string,
+		languageId: string
 	): Promise<void> {
 		if (!this._languageService.isRegisteredLanguageId(languageId)) {
 			return Promise.reject(
-				new Error(`Unknown language id: ${languageId}`),
+				new Error(`Unknown language id: ${languageId}`)
 			);
 		}
 
@@ -67,7 +74,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		const ref = await this._resolverService.createModelReference(uri);
 		try {
 			ref.object.textEditorModel.setLanguage(
-				this._languageService.createById(languageId),
+				this._languageService.createById(languageId)
 			);
 		} finally {
 			ref.dispose();
@@ -76,7 +83,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 
 	async $tokensAtPosition(
 		resource: UriComponents,
-		position: IPosition,
+		position: IPosition
 	): Promise<undefined | { type: StandardTokenType; range: IRange }> {
 		const uri = URI.revive(resource);
 		const model = this._modelService.getModel(uri);
@@ -92,7 +99,7 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 				position.lineNumber,
 				1 + tokens.getStartOffset(idx),
 				position.lineNumber,
-				1 + tokens.getEndOffset(idx),
+				1 + tokens.getEndOffset(idx)
 			),
 		};
 	}

@@ -38,7 +38,7 @@ export class FilePolicyService
 	implements IPolicyService
 {
 	private readonly throttledDelayer = this._register(
-		new ThrottledDelayer(500),
+		new ThrottledDelayer(500)
 	);
 
 	constructor(
@@ -48,9 +48,16 @@ export class FilePolicyService
 	) {
 		super();
 
-		const onDidChangePolicyFile = Event.filter(fileService.onDidFilesChange, e => e.affects(file));
+		const onDidChangePolicyFile = Event.filter(
+			fileService.onDidFilesChange,
+			(e) => e.affects(file)
+		);
 		this._register(fileService.watch(file));
-		this._register(onDidChangePolicyFile(() => this.throttledDelayer.trigger(() => this.refresh())));
+		this._register(
+			onDidChangePolicyFile(() =>
+				this.throttledDelayer.trigger(() => this.refresh())
+			)
+		);
 	}
 
 	protected async _updatePolicyDefinitions(): Promise<void> {
@@ -80,7 +87,7 @@ export class FilePolicyService
 			) {
 				this.logService.error(
 					`[FilePolicyService] Failed to read policies`,
-					error,
+					error
 				);
 			}
 		}

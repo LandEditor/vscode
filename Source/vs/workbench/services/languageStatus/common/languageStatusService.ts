@@ -35,12 +35,12 @@ export interface ILanguageStatus {
 export interface ILanguageStatusProvider {
 	provideLanguageStatus(
 		langId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ILanguageStatus | undefined>;
 }
 
 export const ILanguageStatusService = createDecorator<ILanguageStatusService>(
-	"ILanguageStatusService",
+	"ILanguageStatusService"
 );
 
 export interface ILanguageStatusService {
@@ -81,5 +81,5 @@ class LanguageStatusServiceImpl implements ILanguageStatusService {
 registerSingleton(
 	ILanguageStatusService,
 	LanguageStatusServiceImpl,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

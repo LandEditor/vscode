@@ -31,7 +31,7 @@ interface IVariableResolveContext {
 	getWorkspaceFolderCount(): number;
 	getConfigurationValue(
 		folderUri: uri | undefined,
-		section: string,
+		section: string
 	): string | undefined;
 	getAppRoot(): string | undefined;
 	getExecPath(): string | undefined;
@@ -40,7 +40,7 @@ interface IVariableResolveContext {
 	getSelectedText(): string | undefined;
 	getLineNumber(): string | undefined;
 	getExtension(
-		id: string,
+		id: string
 	): Promise<{ readonly extensionLocation: uri } | undefined>;
 }
 
@@ -70,7 +70,7 @@ export class AbstractVariableResolverService
 		_context: IVariableResolveContext,
 		_labelService?: ILabelService,
 		_userHomePromise?: Promise<string>,
-		_envVariablesPromise?: Promise<IProcessEnvironment>,
+		_envVariablesPromise?: Promise<IProcessEnvironment>
 	) {
 		this._context = _context;
 		this._labelService = _labelService;
@@ -79,7 +79,7 @@ export class AbstractVariableResolverService
 			this._envVariablesPromise = _envVariablesPromise.then(
 				(envVariables) => {
 					return this.prepareEnv(envVariables);
-				},
+				}
 			);
 		}
 	}
@@ -99,30 +99,30 @@ export class AbstractVariableResolverService
 	public resolveWithEnvironment(
 		environment: IProcessEnvironment,
 		root: IWorkspaceFolder | undefined,
-		value: string,
+		value: string
 	): Promise<string> {
 		return this.recursiveResolve(
 			{ env: this.prepareEnv(environment), userHome: undefined },
 			root ? root.uri : undefined,
-			value,
+			value
 		);
 	}
 
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
-		value: string,
+		value: string
 	): Promise<string>;
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
-		value: string[],
+		value: string[]
 	): Promise<string[]>;
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
-		value: IStringDictionary<string>,
+		value: IStringDictionary<string>
 	): Promise<IStringDictionary<string>>;
 	public async resolveAsync(
 		root: IWorkspaceFolder | undefined,
-		value: any,
+		value: any
 	): Promise<any> {
 		const environment: Environment = {
 			env: await this._envVariablesPromise,
@@ -131,7 +131,7 @@ export class AbstractVariableResolverService
 		return this.recursiveResolve(
 			environment,
 			root ? root.uri : undefined,
-			value,
+			value
 		);
 	}
 
@@ -139,22 +139,22 @@ export class AbstractVariableResolverService
 		workspaceFolder: IWorkspaceFolder | undefined,
 		config: any,
 		commandValueMapping?: IStringDictionary<string>,
-		resolvedVariables?: Map<string, string>,
+		resolvedVariables?: Map<string, string>
 	): Promise<any> {
 		const result = objects.deepClone(config);
 
 		// hoist platform specific attributes to top level
 		if (isWindows && result.windows) {
 			Object.keys(result.windows).forEach(
-				(key) => (result[key] = result.windows[key]),
+				(key) => (result[key] = result.windows[key])
 			);
 		} else if (isMacintosh && result.osx) {
 			Object.keys(result.osx).forEach(
-				(key) => (result[key] = result.osx[key]),
+				(key) => (result[key] = result.osx[key])
 			);
 		} else if (isLinux && result.linux) {
 			Object.keys(result.linux).forEach(
-				(key) => (result[key] = result.linux[key]),
+				(key) => (result[key] = result.linux[key])
 			);
 		}
 
@@ -173,33 +173,33 @@ export class AbstractVariableResolverService
 			workspaceFolder ? workspaceFolder.uri : undefined,
 			result,
 			commandValueMapping,
-			resolvedVariables,
+			resolvedVariables
 		);
 	}
 
 	public async resolveAnyAsync(
 		workspaceFolder: IWorkspaceFolder | undefined,
 		config: any,
-		commandValueMapping?: IStringDictionary<string>,
+		commandValueMapping?: IStringDictionary<string>
 	): Promise<any> {
 		return this.resolveAnyBase(
 			workspaceFolder,
 			config,
-			commandValueMapping,
+			commandValueMapping
 		);
 	}
 
 	public async resolveAnyMap(
 		workspaceFolder: IWorkspaceFolder | undefined,
 		config: any,
-		commandValueMapping?: IStringDictionary<string>,
+		commandValueMapping?: IStringDictionary<string>
 	): Promise<{ newConfig: any; resolvedVariables: Map<string, string> }> {
 		const resolvedVariables = new Map<string, string>();
 		const newConfig = await this.resolveAnyBase(
 			workspaceFolder,
 			config,
 			commandValueMapping,
-			resolvedVariables,
+			resolvedVariables
 		);
 		return { newConfig, resolvedVariables };
 	}
@@ -208,7 +208,7 @@ export class AbstractVariableResolverService
 		folder: IWorkspaceFolder | undefined,
 		config: any,
 		section?: string,
-		variables?: IStringDictionary<string>,
+		variables?: IStringDictionary<string>
 	): Promise<any> {
 		throw new Error("resolveWithInteractionReplace not implemented.");
 	}
@@ -217,14 +217,14 @@ export class AbstractVariableResolverService
 		folder: IWorkspaceFolder | undefined,
 		config: any,
 		section?: string,
-		variables?: IStringDictionary<string>,
+		variables?: IStringDictionary<string>
 	): Promise<Map<string, string> | undefined> {
 		throw new Error("resolveWithInteraction not implemented.");
 	}
 
 	public contributeVariable(
 		variable: string,
-		resolution: () => Promise<string | undefined>,
+		resolution: () => Promise<string | undefined>
 	): void {
 		if (this._contributedVariables.has(variable)) {
 			throw new Error("Variable " + variable + " is contributed twice.");
@@ -238,7 +238,7 @@ export class AbstractVariableResolverService
 		folderUri: uri | undefined,
 		value: any,
 		commandValueMapping?: IStringDictionary<string>,
-		resolvedVariables?: Map<string, string>,
+		resolvedVariables?: Map<string, string>
 	): Promise<any> {
 		if (types.isString(value)) {
 			return this.resolveString(
@@ -246,7 +246,7 @@ export class AbstractVariableResolverService
 				folderUri,
 				value,
 				commandValueMapping,
-				resolvedVariables,
+				resolvedVariables
 			);
 		} else if (Array.isArray(value)) {
 			return Promise.all(
@@ -256,9 +256,9 @@ export class AbstractVariableResolverService
 						folderUri,
 						s,
 						commandValueMapping,
-						resolvedVariables,
-					),
-				),
+						resolvedVariables
+					)
+				)
 			);
 		} else if (types.isObject(value)) {
 			const result: IStringDictionary<
@@ -271,7 +271,7 @@ export class AbstractVariableResolverService
 						folderUri,
 						key,
 						commandValueMapping,
-						resolvedVariables,
+						resolvedVariables
 					);
 					return [
 						replaced,
@@ -280,10 +280,10 @@ export class AbstractVariableResolverService
 							folderUri,
 							value[key],
 							commandValueMapping,
-							resolvedVariables,
+							resolvedVariables
 						),
 					] as const;
-				}),
+				})
 			);
 			// two step process to preserve object key order
 			for (const [key, value] of replaced) {
@@ -299,7 +299,7 @@ export class AbstractVariableResolverService
 		folderUri: uri | undefined,
 		value: string,
 		commandValueMapping: IStringDictionary<string> | undefined,
-		resolvedVariables?: Map<string, string>,
+		resolvedVariables?: Map<string, string>
 	): Promise<string> {
 		// loop through all variables occurrences in 'value'
 		return replaceAsync(
@@ -309,7 +309,7 @@ export class AbstractVariableResolverService
 				// disallow attempted nesting, see #77289. This doesn't exclude variables that resolve to other variables.
 				if (
 					variable.includes(
-						AbstractVariableResolverService.VARIABLE_LHS,
+						AbstractVariableResolverService.VARIABLE_LHS
 					)
 				) {
 					return match;
@@ -320,7 +320,7 @@ export class AbstractVariableResolverService
 					match,
 					variable,
 					folderUri,
-					commandValueMapping,
+					commandValueMapping
 				);
 
 				resolvedVariables?.set(variable, resolvedValue);
@@ -329,7 +329,7 @@ export class AbstractVariableResolverService
 					resolvedValue !== match &&
 					types.isString(resolvedValue) &&
 					resolvedValue.match(
-						AbstractVariableResolverService.VARIABLE_REGEXP,
+						AbstractVariableResolverService.VARIABLE_REGEXP
 					)
 				) {
 					resolvedValue = await this.resolveString(
@@ -337,12 +337,12 @@ export class AbstractVariableResolverService
 						folderUri,
 						resolvedValue,
 						commandValueMapping,
-						resolvedVariables,
+						resolvedVariables
 					);
 				}
 
 				return resolvedValue;
-			},
+			}
 		);
 	}
 
@@ -357,7 +357,7 @@ export class AbstractVariableResolverService
 		match: string,
 		variable: string,
 		folderUri: uri | undefined,
-		commandValueMapping: IStringDictionary<string> | undefined,
+		commandValueMapping: IStringDictionary<string> | undefined
 	): Promise<string> {
 		// try to separate variable arguments from variable name
 		let argument: string | undefined;
@@ -378,8 +378,8 @@ export class AbstractVariableResolverService
 				localize(
 					"canNotResolveFile",
 					"Variable {0} can not be resolved. Please open an editor.",
-					match,
-				),
+					match
+				)
 			);
 		};
 
@@ -399,8 +399,8 @@ export class AbstractVariableResolverService
 					"canNotResolveFolderForFile",
 					"Variable {0}: can not find workspace folder of '{1}'.",
 					match,
-					paths.basename(filePath),
-				),
+					paths.basename(filePath)
+				)
 			);
 		};
 
@@ -417,8 +417,8 @@ export class AbstractVariableResolverService
 						"canNotFindFolder",
 						"Variable {0} can not be resolved. No such folder '{1}'.",
 						match,
-						argument,
-					),
+						argument
+					)
 				);
 			}
 
@@ -432,8 +432,8 @@ export class AbstractVariableResolverService
 					localize(
 						"canNotResolveWorkspaceFolderMultiRoot",
 						"Variable {0} can not be resolved in a multi folder workspace. Scope this variable using ':' and a workspace folder name.",
-						match,
-					),
+						match
+					)
 				);
 			}
 			throw new VariableError(
@@ -441,8 +441,8 @@ export class AbstractVariableResolverService
 				localize(
 					"canNotResolveWorkspaceFolder",
 					"Variable {0} can not be resolved. Please open a folder.",
-					match,
-				),
+					match
+				)
 			);
 		};
 
@@ -467,15 +467,15 @@ export class AbstractVariableResolverService
 					localize(
 						"missingEnvVarName",
 						"Variable {0} can not be resolved because no environment variable name is given.",
-						match,
-					),
+						match
+					)
 				);
 
 			case "config":
 				if (argument) {
 					const config = this._context.getConfigurationValue(
 						folderUri,
-						argument,
+						argument
 					);
 					if (types.isUndefinedOrNull(config)) {
 						throw new VariableError(
@@ -484,8 +484,8 @@ export class AbstractVariableResolverService
 								"configNotFound",
 								"Variable {0} can not be resolved because setting '{1}' not found.",
 								match,
-								argument,
-							),
+								argument
+							)
 						);
 					}
 					if (types.isObject(config)) {
@@ -495,8 +495,8 @@ export class AbstractVariableResolverService
 								"configNoString",
 								"Variable {0} can not be resolved because '{1}' is a structured value.",
 								match,
-								argument,
-							),
+								argument
+							)
 						);
 					}
 					return config;
@@ -506,8 +506,8 @@ export class AbstractVariableResolverService
 					localize(
 						"missingConfigName",
 						"Variable {0} can not be resolved because no settings name is given.",
-						match,
-					),
+						match
+					)
 				);
 
 			case "command":
@@ -516,7 +516,7 @@ export class AbstractVariableResolverService
 					match,
 					argument,
 					commandValueMapping,
-					"command",
+					"command"
 				);
 
 			case "input":
@@ -525,7 +525,7 @@ export class AbstractVariableResolverService
 					match,
 					argument,
 					commandValueMapping,
-					"input",
+					"input"
 				);
 
 			case "extensionInstallFolder":
@@ -538,8 +538,8 @@ export class AbstractVariableResolverService
 								"extensionNotInstalled",
 								"Variable {0} can not be resolved because the extension {1} is not installed.",
 								match,
-								argument,
-							),
+								argument
+							)
 						);
 					}
 					return this.fsPath(ext.extensionLocation);
@@ -549,8 +549,8 @@ export class AbstractVariableResolverService
 					localize(
 						"missingExtensionName",
 						"Variable {0} can not be resolved because no extension name is given.",
-						match,
-					),
+						match
+					)
 				);
 
 			default: {
@@ -559,15 +559,15 @@ export class AbstractVariableResolverService
 					case "workspaceFolder":
 						return normalizeDriveLetter(
 							this.fsPath(
-								getFolderUri(VariableKind.WorkspaceFolder),
-							),
+								getFolderUri(VariableKind.WorkspaceFolder)
+							)
 						);
 
 					case "cwd":
 						return folderUri || argument
 							? normalizeDriveLetter(
-									this.fsPath(getFolderUri(VariableKind.Cwd)),
-							  )
+									this.fsPath(getFolderUri(VariableKind.Cwd))
+								)
 							: process.cwd();
 
 					case "workspaceRootFolderName":
@@ -576,10 +576,10 @@ export class AbstractVariableResolverService
 							paths.basename(
 								this.fsPath(
 									getFolderUri(
-										VariableKind.WorkspaceFolderBasename,
-									),
-								),
-							),
+										VariableKind.WorkspaceFolderBasename
+									)
+								)
+							)
 						);
 
 					case "userHome": {
@@ -591,8 +591,8 @@ export class AbstractVariableResolverService
 							localize(
 								"canNotResolveUserHome",
 								"Variable {0} can not be resolved. UserHome path is not defined",
-								match,
-							),
+								match
+							)
 						);
 					}
 
@@ -606,8 +606,8 @@ export class AbstractVariableResolverService
 							localize(
 								"canNotResolveLineNumber",
 								"Variable {0} can not be resolved. Make sure to have a line selected in the active editor.",
-								match,
-							),
+								match
+							)
 						);
 					}
 					case "selectedText": {
@@ -620,8 +620,8 @@ export class AbstractVariableResolverService
 							localize(
 								"canNotResolveSelectedText",
 								"Variable {0} can not be resolved. Make sure to have some text selected in the active editor.",
-								match,
-							),
+								match
+							)
 						);
 					}
 					case "file":
@@ -629,39 +629,39 @@ export class AbstractVariableResolverService
 
 					case "fileWorkspaceFolder":
 						return getFolderPathForFile(
-							VariableKind.FileWorkspaceFolder,
+							VariableKind.FileWorkspaceFolder
 						);
 
 					case "fileWorkspaceFolderBasename":
 						return paths.basename(
 							getFolderPathForFile(
-								VariableKind.FileWorkspaceFolderBasename,
-							),
+								VariableKind.FileWorkspaceFolderBasename
+							)
 						);
 
 					case "relativeFile":
 						if (folderUri || argument) {
 							return paths.relative(
 								this.fsPath(
-									getFolderUri(VariableKind.RelativeFile),
+									getFolderUri(VariableKind.RelativeFile)
 								),
-								getFilePath(VariableKind.RelativeFile),
+								getFilePath(VariableKind.RelativeFile)
 							);
 						}
 						return getFilePath(VariableKind.RelativeFile);
 
 					case "relativeFileDirname": {
 						const dirname = paths.dirname(
-							getFilePath(VariableKind.RelativeFileDirname),
+							getFilePath(VariableKind.RelativeFileDirname)
 						);
 						if (folderUri || argument) {
 							const relative = paths.relative(
 								this.fsPath(
 									getFolderUri(
-										VariableKind.RelativeFileDirname,
-									),
+										VariableKind.RelativeFileDirname
+									)
 								),
-								dirname,
+								dirname
 							);
 							return relative.length === 0 ? "." : relative;
 						}
@@ -669,33 +669,33 @@ export class AbstractVariableResolverService
 					}
 					case "fileDirname":
 						return paths.dirname(
-							getFilePath(VariableKind.FileDirname),
+							getFilePath(VariableKind.FileDirname)
 						);
 
 					case "fileExtname":
 						return paths.extname(
-							getFilePath(VariableKind.FileExtname),
+							getFilePath(VariableKind.FileExtname)
 						);
 
 					case "fileBasename":
 						return paths.basename(
-							getFilePath(VariableKind.FileBasename),
+							getFilePath(VariableKind.FileBasename)
 						);
 
 					case "fileBasenameNoExtension": {
 						const basename = paths.basename(
-							getFilePath(VariableKind.FileBasenameNoExtension),
+							getFilePath(VariableKind.FileBasenameNoExtension)
 						);
 						return basename.slice(
 							0,
-							basename.length - paths.extname(basename).length,
+							basename.length - paths.extname(basename).length
 						);
 					}
 					case "fileDirnameBasename":
 						return paths.basename(
 							paths.dirname(
-								getFilePath(VariableKind.FileDirnameBasename),
-							),
+								getFilePath(VariableKind.FileDirnameBasename)
+							)
 						);
 
 					case "execPath": {
@@ -726,7 +726,7 @@ export class AbstractVariableResolverService
 								match,
 								key,
 								commandValueMapping,
-								undefined,
+								undefined
 							);
 						} catch (error) {
 							return match;
@@ -741,7 +741,7 @@ export class AbstractVariableResolverService
 		match: string,
 		argument: string | undefined,
 		commandValueMapping: IStringDictionary<string> | undefined,
-		prefix: string | undefined,
+		prefix: string | undefined
 	): string {
 		if (argument && commandValueMapping) {
 			const v =
@@ -756,8 +756,8 @@ export class AbstractVariableResolverService
 				localize(
 					"noValueForCommand",
 					"Variable {0} can not be resolved because the command has no value.",
-					match,
-				),
+					match
+				)
 			);
 		}
 		return match;

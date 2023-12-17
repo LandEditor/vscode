@@ -8,7 +8,7 @@ import * as path from "path";
 import * as crypto from "crypto";
 
 const productjson = JSON.parse(
-	fs.readFileSync(path.join(__dirname, "../../../product.json"), "utf8"),
+	fs.readFileSync(path.join(__dirname, "../../../product.json"), "utf8")
 );
 const shasum = crypto.createHash("sha1");
 

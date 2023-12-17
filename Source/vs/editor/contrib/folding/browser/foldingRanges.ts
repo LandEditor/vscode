@@ -71,7 +71,7 @@ export class FoldingRegions {
 	constructor(
 		startIndexes: Uint32Array,
 		endIndexes: Uint32Array,
-		types?: Array<string | undefined>,
+		types?: Array<string | undefined>
 	) {
 		if (
 			startIndexes.length !== endIndexes.length ||
@@ -94,7 +94,7 @@ export class FoldingRegions {
 			const parentIndexes: number[] = [];
 			const isInsideLast = (
 				startLineNumber: number,
-				endLineNumber: number,
+				endLineNumber: number
 			) => {
 				const index = parentIndexes[parentIndexes.length - 1];
 				return (
@@ -111,7 +111,7 @@ export class FoldingRegions {
 				) {
 					throw new Error(
 						"startLineNumber or endLineNumber must not exceed " +
-							MAX_LINE_NUMBER,
+							MAX_LINE_NUMBER
 					);
 				}
 				while (
@@ -333,21 +333,21 @@ export class FoldingRegions {
 	public static sanitizeAndMerge(
 		rangesA: FoldingRegions | FoldRange[],
 		rangesB: FoldingRegions | FoldRange[],
-		maxLineNumber: number | undefined,
+		maxLineNumber: number | undefined
 	): FoldRange[] {
 		maxLineNumber = maxLineNumber ?? Number.MAX_VALUE;
 
 		const getIndexedFunction = (
 			r: FoldingRegions | FoldRange[],
-			limit: number,
+			limit: number
 		) => {
 			return Array.isArray(r)
 				? (i: number) => {
 						return i < limit ? r[i] : undefined;
-				  }
+					}
 				: (i: number) => {
 						return i < limit ? r.toFoldRange(i) : undefined;
-				  };
+					};
 		};
 		const getA = getIndexedFunction(rangesA, rangesA.length);
 		const getB = getIndexedFunction(rangesB, rangesB.length);
@@ -446,7 +446,7 @@ export class FoldingRegions {
 export class FoldingRegion {
 	constructor(
 		private readonly ranges: FoldingRegions,
-		private index: number,
+		private index: number
 	) {}
 
 	public get startLineNumber() {

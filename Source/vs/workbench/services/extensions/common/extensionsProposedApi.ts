@@ -23,27 +23,36 @@ export class ExtensionsProposedApi {
 
 	constructor(
 		@ILogService private readonly _logService: ILogService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@IProductService productService: IProductService
 	) {
-
-		this._envEnabledExtensions = new Set((_environmentService.extensionEnabledProposedApi ?? []).map(id => ExtensionIdentifier.toKey(id)));
+		this._envEnabledExtensions = new Set(
+			(_environmentService.extensionEnabledProposedApi ?? []).map((id) =>
+				ExtensionIdentifier.toKey(id)
+			)
+		);
 
 		this._envEnablesProposedApiForAll =
 			!_environmentService.isBuilt || // always allow proposed API when running out of sources
-			(_environmentService.isExtensionDevelopment && productService.quality !== 'stable') || // do not allow proposed API against stable builds when developing an extension
-			(this._envEnabledExtensions.size === 0 && Array.isArray(_environmentService.extensionEnabledProposedApi)); // always allow proposed API if --enable-proposed-api is provided without extension ID
+			(_environmentService.isExtensionDevelopment &&
+				productService.quality !== "stable") || // do not allow proposed API against stable builds when developing an extension
+			(this._envEnabledExtensions.size === 0 &&
+				Array.isArray(_environmentService.extensionEnabledProposedApi)); // always allow proposed API if --enable-proposed-api is provided without extension ID
 
 		this._productEnabledExtensions = new Map<string, ApiProposalName[]>();
 
-
 		// NEW world - product.json spells out what proposals each extension can use
 		if (productService.extensionEnabledApiProposals) {
-			for (const [k, value] of Object.entries(productService.extensionEnabledApiProposals)) {
+			for (const [k, value] of Object.entries(
+				productService.extensionEnabledApiProposals
+			)) {
 				const key = ExtensionIdentifier.toKey(k);
-				const proposalNames = value.filter(name => {
+				const proposalNames = value.filter((name) => {
 					if (!allApiProposals[<ApiProposalName>name]) {
-						_logService.warn(`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
+						_logService.warn(
+							`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`
+						);
 						return false;
 					}
 					return true;
@@ -60,7 +69,7 @@ export class ExtensionsProposedApi {
 	}
 
 	private doUpdateEnabledApiProposals(
-		_extension: IExtensionDescription,
+		_extension: IExtensionDescription
 	): void {
 		// this is a trick to make the extension description writeable...
 		type Writeable<T> = { -readonly [P in keyof T]: Writeable<T[P]> };
@@ -72,11 +81,11 @@ export class ExtensionsProposedApi {
 			extension.enabledApiProposals =
 				extension.enabledApiProposals.filter((name) => {
 					const result = Boolean(
-						allApiProposals[<ApiProposalName>name],
+						allApiProposals[<ApiProposalName>name]
 					);
 					if (!result) {
 						this._logService.error(
-							`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`,
+							`Extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`
 						);
 					}
 					return result;
@@ -95,22 +104,22 @@ export class ExtensionsProposedApi {
 			const productSet = new Set(productEnabledProposals);
 			const extensionSet = new Set(extension.enabledApiProposals);
 			const diff = new Set(
-				[...extensionSet].filter((a) => !productSet.has(a)),
+				[...extensionSet].filter((a) => !productSet.has(a))
 			);
 			if (diff.size > 0) {
 				this._logService.error(
 					`Extension '${key}' appears in product.json but enables LESS API proposals than the extension wants.\npackage.json (LOSES): ${[
 						...extensionSet,
 					].join(", ")}\nproduct.json (WINS): ${[...productSet].join(
-						", ",
-					)}`,
+						", "
+					)}`
 				);
 
 				if (this._environmentService.isExtensionDevelopment) {
 					this._logService.error(
 						`Proceeding with EXTRA proposals (${[...diff].join(
-							", ",
-						)}) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.`,
+							", "
+						)}) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.`
 					);
 					productEnabledProposals.push(...diff);
 				}
@@ -139,7 +148,7 @@ export class ExtensionsProposedApi {
 					extension.identifier.value
 				} CANNOT USE these API proposals '${
 					extension.enabledApiProposals?.join(", ") || "*"
-				}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`,
+				}'. You MUST start in extension development mode or use the --enable-proposed-api command line flag`
 			);
 			extension.enabledApiProposals = [];
 		}

@@ -18,7 +18,7 @@ export namespace WebFileSystemAccess {
 	}
 
 	export function isFileSystemHandle(
-		handle: unknown,
+		handle: unknown
 	): handle is FileSystemHandle {
 		const candidate = handle as FileSystemHandle | undefined;
 		if (!candidate) {
@@ -33,13 +33,13 @@ export namespace WebFileSystemAccess {
 	}
 
 	export function isFileSystemFileHandle(
-		handle: FileSystemHandle,
+		handle: FileSystemHandle
 	): handle is FileSystemFileHandle {
 		return handle.kind === "file";
 	}
 
 	export function isFileSystemDirectoryHandle(
-		handle: FileSystemHandle,
+		handle: FileSystemHandle
 	): handle is FileSystemDirectoryHandle {
 		return handle.kind === "directory";
 	}

@@ -46,7 +46,8 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 	}
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@IHostService private readonly hostService: IHostService
 	) {
 		super();
@@ -68,7 +69,7 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 	}
 
 	private async doCheckForUpdates(
-		explicit: boolean,
+		explicit: boolean
 	): Promise<
 		| IUpdate
 		| null /* no update available */
@@ -122,5 +123,5 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 registerSingleton(
 	IUpdateService,
 	BrowserUpdateService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

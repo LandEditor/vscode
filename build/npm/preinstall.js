@@ -15,13 +15,13 @@ if (!process.env["VSCODE_SKIP_NODE_VERSION_CHECK"]) {
 		(majorNodeVersion === 18 && minorNodeVersion < 15)
 	) {
 		console.error(
-			"\033[1;31m*** Please use node.js versions >=18.15.x and <19.\033[0;0m",
+			"\033[1;31m*** Please use node.js versions >=18.15.x and <19.\033[0;0m"
 		);
 		err = true;
 	}
 	if (majorNodeVersion >= 19) {
 		console.warn(
-			"\033[1;31m*** Warning: Versions of node.js >= 19 have not been tested.\033[0;0m",
+			"\033[1;31m*** Warning: Versions of node.js >= 19 have not been tested.\033[0;0m"
 		);
 	}
 }
@@ -48,7 +48,7 @@ if (
 
 if (!/yarn[\w-.]*\.c?js$|yarnpkg$/.test(process.env["npm_execpath"])) {
 	console.error(
-		"\033[1;31m*** Please use yarn to install dependencies.\033[0;0m",
+		"\033[1;31m*** Please use yarn to install dependencies.\033[0;0m"
 	);
 	err = true;
 }
@@ -56,7 +56,7 @@ if (!/yarn[\w-.]*\.c?js$|yarnpkg$/.test(process.env["npm_execpath"])) {
 if (process.platform === "win32") {
 	if (!hasSupportedVisualStudioVersion()) {
 		console.error(
-			"\033[1;31m*** Invalid C/C++ Compiler Toolchain. Please check https://github.com/microsoft/vscode/wiki/How-to-Contribute#prerequisites.\033[0;0m",
+			"\033[1;31m*** Invalid C/C++ Compiler Toolchain. Please check https://github.com/microsoft/vscode/wiki/How-to-Contribute#prerequisites.\033[0;0m"
 		);
 		err = true;
 	}
@@ -98,7 +98,7 @@ function hasSupportedVisualStudioVersion() {
 			];
 			if (
 				vsTypes.some((vsType) =>
-					fs.existsSync(path.join(vsPath, vsType)),
+					fs.existsSync(path.join(vsPath, vsType))
 				)
 			) {
 				availableVersions.push(version);
@@ -117,7 +117,7 @@ function hasSupportedVisualStudioVersion() {
 			];
 			if (
 				vsTypes.some((vsType) =>
-					fs.existsSync(path.join(vsPath, vsType)),
+					fs.existsSync(path.join(vsPath, vsType))
 				)
 			) {
 				availableVersions.push(version);
@@ -149,19 +149,19 @@ function installHeaders() {
 		"gyp",
 		"node_modules",
 		".bin",
-		"node-gyp.cmd",
+		"node-gyp.cmd"
 	);
 	const result = cp.execFileSync(node_gyp, ["list"], { encoding: "utf8" });
 	const versions = new Set(
 		result
 			.split(/\n/g)
 			.filter((line) => !line.startsWith("gyp info"))
-			.map((value) => value),
+			.map((value) => value)
 	);
 
 	const local = getHeaderInfo(path.join(__dirname, "..", "..", ".yarnrc"));
 	const remote = getHeaderInfo(
-		path.join(__dirname, "..", "..", "remote", ".yarnrc"),
+		path.join(__dirname, "..", "..", "remote", ".yarnrc")
 	);
 
 	if (local !== undefined && !versions.has(local.target)) {

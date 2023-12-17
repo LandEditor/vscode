@@ -96,7 +96,7 @@ function getCommitSha(repoId) {
 		function () {
 			console.error("Failed loading " + commitInfo);
 			return Promise.resolve(null);
-		},
+		}
 	);
 }
 
@@ -176,8 +176,8 @@ function downloadBinary(source, dest) {
 					e(
 						new Error(
 							"Server responded with status code " +
-								response.statusCode,
-						),
+								response.statusCode
+						)
 					);
 			}
 		});
@@ -211,7 +211,7 @@ function darkenColor(color) {
 	let res = "#";
 	for (let i = 1; i < 7; i += 2) {
 		const newVal = Math.round(
-			parseInt("0x" + color.substr(i, 2), 16) * 0.9,
+			parseInt("0x" + color.substr(i, 2), 16) * 0.9
 		);
 		const hex = newVal.toString(16);
 		if (hex.length === 1) {
@@ -264,7 +264,7 @@ function getLanguageMappings() {
 							mapping.filenamePatterns = filenamePatterns.map(
 								function (f) {
 									return f.toLowerCase();
-								},
+								}
 							);
 						}
 						const existing = langMappings[languageId];
@@ -278,7 +278,7 @@ function getLanguageMappings() {
 								mergeMapping(
 									mapping,
 									existing,
-									"filenamePatterns",
+									"filenamePatterns"
 								);
 								langMappings[languageId] = mapping;
 							} else {
@@ -287,7 +287,7 @@ function getLanguageMappings() {
 								mergeMapping(
 									existing,
 									mapping,
-									"filenamePatterns",
+									"filenamePatterns"
 								);
 							}
 						} else {
@@ -504,7 +504,7 @@ exports.update = function () {
 							lang +
 							": no icon for " +
 							superLang +
-							" defined",
+							" defined"
 					);
 				}
 			}
@@ -528,7 +528,7 @@ exports.update = function () {
 						]["commitHash"] = info.commitSha;
 						fs.writeFileSync(
 							cgmanifestPath,
-							JSON.stringify(cgmanifestContent, null, "\t"),
+							JSON.stringify(cgmanifestContent, null, "\t")
 						);
 						console.log("updated " + cgmanifestPath);
 
@@ -537,7 +537,7 @@ exports.update = function () {
 								info.commitSha.substr(0, 7) +
 								" (" +
 								info.commitDate.substr(0, 10) +
-								")",
+								")"
 						);
 					} catch (e) {
 						console.error(e);

@@ -45,25 +45,33 @@ export abstract class AbstractEditorWithViewState<
 		id: string,
 		viewStateStorageKey: string,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorService protected readonly editorService: IEditorService,
-		@IEditorGroupsService protected readonly editorGroupService: IEditorGroupsService
+		@IEditorGroupsService
+		protected readonly editorGroupService: IEditorGroupsService
 	) {
 		super(id, telemetryService, themeService, storageService);
 
-		this.viewState = this.getEditorMemento<T>(editorGroupService, textResourceConfigurationService, viewStateStorageKey, 100);
+		this.viewState = this.getEditorMemento<T>(
+			editorGroupService,
+			textResourceConfigurationService,
+			viewStateStorageKey,
+			100
+		);
 	}
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined,
+		group: IEditorGroup | undefined
 	): void {
 		// Listen to close events to trigger `onWillCloseEditorInGroup`
 		this.groupListener.value = group?.onWillCloseEditor((e) =>
-			this.onWillCloseEditor(e),
+			this.onWillCloseEditor(e)
 		);
 
 		super.setEditorVisible(visible, group);
@@ -120,7 +128,7 @@ export abstract class AbstractEditorWithViewState<
 					Event.once(input.onWillDispose)(() => {
 						this.clearEditorViewState(resource, this.group);
 						this.editorViewStateDisposables?.delete(input);
-					}),
+					})
 				);
 			}
 		}
@@ -144,7 +152,7 @@ export abstract class AbstractEditorWithViewState<
 
 	private shouldRestoreEditorViewState(
 		input: EditorInput,
-		context?: IEditorOpenContext,
+		context?: IEditorOpenContext
 	): boolean {
 		// new editor: check with workbench.editor.restoreViewState setting
 		if (context?.newInGroup) {
@@ -152,7 +160,7 @@ export abstract class AbstractEditorWithViewState<
 				EditorResourceAccessor.getOriginalUri(input, {
 					supportSideBySide: SideBySideEditor.PRIMARY,
 				}),
-				"workbench.editor.restoreViewState",
+				"workbench.editor.restoreViewState"
 			) === false
 				? false
 				: true /* restore by default */;
@@ -191,7 +199,7 @@ export abstract class AbstractEditorWithViewState<
 
 	protected loadEditorViewState(
 		input: EditorInput | undefined,
-		context?: IEditorOpenContext,
+		context?: IEditorOpenContext
 	): T | undefined {
 		if (!input || !this.group) {
 			return undefined; // we need valid input
@@ -216,7 +224,7 @@ export abstract class AbstractEditorWithViewState<
 	protected moveEditorViewState(
 		source: URI,
 		target: URI,
-		comparer: IExtUri,
+		comparer: IExtUri
 	): void {
 		return this.viewState.moveEditorState(source, target, comparer);
 	}
@@ -273,7 +281,7 @@ export abstract class AbstractEditorWithViewState<
 	 * Asks to return the `URI` to associate with the view state.
 	 */
 	protected abstract toEditorViewStateResource(
-		input: EditorInput,
+		input: EditorInput
 	): URI | undefined;
 
 	//#endregion

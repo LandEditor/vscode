@@ -16,7 +16,7 @@ type RegexpModel = {
 	detect: (
 		inp: string,
 		langBiases: Record<string, number>,
-		supportedLangs?: string[],
+		supportedLangs?: string[]
 	) => string | undefined;
 };
 
@@ -49,7 +49,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 		uri: string,
 		langBiases: Record<string, number> | undefined,
 		preferHistory: boolean,
-		supportedLangs?: string[],
+		supportedLangs?: string[]
 	): Promise<string | undefined> {
 		const languages: string[] = [];
 		const confidences: number[] = [];
@@ -61,14 +61,14 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 
 		const neuralResolver = async () => {
 			for await (const language of this.detectLanguagesImpl(
-				documentTextSample,
+				documentTextSample
 			)) {
 				if (!this.modelIdToCoreId.has(language.languageId)) {
 					this.modelIdToCoreId.set(
 						language.languageId,
 						await this._host.fhr("getLanguageId", [
 							language.languageId,
-						]),
+						])
 					);
 				}
 				const coreId = this.modelIdToCoreId.get(language.languageId);
@@ -97,7 +97,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 			this.runRegexpModel(
 				documentTextSample,
 				langBiases ?? {},
-				supportedLangs,
+				supportedLangs
 			);
 
 		if (preferHistory) {
@@ -160,7 +160,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 	private async runRegexpModel(
 		content: string,
 		langBiases: Record<string, number>,
-		supportedLangs?: string[],
+		supportedLangs?: string[]
 	): Promise<string | undefined> {
 		const regexpModel = await this.getRegexpModel();
 		if (!regexpModel) {
@@ -181,7 +181,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 		const detected = regexpModel.detect(
 			content,
 			langBiases,
-			supportedLangs,
+			supportedLangs
 		);
 		return detected;
 	}
@@ -198,7 +198,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 		this._modelOperations = new ModelOperations({
 			modelJsonLoaderFunc: async () => {
 				const response = await fetch(
-					await this._host.fhr("getModelJsonUri", []),
+					await this._host.fhr("getModelJsonUri", [])
 				);
 				try {
 					const modelJSON = await response.json();
@@ -210,7 +210,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 			},
 			weightsLoaderFunc: async () => {
 				const response = await fetch(
-					await this._host.fhr("getWeightsUri", []),
+					await this._host.fhr("getWeightsUri", [])
 				);
 				const buffer = await response.arrayBuffer();
 				return buffer;
@@ -276,7 +276,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 	}
 
 	private async *detectLanguagesImpl(
-		content: string,
+		content: string
 	): AsyncGenerator<ModelResult, void, unknown> {
 		if (this._loadFailed) {
 			return;

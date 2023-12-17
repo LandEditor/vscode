@@ -55,25 +55,31 @@ class NativeLocaleService implements ILocaleService {
 	_serviceBrand: undefined;
 
 	constructor(
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@ILanguagePackService private readonly languagePackService: ILanguagePackService,
-		@IPaneCompositePartService private readonly paneCompositePartService: IPaneCompositePartService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@ILanguagePackService
+		private readonly languagePackService: ILanguagePackService,
+		@IPaneCompositePartService
+		private readonly paneCompositePartService: IPaneCompositePartService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IProgressService private readonly progressService: IProgressService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IHostService private readonly hostService: IHostService,
 		@IProductService private readonly productService: IProductService
-	) { }
+	) {}
 
 	private async validateLocaleFile(): Promise<boolean> {
 		try {
 			const content = await this.textFileService.read(
 				this.environmentService.argvResource,
-				{ encoding: "utf8" },
+				{ encoding: "utf8" }
 			);
 
 			// This is the same logic that we do where argv.json is parsed so mirror that:
@@ -84,7 +90,7 @@ class NativeLocaleService implements ILocaleService {
 				severity: Severity.Error,
 				message: localize(
 					"argvInvalid",
-					"Unable to write display language. Please open the runtime settings, correct errors/warnings in it and try again.",
+					"Unable to write display language. Please open the runtime settings, correct errors/warnings in it and try again."
 				),
 				actions: {
 					primary: [
@@ -92,7 +98,7 @@ class NativeLocaleService implements ILocaleService {
 							id: "openArgv",
 							label: localize(
 								"openArgv",
-								"Open Runtime Settings",
+								"Open Runtime Settings"
 							),
 							run: () =>
 								this.editorService.openEditor({
@@ -109,7 +115,7 @@ class NativeLocaleService implements ILocaleService {
 	}
 
 	private async writeLocaleValue(
-		locale: string | undefined,
+		locale: string | undefined
 	): Promise<boolean> {
 		if (!(await this.validateLocaleFile())) {
 			return false;
@@ -117,14 +123,14 @@ class NativeLocaleService implements ILocaleService {
 		await this.jsonEditingService.write(
 			this.environmentService.argvResource,
 			[{ path: ["locale"], value: locale }],
-			true,
+			true
 		);
 		return true;
 	}
 
 	async setLocale(
 		languagePackItem: ILanguagePackItem,
-		skipDialog = false,
+		skipDialog = false
 	): Promise<void> {
 		const locale = languagePackItem.id;
 		if (
@@ -141,7 +147,7 @@ class NativeLocaleService implements ILocaleService {
 			if (
 				!installedLanguages.some(
 					(installedLanguage) =>
-						installedLanguage.id === languagePackItem.id,
+						installedLanguage.id === languagePackItem.id
 				)
 			) {
 				// Only actually install a language pack from Microsoft
@@ -154,7 +160,7 @@ class NativeLocaleService implements ILocaleService {
 					const viewlet =
 						await this.paneCompositePartService.openPaneComposite(
 							EXTENSIONS_VIEWLET_ID,
-							ViewContainerLocation.Sidebar,
+							ViewContainerLocation.Sidebar
 						);
 					(
 						viewlet?.getViewPaneContainer() as IExtensionsViewPaneContainer
@@ -168,7 +174,7 @@ class NativeLocaleService implements ILocaleService {
 						title: localize(
 							"installing",
 							"Installing {0} language support...",
-							languagePackItem.label,
+							languagePackItem.label
 						),
 					},
 					(progress) =>
@@ -177,8 +183,8 @@ class NativeLocaleService implements ILocaleService {
 							{
 								// Setting this to false is how you get the extension to be synced with Settings Sync (if enabled).
 								isMachineScoped: false,
-							},
-						),
+							}
+						)
 				);
 			}
 
@@ -212,20 +218,20 @@ class NativeLocaleService implements ILocaleService {
 				"restartDisplayLanguageMessage1",
 				"Restart {0} to switch to {1}?",
 				this.productService.nameLong,
-				languageName,
+				languageName
 			),
 			detail: localize(
 				"restartDisplayLanguageDetail1",
 				"To change the display language to {0}, {1} needs to restart.",
 				languageName,
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			primaryButton: localize(
 				{
 					key: "restart",
 					comment: ["&& denotes a mnemonic character"],
 				},
-				"&&Restart",
+				"&&Restart"
 			),
 		});
 
@@ -239,8 +245,9 @@ class NativeActiveLanguagePackService implements IActiveLanguagePackService {
 	_serviceBrand: undefined;
 
 	constructor(
-		@ILanguagePackService private readonly languagePackService: ILanguagePackService
-	) { }
+		@ILanguagePackService
+		private readonly languagePackService: ILanguagePackService
+	) {}
 
 	async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
 		const language = Language.value();
@@ -257,10 +264,10 @@ class NativeActiveLanguagePackService implements IActiveLanguagePackService {
 registerSingleton(
 	ILocaleService,
 	NativeLocaleService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IActiveLanguagePackService,
 	NativeActiveLanguagePackService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

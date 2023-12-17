@@ -30,7 +30,7 @@ export class TerminalLinkProviderService
 	}
 
 	registerLinkProvider(
-		linkProvider: ITerminalExternalLinkProvider,
+		linkProvider: ITerminalExternalLinkProvider
 	): IDisposable {
 		const disposables: IDisposable[] = [];
 		this._linkProviders.add(linkProvider);

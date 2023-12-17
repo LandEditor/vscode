@@ -37,11 +37,11 @@ export interface IWorkspacesService {
 
 	// Workspaces Management
 	enterWorkspace(
-		workspaceUri: URI,
+		workspaceUri: URI
 	): Promise<IEnterWorkspaceResult | undefined>;
 	createUntitledWorkspace(
 		folders?: IWorkspaceFolderCreationData[],
-		remoteAuthority?: string,
+		remoteAuthority?: string
 	): Promise<IWorkspaceIdentifier>;
 	deleteUntitledWorkspace(workspace: IWorkspaceIdentifier): Promise<void>;
 	getWorkspaceIdentifier(workspaceUri: URI): Promise<IWorkspaceIdentifier>;
@@ -103,13 +103,13 @@ export function isRecentFile(curr: IRecent): curr is IRecentFile {
 //#region Workspace File Utilities
 
 export function isStoredWorkspaceFolder(
-	obj: unknown,
+	obj: unknown
 ): obj is IStoredWorkspaceFolder {
 	return isRawFileWorkspaceFolder(obj) || isRawUriWorkspaceFolder(obj);
 }
 
 function isRawFileWorkspaceFolder(
-	obj: unknown,
+	obj: unknown
 ): obj is IRawFileWorkspaceFolder {
 	const candidate = obj as IRawFileWorkspaceFolder | undefined;
 
@@ -167,7 +167,7 @@ export function getStoredWorkspaceFolder(
 	forceAbsolute: boolean,
 	folderName: string | undefined,
 	targetConfigFolderURI: URI,
-	extUri: IExtUri,
+	extUri: IExtUri
 ): IStoredWorkspaceFolder {
 	// Scheme mismatch: use full absolute URI as `uri`
 	if (folderURI.scheme !== targetConfigFolderURI.scheme) {
@@ -204,7 +204,7 @@ export function getStoredWorkspaceFolder(
 		else if (
 			!extUri.isEqualAuthority(
 				folderURI.authority,
-				targetConfigFolderURI.authority,
+				targetConfigFolderURI.authority
 			)
 		) {
 			return { name: folderName, uri: folderURI.toString(true) };
@@ -236,7 +236,7 @@ function massagePathForWindows(folderPath: string) {
 export function toWorkspaceFolders(
 	configuredFolders: IStoredWorkspaceFolder[],
 	workspaceConfigFile: URI,
-	extUri: IExtUri,
+	extUri: IExtUri
 ): WorkspaceFolder[] {
 	const result: WorkspaceFolder[] = [];
 	const seen: Set<string> = new Set();
@@ -270,8 +270,8 @@ export function toWorkspaceFolders(
 				result.push(
 					new WorkspaceFolder(
 						{ uri, name, index: result.length },
-						configuredFolder,
-					),
+						configuredFolder
+					)
 				);
 			}
 		}
@@ -289,11 +289,11 @@ export function rewriteWorkspaceFileForNewLocation(
 	configPathURI: URI,
 	isFromUntitledWorkspace: boolean,
 	targetConfigPathURI: URI,
-	extUri: IExtUri,
+	extUri: IExtUri
 ) {
 	const storedWorkspace = doParseStoredWorkspace(
 		configPathURI,
-		rawWorkspaceContents,
+		rawWorkspaceContents
 	);
 
 	const sourceConfigFolder = extUri.dirname(configPathURI);
@@ -318,8 +318,8 @@ export function rewriteWorkspaceFileForNewLocation(
 				absolute,
 				folder.name,
 				targetConfigFolder,
-				extUri,
-			),
+				extUri
+			)
 		);
 	}
 
@@ -334,14 +334,14 @@ export function rewriteWorkspaceFileForNewLocation(
 		rawWorkspaceContents,
 		["folders"],
 		rewrittenFolders,
-		formattingOptions,
+		formattingOptions
 	);
 	let newContent = jsonEdit.applyEdits(rawWorkspaceContents, edits);
 
 	if (
 		isEqualAuthority(
 			storedWorkspace.remoteAuthority,
-			getRemoteAuthority(targetConfigPathURI),
+			getRemoteAuthority(targetConfigPathURI)
 		)
 	) {
 		// unsaved remote workspaces have the remoteAuthority set. Remove it when no longer nexessary.
@@ -350,8 +350,8 @@ export function rewriteWorkspaceFileForNewLocation(
 			jsonEdit.removeProperty(
 				newContent,
 				["remoteAuthority"],
-				formattingOptions,
-			),
+				formattingOptions
+			)
 		);
 	}
 
@@ -365,7 +365,7 @@ function doParseStoredWorkspace(path: URI, contents: string): IStoredWorkspace {
 	// Filter out folders which do not have a path or uri set
 	if (storedWorkspace && Array.isArray(storedWorkspace.folders)) {
 		storedWorkspace.folders = storedWorkspace.folders.filter((folder) =>
-			isStoredWorkspaceFolder(folder),
+			isStoredWorkspaceFolder(folder)
 		);
 	} else {
 		throw new Error(`${path} looks like an invalid workspace file.`);
@@ -410,7 +410,7 @@ interface ISerializedRecentlyOpened {
 export type RecentlyOpenedStorageData = object;
 
 function isSerializedRecentWorkspace(
-	data: any,
+	data: any
 ): data is ISerializedRecentWorkspace {
 	return (
 		data.workspace &&
@@ -430,13 +430,13 @@ function isSerializedRecentFile(data: any): data is ISerializedRecentFile {
 
 export function restoreRecentlyOpened(
 	data: RecentlyOpenedStorageData | undefined,
-	logService: ILogService,
+	logService: ILogService
 ): IRecentlyOpened {
 	const result: IRecentlyOpened = { workspaces: [], files: [] };
 	if (data) {
 		const restoreGracefully = function <T>(
 			entries: T[],
-			onEntry: (entry: T, index: number) => void,
+			onEntry: (entry: T, index: number) => void
 		) {
 			for (let i = 0; i < entries.length; i++) {
 				try {
@@ -444,8 +444,8 @@ export function restoreRecentlyOpened(
 				} catch (e) {
 					logService.warn(
 						`Error restoring recent entry ${JSON.stringify(
-							entries[i],
-						)}: ${e.toString()}. Skip entry.`,
+							entries[i]
+						)}: ${e.toString()}. Skip entry.`
 					);
 				}
 			}
@@ -487,7 +487,7 @@ export function restoreRecentlyOpened(
 }
 
 export function toStoreData(
-	recents: IRecentlyOpened,
+	recents: IRecentlyOpened
 ): RecentlyOpenedStorageData {
 	const serialized: ISerializedRecentlyOpened = { entries: [] };
 

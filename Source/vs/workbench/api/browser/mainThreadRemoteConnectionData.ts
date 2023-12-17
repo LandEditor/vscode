@@ -21,20 +21,29 @@ export class MainThreadRemoteConnectionData extends Disposable {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService
+		@IWorkbenchEnvironmentService
+		protected readonly _environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostExtensionService);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostExtensionService
+		);
 
 		const remoteAuthority = this._environmentService.remoteAuthority;
 		if (remoteAuthority) {
-			this._register(remoteAuthorityResolverService.onDidChangeConnectionData(() => {
-				const connectionData = remoteAuthorityResolverService.getConnectionData(remoteAuthority);
-				if (connectionData) {
-					this._proxy.$updateRemoteConnectionData(connectionData);
-				}
-			}));
+			this._register(
+				remoteAuthorityResolverService.onDidChangeConnectionData(() => {
+					const connectionData =
+						remoteAuthorityResolverService.getConnectionData(
+							remoteAuthority
+						);
+					if (connectionData) {
+						this._proxy.$updateRemoteConnectionData(connectionData);
+					}
+				})
+			);
 		}
 	}
 }

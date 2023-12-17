@@ -25,7 +25,7 @@ declare module "vscode" {
 			document: TextDocument,
 			ranges: readonly Range[],
 			dataTransfer: DataTransfer,
-			token: CancellationToken,
+			token: CancellationToken
 		): void | Thenable<void>;
 
 		/**
@@ -44,7 +44,7 @@ declare module "vscode" {
 			document: TextDocument,
 			ranges: readonly Range[],
 			dataTransfer: DataTransfer,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<DocumentPasteEdit>;
 	}
 
@@ -116,7 +116,7 @@ declare module "vscode" {
 		export function registerDocumentPasteEditProvider(
 			selector: DocumentSelector,
 			provider: DocumentPasteEditProvider,
-			metadata: DocumentPasteProviderMetadata,
+			metadata: DocumentPasteProviderMetadata
 		): Disposable;
 	}
 }

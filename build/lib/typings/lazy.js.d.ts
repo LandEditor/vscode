@@ -13,13 +13,13 @@ declare module Lazy {
 	function strict(): StrictLazy;
 	function generate<T>(
 		generatorFn: GeneratorCallback<T>,
-		length?: number,
+		length?: number
 	): GeneratedSequence<T>;
 	function range(to: number): GeneratedSequence<number>;
 	function range(
 		from: number,
 		to: number,
-		step?: number,
+		step?: number
 	): GeneratedSequence<number>;
 	function repeat<T>(value: T, count?: number): GeneratedSequence<T>;
 	function on<T>(eventType: string): Sequence<T>;
@@ -35,13 +35,13 @@ declare module Lazy {
 		strict(): StrictLazy;
 		generate<T>(
 			generatorFn: GeneratorCallback<T>,
-			length?: number,
+			length?: number
 		): GeneratedSequence<T>;
 		range(to: number): GeneratedSequence<number>;
 		range(
 			from: number,
 			to: number,
-			step?: number,
+			step?: number
 		): GeneratedSequence<number>;
 		repeat<T>(value: T, count?: number): GeneratedSequence<T>;
 		on<T>(eventType: string): Sequence<T>;
@@ -109,7 +109,7 @@ declare module Lazy {
 	interface GeneratedSequence<T> extends Sequence<T> {
 		new (
 			generatorFn: GeneratorCallback<T>,
-			length: number,
+			length: number
 		): GeneratedSequence<T>;
 		length(): number;
 	}

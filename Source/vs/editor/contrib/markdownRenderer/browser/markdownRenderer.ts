@@ -46,7 +46,7 @@ export class MarkdownRenderer {
 			createHTML(html: string) {
 				return html;
 			},
-		},
+		}
 	);
 
 	private readonly _onDidRenderAsync = new Emitter<void>();
@@ -55,8 +55,8 @@ export class MarkdownRenderer {
 	constructor(
 		private readonly _options: IMarkdownRendererOptions,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IOpenerService private readonly _openerService: IOpenerService,
-	) { }
+		@IOpenerService private readonly _openerService: IOpenerService
+	) {}
 
 	dispose(): void {
 		this._onDidRenderAsync.dispose();
@@ -65,7 +65,7 @@ export class MarkdownRenderer {
 	render(
 		markdown: IMarkdownString | undefined,
 		options?: MarkdownRenderOptions,
-		markedOptions?: MarkedOptions,
+		markedOptions?: MarkedOptions
 	): IMarkdownRenderResult {
 		if (!markdown) {
 			const element = document.createElement("span");
@@ -80,8 +80,8 @@ export class MarkdownRenderer {
 					...this._getRenderOptions(markdown, disposables),
 					...options,
 				},
-				markedOptions,
-			),
+				markedOptions
+			)
 		);
 		rendered.element.classList.add("rendered-markdown");
 		return {
@@ -92,7 +92,7 @@ export class MarkdownRenderer {
 
 	protected _getRenderOptions(
 		markdown: IMarkdownString,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): MarkdownRenderOptions {
 		return {
 			codeBlockRenderer: async (languageAlias, value) => {
@@ -103,7 +103,7 @@ export class MarkdownRenderer {
 				if (languageAlias) {
 					languageId =
 						this._languageService.getLanguageIdByLanguageName(
-							languageAlias,
+							languageAlias
 						);
 				} else if (this._options.editor) {
 					languageId = this._options.editor
@@ -116,19 +116,19 @@ export class MarkdownRenderer {
 				const html = await tokenizeToString(
 					this._languageService,
 					value,
-					languageId,
+					languageId
 				);
 
 				const element = document.createElement("span");
 
 				element.innerHTML = (MarkdownRenderer._ttpTokenizer?.createHTML(
-					html,
+					html
 				) ?? html) as string;
 
 				// use "good" font
 				if (this._options.editor) {
 					const fontInfo = this._options.editor.getOption(
-						EditorOption.fontInfo,
+						EditorOption.fontInfo
 					);
 					applyFontInfo(element, fontInfo);
 				} else if (this._options.codeBlockFontFamily) {
@@ -148,7 +148,7 @@ export class MarkdownRenderer {
 					openLinkFromMarkdown(
 						this._openerService,
 						link,
-						markdown.isTrusted,
+						markdown.isTrusted
 					),
 				disposables: disposables,
 			},
@@ -159,7 +159,7 @@ export class MarkdownRenderer {
 export async function openLinkFromMarkdown(
 	openerService: IOpenerService,
 	link: string,
-	isTrusted: boolean | MarkdownStringTrustedOptions | undefined,
+	isTrusted: boolean | MarkdownStringTrustedOptions | undefined
 ): Promise<boolean> {
 	try {
 		return await openerService.open(link, {
@@ -174,7 +174,7 @@ export async function openLinkFromMarkdown(
 }
 
 function toAllowCommandsOption(
-	isTrusted: boolean | MarkdownStringTrustedOptions | undefined,
+	isTrusted: boolean | MarkdownStringTrustedOptions | undefined
 ): boolean | readonly string[] {
 	if (isTrusted === true) {
 		return true; // Allow all commands

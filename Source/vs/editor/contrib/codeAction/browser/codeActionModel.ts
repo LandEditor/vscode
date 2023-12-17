@@ -46,7 +46,7 @@ import { IConfigurationService } from "vs/platform/configuration/common/configur
 
 export const SUPPORTED_CODE_ACTIONS = new RawContextKey<string>(
 	"supportedCodeAction",
-	"",
+	""
 );
 
 type TriggeredCodeAction = {
@@ -61,20 +61,16 @@ class CodeActionOracle extends Disposable {
 		private readonly _editor: ICodeEditor,
 		private readonly _markerService: IMarkerService,
 		private readonly _signalChange: (
-			triggered: TriggeredCodeAction | undefined,
+			triggered: TriggeredCodeAction | undefined
 		) => void,
-		private readonly _delay: number = 250,
+		private readonly _delay: number = 250
 	) {
 		super();
 		this._register(
-			this._markerService.onMarkerChanged((e) =>
-				this._onMarkerChanges(e),
-			),
+			this._markerService.onMarkerChanged((e) => this._onMarkerChanges(e))
 		);
 		this._register(
-			this._editor.onDidChangeCursorPosition(() =>
-				this._tryAutoTrigger(),
-			),
+			this._editor.onDidChangeCursorPosition(() => this._tryAutoTrigger())
 		);
 	}
 
@@ -104,7 +100,7 @@ class CodeActionOracle extends Disposable {
 	}
 
 	private _getRangeOfSelectionUnlessWhitespaceEnclosed(
-		trigger: CodeActionTrigger,
+		trigger: CodeActionTrigger
 	): Selection | undefined {
 		if (!this._editor.hasModel()) {
 			return undefined;
@@ -169,7 +165,7 @@ export namespace CodeActionsState {
 		constructor(
 			public readonly trigger: CodeActionTrigger,
 			public readonly position: Position,
-			private readonly _cancellablePromise: CancelablePromise<CodeActionSet>,
+			private readonly _cancellablePromise: CancelablePromise<CodeActionSet>
 		) {
 			this.actions = _cancellablePromise.catch((e): CodeActionSet => {
 				if (isCancellationError(e)) {
@@ -199,14 +195,14 @@ const emptyCodeActionSet = Object.freeze<CodeActionSet>({
 
 export class CodeActionModel extends Disposable {
 	private readonly _codeActionOracle = this._register(
-		new MutableDisposable<CodeActionOracle>(),
+		new MutableDisposable<CodeActionOracle>()
 	);
 	private _state: CodeActionsState.State = CodeActionsState.Empty;
 
 	private readonly _supportedCodeActions: IContextKey<string>;
 
 	private readonly _onDidChangeState = this._register(
-		new Emitter<CodeActionsState.State>(),
+		new Emitter<CodeActionsState.State>()
 	);
 	public readonly onDidChangeState = this._onDidChangeState.event;
 
@@ -218,7 +214,7 @@ export class CodeActionModel extends Disposable {
 		private readonly _markerService: IMarkerService,
 		contextKeyService: IContextKeyService,
 		private readonly _progressService?: IEditorProgressService,
-		private readonly _configurationService?: IConfigurationService,
+		private readonly _configurationService?: IConfigurationService
 	) {
 		super();
 		this._supportedCodeActions =
@@ -226,7 +222,7 @@ export class CodeActionModel extends Disposable {
 
 		this._register(this._editor.onDidChangeModel(() => this._update()));
 		this._register(
-			this._editor.onDidChangeModelLanguage(() => this._update()),
+			this._editor.onDidChangeModelLanguage(() => this._update())
 		);
 		this._register(this._registry.onDidChange(() => this._update()));
 		this._register(
@@ -234,7 +230,7 @@ export class CodeActionModel extends Disposable {
 				if (e.hasChanged(EditorOption.lightbulb)) {
 					this._update();
 				}
-			}),
+			})
 		);
 		this._update();
 	}
@@ -254,8 +250,8 @@ export class CodeActionModel extends Disposable {
 		return this._configurationService
 			? this._configurationService.getValue(
 					"editor.codeActionWidget.includeNearbyQuickFixes",
-					{ resource: model?.uri },
-			  )
+					{ resource: model?.uri }
+				)
 			: false;
 	}
 
@@ -298,7 +294,7 @@ export class CodeActionModel extends Disposable {
 							(trigger.trigger.triggerAction ===
 								CodeActionTriggerSource.QuickFix ||
 								trigger.trigger.filter?.include?.contains(
-									CodeActionKind.QuickFix,
+									CodeActionKind.QuickFix
 								))
 						) {
 							const codeActionSet = await getCodeActions(
@@ -307,7 +303,7 @@ export class CodeActionModel extends Disposable {
 								trigger.selection,
 								trigger.trigger,
 								Progress.None,
-								token,
+								token
 							);
 							const allCodeActions = [
 								...codeActionSet.allActions,
@@ -322,10 +318,10 @@ export class CodeActionModel extends Disposable {
 									action.action.kind
 										? CodeActionKind.QuickFix.contains(
 												new CodeActionKind(
-													action.action.kind,
-												),
-										  )
-										: false,
+													action.action.kind
+												)
+											)
+										: false
 								);
 
 							if (!foundQuickfix) {
@@ -355,7 +351,7 @@ export class CodeActionModel extends Disposable {
 										) {
 											trackedPosition = new Position(
 												row,
-												col,
+												col
 											);
 											const newCodeActionTrigger: CodeActionTrigger =
 												{
@@ -390,7 +386,7 @@ export class CodeActionModel extends Disposable {
 													trackedPosition.lineNumber,
 													trackedPosition.column,
 													trackedPosition.lineNumber,
-													trackedPosition.column,
+													trackedPosition.column
 												);
 											const actionsAtMarker =
 												await getCodeActions(
@@ -399,7 +395,7 @@ export class CodeActionModel extends Disposable {
 													selectionAsPosition,
 													newCodeActionTrigger,
 													Progress.None,
-													token,
+													token
 												);
 
 											if (
@@ -416,7 +412,7 @@ export class CodeActionModel extends Disposable {
 														.length === 0
 												) {
 													allCodeActions.push(
-														...actionsAtMarker.allActions,
+														...actionsAtMarker.allActions
 													);
 												}
 
@@ -424,20 +420,20 @@ export class CodeActionModel extends Disposable {
 												if (
 													Math.abs(
 														currPosition.column -
-															col,
+															col
 													) < distance
 												) {
 													currentActions.unshift(
-														...actionsAtMarker.validActions,
+														...actionsAtMarker.validActions
 													);
 												} else {
 													currentActions.push(
-														...actionsAtMarker.validActions,
+														...actionsAtMarker.validActions
 													);
 												}
 											}
 											distance = Math.abs(
-												currPosition.column - col,
+												currPosition.column - col
 											);
 										}
 									}
@@ -447,8 +443,8 @@ export class CodeActionModel extends Disposable {
 												self.findIndex(
 													(a) =>
 														a.action.title ===
-														action.action.title,
-												) === index,
+														action.action.title
+												) === index
 										);
 
 									filteredActions.sort((a, b) => {
@@ -500,7 +496,7 @@ export class CodeActionModel extends Disposable {
 							trigger.selection,
 							trigger.trigger,
 							Progress.None,
-							token,
+							token
 						);
 					});
 					if (trigger.trigger.type === CodeActionTriggerType.Invoke) {
@@ -510,11 +506,11 @@ export class CodeActionModel extends Disposable {
 						new CodeActionsState.Triggered(
 							trigger.trigger,
 							startPosition,
-							actions,
-						),
+							actions
+						)
 					);
 				},
-				undefined,
+				undefined
 			);
 			this._codeActionOracle.value.trigger({
 				type: CodeActionTriggerType.Auto,

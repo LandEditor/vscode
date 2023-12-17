@@ -29,48 +29,70 @@ export class ListTopCellToolbar extends Disposable {
 
 		contextKeyService: IContextKeyService,
 		insertionIndicatorContainer: HTMLElement,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IContextMenuService protected readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		protected readonly contextMenuService: IContextMenuService,
 		@IMenuService protected readonly menuService: IMenuService
 	) {
 		super();
 
-		this.topCellToolbar = DOM.append(insertionIndicatorContainer, DOM.$('.cell-list-top-cell-toolbar-container'));
+		this.topCellToolbar = DOM.append(
+			insertionIndicatorContainer,
+			DOM.$(".cell-list-top-cell-toolbar-container")
+		);
 
-		this.toolbar = this._register(instantiationService.createInstance(MenuWorkbenchToolBar, this.topCellToolbar, this.notebookEditor.creationOptions.menuIds.cellTopInsertToolbar, {
-			actionViewItemProvider: action => {
-				if (action instanceof MenuItemAction) {
-					const item = this.instantiationService.createInstance(CodiconActionViewItem, action, undefined);
-					return item;
+		this.toolbar = this._register(
+			instantiationService.createInstance(
+				MenuWorkbenchToolBar,
+				this.topCellToolbar,
+				this.notebookEditor.creationOptions.menuIds
+					.cellTopInsertToolbar,
+				{
+					actionViewItemProvider: (action) => {
+						if (action instanceof MenuItemAction) {
+							const item =
+								this.instantiationService.createInstance(
+									CodiconActionViewItem,
+									action,
+									undefined
+								);
+							return item;
+						}
+
+						return undefined;
+					},
+					menuOptions: {
+						shouldForwardArgs: true,
+					},
+					toolbarOptions: {
+						primaryGroup: (g: string) => /^inline/.test(g),
+					},
+					hiddenItemStrategy: HiddenItemStrategy.Ignore,
 				}
-
-				return undefined;
-			},
-			menuOptions: {
-				shouldForwardArgs: true
-			},
-			toolbarOptions: {
-				primaryGroup: (g: string) => /^inline/.test(g),
-			},
-			hiddenItemStrategy: HiddenItemStrategy.Ignore,
-		}));
+			)
+		);
 
 		this.toolbar.context = <INotebookActionContext>{
-			notebookEditor
+			notebookEditor,
 		};
 
 		// update toolbar container css based on cell list length
-		this._register(this.notebookEditor.onDidChangeModel(() => {
-			this._modelDisposables.clear();
+		this._register(
+			this.notebookEditor.onDidChangeModel(() => {
+				this._modelDisposables.clear();
 
-			if (this.notebookEditor.hasModel()) {
-				this._modelDisposables.add(this.notebookEditor.onDidChangeViewCells(() => {
+				if (this.notebookEditor.hasModel()) {
+					this._modelDisposables.add(
+						this.notebookEditor.onDidChangeViewCells(() => {
+							this.updateClass();
+						})
+					);
+
 					this.updateClass();
-				}));
-
-				this.updateClass();
-			}
-		}));
+				}
+			})
+		);
 
 		this.updateClass();
 	}

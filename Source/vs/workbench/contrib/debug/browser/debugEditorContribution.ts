@@ -118,8 +118,8 @@ export const debugInlineForeground = registerColor(
 	},
 	nls.localize(
 		"editor.inlineValuesForeground",
-		"Color for the debug inline value text.",
-	),
+		"Color for the debug inline value text."
+	)
 );
 
 export const debugInlineBackground = registerColor(
@@ -132,18 +132,21 @@ export const debugInlineBackground = registerColor(
 	},
 	nls.localize(
 		"editor.inlineValuesBackground",
-		"Color for the debug inline value background.",
-	),
+		"Color for the debug inline value background."
+	)
 );
 
 class InlineSegment {
-	constructor(public column: number, public text: string) {}
+	constructor(
+		public column: number,
+		public text: string
+	) {}
 }
 
 function createInlineValueDecoration(
 	lineNumber: number,
 	contentText: string,
-	column = Constants.MAX_SAFE_SMALL_INTEGER,
+	column = Constants.MAX_SAFE_SMALL_INTEGER
 ): IModelDeltaDecoration[] {
 	// If decoratorText is too long, trim and add ellipses. This could happen for minified files with everything on a single line
 	if (contentText.length > MAX_INLINE_DECORATOR_LENGTH) {
@@ -197,7 +200,7 @@ function createInlineValueDecorationsInsideRange(
 	expressions: ReadonlyArray<IExpression>,
 	ranges: Range[],
 	model: ITextModel,
-	wordToLineNumbersMap: Map<string, number[]>,
+	wordToLineNumbersMap: Map<string, number[]>
 ): IModelDeltaDecoration[] {
 	const nameValueMap = new Map<string, string>();
 	for (const expr of expressions) {
@@ -219,7 +222,7 @@ function createInlineValueDecorationsInsideRange(
 					ranges.some(
 						(r) =>
 							lineNumber >= r.startLineNumber &&
-							lineNumber <= r.endLineNumber,
+							lineNumber <= r.endLineNumber
 					)
 				) {
 					if (!lineToNamesMap.has(lineNumber)) {
@@ -253,7 +256,7 @@ function createInlineValueDecorationsInsideRange(
 function getWordToLineNumbersMap(
 	model: ITextModel,
 	lineNumber: number,
-	result: Map<string, number[]>,
+	result: Map<string, number[]>
 ) {
 	const lineLength = model.getLineLength(lineNumber);
 	// If line is too long then skip the line
@@ -279,7 +282,7 @@ function getWordToLineNumbersMap(
 			const tokenEndOffset = lineTokens.getEndOffset(tokenIndex);
 			const tokenStr = lineContent.substring(
 				tokenStartOffset,
-				tokenEndOffset,
+				tokenEndOffset
 			);
 			const wordMatch = DEFAULT_WORD_REGEXP.exec(tokenStr);
 
@@ -317,20 +320,33 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 	constructor(
 		private editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHostService private readonly hostService: IHostService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService featureDebounceService: ILanguageFeatureDebounceService
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		featureDebounceService: ILanguageFeatureDebounceService
 	) {
-		this.debounceInfo = featureDebounceService.for(languageFeaturesService.inlineValuesProvider, 'InlineValues', { min: DEAFULT_INLINE_DEBOUNCE_DELAY });
-		this.hoverWidget = this.instantiationService.createInstance(DebugHoverWidget, this.editor);
+		this.debounceInfo = featureDebounceService.for(
+			languageFeaturesService.inlineValuesProvider,
+			"InlineValues",
+			{ min: DEAFULT_INLINE_DEBOUNCE_DELAY }
+		);
+		this.hoverWidget = this.instantiationService.createInstance(
+			DebugHoverWidget,
+			this.editor
+		);
 		this.toDispose = [this.defaultHoverLockout, this.altListener];
 		this.registerListeners();
-		this.exceptionWidgetVisible = CONTEXT_EXCEPTION_WIDGET_VISIBLE.bindTo(contextKeyService);
+		this.exceptionWidgetVisible =
+			CONTEXT_EXCEPTION_WIDGET_VISIBLE.bindTo(contextKeyService);
 		this.toggleExceptionWidget();
 	}
 
@@ -339,23 +355,23 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			this.debugService
 				.getViewModel()
 				.onDidFocusStackFrame((e) =>
-					this.onFocusStackFrame(e.stackFrame),
-				),
+					this.onFocusStackFrame(e.stackFrame)
+				)
 		);
 
 		// hover listeners & hover widget
 		this.toDispose.push(
 			this.editor.onMouseDown((e: IEditorMouseEvent) =>
-				this.onEditorMouseDown(e),
-			),
+				this.onEditorMouseDown(e)
+			)
 		);
 		this.toDispose.push(
-			this.editor.onMouseUp(() => (this.mouseDown = false)),
+			this.editor.onMouseUp(() => (this.mouseDown = false))
 		);
 		this.toDispose.push(
 			this.editor.onMouseMove((e: IEditorMouseEvent) =>
-				this.onEditorMouseMove(e),
-			),
+				this.onEditorMouseMove(e)
+			)
 		);
 		this.toDispose.push(
 			this.editor.onMouseLeave((e: IPartialEditorMouseEvent) => {
@@ -374,30 +390,30 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				) {
 					this.hideHoverWidget();
 				}
-			}),
+			})
 		);
 		this.toDispose.push(
-			this.editor.onKeyDown((e: IKeyboardEvent) => this.onKeyDown(e)),
+			this.editor.onKeyDown((e: IKeyboardEvent) => this.onKeyDown(e))
 		);
 		this.toDispose.push(
 			this.editor.onDidChangeModelContent(() => {
 				this._wordToLineNumbersMap = undefined;
 				this.updateInlineValuesScheduler.schedule();
-			}),
+			})
 		);
 		this.toDispose.push(
 			this.debugService
 				.getViewModel()
 				.onWillUpdateViews(() =>
-					this.updateInlineValuesScheduler.schedule(),
-				),
+					this.updateInlineValuesScheduler.schedule()
+				)
 		);
 		this.toDispose.push(
 			this.debugService
 				.getViewModel()
 				.onDidEvaluateLazyExpression(() =>
-					this.updateInlineValuesScheduler.schedule(),
-				),
+					this.updateInlineValuesScheduler.schedule()
+				)
 		);
 		this.toDispose.push(
 			this.editor.onDidChangeModel(async () => {
@@ -408,7 +424,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				const stackFrame =
 					this.debugService.getViewModel().focusedStackFrame;
 				await this.updateInlineValueDecorations(stackFrame);
-			}),
+			})
 		);
 		this.toDispose.push(
 			this.editor.onDidScrollChange(() => {
@@ -422,21 +438,21 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				) {
 					this.updateInlineValuesScheduler.schedule();
 				}
-			}),
+			})
 		);
 		this.toDispose.push(
 			this.configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration("editor.hover")) {
 					this.updateHoverConfiguration();
 				}
-			}),
+			})
 		);
 		this.toDispose.push(
 			this.debugService.onDidChangeState((state: State) => {
 				if (state !== State.Stopped) {
 					this.toggleExceptionWidget();
 				}
-			}),
+			})
 		);
 
 		this.updateHoverConfiguration();
@@ -453,7 +469,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					{
 						resource: model.uri,
 						overrideIdentifier: model.getLanguageId(),
-					},
+					}
 				);
 		}
 	}
@@ -468,13 +484,13 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 	private applyDocumentListeners(
 		model: ITextModel,
-		stackFrame: IStackFrame | undefined,
+		stackFrame: IStackFrame | undefined
 	): void {
 		if (
 			!stackFrame ||
 			!this.uriIdentityService.extUri.isEqual(
 				model.uri,
-				stackFrame.source.uri,
+				stackFrame.source.uri
 			)
 		) {
 			this.altListener.clear();
@@ -489,7 +505,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			"keydown",
 			(keydownEvent) => {
 				const standardKeyboardEvent = new StandardKeyboardEvent(
-					keydownEvent,
+					keydownEvent
 				);
 				if (standardKeyboardEvent.keyCode === KeyCode.Alt) {
 					this.altPressed = true;
@@ -505,12 +521,12 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					const onKeyUp = new DomEmitter(ownerDocument, "keyup");
 					const listener = Event.any<KeyboardEvent | boolean>(
 						this.hostService.onDidChangeFocus,
-						onKeyUp.event,
+						onKeyUp.event
 					)((keyupEvent) => {
 						let standardKeyboardEvent = undefined;
 						if (isKeyboardEvent(keyupEvent)) {
 							standardKeyboardEvent = new StandardKeyboardEvent(
-								keyupEvent,
+								keyupEvent
 							);
 						}
 						if (
@@ -524,7 +540,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						}
 					});
 				}
-			},
+			}
 		);
 	}
 
@@ -558,7 +574,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		}
 
 		const hoverController = this.editor.getContribution<HoverController>(
-			HoverController.ID,
+			HoverController.ID
 		);
 		hoverController?.hideContentHover();
 
@@ -576,13 +592,13 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 	private showEditorHover(position: Position, focus: boolean) {
 		const hoverController = this.editor.getContribution<HoverController>(
-			HoverController.ID,
+			HoverController.ID
 		);
 		const range = new Range(
 			position.lineNumber,
 			position.column,
 			position.lineNumber,
-			position.column,
+			position.column
 		);
 		// enable the editor hover, otherwise the content controller will see it
 		// as disabled and hide it on the first mouse move (#193149)
@@ -591,12 +607,12 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			range,
 			HoverStartMode.Immediate,
 			HoverStartSource.Mouse,
-			focus,
+			focus
 		);
 	}
 
 	private async onFocusStackFrame(
-		sf: IStackFrame | undefined,
+		sf: IStackFrame | undefined
 	): Promise<void> {
 		const model = this.editor.getModel();
 		if (model) {
@@ -738,7 +754,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					sf.source &&
 					sf.source.available &&
 					sf.source.presentationHint !== "deemphasize"
-				),
+				)
 		);
 		if (!exceptionSf || exceptionSf !== focusedSf) {
 			this.closeExceptionWidget();
@@ -747,7 +763,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 
 		const sameUri = this.uriIdentityService.extUri.isEqual(
 			exceptionSf.source.uri,
-			model.uri,
+			model.uri
 		);
 		if (this.exceptionWidget && !sameUri) {
 			this.closeExceptionWidget();
@@ -758,7 +774,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					exceptionInfo,
 					this.debugService.getViewModel().focusedSession,
 					exceptionSf.range.startLineNumber,
-					exceptionSf.range.startColumn,
+					exceptionSf.range.startColumn
 				);
 			}
 		}
@@ -768,7 +784,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		exceptionInfo: IExceptionInfo,
 		debugSession: IDebugSession | undefined,
 		lineNumber: number,
-		column: number,
+		column: number
 	): void {
 		if (this.exceptionWidget) {
 			this.exceptionWidget.dispose();
@@ -778,7 +794,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			ExceptionWidget,
 			this.editor,
 			exceptionInfo,
-			debugSession,
+			debugSession
 		);
 		this.exceptionWidget.show({ lineNumber, column }, 0);
 		this.exceptionWidget.focus();
@@ -824,7 +840,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						depthInArray === 0
 					) {
 						configurationsArrayPosition = model.getPositionAt(
-							offset + 1,
+							offset + 1
 						);
 					}
 					depthInArray++;
@@ -847,25 +863,25 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 							tabSize,
 							insertSpaces,
 							eol,
-					  })[0]
+						})[0]
 					: setProperty(
 							model.getValue(),
 							["launch"],
 							{ configurations: [] },
-							{ tabSize, insertSpaces, eol },
-					  )[0];
+							{ tabSize, insertSpaces, eol }
+						)[0];
 			const startPosition = model.getPositionAt(edit.offset);
 			const lineNumber = startPosition.lineNumber;
 			const range = new Range(
 				lineNumber,
 				startPosition.column,
 				lineNumber,
-				model.getLineMaxColumn(lineNumber),
+				model.getLineMaxColumn(lineNumber)
 			);
 			model.pushEditOperations(
 				null,
 				[EditOperation.replace(range, edit.content)],
-				() => null,
+				() => null
 			);
 			// Go through the file again since we've edited it
 			getConfigurationPosition();
@@ -886,18 +902,18 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 				CoreEditingCommands.LineBreakInsert.runEditorCommand(
 					null,
 					this.editor,
-					null,
+					null
 				);
 			}
 			this.editor.setPosition(position);
 			return this.commandService.executeCommand(
-				"editor.action.insertLineAfter",
+				"editor.action.insertLineAfter"
 			);
 		};
 
 		await insertLine(configurationsArrayPosition);
 		await this.commandService.executeCommand(
-			"editor.action.triggerSuggest",
+			"editor.action.triggerSuggest"
 		);
 	}
 
@@ -916,16 +932,14 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		return new RunOnceScheduler(
 			async () =>
 				await this.updateInlineValueDecorations(
-					this.debugService.getViewModel().focusedStackFrame,
+					this.debugService.getViewModel().focusedStackFrame
 				),
-			model
-				? this.debounceInfo.get(model)
-				: DEAFULT_INLINE_DEBOUNCE_DELAY,
+			model ? this.debounceInfo.get(model) : DEAFULT_INLINE_DEBOUNCE_DELAY
 		);
 	}
 
 	private async updateInlineValueDecorations(
-		stackFrame: IStackFrame | undefined,
+		stackFrame: IStackFrame | undefined
 	): Promise<void> {
 		const var_value_format = "{0} = {1}";
 		const separator = ", ";
@@ -933,7 +947,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		const model = this.editor.getModel();
 		const inlineValuesSetting =
 			this.configurationService.getValue<IDebugConfiguration>(
-				"debug",
+				"debug"
 			).inlineValues;
 		const inlineValuesTurnedOn =
 			inlineValuesSetting === true ||
@@ -961,10 +975,10 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 		if (this.languageFeaturesService.inlineValuesProvider.has(model)) {
 			const findVariable = async (
 				_key: string,
-				caseSensitiveLookup: boolean,
+				caseSensitiveLookup: boolean
 			): Promise<string | undefined> => {
 				const scopes = await stackFrame.getMostSpecificScopes(
-					stackFrame.range,
+					stackFrame.range
 				);
 				const key = caseSensitiveLookup ? _key : _key.toLowerCase();
 				for (const scope of scopes) {
@@ -972,7 +986,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					const found = variables.find((v) =>
 						caseSensitiveLookup
 							? v.name === key
-							: v.name.toLowerCase() === key,
+							: v.name.toLowerCase() === key
 					);
 					if (found) {
 						return found.value;
@@ -987,7 +1001,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					stackFrame.range.startLineNumber,
 					stackFrame.range.startColumn + 1,
 					stackFrame.range.endLineNumber,
-					stackFrame.range.endColumn + 1,
+					stackFrame.range.endColumn + 1
 				),
 			};
 			const token = new CancellationTokenSource().token;
@@ -1007,8 +1021,8 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 								model,
 								range,
 								ctx,
-								token,
-							),
+								token
+							)
 						).then(
 							async (result) => {
 								if (result) {
@@ -1025,24 +1039,24 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 													const lineContent =
 														model.getLineContent(
 															iv.range
-																.startLineNumber,
+																.startLineNumber
 														);
 													va = lineContent.substring(
 														iv.range.startColumn -
 															1,
-														iv.range.endColumn - 1,
+														iv.range.endColumn - 1
 													);
 												}
 												const value =
 													await findVariable(
 														va,
-														iv.caseSensitiveLookup,
+														iv.caseSensitiveLookup
 													);
 												if (value) {
 													text = strings.format(
 														var_value_format,
 														va,
-														value,
+														value
 													);
 												}
 												break;
@@ -1053,7 +1067,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 													const lineContent =
 														model.getLineContent(
 															iv.range
-																.startLineNumber,
+																.startLineNumber
 														);
 													expr =
 														lineContent.substring(
@@ -1061,7 +1075,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 																.startColumn -
 																1,
 															iv.range.endColumn -
-																1,
+																1
 														);
 												}
 												if (expr) {
@@ -1072,13 +1086,13 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 															.session,
 														stackFrame,
 														"watch",
-														true,
+														true
 													);
 													if (expression.available) {
 														text = strings.format(
 															var_value_format,
 															expr,
-															expression.value,
+															expression.value
 														);
 													}
 												}
@@ -1095,20 +1109,20 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 												lineSegments = [];
 												lineDecorations.set(
 													line,
-													lineSegments,
+													lineSegments
 												);
 											}
 											if (
 												!lineSegments.some(
-													(iv) => iv.text === text,
+													(iv) => iv.text === text
 												)
 											) {
 												// de-dupe
 												lineSegments.push(
 													new InlineSegment(
 														iv.range.startColumn,
-														text,
-													),
+														text
+													)
 												);
 											}
 										}
@@ -1117,10 +1131,10 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 							},
 							(err) => {
 								onUnexpectedExternalError(err);
-							},
-						),
-					),
-				),
+							}
+						)
+					)
+				)
 			);
 
 			const startTime = Date.now();
@@ -1130,7 +1144,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			// update debounce info
 			this.updateInlineValuesScheduler.delay = this.debounceInfo.update(
 				model,
-				Date.now() - startTime,
+				Date.now() - startTime
 			);
 
 			// sort line segments and concatenate them into a decoration
@@ -1140,7 +1154,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 					segments = segments.sort((a, b) => a.column - b.column);
 					const text = segments.map((s) => s.text).join(separator);
 					allDecorations.push(
-						...createInlineValueDecoration(line, text),
+						...createInlineValueDecoration(line, text)
 					);
 				}
 			});
@@ -1148,7 +1162,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 			// old "one-size-fits-all" strategy
 
 			const scopes = await stackFrame.getMostSpecificScopes(
-				stackFrame.range,
+				stackFrame.range
 			);
 			// Get all top level variables in the scope chain
 			const decorationsPerScope = await Promise.all(
@@ -1159,12 +1173,12 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						0,
 						0,
 						stackFrame.range.startLineNumber,
-						stackFrame.range.startColumn,
+						stackFrame.range.startColumn
 					);
 					if (scope.range) {
 						scopeRange = scopeRange.setStartPosition(
 							scope.range.startLineNumber,
-							scope.range.startColumn,
+							scope.range.startColumn
 						);
 					}
 
@@ -1172,7 +1186,7 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						.map((r) => r.intersectRanges(scopeRange))
 						.filter(isDefined);
 					this._wordToLineNumbersMap ??= new WordsToLineNumbersCache(
-						model,
+						model
 					);
 					for (const range of ownRanges) {
 						this._wordToLineNumbersMap.ensureRangePopulated(range);
@@ -1182,19 +1196,19 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 						variables,
 						ownRanges,
 						model,
-						this._wordToLineNumbersMap.value,
+						this._wordToLineNumbersMap.value
 					);
-				}),
+				})
 			);
 
 			allDecorations = distinct(
 				decorationsPerScope.reduce(
 					(previous, current) => previous.concat(current),
-					[],
+					[]
 				),
 				// Deduplicate decorations since same variable can appear in multiple scopes, leading to duplicated decorations #129770
 				(decoration) =>
-					`${decoration.range.startLineNumber}:${decoration?.options.after?.content}`,
+					`${decoration.range.startLineNumber}:${decoration?.options.after?.content}`
 			);
 		}
 
@@ -1246,7 +1260,7 @@ CommandsRegistry.registerCommand(
 		accessor: ServicesAccessor,
 		uri: URI,
 		iRange: IRange,
-		context: InlineValueContext,
+		context: InlineValueContext
 	): Promise<InlineValue[] | null> => {
 		assertType(URI.isUri(uri));
 		assertType(Range.isIRange(iRange));
@@ -1273,10 +1287,10 @@ CommandsRegistry.registerCommand(
 					model,
 					range,
 					context,
-					CancellationToken.None,
-				),
-			),
+					CancellationToken.None
+				)
+			)
 		);
 		return providerResults.flat().filter(isDefined);
-	},
+	}
 );

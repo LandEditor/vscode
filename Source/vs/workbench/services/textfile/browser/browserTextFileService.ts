@@ -36,23 +36,28 @@ import { IDecorationsService } from "vs/workbench/services/decorations/common/de
 export class BrowserTextFileService extends AbstractTextFileService {
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUntitledTextEditorService untitledTextEditorService: IUntitledTextEditorService,
+		@IUntitledTextEditorService
+		untitledTextEditorService: IUntitledTextEditorService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IDialogService dialogService: IDialogService,
 		@IFileDialogService fileDialogService: IFileDialogService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IPathService pathService: IPathService,
-		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		workingCopyFileService: IWorkingCopyFileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILanguageService languageService: ILanguageService,
 		@IElevatedFileService elevatedFileService: IElevatedFileService,
 		@ILogService logService: ILogService,
-		@IDecorationsService decorationsService: IDecorationsService,
+		@IDecorationsService decorationsService: IDecorationsService
 	) {
 		super(
 			fileService,
@@ -72,7 +77,7 @@ export class BrowserTextFileService extends AbstractTextFileService {
 			languageService,
 			logService,
 			elevatedFileService,
-			decorationsService,
+			decorationsService
 		);
 
 		this.registerListeners();
@@ -82,15 +87,15 @@ export class BrowserTextFileService extends AbstractTextFileService {
 		// Lifecycle
 		this._register(
 			this.lifecycleService.onBeforeShutdown((event) =>
-				event.veto(this.onBeforeShutdown(), "veto.textFiles"),
-			),
+				event.veto(this.onBeforeShutdown(), "veto.textFiles")
+			)
 		);
 	}
 
 	private onBeforeShutdown(): boolean {
 		if (
 			this.files.models.some((model) =>
-				model.hasState(TextFileEditorModelState.PENDING_SAVE),
+				model.hasState(TextFileEditorModelState.PENDING_SAVE)
 			)
 		) {
 			return true; // files are pending to be saved: veto (as there is no support for long running operations on shutdown)
@@ -103,5 +108,5 @@ export class BrowserTextFileService extends AbstractTextFileService {
 registerSingleton(
 	ITextFileService,
 	BrowserTextFileService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

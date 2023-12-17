@@ -34,6 +34,6 @@ export interface IQuickDiffService {
 	getQuickDiffs(
 		uri: URI,
 		language?: string,
-		isSynchronized?: boolean,
+		isSynchronized?: boolean
 	): Promise<QuickDiff[]>;
 }

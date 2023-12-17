@@ -11,5 +11,5 @@ import {
 
 registerSharedProcessRemoteService(
 	ISharedProcessTunnelService,
-	ipcSharedProcessTunnelChannelName,
+	ipcSharedProcessTunnelChannelName
 );

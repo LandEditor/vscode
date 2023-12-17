@@ -71,7 +71,7 @@ class EmbedderTerminalService implements IEmbedderTerminalService {
 
 	private readonly _onDidCreateTerminal = new Emitter<IShellLaunchConfig>();
 	readonly onDidCreateTerminal = Event.buffer(
-		this._onDidCreateTerminal.event,
+		this._onDidCreateTerminal.event
 	);
 
 	createTerminal(options: IEmbedderTerminalOptions): void {
@@ -96,19 +96,22 @@ class EmbedderTerminalProcess
 
 	readonly onProcessData: Event<IProcessDataEvent | string>;
 	private readonly _onProcessReady = this._register(
-		new Emitter<IProcessReadyEvent>(),
+		new Emitter<IProcessReadyEvent>()
 	);
 	readonly onProcessReady = this._onProcessReady.event;
 	private readonly _onDidChangeProperty = this._register(
-		new Emitter<IProcessProperty<any>>(),
+		new Emitter<IProcessProperty<any>>()
 	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
 	private readonly _onProcessExit = this._register(
-		new Emitter<number | undefined>(),
+		new Emitter<number | undefined>()
 	);
 	readonly onProcessExit = this._onProcessExit.event;
 
-	constructor(readonly id: number, pty: IEmbedderTerminalPty) {
+	constructor(
+		readonly id: number,
+		pty: IEmbedderTerminalPty
+	) {
 		super();
 
 		this._pty = pty;
@@ -116,8 +119,8 @@ class EmbedderTerminalProcess
 		if (this._pty.onDidClose) {
 			this._register(
 				this._pty.onDidClose((e) =>
-					this._onProcessExit.fire(e || undefined),
-				),
+					this._onProcessExit.fire(e || undefined)
+				)
 			);
 		}
 		if (this._pty.onDidChangeName) {
@@ -126,8 +129,8 @@ class EmbedderTerminalProcess
 					this._onDidChangeProperty.fire({
 						type: ProcessPropertyType.Title,
 						value: e,
-					}),
-				),
+					})
+				)
 			);
 		}
 	}
@@ -169,16 +172,16 @@ class EmbedderTerminalProcess
 		return "";
 	}
 	refreshProperty<T extends ProcessPropertyType>(
-		property: ProcessPropertyType,
+		property: ProcessPropertyType
 	): Promise<IProcessPropertyMap[T]> {
 		throw new Error(
-			`refreshProperty is not suppported in EmbedderTerminalProcess. property: ${property}`,
+			`refreshProperty is not suppported in EmbedderTerminalProcess. property: ${property}`
 		);
 	}
 
 	updateProperty(property: ProcessPropertyType, value: any): Promise<void> {
 		throw new Error(
-			`updateProperty is not suppported in EmbedderTerminalProcess. property: ${property}, value: ${value}`,
+			`updateProperty is not suppported in EmbedderTerminalProcess. property: ${property}, value: ${value}`
 		);
 	}
 }
@@ -186,5 +189,5 @@ class EmbedderTerminalProcess
 registerSingleton(
 	IEmbedderTerminalService,
 	EmbedderTerminalService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

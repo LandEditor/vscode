@@ -454,7 +454,7 @@ const uiMap = new KeyCodeStrMap();
 const userSettingsUSMap = new KeyCodeStrMap();
 const userSettingsGeneralMap = new KeyCodeStrMap();
 export const EVENT_KEY_CODE_MAP: { [keyCode: number]: KeyCode } = new Array(
-	230,
+	230
 );
 export const NATIVE_WINDOWS_KEY_CODE_TO_KEY_CODE: {
 	[nativeKeyCode: string]: KeyCode;
@@ -2698,17 +2698,17 @@ for (let i = 0; i <= KeyCode.MAX_VALUE; i++) {
 			seenKeyCode[keyCode] = true;
 			if (!keyCodeStr) {
 				throw new Error(
-					`String representation missing for key code ${keyCode} around scan code ${scanCodeStr}`,
+					`String representation missing for key code ${keyCode} around scan code ${scanCodeStr}`
 				);
 			}
 			uiMap.define(keyCode, keyCodeStr);
 			userSettingsUSMap.define(
 				keyCode,
-				usUserSettingsLabel || keyCodeStr,
+				usUserSettingsLabel || keyCodeStr
 			);
 			userSettingsGeneralMap.define(
 				keyCode,
-				generalUserSettingsLabel || usUserSettingsLabel || keyCodeStr,
+				generalUserSettingsLabel || usUserSettingsLabel || keyCodeStr
 			);
 		}
 		if (eventKeyCode) {

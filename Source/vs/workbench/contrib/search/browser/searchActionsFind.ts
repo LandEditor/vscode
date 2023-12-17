@@ -88,7 +88,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"restrictResultsToFolder",
-						"Restrict Search to Folder",
+						"Restrict Search to Folder"
 					),
 					original: "Restrict Search to Folder",
 				},
@@ -97,7 +97,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						Constants.SearchViewVisibleKey,
-						Constants.ResourceFolderFocusKey,
+						Constants.ResourceFolderFocusKey
 					),
 					primary: KeyMod.Shift | KeyMod.Alt | KeyCode.KeyF,
 				},
@@ -107,7 +107,7 @@ registerAction2(
 						group: "search",
 						order: 3,
 						when: ContextKeyExpr.and(
-							Constants.ResourceFolderFocusKey,
+							Constants.ResourceFolderFocusKey
 						),
 					},
 				],
@@ -115,17 +115,17 @@ registerAction2(
 		}
 		async run(
 			accessor: ServicesAccessor,
-			folderMatch?: FolderMatchWithResource,
+			folderMatch?: FolderMatchWithResource
 		) {
 			await searchWithFolderCommand(
 				accessor,
 				false,
 				true,
 				undefined,
-				folderMatch,
+				folderMatch
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -136,7 +136,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"excludeFolderFromSearch",
-						"Exclude Folder from Search",
+						"Exclude Folder from Search"
 					),
 					original: "Exclude Folder from Search",
 				},
@@ -147,7 +147,7 @@ registerAction2(
 						group: "search",
 						order: 4,
 						when: ContextKeyExpr.and(
-							Constants.ResourceFolderFocusKey,
+							Constants.ResourceFolderFocusKey
 						),
 					},
 				],
@@ -155,17 +155,17 @@ registerAction2(
 		}
 		async run(
 			accessor: ServicesAccessor,
-			folderMatch?: FolderMatchWithResource,
+			folderMatch?: FolderMatchWithResource
 		) {
 			await searchWithFolderCommand(
 				accessor,
 				false,
 				false,
 				undefined,
-				folderMatch,
+				folderMatch
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -176,7 +176,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"revealInSideBar",
-						"Reveal in Explorer View",
+						"Reveal in Explorer View"
 					),
 					original: "Reveal in Explorer View",
 				},
@@ -186,7 +186,7 @@ registerAction2(
 						id: MenuId.SearchContext,
 						when: ContextKeyExpr.and(
 							Constants.FileFocusKey,
-							Constants.HasSearchResults,
+							Constants.HasSearchResults
 						),
 						group: "search_3",
 						order: 1,
@@ -197,10 +197,10 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			args: any,
+			args: any
 		): Promise<any> {
 			const paneCompositeService = accessor.get(
-				IPaneCompositePartService,
+				IPaneCompositePartService
 			);
 			const explorerService = accessor.get(IExplorerService);
 			const contextService = accessor.get(IWorkspaceContextService);
@@ -224,7 +224,7 @@ registerAction2(
 				.openPaneComposite(
 					VIEWLET_ID_FILES,
 					ViewContainerLocation.Sidebar,
-					false,
+					false
 				)
 				.then((viewlet) => {
 					if (!viewlet) {
@@ -242,12 +242,12 @@ registerAction2(
 							.select(uri, true)
 							.then(
 								() => explorerView.focus(),
-								onUnexpectedError,
+								onUnexpectedError
 							);
 					}
 				});
 		}
-	},
+	}
 );
 
 // Find in Files by default is the same as View: Show Search, but can be configured to open a search editor instead with the `search.mode` binding
@@ -263,20 +263,20 @@ registerAction2(
 							key: "miFindInFiles",
 							comment: ["&& denotes a mnemonic"],
 						},
-						"Find &&in Files",
+						"Find &&in Files"
 					),
 					original: "Find in Files",
 				},
 				metadata: {
 					description: nls.localize(
 						"findInFiles.description",
-						"Open a workspace search",
+						"Open a workspace search"
 					),
 					args: [
 						{
 							name: nls.localize(
 								"findInFiles.args",
-								"A set of options for the search",
+								"A set of options for the search"
 							),
 							schema: {
 								type: "object",
@@ -317,11 +317,11 @@ registerAction2(
 
 		override async run(
 			accessor: ServicesAccessor,
-			args: IFindInFilesArgs = {},
+			args: IFindInFilesArgs = {}
 		): Promise<any> {
 			findInFilesCommand(accessor, args);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -339,7 +339,7 @@ registerAction2(
 					weight: KeybindingWeight.WorkbenchContrib,
 					when: ContextKeyExpr.and(
 						FilesExplorerFocusCondition,
-						ExplorerFolderContext,
+						ExplorerFolderContext
 					),
 					primary: KeyMod.Shift | KeyMod.Alt | KeyCode.KeyF,
 				},
@@ -356,7 +356,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor, resource?: URI) {
 			await searchWithFolderCommand(accessor, true, true, resource);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -368,7 +368,7 @@ registerAction2(
 				title: {
 					value: nls.localize(
 						"findInWorkspace",
-						"Find in Workspace...",
+						"Find in Workspace..."
 					),
 					original: "Find in Workspace...",
 				},
@@ -380,7 +380,7 @@ registerAction2(
 						order: 10,
 						when: ContextKeyExpr.and(
 							ExplorerRootContext,
-							ExplorerFolderContext.toNegated(),
+							ExplorerFolderContext.toNegated()
 						),
 					},
 				],
@@ -395,7 +395,7 @@ registerAction2(
 			if (mode === "view") {
 				const searchView = await openSearchView(
 					accessor.get(IViewsService),
-					true,
+					true
 				);
 				searchView?.searchInFolders();
 			} else {
@@ -407,7 +407,7 @@ registerAction2(
 					});
 			}
 		}
-	},
+	}
 );
 
 //#region Helpers
@@ -416,7 +416,7 @@ async function searchWithFolderCommand(
 	isFromExplorer: boolean,
 	isIncludes: boolean,
 	resource?: URI,
-	folderMatch?: FolderMatchWithResource,
+	folderMatch?: FolderMatchWithResource
 ) {
 	const listService = accessor.get(IListService);
 	const fileService = accessor.get(IFileService);
@@ -435,7 +435,7 @@ async function searchWithFolderCommand(
 			resource,
 			listService,
 			accessor.get(IEditorService),
-			accessor.get(IExplorerService),
+			accessor.get(IExplorerService)
 		);
 	} else {
 		const searchView = getSearchView(accessor.get(IViewsService));
@@ -445,7 +445,7 @@ async function searchWithFolderCommand(
 		resources = getMultiSelectedSearchResources(
 			searchView.getControl(),
 			folderMatch,
-			searchConfig,
+			searchConfig
 		);
 	}
 
@@ -458,7 +458,7 @@ async function searchWithFolderCommand(
 					folders.push(
 						result.stat.isDirectory
 							? result.stat.resource
-							: dirname(result.stat.resource),
+							: dirname(result.stat.resource)
 					);
 				}
 			});
@@ -483,7 +483,7 @@ async function searchWithFolderCommand(
 					filesToInclude: (await resolvedResources).join(", "),
 					showIncludesExcludes: true,
 					location: mode === "newEditor" ? "new" : "reuse",
-				},
+				}
 			);
 		} else {
 			return commandService.executeCommand(
@@ -492,7 +492,7 @@ async function searchWithFolderCommand(
 					filesToExclude: (await resolvedResources).join(", "),
 					showIncludesExcludes: true,
 					location: mode === "newEditor" ? "new" : "reuse",
-				},
+				}
 			);
 		}
 	}
@@ -501,21 +501,21 @@ async function searchWithFolderCommand(
 function getMultiSelectedSearchResources(
 	viewer: WorkbenchCompressibleObjectTree<RenderableMatch, void>,
 	currElement: RenderableMatch | undefined,
-	sortConfig: ISearchConfigurationProperties,
+	sortConfig: ISearchConfigurationProperties
 ): URI[] {
 	return getElementsToOperateOn(viewer, currElement, sortConfig)
 		.map((renderableMatch) =>
-			renderableMatch instanceof Match ? null : renderableMatch.resource,
+			renderableMatch instanceof Match ? null : renderableMatch.resource
 		)
 		.filter(
 			(renderableMatch): renderableMatch is URI =>
-				renderableMatch !== null,
+				renderableMatch !== null
 		);
 }
 
 export async function findInFilesCommand(
 	accessor: ServicesAccessor,
-	_args: IFindInFilesArgs = {},
+	_args: IFindInFilesArgs = {}
 ) {
 	const searchConfig = accessor
 		.get(IConfigurationService)
@@ -527,7 +527,7 @@ export async function findInFilesCommand(
 		// resolve variables in the same way as in
 		// https://github.com/microsoft/vscode/blob/8b76efe9d317d50cb5b57a7658e09ce6ebffaf36/src/vs/workbench/contrib/searchEditor/browser/searchEditorActions.ts#L152-L158
 		const configurationResolverService = accessor.get(
-			IConfigurationResolverService,
+			IConfigurationResolverService
 		);
 		const historyService = accessor.get(IHistoryService);
 		const workspaceContextService = accessor.get(IWorkspaceContextService);
@@ -540,8 +540,8 @@ export async function findInFilesCommand(
 				: undefined;
 		const lastActiveWorkspaceRoot = filteredActiveWorkspaceRootUri
 			? workspaceContextService.getWorkspaceFolder(
-					filteredActiveWorkspaceRootUri,
-			  ) ?? undefined
+					filteredActiveWorkspaceRootUri
+				) ?? undefined
 			: undefined;
 
 		for (const entry of Object.entries(_args)) {
@@ -552,8 +552,8 @@ export async function findInFilesCommand(
 					typeof value === "string"
 						? await configurationResolverService.resolveAsync(
 								lastActiveWorkspaceRoot,
-								value,
-						  )
+								value
+							)
 						: value;
 			}
 		}
@@ -566,7 +566,7 @@ export async function findInFilesCommand(
 				const searchAndReplaceWidget =
 					openedView.searchAndReplaceWidget;
 				searchAndReplaceWidget.toggleReplace(
-					typeof args.replace === "string",
+					typeof args.replace === "string"
 				);
 				let updatedText = false;
 				if (typeof args.query !== "string") {
@@ -581,7 +581,7 @@ export async function findInFilesCommand(
 				openedView.searchAndReplaceWidget.focus(
 					undefined,
 					updatedText,
-					updatedText,
+					updatedText
 				);
 			}
 		});
@@ -605,7 +605,7 @@ export async function findInFilesCommand(
 		});
 		commandService.executeCommand(
 			SearchEditorConstants.OpenEditorCommandId,
-			convertArgs(args),
+			convertArgs(args)
 		);
 	}
 }

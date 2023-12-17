@@ -18,17 +18,17 @@ export const InQuickPickContextKey = new RawContextKey<boolean>(
 	false,
 	localize(
 		"inQuickOpen",
-		"Whether keyboard focus is inside the quick open control",
-	),
+		"Whether keyboard focus is inside the quick open control"
+	)
 );
 export const inQuickPickContext = ContextKeyExpr.has(
-	inQuickPickContextKeyValue,
+	inQuickPickContextKeyValue
 );
 
 export const defaultQuickAccessContextKeyValue = "inFilesPicker";
 export const defaultQuickAccessContext = ContextKeyExpr.and(
 	inQuickPickContext,
-	ContextKeyExpr.has(defaultQuickAccessContextKeyValue),
+	ContextKeyExpr.has(defaultQuickAccessContextKeyValue)
 );
 
 export interface IWorkbenchQuickAccessConfiguration {
@@ -51,7 +51,7 @@ export interface IWorkbenchQuickAccessConfiguration {
 
 export function getQuickNavigateHandler(
 	id: string,
-	next?: boolean,
+	next?: boolean
 ): ICommandHandler {
 	return (accessor) => {
 		const keybindingService = accessor.get(IKeybindingService);

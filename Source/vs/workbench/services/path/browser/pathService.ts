@@ -21,21 +21,22 @@ import { dirname } from "vs/base/common/resources";
 export class BrowserPathService extends AbstractPathService {
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService contextService: IWorkspaceContextService
 	) {
 		super(
 			guessLocalUserHome(environmentService, contextService),
 			remoteAgentService,
 			environmentService,
-			contextService,
+			contextService
 		);
 	}
 }
 
 function guessLocalUserHome(
 	environmentService: IWorkbenchEnvironmentService,
-	contextService: IWorkspaceContextService,
+	contextService: IWorkspaceContextService
 ): URI {
 	// In web we do not really have the concept of a "local" user home
 	// but we still require it in many places as a fallback. As such,
@@ -60,7 +61,7 @@ function guessLocalUserHome(
 	return URI.from({
 		scheme: AbstractPathService.findDefaultUriScheme(
 			environmentService,
-			contextService,
+			contextService
 		),
 		authority: environmentService.remoteAuthority,
 		path: "/",

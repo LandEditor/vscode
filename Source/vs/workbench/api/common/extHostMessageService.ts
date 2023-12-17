@@ -26,7 +26,9 @@ export class ExtHostMessageService {
 		mainContext: IMainContext,
 		@ILogService private readonly _logService: ILogService
 	) {
-		this._proxy = mainContext.getProxy(MainContext.MainThreadMessageService);
+		this._proxy = mainContext.getProxy(
+			MainContext.MainThreadMessageService
+		);
 	}
 
 	showMessage(
@@ -34,7 +36,7 @@ export class ExtHostMessageService {
 		severity: Severity,
 		message: string,
 		optionsOrFirstItem: vscode.MessageOptions | string | undefined,
-		rest: string[],
+		rest: string[]
 	): Promise<string | undefined>;
 	showMessage(
 		extension: IExtensionDescription,
@@ -44,7 +46,7 @@ export class ExtHostMessageService {
 			| vscode.MessageOptions
 			| vscode.MessageItem
 			| undefined,
-		rest: vscode.MessageItem[],
+		rest: vscode.MessageItem[]
 	): Promise<vscode.MessageItem | undefined>;
 	showMessage(
 		extension: IExtensionDescription,
@@ -55,7 +57,7 @@ export class ExtHostMessageService {
 			| vscode.MessageItem
 			| string
 			| undefined,
-		rest: Array<vscode.MessageItem | string>,
+		rest: Array<vscode.MessageItem | string>
 	): Promise<string | vscode.MessageItem | undefined>;
 	showMessage(
 		extension: IExtensionDescription,
@@ -66,7 +68,7 @@ export class ExtHostMessageService {
 			| string
 			| vscode.MessageItem
 			| undefined,
-		rest: Array<string | vscode.MessageItem>,
+		rest: Array<string | vscode.MessageItem>
 	): Promise<string | vscode.MessageItem | undefined> {
 		const options: MainThreadMessageOptions = {
 			source: {
@@ -118,7 +120,7 @@ export class ExtHostMessageService {
 					if (hasCloseAffordance) {
 						this._logService.warn(
 							`[${extension.identifier}] Only one message item can have 'isCloseAffordance':`,
-							command,
+							command
 						);
 					} else {
 						hasCloseAffordance = true;
@@ -127,7 +129,7 @@ export class ExtHostMessageService {
 			} else {
 				this._logService.warn(
 					`[${extension.identifier}] Invalid message item:`,
-					command,
+					command
 				);
 			}
 		}

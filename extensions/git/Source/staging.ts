@@ -8,7 +8,7 @@ import { TextDocument, Range, LineChange, Selection } from "vscode";
 export function applyLineChanges(
 	original: TextDocument,
 	modified: TextDocument,
-	diffs: LineChange[],
+	diffs: LineChange[]
 ): string {
 	const result: string[] = [];
 	let currentLine = 0;
@@ -31,7 +31,7 @@ export function applyLineChanges(
 		}
 
 		result.push(
-			original.getText(new Range(currentLine, 0, endLine, endCharacter)),
+			original.getText(new Range(currentLine, 0, endLine, endCharacter))
 		);
 
 		if (!isDeletion) {
@@ -55,9 +55,9 @@ export function applyLineChanges(
 						fromLine,
 						fromCharacter,
 						diff.modifiedEndLineNumber,
-						0,
-					),
-				),
+						0
+					)
+				)
 			);
 		}
 
@@ -67,7 +67,7 @@ export function applyLineChanges(
 	}
 
 	result.push(
-		original.getText(new Range(currentLine, 0, original.lineCount, 0)),
+		original.getText(new Range(currentLine, 0, original.lineCount, 0))
 	);
 
 	return result.join("");
@@ -75,7 +75,7 @@ export function applyLineChanges(
 
 export function toLineRanges(
 	selections: readonly Selection[],
-	textDocument: TextDocument,
+	textDocument: TextDocument
 ): Range[] {
 	const lineRanges = selections.map((s) => {
 		const startLine = textDocument.lineAt(s.start.line);
@@ -85,29 +85,26 @@ export function toLineRanges(
 
 	lineRanges.sort((a, b) => a.start.line - b.start.line);
 
-	const result = lineRanges.reduce(
-		(result, l) => {
-			if (result.length === 0) {
-				result.push(l);
-				return result;
-			}
+	const result = lineRanges.reduce((result, l) => {
+		if (result.length === 0) {
+			result.push(l);
+			return result;
+		}
 
-			const [last, ...rest] = result;
-			const intersection = l.intersection(last);
+		const [last, ...rest] = result;
+		const intersection = l.intersection(last);
 
-			if (intersection) {
-				return [intersection, ...rest];
-			}
+		if (intersection) {
+			return [intersection, ...rest];
+		}
 
-			if (l.start.line === last.end.line + 1) {
-				const merge = new Range(last.start, l.end);
-				return [merge, ...rest];
-			}
+		if (l.start.line === last.end.line + 1) {
+			const merge = new Range(last.start, l.end);
+			return [merge, ...rest];
+		}
 
-			return [l, ...result];
-		},
-		[] as Range[],
-	);
+		return [l, ...result];
+	}, [] as Range[]);
 
 	result.reverse();
 
@@ -116,29 +113,29 @@ export function toLineRanges(
 
 export function getModifiedRange(
 	textDocument: TextDocument,
-	diff: LineChange,
+	diff: LineChange
 ): Range {
 	if (diff.modifiedEndLineNumber === 0) {
 		if (diff.modifiedStartLineNumber === 0) {
 			return new Range(
 				textDocument.lineAt(diff.modifiedStartLineNumber).range.end,
-				textDocument.lineAt(diff.modifiedStartLineNumber).range.start,
+				textDocument.lineAt(diff.modifiedStartLineNumber).range.start
 			);
 		} else if (textDocument.lineCount === diff.modifiedStartLineNumber) {
 			return new Range(
 				textDocument.lineAt(diff.modifiedStartLineNumber - 1).range.end,
-				textDocument.lineAt(diff.modifiedStartLineNumber - 1).range.end,
+				textDocument.lineAt(diff.modifiedStartLineNumber - 1).range.end
 			);
 		} else {
 			return new Range(
 				textDocument.lineAt(diff.modifiedStartLineNumber - 1).range.end,
-				textDocument.lineAt(diff.modifiedStartLineNumber).range.start,
+				textDocument.lineAt(diff.modifiedStartLineNumber).range.start
 			);
 		}
 	} else {
 		return new Range(
 			textDocument.lineAt(diff.modifiedStartLineNumber - 1).range.start,
-			textDocument.lineAt(diff.modifiedEndLineNumber - 1).range.end,
+			textDocument.lineAt(diff.modifiedEndLineNumber - 1).range.end
 		);
 	}
 }
@@ -146,7 +143,7 @@ export function getModifiedRange(
 export function intersectDiffWithRange(
 	textDocument: TextDocument,
 	diff: LineChange,
-	range: Range,
+	range: Range
 ): LineChange | null {
 	const modifiedRange = getModifiedRange(textDocument, diff);
 	const intersection = range.intersection(modifiedRange);

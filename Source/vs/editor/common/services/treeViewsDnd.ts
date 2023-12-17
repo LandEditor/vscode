@@ -7,11 +7,11 @@ export interface ITreeViewsDnDService<T> {
 	readonly _serviceBrand: undefined;
 
 	removeDragOperationTransfer(
-		uuid: string | undefined,
+		uuid: string | undefined
 	): Promise<T | undefined> | undefined;
 	addDragOperationTransfer(
 		uuid: string,
-		transferPromise: Promise<T | undefined>,
+		transferPromise: Promise<T | undefined>
 	): void;
 }
 
@@ -20,7 +20,7 @@ export class TreeViewsDnDService<T> implements ITreeViewsDnDService<T> {
 	private _dragOperations: Map<string, Promise<T | undefined>> = new Map();
 
 	removeDragOperationTransfer(
-		uuid: string | undefined,
+		uuid: string | undefined
 	): Promise<T | undefined> | undefined {
 		if (uuid && this._dragOperations.has(uuid)) {
 			const operation = this._dragOperations.get(uuid);
@@ -32,7 +32,7 @@ export class TreeViewsDnDService<T> implements ITreeViewsDnDService<T> {
 
 	addDragOperationTransfer(
 		uuid: string,
-		transferPromise: Promise<T | undefined>,
+		transferPromise: Promise<T | undefined>
 	): void {
 		this._dragOperations.set(uuid, transferPromise);
 	}

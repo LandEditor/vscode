@@ -14,7 +14,7 @@ const controlFilePath = path.join(
 	os.homedir(),
 	".vscode-oss-dev",
 	"extensions",
-	"control.json",
+	"control.json"
 );
 
 /**
@@ -96,7 +96,7 @@ function render(el, state) {
 			`marketplace-${ext.name}`,
 			"Marketplace",
 			"marketplace",
-			controlState === "marketplace",
+			controlState === "marketplace"
 		);
 		marketplaceInput.onchange = function () {
 			control[ext.name] = "marketplace";
@@ -108,7 +108,7 @@ function render(el, state) {
 			`disabled-${ext.name}`,
 			"Disabled",
 			"disabled",
-			controlState === "disabled",
+			controlState === "disabled"
 		);
 		disabledInput.onchange = function () {
 			control[ext.name] = "disabled";
@@ -126,7 +126,7 @@ function render(el, state) {
 			`local-${ext.name}`,
 			"Local",
 			"local",
-			!!local,
+			!!local
 		);
 		localInput.onchange = async function () {
 			const result = await ipcRenderer.invoke("pickdir");

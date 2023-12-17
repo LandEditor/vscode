@@ -33,7 +33,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 
 	override get scopedContextKeyService(): IContextKeyService | undefined {
 		return this.editorControl?.invokeWithinContext((accessor) =>
-			accessor.get(IContextKeyService),
+			accessor.get(IContextKeyService)
 		);
 	}
 
@@ -47,15 +47,15 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 
 	protected createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions,
+		initialOptions: ICodeEditorOptions
 	): void {
 		this.editorControl = this._register(
 			this.instantiationService.createInstance(
 				CodeEditorWidget,
 				parent,
 				initialOptions,
-				this.getCodeEditorWidgetOptions(),
-			),
+				this.getCodeEditorWidgetOptions()
+			)
 		);
 	}
 
@@ -106,7 +106,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 			applyTextEditorOptions(
 				options,
 				assertIsDefined(this.editorControl),
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 		}
 	}
@@ -123,7 +123,7 @@ export abstract class AbstractTextCodeEditor<T extends IEditorViewState>
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined,
+		group: IEditorGroup | undefined
 	): void {
 		super.setEditorVisible(visible, group);
 

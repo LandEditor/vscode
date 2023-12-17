@@ -50,8 +50,8 @@ export const ctxHasSymbols = new RawContextKey(
 	false,
 	localize(
 		"hasSymbols",
-		"Whether there are symbol locations that can be navigated via keyboard-only.",
-	),
+		"Whether there are symbol locations that can be navigated via keyboard-only."
+	)
 );
 
 export const ISymbolNavigationService =
@@ -78,8 +78,10 @@ class SymbolNavigationService implements ISymbolNavigationService {
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		this._ctxHasSymbols = ctxHasSymbols.bindTo(contextKeyService);
 	}
@@ -166,7 +168,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 							TextEditorSelectionRevealType.NearTopIfOutsideViewport,
 					},
 				},
-				source,
+				source
 			)
 			.finally(() => {
 				this._ignoreEditorChange = false;
@@ -177,7 +179,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 		this._currentMessage?.dispose();
 
 		const kb = this._keybindingService.lookupKeybinding(
-			"editor.gotoNextSymbolFromResult",
+			"editor.gotoNextSymbolFromResult"
 		);
 		const message = kb
 			? localize(
@@ -185,14 +187,14 @@ class SymbolNavigationService implements ISymbolNavigationService {
 					"Symbol {0} of {1}, {2} for next",
 					this._currentIdx + 1,
 					this._currentModel!.references.length,
-					kb.getLabel(),
-			  )
+					kb.getLabel()
+				)
 			: localize(
 					"location",
 					"Symbol {0} of {1}",
 					this._currentIdx + 1,
-					this._currentModel!.references.length,
-			  );
+					this._currentModel!.references.length
+				);
 
 		this._currentMessage = this._notificationService.status(message);
 	}
@@ -201,7 +203,7 @@ class SymbolNavigationService implements ISymbolNavigationService {
 registerSingleton(
 	ISymbolNavigationService,
 	SymbolNavigationService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 registerEditorCommand(
@@ -219,11 +221,11 @@ registerEditorCommand(
 
 		runEditorCommand(
 			accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): void | Promise<void> {
 			return accessor.get(ISymbolNavigationService).revealNext(editor);
 		}
-	})(),
+	})()
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -247,8 +249,12 @@ class EditorState {
 		this._onDidChange.event;
 
 	constructor(@ICodeEditorService editorService: ICodeEditorService) {
-		this._disposables.add(editorService.onCodeEditorRemove(this._onDidRemoveEditor, this));
-		this._disposables.add(editorService.onCodeEditorAdd(this._onDidAddEditor, this));
+		this._disposables.add(
+			editorService.onCodeEditorRemove(this._onDidRemoveEditor, this)
+		);
+		this._disposables.add(
+			editorService.onCodeEditorAdd(this._onDidAddEditor, this)
+		);
 		editorService.listCodeEditors().forEach(this._onDidAddEditor, this);
 	}
 
@@ -263,12 +269,12 @@ class EditorState {
 			editor,
 			combinedDisposable(
 				editor.onDidChangeCursorPosition((_) =>
-					this._onDidChange.fire({ editor }),
+					this._onDidChange.fire({ editor })
 				),
 				editor.onDidChangeModelContent((_) =>
-					this._onDidChange.fire({ editor }),
-				),
-			),
+					this._onDidChange.fire({ editor })
+				)
+			)
 		);
 	}
 

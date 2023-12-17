@@ -47,41 +47,54 @@ export class TerminalInstanceService
 	>();
 
 	private readonly _onDidCreateInstance = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	get onDidCreateInstance(): Event<ITerminalInstance> {
 		return this._onDidCreateInstance.event;
 	}
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IWorkbenchEnvironmentService readonly _environmentService: IWorkbenchEnvironmentService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IWorkbenchEnvironmentService
+		readonly _environmentService: IWorkbenchEnvironmentService
 	) {
 		super();
-		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
-		this._terminalInRunCommandPicker = TerminalContextKeys.inTerminalRunCommandPicker.bindTo(this._contextKeyService);
-		this._configHelper = _instantiationService.createInstance(TerminalConfigHelper);
+		this._terminalShellTypeContextKey =
+			TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+		this._terminalInRunCommandPicker =
+			TerminalContextKeys.inTerminalRunCommandPicker.bindTo(
+				this._contextKeyService
+			);
+		this._configHelper =
+			_instantiationService.createInstance(TerminalConfigHelper);
 
-
-		for (const remoteAuthority of [undefined, _environmentService.remoteAuthority]) {
+		for (const remoteAuthority of [
+			undefined,
+			_environmentService.remoteAuthority,
+		]) {
 			let resolve: () => void;
-			const p = new Promise<void>(r => resolve = r);
-			this._backendRegistration.set(remoteAuthority, { promise: p, resolve: resolve! });
+			const p = new Promise<void>((r) => (resolve = r));
+			this._backendRegistration.set(remoteAuthority, {
+				promise: p,
+				resolve: resolve!,
+			});
 		}
 	}
 
 	createInstance(
 		profile: ITerminalProfile,
-		target: TerminalLocation,
+		target: TerminalLocation
 	): ITerminalInstance;
 	createInstance(
 		shellLaunchConfig: IShellLaunchConfig,
-		target: TerminalLocation,
+		target: TerminalLocation
 	): ITerminalInstance;
 	createInstance(
 		config: IShellLaunchConfig | ITerminalProfile,
-		target: TerminalLocation,
+		target: TerminalLocation
 	): ITerminalInstance {
 		const shellLaunchConfig =
 			this.convertProfileToShellLaunchConfig(config);
@@ -90,7 +103,7 @@ export class TerminalInstanceService
 			this._terminalShellTypeContextKey,
 			this._terminalInRunCommandPicker,
 			this._configHelper,
-			shellLaunchConfig,
+			shellLaunchConfig
 		);
 		instance.target = target;
 		this._onDidCreateInstance.fire(instance);
@@ -99,7 +112,7 @@ export class TerminalInstanceService
 
 	convertProfileToShellLaunchConfig(
 		shellLaunchConfigOrProfile?: IShellLaunchConfig | ITerminalProfile,
-		cwd?: string | URI,
+		cwd?: string | URI
 	): IShellLaunchConfig {
 		// Profile was provided
 		if (
@@ -134,16 +147,16 @@ export class TerminalInstanceService
 	}
 
 	async getBackend(
-		remoteAuthority?: string,
+		remoteAuthority?: string
 	): Promise<ITerminalBackend | undefined> {
 		let backend = Registry.as<ITerminalBackendRegistry>(
-			TerminalExtensions.Backend,
+			TerminalExtensions.Backend
 		).getTerminalBackend(remoteAuthority);
 		if (!backend) {
 			// Ensure backend is initialized and try again
 			await this._backendRegistration.get(remoteAuthority)?.promise;
 			backend = Registry.as<ITerminalBackendRegistry>(
-				TerminalExtensions.Backend,
+				TerminalExtensions.Backend
 			).getTerminalBackend(remoteAuthority);
 		}
 		return backend;
@@ -151,7 +164,7 @@ export class TerminalInstanceService
 
 	getRegisteredBackends(): IterableIterator<ITerminalBackend> {
 		return Registry.as<ITerminalBackendRegistry>(
-			TerminalExtensions.Backend,
+			TerminalExtensions.Backend
 		).backends.values();
 	}
 
@@ -163,5 +176,5 @@ export class TerminalInstanceService
 registerSingleton(
 	ITerminalInstanceService,
 	TerminalInstanceService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

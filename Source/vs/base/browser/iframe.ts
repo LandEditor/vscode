@@ -51,7 +51,7 @@ export class IframeUtils {
 	 * Having a chain of length 1 might mean that the current execution environment is running outside of an iframe or inside an iframe embedded in a window with a different origin.
 	 */
 	private static getSameOriginWindowChain(
-		targetWindow: Window,
+		targetWindow: Window
 	): IWindowChainElement[] {
 		let windowChainCache = sameOriginWindowChainCache.get(targetWindow);
 		if (!windowChainCache) {
@@ -83,7 +83,7 @@ export class IframeUtils {
 	 */
 	public static getPositionOfChildWindowRelativeToAncestorWindow(
 		childWindow: Window,
-		ancestorWindow: Window | null,
+		ancestorWindow: Window | null
 	) {
 		if (!ancestorWindow || childWindow === ancestorWindow) {
 			return {
@@ -128,12 +128,12 @@ export class IframeUtils {
  */
 export async function parentOriginHash(
 	parentOrigin: string,
-	salt: string,
+	salt: string
 ): Promise<string> {
 	// This same code is also inlined at `src/vs/workbench/services/extensions/worker/webWorkerExtensionHostIframe.html`
 	if (!crypto.subtle) {
 		throw new Error(
-			`'crypto.subtle' is not available so webviews will not work. This is likely because the editor is not running in a secure context (https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).`,
+			`'crypto.subtle' is not available so webviews will not work. This is likely because the editor is not running in a secure context (https://developer.mozilla.org/en-US/docs/Web/Security/Secure_Contexts).`
 		);
 	}
 

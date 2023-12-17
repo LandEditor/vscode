@@ -27,7 +27,7 @@ export interface IGitHubServer {
 	logout(session: vscode.AuthenticationSession): Promise<void>;
 	getUserInfo(token: string): Promise<{ id: string; accountName: string }>;
 	sendAdditionalTelemetryInfo(
-		session: vscode.AuthenticationSession,
+		session: vscode.AuthenticationSession
 	): Promise<void>;
 	friendlyName: string;
 }
@@ -44,7 +44,7 @@ export class GitHubServer implements IGitHubServer {
 		private readonly _telemetryReporter: ExperimentationTelemetry,
 		private readonly _uriHandler: UriEventHandler,
 		private readonly _extensionKind: vscode.ExtensionKind,
-		private readonly _ghesUri?: vscode.Uri,
+		private readonly _ghesUri?: vscode.Uri
 	) {
 		this._type = _ghesUri
 			? AuthProviderType.githubEnterprise
@@ -100,8 +100,8 @@ export class GitHubServer implements IGitHubServer {
 		}
 		const uri = await vscode.env.asExternalUri(
 			vscode.Uri.parse(
-				`${vscode.env.uriScheme}://vscode.github-authentication/dummy`,
-			),
+				`${vscode.env.uriScheme}://vscode.github-authentication/dummy`
+			)
 		);
 		this._isNoCorsEnvironment =
 			(uri.scheme === "https" &&
@@ -125,16 +125,16 @@ export class GitHubServer implements IGitHubServer {
 			const message = userCancelled
 				? vscode.l10n.t(
 						"Having trouble logging in? Would you like to try a different way? ({0})",
-						mode,
-				  )
+						mode
+					)
 				: vscode.l10n.t(
 						"You have not yet finished authorizing this extension to use GitHub. Would you like to try a different way? ({0})",
-						mode,
-				  );
+						mode
+					);
 			const result = await vscode.window.showWarningMessage(
 				message,
 				yes,
-				no,
+				no
 			);
 			if (result !== yes) {
 				throw new Error(CANCELLATION_ERROR);
@@ -149,9 +149,9 @@ export class GitHubServer implements IGitHubServer {
 				`${
 					vscode.env.uriScheme
 				}://vscode.github-authentication/did-authenticate?nonce=${encodeURIComponent(
-					nonce,
-				)}`,
-			),
+					nonce
+				)}`
+			)
 		);
 
 		const supportedClient = isSupportedClient(callbackUri);
@@ -162,8 +162,8 @@ export class GitHubServer implements IGitHubServer {
 				this._type === AuthProviderType.github
 					? GitHubTarget.DotCom
 					: supportedTarget
-					  ? GitHubTarget.HostedEnterprise
-					  : GitHubTarget.Enterprise,
+						? GitHubTarget.HostedEnterprise
+						: GitHubTarget.Enterprise,
 			extensionHost:
 				typeof navigator === "undefined"
 					? this._extensionKind === vscode.ExtensionKind.UI
@@ -187,7 +187,7 @@ export class GitHubServer implements IGitHubServer {
 					uriHandler: this._uriHandler,
 					enterpriseUri: this._ghesUri,
 					redirectUri: vscode.Uri.parse(
-						await this.getRedirectEndpoint(),
+						await this.getRedirectEndpoint()
 					),
 				});
 			} catch (e) {
@@ -196,7 +196,7 @@ export class GitHubServer implements IGitHubServer {
 		}
 
 		throw new Error(
-			userCancelled ? CANCELLATION_ERROR : "No auth flow succeeded.",
+			userCancelled ? CANCELLATION_ERROR : "No auth flow succeeded."
 		);
 	}
 
@@ -205,7 +205,7 @@ export class GitHubServer implements IGitHubServer {
 
 		if (!Config.gitHubClientSecret) {
 			this._logger.warn(
-				"No client secret configured for GitHub authentication. The token has been deleted with best effort on this system, but we are unable to delete the token on server without the client secret.",
+				"No client secret configured for GitHub authentication. The token has been deleted with best effort on this system, but we are unable to delete the token on server without the client secret."
 			);
 			return;
 		}
@@ -214,14 +214,14 @@ export class GitHubServer implements IGitHubServer {
 		// https://docs.github.com/en/rest/apps/oauth-applications#about-oauth-apps-and-oauth-authorizations-of-github-apps
 		if (!session.accessToken.startsWith("gho_")) {
 			this._logger.warn(
-				"The token being deleted is not an OAuth token. It has been deleted locally, but we cannot delete it on server.",
+				"The token being deleted is not an OAuth token. It has been deleted locally, but we cannot delete it on server."
 			);
 			return;
 		}
 
 		if (!isSupportedTarget(this._type, this._ghesUri)) {
 			this._logger.trace(
-				"GitHub.com and GitHub hosted GitHub Enterprise are the only options that support deleting tokens on the server. Skipping.",
+				"GitHub.com and GitHub hosted GitHub Enterprise are the only options that support deleting tokens on the server. Skipping."
 			);
 			return;
 		}
@@ -229,10 +229,10 @@ export class GitHubServer implements IGitHubServer {
 		const authHeader =
 			"Basic " +
 			base64Encode(
-				`${Config.gitHubClientId}:${Config.gitHubClientSecret}`,
+				`${Config.gitHubClientId}:${Config.gitHubClientSecret}`
 			);
 		const uri = this.getServerUri(
-			`/applications/${Config.gitHubClientId}/token`,
+			`/applications/${Config.gitHubClientId}/token`
 		);
 
 		try {
@@ -250,7 +250,7 @@ export class GitHubServer implements IGitHubServer {
 
 			if (result.status === 204) {
 				this._logger.trace(
-					`Successfully deleted token from session (${session.id}) from server.`,
+					`Successfully deleted token from session (${session.id}) from server.`
 				);
 				return;
 			}
@@ -263,7 +263,7 @@ export class GitHubServer implements IGitHubServer {
 			}
 		} catch (e) {
 			this._logger.warn(
-				"Failed to delete token from server." + e.message ?? e,
+				"Failed to delete token from server." + e.message ?? e
 			);
 		}
 	}
@@ -273,17 +273,17 @@ export class GitHubServer implements IGitHubServer {
 		// github.com and Hosted GitHub Enterprise instances
 		if (isSupportedTarget(this._type, this._ghesUri)) {
 			return vscode.Uri.parse(
-				`${apiUri.scheme}://api.${apiUri.authority}`,
+				`${apiUri.scheme}://api.${apiUri.authority}`
 			).with({ path });
 		}
 		// GitHub Enterprise Server (aka on-prem)
 		return vscode.Uri.parse(
-			`${apiUri.scheme}://${apiUri.authority}/api/v3${path}`,
+			`${apiUri.scheme}://${apiUri.authority}/api/v3${path}`
 		);
 	}
 
 	public async getUserInfo(
-		token: string,
+		token: string
 	): Promise<{ id: string; accountName: string }> {
 		let result;
 		try {
@@ -308,7 +308,7 @@ export class GitHubServer implements IGitHubServer {
 				this._logger.error(
 					`Unexpected error parsing response from GitHub: ${
 						e.message ?? e
-					}`,
+					}`
 				);
 				throw e;
 			}
@@ -329,7 +329,7 @@ export class GitHubServer implements IGitHubServer {
 	}
 
 	public async sendAdditionalTelemetryInfo(
-		session: vscode.AuthenticationSession,
+		session: vscode.AuthenticationSession
 	): Promise<void> {
 		if (!vscode.env.isTelemetryEnabled) {
 			return;
@@ -349,7 +349,7 @@ export class GitHubServer implements IGitHubServer {
 	}
 
 	private async checkUserDetails(
-		session: vscode.AuthenticationSession,
+		session: vscode.AuthenticationSession
 	): Promise<void> {
 		let edu: string | undefined;
 
@@ -362,7 +362,7 @@ export class GitHubServer implements IGitHubServer {
 						"faculty-check-preview": "true",
 						"User-Agent": `${vscode.env.appName} (${vscode.env.appHost})`,
 					},
-				},
+				}
 			);
 
 			if (result.ok) {
@@ -371,8 +371,8 @@ export class GitHubServer implements IGitHubServer {
 				edu = json.student
 					? "student"
 					: json.faculty
-					  ? "faculty"
-					  : "none";
+						? "faculty"
+						: "none";
 			} else {
 				edu = "unknown";
 			}
@@ -405,7 +405,7 @@ export class GitHubServer implements IGitHubServer {
 							Authorization: `token ${token}`,
 							"User-Agent": `${vscode.env.appName} (${vscode.env.appHost})`,
 						},
-					},
+					}
 				);
 
 				if (!result.ok) {

@@ -18,9 +18,13 @@ export class OpenLogsFolderAction extends Action {
 		original: "Open Logs Folder",
 	};
 
-	constructor(id: string, label: string,
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+	constructor(
+		id: string,
+		label: string,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService
 	) {
 		super(id, label);
 	}
@@ -29,7 +33,7 @@ export class OpenLogsFolderAction extends Action {
 		return this.nativeHostService.showItemInFolder(
 			joinPath(this.environmentService.logsHome, "main.log").with({
 				scheme: Schemas.file,
-			}).fsPath,
+			}).fsPath
 		);
 	}
 }
@@ -39,27 +43,31 @@ export class OpenExtensionLogsFolderAction extends Action {
 	static readonly TITLE = {
 		value: nls.localize(
 			"openExtensionLogsFolder",
-			"Open Extension Logs Folder",
+			"Open Extension Logs Folder"
 		),
 		original: "Open Extension Logs Folder",
 	};
 
-	constructor(id: string, label: string,
-		@INativeWorkbenchEnvironmentService private readonly environmentSerice: INativeWorkbenchEnvironmentService,
+	constructor(
+		id: string,
+		label: string,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentSerice: INativeWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@INativeHostService private readonly nativeHostService: INativeHostService
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService
 	) {
 		super(id, label);
 	}
 
 	override async run(): Promise<void> {
 		const folderStat = await this.fileService.resolve(
-			this.environmentSerice.extHostLogsPath,
+			this.environmentSerice.extHostLogsPath
 		);
 		if (folderStat.children && folderStat.children[0]) {
 			return this.nativeHostService.showItemInFolder(
 				folderStat.children[0].resource.with({ scheme: Schemas.file })
-					.fsPath,
+					.fsPath
 			);
 		}
 	}

@@ -12,9 +12,10 @@ import { Promises } from "vs/base/common/async";
 
 export class LogsDataCleaner extends Disposable {
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@ILifecycleService private readonly lifecycleService: ILifecycleService,
+		@ILifecycleService private readonly lifecycleService: ILifecycleService
 	) {
 		super();
 		this.cleanUpOldLogsSoon();
@@ -24,27 +25,27 @@ export class LogsDataCleaner extends Disposable {
 		let handle: any = setTimeout(async () => {
 			handle = undefined;
 			const stat = await this.fileService.resolve(
-				dirname(this.environmentService.logsHome),
+				dirname(this.environmentService.logsHome)
 			);
 			if (stat.children) {
 				const currentLog = basename(this.environmentService.logsHome);
 				const allSessions = stat.children.filter(
 					(stat) =>
-						stat.isDirectory && /^\d{8}T\d{6}$/.test(stat.name),
+						stat.isDirectory && /^\d{8}T\d{6}$/.test(stat.name)
 				);
 				const oldSessions = allSessions
 					.sort()
 					.filter((d, i) => d.name !== currentLog);
 				const toDelete = oldSessions.slice(
 					0,
-					Math.max(0, oldSessions.length - 49),
+					Math.max(0, oldSessions.length - 49)
 				);
 				Promises.settled(
 					toDelete.map((stat) =>
 						this.fileService.del(stat.resource, {
 							recursive: true,
-						}),
-					),
+						})
+					)
 				);
 			}
 		}, 10 * 1000);

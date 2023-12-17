@@ -10,7 +10,7 @@ import { ContextKey } from "./utils";
 export class Navigation {
 	private readonly _disposables: vscode.Disposable[] = [];
 	private readonly _ctxCanNavigate = new ContextKey<boolean>(
-		"references-view.canNavigate",
+		"references-view.canNavigate"
 	);
 
 	private _delegate?: SymbolItemNavigation<unknown>;
@@ -18,11 +18,11 @@ export class Navigation {
 	constructor(private readonly _view: vscode.TreeView<unknown>) {
 		this._disposables.push(
 			vscode.commands.registerCommand("references-view.next", () =>
-				this.next(false),
+				this.next(false)
 			),
 			vscode.commands.registerCommand("references-view.prev", () =>
-				this.previous(false),
-			),
+				this.previous(false)
+			)
 		);
 	}
 
@@ -48,7 +48,7 @@ export class Navigation {
 		}
 		return this._delegate.nearest(
 			vscode.window.activeTextEditor.document.uri,
-			vscode.window.activeTextEditor.selection.active,
+			vscode.window.activeTextEditor.selection.active
 		);
 	}
 

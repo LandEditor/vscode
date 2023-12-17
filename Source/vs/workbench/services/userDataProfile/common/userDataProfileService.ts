@@ -22,7 +22,7 @@ export class UserDataProfileService
 	readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeCurrentProfile = this._register(
-		new Emitter<DidChangeUserDataProfileEvent>(),
+		new Emitter<DidChangeUserDataProfileEvent>()
 	);
 	readonly onDidChangeCurrentProfile = this._onDidChangeCurrentProfile.event;
 
@@ -37,7 +37,7 @@ export class UserDataProfileService
 	}
 
 	async updateCurrentProfile(
-		userDataProfile: IUserDataProfile,
+		userDataProfile: IUserDataProfile
 	): Promise<void> {
 		if (equals(this._currentProfile, userDataProfile)) {
 			return;

@@ -26,7 +26,7 @@ export class CachedKeyboardMapper implements IKeyboardMapper {
 	}
 
 	public resolveKeyboardEvent(
-		keyboardEvent: IKeyboardEvent,
+		keyboardEvent: IKeyboardEvent
 	): ResolvedKeybinding {
 		return this._actual.resolveKeyboardEvent(keyboardEvent);
 	}

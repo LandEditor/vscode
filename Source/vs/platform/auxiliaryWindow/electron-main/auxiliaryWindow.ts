@@ -29,14 +29,15 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 
 	constructor(
 		private readonly contents: WebContents,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@ILogService private readonly logService: ILogService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IStateService stateService: IStateService
 	) {
 		super(configurationService, stateService, environmentMainService);
 
-		contents.removeAllListeners('devtools-reload-page'); // remove built in listener as aux windows have no reload
+		contents.removeAllListeners("devtools-reload-page"); // remove built in listener as aux windows have no reload
 
 		// Try to claim window
 		this.tryClaimWindow();
@@ -54,7 +55,7 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 		const window = BrowserWindow.fromWebContents(this.contents);
 		if (window) {
 			this.logService.trace(
-				"[aux window] Claimed browser window instance",
+				"[aux window] Claimed browser window instance"
 			);
 
 			// Remember

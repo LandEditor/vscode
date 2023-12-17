@@ -33,7 +33,7 @@ export function parse(content: string): any {
 function _parse(
 	content: string,
 	filename: string | null,
-	locationKeyName: string | null,
+	locationKeyName: string | null
 ): any {
 	const len = content.length;
 
@@ -149,7 +149,7 @@ function _parse(
 				msg +
 				" ~~~" +
 				content.substr(pos, 50) +
-				"~~~",
+				"~~~"
 		);
 	}
 

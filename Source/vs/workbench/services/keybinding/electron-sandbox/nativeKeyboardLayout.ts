@@ -42,30 +42,38 @@ export class KeyboardLayoutService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
 	private _keyboardMapper: IKeyboardMapper | null;
 
 	constructor(
-		@INativeKeyboardLayoutService private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@INativeKeyboardLayoutService
+		private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 		this._keyboardMapper = null;
 
-		this._register(this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(async () => {
-			this._keyboardMapper = null;
-			this._onDidChangeKeyboardLayout.fire();
-		}));
+		this._register(
+			this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(
+				async () => {
+					this._keyboardMapper = null;
+					this._onDidChangeKeyboardLayout.fire();
+				}
+			)
+		);
 
-		this._register(_configurationService.onDidChangeConfiguration(async (e) => {
-			if (e.affectsConfiguration('keyboard')) {
-				this._keyboardMapper = null;
-				this._onDidChangeKeyboardLayout.fire();
-			}
-		}));
+		this._register(
+			_configurationService.onDidChangeConfiguration(async (e) => {
+				if (e.affectsConfiguration("keyboard")) {
+					this._keyboardMapper = null;
+					this._onDidChangeKeyboardLayout.fire();
+				}
+			})
+		);
 	}
 
 	public getRawKeyboardMapping(): IKeyboardMapping | null {
@@ -91,8 +99,8 @@ export class KeyboardLayoutService
 				createKeyboardMapper(
 					this.getCurrentKeyboardLayout(),
 					this.getRawKeyboardMapping(),
-					config.mapAltGrToCtrlAlt,
-				),
+					config.mapAltGrToCtrlAlt
+				)
 			);
 		}
 		return this._keyboardMapper;
@@ -106,14 +114,14 @@ export class KeyboardLayoutService
 function createKeyboardMapper(
 	layoutInfo: IKeyboardLayoutInfo | null,
 	rawMapping: IKeyboardMapping | null,
-	mapAltGrToCtrlAlt: boolean,
+	mapAltGrToCtrlAlt: boolean
 ): IKeyboardMapper {
 	const _isUSStandard = isUSStandard(layoutInfo);
 	if (OS === OperatingSystem.Windows) {
 		return new WindowsKeyboardMapper(
 			_isUSStandard,
 			<IWindowsKeyboardMapping>rawMapping,
-			mapAltGrToCtrlAlt,
+			mapAltGrToCtrlAlt
 		);
 	}
 
@@ -134,7 +142,7 @@ function createKeyboardMapper(
 		_isUSStandard,
 		<IMacLinuxKeyboardMapping>rawMapping,
 		mapAltGrToCtrlAlt,
-		OS,
+		OS
 	);
 }
 
@@ -165,5 +173,5 @@ function isUSStandard(_kbInfo: IKeyboardLayoutInfo | null): boolean {
 registerSingleton(
 	IKeyboardLayoutService,
 	KeyboardLayoutService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -47,24 +47,24 @@ export interface ISearchService {
 	textSearch(
 		query: ITextQuery,
 		token?: CancellationToken,
-		onProgress?: (result: ISearchProgressItem) => void,
+		onProgress?: (result: ISearchProgressItem) => void
 	): Promise<ISearchComplete>;
 	textSearchSplitSyncAsync(
 		query: ITextQuery,
 		token?: CancellationToken | undefined,
 		onProgress?: ((result: ISearchProgressItem) => void) | undefined,
 		notebookFilesToIgnore?: ResourceSet,
-		asyncNotebookFilesToIgnore?: Promise<ResourceSet>,
+		asyncNotebookFilesToIgnore?: Promise<ResourceSet>
 	): { syncResults: ISearchComplete; asyncResults: Promise<ISearchComplete> };
 	fileSearch(
 		query: IFileQuery,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchComplete>;
 	clearCache(cacheKey: string): Promise<void>;
 	registerSearchResultProvider(
 		scheme: string,
 		type: SearchProviderType,
-		provider: ISearchResultProvider,
+		provider: ISearchResultProvider
 	): IDisposable;
 }
 
@@ -80,11 +80,11 @@ export interface ISearchResultProvider {
 	textSearch(
 		query: ITextQuery,
 		onProgress?: (p: ISearchProgressItem) => void,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchComplete>;
 	fileSearch(
 		query: IFileQuery,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchComplete>;
 	clearCache(cacheKey: string): Promise<void>;
 }
@@ -232,7 +232,7 @@ export type ITextSearchResult<U extends UriComponents = URI> =
 	| ITextSearchContext<U>;
 
 export function resultIsMatch(
-	result: ITextSearchResult,
+	result: ITextSearchResult
 ): result is ITextSearchMatch {
 	return !!(<ITextSearchMatch>result).preview;
 }
@@ -248,7 +248,7 @@ export function isFileMatch(p: ISearchProgressItem): p is IFileMatch {
 }
 
 export function isProgressMessage(
-	p: ISearchProgressItem | ISerializedSearchProgressItem,
+	p: ISearchProgressItem | ISerializedSearchProgressItem
 ): p is IProgressMessage {
 	return !!(p as IProgressMessage).message;
 }
@@ -327,7 +327,7 @@ export class TextSearchMatch implements ITextSearchMatch {
 		text: string,
 		range: ISearchRange | ISearchRange[],
 		previewOptions?: ITextSearchPreviewOptions,
-		webviewIndex?: number,
+		webviewIndex?: number
 	) {
 		this.ranges = range;
 		this.webviewIndex = webviewIndex;
@@ -352,7 +352,7 @@ export class TextSearchMatch implements ITextSearchMatch {
 			for (const range of ranges) {
 				const previewStart = Math.max(
 					range.startColumn - leadingChars,
-					0,
+					0
 				);
 				const previewEnd =
 					range.startColumn + previewOptions.charsPerLine;
@@ -374,8 +374,8 @@ export class TextSearchMatch implements ITextSearchMatch {
 					new OneLineRange(
 						0,
 						range.startColumn - shift,
-						range.endColumn - shift,
-					),
+						range.endColumn - shift
+					)
 				);
 				lastEnd = previewEnd;
 			}
@@ -398,8 +398,8 @@ export class TextSearchMatch implements ITextSearchMatch {
 							r.startLineNumber - firstMatchLine,
 							r.startColumn,
 							r.endLineNumber - firstMatchLine,
-							r.endColumn,
-						),
+							r.endColumn
+						)
 				),
 			};
 		}
@@ -427,7 +427,7 @@ export class SearchRange implements ISearchRange {
 		startLineNumber: number,
 		startColumn: number,
 		endLineNumber: number,
-		endColumn: number,
+		endColumn: number
 	) {
 		this.startLineNumber = startLineNumber;
 		this.startColumn = startColumn;
@@ -513,7 +513,7 @@ export interface ISearchConfiguration extends IFilesConfiguration {
 
 export function getExcludes(
 	configuration: ISearchConfiguration,
-	includeSearchExcludes = true,
+	includeSearchExcludes = true
 ): glob.IExpression | undefined {
 	const fileExcludes =
 		configuration && configuration.files && configuration.files.exclude;
@@ -537,7 +537,7 @@ export function getExcludes(
 	allExcludes = objects.mixin(
 		allExcludes,
 		objects.deepClone(searchExcludes),
-		true,
+		true
 	);
 
 	return allExcludes;
@@ -545,7 +545,7 @@ export function getExcludes(
 
 export function pathIncludedInQuery(
 	queryProps: ICommonQueryProps<URI>,
-	fsPath: string,
+	fsPath: string
 ): boolean {
 	if (
 		queryProps.excludePattern &&
@@ -598,7 +598,10 @@ export enum SearchErrorCode {
 }
 
 export class SearchError extends Error {
-	constructor(message: string, readonly code?: SearchErrorCode) {
+	constructor(
+		message: string,
+		readonly code?: SearchErrorCode
+	) {
 		super(message);
 	}
 }
@@ -629,10 +632,10 @@ export interface ITelemetryEvent {
 
 export interface IRawSearchService {
 	fileSearch(
-		search: IRawFileQuery,
+		search: IRawFileQuery
 	): Event<ISerializedSearchProgressItem | ISerializedSearchComplete>;
 	textSearch(
-		search: IRawTextQuery,
+		search: IRawTextQuery
 	): Event<ISerializedSearchProgressItem | ISerializedSearchComplete>;
 	clearCache(cacheKey: string): Promise<void>;
 }
@@ -658,7 +661,7 @@ export interface ISearchEngine<T> {
 	search: (
 		onResult: (matches: T) => void,
 		onProgress: (progress: IProgressMessage) => void,
-		done: (error: Error | null, complete: ISearchEngineSuccess) => void,
+		done: (error: Error | null, complete: ISearchEngineSuccess) => void
 	) => void;
 	cancel: () => void;
 }
@@ -689,7 +692,7 @@ export type ISerializedSearchComplete =
 	| ISerializedSearchError;
 
 export function isSerializedSearchComplete(
-	arg: ISerializedSearchProgressItem | ISerializedSearchComplete,
+	arg: ISerializedSearchProgressItem | ISerializedSearchComplete
 ): arg is ISerializedSearchComplete {
 	if ((arg as any).type === "error") {
 		return true;
@@ -701,20 +704,20 @@ export function isSerializedSearchComplete(
 }
 
 export function isSerializedSearchSuccess(
-	arg: ISerializedSearchComplete,
+	arg: ISerializedSearchComplete
 ): arg is ISerializedSearchSuccess {
 	return arg.type === "success";
 }
 
 export function isSerializedFileMatch(
-	arg: ISerializedSearchProgressItem,
+	arg: ISerializedSearchProgressItem
 ): arg is ISerializedFileMatch {
 	return !!(<ISerializedFileMatch>arg).path;
 }
 
 export function isFilePatternMatch(
 	candidate: IRawFileMatch,
-	normalizedFilePatternLowercase: string,
+	normalizedFilePatternLowercase: string
 ): boolean {
 	const pathToMatch = candidate.searchPath
 		? candidate.searchPath
@@ -765,7 +768,7 @@ export class SerializableFileMatch implements ISerializedFileMatch {
  */
 export function resolvePatternsForProvider(
 	globalPattern: glob.IExpression | undefined,
-	folderPattern: glob.IExpression | undefined,
+	folderPattern: glob.IExpression | undefined
 ): string[] {
 	const merged = {
 		...(globalPattern || {}),
@@ -813,7 +816,7 @@ export class QueryGlobTester {
 	matchesExcludesSync(
 		testPath: string,
 		basename?: string,
-		hasSibling?: (name: string) => boolean,
+		hasSibling?: (name: string) => boolean
 	): boolean {
 		if (
 			this._parsedExcludeExpression &&
@@ -831,7 +834,7 @@ export class QueryGlobTester {
 	includedInQuerySync(
 		testPath: string,
 		basename?: string,
-		hasSibling?: (name: string) => boolean,
+		hasSibling?: (name: string) => boolean
 	): boolean {
 		if (
 			this._parsedExcludeExpression &&
@@ -857,12 +860,12 @@ export class QueryGlobTester {
 	includedInQuery(
 		testPath: string,
 		basename?: string,
-		hasSibling?: (name: string) => boolean | Promise<boolean>,
+		hasSibling?: (name: string) => boolean | Promise<boolean>
 	): Promise<boolean> | boolean {
 		const excluded = this._parsedExcludeExpression(
 			testPath,
 			basename,
-			hasSibling,
+			hasSibling
 		);
 
 		const isIncluded = () => {
@@ -870,8 +873,8 @@ export class QueryGlobTester {
 				? !!this._parsedIncludeExpression(
 						testPath,
 						basename,
-						hasSibling,
-				  )
+						hasSibling
+					)
 				: true;
 		};
 
@@ -912,7 +915,7 @@ export function hasSiblingPromiseFn(siblingsFn?: () => Promise<string[]>) {
 	return (name: string) => {
 		if (!siblings) {
 			siblings = (siblingsFn() || Promise.resolve([])).then((list) =>
-				list ? listToMap(list) : {},
+				list ? listToMap(list) : {}
 			);
 		}
 		return siblings.then((map) => !!map[name]);

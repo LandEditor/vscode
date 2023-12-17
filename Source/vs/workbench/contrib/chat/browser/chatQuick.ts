@@ -52,9 +52,11 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 	private _container: HTMLElement | undefined;
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IChatService private readonly chatService: IChatService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 	}
@@ -85,7 +87,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 					Event.once(this.onDidClose)(() => {
 						this._currentChat?.clearValue();
 						this._store.delete(disposable);
-					}),
+					})
 				);
 			}
 		}
@@ -129,7 +131,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 				QuickChat,
 				{
 					providerId: providerInfo.id,
-				},
+				}
 			);
 
 			// show needs to come after the quickpick is shown
@@ -144,7 +146,7 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 				this._currentChat!.hide();
 				this._input = undefined;
 				this._onDidClose.fire();
-			}),
+			})
 		);
 
 		this._currentChat.focus();
@@ -184,10 +186,13 @@ class QuickChat extends Disposable {
 
 	constructor(
 		private readonly _options: IChatViewOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IChatService private readonly chatService: IChatService,
-		@IChatWidgetService private readonly _chatWidgetService: IChatWidgetService,
+		@IChatWidgetService
+		private readonly _chatWidgetService: IChatWidgetService,
 		@ILayoutService private readonly layoutService: ILayoutService
 	) {
 		super();
@@ -211,7 +216,7 @@ class QuickChat extends Disposable {
 						startColumn: 1,
 						endLineNumber: 1,
 						endColumn: value.length + 1,
-					},
+					}
 				);
 			}
 		}
@@ -250,7 +255,7 @@ class QuickChat extends Disposable {
 				new ServiceCollection([
 					IContextKeyService,
 					this._register(this.contextKeyService.createScoped(parent)),
-				]),
+				])
 			);
 		this.widget = this._register(
 			scopedInstantiationService.createInstance(
@@ -262,8 +267,8 @@ class QuickChat extends Disposable {
 					listBackground: quickInputBackground,
 					inputEditorBackground: inputBackground,
 					resultEditorBackground: editorBackground,
-				},
-			),
+				}
+			)
 		);
 		this.widget.render(parent);
 		this.widget.setVisible(true);
@@ -273,8 +278,8 @@ class QuickChat extends Disposable {
 			new Sash(
 				parent,
 				{ getHorizontalSashTop: () => parent.offsetHeight },
-				{ orientation: Orientation.HORIZONTAL },
-			),
+				{ orientation: Orientation.HORIZONTAL }
+			)
 		);
 		this.registerListeners(parent);
 	}
@@ -292,7 +297,7 @@ class QuickChat extends Disposable {
 				if (this.widget.visible) {
 					this.widget.updateDynamicChatTreeItemLayout(
 						2,
-						this.maxHeight,
+						this.maxHeight
 					);
 				} else {
 					// If the chat is not visible, then we should defer updating the layout
@@ -300,22 +305,22 @@ class QuickChat extends Disposable {
 					// when the chat is visible.
 					this._deferUpdatingDynamicLayout = true;
 				}
-			}),
+			})
 		);
 		this._register(
 			this.widget.inputEditor.onDidChangeModelContent((e) => {
 				this._currentQuery = this.widget.inputEditor.getValue();
-			}),
+			})
 		);
 		this._register(this.widget.onDidClear(() => this.clear()));
 		this._register(
-			this.widget.onDidChangeHeight((e) => this.sash.layout()),
+			this.widget.onDidChangeHeight((e) => this.sash.layout())
 		);
 		const width = parent.offsetWidth;
 		this._register(
 			this.sash.onDidStart(() => {
 				this.widget.isDynamicChatTreeItemLayoutEnabled = false;
-			}),
+			})
 		);
 		this._register(
 			this.sash.onDidChange((e) => {
@@ -327,13 +332,13 @@ class QuickChat extends Disposable {
 				}
 				this.widget.layout(e.currentY, width);
 				this.sash.layout();
-			}),
+			})
 		);
 		this._register(
 			this.sash.onDidReset(() => {
 				this.widget.isDynamicChatTreeItemLayoutEnabled = true;
 				this.widget.layoutDynamicChatTreeItemMode();
-			}),
+			})
 		);
 	}
 
@@ -343,7 +348,7 @@ class QuickChat extends Disposable {
 
 	async openChatView(): Promise<void> {
 		const widget = await this._chatWidgetService.revealViewForProvider(
-			this._options.providerId,
+			this._options.providerId
 		);
 		if (!widget?.viewModel || !this.model) {
 			return;
@@ -361,7 +366,7 @@ class QuickChat extends Disposable {
 						message: request.response.response.value,
 						errorDetails: request.response.errorDetails,
 						followups: request.response.followups,
-					},
+					}
 				);
 			} else if (request.message) {
 			}
@@ -386,7 +391,7 @@ class QuickChat extends Disposable {
 	private updateModel(): void {
 		this.model ??= this.chatService.startSession(
 			this._options.providerId,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		if (!this.model) {
 			throw new Error("Could not start chat session");

@@ -33,7 +33,7 @@ export class MergeEditorSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		raw: string,
+		raw: string
 	): MergeEditorInput | undefined {
 		try {
 			const data = <MergeEditorInputJSON>parse(raw);
@@ -44,15 +44,15 @@ export class MergeEditorSerializer implements IEditorSerializer {
 					data.input1.uri,
 					data.input1.title,
 					data.input1.detail,
-					data.input1.description,
+					data.input1.description
 				),
 				new MergeEditorInputData(
 					data.input2.uri,
 					data.input2.title,
 					data.input2.detail,
-					data.input2.description,
+					data.input2.description
 				),
-				data.result,
+				data.result
 			);
 		} catch (err) {
 			onUnexpectedError(err);

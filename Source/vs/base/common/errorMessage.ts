@@ -15,7 +15,7 @@ function exceptionToErrorMessage(exception: any, verbose: boolean): string {
 			"{0}: {1}",
 			detectSystemErrorMessage(exception),
 			stackToString(exception.stack) ||
-				stackToString(exception.stacktrace),
+				stackToString(exception.stacktrace)
 		);
 	}
 
@@ -23,7 +23,7 @@ function exceptionToErrorMessage(exception: any, verbose: boolean): string {
 }
 
 function stackToString(
-	stack: string[] | string | undefined,
+	stack: string[] | string | undefined
 ): string | undefined {
 	if (Array.isArray(stack)) {
 		return stack.join("\n");
@@ -47,7 +47,7 @@ function detectSystemErrorMessage(exception: any): string {
 		return nls.localize(
 			"nodeExceptionMessage",
 			"A system error occurred ({0})",
-			exception.message,
+			exception.message
 		);
 	}
 
@@ -55,7 +55,7 @@ function detectSystemErrorMessage(exception: any): string {
 		exception.message ||
 		nls.localize(
 			"error.defaultMessage",
-			"An unknown error occurred. Please consult the log for more details.",
+			"An unknown error occurred. Please consult the log for more details."
 		)
 	);
 }
@@ -68,12 +68,12 @@ function detectSystemErrorMessage(exception: any): string {
  */
 export function toErrorMessage(
 	error: any = null,
-	verbose: boolean = false,
+	verbose: boolean = false
 ): string {
 	if (!error) {
 		return nls.localize(
 			"error.defaultMessage",
-			"An unknown error occurred. Please consult the log for more details.",
+			"An unknown error occurred. Please consult the log for more details."
 		);
 	}
 
@@ -86,7 +86,7 @@ export function toErrorMessage(
 				"error.moreErrors",
 				"{0} ({1} errors in total)",
 				msg,
-				errors.length,
+				errors.length
 			);
 		}
 
@@ -119,7 +119,7 @@ export function toErrorMessage(
 
 	return nls.localize(
 		"error.defaultMessage",
-		"An unknown error occurred. Please consult the log for more details.",
+		"An unknown error occurred. Please consult the log for more details."
 	);
 }
 
@@ -135,7 +135,7 @@ export function isErrorWithActions(obj: unknown): obj is IErrorWithActions {
 
 export function createErrorWithActions(
 	messageOrError: string | Error,
-	actions: IAction[],
+	actions: IAction[]
 ): IErrorWithActions {
 	let error: IErrorWithActions;
 	if (typeof messageOrError === "string") {

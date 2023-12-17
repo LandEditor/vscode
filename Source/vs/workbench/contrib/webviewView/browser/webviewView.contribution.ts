@@ -15,5 +15,5 @@ import {
 registerSingleton(
 	IWebviewViewService,
 	WebviewViewService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

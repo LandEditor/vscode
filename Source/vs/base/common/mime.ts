@@ -113,11 +113,11 @@ const _simplePattern = /^(.+)\/(.+?)(;.+)?$/;
 export function normalizeMimeType(mimeType: string): string;
 export function normalizeMimeType(
 	mimeType: string,
-	strict: true,
+	strict: true
 ): string | undefined;
 export function normalizeMimeType(
 	mimeType: string,
-	strict?: true,
+	strict?: true
 ): string | undefined {
 	const match = _simplePattern.exec(mimeType);
 	if (!match) {

@@ -26,7 +26,7 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 
 export function requireToContent(
 	instantiationService: IInstantiationService,
-	resource: URI,
+	resource: URI
 ): Promise<string> {
 	if (!resource.query) {
 		throw new Error("Welcome: invalid resource");
@@ -56,16 +56,21 @@ export class WalkThroughSnippetContentProvider
 	private loads = new Map<string, Promise<ITextBufferFactory>>();
 
 	constructor(
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IModelService private readonly modelService: IModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
-		this.textModelResolverService.registerTextModelContentProvider(Schemas.walkThroughSnippet, this);
+		this.textModelResolverService.registerTextModelContentProvider(
+			Schemas.walkThroughSnippet,
+			this
+		);
 	}
 
 	private async textBufferFactoryFromResource(
-		resource: URI,
+		resource: URI
 	): Promise<ITextBufferFactory> {
 		let ongoing = this.loads.get(resource.toString());
 		if (!ongoing) {
@@ -79,7 +84,7 @@ export class WalkThroughSnippetContentProvider
 
 	public async provideTextContent(resource: URI): Promise<ITextModel> {
 		const factory = await this.textBufferFactoryFromResource(
-			resource.with({ fragment: "" }),
+			resource.with({ fragment: "" })
 		);
 		let codeEditorModel = this.modelService.getModel(resource);
 		if (!codeEditorModel) {
@@ -91,8 +96,8 @@ export class WalkThroughSnippetContentProvider
 				const languageId =
 					typeof lang === "string"
 						? this.languageService.getLanguageIdByLanguageName(
-								lang,
-						  ) || ""
+								lang
+							) || ""
 						: "";
 				const languageSelection =
 					this.languageService.createById(languageId);
@@ -100,7 +105,7 @@ export class WalkThroughSnippetContentProvider
 				const model = this.modelService.createModel(
 					code,
 					languageSelection,
-					resource.with({ fragment: `${i}.${lang}` }),
+					resource.with({ fragment: `${i}.${lang}` })
 				);
 				if (i === j) {
 					codeEditorModel = model;
@@ -113,11 +118,11 @@ export class WalkThroughSnippetContentProvider
 				1,
 				1,
 				lineCount,
-				textBuffer.getLineLength(lineCount) + 1,
+				textBuffer.getLineLength(lineCount) + 1
 			);
 			const markdown = textBuffer.getValueInRange(
 				range,
-				EndOfLinePreference.TextDefined,
+				EndOfLinePreference.TextDefined
 			);
 			marked(markdown, { renderer });
 		}

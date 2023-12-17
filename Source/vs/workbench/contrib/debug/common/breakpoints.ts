@@ -15,9 +15,13 @@ export class Breakpoints {
 
 	constructor(
 		private readonly breakpointContribution: IBreakpointContribution,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService
 	) {
-		this.breakpointsWhen = typeof breakpointContribution.when === 'string' ? ContextKeyExpr.deserialize(breakpointContribution.when) : undefined;
+		this.breakpointsWhen =
+			typeof breakpointContribution.when === "string"
+				? ContextKeyExpr.deserialize(breakpointContribution.when)
+				: undefined;
 	}
 
 	get language(): string {

@@ -89,7 +89,7 @@ export interface IWebviewWorkbenchService {
 		webviewInitInfo: WebviewInitInfo,
 		viewType: string,
 		title: string,
-		showOptions: IWebViewShowOptions,
+		showOptions: IWebViewShowOptions
 	): WebviewInput;
 
 	/**
@@ -114,7 +114,7 @@ export interface IWebviewWorkbenchService {
 			| GroupIdentifier
 			| ACTIVE_GROUP_TYPE
 			| SIDE_GROUP_TYPE,
-		preserveFocus: boolean,
+		preserveFocus: boolean
 	): void;
 
 	/**
@@ -134,7 +134,7 @@ export interface IWebviewWorkbenchService {
 	 */
 	resolveWebview(
 		webview: WebviewInput,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void>;
 }
 
@@ -152,7 +152,7 @@ interface WebviewResolver {
 	 */
 	resolveWebview(
 		webview: WebviewInput,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void>;
 }
 
@@ -167,7 +167,8 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 	constructor(
 		init: WebviewInputInitInfo,
 		webview: IOverlayWebview,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService
 	) {
 		super(init, webview, _webviewWorkbenchService.iconManager);
 	}
@@ -183,7 +184,7 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 		if (!this._resolved) {
 			this._resolved = true;
 			this._resolvePromise = createCancelablePromise((token) =>
-				this._webviewWorkbenchService.resolveWebview(this, token),
+				this._webviewWorkbenchService.resolveWebview(this, token)
 			);
 			try {
 				await this._resolvePromise;
@@ -197,7 +198,7 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 	}
 
 	protected override transfer(
-		other: LazilyResolvedWebviewEditorInput,
+		other: LazilyResolvedWebviewEditorInput
 	): WebviewInput | undefined {
 		if (!super.transfer(other)) {
 			return;
@@ -217,13 +218,13 @@ class RevivalPool {
 
 	public enqueueForRestoration(
 		input: WebviewInput,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const promise = new DeferredPromise<void>();
 
 		const remove = () => {
 			const index = this._awaitingRevival.findIndex(
-				(entry) => input === entry.input,
+				(entry) => input === entry.input
 			);
 			if (index >= 0) {
 				this._awaitingRevival.splice(index, 1);
@@ -235,7 +236,7 @@ class RevivalPool {
 			token.onCancellationRequested(() => {
 				remove();
 				promise.cancel();
-			}),
+			})
 		);
 
 		this._awaitingRevival.push({ input, promise, disposable });
@@ -245,10 +246,10 @@ class RevivalPool {
 
 	public reviveFor(reviver: WebviewResolver, token: CancellationToken) {
 		const toRevive = this._awaitingRevival.filter(({ input }) =>
-			canRevive(reviver, input),
+			canRevive(reviver, input)
 		);
 		this._awaitingRevival = this._awaitingRevival.filter(
-			({ input }) => !canRevive(reviver, input),
+			({ input }) => !canRevive(reviver, input)
 		);
 
 		for (const { input, promise: resolve, disposable } of toRevive) {
@@ -256,7 +257,7 @@ class RevivalPool {
 				.resolveWebview(input, token)
 				.then(
 					(x) => resolve.complete(x),
-					(err) => resolve.error(err),
+					(err) => resolve.error(err)
 				)
 				.finally(() => {
 					disposable.dispose();
@@ -281,23 +282,31 @@ export class WebviewEditorService
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWebviewService private readonly _webviewService: IWebviewService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWebviewService private readonly _webviewService: IWebviewService
 	) {
 		super();
 
-		this._activeWebviewPanelIdContext = CONTEXT_ACTIVE_WEBVIEW_PANEL_ID.bindTo(contextKeyService);
+		this._activeWebviewPanelIdContext =
+			CONTEXT_ACTIVE_WEBVIEW_PANEL_ID.bindTo(contextKeyService);
 
-		this._iconManager = this._register(this._instantiationService.createInstance(WebviewIconManager));
+		this._iconManager = this._register(
+			this._instantiationService.createInstance(WebviewIconManager)
+		);
 
-		this._register(_editorService.onDidActiveEditorChange(() => {
-			this.updateActiveWebview();
-		}));
+		this._register(
+			_editorService.onDidActiveEditorChange(() => {
+				this.updateActiveWebview();
+			})
+		);
 
 		// The user may have switched focus between two sides of a diff editor
-		this._register(_webviewService.onDidChangeActiveWebview(() => {
-			this.updateActiveWebview();
-		}));
+		this._register(
+			_webviewService.onDidChangeActiveWebview(() => {
+				this.updateActiveWebview();
+			})
+		);
 
 		this.updateActiveWebview();
 	}
@@ -309,7 +318,7 @@ export class WebviewEditorService
 	private _activeWebview: WebviewInput | undefined;
 
 	private readonly _onDidChangeActiveWebviewEditor = this._register(
-		new Emitter<WebviewInput | undefined>(),
+		new Emitter<WebviewInput | undefined>()
 	);
 	public readonly onDidChangeActiveWebviewEditor =
 		this._onDidChangeActiveWebviewEditor.event;
@@ -338,7 +347,7 @@ export class WebviewEditorService
 
 		if (newActiveWebview) {
 			this._activeWebviewPanelIdContext.set(
-				newActiveWebview.webview.providedViewType ?? "",
+				newActiveWebview.webview.providedViewType ?? ""
 			);
 		} else {
 			this._activeWebviewPanelIdContext.reset();
@@ -354,7 +363,7 @@ export class WebviewEditorService
 		webviewInitInfo: WebviewInitInfo,
 		viewType: string,
 		title: string,
-		showOptions: IWebViewShowOptions,
+		showOptions: IWebViewShowOptions
 	): WebviewInput {
 		const webview =
 			this._webviewService.createWebviewOverlay(webviewInitInfo);
@@ -366,7 +375,7 @@ export class WebviewEditorService
 				providedId: webviewInitInfo.providedViewType,
 			},
 			webview,
-			this.iconManager,
+			this.iconManager
 		);
 		this._editorService.openEditor(
 			webviewInput,
@@ -379,7 +388,7 @@ export class WebviewEditorService
 					? EditorActivation.RESTORE
 					: undefined,
 			},
-			showOptions.group,
+			showOptions.group
 		);
 		return webviewInput;
 	}
@@ -391,7 +400,7 @@ export class WebviewEditorService
 			| GroupIdentifier
 			| ACTIVE_GROUP_TYPE
 			| SIDE_GROUP_TYPE,
-		preserveFocus: boolean,
+		preserveFocus: boolean
 	): void {
 		const topLevelEditor = this.findTopLevelEditorForWebview(webview);
 
@@ -405,7 +414,7 @@ export class WebviewEditorService
 					? EditorActivation.RESTORE
 					: undefined,
 			},
-			group,
+			group
 		);
 	}
 
@@ -435,7 +444,7 @@ export class WebviewEditorService
 		group: number | undefined;
 	}): WebviewInput {
 		const webview = this._webviewService.createWebviewOverlay(
-			options.webviewInitInfo,
+			options.webviewInitInfo
 		);
 		webview.state = options.state;
 
@@ -446,7 +455,7 @@ export class WebviewEditorService
 				providedId: options.webviewInitInfo.providedViewType,
 				name: options.title,
 			},
-			webview,
+			webview
 		);
 		webviewInput.iconPath = options.iconPath;
 
@@ -476,13 +485,13 @@ export class WebviewEditorService
 		}
 
 		return Iterable.some(this._revivers.values(), (reviver) =>
-			canRevive(reviver, webview),
+			canRevive(reviver, webview)
 		);
 	}
 
 	private async tryRevive(
 		webview: WebviewInput,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<boolean> {
 		for (const reviver of this._revivers.values()) {
 			if (canRevive(reviver, webview)) {
@@ -495,7 +504,7 @@ export class WebviewEditorService
 
 	public async resolveWebview(
 		webview: WebviewInput,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const didRevive = await this.tryRevive(webview, token);
 		if (!didRevive && !token.isCancellationRequested) {

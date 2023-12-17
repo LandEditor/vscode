@@ -28,21 +28,21 @@ export class ToggleColumnSelectionAction extends Action2 {
 			title: {
 				value: localize(
 					"toggleColumnSelection",
-					"Toggle Column Selection Mode",
+					"Toggle Column Selection Mode"
 				),
 				mnemonicTitle: localize(
 					{
 						key: "miColumnSelection",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Column &&Selection Mode",
+					"Column &&Selection Mode"
 				),
 				original: "Toggle Column Selection Mode",
 			},
 			f1: true,
 			toggled: ContextKeyExpr.equals(
 				"config.editor.columnSelection",
-				true,
+				true
 			),
 			menu: {
 				id: MenuId.MenubarSelectionMenu,
@@ -57,15 +57,15 @@ export class ToggleColumnSelectionAction extends Action2 {
 		const codeEditorService = accessor.get(ICodeEditorService);
 
 		const oldValue = configurationService.getValue(
-			"editor.columnSelection",
+			"editor.columnSelection"
 		);
 		const codeEditor = this._getCodeEditor(codeEditorService);
 		await configurationService.updateValue(
 			"editor.columnSelection",
-			!oldValue,
+			!oldValue
 		);
 		const newValue = configurationService.getValue(
-			"editor.columnSelection",
+			"editor.columnSelection"
 		);
 		if (
 			!codeEditor ||
@@ -82,19 +82,19 @@ export class ToggleColumnSelectionAction extends Action2 {
 			const selection = codeEditor.getSelection();
 			const modelSelectionStart = new Position(
 				selection.selectionStartLineNumber,
-				selection.selectionStartColumn,
+				selection.selectionStartColumn
 			);
 			const viewSelectionStart =
 				viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-					modelSelectionStart,
+					modelSelectionStart
 				);
 			const modelPosition = new Position(
 				selection.positionLineNumber,
-				selection.positionColumn,
+				selection.positionColumn
 			);
 			const viewPosition =
 				viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-					modelPosition,
+					modelPosition
 				);
 
 			CoreNavigationCommands.MoveTo.runCoreEditorCommand(viewModel, {
@@ -104,7 +104,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 			const visibleColumn =
 				viewModel.cursorConfig.visibleColumnFromColumn(
 					viewModel,
-					viewPosition,
+					viewPosition
 				);
 			CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(
 				viewModel,
@@ -113,7 +113,7 @@ export class ToggleColumnSelectionAction extends Action2 {
 					viewPosition: viewPosition,
 					doColumnSelect: true,
 					mouseColumn: visibleColumn + 1,
-				},
+				}
 			);
 		} else {
 			const columnSelectData = viewModel.getCursorColumnSelectData();
@@ -121,26 +121,26 @@ export class ToggleColumnSelectionAction extends Action2 {
 				viewModel.cursorConfig.columnFromVisibleColumn(
 					viewModel,
 					columnSelectData.fromViewLineNumber,
-					columnSelectData.fromViewVisualColumn,
+					columnSelectData.fromViewVisualColumn
 				);
 			const fromPosition =
 				viewModel.coordinatesConverter.convertViewPositionToModelPosition(
 					new Position(
 						columnSelectData.fromViewLineNumber,
-						fromViewColumn,
-					),
+						fromViewColumn
+					)
 				);
 			const toViewColumn = viewModel.cursorConfig.columnFromVisibleColumn(
 				viewModel,
 				columnSelectData.toViewLineNumber,
-				columnSelectData.toViewVisualColumn,
+				columnSelectData.toViewVisualColumn
 			);
 			const toPosition =
 				viewModel.coordinatesConverter.convertViewPositionToModelPosition(
 					new Position(
 						columnSelectData.toViewLineNumber,
-						toViewColumn,
-					),
+						toViewColumn
+					)
 				);
 
 			codeEditor.setSelection(
@@ -148,14 +148,14 @@ export class ToggleColumnSelectionAction extends Action2 {
 					fromPosition.lineNumber,
 					fromPosition.column,
 					toPosition.lineNumber,
-					toPosition.column,
-				),
+					toPosition.column
+				)
 			);
 		}
 	}
 
 	private _getCodeEditor(
-		codeEditorService: ICodeEditorService,
+		codeEditorService: ICodeEditorService
 	): ICodeEditor | null {
 		const codeEditor = codeEditorService.getFocusedCodeEditor();
 		if (codeEditor) {

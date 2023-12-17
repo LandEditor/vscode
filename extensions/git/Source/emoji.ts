@@ -27,10 +27,10 @@ async function loadEmojiMap() {
 	const uri = (Uri as any).joinPath(
 		context.extensionUri,
 		"resources",
-		"emojis.json",
+		"emojis.json"
 	);
 	emojiMap = JSON.parse(
-		new TextDecoder("utf8").decode(await workspace.fs.readFile(uri)),
+		new TextDecoder("utf8").decode(await workspace.fs.readFile(uri))
 	);
 }
 

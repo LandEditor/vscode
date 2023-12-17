@@ -107,8 +107,8 @@ class TranspileWorker {
 				const suffixLen = file.path.endsWith(".d.ts")
 					? 5 /* SuffixTypes.Dts */
 					: file.path.endsWith(".ts")
-					  ? 3 /* SuffixTypes.Ts */
-					  : 0 /* SuffixTypes.Unknown */;
+						? 3 /* SuffixTypes.Ts */
+						: 0; /* SuffixTypes.Unknown */
 				// check if output of a DTS-files isn't just "empty" and iff so
 				// skip this file
 				if (
@@ -124,7 +124,7 @@ class TranspileWorker {
 						path: outPath,
 						base: outBase,
 						contents: Buffer.from(jsSrc),
-					}),
+					})
 				);
 			}
 			this._pending = undefined;
@@ -172,7 +172,7 @@ class TscTranspiler {
 		logFn("Transpile", `will use ${TscTranspiler.P} transpile worker`);
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
-			configFilePath,
+			configFilePath
 		);
 	}
 	async join() {
@@ -204,8 +204,8 @@ class TscTranspiler {
 			for (let i = 0; i < TscTranspiler.P; i++) {
 				this._workerPool.push(
 					new TranspileWorker((file) =>
-						this._outputFileNames.getOutputFileName(file),
-					),
+						this._outputFileNames.getOutputFileName(file)
+					)
 				);
 			}
 		}
@@ -269,7 +269,7 @@ class SwcTranspiler {
 		_logFn("Transpile", `will use SWC to transpile source files`);
 		this._outputFileNames = new OutputFileNameOracle(
 			_cmdLine,
-			configFilePath,
+			configFilePath
 		);
 	}
 	async join() {
@@ -307,23 +307,23 @@ class SwcTranspiler {
 					}
 					const outBase = this._cmdLine.options.outDir ?? file.base;
 					const outPath = this._outputFileNames.getOutputFileName(
-						file.path,
+						file.path
 					);
 					this.onOutfile(
 						new Vinyl({
 							path: outPath,
 							base: outBase,
 							contents: Buffer.from(output.code),
-						}),
+						})
 					);
 					this._logFn(
 						"Transpile",
-						`swc took ${Date.now() - t1}ms for ${file.path}`,
+						`swc took ${Date.now() - t1}ms for ${file.path}`
 					);
 				})
 				.catch((err) => {
 					this._onError(err);
-				}),
+				})
 		);
 	}
 	// --- .swcrc

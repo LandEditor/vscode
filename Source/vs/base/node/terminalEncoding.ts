@@ -42,7 +42,7 @@ const JSCHARDET_TO_ICONV_ENCODINGS: { [name: string]: string } = {
 const UTF8 = "utf8";
 
 export async function resolveTerminalEncoding(
-	verbose?: boolean,
+	verbose?: boolean
 ): Promise<string> {
 	let rawEncodingPromise: Promise<string | undefined>;
 
@@ -51,7 +51,7 @@ export async function resolveTerminalEncoding(
 	if (cliEncodingEnv) {
 		if (verbose) {
 			console.log(
-				`Found VSCODE_CLI_ENCODING variable: ${cliEncodingEnv}`,
+				`Found VSCODE_CLI_ENCODING variable: ${cliEncodingEnv}`
 			);
 		}
 
@@ -72,7 +72,7 @@ export async function resolveTerminalEncoding(
 					}
 
 					const windowsTerminalEncodingKeys = Object.keys(
-						windowsTerminalEncodings,
+						windowsTerminalEncodings
 					) as Array<keyof typeof windowsTerminalEncodings>;
 					for (const key of windowsTerminalEncodingKeys) {
 						if (stdout.indexOf(key) >= 0) {
@@ -90,7 +90,7 @@ export async function resolveTerminalEncoding(
 		rawEncodingPromise = new Promise<string>((resolve) => {
 			if (verbose) {
 				console.log(
-					'Running "locale charmap" to detect terminal encoding...',
+					'Running "locale charmap" to detect terminal encoding...'
 				);
 			}
 

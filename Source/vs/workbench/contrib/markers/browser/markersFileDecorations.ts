@@ -67,8 +67,8 @@ class MarkersDecorationsProvider implements IDecorationsProvider {
 					: localize(
 							"tooltip.N",
 							"{0} problems in this file",
-							markers.length,
-					  ),
+							markers.length
+						),
 			letter: markers.length < 10 ? markers.length.toString() : "9+",
 			color:
 				first.severity === MarkerSeverity.Error
@@ -85,12 +85,14 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 
 	constructor(
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IDecorationsService private readonly _decorationsService: IDecorationsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IDecorationsService
+		private readonly _decorationsService: IDecorationsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		this._disposables = [
-			this._configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration('problems')) {
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("problems")) {
 					this._updateEnablement();
 				}
 			}),
@@ -105,7 +107,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 
 	private _updateEnablement(): void {
 		const problem = this._configurationService.getValue(
-			"problems.visibility",
+			"problems.visibility"
 		);
 		if (problem === undefined) {
 			return;
@@ -126,7 +128,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 		this._enabled = shouldEnable as boolean;
 		if (this._enabled) {
 			const provider = new MarkersDecorationsProvider(
-				this._markerService,
+				this._markerService
 			);
 			this._provider =
 				this._decorationsService.registerDecorationsProvider(provider);
@@ -137,7 +139,7 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 }
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	id: "problems",
 	order: 101,
@@ -146,7 +148,7 @@ Registry.as<IConfigurationRegistry>(
 		"problems.decorations.enabled": {
 			markdownDescription: localize(
 				"markers.showOnFile",
-				"Show Errors & Warnings on files and folder. Overwritten by `#problems.visibility#` when it is off.",
+				"Show Errors & Warnings on files and folder. Overwritten by `#problems.visibility#` when it is off."
 			),
 			type: "boolean",
 			default: true,
@@ -156,8 +158,8 @@ Registry.as<IConfigurationRegistry>(
 
 // register file decorations
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	MarkersFileDecorations,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

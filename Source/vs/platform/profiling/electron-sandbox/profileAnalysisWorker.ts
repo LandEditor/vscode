@@ -48,7 +48,7 @@ class ProfileAnalysisWorker implements IRequestHandler, IProfileAnalysisWorker {
 
 	analyseByUrlCategory(
 		profile: IV8Profile,
-		categories: [url: URI, category: string][],
+		categories: [url: URI, category: string][]
 	): [category: string, aggregated: number][] {
 		// build search tree
 		const searchTree = TernarySearchTree.forUris<string>();
@@ -177,7 +177,7 @@ function bottomUp(model: IProfileModel, topN: number) {
 			}
 			if (top) {
 				const percentage = Math.round(
-					top.selfTime / (node.selfTime / 100),
+					top.selfTime / (node.selfTime / 100)
 				);
 				sample.caller.push({
 					percentage,

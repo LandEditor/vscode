@@ -24,7 +24,11 @@ export class ChatAccessibilityService
 
 	private _requestId: number = 0;
 
-	constructor(@IAudioCueService private readonly _audioCueService: IAudioCueService, @IInstantiationService private readonly _instantiationService: IInstantiationService) {
+	constructor(
+		@IAudioCueService private readonly _audioCueService: IAudioCueService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
+	) {
 		super();
 	}
 	acceptRequest(): number {
@@ -35,14 +39,14 @@ export class ChatAccessibilityService
 		this._pendingCueMap.set(
 			this._requestId,
 			this._register(
-				this._instantiationService.createInstance(AudioCueScheduler),
-			),
+				this._instantiationService.createInstance(AudioCueScheduler)
+			)
 		);
 		return this._requestId;
 	}
 	acceptResponse(
 		response: IChatResponseViewModel | string | undefined,
-		requestId: number,
+		requestId: number
 	): void {
 		this._pendingCueMap.get(requestId)?.dispose();
 		this._pendingCueMap.delete(requestId);
@@ -73,10 +77,15 @@ const CHAT_RESPONSE_PENDING_ALLOWANCE_MS = 4000;
 class AudioCueScheduler extends Disposable {
 	private _scheduler: RunOnceScheduler;
 	private _audioCueLoop: IDisposable | undefined;
-	constructor(@IAudioCueService private readonly _audioCueService: IAudioCueService) {
+	constructor(
+		@IAudioCueService private readonly _audioCueService: IAudioCueService
+	) {
 		super();
 		this._scheduler = new RunOnceScheduler(() => {
-			this._audioCueLoop = this._audioCueService.playAudioCueLoop(AudioCue.chatResponsePending, CHAT_RESPONSE_PENDING_AUDIO_CUE_LOOP_MS);
+			this._audioCueLoop = this._audioCueService.playAudioCueLoop(
+				AudioCue.chatResponsePending,
+				CHAT_RESPONSE_PENDING_AUDIO_CUE_LOOP_MS
+			);
 		}, CHAT_RESPONSE_PENDING_ALLOWANCE_MS);
 		this._scheduler.schedule();
 	}

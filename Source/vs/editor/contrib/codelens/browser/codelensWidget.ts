@@ -43,7 +43,7 @@ class CodeLensViewZone implements IViewZone {
 	constructor(
 		afterLineNumber: number,
 		heightInPx: number,
-		onHeight: () => void,
+		onHeight: () => void
 	) {
 		this.afterLineNumber = afterLineNumber;
 		this.heightInPx = heightInPx;
@@ -97,7 +97,7 @@ class CodeLensContentWidget implements IContentWidget {
 
 	withCommands(
 		lenses: Array<CodeLens | undefined | null>,
-		animate: boolean,
+		animate: boolean
 	): void {
 		this._commands.clear();
 
@@ -117,17 +117,13 @@ class CodeLensContentWidget implements IContentWidget {
 						dom.$(
 							"a",
 							{ id, title: lens.command.tooltip, role: "button" },
-							...title,
-						),
+							...title
+						)
 					);
 					this._commands.set(id, lens.command);
 				} else {
 					children.push(
-						dom.$(
-							"span",
-							{ title: lens.command.tooltip },
-							...title,
-						),
+						dom.$("span", { title: lens.command.tooltip }, ...title)
 					);
 				}
 				if (i + 1 < lenses.length) {
@@ -195,7 +191,7 @@ export class CodeLensHelper {
 
 	addDecoration(
 		decoration: IModelDeltaDecoration,
-		callback: IDecorationIdCallback,
+		callback: IDecorationIdCallback
 	): void {
 		this._addDecorations.push(decoration);
 		this._addDecorationsCallbacks.push(callback);
@@ -208,7 +204,7 @@ export class CodeLensHelper {
 	commit(changeAccessor: IModelDecorationsChangeAccessor): void {
 		const resultingDecorations = changeAccessor.deltaDecorations(
 			this._removeDecorations,
-			this._addDecorations,
+			this._addDecorations
 		);
 		for (let i = 0, len = resultingDecorations.length; i < len; i++) {
 			this._addDecorationsCallbacks[i](resultingDecorations[i]);
@@ -237,7 +233,7 @@ export class CodeLensWidget {
 		helper: CodeLensHelper,
 		viewZoneChangeAccessor: IViewZoneChangeAccessor,
 		heightInPx: number,
-		updateCallback: () => void,
+		updateCallback: () => void
 	) {
 		this._editor = editor;
 		this._data = data;
@@ -258,7 +254,7 @@ export class CodeLensWidget {
 					range: codeLensData.symbol.range,
 					options: codeLensDecorationOptions,
 				},
-				(id) => (this._decorationIds[i] = id),
+				(id) => (this._decorationIds[i] = id)
 			);
 
 			// the range contains all lenses on this line
@@ -272,7 +268,7 @@ export class CodeLensWidget {
 		this._viewZone = new CodeLensViewZone(
 			range!.startLineNumber - 1,
 			heightInPx,
-			updateCallback,
+			updateCallback
 		);
 		this._viewZoneId = viewZoneChangeAccessor.addZone(this._viewZone);
 
@@ -286,7 +282,7 @@ export class CodeLensWidget {
 		if (!this._contentWidget) {
 			this._contentWidget = new CodeLensContentWidget(
 				this._editor,
-				this._viewZone.afterLineNumber + 1,
+				this._viewZone.afterLineNumber + 1
 			);
 			this._editor.addContentWidget(this._contentWidget);
 		} else {
@@ -296,7 +292,7 @@ export class CodeLensWidget {
 
 	dispose(
 		helper: CodeLensHelper,
-		viewZoneChangeAccessor?: IViewZoneChangeAccessor,
+		viewZoneChangeAccessor?: IViewZoneChangeAccessor
 	): void {
 		this._decorationIds.forEach(helper.removeDecoration, helper);
 		this._decorationIds = [];
@@ -330,14 +326,14 @@ export class CodeLensWidget {
 					range: codeLensData.symbol.range,
 					options: codeLensDecorationOptions,
 				},
-				(id) => (this._decorationIds[i] = id),
+				(id) => (this._decorationIds[i] = id)
 			);
 		});
 	}
 
 	updateHeight(
 		height: number,
-		viewZoneChangeAccessor: IViewZoneChangeAccessor,
+		viewZoneChangeAccessor: IViewZoneChangeAccessor
 	): void {
 		this._viewZone.heightInPx = height;
 		viewZoneChangeAccessor.layoutZone(this._viewZoneId);

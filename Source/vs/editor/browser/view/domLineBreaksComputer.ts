@@ -37,7 +37,7 @@ export class DOMLineBreaksComputerFactory
 		tabSize: number,
 		wrappingColumn: number,
 		wrappingIndent: WrappingIndent,
-		wordBreak: "normal" | "keepAll",
+		wordBreak: "normal" | "keepAll"
 	): ILineBreaksComputer {
 		const requests: string[] = [];
 		const injectedTexts: (LineInjectedText[] | null)[] = [];
@@ -45,7 +45,7 @@ export class DOMLineBreaksComputerFactory
 			addRequest: (
 				lineText: string,
 				injectedText: LineInjectedText[] | null,
-				previousLineBreakData: ModelLineProjectionData | null,
+				previousLineBreakData: ModelLineProjectionData | null
 			) => {
 				requests.push(lineText);
 				injectedTexts.push(injectedText);
@@ -59,7 +59,7 @@ export class DOMLineBreaksComputerFactory
 					wrappingColumn,
 					wrappingIndent,
 					wordBreak,
-					injectedTexts,
+					injectedTexts
 				);
 			},
 		};
@@ -74,21 +74,21 @@ function createLineBreaks(
 	firstLineBreakColumn: number,
 	wrappingIndent: WrappingIndent,
 	wordBreak: "normal" | "keepAll",
-	injectedTextsPerLine: (LineInjectedText[] | null)[],
+	injectedTextsPerLine: (LineInjectedText[] | null)[]
 ): (ModelLineProjectionData | null)[] {
 	function createEmptyLineBreakWithPossiblyInjectedText(
-		requestIdx: number,
+		requestIdx: number
 	): ModelLineProjectionData | null {
 		const injectedTexts = injectedTextsPerLine[requestIdx];
 		if (injectedTexts) {
 			const lineText = LineInjectedText.applyInjectedText(
 				requests[requestIdx],
-				injectedTexts,
+				injectedTexts
 			);
 
 			const injectionOptions = injectedTexts.map((t) => t.options);
 			const injectionOffsets = injectedTexts.map(
-				(text) => text.column - 1,
+				(text) => text.column - 1
 			);
 
 			// creating a `LineBreakData` with an invalid `breakOffsetsVisibleColumn` is OK
@@ -98,7 +98,7 @@ function createLineBreaks(
 				injectionOptions,
 				[lineText.length],
 				[],
-				0,
+				0
 			);
 		} else {
 			return null;
@@ -114,17 +114,17 @@ function createLineBreaks(
 	}
 
 	const overallWidth = Math.round(
-		firstLineBreakColumn * fontInfo.typicalHalfwidthCharacterWidth,
+		firstLineBreakColumn * fontInfo.typicalHalfwidthCharacterWidth
 	);
 	const additionalIndent =
 		wrappingIndent === WrappingIndent.DeepIndent
 			? 2
 			: wrappingIndent === WrappingIndent.Indent
-			  ? 1
-			  : 0;
+				? 1
+				: 0;
 	const additionalIndentSize = Math.round(tabSize * additionalIndent);
 	const additionalIndentLength = Math.ceil(
-		fontInfo.spaceWidth * additionalIndentSize,
+		fontInfo.spaceWidth * additionalIndentSize
 	);
 
 	const containerDomNode = document.createElement("div");
@@ -139,7 +139,7 @@ function createLineBreaks(
 	for (let i = 0; i < requests.length; i++) {
 		const lineContent = LineInjectedText.applyInjectedText(
 			requests[i],
-			injectedTextsPerLine[i],
+			injectedTextsPerLine[i]
 		);
 
 		let firstNonWhitespaceIndex = 0;
@@ -164,7 +164,7 @@ function createLineBreaks(
 				}
 
 				const indentWidth = Math.ceil(
-					fontInfo.spaceWidth * wrappedTextIndentLength,
+					fontInfo.spaceWidth * wrappedTextIndentLength
 				);
 
 				// Force sticking to beginning of line if no character would fit except for the indentation
@@ -187,7 +187,7 @@ function createLineBreaks(
 			tabSize,
 			width,
 			sb,
-			additionalIndentLength,
+			additionalIndentLength
 		);
 		firstNonWhitespaceIndices[i] = firstNonWhitespaceIndex;
 		wrappedTextIndentLengths[i] = wrappedTextIndentLength;
@@ -215,7 +215,7 @@ function createLineBreaks(
 	const range = document.createRange();
 	const lineDomNodes = Array.prototype.slice.call(
 		containerDomNode.children,
-		0,
+		0
 	);
 
 	const result: (ModelLineProjectionData | null)[] = [];
@@ -225,7 +225,7 @@ function createLineBreaks(
 			range,
 			lineDomNode,
 			renderLineContents[i],
-			allCharOffsets[i],
+			allCharOffsets[i]
 		);
 		if (breakOffsets === null) {
 			result[i] = createEmptyLineBreakWithPossiblyInjectedText(i);
@@ -265,7 +265,7 @@ function createLineBreaks(
 			injectionOptions,
 			breakOffsets,
 			breakOffsetsVisibleColumn,
-			wrappedTextIndentLength,
+			wrappedTextIndentLength
 		);
 	}
 
@@ -283,7 +283,7 @@ function renderLine(
 	tabSize: number,
 	width: number,
 	sb: StringBuilder,
-	wrappingIndentLength: number,
+	wrappingIndentLength: number
 ): [number[], number[]] {
 	if (wrappingIndentLength !== 0) {
 		const hangingOffset = String(wrappingIndentLength);
@@ -394,7 +394,7 @@ function readLineBreaks(
 	range: Range,
 	lineDomNode: HTMLDivElement,
 	lineContent: string,
-	charOffsets: number[],
+	charOffsets: number[]
 ): number[] | null {
 	if (lineContent.length <= 1) {
 		return null;
@@ -413,7 +413,7 @@ function readLineBreaks(
 			null,
 			lineContent.length - 1,
 			null,
-			breakOffsets,
+			breakOffsets
 		);
 	} catch (err) {
 		console.log(err);
@@ -436,7 +436,7 @@ function discoverBreaks(
 	lowRects: DOMRectList | null,
 	high: number,
 	highRects: DOMRectList | null,
-	result: number[],
+	result: number[]
 ): void {
 	if (low === high) {
 		return;
@@ -466,7 +466,7 @@ function discoverBreaks(
 		range,
 		spans,
 		charOffsets[mid],
-		charOffsets[mid + 1],
+		charOffsets[mid + 1]
 	);
 	discoverBreaks(
 		range,
@@ -476,7 +476,7 @@ function discoverBreaks(
 		lowRects,
 		mid,
 		midRects,
-		result,
+		result
 	);
 	discoverBreaks(
 		range,
@@ -486,7 +486,7 @@ function discoverBreaks(
 		midRects,
 		high,
 		highRects,
-		result,
+		result
 	);
 }
 
@@ -494,15 +494,15 @@ function readClientRect(
 	range: Range,
 	spans: HTMLSpanElement[],
 	startOffset: number,
-	endOffset: number,
+	endOffset: number
 ): DOMRectList {
 	range.setStart(
 		spans[(startOffset / Constants.SPAN_MODULO_LIMIT) | 0].firstChild!,
-		startOffset % Constants.SPAN_MODULO_LIMIT,
+		startOffset % Constants.SPAN_MODULO_LIMIT
 	);
 	range.setEnd(
 		spans[(endOffset / Constants.SPAN_MODULO_LIMIT) | 0].firstChild!,
-		endOffset % Constants.SPAN_MODULO_LIMIT,
+		endOffset % Constants.SPAN_MODULO_LIMIT
 	);
 	return range.getClientRects();
 }

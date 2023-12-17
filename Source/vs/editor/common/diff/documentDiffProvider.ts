@@ -21,7 +21,7 @@ export interface IDocumentDiffProvider {
 		original: ITextModel,
 		modified: ITextModel,
 		options: IDocumentDiffProviderOptions,
-		cancellationToken: CancellationToken,
+		cancellationToken: CancellationToken
 	): Promise<IDocumentDiff>;
 
 	/**

@@ -110,74 +110,74 @@ import { WebLanguagePacksService } from "vs/platform/languagePacks/browser/langu
 registerSingleton(
 	IWorkbenchExtensionManagementService,
 	ExtensionManagementService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IAccessibilityService,
 	AccessibilityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IContextMenuService,
 	ContextMenuService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataSyncStoreService,
 	UserDataSyncStoreService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataSyncMachinesService,
 	UserDataSyncMachinesService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataSyncLocalStoreService,
 	UserDataSyncLocalStoreService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataSyncAccountService,
 	UserDataSyncAccountService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataSyncService,
 	UserDataSyncService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataSyncResourceProviderService,
 	UserDataSyncResourceProviderService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IUserDataAutoSyncService,
 	UserDataAutoSyncService,
-	InstantiationType.Eager /* Eager to start auto sync */,
+	InstantiationType.Eager /* Eager to start auto sync */
 );
 registerSingleton(ITitleService, BrowserTitleService, InstantiationType.Eager);
 registerSingleton(
 	IExtensionTipsService,
 	ExtensionTipsService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(ITimerService, TimerService, InstantiationType.Delayed);
 registerSingleton(
 	ICustomEndpointTelemetryService,
 	NullEndpointTelemetryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IDiagnosticsService,
 	NullDiagnosticsService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ILanguagePackService,
 	WebLanguagePacksService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 //#endregion

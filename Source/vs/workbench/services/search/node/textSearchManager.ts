@@ -17,7 +17,7 @@ export class NativeTextSearchManager extends TextSearchManager {
 		query: ITextQuery,
 		provider: TextSearchProvider,
 		_pfs: typeof pfs = pfs,
-		processType: ITextSearchStats["type"] = "searchProcess",
+		processType: ITextSearchStats["type"] = "searchProcess"
 	) {
 		super(
 			query,
@@ -26,7 +26,7 @@ export class NativeTextSearchManager extends TextSearchManager {
 				readdir: (resource) => _pfs.Promises.readdir(resource.fsPath),
 				toCanonicalName: (name) => toCanonicalName(name),
 			},
-			processType,
+			processType
 		);
 	}
 }

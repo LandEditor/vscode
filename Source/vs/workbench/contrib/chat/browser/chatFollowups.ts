@@ -21,16 +21,16 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 		followups: T[],
 		private readonly options: IButtonStyles | undefined,
 		private readonly clickHandler: (followup: T) => void,
-		private readonly contextService: IContextKeyService,
+		private readonly contextService: IContextKeyService
 	) {
 		super();
 
 		const followupsContainer = dom.append(
 			container,
-			$(".interactive-session-followups"),
+			$(".interactive-session-followups")
 		);
 		followups.forEach((followup) =>
-			this.renderFollowup(followupsContainer, followup),
+			this.renderFollowup(followupsContainer, followup)
 		);
 	}
 
@@ -39,7 +39,7 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 			followup.kind === "command" &&
 			followup.when &&
 			!this.contextService.contextMatchesRules(
-				ContextKeyExpr.deserialize(followup.when),
+				ContextKeyExpr.deserialize(followup.when)
 			)
 		) {
 			return;
@@ -51,7 +51,7 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 				...this.options,
 				supportIcons: true,
 				title: tooltip,
-			}),
+			})
 		);
 		if (followup.kind === "reply") {
 			button.element.classList.add("interactive-followup-reply");

@@ -24,7 +24,7 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 	constructor(
 		scrollable: Scrollable,
 		options: ScrollableElementResolvedOptions,
-		host: ScrollbarHost,
+		host: ScrollbarHost
 	) {
 		const scrollDimensions = scrollable.getScrollDimensions();
 		const scrollPosition = scrollable.getCurrentScrollPosition();
@@ -41,7 +41,7 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 					: options.verticalScrollbarSize,
 				scrollDimensions.width,
 				scrollDimensions.scrollWidth,
-				scrollPosition.scrollLeft,
+				scrollPosition.scrollLeft
 			),
 			visibility: options.horizontal,
 			extraScrollbarClassName: "horizontal",
@@ -78,7 +78,7 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 				bgHeight: options.horizontalScrollbarSize,
 				onActivate: () =>
 					this._host.onMouseWheel(
-						new StandardWheelEvent(null, -1, 0),
+						new StandardWheelEvent(null, -1, 0)
 					),
 			});
 		}
@@ -87,11 +87,11 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 			Math.floor(
 				(options.horizontalScrollbarSize -
 					options.horizontalSliderSize) /
-					2,
+					2
 			),
 			0,
 			undefined,
-			options.horizontalSliderSize,
+			options.horizontalSliderSize
 		);
 	}
 
@@ -118,7 +118,7 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 
 	protected _pointerDownRelativePosition(
 		offsetX: number,
-		offsetY: number,
+		offsetY: number
 	): number {
 		return offsetX;
 	}
@@ -128,7 +128,7 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 	}
 
 	protected _sliderOrthogonalPointerPosition(
-		e: ISimplifiedPointerEvent,
+		e: ISimplifiedPointerEvent
 	): number {
 		return e.pageY;
 	}
@@ -139,7 +139,7 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 
 	public writeScrollPosition(
 		target: INewScrollPosition,
-		scrollPosition: number,
+		scrollPosition: number
 	): void {
 		target.scrollLeft = scrollPosition;
 	}
@@ -148,12 +148,12 @@ export class HorizontalScrollbar extends AbstractScrollbar {
 		this.updateScrollbarSize(
 			options.horizontal === ScrollbarVisibility.Hidden
 				? 0
-				: options.horizontalScrollbarSize,
+				: options.horizontalScrollbarSize
 		);
 		this._scrollbarState.setOppositeScrollbarSize(
 			options.vertical === ScrollbarVisibility.Hidden
 				? 0
-				: options.verticalScrollbarSize,
+				: options.verticalScrollbarSize
 		);
 		this._visibilityController.setVisibility(options.horizontal);
 		this._scrollByPage = options.scrollByPage;

@@ -93,24 +93,31 @@ export class HoverController extends Disposable implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 		this._reactToEditorMouseMoveRunner = this._register(
 			new RunOnceScheduler(
-				() => this._reactToEditorMouseMove(this._mouseMoveEvent), 0
+				() => this._reactToEditorMouseMove(this._mouseMoveEvent),
+				0
 			)
 		);
 		this._hookListeners();
-		this._register(this._editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.hover)) {
-				this._unhookListeners();
-				this._hookListeners();
-			}
-		}));
+		this._register(
+			this._editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (e.hasChanged(EditorOption.hover)) {
+						this._unhookListeners();
+						this._hookListeners();
+					}
+				}
+			)
+		);
 	}
 
 	static get(editor: ICodeEditor): HoverController | null {
@@ -128,51 +135,51 @@ export class HoverController extends Disposable implements IEditorContribution {
 		if (hoverOpts.enabled) {
 			this._listenersStore.add(
 				this._editor.onMouseDown((e: IEditorMouseEvent) =>
-					this._onEditorMouseDown(e),
-				),
+					this._onEditorMouseDown(e)
+				)
 			);
 			this._listenersStore.add(
-				this._editor.onMouseUp(() => this._onEditorMouseUp()),
+				this._editor.onMouseUp(() => this._onEditorMouseUp())
 			);
 			this._listenersStore.add(
 				this._editor.onMouseMove((e: IEditorMouseEvent) =>
-					this._onEditorMouseMove(e),
-				),
+					this._onEditorMouseMove(e)
+				)
 			);
 			this._listenersStore.add(
 				this._editor.onKeyDown((e: IKeyboardEvent) =>
-					this._onKeyDown(e),
-				),
+					this._onKeyDown(e)
+				)
 			);
 		} else {
 			this._listenersStore.add(
 				this._editor.onMouseMove((e: IEditorMouseEvent) =>
-					this._onEditorMouseMove(e),
-				),
+					this._onEditorMouseMove(e)
+				)
 			);
 			this._listenersStore.add(
 				this._editor.onKeyDown((e: IKeyboardEvent) =>
-					this._onKeyDown(e),
-				),
+					this._onKeyDown(e)
+				)
 			);
 		}
 
 		this._listenersStore.add(
-			this._editor.onMouseLeave((e) => this._onEditorMouseLeave(e)),
+			this._editor.onMouseLeave((e) => this._onEditorMouseLeave(e))
 		);
 		this._listenersStore.add(
 			this._editor.onDidChangeModel(() => {
 				this._cancelScheduler();
 				this._hideWidgets();
-			}),
+			})
 		);
 		this._listenersStore.add(
-			this._editor.onDidChangeModelContent(() => this._cancelScheduler()),
+			this._editor.onDidChangeModelContent(() => this._cancelScheduler())
 		);
 		this._listenersStore.add(
 			this._editor.onDidScrollChange((e: IScrollEvent) =>
-				this._onEditorScrollChanged(e),
-			),
+				this._onEditorScrollChanged(e)
+			)
 		);
 	}
 
@@ -260,7 +267,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 		if (
 			sticky &&
 			this._contentWidget?.containsNode(
-				mouseEvent.event.browserEvent.view?.document.activeElement,
+				mouseEvent.event.browserEvent.view?.document.activeElement
 			) &&
 			!mouseEvent.event.browserEvent.view?.getSelection()?.isCollapsed
 		) {
@@ -325,7 +332,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 	}
 
 	private _reactToEditorMouseMove(
-		mouseEvent: IEditorMouseEvent | undefined,
+		mouseEvent: IEditorMouseEvent | undefined
 	): void {
 		if (!mouseEvent) {
 			return;
@@ -333,10 +340,10 @@ export class HoverController extends Disposable implements IEditorContribution {
 
 		const target = mouseEvent.target;
 		const mouseOnDecorator = target.element?.classList.contains(
-			"colorpicker-color-decoration",
+			"colorpicker-color-decoration"
 		);
 		const decoratorActivatedOn = this._editor.getOption(
-			EditorOption.colorDecoratorsActivatedOn,
+			EditorOption.colorDecoratorsActivatedOn
 		);
 
 		const enabled = this._hoverSettings.enabled;
@@ -387,7 +394,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 
 		const resolvedKeyboardEvent = this._keybindingService.softDispatch(
 			e,
-			this._editor.getDomNode(),
+			this._editor.getDomNode()
 		);
 
 		// If the beginning of a multi-chord keybinding is pressed,
@@ -435,7 +442,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 		if (!this._contentWidget) {
 			this._contentWidget = this._instantiationService.createInstance(
 				ContentHoverController,
-				this._editor,
+				this._editor
 			);
 		}
 		return this._contentWidget;
@@ -446,7 +453,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 			this._glyphWidget = new MarginHoverWidget(
 				this._editor,
 				this._languageService,
-				this._openerService,
+				this._openerService
 			);
 		}
 		return this._glyphWidget;
@@ -461,7 +468,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 		mode: HoverStartMode,
 		source: HoverStartSource,
 		focus: boolean,
-		activatedByColorDecoratorClick: boolean = false,
+		activatedByColorDecoratorClick: boolean = false
 	): void {
 		this._hoverState.activatedByDecoratorClick =
 			activatedByColorDecoratorClick;
@@ -469,7 +476,7 @@ export class HoverController extends Disposable implements IEditorContribution {
 			range,
 			mode,
 			source,
-			focus,
+			focus
 		);
 	}
 
@@ -549,7 +556,7 @@ class ShowOrFocusHoverAction extends EditorAction {
 						"This allows for users to show the hover without using the mouse.",
 					],
 				},
-				"Show or Focus Hover",
+				"Show or Focus Hover"
 			),
 			metadata: {
 				description: `Show or Focus Hover`,
@@ -570,15 +577,15 @@ class ShowOrFocusHoverAction extends EditorAction {
 									enumDescriptions: [
 										nls.localize(
 											"showOrFocusHover.focus.noAutoFocus",
-											"The hover will not automatically take focus.",
+											"The hover will not automatically take focus."
 										),
 										nls.localize(
 											"showOrFocusHover.focus.focusIfVisible",
-											"The hover will take focus only if it is already visible.",
+											"The hover will take focus only if it is already visible."
 										),
 										nls.localize(
 											"showOrFocusHover.focus.autoFocusImmediately",
-											"The hover will automatically take focus when it appears.",
+											"The hover will automatically take focus when it appears."
 										),
 									],
 									default: HoverFocusBehavior.FocusIfVisible,
@@ -594,7 +601,7 @@ class ShowOrFocusHoverAction extends EditorAction {
 				kbExpr: EditorContextKeys.editorTextFocus,
 				primary: KeyChord(
 					KeyMod.CtrlCmd | KeyCode.KeyK,
-					KeyMod.CtrlCmd | KeyCode.KeyI,
+					KeyMod.CtrlCmd | KeyCode.KeyI
 				),
 				weight: KeybindingWeight.EditorContrib,
 			},
@@ -604,7 +611,7 @@ class ShowOrFocusHoverAction extends EditorAction {
 	public run(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): void {
 		if (!editor.hasModel()) {
 			return;
@@ -629,13 +636,13 @@ class ShowOrFocusHoverAction extends EditorAction {
 				position.lineNumber,
 				position.column,
 				position.lineNumber,
-				position.column,
+				position.column
 			);
 			controller.showContentHover(
 				range,
 				HoverStartMode.Immediate,
 				HoverStartSource.Keyboard,
-				focus,
+				focus
 			);
 		};
 
@@ -652,7 +659,7 @@ class ShowOrFocusHoverAction extends EditorAction {
 		} else {
 			showContentHover(
 				accessibilitySupportEnabled ||
-					focusOption === HoverFocusBehavior.AutoFocusImmediately,
+					focusOption === HoverFocusBehavior.AutoFocusImmediately
 			);
 		}
 	}
@@ -670,7 +677,7 @@ class ShowDefinitionPreviewHoverAction extends EditorAction {
 						"This allows for users to show the definition preview hover without using the mouse.",
 					],
 				},
-				"Show Definition Preview Hover",
+				"Show Definition Preview Hover"
 			),
 			alias: "Show Definition Preview Hover",
 			precondition: undefined,
@@ -692,7 +699,7 @@ class ShowDefinitionPreviewHoverAction extends EditorAction {
 			position.lineNumber,
 			position.column,
 			position.lineNumber,
-			position.column,
+			position.column
 		);
 		const goto = GotoDefinitionAtPositionEditorContribution.get(editor);
 		if (!goto) {
@@ -705,7 +712,7 @@ class ShowDefinitionPreviewHoverAction extends EditorAction {
 				range,
 				HoverStartMode.Immediate,
 				HoverStartSource.Keyboard,
-				true,
+				true
 			);
 		});
 	}
@@ -722,7 +729,7 @@ class ScrollUpHoverAction extends EditorAction {
 						"Action that allows to scroll up in the hover widget with the up arrow when the hover widget is focused.",
 					],
 				},
-				"Scroll Up Hover",
+				"Scroll Up Hover"
 			),
 			alias: "Scroll Up Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -754,7 +761,7 @@ class ScrollDownHoverAction extends EditorAction {
 						"Action that allows to scroll down in the hover widget with the up arrow when the hover widget is focused.",
 					],
 				},
-				"Scroll Down Hover",
+				"Scroll Down Hover"
 			),
 			alias: "Scroll Down Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -786,7 +793,7 @@ class ScrollLeftHoverAction extends EditorAction {
 						"Action that allows to scroll left in the hover widget with the left arrow when the hover widget is focused.",
 					],
 				},
-				"Scroll Left Hover",
+				"Scroll Left Hover"
 			),
 			alias: "Scroll Left Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -818,7 +825,7 @@ class ScrollRightHoverAction extends EditorAction {
 						"Action that allows to scroll right in the hover widget with the right arrow when the hover widget is focused.",
 					],
 				},
-				"Scroll Right Hover",
+				"Scroll Right Hover"
 			),
 			alias: "Scroll Right Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -850,7 +857,7 @@ class PageUpHoverAction extends EditorAction {
 						"Action that allows to page up in the hover widget with the page up command when the hover widget is focused.",
 					],
 				},
-				"Page Up Hover",
+				"Page Up Hover"
 			),
 			alias: "Page Up Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -883,7 +890,7 @@ class PageDownHoverAction extends EditorAction {
 						"Action that allows to page down in the hover widget with the page down command when the hover widget is focused.",
 					],
 				},
-				"Page Down Hover",
+				"Page Down Hover"
 			),
 			alias: "Page Down Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -916,7 +923,7 @@ class GoToTopHoverAction extends EditorAction {
 						"Action that allows to go to the top of the hover widget with the home command when the hover widget is focused.",
 					],
 				},
-				"Go To Top Hover",
+				"Go To Top Hover"
 			),
 			alias: "Go To Bottom Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -949,7 +956,7 @@ class GoToBottomHoverAction extends EditorAction {
 						"Action that allows to go to the bottom in the hover widget with the end command when the hover widget is focused.",
 					],
 				},
-				"Go To Bottom Hover",
+				"Go To Bottom Hover"
 			),
 			alias: "Go To Bottom Hover",
 			precondition: EditorContextKeys.hoverFocused,
@@ -974,7 +981,7 @@ class GoToBottomHoverAction extends EditorAction {
 registerEditorContribution(
 	HoverController.ID,
 	HoverController,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );
 registerEditorAction(ShowOrFocusHoverAction);
 registerEditorAction(ShowDefinitionPreviewHoverAction);
@@ -995,18 +1002,18 @@ registerThemingParticipant((theme, collector) => {
 	if (hoverBorder) {
 		collector.addRule(
 			`.monaco-editor .monaco-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(
-				0.5,
-			)}; }`,
+				0.5
+			)}; }`
 		);
 		collector.addRule(
 			`.monaco-editor .monaco-hover hr { border-top: 1px solid ${hoverBorder.transparent(
-				0.5,
-			)}; }`,
+				0.5
+			)}; }`
 		);
 		collector.addRule(
 			`.monaco-editor .monaco-hover hr { border-bottom: 0px solid ${hoverBorder.transparent(
-				0.5,
-			)}; }`,
+				0.5
+			)}; }`
 		);
 	}
 });

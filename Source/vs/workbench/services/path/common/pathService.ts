@@ -72,7 +72,7 @@ export interface IPathService {
 	hasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
-		basename?: string,
+		basename?: string
 	): boolean;
 
 	/**
@@ -91,11 +91,13 @@ export abstract class AbstractPathService implements IPathService {
 
 	constructor(
 		private localUserHome: URI,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private contextService: IWorkspaceContextService
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private contextService: IWorkspaceContextService
 	) {
-
 		// OS
 		this.resolveOS = (async () => {
 			const env = await this.remoteAgentService.getEnvironment();
@@ -106,7 +108,8 @@ export abstract class AbstractPathService implements IPathService {
 		// User Home
 		this.resolveUserHome = (async () => {
 			const env = await this.remoteAgentService.getEnvironment();
-			const userHome = this.maybeUnresolvedUserHome = env?.userHome ?? localUserHome;
+			const userHome = (this.maybeUnresolvedUserHome =
+				env?.userHome ?? localUserHome);
 
 			return userHome;
 		})();
@@ -116,17 +119,17 @@ export abstract class AbstractPathService implements IPathService {
 	hasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
-		basename?: string,
+		basename?: string
 	): boolean;
 	hasValidBasename(
 		resource: URI,
 		arg2?: string | OperatingSystem,
-		basename?: string,
+		basename?: string
 	): boolean | Promise<boolean> {
 		// async version
 		if (typeof arg2 === "string" || typeof arg2 === "undefined") {
 			return this.resolveOS.then((os) =>
-				this.doHasValidBasename(resource, os, arg2),
+				this.doHasValidBasename(resource, os, arg2)
 			);
 		}
 
@@ -137,7 +140,7 @@ export abstract class AbstractPathService implements IPathService {
 	private doHasValidBasename(
 		resource: URI,
 		os: OperatingSystem,
-		name?: string,
+		name?: string
 	): boolean {
 		// Our `isValidBasename` method only works with our
 		// standard schemes for files on disk, either locally
@@ -148,7 +151,7 @@ export abstract class AbstractPathService implements IPathService {
 		) {
 			return isValidBasename(
 				name ?? basename(resource),
-				os === OperatingSystem.Windows,
+				os === OperatingSystem.Windows
 			);
 		}
 
@@ -158,20 +161,20 @@ export abstract class AbstractPathService implements IPathService {
 	get defaultUriScheme(): string {
 		return AbstractPathService.findDefaultUriScheme(
 			this.environmentService,
-			this.contextService,
+			this.contextService
 		);
 	}
 
 	static findDefaultUriScheme(
 		environmentService: IWorkbenchEnvironmentService,
-		contextService: IWorkspaceContextService,
+		contextService: IWorkspaceContextService
 	): string {
 		if (environmentService.remoteAuthority) {
 			return Schemas.vscodeRemote;
 		}
 
 		const virtualWorkspace = getVirtualWorkspaceScheme(
-			contextService.getWorkspace(),
+			contextService.getWorkspace()
 		);
 		if (virtualWorkspace) {
 			return virtualWorkspace;

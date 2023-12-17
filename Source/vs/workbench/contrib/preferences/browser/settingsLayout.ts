@@ -30,7 +30,7 @@ const defaultCommonlyUsedSettings: string[] = [
 ];
 
 export function getCommonlyUsedData(
-	toggleData: ExtensionToggleData | undefined,
+	toggleData: ExtensionToggleData | undefined
 ): ITOCEntry<string> {
 	return {
 		id: "commonlyUsed",
@@ -77,7 +77,7 @@ export const tocData: ITOCEntry<string> = {
 					id: "editor/multiDiffEditor",
 					label: localize(
 						"multiDiffEditor",
-						"Multi-File Diff Editor",
+						"Multi-File Diff Editor"
 					),
 					settings: ["multiDiffEditor.*"],
 				},

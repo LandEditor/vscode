@@ -54,8 +54,10 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IProductService private readonly productService: IProductService,
 		@IClipboardService private readonly clipboardService: IClipboardService
 	) {
@@ -75,7 +77,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			prompt.cancelButton ? buttons.length - 1 : -1 /* Disabled */,
 			prompt.checkbox,
 			undefined,
-			typeof prompt?.custom === "object" ? prompt.custom : undefined,
+			typeof prompt?.custom === "object" ? prompt.custom : undefined
 		);
 
 		return this.getPromptResult(prompt, button, checkboxChecked);
@@ -96,7 +98,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			undefined,
 			typeof confirmation?.custom === "object"
 				? confirmation.custom
-				: undefined,
+				: undefined
 		);
 
 		return { confirmed: button === 0, checkboxChecked };
@@ -115,7 +117,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			buttons.length - 1,
 			input?.checkbox,
 			input.inputs,
-			typeof input.custom === "object" ? input.custom : undefined,
+			typeof input.custom === "object" ? input.custom : undefined
 		);
 
 		return { confirmed: button === 0, checkboxChecked, values };
@@ -132,15 +134,15 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 					? `${this.productService.date}${
 							useAgo
 								? " (" +
-								  fromNow(
+									fromNow(
 										new Date(this.productService.date),
-										true,
-								  ) +
-								  ")"
+										true
+									) +
+									")"
 								: ""
-					  }`
+						}`
 					: "Unknown",
-				navigator.userAgent,
+				navigator.userAgent
 			);
 		};
 
@@ -153,12 +155,12 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 			[
 				localize(
 					{ key: "copy", comment: ["&& denotes a mnemonic"] },
-					"&&Copy",
+					"&&Copy"
 				),
 				localize("ok", "OK"),
 			],
 			detail,
-			1,
+			1
 		);
 
 		if (button === 0) {
@@ -174,7 +176,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 		cancelId?: number,
 		checkbox?: ICheckbox,
 		inputs?: IInputElement[],
-		customOptions?: ICustomDialogOptions,
+		customOptions?: ICustomDialogOptions
 	): Promise<IDialogResult> {
 		const dialogDisposables = new DisposableStore();
 
@@ -183,15 +185,15 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 					parent.classList.add(...(customOptions.classes || []));
 					customOptions.markdownDetails?.forEach((markdownDetail) => {
 						const result = this.markdownRenderer.render(
-							markdownDetail.markdown,
+							markdownDetail.markdown
 						);
 						parent.appendChild(result.element);
 						result.element.classList.add(
-							...(markdownDetail.classes || []),
+							...(markdownDetail.classes || [])
 						);
 						dialogDisposables.add(result);
 					});
-			  }
+				}
 			: undefined;
 
 		const dialog = new Dialog(
@@ -205,7 +207,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 				keyEventProcessor: (event: StandardKeyboardEvent) => {
 					const resolved = this.keybindingService.softDispatch(
 						event,
-						this.layoutService.activeContainer,
+						this.layoutService.activeContainer
 					);
 					if (
 						resolved.kind === ResultKind.KbFound &&
@@ -213,7 +215,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 					) {
 						if (
 							BrowserDialogHandler.ALLOWABLE_COMMANDS.indexOf(
-								resolved.commandId,
+								resolved.commandId
 							) === -1
 						) {
 							EventHelper.stop(event, true);
@@ -231,7 +233,7 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 				checkboxStyles: defaultCheckboxStyles,
 				inputBoxStyles: defaultInputBoxStyles,
 				dialogStyles: defaultDialogStyles,
-			},
+			}
 		);
 
 		dialogDisposables.add(dialog);

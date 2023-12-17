@@ -36,7 +36,7 @@ export const grammarsExtPoint: IExtensionPoint<ITMSyntaxExtensionPoint[]> =
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.grammars",
-				"Contributes textmate tokenizers.",
+				"Contributes textmate tokenizers."
 			),
 			type: "array",
 			defaultSnippets: [
@@ -65,35 +65,35 @@ export const grammarsExtPoint: IExtensionPoint<ITMSyntaxExtensionPoint[]> =
 					language: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.language",
-							"Language identifier for which this syntax is contributed to.",
+							"Language identifier for which this syntax is contributed to."
 						),
 						type: "string",
 					},
 					scopeName: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.scopeName",
-							"Textmate scope name used by the tmLanguage file.",
+							"Textmate scope name used by the tmLanguage file."
 						),
 						type: "string",
 					},
 					path: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.path",
-							"Path of the tmLanguage file. The path is relative to the extension folder and typically starts with './syntaxes/'.",
+							"Path of the tmLanguage file. The path is relative to the extension folder and typically starts with './syntaxes/'."
 						),
 						type: "string",
 					},
 					embeddedLanguages: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.embeddedLanguages",
-							"A map of scope name to language id if this grammar contains embedded languages.",
+							"A map of scope name to language id if this grammar contains embedded languages."
 						),
 						type: "object",
 					},
 					tokenTypes: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.tokenTypes",
-							"A map of scope name to token types.",
+							"A map of scope name to token types."
 						),
 						type: "object",
 						additionalProperties: {
@@ -103,7 +103,7 @@ export const grammarsExtPoint: IExtensionPoint<ITMSyntaxExtensionPoint[]> =
 					injectTo: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.injectTo",
-							"List of language scope names to which this grammar is injected to.",
+							"List of language scope names to which this grammar is injected to."
 						),
 						type: "array",
 						items: {
@@ -113,7 +113,7 @@ export const grammarsExtPoint: IExtensionPoint<ITMSyntaxExtensionPoint[]> =
 					balancedBracketScopes: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.balancedBracketScopes",
-							"Defines which scope names contain balanced brackets.",
+							"Defines which scope names contain balanced brackets."
 						),
 						type: "array",
 						items: {
@@ -124,7 +124,7 @@ export const grammarsExtPoint: IExtensionPoint<ITMSyntaxExtensionPoint[]> =
 					unbalancedBracketScopes: {
 						description: nls.localize(
 							"vscode.extension.contributes.grammars.unbalancedBracketScopes",
-							"Defines which scope names do not contain balanced brackets.",
+							"Defines which scope names do not contain balanced brackets."
 						),
 						type: "array",
 						items: {

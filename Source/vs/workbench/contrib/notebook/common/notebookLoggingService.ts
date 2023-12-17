@@ -6,7 +6,7 @@
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const INotebookLoggingService = createDecorator<INotebookLoggingService>(
-	"INotebookLoggingService",
+	"INotebookLoggingService"
 );
 
 export interface INotebookLoggingService {

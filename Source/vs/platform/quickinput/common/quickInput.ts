@@ -131,7 +131,7 @@ export interface IPickOptions<T extends IQuickPickItem> {
 	onDidFocus?: (entry: T) => void;
 	onDidTriggerItemButton?: (context: IQuickPickItemButtonContext<T>) => void;
 	onDidTriggerSeparatorButton?: (
-		context: IQuickPickSeparatorButtonEvent,
+		context: IQuickPickSeparatorButtonEvent
 	) => void;
 }
 
@@ -175,7 +175,7 @@ export interface IInputOptions {
 	 * an optional function that is used to validate user input.
 	 */
 	validateInput?: (
-		input: string,
+		input: string
 	) => Promise<
 		string | null | undefined | { content: string; severity: Severity }
 	>;
@@ -679,7 +679,7 @@ export class QuickPickItemScorerAccessor
 	implements IItemAccessor<IQuickPickItemWithResource>
 {
 	constructor(
-		private options?: { skipDescription?: boolean; skipPath?: boolean },
+		private options?: { skipDescription?: boolean; skipPath?: boolean }
 	) {}
 
 	getItemLabel(entry: IQuickPickItemWithResource): string {
@@ -746,17 +746,17 @@ export interface IQuickInputService {
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: IPickOptions<T> & { canPickMany: true },
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<T[] | undefined>;
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: IPickOptions<T> & { canPickMany: false },
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<T | undefined>;
 	pick<T extends IQuickPickItem>(
 		picks: Promise<QuickPickInput<T>[]> | QuickPickInput<T>[],
 		options?: Omit<IPickOptions<T>, "canPickMany">,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<T | undefined>;
 
 	/**
@@ -764,7 +764,7 @@ export interface IQuickInputService {
 	 */
 	input(
 		options?: IInputOptions,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<string | undefined>;
 
 	/**

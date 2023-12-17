@@ -11,7 +11,7 @@ export class ShowSourceCommand implements Command {
 	public readonly id = "markdown.showSource";
 
 	public constructor(
-		private readonly _previewManager: MarkdownPreviewManager,
+		private readonly _previewManager: MarkdownPreviewManager
 	) {}
 
 	public execute() {
@@ -23,7 +23,7 @@ export class ShowSourceCommand implements Command {
 				.then((document) => {
 					return vscode.window.showTextDocument(
 						document,
-						activePreviewResourceColumn,
+						activePreviewResourceColumn
 					);
 				});
 		}

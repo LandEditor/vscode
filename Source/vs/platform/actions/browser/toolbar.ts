@@ -94,42 +94,52 @@ export type IWorkbenchToolBarOptions = IToolBarOptions & {
  */
 export class WorkbenchToolBar extends ToolBar {
 	private readonly _sessionDisposables = this._store.add(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 
 	constructor(
 		container: HTMLElement,
 		private _options: IWorkbenchToolBarOptions | undefined,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(container, _contextMenuService, {
 			// defaults
-			getKeyBinding: (action) => keybindingService.lookupKeybinding(action.id) ?? undefined,
+			getKeyBinding: (action) =>
+				keybindingService.lookupKeybinding(action.id) ?? undefined,
 			// options (override defaults)
 			..._options,
 			// mandatory (overide options)
 			allowContextMenu: true,
-			skipTelemetry: typeof _options?.telemetrySource === 'string',
+			skipTelemetry: typeof _options?.telemetrySource === "string",
 		});
 
 		// telemetry logic
 		const telemetrySource = _options?.telemetrySource;
 		if (telemetrySource) {
-			this._store.add(this.actionBar.onDidRun(e => telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
-				'workbenchActionExecuted',
-				{ id: e.action.id, from: telemetrySource })
-			));
+			this._store.add(
+				this.actionBar.onDidRun((e) =>
+					telemetryService.publicLog2<
+						WorkbenchActionExecutedEvent,
+						WorkbenchActionExecutedClassification
+					>("workbenchActionExecuted", {
+						id: e.action.id,
+						from: telemetrySource,
+					})
+				)
+			);
 		}
 	}
 
 	override setActions(
 		_primary: readonly IAction[],
 		_secondary: readonly IAction[] = [],
-		menuIds?: readonly MenuId[],
+		menuIds?: readonly MenuId[]
 	): void {
 		this._sessionDisposables.clear();
 		const primary: Array<IAction | undefined> = _primary.slice(); // for hiding and overflow we set some items to undefined
@@ -179,7 +189,7 @@ export class WorkbenchToolBar extends ToolBar {
 		if (this._options?.overflowBehavior !== undefined) {
 			const exemptedIds = intersection(
 				new Set(this._options.overflowBehavior.exempted),
-				Iterable.map(primary, (a) => a?.id),
+				Iterable.map(primary, (a) => a?.id)
 			);
 			const maxItems =
 				this._options.overflowBehavior.maxItems - exemptedIds.size;
@@ -212,7 +222,7 @@ export class WorkbenchToolBar extends ToolBar {
 				addDisposableListener(this.getElement(), "contextmenu", (e) => {
 					const event = new StandardMouseEvent(
 						getWindow(this.getElement()),
-						e,
+						e
 					);
 
 					const action = this.getItemAction(event.target);
@@ -281,9 +291,9 @@ export class WorkbenchToolBar extends ToolBar {
 								label: localize("resetThisMenu", "Reset Menu"),
 								run: () =>
 									this._menuService.resetHiddenStates(
-										menuIds,
+										menuIds
 									),
-							}),
+							})
 						);
 					}
 
@@ -300,7 +310,7 @@ export class WorkbenchToolBar extends ToolBar {
 							typeof this._options?.telemetrySource === "string",
 						contextKeyService: this._contextKeyService,
 					});
-				}),
+				})
 			);
 		}
 	}
@@ -321,7 +331,7 @@ export interface IToolBarRenderOptions {
 	shouldInlineSubmenu?: (
 		action: SubmenuAction,
 		group: string,
-		groupSize: number,
+		groupSize: number
 	) => boolean;
 
 	/**
@@ -350,7 +360,7 @@ export interface IMenuWorkbenchToolBarOptions extends IWorkbenchToolBarOptions {
  */
 export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 	private readonly _onDidChangeMenuItems = this._store.add(
-		new Emitter<this>(),
+		new Emitter<this>()
 	);
 	readonly onDidChangeMenuItems: Event<this> =
 		this._onDidChangeMenuItems.event;
@@ -363,7 +373,7 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
 		super(
 			container,
@@ -372,14 +382,14 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 			contextKeyService,
 			contextMenuService,
 			keybindingService,
-			telemetryService,
+			telemetryService
 		);
 
 		// update logic
 		const menu = this._store.add(
 			menuService.createMenu(menuId, contextKeyService, {
 				emitEventsForSubmenuChanges: true,
-			}),
+			})
 		);
 		const updateToolbar = () => {
 			const primary: IAction[] = [];
@@ -390,11 +400,11 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 				{ primary, secondary },
 				options?.toolbarOptions?.primaryGroup,
 				options?.toolbarOptions?.shouldInlineSubmenu,
-				options?.toolbarOptions?.useSeparatorsInPrimaryActions,
+				options?.toolbarOptions?.useSeparatorsInPrimaryActions
 			);
 			container.classList.toggle(
 				"has-no-actions",
-				primary.length === 0 && secondary.length === 0,
+				primary.length === 0 && secondary.length === 0
 			);
 			super.setActions(primary, secondary);
 		};
@@ -403,7 +413,7 @@ export class MenuWorkbenchToolBar extends WorkbenchToolBar {
 			menu.onDidChange(() => {
 				updateToolbar();
 				this._onDidChangeMenuItems.fire(this);
-			}),
+			})
 		);
 		updateToolbar();
 	}

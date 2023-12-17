@@ -41,47 +41,55 @@ export class KeymapExtensions
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IExtensionRecommendationsService private readonly tipsService: IExtensionRecommendationsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionRecommendationsService
+		private readonly tipsService: IExtensionRecommendationsService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService
 	) {
 		super();
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
-		this._register(instantiationService.invokeFunction(onExtensionChanged)((identifiers => {
-			Promise.all(identifiers.map(identifier => this.checkForOtherKeymaps(identifier)))
-				.then(undefined, onUnexpectedError);
-		})));
+		this._register(
+			instantiationService.invokeFunction(onExtensionChanged)(
+				(identifiers) => {
+					Promise.all(
+						identifiers.map((identifier) =>
+							this.checkForOtherKeymaps(identifier)
+						)
+					).then(undefined, onUnexpectedError);
+				}
+			)
+		);
 	}
 
 	private checkForOtherKeymaps(
-		extensionIdentifier: IExtensionIdentifier,
+		extensionIdentifier: IExtensionIdentifier
 	): Promise<void> {
 		return this.instantiationService
 			.invokeFunction(getInstalledExtensions)
 			.then((extensions) => {
 				const keymaps = extensions.filter((extension) =>
-					isKeymapExtension(this.tipsService, extension),
+					isKeymapExtension(this.tipsService, extension)
 				);
 				const extension = keymaps.find((extension) =>
-					areSameExtensions(
-						extension.identifier,
-						extensionIdentifier,
-					),
+					areSameExtensions(extension.identifier, extensionIdentifier)
 				);
 				if (extension && extension.globallyEnabled) {
 					const otherKeymaps = keymaps.filter(
 						(extension) =>
 							!areSameExtensions(
 								extension.identifier,
-								extensionIdentifier,
-							) && extension.globallyEnabled,
+								extensionIdentifier
+							) && extension.globallyEnabled
 					);
 					if (otherKeymaps.length) {
 						return this.promptForDisablingOtherKeymaps(
 							extension,
-							otherKeymaps,
+							otherKeymaps
 						);
 					}
 				}
@@ -91,13 +99,13 @@ export class KeymapExtensions
 
 	private promptForDisablingOtherKeymaps(
 		newKeymap: IExtensionStatus,
-		oldKeymaps: IExtensionStatus[],
+		oldKeymaps: IExtensionStatus[]
 	): void {
 		const onPrompt = (confirmed: boolean) => {
 			if (confirmed) {
 				this.extensionEnablementService.setEnablement(
 					oldKeymaps.map((keymap) => keymap.local),
-					EnablementState.DisabledGlobally,
+					EnablementState.DisabledGlobally
 				);
 			}
 		};
@@ -109,7 +117,7 @@ export class KeymapExtensions
 				"Disable other keymaps ({0}) to avoid conflicts between keybindings?",
 				oldKeymaps
 					.map((k) => `'${k.local.manifest.displayName}'`)
-					.join(", "),
+					.join(", ")
 			),
 			[
 				{
@@ -120,26 +128,26 @@ export class KeymapExtensions
 					label: localize("no", "No"),
 					run: () => onPrompt(false),
 				},
-			],
+			]
 		);
 	}
 }
 
 function onExtensionChanged(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): Event<IExtensionIdentifier[]> {
 	const extensionService = accessor.get(IExtensionManagementService);
 	const extensionEnablementService = accessor.get(
-		IWorkbenchExtensionEnablementService,
+		IWorkbenchExtensionEnablementService
 	);
 	const onDidInstallExtensions = Event.chain(
 		extensionService.onDidInstallExtensions,
 		($) =>
 			$.filter((e) =>
 				e.some(
-					({ operation }) => operation === InstallOperation.Install,
-				),
-			).map((e) => e.map(({ identifier }) => identifier)),
+					({ operation }) => operation === InstallOperation.Install
+				)
+			).map((e) => e.map(({ identifier }) => identifier))
 	);
 	return Event.debounce<IExtensionIdentifier[], IExtensionIdentifier[]>(
 		Event.any(
@@ -147,16 +155,16 @@ function onExtensionChanged(
 				onDidInstallExtensions,
 				Event.map(extensionService.onDidUninstallExtension, (e) => [
 					e.identifier,
-				]),
+				])
 			),
 			Event.map(
 				extensionEnablementService.onEnablementChanged,
-				(extensions) => extensions.map((e) => e.identifier),
-			),
+				(extensions) => extensions.map((e) => e.identifier)
+			)
 		),
 		(
 			result: IExtensionIdentifier[] | undefined,
-			identifiers: IExtensionIdentifier[],
+			identifiers: IExtensionIdentifier[]
 		) => {
 			result = result || [];
 			for (const identifier of identifiers) {
@@ -165,16 +173,16 @@ function onExtensionChanged(
 				}
 			}
 			return result;
-		},
+		}
 	);
 }
 
 export async function getInstalledExtensions(
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ): Promise<IExtensionStatus[]> {
 	const extensionService = accessor.get(IExtensionManagementService);
 	const extensionEnablementService = accessor.get(
-		IWorkbenchExtensionEnablementService,
+		IWorkbenchExtensionEnablementService
 	);
 	const extensions = await extensionService.getInstalled();
 	return extensions.map((extension) => {
@@ -188,7 +196,7 @@ export async function getInstalledExtensions(
 
 function isKeymapExtension(
 	tipsService: IExtensionRecommendationsService,
-	extension: IExtensionStatus,
+	extension: IExtensionStatus
 ): boolean {
 	const cats = extension.local.manifest.categories;
 	return (
@@ -198,8 +206,8 @@ function isKeymapExtension(
 			.some((extensionId) =>
 				areSameExtensions(
 					{ id: extensionId },
-					extension.local.identifier,
-				),
+					extension.local.identifier
+				)
 			)
 	);
 }

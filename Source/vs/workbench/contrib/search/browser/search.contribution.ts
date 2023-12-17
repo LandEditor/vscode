@@ -90,12 +90,12 @@ import {
 registerSingleton(
 	ISearchViewModelWorkbenchService,
 	SearchViewModelWorkbenchService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	ISearchHistoryService,
 	SearchHistoryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 replaceContributions();
@@ -105,7 +105,7 @@ searchWidgetContributions();
 const SEARCH_MODE_CONFIG = "search.mode";
 
 const viewContainer = Registry.as<IViewContainersRegistry>(
-	ViewExtensions.ViewContainersRegistry,
+	ViewExtensions.ViewContainersRegistry
 ).registerViewContainer(
 	{
 		id: VIEWLET_ID,
@@ -119,7 +119,7 @@ const viewContainer = Registry.as<IViewContainersRegistry>(
 		order: 1,
 	},
 	ViewContainerLocation.Sidebar,
-	{ doNotRegisterOpenCommand: true },
+	{ doNotRegisterOpenCommand: true }
 );
 
 const viewDescriptor: IViewDescriptor = {
@@ -133,7 +133,7 @@ const viewDescriptor: IViewDescriptor = {
 		id: viewContainer.id,
 		mnemonicTitle: nls.localize(
 			{ key: "miViewSearch", comment: ["&& denotes a mnemonic"] },
-			"&&Search",
+			"&&Search"
 		),
 		keybindings: {
 			primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyF,
@@ -147,25 +147,25 @@ const viewDescriptor: IViewDescriptor = {
 // Register search default location to sidebar
 Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry).registerViews(
 	[viewDescriptor],
-	viewContainer,
+	viewContainer
 );
 
 // Migrate search location setting to new model
 class RegisterSearchViewContribution implements IWorkbenchContribution {
 	constructor(
 		@IConfigurationService configurationService: IConfigurationService,
-		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
+		@IViewDescriptorService viewDescriptorService: IViewDescriptorService
 	) {
 		const data = configurationService.inspect("search.location");
 		if (data.value === "panel") {
 			viewDescriptorService.moveViewToLocation(
 				viewDescriptor,
 				ViewContainerLocation.Panel,
-				"search.location",
+				"search.location"
 			);
 		}
 		Registry.as<IConfigurationMigrationRegistry>(
-			Extensions.ConfigurationMigration,
+			Extensions.ConfigurationMigration
 		).registerConfigurationMigrations([
 			{
 				key: "search.location",
@@ -175,15 +175,15 @@ class RegisterSearchViewContribution implements IWorkbenchContribution {
 	}
 }
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	RegisterSearchViewContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 
 // Register Quick Access Handler
 const quickAccessRegistry = Registry.as<IQuickAccessRegistry>(
-	QuickAccessExtensions.Quickaccess,
+	QuickAccessExtensions.Quickaccess
 );
 
 quickAccessRegistry.registerQuickAccessProvider({
@@ -193,7 +193,7 @@ quickAccessRegistry.registerQuickAccessProvider({
 		"anythingQuickAccessPlaceholder",
 		"Search files by name (append {0} to go to line or {1} to go to symbol)",
 		AbstractGotoLineQuickAccessProvider.PREFIX,
-		GotoSymbolQuickAccessProvider.PREFIX,
+		GotoSymbolQuickAccessProvider.PREFIX
 	),
 	contextKey: defaultQuickAccessContextKeyValue,
 	helpEntries: [
@@ -210,14 +210,14 @@ quickAccessRegistry.registerQuickAccessProvider({
 	prefix: SymbolsQuickAccessProvider.PREFIX,
 	placeholder: nls.localize(
 		"symbolsQuickAccessPlaceholder",
-		"Type the name of a symbol to open.",
+		"Type the name of a symbol to open."
 	),
 	contextKey: "inWorkspaceSymbolsPicker",
 	helpEntries: [
 		{
 			description: nls.localize(
 				"symbolsQuickAccess",
-				"Go to Symbol in Workspace",
+				"Go to Symbol in Workspace"
 			),
 			commandId: Constants.ShowAllSymbolsActionId,
 		},
@@ -230,13 +230,13 @@ quickAccessRegistry.registerQuickAccessProvider({
 	contextKey: "inTextSearchPicker",
 	placeholder: nls.localize(
 		"textSearchPickerPlaceholder",
-		"Search for text in your workspace files (experimental).",
+		"Search for text in your workspace files (experimental)."
 	),
 	helpEntries: [
 		{
 			description: nls.localize(
 				"textSearchPickerHelp",
-				"Search for Text (Experimental)",
+				"Search for Text (Experimental)"
 			),
 			commandId: Constants.QuickTextSearchActionId,
 			commandCenterOrder: 65,
@@ -246,7 +246,7 @@ quickAccessRegistry.registerQuickAccessProvider({
 
 // Configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	id: "search",
@@ -258,7 +258,7 @@ configurationRegistry.registerConfiguration({
 			type: "object",
 			markdownDescription: nls.localize(
 				"exclude",
-				"Configure [glob patterns](https://code.visualstudio.com/docs/editor/codebasics#_advanced-search-options) for excluding files and folders in fulltext searches and quick open. Inherits all glob patterns from the `#files.exclude#` setting.",
+				"Configure [glob patterns](https://code.visualstudio.com/docs/editor/codebasics#_advanced-search-options) for excluding files and folders in fulltext searches and quick open. Inherits all glob patterns from the `#files.exclude#` setting."
 			),
 			default: {
 				"**/node_modules": true,
@@ -271,7 +271,7 @@ configurationRegistry.registerConfiguration({
 						type: "boolean",
 						description: nls.localize(
 							"exclude.boolean",
-							"The glob pattern to match file paths against. Set to true or false to enable or disable the pattern.",
+							"The glob pattern to match file paths against. Set to true or false to enable or disable the pattern."
 						),
 					},
 					{
@@ -288,7 +288,7 @@ configurationRegistry.registerConfiguration({
 											"\\$(basename) should not be translated",
 										],
 									},
-									"Additional check on the siblings of a matching file. Use \\$(basename) as variable for the matching file name.",
+									"Additional check on the siblings of a matching file. Use \\$(basename) as variable for the matching file name."
 								),
 							},
 						},
@@ -303,20 +303,20 @@ configurationRegistry.registerConfiguration({
 			default: "view",
 			markdownDescription: nls.localize(
 				"search.mode",
-				"Controls where new `Search: Find in Files` and `Find in Folder` operations occur: either in the search view, or in a search editor.",
+				"Controls where new `Search: Find in Files` and `Find in Folder` operations occur: either in the search view, or in a search editor."
 			),
 			enumDescriptions: [
 				nls.localize(
 					"search.mode.view",
-					"Search in the search view, either in the panel or side bars.",
+					"Search in the search view, either in the panel or side bars."
 				),
 				nls.localize(
 					"search.mode.reuseEditor",
-					"Search in an existing search editor if present, otherwise in a new search editor.",
+					"Search in an existing search editor if present, otherwise in a new search editor."
 				),
 				nls.localize(
 					"search.mode.newEditor",
-					"Search in a new search editor.",
+					"Search in a new search editor."
 				),
 			],
 		},
@@ -324,11 +324,11 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"useRipgrep",
-				'This setting is deprecated and now falls back on "search.usePCRE2".',
+				'This setting is deprecated and now falls back on "search.usePCRE2".'
 			),
 			deprecationMessage: nls.localize(
 				"useRipgrepDeprecated",
-				'Deprecated. Consider "search.usePCRE2" for advanced regex feature support.',
+				'Deprecated. Consider "search.usePCRE2" for advanced regex feature support.'
 			),
 			default: true,
 		},
@@ -336,11 +336,11 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			deprecationMessage: nls.localize(
 				"maintainFileSearchCacheDeprecated",
-				"The search cache is kept in the extension host which never shuts down, so this setting is no longer needed.",
+				"The search cache is kept in the extension host which never shuts down, so this setting is no longer needed."
 			),
 			description: nls.localize(
 				"search.maintainFileSearchCache",
-				"When enabled, the searchService process will be kept alive instead of being shut down after an hour of inactivity. This will keep the file search cache in memory.",
+				"When enabled, the searchService process will be kept alive instead of being shut down after an hour of inactivity. This will keep the file search cache in memory."
 			),
 			default: false,
 		},
@@ -348,7 +348,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			markdownDescription: nls.localize(
 				"useIgnoreFiles",
-				"Controls whether to use `.gitignore` and `.ignore` files when searching for files.",
+				"Controls whether to use `.gitignore` and `.ignore` files when searching for files."
 			),
 			default: true,
 			scope: ConfigurationScope.RESOURCE,
@@ -357,7 +357,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			markdownDescription: nls.localize(
 				"useGlobalIgnoreFiles",
-				"Controls whether to use your global gitignore file (for example, from `$HOME/.config/git/ignore`) when searching for files. Requires `#search.useIgnoreFiles#` to be enabled.",
+				"Controls whether to use your global gitignore file (for example, from `$HOME/.config/git/ignore`) when searching for files. Requires `#search.useIgnoreFiles#` to be enabled."
 			),
 			default: false,
 			scope: ConfigurationScope.RESOURCE,
@@ -366,7 +366,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			markdownDescription: nls.localize(
 				"useParentIgnoreFiles",
-				"Controls whether to use `.gitignore` and `.ignore` files in parent directories when searching for files. Requires `#search.useIgnoreFiles#` to be enabled.",
+				"Controls whether to use `.gitignore` and `.ignore` files in parent directories when searching for files. Requires `#search.useIgnoreFiles#` to be enabled."
 			),
 			default: false,
 			scope: ConfigurationScope.RESOURCE,
@@ -375,7 +375,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"search.quickOpen.includeSymbols",
-				"Whether to include results from a global symbol search in the file results for Quick Open.",
+				"Whether to include results from a global symbol search in the file results for Quick Open."
 			),
 			default: false,
 		},
@@ -383,7 +383,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"search.quickOpen.includeHistory",
-				"Whether to include results from recently opened files in the file results for Quick Open.",
+				"Whether to include results from recently opened files in the file results for Quick Open."
 			),
 			default: true,
 		},
@@ -394,23 +394,23 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"filterSortOrder.default",
-					"History entries are sorted by relevance based on the filter value used. More relevant entries appear first.",
+					"History entries are sorted by relevance based on the filter value used. More relevant entries appear first."
 				),
 				nls.localize(
 					"filterSortOrder.recency",
-					"History entries are sorted by recency. More recently opened entries appear first.",
+					"History entries are sorted by recency. More recently opened entries appear first."
 				),
 			],
 			description: nls.localize(
 				"filterSortOrder",
-				"Controls sorting order of editor history in quick open when filtering.",
+				"Controls sorting order of editor history in quick open when filtering."
 			),
 		},
 		"search.followSymlinks": {
 			type: "boolean",
 			description: nls.localize(
 				"search.followSymlinks",
-				"Controls whether to follow symlinks while searching.",
+				"Controls whether to follow symlinks while searching."
 			),
 			default: true,
 		},
@@ -418,7 +418,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"search.smartCase",
-				"Search case-insensitively if the pattern is all lowercase, otherwise, search case-sensitively.",
+				"Search case-insensitively if the pattern is all lowercase, otherwise, search case-sensitively."
 			),
 			default: false,
 		},
@@ -427,7 +427,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: nls.localize(
 				"search.globalFindClipboard",
-				"Controls whether the search view should read or modify the shared find clipboard on macOS.",
+				"Controls whether the search view should read or modify the shared find clipboard on macOS."
 			),
 			included: platform.isMacintosh,
 		},
@@ -437,11 +437,11 @@ configurationRegistry.registerConfiguration({
 			default: "sidebar",
 			description: nls.localize(
 				"search.location",
-				"Controls whether the search will be shown as a view in the sidebar or as a panel in the panel area for more horizontal space.",
+				"Controls whether the search will be shown as a view in the sidebar or as a panel in the panel area for more horizontal space."
 			),
 			deprecationMessage: nls.localize(
 				"search.location.deprecationMessage",
-				"This setting is deprecated. You can drag the search icon to a new location instead.",
+				"This setting is deprecated. You can drag the search icon to a new location instead."
 			),
 		},
 		"search.maxResults": {
@@ -449,7 +449,7 @@ configurationRegistry.registerConfiguration({
 			default: 20000,
 			markdownDescription: nls.localize(
 				"search.maxResults",
-				"Controls the maximum number of search results, this can be set to `null` (empty) to return unlimited results.",
+				"Controls the maximum number of search results, this can be set to `null` (empty) to return unlimited results."
 			),
 		},
 		"search.collapseResults": {
@@ -458,7 +458,7 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"search.collapseResults.auto",
-					"Files with less than 10 results are expanded. Others are collapsed.",
+					"Files with less than 10 results are expanded. Others are collapsed."
 				),
 				"",
 				"",
@@ -466,7 +466,7 @@ configurationRegistry.registerConfiguration({
 			default: "alwaysExpand",
 			description: nls.localize(
 				"search.collapseAllResults",
-				"Controls whether the search results will be collapsed or expanded.",
+				"Controls whether the search results will be collapsed or expanded."
 			),
 		},
 		"search.useReplacePreview": {
@@ -474,7 +474,7 @@ configurationRegistry.registerConfiguration({
 			default: true,
 			description: nls.localize(
 				"search.useReplacePreview",
-				"Controls whether to open Replace Preview when selecting or replacing a match.",
+				"Controls whether to open Replace Preview when selecting or replacing a match."
 			),
 		},
 		"search.showLineNumbers": {
@@ -482,7 +482,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: nls.localize(
 				"search.showLineNumbers",
-				"Controls whether to show line numbers for search results.",
+				"Controls whether to show line numbers for search results."
 			),
 		},
 		"search.usePCRE2": {
@@ -490,11 +490,11 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: nls.localize(
 				"search.usePCRE2",
-				"Whether to use the PCRE2 regex engine in text search. This enables using some advanced regex features like lookahead and backreferences. However, not all PCRE2 features are supported - only features that are also supported by JavaScript.",
+				"Whether to use the PCRE2 regex engine in text search. This enables using some advanced regex features like lookahead and backreferences. However, not all PCRE2 features are supported - only features that are also supported by JavaScript."
 			),
 			deprecationMessage: nls.localize(
 				"usePCRE2Deprecated",
-				"Deprecated. PCRE2 will be used automatically when using regex features that are only supported by PCRE2.",
+				"Deprecated. PCRE2 will be used automatically when using regex features that are only supported by PCRE2."
 			),
 		},
 		"search.actionsPosition": {
@@ -503,17 +503,17 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"search.actionsPositionAuto",
-					"Position the actionbar to the right when the search view is narrow, and immediately after the content when the search view is wide.",
+					"Position the actionbar to the right when the search view is narrow, and immediately after the content when the search view is wide."
 				),
 				nls.localize(
 					"search.actionsPositionRight",
-					"Always position the actionbar to the right.",
+					"Always position the actionbar to the right."
 				),
 			],
 			default: "right",
 			description: nls.localize(
 				"search.actionsPosition",
-				"Controls the positioning of the actionbar on rows in the search view.",
+				"Controls the positioning of the actionbar on rows in the search view."
 			),
 		},
 		"search.searchOnType": {
@@ -521,7 +521,7 @@ configurationRegistry.registerConfiguration({
 			default: true,
 			description: nls.localize(
 				"search.searchOnType",
-				"Search all files as you type.",
+				"Search all files as you type."
 			),
 		},
 		"search.seedWithNearestWord": {
@@ -529,7 +529,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			description: nls.localize(
 				"search.seedWithNearestWord",
-				"Enable seeding search from the word nearest the cursor when the active editor has no selection.",
+				"Enable seeding search from the word nearest the cursor when the active editor has no selection."
 			),
 		},
 		"search.seedOnFocus": {
@@ -537,7 +537,7 @@ configurationRegistry.registerConfiguration({
 			default: false,
 			markdownDescription: nls.localize(
 				"search.seedOnFocus",
-				"Update the search query to the editor's selected text when focusing the search view. This happens either on click or when triggering the `workbench.views.search.focus` command.",
+				"Update the search query to the editor's selected text when focusing the search view. This happens either on click or when triggering the `workbench.views.search.focus` command."
 			),
 		},
 		"search.searchOnTypeDebouncePeriod": {
@@ -546,7 +546,7 @@ configurationRegistry.registerConfiguration({
 			markdownDescription: nls.localize(
 				"search.searchOnTypeDebouncePeriod",
 				"When {0} is enabled, controls the timeout in milliseconds between a character being typed and the search starting. Has no effect when {0} is disabled.",
-				"`#search.searchOnType#`",
+				"`#search.searchOnType#`"
 			),
 		},
 		"search.searchEditor.doubleClickBehaviour": {
@@ -556,20 +556,20 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"search.searchEditor.doubleClickBehaviour.selectWord",
-					"Double-clicking selects the word under the cursor.",
+					"Double-clicking selects the word under the cursor."
 				),
 				nls.localize(
 					"search.searchEditor.doubleClickBehaviour.goToLocation",
-					"Double-clicking opens the result in the active editor group.",
+					"Double-clicking opens the result in the active editor group."
 				),
 				nls.localize(
 					"search.searchEditor.doubleClickBehaviour.openLocationToSide",
-					"Double-clicking opens the result in the editor group to the side, creating one if it does not yet exist.",
+					"Double-clicking opens the result in the editor group to the side, creating one if it does not yet exist."
 				),
 			],
 			markdownDescription: nls.localize(
 				"search.searchEditor.doubleClickBehaviour",
-				"Configure effect of double-clicking a result in a search editor.",
+				"Configure effect of double-clicking a result in a search editor."
 			),
 		},
 		"search.searchEditor.reusePriorSearchConfiguration": {
@@ -582,7 +582,7 @@ configurationRegistry.registerConfiguration({
 						'"Search Editor" is a type of editor that can display search results. "includes, excludes, and flags" refers to the "files to include" and "files to exclude" input boxes, and the flags that control whether a query is case-sensitive or a regex.',
 					],
 				},
-				"When enabled, new Search Editors will reuse the includes, excludes, and flags of the previously opened Search Editor.",
+				"When enabled, new Search Editors will reuse the includes, excludes, and flags of the previously opened Search Editor."
 			),
 		},
 		"search.searchEditor.defaultNumberOfContextLines": {
@@ -590,7 +590,7 @@ configurationRegistry.registerConfiguration({
 			default: 1,
 			markdownDescription: nls.localize(
 				"search.searchEditor.defaultNumberOfContextLines",
-				"The default number of surrounding context lines to use when creating new Search Editors. If using `#search.searchEditor.reusePriorSearchConfiguration#`, this can be set to `null` (empty) to use the prior Search Editor's configuration.",
+				"The default number of surrounding context lines to use when creating new Search Editors. If using `#search.searchEditor.reusePriorSearchConfiguration#`, this can be set to `null` (empty) to use the prior Search Editor's configuration."
 			),
 		},
 		"search.sortOrder": {
@@ -607,39 +607,39 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"searchSortOrder.default",
-					"Results are sorted by folder and file names, in alphabetical order.",
+					"Results are sorted by folder and file names, in alphabetical order."
 				),
 				nls.localize(
 					"searchSortOrder.filesOnly",
-					"Results are sorted by file names ignoring folder order, in alphabetical order.",
+					"Results are sorted by file names ignoring folder order, in alphabetical order."
 				),
 				nls.localize(
 					"searchSortOrder.type",
-					"Results are sorted by file extensions, in alphabetical order.",
+					"Results are sorted by file extensions, in alphabetical order."
 				),
 				nls.localize(
 					"searchSortOrder.modified",
-					"Results are sorted by file last modified date, in descending order.",
+					"Results are sorted by file last modified date, in descending order."
 				),
 				nls.localize(
 					"searchSortOrder.countDescending",
-					"Results are sorted by count per file, in descending order.",
+					"Results are sorted by count per file, in descending order."
 				),
 				nls.localize(
 					"searchSortOrder.countAscending",
-					"Results are sorted by count per file, in ascending order.",
+					"Results are sorted by count per file, in ascending order."
 				),
 			],
 			description: nls.localize(
 				"search.sortOrder",
-				"Controls sorting order of search results.",
+				"Controls sorting order of search results."
 			),
 		},
 		"search.decorations.colors": {
 			type: "boolean",
 			description: nls.localize(
 				"search.decorations.colors",
-				"Controls whether search file decorations should use colors.",
+				"Controls whether search file decorations should use colors."
 			),
 			default: true,
 		},
@@ -647,7 +647,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"search.decorations.badges",
-				"Controls whether search file decorations should use badges.",
+				"Controls whether search file decorations should use badges."
 			),
 			default: true,
 		},
@@ -658,23 +658,23 @@ configurationRegistry.registerConfiguration({
 			enumDescriptions: [
 				nls.localize(
 					"scm.defaultViewMode.tree",
-					"Shows search results as a tree.",
+					"Shows search results as a tree."
 				),
 				nls.localize(
 					"scm.defaultViewMode.list",
-					"Shows search results as a list.",
+					"Shows search results as a list."
 				),
 			],
 			description: nls.localize(
 				"search.defaultViewMode",
-				"Controls the default search result view mode.",
+				"Controls the default search result view mode."
 			),
 		},
 		"search.experimental.closedNotebookRichContentResults": {
 			type: "boolean",
 			description: nls.localize(
 				"search.experimental.closedNotebookResults",
-				"Show notebook editor rich content results for closed notebooks. Please refresh your search results after changing this setting.",
+				"Show notebook editor rich content results for closed notebooks. Please refresh your search results after changing this setting."
 			),
 			default: false,
 		},
@@ -682,7 +682,7 @@ configurationRegistry.registerConfiguration({
 			type: "boolean",
 			description: nls.localize(
 				"search.experimental.quickAccess.preserveInput",
-				"Controls whether the last typed input to Quick Search should be restored when opening it the next time.",
+				"Controls whether the last typed input to Quick Search should be restored when opening it the next time."
 			),
 			default: false,
 		},
@@ -696,5 +696,5 @@ CommandsRegistry.registerCommand(
 		assertType(typeof query === "string");
 		const result = await getWorkspaceSymbols(query);
 		return result.map((item) => item.symbol);
-	},
+	}
 );

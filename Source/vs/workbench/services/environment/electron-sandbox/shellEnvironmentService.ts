@@ -31,5 +31,5 @@ export class ShellEnvironmentService implements IShellEnvironmentService {
 registerSingleton(
 	IShellEnvironmentService,
 	ShellEnvironmentService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

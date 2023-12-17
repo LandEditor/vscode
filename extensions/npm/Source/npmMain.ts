@@ -32,7 +32,7 @@ function invalidateScriptCaches() {
 }
 
 export async function activate(
-	context: vscode.ExtensionContext,
+	context: vscode.ExtensionContext
 ): Promise<void> {
 	configureHttpRequest();
 	context.subscriptions.push(
@@ -43,12 +43,12 @@ export async function activate(
 			) {
 				configureHttpRequest();
 			}
-		}),
+		})
 	);
 
 	const npmCommandPath = await getNPMCommandPath();
 	context.subscriptions.push(
-		addJSONProviders(httpRequest.xhr, npmCommandPath),
+		addJSONProviders(httpRequest.xhr, npmCommandPath)
 	);
 	registerTaskProvider(context);
 
@@ -71,7 +71,7 @@ export async function activate(
 					treeDataProvider.refresh();
 				}
 			}
-		}),
+		})
 	);
 
 	registerHoverProvider(context);
@@ -79,28 +79,28 @@ export async function activate(
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"npm.runSelectedScript",
-			runSelectedScript,
-		),
+			runSelectedScript
+		)
 	);
 
 	if (await hasPackageJson()) {
 		vscode.commands.executeCommand(
 			"setContext",
 			"npm:showScriptExplorer",
-			true,
+			true
 		);
 	}
 
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"npm.runScriptFromFolder",
-			selectAndRunScriptFromFolder,
-		),
+			selectAndRunScriptFromFolder
+		)
 	);
 	context.subscriptions.push(
 		vscode.commands.registerCommand("npm.refresh", () => {
 			invalidateScriptCaches();
-		}),
+		})
 	);
 	context.subscriptions.push(
 		vscode.commands.registerCommand("npm.packageManager", (args) => {
@@ -108,7 +108,7 @@ export async function activate(
 				return getPackageManager(context, args);
 			}
 			return "";
-		}),
+		})
 	);
 	context.subscriptions.push(new NpmScriptLensProvider());
 
@@ -135,15 +135,15 @@ export async function activate(
 						fixes.push({
 							terminalCommand: line.slice(
 								begin,
-								end === -1 ? undefined : end - 1,
+								end === -1 ? undefined : end - 1
 							),
 						});
 					}
 
 					return fixes;
 				},
-			},
-		),
+			}
+		)
 	);
 }
 
@@ -151,7 +151,7 @@ async function getNPMCommandPath(): Promise<string | undefined> {
 	if (vscode.workspace.isTrusted && canRunNpmInCurrentWorkspace()) {
 		try {
 			return await which(
-				process.platform === "win32" ? "npm.cmd" : "npm",
+				process.platform === "win32" ? "npm.cmd" : "npm"
 			);
 		} catch (e) {
 			return undefined;
@@ -163,7 +163,7 @@ async function getNPMCommandPath(): Promise<string | undefined> {
 function canRunNpmInCurrentWorkspace() {
 	if (vscode.workspace.workspaceFolders) {
 		return vscode.workspace.workspaceFolders.some(
-			(f) => f.uri.scheme === "file",
+			(f) => f.uri.scheme === "file"
 		);
 	}
 	return false;
@@ -171,7 +171,7 @@ function canRunNpmInCurrentWorkspace() {
 
 let taskProvider: NpmTaskProvider;
 function registerTaskProvider(
-	context: vscode.ExtensionContext,
+	context: vscode.ExtensionContext
 ): vscode.Disposable | undefined {
 	if (vscode.workspace.workspaceFolders) {
 		const watcher =
@@ -182,14 +182,14 @@ function registerTaskProvider(
 		context.subscriptions.push(watcher);
 
 		const workspaceWatcher = vscode.workspace.onDidChangeWorkspaceFolders(
-			(_e) => invalidateScriptCaches(),
+			(_e) => invalidateScriptCaches()
 		);
 		context.subscriptions.push(workspaceWatcher);
 
 		taskProvider = new NpmTaskProvider(context);
 		const disposable = vscode.tasks.registerTaskProvider(
 			"npm",
-			taskProvider,
+			taskProvider
 		);
 		context.subscriptions.push(disposable);
 		return disposable;
@@ -198,12 +198,12 @@ function registerTaskProvider(
 }
 
 function registerExplorer(
-	context: vscode.ExtensionContext,
+	context: vscode.ExtensionContext
 ): NpmScriptsTreeDataProvider | undefined {
 	if (vscode.workspace.workspaceFolders) {
 		const treeDataProvider = new NpmScriptsTreeDataProvider(
 			context,
-			taskProvider!,
+			taskProvider!
 		);
 		const view = vscode.window.createTreeView("npm", {
 			treeDataProvider: treeDataProvider,
@@ -216,7 +216,7 @@ function registerExplorer(
 }
 
 function registerHoverProvider(
-	context: vscode.ExtensionContext,
+	context: vscode.ExtensionContext
 ): NpmScriptHoverProvider | undefined {
 	if (vscode.workspace.workspaceFolders) {
 		const npmSelector: vscode.DocumentSelector = {
@@ -226,7 +226,7 @@ function registerHoverProvider(
 		};
 		const provider = new NpmScriptHoverProvider(context);
 		context.subscriptions.push(
-			vscode.languages.registerHoverProvider(npmSelector, provider),
+			vscode.languages.registerHoverProvider(npmSelector, provider)
 		);
 		return provider;
 	}
@@ -237,7 +237,7 @@ function configureHttpRequest() {
 	const httpSettings = vscode.workspace.getConfiguration("http");
 	httpRequest.configure(
 		httpSettings.get<string>("proxy", ""),
-		httpSettings.get<boolean>("proxyStrictSSL", true),
+		httpSettings.get<boolean>("proxyStrictSSL", true)
 	);
 }
 

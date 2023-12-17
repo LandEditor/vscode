@@ -27,7 +27,7 @@ export function runSafeAsync<T>(
 	func: () => Thenable<T>,
 	errorVal: T,
 	errorMessage: string,
-	token: CancellationToken,
+	token: CancellationToken
 ): Thenable<T | ResponseError<any>> {
 	return new Promise<T | ResponseError<any>>((resolve) => {
 		runtime.timer.setImmediate(() => {
@@ -47,7 +47,7 @@ export function runSafeAsync<T>(
 				(e) => {
 					console.error(formatError(errorMessage, e));
 					resolve(errorVal);
-				},
+				}
 			);
 		});
 	});
@@ -58,7 +58,7 @@ export function runSafe<T, E>(
 	func: () => T,
 	errorVal: T,
 	errorMessage: string,
-	token: CancellationToken,
+	token: CancellationToken
 ): Thenable<T | ResponseError<E>> {
 	return new Promise<T | ResponseError<E>>((resolve) => {
 		runtime.timer.setImmediate(() => {
@@ -86,6 +86,6 @@ function cancelValue<E>() {
 	console.log("cancelled");
 	return new ResponseError<E>(
 		LSPErrorCodes.RequestCancelled,
-		"Request cancelled",
+		"Request cancelled"
 	);
 }

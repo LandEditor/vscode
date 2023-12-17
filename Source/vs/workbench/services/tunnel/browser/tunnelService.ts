@@ -23,7 +23,8 @@ import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/
 export class TunnelService extends AbstractTunnelService {
 	constructor(
 		@ILogService logService: ILogService,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(logService, configurationService);
@@ -41,7 +42,7 @@ export class TunnelService extends AbstractTunnelService {
 		localPort: number | undefined,
 		elevateIfNeeded: boolean,
 		privacy?: string,
-		protocol?: string,
+		protocol?: string
 	): Promise<RemoteTunnel | string | undefined> | undefined {
 		const existing = this.getTunnelFromMap(remoteHost, remotePort);
 		if (existing) {
@@ -57,7 +58,7 @@ export class TunnelService extends AbstractTunnelService {
 				localPort,
 				elevateIfNeeded,
 				privacy,
-				protocol,
+				protocol
 			);
 		}
 		return undefined;

@@ -16,6 +16,6 @@ export const multiDiffEditorHeaderBackground = registerColor(
 	},
 	localize(
 		"multiDiffEditor.headerBackground",
-		"The background color of the diff editor's header",
-	),
+		"The background color of the diff editor's header"
+	)
 );

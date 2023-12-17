@@ -26,8 +26,9 @@ export class MainThreadConsole implements MainThreadConsoleShape {
 
 	constructor(
 		_extHostContext: IExtHostContext,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@ILogService private readonly _logService: ILogService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		const devOpts = parseExtensionDevOptions(this._environmentService);
 		this._isExtensionDevTestFromCli = devOpts.isExtensionDevTestFromCli;

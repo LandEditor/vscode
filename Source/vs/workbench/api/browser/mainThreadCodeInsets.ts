@@ -45,7 +45,7 @@ class EditorWebviewZone implements IViewZone {
 		readonly editor: IActiveCodeEditor,
 		readonly line: number,
 		readonly height: number,
-		readonly webview: IWebviewElement,
+		readonly webview: IWebviewElement
 	) {
 		this.domNode = document.createElement("div");
 		this.domNode.style.zIndex = "10"; // without this, the webview is not interactive
@@ -54,14 +54,14 @@ class EditorWebviewZone implements IViewZone {
 		this.heightInLines = height;
 
 		editor.changeViewZones(
-			(accessor) => (this._id = accessor.addZone(this)),
+			(accessor) => (this._id = accessor.addZone(this))
 		);
 		webview.mountTo(this.domNode);
 	}
 
 	dispose(): void {
 		this.editor.changeViewZones(
-			(accessor) => this._id && accessor.removeZone(this._id),
+			(accessor) => this._id && accessor.removeZone(this._id)
 		);
 	}
 }
@@ -75,7 +75,7 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 	constructor(
 		context: IExtHostContext,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@IWebviewService private readonly _webviewService: IWebviewService,
+		@IWebviewService private readonly _webviewService: IWebviewService
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostEditorInsets);
 	}
@@ -92,7 +92,7 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 		height: number,
 		options: IWebviewContentOptions,
 		extensionId: ExtensionIdentifier,
-		extensionLocation: UriComponents,
+		extensionLocation: UriComponents
 	): Promise<void> {
 		let editor: IActiveCodeEditor | undefined;
 		id = id.substr(0, id.indexOf(",")); //todo@jrieken HACK
@@ -131,7 +131,7 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 			editor,
 			line,
 			height,
-			webview,
+			webview
 		);
 
 		const remove = () => {
@@ -146,8 +146,8 @@ export class MainThreadEditorInsets implements MainThreadEditorInsetsShape {
 		disposables.add(webview);
 		disposables.add(
 			webview.onMessage((msg) =>
-				this._proxy.$onDidReceiveMessage(handle, msg.message),
-			),
+				this._proxy.$onDidReceiveMessage(handle, msg.message)
+			)
 		);
 
 		this._insets.set(handle, webviewZone);

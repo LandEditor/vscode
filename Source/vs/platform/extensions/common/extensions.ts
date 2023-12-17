@@ -242,7 +242,7 @@ export function getWorkspaceSupportTypeMessage(
 	supportType:
 		| ExtensionUntrustedWorkspaceSupport
 		| ExtensionVirtualWorkspaceSupport
-		| undefined,
+		| undefined
 ): string | undefined {
 	if (typeof supportType === "object" && supportType !== null) {
 		if (supportType.supported !== true) {
@@ -380,7 +380,7 @@ export class ExtensionIdentifier {
 
 	public static equals(
 		a: ExtensionIdentifier | string | null | undefined,
-		b: ExtensionIdentifier | string | null | undefined,
+		b: ExtensionIdentifier | string | null | undefined
 	) {
 		if (typeof a === "undefined" || a === null) {
 			return typeof b === "undefined" || b === null;
@@ -467,7 +467,7 @@ export class ExtensionIdentifierMap<T> {
 	}
 
 	forEach(
-		callbackfn: (value: T, key: string, map: Map<string, T>) => void,
+		callbackfn: (value: T, key: string, map: Map<string, T>) => void
 	): void {
 		this._map.forEach(callbackfn);
 	}
@@ -492,7 +492,7 @@ export interface IRelaxedExtensionDescription
 export type IExtensionDescription = Readonly<IRelaxedExtensionDescription>;
 
 export function isApplicationScopedExtension(
-	manifest: IExtensionManifest,
+	manifest: IExtensionManifest
 ): boolean {
 	return isLanguagePackExtension(manifest);
 }
@@ -504,7 +504,7 @@ export function isLanguagePackExtension(manifest: IExtensionManifest): boolean {
 }
 
 export function isAuthenticationProviderExtension(
-	manifest: IExtensionManifest,
+	manifest: IExtensionManifest
 ): boolean {
 	return manifest.contributes && manifest.contributes.authentication
 		? manifest.contributes.authentication.length > 0
@@ -513,11 +513,11 @@ export function isAuthenticationProviderExtension(
 
 export function isResolverExtension(
 	manifest: IExtensionManifest,
-	remoteAuthority: string | undefined,
+	remoteAuthority: string | undefined
 ): boolean {
 	if (remoteAuthority) {
 		const activationEvent = `onResolveRemoteAuthority:${getRemoteName(
-			remoteAuthority,
+			remoteAuthority
 		)}`;
 		return !!manifest.activationEvents?.includes(activationEvent);
 	}
@@ -526,7 +526,7 @@ export function isResolverExtension(
 
 export const IBuiltinExtensionsScannerService =
 	createDecorator<IBuiltinExtensionsScannerService>(
-		"IBuiltinExtensionsScannerService",
+		"IBuiltinExtensionsScannerService"
 	);
 export interface IBuiltinExtensionsScannerService {
 	readonly _serviceBrand: undefined;

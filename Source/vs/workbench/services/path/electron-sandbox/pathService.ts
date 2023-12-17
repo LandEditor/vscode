@@ -18,14 +18,15 @@ import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace
 export class NativePathService extends AbstractPathService {
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
+		@IWorkspaceContextService contextService: IWorkspaceContextService
 	) {
 		super(
 			environmentService.userHome,
 			remoteAgentService,
 			environmentService,
-			contextService,
+			contextService
 		);
 	}
 }

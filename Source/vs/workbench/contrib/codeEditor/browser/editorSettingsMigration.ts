@@ -15,7 +15,7 @@ import {
 } from "vs/workbench/common/configuration";
 
 Registry.as<IConfigurationMigrationRegistry>(
-	Extensions.ConfigurationMigration,
+	Extensions.ConfigurationMigration
 ).registerConfigurationMigrations(
 	EditorSettingMigration.items.map((item) => ({
 		key: `editor.${item.key}`,
@@ -26,5 +26,5 @@ Registry.as<IConfigurationMigrationRegistry>(
 			item.migrate(value, (key) => accessor(`editor.${key}`), writer);
 			return configurationKeyValuePairs;
 		},
-	})),
+	}))
 );

@@ -25,7 +25,7 @@ export function fromNow(
 	date: number | Date,
 	appendAgoLabel?: boolean,
 	useFullTimeWords?: boolean,
-	disallowNow?: boolean,
+	disallowNow?: boolean
 ): string {
 	if (typeof date !== "number") {
 		date = date.getTime();
@@ -35,7 +35,7 @@ export function fromNow(
 	if (seconds < -30) {
 		return l10n.t(
 			"in {0}",
-			fromNow(new Date().getTime() + seconds * 1000, false),
+			fromNow(new Date().getTime() + seconds * 1000, false)
 		);
 	}
 

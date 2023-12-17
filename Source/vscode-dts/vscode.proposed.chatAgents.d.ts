@@ -33,7 +33,7 @@ declare module "vscode" {
 			prompt: ChatMessage,
 			context: ChatAgentContext,
 			progress: Progress<ChatAgentResponse>,
-			token: CancellationToken,
+			token: CancellationToken
 		): Thenable<ChatAgentResult | void>;
 	}
 
@@ -41,7 +41,7 @@ declare module "vscode" {
 		export function registerAgent(
 			id: string,
 			agent: ChatAgent,
-			metadata: ChatAgentMetadata,
+			metadata: ChatAgentMetadata
 		): Disposable;
 	}
 }

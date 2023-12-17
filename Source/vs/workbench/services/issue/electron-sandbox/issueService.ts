@@ -86,53 +86,102 @@ export class NativeIssueService implements IWorkbenchIssueService {
 	constructor(
 		@IIssueMainService private readonly issueMainService: IIssueMainService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IProductService private readonly productService: IProductService,
-		@IWorkbenchAssignmentService private readonly experimentService: IWorkbenchAssignmentService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
+		@IWorkbenchAssignmentService
+		private readonly experimentService: IWorkbenchAssignmentService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
 		@IIntegrityService private readonly integrityService: IIntegrityService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
-		ipcRenderer.on('vscode:triggerIssueUriRequestHandler', async (event: unknown, request: { replyChannel: string; extensionId: string }) => {
-			const result = await this.getIssueReporterUri(request.extensionId, CancellationToken.None);
-			ipcRenderer.send(request.replyChannel, result.toString());
-		});
-		ipcRenderer.on('vscode:triggerIssueDataProvider', async (event: unknown, request: { replyChannel: string; extensionId: string }) => {
-			const result = await this.getIssueData(request.extensionId, CancellationToken.None);
-			ipcRenderer.send(request.replyChannel, result);
-		});
-		ipcRenderer.on('vscode:triggerIssueDataTemplate', async (event: unknown, request: { replyChannel: string; extensionId: string }) => {
-			const result = await this.getIssueTemplate(request.extensionId, CancellationToken.None);
-			ipcRenderer.send(request.replyChannel, result);
-		});
-		ipcRenderer.on('vscode:triggerReporterStatus', async (event, arg) => {
+		ipcRenderer.on(
+			"vscode:triggerIssueUriRequestHandler",
+			async (
+				event: unknown,
+				request: { replyChannel: string; extensionId: string }
+			) => {
+				const result = await this.getIssueReporterUri(
+					request.extensionId,
+					CancellationToken.None
+				);
+				ipcRenderer.send(request.replyChannel, result.toString());
+			}
+		);
+		ipcRenderer.on(
+			"vscode:triggerIssueDataProvider",
+			async (
+				event: unknown,
+				request: { replyChannel: string; extensionId: string }
+			) => {
+				const result = await this.getIssueData(
+					request.extensionId,
+					CancellationToken.None
+				);
+				ipcRenderer.send(request.replyChannel, result);
+			}
+		);
+		ipcRenderer.on(
+			"vscode:triggerIssueDataTemplate",
+			async (
+				event: unknown,
+				request: { replyChannel: string; extensionId: string }
+			) => {
+				const result = await this.getIssueTemplate(
+					request.extensionId,
+					CancellationToken.None
+				);
+				ipcRenderer.send(request.replyChannel, result);
+			}
+		);
+		ipcRenderer.on("vscode:triggerReporterStatus", async (event, arg) => {
 			const extensionId = arg.extensionId;
-			const extension = await this.extensionService.getExtension(extensionId);
+			const extension =
+				await this.extensionService.getExtension(extensionId);
 			if (extension) {
-				const activationEvents = this._activationEventReader.readActivationEvents(extension);
+				const activationEvents =
+					this._activationEventReader.readActivationEvents(extension);
 				for (const activationEvent of activationEvents) {
-					if (activationEvent === 'onIssueReporterOpened') {
-						const eventName = `onIssueReporterOpened:${ExtensionIdentifier.toKey(extension.identifier)}`;
+					if (activationEvent === "onIssueReporterOpened") {
+						const eventName = `onIssueReporterOpened:${ExtensionIdentifier.toKey(
+							extension.identifier
+						)}`;
 						try {
-							await this.extensionService.activateById(extension.identifier, { startup: false, extensionId: extension.identifier, activationEvent: eventName });
+							await this.extensionService.activateById(
+								extension.identifier,
+								{
+									startup: false,
+									extensionId: extension.identifier,
+									activationEvent: eventName,
+								}
+							);
 						} catch (e) {
-							this.logService.error(`Error activating extension ${extensionId}: ${e}`);
+							this.logService.error(
+								`Error activating extension ${extensionId}: ${e}`
+							);
 						}
 						break;
 					}
 				}
 			}
-			const result = [this._providers.has(extensionId.toLowerCase()), this._handlers.has(extensionId.toLowerCase())];
-			ipcRenderer.send('vscode:triggerReporterStatusResponse', result);
+			const result = [
+				this._providers.has(extensionId.toLowerCase()),
+				this._handlers.has(extensionId.toLowerCase()),
+			];
+			ipcRenderer.send("vscode:triggerReporterStatusResponse", result);
 		});
 	}
 
 	async openReporter(
-		dataOverrides: Partial<IssueReporterData> = {},
+		dataOverrides: Partial<IssueReporterData> = {}
 	): Promise<void> {
 		const extensionData: IssueReporterExtensionData[] = [];
 		try {
@@ -142,7 +191,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 				(extension) =>
 					this.extensionEnablementService.isEnabled(extension) ||
 					(dataOverrides.extensionId &&
-						extension.identifier.id === dataOverrides.extensionId),
+						extension.identifier.id === dataOverrides.extensionId)
 			);
 			extensionData.push(
 				...enabledExtensions.map(
@@ -166,10 +215,10 @@ export class NativeIssueService implements IWorkbenchIssueService {
 								manifest.repository && manifest.repository.url,
 							bugsUrl: manifest.bugs && manifest.bugs.url,
 							hasIssueUriRequestHandler: this._handlers.has(
-								extension.identifier.id.toLowerCase(),
+								extension.identifier.id.toLowerCase()
 							),
 							hasIssueDataProviders: this._providers.has(
-								extension.identifier.id.toLowerCase(),
+								extension.identifier.id.toLowerCase()
 							),
 							displayName: manifest.displayName,
 							id: extension.identifier.id,
@@ -177,8 +226,8 @@ export class NativeIssueService implements IWorkbenchIssueService {
 							isBuiltin,
 							extensionData: "Extensions data loading",
 						};
-					},
-				),
+					}
+				)
 			);
 		} catch (e) {
 			extensionData.push({
@@ -202,7 +251,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 			const githubSessions =
 				await this.authenticationService.getSessions("github");
 			const potentialSessions = githubSessions.filter((session) =>
-				session.scopes.includes("repo"),
+				session.scopes.includes("repo")
 			);
 			githubAccessToken = potentialSessions[0]?.accessToken;
 		} catch (e) {
@@ -229,7 +278,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 				isUnsupported,
 				githubAccessToken,
 			},
-			dataOverrides,
+			dataOverrides
 		);
 		return this.issueMainService.openReporter(issueReporterData);
 	}
@@ -249,25 +298,25 @@ export class NativeIssueService implements IWorkbenchIssueService {
 				listFocusOutline: getColor(theme, listFocusOutline),
 				listActiveSelectionBackground: getColor(
 					theme,
-					listActiveSelectionBackground,
+					listActiveSelectionBackground
 				),
 				listActiveSelectionForeground: getColor(
 					theme,
-					listActiveSelectionForeground,
+					listActiveSelectionForeground
 				),
 				listHoverOutline: getColor(theme, activeContrastBorder),
 				scrollbarShadowColor: getColor(theme, scrollbarShadow),
 				scrollbarSliderActiveBackgroundColor: getColor(
 					theme,
-					scrollbarSliderActiveBackground,
+					scrollbarSliderActiveBackground
 				),
 				scrollbarSliderBackgroundColor: getColor(
 					theme,
-					scrollbarSliderBackground,
+					scrollbarSliderBackground
 				),
 				scrollbarSliderHoverBackgroundColor: getColor(
 					theme,
-					scrollbarSliderHoverBackground,
+					scrollbarSliderHoverBackground
 				),
 			},
 			platform: platform,
@@ -278,7 +327,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 
 	registerIssueUriRequestHandler(
 		extensionId: string,
-		handler: IIssueUriRequestHandler,
+		handler: IIssueUriRequestHandler
 	): IDisposable {
 		this._handlers.set(extensionId.toLowerCase(), handler);
 		return {
@@ -288,12 +337,12 @@ export class NativeIssueService implements IWorkbenchIssueService {
 
 	private async getIssueReporterUri(
 		extensionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<URI> {
 		const handler = this._handlers.get(extensionId);
 		if (!handler) {
 			throw new Error(
-				`No issue uri request handler registered for extension '${extensionId}'`,
+				`No issue uri request handler registered for extension '${extensionId}'`
 			);
 		}
 		return handler.provideIssueUrl(token);
@@ -301,7 +350,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 
 	registerIssueDataProvider(
 		extensionId: string,
-		handler: IIssueDataProvider,
+		handler: IIssueDataProvider
 	): IDisposable {
 		this._providers.set(extensionId.toLowerCase(), handler);
 		return {
@@ -311,12 +360,12 @@ export class NativeIssueService implements IWorkbenchIssueService {
 
 	private async getIssueData(
 		extensionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<string> {
 		const provider = this._providers.get(extensionId);
 		if (!provider) {
 			throw new Error(
-				`No issue uri request provider registered for extension '${extensionId}'`,
+				`No issue uri request provider registered for extension '${extensionId}'`
 			);
 		}
 		return provider.provideIssueExtensionData(token);
@@ -324,12 +373,12 @@ export class NativeIssueService implements IWorkbenchIssueService {
 
 	private async getIssueTemplate(
 		extensionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<string> {
 		const provider = this._providers.get(extensionId);
 		if (!provider) {
 			throw new Error(
-				`No issue uri request provider registered for extension '${extensionId}'`,
+				`No issue uri request provider registered for extension '${extensionId}'`
 			);
 		}
 		return provider.provideIssueExtensionTemplate(token);
@@ -337,7 +386,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 }
 
 export function getIssueReporterStyles(
-	theme: IColorTheme,
+	theme: IColorTheme
 ): IssueReporterStyles {
 	return {
 		backgroundColor: getColor(theme, SIDE_BAR_BACKGROUND),
@@ -368,5 +417,5 @@ function getColor(theme: IColorTheme, key: string): string | undefined {
 registerSingleton(
 	IWorkbenchIssueService,
 	NativeIssueService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -23,10 +23,11 @@ import { createSingleCallFunction } from "vs/base/common/functional";
 export class ExtensionHostProfiler {
 	constructor(
 		private readonly _port: number,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IV8InspectProfilingService private readonly _profilingService: IV8InspectProfilingService,
-	) {
-	}
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IV8InspectProfilingService
+		private readonly _profilingService: IV8InspectProfilingService
+	) {}
 
 	public async start(): Promise<ProfileSession> {
 		const id = await this._profilingService.startProfiling({
@@ -45,14 +46,14 @@ export class ExtensionHostProfiler {
 
 	private _distill(
 		profile: IV8Profile,
-		extensions: readonly IExtensionDescription[],
+		extensions: readonly IExtensionDescription[]
 	): IExtensionHostProfile {
 		const searchTree = TernarySearchTree.forUris<IExtensionDescription>();
 		for (const extension of extensions) {
 			if (extension.extensionLocation.scheme === Schemas.file) {
 				searchTree.set(
 					URI.file(extension.extensionLocation.fsPath),
-					extension,
+					extension
 				);
 			}
 		}
@@ -66,7 +67,7 @@ export class ExtensionHostProfiler {
 
 		function visit(
 			node: IV8ProfileNode,
-			segmentId: ProfileSegmentId | null,
+			segmentId: ProfileSegmentId | null
 		) {
 			if (!segmentId) {
 				switch (node.callFrame.functionName) {
@@ -86,7 +87,7 @@ export class ExtensionHostProfiler {
 				let extension: IExtensionDescription | undefined;
 				try {
 					extension = searchTree.findSubstr(
-						URI.parse(node.callFrame.url),
+						URI.parse(node.callFrame.url)
 					);
 				} catch {
 					// ignore
@@ -145,7 +146,7 @@ export class ExtensionHostProfiler {
 					const id = distilledIds[i];
 					segmentsToTime.set(
 						id,
-						(segmentsToTime.get(id) || 0) + distilledDeltas[i],
+						(segmentsToTime.get(id) || 0) + distilledDeltas[i]
 					);
 				}
 				return segmentsToTime;

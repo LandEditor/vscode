@@ -29,20 +29,29 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@IRequestService requestService: IRequestService,
 		@ILogService logService: ILogService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
 		@IProductService productService: IProductService
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService
+		);
 	}
 
 	protected buildUpdateFeedUrl(quality: string): string {
 		return createUpdateURL(
 			`linux-${process.arch}`,
 			quality,
-			this.productService,
+			this.productService
 		);
 	}
 
@@ -83,7 +92,7 @@ export class LinuxUpdateService extends AbstractUpdateService {
 	}
 
 	protected override async doDownloadUpdate(
-		state: AvailableForDownload,
+		state: AvailableForDownload
 	): Promise<void> {
 		// Use the download URL if available as we don't currently detect the package type that was
 		// installed and the website download page is more useful than the tarball generally.
@@ -93,12 +102,12 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		) {
 			this.nativeHostMainService.openExternal(
 				undefined,
-				this.productService.downloadUrl,
+				this.productService.downloadUrl
 			);
 		} else if (state.update.url) {
 			this.nativeHostMainService.openExternal(
 				undefined,
-				state.update.url,
+				state.update.url
 			);
 		}
 

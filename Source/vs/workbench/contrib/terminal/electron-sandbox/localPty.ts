@@ -47,34 +47,34 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 	private _inReplay = false;
 
 	private readonly _onProcessData = this._register(
-		new Emitter<IProcessDataEvent | string>(),
+		new Emitter<IProcessDataEvent | string>()
 	);
 	readonly onProcessData = this._onProcessData.event;
 	private readonly _onProcessReplayComplete = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onProcessReplayComplete = this._onProcessReplayComplete.event;
 	private readonly _onProcessReady = this._register(
-		new Emitter<IProcessReadyEvent>(),
+		new Emitter<IProcessReadyEvent>()
 	);
 	readonly onProcessReady = this._onProcessReady.event;
 	private readonly _onDidChangeProperty = this._register(
-		new Emitter<IProcessProperty<any>>(),
+		new Emitter<IProcessProperty<any>>()
 	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
 	private readonly _onProcessExit = this._register(
-		new Emitter<number | undefined>(),
+		new Emitter<number | undefined>()
 	);
 	readonly onProcessExit = this._onProcessExit.event;
 	private readonly _onRestoreCommands = this._register(
-		new Emitter<ISerializedCommandDetectionCapability>(),
+		new Emitter<ISerializedCommandDetectionCapability>()
 	);
 	readonly onRestoreCommands = this._onRestoreCommands.event;
 
 	constructor(
 		readonly id: number,
 		readonly shouldPersist: boolean,
-		private readonly _proxy: IPtyService,
+		private readonly _proxy: IPtyService
 	) {
 		super();
 	}
@@ -118,11 +118,11 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 		this._proxy.clearBuffer?.(this.id);
 	}
 	freePortKillProcess(
-		port: string,
+		port: string
 	): Promise<{ port: string; processId: string }> {
 		if (!this._proxy.freePortKillProcess) {
 			throw new Error(
-				"freePortKillProcess does not exist on the local pty service",
+				"freePortKillProcess does not exist on the local pty service"
 			);
 		}
 		return this._proxy.freePortKillProcess(port);
@@ -134,13 +134,13 @@ export class LocalPty extends Disposable implements ITerminalChildProcess {
 		return this._properties.cwd || this._properties.initialCwd;
 	}
 	async refreshProperty<T extends ProcessPropertyType>(
-		type: T,
+		type: T
 	): Promise<IProcessPropertyMap[T]> {
 		return this._proxy.refreshProperty(this.id, type);
 	}
 	async updateProperty<T extends ProcessPropertyType>(
 		type: T,
-		value: IProcessPropertyMap[T],
+		value: IProcessPropertyMap[T]
 	): Promise<void> {
 		return this._proxy.updateProperty(this.id, type, value);
 	}

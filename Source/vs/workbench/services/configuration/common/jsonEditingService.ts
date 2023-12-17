@@ -38,7 +38,8 @@ export class JSONEditingService implements IJSONEditingService {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ITextFileService private readonly textFileService: ITextFileService
 	) {
 		this.queue = new Queue<void>();
@@ -46,13 +47,13 @@ export class JSONEditingService implements IJSONEditingService {
 
 	write(resource: URI, values: IJSONValue[]): Promise<void> {
 		return Promise.resolve(
-			this.queue.queue(() => this.doWriteConfiguration(resource, values)),
+			this.queue.queue(() => this.doWriteConfiguration(resource, values))
 		); // queue up writes to prevent race conditions
 	}
 
 	private async doWriteConfiguration(
 		resource: URI,
-		values: IJSONValue[],
+		values: IJSONValue[]
 	): Promise<void> {
 		const reference = await this.resolveAndValidate(resource, true);
 		try {
@@ -64,7 +65,7 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private async writeToBuffer(
 		model: ITextModel,
-		values: IJSONValue[],
+		values: IJSONValue[]
 	): Promise<any> {
 		let hasEdits: boolean = false;
 		for (const value of values) {
@@ -83,7 +84,7 @@ export class JSONEditingService implements IJSONEditingService {
 			startPosition.lineNumber,
 			startPosition.column,
 			endPosition.lineNumber,
-			endPosition.column,
+			endPosition.column
 		);
 		const currentText = model.getValueInRange(range);
 		if (edit.content !== currentText) {
@@ -96,11 +97,11 @@ export class JSONEditingService implements IJSONEditingService {
 						startPosition.lineNumber,
 						startPosition.column,
 						startPosition.lineNumber,
-						startPosition.column,
+						startPosition.column
 					),
 				],
 				[editOperation],
-				() => [],
+				() => []
 			);
 			return true;
 		}
@@ -109,7 +110,7 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private getEdits(
 		model: ITextModel,
-		configurationValue: IJSONValue,
+		configurationValue: IJSONValue
 	): Edit[] {
 		const { tabSize, insertSpaces } = model.getOptions();
 		const eol = model.getEOL();
@@ -120,7 +121,7 @@ export class JSONEditingService implements IJSONEditingService {
 			const content = JSON.stringify(
 				value,
 				null,
-				insertSpaces ? " ".repeat(tabSize) : "\t",
+				insertSpaces ? " ".repeat(tabSize) : "\t"
 			);
 			return [
 				{
@@ -139,7 +140,7 @@ export class JSONEditingService implements IJSONEditingService {
 	}
 
 	private async resolveModelReference(
-		resource: URI,
+		resource: URI
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		const exists = await this.fileService.exists(resource);
 		if (!exists) {
@@ -161,7 +162,7 @@ export class JSONEditingService implements IJSONEditingService {
 
 	private async resolveAndValidate(
 		resource: URI,
-		checkDirty: boolean,
+		checkDirty: boolean
 	): Promise<IReference<IResolvedTextEditorModel>> {
 		const reference = await this.resolveModelReference(resource);
 
@@ -170,7 +171,7 @@ export class JSONEditingService implements IJSONEditingService {
 		if (this.hasParseErrors(model)) {
 			reference.dispose();
 			return this.reject<IReference<IResolvedTextEditorModel>>(
-				JSONEditingErrorCode.ERROR_INVALID_FILE,
+				JSONEditingErrorCode.ERROR_INVALID_FILE
 			);
 		}
 
@@ -188,7 +189,7 @@ export class JSONEditingService implements IJSONEditingService {
 			case JSONEditingErrorCode.ERROR_INVALID_FILE: {
 				return nls.localize(
 					"errorInvalidFile",
-					"Unable to write into the file. Please open the file to correct errors/warnings in the file and try again.",
+					"Unable to write into the file. Please open the file to correct errors/warnings in the file and try again."
 				);
 			}
 		}
@@ -198,5 +199,5 @@ export class JSONEditingService implements IJSONEditingService {
 registerSingleton(
 	IJSONEditingService,
 	JSONEditingService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

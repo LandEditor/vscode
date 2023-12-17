@@ -42,47 +42,47 @@ export const CustomExecutionSupportedContext = new RawContextKey<boolean>(
 	false,
 	nls.localize(
 		"tasks.customExecutionSupported",
-		"Whether CustomExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution.",
-	),
+		"Whether CustomExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution."
+	)
 );
 export const ShellExecutionSupportedContext = new RawContextKey<boolean>(
 	"shellExecutionSupported",
 	false,
 	nls.localize(
 		"tasks.shellExecutionSupported",
-		"Whether ShellExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution.",
-	),
+		"Whether ShellExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution."
+	)
 );
 export const TaskCommandsRegistered = new RawContextKey<boolean>(
 	"taskCommandsRegistered",
 	false,
 	nls.localize(
 		"tasks.taskCommandsRegistered",
-		"Whether the task commands have been registered yet",
-	),
+		"Whether the task commands have been registered yet"
+	)
 );
 export const ProcessExecutionSupportedContext = new RawContextKey<boolean>(
 	"processExecutionSupported",
 	false,
 	nls.localize(
 		"tasks.processExecutionSupported",
-		"Whether ProcessExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution.",
-	),
+		"Whether ProcessExecution tasks are supported. Consider using in the when clause of a 'taskDefinition' contribution."
+	)
 );
 export const ServerlessWebContext = new RawContextKey<boolean>(
 	"serverlessWebContext",
 	false,
 	nls.localize(
 		"tasks.serverlessWebContext",
-		"True when in the web with no remote authority.",
-	),
+		"True when in the web with no remote authority."
+	)
 );
 export const TaskExecutionSupportedContext = ContextKeyExpr.or(
 	ContextKeyExpr.and(
 		ShellExecutionSupportedContext,
-		ProcessExecutionSupportedContext,
+		ProcessExecutionSupportedContext
 	),
-	CustomExecutionSupportedContext,
+	CustomExecutionSupportedContext
 );
 
 export const ITaskService = createDecorator<ITaskService>("taskService");
@@ -134,7 +134,7 @@ export interface ITaskService {
 	configureAction(): Action;
 	run(
 		task: Task | undefined,
-		options?: IProblemMatcherRunOptions,
+		options?: IProblemMatcherRunOptions
 	): Promise<ITaskSummary | undefined>;
 	inTerminal(): boolean;
 	getActiveTasks(): Promise<Task[]>;
@@ -143,10 +143,10 @@ export interface ITaskService {
 	tasks(filter?: ITaskFilter): Promise<Task[]>;
 	taskTypes(): string[];
 	getWorkspaceTasks(
-		runSource?: TaskRunSource,
+		runSource?: TaskRunSource
 	): Promise<Map<string, IWorkspaceFolderTaskResult>>;
 	getSavedTasks(
-		type: "persistent" | "historical",
+		type: "persistent" | "historical"
 	): Promise<(Task | ConfiguringTask)[]>;
 	removeRecentlyUsedTask(taskRecentlyUsedKey: string): void;
 	/**
@@ -155,7 +155,7 @@ export interface ITaskService {
 	getTask(
 		workspaceFolder: IWorkspace | IWorkspaceFolder | string,
 		alias: string | ITaskIdentifier,
-		compareId?: boolean,
+		compareId?: boolean
 	): Promise<Task | undefined>;
 	tryResolveTask(configuringTask: ConfiguringTask): Promise<Task | undefined>;
 	createSorter(): TaskSorter;
@@ -164,15 +164,15 @@ export interface ITaskService {
 	customize(
 		task: ContributedTask | CustomTask | ConfiguringTask,
 		properties?: {},
-		openConfig?: boolean,
+		openConfig?: boolean
 	): Promise<void>;
 	openConfig(
-		task: CustomTask | ConfiguringTask | undefined,
+		task: CustomTask | ConfiguringTask | undefined
 	): Promise<boolean>;
 
 	registerTaskProvider(
 		taskProvider: ITaskProvider,
-		type: string,
+		type: string
 	): IDisposable;
 
 	registerTaskSystem(scheme: string, taskSystemInfo: ITaskSystemInfo): void;
@@ -181,11 +181,11 @@ export interface ITaskService {
 	registerSupportedExecutions(
 		custom?: boolean,
 		shell?: boolean,
-		process?: boolean,
+		process?: boolean
 	): void;
 
 	extensionCallbackTaskComplete(
 		task: Task,
-		result: number | undefined,
+		result: number | undefined
 	): Promise<void>;
 }

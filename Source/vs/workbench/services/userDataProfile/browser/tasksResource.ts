@@ -36,11 +36,11 @@ interface ITasksResourceContent {
 
 export class TasksResourceInitializer implements IProfileResourceInitializer {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const tasksContent: ITasksResourceContent = JSON.parse(content);
@@ -50,7 +50,7 @@ export class TasksResourceInitializer implements IProfileResourceInitializer {
 		}
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.tasksResource,
-			VSBuffer.fromString(tasksContent.tasks),
+			VSBuffer.fromString(tasksContent.tasks)
 		);
 	}
 }
@@ -58,9 +58,8 @@ export class TasksResourceInitializer implements IProfileResourceInitializer {
 export class TasksResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const tasksContent = await this.getTasksResourceContent(profile);
@@ -68,7 +67,7 @@ export class TasksResource implements IProfileResource {
 	}
 
 	async getTasksResourceContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<ITasksResourceContent> {
 		const tasksContent = await this.getTasksContent(profile);
 		return { tasks: tasksContent };
@@ -78,22 +77,22 @@ export class TasksResource implements IProfileResource {
 		const tasksContent: ITasksResourceContent = JSON.parse(content);
 		if (!tasksContent.tasks) {
 			this.logService.info(
-				`Importing Profile (${profile.name}): No tasks to apply...`,
+				`Importing Profile (${profile.name}): No tasks to apply...`
 			);
 			return;
 		}
 		await this.fileService.writeFile(
 			profile.tasksResource,
-			VSBuffer.fromString(tasksContent.tasks),
+			VSBuffer.fromString(tasksContent.tasks)
 		);
 	}
 
 	private async getTasksContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<string | null> {
 		try {
 			const content = await this.fileService.readFile(
-				profile.tasksResource,
+				profile.tasksResource
 			);
 			return content.value.toString();
 		} catch (error) {
@@ -119,9 +118,11 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [
@@ -132,7 +133,7 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 				parent: this,
 				accessibilityInformation: {
 					label: this.uriIdentityService.extUri.basename(
-						this.profile.settingsResource,
+						this.profile.settingsResource
 					),
 				},
 				command: {

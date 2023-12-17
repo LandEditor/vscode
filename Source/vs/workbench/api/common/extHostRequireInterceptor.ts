@@ -46,17 +46,21 @@ interface INodeModuleFactory extends Partial<IAlternativeModuleProvider> {
 export abstract class RequireInterceptor {
 	protected readonly _factories: Map<string, INodeModuleFactory>;
 	protected readonly _alternatives: ((
-		moduleName: string,
+		moduleName: string
 	) => string | undefined)[];
 
 	constructor(
 		private _apiFactory: IExtensionApiFactory,
 		private _extensionRegistry: IExtensionRegistries,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@IExtHostConfiguration private readonly _extHostConfiguration: IExtHostConfiguration,
-		@IExtHostExtensionService private readonly _extHostExtensionService: IExtHostExtensionService,
-		@IExtHostInitDataService private readonly _initData: IExtHostInitDataService,
-		@ILogService private readonly _logService: ILogService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@IExtHostConfiguration
+		private readonly _extHostConfiguration: IExtHostConfiguration,
+		@IExtHostExtensionService
+		private readonly _extHostExtensionService: IExtHostExtensionService,
+		@IExtHostInitDataService
+		private readonly _initData: IExtHostInitDataService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._factories = new Map<string, INodeModuleFactory>();
 		this._alternatives = [];
@@ -78,19 +82,19 @@ export abstract class RequireInterceptor {
 				extensionPaths,
 				this._extensionRegistry,
 				configProvider,
-				this._logService,
-			),
+				this._logService
+			)
 		);
 		this.register(
-			this._instaService.createInstance(NodeModuleAliasingModuleFactory),
+			this._instaService.createInstance(NodeModuleAliasingModuleFactory)
 		);
 		if (this._initData.remote.isRemote) {
 			this.register(
 				this._instaService.createInstance(
 					OpenNodeModuleFactory,
 					extensionPaths,
-					this._initData.environment.appUriScheme,
-				),
+					this._initData.environment.appUriScheme
+				)
 			);
 		}
 	}
@@ -98,7 +102,7 @@ export abstract class RequireInterceptor {
 	protected abstract _installInterceptor(): void;
 
 	public register(
-		interceptor: INodeModuleFactory | IAlternativeModuleProvider,
+		interceptor: INodeModuleFactory | IAlternativeModuleProvider
 	): void {
 		if ("nodeModuleName" in interceptor) {
 			if (Array.isArray(interceptor.nodeModuleName)) {
@@ -133,15 +137,24 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
 	private readonly re?: RegExp;
 
 	constructor(@IExtHostInitDataService initData: IExtHostInitDataService) {
-		if (initData.environment.appRoot && NodeModuleAliasingModuleFactory.aliased.size) {
-			const root = escapeRegExpCharacters(this.forceForwardSlashes(initData.environment.appRoot.fsPath));
+		if (
+			initData.environment.appRoot &&
+			NodeModuleAliasingModuleFactory.aliased.size
+		) {
+			const root = escapeRegExpCharacters(
+				this.forceForwardSlashes(initData.environment.appRoot.fsPath)
+			);
 			// decompose ${appRoot}/node_modules/foo/bin to ['${appRoot}/node_modules/', 'foo', '/bin'],
 			// and likewise the more complex form ${appRoot}/node_modules.asar.unpacked/@vcode/foo/bin
 			// to ['${appRoot}/node_modules.asar.unpacked/',' @vscode/foo', '/bin'].
 			const npmIdChrs = `[a-z0-9_.-]`;
 			const npmModuleName = `@${npmIdChrs}+\\/${npmIdChrs}+|${npmIdChrs}+`;
-			const moduleFolders = 'node_modules|node_modules\\.asar(?:\\.unpacked)?';
-			this.re = new RegExp(`^(${root}/${moduleFolders}\\/)(${npmModuleName})(.*)$`, 'i');
+			const moduleFolders =
+				"node_modules|node_modules\\.asar(?:\\.unpacked)?";
+			this.re = new RegExp(
+				`^(${root}/${moduleFolders}\\/)(${npmModuleName})(.*)$`,
+				"i"
+			);
 		}
 	}
 
@@ -163,7 +176,7 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
 		}
 
 		console.warn(
-			`${moduleName} as been renamed to ${dealiased}, please update your imports`,
+			`${moduleName} as been renamed to ${dealiased}, please update your imports`
 		);
 
 		return prefix + dealiased + suffix;
@@ -189,7 +202,7 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 		private readonly _extensionPaths: ExtensionPaths,
 		private readonly _extensionRegistry: IExtensionRegistries,
 		private readonly _configProvider: ExtHostConfigProvider,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {}
 
 	public load(_request: string, parent: URI): any {
@@ -201,7 +214,7 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 				apiImpl = this._apiFactory(
 					ext,
 					this._extensionRegistry,
-					this._configProvider,
+					this._configProvider
 				);
 				this._extApiImpl.set(ext.identifier, apiImpl);
 			}
@@ -213,15 +226,15 @@ class VSCodeNodeModuleFactory implements INodeModuleFactory {
 			let extensionPathsPretty = "";
 			this._extensionPaths.forEach(
 				(value, index) =>
-					(extensionPathsPretty += `\t${index} -> ${value.identifier.value}\n`),
+					(extensionPathsPretty += `\t${index} -> ${value.identifier.value}\n`)
 			);
 			this._logService.warn(
-				`Could not identify extension for 'vscode' require call from ${parent}. These are the extension path mappings: \n${extensionPathsPretty}`,
+				`Could not identify extension for 'vscode' require call from ${parent}. These are the extension path mappings: \n${extensionPathsPretty}`
 			);
 			this._defaultApiImpl = this._apiFactory(
 				nullExtensionDescription,
 				this._extensionRegistry,
-				this._configProvider,
+				this._configProvider
 			);
 		}
 		return this._defaultApiImpl;
@@ -256,13 +269,13 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 	constructor(
 		private readonly _extensionPaths: ExtensionPaths,
 		private readonly _appUriScheme: string,
-		@IExtHostRpcService rpcService: IExtHostRpcService,
+		@IExtHostRpcService rpcService: IExtHostRpcService
 	) {
 		this._mainThreadTelemetry = rpcService.getProxy(
-			MainContext.MainThreadTelemetry,
+			MainContext.MainThreadTelemetry
 		);
 		const mainThreadWindow = rpcService.getProxy(
-			MainContext.MainThreadWindow,
+			MainContext.MainThreadWindow
 		);
 
 		this._impl = (target, options) => {
@@ -299,7 +312,7 @@ class OpenNodeModuleFactory implements INodeModuleFactory {
 
 	private callOriginal(
 		target: string,
-		options: OpenOptions | undefined,
+		options: OpenOptions | undefined
 	): Thenable<any> {
 		this.sendNoForwardTelemetry();
 		return this._original!(target, options);

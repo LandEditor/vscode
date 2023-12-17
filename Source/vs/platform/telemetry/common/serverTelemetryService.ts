@@ -39,7 +39,7 @@ export class ServerTelemetryService
 		config: ITelemetryServiceConfig,
 		injectedTelemetryLevel: TelemetryLevel,
 		@IConfigurationService _configurationService: IConfigurationService,
-		@IProductService _productService: IProductService,
+		@IProductService _productService: IProductService
 	) {
 		super(config, _configurationService, _productService);
 		this._injectedTelemetryLevel = injectedTelemetryLevel;
@@ -72,17 +72,17 @@ export class ServerTelemetryService
 	>(eventName: string, data?: StrictPropertyCheck<T, E>) {
 		return this.publicLogError(
 			eventName,
-			data as ITelemetryData | undefined,
+			data as ITelemetryData | undefined
 		);
 	}
 
 	async updateInjectedTelemetryLevel(
-		telemetryLevel: TelemetryLevel,
+		telemetryLevel: TelemetryLevel
 	): Promise<void> {
 		if (telemetryLevel === undefined) {
 			this._injectedTelemetryLevel = TelemetryLevel.NONE;
 			throw new Error(
-				"Telemetry level cannot be undefined. This will cause infinite looping!",
+				"Telemetry level cannot be undefined. This will cause infinite looping!"
 			);
 		}
 		// We always take the most restrictive level because we don't want multiple clients to connect and send data when one client does not consent

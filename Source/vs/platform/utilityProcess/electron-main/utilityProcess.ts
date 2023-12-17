@@ -106,7 +106,7 @@ export interface IWindowUtilityProcessConfiguration
 }
 
 function isWindowUtilityProcessConfiguration(
-	config: IUtilityProcessConfiguration,
+	config: IUtilityProcessConfiguration
 ): config is IWindowUtilityProcessConfiguration {
 	const candidate = config as IWindowUtilityProcessConfiguration;
 
@@ -173,17 +173,17 @@ export class UtilityProcess extends Disposable {
 	readonly onMessage = this._onMessage.event;
 
 	private readonly _onSpawn = this._register(
-		new Emitter<number | undefined>(),
+		new Emitter<number | undefined>()
 	);
 	readonly onSpawn = this._onSpawn.event;
 
 	private readonly _onExit = this._register(
-		new Emitter<IUtilityProcessExitEvent>(),
+		new Emitter<IUtilityProcessExitEvent>()
 	);
 	readonly onExit = this._onExit.event;
 
 	private readonly _onCrash = this._register(
-		new Emitter<IUtilityProcessCrashEvent>(),
+		new Emitter<IUtilityProcessCrashEvent>()
 	);
 	readonly onCrash = this._onCrash.event;
 
@@ -194,7 +194,8 @@ export class UtilityProcess extends Disposable {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@ILifecycleMainService protected readonly lifecycleMainService: ILifecycleMainService
+		@ILifecycleMainService
+		protected readonly lifecycleMainService: ILifecycleMainService
 	) {
 		super();
 	}
@@ -202,9 +203,8 @@ export class UtilityProcess extends Disposable {
 	protected log(msg: string, severity: Severity): void {
 		let logMsg: string;
 		if (this.configuration?.correlationId) {
-			logMsg = `[UtilityProcess id: ${
-				this.configuration?.correlationId
-			}, type: ${this.configuration?.type}, pid: ${
+			logMsg = `[UtilityProcess id: ${this.configuration
+				?.correlationId}, type: ${this.configuration?.type}, pid: ${
 				this.processPid ?? "<none>"
 			}]: ${msg}`;
 		} else {
@@ -230,7 +230,7 @@ export class UtilityProcess extends Disposable {
 		if (this.process) {
 			this.log(
 				"Cannot start utility process because it is already running...",
-				Severity.Error,
+				Severity.Error
 			);
 
 			return false;
@@ -296,7 +296,7 @@ export class UtilityProcess extends Disposable {
 		env["VSCODE_AMD_ENTRYPOINT"] = configuration.entryPoint;
 		if (typeof configuration.parentLifecycleBound === "number") {
 			env["VSCODE_PARENT_PID"] = String(
-				configuration.parentLifecycleBound,
+				configuration.parentLifecycleBound
 			);
 		}
 		env["VSCODE_CRASH_REPORTER_PROCESS_TYPE"] = configuration.type;
@@ -323,7 +323,7 @@ export class UtilityProcess extends Disposable {
 	private registerListeners(
 		process: ElectronUtilityProcess,
 		configuration: IUtilityProcessConfiguration,
-		serviceName: string,
+		serviceName: string
 	): void {
 		// Stdout
 		if (process.stdout) {
@@ -331,14 +331,14 @@ export class UtilityProcess extends Disposable {
 			this._register(
 				Event.fromNodeEventEmitter<string | Buffer>(
 					process.stdout,
-					"data",
+					"data"
 				)((chunk) =>
 					this._onStdout.fire(
 						typeof chunk === "string"
 							? chunk
-							: stdoutDecoder.write(chunk),
-					),
-				),
+							: stdoutDecoder.write(chunk)
+					)
+				)
 			);
 		}
 
@@ -348,14 +348,14 @@ export class UtilityProcess extends Disposable {
 			this._register(
 				Event.fromNodeEventEmitter<string | Buffer>(
 					process.stderr,
-					"data",
+					"data"
 				)((chunk) =>
 					this._onStderr.fire(
 						typeof chunk === "string"
 							? chunk
-							: stderrDecoder.write(chunk),
-					),
-				),
+							: stderrDecoder.write(chunk)
+					)
+				)
 			);
 		}
 
@@ -363,15 +363,15 @@ export class UtilityProcess extends Disposable {
 		this._register(
 			Event.fromNodeEventEmitter(
 				process,
-				"message",
-			)((msg) => this._onMessage.fire(msg)),
+				"message"
+			)((msg) => this._onMessage.fire(msg))
 		);
 
 		// Spawn
 		this._register(
 			Event.fromNodeEventEmitter<void>(
 				process,
-				"spawn",
+				"spawn"
 			)(() => {
 				this.processPid = process.pid;
 
@@ -386,18 +386,18 @@ export class UtilityProcess extends Disposable {
 
 				this.log("successfully created", Severity.Info);
 				this._onSpawn.fire(process.pid);
-			}),
+			})
 		);
 
 		// Exit
 		this._register(
 			Event.fromNodeEventEmitter<number>(
 				process,
-				"exit",
+				"exit"
 			)((code) => {
 				this.log(
 					`received exit event with code ${code}`,
-					Severity.Info,
+					Severity.Info
 				);
 
 				// Event
@@ -409,7 +409,7 @@ export class UtilityProcess extends Disposable {
 
 				// Cleanup
 				this.onDidExitOrCrashOrKill();
-			}),
+			})
 		);
 
 		// Child process gone
@@ -417,7 +417,7 @@ export class UtilityProcess extends Disposable {
 			Event.fromNodeEventEmitter<{ details: Details }>(
 				app,
 				"child-process-gone",
-				(event, details) => ({ event, details }),
+				(event, details) => ({ event, details })
 			)(({ details }) => {
 				if (
 					details.type === "Utility" &&
@@ -425,7 +425,7 @@ export class UtilityProcess extends Disposable {
 				) {
 					this.log(
 						`crashed with code ${details.exitCode} and reason '${details.reason}'`,
-						Severity.Error,
+						Severity.Error
 					);
 
 					// Telemetry
@@ -473,7 +473,7 @@ export class UtilityProcess extends Disposable {
 					// Cleanup
 					this.onDidExitOrCrashOrKill();
 				}
-			}),
+			})
 		);
 	}
 
@@ -485,7 +485,7 @@ export class UtilityProcess extends Disposable {
 
 					callback();
 				}
-			}),
+			})
 		);
 	}
 
@@ -565,7 +565,7 @@ export class UtilityProcess extends Disposable {
 		if (this.process) {
 			this.log(
 				`did not exit within ${maxWaitTimeMs}ms, will kill it now...`,
-				Severity.Info,
+				Severity.Info
 			);
 			this.kill();
 		}
@@ -575,7 +575,8 @@ export class UtilityProcess extends Disposable {
 export class WindowUtilityProcess extends UtilityProcess {
 	constructor(
 		@ILogService logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService
 	) {
@@ -584,7 +585,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 
 	override start(configuration: IWindowUtilityProcessConfiguration): boolean {
 		const responseWindow = this.windowsMainService.getWindowById(
-			configuration.responseWindowId,
+			configuration.responseWindowId
 		);
 		if (
 			!responseWindow?.win ||
@@ -593,7 +594,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 		) {
 			this.log(
 				"Refusing to start utility process because requesting window cannot be found or is destroyed...",
-				Severity.Error,
+				Severity.Error
 			);
 
 			return true;
@@ -613,7 +614,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 		responseWindow.win.webContents.postMessage(
 			configuration.responseChannel,
 			configuration.responseNonce,
-			[windowPort],
+			[windowPort]
 		);
 
 		return true;
@@ -621,7 +622,7 @@ export class WindowUtilityProcess extends UtilityProcess {
 
 	private registerWindowListeners(
 		window: BrowserWindow,
-		configuration: IWindowUtilityProcessConfiguration,
+		configuration: IWindowUtilityProcessConfiguration
 	): void {
 		// If the lifecycle of the utility process is bound to the window,
 		// we kill the process if the window closes or changes
@@ -630,11 +631,11 @@ export class WindowUtilityProcess extends UtilityProcess {
 			this._register(
 				Event.filter(
 					this.lifecycleMainService.onWillLoadWindow,
-					(e) => e.window.win === window,
-				)(() => this.kill()),
+					(e) => e.window.win === window
+				)(() => this.kill())
 			);
 			this._register(
-				Event.fromNodeEventEmitter(window, "closed")(() => this.kill()),
+				Event.fromNodeEventEmitter(window, "closed")(() => this.kill())
 			);
 		}
 	}

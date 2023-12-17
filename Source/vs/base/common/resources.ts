@@ -42,7 +42,7 @@ export interface IExtUri {
 	isEqual(
 		uri1: URI | undefined,
 		uri2: URI | undefined,
-		ignoreFragment?: boolean,
+		ignoreFragment?: boolean
 	): boolean;
 
 	/**
@@ -55,7 +55,7 @@ export interface IExtUri {
 	isEqualOrParent(
 		base: URI,
 		parentCandidate: URI,
-		ignoreFragment?: boolean,
+		ignoreFragment?: boolean
 	): boolean;
 
 	/**
@@ -155,14 +155,14 @@ export class ExtUri implements IExtUri {
 		}
 		return strCompare(
 			this.getComparisonKey(uri1, ignoreFragment),
-			this.getComparisonKey(uri2, ignoreFragment),
+			this.getComparisonKey(uri2, ignoreFragment)
 		);
 	}
 
 	isEqual(
 		uri1: URI | undefined,
 		uri2: URI | undefined,
-		ignoreFragment: boolean = false,
+		ignoreFragment: boolean = false
 	): boolean {
 		if (uri1 === uri2) {
 			return true;
@@ -194,7 +194,7 @@ export class ExtUri implements IExtUri {
 	isEqualOrParent(
 		base: URI,
 		parentCandidate: URI,
-		ignoreFragment: boolean = false,
+		ignoreFragment: boolean = false
 	): boolean {
 		if (base.scheme === parentCandidate.scheme) {
 			if (base.scheme === Schemas.file) {
@@ -202,7 +202,7 @@ export class ExtUri implements IExtUri {
 					extpath.isEqualOrParent(
 						originalFSPath(base),
 						originalFSPath(parentCandidate),
-						this._ignorePathCasing(base),
+						this._ignorePathCasing(base)
 					) &&
 					base.query === parentCandidate.query &&
 					(ignoreFragment ||
@@ -215,7 +215,7 @@ export class ExtUri implements IExtUri {
 						base.path,
 						parentCandidate.path,
 						this._ignorePathCasing(base),
-						"/",
+						"/"
 					) &&
 					base.query === parentCandidate.query &&
 					(ignoreFragment ||
@@ -259,7 +259,7 @@ export class ExtUri implements IExtUri {
 				dirname.charCodeAt(0) !== CharCode.Slash
 			) {
 				console.error(
-					`dirname("${resource.toString})) resulted in a relative path`,
+					`dirname("${resource.toString})) resulted in a relative path`
 				);
 				dirname = "/"; // If a URI contains an authority component, then the path component must either be empty or begin with a CharCode.Slash ("/") character
 			}
@@ -276,7 +276,7 @@ export class ExtUri implements IExtUri {
 		let normalizedPath: string;
 		if (resource.scheme === Schemas.file) {
 			normalizedPath = URI.file(
-				paths.normalize(originalFSPath(resource)),
+				paths.normalize(originalFSPath(resource))
 			).path;
 		} else {
 			normalizedPath = paths.posix.normalize(resource.path);
@@ -296,7 +296,7 @@ export class ExtUri implements IExtUri {
 		if (from.scheme === Schemas.file) {
 			const relativePath = paths.relative(
 				originalFSPath(from),
-				originalFSPath(to),
+				originalFSPath(to)
 			);
 			return isWindows ? extpath.toSlashes(relativePath) : relativePath;
 		}
@@ -462,7 +462,7 @@ export const addTrailingPathSeparator =
 
 export function distinctParents<T>(
 	items: T[],
-	resourceAccessor: (item: T) => URI,
+	resourceAccessor: (item: T) => URI
 ): T[] {
 	const distinctParents: T[] = [];
 	for (let i = 0; i < items.length; i++) {
@@ -475,7 +475,7 @@ export function distinctParents<T>(
 
 				return isEqualOrParent(
 					candidateResource,
-					resourceAccessor(otherItem),
+					resourceAccessor(otherItem)
 				);
 			})
 		) {
@@ -504,7 +504,7 @@ export namespace DataUri {
 		// the metadata is: size:2313;label:SomeLabel;description:SomeDescription
 		const meta = dataUri.path.substring(
 			dataUri.path.indexOf(";") + 1,
-			dataUri.path.lastIndexOf(";"),
+			dataUri.path.lastIndexOf(";")
 		);
 		meta.split(";").forEach((property) => {
 			const [key, value] = property.split(":");
@@ -527,7 +527,7 @@ export namespace DataUri {
 export function toLocalResource(
 	resource: URI,
 	authority: string | undefined,
-	localScheme: string,
+	localScheme: string
 ): URI {
 	if (authority) {
 		let path = resource.path;

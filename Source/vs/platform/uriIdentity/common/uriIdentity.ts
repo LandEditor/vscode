@@ -8,7 +8,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 import { IExtUri } from "vs/base/common/resources";
 
 export const IUriIdentityService = createDecorator<IUriIdentityService>(
-	"IUriIdentityService",
+	"IUriIdentityService"
 );
 
 export interface IUriIdentityService {

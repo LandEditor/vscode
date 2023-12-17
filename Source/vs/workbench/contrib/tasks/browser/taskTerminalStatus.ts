@@ -65,7 +65,7 @@ const SUCCEEDED_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Info,
 	tooltip: nls.localize(
 		"taskTerminalStatus.succeededInactive",
-		"Task succeeded and waiting...",
+		"Task succeeded and waiting..."
 	),
 };
 export const FAILED_TASK_STATUS: ITerminalStatus = {
@@ -80,7 +80,7 @@ const FAILED_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Error,
 	tooltip: nls.localize(
 		"taskTerminalStatus.errorsInactive",
-		"Task has errors and is waiting...",
+		"Task has errors and is waiting..."
 	),
 };
 const WARNING_TASK_STATUS: ITerminalStatus = {
@@ -95,7 +95,7 @@ const WARNING_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Warning,
 	tooltip: nls.localize(
 		"taskTerminalStatus.warningsInactive",
-		"Task has warnings and is waiting...",
+		"Task has warnings and is waiting..."
 	),
 };
 const INFO_TASK_STATUS: ITerminalStatus = {
@@ -110,35 +110,48 @@ const INFO_INACTIVE_TASK_STATUS: ITerminalStatus = {
 	severity: Severity.Info,
 	tooltip: nls.localize(
 		"taskTerminalStatus.infosInactive",
-		"Task has infos and is waiting...",
+		"Task has infos and is waiting..."
 	),
 };
 
 export class TaskTerminalStatus extends Disposable {
 	private terminalMap: Map<number, ITerminalData> = new Map();
 	private _marker: IMarker | undefined;
-	constructor(@ITaskService taskService: ITaskService, @IAudioCueService private readonly _audioCueService: IAudioCueService) {
+	constructor(
+		@ITaskService taskService: ITaskService,
+		@IAudioCueService private readonly _audioCueService: IAudioCueService
+	) {
 		super();
-		this._register(taskService.onDidStateChange((event) => {
-			switch (event.kind) {
-				case TaskEventKind.ProcessStarted:
-				case TaskEventKind.Active: this.eventActive(event); break;
-				case TaskEventKind.Inactive: this.eventInactive(event); break;
-				case TaskEventKind.ProcessEnded: this.eventEnd(event); break;
-			}
-		}));
-		this._register(toDisposable(() => {
-			for (const terminalData of this.terminalMap.values()) {
-				terminalData.disposeListener?.dispose();
-			}
-			this.terminalMap.clear();
-		}));
+		this._register(
+			taskService.onDidStateChange((event) => {
+				switch (event.kind) {
+					case TaskEventKind.ProcessStarted:
+					case TaskEventKind.Active:
+						this.eventActive(event);
+						break;
+					case TaskEventKind.Inactive:
+						this.eventInactive(event);
+						break;
+					case TaskEventKind.ProcessEnded:
+						this.eventEnd(event);
+						break;
+				}
+			})
+		);
+		this._register(
+			toDisposable(() => {
+				for (const terminalData of this.terminalMap.values()) {
+					terminalData.disposeListener?.dispose();
+				}
+				this.terminalMap.clear();
+			})
+		);
 	}
 
 	addTerminal(
 		task: Task,
 		terminal: ITerminalInstance,
-		problemMatcher: AbstractProblemCollector,
+		problemMatcher: AbstractProblemCollector
 	) {
 		const status: ITerminalStatus = {
 			id: TASK_TERMINAL_STATUS_ID,
@@ -151,7 +164,7 @@ export class TaskTerminalStatus extends Disposable {
 				if (this._marker) {
 					this._register(this._marker);
 				}
-			}),
+			})
 		);
 		this._register(
 			problemMatcher.onDidFindErrors(() => {
@@ -160,18 +173,18 @@ export class TaskTerminalStatus extends Disposable {
 						marker: this._marker,
 						hoverMessage: nls.localize(
 							"task.watchFirstError",
-							"Beginning of detected errors for this run",
+							"Beginning of detected errors for this run"
 						),
 						disableCommandStorage: true,
 					});
 				}
-			}),
+			})
 		);
 		this._register(
 			problemMatcher.onDidRequestInvalidateLastMarker(() => {
 				this._marker?.dispose();
 				this._marker = undefined;
-			}),
+			})
 		);
 
 		this.terminalMap.set(terminal.instanceId, {
@@ -183,9 +196,9 @@ export class TaskTerminalStatus extends Disposable {
 		});
 	}
 
-	private terminalFromEvent(event: { terminalId: number | undefined }):
-		| ITerminalData
-		| undefined {
+	private terminalFromEvent(event: {
+		terminalId: number | undefined;
+	}): ITerminalData | undefined {
 		if (!("terminalId" in event) || !event.terminalId) {
 			return undefined;
 		}
@@ -245,7 +258,7 @@ export class TaskTerminalStatus extends Disposable {
 		if (terminalData.problemMatcher.numberOfMatches === 0) {
 			this._audioCueService.playAudioCue(AudioCue.taskCompleted);
 			terminalData.terminal.statusList.add(
-				SUCCEEDED_INACTIVE_TASK_STATUS,
+				SUCCEEDED_INACTIVE_TASK_STATUS
 			);
 		} else if (
 			terminalData.problemMatcher.maxMarkerSeverity ===
@@ -273,7 +286,7 @@ export class TaskTerminalStatus extends Disposable {
 		}
 		if (!terminalData.disposeListener) {
 			terminalData.disposeListener = this._register(
-				new MutableDisposable(),
+				new MutableDisposable()
 			);
 			terminalData.disposeListener.value =
 				terminalData.terminal.onDisposed(() => {

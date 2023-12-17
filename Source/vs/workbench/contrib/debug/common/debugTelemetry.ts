@@ -14,8 +14,8 @@ import { Debugger } from "vs/workbench/contrib/debug/common/debugger";
 export class DebugTelemetry {
 	constructor(
 		private readonly model: IDebugModel,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
-	) { }
+		@ITelemetryService private readonly telemetryService: ITelemetryService
+	) {}
 
 	logDebugSessionStart(dbgr: Debugger, launchJsonExists: boolean) {
 		const extension = dbgr.getMainExtensionDescriptor();
@@ -44,7 +44,7 @@ export class DebugTelemetry {
 
 	logDebugSessionStop(
 		session: IDebugSession,
-		adapterExitEvent: AdapterEndEvent,
+		adapterExitEvent: AdapterEndEvent
 	) {
 		const breakpoints = this.model.getBreakpoints();
 

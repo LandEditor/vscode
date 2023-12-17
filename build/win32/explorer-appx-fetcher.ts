@@ -18,7 +18,7 @@ const d = debug("explorer-appx-fetcher");
 export async function downloadExplorerAppx(
 	outDir: string,
 	quality: string = "stable",
-	targetArch: string = "x64",
+	targetArch: string = "x64"
 ): Promise<void> {
 	const fileNamePrefix = quality === "insider" ? "code_insiders" : "code";
 	const fileName = `${fileNamePrefix}_explorer_${targetArch}.zip`;
@@ -56,7 +56,7 @@ async function main(outputDir?: string): Promise<void> {
 	}
 
 	const product = JSON.parse(
-		fs.readFileSync(path.join(root, "product.json"), "utf8"),
+		fs.readFileSync(path.join(root, "product.json"), "utf8")
 	);
 	await downloadExplorerAppx(outputDir, (product as any).quality, arch);
 }

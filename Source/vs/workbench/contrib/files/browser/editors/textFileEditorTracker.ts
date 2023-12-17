@@ -32,9 +32,12 @@ export class TextFileEditorTracker
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IHostService private readonly hostService: IHostService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IWorkingCopyEditorService private readonly workingCopyEditorService: IWorkingCopyEditorService
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyEditorService
+		private readonly workingCopyEditorService: IWorkingCopyEditorService
 	) {
 		super();
 
@@ -45,30 +48,30 @@ export class TextFileEditorTracker
 		// Ensure dirty text file and untitled models are always opened as editors
 		this._register(
 			this.textFileService.files.onDidChangeDirty((model) =>
-				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
-			),
+				this.ensureDirtyFilesAreOpenedWorker.work(model.resource)
+			)
 		);
 		this._register(
 			this.textFileService.files.onDidSaveError((model) =>
-				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
-			),
+				this.ensureDirtyFilesAreOpenedWorker.work(model.resource)
+			)
 		);
 		this._register(
 			this.textFileService.untitled.onDidChangeDirty((model) =>
-				this.ensureDirtyFilesAreOpenedWorker.work(model.resource),
-			),
+				this.ensureDirtyFilesAreOpenedWorker.work(model.resource)
+			)
 		);
 
 		// Update visible text file editors when focus is gained
 		this._register(
 			this.hostService.onDidChangeFocus((hasFocus) =>
-				hasFocus ? this.reloadVisibleTextFileEditors() : undefined,
-			),
+				hasFocus ? this.reloadVisibleTextFileEditors() : undefined
+			)
 		);
 
 		// Lifecycle
 		this._register(
-			this.lifecycleService.onDidShutdown(() => this.dispose()),
+			this.lifecycleService.onDidShutdown(() => this.dispose())
 		);
 	}
 
@@ -77,8 +80,8 @@ export class TextFileEditorTracker
 	private readonly ensureDirtyFilesAreOpenedWorker = this._register(
 		new RunOnceWorker<URI>(
 			(units) => this.ensureDirtyTextFilesAreOpened(units),
-			this.getDirtyTextFileTrackerDelay(),
-		),
+			this.getDirtyTextFileTrackerDelay()
+		)
 	);
 
 	protected getDirtyTextFileTrackerDelay(): number {
@@ -96,7 +99,7 @@ export class TextFileEditorTracker
 					const fileModel = this.textFileService.files.get(resource);
 					if (
 						fileModel?.hasState(
-							TextFileEditorModelState.PENDING_SAVE,
+							TextFileEditorModelState.PENDING_SAVE
 						)
 					) {
 						return false; // resource must not be pending to save
@@ -106,7 +109,7 @@ export class TextFileEditorTracker
 						resource.scheme !== Schemas.untitled &&
 						!fileModel?.hasState(TextFileEditorModelState.ERROR) &&
 						this.filesConfigurationService.isShortAutoSaveDelayConfigured(
-							resource,
+							resource
 						)
 					) {
 						// leave models auto saved after short delay unless
@@ -140,8 +143,8 @@ export class TextFileEditorTracker
 
 					return true;
 				}),
-				(resource) => resource.toString(),
-			),
+				(resource) => resource.toString()
+			)
 		);
 	}
 
@@ -154,7 +157,7 @@ export class TextFileEditorTracker
 			resources.map((resource) => ({
 				resource,
 				options: { inactive: true, pinned: true, preserveFocus: true },
-			})),
+			}))
 		);
 	}
 
@@ -181,13 +184,13 @@ export class TextFileEditorTracker
 					}
 
 					return model;
-				}),
+				})
 			),
-			(model) => model.resource.toString(),
+			(model) => model.resource.toString()
 		).forEach((model) =>
 			this.textFileService.files.resolve(model.resource, {
 				reload: { async: true },
-			}),
+			})
 		);
 	}
 

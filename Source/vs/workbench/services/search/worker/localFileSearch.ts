@@ -61,7 +61,7 @@ const time = async <T>(name: string, task: () => Promise<T> | T) => {
 		name,
 		itr,
 		"starting",
-		Math.round((start - globalStart) * 10) / 10000,
+		Math.round((start - globalStart) * 10) / 10000
 	);
 
 	itrcount[name] = itr;
@@ -76,7 +76,7 @@ const time = async <T>(name: string, task: () => Promise<T> | T) => {
  * @internal
  */
 export function create(
-	host: ILocalFileSearchSimpleWorkerHost,
+	host: ILocalFileSearchSimpleWorkerHost
 ): IRequestHandler {
 	return new LocalFileSearchSimpleWorker(host);
 }
@@ -95,7 +95,7 @@ export class LocalFileSearchSimpleWorker
 	}
 
 	private registerCancellationToken(
-		queryId: number,
+		queryId: number
 	): CancellationTokenSource {
 		const source = new CancellationTokenSource();
 		this.cancellationTokens.set(queryId, source);
@@ -107,7 +107,7 @@ export class LocalFileSearchSimpleWorker
 		query: IFileQueryProps<UriComponents>,
 		folderQuery: IFolderQuery<UriComponents>,
 		ignorePathCasing: boolean,
-		queryId: number,
+		queryId: number
 	): Promise<IWorkerFileSearchComplete> {
 		const revivedFolderQuery = reviveFolderQuery(folderQuery);
 		const extUri = new ExtUri(() => ignorePathCasing);
@@ -143,8 +143,8 @@ export class LocalFileSearchSimpleWorker
 					}
 					return entries.push(file.path);
 				},
-				token.token,
-			),
+				token.token
+			)
 		);
 
 		return {
@@ -158,7 +158,7 @@ export class LocalFileSearchSimpleWorker
 		query: ITextQueryProps<UriComponents>,
 		folderQuery: IFolderQuery<UriComponents>,
 		ignorePathCasing: boolean,
-		queryId: number,
+		queryId: number
 	): Promise<IWorkerTextSearchComplete> {
 		const revivedQuery = reviveFolderQuery(folderQuery);
 		const extUri = new ExtUri(() => ignorePathCasing);
@@ -219,12 +219,12 @@ export class LocalFileSearchSimpleWorker
 					revivedQuery,
 					extUri,
 					async (file) => onGoingProcesses.push(processFile(file)),
-					token.token,
-				),
+					token.token
+				)
 			);
 
 			await time("resolveOngoingProcesses", () =>
-				Promise.all(onGoingProcesses),
+				Promise.all(onGoingProcesses)
 			);
 
 			if (PERF) {
@@ -244,7 +244,7 @@ export class LocalFileSearchSimpleWorker
 		folderQuery: IFolderQuery<URI>,
 		extUri: ExtUri,
 		onFile: (file: FileNode) => any,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const folderExcludes = glob.parse(folderQuery.excludePattern ?? {}, {
 			trimForExclusions: true,
@@ -254,7 +254,7 @@ export class LocalFileSearchSimpleWorker
 		const isFolderExcluded = (
 			path: string,
 			basename: string,
-			hasSibling: (query: string) => boolean,
+			hasSibling: (query: string) => boolean
 		) => {
 			path = path.slice(1);
 			if (folderExcludes(path, basename, hasSibling)) {
@@ -270,7 +270,7 @@ export class LocalFileSearchSimpleWorker
 		const isFileIncluded = (
 			path: string,
 			basename: string,
-			hasSibling: (query: string) => boolean,
+			hasSibling: (query: string) => boolean
 		) => {
 			path = path.slice(1);
 			if (folderExcludes(path, basename, hasSibling)) {
@@ -284,7 +284,7 @@ export class LocalFileSearchSimpleWorker
 
 		const processFile = (
 			file: FileSystemFileHandle,
-			prior: string,
+			prior: string
 		): FileNode => {
 			const resolved: FileNode = {
 				type: "file",
@@ -297,13 +297,13 @@ export class LocalFileSearchSimpleWorker
 		};
 
 		const isFileSystemDirectoryHandle = (
-			handle: IWorkerFileSystemHandle,
+			handle: IWorkerFileSystemHandle
 		): handle is FileSystemDirectoryHandle => {
 			return handle.kind === "directory";
 		};
 
 		const isFileSystemFileHandle = (
-			handle: IWorkerFileSystemHandle,
+			handle: IWorkerFileSystemHandle
 		): handle is FileSystemFileHandle => {
 			return handle.kind === "file";
 		};
@@ -311,7 +311,7 @@ export class LocalFileSearchSimpleWorker
 		const processDirectory = async (
 			directory: IWorkerFileSystemDirectoryHandle,
 			prior: string,
-			ignoreFile?: IgnoreFile,
+			ignoreFile?: IgnoreFile
 		): Promise<DirNode> => {
 			if (!folderQuery.disregardIgnoreFiles) {
 				const ignoreFiles = await Promise.all([
@@ -329,15 +329,15 @@ export class LocalFileSearchSimpleWorker
 
 						const ignoreContents = new TextDecoder("utf8").decode(
 							new Uint8Array(
-								await (await file.getFile()).arrayBuffer(),
-							),
+								await (await file.getFile()).arrayBuffer()
+							)
 						);
 						ignoreFile = new IgnoreFile(
 							ignoreContents,
 							prior,
-							ignoreFile,
+							ignoreFile
 						);
-					}),
+					})
 				);
 			}
 
@@ -365,7 +365,7 @@ export class LocalFileSearchSimpleWorker
 							ignoreFile &&
 							!ignoreFile.isPathIncludedInTraversal(
 								path,
-								handle.kind === "directory",
+								handle.kind === "directory"
 							)
 						) {
 							continue;
@@ -379,11 +379,7 @@ export class LocalFileSearchSimpleWorker
 							!isFolderExcluded(path, basename, hasSibling)
 						) {
 							dirs.push(
-								processDirectory(
-									handle,
-									path + "/",
-									ignoreFile,
-								),
+								processDirectory(handle, path + "/", ignoreFile)
 							);
 						} else if (
 							isFileSystemFileHandle(handle) &&
@@ -393,7 +389,7 @@ export class LocalFileSearchSimpleWorker
 						}
 					}
 					c([...(await Promise.all(dirs)), ...files]);
-				},
+				}
 			);
 
 			return {
@@ -405,7 +401,7 @@ export class LocalFileSearchSimpleWorker
 
 		const resolveDirectory = async (
 			directory: DirNode,
-			onFile: (f: FileNode) => any,
+			onFile: (f: FileNode) => any
 		) => {
 			if (token.isCancellationRequested) {
 				return;
@@ -416,7 +412,7 @@ export class LocalFileSearchSimpleWorker
 					.sort(
 						(a, b) =>
 							-(a.type === "dir" ? 0 : 1) +
-							(b.type === "dir" ? 0 : 1),
+							(b.type === "dir" ? 0 : 1)
 					)
 					.map(async (entry) => {
 						if (entry.type === "dir") {
@@ -424,12 +420,12 @@ export class LocalFileSearchSimpleWorker
 						} else {
 							return onFile(entry);
 						}
-					}),
+					})
 			);
 		};
 
 		const processed = await time("process", () =>
-			processDirectory(handle, "/"),
+			processDirectory(handle, "/")
 		);
 		await time("resolve", () => resolveDirectory(processed, onFile));
 	}
@@ -446,7 +442,7 @@ function createSearchRegExp(options: IPatternInfo): RegExp {
 }
 
 function reviveFolderQuery(
-	folderQuery: IFolderQuery<UriComponents>,
+	folderQuery: IFolderQuery<UriComponents>
 ): IFolderQuery<URI> {
 	return {
 		...folderQuery,
@@ -455,22 +451,22 @@ function reviveFolderQuery(
 }
 
 function reviveQueryProps(
-	queryProps: ICommonQueryProps<UriComponents>,
+	queryProps: ICommonQueryProps<UriComponents>
 ): ICommonQueryProps<URI> {
 	return {
 		...queryProps,
 		extraFileResources: queryProps.extraFileResources?.map((r) =>
-			URI.revive(r),
+			URI.revive(r)
 		),
 		folderQueries: queryProps.folderQueries.map((fq) =>
-			reviveFolderQuery(fq),
+			reviveFolderQuery(fq)
 		),
 	};
 }
 
 function pathExcludedInQuery(
 	queryProps: ICommonQueryProps<URI>,
-	fsPath: string,
+	fsPath: string
 ): boolean {
 	if (
 		queryProps.excludePattern &&
@@ -484,7 +480,7 @@ function pathExcludedInQuery(
 function pathIncludedInQuery(
 	queryProps: ICommonQueryProps<URI>,
 	path: string,
-	extUri: ExtUri,
+	extUri: ExtUri
 ): boolean {
 	if (
 		queryProps.excludePattern &&
@@ -511,7 +507,7 @@ function pathIncludedInQuery(
 					if (extUri.isEqualOrParent(uri, searchPath)) {
 						const relPath = paths.relative(
 							searchPath.path,
-							uri.path,
+							uri.path
 						);
 						return (
 							!fq.includePattern ||

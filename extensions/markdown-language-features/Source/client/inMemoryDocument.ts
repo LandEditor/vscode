@@ -20,7 +20,7 @@ export class InMemoryDocument implements ITextDocument {
 			this.uri.toString(),
 			"markdown",
 			0,
-			contents,
+			contents
 		);
 	}
 

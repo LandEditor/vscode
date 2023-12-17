@@ -29,7 +29,7 @@ export abstract class FixedZoneWidget extends Disposable {
 		viewZoneAccessor: IViewZoneChangeAccessor,
 		afterLineNumber: number,
 		height: number,
-		viewZoneIdsToCleanUp: string[],
+		viewZoneIdsToCleanUp: string[]
 	) {
 		super();
 
@@ -50,7 +50,7 @@ export abstract class FixedZoneWidget extends Disposable {
 			Event.runAndSubscribe(this.editor.onDidLayoutChange, () => {
 				this.widgetDomNode.style.left =
 					this.editor.getLayoutInfo().contentLeft + "px";
-			}),
+			})
 		);
 
 		this.editor.addOverlayWidget(this.overlayWidget);

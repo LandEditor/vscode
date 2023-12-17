@@ -26,7 +26,7 @@ const defaultDiagnosticOptions: md.DiagnosticOptions = {
 };
 
 function convertDiagnosticLevel(
-	enabled: ValidateEnabled,
+	enabled: ValidateEnabled
 ): md.DiagnosticLevel | undefined {
 	switch (enabled) {
 		case "error":
@@ -43,7 +43,7 @@ function convertDiagnosticLevel(
 }
 
 function getDiagnosticsOptions(
-	config: ConfigurationManager,
+	config: ConfigurationManager
 ): md.DiagnosticOptions {
 	const settings = config.getSettings();
 	if (!settings) {
@@ -51,17 +51,17 @@ function getDiagnosticsOptions(
 	}
 
 	const validateFragmentLinks = convertDiagnosticLevel(
-		settings.markdown.validate.fragmentLinks.enabled,
+		settings.markdown.validate.fragmentLinks.enabled
 	);
 	return {
 		validateFileLinks: convertDiagnosticLevel(
-			settings.markdown.validate.fileLinks.enabled,
+			settings.markdown.validate.fileLinks.enabled
 		),
 		validateReferences: convertDiagnosticLevel(
-			settings.markdown.validate.referenceLinks.enabled,
+			settings.markdown.validate.referenceLinks.enabled
 		),
 		validateFragmentLinks: convertDiagnosticLevel(
-			settings.markdown.validate.fragmentLinks.enabled,
+			settings.markdown.validate.fragmentLinks.enabled
 		),
 		validateMarkdownFileLinkFragments:
 			settings.markdown.validate.fileLinks.markdownFragmentLinks ===
@@ -69,13 +69,13 @@ function getDiagnosticsOptions(
 				? validateFragmentLinks
 				: convertDiagnosticLevel(
 						settings.markdown.validate.fileLinks
-							.markdownFragmentLinks,
-				  ),
+							.markdownFragmentLinks
+					),
 		validateUnusedLinkDefinitions: convertDiagnosticLevel(
-			settings.markdown.validate.unusedLinkDefinitions.enabled,
+			settings.markdown.validate.unusedLinkDefinitions.enabled
 		),
 		validateDuplicateLinkDefinitions: convertDiagnosticLevel(
-			settings.markdown.validate.duplicateLinkDefinitions.enabled,
+			settings.markdown.validate.duplicateLinkDefinitions.enabled
 		),
 		ignoreLinks: settings.markdown.validate.ignoredLinks,
 	};
@@ -87,7 +87,7 @@ export function registerValidateSupport(
 	documents: TextDocuments<md.ITextDocument>,
 	ls: md.IMdLanguageService,
 	config: ConfigurationManager,
-	logger: md.ILogger,
+	logger: md.ILogger
 ): Disposable {
 	let diagnosticOptions: md.DiagnosticOptions = defaultDiagnosticOptions;
 	function updateDiagnosticsSetting(): void {
@@ -102,7 +102,7 @@ export function registerValidateSupport(
 		manager.onLinkedToFileChanged(() => {
 			// TODO: We only need to refresh certain files
 			connection.languages.diagnostics.refresh();
-		}),
+		})
 	);
 
 	const emptyDiagnosticsResponse = Object.freeze({ kind: "full", items: [] });
@@ -110,14 +110,14 @@ export function registerValidateSupport(
 	connection.languages.diagnostics.on(
 		async (
 			params,
-			token,
+			token
 		): Promise<
 			FullDocumentDiagnosticReport | UnchangedDocumentDiagnosticReport
 		> => {
 			logger.log(
 				md.LogLevel.Debug,
 				"connection.languages.diagnostics.on",
-				{ document: params.textDocument.uri },
+				{ document: params.textDocument.uri }
 			);
 
 			if (!config.getSettings()?.markdown.validate.enabled) {
@@ -137,13 +137,13 @@ export function registerValidateSupport(
 			const diagnostics = await manager.computeDiagnostics(
 				document,
 				diagnosticOptions,
-				token,
+				token
 			);
 			return {
 				kind: "full",
 				items: diagnostics,
 			};
-		},
+		}
 	);
 
 	updateDiagnosticsSetting();
@@ -151,13 +151,13 @@ export function registerValidateSupport(
 		config.onDidChangeConfiguration(() => {
 			updateDiagnosticsSetting();
 			connection.languages.diagnostics.refresh();
-		}),
+		})
 	);
 
 	subs.push(
 		documents.onDidClose((e) => {
 			manager.disposeDocumentResources(URI.parse(e.document.uri));
-		}),
+		})
 	);
 
 	return {

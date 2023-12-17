@@ -12,7 +12,7 @@ export type Scale = number | "fit";
 
 export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 	private readonly _onDidChangeScale = this._register(
-		new vscode.EventEmitter<{ scale: Scale }>(),
+		new vscode.EventEmitter<{ scale: Scale }>()
 	);
 	public readonly onDidChangeScale = this._onDidChangeScale.event;
 
@@ -21,7 +21,7 @@ export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 			"status.imagePreview.zoom",
 			vscode.l10n.t("Image Zoom"),
 			vscode.StatusBarAlignment.Right,
-			102 /* to the left of editor size entry (101) */,
+			102 /* to the left of editor size entry (101) */
 		);
 
 		this._register(
@@ -35,7 +35,7 @@ export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 						(scale): MyPickItem => ({
 							label: this.zoomLabel(scale),
 							scale,
-						}),
+						})
 					);
 
 					const pick = await vscode.window.showQuickPick(options, {
@@ -44,8 +44,8 @@ export class ZoomStatusBarEntry extends OwnedStatusBarEntry {
 					if (pick) {
 						this._onDidChangeScale.fire({ scale: pick.scale });
 					}
-				},
-			),
+				}
+			)
 		);
 
 		this.entry.command = selectZoomLevelCommandId;

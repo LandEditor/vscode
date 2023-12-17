@@ -16,7 +16,7 @@ export class NativeWorkbenchStorageService extends RemoteStorageService {
 		private readonly userDataProfileService: IUserDataProfileService,
 		userDataProfilesService: IUserDataProfilesService,
 		mainProcessService: IMainProcessService,
-		environmentService: IEnvironmentService,
+		environmentService: IEnvironmentService
 	) {
 		super(
 			workspace,
@@ -25,7 +25,7 @@ export class NativeWorkbenchStorageService extends RemoteStorageService {
 				defaultProfile: userDataProfilesService.defaultProfile,
 			},
 			mainProcessService,
-			environmentService,
+			environmentService
 		);
 
 		this.registerListeners();
@@ -34,8 +34,8 @@ export class NativeWorkbenchStorageService extends RemoteStorageService {
 	private registerListeners(): void {
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile((e) =>
-				e.join(this.switchToProfile(e.profile)),
-			),
+				e.join(this.switchToProfile(e.profile))
+			)
 		);
 	}
 }

@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		},
 		undefined,
-		context.subscriptions,
+		context.subscriptions
 	);
 
 	return {

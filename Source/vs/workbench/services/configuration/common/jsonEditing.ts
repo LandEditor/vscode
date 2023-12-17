@@ -18,7 +18,10 @@ export const enum JSONEditingErrorCode {
 }
 
 export class JSONEditingError extends Error {
-	constructor(message: string, public code: JSONEditingErrorCode) {
+	constructor(
+		message: string,
+		public code: JSONEditingErrorCode
+	) {
 		super(message);
 	}
 }

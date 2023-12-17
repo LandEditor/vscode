@@ -23,16 +23,16 @@ export interface IUserDataInitializer {
 	whenInitializationFinished(): Promise<void>;
 	initializeRequiredResources(): Promise<void>;
 	initializeInstalledExtensions(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void>;
 	initializeOtherResources(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void>;
 }
 
 export const IUserDataInitializationService =
 	createDecorator<IUserDataInitializationService>(
-		"IUserDataInitializationService",
+		"IUserDataInitializationService"
 	);
 export interface IUserDataInitializationService extends IUserDataInitializer {
 	_serviceBrand: any;
@@ -49,8 +49,8 @@ export class UserDataInitializationService
 		if (await this.requiresInitialization()) {
 			await Promise.all(
 				this.initializers.map((initializer) =>
-					initializer.whenInitializationFinished(),
-				),
+					initializer.whenInitializationFinished()
+				)
 			);
 		}
 	}
@@ -59,8 +59,8 @@ export class UserDataInitializationService
 		return (
 			await Promise.all(
 				this.initializers.map((initializer) =>
-					initializer.requiresInitialization(),
-				),
+					initializer.requiresInitialization()
+				)
 			)
 		).some((result) => result);
 	}
@@ -69,34 +69,34 @@ export class UserDataInitializationService
 		if (await this.requiresInitialization()) {
 			await Promise.all(
 				this.initializers.map((initializer) =>
-					initializer.initializeRequiredResources(),
-				),
+					initializer.initializeRequiredResources()
+				)
 			);
 		}
 	}
 
 	async initializeOtherResources(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		if (await this.requiresInitialization()) {
 			await Promise.all(
 				this.initializers.map((initializer) =>
-					initializer.initializeOtherResources(instantiationService),
-				),
+					initializer.initializeOtherResources(instantiationService)
+				)
 			);
 		}
 	}
 
 	async initializeInstalledExtensions(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		if (await this.requiresInitialization()) {
 			await Promise.all(
 				this.initializers.map((initializer) =>
 					initializer.initializeInstalledExtensions(
-						instantiationService,
-					),
-				),
+						instantiationService
+					)
+				)
 			);
 		}
 	}
@@ -104,28 +104,29 @@ export class UserDataInitializationService
 
 class InitializeOtherResourcesContribution implements IWorkbenchContribution {
 	constructor(
-		@IUserDataInitializationService userDataInitializeService: IUserDataInitializationService,
+		@IUserDataInitializationService
+		userDataInitializeService: IUserDataInitializationService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IExtensionService extensionService: IExtensionService,
+		@IExtensionService extensionService: IExtensionService
 	) {
 		extensionService
 			.whenInstalledExtensionsRegistered()
 			.then(() =>
 				this.initializeOtherResource(
 					userDataInitializeService,
-					instantiationService,
-				),
+					instantiationService
+				)
 			);
 	}
 
 	private async initializeOtherResource(
 		userDataInitializeService: IUserDataInitializationService,
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		if (await userDataInitializeService.requiresInitialization()) {
 			mark("code/willInitOtherUserData");
 			await userDataInitializeService.initializeOtherResources(
-				instantiationService,
+				instantiationService
 			);
 			mark("code/didInitOtherUserData");
 		}
@@ -134,10 +135,10 @@ class InitializeOtherResourcesContribution implements IWorkbenchContribution {
 
 if (isWeb) {
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-		Extensions.Workbench,
+		Extensions.Workbench
 	);
 	workbenchRegistry.registerWorkbenchContribution(
 		InitializeOtherResourcesContribution,
-		LifecyclePhase.Restored,
+		LifecyclePhase.Restored
 	);
 }

@@ -30,7 +30,7 @@ export class ExtHostNotebookEditor {
 		readonly notebookData: ExtHostNotebookDocument,
 		visibleRanges: vscode.NotebookRange[],
 		selections: vscode.NotebookRange[],
-		viewColumn: vscode.ViewColumn | undefined,
+		viewColumn: vscode.ViewColumn | undefined
 	) {
 		this._selections = selections;
 		this._visibleRanges = visibleRanges;
@@ -71,7 +71,7 @@ export class ExtHostNotebookEditor {
 						that.id,
 						extHostConverter.NotebookRange.from(range),
 						revealType ??
-							extHostTypes.NotebookEditorRevealType.Default,
+							extHostTypes.NotebookEditorRevealType.Default
 					);
 				},
 				get viewColumn() {
@@ -103,7 +103,7 @@ export class ExtHostNotebookEditor {
 	private _trySetSelections(value: vscode.NotebookRange[]): void {
 		this._proxy.$trySetSelections(
 			this.id,
-			value.map(extHostConverter.NotebookRange.from),
+			value.map(extHostConverter.NotebookRange.from)
 		);
 	}
 

@@ -46,7 +46,7 @@ import { IExtensionDescription } from "vs/platform/extensions/common/extensions"
 import { IJSONSchema } from "vs/base/common/jsonSchema";
 
 export const IRemoteExplorerService = createDecorator<IRemoteExplorerService>(
-	"remoteExplorerService",
+	"remoteExplorerService"
 );
 export const REMOTE_EXPLORER_TYPE_KEY: string = "remote.explorerType";
 export const TUNNEL_VIEW_ID = "~remote.forwardedPorts";
@@ -107,7 +107,7 @@ const getStartedWalkthrough: IJSONSchema = {
 		id: {
 			description: nls.localize(
 				"getStartedWalkthrough.id",
-				"The ID of a Get Started walkthrough to open.",
+				"The ID of a Get Started walkthrough to open."
 			),
 			type: "string",
 		},
@@ -120,47 +120,47 @@ const remoteHelpExtPoint =
 		jsonSchema: {
 			description: nls.localize(
 				"RemoteHelpInformationExtPoint",
-				"Contributes help information for Remote",
+				"Contributes help information for Remote"
 			),
 			type: "object",
 			properties: {
 				getStarted: {
 					description: nls.localize(
 						"RemoteHelpInformationExtPoint.getStarted",
-						"The url, or a command that returns the url, to your project's Getting Started page, or a walkthrough ID contributed by your project's extension",
+						"The url, or a command that returns the url, to your project's Getting Started page, or a walkthrough ID contributed by your project's extension"
 					),
 					oneOf: [{ type: "string" }, getStartedWalkthrough],
 				},
 				documentation: {
 					description: nls.localize(
 						"RemoteHelpInformationExtPoint.documentation",
-						"The url, or a command that returns the url, to your project's documentation page",
+						"The url, or a command that returns the url, to your project's documentation page"
 					),
 					type: "string",
 				},
 				feedback: {
 					description: nls.localize(
 						"RemoteHelpInformationExtPoint.feedback",
-						"The url, or a command that returns the url, to your project's feedback reporter",
+						"The url, or a command that returns the url, to your project's feedback reporter"
 					),
 					type: "string",
 					markdownDeprecationMessage: nls.localize(
 						"RemoteHelpInformationExtPoint.feedback.deprecated",
 						"Use {0} instead",
-						"`reportIssue`",
+						"`reportIssue`"
 					),
 				},
 				reportIssue: {
 					description: nls.localize(
 						"RemoteHelpInformationExtPoint.reportIssue",
-						"The url, or a command that returns the url, to your project's issue reporter",
+						"The url, or a command that returns the url, to your project's issue reporter"
 					),
 					type: "string",
 				},
 				issues: {
 					description: nls.localize(
 						"RemoteHelpInformationExtPoint.issues",
-						"The url, or a command that returns the url, to your project's issues list",
+						"The url, or a command that returns the url, to your project's issues list"
 					),
 					type: "string",
 				},
@@ -183,27 +183,27 @@ export interface IRemoteExplorerService {
 	setEditable(
 		tunnelItem: ITunnelItem | undefined,
 		editId: TunnelEditId,
-		data: IEditableData | null,
+		data: IEditableData | null
 	): void;
 	getEditableData(
 		tunnelItem: ITunnelItem | undefined,
-		editId?: TunnelEditId,
+		editId?: TunnelEditId
 	): IEditableData | undefined;
 	forward(
 		tunnelProperties: TunnelProperties,
-		attributes?: Attributes | null,
+		attributes?: Attributes | null
 	): Promise<RemoteTunnel | string | undefined>;
 	close(
 		remote: { host: string; port: number },
-		reason: TunnelCloseReason,
+		reason: TunnelCloseReason
 	): Promise<void>;
 	setTunnelInformation(
-		tunnelInformation: TunnelInformation | undefined,
+		tunnelInformation: TunnelInformation | undefined
 	): void;
 	setCandidateFilter(
 		filter:
 			| ((candidates: CandidatePort[]) => Promise<CandidatePort[]>)
-			| undefined,
+			| undefined
 	): IDisposable;
 	onFoundNewCandidates(candidates: CandidatePort[]): void;
 	restore(): Promise<void>;
@@ -251,7 +251,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		this._tunnelModel = instantiationService.createInstance(TunnelModel);
 
@@ -276,13 +276,13 @@ class RemoteExplorerService implements IRemoteExplorerService {
 				REMOTE_EXPLORER_TYPE_KEY,
 				this._targetType.toString(),
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 			this.storageService.store(
 				REMOTE_EXPLORER_TYPE_KEY,
 				this._targetType.toString(),
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			this._onDidChangeTargetType.fire(this._targetType);
 		}
@@ -297,33 +297,33 @@ class RemoteExplorerService implements IRemoteExplorerService {
 
 	forward(
 		tunnelProperties: TunnelProperties,
-		attributes?: Attributes | null,
+		attributes?: Attributes | null
 	): Promise<RemoteTunnel | string | undefined> {
 		return this.tunnelModel.forward(tunnelProperties, attributes);
 	}
 
 	close(
 		remote: { host: string; port: number },
-		reason: TunnelCloseReason,
+		reason: TunnelCloseReason
 	): Promise<void> {
 		return this.tunnelModel.close(remote.host, remote.port, reason);
 	}
 
 	setTunnelInformation(
-		tunnelInformation: TunnelInformation | undefined,
+		tunnelInformation: TunnelInformation | undefined
 	): void {
 		if (tunnelInformation?.features) {
 			this.tunnelService.setTunnelFeatures(tunnelInformation.features);
 		}
 		this.tunnelModel.addEnvironmentTunnels(
-			tunnelInformation?.environmentTunnels,
+			tunnelInformation?.environmentTunnels
 		);
 	}
 
 	setEditable(
 		tunnelItem: ITunnelItem | undefined,
 		editId: TunnelEditId,
-		data: IEditableData | null,
+		data: IEditableData | null
 	): void {
 		if (!data) {
 			this._editable = undefined;
@@ -331,13 +331,13 @@ class RemoteExplorerService implements IRemoteExplorerService {
 			this._editable = { tunnelItem, data, editId };
 		}
 		this._onDidChangeEditable.fire(
-			tunnelItem ? { tunnel: tunnelItem, editId } : undefined,
+			tunnelItem ? { tunnel: tunnelItem, editId } : undefined
 		);
 	}
 
 	getEditableData(
 		tunnelItem: ITunnelItem | undefined,
-		editId: TunnelEditId,
+		editId: TunnelEditId
 	): IEditableData | undefined {
 		return this._editable &&
 			((!tunnelItem && tunnelItem === this._editable.tunnelItem) ||
@@ -352,7 +352,7 @@ class RemoteExplorerService implements IRemoteExplorerService {
 	}
 
 	setCandidateFilter(
-		filter: (candidates: CandidatePort[]) => Promise<CandidatePort[]>,
+		filter: (candidates: CandidatePort[]) => Promise<CandidatePort[]>
 	): IDisposable {
 		if (!filter) {
 			return {
@@ -388,5 +388,5 @@ class RemoteExplorerService implements IRemoteExplorerService {
 registerSingleton(
 	IRemoteExplorerService,
 	RemoteExplorerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -15,8 +15,8 @@ export function getManifest(vsix: string): Promise<IExtensionManifest> {
 			throw new Error(
 				localize(
 					"invalidManifest",
-					"VSIX invalid: package.json is not a JSON file.",
-				),
+					"VSIX invalid: package.json is not a JSON file."
+				)
 			);
 		}
 	});

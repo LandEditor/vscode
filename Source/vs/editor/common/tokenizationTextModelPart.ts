@@ -21,7 +21,7 @@ export interface ITokenizationTextModelPart {
 	 */
 	setSemanticTokens(
 		tokens: SparseMultilineTokens[] | null,
-		isComplete: boolean,
+		isComplete: boolean
 	): void;
 
 	/**
@@ -30,7 +30,7 @@ export interface ITokenizationTextModelPart {
 	 */
 	setPartialSemanticTokens(
 		range: Range,
-		tokens: SparseMultilineTokens[] | null,
+		tokens: SparseMultilineTokens[] | null
 	): void;
 
 	/**
@@ -84,7 +84,7 @@ export interface ITokenizationTextModelPart {
 	getTokenTypeIfInsertingCharacter(
 		lineNumber: number,
 		column: number,
-		character: string,
+		character: string
 	): StandardTokenType;
 
 	/**
@@ -93,7 +93,7 @@ export interface ITokenizationTextModelPart {
 	tokenizeLineWithEdit(
 		position: IPosition,
 		length: number,
-		newText: string,
+		newText: string
 	): LineTokens | null;
 
 	getLanguageId(): string;

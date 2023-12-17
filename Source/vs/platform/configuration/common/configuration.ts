@@ -10,11 +10,11 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 import { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
 
 export const IConfigurationService = createDecorator<IConfigurationService>(
-	"configurationService",
+	"configurationService"
 );
 
 export function isConfigurationOverrides(
-	thing: any,
+	thing: any
 ): thing is IConfigurationOverrides {
 	return (
 		thing &&
@@ -31,7 +31,7 @@ export interface IConfigurationOverrides {
 }
 
 export function isConfigurationUpdateOverrides(
-	thing: any,
+	thing: any
 ): thing is IConfigurationUpdateOverrides {
 	return (
 		thing &&
@@ -59,7 +59,7 @@ export const enum ConfigurationTarget {
 	MEMORY,
 }
 export function ConfigurationTargetToString(
-	configurationTarget: ConfigurationTarget,
+	configurationTarget: ConfigurationTarget
 ) {
 	switch (configurationTarget) {
 		case ConfigurationTarget.APPLICATION:
@@ -93,7 +93,7 @@ export interface IConfigurationChangeEvent {
 
 	affectsConfiguration(
 		configuration: string,
-		overrides?: IConfigurationOverrides,
+		overrides?: IConfigurationOverrides
 	): boolean;
 
 	// Following data is used for telemetry
@@ -126,7 +126,7 @@ export interface IConfigurationValue<T> {
 }
 
 export function isConfigured<T>(
-	configValue: IConfigurationValue<T>,
+	configValue: IConfigurationValue<T>
 ): configValue is IConfigurationValue<T> & { value: T } {
 	return (
 		configValue.applicationValue !== undefined ||
@@ -191,28 +191,28 @@ export interface IConfigurationService {
 	updateValue(
 		key: string,
 		value: any,
-		target: ConfigurationTarget,
+		target: ConfigurationTarget
+	): Promise<void>;
+	updateValue(
+		key: string,
+		value: any,
+		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides
 	): Promise<void>;
 	updateValue(
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
-	): Promise<void>;
-	updateValue(
-		key: string,
-		value: any,
-		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
 		target: ConfigurationTarget,
-		options?: IConfigurationUpdateOptions,
+		options?: IConfigurationUpdateOptions
 	): Promise<void>;
 
 	inspect<T>(
 		key: string,
-		overrides?: IConfigurationOverrides,
+		overrides?: IConfigurationOverrides
 	): IConfigurationValue<Readonly<T>>;
 
 	reloadConfiguration(
-		target?: ConfigurationTarget | IWorkspaceFolder,
+		target?: ConfigurationTarget | IWorkspaceFolder
 	): Promise<void>;
 
 	keys(): {
@@ -254,7 +254,7 @@ export interface IConfigurationCompareResult {
 
 export function toValuesTree(
 	properties: { [qualifiedKey: string]: any },
-	conflictReporter: (message: string) => void,
+	conflictReporter: (message: string) => void
 ): any {
 	const root = Object.create(null);
 
@@ -269,7 +269,7 @@ export function addToValueTree(
 	settingsTreeRoot: any,
 	key: string,
 	value: any,
-	conflictReporter: (message: string) => void,
+	conflictReporter: (message: string) => void
 ): void {
 	const segments = key.split(".");
 	const last = segments.pop()!;
@@ -288,7 +288,7 @@ export function addToValueTree(
 				conflictReporter(
 					`Ignoring ${key} as ${segments
 						.slice(0, i + 1)
-						.join(".")} is ${JSON.stringify(obj)}`,
+						.join(".")} is ${JSON.stringify(obj)}`
 				);
 				return;
 		}
@@ -301,15 +301,15 @@ export function addToValueTree(
 		} catch (e) {
 			conflictReporter(
 				`Ignoring ${key} as ${segments.join(".")} is ${JSON.stringify(
-					curr,
-				)}`,
+					curr
+				)}`
 			);
 		}
 	} else {
 		conflictReporter(
 			`Ignoring ${key} as ${segments.join(".")} is ${JSON.stringify(
-				curr,
-			)}`,
+				curr
+			)}`
 		);
 	}
 }
@@ -344,7 +344,7 @@ function doRemoveFromValueTree(valueTree: any, segments: string[]): void {
 export function getConfigurationValue<T>(
 	config: any,
 	settingPath: string,
-	defaultValue?: T,
+	defaultValue?: T
 ): T {
 	function accessSetting(config: any, path: string[]): any {
 		let current = config;

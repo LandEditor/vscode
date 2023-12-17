@@ -22,7 +22,7 @@ export interface FormattedTextRenderOptions {
 
 export function renderText(
 	text: string,
-	options: FormattedTextRenderOptions = {},
+	options: FormattedTextRenderOptions = {}
 ): HTMLElement {
 	const element = createElement(options);
 	element.textContent = text;
@@ -31,20 +31,20 @@ export function renderText(
 
 export function renderFormattedText(
 	formattedText: string,
-	options: FormattedTextRenderOptions = {},
+	options: FormattedTextRenderOptions = {}
 ): HTMLElement {
 	const element = createElement(options);
 	_renderFormattedText(
 		element,
 		parseFormattedText(formattedText, !!options.renderCodeSegments),
 		options.actionHandler,
-		options.renderCodeSegments,
+		options.renderCodeSegments
 	);
 	return element;
 }
 
 export function createElement(
-	options: FormattedTextRenderOptions,
+	options: FormattedTextRenderOptions
 ): HTMLElement {
 	const tagName = options.inline ? "span" : "div";
 	const element = document.createElement(tagName);
@@ -105,7 +105,7 @@ function _renderFormattedText(
 	element: Node,
 	treeNode: IFormatParseTree,
 	actionHandler?: IContentActionHandler,
-	renderCodeSegments?: boolean,
+	renderCodeSegments?: boolean
 ) {
 	let child: Node | undefined;
 
@@ -122,7 +122,7 @@ function _renderFormattedText(
 		actionHandler.disposables.add(
 			DOM.addStandardDisposableListener(a, "click", (event) => {
 				actionHandler.callback(String(treeNode.index), event);
-			}),
+			})
 		);
 
 		child = a;
@@ -142,7 +142,7 @@ function _renderFormattedText(
 				child!,
 				nodeChild,
 				actionHandler,
-				renderCodeSegments,
+				renderCodeSegments
 			);
 		});
 	}
@@ -150,7 +150,7 @@ function _renderFormattedText(
 
 function parseFormattedText(
 	content: string,
-	parseCodeSegments: boolean,
+	parseCodeSegments: boolean
 ): IFormatParseTree {
 	const root: IFormatParseTree = {
 		type: FormatType.Root,

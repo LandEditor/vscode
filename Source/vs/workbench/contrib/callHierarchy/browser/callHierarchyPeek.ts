@@ -70,7 +70,7 @@ class LayoutInfo {
 			"callHierarchyPeekLayout",
 			JSON.stringify(info),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
@@ -78,7 +78,7 @@ class LayoutInfo {
 		const value = storageService.get(
 			"callHierarchyPeekLayout",
 			StorageScope.PROFILE,
-			"{}",
+			"{}"
 		);
 		const defaultInfo: LayoutInfo = { ratio: 0.7, height: 17 };
 		try {
@@ -88,7 +88,10 @@ class LayoutInfo {
 		}
 	}
 
-	constructor(public ratio: number, public height: number) {}
+	constructor(
+		public ratio: number,
+		public height: number
+	) {}
 }
 
 class CallHierarchyTree extends WorkbenchAsyncDataTree<
@@ -119,19 +122,34 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		private readonly _where: IPosition,
 		private _direction: CallHierarchyDirection,
 		@IThemeService themeService: IThemeService,
-		@peekView.IPeekViewService private readonly _peekViewService: peekView.IPeekViewService,
+		@peekView.IPeekViewService
+		private readonly _peekViewService: peekView.IPeekViewService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
-		super(editor, { showFrame: true, showArrow: true, isResizeable: true, isAccessible: true }, _instantiationService);
+		super(
+			editor,
+			{
+				showFrame: true,
+				showArrow: true,
+				isResizeable: true,
+				isAccessible: true,
+			},
+			_instantiationService
+		);
 		this.create();
 		this._peekViewService.addExclusiveWidget(editor, this);
 		this._applyTheme(themeService.getColorTheme());
-		this._disposables.add(themeService.onDidColorThemeChange(this._applyTheme, this));
+		this._disposables.add(
+			themeService.onDidColorThemeChange(this._applyTheme, this)
+		);
 		this._disposables.add(this._previewDisposable);
 	}
 
@@ -157,10 +175,10 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				theme.getColor(peekView.peekViewTitleBackground) ||
 				Color.transparent,
 			primaryHeadingColor: theme.getColor(
-				peekView.peekViewTitleForeground,
+				peekView.peekViewTitleForeground
 			),
 			secondaryHeadingColor: theme.getColor(
-				peekView.peekViewTitleInfoForeground,
+				peekView.peekViewTitleInfoForeground
 			),
 		});
 	}
@@ -170,7 +188,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 
 		const menu = this._menuService.createMenu(
 			CallHierarchyTreePeekWidget.TitleMenu,
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		const updateToolbar = () => {
 			const actions: IAction[] = [];
@@ -229,7 +247,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			editorContainer,
 			editorOptions,
 			{},
-			this.editor,
+			this.editor
 		);
 
 		// tree stuff
@@ -242,10 +260,10 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		> = {
 			sorter: new callHTree.Sorter(),
 			accessibilityProvider: new callHTree.AccessibilityProvider(
-				() => this._direction,
+				() => this._direction
 			),
 			identityProvider: new callHTree.IdentityProvider(
-				() => this._direction,
+				() => this._direction
 			),
 			expandOnlyOnTwistieClick: true,
 			overrideStyles: {
@@ -260,9 +278,9 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			[this._instantiationService.createInstance(callHTree.CallRenderer)],
 			this._instantiationService.createInstance(
 				callHTree.DataSource,
-				() => this._direction,
+				() => this._direction
 			),
-			options,
+			options
 		);
 
 		// split stuff
@@ -281,7 +299,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					}
 				},
 			},
-			Sizing.Distribute,
+			Sizing.Distribute
 		);
 
 		this._splitView.addView(
@@ -296,7 +314,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					}
 				},
 			},
-			Sizing.Distribute,
+			Sizing.Distribute
 		);
 
 		this._disposables.add(
@@ -305,12 +323,12 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					this._layoutInfo.ratio =
 						this._splitView.getViewSize(0) / this._dim.width;
 				}
-			}),
+			})
 		);
 
 		// update editor
 		this._disposables.add(
-			this._tree.onDidChangeFocus(this._updatePreview, this),
+			this._tree.onDidChangeFocus(this._updatePreview, this)
 		);
 
 		this._disposables.add(
@@ -328,7 +346,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					resource: focus.item.uri,
 					options: { selection: target.range! },
 				});
-			}),
+			})
 		);
 
 		this._disposables.add(
@@ -347,7 +365,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 						},
 					});
 				}
-			}),
+			})
 		);
 
 		this._disposables.add(
@@ -364,7 +382,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 						},
 					});
 				}
-			}),
+			})
 		);
 	}
 
@@ -424,7 +442,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 			const decorationsCollection =
 				this._editor.createDecorationsCollection(decorations);
 			this._previewDisposable.add(
-				toDisposable(() => decorationsCollection.clear()),
+				toDisposable(() => decorationsCollection.clear())
 			);
 		}
 		this._previewDisposable.add(value);
@@ -435,13 +453,13 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 				? localize(
 						"callFrom",
 						"Calls from '{0}'",
-						element.model.root.name,
-				  )
+						element.model.root.name
+					)
 				: localize(
 						"callsTo",
 						"Callers of '{0}'",
-						element.model.root.name,
-				  );
+						element.model.root.name
+					);
 		this.setTitle(title);
 	}
 
@@ -478,13 +496,13 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 					? localize(
 							"empt.callsFrom",
 							"No calls from '{0}'",
-							model.root.name,
-					  )
+							model.root.name
+						)
 					: localize(
 							"empt.callsTo",
 							"No callers of '{0}'",
-							model.root.name,
-					  ),
+							model.root.name
+						)
 			);
 		} else {
 			this._parent.dataset["state"] = State.Data;
@@ -509,7 +527,7 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		if (model && newDirection !== this._direction) {
 			this._treeViewStates.set(
 				this._direction,
-				this._tree.getViewState(),
+				this._tree.getViewState()
 			);
 			this._direction = newDirection;
 			await this.showModel(model);
@@ -520,11 +538,11 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		if (!this._isShowing) {
 			this.editor.revealLineInCenterIfOutsideViewport(
 				this._where.lineNumber,
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 			super.show(
 				Range.fromPositions(this._where),
-				this._layoutInfo.height,
+				this._layoutInfo.height
 			);
 		}
 	}

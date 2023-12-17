@@ -33,7 +33,7 @@ export class StorageDatabaseChannel
 	private static readonly STORAGE_CHANGE_DEBOUNCE_TIME = 100;
 
 	private readonly onDidChangeApplicationStorageEmitter = this._register(
-		new Emitter<ISerializableItemsChangeEvent>(),
+		new Emitter<ISerializableItemsChangeEvent>()
 	);
 
 	private readonly mapProfileToOnDidChangeProfileStorageEmitter = new Map<
@@ -43,13 +43,13 @@ export class StorageDatabaseChannel
 
 	constructor(
 		private readonly logService: ILogService,
-		private readonly storageMainService: IStorageMainService,
+		private readonly storageMainService: IStorageMainService
 	) {
 		super();
 
 		this.registerStorageChangeListeners(
 			storageMainService.applicationStorage,
-			this.onDidChangeApplicationStorageEmitter,
+			this.onDidChangeApplicationStorageEmitter
 		);
 	}
 
@@ -57,7 +57,7 @@ export class StorageDatabaseChannel
 
 	private registerStorageChangeListeners(
 		storage: IStorageMain,
-		emitter: Emitter<ISerializableItemsChangeEvent>,
+		emitter: Emitter<ISerializableItemsChangeEvent>
 	): void {
 		// Listen for changes in provided storage to send to listeners
 		// that are listening. Use a debouncer to reduce IPC traffic.
@@ -67,7 +67,7 @@ export class StorageDatabaseChannel
 				storage.onDidChangeStorage,
 				(
 					prev: IStorageChangeEvent[] | undefined,
-					cur: IStorageChangeEvent,
+					cur: IStorageChangeEvent
 				) => {
 					if (!prev) {
 						prev = [cur];
@@ -77,20 +77,20 @@ export class StorageDatabaseChannel
 
 					return prev;
 				},
-				StorageDatabaseChannel.STORAGE_CHANGE_DEBOUNCE_TIME,
+				StorageDatabaseChannel.STORAGE_CHANGE_DEBOUNCE_TIME
 			)((events) => {
 				if (events.length) {
 					emitter.fire(
-						this.serializeStorageChangeEvents(events, storage),
+						this.serializeStorageChangeEvents(events, storage)
 					);
 				}
-			}),
+			})
 		);
 	}
 
 	private serializeStorageChangeEvents(
 		events: IStorageChangeEvent[],
-		storage: IStorageMain,
+		storage: IStorageMain
 	): ISerializableItemsChangeEvent {
 		const changed = new Map<Key, Value>();
 		const deleted = new Set<Key>();
@@ -112,7 +112,7 @@ export class StorageDatabaseChannel
 	listen(
 		_: unknown,
 		event: string,
-		arg: IBaseSerializableStorageRequest,
+		arg: IBaseSerializableStorageRequest
 	): Event<any> {
 		switch (event) {
 			case "onDidChangeStorage": {
@@ -128,19 +128,19 @@ export class StorageDatabaseChannel
 				// With profile: profile scope for the profile
 				let profileStorageChangeEmitter =
 					this.mapProfileToOnDidChangeProfileStorageEmitter.get(
-						profile.id,
+						profile.id
 					);
 				if (!profileStorageChangeEmitter) {
 					profileStorageChangeEmitter = this._register(
-						new Emitter<ISerializableItemsChangeEvent>(),
+						new Emitter<ISerializableItemsChangeEvent>()
 					);
 					this.registerStorageChangeListeners(
 						this.storageMainService.profileStorage(profile),
-						profileStorageChangeEmitter,
+						profileStorageChangeEmitter
 					);
 					this.mapProfileToOnDidChangeProfileStorageEmitter.set(
 						profile.id,
-						profileStorageChangeEmitter,
+						profileStorageChangeEmitter
 					);
 				}
 
@@ -156,7 +156,7 @@ export class StorageDatabaseChannel
 	async call(
 		_: unknown,
 		command: string,
-		arg: IBaseSerializableStorageRequest,
+		arg: IBaseSerializableStorageRequest
 	): Promise<any> {
 		const profile = arg.profile
 			? revive<IUserDataProfile>(arg.profile)
@@ -204,7 +204,7 @@ export class StorageDatabaseChannel
 
 	private async withStorageInitialized(
 		profile: IUserDataProfile | undefined,
-		workspace: IAnyWorkspaceIdentifier | undefined,
+		workspace: IAnyWorkspaceIdentifier | undefined
 	): Promise<IStorageMain> {
 		let storage: IStorageMain;
 		if (workspace) {
@@ -223,9 +223,9 @@ export class StorageDatabaseChannel
 					workspace
 						? "workspace"
 						: profile
-						  ? "profile"
-						  : "application"
-				} storage due to ${error}`,
+							? "profile"
+							: "application"
+				} storage due to ${error}`
 			);
 		}
 

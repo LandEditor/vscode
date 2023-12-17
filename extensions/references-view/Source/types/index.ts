@@ -10,11 +10,11 @@ import { TypeHierarchyDirection, TypeItem, TypesTreeInput } from "./model";
 
 export function register(
 	tree: SymbolsTree,
-	context: vscode.ExtensionContext,
+	context: vscode.ExtensionContext
 ): void {
 	const direction = new RichTypesDirection(
 		context.workspaceState,
-		TypeHierarchyDirection.Subtypes,
+		TypeHierarchyDirection.Subtypes
 	);
 
 	function showTypeHierarchy() {
@@ -22,9 +22,9 @@ export function register(
 			const input = new TypesTreeInput(
 				new vscode.Location(
 					vscode.window.activeTextEditor.document.uri,
-					vscode.window.activeTextEditor.selection.active,
+					vscode.window.activeTextEditor.selection.active
 				),
-				direction.value,
+				direction.value
 			);
 			tree.setInput(input);
 		}
@@ -32,7 +32,7 @@ export function register(
 
 	function setTypeHierarchyDirection(
 		value: TypeHierarchyDirection,
-		anchor: TypeItem | vscode.Location | unknown,
+		anchor: TypeItem | vscode.Location | unknown
 	) {
 		direction.value = value;
 
@@ -42,9 +42,9 @@ export function register(
 			newInput = new TypesTreeInput(
 				new vscode.Location(
 					anchor.item.uri,
-					anchor.item.selectionRange.start,
+					anchor.item.selectionRange.start
 				),
-				direction.value,
+				direction.value
 			);
 		} else if (anchor instanceof vscode.Location) {
 			newInput = new TypesTreeInput(anchor, direction.value);
@@ -59,28 +59,25 @@ export function register(
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
 			"references-view.showTypeHierarchy",
-			showTypeHierarchy,
+			showTypeHierarchy
 		),
 		vscode.commands.registerCommand(
 			"references-view.showSupertypes",
 			(item: TypeItem | vscode.Location | unknown) =>
 				setTypeHierarchyDirection(
 					TypeHierarchyDirection.Supertypes,
-					item,
-				),
+					item
+				)
 		),
 		vscode.commands.registerCommand(
 			"references-view.showSubtypes",
 			(item: TypeItem | vscode.Location | unknown) =>
-				setTypeHierarchyDirection(
-					TypeHierarchyDirection.Subtypes,
-					item,
-				),
+				setTypeHierarchyDirection(TypeHierarchyDirection.Subtypes, item)
 		),
 		vscode.commands.registerCommand(
 			"references-view.removeTypeItem",
-			removeTypeItem,
-		),
+			removeTypeItem
+		)
 	);
 }
 
@@ -94,12 +91,12 @@ class RichTypesDirection {
 	private static _key = "references-view.typeHierarchyMode";
 
 	private _ctxMode = new ContextKey<TypeHierarchyDirection>(
-		"references-view.typeHierarchyMode",
+		"references-view.typeHierarchyMode"
 	);
 
 	constructor(
 		private _mem: vscode.Memento,
-		private _value: TypeHierarchyDirection = TypeHierarchyDirection.Subtypes,
+		private _value: TypeHierarchyDirection = TypeHierarchyDirection.Subtypes
 	) {
 		const raw = _mem.get<TypeHierarchyDirection>(RichTypesDirection._key);
 		if (typeof raw === "string") {

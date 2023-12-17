@@ -21,7 +21,7 @@ export class StaticLanguageServiceHost implements ts.LanguageServiceHost {
 			parsed.config,
 			ts.sys,
 			path.dirname(projectPath),
-			existingOptions,
+			existingOptions
 		);
 		if (this._cmdLine.errors.length > 0) {
 			throw parsed.error;

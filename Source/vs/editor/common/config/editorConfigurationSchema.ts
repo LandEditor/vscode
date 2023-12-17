@@ -34,7 +34,7 @@ const editorConfiguration: IConfigurationNode = {
 			markdownDescription: nls.localize(
 				"tabSize",
 				"The number of spaces a tab is equal to. This setting is overridden based on the file contents when {0} is on.",
-				"`#editor.detectIndentation#`",
+				"`#editor.detectIndentation#`"
 			),
 		},
 		"editor.indentSize": {
@@ -51,7 +51,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: "tabSize",
 			markdownDescription: nls.localize(
 				"indentSize",
-				'The number of spaces used for indentation or `"tabSize"` to use the value from `#editor.tabSize#`. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.',
+				'The number of spaces used for indentation or `"tabSize"` to use the value from `#editor.tabSize#`. This setting is overridden based on the file contents when `#editor.detectIndentation#` is on.'
 			),
 		},
 		"editor.insertSpaces": {
@@ -60,7 +60,7 @@ const editorConfiguration: IConfigurationNode = {
 			markdownDescription: nls.localize(
 				"insertSpaces",
 				"Insert spaces when pressing `Tab`. This setting is overridden based on the file contents when {0} is on.",
-				"`#editor.detectIndentation#`",
+				"`#editor.detectIndentation#`"
 			),
 		},
 		"editor.detectIndentation": {
@@ -70,7 +70,7 @@ const editorConfiguration: IConfigurationNode = {
 				"detectIndentation",
 				"Controls whether {0} and {1} will be automatically detected when a file is opened based on the file contents.",
 				"`#editor.tabSize#`",
-				"`#editor.insertSpaces#`",
+				"`#editor.insertSpaces#`"
 			),
 		},
 		"editor.trimAutoWhitespace": {
@@ -78,7 +78,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: EDITOR_MODEL_DEFAULTS.trimAutoWhitespace,
 			description: nls.localize(
 				"trimAutoWhitespace",
-				"Remove trailing auto inserted whitespace.",
+				"Remove trailing auto inserted whitespace."
 			),
 		},
 		"editor.largeFileOptimizations": {
@@ -86,7 +86,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: EDITOR_MODEL_DEFAULTS.largeFileOptimizations,
 			description: nls.localize(
 				"largeFileOptimizations",
-				"Special handling for large files to disable certain memory intensive features.",
+				"Special handling for large files to disable certain memory intensive features."
 			),
 		},
 		"editor.wordBasedSuggestions": {
@@ -100,24 +100,24 @@ const editorConfiguration: IConfigurationNode = {
 			enumDescriptions: [
 				nls.localize(
 					"wordBasedSuggestions.off",
-					"Turn off Word Based Suggestions.",
+					"Turn off Word Based Suggestions."
 				),
 				nls.localize(
 					"wordBasedSuggestions.currentDocument",
-					"Only suggest words from the active document.",
+					"Only suggest words from the active document."
 				),
 				nls.localize(
 					"wordBasedSuggestions.matchingDocuments",
-					"Suggest words from all open documents of the same language.",
+					"Suggest words from all open documents of the same language."
 				),
 				nls.localize(
 					"wordBasedSuggestions.allDocuments",
-					"Suggest words from all open documents.",
+					"Suggest words from all open documents."
 				),
 			],
 			description: nls.localize(
 				"wordBasedSuggestions",
-				"Controls whether completions should be computed based on words in the document and from which documents they are computed.",
+				"Controls whether completions should be computed based on words in the document and from which documents they are computed."
 			),
 		},
 		"editor.semanticHighlighting.enabled": {
@@ -125,21 +125,21 @@ const editorConfiguration: IConfigurationNode = {
 			enumDescriptions: [
 				nls.localize(
 					"semanticHighlighting.true",
-					"Semantic highlighting enabled for all color themes.",
+					"Semantic highlighting enabled for all color themes."
 				),
 				nls.localize(
 					"semanticHighlighting.false",
-					"Semantic highlighting disabled for all color themes.",
+					"Semantic highlighting disabled for all color themes."
 				),
 				nls.localize(
 					"semanticHighlighting.configuredByTheme",
-					"Semantic highlighting is configured by the current color theme's `semanticHighlighting` setting.",
+					"Semantic highlighting is configured by the current color theme's `semanticHighlighting` setting."
 				),
 			],
 			default: "configuredByTheme",
 			description: nls.localize(
 				"semanticHighlighting.enabled",
-				"Controls whether the semanticHighlighting is shown for the languages that support it.",
+				"Controls whether the semanticHighlighting is shown for the languages that support it."
 			),
 		},
 		"editor.stablePeek": {
@@ -147,7 +147,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: false,
 			markdownDescription: nls.localize(
 				"stablePeek",
-				"Keep peek editors open even when double-clicking their content or when hitting `Escape`.",
+				"Keep peek editors open even when double-clicking their content or when hitting `Escape`."
 			),
 		},
 		"editor.maxTokenizationLineLength": {
@@ -155,7 +155,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: 20_000,
 			description: nls.localize(
 				"maxTokenizationLineLength",
-				"Lines above this length will not be tokenized for performance reasons",
+				"Lines above this length will not be tokenized for performance reasons"
 			),
 		},
 		"editor.experimental.asyncTokenization": {
@@ -163,7 +163,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: false,
 			description: nls.localize(
 				"editor.experimental.asyncTokenization",
-				"Controls whether the tokenization should happen asynchronously on a web worker.",
+				"Controls whether the tokenization should happen asynchronously on a web worker."
 			),
 			tags: ["experimental"],
 		},
@@ -172,7 +172,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: false,
 			description: nls.localize(
 				"editor.experimental.asyncTokenizationLogging",
-				"Controls whether async tokenization should be logged. For debugging only.",
+				"Controls whether async tokenization should be logged. For debugging only."
 			),
 		},
 		"editor.experimental.asyncTokenizationVerification": {
@@ -180,7 +180,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: false,
 			description: nls.localize(
 				"editor.experimental.asyncTokenizationVerification",
-				"Controls whether async tokenization should be verified against legacy background tokenization. Might slow down tokenization. For debugging only.",
+				"Controls whether async tokenization should be verified against legacy background tokenization. Might slow down tokenization. For debugging only."
 			),
 			tags: ["experimental"],
 		},
@@ -189,7 +189,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: null, // We want to distinguish the empty array from not configured.
 			description: nls.localize(
 				"schema.brackets",
-				"Defines the bracket symbols that increase or decrease the indentation.",
+				"Defines the bracket symbols that increase or decrease the indentation."
 			),
 			items: {
 				type: "array",
@@ -198,14 +198,14 @@ const editorConfiguration: IConfigurationNode = {
 						type: "string",
 						description: nls.localize(
 							"schema.openBracket",
-							"The opening bracket character or string sequence.",
+							"The opening bracket character or string sequence."
 						),
 					},
 					{
 						type: "string",
 						description: nls.localize(
 							"schema.closeBracket",
-							"The closing bracket character or string sequence.",
+							"The closing bracket character or string sequence."
 						),
 					},
 				],
@@ -216,7 +216,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: null, // We want to distinguish the empty array from not configured.
 			description: nls.localize(
 				"schema.colorizedBracketPairs",
-				"Defines the bracket pairs that are colorized by their nesting level if bracket pair colorization is enabled.",
+				"Defines the bracket pairs that are colorized by their nesting level if bracket pair colorization is enabled."
 			),
 			items: {
 				type: "array",
@@ -225,14 +225,14 @@ const editorConfiguration: IConfigurationNode = {
 						type: "string",
 						description: nls.localize(
 							"schema.openBracket",
-							"The opening bracket character or string sequence.",
+							"The opening bracket character or string sequence."
 						),
 					},
 					{
 						type: "string",
 						description: nls.localize(
 							"schema.closeBracket",
-							"The closing bracket character or string sequence.",
+							"The closing bracket character or string sequence."
 						),
 					},
 				],
@@ -243,7 +243,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.maxComputationTime,
 			description: nls.localize(
 				"maxComputationTime",
-				"Timeout in milliseconds after which diff computation is cancelled. Use 0 for no timeout.",
+				"Timeout in milliseconds after which diff computation is cancelled. Use 0 for no timeout."
 			),
 		},
 		"diffEditor.maxFileSize": {
@@ -251,7 +251,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.maxFileSize,
 			description: nls.localize(
 				"maxFileSize",
-				"Maximum file size in MB for which to compute diffs. Use 0 for no limit.",
+				"Maximum file size in MB for which to compute diffs. Use 0 for no limit."
 			),
 		},
 		"diffEditor.renderSideBySide": {
@@ -259,7 +259,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.renderSideBySide,
 			description: nls.localize(
 				"sideBySide",
-				"Controls whether the diff editor shows the diff side by side or inline.",
+				"Controls whether the diff editor shows the diff side by side or inline."
 			),
 		},
 		"diffEditor.renderSideBySideInlineBreakpoint": {
@@ -267,7 +267,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.renderSideBySideInlineBreakpoint,
 			description: nls.localize(
 				"renderSideBySideInlineBreakpoint",
-				"If the diff editor width is smaller than this value, the inline view is used.",
+				"If the diff editor width is smaller than this value, the inline view is used."
 			),
 		},
 		"diffEditor.useInlineViewWhenSpaceIsLimited": {
@@ -275,7 +275,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.useInlineViewWhenSpaceIsLimited,
 			description: nls.localize(
 				"useInlineViewWhenSpaceIsLimited",
-				"If enabled and the editor width is too small, the inline view is used.",
+				"If enabled and the editor width is too small, the inline view is used."
 			),
 		},
 		"diffEditor.renderMarginRevertIcon": {
@@ -283,7 +283,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.renderMarginRevertIcon,
 			description: nls.localize(
 				"renderMarginRevertIcon",
-				"When enabled, the diff editor shows arrows in its glyph margin to revert changes.",
+				"When enabled, the diff editor shows arrows in its glyph margin to revert changes."
 			),
 		},
 		"diffEditor.ignoreTrimWhitespace": {
@@ -291,7 +291,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.ignoreTrimWhitespace,
 			description: nls.localize(
 				"ignoreTrimWhitespace",
-				"When enabled, the diff editor ignores changes in leading or trailing whitespace.",
+				"When enabled, the diff editor ignores changes in leading or trailing whitespace."
 			),
 		},
 		"diffEditor.renderIndicators": {
@@ -299,7 +299,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.renderIndicators,
 			description: nls.localize(
 				"renderIndicators",
-				"Controls whether the diff editor shows +/- indicators for added/removed changes.",
+				"Controls whether the diff editor shows +/- indicators for added/removed changes."
 			),
 		},
 		"diffEditor.codeLens": {
@@ -307,7 +307,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.diffCodeLens,
 			description: nls.localize(
 				"codeLens",
-				"Controls whether the editor shows CodeLens.",
+				"Controls whether the editor shows CodeLens."
 			),
 		},
 		"diffEditor.wordWrap": {
@@ -318,12 +318,12 @@ const editorConfiguration: IConfigurationNode = {
 				nls.localize("wordWrap.off", "Lines will never wrap."),
 				nls.localize(
 					"wordWrap.on",
-					"Lines will wrap at the viewport width.",
+					"Lines will wrap at the viewport width."
 				),
 				nls.localize(
 					"wordWrap.inherit",
 					"Lines will wrap according to the {0} setting.",
-					"`#editor.wordWrap#`",
+					"`#editor.wordWrap#`"
 				),
 			],
 		},
@@ -334,11 +334,11 @@ const editorConfiguration: IConfigurationNode = {
 			markdownEnumDescriptions: [
 				nls.localize(
 					"diffAlgorithm.legacy",
-					"Uses the legacy diffing algorithm.",
+					"Uses the legacy diffing algorithm."
 				),
 				nls.localize(
 					"diffAlgorithm.advanced",
-					"Uses the advanced diffing algorithm.",
+					"Uses the advanced diffing algorithm."
 				),
 			],
 			tags: ["experimental"],
@@ -348,7 +348,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.hideUnchangedRegions.enabled,
 			markdownDescription: nls.localize(
 				"hideUnchangedRegions.enabled",
-				"Controls whether the diff editor shows unchanged regions.",
+				"Controls whether the diff editor shows unchanged regions."
 			),
 		},
 		"diffEditor.hideUnchangedRegions.revealLineCount": {
@@ -357,7 +357,7 @@ const editorConfiguration: IConfigurationNode = {
 				diffEditorDefaultOptions.hideUnchangedRegions.revealLineCount,
 			markdownDescription: nls.localize(
 				"hideUnchangedRegions.revealLineCount",
-				"Controls how many lines are used for unchanged regions.",
+				"Controls how many lines are used for unchanged regions."
 			),
 			minimum: 1,
 		},
@@ -367,7 +367,7 @@ const editorConfiguration: IConfigurationNode = {
 				diffEditorDefaultOptions.hideUnchangedRegions.minimumLineCount,
 			markdownDescription: nls.localize(
 				"hideUnchangedRegions.minimumLineCount",
-				"Controls how many lines are used as a minimum for unchanged regions.",
+				"Controls how many lines are used as a minimum for unchanged regions."
 			),
 			minimum: 1,
 		},
@@ -377,7 +377,7 @@ const editorConfiguration: IConfigurationNode = {
 				diffEditorDefaultOptions.hideUnchangedRegions.contextLineCount,
 			markdownDescription: nls.localize(
 				"hideUnchangedRegions.contextLineCount",
-				"Controls how many lines are used as context when comparing unchanged regions.",
+				"Controls how many lines are used as context when comparing unchanged regions."
 			),
 			minimum: 1,
 		},
@@ -386,7 +386,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.experimental.showMoves,
 			markdownDescription: nls.localize(
 				"showMoves",
-				"Controls whether the diff editor should show detected code moves.",
+				"Controls whether the diff editor should show detected code moves."
 			),
 		},
 		"diffEditor.experimental.showEmptyDecorations": {
@@ -394,7 +394,7 @@ const editorConfiguration: IConfigurationNode = {
 			default: diffEditorDefaultOptions.experimental.showEmptyDecorations,
 			description: nls.localize(
 				"showEmptyDecorations",
-				"Controls whether the diff editor shows empty decorations to see where characters got inserted or deleted.",
+				"Controls whether the diff editor shows empty decorations to see where characters got inserted or deleted."
 			),
 		},
 	},
@@ -403,7 +403,7 @@ const editorConfiguration: IConfigurationNode = {
 function isConfigurationPropertySchema(
 	x:
 		| IConfigurationPropertySchema
-		| { [path: string]: IConfigurationPropertySchema },
+		| { [path: string]: IConfigurationPropertySchema }
 ): x is IConfigurationPropertySchema {
 	return typeof x.type !== "undefined" || typeof x.anyOf !== "undefined";
 }
@@ -450,6 +450,6 @@ export function isDiffEditorConfigurationKey(key: string): boolean {
 }
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 );
 configurationRegistry.registerConfiguration(editorConfiguration);

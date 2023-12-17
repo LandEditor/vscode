@@ -29,11 +29,18 @@ export class TerminalNativeContribution
 	) {
 		super();
 
-		ipcRenderer.on('vscode:openFiles', (_: unknown, request: INativeOpenFileRequest) => { this._onOpenFileRequest(request); });
-		this._register(nativeHostService.onDidResumeOS(() => this._onOsResume()));
+		ipcRenderer.on(
+			"vscode:openFiles",
+			(_: unknown, request: INativeOpenFileRequest) => {
+				this._onOpenFileRequest(request);
+			}
+		);
+		this._register(
+			nativeHostService.onDidResumeOS(() => this._onOsResume())
+		);
 
 		this._terminalService.setNativeDelegate({
-			getWindowCount: () => nativeHostService.getWindowCount()
+			getWindowCount: () => nativeHostService.getWindowCount(),
 		});
 
 		const connection = remoteAgentService.getConnection();
@@ -49,14 +56,14 @@ export class TerminalNativeContribution
 	}
 
 	private async _onOpenFileRequest(
-		request: INativeOpenFileRequest,
+		request: INativeOpenFileRequest
 	): Promise<void> {
 		// if the request to open files is coming in from the integrated terminal (identified though
 		// the termProgram variable) and we are instructed to wait for editors close, wait for the
 		// marker file to get deleted and then focus back to the integrated terminal.
 		if (request.termProgram === "vscode" && request.filesToWait) {
 			const waitMarkerFileUri = URI.revive(
-				request.filesToWait.waitMarkerFileUri,
+				request.filesToWait.waitMarkerFileUri
 			);
 			await this._whenFileDeleted(waitMarkerFileUri);
 
@@ -83,7 +90,7 @@ export class TerminalNativeContribution
 						}
 					}
 				},
-				1000,
+				1000
 			);
 		});
 	}

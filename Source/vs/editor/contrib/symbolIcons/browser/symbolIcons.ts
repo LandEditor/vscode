@@ -20,8 +20,8 @@ export const SYMBOL_ICON_ARRAY_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.arrayForeground",
-		"The foreground color for array symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for array symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_BOOLEAN_FOREGROUND = registerColor(
@@ -34,8 +34,8 @@ export const SYMBOL_ICON_BOOLEAN_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.booleanForeground",
-		"The foreground color for boolean symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for boolean symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_CLASS_FOREGROUND = registerColor(
@@ -48,8 +48,8 @@ export const SYMBOL_ICON_CLASS_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.classForeground",
-		"The foreground color for class symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for class symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_COLOR_FOREGROUND = registerColor(
@@ -62,8 +62,8 @@ export const SYMBOL_ICON_COLOR_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.colorForeground",
-		"The foreground color for color symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for color symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_CONSTANT_FOREGROUND = registerColor(
@@ -76,8 +76,8 @@ export const SYMBOL_ICON_CONSTANT_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.constantForeground",
-		"The foreground color for constant symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for constant symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_CONSTRUCTOR_FOREGROUND = registerColor(
@@ -90,8 +90,8 @@ export const SYMBOL_ICON_CONSTRUCTOR_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.constructorForeground",
-		"The foreground color for constructor symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for constructor symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_ENUMERATOR_FOREGROUND = registerColor(
@@ -104,8 +104,8 @@ export const SYMBOL_ICON_ENUMERATOR_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.enumeratorForeground",
-		"The foreground color for enumerator symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for enumerator symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_ENUMERATOR_MEMBER_FOREGROUND = registerColor(
@@ -118,8 +118,8 @@ export const SYMBOL_ICON_ENUMERATOR_MEMBER_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.enumeratorMemberForeground",
-		"The foreground color for enumerator member symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for enumerator member symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_EVENT_FOREGROUND = registerColor(
@@ -132,8 +132,8 @@ export const SYMBOL_ICON_EVENT_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.eventForeground",
-		"The foreground color for event symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for event symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_FIELD_FOREGROUND = registerColor(
@@ -146,8 +146,8 @@ export const SYMBOL_ICON_FIELD_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.fieldForeground",
-		"The foreground color for field symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for field symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_FILE_FOREGROUND = registerColor(
@@ -160,8 +160,8 @@ export const SYMBOL_ICON_FILE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.fileForeground",
-		"The foreground color for file symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for file symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_FOLDER_FOREGROUND = registerColor(
@@ -174,8 +174,8 @@ export const SYMBOL_ICON_FOLDER_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.folderForeground",
-		"The foreground color for folder symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for folder symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_FUNCTION_FOREGROUND = registerColor(
@@ -188,8 +188,8 @@ export const SYMBOL_ICON_FUNCTION_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.functionForeground",
-		"The foreground color for function symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for function symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_INTERFACE_FOREGROUND = registerColor(
@@ -202,8 +202,8 @@ export const SYMBOL_ICON_INTERFACE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.interfaceForeground",
-		"The foreground color for interface symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for interface symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_KEY_FOREGROUND = registerColor(
@@ -216,8 +216,8 @@ export const SYMBOL_ICON_KEY_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.keyForeground",
-		"The foreground color for key symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for key symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_KEYWORD_FOREGROUND = registerColor(
@@ -230,8 +230,8 @@ export const SYMBOL_ICON_KEYWORD_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.keywordForeground",
-		"The foreground color for keyword symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for keyword symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_METHOD_FOREGROUND = registerColor(
@@ -244,8 +244,8 @@ export const SYMBOL_ICON_METHOD_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.methodForeground",
-		"The foreground color for method symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for method symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_MODULE_FOREGROUND = registerColor(
@@ -258,8 +258,8 @@ export const SYMBOL_ICON_MODULE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.moduleForeground",
-		"The foreground color for module symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for module symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_NAMESPACE_FOREGROUND = registerColor(
@@ -272,8 +272,8 @@ export const SYMBOL_ICON_NAMESPACE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.namespaceForeground",
-		"The foreground color for namespace symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for namespace symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_NULL_FOREGROUND = registerColor(
@@ -286,8 +286,8 @@ export const SYMBOL_ICON_NULL_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.nullForeground",
-		"The foreground color for null symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for null symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_NUMBER_FOREGROUND = registerColor(
@@ -300,8 +300,8 @@ export const SYMBOL_ICON_NUMBER_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.numberForeground",
-		"The foreground color for number symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for number symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_OBJECT_FOREGROUND = registerColor(
@@ -314,8 +314,8 @@ export const SYMBOL_ICON_OBJECT_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.objectForeground",
-		"The foreground color for object symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for object symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_OPERATOR_FOREGROUND = registerColor(
@@ -328,8 +328,8 @@ export const SYMBOL_ICON_OPERATOR_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.operatorForeground",
-		"The foreground color for operator symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for operator symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_PACKAGE_FOREGROUND = registerColor(
@@ -342,8 +342,8 @@ export const SYMBOL_ICON_PACKAGE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.packageForeground",
-		"The foreground color for package symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for package symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_PROPERTY_FOREGROUND = registerColor(
@@ -356,8 +356,8 @@ export const SYMBOL_ICON_PROPERTY_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.propertyForeground",
-		"The foreground color for property symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for property symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_REFERENCE_FOREGROUND = registerColor(
@@ -370,8 +370,8 @@ export const SYMBOL_ICON_REFERENCE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.referenceForeground",
-		"The foreground color for reference symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for reference symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_SNIPPET_FOREGROUND = registerColor(
@@ -384,8 +384,8 @@ export const SYMBOL_ICON_SNIPPET_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.snippetForeground",
-		"The foreground color for snippet symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for snippet symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_STRING_FOREGROUND = registerColor(
@@ -398,8 +398,8 @@ export const SYMBOL_ICON_STRING_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.stringForeground",
-		"The foreground color for string symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for string symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_STRUCT_FOREGROUND = registerColor(
@@ -412,8 +412,8 @@ export const SYMBOL_ICON_STRUCT_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.structForeground",
-		"The foreground color for struct symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for struct symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_TEXT_FOREGROUND = registerColor(
@@ -426,8 +426,8 @@ export const SYMBOL_ICON_TEXT_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.textForeground",
-		"The foreground color for text symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for text symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_TYPEPARAMETER_FOREGROUND = registerColor(
@@ -440,8 +440,8 @@ export const SYMBOL_ICON_TYPEPARAMETER_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.typeParameterForeground",
-		"The foreground color for type parameter symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for type parameter symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_UNIT_FOREGROUND = registerColor(
@@ -454,8 +454,8 @@ export const SYMBOL_ICON_UNIT_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.unitForeground",
-		"The foreground color for unit symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for unit symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );
 
 export const SYMBOL_ICON_VARIABLE_FOREGROUND = registerColor(
@@ -468,6 +468,6 @@ export const SYMBOL_ICON_VARIABLE_FOREGROUND = registerColor(
 	},
 	localize(
 		"symbolIcon.variableForeground",
-		"The foreground color for variable symbols. These symbols appear in the outline, breadcrumb, and suggest widget.",
-	),
+		"The foreground color for variable symbols. These symbols appear in the outline, breadcrumb, and suggest widget."
+	)
 );

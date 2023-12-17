@@ -13,7 +13,7 @@ declare module "vscode" {
 			options?: {
 				readonly isCaseSensitive?: boolean;
 				readonly isReadonly?: boolean | MarkdownString;
-			},
+			}
 		): Disposable;
 	}
 }

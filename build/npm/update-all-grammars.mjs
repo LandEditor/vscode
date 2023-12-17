@@ -27,8 +27,8 @@ async function main() {
 		try {
 			const packageJSON = JSON.parse(
 				readFileSync(
-					join("extensions", extension, "package.json"),
-				).toString(),
+					join("extensions", extension, "package.json")
+				).toString()
 			);
 			if (
 				!(

@@ -13,8 +13,8 @@ export class WindowProfiler {
 	constructor(
 		private readonly _window: BrowserWindow,
 		private readonly _sessionId: string,
-		@ILogService private readonly _logService: ILogService,
-	) { }
+		@ILogService private readonly _logService: ILogService
+	) {}
 
 	async inspect(duration: number): Promise<IV8Profile> {
 		await this._connect();

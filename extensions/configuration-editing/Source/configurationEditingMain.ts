@@ -24,7 +24,7 @@ export function activate(context: vscode.ExtensionContext): void {
 
 	// Workspace file launch/tasks variable completions
 	context.subscriptions.push(
-		registerVariableCompletions("**/*.code-workspace"),
+		registerVariableCompletions("**/*.code-workspace")
 	);
 
 	// keybindings.json/package.json context key suggestions
@@ -38,10 +38,10 @@ function registerSettingsCompletions(): vscode.Disposable {
 			provideCompletionItems(document, position, token) {
 				return new SettingsDocument(document).provideCompletionItems(
 					position,
-					token,
+					token
 				);
 			},
-		},
+		}
 	);
 }
 
@@ -52,13 +52,13 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 			provideCompletionItems(document, position, _token) {
 				const location = getLocation(
 					document.getText(),
-					document.offsetAt(position),
+					document.offsetAt(position)
 				);
 				if (
 					isCompletingInsidePropertyStringValue(
 						document,
 						location,
-						position,
+						position
 					)
 				) {
 					if (
@@ -73,7 +73,7 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 
 					let range = document.getWordRangeAtPosition(
 						position,
-						/\$\{[^"\}]*\}?/,
+						/\$\{[^"\}]*\}?/
 					);
 					if (
 						!range ||
@@ -88,31 +88,31 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 						{
 							label: "workspaceFolder",
 							detail: vscode.l10n.t(
-								"The path of the folder opened in VS Code",
+								"The path of the folder opened in VS Code"
 							),
 						},
 						{
 							label: "workspaceFolderBasename",
 							detail: vscode.l10n.t(
-								"The name of the folder opened in VS Code without any slashes (/)",
+								"The name of the folder opened in VS Code without any slashes (/)"
 							),
 						},
 						{
 							label: "fileWorkspaceFolderBasename",
 							detail: vscode.l10n.t(
-								"The current opened file workspace folder name without any slashes (/)",
+								"The current opened file workspace folder name without any slashes (/)"
 							),
 						},
 						{
 							label: "relativeFile",
 							detail: vscode.l10n.t(
-								"The current opened file relative to ${workspaceFolder}",
+								"The current opened file relative to ${workspaceFolder}"
 							),
 						},
 						{
 							label: "relativeFileDirname",
 							detail: vscode.l10n.t(
-								"The current opened file's dirname relative to ${workspaceFolder}",
+								"The current opened file's dirname relative to ${workspaceFolder}"
 							),
 						},
 						{
@@ -122,61 +122,61 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 						{
 							label: "cwd",
 							detail: vscode.l10n.t(
-								"The task runner's current working directory on startup",
+								"The task runner's current working directory on startup"
 							),
 						},
 						{
 							label: "lineNumber",
 							detail: vscode.l10n.t(
-								"The current selected line number in the active file",
+								"The current selected line number in the active file"
 							),
 						},
 						{
 							label: "selectedText",
 							detail: vscode.l10n.t(
-								"The current selected text in the active file",
+								"The current selected text in the active file"
 							),
 						},
 						{
 							label: "fileDirname",
 							detail: vscode.l10n.t(
-								"The current opened file's dirname",
+								"The current opened file's dirname"
 							),
 						},
 						{
 							label: "fileExtname",
 							detail: vscode.l10n.t(
-								"The current opened file's extension",
+								"The current opened file's extension"
 							),
 						},
 						{
 							label: "fileBasename",
 							detail: vscode.l10n.t(
-								"The current opened file's basename",
+								"The current opened file's basename"
 							),
 						},
 						{
 							label: "fileBasenameNoExtension",
 							detail: vscode.l10n.t(
-								"The current opened file's basename with no file extension",
+								"The current opened file's basename with no file extension"
 							),
 						},
 						{
 							label: "defaultBuildTask",
 							detail: vscode.l10n.t(
-								"The name of the default build task. If there is not a single default build task then a quick pick is shown to choose the build task.",
+								"The name of the default build task. If there is not a single default build task then a quick pick is shown to choose the build task."
 							),
 						},
 						{
 							label: "pathSeparator",
 							detail: vscode.l10n.t(
-								"The character used by the operating system to separate components in file paths. Is also aliased to '/'.",
+								"The character used by the operating system to separate components in file paths. Is also aliased to '/'."
 							),
 						},
 						{
 							label: "extensionInstallFolder",
 							detail: vscode.l10n.t(
-								"The path where an an extension is installed.",
+								"The path where an an extension is installed."
 							),
 							param: "publisher.extension",
 						},
@@ -194,14 +194,14 @@ function registerVariableCompletions(pattern: string): vscode.Disposable {
 
 				return [];
 			},
-		},
+		}
 	);
 }
 
 function isCompletingInsidePropertyStringValue(
 	document: vscode.TextDocument,
 	location: Location,
-	pos: vscode.Position,
+	pos: vscode.Position
 ) {
 	if (location.isAtPropertyKey) {
 		return false;
@@ -219,7 +219,7 @@ function isCompletingInsidePropertyStringValue(
 
 function isLocationInsideTopLevelProperty(
 	location: Location,
-	values: string[],
+	values: string[]
 ) {
 	return values.includes(location.path[0] as string);
 }
@@ -242,7 +242,7 @@ function registerExtensionsCompletionsInExtensionsDocument(): vscode.Disposable 
 			provideCompletionItems(document, position, _token) {
 				const location = getLocation(
 					document.getText(),
-					document.offsetAt(position),
+					document.offsetAt(position)
 				);
 				if (location.path[0] === "recommendations") {
 					const range = getReplaceRange(document, location, position);
@@ -255,12 +255,12 @@ function registerExtensionsCompletionsInExtensionsDocument(): vscode.Disposable 
 							[],
 						"",
 						range,
-						false,
+						false
 					);
 				}
 				return [];
 			},
-		},
+		}
 	);
 }
 
@@ -271,7 +271,7 @@ function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode
 			provideCompletionItems(document, position, _token) {
 				const location = getLocation(
 					document.getText(),
-					document.offsetAt(position),
+					document.offsetAt(position)
 				);
 				if (
 					location.path[0] === "extensions" &&
@@ -287,19 +287,19 @@ function registerExtensionsCompletionsInWorkspaceConfigurationDocument(): vscode
 							[],
 						"",
 						range,
-						false,
+						false
 					);
 				}
 				return [];
 			},
-		},
+		}
 	);
 }
 
 function getReplaceRange(
 	document: vscode.TextDocument,
 	location: Location,
-	position: vscode.Position,
+	position: vscode.Position
 ) {
 	const node = location.previousNode;
 	if (node) {
@@ -320,7 +320,7 @@ vscode.languages.registerDocumentSymbolProvider(
 	{
 		provideDocumentSymbols(
 			document: vscode.TextDocument,
-			_token: vscode.CancellationToken,
+			_token: vscode.CancellationToken
 		): vscode.ProviderResult<vscode.SymbolInformation[]> {
 			const result: vscode.SymbolInformation[] = [];
 			let name: string = "";
@@ -335,7 +335,7 @@ vscode.languages.registerDocumentSymbolProvider(
 				onLiteralValue: (
 					value: any,
 					_offset: number,
-					_length: number,
+					_length: number
 				) => {
 					if (lastProperty === "name") {
 						name = value;
@@ -355,9 +355,9 @@ vscode.languages.registerDocumentSymbolProvider(
 								vscode.SymbolKind.Object,
 								new vscode.Range(
 									document.positionAt(startOffset),
-									document.positionAt(offset),
-								),
-							),
+									document.positionAt(offset)
+								)
+							)
 						);
 					}
 					depthInObjects--;
@@ -367,7 +367,7 @@ vscode.languages.registerDocumentSymbolProvider(
 			return result;
 		},
 	},
-	{ label: "Launch Targets" },
+	{ label: "Launch Targets" }
 );
 
 function registerContextKeyCompletions(): vscode.Disposable {
@@ -394,11 +394,11 @@ function registerContextKeyCompletions(): vscode.Disposable {
 		async provideCompletionItems(
 			document: vscode.TextDocument,
 			position: vscode.Position,
-			token: vscode.CancellationToken,
+			token: vscode.CancellationToken
 		) {
 			const location = getLocation(
 				document.getText(),
-				document.offsetAt(position),
+				document.offsetAt(position)
 			);
 
 			if (location.isAtPropertyKey) {
@@ -420,7 +420,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 				!isCompletingInsidePropertyStringValue(
 					document,
 					location,
-					position,
+					position
 				)
 			) {
 				return;
@@ -433,7 +433,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 
 			const data =
 				await vscode.commands.executeCommand<ContextKeyInfo[]>(
-					"getContextKeyInfo",
+					"getContextKeyInfo"
 				);
 			if (token.isCancellationRequested || !data) {
 				return;
@@ -443,7 +443,7 @@ function registerContextKeyCompletions(): vscode.Disposable {
 			for (const item of data) {
 				const completion = new vscode.CompletionItem(
 					item.key,
-					vscode.CompletionItemKind.Constant,
+					vscode.CompletionItemKind.Constant
 				);
 				completion.detail = item.type;
 				completion.range = { replacing, inserting };

@@ -27,9 +27,9 @@ registerSingleton(
 			localStorage.setItem("monaco-parts-splash", raw);
 		}
 	},
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(PartsSplash, LifecyclePhase.Starting);

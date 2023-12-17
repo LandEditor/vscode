@@ -153,10 +153,13 @@ class SessionWholeRange {
 
 	private _decorationIds: string[] = [];
 
-	constructor(private readonly _textModel: ITextModel, wholeRange: IRange) {
+	constructor(
+		private readonly _textModel: ITextModel,
+		wholeRange: IRange
+	) {
 		this._decorationIds = _textModel.deltaDecorations(
 			[],
-			[{ range: wholeRange, options: SessionWholeRange._options }],
+			[{ range: wholeRange, options: SessionWholeRange._options }]
 		);
 	}
 
@@ -176,7 +179,7 @@ class SessionWholeRange {
 			});
 		}
 		this._decorationIds.push(
-			...this._textModel.deltaDecorations([], newDeco),
+			...this._textModel.deltaDecorations([], newDeco)
 		);
 		this._onDidChange.fire(this);
 	}
@@ -189,16 +192,16 @@ class SessionWholeRange {
 						modified.startLineNumber,
 						1,
 						modified.startLineNumber,
-						this._textModel.getLineLength(modified.startLineNumber),
-				  )
+						this._textModel.getLineLength(modified.startLineNumber)
+					)
 				: new Range(
 						modified.startLineNumber,
 						1,
 						modified.endLineNumberExclusive - 1,
 						this._textModel.getLineLength(
-							modified.endLineNumberExclusive - 1,
-						),
-				  );
+							modified.endLineNumberExclusive - 1
+						)
+					);
 
 			newDeco.push({
 				range: modifiedRange,
@@ -245,7 +248,7 @@ export class Session {
 		readonly textModelN: ITextModel,
 		readonly provider: IInlineChatSessionProvider,
 		readonly session: IInlineChatSession,
-		readonly wholeRange: SessionWholeRange,
+		readonly wholeRange: SessionWholeRange
 	) {
 		this.textModelNAltVersion = textModelN.getAlternativeVersionId();
 		this._teldata = {
@@ -307,7 +310,7 @@ export class Session {
 
 	get hasChangedText(): boolean {
 		return !this.textModel0.equalsTextBuffer(
-			this.textModelN.getTextBuffer(),
+			this.textModelN.getTextBuffer()
 		);
 	}
 
@@ -324,7 +327,7 @@ export class Session {
 		}
 
 		return this.textModelN.getValueInRange(
-			new Range(startLine, 1, endLine, Number.MAX_VALUE),
+			new Range(startLine, 1, endLine, Number.MAX_VALUE)
 		);
 	}
 
@@ -378,7 +381,7 @@ export class SessionPrompt {
 export class SessionExchange {
 	constructor(
 		readonly prompt: SessionPrompt,
-		readonly response: ReplyResponse | EmptyResponse | ErrorResponse,
+		readonly response: ReplyResponse | EmptyResponse | ErrorResponse
 	) {}
 }
 
@@ -409,9 +412,8 @@ export class ReplyResponse {
 		progressEdits: TextEdit[][],
 		readonly requestId: string,
 		@ITextFileService private readonly _textFileService: ITextFileService,
-		@ILanguageService private readonly _languageService: ILanguageService,
+		@ILanguageService private readonly _languageService: ILanguageService
 	) {
-
 		const editsMap = new ResourceMap<TextEdit[][]>();
 
 		editsMap.set(localUri, [...progressEdits]);
@@ -419,7 +421,6 @@ export class ReplyResponse {
 		if (raw.type === InlineChatResponseType.EditorEdit) {
 			//
 			editsMap.get(localUri)!.push(raw.edits);
-
 		} else if (raw.type === InlineChatResponseType.BulkEdit) {
 			//
 			const edits = ResourceEdit.convert(raw.edits);
@@ -429,7 +430,7 @@ export class ReplyResponse {
 					if (edit.newResource && !edit.oldResource) {
 						editsMap.set(edit.newResource, []);
 						if (edit.options.contents) {
-							console.warn('CONTENT not supported');
+							console.warn("CONTENT not supported");
 						}
 					}
 				} else if (edit instanceof ResourceTextEdit) {
@@ -447,7 +448,6 @@ export class ReplyResponse {
 		let needsWorkspaceEdit = false;
 
 		for (const [uri, edits] of editsMap) {
-
 			const flatEdits = edits.flat();
 			if (flatEdits.length === 0) {
 				editsMap.delete(uri);
@@ -455,19 +455,39 @@ export class ReplyResponse {
 			}
 
 			const isLocalUri = isEqual(uri, localUri);
-			needsWorkspaceEdit = needsWorkspaceEdit || (uri.scheme !== Schemas.untitled && !isLocalUri);
+			needsWorkspaceEdit =
+				needsWorkspaceEdit ||
+				(uri.scheme !== Schemas.untitled && !isLocalUri);
 
-			if (uri.scheme === Schemas.untitled && !isLocalUri && !this.untitledTextModel) { //TODO@jrieken the first untitled model WINS
-				const langSelection = this._languageService.createByFilepathOrFirstLine(uri, undefined);
-				const untitledTextModel = this._textFileService.untitled.create({
-					associatedResource: uri,
-					languageId: langSelection.languageId
-				});
+			if (
+				uri.scheme === Schemas.untitled &&
+				!isLocalUri &&
+				!this.untitledTextModel
+			) {
+				//TODO@jrieken the first untitled model WINS
+				const langSelection =
+					this._languageService.createByFilepathOrFirstLine(
+						uri,
+						undefined
+					);
+				const untitledTextModel = this._textFileService.untitled.create(
+					{
+						associatedResource: uri,
+						languageId: langSelection.languageId,
+					}
+				);
 				this.untitledTextModel = untitledTextModel;
 
 				untitledTextModel.resolve().then(async () => {
 					const model = untitledTextModel.textEditorModel!;
-					model.applyEdits(flatEdits.map(edit => EditOperation.replace(Range.lift(edit.range), edit.text)));
+					model.applyEdits(
+						flatEdits.map((edit) =>
+							EditOperation.replace(
+								Range.lift(edit.range),
+								edit.text
+							)
+						)
+					);
 				});
 			}
 		}
@@ -478,12 +498,15 @@ export class ReplyResponse {
 			const workspaceEdits: IWorkspaceTextEdit[] = [];
 			for (const [uri, edits] of editsMap) {
 				for (const edit of edits.flat()) {
-					workspaceEdits.push({ resource: uri, textEdit: edit, versionId: undefined });
+					workspaceEdits.push({
+						resource: uri,
+						textEdit: edit,
+						versionId: undefined,
+					});
 				}
 			}
 			this.workspaceEdit = { edits: workspaceEdits };
 		}
-
 
 		const hasEdits = editsMap.size > 0;
 		const hasMessage = mdContent.value.length > 0;
@@ -516,7 +539,7 @@ export interface IInlineChatSessionService {
 	createSession(
 		editor: IActiveCodeEditor,
 		options: { editMode: EditMode; wholeRange?: IRange },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Session | undefined>;
 
 	getSession(editor: ICodeEditor, uri: URI): Session | undefined;
@@ -525,7 +548,7 @@ export interface IInlineChatSessionService {
 
 	registerSessionKeyComputer(
 		scheme: string,
-		value: ISessionKeyComputer,
+		value: ISessionKeyComputer
 	): IDisposable;
 
 	//
@@ -555,12 +578,15 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 	private _recordings: Recording[] = [];
 
 	constructor(
-		@IInlineChatService private readonly _inlineChatService: IInlineChatService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IInlineChatService
+		private readonly _inlineChatService: IInlineChatService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@ILogService private readonly _logService: ILogService,
-	) { }
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@ILogService private readonly _logService: ILogService
+	) {}
 
 	dispose() {
 		this._onWillStartSession.dispose();
@@ -572,10 +598,10 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 	async createSession(
 		editor: IActiveCodeEditor,
 		options: { editMode: EditMode; wholeRange?: Range },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Session | undefined> {
 		const provider = Iterable.first(
-			this._inlineChatService.getAllProvider(),
+			this._inlineChatService.getAllProvider()
 		);
 		if (!provider) {
 			this._logService.trace("[IE] NO provider found");
@@ -593,15 +619,15 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 					provider.prepareInlineChatSession(
 						textModel,
 						selection,
-						token,
-					),
+						token
+					)
 				),
-				token,
+				token
 			);
 		} catch (error) {
 			this._logService.error(
 				"[IE] FAILED to prepare session",
-				provider.debugName,
+				provider.debugName
 			);
 			this._logService.error(error);
 			return undefined;
@@ -615,13 +641,13 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 		this._logService.trace(
 			`[IE] creating NEW session for ${editor.getId()},  ${
 				provider.debugName
-			}`,
+			}`
 		);
 		const store = new DisposableStore();
 
 		// create: keep a reference to prevent disposal of the "actual" model
 		const refTextModelN = await this._textModelService.createModelReference(
-			textModel.uri,
+			textModel.uri
 		);
 		store.add(refTextModelN);
 
@@ -630,7 +656,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 			createTextBufferFactoryFromSnapshot(textModel.createSnapshot()),
 			{ languageId: textModel.getLanguageId(), onDidChange: Event.None },
 			undefined,
-			true,
+			true
 		);
 		store.add(textModel0);
 
@@ -646,7 +672,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 			wholeRange.startLineNumber,
 			1,
 			wholeRange.endLineNumber,
-			textModel.getLineMaxColumn(wholeRange.endLineNumber),
+			textModel.getLineMaxColumn(wholeRange.endLineNumber)
 		);
 
 		// install managed-marker for the decoration range
@@ -660,7 +686,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 			textModel,
 			provider,
 			raw,
-			wholeRangeMgr,
+			wholeRangeMgr
 		);
 
 		// store: key -> session
@@ -684,7 +710,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 				this._logService.trace(
 					`[IE] did RELEASED session for ${editor.getId()}, ${
 						session.provider.debugName
-					}`,
+					}`
 				);
 				break;
 			}
@@ -719,7 +745,7 @@ export class InlineChatSessionService implements IInlineChatSessionService {
 
 	registerSessionKeyComputer(
 		scheme: string,
-		value: ISessionKeyComputer,
+		value: ISessionKeyComputer
 	): IDisposable {
 		this._keyComputers.set(scheme, value);
 		return toDisposable(() => this._keyComputers.delete(scheme));

@@ -23,7 +23,7 @@ export class DiffEditorModel extends EditorModel {
 
 	constructor(
 		originalModel: IResolvableEditorModel | undefined,
-		modifiedModel: IResolvableEditorModel | undefined,
+		modifiedModel: IResolvableEditorModel | undefined
 	) {
 		super();
 

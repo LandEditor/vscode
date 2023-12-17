@@ -18,5 +18,5 @@ module.exports = withBrowserDefaults(
 	},
 	{
 		configFile: "tsconfig.browser.json",
-	},
+	}
 );

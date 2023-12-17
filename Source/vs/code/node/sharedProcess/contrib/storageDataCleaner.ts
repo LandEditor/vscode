@@ -19,22 +19,27 @@ import { Schemas } from "vs/base/common/network";
 
 export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 	constructor(
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
 		@ILogService private readonly logService: ILogService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@IMainProcessService private readonly mainProcessService: IMainProcessService
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@IMainProcessService
+		private readonly mainProcessService: IMainProcessService
 	) {
 		super();
 
-		const scheduler = this._register(new RunOnceScheduler(() => {
-			this.cleanUpStorage();
-		}, 30 * 1000 /* after 30s */));
+		const scheduler = this._register(
+			new RunOnceScheduler(() => {
+				this.cleanUpStorage();
+			}, 30 * 1000 /* after 30s */)
+		);
 		scheduler.schedule();
 	}
 
 	private async cleanUpStorage(): Promise<void> {
 		this.logService.trace(
-			"[storage cleanup]: Starting to clean up workspace storage folders for unused empty workspaces.",
+			"[storage cleanup]: Starting to clean up workspace storage folders for unused empty workspaces."
 		);
 
 		try {
@@ -45,14 +50,14 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 			const workspaceStorageFolders =
 				await Promises.readdir(workspaceStorageHome);
 			const storageClient = new StorageClient(
-				this.mainProcessService.getChannel("storage"),
+				this.mainProcessService.getChannel("storage")
 			);
 
 			await Promise.all(
 				workspaceStorageFolders.map(async (workspaceStorageFolder) => {
 					const workspaceStoragePath = join(
 						workspaceStorageHome,
-						workspaceStorageFolder,
+						workspaceStorageFolder
 					);
 
 					if (
@@ -75,7 +80,7 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 					if (
 						windows.some(
 							(window) =>
-								window.workspace?.id === workspaceStorageFolder,
+								window.workspace?.id === workspaceStorageFolder
 						)
 					) {
 						return; // keep workspace storage for empty workspaces opened as window
@@ -88,11 +93,11 @@ export class UnusedWorkspaceStorageDataCleaner extends Disposable {
 					}
 
 					this.logService.trace(
-						`[storage cleanup]: Deleting workspace storage folder ${workspaceStorageFolder} as it seems to be an unused empty workspace.`,
+						`[storage cleanup]: Deleting workspace storage folder ${workspaceStorageFolder} as it seems to be an unused empty workspace.`
 					);
 
 					await Promises.rm(workspaceStoragePath);
-				}),
+				})
 			);
 		} catch (error) {
 			onUnexpectedError(error);

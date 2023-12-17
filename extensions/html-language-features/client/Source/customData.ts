@@ -23,7 +23,7 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 			const newExternalExtensionUris = new Set<string>();
 			collectInExtensions(
 				newLocalExtensionUris,
-				newExternalExtensionUris,
+				newExternalExtensionUris
 			);
 			if (
 				hasChanges(newLocalExtensionUris, localExtensionUris) ||
@@ -33,7 +33,7 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 				externalExtensionUris = newExternalExtensionUris;
 				onChange.fire();
 			}
-		}),
+		})
 	);
 	toDispose.push(
 		workspace.onDidChangeConfiguration((e) => {
@@ -42,7 +42,7 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 				collectInWorkspaces(workspaceUris);
 				onChange.fire();
 			}
-		}),
+		})
 	);
 
 	toDispose.push(
@@ -51,14 +51,14 @@ export function getCustomDataSource(runtime: Runtime, toDispose: Disposable[]) {
 			if (externalExtensionUris.has(path) || workspaceUris.has(path)) {
 				onChange.fire();
 			}
-		}),
+		})
 	);
 
 	return {
 		get uris() {
 			return [...localExtensionUris].concat(
 				[...externalExtensionUris],
-				[...workspaceUris],
+				[...workspaceUris]
 			);
 		},
 		get onDidChange() {
@@ -110,7 +110,7 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
 					if (!isURI(uriOrPath)) {
 						// path in the workspace
 						workspaceUris.add(
-							Utils.resolvePath(rootFolder, uriOrPath).toString(),
+							Utils.resolvePath(rootFolder, uriOrPath).toString()
 						);
 					} else {
 						// external uri
@@ -131,7 +131,7 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
 				if (workspace.workspaceFile) {
 					collect(
 						customDataInspect.workspaceValue,
-						workspace.workspaceFile,
+						workspace.workspaceFile
 					);
 				}
 				collect(customDataInspect.globalValue, folderUri);
@@ -143,7 +143,7 @@ function collectInWorkspaces(workspaceUris: Set<string>): Set<string> {
 
 function collectInExtensions(
 	localExtensionUris: Set<string>,
-	externalUris: Set<string>,
+	externalUris: Set<string>
 ): void {
 	for (const extension of extensions.allAcrossExtensionHosts) {
 		const customData = extension.packageJSON?.contributes?.html?.customData;
@@ -154,8 +154,8 @@ function collectInExtensions(
 					localExtensionUris.add(
 						Uri.joinPath(
 							extension.extensionUri,
-							uriOrPath,
-						).toString(),
+							uriOrPath
+						).toString()
 					);
 				} else {
 					// external uri

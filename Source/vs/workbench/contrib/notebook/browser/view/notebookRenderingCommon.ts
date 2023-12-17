@@ -82,7 +82,7 @@ export interface INotebookCellList {
 	revealRangeInCell(
 		cell: ICellViewModel,
 		range: Selection | Range,
-		revealType: CellRevealRangeType,
+		revealType: CellRevealRangeType
 	): Promise<void>;
 	revealCellOffsetInCenter(element: ICellViewModel, offset: number): void;
 	setHiddenAreas(_ranges: ICellRange[], triggerViewUpdate: boolean): boolean;
@@ -92,7 +92,7 @@ export interface INotebookCellList {
 	updateElementHeight2(
 		element: ICellViewModel,
 		size: number,
-		anchorElementIndex?: number | null,
+		anchorElementIndex?: number | null
 	): void;
 	domFocus(): void;
 	focusContainer(): void;

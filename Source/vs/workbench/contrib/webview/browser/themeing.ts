@@ -33,21 +33,35 @@ export class WebviewThemeDataProvider extends Disposable {
 	public readonly onThemeDataChanged = this._onThemeDataChanged.event;
 
 	constructor(
-		@IWorkbenchThemeService private readonly _themeService: IWorkbenchThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IWorkbenchThemeService
+		private readonly _themeService: IWorkbenchThemeService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._reset();
-		}));
-
-		const webviewConfigurationKeys = ['editor.fontFamily', 'editor.fontWeight', 'editor.fontSize'];
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (webviewConfigurationKeys.some(key => e.affectsConfiguration(key))) {
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
 				this._reset();
-			}
-		}));
+			})
+		);
+
+		const webviewConfigurationKeys = [
+			"editor.fontFamily",
+			"editor.fontWeight",
+			"editor.fontSize",
+		];
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					webviewConfigurationKeys.some((key) =>
+						e.affectsConfiguration(key)
+					)
+				) {
+					this._reset();
+				}
+			})
+		);
 	}
 
 	public getTheme(): IWorkbenchColorTheme {
@@ -69,14 +83,17 @@ export class WebviewThemeDataProvider extends Disposable {
 			const exportedColors = colorRegistry
 				.getColorRegistry()
 				.getColors()
-				.reduce((colors, entry) => {
-					const color = theme.getColor(entry.id);
-					if (color) {
-						colors["vscode-" + entry.id.replace(".", "-")] =
-							color.toString();
-					}
-					return colors;
-				}, {} as { [key: string]: string });
+				.reduce(
+					(colors, entry) => {
+						const color = theme.getColor(entry.id);
+						if (color) {
+							colors["vscode-" + entry.id.replace(".", "-")] =
+								color.toString();
+						}
+						return colors;
+					},
+					{} as { [key: string]: string }
+				);
 
 			const styles = {
 				"vscode-font-family": DEFAULT_FONT_FAMILY,

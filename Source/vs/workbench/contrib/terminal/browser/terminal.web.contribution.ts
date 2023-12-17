@@ -22,7 +22,7 @@ import { TerminalContextKeys } from "vs/workbench/contrib/terminal/common/termin
 registerSingleton(
 	ITerminalProfileResolverService,
 	BrowserTerminalProfileResolverService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 // Register standard external terminal keybinding as integrated terminal when in web as the

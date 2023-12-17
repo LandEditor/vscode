@@ -237,7 +237,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
 			this.shiftKey,
 			this.altKey,
 			this.metaKey,
-			key,
+			key
 		);
 	}
 }

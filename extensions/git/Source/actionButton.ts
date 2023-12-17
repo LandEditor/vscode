@@ -21,7 +21,7 @@ import { dispose } from "./util";
 
 function isActionButtonStateEqual(
 	state1: ActionButtonState,
-	state2: ActionButtonState,
+	state2: ActionButtonState
 ): boolean {
 	return (
 		state1.HEAD?.name === state2.HEAD?.name &&
@@ -76,7 +76,7 @@ export class ActionButton {
 
 	constructor(
 		readonly repository: Repository,
-		readonly postCommitCommandCenter: CommitCommandsCenter,
+		readonly postCommitCommandCenter: CommitCommandsCenter
 	) {
 		this._state = {
 			HEAD: undefined,
@@ -91,21 +91,21 @@ export class ActionButton {
 		repository.onDidRunGitStatus(
 			this.onDidRunGitStatus,
 			this,
-			this.disposables,
+			this.disposables
 		);
 		repository.onDidChangeOperations(
 			this.onDidChangeOperations,
 			this,
-			this.disposables,
+			this.disposables
 		);
 
 		this.disposables.push(
 			repository.onDidChangeBranchProtection(() =>
-				this._onDidChange.fire(),
-			),
+				this._onDidChange.fire()
+			)
 		);
 		this.disposables.push(
-			postCommitCommandCenter.onDidChange(() => this._onDidChange.fire()),
+			postCommitCommandCenter.onDidChange(() => this._onDidChange.fire())
 		);
 
 		const root = Uri.file(repository.root);
@@ -122,18 +122,18 @@ export class ActionButton {
 				if (
 					e.affectsConfiguration(
 						"git.branchProtectionPrompt",
-						root,
+						root
 					) ||
 					e.affectsConfiguration("git.postCommitCommand", root) ||
 					e.affectsConfiguration(
 						"git.rememberPostCommitCommand",
-						root,
+						root
 					) ||
 					e.affectsConfiguration("git.showActionButton", root)
 				) {
 					this._onDidChange.fire();
 				}
-			}),
+			})
 		);
 	}
 
@@ -161,11 +161,11 @@ export class ActionButton {
 	private getCommitActionButton(): SourceControlActionButton | undefined {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		const showActionButton = config.get<{ commit: boolean }>(
 			"showActionButton",
-			{ commit: true },
+			{ commit: true }
 		);
 
 		// The button is disabled
@@ -237,7 +237,7 @@ export class ActionButton {
 						tooltip: c.tooltip,
 						arguments: c.arguments,
 					};
-				}),
+				})
 			);
 		}
 
@@ -249,11 +249,11 @@ export class ActionButton {
 		| undefined {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		const showActionButton = config.get<{ publish: boolean }>(
 			"showActionButton",
-			{ publish: true },
+			{ publish: true }
 		);
 
 		// Not a branch (tag, detached), branch does have an upstream, commit/merge/rebase is in progress, or the button is disabled
@@ -294,30 +294,30 @@ export class ActionButton {
 									'{Locked="Branch"}',
 									'Do not translate "Branch" as it is a git term',
 								],
-						  })
+							})
 						: l10n.t({
 								message: "Publishing Branch...",
 								comment: [
 									'{Locked="Branch"}',
 									'Do not translate "Branch" as it is a git term',
 								],
-						  })
+							})
 					: this.repository.HEAD?.name
-					  ? l10n.t({
+						? l10n.t({
 								message: 'Publish Branch "{0}"',
 								args: [this.state.HEAD?.name],
 								comment: [
 									'{Locked="Branch"}',
 									'Do not translate "Branch" as it is a git term',
 								],
-						  })
-					  : l10n.t({
+							})
+						: l10n.t({
 								message: "Publish Branch",
 								comment: [
 									'{Locked="Branch"}',
 									'Do not translate "Branch" as it is a git term',
 								],
-						  }),
+							}),
 				arguments: [this.repository.sourceControl],
 			},
 			enabled:
@@ -331,11 +331,11 @@ export class ActionButton {
 		| undefined {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		const showActionButton = config.get<{ sync: boolean }>(
 			"showActionButton",
-			{ sync: true },
+			{ sync: true }
 		);
 		const branchIsAheadOrBehind =
 			(this.state.HEAD?.behind ?? 0) > 0 ||
@@ -381,13 +381,13 @@ export class ActionButton {
 		const isCheckoutInProgress =
 			this.repository.operations.isRunning(OperationKind.Checkout) ||
 			this.repository.operations.isRunning(
-				OperationKind.CheckoutTracking,
+				OperationKind.CheckoutTracking
 			);
 
 		const isCommitInProgress =
 			this.repository.operations.isRunning(OperationKind.Commit) ||
 			this.repository.operations.isRunning(
-				OperationKind.PostCommitCommand,
+				OperationKind.PostCommitCommand
 			) ||
 			this.repository.operations.isRunning(OperationKind.RebaseContinue);
 
@@ -425,7 +425,7 @@ export class ActionButton {
 	private repositoryHasChangesToCommit(): boolean {
 		const config = workspace.getConfiguration(
 			"git",
-			Uri.file(this.repository.root),
+			Uri.file(this.repository.root)
 		);
 		const enableSmartCommit =
 			config.get<boolean>("enableSmartCommit") === true;
@@ -433,7 +433,7 @@ export class ActionButton {
 			config.get<boolean>("suggestSmartCommit") === true;
 		const smartCommitChanges = config.get<"all" | "tracked">(
 			"smartCommitChanges",
-			"all",
+			"all"
 		);
 
 		const resources = [...this.repository.indexGroup.resourceStates];
@@ -451,8 +451,8 @@ export class ActionButton {
 		if (enableSmartCommit && smartCommitChanges === "tracked") {
 			resources.push(
 				...this.repository.workingTreeGroup.resourceStates.filter(
-					(r) => r.type !== Status.UNTRACKED,
-				),
+					(r) => r.type !== Status.UNTRACKED
+				)
 			);
 		}
 

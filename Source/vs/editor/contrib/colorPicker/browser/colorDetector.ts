@@ -67,38 +67,65 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService
 	) {
 		super();
-		this._debounceInformation = languageFeatureDebounceService.for(_languageFeaturesService.colorProvider, 'Document Colors', { min: ColorDetector.RECOMPUTE_TIME });
-		this._register(_editor.onDidChangeModel(() => {
-			this._isColorDecoratorsEnabled = this.isEnabled();
-			this.updateColors();
-		}));
-		this._register(_editor.onDidChangeModelLanguage(() => this.updateColors()));
-		this._register(_languageFeaturesService.colorProvider.onDidChange(() => this.updateColors()));
-		this._register(_editor.onDidChangeConfiguration((e) => {
-			const prevIsEnabled = this._isColorDecoratorsEnabled;
-			this._isColorDecoratorsEnabled = this.isEnabled();
-			this._isDefaultColorDecoratorsEnabled = this._editor.getOption(EditorOption.defaultColorDecorators);
-			const updatedColorDecoratorsSetting = prevIsEnabled !== this._isColorDecoratorsEnabled || e.hasChanged(EditorOption.colorDecoratorsLimit);
-			const updatedDefaultColorDecoratorsSetting = e.hasChanged(EditorOption.defaultColorDecorators);
-			if (updatedColorDecoratorsSetting || updatedDefaultColorDecoratorsSetting) {
-				if (this._isColorDecoratorsEnabled) {
-					this.updateColors();
+		this._debounceInformation = languageFeatureDebounceService.for(
+			_languageFeaturesService.colorProvider,
+			"Document Colors",
+			{ min: ColorDetector.RECOMPUTE_TIME }
+		);
+		this._register(
+			_editor.onDidChangeModel(() => {
+				this._isColorDecoratorsEnabled = this.isEnabled();
+				this.updateColors();
+			})
+		);
+		this._register(
+			_editor.onDidChangeModelLanguage(() => this.updateColors())
+		);
+		this._register(
+			_languageFeaturesService.colorProvider.onDidChange(() =>
+				this.updateColors()
+			)
+		);
+		this._register(
+			_editor.onDidChangeConfiguration((e) => {
+				const prevIsEnabled = this._isColorDecoratorsEnabled;
+				this._isColorDecoratorsEnabled = this.isEnabled();
+				this._isDefaultColorDecoratorsEnabled = this._editor.getOption(
+					EditorOption.defaultColorDecorators
+				);
+				const updatedColorDecoratorsSetting =
+					prevIsEnabled !== this._isColorDecoratorsEnabled ||
+					e.hasChanged(EditorOption.colorDecoratorsLimit);
+				const updatedDefaultColorDecoratorsSetting = e.hasChanged(
+					EditorOption.defaultColorDecorators
+				);
+				if (
+					updatedColorDecoratorsSetting ||
+					updatedDefaultColorDecoratorsSetting
+				) {
+					if (this._isColorDecoratorsEnabled) {
+						this.updateColors();
+					} else {
+						this.removeAllDecorations();
+					}
 				}
-				else {
-					this.removeAllDecorations();
-				}
-			}
-		}));
+			})
+		);
 
 		this._timeoutTimer = null;
 		this._computePromise = null;
 		this._isColorDecoratorsEnabled = this.isEnabled();
-		this._isDefaultColorDecoratorsEnabled = this._editor.getOption(EditorOption.defaultColorDecorators);
+		this._isDefaultColorDecoratorsEnabled = this._editor.getOption(
+			EditorOption.defaultColorDecorators
+		);
 		this.updateColors();
 	}
 
@@ -162,7 +189,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 						this.beginCompute();
 					}, this._debounceInformation.get(model));
 				}
-			}),
+			})
 		);
 		this.beginCompute();
 	}
@@ -178,7 +205,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 				this._languageFeaturesService.colorProvider,
 				model,
 				token,
-				this._isDefaultColorDecoratorsEnabled,
+				this._isDefaultColorDecoratorsEnabled
 			);
 			this._debounceInformation.update(model, sw.elapsed());
 			return colors;
@@ -219,12 +246,12 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 		this._editor.changeDecorations((changeAccessor) => {
 			this._decorationsIds = changeAccessor.deltaDecorations(
 				this._decorationsIds,
-				decorations,
+				decorations
 			);
 
 			this._colorDatas = new Map<string, IColorData>();
 			this._decorationsIds.forEach((id, i) =>
-				this._colorDatas.set(id, colorDatas[i]),
+				this._colorDatas.set(id, colorDatas[i])
 			);
 		});
 	}
@@ -248,14 +275,14 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 				Math.round(red * 255),
 				Math.round(green * 255),
 				Math.round(blue * 255),
-				alpha,
+				alpha
 			);
 			const color = `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
 
 			const ref = this._colorDecorationClassRefs.add(
 				this._ruleFactory.createClassNameRef({
 					backgroundColor: color,
-				}),
+				})
 			);
 
 			decorations.push({
@@ -336,5 +363,5 @@ export class DecoratorLimitReporter {
 registerEditorContribution(
 	ColorDetector.ID,
 	ColorDetector,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );

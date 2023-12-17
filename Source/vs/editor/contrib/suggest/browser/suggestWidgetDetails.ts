@@ -23,14 +23,14 @@ import { IInstantiationService } from "vs/platform/instantiation/common/instanti
 import { CompletionItem } from "./suggest";
 
 export function canExpandCompletionItem(
-	item: CompletionItem | undefined,
+	item: CompletionItem | undefined
 ): boolean {
 	return (
 		!!item &&
 		Boolean(
 			item.completion.documentation ||
 				(item.completion.detail &&
-					item.completion.detail !== item.completion.label),
+					item.completion.detail !== item.completion.label)
 		)
 	);
 }
@@ -59,7 +59,7 @@ export class SuggestDetailsWidget {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService instaService: IInstantiationService,
+		@IInstantiationService instaService: IInstantiationService
 	) {
 		this.domNode = dom.$(".suggest-details");
 		this.domNode.classList.add("no-docs");
@@ -79,7 +79,7 @@ export class SuggestDetailsWidget {
 		this._header = dom.append(this._body, dom.$(".header"));
 		this._close = dom.append(
 			this._header,
-			dom.$("span" + ThemeIcon.asCSSSelector(Codicon.close)),
+			dom.$("span" + ThemeIcon.asCSSSelector(Codicon.close))
 		);
 		this._close.title = nls.localize("details.close", "Close");
 		this._type = dom.append(this._header, dom.$("p.type"));
@@ -93,7 +93,7 @@ export class SuggestDetailsWidget {
 				if (e.hasChanged(EditorOption.fontInfo)) {
 					this._configureFont();
 				}
-			}),
+			})
 		);
 	}
 
@@ -167,7 +167,7 @@ export class SuggestDetailsWidget {
 				"label"
 			}\n`;
 			md += `commit_chars: ${item.completion.commitCharacters?.join(
-				"",
+				""
 			)}\n`;
 			documentation = new MarkdownString().appendCodeblock("empty", md);
 			detail = `Provider: ${item.provider._debugDisplayName}`;
@@ -192,7 +192,7 @@ export class SuggestDetailsWidget {
 			dom.show(this._type);
 			this._type.classList.toggle(
 				"auto-wrap",
-				!/\r?\n^\s+/gim.test(cappedDetail),
+				!/\r?\n^\s+/gim.test(cappedDetail)
 			);
 		} else {
 			dom.clearNode(this._type);
@@ -217,10 +217,10 @@ export class SuggestDetailsWidget {
 				this._markdownRenderer.onDidRenderAsync(() => {
 					this.layout(
 						this._size.width,
-						this._type.clientHeight + this._docs.clientHeight,
+						this._type.clientHeight + this._docs.clientHeight
 					);
 					this._onDidChangeContents.fire(this);
-				}),
+				})
 			);
 		}
 
@@ -241,7 +241,7 @@ export class SuggestDetailsWidget {
 
 		this.layout(
 			this._size.width,
-			this._type.clientHeight + this._docs.clientHeight,
+			this._type.clientHeight + this._docs.clientHeight
 		);
 		this._onDidChangeContents.fire(this);
 	}
@@ -321,7 +321,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 
 	constructor(
 		readonly widget: SuggestDetailsWidget,
-		private readonly _editor: ICodeEditor,
+		private readonly _editor: ICodeEditor
 	) {
 		this._resizable = new ResizableHTMLElement();
 		this._resizable.domNode.classList.add("suggest-details-container");
@@ -336,7 +336,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 			this._resizable.onDidWillResize(() => {
 				topLeftNow = this._topLeft;
 				sizeNow = this._resizable.size;
-			}),
+			})
 		);
 
 		this._disposables.add(
@@ -367,7 +367,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 					deltaLeft = 0;
 					this._userSize = e.dimension;
 				}
-			}),
+			})
 		);
 
 		this._disposables.add(
@@ -376,10 +376,10 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 					this._placeAtAnchor(
 						this._anchorBox,
 						this._userSize ?? this.widget.size,
-						this._preferAlignAtTop,
+						this._preferAlignAtTop
 					);
 				}
-			}),
+			})
 		);
 	}
 
@@ -430,14 +430,14 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 		this._placeAtAnchor(
 			this._anchorBox,
 			this._userSize ?? this.widget.size,
-			preferAlignAtTop,
+			preferAlignAtTop
 		);
 	}
 
 	_placeAtAnchor(
 		anchorBox: dom.IDomNodePagePosition,
 		size: dom.Dimension,
-		preferAlignAtTop: boolean,
+		preferAlignAtTop: boolean
 	) {
 		const bodyBox = dom.getClientArea(this.getDomNode().ownerDocument.body);
 
@@ -469,14 +469,14 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 				bodyBox.height -
 					anchorBox.top -
 					info.borderHeight -
-					info.verticalPadding,
+					info.verticalPadding
 			);
 			const maxSizeBottom = maxSizeTop.with(
 				undefined,
 				anchorBox.top +
 					anchorBox.height -
 					info.borderHeight -
-					info.verticalPadding,
+					info.verticalPadding
 			);
 			return {
 				top: defaultTop,
@@ -485,7 +485,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 				maxSizeTop,
 				maxSizeBottom,
 				minSize: defaultMinSize.with(
-					Math.min(width, defaultMinSize.width),
+					Math.min(width, defaultMinSize.width)
 				),
 			};
 		})();
@@ -496,21 +496,21 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 				anchorBox.left - info.borderWidth - info.horizontalPadding;
 			const left = Math.max(
 				info.horizontalPadding,
-				anchorBox.left - size.width - info.borderWidth,
+				anchorBox.left - size.width - info.borderWidth
 			);
 			const maxSizeTop = new dom.Dimension(
 				width,
 				bodyBox.height -
 					anchorBox.top -
 					info.borderHeight -
-					info.verticalPadding,
+					info.verticalPadding
 			);
 			const maxSizeBottom = maxSizeTop.with(
 				undefined,
 				anchorBox.top +
 					anchorBox.height -
 					info.borderHeight -
-					info.verticalPadding,
+					info.verticalPadding
 			);
 			return {
 				top: defaultTop,
@@ -519,7 +519,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 				maxSizeTop,
 				maxSizeBottom,
 				minSize: defaultMinSize.with(
-					Math.min(width, defaultMinSize.width),
+					Math.min(width, defaultMinSize.width)
 				),
 			};
 		})();
@@ -533,7 +533,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 				bodyBox.height -
 					anchorBox.top -
 					anchorBox.height -
-					info.verticalPadding,
+					info.verticalPadding
 			);
 			return {
 				top,
@@ -557,7 +557,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 		let height = size.height;
 		const maxHeight = Math.max(
 			placement.maxSizeTop.height,
-			placement.maxSizeBottom.height,
+			placement.maxSizeBottom.height
 		);
 		if (height > maxHeight) {
 			height = maxHeight;
@@ -598,7 +598,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 			!alignAtTop,
 			placement === eastPlacement,
 			alignAtTop,
-			placement !== eastPlacement,
+			placement !== eastPlacement
 		);
 
 		this._resizable.minSize = placement.minSize;
@@ -606,7 +606,7 @@ export class SuggestDetailsOverlay implements IOverlayWidget {
 		this._resizable.layout(height, Math.min(maxSize.width, size.width));
 		this.widget.layout(
 			this._resizable.size.width,
-			this._resizable.size.height,
+			this._resizable.size.height
 		);
 	}
 

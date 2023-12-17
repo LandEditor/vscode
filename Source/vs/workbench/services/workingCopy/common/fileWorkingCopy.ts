@@ -22,7 +22,7 @@ export interface IFileWorkingCopyModelFactory<M extends IFileWorkingCopyModel> {
 	createModel(
 		resource: URI,
 		contents: VSBufferReadableStream,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<M>;
 }
 
@@ -91,7 +91,7 @@ export interface IFileWorkingCopyModel extends IDisposable {
 	 */
 	update(
 		contents: VSBufferReadableStream,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void>;
 }
 

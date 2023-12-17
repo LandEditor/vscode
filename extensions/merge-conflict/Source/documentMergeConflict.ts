@@ -18,7 +18,7 @@ export class DocumentMergeConflict
 
 	constructor(
 		descriptor: interfaces.IDocumentMergeConflictDescriptor,
-		private readonly telemetryReporter: TelemetryReporter,
+		private readonly telemetryReporter: TelemetryReporter
 	) {
 		this.range = descriptor.range;
 		this.current = descriptor.current;
@@ -30,7 +30,7 @@ export class DocumentMergeConflict
 	public commitEdit(
 		type: interfaces.CommitType,
 		editor: vscode.TextEditor,
-		edit?: vscode.TextEditorEdit,
+		edit?: vscode.TextEditorEdit
 	): Thenable<boolean> {
 		function commitTypeToString(type: interfaces.CommitType): string {
 			switch (type) {
@@ -60,14 +60,14 @@ export class DocumentMergeConflict
 		}
 
 		return editor.edit((edit) =>
-			this.applyEdit(type, editor.document, edit),
+			this.applyEdit(type, editor.document, edit)
 		);
 	}
 
 	public applyEdit(
 		type: interfaces.CommitType,
 		document: vscode.TextDocument,
-		edit: { replace(range: vscode.Range, newText: string): void },
+		edit: { replace(range: vscode.Range, newText: string): void }
 	): void {
 		if (this.applied) {
 			return;
@@ -102,7 +102,7 @@ export class DocumentMergeConflict
 
 	private replaceRangeWithContent(
 		content: string,
-		edit: { replace(range: vscode.Range, newText: string): void },
+		edit: { replace(range: vscode.Range, newText: string): void }
 	) {
 		if (this.isNewlineOnly(content)) {
 			edit.replace(this.range, "");

@@ -60,7 +60,7 @@ function fromLittleEndianBuffer(buff: VSBuffer): Uint32Array {
 		return new Uint32Array(
 			uint8Arr.buffer,
 			uint8Arr.byteOffset,
-			uint8Arr.length / 4,
+			uint8Arr.length / 4
 		);
 	} else {
 		// unaligned memory access doesn't work on all platforms
@@ -71,7 +71,7 @@ function fromLittleEndianBuffer(buff: VSBuffer): Uint32Array {
 }
 
 export function encodeSemanticTokensDto(
-	semanticTokens: ISemanticTokensDto,
+	semanticTokens: ISemanticTokensDto
 ): VSBuffer {
 	const dest = new Uint32Array(encodeSemanticTokensDtoSize(semanticTokens));
 	let offset = 0;
@@ -100,7 +100,7 @@ export function encodeSemanticTokensDto(
 }
 
 function encodeSemanticTokensDtoSize(
-	semanticTokens: ISemanticTokensDto,
+	semanticTokens: ISemanticTokensDto
 ): number {
 	let result = 0;
 	result +=
@@ -111,8 +111,7 @@ function encodeSemanticTokensDtoSize(
 			+1 + // data length
 			semanticTokens.data.length;
 	} else {
-		result +=
-			+1; // delta count
+		result += +1; // delta count
 		result +=
 			(+1 + // start
 				1 + // deleteCount

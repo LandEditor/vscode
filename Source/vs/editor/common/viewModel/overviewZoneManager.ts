@@ -51,7 +51,7 @@ export class OverviewRulerZone {
 		startLineNumber: number,
 		endLineNumber: number,
 		heightInLines: number,
-		color: string,
+		color: string
 	) {
 		this.startLineNumber = startLineNumber;
 		this.endLineNumber = endLineNumber;
@@ -188,7 +188,7 @@ export class OverviewZoneManager {
 		const outerHeight = Math.floor(this._outerHeight);
 		const heightRatio = totalHeight / outerHeight;
 		const halfMinimumHeight = Math.floor(
-			(Constants.MINIMUM_HEIGHT * this._pixelRatio) / 2,
+			(Constants.MINIMUM_HEIGHT * this._pixelRatio) / 2
 		);
 
 		const allColorZones: ColorZone[] = [];
@@ -204,12 +204,12 @@ export class OverviewZoneManager {
 			}
 
 			const offset1 = this._getVerticalOffsetForLine(
-				zone.startLineNumber,
+				zone.startLineNumber
 			);
 			const offset2 =
 				zone.heightInLines === 0
 					? this._getVerticalOffsetForLine(zone.endLineNumber) +
-					  lineHeight
+						lineHeight
 					: offset1 + zone.heightInLines * lineHeight;
 
 			const y1 = Math.floor(heightRatio * offset1);
@@ -239,7 +239,7 @@ export class OverviewZoneManager {
 			const colorZone = new ColorZone(
 				ycenter - halfHeight,
 				ycenter + halfHeight,
-				colorId,
+				colorId
 			);
 
 			zone.setColorZone(colorZone);

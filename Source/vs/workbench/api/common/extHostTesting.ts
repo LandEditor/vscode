@@ -94,7 +94,7 @@ type ActiveProfileChangeEvent = Map<
 
 export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	private readonly resultsChangedEmitter = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	protected readonly controllers = new Map<
 		/* controller ID */ string,
@@ -104,7 +104,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	private readonly runTracker: TestRunCoordinator;
 	private readonly observer: TestObservers;
 	private readonly activeProfilesChangedEmitter = this._register(
-		new Emitter<ActiveProfileChangeEvent>(),
+		new Emitter<ActiveProfileChangeEvent>()
 	);
 
 	public onResultsChanged = this.resultsChangedEmitter.event;
@@ -113,7 +113,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	constructor(
 		@IExtHostRpcService rpc: IExtHostRpcService,
 		commands: ExtHostCommands,
-		private readonly editors: ExtHostDocumentsAndEditors,
+		private readonly editors: ExtHostDocumentsAndEditors
 	) {
 		super();
 		this.proxy = rpc.getProxy(MainContext.MainThreadTesting);
@@ -128,7 +128,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 						const targetTest =
 							cast.tests[cast.tests.length - 1].item.extId;
 						const controller = this.controllers.get(
-							TestId.root(targetTest),
+							TestId.root(targetTest)
 						);
 						return (
 							controller?.collection.tree.get(targetTest)
@@ -142,7 +142,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 								.get(TestId.root(extId))
 								?.collection.tree.get(extId)?.actual,
 							message: Convert.TestMessage.to(
-								message as ITestErrorMessage.Serialized,
+								message as ITestErrorMessage.Serialized
 							),
 						};
 					}
@@ -175,7 +175,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 					include: inner?.include.map(lookup).filter(isDefined) || [],
 					exclude: inner?.exclude.map(lookup).filter(isDefined) || [],
 				};
-			},
+			}
 		);
 	}
 
@@ -186,17 +186,17 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		extension: IExtensionDescription,
 		controllerId: string,
 		label: string,
-		refreshHandler?: (token: CancellationToken) => Thenable<void> | void,
+		refreshHandler?: (token: CancellationToken) => Thenable<void> | void
 	): vscode.TestController {
 		if (this.controllers.has(controllerId)) {
 			throw new Error(
-				`Attempt to insert a duplicate controller with ID "${controllerId}"`,
+				`Attempt to insert a duplicate controller with ID "${controllerId}"`
 			);
 		}
 
 		const disposable = new DisposableStore();
 		const collection = disposable.add(
-			new ExtHostTestItemCollection(controllerId, label, this.editors),
+			new ExtHostTestItemCollection(controllerId, label, this.editors)
 		);
 		collection.root.label = label;
 
@@ -217,9 +217,11 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 			get refreshHandler() {
 				return refreshHandler;
 			},
-			set refreshHandler(value:
-				| ((token: CancellationToken) => Thenable<void> | void)
-				| undefined) {
+			set refreshHandler(
+				value:
+					| ((token: CancellationToken) => Thenable<void> | void)
+					| undefined
+			) {
 				refreshHandler = value;
 				proxy.$updateController(controllerId, { canRefresh: !!value });
 			},
@@ -232,7 +234,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				runHandler,
 				isDefault,
 				tag?: vscode.TestTag | undefined,
-				supportsContinuousRun?: boolean,
+				supportsContinuousRun?: boolean
 			) => {
 				// Derive the profile ID from a hash so that the same profile will tend
 				// to have the same hashes, allowing re-run requests to work across reloads.
@@ -254,7 +256,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 					runHandler,
 					isDefault,
 					tag,
-					supportsContinuousRun,
+					supportsContinuousRun
 				);
 			},
 			createTestItem(id, label, uri) {
@@ -267,7 +269,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 					collection,
 					request,
 					name,
-					persist,
+					persist
 				);
 			},
 			invalidateTestResults: (items) => {
@@ -279,9 +281,9 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 						itemsArr.map((i) =>
 							TestId.fromExtHostTestItem(
 								i!,
-								controllerId,
-							).toString(),
-						),
+								controllerId
+							).toString()
+						)
 					);
 				}
 			},
@@ -300,7 +302,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 
 		proxy.$registerTestController(controllerId, label, !!refreshHandler);
 		disposable.add(
-			toDisposable(() => proxy.$unregisterTestController(controllerId)),
+			toDisposable(() => proxy.$unregisterTestController(controllerId))
 		);
 
 		const info: ControllerInfo = {
@@ -312,16 +314,16 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		};
 		this.controllers.set(controllerId, info);
 		disposable.add(
-			toDisposable(() => this.controllers.delete(controllerId)),
+			toDisposable(() => this.controllers.delete(controllerId))
 		);
 
 		disposable.add(
 			collection.onDidGenerateDiff((diff) =>
 				proxy.$publishDiff(
 					controllerId,
-					diff.map(TestsDiffOp.serialize),
-				),
-			),
+					diff.map(TestsDiffOp.serialize)
+				)
+			)
 		);
 
 		return controller;
@@ -339,12 +341,12 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	 */
 	public async runTests(
 		req: vscode.TestRunRequest,
-		token = CancellationToken.None,
+		token = CancellationToken.None
 	) {
 		const profile = tryGetProfileFromTestRunReq(req);
 		if (!profile) {
 			throw new Error(
-				"The request passed to `vscode.test.runTests` must include a profile",
+				"The request passed to `vscode.test.runTests` must include a profile"
 			);
 		}
 
@@ -361,8 +363,8 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 						testIds: req.include?.map((t) =>
 							TestId.fromExtHostTestItem(
 								t,
-								controller.collection.root.id,
-							).toString(),
+								controller.collection.root.id
+							).toString()
 						) ?? [controller.collection.root.id],
 						profileGroup: profileGroupToBitset[profile.kind],
 						profileId: profile.profileId,
@@ -371,7 +373,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				],
 				exclude: req.exclude?.map((t) => t.id),
 			},
-			token,
+			token
 		);
 	}
 
@@ -392,7 +394,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	async $provideFileCoverage(
 		runId: string,
 		taskId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IFileCoverage.Serialized[]> {
 		const coverage = this.runTracker.getCoverageReport(runId, taskId);
 		const fileCoverage = await coverage?.provideFileCoverage(token);
@@ -406,7 +408,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		runId: string,
 		taskId: string,
 		fileIndex: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<CoverageDetails.Serialized[]> {
 		const coverage = this.runTracker.getCoverageReport(runId, taskId);
 		const details = await coverage?.resolveFileCoverage(fileIndex, token);
@@ -423,7 +425,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 
 	/** @inheritdoc */
 	$setActiveRunProfiles(
-		profiles: Record</* controller id */ string, /* profile id */ number[]>,
+		profiles: Record</* controller id */ string, /* profile id */ number[]>
 	): void {
 		const evt: ActiveProfileChangeEvent = new Map();
 		for (const [controllerId, profileIds] of Object.entries(profiles)) {
@@ -433,10 +435,10 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 			}
 			const changes = new Map<number, boolean>();
 			const added = profileIds.filter(
-				(id) => !ctrl.activeProfiles.has(id),
+				(id) => !ctrl.activeProfiles.has(id)
 			);
 			const removed = [...ctrl.activeProfiles].filter(
-				(id) => !profileIds.includes(id),
+				(id) => !profileIds.includes(id)
 			);
 			for (const id of added) {
 				changes.set(id, true);
@@ -471,7 +473,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				.map((r) => deepFreeze(Convert.TestResults.to(r)))
 				.concat(this.results)
 				.sort((a, b) => b.completedAt - a.completedAt)
-				.slice(0, 32),
+				.slice(0, 32)
 		);
 
 		this.resultsChangedEmitter.fire();
@@ -483,7 +485,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	 */
 	public async $expandTest(testId: string, levels: number) {
 		const collection = this.controllers.get(
-			TestId.fromString(testId).controllerId,
+			TestId.fromString(testId).controllerId
 		)?.collection;
 		if (collection) {
 			await collection.expand(testId, levels < 0 ? Infinity : levels);
@@ -498,8 +500,8 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	public $acceptDiff(diff: TestsDiffOp.Serialized[]): void {
 		this.observer.applyDiff(
 			diff.map((d) =>
-				TestsDiffOp.deserialize({ asCanonicalUri: (u) => u }, d),
-			),
+				TestsDiffOp.deserialize({ asCanonicalUri: (u) => u }, d)
+			)
 		);
 	}
 
@@ -510,10 +512,10 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	 */
 	public async $runControllerTests(
 		reqs: IStartControllerTests[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IStartControllerTestsResult[]> {
 		return Promise.all(
-			reqs.map((req) => this.runControllerTestRequest(req, false, token)),
+			reqs.map((req) => this.runControllerTestRequest(req, false, token))
 		);
 	}
 
@@ -524,13 +526,13 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	 */
 	public async $startContinuousRun(
 		reqs: IStartControllerTests[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IStartControllerTestsResult[]> {
 		const cts = new CancellationTokenSource(token);
 		const res = await Promise.all(
 			reqs.map((req) =>
-				this.runControllerTestRequest(req, true, cts.token),
-			),
+				this.runControllerTestRequest(req, true, cts.token)
+			)
 		);
 
 		// avoid returning until cancellation is requested, otherwise ipc disposes of the token
@@ -545,7 +547,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 	private async runControllerTestRequest(
 		req: ICallProfileRunHandler | ICallProfileRunHandler,
 		isContinuous: boolean,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IStartControllerTestsResult> {
 		const lookup = this.controllers.get(req.controllerId);
 		if (!lookup) {
@@ -569,8 +571,8 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				includeTests.some(
 					(include) =>
 						include.fullId.compare(exclude.fullId) ===
-						TestPosition.IsChild,
-				),
+						TestPosition.IsChild
+				)
 			);
 
 		if (!includeTests.length) {
@@ -583,7 +585,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				: includeTests.map((t) => t.actual),
 			excludeTests.map((t) => t.actual),
 			profile,
-			isContinuous,
+			isContinuous
 		);
 
 		const tracker =
@@ -592,7 +594,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 				publicReq,
 				TestRunDto.fromInternal(req, lookup.collection),
 				extension,
-				token,
+				token
 			);
 
 		try {
@@ -649,7 +651,7 @@ class TestRunTracker extends Disposable {
 			runId: string;
 			taskId: string;
 			coverage: TestRunCoverageBearer | undefined;
-		}>(),
+		}>()
 	);
 
 	/**
@@ -680,7 +682,7 @@ class TestRunTracker extends Disposable {
 		private readonly dto: TestRunDto,
 		private readonly proxy: MainThreadTestingShape,
 		private readonly extension: IRelaxedExtensionDescription,
-		parentToken?: CancellationToken,
+		parentToken?: CancellationToken
 	) {
 		super();
 		this.cts = this._register(new CancellationTokenSource(parentToken));
@@ -688,13 +690,11 @@ class TestRunTracker extends Disposable {
 		const forciblyEnd = this._register(
 			new RunOnceScheduler(
 				() => this.forciblyEndTasks(),
-				RUN_CANCEL_DEADLINE,
-			),
+				RUN_CANCEL_DEADLINE
+			)
 		);
 		this._register(
-			this.cts.token.onCancellationRequested(() =>
-				forciblyEnd.schedule(),
-			),
+			this.cts.token.onCancellationRequested(() => forciblyEnd.schedule())
 		);
 	}
 
@@ -719,12 +719,12 @@ class TestRunTracker extends Disposable {
 
 		const guardTestMutation =
 			<Args extends unknown[]>(
-				fn: (test: vscode.TestItem, ...args: Args) => void,
+				fn: (test: vscode.TestItem, ...args: Args) => void
 			) =>
 			(test: vscode.TestItem, ...args: Args) => {
 				if (ended) {
 					console.warn(
-						`Setting the state of test "${test.id}" is a no-op after the run ends.`,
+						`Setting the state of test "${test.id}" is a no-op after the run ends.`
 					);
 					return;
 				}
@@ -739,7 +739,7 @@ class TestRunTracker extends Disposable {
 
 		const appendMessages = (
 			test: vscode.TestItem,
-			messages: vscode.TestMessage | readonly vscode.TestMessage[],
+			messages: vscode.TestMessage | readonly vscode.TestMessage[]
 		) => {
 			const converted =
 				messages instanceof Array
@@ -760,7 +760,7 @@ class TestRunTracker extends Disposable {
 				runId,
 				taskId,
 				TestId.fromExtHostTestItem(test, ctrlId).toString(),
-				converted,
+				converted
 			);
 		};
 
@@ -783,7 +783,7 @@ class TestRunTracker extends Disposable {
 					runId,
 					taskId,
 					TestId.fromExtHostTestItem(test, ctrlId).toString(),
-					TestResultState.Queued,
+					TestResultState.Queued
 				);
 			}),
 			skipped: guardTestMutation((test) => {
@@ -791,7 +791,7 @@ class TestRunTracker extends Disposable {
 					runId,
 					taskId,
 					TestId.fromExtHostTestItem(test, ctrlId).toString(),
-					TestResultState.Skipped,
+					TestResultState.Skipped
 				);
 			}),
 			started: guardTestMutation((test) => {
@@ -799,7 +799,7 @@ class TestRunTracker extends Disposable {
 					runId,
 					taskId,
 					TestId.fromExtHostTestItem(test, ctrlId).toString(),
-					TestResultState.Running,
+					TestResultState.Running
 				);
 			}),
 			errored: guardTestMutation((test, messages, duration) => {
@@ -809,7 +809,7 @@ class TestRunTracker extends Disposable {
 					taskId,
 					TestId.fromExtHostTestItem(test, ctrlId).toString(),
 					TestResultState.Errored,
-					duration,
+					duration
 				);
 			}),
 			failed: guardTestMutation((test, messages, duration) => {
@@ -819,7 +819,7 @@ class TestRunTracker extends Disposable {
 					taskId,
 					TestId.fromExtHostTestItem(test, ctrlId).toString(),
 					TestResultState.Failed,
-					duration,
+					duration
 				);
 			}),
 			passed: guardTestMutation((test, duration) => {
@@ -828,17 +828,17 @@ class TestRunTracker extends Disposable {
 					taskId,
 					TestId.fromExtHostTestItem(
 						test,
-						this.dto.controllerId,
+						this.dto.controllerId
 					).toString(),
 					TestResultState.Passed,
-					duration,
+					duration
 				);
 			}),
 			//#endregion
 			appendOutput: (
 				output,
 				location?: vscode.Location,
-				test?: vscode.TestItem,
+				test?: vscode.TestItem
 			) => {
 				if (ended) {
 					return;
@@ -857,7 +857,7 @@ class TestRunTracker extends Disposable {
 					taskId,
 					VSBuffer.fromString(output),
 					location && Convert.location.from(location),
-					test && TestId.fromExtHostTestItem(test, ctrlId).toString(),
+					test && TestId.fromExtHostTestItem(test, ctrlId).toString()
 				);
 			},
 			end: () => {
@@ -906,8 +906,8 @@ class TestRunTracker extends Disposable {
 			this.sharedTestIds.has(
 				TestId.fromExtHostTestItem(
 					test,
-					this.dto.controllerId,
-				).toString(),
+					this.dto.controllerId
+				).toString()
 			)
 		) {
 			return;
@@ -977,7 +977,7 @@ export class TestRunCoordinator {
 		req: vscode.TestRunRequest,
 		dto: TestRunDto,
 		extension: Readonly<IRelaxedExtensionDescription>,
-		token: CancellationToken,
+		token: CancellationToken
 	) {
 		return this.getTracker(req, dto, extension, token);
 	}
@@ -1012,7 +1012,7 @@ export class TestRunCoordinator {
 		collection: ExtHostTestItemCollection,
 		request: vscode.TestRunRequest,
 		name: string | undefined,
-		persist: boolean,
+		persist: boolean
 	): vscode.TestRun {
 		const existing = this.tracked.get(request);
 		if (existing) {
@@ -1025,7 +1025,7 @@ export class TestRunCoordinator {
 			controllerId,
 			collection,
 			request,
-			persist,
+			persist
 		);
 		const profile = tryGetProfileFromTestRunReq(request);
 		this.proxy.$startedExtensionTestRun({
@@ -1037,14 +1037,11 @@ export class TestRunCoordinator {
 			},
 			exclude:
 				request.exclude?.map((t) =>
-					TestId.fromExtHostTestItem(
-						t,
-						collection.root.id,
-					).toString(),
+					TestId.fromExtHostTestItem(t, collection.root.id).toString()
 				) ?? [],
 			id: dto.id,
 			include: request.include?.map((t) =>
-				TestId.fromExtHostTestItem(t, collection.root.id).toString(),
+				TestId.fromExtHostTestItem(t, collection.root.id).toString()
 			) ?? [collection.root.id],
 			persist,
 		});
@@ -1062,7 +1059,7 @@ export class TestRunCoordinator {
 		req: vscode.TestRunRequest,
 		dto: TestRunDto,
 		extension: IRelaxedExtensionDescription,
-		token?: CancellationToken,
+		token?: CancellationToken
 	) {
 		const tracker = new TestRunTracker(dto, this.proxy, extension, token);
 		this.tracked.set(req, tracker);
@@ -1083,7 +1080,7 @@ export class TestRunCoordinator {
 
 				coverageReports.coverage.set(taskId, coverage);
 				this.proxy.$signalCoverageAvailable(runId, taskId, !!coverage);
-			},
+			}
 		);
 
 		Event.once(tracker.onEnd)(() => {
@@ -1101,7 +1098,7 @@ const tryGetProfileFromTestRunReq = (request: vscode.TestRunRequest) => {
 
 	if (!(request.profile instanceof TestRunProfileImpl)) {
 		throw new Error(
-			`TestRunRequest.profile is not an instance created from TestController.createRunProfile`,
+			`TestRunRequest.profile is not an instance created from TestController.createRunProfile`
 		);
 	}
 
@@ -1116,25 +1113,25 @@ export class TestRunDto {
 		controllerId: string,
 		collection: ExtHostTestItemCollection,
 		request: vscode.TestRunRequest,
-		persist: boolean,
+		persist: boolean
 	) {
 		return new TestRunDto(
 			controllerId,
 			generateUuid(),
 			request.include?.map((t) =>
-				TestId.fromExtHostTestItem(t, controllerId).toString(),
+				TestId.fromExtHostTestItem(t, controllerId).toString()
 			) ?? [controllerId],
 			request.exclude?.map((t) =>
-				TestId.fromExtHostTestItem(t, controllerId).toString(),
+				TestId.fromExtHostTestItem(t, controllerId).toString()
 			) ?? [],
 			persist,
-			collection,
+			collection
 		);
 	}
 
 	public static fromInternal(
 		request: IStartControllerTests,
-		collection: ExtHostTestItemCollection,
+		collection: ExtHostTestItemCollection
 	) {
 		return new TestRunDto(
 			request.controllerId,
@@ -1142,7 +1139,7 @@ export class TestRunDto {
 			request.testIds,
 			request.excludeExtIds,
 			true,
-			collection,
+			collection
 		);
 	}
 
@@ -1152,13 +1149,13 @@ export class TestRunDto {
 		include: string[],
 		exclude: string[],
 		public readonly isPersisted: boolean,
-		public readonly colllection: ExtHostTestItemCollection,
+		public readonly colllection: ExtHostTestItemCollection
 	) {
 		this.includePrefix = include.map(
-			(id) => id + TestIdPathParts.Delimiter,
+			(id) => id + TestIdPathParts.Delimiter
 		);
 		this.excludePrefix = exclude.map(
-			(id) => id + TestIdPathParts.Delimiter,
+			(id) => id + TestIdPathParts.Delimiter
 		);
 	}
 
@@ -1188,7 +1185,7 @@ class TestRunCoverageBearer {
 	constructor(public readonly provider: vscode.TestCoverageProvider) {}
 
 	public async provideFileCoverage(
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IFileCoverage.Serialized[]> {
 		if (!this.fileCoverage) {
 			this.fileCoverage = (async () =>
@@ -1206,7 +1203,7 @@ class TestRunCoverageBearer {
 
 	public async resolveFileCoverage(
 		index: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<CoverageDetails.Serialized[]> {
 		const fileCoverage = await this.fileCoverage;
 		let file = fileCoverage?.[index];
@@ -1354,7 +1351,7 @@ class MirroredTestCollection extends AbstractIncrementalTestCollection<MirroredC
 	 */
 	protected createItem(
 		item: InternalTestItem,
-		parent?: MirroredCollectionTestItem,
+		parent?: MirroredCollectionTestItem
 	): MirroredCollectionTestItem {
 		return {
 			...item,
@@ -1442,7 +1439,7 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 			this.#proxy.$updateTestRunConfig(
 				this.controllerId,
 				this.profileId,
-				{ label },
+				{ label }
 			);
 		}
 	}
@@ -1457,7 +1454,7 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 			this.#proxy.$updateTestRunConfig(
 				this.controllerId,
 				this.profileId,
-				{ supportsContinuousRun: supports },
+				{ supportsContinuousRun: supports }
 			);
 		}
 	}
@@ -1472,7 +1469,7 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 			this.#proxy.$updateTestRunConfig(
 				this.controllerId,
 				this.profileId,
-				{ isDefault },
+				{ isDefault }
 			);
 		}
 	}
@@ -1491,7 +1488,7 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 					tag: tag
 						? Convert.TestTag.namespace(this.controllerId, tag.id)
 						: null,
-				},
+				}
 			);
 		}
 	}
@@ -1506,7 +1503,7 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 			this.#proxy.$updateTestRunConfig(
 				this.controllerId,
 				this.profileId,
-				{ hasConfigurationHandler: !!handler },
+				{ hasConfigurationHandler: !!handler }
 			);
 		}
 	}
@@ -1519,9 +1516,9 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 	public get onDidChangeSelected() {
 		checkProposedApiEnabled(this.#extension, "testingActiveProfile");
 		return Event.chain(this.#onDidChangeActiveProfiles, ($) =>
-			$.map((ev) =>
-				ev.get(this.controllerId)?.get(this.profileId),
-			).filter(isDefined),
+			$.map(
+				(ev) => ev.get(this.controllerId)?.get(this.profileId)
+			).filter(isDefined)
 		);
 	}
 
@@ -1537,11 +1534,11 @@ export class TestRunProfileImpl implements vscode.TestRunProfile {
 		public readonly kind: vscode.TestRunProfileKind,
 		public runHandler: (
 			request: vscode.TestRunRequest,
-			token: vscode.CancellationToken,
+			token: vscode.CancellationToken
 		) => Thenable<void> | void,
 		private _isDefault = false,
 		public _tag: vscode.TestTag | undefined = undefined,
-		private _supportsContinuousRun = false,
+		private _supportsContinuousRun = false
 	) {
 		this.#proxy = proxy;
 		this.#profiles = profiles;

@@ -84,7 +84,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 		id: string,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		super(id, telemetryService, themeService, storageService);
 	}
@@ -101,7 +101,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 			new DomScrollableElement(this.container, {
 				horizontal: ScrollbarVisibility.Auto,
 				vertical: ScrollbarVisibility.Auto,
-			}),
+			})
 		);
 		parent.appendChild(this.scrollbar.getDomNode());
 	}
@@ -110,7 +110,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 		input: EditorInput,
 		options: IEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		await super.setInput(input, options, context, token);
 
@@ -125,11 +125,11 @@ export abstract class EditorPlaceholder extends EditorPane {
 
 	private async renderInput(
 		input: EditorInput,
-		options: IEditorOptions | undefined,
+		options: IEditorOptions | undefined
 	): Promise<IDisposable> {
 		const [container, scrollbar] = assertAllDefined(
 			this.container,
-			this.scrollbar,
+			this.scrollbar
 		);
 
 		// Reset any previous contents
@@ -140,23 +140,23 @@ export abstract class EditorPlaceholder extends EditorPane {
 		const { icon, label, actions } = await this.getContents(
 			input,
 			options,
-			disposables,
+			disposables
 		);
 		const truncatedLabel = truncate(
 			label,
-			EditorPlaceholder.PLACEHOLDER_LABEL_MAX_LENGTH,
+			EditorPlaceholder.PLACEHOLDER_LABEL_MAX_LENGTH
 		);
 
 		// Icon
 		const iconContainer = container.appendChild(
-			$(".editor-placeholder-icon-container"),
+			$(".editor-placeholder-icon-container")
 		);
 		const iconWidget = new SimpleIconLabel(iconContainer);
 		iconWidget.text = icon;
 
 		// Label
 		const labelContainer = container.appendChild(
-			$(".editor-placeholder-label-container"),
+			$(".editor-placeholder-label-container")
 		);
 		const labelWidget = document.createElement("span");
 		labelWidget.textContent = truncatedLabel;
@@ -169,14 +169,14 @@ export abstract class EditorPlaceholder extends EditorPane {
 				input,
 				undefined,
 				this.group,
-				undefined,
-			)}, ${truncatedLabel}`,
+				undefined
+			)}, ${truncatedLabel}`
 		);
 
 		// Buttons
 		if (actions.length) {
 			const actionsContainer = container.appendChild(
-				$(".editor-placeholder-buttons-container"),
+				$(".editor-placeholder-buttons-container")
 			);
 			const buttons = disposables.add(new ButtonBar(actionsContainer));
 
@@ -185,7 +185,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 					buttons.addButton({
 						...defaultButtonStyles,
 						secondary: i !== 0,
-					}),
+					})
 				);
 
 				button.label = actions[i].label;
@@ -196,7 +196,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 						}
 
 						actions[i].run();
-					}),
+					})
 				);
 			}
 		}
@@ -210,7 +210,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 	protected abstract getContents(
 		input: EditorInput,
 		options: IEditorOptions | undefined,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): Promise<IEditorPlaceholderContents>;
 
 	override clearInput(): void {
@@ -226,7 +226,7 @@ export abstract class EditorPlaceholder extends EditorPane {
 	layout(dimension: Dimension): void {
 		const [container, scrollbar] = assertAllDefined(
 			this.container,
-			this.scrollbar,
+			this.scrollbar
 		);
 
 		// Pass on to Container
@@ -256,23 +256,29 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 	static readonly ID = "workbench.editors.workspaceTrustRequiredEditor";
 	private static readonly LABEL = localize(
 		"trustRequiredEditor",
-		"Workspace Trust Required",
+		"Workspace Trust Required"
 	);
 
 	static readonly DESCRIPTOR = EditorPaneDescriptor.create(
 		WorkspaceTrustRequiredPlaceholderEditor,
 		WorkspaceTrustRequiredPlaceholderEditor.ID,
-		WorkspaceTrustRequiredPlaceholderEditor.LABEL,
+		WorkspaceTrustRequiredPlaceholderEditor.LABEL
 	);
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
 		@IStorageService storageService: IStorageService
 	) {
-		super(WorkspaceTrustRequiredPlaceholderEditor.ID, telemetryService, themeService, storageService);
+		super(
+			WorkspaceTrustRequiredPlaceholderEditor.ID,
+			telemetryService,
+			themeService,
+			storageService
+		);
 	}
 
 	override getTitle(): string {
@@ -283,22 +289,22 @@ export class WorkspaceTrustRequiredPlaceholderEditor extends EditorPlaceholder {
 		return {
 			icon: "$(workspace-untrusted)",
 			label: isSingleFolderWorkspaceIdentifier(
-				toWorkspaceIdentifier(this.workspaceService.getWorkspace()),
+				toWorkspaceIdentifier(this.workspaceService.getWorkspace())
 			)
 				? localize(
 						"requiresFolderTrustText",
-						"The file is not displayed in the editor because trust has not been granted to the folder.",
-				  )
+						"The file is not displayed in the editor because trust has not been granted to the folder."
+					)
 				: localize(
 						"requiresWorkspaceTrustText",
-						"The file is not displayed in the editor because trust has not been granted to the workspace.",
-				  ),
+						"The file is not displayed in the editor because trust has not been granted to the workspace."
+					),
 			actions: [
 				{
 					label: localize("manageTrust", "Manage Workspace Trust"),
 					run: () =>
 						this.commandService.executeCommand(
-							"workbench.trust.manage",
+							"workbench.trust.manage"
 						),
 				},
 			],
@@ -313,7 +319,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 	static readonly DESCRIPTOR = EditorPaneDescriptor.create(
 		ErrorPlaceholderEditor,
 		ErrorPlaceholderEditor.ID,
-		ErrorPlaceholderEditor.LABEL,
+		ErrorPlaceholderEditor.LABEL
 	);
 
 	constructor(
@@ -323,13 +329,18 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 		@IFileService private readonly fileService: IFileService,
 		@IDialogService private readonly dialogService: IDialogService
 	) {
-		super(ErrorPlaceholderEditor.ID, telemetryService, themeService, storageService);
+		super(
+			ErrorPlaceholderEditor.ID,
+			telemetryService,
+			themeService,
+			storageService
+		);
 	}
 
 	protected async getContents(
 		input: EditorInput,
 		options: IErrorEditorPlaceholderOptions,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): Promise<IEditorPlaceholderContents> {
 		const resource = input.resource;
 		const group = this.group;
@@ -343,7 +354,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 		if (isFileNotFound) {
 			label = localize(
 				"unavailableResourceErrorEditorText",
-				"The editor could not be opened because the file was not found.",
+				"The editor could not be opened because the file was not found."
 			);
 		} else if (isEditorOpenError(error) && error.forceMessage) {
 			label = error.message;
@@ -353,13 +364,13 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 				"The editor could not be opened due to an unexpected error: {0}",
 				truncateMiddle(
 					toErrorMessage(error),
-					EditorPlaceholder.PLACEHOLDER_LABEL_MAX_LENGTH / 2,
-				),
+					EditorPlaceholder.PLACEHOLDER_LABEL_MAX_LENGTH / 2
+				)
 			);
 		} else {
 			label = localize(
 				"unknownErrorEditorTextWithoutError",
-				"The editor could not be opened due to an unexpected error.",
+				"The editor could not be opened due to an unexpected error."
 			);
 		}
 
@@ -383,7 +394,7 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 						const result = action.run();
 						if (result instanceof Promise) {
 							result.catch((error) =>
-								this.dialogService.error(toErrorMessage(error)),
+								this.dialogService.error(toErrorMessage(error))
 							);
 						}
 					},
@@ -415,12 +426,12 @@ export class ErrorPlaceholderEditor extends EditorPlaceholder {
 						e.contains(
 							resource,
 							FileChangeType.ADDED,
-							FileChangeType.UPDATED,
+							FileChangeType.UPDATED
 						)
 					) {
 						group.openEditor(input, options);
 					}
-				}),
+				})
 			);
 		}
 

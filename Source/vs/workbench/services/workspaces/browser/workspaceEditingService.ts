@@ -34,20 +34,24 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 	constructor(
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IWorkspaceContextService contextService: WorkspaceService,
-		@IWorkbenchConfigurationService configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		configurationService: IWorkbenchConfigurationService,
 		@INotificationService notificationService: INotificationService,
 		@ICommandService commandService: ICommandService,
 		@IFileService fileService: IFileService,
 		@ITextFileService textFileService: ITextFileService,
 		@IWorkspacesService workspacesService: IWorkspacesService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IFileDialogService fileDialogService: IFileDialogService,
 		@IDialogService dialogService: IDialogService,
 		@IHostService hostService: IHostService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService userDataProfileService: IUserDataProfileService
 	) {
 		super(
 			jsonEditingService,
@@ -65,7 +69,7 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 			uriIdentityService,
 			workspaceTrustManagementService,
 			userDataProfilesService,
-			userDataProfileService,
+			userDataProfileService
 		);
 	}
 
@@ -83,5 +87,5 @@ export class BrowserWorkspaceEditingService extends AbstractWorkspaceEditingServ
 registerSingleton(
 	IWorkspaceEditingService,
 	BrowserWorkspaceEditingService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

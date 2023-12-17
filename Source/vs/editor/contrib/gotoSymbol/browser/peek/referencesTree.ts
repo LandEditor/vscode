@@ -41,10 +41,12 @@ export type TreeElement = FileReferences | OneReference;
 export class DataSource
 	implements IAsyncDataSource<ReferencesModel | FileReferences, TreeElement>
 {
-	constructor(@ITextModelService private readonly _resolverService: ITextModelService) { }
+	constructor(
+		@ITextModelService private readonly _resolverService: ITextModelService
+	) {}
 
 	hasChildren(
-		element: ReferencesModel | FileReferences | TreeElement,
+		element: ReferencesModel | FileReferences | TreeElement
 	): boolean {
 		if (element instanceof ReferencesModel) {
 			return true;
@@ -56,7 +58,7 @@ export class DataSource
 	}
 
 	getChildren(
-		element: ReferencesModel | FileReferences | TreeElement,
+		element: ReferencesModel | FileReferences | TreeElement
 	): TreeElement[] | Promise<TreeElement[]> {
 		if (element instanceof ReferencesModel) {
 			return element.groups;
@@ -95,7 +97,10 @@ export class Delegate implements IListVirtualDelegate<TreeElement> {
 export class StringRepresentationProvider
 	implements IKeyboardNavigationLabelProvider<TreeElement>
 {
-	constructor(@IKeybindingService private readonly _keybindingService: IKeybindingService) { }
+	constructor(
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
+	) {}
 
 	getKeyboardNavigationLabel(element: TreeElement): { toString(): string } {
 		if (element instanceof OneReference) {
@@ -132,11 +137,17 @@ class FileReferencesTemplate extends Disposable {
 		@ILabelService private readonly _labelService: ILabelService
 	) {
 		super();
-		const parent = document.createElement('div');
-		parent.classList.add('reference-file');
-		this.file = this._register(new IconLabel(parent, { supportHighlights: true }));
+		const parent = document.createElement("div");
+		parent.classList.add("reference-file");
+		this.file = this._register(
+			new IconLabel(parent, { supportHighlights: true })
+		);
 
-		this.badge = new CountBadge(dom.append(parent, dom.$('.count')), {}, defaultCountBadgeStyles);
+		this.badge = new CountBadge(
+			dom.append(parent, dom.$(".count")),
+			{},
+			defaultCountBadgeStyles
+		);
 
 		container.appendChild(parent);
 	}
@@ -146,41 +157,45 @@ class FileReferencesTemplate extends Disposable {
 		this.file.setLabel(
 			this._labelService.getUriBasenameLabel(element.uri),
 			this._labelService.getUriLabel(parent, { relative: true }),
-			{ title: this._labelService.getUriLabel(element.uri), matches },
+			{ title: this._labelService.getUriLabel(element.uri), matches }
 		);
 		const len = element.children.length;
 		this.badge.setCount(len);
 		if (len > 1) {
 			this.badge.setTitleFormat(
-				localize("referencesCount", "{0} references", len),
+				localize("referencesCount", "{0} references", len)
 			);
 		} else {
 			this.badge.setTitleFormat(
-				localize("referenceCount", "{0} reference", len),
+				localize("referenceCount", "{0} reference", len)
 			);
 		}
 	}
 }
 
 export class FileReferencesRenderer
-	implements ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
+	implements
+		ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
 {
 	static readonly id = "FileReferencesRenderer";
 
 	readonly templateId: string = FileReferencesRenderer.id;
 
-	constructor(@IInstantiationService private readonly _instantiationService: IInstantiationService) { }
+	constructor(
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
+	) {}
 
 	renderTemplate(container: HTMLElement): FileReferencesTemplate {
 		return this._instantiationService.createInstance(
 			FileReferencesTemplate,
-			container,
+			container
 		);
 	}
 	renderElement(
 		node: ITreeNode<FileReferences, FuzzyScore>,
 		index: number,
-		template: FileReferencesTemplate,
+		template: FileReferencesTemplate
 	): void {
 		template.set(node.element, createMatches(node.filterData));
 	}
@@ -208,7 +223,7 @@ class OneReferenceTemplate {
 			this.label.set(
 				`${basename(element.uri)}:${
 					element.range.startLineNumber + 1
-				}:${element.range.startColumn + 1}`,
+				}:${element.range.startColumn + 1}`
 			);
 		} else {
 			// render search match as highlight unless
@@ -238,7 +253,7 @@ export class OneReferenceRenderer
 	renderElement(
 		node: ITreeNode<OneReference, FuzzyScore>,
 		index: number,
-		templateData: OneReferenceTemplate,
+		templateData: OneReferenceTemplate
 	): void {
 		templateData.set(node.element, node.filterData);
 	}

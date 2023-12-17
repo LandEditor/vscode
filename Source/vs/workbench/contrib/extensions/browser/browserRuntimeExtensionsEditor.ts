@@ -18,24 +18,24 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 	}
 
 	protected _getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
+		extensionId: ExtensionIdentifier
 	): IExtensionHostProfile | undefined {
 		return undefined;
 	}
 
 	protected _createSlowExtensionAction(
-		element: IRuntimeExtension,
+		element: IRuntimeExtension
 	): Action | null {
 		return null;
 	}
 
 	protected _createReportExtensionIssueAction(
-		element: IRuntimeExtension,
+		element: IRuntimeExtension
 	): Action | null {
 		if (element.marketplaceInfo) {
 			return this._instantiationService.createInstance(
 				ReportExtensionIssueAction,
-				element.description,
+				element.description
 			);
 		}
 		return null;

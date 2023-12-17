@@ -55,7 +55,7 @@ export class ConfigureRuntimeArgumentsAction extends Action2 {
 			title: {
 				value: localize(
 					"configureRuntimeArguments",
-					"Configure Runtime Arguments",
+					"Configure Runtime Arguments"
 				),
 				original: "Configure Runtime Arguments",
 			},
@@ -82,7 +82,7 @@ export class ReloadWindowWithExtensionsDisabledAction extends Action2 {
 			title: {
 				value: localize(
 					"reloadWindowWithExtensionsDisabled",
-					"Reload With Extensions Disabled",
+					"Reload With Extensions Disabled"
 				),
 				original: "Reload With Extensions Disabled",
 			},
@@ -115,7 +115,7 @@ export class OpenUserDataFolderAction extends Action2 {
 		const nativeHostService = accessor.get(INativeHostService);
 		const fileService = accessor.get(IFileService);
 		const environmentService = accessor.get(
-			INativeWorkbenchEnvironmentService,
+			INativeWorkbenchEnvironmentService
 		);
 
 		const userDataHome = URI.file(environmentService.userDataPath);

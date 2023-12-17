@@ -31,11 +31,11 @@ export class WebLocaleService implements ILocaleService {
 		@IDialogService private readonly dialogService: IDialogService,
 		@IHostService private readonly hostService: IHostService,
 		@IProductService private readonly productService: IProductService
-	) { }
+	) {}
 
 	async setLocale(
 		languagePackItem: ILanguagePackItem,
-		_skipDialog = false,
+		_skipDialog = false
 	): Promise<void> {
 		const locale = languagePackItem.id;
 		if (
@@ -47,18 +47,18 @@ export class WebLocaleService implements ILocaleService {
 		if (locale) {
 			localStorage.setItem(
 				WebLocaleService._LOCAL_STORAGE_LOCALE_KEY,
-				locale,
+				locale
 			);
 			if (languagePackItem.extensionId) {
 				localStorage.setItem(
 					WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY,
-					languagePackItem.extensionId,
+					languagePackItem.extensionId
 				);
 			}
 		} else {
 			localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY);
 			localStorage.removeItem(
-				WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY,
+				WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY
 			);
 		}
 
@@ -67,16 +67,16 @@ export class WebLocaleService implements ILocaleService {
 			message: localize(
 				"relaunchDisplayLanguageMessage",
 				"To change the display language, {0} needs to reload",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			detail: localize(
 				"relaunchDisplayLanguageDetail",
 				"Press the reload button to refresh the page and set the display language to {0}.",
-				languagePackItem.label,
+				languagePackItem.label
 			),
 			primaryButton: localize(
 				{ key: "reload", comment: ["&& denotes a mnemonic character"] },
-				"&&Reload",
+				"&&Reload"
 			),
 		});
 
@@ -88,7 +88,7 @@ export class WebLocaleService implements ILocaleService {
 	async clearLocalePreference(): Promise<void> {
 		localStorage.removeItem(WebLocaleService._LOCAL_STORAGE_LOCALE_KEY);
 		localStorage.removeItem(
-			WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY,
+			WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY
 		);
 
 		if (Language.value() === navigator.language.toLowerCase()) {
@@ -100,15 +100,15 @@ export class WebLocaleService implements ILocaleService {
 			message: localize(
 				"clearDisplayLanguageMessage",
 				"To change the display language, {0} needs to reload",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			detail: localize(
 				"clearDisplayLanguageDetail",
-				"Press the reload button to refresh the page and use your browser's language.",
+				"Press the reload button to refresh the page and use your browser's language."
 			),
 			primaryButton: localize(
 				{ key: "reload", comment: ["&& denotes a mnemonic character"] },
-				"&&Reload",
+				"&&Reload"
 			),
 		});
 
@@ -122,9 +122,10 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 	_serviceBrand: undefined;
 
 	constructor(
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
 		@ILogService private readonly logService: ILogService
-	) { }
+	) {}
 
 	async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
 		const language = Language.value();
@@ -132,7 +133,7 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 			return undefined;
 		}
 		const extensionId = localStorage.getItem(
-			WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY,
+			WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY
 		);
 		if (extensionId) {
 			return extensionId;
@@ -145,19 +146,19 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 		try {
 			const tagResult = await this.galleryService.query(
 				{ text: `tag:lp-${language}` },
-				CancellationToken.None,
+				CancellationToken.None
 			);
 
 			// Only install extensions that are published by Microsoft and start with vscode-language-pack for extra certainty
 			const extensionToInstall = tagResult.firstPage.find(
 				(e) =>
 					e.publisher === "MS-CEINTL" &&
-					e.name.startsWith("vscode-language-pack"),
+					e.name.startsWith("vscode-language-pack")
 			);
 			if (extensionToInstall) {
 				localStorage.setItem(
 					WebLocaleService._LOCAL_STORAGE_EXTENSION_ID_KEY,
-					extensionToInstall.identifier.id,
+					extensionToInstall.identifier.id
 				);
 				return extensionToInstall.identifier.id;
 			}
@@ -177,5 +178,5 @@ registerSingleton(ILocaleService, WebLocaleService, InstantiationType.Delayed);
 registerSingleton(
 	IActiveLanguagePackService,
 	WebActiveLanguagePackService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

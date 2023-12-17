@@ -18,7 +18,7 @@ async function main() {
 	if (args.help) {
 		console.log(
 			"./scripts/code-server.sh|bat [options]\n" +
-				" --launch              Opens a browser",
+				" --launch              Opens a browser"
 		);
 		startServer(["--help"]);
 		return;

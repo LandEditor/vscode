@@ -29,9 +29,15 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 		@IProductService productService: IProductService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
-		super(fileService, storageService, productService, environmentService, configurationService);
+		super(
+			fileService,
+			storageService,
+			productService,
+			environmentService,
+			configurationService
+		);
 	}
 
 	async readExtensionResource(uri: URI): Promise<string> {
@@ -59,7 +65,7 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 			this._logService.info(
 				`Request to '${uri.toString(true)}' failed with status code ${
 					response.status
-				}`,
+				}`
 			);
 			throw new Error(response.statusText);
 		}
@@ -70,5 +76,5 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 registerSingleton(
 	IExtensionResourceLoaderService,
 	ExtensionResourceLoaderService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

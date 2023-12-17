@@ -23,11 +23,11 @@ export default class ManagedFileContextManager extends Disposable {
 		activeJsTsEditorTracker.onDidChangeActiveJsTsEditor(
 			this.onDidChangeActiveTextEditor,
 			this,
-			this._disposables,
+			this._disposables
 		);
 
 		this.onDidChangeActiveTextEditor(
-			activeJsTsEditorTracker.activeJsTsEditor,
+			activeJsTsEditorTracker.activeJsTsEditor
 		);
 	}
 
@@ -47,7 +47,7 @@ export default class ManagedFileContextManager extends Disposable {
 		vscode.commands.executeCommand(
 			"setContext",
 			ManagedFileContextManager.contextName,
-			newValue,
+			newValue
 		);
 		this.isInManagedFileContext = newValue;
 	}

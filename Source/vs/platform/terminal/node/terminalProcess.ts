@@ -162,11 +162,11 @@ export class TerminalProcess
 	private readonly _onProcessData = this._register(new Emitter<string>());
 	readonly onProcessData = this._onProcessData.event;
 	private readonly _onProcessReady = this._register(
-		new Emitter<IProcessReadyEvent>(),
+		new Emitter<IProcessReadyEvent>()
 	);
 	readonly onProcessReady = this._onProcessReady.event;
 	private readonly _onDidChangeProperty = this._register(
-		new Emitter<IProcessProperty<any>>(),
+		new Emitter<IProcessProperty<any>>()
 	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
 	private readonly _onProcessExit = this._register(new Emitter<number>());
@@ -189,16 +189,19 @@ export class TerminalProcess
 		super();
 		let name: string;
 		if (isWindows) {
-			name = path.basename(this.shellLaunchConfig.executable || '');
+			name = path.basename(this.shellLaunchConfig.executable || "");
 		} else {
 			// Using 'xterm-256color' here helps ensure that the majority of Linux distributions will use a
 			// color prompt as defined in the default ~/.bashrc file.
-			name = 'xterm-256color';
+			name = "xterm-256color";
 		}
 		this._initialCwd = cwd;
 		this._properties[ProcessPropertyType.InitialCwd] = this._initialCwd;
 		this._properties[ProcessPropertyType.Cwd] = this._initialCwd;
-		const useConpty = this._options.windowsEnableConpty && process.platform === 'win32' && getWindowsBuildNumber() >= 18309;
+		const useConpty =
+			this._options.windowsEnableConpty &&
+			process.platform === "win32" &&
+			getWindowsBuildNumber() >= 18309;
 		this._ptyOptions = {
 			name,
 			cwd,
@@ -208,33 +211,60 @@ export class TerminalProcess
 			rows,
 			useConpty,
 			// This option will force conpty to not redraw the whole viewport on launch
-			conptyInheritCursor: useConpty && !!shellLaunchConfig.initialText
+			conptyInheritCursor: useConpty && !!shellLaunchConfig.initialText,
 		};
 		// Delay resizes to avoid conpty not respecting very early resize calls
 		if (isWindows) {
-			if (useConpty && cols === 0 && rows === 0 && this.shellLaunchConfig.executable?.endsWith('Git\\bin\\bash.exe')) {
+			if (
+				useConpty &&
+				cols === 0 &&
+				rows === 0 &&
+				this.shellLaunchConfig.executable?.endsWith(
+					"Git\\bin\\bash.exe"
+				)
+			) {
 				this._delayedResizer = new DelayedResizer();
-				this._register(this._delayedResizer.onTrigger(dimensions => {
-					this._delayedResizer?.dispose();
-					this._delayedResizer = undefined;
-					if (dimensions.cols && dimensions.rows) {
-						this.resize(dimensions.cols, dimensions.rows);
-					}
-				}));
+				this._register(
+					this._delayedResizer.onTrigger((dimensions) => {
+						this._delayedResizer?.dispose();
+						this._delayedResizer = undefined;
+						if (dimensions.cols && dimensions.rows) {
+							this.resize(dimensions.cols, dimensions.rows);
+						}
+					})
+				);
 			}
 			// WindowsShellHelper is used to fetch the process title and shell type
-			this.onProcessReady(e => {
-				this._windowsShellHelper = this._register(new WindowsShellHelper(e.pid));
-				this._register(this._windowsShellHelper.onShellTypeChanged(e => this._onDidChangeProperty.fire({ type: ProcessPropertyType.ShellType, value: e })));
-				this._register(this._windowsShellHelper.onShellNameChanged(e => this._onDidChangeProperty.fire({ type: ProcessPropertyType.Title, value: e })));
+			this.onProcessReady((e) => {
+				this._windowsShellHelper = this._register(
+					new WindowsShellHelper(e.pid)
+				);
+				this._register(
+					this._windowsShellHelper.onShellTypeChanged((e) =>
+						this._onDidChangeProperty.fire({
+							type: ProcessPropertyType.ShellType,
+							value: e,
+						})
+					)
+				);
+				this._register(
+					this._windowsShellHelper.onShellNameChanged((e) =>
+						this._onDidChangeProperty.fire({
+							type: ProcessPropertyType.Title,
+							value: e,
+						})
+					)
+				);
 			});
 		}
-		this._register(toDisposable(() => {
-			if (this._titleInterval) {
-				clearInterval(this._titleInterval);
-				this._titleInterval = null;
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				if (this._titleInterval) {
+					clearInterval(this._titleInterval);
+					this._titleInterval = null;
+				}
+			})
+		);
 	}
 
 	async start(): Promise<
@@ -256,7 +286,7 @@ export class TerminalProcess
 				this._options,
 				this._ptyOptions.env,
 				this._logService,
-				this._productService,
+				this._productService
 			);
 			if (injection) {
 				this._onDidChangeProperty.fire({
@@ -265,7 +295,7 @@ export class TerminalProcess
 				});
 				if (injection.envMixin) {
 					for (const [key, value] of Object.entries(
-						injection.envMixin,
+						injection.envMixin
 					)) {
 						this._ptyOptions.env ||= {};
 						this._ptyOptions.env[key] = value;
@@ -298,7 +328,7 @@ export class TerminalProcess
 			await this.setupPtyProcess(
 				this.shellLaunchConfig,
 				this._ptyOptions,
-				injection,
+				injection
 			);
 			if (injection?.newArgs) {
 				return { injectedArgs: injection.newArgs };
@@ -307,7 +337,7 @@ export class TerminalProcess
 		} catch (err) {
 			this._logService.trace(
 				"node-pty.node-pty.IPty#spawn native exception",
-				err,
+				err
 			);
 			return {
 				message: `A native exception occurred during launch (${err.message})`,
@@ -323,7 +353,7 @@ export class TerminalProcess
 					message: localize(
 						"launchFail.cwdNotDirectory",
 						'Starting directory (cwd) "{0}" is not a directory',
-						this._initialCwd.toString(),
+						this._initialCwd.toString()
 					),
 				};
 			}
@@ -333,7 +363,7 @@ export class TerminalProcess
 					message: localize(
 						"launchFail.cwdDoesNotExist",
 						'Starting directory (cwd) "{0}" does not exist',
-						this._initialCwd.toString(),
+						this._initialCwd.toString()
 					),
 				};
 			}
@@ -362,14 +392,14 @@ export class TerminalProcess
 			slc.executable!,
 			cwd,
 			envPaths,
-			this._executableEnv,
+			this._executableEnv
 		);
 		if (!executable) {
 			return {
 				message: localize(
 					"launchFail.executableDoesNotExist",
 					'Path to shell executable "{0}" does not exist',
-					slc.executable,
+					slc.executable
 				),
 			};
 		}
@@ -381,7 +411,7 @@ export class TerminalProcess
 					message: localize(
 						"launchFail.executableIsNotFileOrSymlink",
 						'Path to shell executable "{0}" is not a file or a symlink',
-						slc.executable,
+						slc.executable
 					),
 				};
 			}
@@ -401,7 +431,7 @@ export class TerminalProcess
 	private async setupPtyProcess(
 		shellLaunchConfig: IShellLaunchConfig,
 		options: IPtyForkOptions,
-		shellIntegrationInjection: IShellIntegrationConfigInjection | undefined,
+		shellIntegrationInjection: IShellIntegrationConfigInjection | undefined
 	): Promise<void> {
 		const args =
 			shellIntegrationInjection?.newArgs || shellLaunchConfig.args || [];
@@ -410,18 +440,18 @@ export class TerminalProcess
 			"node-pty.IPty#spawn",
 			shellLaunchConfig.executable,
 			args,
-			options,
+			options
 		);
 		const ptyProcess = spawn(shellLaunchConfig.executable!, args, options);
 		this._ptyProcess = ptyProcess;
 		this._childProcessMonitor = this._register(
-			new ChildProcessMonitor(ptyProcess.pid, this._logService),
+			new ChildProcessMonitor(ptyProcess.pid, this._logService)
 		);
 		this._childProcessMonitor.onDidChangeHasChildProcesses((value) =>
 			this._onDidChangeProperty.fire({
 				type: ProcessPropertyType.HasChildProcesses,
 				value,
-			}),
+			})
 		);
 		this._processStartupComplete = new Promise<void>((c) => {
 			this.onProcessReady(() => c());
@@ -435,7 +465,7 @@ export class TerminalProcess
 					FlowControlConstants.HighWatermarkChars
 			) {
 				this._logService.trace(
-					`Flow control: Pause (${this._unacknowledgedCharCount} > ${FlowControlConstants.HighWatermarkChars})`,
+					`Flow control: Pause (${this._unacknowledgedCharCount} > ${FlowControlConstants.HighWatermarkChars})`
 				);
 				this._isPtyPaused = true;
 				ptyProcess.pause();
@@ -477,7 +507,7 @@ export class TerminalProcess
 		if (this._logService.getLevel() === LogLevel.Trace) {
 			this._logService.trace(
 				"TerminalProcess#_queueProcessExit",
-				new Error().stack?.replace(/^Error/, ""),
+				new Error().stack?.replace(/^Error/, "")
 			);
 		}
 		if (this._closeTimeout) {
@@ -529,7 +559,7 @@ export class TerminalProcess
 			await timeout(
 				Constants.KillSpawnThrottleInterval -
 					(Date.now() - TerminalProcess._lastKillOrStart) +
-					Constants.KillSpawnSpacingDuration,
+					Constants.KillSpawnSpacingDuration
 			);
 		}
 		TerminalProcess._lastKillOrStart = Date.now();
@@ -564,7 +594,7 @@ export class TerminalProcess
 		if (this._logService.getLevel() === LogLevel.Trace) {
 			this._logService.trace(
 				"TerminalProcess#shutdown",
-				new Error().stack?.replace(/^Error/, ""),
+				new Error().stack?.replace(/^Error/, "")
 			);
 		}
 		// don't force immediate disposal of the terminal processes on Windows as an additional
@@ -599,7 +629,7 @@ export class TerminalProcess
 				isBinary: isBinary || false,
 				data: data.substr(
 					i * Constants.WriteMaxChunkSize,
-					Constants.WriteMaxChunkSize,
+					Constants.WriteMaxChunkSize
 				),
 			};
 			this._writeQueue.push(obj);
@@ -612,7 +642,7 @@ export class TerminalProcess
 	}
 
 	async refreshProperty<T extends ProcessPropertyType>(
-		type: T,
+		type: T
 	): Promise<IProcessPropertyMap[T]> {
 		switch (type) {
 			case ProcessPropertyType.Cwd: {
@@ -646,7 +676,7 @@ export class TerminalProcess
 
 	async updateProperty<T extends ProcessPropertyType>(
 		type: T,
-		value: IProcessPropertyMap[T],
+		value: IProcessPropertyMap[T]
 	): Promise<void> {
 		if (type === ProcessPropertyType.FixedDimensions) {
 			this._properties.fixedDimensions =
@@ -717,7 +747,7 @@ export class TerminalProcess
 			} catch (e) {
 				// Swallow error if the pty has already exited
 				this._logService.trace(
-					"node-pty.IPty#resize exception " + e.message,
+					"node-pty.IPty#resize exception " + e.message
 				);
 				if (
 					this._exitCode !== undefined &&
@@ -738,10 +768,10 @@ export class TerminalProcess
 		// Prevent lower than 0 to heal from errors
 		this._unacknowledgedCharCount = Math.max(
 			this._unacknowledgedCharCount - charCount,
-			0,
+			0
 		);
 		this._logService.trace(
-			`Flow control: Ack ${charCount} chars (unacknowledged: ${this._unacknowledgedCharCount})`,
+			`Flow control: Ack ${charCount} chars (unacknowledged: ${this._unacknowledgedCharCount})`
 		);
 		if (
 			this._isPtyPaused &&
@@ -749,7 +779,7 @@ export class TerminalProcess
 				FlowControlConstants.LowWatermarkChars
 		) {
 			this._logService.trace(
-				`Flow control: Resume (${this._unacknowledgedCharCount} < ${FlowControlConstants.LowWatermarkChars})`,
+				`Flow control: Resume (${this._unacknowledgedCharCount} < ${FlowControlConstants.LowWatermarkChars})`
 			);
 			this._ptyProcess?.resume();
 			this._isPtyPaused = false;
@@ -759,7 +789,7 @@ export class TerminalProcess
 	clearUnacknowledgedChars(): void {
 		this._unacknowledgedCharCount = 0;
 		this._logService.trace(
-			`Flow control: Cleared all unacknowledged chars, forcing resume`,
+			`Flow control: Cleared all unacknowledged chars, forcing resume`
 		);
 		if (this._isPtyPaused) {
 			this._ptyProcess?.resume();
@@ -794,19 +824,19 @@ export class TerminalProcess
 							resolve(
 								stdout.substring(
 									stdout.indexOf("/"),
-									stdout.length - 1,
-								),
+									stdout.length - 1
+								)
 							);
 						} else {
 							this._logService.error(
 								"lsof did not run successfully, it may not be on the $PATH?",
 								error,
 								stdout,
-								stderr,
+								stderr
 							);
 							resolve(this._initialCwd);
 						}
-					},
+					}
 				);
 			});
 		}
@@ -818,7 +848,7 @@ export class TerminalProcess
 			this._logService.trace("node-pty.IPty#pid");
 			try {
 				return await Promises.readlink(
-					`/proc/${this._ptyProcess.pid}/cwd`,
+					`/proc/${this._ptyProcess.pid}/cwd`
 				);
 			} catch (error) {
 				return this._initialCwd;
@@ -837,7 +867,7 @@ export class TerminalProcess
 							? "conpty"
 							: "winpty",
 					buildNumber: getWindowsBuildNumber(),
-			  }
+				}
 			: undefined;
 	}
 }
@@ -851,7 +881,7 @@ class DelayedResizer extends Disposable {
 	private _timeout: NodeJS.Timeout;
 
 	private readonly _onTrigger = this._register(
-		new Emitter<{ rows?: number; cols?: number }>(),
+		new Emitter<{ rows?: number; cols?: number }>()
 	);
 	get onTrigger(): Event<{ rows?: number; cols?: number }> {
 		return this._onTrigger.event;

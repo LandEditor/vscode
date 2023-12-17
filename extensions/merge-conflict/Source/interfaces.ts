@@ -28,12 +28,12 @@ export interface IDocumentMergeConflict
 	commitEdit(
 		type: CommitType,
 		editor: vscode.TextEditor,
-		edit?: vscode.TextEditorEdit,
+		edit?: vscode.TextEditorEdit
 	): Thenable<boolean>;
 	applyEdit(
 		type: CommitType,
 		document: vscode.TextDocument,
-		edit: { replace(range: vscode.Range, newText: string): void },
+		edit: { replace(range: vscode.Range, newText: string): void }
 	): void;
 }
 
@@ -47,7 +47,7 @@ export interface IDocumentMergeConflictDescriptor {
 
 export interface IDocumentMergeConflictTracker {
 	getConflicts(
-		document: vscode.TextDocument,
+		document: vscode.TextDocument
 	): PromiseLike<IDocumentMergeConflict[]>;
 	isPending(document: vscode.TextDocument): boolean;
 	forget(document: vscode.TextDocument): void;

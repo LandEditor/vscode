@@ -49,12 +49,12 @@ export interface IURLCallbackProvider {
 class BrowserURLOpener implements IOpener {
 	constructor(
 		private urlService: IURLService,
-		private productService: IProductService,
+		private productService: IProductService
 	) {}
 
 	async open(
 		resource: string | URI,
-		options?: OpenInternalOptions | OpenExternalOptions,
+		options?: OpenInternalOptions | OpenExternalOptions
 	): Promise<boolean> {
 		if ((options as OpenExternalOptions | undefined)?.openExternal) {
 			return false;
@@ -76,9 +76,10 @@ export class BrowserURLService extends AbstractURLService {
 	private provider: IURLCallbackProvider | undefined;
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IOpenerService openerService: IOpenerService,
-		@IProductService productService: IProductService,
+		@IProductService productService: IProductService
 	) {
 		super();
 
@@ -87,15 +88,15 @@ export class BrowserURLService extends AbstractURLService {
 		if (this.provider) {
 			this._register(
 				this.provider.onCallback((uri) =>
-					this.open(uri, { trusted: true }),
-				),
+					this.open(uri, { trusted: true })
+				)
 			);
 		}
 
 		this._register(
 			openerService.registerOpener(
-				new BrowserURLOpener(this, productService),
-			),
+				new BrowserURLOpener(this, productService)
+			)
 		);
 	}
 

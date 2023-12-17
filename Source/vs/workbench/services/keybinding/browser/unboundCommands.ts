@@ -16,7 +16,7 @@ import {
 } from "vs/platform/actions/common/actions";
 
 export function getAllUnboundCommands(
-	boundCommands: Map<string, boolean>,
+	boundCommands: Map<string, boolean>
 ): string[] {
 	const unboundCommands: string[] = [];
 	const seenMap: Map<string, boolean> = new Map<string, boolean>();

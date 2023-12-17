@@ -69,8 +69,8 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 
 	private delayer = this._register(
 		new ThrottledDelayer<ISymbolQuickPickItem[]>(
-			SymbolsQuickAccessProvider.TYPING_SEARCH_DELAY,
-		),
+			SymbolsQuickAccessProvider.TYPING_SEARCH_DELAY
+		)
 	);
 
 	get defaultFilterValue(): string | undefined {
@@ -87,14 +87,19 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		@ILabelService private readonly labelService: ILabelService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService
 	) {
 		super(SymbolsQuickAccessProvider.PREFIX, {
 			canAcceptInBackground: true,
 			noResultsPick: {
-				label: localize('noSymbolResults', "No matching workspace symbols")
-			}
+				label: localize(
+					"noSymbolResults",
+					"No matching workspace symbols"
+				),
+			},
 		});
 	}
 
@@ -114,7 +119,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 	protected _getPicks(
 		filter: string,
 		disposables: DisposableStore,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<ISymbolQuickPickItem>> {
 		return this.getSymbolPicks(filter, undefined, token);
 	}
@@ -124,21 +129,28 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		options:
 			| { skipLocal?: boolean; skipSorting?: boolean; delay?: number }
 			| undefined,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<ISymbolQuickPickItem>> {
-		return this.delayer.trigger(async () => {
-			if (token.isCancellationRequested) {
-				return [];
-			}
+		return this.delayer.trigger(
+			async () => {
+				if (token.isCancellationRequested) {
+					return [];
+				}
 
-			return this.doGetSymbolPicks(prepareQuery(filter), options, token);
-		}, options?.delay);
+				return this.doGetSymbolPicks(
+					prepareQuery(filter),
+					options,
+					token
+				);
+			},
+			options?.delay
+		);
 	}
 
 	private async doGetSymbolPicks(
 		query: IPreparedQuery,
 		options: { skipLocal?: boolean; skipSorting?: boolean } | undefined,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Array<ISymbolQuickPickItem>> {
 		// Split between symbol and container query
 		let symbolQuery: IPreparedQuery;
@@ -153,7 +165,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		// Run the workspace symbol query
 		const workspaceSymbols = await getWorkspaceSymbols(
 			symbolQuery.original,
-			token,
+			token
 		);
 		if (token.isCancellationRequested) {
 			return [];
@@ -171,7 +183,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			if (
 				options?.skipLocal &&
 				!SymbolsQuickAccessProvider.TREAT_AS_GLOBAL_SYMBOL_TYPES.has(
-					symbol.kind,
+					symbol.kind
 				) &&
 				!!symbol.containerName
 			) {
@@ -202,7 +214,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 							values: undefined /* disable multi-query support */,
 						},
 						0,
-						symbolLabelIconOffset,
+						symbolLabelIconOffset
 					);
 					if (typeof symbolScore === "number") {
 						skipContainerQuery = true; // since we consumed the query, skip any container matching
@@ -215,7 +227,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 						symbolLabelWithIcon,
 						symbolQuery,
 						0,
-						symbolLabelIconOffset,
+						symbolLabelIconOffset
 					);
 					if (typeof symbolScore !== "number") {
 						continue;
@@ -247,7 +259,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 				if (containerLabel) {
 					[containerScore, containerMatches] = scoreFuzzy2(
 						containerLabel,
-						containerQuery,
+						containerQuery
 					);
 				}
 
@@ -275,7 +287,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 					: {
 							label: symbolMatches,
 							description: containerMatches,
-					  },
+						},
 				description: containerLabel,
 				strikethrough: deprecated,
 				buttons: [
@@ -289,8 +301,8 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 								? localize("openToSide", "Open to the Side")
 								: localize(
 										"openToBottom",
-										"Open to the Bottom",
-								  ),
+										"Open to the Bottom"
+									),
 					},
 				],
 				trigger: (buttonIndex, keyMods) => {
@@ -313,7 +325,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		// Sort picks (unless disabled)
 		if (!options?.skipSorting) {
 			symbolPicks.sort((symbolA, symbolB) =>
-				this.compareSymbols(symbolA, symbolB),
+				this.compareSymbols(symbolA, symbolB)
 			);
 		}
 
@@ -329,7 +341,7 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 			forceOpenSideBySide?: boolean;
 			preserveFocus?: boolean;
 			forcePinned?: boolean;
-		},
+		}
 	): Promise<void> {
 		// Resolve actual symbol to open for providers that can resolve
 		let symbolToOpen = symbol;
@@ -371,18 +383,18 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 					},
 				},
 				options.keyMods.alt ||
-				(this.configuration.openEditorPinned &&
-					options.keyMods.ctrlCmd) ||
-				options?.forceOpenSideBySide
+					(this.configuration.openEditorPinned &&
+						options.keyMods.ctrlCmd) ||
+					options?.forceOpenSideBySide
 					? SIDE_GROUP
-					: ACTIVE_GROUP,
+					: ACTIVE_GROUP
 			);
 		}
 	}
 
 	private compareSymbols(
 		symbolA: ISymbolQuickPickItem,
-		symbolB: ISymbolQuickPickItem,
+		symbolB: ISymbolQuickPickItem
 	): number {
 		// By score
 		if (

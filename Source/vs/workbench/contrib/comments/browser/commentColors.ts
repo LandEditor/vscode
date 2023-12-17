@@ -24,7 +24,7 @@ const resolvedCommentViewIcon = registerColor(
 		hcDark: contrastBorder,
 		hcLight: contrastBorder,
 	},
-	nls.localize("resolvedCommentIcon", "Icon color for resolved comments."),
+	nls.localize("resolvedCommentIcon", "Icon color for resolved comments.")
 );
 const unresolvedCommentViewIcon = registerColor(
 	"commentsView.unresolvedIcon",
@@ -34,10 +34,7 @@ const unresolvedCommentViewIcon = registerColor(
 		hcDark: contrastBorder,
 		hcLight: contrastBorder,
 	},
-	nls.localize(
-		"unresolvedCommentIcon",
-		"Icon color for unresolved comments.",
-	),
+	nls.localize("unresolvedCommentIcon", "Icon color for unresolved comments.")
 );
 
 registerColor(
@@ -50,8 +47,8 @@ registerColor(
 	},
 	nls.localize(
 		"commentReplyInputBackground",
-		"Background color for comment reply input box.",
-	),
+		"Background color for comment reply input box."
+	)
 );
 const resolvedCommentBorder = registerColor(
 	"editorCommentsWidget.resolvedBorder",
@@ -63,8 +60,8 @@ const resolvedCommentBorder = registerColor(
 	},
 	nls.localize(
 		"resolvedCommentBorder",
-		"Color of borders and arrow for resolved comments.",
-	),
+		"Color of borders and arrow for resolved comments."
+	)
 );
 const unresolvedCommentBorder = registerColor(
 	"editorCommentsWidget.unresolvedBorder",
@@ -76,8 +73,8 @@ const unresolvedCommentBorder = registerColor(
 	},
 	nls.localize(
 		"unresolvedCommentBorder",
-		"Color of borders and arrow for unresolved comments.",
-	),
+		"Color of borders and arrow for unresolved comments."
+	)
 );
 export const commentThreadRangeBackground = registerColor(
 	"editorCommentsWidget.rangeBackground",
@@ -89,8 +86,8 @@ export const commentThreadRangeBackground = registerColor(
 	},
 	nls.localize(
 		"commentThreadRangeBackground",
-		"Color of background for comment ranges.",
-	),
+		"Color of background for comment ranges."
+	)
 );
 export const commentThreadRangeActiveBackground = registerColor(
 	"editorCommentsWidget.rangeActiveBackground",
@@ -102,8 +99,8 @@ export const commentThreadRangeActiveBackground = registerColor(
 	},
 	nls.localize(
 		"commentThreadActiveRangeBackground",
-		"Color of background for currently selected or hovered comment range.",
-	),
+		"Color of background for currently selected or hovered comment range."
+	)
 );
 
 const commentThreadStateBorderColors = new Map([
@@ -125,7 +122,7 @@ export const commentThreadStateBackgroundColorVar =
 function getCommentThreadStateColor(
 	state: languages.CommentThreadState | undefined,
 	theme: IColorTheme,
-	map: Map<languages.CommentThreadState, string>,
+	map: Map<languages.CommentThreadState, string>
 ): Color | undefined {
 	const colorId = state !== undefined ? map.get(state) : undefined;
 	return colorId !== undefined ? theme.getColor(colorId) : undefined;
@@ -133,22 +130,22 @@ function getCommentThreadStateColor(
 
 export function getCommentThreadStateBorderColor(
 	state: languages.CommentThreadState | undefined,
-	theme: IColorTheme,
+	theme: IColorTheme
 ): Color | undefined {
 	return getCommentThreadStateColor(
 		state,
 		theme,
-		commentThreadStateBorderColors,
+		commentThreadStateBorderColors
 	);
 }
 
 export function getCommentThreadStateIconColor(
 	state: languages.CommentThreadState | undefined,
-	theme: IColorTheme,
+	theme: IColorTheme
 ): Color | undefined {
 	return getCommentThreadStateColor(
 		state,
 		theme,
-		commentThreadStateIconColors,
+		commentThreadStateIconColors
 	);
 }

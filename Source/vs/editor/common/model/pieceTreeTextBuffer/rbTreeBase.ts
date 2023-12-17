@@ -390,7 +390,7 @@ export function updateTreeMetadata(
 	tree: PieceTreeBase,
 	x: TreeNode,
 	delta: number,
-	lineFeedCntDelta: number,
+	lineFeedCntDelta: number
 ): void {
 	// node length change or line feed count change
 	while (x !== tree.root && x !== SENTINEL) {

@@ -29,18 +29,18 @@ const wordHighlightBackground = registerColor(
 	{ dark: "#575757B8", light: "#57575740", hcDark: null, hcLight: null },
 	nls.localize(
 		"wordHighlight",
-		"Background color of a symbol during read-access, like reading a variable. The color must not be opaque so as not to hide underlying decorations.",
+		"Background color of a symbol during read-access, like reading a variable. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 registerColor(
 	"editor.wordHighlightStrongBackground",
 	{ dark: "#004972B8", light: "#0e639c40", hcDark: null, hcLight: null },
 	nls.localize(
 		"wordHighlightStrong",
-		"Background color of a symbol during write-access, like writing to a variable. The color must not be opaque so as not to hide underlying decorations.",
+		"Background color of a symbol during write-access, like writing to a variable. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 registerColor(
 	"editor.wordHighlightTextBackground",
@@ -52,9 +52,9 @@ registerColor(
 	},
 	nls.localize(
 		"wordHighlightText",
-		"Background color of a textual occurrence for a symbol. The color must not be opaque so as not to hide underlying decorations.",
+		"Background color of a textual occurrence for a symbol. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 const wordHighlightBorder = registerColor(
 	"editor.wordHighlightBorder",
@@ -66,8 +66,8 @@ const wordHighlightBorder = registerColor(
 	},
 	nls.localize(
 		"wordHighlightBorder",
-		"Border color of a symbol during read-access, like reading a variable.",
-	),
+		"Border color of a symbol during read-access, like reading a variable."
+	)
 );
 registerColor(
 	"editor.wordHighlightStrongBorder",
@@ -79,8 +79,8 @@ registerColor(
 	},
 	nls.localize(
 		"wordHighlightStrongBorder",
-		"Border color of a symbol during write-access, like writing to a variable.",
-	),
+		"Border color of a symbol during write-access, like writing to a variable."
+	)
 );
 registerColor(
 	"editor.wordHighlightTextBorder",
@@ -92,8 +92,8 @@ registerColor(
 	},
 	nls.localize(
 		"wordHighlightTextBorder",
-		"Border color of a textual occurrence for a symbol.",
-	),
+		"Border color of a textual occurrence for a symbol."
+	)
 );
 const overviewRulerWordHighlightForeground = registerColor(
 	"editorOverviewRuler.wordHighlightForeground",
@@ -105,9 +105,9 @@ const overviewRulerWordHighlightForeground = registerColor(
 	},
 	nls.localize(
 		"overviewRulerWordHighlightForeground",
-		"Overview ruler marker color for symbol highlights. The color must not be opaque so as not to hide underlying decorations.",
+		"Overview ruler marker color for symbol highlights. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 const overviewRulerWordHighlightStrongForeground = registerColor(
 	"editorOverviewRuler.wordHighlightStrongForeground",
@@ -119,9 +119,9 @@ const overviewRulerWordHighlightStrongForeground = registerColor(
 	},
 	nls.localize(
 		"overviewRulerWordHighlightStrongForeground",
-		"Overview ruler marker color for write-access symbol highlights. The color must not be opaque so as not to hide underlying decorations.",
+		"Overview ruler marker color for write-access symbol highlights. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 const overviewRulerWordHighlightTextForeground = registerColor(
 	"editorOverviewRuler.wordHighlightTextForeground",
@@ -133,9 +133,9 @@ const overviewRulerWordHighlightTextForeground = registerColor(
 	},
 	nls.localize(
 		"overviewRulerWordHighlightTextForeground",
-		"Overview ruler marker color of a textual occurrence for a symbol. The color must not be opaque so as not to hide underlying decorations.",
+		"Overview ruler marker color of a textual occurrence for a symbol. The color must not be opaque so as not to hide underlying decorations."
 	),
-	true,
+	true
 );
 
 const _WRITE_OPTIONS = ModelDecorationOptions.register({
@@ -202,7 +202,7 @@ const _REGULAR_OPTIONS = ModelDecorationOptions.register({
 });
 
 export function getHighlightDecorationOptions(
-	kind: DocumentHighlightKind | undefined,
+	kind: DocumentHighlightKind | undefined
 ): ModelDecorationOptions {
 	if (kind === DocumentHighlightKind.Write) {
 		return _WRITE_OPTIONS;
@@ -214,7 +214,7 @@ export function getHighlightDecorationOptions(
 }
 
 export function getSelectionHighlightDecorationOptions(
-	hasSemanticHighlights: boolean,
+	hasSemanticHighlights: boolean
 ): ModelDecorationOptions {
 	// Show in overviewRuler only if model has no semantic highlighting
 	return hasSemanticHighlights
@@ -227,8 +227,8 @@ registerThemingParticipant((theme, collector) => {
 	if (selectionHighlight) {
 		collector.addRule(
 			`.monaco-editor .selectionHighlight { background-color: ${selectionHighlight.transparent(
-				0.5,
-			)}; }`,
+				0.5
+			)}; }`
 		);
 	}
 });

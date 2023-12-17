@@ -67,7 +67,7 @@ export class ScrollbarState {
 		oppositeScrollbarSize: number,
 		visibleSize: number,
 		scrollSize: number,
-		scrollPosition: number,
+		scrollPosition: number
 	) {
 		this._scrollbarSize = Math.round(scrollbarSize);
 		this._oppositeScrollbarSize = Math.round(oppositeScrollbarSize);
@@ -93,7 +93,7 @@ export class ScrollbarState {
 			this._oppositeScrollbarSize,
 			this._visibleSize,
 			this._scrollSize,
-			this._scrollPosition,
+			this._scrollPosition
 		);
 	}
 
@@ -140,15 +140,15 @@ export class ScrollbarState {
 		arrowSize: number,
 		visibleSize: number,
 		scrollSize: number,
-		scrollPosition: number,
+		scrollPosition: number
 	) {
 		const computedAvailableSize = Math.max(
 			0,
-			visibleSize - oppositeScrollbarSize,
+			visibleSize - oppositeScrollbarSize
 		);
 		const computedRepresentableSize = Math.max(
 			0,
-			computedAvailableSize - 2 * arrowSize,
+			computedAvailableSize - 2 * arrowSize
 		);
 		const computedIsNeeded = scrollSize > 0 && scrollSize > visibleSize;
 
@@ -168,9 +168,9 @@ export class ScrollbarState {
 			Math.max(
 				MINIMUM_SLIDER_SIZE,
 				Math.floor(
-					(visibleSize * computedRepresentableSize) / scrollSize,
-				),
-			),
+					(visibleSize * computedRepresentableSize) / scrollSize
+				)
+			)
 		);
 
 		// The slider can move from 0 to `computedRepresentableSize` - `computedSliderSize`
@@ -195,7 +195,7 @@ export class ScrollbarState {
 			this._arrowSize,
 			this._visibleSize,
 			this._scrollSize,
-			this._scrollPosition,
+			this._scrollPosition
 		);
 		this._computedAvailableSize = r.computedAvailableSize;
 		this._computedIsNeeded = r.computedIsNeeded;

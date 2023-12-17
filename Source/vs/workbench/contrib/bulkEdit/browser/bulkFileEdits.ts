@@ -58,7 +58,7 @@ class RenameEdit {
 	constructor(
 		readonly newUri: URI,
 		readonly oldUri: URI,
-		readonly options: WorkspaceFileEditOptions,
+		readonly options: WorkspaceFileEditOptions
 	) {}
 }
 
@@ -66,9 +66,10 @@ class RenameOperation implements IFileOperation {
 	constructor(
 		private readonly _edits: RenameEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
-		@IFileService private readonly _fileService: IFileService,
-	) { }
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IFileService private readonly _fileService: IFileService
+	) {}
 
 	get uris() {
 		return this._edits.flatMap((edit) => [edit.newUri, edit.oldUri]);
@@ -91,7 +92,7 @@ class RenameOperation implements IFileOperation {
 
 				// reverse edit
 				undoes.push(
-					new RenameEdit(edit.oldUri, edit.newUri, edit.options),
+					new RenameEdit(edit.oldUri, edit.newUri, edit.options)
 				);
 			}
 		}
@@ -103,13 +104,13 @@ class RenameOperation implements IFileOperation {
 		await this._workingCopyFileService.move(
 			moves,
 			token,
-			this._undoRedoInfo,
+			this._undoRedoInfo
 		);
 		return new RenameOperation(
 			undoes,
 			{ isUndoing: true },
 			this._workingCopyFileService,
-			this._fileService,
+			this._fileService
 		);
 	}
 
@@ -125,7 +126,7 @@ class CopyEdit {
 	constructor(
 		readonly newUri: URI,
 		readonly oldUri: URI,
-		readonly options: WorkspaceFileEditOptions,
+		readonly options: WorkspaceFileEditOptions
 	) {}
 }
 
@@ -133,10 +134,12 @@ class CopyOperation implements IFileOperation {
 	constructor(
 		private readonly _edits: CopyEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
 		@IFileService private readonly _fileService: IFileService,
-		@IInstantiationService private readonly _instaService: IInstantiationService
-	) { }
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService
+	) {}
 
 	get uris() {
 		return this._edits.flatMap((edit) => [edit.newUri, edit.oldUri]);
@@ -167,7 +170,7 @@ class CopyOperation implements IFileOperation {
 		const stats = await this._workingCopyFileService.copy(
 			copies,
 			token,
-			this._undoRedoInfo,
+			this._undoRedoInfo
 		);
 		const undoes: DeleteEdit[] = [];
 
@@ -183,8 +186,8 @@ class CopyOperation implements IFileOperation {
 							this._edits[i].options.folder || stat.isDirectory,
 						...edit.options,
 					},
-					false,
-				),
+					false
+				)
 			);
 		}
 
@@ -205,7 +208,7 @@ class CreateEdit {
 	constructor(
 		readonly newUri: URI,
 		readonly options: WorkspaceFileEditOptions,
-		readonly contents: VSBuffer | undefined,
+		readonly contents: VSBuffer | undefined
 	) {}
 }
 
@@ -214,10 +217,12 @@ class CreateOperation implements IFileOperation {
 		private readonly _edits: CreateEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
 		@IFileService private readonly _fileService: IFileService,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@ITextFileService private readonly _textFileService: ITextFileService
-	) { }
+	) {}
 
 	get uris() {
 		return this._edits.map((edit) => edit.newUri);
@@ -247,8 +252,8 @@ class CreateOperation implements IFileOperation {
 					typeof edit.contents !== "undefined"
 						? edit.contents
 						: await this._textFileService.getEncodedReadable(
-								edit.newUri,
-						  );
+								edit.newUri
+							);
 				fileCreates.push({
 					resource: edit.newUri,
 					contents: encodedReadable,
@@ -259,8 +264,8 @@ class CreateOperation implements IFileOperation {
 				new DeleteEdit(
 					edit.newUri,
 					edit.options,
-					!edit.options.folder && !edit.contents,
-				),
+					!edit.options.folder && !edit.contents
+				)
 			);
 		}
 
@@ -271,12 +276,12 @@ class CreateOperation implements IFileOperation {
 		await this._workingCopyFileService.createFolder(
 			folderCreates,
 			token,
-			this._undoRedoInfo,
+			this._undoRedoInfo
 		);
 		await this._workingCopyFileService.create(
 			fileCreates,
 			token,
-			this._undoRedoInfo,
+			this._undoRedoInfo
 		);
 
 		return this._instaService.createInstance(DeleteOperation, undoes, {
@@ -291,7 +296,7 @@ class CreateOperation implements IFileOperation {
 					? `folder ${edit.newUri}`
 					: `file ${edit.newUri} with ${
 							edit.contents?.byteLength || 0
-					  } bytes`,
+						} bytes`
 			)
 			.join(", ")})`;
 	}
@@ -302,7 +307,7 @@ class DeleteEdit {
 	constructor(
 		readonly oldUri: URI,
 		readonly options: WorkspaceFileEditOptions,
-		readonly undoesCreate: boolean,
+		readonly undoesCreate: boolean
 	) {}
 }
 
@@ -310,12 +315,15 @@ class DeleteOperation implements IFileOperation {
 	constructor(
 		private _edits: DeleteEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
 		@IFileService private readonly _fileService: IFileService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService
-	) { }
+	) {}
 
 	get uris() {
 		return this._edits.map((edit) => edit.oldUri);
@@ -336,7 +344,7 @@ class DeleteOperation implements IFileOperation {
 			} catch (err) {
 				if (!edit.options.ignoreIfNotExists) {
 					throw new Error(
-						`${edit.oldUri} does not exist and can not be deleted`,
+						`${edit.oldUri} does not exist and can not be deleted`
 					);
 				}
 				continue;
@@ -349,10 +357,10 @@ class DeleteOperation implements IFileOperation {
 					!edit.options.skipTrashBin &&
 					this._fileService.hasCapability(
 						edit.oldUri,
-						FileSystemProviderCapabilities.Trash,
+						FileSystemProviderCapabilities.Trash
 					) &&
 					this._configurationService.getValue<boolean>(
-						"files.enableTrash",
+						"files.enableTrash"
 					),
 			});
 
@@ -374,11 +382,7 @@ class DeleteOperation implements IFileOperation {
 			}
 			if (fileContent !== undefined) {
 				undoes.push(
-					new CreateEdit(
-						edit.oldUri,
-						edit.options,
-						fileContent.value,
-					),
+					new CreateEdit(edit.oldUri, edit.options, fileContent.value)
 				);
 			}
 		}
@@ -390,7 +394,7 @@ class DeleteOperation implements IFileOperation {
 		await this._workingCopyFileService.delete(
 			deletes,
 			token,
-			this._undoRedoInfo,
+			this._undoRedoInfo
 		);
 
 		if (undoes.length === 0) {
@@ -415,7 +419,7 @@ class FileUndoRedoElement implements IWorkspaceUndoRedoElement {
 		readonly label: string,
 		readonly code: string,
 		readonly operations: IFileOperation[],
-		readonly confirmBeforeUndo: boolean,
+		readonly confirmBeforeUndo: boolean
 	) {
 		this.resources = operations.flatMap((op) => op.uris);
 	}
@@ -451,9 +455,10 @@ export class BulkFileEdits {
 		private readonly _progress: IProgress<void>,
 		private readonly _token: CancellationToken,
 		private readonly _edits: ResourceFileEdit[],
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService,
-	) { }
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService
+	) {}
 
 	async apply(): Promise<readonly URI[]> {
 		const undoOperations: IFileOperation[] = [];
@@ -467,8 +472,8 @@ export class BulkFileEdits {
 					new RenameEdit(
 						edit.newResource,
 						edit.oldResource,
-						edit.options ?? {},
-					),
+						edit.options ?? {}
+					)
 				);
 			} else if (
 				edit.newResource &&
@@ -479,20 +484,20 @@ export class BulkFileEdits {
 					new CopyEdit(
 						edit.newResource,
 						edit.oldResource,
-						edit.options ?? {},
-					),
+						edit.options ?? {}
+					)
 				);
 			} else if (!edit.newResource && edit.oldResource) {
 				edits.push(
-					new DeleteEdit(edit.oldResource, edit.options ?? {}, false),
+					new DeleteEdit(edit.oldResource, edit.options ?? {}, false)
 				);
 			} else if (edit.newResource && !edit.oldResource) {
 				edits.push(
 					new CreateEdit(
 						edit.newResource,
 						edit.options ?? {},
-						await edit.options.contents,
-					),
+						await edit.options.contents
+					)
 				);
 			}
 		}
@@ -526,28 +531,28 @@ export class BulkFileEdits {
 					op = this._instaService.createInstance(
 						RenameOperation,
 						<RenameEdit[]>group,
-						undoRedoInfo,
+						undoRedoInfo
 					);
 					break;
 				case "copy":
 					op = this._instaService.createInstance(
 						CopyOperation,
 						<CopyEdit[]>group,
-						undoRedoInfo,
+						undoRedoInfo
 					);
 					break;
 				case "delete":
 					op = this._instaService.createInstance(
 						DeleteOperation,
 						<DeleteEdit[]>group,
-						undoRedoInfo,
+						undoRedoInfo
 					);
 					break;
 				case "create":
 					op = this._instaService.createInstance(
 						CreateOperation,
 						<CreateEdit[]>group,
-						undoRedoInfo,
+						undoRedoInfo
 					);
 					break;
 			}
@@ -563,12 +568,12 @@ export class BulkFileEdits {
 			this._label,
 			this._code,
 			undoOperations,
-			this._confirmBeforeUndo,
+			this._confirmBeforeUndo
 		);
 		this._undoRedoService.pushElement(
 			undoRedoElement,
 			this._undoRedoGroup,
-			this._undoRedoSource,
+			this._undoRedoSource
 		);
 		return undoRedoElement.resources;
 	}

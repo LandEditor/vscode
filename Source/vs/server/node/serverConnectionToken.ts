@@ -52,7 +52,7 @@ export class ServerConnectionTokenParseError {
 
 export async function parseServerConnectionToken(
 	args: ServerParsedArgs,
-	defaultValue: () => Promise<string>,
+	defaultValue: () => Promise<string>
 ): Promise<ServerConnectionToken | ServerConnectionTokenParseError> {
 	const withoutConnectionToken = args["without-connection-token"];
 	const connectionToken = args["connection-token"];
@@ -64,7 +64,7 @@ export async function parseServerConnectionToken(
 			typeof connectionTokenFile !== "undefined"
 		) {
 			return new ServerConnectionTokenParseError(
-				`Please do not use the argument '--connection-token' or '--connection-token-file' at the same time as '--without-connection-token'.`,
+				`Please do not use the argument '--connection-token' or '--connection-token-file' at the same time as '--without-connection-token'.`
 			);
 		}
 		return new NoneServerConnectionToken();
@@ -73,7 +73,7 @@ export async function parseServerConnectionToken(
 	if (typeof connectionTokenFile !== "undefined") {
 		if (typeof connectionToken !== "undefined") {
 			return new ServerConnectionTokenParseError(
-				`Please do not use the argument '--connection-token' at the same time as '--connection-token-file'.`,
+				`Please do not use the argument '--connection-token' at the same time as '--connection-token-file'.`
 			);
 		}
 
@@ -85,13 +85,13 @@ export async function parseServerConnectionToken(
 				.replace(/\r?\n$/, "");
 		} catch (e) {
 			return new ServerConnectionTokenParseError(
-				`Unable to read the connection token file at '${connectionTokenFile}'.`,
+				`Unable to read the connection token file at '${connectionTokenFile}'.`
 			);
 		}
 
 		if (!connectionTokenRegex.test(rawConnectionToken)) {
 			return new ServerConnectionTokenParseError(
-				`The connection token defined in '${connectionTokenFile} does not adhere to the characters 0-9, a-z, A-Z, _, or -.`,
+				`The connection token defined in '${connectionTokenFile} does not adhere to the characters 0-9, a-z, A-Z, _, or -.`
 			);
 		}
 
@@ -101,7 +101,7 @@ export async function parseServerConnectionToken(
 	if (typeof connectionToken !== "undefined") {
 		if (!connectionTokenRegex.test(connectionToken)) {
 			return new ServerConnectionTokenParseError(
-				`The connection token '${connectionToken} does not adhere to the characters 0-9, a-z, A-Z or -.`,
+				`The connection token '${connectionToken} does not adhere to the characters 0-9, a-z, A-Z or -.`
 			);
 		}
 
@@ -112,7 +112,7 @@ export async function parseServerConnectionToken(
 }
 
 export async function determineServerConnectionToken(
-	args: ServerParsedArgs,
+	args: ServerParsedArgs
 ): Promise<ServerConnectionToken | ServerConnectionTokenParseError> {
 	const readOrGenerateConnectionToken = async () => {
 		if (!args["user-data-dir"]) {
@@ -150,7 +150,7 @@ export async function determineServerConnectionToken(
 export function requestHasValidConnectionToken(
 	connectionToken: ServerConnectionToken,
 	req: http.IncomingMessage,
-	parsedUrl: url.UrlWithParsedQuery,
+	parsedUrl: url.UrlWithParsedQuery
 ) {
 	// First check if there is a valid query parameter
 	if (connectionToken.validate(parsedUrl.query[connectionTokenQueryName])) {

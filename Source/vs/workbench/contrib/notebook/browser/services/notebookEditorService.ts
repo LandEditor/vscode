@@ -19,7 +19,7 @@ import { NotebookEditorWidget } from "vs/workbench/contrib/notebook/browser/note
 import { URI } from "vs/base/common/uri";
 
 export const INotebookEditorService = createDecorator<INotebookEditorService>(
-	"INotebookEditorWidgetService",
+	"INotebookEditorWidgetService"
 );
 
 export interface IBorrowValue<T> {
@@ -34,11 +34,11 @@ export interface INotebookEditorService {
 		group: IEditorGroup,
 		input: NotebookEditorInput,
 		creationOptions?: INotebookEditorCreationOptions,
-		dimension?: Dimension,
+		dimension?: Dimension
 	): IBorrowValue<INotebookEditor>;
 
 	retrieveExistingWidgetFromURI(
-		resource: URI,
+		resource: URI
 	): IBorrowValue<NotebookEditorWidget> | undefined;
 	retrieveAllExistingWidgets(): IBorrowValue<NotebookEditorWidget>[];
 	onDidAddNotebookEditor: Event<INotebookEditor>;

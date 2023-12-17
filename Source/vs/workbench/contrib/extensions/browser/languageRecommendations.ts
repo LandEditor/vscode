@@ -17,7 +17,7 @@ export class LanguageRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IProductService private readonly productService: IProductService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
 	}
@@ -34,7 +34,7 @@ export class LanguageRecommendations extends ExtensionRecommendations {
 									ExtensionRecommendationReason.Application,
 								reasonText: "",
 							},
-						},
+						}
 				);
 		}
 	}

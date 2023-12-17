@@ -27,22 +27,29 @@ import {
 export class QuickInputService extends BaseQuickInputService {
 	private readonly hoverDelegate = new QuickInputHoverDelegate(
 		this.configurationService,
-		this.hoverService,
+		this.hoverService
 	);
 	private readonly inQuickInputContext = InQuickPickContextKey.bindTo(
-		this.contextKeyService,
+		this.contextKeyService
 	);
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@ILayoutService layoutService: ILayoutService,
 		@IHoverService private readonly hoverService: IHoverService
 	) {
-		super(instantiationService, contextKeyService, themeService, layoutService);
+		super(
+			instantiationService,
+			contextKeyService,
+			themeService,
+			layoutService
+		);
 
 		this.registerListeners();
 	}
@@ -56,7 +63,7 @@ export class QuickInputService extends BaseQuickInputService {
 		return super.createController(this.layoutService, {
 			ignoreFocusOut: () =>
 				!this.configurationService.getValue(
-					"workbench.quickOpen.closeOnFocusLost",
+					"workbench.quickOpen.closeOnFocusLost"
 				),
 			backKeybindingLabel: () =>
 				this.keybindingService
@@ -77,26 +84,26 @@ class QuickInputHoverDelegate implements IHoverDelegate {
 		}
 
 		return this.configurationService.getValue<number>(
-			"workbench.hover.delay",
+			"workbench.hover.delay"
 		);
 	}
 
 	constructor(
 		private readonly configurationService: IConfigurationService,
-		private readonly hoverService: IHoverService,
+		private readonly hoverService: IHoverService
 	) {}
 
 	showHover(
 		options: IHoverDelegateOptions,
-		focus?: boolean,
+		focus?: boolean
 	): IHoverWidget | undefined {
 		// Only show the hover hint if the content is of a decent size
 		const showHoverHint =
 			(options.content instanceof HTMLElement
 				? options.content.textContent ?? ""
 				: typeof options.content === "string"
-				  ? options.content
-				  : options.content.value
+					? options.content
+					: options.content.value
 			).length > 20;
 		return this.hoverService.showHover(
 			{
@@ -109,7 +116,7 @@ class QuickInputHoverDelegate implements IHoverDelegate {
 					skipFadeInAnimation: true,
 				},
 			},
-			focus,
+			focus
 		);
 	}
 
@@ -121,5 +128,5 @@ class QuickInputHoverDelegate implements IHoverDelegate {
 registerSingleton(
 	IQuickInputService,
 	QuickInputService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

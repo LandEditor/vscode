@@ -82,7 +82,7 @@ export class KeymapInfo {
 		public layout: IKeyboardLayoutInfo,
 		public secondaryLayouts: IKeyboardLayoutInfo[],
 		keyboardMapping: ISerializedMapping,
-		isUserKeyboardLayout?: boolean,
+		isUserKeyboardLayout?: boolean
 	) {
 		this.mapping = deserializeMapping(keyboardMapping);
 		this.isUserKeyboardLayout = !!isUserKeyboardLayout;
@@ -92,7 +92,7 @@ export class KeymapInfo {
 	static createKeyboardLayoutFromDebugInfo(
 		layout: IKeyboardLayoutInfo,
 		value: IRawMixedKeyboardMapping,
-		isUserKeyboardLayout?: boolean,
+		isUserKeyboardLayout?: boolean
 	): KeymapInfo {
 		const keyboardLayoutInfo = new KeymapInfo(layout, [], {}, true);
 		keyboardLayoutInfo.mapping = value;

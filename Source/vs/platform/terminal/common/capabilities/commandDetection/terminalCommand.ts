@@ -90,21 +90,21 @@ export class TerminalCommand implements ITerminalCommand {
 
 	constructor(
 		private readonly _xterm: Terminal,
-		private readonly _properties: ITerminalCommandProperties,
+		private readonly _properties: ITerminalCommandProperties
 	) {}
 
 	static deserialize(
 		xterm: Terminal,
 		serialized: ISerializedTerminalCommand &
 			Required<Pick<ISerializedTerminalCommand, "endLine">>,
-		isCommandStorageDisabled: boolean,
+		isCommandStorageDisabled: boolean
 	): TerminalCommand | undefined {
 		const buffer = xterm.buffer.normal;
 		const marker =
 			serialized.startLine !== undefined
 				? xterm.registerMarker(
-						serialized.startLine - (buffer.baseY + buffer.cursorY),
-				  )
+						serialized.startLine - (buffer.baseY + buffer.cursorY)
+					)
 				: undefined;
 
 		// Check for invalid command
@@ -115,23 +115,23 @@ export class TerminalCommand implements ITerminalCommand {
 			serialized.promptStartLine !== undefined
 				? xterm.registerMarker(
 						serialized.promptStartLine -
-							(buffer.baseY + buffer.cursorY),
-				  )
+							(buffer.baseY + buffer.cursorY)
+					)
 				: undefined;
 
 		// Valid full command
 		const endMarker =
 			serialized.endLine !== undefined
 				? xterm.registerMarker(
-						serialized.endLine - (buffer.baseY + buffer.cursorY),
-				  )
+						serialized.endLine - (buffer.baseY + buffer.cursorY)
+					)
 				: undefined;
 		const executedMarker =
 			serialized.executedLine !== undefined
 				? xterm.registerMarker(
 						serialized.executedLine -
-							(buffer.baseY + buffer.cursorY),
-				  )
+							(buffer.baseY + buffer.cursorY)
+					)
 				: undefined;
 		const newCommand = new TerminalCommand(xterm, {
 			command: isCommandStorageDisabled ? "" : serialized.command,
@@ -196,7 +196,7 @@ export class TerminalCommand implements ITerminalCommand {
 	}
 
 	getOutputMatch(
-		outputMatcher: ITerminalOutputMatcher,
+		outputMatcher: ITerminalOutputMatcher
 	): ITerminalOutputMatch | undefined {
 		// TODO: Add back this check? this._ptyHeuristics.value instanceof WindowsPtyHeuristics && (executedMarker?.line === endMarker?.line) ? this._currentCommand.commandStartMarker : executedMarker
 		if (!this.executedMarker || !this.endMarker) {
@@ -235,8 +235,8 @@ export class TerminalCommand implements ITerminalCommand {
 						buffer,
 						wrappedLineStart,
 						wrappedLineEnd,
-						this._xterm.cols,
-					),
+						this._xterm.cols
+					)
 				);
 				if (!match) {
 					match = lines[0].match(matcher);
@@ -265,8 +265,8 @@ export class TerminalCommand implements ITerminalCommand {
 						buffer,
 						wrappedLineStart,
 						wrappedLineEnd,
-						this._xterm.cols,
-					),
+						this._xterm.cols
+					)
 				);
 				if (!match) {
 					match = lines[lines.length - 1].match(matcher);
@@ -390,7 +390,7 @@ export class PartialTerminalCommand implements ICurrentPartialCommand {
 		cwd: string | undefined,
 		exitCode: number | undefined,
 		ignoreCommandLine: boolean,
-		markProperties: IMarkProperties | undefined,
+		markProperties: IMarkProperties | undefined
 	): TerminalCommand | undefined {
 		// When the command finishes and executed never fires the placeholder selector should be used.
 		if (exitCode === undefined && this.command === undefined) {
@@ -434,7 +434,7 @@ function getXtermLineContent(
 	buffer: IBuffer,
 	lineStart: number,
 	lineEnd: number,
-	cols: number,
+	cols: number
 ): string {
 	// Cap the maximum number of lines generated to prevent potential performance problems. This is
 	// more of a sanity check as the wrapped line should already be trimmed down at this point.
@@ -468,7 +468,7 @@ function countNewLines(regex: RegExp): number {
 
 function getPromptRowCount(
 	command: ITerminalCommand | ICurrentPartialCommand,
-	buffer: IBuffer,
+	buffer: IBuffer
 ): number {
 	const marker =
 		"hasOutput" in command ? command.marker : command.commandStartMarker;
@@ -490,7 +490,7 @@ function getPromptRowCount(
 }
 
 function getCommandRowCount(
-	command: ITerminalCommand | ICurrentPartialCommand,
+	command: ITerminalCommand | ICurrentPartialCommand
 ): number {
 	const marker =
 		"hasOutput" in command ? command.marker : command.commandStartMarker;

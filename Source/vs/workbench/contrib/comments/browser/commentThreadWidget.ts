@@ -98,21 +98,28 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		},
 		@ICommentService private commentService: ICommentService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
 		@IKeybindingService private _keybindingService: IKeybindingService
 	) {
 		super();
 
-		this._threadIsEmpty = CommentContextKeys.commentThreadIsEmpty.bindTo(this._contextKeyService);
-		this._threadIsEmpty.set(!_commentThread.comments || !_commentThread.comments.length);
-		this._focusedContextKey = CommentContextKeys.commentFocused.bindTo(this._contextKeyService);
+		this._threadIsEmpty = CommentContextKeys.commentThreadIsEmpty.bindTo(
+			this._contextKeyService
+		);
+		this._threadIsEmpty.set(
+			!_commentThread.comments || !_commentThread.comments.length
+		);
+		this._focusedContextKey = CommentContextKeys.commentFocused.bindTo(
+			this._contextKeyService
+		);
 
 		this._commentMenus = this.commentService.getCommentMenus(this._owner);
 
 		this._header = new CommentThreadHeader<T>(
 			container,
 			{
-				collapse: this.collapse.bind(this)
+				collapse: this.collapse.bind(this),
 			},
 			this._commentMenus,
 			this._commentThread,
@@ -123,30 +130,45 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 		this._header.updateCommentThread(this._commentThread);
 
-		const bodyElement = <HTMLDivElement>dom.$('.body');
+		const bodyElement = <HTMLDivElement>dom.$(".body");
 		container.appendChild(bodyElement);
 
 		const tracker = this._register(dom.trackFocus(bodyElement));
-		this._register(registerNavigableContainer({
-			focusNotifiers: [tracker],
-			focusNextWidget: () => {
-				if (!this._commentReply?.isCommentEditorFocused()) {
-					this._commentReply?.expandReplyAreaAndFocusCommentEditor();
+		this._register(
+			registerNavigableContainer({
+				focusNotifiers: [tracker],
+				focusNextWidget: () => {
+					if (!this._commentReply?.isCommentEditorFocused()) {
+						this._commentReply?.expandReplyAreaAndFocusCommentEditor();
+					}
+				},
+				focusPreviousWidget: () => {
+					if (
+						this._commentReply?.isCommentEditorFocused() &&
+						this._commentThread.comments?.length
+					) {
+						this._body.focus();
+					}
+				},
+			})
+		);
+		this._register(
+			tracker.onDidFocus(() => this._focusedContextKey.set(true))
+		);
+		this._register(
+			tracker.onDidBlur(() => this._focusedContextKey.reset())
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						AccessibilityVerbositySettingId.Comments
+					)
+				) {
+					this._setAriaLabel();
 				}
-			},
-			focusPreviousWidget: () => {
-				if (this._commentReply?.isCommentEditorFocused() && this._commentThread.comments?.length) {
-					this._body.focus();
-				}
-			}
-		}));
-		this._register(tracker.onDidFocus(() => this._focusedContextKey.set(true)));
-		this._register(tracker.onDidBlur(() => this._focusedContextKey.reset()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.Comments)) {
-				this._setAriaLabel();
-			}
-		}));
+			})
+		);
 		this._body = this._scopedInstantiationService.createInstance(
 			CommentThreadBody,
 			this._parentEditor,
@@ -163,12 +185,19 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this._setAriaLabel();
 		this._styleElement = dom.createStyleSheet(this.container);
 
-
-		this._commentThreadContextValue = CommentContextKeys.commentThreadContext.bindTo(this._contextKeyService);
+		this._commentThreadContextValue =
+			CommentContextKeys.commentThreadContext.bindTo(
+				this._contextKeyService
+			);
 		this._commentThreadContextValue.set(_commentThread.contextValue);
 
-		const commentControllerKey = CommentContextKeys.commentControllerContext.bindTo(this._contextKeyService);
-		const controller = this.commentService.getCommentController(this._owner);
+		const commentControllerKey =
+			CommentContextKeys.commentControllerContext.bindTo(
+				this._contextKeyService
+			);
+		const controller = this.commentService.getCommentController(
+			this._owner
+		);
 
 		if (controller?.contextValue) {
 			commentControllerKey.set(controller.contextValue);
@@ -181,14 +210,14 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		let ariaLabel = localize("commentLabel", "Comment");
 		let keybinding: string | undefined;
 		const verbose = this.configurationService.getValue(
-			AccessibilityVerbositySettingId.Comments,
+			AccessibilityVerbositySettingId.Comments
 		);
 		if (verbose) {
 			keybinding =
 				this._keybindingService
 					.lookupKeybinding(
 						AccessibilityCommandId.OpenAccessibilityHelp,
-						this._contextKeyService,
+						this._contextKeyService
 					)
 					?.getLabel() ?? undefined;
 		}
@@ -197,13 +226,13 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				"commentLabelWithKeybinding",
 				"{0}, use ({1}) for accessibility help",
 				ariaLabel,
-				keybinding,
+				keybinding
 			);
 		} else {
 			ariaLabel = localize(
 				"commentLabelWithKeybindingNoKeybinding",
 				"{0}, run the command Open Accessibility Help which is currently not triggerable via keybinding.",
-				ariaLabel,
+				ariaLabel
 			);
 		}
 		this._body.container.ariaLabel = ariaLabel;
@@ -230,8 +259,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 						this.updateCurrentThread(hasMouse, hasFocus);
 					}
 				},
-				true,
-			),
+				true
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -243,8 +272,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 						this.updateCurrentThread(hasMouse, hasFocus);
 					}
 				},
-				true,
-			),
+				true
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -254,8 +283,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 					hasFocus = true;
 					this.updateCurrentThread(hasMouse, hasFocus);
 				},
-				true,
-			),
+				true
+			)
 		);
 		this._register(
 			dom.addDisposableListener(
@@ -265,8 +294,8 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 					hasFocus = false;
 					this.updateCurrentThread(hasMouse, hasFocus);
 				},
-				true,
-			),
+				true
+			)
 		);
 	}
 
@@ -285,7 +314,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 		this._body.updateCommentThread(
 			commentThread,
-			this._commentReply?.isCommentEditorFocused() ?? false,
+			this._commentReply?.isCommentEditorFocused() ?? false
 		);
 		this._threadIsEmpty.set(!this._body.length);
 		this._header.updateCommentThread(commentThread);
@@ -293,7 +322,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 
 		if (this._commentThread.contextValue) {
 			this._commentThreadContextValue.set(
-				this._commentThread.contextValue,
+				this._commentThread.contextValue
 			);
 		} else {
 			this._commentThreadContextValue.reset();
@@ -302,7 +331,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		if (
 			shouldCollapse &&
 			this.configurationService.getValue<ICommentsConfiguration>(
-				COMMENTS_SECTION,
+				COMMENTS_SECTION
 			).collapseOnResolve
 		) {
 			this.collapse();
@@ -324,7 +353,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this._register(
 			this._body.onDidResize((dimension) => {
 				this._refresh(dimension);
-			}),
+			})
 		);
 
 		// If there are no existing comments, place focus on the text area. This must be done after show, which also moves focus.
@@ -356,19 +385,19 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 						this._createCommentForm();
 					}
 				}
-			}),
+			})
 		);
 
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeComments(async (_) => {
 				await this.updateCommentThread(this._commentThread);
-			}),
+			})
 		);
 
 		this._commentThreadDisposables.push(
 			this._commentThread.onDidChangeLabel((_) => {
 				this._header.createThreadLabel();
-			}),
+			})
 		);
 	}
 
@@ -385,7 +414,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._commentOptions,
 			this._pendingComment,
 			this,
-			this._containerDelegate.actionRunner,
+			this._containerDelegate.actionRunner
 		);
 
 		this._register(this._commentReply);
@@ -399,7 +428,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 				this._commentThread,
 				this._contextKeyService,
 				this._commentMenus,
-				this._containerDelegate.actionRunner,
+				this._containerDelegate.actionRunner
 			);
 
 		this._register(this._additionalActions);
@@ -463,85 +492,85 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		const content: string[] = [];
 
 		content.push(
-			`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`,
+			`.monaco-editor .review-widget > .body { border-top: 1px solid var(${commentThreadStateColorVar}) }`
 		);
 		content.push(
-			`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`,
+			`.monaco-editor .review-widget > .head { background-color: var(${commentThreadStateBackgroundColorVar}) }`
 		);
 
 		const linkColor = theme.getColor(textLinkForeground);
 		if (linkColor) {
 			content.push(
-				`.review-widget .body .comment-body a { color: ${linkColor} }`,
+				`.review-widget .body .comment-body a { color: ${linkColor} }`
 			);
 		}
 
 		const linkActiveColor = theme.getColor(textLinkActiveForeground);
 		if (linkActiveColor) {
 			content.push(
-				`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`,
+				`.review-widget .body .comment-body a:hover, a:active { color: ${linkActiveColor} }`
 			);
 		}
 
 		const focusColor = theme.getColor(focusBorder);
 		if (focusColor) {
 			content.push(
-				`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`,
+				`.review-widget .body .comment-body a:focus { outline: 1px solid ${focusColor}; }`
 			);
 			content.push(
-				`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`,
+				`.review-widget .body .monaco-editor.focused { outline: 1px solid ${focusColor}; }`
 			);
 		}
 
 		const blockQuoteBackground = theme.getColor(textBlockQuoteBackground);
 		if (blockQuoteBackground) {
 			content.push(
-				`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`,
+				`.review-widget .body .review-comment blockquote { background: ${blockQuoteBackground}; }`
 			);
 		}
 
 		const blockQuoteBOrder = theme.getColor(textBlockQuoteBorder);
 		if (blockQuoteBOrder) {
 			content.push(
-				`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`,
+				`.review-widget .body .review-comment blockquote { border-color: ${blockQuoteBOrder}; }`
 			);
 		}
 
 		const border = theme.getColor(PANEL_BORDER);
 		if (border) {
 			content.push(
-				`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`,
+				`.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label { border-color: ${border}; }`
 			);
 		}
 
 		const hcBorder = theme.getColor(contrastBorder);
 		if (hcBorder) {
 			content.push(
-				`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`,
+				`.review-widget .body .comment-form .review-thread-reply-button { outline-color: ${hcBorder}; }`
 			);
 			content.push(
-				`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`,
+				`.review-widget .body .monaco-editor { outline: 1px solid ${hcBorder}; }`
 			);
 		}
 
 		const errorBorder = theme.getColor(inputValidationErrorBorder);
 		if (errorBorder) {
 			content.push(
-				`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`,
+				`.review-widget .validation-error { border: 1px solid ${errorBorder}; }`
 			);
 		}
 
 		const errorBackground = theme.getColor(inputValidationErrorBackground);
 		if (errorBackground) {
 			content.push(
-				`.review-widget .validation-error { background: ${errorBackground}; }`,
+				`.review-widget .validation-error { background: ${errorBackground}; }`
 			);
 		}
 
 		const errorForeground = theme.getColor(inputValidationErrorForeground);
 		if (errorForeground) {
 			content.push(
-				`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`,
+				`.review-widget .body .comment-form .validation-error { color: ${errorForeground}; }`
 			);
 		}
 
@@ -551,7 +580,7 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		this.container?.style.setProperty(fontFamilyVar, fontInfo.fontFamily);
 		this.container?.style.setProperty(
 			fontSizeVar,
-			`${fontInfo.fontSize}px`,
+			`${fontInfo.fontSize}px`
 		);
 		this.container?.style.setProperty(fontWeightVar, fontInfo.fontWeight);
 

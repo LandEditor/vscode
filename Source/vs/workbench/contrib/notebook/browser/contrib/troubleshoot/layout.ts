@@ -47,7 +47,7 @@ export class TroubleshootController
 		this._register(
 			this._notebookEditor.onDidChangeModel(() => {
 				this._update();
-			}),
+			})
 		);
 
 		this._update();
@@ -77,7 +77,7 @@ export class TroubleshootController
 			console.log(
 				`cell#${cell.handle}`,
 				e,
-				`${oldHeight} -> ${cell.layoutInfo.totalHeight}`,
+				`${oldHeight} -> ${cell.layoutInfo.totalHeight}`
 			);
 		}
 	}
@@ -93,7 +93,7 @@ export class TroubleshootController
 			this._cellStateListeners.push(
 				cell.onDidChangeLayout((e) => {
 					this._log(cell, e);
-				}),
+				})
 			);
 		}
 
@@ -108,14 +108,14 @@ export class TroubleshootController
 							return cell.onDidChangeLayout(
 								(e: ICommonCellViewModelLayoutChangeInfo) => {
 									this._log(cell, e);
-								},
+								}
 							);
-						}),
+						})
 					);
 
 					dispose(deletedCells);
 				});
-			}),
+			})
 		);
 
 		const vm = this._notebookEditor.getViewModel();
@@ -127,7 +127,7 @@ export class TroubleshootController
 
 		this._cellStatusItems = vm.deltaCellStatusBarItems(
 			this._cellStatusItems,
-			items,
+			items
 		);
 	}
 
@@ -165,7 +165,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.toggleLayoutTroubleshoot",
-						"Toggle Layout Troubleshoot",
+						"Toggle Layout Troubleshoot"
 					),
 					original: "Toggle Notebook Layout Troubleshoot",
 				},
@@ -177,7 +177,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const editor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane,
+				editorService.activeEditorPane
 			);
 
 			if (!editor) {
@@ -185,11 +185,11 @@ registerAction2(
 			}
 
 			const controller = editor.getContribution<TroubleshootController>(
-				TroubleshootController.id,
+				TroubleshootController.id
 			);
 			controller?.toggle();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -200,7 +200,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.inspectLayout",
-						"Inspect Notebook Layout",
+						"Inspect Notebook Layout"
 					),
 					original: "Inspect Notebook Layout",
 				},
@@ -212,7 +212,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			const editorService = accessor.get(IEditorService);
 			const editor = getNotebookEditorFromEditorPane(
-				editorService.activeEditorPane,
+				editorService.activeEditorPane
 			);
 
 			if (!editor || !editor.hasModel()) {
@@ -224,7 +224,7 @@ registerAction2(
 				console.log(`cell#${cell.handle}`, cell.layoutInfo);
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -235,7 +235,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.clearNotebookEdtitorTypeCache",
-						"Clear Notebook Editor Type Cache",
+						"Clear Notebook Editor Type Cache"
 					),
 					original: "Clear Notebook Editor Cache",
 				},
@@ -248,5 +248,5 @@ registerAction2(
 			const notebookService = accessor.get(INotebookService);
 			notebookService.clearEditorCache();
 		}
-	},
+	}
 );

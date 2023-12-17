@@ -18,7 +18,7 @@ export function tail<T>(array: T[]): T | undefined {
 
 export function asResourceUrl(
 	uri: vscode.Uri,
-	range: vscode.Range,
+	range: vscode.Range
 ): vscode.Uri {
 	return uri.with({
 		fragment: `L${1 + range.start.line},${1 + range.start.character}-${
@@ -29,7 +29,7 @@ export function asResourceUrl(
 
 export async function isValidRequestPosition(
 	uri: vscode.Uri,
-	position: vscode.Position,
+	position: vscode.Position
 ) {
 	const doc = await vscode.workspace.openTextDocument(uri);
 	let range = doc.getWordRangeAtPosition(position);
@@ -43,7 +43,7 @@ export function getPreviewChunks(
 	doc: vscode.TextDocument,
 	range: vscode.Range,
 	beforeLen: number = 8,
-	trim: boolean = true,
+	trim: boolean = true
 ) {
 	const previewStart = range.start.with({
 		character: Math.max(0, range.start.character - beforeLen),
@@ -52,8 +52,8 @@ export function getPreviewChunks(
 	let before = doc.getText(
 		new vscode.Range(
 			wordRange ? wordRange.start : previewStart,
-			range.start,
-		),
+			range.start
+		)
 	);
 	const inside = doc.getText(range);
 	const previewEnd = range.end.translate(0, 331);
@@ -76,7 +76,7 @@ export class ContextKey<V> {
 		await vscode.commands.executeCommand(
 			"setContext",
 			this.name,
-			undefined,
+			undefined
 		);
 	}
 }
@@ -87,7 +87,7 @@ export class WordAnchor {
 
 	constructor(
 		private readonly _doc: vscode.TextDocument,
-		private readonly _position: vscode.Position,
+		private readonly _position: vscode.Position
 	) {
 		this._version = _doc.version;
 		this._word = this._getAnchorWord(_doc, _position);
@@ -95,7 +95,7 @@ export class WordAnchor {
 
 	private _getAnchorWord(
 		doc: vscode.TextDocument,
-		pos: vscode.Position,
+		pos: vscode.Position
 	): string | undefined {
 		const range =
 			doc.getWordRangeAtPosition(pos) ||
@@ -184,7 +184,7 @@ const _themeIconIds = [
 ];
 
 export function getThemeIcon(
-	kind: vscode.SymbolKind,
+	kind: vscode.SymbolKind
 ): vscode.ThemeIcon | undefined {
 	const id = _themeIconIds[kind];
 	return id ? new vscode.ThemeIcon(id) : undefined;

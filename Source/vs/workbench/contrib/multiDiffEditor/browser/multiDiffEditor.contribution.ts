@@ -58,7 +58,7 @@ import {
 class MultiDiffEditorResolverContribution extends Disposable {
 	constructor(
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -74,7 +74,7 @@ class MultiDiffEditorResolverContribution extends Disposable {
 				{},
 				{
 					createMultiDiffEditorInput: (
-						diffListEditor: IResourceMultiDiffEditorInput,
+						diffListEditor: IResourceMultiDiffEditorInput
 					): EditorInputWithOptions => {
 						return {
 							editor: instantiationService.createInstance(
@@ -84,24 +84,24 @@ class MultiDiffEditorResolverContribution extends Disposable {
 									return new MultiDiffEditorInputData(
 										resource.resource,
 										resource.original.resource,
-										resource.modified.resource,
+										resource.modified.resource
 									);
 								}),
-								undefined,
+								undefined
 							),
 						};
 					},
-				},
-			),
+				}
+			)
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	MultiDiffEditorResolverContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 
 class MultiDiffEditorSerializer implements IEditorSerializer {
@@ -119,7 +119,7 @@ class MultiDiffEditorSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditor: string,
+		serializedEditor: string
 	): EditorInput | undefined {
 		try {
 			const data = parse(serializedEditor) as {
@@ -131,7 +131,7 @@ class MultiDiffEditorSerializer implements IEditorSerializer {
 				MultiDiffEditorInput,
 				data.label,
 				data.resources,
-				data.id,
+				data.id
 			);
 		} catch (err) {
 			onUnexpectedError(err);
@@ -141,18 +141,18 @@ class MultiDiffEditorSerializer implements IEditorSerializer {
 }
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		MultiDiffEditor,
 		MultiDiffEditor.ID,
-		localize("name", "Multi Diff Editor"),
+		localize("name", "Multi Diff Editor")
 	),
-	[new SyncDescriptor(MultiDiffEditorInput)],
+	[new SyncDescriptor(MultiDiffEditorInput)]
 );
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(MultiDiffEditorInput.ID, MultiDiffEditorSerializer);
 
 export class GoToFileAction extends Action2 {
@@ -192,12 +192,12 @@ export class CollapseAllAction extends Action2 {
 			icon: Codicon.collapseAll,
 			precondition: ContextKeyExpr.and(
 				ContextKeyExpr.equals("activeEditor", MultiDiffEditor.ID),
-				ContextKeyExpr.not("multiDiffEditorAllCollapsed"),
+				ContextKeyExpr.not("multiDiffEditorAllCollapsed")
 			),
 			menu: {
 				when: ContextKeyExpr.and(
 					ContextKeyExpr.equals("activeEditor", MultiDiffEditor.ID),
-					ContextKeyExpr.not("multiDiffEditorAllCollapsed"),
+					ContextKeyExpr.not("multiDiffEditorAllCollapsed")
 				),
 				id: MenuId.EditorTitle,
 				group: "navigation",
@@ -228,12 +228,12 @@ export class ExpandAllAction extends Action2 {
 			icon: Codicon.expandAll,
 			precondition: ContextKeyExpr.and(
 				ContextKeyExpr.equals("activeEditor", MultiDiffEditor.ID),
-				ContextKeyExpr.has("multiDiffEditorAllCollapsed"),
+				ContextKeyExpr.has("multiDiffEditorAllCollapsed")
 			),
 			menu: {
 				when: ContextKeyExpr.and(
 					ContextKeyExpr.equals("activeEditor", MultiDiffEditor.ID),
-					ContextKeyExpr.has("multiDiffEditorAllCollapsed"),
+					ContextKeyExpr.has("multiDiffEditorAllCollapsed")
 				),
 				id: MenuId.EditorTitle,
 				group: "navigation",
@@ -258,7 +258,7 @@ registerAction2(CollapseAllAction);
 registerAction2(ExpandAllAction);
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration({
 	properties: {
 		"multiDiffEditor.experimental.enabled": {

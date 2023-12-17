@@ -164,7 +164,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
 		ExplorerRootContext.toNegated(),
-		ExplorerResourceNotReadonlyContext,
+		ExplorerResourceNotReadonlyContext
 	),
 	primary: KeyCode.F2,
 	mac: {
@@ -180,7 +180,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
 		ExplorerResourceNotReadonlyContext,
-		ExplorerResourceMoveableToTrash,
+		ExplorerResourceMoveableToTrash
 	),
 	primary: KeyCode.Delete,
 	mac: {
@@ -196,7 +196,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + explorerCommandsWeightBonus,
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
-		ExplorerResourceNotReadonlyContext,
+		ExplorerResourceNotReadonlyContext
 	),
 	primary: KeyMod.Shift | KeyCode.Delete,
 	mac: {
@@ -211,7 +211,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
 		ExplorerResourceNotReadonlyContext,
-		ExplorerResourceMoveableToTrash.toNegated(),
+		ExplorerResourceMoveableToTrash.toNegated()
 	),
 	primary: KeyCode.Delete,
 	mac: {
@@ -227,7 +227,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
 		ExplorerRootContext.toNegated(),
-		ExplorerResourceNotReadonlyContext,
+		ExplorerResourceNotReadonlyContext
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.KeyX,
 	handler: cutFileHandler,
@@ -239,7 +239,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + explorerCommandsWeightBonus,
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
-		ExplorerRootContext.toNegated(),
+		ExplorerRootContext.toNegated()
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.KeyC,
 	handler: copyFileHandler,
@@ -254,7 +254,7 @@ KeybindingsRegistry.registerKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + explorerCommandsWeightBonus,
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
-		ExplorerResourceNotReadonlyContext,
+		ExplorerResourceNotReadonlyContext
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.KeyV,
 });
@@ -275,7 +275,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 	weight: KeybindingWeight.WorkbenchContrib + explorerCommandsWeightBonus,
 	when: ContextKeyExpr.and(
 		FilesExplorerFocusCondition,
-		ExplorerFolderContext.toNegated(),
+		ExplorerFolderContext.toNegated()
 	),
 	primary: KeyCode.Space,
 	handler: openFilePreserveFocusHandler,
@@ -296,20 +296,20 @@ appendEditorTitleContextMenuItem(
 	COPY_PATH_COMMAND_ID,
 	copyPathCommand.title,
 	ResourceContextKey.IsFileSystemResource,
-	"1_cutcopypaste",
+	"1_cutcopypaste"
 );
 appendEditorTitleContextMenuItem(
 	COPY_RELATIVE_PATH_COMMAND_ID,
 	copyRelativePathCommand.title,
 	ResourceContextKey.IsFileSystemResource,
-	"1_cutcopypaste",
+	"1_cutcopypaste"
 );
 appendEditorTitleContextMenuItem(
 	REVEAL_IN_EXPLORER_COMMAND_ID,
 	nls.localize("revealInSideBar", "Reveal in Explorer View"),
 	ResourceContextKey.IsFileSystemResource,
 	"2_files",
-	1,
+	1
 );
 
 export function appendEditorTitleContextMenuItem(
@@ -317,7 +317,7 @@ export function appendEditorTitleContextMenuItem(
 	title: string,
 	when: ContextKeyExpression | undefined,
 	group: string,
-	order?: number,
+	order?: number
 ): void {
 	// Menu
 	MenuRegistry.appendMenuItem(MenuId.EditorTitleContext, {
@@ -333,21 +333,21 @@ appendSaveConflictEditorTitleAction(
 	"workbench.files.action.acceptLocalChanges",
 	nls.localize(
 		"acceptLocalChanges",
-		"Use your changes and overwrite file contents",
+		"Use your changes and overwrite file contents"
 	),
 	Codicon.check,
 	-10,
-	acceptLocalChangesCommand,
+	acceptLocalChangesCommand
 );
 appendSaveConflictEditorTitleAction(
 	"workbench.files.action.revertLocalChanges",
 	nls.localize(
 		"revertLocalChanges",
-		"Discard your changes and revert to file contents",
+		"Discard your changes and revert to file contents"
 	),
 	Codicon.discard,
 	-9,
-	revertLocalChangesCommand,
+	revertLocalChangesCommand
 );
 
 function appendSaveConflictEditorTitleAction(
@@ -355,7 +355,7 @@ function appendSaveConflictEditorTitleAction(
 	title: string,
 	icon: ThemeIcon,
 	order: number,
-	command: ICommandHandler,
+	command: ICommandHandler
 ): void {
 	// Command
 	CommandsRegistry.registerCommand(id, command);
@@ -373,7 +373,7 @@ function appendSaveConflictEditorTitleAction(
 
 export function appendToCommandPalette(
 	{ id, title, category, metadata }: ICommandAction,
-	when?: ContextKeyExpression,
+	when?: ContextKeyExpression
 ): void {
 	MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 		command: {
@@ -399,7 +399,7 @@ appendToCommandPalette({
 	title: {
 		value: nls.localize(
 			"copyRelativePathOfActive",
-			"Copy Relative Path of Active File",
+			"Copy Relative Path of Active File"
 		),
 		original: "Copy Relative Path of Active File",
 	},
@@ -453,7 +453,7 @@ appendToCommandPalette({
 	title: {
 		value: nls.localize(
 			"compareActiveWithSaved",
-			"Compare Active File with Saved",
+			"Compare Active File with Saved"
 		),
 		original: "Compare Active File with Saved",
 	},
@@ -472,7 +472,7 @@ appendToCommandPalette(
 		title: { value: NEW_FILE_LABEL, original: "New File" },
 		category: Categories.File,
 	},
-	WorkspaceFolderCountContext.notEqualsTo("0"),
+	WorkspaceFolderCountContext.notEqualsTo("0")
 );
 
 appendToCommandPalette(
@@ -483,11 +483,11 @@ appendToCommandPalette(
 		metadata: {
 			description: nls.localize2(
 				"newFolderDescription",
-				"Create a new folder or directory",
+				"Create a new folder or directory"
 			),
 		},
 	},
-	WorkspaceFolderCountContext.notEqualsTo("0"),
+	WorkspaceFolderCountContext.notEqualsTo("0")
 );
 
 appendToCommandPalette({
@@ -503,7 +503,7 @@ appendToCommandPalette({
 
 const isFileOrUntitledResourceContextKey = ContextKeyExpr.or(
 	ResourceContextKey.IsFileSystemResource,
-	ResourceContextKey.Scheme.isEqualTo(Schemas.untitled),
+	ResourceContextKey.Scheme.isEqualTo(Schemas.untitled)
 );
 
 const openToSideCommand = {
@@ -559,8 +559,8 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 			// Not: readonly editors
 			OpenEditorsReadonlyEditorContext.toNegated(),
 			// Not: auto save after short delay
-			AutoSaveAfterShortDelayContext.toNegated(),
-		),
+			AutoSaveAfterShortDelayContext.toNegated()
+		)
 	),
 });
 
@@ -580,7 +580,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 		// Not: untitled editors (revert closes them)
 		ResourceContextKey.Scheme.notEqualsTo(Schemas.untitled),
 		// Not: auto save after short delay
-		AutoSaveAfterShortDelayContext.toNegated(),
+		AutoSaveAfterShortDelayContext.toNegated()
 	),
 });
 
@@ -607,7 +607,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 	when: ContextKeyExpr.and(
 		ResourceContextKey.IsFileSystemResource,
 		AutoSaveAfterShortDelayContext.toNegated(),
-		WorkbenchListDoubleSelection.toNegated(),
+		WorkbenchListDoubleSelection.toNegated()
 	),
 });
 
@@ -623,7 +623,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 		ResourceContextKey.HasResource,
 		ResourceSelectedForCompareContext,
 		isFileOrUntitledResourceContextKey,
-		WorkbenchListDoubleSelection.toNegated(),
+		WorkbenchListDoubleSelection.toNegated()
 	),
 });
 
@@ -638,7 +638,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 	when: ContextKeyExpr.and(
 		ResourceContextKey.HasResource,
 		isFileOrUntitledResourceContextKey,
-		WorkbenchListDoubleSelection.toNegated(),
+		WorkbenchListDoubleSelection.toNegated()
 	),
 });
 
@@ -653,7 +653,7 @@ MenuRegistry.appendMenuItem(MenuId.OpenEditorsContext, {
 	when: ContextKeyExpr.and(
 		ResourceContextKey.HasResource,
 		WorkbenchListDoubleSelection,
-		isFileOrUntitledResourceContextKey,
+		isFileOrUntitledResourceContextKey
 	),
 });
 
@@ -725,7 +725,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	command: openToSideCommand,
 	when: ContextKeyExpr.and(
 		ExplorerFolderContext.toNegated(),
-		ResourceContextKey.HasResource,
+		ResourceContextKey.HasResource
 	),
 });
 
@@ -738,7 +738,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	},
 	when: ContextKeyExpr.and(
 		ExplorerFolderContext.toNegated(),
-		ExplorerResourceAvailableEditorIdsContext,
+		ExplorerResourceAvailableEditorIdsContext
 	),
 });
 
@@ -750,7 +750,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 		ExplorerFolderContext.toNegated(),
 		ResourceContextKey.HasResource,
 		ResourceSelectedForCompareContext,
-		WorkbenchListDoubleSelection.toNegated(),
+		WorkbenchListDoubleSelection.toNegated()
 	),
 });
 
@@ -761,7 +761,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	when: ContextKeyExpr.and(
 		ExplorerFolderContext.toNegated(),
 		ResourceContextKey.HasResource,
-		WorkbenchListDoubleSelection.toNegated(),
+		WorkbenchListDoubleSelection.toNegated()
 	),
 });
 
@@ -772,7 +772,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	when: ContextKeyExpr.and(
 		ExplorerFolderContext.toNegated(),
 		ResourceContextKey.HasResource,
-		WorkbenchListDoubleSelection,
+		WorkbenchListDoubleSelection
 	),
 });
 
@@ -785,7 +785,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	},
 	when: ContextKeyExpr.and(
 		ExplorerRootContext.toNegated(),
-		ExplorerResourceNotReadonlyContext,
+		ExplorerResourceNotReadonlyContext
 	),
 });
 
@@ -807,7 +807,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 		title: PASTE_FILE_LABEL,
 		precondition: ContextKeyExpr.and(
 			ExplorerResourceNotReadonlyContext,
-			FileCopiedContext,
+			FileCopiedContext
 		),
 	},
 	when: ExplorerFolderContext,
@@ -824,16 +824,16 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 		// native: for any remote resource
 		ContextKeyExpr.and(
 			IsWebContext.toNegated(),
-			ResourceContextKey.Scheme.notEqualsTo(Schemas.file),
+			ResourceContextKey.Scheme.notEqualsTo(Schemas.file)
 		),
 		// web: for any files
 		ContextKeyExpr.and(
 			IsWebContext,
 			ExplorerFolderContext.toNegated(),
-			ExplorerRootContext.toNegated(),
+			ExplorerRootContext.toNegated()
 		),
 		// web: for any folders if file system API support is provided
-		ContextKeyExpr.and(IsWebContext, HasWebFileSystemAccess),
+		ContextKeyExpr.and(IsWebContext, HasWebFileSystemAccess)
 	),
 });
 
@@ -850,7 +850,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 		// only on folders
 		ExplorerFolderContext,
 		// only on editable folders
-		ExplorerResourceNotReadonlyContext,
+		ExplorerResourceNotReadonlyContext
 	),
 });
 
@@ -879,8 +879,8 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 		ExplorerRootContext,
 		ContextKeyExpr.or(
 			EnterMultiRootWorkspaceSupportContext,
-			WorkbenchStateContext.isEqualTo("workspace"),
-		),
+			WorkbenchStateContext.isEqualTo("workspace")
+		)
 	),
 });
 
@@ -898,9 +898,9 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 			WorkspaceFolderCountContext.notEqualsTo("0"),
 			ContextKeyExpr.or(
 				EnterMultiRootWorkspaceSupportContext,
-				WorkbenchStateContext.isEqualTo("workspace"),
-			),
-		),
+				WorkbenchStateContext.isEqualTo("workspace")
+			)
+		)
 	),
 });
 
@@ -930,7 +930,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	},
 	when: ContextKeyExpr.and(
 		ExplorerRootContext.toNegated(),
-		ExplorerResourceMoveableToTrash,
+		ExplorerResourceMoveableToTrash
 	),
 });
 
@@ -944,7 +944,7 @@ MenuRegistry.appendMenuItem(MenuId.ExplorerContext, {
 	},
 	when: ContextKeyExpr.and(
 		ExplorerRootContext.toNegated(),
-		ExplorerResourceMoveableToTrash.toNegated(),
+		ExplorerResourceMoveableToTrash.toNegated()
 	),
 });
 
@@ -979,7 +979,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: NEW_UNTITLED_FILE_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miNewFile", comment: ["&& denotes a mnemonic"] },
-			"&&New Text File",
+			"&&New Text File"
 		),
 	},
 	order: 1,
@@ -991,11 +991,11 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: SAVE_FILE_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miSave", comment: ["&& denotes a mnemonic"] },
-			"&&Save",
+			"&&Save"
 		),
 		precondition: ContextKeyExpr.or(
 			ActiveEditorContext,
-			ContextKeyExpr.and(FoldersViewVisibleContext, SidebarFocusContext),
+			ContextKeyExpr.and(FoldersViewVisibleContext, SidebarFocusContext)
 		),
 	},
 	order: 1,
@@ -1007,11 +1007,11 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: SAVE_FILE_AS_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miSaveAs", comment: ["&& denotes a mnemonic"] },
-			"Save &&As...",
+			"Save &&As..."
 		),
 		precondition: ContextKeyExpr.or(
 			ActiveEditorContext,
-			ContextKeyExpr.and(FoldersViewVisibleContext, SidebarFocusContext),
+			ContextKeyExpr.and(FoldersViewVisibleContext, SidebarFocusContext)
 		),
 	},
 	order: 2,
@@ -1023,7 +1023,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: SAVE_ALL_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miSaveAll", comment: ["&& denotes a mnemonic"] },
-			"Save A&&ll",
+			"Save A&&ll"
 		),
 		precondition: DirtyWorkingCopiesContext,
 	},
@@ -1036,7 +1036,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: ToggleAutoSaveAction.ID,
 		title: nls.localize(
 			{ key: "miAutoSave", comment: ["&& denotes a mnemonic"] },
-			"A&&uto Save",
+			"A&&uto Save"
 		),
 		toggled: ContextKeyExpr.notEquals("config.files.autoSave", "off"),
 	},
@@ -1049,7 +1049,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: REVERT_FILE_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miRevert", comment: ["&& denotes a mnemonic"] },
-			"Re&&vert File",
+			"Re&&vert File"
 		),
 		precondition: ContextKeyExpr.or(
 			// Active editor can revert
@@ -1058,8 +1058,8 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 			ContextKeyExpr.and(
 				ResourceContextKey.Scheme.notEqualsTo(Schemas.untitled),
 				FoldersViewVisibleContext,
-				SidebarFocusContext,
-			),
+				SidebarFocusContext
+			)
 		),
 	},
 	order: 1,
@@ -1071,11 +1071,11 @@ MenuRegistry.appendMenuItem(MenuId.MenubarFileMenu, {
 		id: CLOSE_EDITOR_COMMAND_ID,
 		title: nls.localize(
 			{ key: "miCloseEditor", comment: ["&& denotes a mnemonic"] },
-			"&&Close Editor",
+			"&&Close Editor"
 		),
 		precondition: ContextKeyExpr.or(
 			ActiveEditorContext,
-			ContextKeyExpr.and(FoldersViewVisibleContext, SidebarFocusContext),
+			ContextKeyExpr.and(FoldersViewVisibleContext, SidebarFocusContext)
 		),
 	},
 	order: 2,
@@ -1089,7 +1089,7 @@ MenuRegistry.appendMenuItem(MenuId.MenubarGoMenu, {
 		id: "workbench.action.quickOpen",
 		title: nls.localize(
 			{ key: "miGotoFile", comment: ["&& denotes a mnemonic"] },
-			"Go to &&File...",
+			"Go to &&File..."
 		),
 	},
 	order: 1,

@@ -57,7 +57,7 @@ export function cloneAndChange(obj: any, changer: (orig: any) => any): any {
 function _cloneAndChange(
 	obj: any,
 	changer: (orig: any) => any,
-	seen: Set<any>,
+	seen: Set<any>
 ): any {
 	if (isUndefinedOrNull(obj)) {
 		return obj;
@@ -101,7 +101,7 @@ function _cloneAndChange(
 export function mixin(
 	destination: any,
 	source: any,
-	overwrite: boolean = true,
+	overwrite: boolean = true
 ): any {
 	if (!isObject(destination)) {
 		return source;
@@ -236,14 +236,14 @@ export function distinct(base: obj, target: obj): obj {
 export function getCaseInsensitive(target: obj, key: string): any {
 	const lowercaseKey = key.toLowerCase();
 	const equivalentKey = Object.keys(target).find(
-		(k) => k.toLowerCase() === lowercaseKey,
+		(k) => k.toLowerCase() === lowercaseKey
 	);
 	return equivalentKey ? target[equivalentKey] : target[key];
 }
 
 export function filter(
 	obj: obj,
-	predicate: (key: string, value: any) => boolean,
+	predicate: (key: string, value: any) => boolean
 ): obj {
 	const result = Object.create(null);
 	for (const [key, value] of Object.entries(obj)) {
@@ -275,7 +275,7 @@ export function getAllMethodNames(obj: object): string[] {
 
 export function createProxyObject<T extends object>(
 	methodNames: string[],
-	invoke: (method: string, args: unknown[]) => unknown,
+	invoke: (method: string, args: unknown[]) => unknown
 ): T {
 	const createProxyMethod = (method: string): (() => unknown) => {
 		return function () {

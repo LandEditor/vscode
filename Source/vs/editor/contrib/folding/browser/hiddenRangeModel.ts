@@ -30,7 +30,7 @@ export class HiddenRangeModel {
 	public constructor(model: FoldingModel) {
 		this._foldingModel = model;
 		this._foldingModelListener = model.onDidChange((_) =>
-			this.updateHiddenRanges(),
+			this.updateHiddenRanges()
 		);
 		this._hiddenRanges = [];
 		if (model.regions.length) {
@@ -87,7 +87,7 @@ export class HiddenRangeModel {
 			} else {
 				updateHiddenAreas = true;
 				newHiddenAreas.push(
-					new Range(startLineNumber, 1, endLineNumber, 1),
+					new Range(startLineNumber, 1, endLineNumber, 1)
 				);
 			}
 			lastCollapsedStart = startLineNumber;
@@ -136,7 +136,7 @@ export class HiddenRangeModel {
 			if (adjustedStartLine) {
 				selection = selection.setStartPosition(
 					adjustedStartLine,
-					editorModel.getLineMaxColumn(adjustedStartLine),
+					editorModel.getLineMaxColumn(adjustedStartLine)
 				);
 				hasChanges = true;
 			}
@@ -144,7 +144,7 @@ export class HiddenRangeModel {
 			if (adjustedEndLine) {
 				selection = selection.setEndPosition(
 					adjustedEndLine,
-					editorModel.getLineMaxColumn(adjustedEndLine),
+					editorModel.getLineMaxColumn(adjustedEndLine)
 				);
 				hasChanges = true;
 			}
@@ -172,7 +172,7 @@ function findRange(ranges: IRange[], line: number): IRange | null {
 	const i =
 		findFirstIdxMonotonousOrArrLen(
 			ranges,
-			(r) => line < r.startLineNumber,
+			(r) => line < r.startLineNumber
 		) - 1;
 	if (i >= 0 && ranges[i].endLineNumber >= line) {
 		return ranges[i];

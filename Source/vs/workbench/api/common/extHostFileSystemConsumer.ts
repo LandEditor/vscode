@@ -40,7 +40,7 @@ export class ExtHostConsumerFileSystem {
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostFileSystemInfo fileSystemInfo: IExtHostFileSystemInfo,
+		@IExtHostFileSystemInfo fileSystemInfo: IExtHostFileSystemInfo
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadFileSystem);
 		const that = this;
@@ -74,7 +74,7 @@ export class ExtHostConsumerFileSystem {
 				}
 			},
 			async readDirectory(
-				uri: vscode.Uri,
+				uri: vscode.Uri
 			): Promise<[string, vscode.FileType][]> {
 				try {
 					const provider = that._fileSystemProvider.get(uri.scheme);
@@ -98,7 +98,7 @@ export class ExtHostConsumerFileSystem {
 						return await that.mkdirp(
 							provider.impl,
 							provider.extUri,
-							uri,
+							uri
 						);
 					} else {
 						return await that._proxy.$mkdir(uri);
@@ -124,7 +124,7 @@ export class ExtHostConsumerFileSystem {
 			},
 			async writeFile(
 				uri: vscode.Uri,
-				content: Uint8Array,
+				content: Uint8Array
 			): Promise<void> {
 				try {
 					const provider = that._fileSystemProvider.get(uri.scheme);
@@ -134,22 +134,20 @@ export class ExtHostConsumerFileSystem {
 						await that.mkdirp(
 							provider.impl,
 							provider.extUri,
-							provider.extUri.dirname(uri),
+							provider.extUri.dirname(uri)
 						);
-						return await that._writeQueue
-							.queueFor(uri)
-							.queue(() =>
-								Promise.resolve(
-									provider.impl.writeFile(uri, content, {
-										create: true,
-										overwrite: true,
-									}),
-								),
-							);
+						return await that._writeQueue.queueFor(uri).queue(() =>
+							Promise.resolve(
+								provider.impl.writeFile(uri, content, {
+									create: true,
+									overwrite: true,
+								})
+							)
+						);
 					} else {
 						return await that._proxy.$writeFile(
 							uri,
-							VSBuffer.wrap(content),
+							VSBuffer.wrap(content)
 						);
 					}
 				} catch (err) {
@@ -158,7 +156,7 @@ export class ExtHostConsumerFileSystem {
 			},
 			async delete(
 				uri: vscode.Uri,
-				options?: { recursive?: boolean; useTrash?: boolean },
+				options?: { recursive?: boolean; useTrash?: boolean }
 			): Promise<void> {
 				try {
 					const provider = that._fileSystemProvider.get(uri.scheme);
@@ -184,7 +182,7 @@ export class ExtHostConsumerFileSystem {
 			async rename(
 				oldUri: vscode.Uri,
 				newUri: vscode.Uri,
-				options?: { overwrite?: boolean },
+				options?: { overwrite?: boolean }
 			): Promise<void> {
 				try {
 					// no shortcut: potentially involves different schemes, does mkdirp
@@ -199,7 +197,7 @@ export class ExtHostConsumerFileSystem {
 			async copy(
 				source: vscode.Uri,
 				destination: vscode.Uri,
-				options?: { overwrite?: boolean },
+				options?: { overwrite?: boolean }
 			): Promise<void> {
 				try {
 					// no shortcut: potentially involves different schemes, does mkdirp
@@ -227,14 +225,14 @@ export class ExtHostConsumerFileSystem {
 	private async mkdirp(
 		provider: vscode.FileSystemProvider,
 		providerExtUri: IExtUri,
-		directory: vscode.Uri,
+		directory: vscode.Uri
 	): Promise<void> {
 		const directoriesToCreate: string[] = [];
 
 		while (
 			!providerExtUri.isEqual(
 				directory,
-				providerExtUri.dirname(directory),
+				providerExtUri.dirname(directory)
 			)
 		) {
 			try {
@@ -245,7 +243,7 @@ export class ExtHostConsumerFileSystem {
 							directory.scheme === Schemas.file
 								? directory.fsPath
 								: directory.toString(true)
-						}' that already exists but is not a directory`,
+						}' that already exists but is not a directory`
 					);
 				}
 
@@ -267,7 +265,7 @@ export class ExtHostConsumerFileSystem {
 		for (let i = directoriesToCreate.length - 1; i >= 0; i--) {
 			directory = providerExtUri.joinPath(
 				directory,
-				directoriesToCreate[i],
+				directoriesToCreate[i]
 			);
 
 			try {
@@ -316,7 +314,7 @@ export class ExtHostConsumerFileSystem {
 				default:
 					throw new FileSystemError(
 						err.message,
-						err.name as files.FileSystemProviderErrorCode,
+						err.name as files.FileSystemProviderErrorCode
 					);
 			}
 		}
@@ -349,7 +347,7 @@ export class ExtHostConsumerFileSystem {
 			default:
 				throw new FileSystemError(
 					err.message,
-					err.name as files.FileSystemProviderErrorCode,
+					err.name as files.FileSystemProviderErrorCode
 				);
 		}
 	}
@@ -362,7 +360,7 @@ export class ExtHostConsumerFileSystem {
 		options?: {
 			isCaseSensitive?: boolean;
 			isReadonly?: boolean | IMarkdownString;
-		},
+		}
 	): IDisposable {
 		this._fileSystemProvider.set(scheme, {
 			impl: provider,

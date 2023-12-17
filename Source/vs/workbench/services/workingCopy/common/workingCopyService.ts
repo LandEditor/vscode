@@ -155,27 +155,27 @@ export class WorkingCopyService
 	//#region Events
 
 	private readonly _onDidRegister = this._register(
-		new Emitter<IWorkingCopy>(),
+		new Emitter<IWorkingCopy>()
 	);
 	readonly onDidRegister = this._onDidRegister.event;
 
 	private readonly _onDidUnregister = this._register(
-		new Emitter<IWorkingCopy>(),
+		new Emitter<IWorkingCopy>()
 	);
 	readonly onDidUnregister = this._onDidUnregister.event;
 
 	private readonly _onDidChangeDirty = this._register(
-		new Emitter<IWorkingCopy>(),
+		new Emitter<IWorkingCopy>()
 	);
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
 
 	private readonly _onDidChangeContent = this._register(
-		new Emitter<IWorkingCopy>(),
+		new Emitter<IWorkingCopy>()
 	);
 	readonly onDidChangeContent = this._onDidChangeContent.event;
 
 	private readonly _onDidSave = this._register(
-		new Emitter<IWorkingCopySaveEvent>(),
+		new Emitter<IWorkingCopySaveEvent>()
 	);
 	readonly onDidSave = this._onDidSave.event;
 
@@ -192,18 +192,18 @@ export class WorkingCopyService
 		Map<string, IWorkingCopy>
 	>();
 	private readonly mapWorkingCopyToListeners = this._register(
-		new DisposableMap<IWorkingCopy>(),
+		new DisposableMap<IWorkingCopy>()
 	);
 
 	registerWorkingCopy(workingCopy: IWorkingCopy): IDisposable {
 		let workingCopiesForResource = this.mapResourceToWorkingCopies.get(
-			workingCopy.resource,
+			workingCopy.resource
 		);
 		if (workingCopiesForResource?.has(workingCopy.typeId)) {
 			throw new Error(
 				`Cannot register more than one working copy with the same resource ${workingCopy.resource.toString()} and type ${
 					workingCopy.typeId
-				}.`,
+				}.`
 			);
 		}
 
@@ -215,7 +215,7 @@ export class WorkingCopyService
 			workingCopiesForResource = new Map();
 			this.mapResourceToWorkingCopies.set(
 				workingCopy.resource,
-				workingCopiesForResource,
+				workingCopiesForResource
 			);
 		}
 		workingCopiesForResource.set(workingCopy.typeId, workingCopy);
@@ -224,18 +224,18 @@ export class WorkingCopyService
 		const disposables = new DisposableStore();
 		disposables.add(
 			workingCopy.onDidChangeContent(() =>
-				this._onDidChangeContent.fire(workingCopy),
-			),
+				this._onDidChangeContent.fire(workingCopy)
+			)
 		);
 		disposables.add(
 			workingCopy.onDidChangeDirty(() =>
-				this._onDidChangeDirty.fire(workingCopy),
-			),
+				this._onDidChangeDirty.fire(workingCopy)
+			)
 		);
 		disposables.add(
 			workingCopy.onDidSave((e) =>
-				this._onDidSave.fire({ workingCopy, ...e }),
-			),
+				this._onDidSave.fire({ workingCopy, ...e })
+			)
 		);
 		this.mapWorkingCopyToListeners.set(workingCopy, disposables);
 
@@ -260,7 +260,7 @@ export class WorkingCopyService
 
 		// Registry (type based)
 		const workingCopiesForResource = this.mapResourceToWorkingCopies.get(
-			workingCopy.resource,
+			workingCopy.resource
 		);
 		if (
 			workingCopiesForResource?.delete(workingCopy.typeId) &&
@@ -336,7 +336,7 @@ export class WorkingCopyService
 
 	get dirtyWorkingCopies(): IWorkingCopy[] {
 		return this.workingCopies.filter((workingCopy) =>
-			workingCopy.isDirty(),
+			workingCopy.isDirty()
 		);
 	}
 
@@ -354,7 +354,7 @@ export class WorkingCopyService
 
 	get modifiedWorkingCopies(): IWorkingCopy[] {
 		return this.workingCopies.filter((workingCopy) =>
-			workingCopy.isModified(),
+			workingCopy.isModified()
 		);
 	}
 
@@ -385,5 +385,5 @@ export class WorkingCopyService
 registerSingleton(
 	IWorkingCopyService,
 	WorkingCopyService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

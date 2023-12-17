@@ -20,7 +20,7 @@ export class TypeScriptVersion {
 		public readonly source: TypeScriptVersionSource,
 		public readonly path: string,
 		public readonly apiVersion: API | undefined,
-		private readonly _pathLabel?: string,
+		private readonly _pathLabel?: string
 	) {}
 
 	public get tsServerPath(): string {
@@ -54,8 +54,8 @@ export class TypeScriptVersion {
 		return version
 			? version.displayName
 			: vscode.l10n.t(
-					"Could not load the TypeScript version at this path",
-			  );
+					"Could not load the TypeScript version at this path"
+				);
 	}
 }
 

@@ -24,7 +24,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		args: "ip-address",
 		description: nls.localize(
 			"host",
-			"The host name or IP address the server should listen to. If not set, defaults to 'localhost'.",
+			"The host name or IP address the server should listen to. If not set, defaults to 'localhost'."
 		),
 	},
 	port: {
@@ -33,7 +33,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		args: "port | port range",
 		description: nls.localize(
 			"port",
-			"The port the server should listen to. If 0 is passed a random free port is picked. If a range in the format num-num is passed, a free port from the range (end inclusive) is selected.",
+			"The port the server should listen to. If 0 is passed a random free port is picked. If a range in the format num-num is passed, a free port from the range (end inclusive) is selected."
 		),
 	},
 	"socket-path": {
@@ -42,7 +42,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		args: "path",
 		description: nls.localize(
 			"socket-path",
-			"The path to a socket file for the server to listen to.",
+			"The path to a socket file for the server to listen to."
 		),
 	},
 	"connection-token": {
@@ -52,7 +52,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		deprecates: ["connectionToken"],
 		description: nls.localize(
 			"connection-token",
-			"A secret that must be included with all requests.",
+			"A secret that must be included with all requests."
 		),
 	},
 	"connection-token-file": {
@@ -62,7 +62,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		deprecates: ["connection-secret", "connectionTokenFile"],
 		description: nls.localize(
 			"connection-token-file",
-			"Path to a file that contains the connection token.",
+			"Path to a file that contains the connection token."
 		),
 	},
 	"without-connection-token": {
@@ -70,7 +70,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		cat: "o",
 		description: nls.localize(
 			"without-connection-token",
-			"Run without a connection token. Only use this if the connection is secured by other means.",
+			"Run without a connection token. Only use this if the connection is secured by other means."
 		),
 	},
 	"disable-websocket-compression": { type: "boolean" },
@@ -81,7 +81,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		cat: "o",
 		description: nls.localize(
 			"acceptLicenseTerms",
-			"If set, the user accepts the server license terms and the server will be started without a user prompt.",
+			"If set, the user accepts the server license terms and the server will be started without a user prompt."
 		),
 	},
 	"server-data-dir": {
@@ -89,7 +89,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		cat: "o",
 		description: nls.localize(
 			"serverDataDir",
-			"Specifies the directory that server data is kept in.",
+			"Specifies the directory that server data is kept in."
 		),
 	},
 	"telemetry-level": {
@@ -98,7 +98,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		args: "level",
 		description: nls.localize(
 			"telemetry-level",
-			"Sets the initial telemetry level. Valid levels are: 'off', 'crash', 'error' and 'all'. If not specified, the server will send telemetry until a client connects, it will then use the clients telemetry setting. Setting this to 'off' is equivalent to --disable-telemetry",
+			"Sets the initial telemetry level. Valid levels are: 'off', 'crash', 'error' and 'all'. If not specified, the server will send telemetry until a client connects, it will then use the clients telemetry setting. Setting this to 'off' is equivalent to --disable-telemetry"
 		),
 	},
 
@@ -133,14 +133,14 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		type: "string",
 		description: nls.localize(
 			"default-folder",
-			"The workspace folder to open when no input is specified in the browser URL. A relative or absolute path resolved against the current working directory.",
+			"The workspace folder to open when no input is specified in the browser URL. A relative or absolute path resolved against the current working directory."
 		),
 	},
 	"default-workspace": {
 		type: "string",
 		description: nls.localize(
 			"default-workspace",
-			"The workspace to open when no input is specified in the browser URL. A relative or absolute path resolved against the current working directory.",
+			"The workspace to open when no input is specified in the browser URL. A relative or absolute path resolved against the current working directory."
 		),
 	},
 
@@ -169,7 +169,7 @@ export const serverOptions: OptionDescriptions<Required<ServerParsedArgs>> = {
 		cat: "e",
 		description: nls.localize(
 			"start-server",
-			"Start the server when installing or uninstalling extensions. To be used in combination with 'install-extension', 'install-builtin-extension' and 'uninstall-extension'.",
+			"Start the server when installing or uninstalling extensions. To be used in combination with 'install-extension', 'install-builtin-extension' and 'uninstall-extension'."
 		),
 	},
 

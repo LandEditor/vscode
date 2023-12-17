@@ -23,7 +23,7 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 		document: vscode.TextDocument,
 		_position: vscode.Position,
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentDropEdit | undefined> {
 		const enabled = vscode.workspace
 			.getConfiguration("markdown", document)
@@ -35,7 +35,7 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 		const filesEdit = await this._getMediaFilesEdit(
 			document,
 			dataTransfer,
-			token,
+			token
 		);
 		if (filesEdit) {
 			return filesEdit;
@@ -51,7 +51,7 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 	private async _getUriListEdit(
 		document: vscode.TextDocument,
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentDropEdit | undefined> {
 		const urlList = await dataTransfer.get(Mime.textUriList)?.asString();
 		if (!urlList || token.isCancellationRequested) {
@@ -72,7 +72,7 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 	private async _getMediaFilesEdit(
 		document: vscode.TextDocument,
 		dataTransfer: vscode.DataTransfer,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.DocumentDropEdit | undefined> {
 		if (getParentDocumentUri(document.uri).scheme === Schemes.untitled) {
 			return;
@@ -82,7 +82,7 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 			.getConfiguration("markdown", document)
 			.get<"mediaFiles" | "never">(
 				"editor.drop.copyIntoWorkspace",
-				"mediaFiles",
+				"mediaFiles"
 			);
 		if (copyIntoWorkspace !== "mediaFiles") {
 			return;
@@ -91,7 +91,7 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 		const edit = await createEditForMediaFiles(
 			document,
 			dataTransfer,
-			token,
+			token
 		);
 		if (!edit) {
 			return;
@@ -106,11 +106,11 @@ class ResourceDropProvider implements vscode.DocumentDropEditProvider {
 }
 
 export function registerDropIntoEditorSupport(
-	selector: vscode.DocumentSelector,
+	selector: vscode.DocumentSelector
 ) {
 	return vscode.languages.registerDocumentDropEditProvider(
 		selector,
 		new ResourceDropProvider(),
-		ResourceDropProvider,
+		ResourceDropProvider
 	);
 }

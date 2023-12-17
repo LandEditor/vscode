@@ -16,7 +16,7 @@ export class NodeJSWatcherClient extends AbstractNonRecursiveWatcherClient {
 	constructor(
 		onFileChanges: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean,
+		verboseLogging: boolean
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging);
 
@@ -24,7 +24,7 @@ export class NodeJSWatcherClient extends AbstractNonRecursiveWatcherClient {
 	}
 
 	protected override createWatcher(
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): INonRecursiveWatcher {
 		return disposables.add(new NodeJSWatcher());
 	}

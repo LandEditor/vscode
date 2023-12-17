@@ -19,29 +19,29 @@ class ContextMenuContribution implements IWorkbenchContribution {
 
 	constructor(
 		@ILayoutService layoutService: ILayoutService,
-		@IContextMenuService contextMenuService: IContextMenuService,
+		@IContextMenuService contextMenuService: IContextMenuService
 	) {
 		const update = (visible: boolean) =>
 			layoutService.activeContainer.classList.toggle(
 				"context-menu-visible",
-				visible,
+				visible
 			);
 		contextMenuService.onDidShowContextMenu(
 			() => update(true),
 			null,
-			this.disposables,
+			this.disposables
 		);
 		contextMenuService.onDidHideContextMenu(
 			() => update(false),
 			null,
-			this.disposables,
+			this.disposables
 		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	ContextMenuContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

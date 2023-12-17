@@ -55,7 +55,7 @@ export interface Range {
 export function format(
 	documentText: string,
 	range: Range | undefined,
-	options: FormattingOptions,
+	options: FormattingOptions
 ): Edit[] {
 	let initialIndentLevel: number;
 	let formatText: string;
@@ -257,7 +257,7 @@ export function toFormattedString(obj: any, options: FormattingOptions) {
 	const content = JSON.stringify(
 		obj,
 		undefined,
-		options.insertSpaces ? options.tabSize || 4 : "\t",
+		options.insertSpaces ? options.tabSize || 4 : "\t"
 	);
 	if (options.eol !== undefined) {
 		return content.replace(/\r\n|\r|\n/g, options.eol);
@@ -275,7 +275,7 @@ function repeat(s: string, count: number): string {
 
 function computeIndentLevel(
 	content: string,
-	options: FormattingOptions,
+	options: FormattingOptions
 ): number {
 	let i = 0;
 	let nChars = 0;

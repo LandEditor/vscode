@@ -22,20 +22,21 @@ import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle
  */
 class TextMateTokenizationInstantiator implements IWorkbenchContribution {
 	constructor(
-		@ITextMateTokenizationService _textMateTokenizationService: ITextMateTokenizationService
-	) { }
+		@ITextMateTokenizationService
+		_textMateTokenizationService: ITextMateTokenizationService
+	) {}
 }
 
 registerSingleton(
 	ITextMateTokenizationService,
 	TextMateTokenizationFeature,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	TextMateTokenizationInstantiator,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );

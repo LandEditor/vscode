@@ -41,7 +41,7 @@ export async function findExecutable(
 	cwd?: string,
 	paths?: string[],
 	env: IProcessEnvironment = process.env as IProcessEnvironment,
-	exists: (path: string) => Promise<boolean> = pfs.Promises.exists,
+	exists: (path: string) => Promise<boolean> = pfs.Promises.exists
 ): Promise<string | undefined> {
 	// If we have an absolute path then we take it.
 	if (path.isAbsolute(command)) {
@@ -124,7 +124,7 @@ export function getShellIntegrationInjection(
 	options: ITerminalProcessOptions,
 	env: ITerminalEnvironment | undefined,
 	logService: ILogService,
-	productService: IProductService,
+	productService: IProductService
 ): IShellIntegrationConfigInjection | undefined {
 	// Shell integration arg injection is disabled when:
 	// - The global setting is disabled
@@ -164,11 +164,11 @@ export function getShellIntegrationInjection(
 		if (shell === "pwsh.exe" || shell === "powershell.exe") {
 			if (!originalArgs || arePwshImpliedArgs(originalArgs)) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.WindowsPwsh,
+					ShellIntegrationExecutable.WindowsPwsh
 				);
 			} else if (arePwshLoginArgs(originalArgs)) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.WindowsPwshLogin,
+					ShellIntegrationExecutable.WindowsPwshLogin
 				);
 			}
 			if (!newArgs) {
@@ -178,7 +178,7 @@ export function getShellIntegrationInjection(
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
 				appRoot,
-				"",
+				""
 			);
 			if (options.shellIntegration.suggestEnabled) {
 				envMixin["VSCODE_SUGGEST"] = "1";
@@ -187,7 +187,7 @@ export function getShellIntegrationInjection(
 		}
 		logService.warn(
 			`Shell integration cannot be enabled for executable "${shellLaunchConfig.executable}" and args`,
-			shellLaunchConfig.args,
+			shellLaunchConfig.args
 		);
 		return undefined;
 	}
@@ -197,13 +197,13 @@ export function getShellIntegrationInjection(
 		case "bash": {
 			if (!originalArgs || originalArgs.length === 0) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.Bash,
+					ShellIntegrationExecutable.Bash
 				);
 			} else if (areZshBashLoginArgs(originalArgs)) {
 				envMixin["VSCODE_SHELL_LOGIN"] = "1";
 				addEnvMixinPathPrefix(options, envMixin);
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.Bash,
+					ShellIntegrationExecutable.Bash
 				);
 			}
 			if (!newArgs) {
@@ -212,7 +212,7 @@ export function getShellIntegrationInjection(
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
-				appRoot,
+				appRoot
 			);
 			return { newArgs, envMixin };
 		}
@@ -223,7 +223,7 @@ export function getShellIntegrationInjection(
 				env?.XDG_DATA_DIRS ?? "/usr/local/share:/usr/share";
 			const newDataDir = path.join(
 				appRoot,
-				"out/vs/workbench/contrib/terminal/browser/media/fish_xdg_data",
+				"out/vs/workbench/contrib/terminal/browser/media/fish_xdg_data"
 			);
 			envMixin["XDG_DATA_DIRS"] = `${oldDataDirs}:${newDataDir}`;
 			addEnvMixinPathPrefix(options, envMixin);
@@ -232,11 +232,11 @@ export function getShellIntegrationInjection(
 		case "pwsh": {
 			if (!originalArgs || arePwshImpliedArgs(originalArgs)) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.Pwsh,
+					ShellIntegrationExecutable.Pwsh
 				);
 			} else if (arePwshLoginArgs(originalArgs)) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.PwshLogin,
+					ShellIntegrationExecutable.PwshLogin
 				);
 			}
 			if (!newArgs) {
@@ -249,18 +249,18 @@ export function getShellIntegrationInjection(
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
 				appRoot,
-				"",
+				""
 			);
 			return { newArgs, envMixin };
 		}
 		case "zsh": {
 			if (!originalArgs || originalArgs.length === 0) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.Zsh,
+					ShellIntegrationExecutable.Zsh
 				);
 			} else if (areZshBashLoginArgs(originalArgs)) {
 				newArgs = shellIntegrationArgs.get(
-					ShellIntegrationExecutable.ZshLogin,
+					ShellIntegrationExecutable.ZshLogin
 				);
 				addEnvMixinPathPrefix(options, envMixin);
 			} else if (
@@ -268,7 +268,7 @@ export function getShellIntegrationInjection(
 					shellIntegrationArgs.get(ShellIntegrationExecutable.Zsh) ||
 				originalArgs ===
 					shellIntegrationArgs.get(
-						ShellIntegrationExecutable.ZshLogin,
+						ShellIntegrationExecutable.ZshLogin
 					)
 			) {
 				newArgs = originalArgs;
@@ -279,7 +279,7 @@ export function getShellIntegrationInjection(
 			newArgs = [...newArgs]; // Shallow clone the array to avoid setting the default array
 			newArgs[newArgs.length - 1] = format(
 				newArgs[newArgs.length - 1],
-				appRoot,
+				appRoot
 			);
 
 			// Move .zshrc into $ZDOTDIR as the way to activate the script
@@ -291,7 +291,7 @@ export function getShellIntegrationInjection(
 			}
 			const zdotdir = path.join(
 				os.tmpdir(),
-				`${username}-${productService.applicationName}-zsh`,
+				`${username}-${productService.applicationName}-zsh`
 			);
 			envMixin["ZDOTDIR"] = zdotdir;
 			const userZdotdir = env?.ZDOTDIR ?? os.homedir() ?? `~`;
@@ -301,28 +301,28 @@ export function getShellIntegrationInjection(
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
-					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-rc.zsh",
+					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-rc.zsh"
 				),
 				dest: path.join(zdotdir, ".zshrc"),
 			});
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
-					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-profile.zsh",
+					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-profile.zsh"
 				),
 				dest: path.join(zdotdir, ".zprofile"),
 			});
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
-					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-env.zsh",
+					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-env.zsh"
 				),
 				dest: path.join(zdotdir, ".zshenv"),
 			});
 			filesToCopy.push({
 				source: path.join(
 					appRoot,
-					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-login.zsh",
+					"out/vs/workbench/contrib/terminal/browser/media/shellIntegration-login.zsh"
 				),
 				dest: path.join(zdotdir, ".zlogin"),
 			});
@@ -331,7 +331,7 @@ export function getShellIntegrationInjection(
 	}
 	logService.warn(
 		`Shell integration cannot be enabled for executable "${shellLaunchConfig.executable}" and args`,
-		shellLaunchConfig.args,
+		shellLaunchConfig.args
 	);
 	return undefined;
 }
@@ -347,12 +347,12 @@ export function getShellIntegrationInjection(
  */
 function addEnvMixinPathPrefix(
 	options: ITerminalProcessOptions,
-	envMixin: IProcessEnvironment,
+	envMixin: IProcessEnvironment
 ): void {
 	if (isMacintosh && options.environmentVariableCollections) {
 		// Deserialize and merge
 		const deserialized = deserializeEnvironmentVariableCollections(
-			options.environmentVariableCollections,
+			options.environmentVariableCollections
 		);
 		const merged = new MergedEnvironmentVariableCollection(deserialized);
 

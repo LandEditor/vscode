@@ -48,12 +48,14 @@ export class FileDialogService
 		@IHostService hostService: IHostService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IHistoryService historyService: IHistoryService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IFileService fileService: IFileService,
 		@IOpenerService openerService: IOpenerService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IDialogService dialogService: IDialogService,
 		@ILanguageService languageService: ILanguageService,
 		@IWorkspacesService workspacesService: IWorkspacesService,
@@ -64,12 +66,29 @@ export class FileDialogService
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@ILogService logService: ILogService
 	) {
-		super(hostService, contextService, historyService, environmentService, instantiationService,
-			configurationService, fileService, openerService, dialogService, languageService, workspacesService, labelService, pathService, commandService, editorService, codeEditorService, logService);
+		super(
+			hostService,
+			contextService,
+			historyService,
+			environmentService,
+			instantiationService,
+			configurationService,
+			fileService,
+			openerService,
+			dialogService,
+			languageService,
+			workspacesService,
+			labelService,
+			pathService,
+			commandService,
+			editorService,
+			codeEditorService,
+			logService
+		);
 	}
 
 	private toNativeOpenDialogOptions(
-		options: IPickAndOpenOptions,
+		options: IPickAndOpenOptions
 	): INativeOpenDialogOptions {
 		return {
 			forceNewWindow: options.forceNewWindow,
@@ -87,7 +106,7 @@ export class FileDialogService
 			true;
 		const newWindowSetting =
 			this.configurationService.getValue(
-				"window.openFilesInNewWindow",
+				"window.openFilesInNewWindow"
 			) === "on";
 		return {
 			useSimplified:
@@ -110,11 +129,11 @@ export class FileDialogService
 			return this.pickFileFolderAndOpenSimplified(
 				schema,
 				options,
-				shouldUseSimplified.isSetting,
+				shouldUseSimplified.isSetting
 			);
 		}
 		return this.nativeHostService.pickFileFolderAndOpen(
-			this.toNativeOpenDialogOptions(options),
+			this.toNativeOpenDialogOptions(options)
 		);
 	}
 
@@ -130,11 +149,11 @@ export class FileDialogService
 			return this.pickFileAndOpenSimplified(
 				schema,
 				options,
-				shouldUseSimplified.isSetting,
+				shouldUseSimplified.isSetting
 			);
 		}
 		return this.nativeHostService.pickFileAndOpen(
-			this.toNativeOpenDialogOptions(options),
+			this.toNativeOpenDialogOptions(options)
 		);
 	}
 
@@ -149,7 +168,7 @@ export class FileDialogService
 			return this.pickFolderAndOpenSimplified(schema, options);
 		}
 		return this.nativeHostService.pickFolderAndOpen(
-			this.toNativeOpenDialogOptions(options),
+			this.toNativeOpenDialogOptions(options)
 		);
 	}
 
@@ -166,13 +185,13 @@ export class FileDialogService
 			return this.pickWorkspaceAndOpenSimplified(schema, options);
 		}
 		return this.nativeHostService.pickWorkspaceAndOpen(
-			this.toNativeOpenDialogOptions(options),
+			this.toNativeOpenDialogOptions(options)
 		);
 	}
 
 	async pickFileToSave(
 		defaultUri: URI,
-		availableFileSystems?: string[],
+		availableFileSystems?: string[]
 	): Promise<URI | undefined> {
 		const schema = this.getFileSystemSchema({
 			defaultUri,
@@ -180,13 +199,13 @@ export class FileDialogService
 		});
 		const options = this.getPickFileToSaveDialogOptions(
 			defaultUri,
-			availableFileSystems,
+			availableFileSystems
 		);
 		if (this.shouldUseSimplified(schema).useSimplified) {
 			return this.pickFileToSaveSimplified(schema, options);
 		} else {
 			const result = await this.nativeHostService.showSaveDialog(
-				this.toNativeSaveDialogOptions(options),
+				this.toNativeSaveDialogOptions(options)
 			);
 			if (result && !result.canceled && result.filePath) {
 				const uri = URI.file(result.filePath);
@@ -200,7 +219,7 @@ export class FileDialogService
 	}
 
 	private toNativeSaveDialogOptions(
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): SaveDialogOptions {
 		options.defaultUri = options.defaultUri
 			? URI.file(options.defaultUri.path)
@@ -214,7 +233,7 @@ export class FileDialogService
 	}
 
 	async showSaveDialog(
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): Promise<URI | undefined> {
 		const schema = this.getFileSystemSchema(options);
 		if (this.shouldUseSimplified(schema).useSimplified) {
@@ -222,7 +241,7 @@ export class FileDialogService
 		}
 
 		const result = await this.nativeHostService.showSaveDialog(
-			this.toNativeSaveDialogOptions(options),
+			this.toNativeSaveDialogOptions(options)
 		);
 		if (result && !result.canceled && result.filePath) {
 			return URI.file(result.filePath);
@@ -232,7 +251,7 @@ export class FileDialogService
 	}
 
 	async showOpenDialog(
-		options: IOpenDialogOptions,
+		options: IOpenDialogOptions
 	): Promise<URI[] | undefined> {
 		const schema = this.getFileSystemSchema(options);
 		if (this.shouldUseSimplified(schema).useSimplified) {
@@ -273,5 +292,5 @@ export class FileDialogService
 registerSingleton(
 	IFileDialogService,
 	FileDialogService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

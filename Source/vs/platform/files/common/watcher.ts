@@ -76,7 +76,7 @@ export interface IRecursiveWatchRequest extends IWatchRequest {
 }
 
 export function isRecursiveWatchRequest(
-	request: IWatchRequest,
+	request: IWatchRequest
 ): request is IRecursiveWatchRequest {
 	return request.recursive === true;
 }
@@ -160,7 +160,7 @@ export abstract class AbstractWatcherClient extends Disposable {
 
 	private watcher: IWatcher | undefined;
 	private readonly watcherDisposables = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 
 	private requests: IWatchRequest[] | undefined = undefined;
@@ -174,7 +174,7 @@ export abstract class AbstractWatcherClient extends Disposable {
 		private options: {
 			type: string;
 			restartOnError: boolean;
-		},
+		}
 	) {
 		super();
 	}
@@ -193,14 +193,14 @@ export abstract class AbstractWatcherClient extends Disposable {
 		// Wire in event handlers
 		disposables.add(
 			this.watcher.onDidChangeFile((changes) =>
-				this.onFileChanges(changes),
-			),
+				this.onFileChanges(changes)
+			)
 		);
 		disposables.add(
-			this.watcher.onDidLogMessage((msg) => this.onLogMessage(msg)),
+			this.watcher.onDidLogMessage((msg) => this.onLogMessage(msg))
 		);
 		disposables.add(
-			this.watcher.onDidError((error) => this.onError(error)),
+			this.watcher.onDidError((error) => this.onError(error))
 		);
 	}
 
@@ -215,7 +215,7 @@ export abstract class AbstractWatcherClient extends Disposable {
 				this.restart(this.requests);
 			} else {
 				this.error(
-					`gave up attempting to restart watcher after error: ${error}`,
+					`gave up attempting to restart watcher after error: ${error}`
 				);
 			}
 		}
@@ -271,7 +271,7 @@ export abstract class AbstractNonRecursiveWatcherClient extends AbstractWatcherC
 	constructor(
 		onFileChanges: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean,
+		verboseLogging: boolean
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging, {
 			type: "node.js",
@@ -280,7 +280,7 @@ export abstract class AbstractNonRecursiveWatcherClient extends AbstractWatcherC
 	}
 
 	protected abstract override createWatcher(
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): INonRecursiveWatcher;
 }
 
@@ -288,7 +288,7 @@ export abstract class AbstractUniversalWatcherClient extends AbstractWatcherClie
 	constructor(
 		onFileChanges: (changes: IFileChange[]) => void,
 		onLogMessage: (msg: ILogMessage) => void,
-		verboseLogging: boolean,
+		verboseLogging: boolean
 	) {
 		super(onFileChanges, onLogMessage, verboseLogging, {
 			type: "universal",
@@ -297,7 +297,7 @@ export abstract class AbstractUniversalWatcherClient extends AbstractWatcherClie
 	}
 
 	protected abstract override createWatcher(
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): IUniversalWatcher;
 }
 
@@ -326,7 +326,7 @@ export function coalesceEvents(changes: IFileChange[]): IFileChange[] {
 
 export function normalizeWatcherPattern(
 	path: string,
-	pattern: string | IRelativePattern,
+	pattern: string | IRelativePattern
 ): string | IRelativePattern {
 	// Patterns are always matched on the full absolute path
 	// of the event. As such, if the pattern is not absolute
@@ -347,7 +347,7 @@ export function normalizeWatcherPattern(
 
 export function parseWatcherPatterns(
 	path: string,
-	patterns: Array<string | IRelativePattern>,
+	patterns: Array<string | IRelativePattern>
 ): ParsedPattern[] {
 	const parsedPatterns: ParsedPattern[] = [];
 
@@ -461,8 +461,8 @@ class EventCoalescer {
 						isParent(
 							e.resource.fsPath,
 							deletedPath,
-							!isLinux /* ignorecase */,
-						),
+							!isLinux /* ignorecase */
+						)
 					)
 				) {
 					return false; // DELETE is ignored if parent is deleted already

@@ -29,7 +29,7 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 		private readonly _containsRTL: boolean,
 		private readonly _containsUnusualLineTerminators: boolean,
 		private readonly _isBasicASCII: boolean,
-		private readonly _normalizeEOL: boolean,
+		private readonly _normalizeEOL: boolean
 	) {}
 
 	private _getEOL(defaultEOL: DefaultEndOfLine): "\r\n" | "\n" {
@@ -74,7 +74,7 @@ class PieceTreeTextBufferFactory implements ITextBufferFactory {
 			this._containsRTL,
 			this._containsUnusualLineTerminators,
 			this._isBasicASCII,
-			this._normalizeEOL,
+			this._normalizeEOL
 		);
 		return { textBuffer: textBuffer, disposable: textBuffer };
 	}
@@ -190,7 +190,7 @@ export class PieceTreeTextBufferBuilder implements ITextBufferBuilder {
 			this.containsRTL,
 			this.containsUnusualLineTerminators,
 			this.isBasicASCII,
-			normalizeEOL,
+			normalizeEOL
 		);
 	}
 

@@ -21,7 +21,7 @@ import { registerAction2 } from "vs/platform/actions/common/actions";
 registerEditorContribution(
 	StickyScrollController.ID,
 	StickyScrollController,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );
 registerAction2(ToggleStickyScroll);
 registerAction2(FocusStickyScroll);

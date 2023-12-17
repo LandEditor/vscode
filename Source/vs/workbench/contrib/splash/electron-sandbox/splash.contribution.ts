@@ -23,16 +23,17 @@ class SplashStorageService implements ISplashStorageService {
 	readonly saveWindowSplash: (splash: IPartsSplash) => Promise<void>;
 
 	constructor(@INativeHostService nativeHostService: INativeHostService) {
-		this.saveWindowSplash = nativeHostService.saveWindowSplash.bind(nativeHostService);
+		this.saveWindowSplash =
+			nativeHostService.saveWindowSplash.bind(nativeHostService);
 	}
 }
 
 registerSingleton(
 	ISplashStorageService,
 	SplashStorageService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(PartsSplash, LifecyclePhase.Starting);

@@ -37,7 +37,7 @@ import { PreferredGroup } from "vs/workbench/services/editor/common/editorServic
 import { AtLeastOne } from "vs/base/common/types";
 
 export const IEditorResolverService = createDecorator<IEditorResolverService>(
-	"editorResolverService",
+	"editorResolverService"
 );
 
 //#region Editor Associations
@@ -54,7 +54,7 @@ export type EditorAssociations = readonly EditorAssociation[];
 export const editorsAssociationsSettingId = "workbench.editorAssociations";
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 
 const editorAssociationsConfigurationNode: IConfigurationNode = {
@@ -64,7 +64,7 @@ const editorAssociationsConfigurationNode: IConfigurationNode = {
 			type: "object",
 			markdownDescription: localize(
 				"editor.editorAssociations",
-				'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.',
+				'Configure [glob patterns](https://aka.ms/vscode-glob-patterns) to editors (for example `"*.hex": "hexEditor.hexedit"`). These have precedence over the default behavior.'
 			),
 			additionalProperties: {
 				type: "string",
@@ -80,7 +80,7 @@ export interface IEditorType {
 }
 
 configurationRegistry.registerConfiguration(
-	editorAssociationsConfigurationNode,
+	editorAssociationsConfigurationNode
 );
 //#endregion
 
@@ -130,27 +130,27 @@ type EditorInputFactoryResult =
 
 export type EditorInputFactoryFunction = (
 	editorInput: IResourceEditorInput | ITextResourceEditorInput,
-	group: IEditorGroup,
+	group: IEditorGroup
 ) => EditorInputFactoryResult;
 
 export type UntitledEditorInputFactoryFunction = (
 	untitledEditorInput: IUntitledTextResourceEditorInput,
-	group: IEditorGroup,
+	group: IEditorGroup
 ) => EditorInputFactoryResult;
 
 export type DiffEditorInputFactoryFunction = (
 	diffEditorInput: IResourceDiffEditorInput,
-	group: IEditorGroup,
+	group: IEditorGroup
 ) => EditorInputFactoryResult;
 
 export type DiffListEditorInputFactoryFunction = (
 	diffEditorInput: IResourceMultiDiffEditorInput,
-	group: IEditorGroup,
+	group: IEditorGroup
 ) => EditorInputFactoryResult;
 
 export type MergeEditorInputFactoryFunction = (
 	mergeEditorInput: IResourceMergeEditorInput,
-	group: IEditorGroup,
+	group: IEditorGroup
 ) => EditorInputFactoryResult;
 
 type EditorInputFactories = {
@@ -201,7 +201,7 @@ export interface IEditorResolverService {
 		globPattern: string | glob.IRelativePattern,
 		editorInfo: RegisteredEditorInfo,
 		options: RegisteredEditorOptions,
-		editorFactoryObject: EditorInputFactoryObject,
+		editorFactoryObject: EditorInputFactoryObject
 	): IDisposable;
 
 	/**
@@ -212,7 +212,7 @@ export interface IEditorResolverService {
 	 */
 	resolveEditor(
 		editor: IUntypedEditorInput,
-		preferredGroup: PreferredGroup | undefined,
+		preferredGroup: PreferredGroup | undefined
 	): Promise<ResolvedEditor>;
 
 	/**
@@ -253,7 +253,7 @@ export function priorityToRank(priority: RegisteredEditorPriority): number {
 
 export function globMatchesResource(
 	globPattern: string | glob.IRelativePattern,
-	resource: URI,
+	resource: URI
 ): boolean {
 	const excludedSchemes = new Set([
 		Schemas.extension,
@@ -274,7 +274,7 @@ export function globMatchesResource(
 		typeof globPattern === "string"
 			? globPattern.toLowerCase()
 			: globPattern,
-		target.toLowerCase(),
+		target.toLowerCase()
 	);
 }
 //#endregion

@@ -26,7 +26,7 @@ class ErrorLog {
 		fancyLog(
 			`Starting ${ansiColors.green("compilation")}${
 				this.id ? ansiColors.blue(` ${this.id}`) : ""
-			}...`,
+			}...`
 		);
 	}
 	onEnd() {
@@ -48,8 +48,8 @@ class ErrorLog {
 			`Finished ${ansiColors.green("compilation")}${
 				this.id ? ansiColors.blue(` ${this.id}`) : ""
 			} with ${errors.length} errors after ${ansiColors.magenta(
-				new Date().getTime() - this.startTime + " ms",
-			)}`,
+				new Date().getTime() - this.startTime + " ms"
+			)}`
 		);
 		const regex = /^([^(]+)\((\d+),(\d+)\): (.*)$/s;
 		const messages = errors
@@ -66,7 +66,7 @@ class ErrorLog {
 			const logFileName = "log" + (this.id ? `_${this.id}` : "");
 			fs.writeFileSync(
 				path.join(buildLogFolder, logFileName),
-				JSON.stringify(messages),
+				JSON.stringify(messages)
 			);
 		} catch (err) {
 			//noop
@@ -84,7 +84,7 @@ function getErrorLog(id = "") {
 }
 const buildLogFolder = path.join(
 	path.dirname(path.dirname(__dirname)),
-	".build",
+	".build"
 );
 try {
 	fs.mkdirSync(buildLogFolder);

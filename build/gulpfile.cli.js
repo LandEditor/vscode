@@ -28,7 +28,7 @@ const targetCliPath = path.join(
 	root,
 	"target",
 	"debug",
-	process.platform === "win32" ? "code.exe" : "code",
+	process.platform === "win32" ? "code.exe" : "code"
 );
 
 const platformOpensslDirName =
@@ -37,20 +37,20 @@ const platformOpensslDirName =
 			? "arm64-windows-static-md"
 			: "x64-windows-static-md"
 		: process.platform === "darwin"
-		  ? process.arch === "arm64"
+			? process.arch === "arm64"
 				? "arm64-osx"
 				: "x64-osx"
-		  : process.arch === "arm64"
-			  ? "arm64-linux"
-			  : process.arch === "arm"
-				  ? "arm-linux"
-				  : "x64-linux";
+			: process.arch === "arm64"
+				? "arm64-linux"
+				: process.arch === "arm"
+					? "arm-linux"
+					: "x64-linux";
 const platformOpensslDir = path.join(
 	rootAbs,
 	"openssl",
 	"package",
 	"out",
-	platformOpensslDirName,
+	platformOpensslDirName
 );
 
 const hasLocalRust = (() => {
@@ -136,7 +136,7 @@ const acquireBuiltOpenSSL = (callback) => {
 	cp.spawnSync(
 		process.platform === "win32" ? "npm.cmd" : "npm",
 		["pack", "@vscode/openssl-prebuilt"],
-		{ stdio: ["ignore", "ignore", "inherit"], cwd: dir },
+		{ stdio: ["ignore", "ignore", "inherit"], cwd: dir }
 	);
 
 	gulp.src("*.tgz", { cwd: dir })
@@ -151,7 +151,7 @@ const acquireBuiltOpenSSL = (callback) => {
 };
 
 const compileWithOpenSSLCheck = (
-	/** @type import('./lib/reporter').IReporter */ reporter,
+	/** @type import('./lib/reporter').IReporter */ reporter
 ) =>
 	es.map((_, callback) => {
 		compileFromSources((err) => {
@@ -161,13 +161,13 @@ const compileWithOpenSSLCheck = (
 				err
 					.toString()
 					.includes(
-						"Could not find directory of OpenSSL installation",
+						"Could not find directory of OpenSSL installation"
 					) &&
 				!existsSync(platformOpensslDir)
 			) {
 				fancyLog(
 					ansiColors.yellow(`[cli]`),
-					"OpenSSL libraries not found, acquiring prebuilt bits...",
+					"OpenSSL libraries not found, acquiring prebuilt bits..."
 				);
 				acquireBuiltOpenSSL((err) => {
 					if (err) {
@@ -193,11 +193,11 @@ const warnIfRustNotInstalled = () => {
 	if (!hasLocalRust()) {
 		fancyLog(
 			ansiColors.yellow(`[cli]`),
-			"No local Rust install detected, compilation may fail.",
+			"No local Rust install detected, compilation may fail."
 		);
 		fancyLog(
 			ansiColors.yellow(`[cli]`),
-			"Get rust from: https://rustup.rs/",
+			"Get rust from: https://rustup.rs/"
 		);
 	}
 };

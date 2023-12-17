@@ -20,7 +20,7 @@ export function registerContextMenuListener(): void {
 			contextMenuId: number,
 			items: ISerializableContextMenuItem[],
 			onClickChannel: string,
-			options?: IPopupOptions,
+			options?: IPopupOptions
 		) => {
 			const menu = createMenu(event, onClickChannel, items);
 
@@ -35,19 +35,19 @@ export function registerContextMenuListener(): void {
 					if (menu) {
 						event.sender.send(
 							CONTEXT_MENU_CLOSE_CHANNEL,
-							contextMenuId,
+							contextMenuId
 						);
 					}
 				},
 			});
-		},
+		}
 	);
 }
 
 function createMenu(
 	event: IpcMainEvent,
 	onClickChannel: string,
-	items: ISerializableContextMenuItem[],
+	items: ISerializableContextMenuItem[]
 ): Menu {
 	const menu = new Menu();
 
@@ -82,7 +82,7 @@ function createMenu(
 					event.sender.send(
 						onClickChannel,
 						item.id,
-						contextmenuEvent,
+						contextmenuEvent
 					),
 			});
 		}

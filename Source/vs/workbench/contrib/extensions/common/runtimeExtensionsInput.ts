@@ -19,8 +19,8 @@ const RuntimeExtensionsEditorIcon = registerIcon(
 	Codicon.extensions,
 	nls.localize(
 		"runtimeExtensionEditorLabelIcon",
-		"Icon of the runtime extensions editor label.",
-	),
+		"Icon of the runtime extensions editor label."
+	)
 );
 
 export class RuntimeExtensionsInput extends EditorInput {

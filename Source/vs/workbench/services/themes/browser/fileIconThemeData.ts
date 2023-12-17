@@ -52,7 +52,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 	}
 
 	public ensureLoaded(
-		themeLoader: FileIconThemeLoader,
+		themeLoader: FileIconThemeLoader
 	): Promise<string | undefined> {
 		return !this.isLoaded
 			? this.load(themeLoader)
@@ -60,13 +60,13 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 	}
 
 	public reload(
-		themeLoader: FileIconThemeLoader,
+		themeLoader: FileIconThemeLoader
 	): Promise<string | undefined> {
 		return this.load(themeLoader);
 	}
 
 	private load(
-		themeLoader: FileIconThemeLoader,
+		themeLoader: FileIconThemeLoader
 	): Promise<string | undefined> {
 		return themeLoader.load(this);
 	}
@@ -74,7 +74,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 	static fromExtensionTheme(
 		iconTheme: IThemeExtensionPoint,
 		iconThemeLocation: URI,
-		extensionData: ExtensionData,
+		extensionData: ExtensionData
 	): FileIconThemeData {
 		const id = extensionData.extensionId + "-" + iconTheme.id;
 		const label = iconTheme.label || paths.basename(iconTheme.path);
@@ -98,7 +98,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 			themeData = FileIconThemeData._noIconTheme = new FileIconThemeData(
 				"",
 				"",
-				null,
+				null
 			);
 			themeData.hasFileIcons = false;
 			themeData.hasFolderIcons = false;
@@ -122,11 +122,11 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 	}
 
 	static fromStorageData(
-		storageService: IStorageService,
+		storageService: IStorageService
 	): FileIconThemeData | undefined {
 		const input = storageService.get(
 			FileIconThemeData.STORAGE_KEY,
-			StorageScope.PROFILE,
+			StorageScope.PROFILE
 		);
 		if (!input) {
 			return undefined;
@@ -152,7 +152,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 						break;
 					case "extensionData":
 						theme.extensionData = ExtensionData.fromJSONObject(
-							data.extensionData,
+							data.extensionData
 						);
 						break;
 				}
@@ -180,7 +180,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 			FileIconThemeData.STORAGE_KEY,
 			data,
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 }
@@ -228,7 +228,7 @@ interface IconThemeDocument extends IconsAssociation {
 export class FileIconThemeLoader {
 	constructor(
 		private readonly fileService: IExtensionResourceLoaderService,
-		private readonly languageService: ILanguageService,
+		private readonly languageService: ILanguageService
 	) {}
 
 	public load(data: FileIconThemeData): Promise<string | undefined> {
@@ -240,7 +240,7 @@ export class FileIconThemeLoader {
 				const result = this.processIconThemeDocument(
 					data.id,
 					data.location!,
-					iconThemeDocument,
+					iconThemeDocument
 				);
 				data.styleSheetContent = result.content;
 				data.hasFileIcons = result.hasFileIcons;
@@ -248,7 +248,7 @@ export class FileIconThemeLoader {
 				data.hidesExplorerArrows = result.hidesExplorerArrows;
 				data.isLoaded = true;
 				return data.styleSheetContent;
-			},
+			}
 		);
 	}
 
@@ -266,18 +266,18 @@ export class FileIconThemeLoader {
 								"Problems parsing file icons file: {0}",
 								errors
 									.map((e) => getParseErrorMessage(e.error))
-									.join(", "),
-							),
-						),
+									.join(", ")
+							)
+						)
 					);
 				} else if (Json.getNodeType(contentValue) !== "object") {
 					return Promise.reject(
 						new Error(
 							nls.localize(
 								"error.invalidformat",
-								"Invalid format for file icons theme file: Object expected.",
-							),
-						),
+								"Invalid format for file icons theme file: Object expected."
+							)
+						)
 					);
 				}
 				return Promise.resolve(contentValue);
@@ -287,7 +287,7 @@ export class FileIconThemeLoader {
 	private processIconThemeDocument(
 		id: string,
 		iconThemeDocumentLocation: URI,
-		iconThemeDocument: IconThemeDocument,
+		iconThemeDocument: IconThemeDocument
 	): {
 		content: string;
 		hasFileIcons: boolean;
@@ -310,7 +310,7 @@ export class FileIconThemeLoader {
 		const coveredLanguages: { [languageId: string]: boolean } = {};
 
 		const iconThemeDocumentLocationDirname = resources.dirname(
-			iconThemeDocumentLocation,
+			iconThemeDocumentLocation
 		);
 		function resolvePath(path: string) {
 			return resources.joinPath(iconThemeDocumentLocationDirname, path);
@@ -318,7 +318,7 @@ export class FileIconThemeLoader {
 
 		function collectSelectors(
 			associations: IconsAssociation | undefined,
-			baseThemeClassName?: string,
+			baseThemeClassName?: string
 		) {
 			function addSelector(selector: string, defId: string) {
 				if (defId) {
@@ -342,7 +342,7 @@ export class FileIconThemeLoader {
 				if (associations.folder) {
 					addSelector(
 						`${qualifier} .folder-icon::before`,
-						associations.folder,
+						associations.folder
 					);
 					result.hasFolderIcons = true;
 				}
@@ -350,7 +350,7 @@ export class FileIconThemeLoader {
 				if (associations.folderExpanded) {
 					addSelector(
 						`${qualifier} ${expanded} .folder-icon::before`,
-						associations.folderExpanded,
+						associations.folderExpanded
 					);
 					result.hasFolderIcons = true;
 				}
@@ -364,7 +364,7 @@ export class FileIconThemeLoader {
 				if (rootFolder) {
 					addSelector(
 						`${qualifier} .rootfolder-icon::before`,
-						rootFolder,
+						rootFolder
 					);
 					result.hasFolderIcons = true;
 				}
@@ -372,7 +372,7 @@ export class FileIconThemeLoader {
 				if (rootFolderExpanded) {
 					addSelector(
 						`${qualifier} ${expanded} .rootfolder-icon::before`,
-						rootFolderExpanded,
+						rootFolderExpanded
 					);
 					result.hasFolderIcons = true;
 				}
@@ -380,7 +380,7 @@ export class FileIconThemeLoader {
 				if (associations.file) {
 					addSelector(
 						`${qualifier} .file-icon::before`,
-						associations.file,
+						associations.file
 					);
 					result.hasFileIcons = true;
 				}
@@ -391,14 +391,14 @@ export class FileIconThemeLoader {
 						const selectors: string[] = [];
 						const name = handleParentFolder(
 							key.toLowerCase(),
-							selectors,
+							selectors
 						);
 						selectors.push(`.${escapeCSS(name)}-name-folder-icon`);
 						addSelector(
 							`${qualifier} ${selectors.join(
-								"",
+								""
 							)}.folder-icon::before`,
-							folderNames[key],
+							folderNames[key]
 						);
 						result.hasFolderIcons = true;
 					}
@@ -409,14 +409,14 @@ export class FileIconThemeLoader {
 						const selectors: string[] = [];
 						const name = handleParentFolder(
 							key.toLowerCase(),
-							selectors,
+							selectors
 						);
 						selectors.push(`.${escapeCSS(name)}-name-folder-icon`);
 						addSelector(
 							`${qualifier} ${expanded} ${selectors.join(
-								"",
+								""
 							)}.folder-icon::before`,
-							folderNamesExpanded[key],
+							folderNamesExpanded[key]
 						);
 						result.hasFolderIcons = true;
 					}
@@ -428,9 +428,9 @@ export class FileIconThemeLoader {
 						const name = key.toLowerCase();
 						addSelector(
 							`${qualifier} .${escapeCSS(
-								name,
+								name
 							)}-root-name-folder-icon.rootfolder-icon::before`,
-							rootFolderNames[key],
+							rootFolderNames[key]
 						);
 						result.hasFolderIcons = true;
 					}
@@ -442,9 +442,9 @@ export class FileIconThemeLoader {
 						const name = key.toLowerCase();
 						addSelector(
 							`${qualifier} ${expanded} .${escapeCSS(
-								name,
+								name
 							)}-root-name-folder-icon.rootfolder-icon::before`,
-							rootFolderNamesExpanded[key],
+							rootFolderNamesExpanded[key]
 						);
 						result.hasFolderIcons = true;
 					}
@@ -458,9 +458,9 @@ export class FileIconThemeLoader {
 					for (const languageId in languageIds) {
 						addSelector(
 							`${qualifier} .${escapeCSS(
-								languageId,
+								languageId
 							)}-lang-file-icon.file-icon::before`,
-							languageIds[languageId],
+							languageIds[languageId]
 						);
 						result.hasFileIcons = true;
 						hasSpecificFileIcons = true;
@@ -473,24 +473,24 @@ export class FileIconThemeLoader {
 						const selectors: string[] = [];
 						const name = handleParentFolder(
 							key.toLowerCase(),
-							selectors,
+							selectors
 						);
 						const segments = name.split(".");
 						if (segments.length) {
 							for (let i = 0; i < segments.length; i++) {
 								selectors.push(
 									`.${escapeCSS(
-										segments.slice(i).join("."),
-									)}-ext-file-icon`,
+										segments.slice(i).join(".")
+									)}-ext-file-icon`
 								);
 							}
 							selectors.push(".ext-file-icon"); // extra segment to increase file-ext score
 						}
 						addSelector(
 							`${qualifier} ${selectors.join(
-								"",
+								""
 							)}.file-icon::before`,
-							fileExtensions[key],
+							fileExtensions[key]
 						);
 						result.hasFileIcons = true;
 						hasSpecificFileIcons = true;
@@ -502,10 +502,10 @@ export class FileIconThemeLoader {
 						const selectors: string[] = [];
 						const fileName = handleParentFolder(
 							key.toLowerCase(),
-							selectors,
+							selectors
 						);
 						selectors.push(
-							`.${escapeCSS(fileName)}-name-file-icon`,
+							`.${escapeCSS(fileName)}-name-file-icon`
 						);
 						selectors.push(".name-file-icon"); // extra segment to increase file-name score
 						const segments = fileName.split(".");
@@ -513,17 +513,17 @@ export class FileIconThemeLoader {
 							for (let i = 1; i < segments.length; i++) {
 								selectors.push(
 									`.${escapeCSS(
-										segments.slice(i).join("."),
-									)}-ext-file-icon`,
+										segments.slice(i).join(".")
+									)}-ext-file-icon`
 								);
 							}
 							selectors.push(".ext-file-icon"); // extra segment to increase file-ext score
 						}
 						addSelector(
 							`${qualifier} ${selectors.join(
-								"",
+								""
 							)}.file-icon::before`,
-							fileNames[key],
+							fileNames[key]
 						);
 						result.hasFileIcons = true;
 						hasSpecificFileIcons = true;
@@ -557,18 +557,18 @@ export class FileIconThemeLoader {
 						(l) =>
 							`${asCSSUrl(resolvePath(l.path))} format('${
 								l.format
-							}')`,
+							}')`
 					)
 					.join(", ");
 				cssRules.push(
-					`@font-face { src: ${src}; font-family: '${font.id}'; font-weight: ${font.weight}; font-style: ${font.style}; font-display: block; }`,
+					`@font-face { src: ${src}; font-family: '${font.id}'; font-weight: ${font.weight}; font-style: ${font.style}; font-display: block; }`
 				);
 				if (font.size !== undefined && font.size !== defaultFontSize) {
 					fontSizes.set(font.id, font.size);
 				}
 			});
 			cssRules.push(
-				`.show-file-icons .file-icon::before, .show-file-icons .folder-icon::before, .show-file-icons .rootfolder-icon::before { font-family: '${fonts[0].id}'; font-size: ${defaultFontSize}; }`,
+				`.show-file-icons .file-icon::before, .show-file-icons .folder-icon::before, .show-file-icons .rootfolder-icon::before { font-family: '${fonts[0].id}'; font-size: ${defaultFontSize}; }`
 			);
 		}
 
@@ -579,10 +579,10 @@ export class FileIconThemeLoader {
 				if (definition.iconPath) {
 					cssRules.push(
 						`${selectors.join(
-							", ",
+							", "
 						)} { content: ' '; background-image: ${asCSSUrl(
-							resolvePath(definition.iconPath),
-						)}; }`,
+							resolvePath(definition.iconPath)
+						)}; }`
 					);
 				} else if (definition.fontCharacter || definition.fontColor) {
 					const body = [];
@@ -607,7 +607,7 @@ export class FileIconThemeLoader {
 						body.push(`background-image: unset;`); // potentially set by the language default
 					}
 					cssRules.push(
-						`${selectors.join(", ")} { ${body.join(" ")} }`,
+						`${selectors.join(", ")} { ${body.join(" ")} }`
 					);
 				}
 			}
@@ -619,17 +619,17 @@ export class FileIconThemeLoader {
 					const icon = this.languageService.getIcon(languageId);
 					if (icon) {
 						const selector = `.show-file-icons .${escapeCSS(
-							languageId,
+							languageId
 						)}-lang-file-icon.file-icon::before`;
 						cssRules.push(
 							`${selector} { content: ' '; background-image: ${asCSSUrl(
-								icon.dark,
-							)}; }`,
+								icon.dark
+							)}; }`
 						);
 						cssRules.push(
 							`.vs ${selector} { content: ' '; background-image: ${asCSSUrl(
-								icon.light,
-							)}; }`,
+								icon.light
+							)}; }`
 						);
 					}
 				}

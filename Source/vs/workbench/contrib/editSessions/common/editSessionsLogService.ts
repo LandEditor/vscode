@@ -25,20 +25,20 @@ export class EditSessionsLogService
 
 	constructor(
 		@ILoggerService loggerService: ILoggerService,
-		@IEnvironmentService environmentService: IEnvironmentService,
+		@IEnvironmentService environmentService: IEnvironmentService
 	) {
 		super();
 		this.logger = this._register(
 			loggerService.createLogger(
 				joinPath(
 					environmentService.logsHome,
-					`${editSessionsLogId}.log`,
+					`${editSessionsLogId}.log`
 				),
 				{
 					id: editSessionsLogId,
 					name: localize("cloudChangesLog", "Cloud Changes"),
-				},
-			),
+				}
+			)
 		);
 	}
 

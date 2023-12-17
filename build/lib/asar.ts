@@ -18,14 +18,14 @@ declare class AsarFilesystem {
 		path: string,
 		shouldUnpack: boolean,
 		file: { stat: { size: number; mode: number } },
-		options: {},
+		options: {}
 	): Promise<void>;
 }
 
 export function createAsar(
 	folderPath: string,
 	unpackGlobs: string[],
-	destFilename: string,
+	destFilename: string
 ): NodeJS.ReadWriteStream {
 	const shouldUnpackFile = (file: VinylFile): boolean => {
 		for (let i = 0; i < unpackGlobs.length; i++) {
@@ -76,7 +76,7 @@ export function createAsar(
 	const insertFile = (
 		relativePath: string,
 		stat: { size: number; mode: number },
-		shouldUnpack: boolean,
+		shouldUnpack: boolean
 	) => {
 		insertDirectoryForFile(relativePath);
 		pendingInserts++;
@@ -86,7 +86,7 @@ export function createAsar(
 			.insertFile(relativePath, shouldUnpack, { stat: stat }, {})
 			.then(
 				() => onFileInserted(),
-				() => onFileInserted(),
+				() => onFileInserted()
 			);
 	};
 
@@ -102,7 +102,7 @@ export function createAsar(
 			insertFile(
 				file.relative,
 				{ size: file.contents.length, mode: file.stat.mode },
-				shouldUnpack,
+				shouldUnpack
 			);
 
 			if (shouldUnpack) {
@@ -114,7 +114,7 @@ export function createAsar(
 						path: path.join(destFilename + ".unpacked", relative),
 						stat: file.stat,
 						contents: file.contents,
-					}),
+					})
 				);
 			} else {
 				// The file goes inside of xx.asar
@@ -144,7 +144,7 @@ export function createAsar(
 						base: ".",
 						path: destFilename,
 						contents: contents,
-					}),
+					})
 				);
 				this.queue(null);
 			};
@@ -160,6 +160,6 @@ export function createAsar(
 					}
 				};
 			}
-		},
+		}
 	);
 }

@@ -17,7 +17,10 @@ export interface Sender {
  * name for sending data.
  */
 export class Protocol implements IMessagePassingProtocol {
-	constructor(private sender: Sender, readonly onMessage: Event<VSBuffer>) {}
+	constructor(
+		private sender: Sender,
+		readonly onMessage: Event<VSBuffer>
+	) {}
 
 	send(message: VSBuffer): void {
 		try {

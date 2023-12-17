@@ -19,7 +19,7 @@ export interface HtmlRenderingHook {
 	postRender(
 		outputItem: OutputItem,
 		element: HTMLElement,
-		signal: AbortSignal,
+		signal: AbortSignal
 	): HTMLElement | undefined | Promise<HTMLElement | undefined>;
 }
 
@@ -33,7 +33,7 @@ export interface JavaScriptRenderingHook {
 		outputItem: OutputItem,
 		element: HTMLElement,
 		script: string,
-		signal: AbortSignal,
+		signal: AbortSignal
 	): string | undefined | Promise<string | undefined>;
 }
 

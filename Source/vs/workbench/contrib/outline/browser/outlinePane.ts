@@ -67,7 +67,7 @@ import { defaultProgressBarStyles } from "vs/platform/theme/browser/defaultStyle
 class OutlineTreeSorter<E> implements ITreeSorter<E> {
 	constructor(
 		private _comparator: IOutlineComparator<E>,
-		public order: OutlineSortOrder,
+		public order: OutlineSortOrder
 	) {}
 
 	compare(a: E, b: E): number {
@@ -112,7 +112,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 	constructor(
 		options: IViewletViewOptions,
 		@IOutlineService private readonly _outlineService: IOutlineService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IEditorService private readonly _editorService: IEditorService,
@@ -122,9 +123,20 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService telemetryService: ITelemetryService,
+		@ITelemetryService telemetryService: ITelemetryService
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, _instantiationService, openerService, themeService, telemetryService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			_instantiationService,
+			openerService,
+			themeService,
+			telemetryService
+		);
 		this._outlineViewState.restore(this._storageService);
 		this._disposables.add(this._outlineViewState);
 
@@ -141,7 +153,9 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			this._ctxSortMode.set(this._outlineViewState.sortBy);
 		};
 		updateContext();
-		this._disposables.add(this._outlineViewState.onDidChange(updateContext));
+		this._disposables.add(
+			this._outlineViewState.onDidChange(updateContext)
+		);
 	}
 
 	override dispose(): void {
@@ -168,7 +182,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 
 		this._progressBar = new ProgressBar(
 			progressContainer,
-			defaultProgressBarStyles,
+			defaultProgressBarStyles
 		);
 
 		this._treeContainer = dom.$(".outline-tree");
@@ -176,7 +190,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			container,
 			progressContainer,
 			this._message,
-			this._treeContainer,
+			this._treeContainer
 		);
 
 		this._disposables.add(
@@ -189,18 +203,18 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 				} else if (!this._editorListener.value) {
 					const event = Event.any(
 						this._editorService.onDidActiveEditorChange,
-						this._outlineService.onDidChange,
+						this._outlineService.onDidChange
 					);
 					this._editorListener.value = event(() =>
 						this._handleEditorChanged(
-							this._editorService.activeEditorPane,
-						),
+							this._editorService.activeEditorPane
+						)
 					);
 					this._handleEditorChanged(
-						this._editorService.activeEditorPane,
+						this._editorService.activeEditorPane
 					);
 				}
-			}),
+			})
 		);
 	}
 
@@ -237,7 +251,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			if (oldOutline && uri) {
 				this._treeStates.set(
 					`${oldOutline.outlineKind}/${uri}`,
-					this._tree.getViewState(),
+					this._tree.getViewState()
 				);
 				return true;
 			}
@@ -253,7 +267,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			this._editorPaneDisposables.add(
 				pane.onDidChangeControl(() => {
 					this._handleEditorControlChanged(pane);
-				}),
+				})
 			);
 		}
 
@@ -261,7 +275,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 	}
 
 	private async _handleEditorControlChanged(
-		pane: IEditorPane | undefined,
+		pane: IEditorPane | undefined
 	): Promise<void> {
 		// persist state
 		const resource = EditorResourceAccessor.getOriginalUri(pane?.input);
@@ -277,8 +291,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			return this._showMessage(
 				localize(
 					"no-editor",
-					"The active editor cannot provide outline information.",
-				),
+					"The active editor cannot provide outline information."
+				)
 			);
 		}
 
@@ -289,8 +303,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					localize(
 						"loading",
 						"Loading document symbols for '{0}'...",
-						basename(resource),
-					),
+						basename(resource)
+					)
 				);
 			}, 100);
 		}
@@ -299,13 +313,13 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 
 		const cts = new CancellationTokenSource();
 		this._editorControlDisposables.add(
-			toDisposable(() => cts.dispose(true)),
+			toDisposable(() => cts.dispose(true))
 		);
 
 		const newOutline = await this._outlineService.createOutline(
 			pane,
 			OutlineTarget.OutlinePane,
-			cts.token,
+			cts.token
 		);
 		loadingMessage?.dispose();
 
@@ -323,7 +337,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 
 		const sorter = new OutlineTreeSorter(
 			newOutline.config.comparator,
-			this._outlineViewState.sortBy,
+			this._outlineViewState.sortBy
 		);
 
 		const tree = <
@@ -346,7 +360,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					? TreeFindMode.Filter
 					: TreeFindMode.Highlight,
 				overrideStyles: { listBackground: this.getBackgroundColor() },
-			},
+			}
 		);
 
 		// update tree, listen to changes
@@ -357,8 +371,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					localize(
 						"no-symbols",
 						"No symbols found in document '{0}'",
-						basename(resource),
-					),
+						basename(resource)
+					)
 				);
 				this._captureViewState(resource);
 				tree.setInput(undefined);
@@ -366,11 +380,11 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 				// first: init tree
 				this._domNode.classList.remove("message");
 				const state = this._treeStates.get(
-					`${newOutline.outlineKind}/${newOutline.uri}`,
+					`${newOutline.outlineKind}/${newOutline.uri}`
 				);
 				tree.setInput(
 					newOutline,
-					state && AbstractTreeViewState.lift(state),
+					state && AbstractTreeViewState.lift(state)
 				);
 			} else {
 				// update: refresh tree
@@ -394,7 +408,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 						},
 					});
 				}
-			}),
+			})
 		);
 
 		// feature: filter on type - keep tree and menu in sync
@@ -402,16 +416,16 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			tree.onDidChangeFindMode(
 				(mode) =>
 					(this._outlineViewState.filterOnType =
-						mode === TreeFindMode.Filter),
-			),
+						mode === TreeFindMode.Filter)
+			)
 		);
 
 		// feature: reveal outline selection in editor
 		// on change -> reveal/select defining range
 		this._editorControlDisposables.add(
 			tree.onDidOpen((e) =>
-				newOutline.reveal(e.element, e.editorOptions, e.sideBySide),
-			),
+				newOutline.reveal(e.element, e.editorOptions, e.sideBySide)
+			)
 		);
 		// feature: reveal editor selection in outline
 		const revealActiveElement = () => {
@@ -439,7 +453,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 		};
 		revealActiveElement();
 		this._editorControlDisposables.add(
-			newOutline.onDidChange(revealActiveElement),
+			newOutline.onDidChange(revealActiveElement)
 		);
 
 		// feature: update view when user state changes
@@ -463,8 +477,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 						sorter.order = this._outlineViewState.sortBy;
 						tree.resort();
 					}
-				},
-			),
+				}
+			)
 		);
 
 		// feature: expand all nodes when filtering (not when finding)
@@ -481,7 +495,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 					tree.setInput(tree.getInput()!, viewState);
 					viewState = undefined;
 				}
-			}),
+			})
 		);
 
 		// feature: update all-collapsed context key
@@ -490,15 +504,15 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 				tree
 					.getNode(null)
 					.children.every(
-						(node) => !node.collapsible || node.collapsed,
-					),
+						(node) => !node.collapsible || node.collapsed
+					)
 			);
 		};
 		this._editorControlDisposables.add(
-			tree.onDidChangeCollapseState(updateAllCollapsedCtx),
+			tree.onDidChangeCollapseState(updateAllCollapsedCtx)
 		);
 		this._editorControlDisposables.add(
-			tree.onDidChangeModel(updateAllCollapsedCtx),
+			tree.onDidChangeModel(updateAllCollapsedCtx)
 		);
 		updateAllCollapsedCtx();
 
@@ -509,7 +523,7 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			toDisposable(() => {
 				tree.dispose();
 				this._tree = undefined;
-			}),
+			})
 		);
 	}
 }

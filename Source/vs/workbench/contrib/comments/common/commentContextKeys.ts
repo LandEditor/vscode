@@ -16,10 +16,10 @@ export namespace CommentContextKeys {
 		{
 			description: nls.localize(
 				"hasCommentingRange",
-				"Whether the position at the active cursor has a commenting range",
+				"Whether the position at the active cursor has a commenting range"
 			),
 			type: "boolean",
-		},
+		}
 	);
 
 	/**
@@ -31,10 +31,10 @@ export namespace CommentContextKeys {
 		{
 			description: nls.localize(
 				"editorHasCommentingRange",
-				"Whether the active editor has a commenting range",
+				"Whether the active editor has a commenting range"
 			),
 			type: "boolean",
-		},
+		}
 	);
 
 	/**
@@ -46,10 +46,10 @@ export namespace CommentContextKeys {
 		{
 			description: nls.localize(
 				"hasCommentingProvider",
-				"Whether the open workspace has either comments or commenting ranges.",
+				"Whether the open workspace has either comments or commenting ranges."
 			),
 			type: "boolean",
-		},
+		}
 	);
 
 	/**
@@ -62,9 +62,9 @@ export namespace CommentContextKeys {
 			type: "boolean",
 			description: nls.localize(
 				"commentThreadIsEmpty",
-				"Set when the comment thread has no comments",
+				"Set when the comment thread has no comments"
 			),
-		},
+		}
 	);
 	/**
 	 * A context key that is set when the comment has no input.
@@ -76,9 +76,9 @@ export namespace CommentContextKeys {
 			type: "boolean",
 			description: nls.localize(
 				"commentIsEmpty",
-				"Set when the comment has no input",
+				"Set when the comment has no input"
 			),
-		},
+		}
 	);
 	/**
 	 * The context value of the comment.
@@ -90,9 +90,9 @@ export namespace CommentContextKeys {
 			type: "string",
 			description: nls.localize(
 				"comment",
-				"The context value of the comment",
+				"The context value of the comment"
 			),
-		},
+		}
 	);
 	/**
 	 * The context value of the comment thread.
@@ -104,9 +104,9 @@ export namespace CommentContextKeys {
 			type: "string",
 			description: nls.localize(
 				"commentThread",
-				"The context value of the comment thread",
+				"The context value of the comment thread"
 			),
-		},
+		}
 	);
 	/**
 	 * The comment controller id associated with a comment thread.
@@ -118,9 +118,9 @@ export namespace CommentContextKeys {
 			type: "string",
 			description: nls.localize(
 				"commentController",
-				"The comment controller id associated with a comment thread",
+				"The comment controller id associated with a comment thread"
 			),
-		},
+		}
 	);
 
 	/**
@@ -133,8 +133,8 @@ export namespace CommentContextKeys {
 			type: "boolean",
 			description: nls.localize(
 				"commentFocused",
-				"Set when the comment is focused",
+				"Set when the comment is focused"
 			),
-		},
+		}
 	);
 }

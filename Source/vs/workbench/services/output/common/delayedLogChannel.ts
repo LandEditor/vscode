@@ -15,10 +15,16 @@ export class DelayedLogChannel {
 	private readonly logger: ILogger;
 
 	constructor(
-		id: string, name: string, private readonly file: URI,
-		@ILoggerService private readonly loggerService: ILoggerService,
+		id: string,
+		name: string,
+		private readonly file: URI,
+		@ILoggerService private readonly loggerService: ILoggerService
 	) {
-		this.logger = loggerService.createLogger(file, { name, id, hidden: true });
+		this.logger = loggerService.createLogger(file, {
+			name,
+			id,
+			hidden: true,
+		});
 	}
 
 	log(level: LogLevel, message: string): void {

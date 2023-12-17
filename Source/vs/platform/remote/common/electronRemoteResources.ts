@@ -24,7 +24,7 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
 	async routeCall(
 		hub: IConnectionHub<string>,
 		command: string,
-		arg?: any,
+		arg?: any
 	): Promise<Client<string>> {
 		if (command !== NODE_REMOTE_RESOURCE_IPC_METHOD_NAME) {
 			throw new Error(`Call not found: ${command}`);
@@ -33,7 +33,7 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
 		const uri = arg[0] as UriComponents | undefined;
 		if (uri?.authority) {
 			const connection = hub.connections.find(
-				(c) => c.ctx === uri.authority,
+				(c) => c.ctx === uri.authority
 			);
 			if (connection) {
 				return connection;
@@ -45,7 +45,7 @@ export class NodeRemoteResourceRouter implements IClientRouter<string> {
 
 	routeEvent(
 		_: IConnectionHub<string>,
-		event: string,
+		event: string
 	): Promise<Client<string>> {
 		throw new Error(`Event not found: ${event}`);
 	}

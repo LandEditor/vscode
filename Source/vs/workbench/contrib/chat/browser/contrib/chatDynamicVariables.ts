@@ -46,35 +46,46 @@ export class ChatDynamicVariableModel
 	constructor(
 		private readonly widget: IChatWidget,
 		@ILabelService private readonly labelService: ILabelService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
-		this._register(widget.inputEditor.onDidChangeModelContent(e => {
-			e.changes.forEach(c => {
-				// Don't mutate entries in _variables, since they will be returned from the getter
-				this._variables = coalesce(this._variables.map(ref => {
-					if (Range.areIntersecting(ref.range, c.range)) {
-						// The reference text was changed, it's broken
-						return null;
-					} else if (Range.compareRangesUsingStarts(ref.range, c.range) > 0) {
-						const delta = c.text.length - c.rangeLength;
-						return {
-							...ref,
-							range: {
-								startLineNumber: ref.range.startLineNumber,
-								startColumn: ref.range.startColumn + delta,
-								endLineNumber: ref.range.endLineNumber,
-								endColumn: ref.range.endColumn + delta
+		this._register(
+			widget.inputEditor.onDidChangeModelContent((e) => {
+				e.changes.forEach((c) => {
+					// Don't mutate entries in _variables, since they will be returned from the getter
+					this._variables = coalesce(
+						this._variables.map((ref) => {
+							if (Range.areIntersecting(ref.range, c.range)) {
+								// The reference text was changed, it's broken
+								return null;
+							} else if (
+								Range.compareRangesUsingStarts(
+									ref.range,
+									c.range
+								) > 0
+							) {
+								const delta = c.text.length - c.rangeLength;
+								return {
+									...ref,
+									range: {
+										startLineNumber:
+											ref.range.startLineNumber,
+										startColumn:
+											ref.range.startColumn + delta,
+										endLineNumber: ref.range.endLineNumber,
+										endColumn: ref.range.endColumn + delta,
+									},
+								};
 							}
-						};
-					}
 
-					return ref;
-				}));
-			});
+							return ref;
+						})
+					);
+				});
 
-			this.updateDecorations();
-		}));
+				this.updateDecorations();
+			})
+		);
 	}
 
 	getInputState(): any {
@@ -86,7 +97,7 @@ export class ChatDynamicVariableModel
 			// Something went wrong
 			this.logService.warn(
 				"ChatDynamicVariableModel.setInputState called with invalid state: " +
-					JSON.stringify(s),
+					JSON.stringify(s)
 			);
 			return;
 		}
@@ -109,18 +120,18 @@ export class ChatDynamicVariableModel
 					<IDecorationOptions>{
 						range: r.range,
 						hoverMessage: this.getHoverForReference(r),
-					},
-			),
+					}
+			)
 		);
 	}
 
 	private getHoverForReference(
-		ref: IDynamicVariable,
+		ref: IDynamicVariable
 	): string | IMarkdownString {
 		const value = ref.data[0];
 		if (URI.isUri(value.value)) {
 			return new MarkdownString(
-				this.labelService.getUriLabel(value.value, { relative: true }),
+				this.labelService.getUriLabel(value.value, { relative: true })
 			);
 		} else {
 			return value.value.toString();
@@ -136,7 +147,7 @@ interface SelectAndInsertFileActionContext {
 }
 
 function isSelectAndInsertFileActionContext(
-	context: any,
+	context: any
 ): context is SelectAndInsertFileActionContext {
 	return "widget" in context && "range" in context;
 }
@@ -179,7 +190,7 @@ export class SelectAndInsertFileAction extends Action2 {
 			.resource as URI;
 		if (!textModelService.canHandleResource(resource)) {
 			logService.trace(
-				"SelectAndInsertFileAction: non-text resource selected",
+				"SelectAndInsertFileAction: non-text resource selected"
 			);
 			doCleanup();
 			return;
@@ -194,7 +205,7 @@ export class SelectAndInsertFileAction extends Action2 {
 		]);
 		if (!success) {
 			logService.trace(
-				`SelectAndInsertFileAction: failed to insert "${text}"`,
+				`SelectAndInsertFileAction: failed to insert "${text}"`
 			);
 			doCleanup();
 			return;
@@ -222,7 +233,7 @@ export interface IAddDynamicVariableContext {
 }
 
 function isAddDynamicVariableContext(
-	context: any,
+	context: any
 ): context is IAddDynamicVariableContext {
 	return (
 		"widget" in context && "range" in context && "variableData" in context

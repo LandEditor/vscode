@@ -43,31 +43,42 @@ export class ElectronPtyHostStarter
 
 	constructor(
 		private readonly _reconnectConstants: IReconnectConstants,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IEnvironmentMainService private readonly _environmentMainService: IEnvironmentMainService,
-		@ILifecycleMainService private readonly _lifecycleMainService: ILifecycleMainService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IEnvironmentMainService
+		private readonly _environmentMainService: IEnvironmentMainService,
+		@ILifecycleMainService
+		private readonly _lifecycleMainService: ILifecycleMainService,
 		@ILogService private readonly _logService: ILogService
 	) {
 		super();
 
-		this._lifecycleMainService.onWillShutdown(() => this._onWillShutdown.fire());
+		this._lifecycleMainService.onWillShutdown(() =>
+			this._onWillShutdown.fire()
+		);
 		// Listen for new windows to establish connection directly to pty host
-		validatedIpcMain.on('vscode:createPtyHostMessageChannel', (e, nonce) => this._onWindowConnection(e, nonce));
-		this._register(toDisposable(() => {
-			validatedIpcMain.removeHandler('vscode:createPtyHostMessageChannel');
-		}));
+		validatedIpcMain.on("vscode:createPtyHostMessageChannel", (e, nonce) =>
+			this._onWindowConnection(e, nonce)
+		);
+		this._register(
+			toDisposable(() => {
+				validatedIpcMain.removeHandler(
+					"vscode:createPtyHostMessageChannel"
+				);
+			})
+		);
 	}
 
 	start(): IPtyHostConnection {
 		this.utilityProcess = new UtilityProcess(
 			this._logService,
 			NullTelemetryService,
-			this._lifecycleMainService,
+			this._lifecycleMainService
 		);
 
 		const inspectParams = parsePtyHostDebugPort(
 			this._environmentMainService.args,
-			this._environmentMainService.isBuilt,
+			this._environmentMainService.isBuilt
 		);
 		const execArgv = inspectParams.port
 			? [
@@ -75,7 +86,7 @@ export class ElectronPtyHostStarter
 					`--inspect${inspectParams.break ? "-brk" : ""}=${
 						inspectParams.port
 					}`,
-			  ]
+				]
 			: undefined;
 
 		this.utilityProcess.start({
@@ -101,7 +112,7 @@ export class ElectronPtyHostStarter
 				this.utilityProcess?.kill();
 				this.utilityProcess?.dispose();
 				this.utilityProcess = undefined;
-			}),
+			})
 		);
 
 		return {
@@ -119,23 +130,23 @@ export class ElectronPtyHostStarter
 			VSCODE_PIPE_LOGGING: "true",
 			VSCODE_VERBOSE_LOGGING: "true", // transmit console logs from server to client,
 			VSCODE_RECONNECT_GRACE_TIME: String(
-				this._reconnectConstants.graceTime,
+				this._reconnectConstants.graceTime
 			),
 			VSCODE_RECONNECT_SHORT_GRACE_TIME: String(
-				this._reconnectConstants.shortGraceTime,
+				this._reconnectConstants.shortGraceTime
 			),
 			VSCODE_RECONNECT_SCROLLBACK: String(
-				this._reconnectConstants.scrollback,
+				this._reconnectConstants.scrollback
 			),
 		};
 		const simulatedLatency = this._configurationService.getValue(
-			TerminalSettingId.DeveloperPtyHostLatency,
+			TerminalSettingId.DeveloperPtyHostLatency
 		);
 		if (simulatedLatency && typeof simulatedLatency === "number") {
 			config.VSCODE_LATENCY = String(simulatedLatency);
 		}
 		const startupDelay = this._configurationService.getValue(
-			TerminalSettingId.DeveloperPtyHostStartupDelay,
+			TerminalSettingId.DeveloperPtyHostStartupDelay
 		);
 		if (startupDelay && typeof startupDelay === "number") {
 			config.VSCODE_STARTUP_DELAY = String(startupDelay);
@@ -162,7 +173,7 @@ export class ElectronPtyHostStarter
 		e.sender.postMessage(
 			"vscode:createPtyHostMessageChannelResult",
 			nonce,
-			[port],
+			[port]
 		);
 	}
 }

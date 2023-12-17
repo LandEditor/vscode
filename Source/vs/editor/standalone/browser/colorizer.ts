@@ -47,7 +47,7 @@ export class Colorizer {
 		themeService: IStandaloneThemeService,
 		languageService: ILanguageService,
 		domNode: HTMLElement,
-		options: IColorizerElementOptions,
+		options: IColorizerElementOptions
 	): Promise<void> {
 		options = options || {};
 		const theme = options.theme || "vs";
@@ -74,7 +74,7 @@ export class Colorizer {
 			languageService,
 			text || "",
 			languageId,
-			options,
+			options
 		).then(render, (err) => console.error(err));
 	}
 
@@ -82,7 +82,7 @@ export class Colorizer {
 		languageService: ILanguageService,
 		text: string,
 		languageId: string,
-		options: IColorizerOptions | null | undefined,
+		options: IColorizerOptions | null | undefined
 	): Promise<string> {
 		const languageIdCodec = languageService.languageIdCodec;
 		let tabSize = 4;
@@ -105,7 +105,7 @@ export class Colorizer {
 				lines,
 				tabSize,
 				tokenizationSupport,
-				languageIdCodec,
+				languageIdCodec
 			);
 		}
 
@@ -117,16 +117,16 @@ export class Colorizer {
 		mightContainNonBasicASCII: boolean,
 		mightContainRTL: boolean,
 		tokens: IViewLineTokens,
-		tabSize: number = 4,
+		tabSize: number = 4
 	): string {
 		const isBasicASCII = ViewLineRenderingData.isBasicASCII(
 			line,
-			mightContainNonBasicASCII,
+			mightContainNonBasicASCII
 		);
 		const containsRTL = ViewLineRenderingData.containsRTL(
 			line,
 			isBasicASCII,
-			mightContainRTL,
+			mightContainRTL
 		);
 		const renderResult = renderViewLine(
 			new RenderLineInput(
@@ -148,8 +148,8 @@ export class Colorizer {
 				"none",
 				false,
 				false,
-				null,
-			),
+				null
+			)
 		);
 		return renderResult.html;
 	}
@@ -157,7 +157,7 @@ export class Colorizer {
 	public static colorizeModelLine(
 		model: ITextModel,
 		lineNumber: number,
-		tabSize: number = 4,
+		tabSize: number = 4
 	): string {
 		const content = model.getLineContent(lineNumber);
 		model.tokenization.forceTokenization(lineNumber);
@@ -168,7 +168,7 @@ export class Colorizer {
 			model.mightContainNonBasicASCII(),
 			model.mightContainRTL(),
 			inflatedTokens,
-			tabSize,
+			tabSize
 		);
 	}
 }
@@ -177,7 +177,7 @@ function _colorize(
 	lines: string[],
 	tabSize: number,
 	tokenizationSupport: ITokenizationSupport,
-	languageIdCodec: ILanguageIdCodec,
+	languageIdCodec: ILanguageIdCodec
 ): Promise<string> {
 	return new Promise<string>((c, e) => {
 		const execute = () => {
@@ -185,7 +185,7 @@ function _colorize(
 				lines,
 				tabSize,
 				tokenizationSupport,
-				languageIdCodec,
+				languageIdCodec
 			);
 			if (tokenizationSupport instanceof MonarchTokenizer) {
 				const status = tokenizationSupport.getLoadStatus();
@@ -203,7 +203,7 @@ function _colorize(
 function _fakeColorize(
 	lines: string[],
 	tabSize: number,
-	languageIdCodec: ILanguageIdCodec,
+	languageIdCodec: ILanguageIdCodec
 ): string {
 	let html: string[] = [];
 
@@ -225,12 +225,12 @@ function _fakeColorize(
 
 		const isBasicASCII = ViewLineRenderingData.isBasicASCII(
 			line,
-			/* check for basic ASCII */ true,
+			/* check for basic ASCII */ true
 		);
 		const containsRTL = ViewLineRenderingData.containsRTL(
 			line,
 			isBasicASCII,
-			/* check for RTL */ true,
+			/* check for RTL */ true
 		);
 		const renderResult = renderViewLine(
 			new RenderLineInput(
@@ -252,8 +252,8 @@ function _fakeColorize(
 				"none",
 				false,
 				false,
-				null,
-			),
+				null
+			)
 		);
 
 		html = html.concat(renderResult.html);
@@ -267,7 +267,7 @@ function _actualColorize(
 	lines: string[],
 	tabSize: number,
 	tokenizationSupport: ITokenizationSupport,
-	languageIdCodec: ILanguageIdCodec,
+	languageIdCodec: ILanguageIdCodec
 ): string {
 	let html: string[] = [];
 	let state = tokenizationSupport.getInitialState();
@@ -277,22 +277,22 @@ function _actualColorize(
 		const tokenizeResult = tokenizationSupport.tokenizeEncoded(
 			line,
 			true,
-			state,
+			state
 		);
 		LineTokens.convertToEndOffset(tokenizeResult.tokens, line.length);
 		const lineTokens = new LineTokens(
 			tokenizeResult.tokens,
 			line,
-			languageIdCodec,
+			languageIdCodec
 		);
 		const isBasicASCII = ViewLineRenderingData.isBasicASCII(
 			line,
-			/* check for basic ASCII */ true,
+			/* check for basic ASCII */ true
 		);
 		const containsRTL = ViewLineRenderingData.containsRTL(
 			line,
 			isBasicASCII,
-			/* check for RTL */ true,
+			/* check for RTL */ true
 		);
 		const renderResult = renderViewLine(
 			new RenderLineInput(
@@ -314,8 +314,8 @@ function _actualColorize(
 				"none",
 				false,
 				false,
-				null,
-			),
+				null
+			)
 		);
 
 		html = html.concat(renderResult.html);

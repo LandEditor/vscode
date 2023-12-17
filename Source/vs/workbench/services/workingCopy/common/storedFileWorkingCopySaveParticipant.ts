@@ -43,7 +43,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	}
 
 	addSaveParticipant(
-		participant: IStoredFileWorkingCopySaveParticipant,
+		participant: IStoredFileWorkingCopySaveParticipant
 	): IDisposable {
 		const remove = insert(this.saveParticipants, participant);
 
@@ -53,7 +53,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		context: { reason: SaveReason },
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const cts = new CancellationTokenSource(token);
 
@@ -62,7 +62,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 				title: localize(
 					"saveParticipants",
 					"Saving '{0}'",
-					workingCopy.name,
+					workingCopy.name
 				),
 				location: ProgressLocation.Notification,
 				cancellable: true,
@@ -85,7 +85,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 							workingCopy,
 							context,
 							progress,
-							cts.token,
+							cts.token
 						);
 						await raceCancellation(promise, cts.token);
 					} catch (err) {
@@ -102,7 +102,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 			() => {
 				// user cancel
 				cts.dispose(true);
-			},
+			}
 		);
 	}
 

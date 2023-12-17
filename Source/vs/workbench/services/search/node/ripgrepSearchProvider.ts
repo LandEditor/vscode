@@ -30,7 +30,7 @@ export class RipgrepSearchProvider implements TextSearchProvider {
 		query: TextSearchQuery,
 		options: TextSearchOptions,
 		progress: Progress<TextSearchResult>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<TextSearchComplete> {
 		const engine = new RipgrepTextSearchEngine(this.outputChannel);
 		if (options.folder.scheme === Schemas.vscodeUserData) {
@@ -44,31 +44,26 @@ export class RipgrepSearchProvider implements TextSearchProvider {
 				progress.report({
 					...data,
 					uri: data.uri.with({ scheme: options.folder.scheme }),
-				}),
+				})
 			);
 			return this.withToken(token, (token) =>
 				engine.provideTextSearchResults(
 					query,
 					translatedOptions,
 					progressTranslator,
-					token,
-				),
+					token
+				)
 			);
 		} else {
 			return this.withToken(token, (token) =>
-				engine.provideTextSearchResults(
-					query,
-					options,
-					progress,
-					token,
-				),
+				engine.provideTextSearchResults(query, options, progress, token)
 			);
 		}
 	}
 
 	private async withToken<T>(
 		token: CancellationToken,
-		fn: (token: CancellationToken) => Promise<T>,
+		fn: (token: CancellationToken) => Promise<T>
 	): Promise<T> {
 		const merged = mergedTokenSource(token);
 		this.inProgress.add(merged);

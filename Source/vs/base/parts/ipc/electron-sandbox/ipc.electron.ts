@@ -21,7 +21,7 @@ export class Client extends IPCClient implements IDisposable {
 		const onMessage = Event.fromNodeEventEmitter<VSBuffer>(
 			ipcRenderer,
 			"vscode:message",
-			(_, message) => VSBuffer.wrap(message),
+			(_, message) => VSBuffer.wrap(message)
 		);
 		ipcRenderer.send("vscode:hello");
 

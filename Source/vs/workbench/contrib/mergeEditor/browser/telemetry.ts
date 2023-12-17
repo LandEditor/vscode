@@ -8,7 +8,7 @@ import { InputNumber } from "vs/workbench/contrib/mergeEditor/browser/model/modi
 export class MergeEditorTelemetry {
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService
-	) { }
+	) {}
 
 	reportMergeEditorOpened(args: {
 		conflictCount: number;
@@ -314,7 +314,7 @@ export class MergeEditorTelemetry {
 
 	reportAcceptInvoked(
 		inputNumber: InputNumber,
-		otherAccepted: boolean,
+		otherAccepted: boolean
 	): void {
 		this.telemetryService.publicLog2<
 			{
@@ -362,7 +362,7 @@ export class MergeEditorTelemetry {
 
 	reportRemoveInvoked(
 		inputNumber: InputNumber,
-		otherAccepted: boolean,
+		otherAccepted: boolean
 	): void {
 		this.telemetryService.publicLog2<
 			{

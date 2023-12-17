@@ -227,14 +227,14 @@ export class ShellIntegrationAddon
 		private _nonce: string,
 		private readonly _disableTelemetry: boolean | undefined,
 		private readonly _telemetryService: ITelemetryService | undefined,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		super();
 		this._register(
 			toDisposable(() => {
 				this._clearActivationTimeout();
 				this._disposeCommonProtocol();
-			}),
+			})
 		);
 	}
 
@@ -248,38 +248,38 @@ export class ShellIntegrationAddon
 		this.capabilities.add(
 			TerminalCapability.PartialCommandDetection,
 			this._register(
-				new PartialCommandDetectionCapability(this._terminal),
-			),
+				new PartialCommandDetectionCapability(this._terminal)
+			)
 		);
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.VSCode,
-				(data) => this._handleVSCodeSequence(data),
-			),
+				(data) => this._handleVSCodeSequence(data)
+			)
 		);
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.ITerm,
-				(data) => this._doHandleITermSequence(data),
-			),
+				(data) => this._doHandleITermSequence(data)
+			)
 		);
 		this._commonProtocolDisposables.push(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.FinalTerm,
-				(data) => this._handleFinalTermSequence(data),
-			),
+				(data) => this._handleFinalTermSequence(data)
+			)
 		);
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.SetCwd,
-				(data) => this._doHandleSetCwd(data),
-			),
+				(data) => this._doHandleSetCwd(data)
+			)
 		);
 		this._register(
 			xterm.parser.registerOscHandler(
 				ShellIntegrationOscPs.SetWindowsFriendlyCwd,
-				(data) => this._doHandleSetWindowsFriendlyCwd(data),
-			),
+				(data) => this._doHandleSetWindowsFriendlyCwd(data)
+			)
 		);
 		this._ensureCapabilitiesOrAddFailureTelemetry();
 	}
@@ -311,25 +311,25 @@ export class ShellIntegrationAddon
 		switch (command) {
 			case "A":
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handlePromptStart();
 				return true;
 			case "B":
 				// Ignore the command line for these sequences as it's unreliable for example in powerlevel10k
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleCommandStart({ ignoreCommandLine: true });
 				return true;
 			case "C":
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleCommandExecuted();
 				return true;
 			case "D": {
 				const exitCode =
 					args.length === 1 ? parseInt(args[0]) : undefined;
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleCommandFinished(exitCode);
 				return true;
 			}
@@ -371,7 +371,7 @@ export class ShellIntegrationAddon
 					purpose: "FeatureInsight";
 				}>("terminal/shellIntegrationActivationTimeout");
 				this._logService.warn(
-					"Shell integration failed to add capabilities within 10 seconds",
+					"Shell integration failed to add capabilities within 10 seconds"
 				);
 			}
 			this._hasUpdatedTelemetry = true;
@@ -400,17 +400,17 @@ export class ShellIntegrationAddon
 		switch (sequenceCommand) {
 			case VSCodeOscPt.PromptStart:
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handlePromptStart();
 				return true;
 			case VSCodeOscPt.CommandStart:
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleCommandStart();
 				return true;
 			case VSCodeOscPt.CommandExecuted:
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleCommandExecuted();
 				return true;
 			case VSCodeOscPt.CommandFinished: {
@@ -418,7 +418,7 @@ export class ShellIntegrationAddon
 				const exitCode =
 					arg0 !== undefined ? parseInt(arg0) : undefined;
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleCommandFinished(exitCode);
 				return true;
 			}
@@ -432,31 +432,31 @@ export class ShellIntegrationAddon
 					commandLine = "";
 				}
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).setCommandLine(commandLine, arg1 === this._nonce);
 				return true;
 			}
 			case VSCodeOscPt.ContinuationStart: {
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleContinuationStart();
 				return true;
 			}
 			case VSCodeOscPt.ContinuationEnd: {
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleContinuationEnd();
 				return true;
 			}
 			case VSCodeOscPt.RightPromptStart: {
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleRightPromptStart();
 				return true;
 			}
 			case VSCodeOscPt.RightPromptEnd: {
 				this._createOrGetCommandDetection(
-					this._terminal,
+					this._terminal
 				).handleRightPromptEnd();
 				return true;
 			}
@@ -475,7 +475,7 @@ export class ShellIntegrationAddon
 					}
 					case "IsWindows": {
 						this._createOrGetCommandDetection(
-							this._terminal,
+							this._terminal
 						).setIsWindowsPty(value === "True" ? true : false);
 						return true;
 					}
@@ -490,7 +490,7 @@ export class ShellIntegrationAddon
 			}
 			case VSCodeOscPt.SetMark: {
 				this._createOrGetBufferMarkDetection(this._terminal).addMark(
-					parseMarkSequence(args),
+					parseMarkSequence(args)
 				);
 				return true;
 			}
@@ -504,7 +504,7 @@ export class ShellIntegrationAddon
 		value = sanitizeCwd(value);
 		this._createOrGetCwdDetection().updateCwd(value);
 		const commandDetection = this.capabilities.get(
-			TerminalCapability.CommandDetection,
+			TerminalCapability.CommandDetection
 		);
 		commandDetection?.setCwd(value);
 	}
@@ -595,7 +595,7 @@ export class ShellIntegrationAddon
 			};
 		}
 		const result = this._createOrGetCommandDetection(
-			this._terminal,
+			this._terminal
 		).serialize();
 		return result;
 	}
@@ -603,59 +603,59 @@ export class ShellIntegrationAddon
 	deserialize(serialized: ISerializedCommandDetectionCapability): void {
 		if (!this._terminal) {
 			throw new Error(
-				"Cannot restore commands before addon is activated",
+				"Cannot restore commands before addon is activated"
 			);
 		}
 		this._createOrGetCommandDetection(this._terminal).deserialize(
-			serialized,
+			serialized
 		);
 	}
 
 	protected _createOrGetCwdDetection(): ICwdDetectionCapability {
 		let cwdDetection = this.capabilities.get(
-			TerminalCapability.CwdDetection,
+			TerminalCapability.CwdDetection
 		);
 		if (!cwdDetection) {
 			cwdDetection = this._register(new CwdDetectionCapability());
 			this.capabilities.add(
 				TerminalCapability.CwdDetection,
-				cwdDetection,
+				cwdDetection
 			);
 		}
 		return cwdDetection;
 	}
 
 	protected _createOrGetCommandDetection(
-		terminal: Terminal,
+		terminal: Terminal
 	): ICommandDetectionCapability {
 		let commandDetection = this.capabilities.get(
-			TerminalCapability.CommandDetection,
+			TerminalCapability.CommandDetection
 		);
 		if (!commandDetection) {
 			commandDetection = this._register(
-				new CommandDetectionCapability(terminal, this._logService),
+				new CommandDetectionCapability(terminal, this._logService)
 			);
 			this.capabilities.add(
 				TerminalCapability.CommandDetection,
-				commandDetection,
+				commandDetection
 			);
 		}
 		return commandDetection;
 	}
 
 	protected _createOrGetBufferMarkDetection(
-		terminal: Terminal,
+		terminal: Terminal
 	): IBufferMarkCapability {
 		let bufferMarkDetection = this.capabilities.get(
-			TerminalCapability.BufferMarkDetection,
+			TerminalCapability.BufferMarkDetection
 		);
 		if (!bufferMarkDetection) {
 			bufferMarkDetection = this._register(
-				new BufferMarkCapability(terminal),
+				new BufferMarkCapability(terminal)
 			);
 			this.capabilities.add(
 				TerminalCapability.BufferMarkDetection,
-				bufferMarkDetection,
+				bufferMarkDetection
 			);
 		}
 		return bufferMarkDetection;
@@ -669,7 +669,7 @@ export function deserializeMessage(message: string): string {
 		// If it's a hex value, parse it to a character.
 		// Otherwise the operator is '\', which we return literally, now unescaped.
 		(_match: string, op: string, hex?: string) =>
-			hex ? String.fromCharCode(parseInt(hex, 16)) : op,
+			hex ? String.fromCharCode(parseInt(hex, 16)) : op
 	);
 }
 

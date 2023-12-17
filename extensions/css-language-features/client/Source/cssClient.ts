@@ -37,14 +37,14 @@ import { RequestService, serveFileSystemRequests } from "./requests";
 
 namespace CustomDataChangedNotification {
 	export const type: NotificationType<string[]> = new NotificationType(
-		"css/customDataChanged",
+		"css/customDataChanged"
 	);
 }
 
 export type LanguageClientConstructor = (
 	name: string,
 	description: string,
-	clientOptions: LanguageClientOptions,
+	clientOptions: LanguageClientOptions
 ) => BaseLanguageClient;
 
 export interface Runtime {
@@ -81,7 +81,7 @@ const cssFormatSettingKeys: (keyof CSSFormatSettings)[] = [
 export async function startClient(
 	context: ExtensionContext,
 	newLanguageClient: LanguageClientConstructor,
-	runtime: Runtime,
+	runtime: Runtime
 ): Promise<BaseLanguageClient> {
 	const customDataSource = getCustomDataSource(context.subscriptions);
 
@@ -111,7 +111,7 @@ export async function startClient(
 				position: Position,
 				context: CompletionContext,
 				token: CancellationToken,
-				next: ProvideCompletionItemsSignature,
+				next: ProvideCompletionItemsSignature
 			): ProviderResult<CompletionItem[] | CompletionList> {
 				// testing the replace / insert mode
 				function updateRanges(item: CompletionItem) {
@@ -137,7 +137,7 @@ export async function startClient(
 				}
 				// testing the new completion
 				function updateProposals(
-					r: CompletionItem[] | CompletionList | null | undefined,
+					r: CompletionItem[] | CompletionList | null | undefined
 				): CompletionItem[] | CompletionList | null | undefined {
 					if (r) {
 						(Array.isArray(r) ? r : r.items).forEach(updateRanges);
@@ -146,7 +146,7 @@ export async function startClient(
 					return r;
 				}
 				const isThenable = <T>(
-					obj: ProviderResult<T>,
+					obj: ProviderResult<T>
 				): obj is Thenable<T> => obj && (<any>obj)["then"];
 
 				const r = next(document, position, context, token);
@@ -166,7 +166,7 @@ export async function startClient(
 	const client = newLanguageClient(
 		"css",
 		l10n.t("CSS Language Server"),
-		clientOptions,
+		clientOptions
 	);
 	client.registerProposedFeatures();
 
@@ -174,12 +174,12 @@ export async function startClient(
 
 	client.sendNotification(
 		CustomDataChangedNotification.type,
-		customDataSource.uris,
+		customDataSource.uris
 	);
 	customDataSource.onDidChange(() => {
 		client.sendNotification(
 			CustomDataChangedNotification.type,
-			customDataSource.uris,
+			customDataSource.uris
 		);
 	});
 
@@ -193,8 +193,8 @@ export async function startClient(
 			workspace.onDidChangeConfiguration(
 				(e) =>
 					e.affectsConfiguration(registration.settingId) &&
-					updateFormatterRegistration(registration),
-			),
+					updateFormatterRegistration(registration)
+			)
 		);
 	}
 
@@ -208,31 +208,31 @@ export async function startClient(
 		return languages.registerCompletionItemProvider(documentSelector, {
 			provideCompletionItems(doc: TextDocument, pos: Position) {
 				const lineUntilPos = doc.getText(
-					new Range(new Position(pos.line, 0), pos),
+					new Range(new Position(pos.line, 0), pos)
 				);
 				const match = lineUntilPos.match(regionCompletionRegExpr);
 				if (match) {
 					const range = new Range(
 						new Position(pos.line, match[1].length),
-						pos,
+						pos
 					);
 					const beginProposal = new CompletionItem(
 						"#region",
-						CompletionItemKind.Snippet,
+						CompletionItemKind.Snippet
 					);
 					beginProposal.range = range;
 					TextEdit.replace(range, "/* #region */");
 					beginProposal.insertText = new SnippetString(
-						"/* #region $1*/",
+						"/* #region $1*/"
 					);
 					beginProposal.documentation = l10n.t(
-						"Folding Region Start",
+						"Folding Region Start"
 					);
 					beginProposal.filterText = match[2];
 					beginProposal.sortText = "za";
 					const endProposal = new CompletionItem(
 						"#endregion",
-						CompletionItemKind.Snippet,
+						CompletionItemKind.Snippet
 					);
 					endProposal.range = range;
 					endProposal.insertText = "/* #endregion */";
@@ -251,15 +251,15 @@ export async function startClient(
 	function applyCodeAction(
 		uri: string,
 		documentVersion: number,
-		edits: TextEdit[],
+		edits: TextEdit[]
 	) {
 		const textEditor = window.activeTextEditor;
 		if (textEditor && textEditor.document.uri.toString() === uri) {
 			if (textEditor.document.version !== documentVersion) {
 				window.showInformationMessage(
 					l10n.t(
-						"CSS fix is outdated and can't be applied to the document.",
-					),
+						"CSS fix is outdated and can't be applied to the document."
+					)
 				);
 			}
 			textEditor
@@ -267,7 +267,7 @@ export async function startClient(
 					for (const edit of edits) {
 						mutator.replace(
 							client.protocol2CodeConverter.asRange(edit.range),
-							edit.newText,
+							edit.newText
 						);
 					}
 				})
@@ -275,8 +275,8 @@ export async function startClient(
 					if (!success) {
 						window.showErrorMessage(
 							l10n.t(
-								"Failed to apply CSS fix to the document. Please consider opening an issue with steps to reproduce.",
-							),
+								"Failed to apply CSS fix to the document. Please consider opening an issue with steps to reproduce."
+							)
 						);
 					}
 				});
@@ -299,46 +299,46 @@ export async function startClient(
 							document: TextDocument,
 							range: Range,
 							options: FormattingOptions,
-							token: CancellationToken,
+							token: CancellationToken
 						): ProviderResult<TextEdit[]> {
 							const filesConfig = workspace.getConfiguration(
 								"files",
-								document,
+								document
 							);
 
 							const fileFormattingOptions = {
 								trimTrailingWhitespace:
 									filesConfig.get<boolean>(
-										"trimTrailingWhitespace",
+										"trimTrailingWhitespace"
 									),
 								trimFinalNewlines:
 									filesConfig.get<boolean>(
-										"trimFinalNewlines",
+										"trimFinalNewlines"
 									),
 								insertFinalNewline:
 									filesConfig.get<boolean>(
-										"insertFinalNewline",
+										"insertFinalNewline"
 									),
 							};
 							const params: DocumentRangeFormattingParams = {
 								textDocument:
 									client.code2ProtocolConverter.asTextDocumentIdentifier(
-										document,
+										document
 									),
 								range: client.code2ProtocolConverter.asRange(
-									range,
+									range
 								),
 								options:
 									client.code2ProtocolConverter.asFormattingOptions(
 										options,
-										fileFormattingOptions,
+										fileFormattingOptions
 									),
 							};
 							// add the css formatter options from the settings
 							const formatterSettings = workspace
 								.getConfiguration(
 									registration.languageId,
-									document,
+									document
 								)
 								.get<CSSFormatSettings>("format");
 							if (formatterSettings) {
@@ -353,7 +353,7 @@ export async function startClient(
 								.sendRequest(
 									DocumentRangeFormattingRequest.type,
 									params,
-									token,
+									token
 								)
 								.then(
 									client.protocol2CodeConverter.asTextEdits,
@@ -362,13 +362,13 @@ export async function startClient(
 											DocumentRangeFormattingRequest.type,
 											undefined,
 											error,
-											[],
+											[]
 										);
 										return Promise.resolve([]);
-									},
+									}
 								);
 						},
-					},
+					}
 				);
 		}
 	}

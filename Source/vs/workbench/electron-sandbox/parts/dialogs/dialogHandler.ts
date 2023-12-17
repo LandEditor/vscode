@@ -22,7 +22,8 @@ import { process } from "vs/base/parts/sandbox/electron-sandbox/globals";
 export class NativeDialogHandler extends AbstractDialogHandler {
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IProductService private readonly productService: IProductService,
 		@IClipboardService private readonly clipboardService: IClipboardService
 	) {
@@ -100,13 +101,13 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 					? `${this.productService.date}${
 							useAgo
 								? " (" +
-								  fromNow(
+									fromNow(
 										new Date(this.productService.date),
-										true,
-								  ) +
-								  ")"
+										true
+									) +
+									")"
 								: ""
-					  }`
+						}`
 					: "Unknown",
 				process.versions["electron"],
 				process.versions["microsoft-build"],
@@ -115,7 +116,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 				process.versions["v8"],
 				`${osProps.type} ${osProps.arch} ${osProps.release}${
 					isLinuxSnap ? " snap" : ""
-				}`,
+				}`
 			);
 		};
 
@@ -129,7 +130,7 @@ export class NativeDialogHandler extends AbstractDialogHandler {
 			buttons: [
 				localize(
 					{ key: "copy", comment: ["&& denotes a mnemonic"] },
-					"&&Copy",
+					"&&Copy"
 				),
 				localize("okButton", "OK"),
 			],

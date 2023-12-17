@@ -86,7 +86,7 @@ export interface ICpuProfileRaw extends IV8Profile {
  */
 const computeAggregateTime = (
 	index: number,
-	nodes: IComputedNode[],
+	nodes: IComputedNode[]
 ): number => {
 	const row = nodes[index];
 	if (row.aggregateTime) {
@@ -102,7 +102,7 @@ const computeAggregateTime = (
 };
 
 const ensureSourceLocations = (
-	profile: ICpuProfileRaw,
+	profile: ICpuProfileRaw
 ): ReadonlyArray<IAnnotationLocation> => {
 	let locationIdCounter = 0;
 	const locationsByRef = new Map<
@@ -314,7 +314,7 @@ export class BottomUpNode {
 
 	constructor(
 		public readonly location: ILocation,
-		public readonly parent?: BottomUpNode,
+		public readonly parent?: BottomUpNode
 	) {}
 
 	public addNode(node: IComputedNode) {
@@ -327,7 +327,7 @@ export const processNode = (
 	aggregate: BottomUpNode,
 	node: IComputedNode,
 	model: IProfileModel,
-	initialNode = node,
+	initialNode = node
 ) => {
 	let child = aggregate.children[node.locationId];
 	if (!child) {

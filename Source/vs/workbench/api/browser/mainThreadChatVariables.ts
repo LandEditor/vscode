@@ -28,9 +28,12 @@ export class MainThreadChatVariables implements MainThreadChatVariablesShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IChatVariablesService private readonly _chatVariablesService: IChatVariablesService,
+		@IChatVariablesService
+		private readonly _chatVariablesService: IChatVariablesService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostChatVariables);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostChatVariables
+		);
 	}
 
 	dispose(): void {
@@ -45,10 +48,10 @@ export class MainThreadChatVariables implements MainThreadChatVariablesShape {
 					await this._proxy.$resolveVariable(
 						handle,
 						messageText,
-						token,
-					),
+						token
+					)
 				);
-			},
+			}
 		);
 		this._variables.set(handle, registration);
 	}

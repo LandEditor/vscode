@@ -48,7 +48,7 @@ declare module "vscode" {
 		 * @param tunnelOptions The `localPort` is a suggestion only. If that port is not available another will be chosen.
 		 */
 		export function openTunnel(
-			tunnelOptions: TunnelOptions,
+			tunnelOptions: TunnelOptions
 		): Thenable<Tunnel>;
 
 		/**

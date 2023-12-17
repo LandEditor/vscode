@@ -23,7 +23,7 @@ export class NotebookDiffLayoutChangedEvent {
 
 	constructor(
 		readonly source: NotebookLayoutChangeEvent,
-		readonly value: NotebookLayoutInfo,
+		readonly value: NotebookLayoutInfo
 	) {}
 }
 
@@ -39,12 +39,12 @@ export type NotebookDiffViewEvent =
 
 export class NotebookDiffEditorEventDispatcher extends Disposable {
 	protected readonly _onDidChangeLayout = this._register(
-		new Emitter<NotebookDiffLayoutChangedEvent>(),
+		new Emitter<NotebookDiffLayoutChangedEvent>()
 	);
 	readonly onDidChangeLayout = this._onDidChangeLayout.event;
 
 	protected readonly _onDidChangeCellLayout = this._register(
-		new Emitter<NotebookCellLayoutChangedEvent>(),
+		new Emitter<NotebookCellLayoutChangedEvent>()
 	);
 	readonly onDidChangeCellLayout = this._onDidChangeCellLayout.event;
 

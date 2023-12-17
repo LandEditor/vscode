@@ -331,7 +331,7 @@ export interface IModelDecorationsChangeAccessor {
 	 */
 	changeDecorationOptions(
 		id: string,
-		newOptions: IModelDecorationOptions,
+		newOptions: IModelDecorationOptions
 	): void;
 	/**
 	 * Remove an existing decoration.
@@ -349,7 +349,7 @@ export interface IModelDecorationsChangeAccessor {
 	 */
 	deltaDecorations(
 		oldDecorations: readonly string[],
-		newDecorations: readonly IModelDeltaDecoration[],
+		newDecorations: readonly IModelDeltaDecoration[]
 	): string[];
 }
 
@@ -520,7 +520,7 @@ export class TextModelResolvedOptions {
 			this.trimAutoWhitespace === other.trimAutoWhitespace &&
 			equals(
 				this.bracketPairColorizationOptions,
-				other.bracketPairColorizationOptions,
+				other.bracketPairColorizationOptions
 			)
 		);
 	}
@@ -529,7 +529,7 @@ export class TextModelResolvedOptions {
 	 * @internal
 	 */
 	public createChangeEvent(
-		newOpts: TextModelResolvedOptions,
+		newOpts: TextModelResolvedOptions
 	): IModelOptionsChangedEvent {
 		return {
 			tabSize: this.tabSize !== newOpts.tabSize,
@@ -890,7 +890,7 @@ export interface ITextModel {
 		matchCase: boolean,
 		wordSeparators: string | null,
 		captureMatches: boolean,
-		limitResultCount?: number,
+		limitResultCount?: number
 	): FindMatch[];
 	/**
 	 * Search the model.
@@ -910,7 +910,7 @@ export interface ITextModel {
 		matchCase: boolean,
 		wordSeparators: string | null,
 		captureMatches: boolean,
-		limitResultCount?: number,
+		limitResultCount?: number
 	): FindMatch[];
 	/**
 	 * Search the model for the next match. Loops to the beginning of the model if needed.
@@ -928,7 +928,7 @@ export interface ITextModel {
 		isRegex: boolean,
 		matchCase: boolean,
 		wordSeparators: string | null,
-		captureMatches: boolean,
+		captureMatches: boolean
 	): FindMatch | null;
 	/**
 	 * Search the model for the previous match. Loops to the end of the model if needed.
@@ -946,7 +946,7 @@ export interface ITextModel {
 		isRegex: boolean,
 		matchCase: boolean,
 		wordSeparators: string | null,
-		captureMatches: boolean,
+		captureMatches: boolean
 	): FindMatch | null;
 
 	/**
@@ -1001,7 +1001,7 @@ export interface ITextModel {
 	 */
 	changeDecorations<T>(
 		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T,
-		ownerId?: number,
+		ownerId?: number
 	): T | null;
 
 	/**
@@ -1017,7 +1017,7 @@ export interface ITextModel {
 	deltaDecorations(
 		oldDecorations: string[],
 		newDecorations: IModelDeltaDecoration[],
-		ownerId?: number,
+		ownerId?: number
 	): string[];
 
 	/**
@@ -1051,7 +1051,7 @@ export interface ITextModel {
 	getLineDecorations(
 		lineNumber: number,
 		ownerId?: number,
-		filterOutValidation?: boolean,
+		filterOutValidation?: boolean
 	): IModelDecoration[];
 
 	/**
@@ -1066,7 +1066,7 @@ export interface ITextModel {
 		startLineNumber: number,
 		endLineNumber: number,
 		ownerId?: number,
-		filterOutValidation?: boolean,
+		filterOutValidation?: boolean
 	): IModelDecoration[];
 
 	/**
@@ -1084,7 +1084,7 @@ export interface ITextModel {
 		ownerId?: number,
 		filterOutValidation?: boolean,
 		onlyMinimapDecorations?: boolean,
-		onlyMarginDecorations?: boolean,
+		onlyMarginDecorations?: boolean
 	): IModelDecoration[];
 
 	/**
@@ -1094,7 +1094,7 @@ export interface ITextModel {
 	 */
 	getAllDecorations(
 		ownerId?: number,
-		filterOutValidation?: boolean,
+		filterOutValidation?: boolean
 	): IModelDecoration[];
 
 	/**
@@ -1110,7 +1110,7 @@ export interface ITextModel {
 	 */
 	getOverviewRulerDecorations(
 		ownerId?: number,
-		filterOutValidation?: boolean,
+		filterOutValidation?: boolean
 	): IModelDecoration[];
 
 	/**
@@ -1130,7 +1130,7 @@ export interface ITextModel {
 	_setTrackedRange(
 		id: string | null,
 		newRange: null,
-		newStickiness: TrackedRangeStickiness,
+		newStickiness: TrackedRangeStickiness
 	): null;
 	/**
 	 * @internal
@@ -1138,7 +1138,7 @@ export interface ITextModel {
 	_setTrackedRange(
 		id: string | null,
 		newRange: Range,
-		newStickiness: TrackedRangeStickiness,
+		newStickiness: TrackedRangeStickiness
 	): string;
 
 	/**
@@ -1156,7 +1156,7 @@ export interface ITextModel {
 	 */
 	detectIndentation(
 		defaultInsertSpaces: boolean,
-		defaultTabSize: number,
+		defaultTabSize: number
 	): void;
 
 	/**
@@ -1182,7 +1182,7 @@ export interface ITextModel {
 	pushEditOperations(
 		beforeCursorState: Selection[] | null,
 		editOperations: IIdentifiedSingleEditOperation[],
-		cursorStateComputer: ICursorStateComputer,
+		cursorStateComputer: ICursorStateComputer
 	): Selection[] | null;
 	/**
 	 * @internal
@@ -1191,7 +1191,7 @@ export interface ITextModel {
 		beforeCursorState: Selection[] | null,
 		editOperations: IIdentifiedSingleEditOperation[],
 		cursorStateComputer: ICursorStateComputer,
-		group?: UndoRedoGroup,
+		group?: UndoRedoGroup
 	): Selection[] | null;
 
 	/**
@@ -1209,11 +1209,11 @@ export interface ITextModel {
 	applyEdits(operations: IIdentifiedSingleEditOperation[]): void;
 	applyEdits(
 		operations: IIdentifiedSingleEditOperation[],
-		computeUndoEdits: false,
+		computeUndoEdits: false
 	): void;
 	applyEdits(
 		operations: IIdentifiedSingleEditOperation[],
-		computeUndoEdits: true,
+		computeUndoEdits: true
 	): IValidEditOperation[];
 
 	/**
@@ -1229,7 +1229,7 @@ export interface ITextModel {
 		changes: TextChange[],
 		eol: EndOfLineSequence,
 		resultingAlternativeVersionId: number,
-		resultingSelection: Selection[] | null,
+		resultingSelection: Selection[] | null
 	): void;
 
 	/**
@@ -1239,7 +1239,7 @@ export interface ITextModel {
 		changes: TextChange[],
 		eol: EndOfLineSequence,
 		resultingAlternativeVersionId: number,
-		resultingSelection: Selection[] | null,
+		resultingSelection: Selection[] | null
 	): void;
 
 	/**
@@ -1282,7 +1282,7 @@ export interface ITextModel {
 	 * @event
 	 */
 	onDidChangeContent(
-		listener: (e: IModelContentChangedEvent) => void,
+		listener: (e: IModelContentChangedEvent) => void
 	): IDisposable;
 	/**
 	 * An event emitted when decorations of the model have changed.
@@ -1396,7 +1396,7 @@ export interface IAttachedView {
 	 */
 	setVisibleLines(
 		visibleLines: { startLineNumber: number; endLineNumber: number }[],
-		stabilized: boolean,
+		stabilized: boolean
 	): void;
 }
 
@@ -1465,7 +1465,7 @@ export class ValidAnnotatedEditOperation
 		public readonly text: string | null,
 		public readonly forceMoveMarkers: boolean,
 		public readonly isAutoWhitespaceEdit: boolean,
-		public readonly _isTracked: boolean,
+		public readonly _isTracked: boolean
 	) {}
 }
 
@@ -1505,7 +1505,7 @@ export interface IReadonlyTextBuffer {
 		searchRange: Range,
 		searchData: SearchData,
 		captureMatches: boolean,
-		limitResultCount: number,
+		limitResultCount: number
 	): FindMatch[];
 }
 
@@ -1529,7 +1529,7 @@ export class SearchData {
 	constructor(
 		regex: RegExp,
 		wordSeparators: WordCharacterClassifier | null,
-		simpleSearch: string | null,
+		simpleSearch: string | null
 	) {
 		this.regex = regex;
 		this.wordSeparators = wordSeparators;
@@ -1545,7 +1545,7 @@ export interface ITextBuffer extends IReadonlyTextBuffer, IDisposable {
 	applyEdits(
 		rawOperations: ValidAnnotatedEditOperation[],
 		recordTrimAutoWhitespace: boolean,
-		computeUndoEdits: boolean,
+		computeUndoEdits: boolean
 	): ApplyEditsResult;
 }
 
@@ -1556,7 +1556,7 @@ export class ApplyEditsResult {
 	constructor(
 		public readonly reverseEdits: IValidEditOperation[] | null,
 		public readonly changes: IInternalModelContentChange[],
-		public readonly trimAutoWhitespaceLineNumbers: number[] | null,
+		public readonly trimAutoWhitespaceLineNumbers: number[] | null
 	) {}
 }
 

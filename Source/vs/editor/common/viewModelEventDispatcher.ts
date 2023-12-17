@@ -21,7 +21,7 @@ import {
 
 export class ViewModelEventDispatcher extends Disposable {
 	private readonly _onEvent = this._register(
-		new Emitter<OutgoingViewModelEvent>(),
+		new Emitter<OutgoingViewModelEvent>()
 	);
 	public readonly onEvent = this._onEvent.event;
 
@@ -81,7 +81,7 @@ export class ViewModelEventDispatcher extends Disposable {
 			if (this._eventHandlers[i] === eventHandler) {
 				console.warn(
 					"Detected duplicate listener in ViewEventDispatcher",
-					eventHandler,
+					eventHandler
 				);
 			}
 		}
@@ -232,7 +232,7 @@ export class ContentSizeChangedEvent implements IContentSizeChangedEvent {
 		oldContentWidth: number,
 		oldContentHeight: number,
 		contentWidth: number,
-		contentHeight: number,
+		contentHeight: number
 	) {
 		this._oldContentWidth = oldContentWidth;
 		this._oldContentHeight = oldContentHeight;
@@ -248,7 +248,7 @@ export class ContentSizeChangedEvent implements IContentSizeChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -257,7 +257,7 @@ export class ContentSizeChangedEvent implements IContentSizeChangedEvent {
 			this._oldContentWidth,
 			this._oldContentHeight,
 			other.contentWidth,
-			other.contentHeight,
+			other.contentHeight
 		);
 	}
 }
@@ -278,7 +278,7 @@ export class FocusChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -313,7 +313,7 @@ export class ScrollChangedEvent {
 		scrollWidth: number,
 		scrollLeft: number,
 		scrollHeight: number,
-		scrollTop: number,
+		scrollTop: number
 	) {
 		this._oldScrollWidth = oldScrollWidth;
 		this._oldScrollLeft = oldScrollLeft;
@@ -341,7 +341,7 @@ export class ScrollChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -354,7 +354,7 @@ export class ScrollChangedEvent {
 			other.scrollWidth,
 			other.scrollLeft,
 			other.scrollHeight,
-			other.scrollTop,
+			other.scrollTop
 		);
 	}
 }
@@ -369,7 +369,7 @@ export class ViewZonesChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -388,7 +388,7 @@ export class HiddenAreasChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -415,7 +415,7 @@ export class CursorStateChangedEvent {
 		modelVersionId: number,
 		source: string,
 		reason: CursorChangeReason,
-		reachedMaxCursorCount: boolean,
+		reachedMaxCursorCount: boolean
 	) {
 		this.oldSelections = oldSelections;
 		this.selections = selections;
@@ -428,7 +428,7 @@ export class CursorStateChangedEvent {
 
 	private static _selectionsAreEqual(
 		a: Selection[] | null,
-		b: Selection[] | null,
+		b: Selection[] | null
 	): boolean {
 		if (!a && !b) {
 			return true;
@@ -453,13 +453,13 @@ export class CursorStateChangedEvent {
 		return (
 			CursorStateChangedEvent._selectionsAreEqual(
 				this.oldSelections,
-				this.selections,
+				this.selections
 			) && this.oldModelVersionId === this.modelVersionId
 		);
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -471,7 +471,7 @@ export class CursorStateChangedEvent {
 			other.modelVersionId,
 			other.source,
 			other.reason,
-			this.reachedMaxCursorCount || other.reachedMaxCursorCount,
+			this.reachedMaxCursorCount || other.reachedMaxCursorCount
 		);
 	}
 }
@@ -486,7 +486,7 @@ export class ReadOnlyEditAttemptEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		if (other.kind !== this.kind) {
 			return null;
@@ -505,7 +505,7 @@ export class ModelDecorationsChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		return null;
 	}
@@ -521,7 +521,7 @@ export class ModelLanguageChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		return null;
 	}
@@ -532,7 +532,7 @@ export class ModelLanguageConfigurationChangedEvent {
 		OutgoingViewModelEventKind.ModelLanguageConfigurationChanged;
 
 	constructor(
-		public readonly event: IModelLanguageConfigurationChangedEvent,
+		public readonly event: IModelLanguageConfigurationChangedEvent
 	) {}
 
 	public isNoOp(): boolean {
@@ -540,7 +540,7 @@ export class ModelLanguageConfigurationChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		return null;
 	}
@@ -556,7 +556,7 @@ export class ModelContentChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		return null;
 	}
@@ -572,7 +572,7 @@ export class ModelOptionsChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		return null;
 	}
@@ -588,7 +588,7 @@ export class ModelTokensChangedEvent {
 	}
 
 	public attemptToMerge(
-		other: OutgoingViewModelEvent,
+		other: OutgoingViewModelEvent
 	): OutgoingViewModelEvent | null {
 		return null;
 	}

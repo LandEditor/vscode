@@ -97,19 +97,23 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IExtensionService extensionService: IExtensionService,
 		@ICommandService private commandService: ICommandService,
-		@IMenuService menuService: IMenuService,
+		@IMenuService menuService: IMenuService
 	) {
 		super(
 			Parts.AUXILIARYBAR_PART,
 			{
 				hasTitle: true,
-				borderWidth: () => (this.getColor(SIDE_BAR_BORDER) || this.getColor(contrastBorder)) ? 1 : 0,
+				borderWidth: () =>
+					this.getColor(SIDE_BAR_BORDER) ||
+					this.getColor(contrastBorder)
+						? 1
+						: 0,
 			},
 			AuxiliaryBarPart.activePanelSettingsKey,
 			ActiveAuxiliaryContext.bindTo(contextKeyService),
 			AuxiliaryBarFocusContext.bindTo(contextKeyService),
-			'auxiliarybar',
-			'auxiliarybar',
+			"auxiliarybar",
+			"auxiliarybar",
 			undefined,
 			notificationService,
 			storageService,
@@ -121,7 +125,7 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 			viewDescriptorService,
 			contextKeyService,
 			extensionService,
-			menuService,
+			menuService
 		);
 	}
 
@@ -175,13 +179,13 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 				activeBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				inactiveBackgroundColor: theme.getColor(SIDE_BAR_BACKGROUND),
 				activeBorderBottomColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_BORDER,
+					PANEL_ACTIVE_TITLE_BORDER
 				),
 				activeForegroundColor: theme.getColor(
-					PANEL_ACTIVE_TITLE_FOREGROUND,
+					PANEL_ACTIVE_TITLE_FOREGROUND
 				),
 				inactiveForegroundColor: theme.getColor(
-					PANEL_INACTIVE_TITLE_FOREGROUND,
+					PANEL_INACTIVE_TITLE_FOREGROUND
 				),
 				badgeBackground: theme.getColor(ACTIVITY_BAR_BADGE_BACKGROUND),
 				badgeForeground: theme.getColor(ACTIVITY_BAR_BADGE_FOREGROUND),
@@ -207,29 +211,29 @@ export class AuxiliaryBarPart extends AbstractPaneCompositePart {
 					label: currentPositionRight
 						? localize(
 								"move second side bar left",
-								"Move Secondary Side Bar Left",
-						  )
+								"Move Secondary Side Bar Left"
+							)
 						: localize(
 								"move second side bar right",
-								"Move Secondary Side Bar Right",
-						  ),
+								"Move Secondary Side Bar Right"
+							),
 					run: () =>
 						this.commandService.executeCommand(
-							ToggleSidebarPositionAction.ID,
+							ToggleSidebarPositionAction.ID
 						),
 				}),
 				toAction({
 					id: ToggleAuxiliaryBarAction.ID,
 					label: localize(
 						"hide second side bar",
-						"Hide Secondary Side Bar",
+						"Hide Secondary Side Bar"
 					),
 					run: () =>
 						this.commandService.executeCommand(
-							ToggleAuxiliaryBarAction.ID,
+							ToggleAuxiliaryBarAction.ID
 						),
 				}),
-			],
+			]
 		);
 	}
 

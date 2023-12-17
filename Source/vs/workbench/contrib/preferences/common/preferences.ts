@@ -46,14 +46,14 @@ export interface IPreferencesSearchService {
 	getLocalSearchProvider(filter: string): ISearchProvider;
 	getRemoteSearchProvider(
 		filter: string,
-		newExtensionsOnly?: boolean,
+		newExtensionsOnly?: boolean
 	): ISearchProvider | undefined;
 }
 
 export interface ISearchProvider {
 	searchModel(
 		preferencesModel: ISettingsEditorModel,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchResult | null>;
 }
 
@@ -70,39 +70,39 @@ export const SETTINGS_EDITOR_COMMAND_SUGGEST_FILTERS =
 
 export const CONTEXT_SETTINGS_EDITOR = new RawContextKey<boolean>(
 	"inSettingsEditor",
-	false,
+	false
 );
 export const CONTEXT_SETTINGS_JSON_EDITOR = new RawContextKey<boolean>(
 	"inSettingsJSONEditor",
-	false,
+	false
 );
 export const CONTEXT_SETTINGS_SEARCH_FOCUS = new RawContextKey<boolean>(
 	"inSettingsSearch",
-	false,
+	false
 );
 export const CONTEXT_TOC_ROW_FOCUS = new RawContextKey<boolean>(
 	"settingsTocRowFocus",
-	false,
+	false
 );
 export const CONTEXT_SETTINGS_ROW_FOCUS = new RawContextKey<boolean>(
 	"settingRowFocus",
-	false,
+	false
 );
 export const CONTEXT_KEYBINDINGS_EDITOR = new RawContextKey<boolean>(
 	"inKeybindings",
-	false,
+	false
 );
 export const CONTEXT_KEYBINDINGS_SEARCH_FOCUS = new RawContextKey<boolean>(
 	"inKeybindingsSearch",
-	false,
+	false
 );
 export const CONTEXT_KEYBINDING_FOCUS = new RawContextKey<boolean>(
 	"keybindingFocus",
-	false,
+	false
 );
 export const CONTEXT_WHEN_FOCUS = new RawContextKey<boolean>(
 	"whenFocus",
-	false,
+	false
 );
 
 export const KEYBINDINGS_EDITOR_COMMAND_SEARCH =
@@ -172,7 +172,7 @@ let cachedExtensionToggleData: ExtensionToggleData | undefined;
 
 export async function getExperimentalExtensionToggleData(
 	extensionGalleryService: IExtensionGalleryService,
-	productService: IProductService,
+	productService: IProductService
 ): Promise<ExtensionToggleData | undefined> {
 	if (!ENABLE_EXTENSION_TOGGLE_SETTINGS) {
 		return undefined;
@@ -200,7 +200,7 @@ export async function getExperimentalExtensionToggleData(
 					settingsEditorRecommendedExtensions[extensionId] =
 						extensionInfo;
 				}
-			},
+			}
 		);
 
 		const recommendedExtensionsGalleryInfo: IStringDictionary<IGalleryExtension> =
@@ -212,7 +212,7 @@ export async function getExperimentalExtensionToggleData(
 			try {
 				const [extension] = await extensionGalleryService.getExtensions(
 					[{ id: extensionId, preRelease: !isStable }],
-					CancellationToken.None,
+					CancellationToken.None
 				);
 				if (extension) {
 					recommendedExtensionsGalleryInfo[key] = extension;
@@ -242,7 +242,7 @@ export async function getExperimentalExtensionToggleData(
  */
 export function compareTwoNullableNumbers(
 	a: number | undefined,
-	b: number | undefined,
+	b: number | undefined
 ): number {
 	const aOrMax = a ?? Number.MAX_SAFE_INTEGER;
 	const bOrMax = b ?? Number.MAX_SAFE_INTEGER;

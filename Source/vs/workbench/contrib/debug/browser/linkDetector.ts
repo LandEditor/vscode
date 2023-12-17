@@ -27,13 +27,13 @@ const WEB_LINK_REGEX = new RegExp(
 		'"]{2,}[^\\s' +
 		CONTROL_CODES +
 		"\"')}\\],:;.!?]",
-	"ug",
+	"ug"
 );
 
 const WIN_ABSOLUTE_PATH = /(?:[a-zA-Z]:(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_RELATIVE_PATH = /(?:(?:\~|\.)(?:(?:\\|\/)[\w\.-]*)+)/;
 const WIN_PATH = new RegExp(
-	`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`,
+	`(${WIN_ABSOLUTE_PATH.source}|${WIN_RELATIVE_PATH.source})`
 );
 const POSIX_PATH = /((?:\~|\.)?(?:\/[\w\.-]*)+)/;
 const LINE_COLUMN = /(?:\:([\d]+))?(?:\:([\d]+))?/;
@@ -41,7 +41,7 @@ const PATH_LINK_REGEX = new RegExp(
 	`${platform.isWindows ? WIN_PATH.source : POSIX_PATH.source}${
 		LINE_COLUMN.source
 	}`,
-	"g",
+	"g"
 );
 const LINE_COLUMN_REGEX = /:([\d]+)(?::([\d]+))?$/;
 
@@ -61,8 +61,10 @@ export class LinkDetector {
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IPathService private readonly pathService: IPathService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		// noop
 	}
@@ -78,7 +80,7 @@ export class LinkDetector {
 		text: string,
 		splitLines?: boolean,
 		workspaceFolder?: IWorkspaceFolder,
-		includeFulltext?: boolean,
+		includeFulltext?: boolean
 	): HTMLElement {
 		if (splitLines) {
 			const lines = text.split("\n");
@@ -90,7 +92,7 @@ export class LinkDetector {
 				lines.pop();
 			}
 			const elements = lines.map((line) =>
-				this.linkify(line, false, workspaceFolder, includeFulltext),
+				this.linkify(line, false, workspaceFolder, includeFulltext)
 			);
 			if (elements.length === 1) {
 				// Do not wrap single line with extra span.
@@ -107,15 +109,15 @@ export class LinkDetector {
 				switch (part.kind) {
 					case "text":
 						container.appendChild(
-							document.createTextNode(part.value),
+							document.createTextNode(part.value)
 						);
 						break;
 					case "web":
 						container.appendChild(
 							this.createWebLink(
 								includeFulltext ? text : undefined,
-								part.value,
-							),
+								part.value
+							)
 						);
 						break;
 					case "path": {
@@ -133,8 +135,8 @@ export class LinkDetector {
 								path,
 								lineNumber,
 								columnNumber,
-								workspaceFolder,
-							),
+								workspaceFolder
+							)
 						);
 						break;
 					}
@@ -168,7 +170,7 @@ export class LinkDetector {
 				const fileUrl = osPath.normalize(
 					path.sep === osPath.posix.sep && platform.isWindows
 						? fsPath.replace(/\\/g, osPath.posix.sep)
-						: fsPath,
+						: fsPath
 				);
 
 				const fileUri = URI.parse(fileUrl);
@@ -185,7 +187,7 @@ export class LinkDetector {
 							? {
 									startLineNumber: +lineCol[1],
 									startColumn: +lineCol[2],
-							  }
+								}
 							: undefined,
 					},
 				});
@@ -208,7 +210,7 @@ export class LinkDetector {
 		path: string,
 		lineNumber: number,
 		columnNumber: number,
-		workspaceFolder: IWorkspaceFolder | undefined,
+		workspaceFolder: IWorkspaceFolder | undefined
 	): Node {
 		if (path[0] === "/" && path[1] === "/") {
 			// Most likely a url part which did not match, for example ftp://path.
@@ -231,7 +233,7 @@ export class LinkDetector {
 				this.editorService.openEditor({
 					resource: uri,
 					options: { ...options, preserveFocus },
-				}),
+				})
 			);
 			return link;
 		}
@@ -260,7 +262,7 @@ export class LinkDetector {
 						this.editorService.openEditor({
 							resource: uri,
 							options: { ...options, preserveFocus },
-						}),
+						})
 				);
 			})
 			.catch(() => {
@@ -279,14 +281,14 @@ export class LinkDetector {
 		link: HTMLElement,
 		uri: URI,
 		fulltext: string | undefined,
-		onClick: (preserveFocus: boolean) => void,
+		onClick: (preserveFocus: boolean) => void
 	) {
 		link.classList.add("link");
 		const followLink = this.tunnelService.canTunnel(uri)
 			? localize(
 					"followForwardedLink",
-					"follow link using forwarded port",
-			  )
+					"follow link using forwarded port"
+				)
 			: localize("followLink", "follow link");
 		link.title = fulltext
 			? platform.isMacintosh
@@ -294,21 +296,21 @@ export class LinkDetector {
 						"fileLinkWithPathMac",
 						"Cmd + click to {0}\n{1}",
 						followLink,
-						fulltext,
-				  )
+						fulltext
+					)
 				: localize(
 						"fileLinkWithPath",
 						"Ctrl + click to {0}\n{1}",
 						followLink,
-						fulltext,
-				  )
+						fulltext
+					)
 			: platform.isMacintosh
-			  ? localize("fileLinkMac", "Cmd + click to {0}", followLink)
-			  : localize("fileLink", "Ctrl + click to {0}", followLink);
+				? localize("fileLinkMac", "Cmd + click to {0}", followLink)
+				: localize("fileLink", "Ctrl + click to {0}", followLink);
 		link.onmousemove = (event) => {
 			link.classList.toggle(
 				"pointer",
-				platform.isMacintosh ? event.metaKey : event.ctrlKey,
+				platform.isMacintosh ? event.metaKey : event.ctrlKey
 			);
 		};
 		link.onmouseleave = () => link.classList.remove("pointer");
@@ -359,7 +361,7 @@ export class LinkDetector {
 			while ((match = regex.exec(text)) !== null) {
 				const stringBeforeMatch = text.substring(
 					currentIndex,
-					match.index,
+					match.index
 				);
 				if (stringBeforeMatch) {
 					splitOne(stringBeforeMatch, regexIndex + 1);

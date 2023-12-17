@@ -27,7 +27,7 @@ class NotebookDiffEditorModel
 {
 	constructor(
 		readonly original: IResolvedNotebookEditorModel,
-		readonly modified: IResolvedNotebookEditorModel,
+		readonly modified: IResolvedNotebookEditorModel
 	) {
 		super();
 	}
@@ -40,19 +40,19 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 		name: string | undefined,
 		description: string | undefined,
 		originalResource: URI,
-		viewType: string,
+		viewType: string
 	) {
 		const original = NotebookEditorInput.getOrCreate(
 			instantiationService,
 			originalResource,
 			undefined,
-			viewType,
+			viewType
 		);
 		const modified = NotebookEditorInput.getOrCreate(
 			instantiationService,
 			resource,
 			undefined,
-			viewType,
+			viewType
 		);
 		return instantiationService.createInstance(
 			NotebookDiffEditorInput,
@@ -60,7 +60,7 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 			description,
 			original,
 			modified,
-			viewType,
+			viewType
 		);
 	}
 
@@ -85,7 +85,7 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 		override readonly original: NotebookEditorInput,
 		override readonly modified: NotebookEditorInput,
 		public readonly viewType: string,
-		@IEditorService editorService: IEditorService,
+		@IEditorService editorService: IEditorService
 	) {
 		super(name, description, original, modified, undefined, editorService);
 	}
@@ -105,13 +105,13 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 		// TODO@rebornix check how we restore the editor in text diff editor
 		if (!modifiedEditorModel) {
 			throw new Error(
-				`Fail to resolve modified editor model for resource ${this.modified.resource} with notebookType ${this.viewType}`,
+				`Fail to resolve modified editor model for resource ${this.modified.resource} with notebookType ${this.viewType}`
 			);
 		}
 
 		if (!originalEditorModel) {
 			throw new Error(
-				`Fail to resolve original editor model for resource ${this.original.resource} with notebookType ${this.viewType}`,
+				`Fail to resolve original editor model for resource ${this.original.resource} with notebookType ${this.viewType}`
 			);
 		}
 
@@ -119,7 +119,7 @@ export class NotebookDiffEditorInput extends DiffEditorInput {
 		this._modifiedTextModel = modifiedEditorModel;
 		this._cachedModel = new NotebookDiffEditorModel(
 			this._originalTextModel,
-			this._modifiedTextModel,
+			this._modifiedTextModel
 		);
 		return this._cachedModel;
 	}

@@ -18,7 +18,7 @@ export class InlineChatNotebookContribution {
 
 	constructor(
 		@IInlineChatSessionService sessionService: IInlineChatSessionService,
-		@INotebookEditorService notebookEditorService: INotebookEditorService,
+		@INotebookEditorService notebookEditorService: INotebookEditorService
 	) {
 		this._store.add(
 			sessionService.registerSessionKeyComputer(
@@ -36,14 +36,14 @@ export class InlineChatNotebookContribution {
 						}
 						throw illegalState("Expected notebook");
 					},
-				},
-			),
+				}
+			)
 		);
 
 		this._store.add(
 			sessionService.onWillStartSession((newSessionEditor) => {
 				const candidate = CellUri.parse(
-					newSessionEditor.getModel().uri,
+					newSessionEditor.getModel().uri
 				);
 				if (!candidate) {
 					return;
@@ -52,7 +52,7 @@ export class InlineChatNotebookContribution {
 					if (
 						isEqual(
 							notebookEditor.textModel?.uri,
-							candidate.notebook,
+							candidate.notebook
 						)
 					) {
 						let found = false;
@@ -70,7 +70,7 @@ export class InlineChatNotebookContribution {
 							for (const editor of editors) {
 								if (editor !== newSessionEditor) {
 									InlineChatController.get(
-										editor,
+										editor
 									)?.finishExistingSession();
 								}
 							}
@@ -78,7 +78,7 @@ export class InlineChatNotebookContribution {
 						}
 					}
 				}
-			}),
+			})
 		);
 	}
 

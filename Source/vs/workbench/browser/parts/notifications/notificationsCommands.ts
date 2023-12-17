@@ -95,7 +95,7 @@ export interface INotificationsToastController {
 
 export function getNotificationFromContext(
 	listService: IListService,
-	context?: unknown,
+	context?: unknown
 ): INotificationViewItem | undefined {
 	if (isNotificationViewItem(context)) {
 		return context;
@@ -125,7 +125,7 @@ export function getNotificationFromContext(
 export function registerNotificationCommands(
 	center: INotificationsCenterController,
 	toasts: INotificationsToastController,
-	model: NotificationsModel,
+	model: NotificationsModel
 ): void {
 	// Show Notifications Cneter
 	KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -133,7 +133,7 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib,
 		primary: KeyChord(
 			KeyMod.CtrlCmd | KeyCode.KeyK,
-			KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN,
+			KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyN
 		),
 		handler: () => {
 			toasts.hide();
@@ -160,8 +160,8 @@ export function registerNotificationCommands(
 							notification.message.original,
 							notification.sourceId,
 							notification.priority ===
-								NotificationPriority.SILENT,
-						),
+								NotificationPriority.SILENT
+						)
 					);
 				}
 			}
@@ -191,16 +191,16 @@ export function registerNotificationCommands(
 		},
 		handler: (accessor, args?) => {
 			const accessibleNotificationService = accessor.get(
-				IAccessibleNotificationService,
+				IAccessibleNotificationService
 			);
 			const notification = getNotificationFromContext(
 				accessor.get(IListService),
-				args,
+				args
 			);
 			if (notification && !notification.hasProgress) {
 				notification.close();
 				accessibleNotificationService.notify(
-					AccessibleNotificationEvent.Clear,
+					AccessibleNotificationEvent.Clear
 				);
 			}
 		},
@@ -215,7 +215,7 @@ export function registerNotificationCommands(
 		handler: (accessor, args?) => {
 			const notification = getNotificationFromContext(
 				accessor.get(IListService),
-				args,
+				args
 			);
 			notification?.expand();
 		},
@@ -227,7 +227,7 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib,
 		when: ContextKeyExpr.or(
 			NotificationFocusedContext,
-			NotificationsToastsVisibleContext,
+			NotificationsToastsVisibleContext
 		),
 		primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyA,
 		handler: (accessor) => {
@@ -260,7 +260,7 @@ export function registerNotificationCommands(
 		handler: (accessor, args?) => {
 			const notification = getNotificationFromContext(
 				accessor.get(IListService),
-				args,
+				args
 			);
 			notification?.collapse();
 		},
@@ -275,7 +275,7 @@ export function registerNotificationCommands(
 		secondary: [KeyCode.Enter],
 		handler: (accessor) => {
 			const notification = getNotificationFromContext(
-				accessor.get(IListService),
+				accessor.get(IListService)
 			);
 			notification?.toggle();
 		},
@@ -294,8 +294,8 @@ export function registerNotificationCommands(
 					notificationToMetrics(
 						notification.message.original,
 						notification.sourceId,
-						notification.priority === NotificationPriority.SILENT,
-					),
+						notification.priority === NotificationPriority.SILENT
+					)
 				);
 			}
 		}
@@ -314,14 +314,14 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib + 100, // higher when focused
 		when: ContextKeyExpr.and(
 			NotificationsToastsVisibleContext,
-			NotificationFocusedContext,
+			NotificationFocusedContext
 		),
 		primary: KeyCode.Escape,
 	});
 
 	// Focus Toasts
 	CommandsRegistry.registerCommand(FOCUS_NOTIFICATION_TOAST, () =>
-		toasts.focus(),
+		toasts.focus()
 	);
 
 	// Focus Next Toast
@@ -330,7 +330,7 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib,
 		when: ContextKeyExpr.and(
 			NotificationFocusedContext,
-			NotificationsToastsVisibleContext,
+			NotificationsToastsVisibleContext
 		),
 		primary: KeyCode.DownArrow,
 		handler: () => {
@@ -344,7 +344,7 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib,
 		when: ContextKeyExpr.and(
 			NotificationFocusedContext,
-			NotificationsToastsVisibleContext,
+			NotificationsToastsVisibleContext
 		),
 		primary: KeyCode.UpArrow,
 		handler: () => {
@@ -358,7 +358,7 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib,
 		when: ContextKeyExpr.and(
 			NotificationFocusedContext,
-			NotificationsToastsVisibleContext,
+			NotificationsToastsVisibleContext
 		),
 		primary: KeyCode.PageUp,
 		secondary: [KeyCode.Home],
@@ -373,7 +373,7 @@ export function registerNotificationCommands(
 		weight: KeybindingWeight.WorkbenchContrib,
 		when: ContextKeyExpr.and(
 			NotificationFocusedContext,
-			NotificationsToastsVisibleContext,
+			NotificationsToastsVisibleContext
 		),
 		primary: KeyCode.PageDown,
 		secondary: [KeyCode.End],
@@ -384,7 +384,7 @@ export function registerNotificationCommands(
 
 	// Clear All Notifications
 	CommandsRegistry.registerCommand(CLEAR_ALL_NOTIFICATIONS, () =>
-		center.clearAll(),
+		center.clearAll()
 	);
 
 	// Toggle Do Not Disturb Mode
@@ -427,7 +427,7 @@ export function registerNotificationCommands(
 			title: {
 				value: localize(
 					"clearAllNotifications",
-					"Clear All Notifications",
+					"Clear All Notifications"
 				),
 				original: "Clear All Notifications",
 			},
@@ -440,7 +440,7 @@ export function registerNotificationCommands(
 			title: {
 				value: localize(
 					"acceptNotificationPrimaryAction",
-					"Accept Notification Primary Action",
+					"Accept Notification Primary Action"
 				),
 				original: "Accept Notification Primary Action",
 			},
@@ -453,7 +453,7 @@ export function registerNotificationCommands(
 			title: {
 				value: localize(
 					"toggleDoNotDisturbMode",
-					"Toggle Do Not Disturb Mode",
+					"Toggle Do Not Disturb Mode"
 				),
 				original: "Toggle Do Not Disturb Mode",
 			},
@@ -466,7 +466,7 @@ export function registerNotificationCommands(
 			title: {
 				value: localize(
 					"focusNotificationToasts",
-					"Focus Notification Toast",
+					"Focus Notification Toast"
 				),
 				original: "Focus Notification Toast",
 			},
@@ -511,14 +511,15 @@ type NotificationActionMetricsClassification = {
 export class NotificationActionRunner extends ActionRunner {
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@INotificationService private readonly notificationService: INotificationService
+		@INotificationService
+		private readonly notificationService: INotificationService
 	) {
 		super();
 	}
 
 	protected override async runAction(
 		action: IAction,
-		context: unknown,
+		context: unknown
 	): Promise<void> {
 		this.telemetryService.publicLog2<
 			WorkbenchActionExecutedEvent,

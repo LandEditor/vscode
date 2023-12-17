@@ -55,7 +55,8 @@ export class EditorParts
 	private readonly mostRecentActiveParts = [this.mainPart];
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -69,13 +70,13 @@ export class EditorParts
 	//#region Auxiliary Editor Parts
 
 	private readonly _onDidCreateAuxiliaryEditorPart = this._register(
-		new Emitter<IAuxiliaryEditorPartCreateEvent>(),
+		new Emitter<IAuxiliaryEditorPartCreateEvent>()
 	);
 	readonly onDidCreateAuxiliaryEditorPart =
 		this._onDidCreateAuxiliaryEditorPart.event;
 
 	async createAuxiliaryEditorPart(
-		options?: IAuxiliaryWindowOpenOptions,
+		options?: IAuxiliaryWindowOpenOptions
 	): Promise<IAuxiliaryEditorPart> {
 		const { part, instantiationService, disposables } =
 			await this.instantiationService
@@ -125,7 +126,7 @@ export class EditorParts
 
 	private registerEditorPartListeners(
 		part: EditorPart,
-		disposables: DisposableStore,
+		disposables: DisposableStore
 	): void {
 		disposables.add(
 			part.onDidFocus(() => {
@@ -134,54 +135,52 @@ export class EditorParts
 				if (this._parts.size > 1) {
 					this._onDidActiveGroupChange.fire(this.activeGroup); // this can only happen when we have more than 1 editor part
 				}
-			}),
+			})
 		);
 		disposables.add(
-			toDisposable(() => this.doUpdateMostRecentActive(part)),
+			toDisposable(() => this.doUpdateMostRecentActive(part))
 		);
 
 		disposables.add(
 			part.onDidChangeActiveGroup((group) =>
-				this._onDidActiveGroupChange.fire(group),
-			),
+				this._onDidActiveGroupChange.fire(group)
+			)
 		);
 		disposables.add(
-			part.onDidAddGroup((group) => this._onDidAddGroup.fire(group)),
+			part.onDidAddGroup((group) => this._onDidAddGroup.fire(group))
 		);
 		disposables.add(
-			part.onDidRemoveGroup((group) =>
-				this._onDidRemoveGroup.fire(group),
-			),
+			part.onDidRemoveGroup((group) => this._onDidRemoveGroup.fire(group))
 		);
 		disposables.add(
-			part.onDidMoveGroup((group) => this._onDidMoveGroup.fire(group)),
+			part.onDidMoveGroup((group) => this._onDidMoveGroup.fire(group))
 		);
 		disposables.add(
 			part.onDidActivateGroup((group) =>
-				this._onDidActivateGroup.fire(group),
-			),
+				this._onDidActivateGroup.fire(group)
+			)
 		);
 		disposables.add(
 			part.onDidChangeGroupMaximized((maximized) =>
-				this._onDidChangeGroupMaximized.fire(maximized),
-			),
+				this._onDidChangeGroupMaximized.fire(maximized)
+			)
 		);
 
 		disposables.add(
 			part.onDidChangeGroupIndex((group) =>
-				this._onDidChangeGroupIndex.fire(group),
-			),
+				this._onDidChangeGroupIndex.fire(group)
+			)
 		);
 		disposables.add(
 			part.onDidChangeGroupLocked((group) =>
-				this._onDidChangeGroupLocked.fire(group),
-			),
+				this._onDidChangeGroupLocked.fire(group)
+			)
 		);
 	}
 
 	private doUpdateMostRecentActive(
 		part: EditorPart,
-		makeMostRecentlyActive?: boolean,
+		makeMostRecentlyActive?: boolean
 	): void {
 		const index = this.mostRecentActiveParts.indexOf(part);
 
@@ -207,7 +206,7 @@ export class EditorParts
 	override getPart(group: IEditorGroupView | GroupIdentifier): EditorPart;
 	override getPart(element: HTMLElement): EditorPart;
 	override getPart(
-		groupOrElement: IEditorGroupView | GroupIdentifier | HTMLElement,
+		groupOrElement: IEditorGroupView | GroupIdentifier | HTMLElement
 	): EditorPart {
 		if (this._parts.size > 1) {
 			if (groupOrElement instanceof HTMLElement) {
@@ -240,42 +239,42 @@ export class EditorParts
 	//#region Events
 
 	private readonly _onDidActiveGroupChange = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidChangeActiveGroup = this._onDidActiveGroupChange.event;
 
 	private readonly _onDidAddGroup = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidAddGroup = this._onDidAddGroup.event;
 
 	private readonly _onDidRemoveGroup = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidRemoveGroup = this._onDidRemoveGroup.event;
 
 	private readonly _onDidMoveGroup = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidMoveGroup = this._onDidMoveGroup.event;
 
 	private readonly _onDidActivateGroup = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidActivateGroup = this._onDidActivateGroup.event;
 
 	private readonly _onDidChangeGroupIndex = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidChangeGroupIndex = this._onDidChangeGroupIndex.event;
 
 	private readonly _onDidChangeGroupLocked = this._register(
-		new Emitter<IEditorGroupView>(),
+		new Emitter<IEditorGroupView>()
 	);
 	readonly onDidChangeGroupLocked = this._onDidChangeGroupLocked.event;
 
 	private readonly _onDidChangeGroupMaximized = this._register(
-		new Emitter<boolean>(),
+		new Emitter<boolean>()
 	);
 	readonly onDidChangeGroupMaximized = this._onDidChangeGroupMaximized.event;
 
@@ -336,7 +335,7 @@ export class EditorParts
 	}
 
 	private assertGroupView(
-		group: IEditorGroupView | GroupIdentifier,
+		group: IEditorGroupView | GroupIdentifier
 	): IEditorGroupView {
 		let groupView: IEditorGroupView | undefined;
 		if (typeof group === "number") {
@@ -365,14 +364,14 @@ export class EditorParts
 
 	setSize(
 		group: IEditorGroupView | GroupIdentifier,
-		size: { width: number; height: number },
+		size: { width: number; height: number }
 	): void {
 		this.getPart(group).setSize(group, size);
 	}
 
 	arrangeGroups(
 		arrangement: GroupsArrangement,
-		group?: IEditorGroupView | GroupIdentifier,
+		group?: IEditorGroupView | GroupIdentifier
 	): void {
 		(group !== undefined
 			? this.getPart(group)
@@ -417,7 +416,7 @@ export class EditorParts
 	findGroup(
 		scope: IFindGroupScope,
 		source: IEditorGroupView | GroupIdentifier = this.activeGroup,
-		wrap?: boolean,
+		wrap?: boolean
 	): IEditorGroupView | undefined {
 		const sourcePart = this.getPart(source);
 		if (this._parts.size > 1) {
@@ -472,7 +471,7 @@ export class EditorParts
 
 	addGroup(
 		location: IEditorGroupView | GroupIdentifier,
-		direction: GroupDirection,
+		direction: GroupDirection
 	): IEditorGroupView {
 		return this.getPart(location).addGroup(location, direction);
 	}
@@ -484,7 +483,7 @@ export class EditorParts
 	moveGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		location: IEditorGroupView | GroupIdentifier,
-		direction: GroupDirection,
+		direction: GroupDirection
 	): IEditorGroupView {
 		return this.getPart(group).moveGroup(group, location, direction);
 	}
@@ -492,13 +491,13 @@ export class EditorParts
 	mergeGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		target: IEditorGroupView | GroupIdentifier,
-		options?: IMergeGroupOptions,
+		options?: IMergeGroupOptions
 	): IEditorGroupView {
 		return this.getPart(group).mergeGroup(group, target, options);
 	}
 
 	mergeAllGroups(
-		target: IEditorGroupView | GroupIdentifier,
+		target: IEditorGroupView | GroupIdentifier
 	): IEditorGroupView {
 		return this.activePart.mergeAllGroups(target);
 	}
@@ -506,18 +505,18 @@ export class EditorParts
 	copyGroup(
 		group: IEditorGroupView | GroupIdentifier,
 		location: IEditorGroupView | GroupIdentifier,
-		direction: GroupDirection,
+		direction: GroupDirection
 	): IEditorGroupView {
 		return this.getPart(group).copyGroup(group, location, direction);
 	}
 
 	createEditorDropTarget(
 		container: HTMLElement,
-		delegate: IEditorDropTargetDelegate,
+		delegate: IEditorDropTargetDelegate
 	): IDisposable {
 		return this.getPart(container).createEditorDropTarget(
 			container,
-			delegate,
+			delegate
 		);
 	}
 

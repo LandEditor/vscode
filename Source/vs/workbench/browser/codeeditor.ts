@@ -53,7 +53,9 @@ export class RangeHighlightDecorations extends Disposable {
 	private editor: ICodeEditor | null = null;
 	private readonly editorDisposables = this._register(new DisposableStore());
 
-	constructor(@IEditorService private readonly editorService: IEditorService) {
+	constructor(
+		@IEditorService private readonly editorService: IEditorService
+	) {
 		super();
 	}
 
@@ -83,7 +85,7 @@ export class RangeHighlightDecorations extends Disposable {
 
 	private doHighlightRange(
 		editor: ICodeEditor,
-		selectionRange: IRangeHighlightDecoration,
+		selectionRange: IRangeHighlightDecoration
 	) {
 		this.removeHighlightRange();
 
@@ -92,17 +94,17 @@ export class RangeHighlightDecorations extends Disposable {
 				this.rangeHighlightDecorationId = changeAccessor.addDecoration(
 					selectionRange.range,
 					this.createRangeHighlightDecoration(
-						selectionRange.isWholeLine,
-					),
+						selectionRange.isWholeLine
+					)
 				);
-			},
+			}
 		);
 
 		this.setEditor(editor);
 	}
 
 	private getEditor(
-		resourceRange: IRangeHighlightDecoration,
+		resourceRange: IRangeHighlightDecoration
 	): ICodeEditor | undefined {
 		const resource = this.editorService.activeEditor?.resource;
 		if (
@@ -131,19 +133,19 @@ export class RangeHighlightDecorations extends Disposable {
 						) {
 							this.removeHighlightRange();
 						}
-					},
-				),
+					}
+				)
 			);
 			this.editorDisposables.add(
 				this.editor.onDidChangeModel(() => {
 					this.removeHighlightRange();
-				}),
+				})
 			);
 			this.editorDisposables.add(
 				this.editor.onDidDispose(() => {
 					this.removeHighlightRange();
 					this.editor = null;
-				}),
+				})
 			);
 		}
 	}
@@ -163,7 +165,7 @@ export class RangeHighlightDecorations extends Disposable {
 	});
 
 	private createRangeHighlightDecoration(
-		isWholeLine: boolean = true,
+		isWholeLine: boolean = true
 	): ModelDecorationOptions {
 		return isWholeLine
 			? RangeHighlightDecorations._WHOLE_LINE_RANGE_HIGHLIGHT
@@ -188,15 +190,15 @@ export class FloatingEditorClickWidget
 		private editor: ICodeEditor,
 		label: string,
 		keyBindingAction: string | null,
-		@IKeybindingService keybindingService: IKeybindingService,
+		@IKeybindingService keybindingService: IKeybindingService
 	) {
 		super(
 			keyBindingAction &&
-			keybindingService.lookupKeybinding(keyBindingAction)
+				keybindingService.lookupKeybinding(keyBindingAction)
 				? `${label} (${keybindingService
 						.lookupKeybinding(keyBindingAction)!
 						.getLabel()})`
-				: label,
+				: label
 		);
 	}
 
@@ -229,7 +231,8 @@ export class FloatingEditorClickMenu
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IMenuService menuService: IMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService
 	) {
@@ -242,7 +245,7 @@ export class FloatingEditorClickMenu
 			FloatingEditorClickWidget,
 			this.editor,
 			action.label,
-			action.id,
+			action.id
 		);
 	}
 

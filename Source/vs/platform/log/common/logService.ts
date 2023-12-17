@@ -21,7 +21,7 @@ export class LogService extends Disposable implements ILogService {
 		super();
 		this.logger = new MultiplexLogger([primaryLogger, ...otherLoggers]);
 		this._register(
-			primaryLogger.onDidChangeLogLevel((level) => this.setLevel(level)),
+			primaryLogger.onDidChangeLogLevel((level) => this.setLevel(level))
 		);
 	}
 

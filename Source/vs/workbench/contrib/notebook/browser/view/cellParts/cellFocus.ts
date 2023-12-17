@@ -12,7 +12,7 @@ export class CellFocusPart extends CellContentPart {
 	constructor(
 		containerElement: HTMLElement,
 		focusSinkElement: HTMLElement | undefined,
-		notebookEditor: INotebookEditor,
+		notebookEditor: INotebookEditor
 	) {
 		super();
 
@@ -25,8 +25,8 @@ export class CellFocusPart extends CellContentPart {
 						notebookEditor.focusElement(this.currentCell);
 					}
 				},
-				true,
-			),
+				true
+			)
 		);
 
 		if (focusSinkElement) {
@@ -42,11 +42,11 @@ export class CellFocusPart extends CellContentPart {
 						) {
 							notebookEditor.focusNotebookCell(
 								this.currentCell,
-								"output",
+								"output"
 							);
 						}
-					},
-				),
+					}
+				)
 			);
 		}
 	}

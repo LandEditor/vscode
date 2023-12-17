@@ -13,13 +13,13 @@ export class SymbolsTree {
 	readonly viewId = "references-view.tree";
 
 	private readonly _ctxIsActive = new ContextKey<boolean>(
-		"reference-list.isActive",
+		"reference-list.isActive"
 	);
 	private readonly _ctxHasResult = new ContextKey<boolean>(
-		"reference-list.hasResult",
+		"reference-list.hasResult"
 	);
 	private readonly _ctxInputSource = new ContextKey<string>(
-		"reference-list.source",
+		"reference-list.source"
 	);
 
 	private readonly _history = new TreeInputHistory(this);
@@ -54,7 +54,7 @@ export class SymbolsTree {
 		if (
 			!(await isValidRequestPosition(
 				input.location.uri,
-				input.location.range.start,
+				input.location.range.start
 			))
 		) {
 			this.clearInput();
@@ -79,7 +79,7 @@ export class SymbolsTree {
 
 		// set promise to tree data provider to trigger tree loading UI
 		this._provider.update(
-			modelPromise.then((model) => model?.provider ?? this._history),
+			modelPromise.then((model) => model?.provider ?? this._history)
 		);
 		this._dnd.update(modelPromise.then((model) => model?.dnd));
 
@@ -102,7 +102,7 @@ export class SymbolsTree {
 		// reveal & select
 		const selection = model.navigation?.nearest(
 			input.location.uri,
-			input.location.range.start,
+			input.location.range.start
 		);
 		if (selection && this._tree.visible) {
 			await this._tree.reveal(selection, {
@@ -128,7 +128,7 @@ export class SymbolsTree {
 					this._tree.title = input.title;
 					this._tree.message = model.message;
 					highlights?.update();
-				}),
+				})
 			);
 		}
 		if (typeof model.dispose === "function") {
@@ -147,8 +147,8 @@ export class SymbolsTree {
 			this._history.size === 0
 				? vscode.l10n.t("No results.")
 				: vscode.l10n.t(
-						"No results. Try running a previous search again:",
-				  );
+						"No results. Try running a previous search again:"
+					);
 		this._provider.update(Promise.resolve(this._history));
 	}
 }
@@ -180,7 +180,7 @@ class TreeDataProviderDelegate implements vscode.TreeDataProvider<undefined> {
 				if (this.provider === provider && value.onDidChangeTreeData) {
 					this._sessionDispoables = value.onDidChangeTreeData(
 						this._onDidChange.fire,
-						this._onDidChange,
+						this._onDidChange
 					);
 				}
 			})
@@ -239,7 +239,7 @@ class TreeDndDelegate implements vscode.TreeDragAndDropController<undefined> {
 			if (urls.length > 0) {
 				data.set(
 					"text/uri-list",
-					new vscode.DataTransferItem(urls.join("\r\n")),
+					new vscode.DataTransferItem(urls.join("\r\n"))
 				);
 			}
 		}
@@ -259,10 +259,10 @@ class HistoryItem {
 		readonly key: string,
 		readonly word: string,
 		readonly anchor: WordAnchor,
-		readonly input: SymbolTreeInput<unknown>,
+		readonly input: SymbolTreeInput<unknown>
 	) {
 		this.description = `${vscode.workspace.asRelativePath(
-			input.location.uri,
+			input.location.uri
 		)} • ${input.title.toLocaleLowerCase()}`;
 	}
 }
@@ -275,21 +275,21 @@ class TreeInputHistory implements vscode.TreeDataProvider<HistoryItem> {
 
 	private readonly _disposables: vscode.Disposable[] = [];
 	private readonly _ctxHasHistory = new ContextKey<boolean>(
-		"reference-list.hasHistory",
+		"reference-list.hasHistory"
 	);
 	private readonly _inputs = new Map<string, HistoryItem>();
 
 	constructor(private readonly _tree: SymbolsTree) {
 		this._disposables.push(
 			vscode.commands.registerCommand("references-view.clear", () =>
-				_tree.clearInput(),
+				_tree.clearInput()
 			),
 			vscode.commands.registerCommand(
 				"references-view.clearHistory",
 				() => {
 					this.clear();
 					_tree.clearInput();
-				},
+				}
 			),
 			vscode.commands.registerCommand(
 				"references-view.refind",
@@ -297,7 +297,7 @@ class TreeInputHistory implements vscode.TreeDataProvider<HistoryItem> {
 					if (item instanceof HistoryItem) {
 						this._reRunHistoryItem(item);
 					}
-				},
+				}
 			),
 			vscode.commands.registerCommand("references-view.refresh", () => {
 				const item = Array.from(this._inputs.values()).pop();
@@ -315,10 +315,10 @@ class TreeInputHistory implements vscode.TreeDataProvider<HistoryItem> {
 						await vscode.commands.executeCommand(
 							"vscode.open",
 							item.input.location.uri,
-							{ selection: new vscode.Range(position, position) },
+							{ selection: new vscode.Range(position, position) }
 						);
 					}
-				},
+				}
 			),
 			vscode.commands.registerCommand(
 				"references-view.pickFromHistory",
@@ -333,18 +333,18 @@ class TreeInputHistory implements vscode.TreeDataProvider<HistoryItem> {
 								label: item.word,
 								description: item.description,
 								item,
-							},
+							}
 					);
 					const pick = await vscode.window.showQuickPick(picks, {
 						placeHolder: vscode.l10n.t(
-							"Select previous reference search",
+							"Select previous reference search"
 						),
 					});
 					if (pick) {
 						this._reRunHistoryItem(pick.item);
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -364,7 +364,7 @@ class TreeInputHistory implements vscode.TreeDataProvider<HistoryItem> {
 			!item.input.location.range.start.isEqual(newPosition)
 		) {
 			newInput = item.input.with(
-				new vscode.Location(item.input.location.uri, newPosition),
+				new vscode.Location(item.input.location.uri, newPosition)
 			);
 		}
 		this._tree.setInput(newInput);
@@ -387,7 +387,7 @@ class TreeInputHistory implements vscode.TreeDataProvider<HistoryItem> {
 			]),
 			word,
 			anchor,
-			input,
+			input
 		);
 		// use filo-ordering of native maps
 		this._inputs.delete(item.key);

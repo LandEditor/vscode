@@ -37,7 +37,8 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 			: 1000 * 60 * 60 * 24 * 30 * 3; // roughly 3 months (stable)
 
 	constructor(
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
 		@ILogService private readonly logService: ILogService,
 		@IProductService private readonly productService: IProductService
 	) {
@@ -46,16 +47,18 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 		// We have no Language pack support for dev version (run from source)
 		// So only cleanup when we have a build version.
 		if (this.environmentService.isBuilt) {
-			const scheduler = this._register(new RunOnceScheduler(() => {
-				this.cleanUpLanguagePackCache();
-			}, 40 * 1000 /* after 40s */));
+			const scheduler = this._register(
+				new RunOnceScheduler(() => {
+					this.cleanUpLanguagePackCache();
+				}, 40 * 1000 /* after 40s */)
+			);
 			scheduler.schedule();
 		}
 	}
 
 	private async cleanUpLanguagePackCache(): Promise<void> {
 		this.logService.trace(
-			"[language pack cache cleanup]: Starting to clean up unused language packs.",
+			"[language pack cache cleanup]: Starting to clean up unused language packs."
 		);
 
 		try {
@@ -64,10 +67,10 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 				await Promises.readFile(
 					join(
 						this.environmentService.userDataPath,
-						"languagepacks.json",
+						"languagepacks.json"
 					),
-					"utf8",
-				),
+					"utf8"
+				)
 			);
 			for (const locale of Object.keys(metaData)) {
 				const entry = metaData[locale];
@@ -85,13 +88,13 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 			for (const entry of entries) {
 				if (installed[entry]) {
 					this.logService.trace(
-						`[language pack cache cleanup]: Skipping folder ${entry}. Language pack still in use.`,
+						`[language pack cache cleanup]: Skipping folder ${entry}. Language pack still in use.`
 					);
 					continue;
 				}
 
 				this.logService.trace(
-					`[language pack cache cleanup]: Removing unused language pack: ${entry}`,
+					`[language pack cache cleanup]: Removing unused language pack: ${entry}`
 				);
 
 				await Promises.rm(join(cacheDir, entry));
@@ -115,8 +118,8 @@ export class LanguagePackCachedDataCleaner extends Disposable {
 						this.logService.trace(
 							`[language pack cache cleanup]: Removing language pack cache folder: ${join(
 								packEntry,
-								entry,
-							)}`,
+								entry
+							)}`
 						);
 
 						await Promises.rm(candidate);

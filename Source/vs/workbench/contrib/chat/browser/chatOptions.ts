@@ -79,23 +79,35 @@ export class ChatEditorOptions extends Disposable {
 		private readonly foreground: string,
 		private readonly inputEditorBackgroundColor: string,
 		private readonly resultEditorBackgroundColor: string,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IViewDescriptorService readonly viewDescriptorService: IViewDescriptorService
+		@IViewDescriptorService
+		readonly viewDescriptorService: IViewDescriptorService
 	) {
 		super();
 
-		this._register(this.themeService.onDidColorThemeChange(e => this.update()));
-		this._register(this.viewDescriptorService.onDidChangeLocation(e => {
-			if (e.views.some(v => v.id === viewId)) {
-				this.update();
-			}
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (ChatEditorOptions.relevantSettingIds.some(id => e.affectsConfiguration(id))) {
-				this.update();
-			}
-		}));
+		this._register(
+			this.themeService.onDidColorThemeChange((e) => this.update())
+		);
+		this._register(
+			this.viewDescriptorService.onDidChangeLocation((e) => {
+				if (e.views.some((v) => v.id === viewId)) {
+					this.update();
+				}
+			})
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					ChatEditorOptions.relevantSettingIds.some((id) =>
+						e.affectsConfiguration(id)
+					)
+				) {
+					this.update();
+				}
+			})
+		);
 		this.update();
 	}
 
@@ -105,9 +117,8 @@ export class ChatEditorOptions extends Disposable {
 
 		// TODO shouldn't the setting keys be more specific?
 		const chatEditorConfig =
-			this.configurationService.getValue<IChatConfiguration>(
-				"chat",
-			)?.editor;
+			this.configurationService.getValue<IChatConfiguration>("chat")
+				?.editor;
 		const accessibilitySupport = this.configurationService.getValue<
 			"auto" | "off" | "on"
 		>("editor.accessibilitySupport");
@@ -134,14 +145,14 @@ export class ChatEditorOptions extends Disposable {
 				lineHeight: chatEditorConfig.lineHeight
 					? chatEditorConfig.lineHeight
 					: ChatEditorOptions.lineHeightEm *
-					  chatEditorConfig.fontSize,
+						chatEditorConfig.fontSize,
 				bracketPairColorization: {
 					enabled: this.configurationService.getValue<boolean>(
-						"editor.bracketPairColorization.enabled",
+						"editor.bracketPairColorization.enabled"
 					),
 					independentColorPoolPerBracketType:
 						this.configurationService.getValue<boolean>(
-							"editor.bracketPairColorization.independentColorPoolPerBracketType",
+							"editor.bracketPairColorization.independentColorPoolPerBracketType"
 						),
 				},
 				wordWrap: chatEditorConfig.wordWrap,

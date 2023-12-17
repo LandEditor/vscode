@@ -19,7 +19,7 @@ export class NotebookCellListView<T> extends ListView<T> {
 		renderHeight: number,
 		renderLeft: number | undefined,
 		scrollWidth: number | undefined,
-		updateItemsInDOM?: boolean,
+		updateItemsInDOM?: boolean
 	): void {
 		this._renderingStack++;
 		super.render(
@@ -28,7 +28,7 @@ export class NotebookCellListView<T> extends ListView<T> {
 			renderHeight,
 			renderLeft,
 			scrollWidth,
-			updateItemsInDOM,
+			updateItemsInDOM
 		);
 		this._renderingStack--;
 	}
@@ -36,7 +36,7 @@ export class NotebookCellListView<T> extends ListView<T> {
 	protected override _rerender(
 		renderTop: number,
 		renderHeight: number,
-		inSmoothScrolling?: boolean | undefined,
+		inSmoothScrolling?: boolean | undefined
 	): void {
 		this._renderingStack++;
 		super._rerender(renderTop, renderHeight, inSmoothScrolling);

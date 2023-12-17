@@ -22,7 +22,7 @@ declare module "vscode" {
 		export function registerInlineCompletionItemProvider(
 			selector: DocumentSelector,
 			provider: InlineCompletionItemProvider,
-			metadata: InlineCompletionItemProviderMetadata,
+			metadata: InlineCompletionItemProviderMetadata
 		): Disposable;
 	}
 
@@ -50,7 +50,7 @@ declare module "vscode" {
 		// eslint-disable-next-line local/vscode-dts-provider-naming
 		handleDidShowCompletionItem?(
 			completionItem: InlineCompletionItem,
-			updatedInsertText: string,
+			updatedInsertText: string
 		): void;
 
 		/**
@@ -60,7 +60,7 @@ declare module "vscode" {
 		// eslint-disable-next-line local/vscode-dts-provider-naming
 		handleDidPartiallyAcceptCompletionItem?(
 			completionItem: InlineCompletionItem,
-			acceptedLength: number,
+			acceptedLength: number
 		): void;
 	}
 

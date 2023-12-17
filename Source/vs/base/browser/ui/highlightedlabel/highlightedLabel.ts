@@ -44,7 +44,7 @@ export class HighlightedLabel {
 		this.supportIcons = options?.supportIcons ?? false;
 		this.domNode = dom.append(
 			container,
-			dom.$("span.monaco-highlighted-label"),
+			dom.$("span.monaco-highlighted-label")
 		);
 	}
 
@@ -68,7 +68,7 @@ export class HighlightedLabel {
 		text: string | undefined,
 		highlights: readonly IHighlight[] = [],
 		title: string = "",
-		escapeNewLines?: boolean,
+		escapeNewLines?: boolean
 	) {
 		if (!text) {
 			text = "";
@@ -119,7 +119,7 @@ export class HighlightedLabel {
 				undefined,
 				...(this.supportIcons
 					? renderLabelWithIcons(substring)
-					: [substring]),
+					: [substring])
 			);
 
 			if (highlight.extraClasses) {
@@ -152,7 +152,7 @@ export class HighlightedLabel {
 
 	static escapeNewLines(
 		text: string,
-		highlights: readonly IHighlight[],
+		highlights: readonly IHighlight[]
 	): string {
 		let total = 0;
 		let extra = 0;

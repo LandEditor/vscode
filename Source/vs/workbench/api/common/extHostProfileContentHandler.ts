@@ -27,14 +27,14 @@ export class ExtHostProfileContentHandlers
 
 	constructor(mainContext: IMainContext) {
 		this.proxy = mainContext.getProxy(
-			MainContext.MainThreadProfileContentHandlers,
+			MainContext.MainThreadProfileContentHandlers
 		);
 	}
 
 	registrProfileContentHandler(
 		extension: IExtensionDescription,
 		id: string,
-		handler: vscode.ProfileContentHandler,
+		handler: vscode.ProfileContentHandler
 	): vscode.Disposable {
 		checkProposedApiEnabled(extension, "profileContentHandlers");
 		if (this.handlers.has(id)) {
@@ -46,7 +46,7 @@ export class ExtHostProfileContentHandlers
 			id,
 			handler.name,
 			handler.description,
-			extension.identifier.value,
+			extension.identifier.value
 		);
 
 		return toDisposable(() => {
@@ -59,7 +59,7 @@ export class ExtHostProfileContentHandlers
 		id: string,
 		name: string,
 		content: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ISaveProfileResult | null> {
 		const handler = this.handlers.get(id);
 		if (!handler) {
@@ -72,7 +72,7 @@ export class ExtHostProfileContentHandlers
 	async $readProfile(
 		id: string,
 		idOrUri: string | UriComponents,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<string | null> {
 		const handler = this.handlers.get(id);
 		if (!handler) {
@@ -81,7 +81,7 @@ export class ExtHostProfileContentHandlers
 
 		return handler.readProfile(
 			isString(idOrUri) ? idOrUri : URI.revive(idOrUri),
-			token,
+			token
 		);
 	}
 }

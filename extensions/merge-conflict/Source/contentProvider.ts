@@ -16,8 +16,8 @@ export default class MergeConflictContentProvider
 		this.context.subscriptions.push(
 			vscode.workspace.registerTextDocumentContentProvider(
 				MergeConflictContentProvider.scheme,
-				this,
-			),
+				this
+			)
 		);
 	}
 
@@ -35,7 +35,7 @@ export default class MergeConflictContentProvider
 
 			// complete diff
 			const document = await vscode.workspace.openTextDocument(
-				uri.with({ scheme, query: "" }),
+				uri.with({ scheme, query: "" })
 			);
 
 			let text = "";
@@ -51,20 +51,20 @@ export default class MergeConflictContentProvider
 						lastPosition.line,
 						lastPosition.character,
 						fullStart.line,
-						fullStart.character,
-					),
+						fullStart.character
+					)
 				);
 				text += document.getText(
 					new vscode.Range(
 						start.line,
 						start.character,
 						end.line,
-						end.character,
-					),
+						end.character
+					)
 				);
 				lastPosition = new vscode.Position(
 					fullEnd.line,
-					fullEnd.character,
+					fullEnd.character
 				);
 			});
 
@@ -75,8 +75,8 @@ export default class MergeConflictContentProvider
 					lastPosition.line,
 					lastPosition.character,
 					documentEnd.line,
-					documentEnd.character,
-				),
+					documentEnd.character
+				)
 			);
 
 			return text;

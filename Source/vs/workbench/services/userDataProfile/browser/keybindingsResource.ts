@@ -40,24 +40,24 @@ export class KeybindingsResourceInitializer
 	implements IProfileResourceInitializer
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const keybindingsContent: IKeybindingsResourceContent =
 			JSON.parse(content);
 		if (keybindingsContent.keybindings === null) {
 			this.logService.info(
-				`Initializing Profile: No keybindings to apply...`,
+				`Initializing Profile: No keybindings to apply...`
 			);
 			return;
 		}
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.keybindingsResource,
-			VSBuffer.fromString(keybindingsContent.keybindings),
+			VSBuffer.fromString(keybindingsContent.keybindings)
 		);
 	}
 }
@@ -65,9 +65,8 @@ export class KeybindingsResourceInitializer
 export class KeybindingsResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const keybindingsContent =
@@ -76,7 +75,7 @@ export class KeybindingsResource implements IProfileResource {
 	}
 
 	async getKeybindingsResourceContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<IKeybindingsResourceContent> {
 		const keybindings = await this.getKeybindingsContent(profile);
 		return { keybindings, platform };
@@ -87,22 +86,22 @@ export class KeybindingsResource implements IProfileResource {
 			JSON.parse(content);
 		if (keybindingsContent.keybindings === null) {
 			this.logService.info(
-				`Importing Profile (${profile.name}): No keybindings to apply...`,
+				`Importing Profile (${profile.name}): No keybindings to apply...`
 			);
 			return;
 		}
 		await this.fileService.writeFile(
 			profile.keybindingsResource,
-			VSBuffer.fromString(keybindingsContent.keybindings),
+			VSBuffer.fromString(keybindingsContent.keybindings)
 		);
 	}
 
 	private async getKeybindingsContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<string | null> {
 		try {
 			const content = await this.fileService.readFile(
-				profile.keybindingsResource,
+				profile.keybindingsResource
 			);
 			return content.value.toString();
 		} catch (error) {
@@ -128,9 +127,11 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
+	) {}
 
 	isFromDefaultProfile(): boolean {
 		return (
@@ -148,7 +149,7 @@ export class KeybindingsResourceTreeItem implements IProfileResourceTreeItem {
 				parent: this,
 				accessibilityInformation: {
 					label: this.uriIdentityService.extUri.basename(
-						this.profile.settingsResource,
+						this.profile.settingsResource
 					),
 				},
 				command: {

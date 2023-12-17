@@ -45,7 +45,7 @@ export async function showGoToContextMenu(
 	accessor: ServicesAccessor,
 	editor: ICodeEditor,
 	anchor: HTMLElement,
-	part: RenderedInlayHintLabelPart,
+	part: RenderedInlayHintLabelPart
 ) {
 	const resolverService = accessor.get(ITextModelService);
 	const contextMenuService = accessor.get(IContextMenuService);
@@ -66,8 +66,8 @@ export async function showGoToContextMenu(
 	// that are a symbol navigation actions
 	const filter = new Set(
 		MenuRegistry.getMenuItems(MenuId.EditorContext).map((item) =>
-			isIMenuItem(item) ? item.command.id : generateUuid(),
-		),
+			isIMenuItem(item) ? item.command.id : generateUuid()
+		)
 	);
 
 	for (const delegate of SymbolNavigationAction.all()) {
@@ -82,25 +82,25 @@ export async function showGoToContextMenu(
 					true,
 					async () => {
 						const ref = await resolverService.createModelReference(
-							location.uri,
+							location.uri
 						);
 						try {
 							const symbolAnchor = new SymbolNavigationAnchor(
 								ref.object.textEditorModel,
-								Range.getStartPosition(location.range),
+								Range.getStartPosition(location.range)
 							);
 							const range = part.item.anchor.range;
 							await instaService.invokeFunction(
 								delegate.runEditorCommand.bind(delegate),
 								editor,
 								symbolAnchor,
-								range,
+								range
 							);
 						} finally {
 							ref.dispose();
 						}
-					},
-				),
+					}
+				)
 			);
 		}
 	}
@@ -113,7 +113,7 @@ export async function showGoToContextMenu(
 				try {
 					await commandService.executeCommand(
 						command.id,
-						...(command.arguments ?? []),
+						...(command.arguments ?? [])
 					);
 				} catch (err) {
 					notificationService.notify({
@@ -122,7 +122,7 @@ export async function showGoToContextMenu(
 						message: err,
 					});
 				}
-			}),
+			})
 		);
 	}
 
@@ -148,7 +148,7 @@ export async function goToDefinitionWithLocation(
 	accessor: ServicesAccessor,
 	event: ClickLinkMouseEvent,
 	editor: IActiveCodeEditor,
-	location: Location,
+	location: Location
 ) {
 	const resolverService = accessor.get(ITextModelService);
 	const ref = await resolverService.createModelReference(location.uri);
@@ -169,15 +169,15 @@ export async function goToDefinitionWithLocation(
 				title: { value: "", original: "" },
 				id: "",
 				precondition: undefined,
-			},
+			}
 		);
 		return action.run(
 			accessor,
 			new SymbolNavigationAnchor(
 				ref.object.textEditorModel,
-				Range.getStartPosition(location.range),
+				Range.getStartPosition(location.range)
 			),
-			Range.lift(location.range),
+			Range.lift(location.range)
 		);
 	});
 

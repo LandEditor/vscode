@@ -19,12 +19,13 @@ export class NativeClipboardService implements IClipboardService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService
-	) { }
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService
+	) {}
 
 	async writeText(
 		text: string,
-		type?: "selection" | "clipboard",
+		type?: "selection" | "clipboard"
 	): Promise<void> {
 		return this.nativeHostService.writeClipboardText(text, type);
 	}
@@ -51,7 +52,7 @@ export class NativeClipboardService implements IClipboardService {
 		if (resources.length) {
 			return this.nativeHostService.writeClipboardBuffer(
 				NativeClipboardService.FILE_FORMAT,
-				this.resourcesToBuffer(resources),
+				this.resourcesToBuffer(resources)
 			);
 		}
 	}
@@ -59,20 +60,20 @@ export class NativeClipboardService implements IClipboardService {
 	async readResources(): Promise<URI[]> {
 		return this.bufferToResources(
 			await this.nativeHostService.readClipboardBuffer(
-				NativeClipboardService.FILE_FORMAT,
-			),
+				NativeClipboardService.FILE_FORMAT
+			)
 		);
 	}
 
 	async hasResources(): Promise<boolean> {
 		return this.nativeHostService.hasClipboard(
-			NativeClipboardService.FILE_FORMAT,
+			NativeClipboardService.FILE_FORMAT
 		);
 	}
 
 	private resourcesToBuffer(resources: URI[]): VSBuffer {
 		return VSBuffer.fromString(
-			resources.map((r) => r.toString()).join("\n"),
+			resources.map((r) => r.toString()).join("\n")
 		);
 	}
 
@@ -97,5 +98,5 @@ export class NativeClipboardService implements IClipboardService {
 registerSingleton(
 	IClipboardService,
 	NativeClipboardService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

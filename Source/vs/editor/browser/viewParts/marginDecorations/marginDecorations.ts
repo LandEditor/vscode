@@ -32,12 +32,12 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		return true;
 	}
 	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent,
+		e: viewEvents.ViewDecorationsChangedEvent
 	): boolean {
 		return true;
 	}
@@ -45,27 +45,27 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent,
+		e: viewEvents.ViewLinesChangedEvent
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent,
+		e: viewEvents.ViewLinesDeletedEvent
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent,
+		e: viewEvents.ViewLinesInsertedEvent
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return e.scrollTopChanged;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
+		e: viewEvents.ViewZonesChangedEvent
 	): boolean {
 		return true;
 	}
@@ -85,7 +85,7 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 					d.range.startLineNumber,
 					d.range.endLineNumber,
 					marginClassName,
-					zIndex,
+					zIndex
 				);
 			}
 		}
@@ -98,7 +98,7 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 		const toRender = this._render(
 			visibleStartLineNumber,
 			visibleEndLineNumber,
-			this._getDecorations(ctx),
+			this._getDecorations(ctx)
 		);
 
 		const output: string[] = [];

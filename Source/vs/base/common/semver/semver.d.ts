@@ -53,7 +53,7 @@ declare namespace semver {
 	 */
 	export function parse(
 		version: string | SemVer | null | undefined,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): SemVer | null;
 
 	/**
@@ -61,7 +61,7 @@ declare namespace semver {
 	 */
 	export function valid(
 		version: string | SemVer | null | undefined,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): string | null;
 
 	/**
@@ -69,7 +69,7 @@ declare namespace semver {
 	 */
 	export function coerce(
 		version: string | number | SemVer | null | undefined,
-		options?: CoerceOptions,
+		options?: CoerceOptions
 	): SemVer | null;
 
 	/**
@@ -77,7 +77,7 @@ declare namespace semver {
 	 */
 	export function clean(
 		version: string,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): string | null;
 
 	/**
@@ -87,12 +87,12 @@ declare namespace semver {
 		version: string | SemVer,
 		release: ReleaseType,
 		optionsOrLoose?: boolean | Options,
-		identifier?: string,
+		identifier?: string
 	): string | null;
 	export function inc(
 		version: string | SemVer,
 		release: ReleaseType,
-		identifier?: string,
+		identifier?: string
 	): string | null;
 
 	/**
@@ -100,7 +100,7 @@ declare namespace semver {
 	 */
 	export function major(
 		version: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): number;
 
 	/**
@@ -108,7 +108,7 @@ declare namespace semver {
 	 */
 	export function minor(
 		version: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): number;
 
 	/**
@@ -116,7 +116,7 @@ declare namespace semver {
 	 */
 	export function patch(
 		version: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): number;
 
 	/**
@@ -124,7 +124,7 @@ declare namespace semver {
 	 */
 	export function prerelease(
 		version: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): ReadonlyArray<string> | null;
 
 	// Comparison
@@ -134,7 +134,7 @@ declare namespace semver {
 	export function gt(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * v1 >= v2
@@ -142,7 +142,7 @@ declare namespace semver {
 	export function gte(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * v1 < v2
@@ -150,7 +150,7 @@ declare namespace semver {
 	export function lt(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * v1 <= v2
@@ -158,7 +158,7 @@ declare namespace semver {
 	export function lte(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * v1 == v2 This is true if they're logically equivalent, even if they're not the exact same string. You already know how to compare strings.
@@ -166,7 +166,7 @@ declare namespace semver {
 	export function eq(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * v1 != v2 The opposite of eq.
@@ -174,7 +174,7 @@ declare namespace semver {
 	export function neq(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 
 	/**
@@ -186,7 +186,7 @@ declare namespace semver {
 		v1: string | SemVer,
 		operator: Operator,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	export type Operator =
 		| "==="
@@ -213,7 +213,7 @@ declare namespace semver {
 	export function compare(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): 1 | 0 | -1;
 	/**
 	 * The reverse of compare.
@@ -223,7 +223,7 @@ declare namespace semver {
 	export function rcompare(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): 1 | 0 | -1;
 
 	/**
@@ -233,7 +233,7 @@ declare namespace semver {
 	 */
 	export function compareIdentifiers(
 		a: string | null | undefined,
-		b: string | null | undefined,
+		b: string | null | undefined
 	): 1 | 0 | -1;
 	/**
 	 * The reverse of compareIdentifiers.
@@ -242,7 +242,7 @@ declare namespace semver {
 	 */
 	export function rcompareIdentifiers(
 		a: string | null | undefined,
-		b: string | null | undefined,
+		b: string | null | undefined
 	): 1 | 0 | -1;
 
 	/**
@@ -259,7 +259,7 @@ declare namespace semver {
 	 */
 	export function compareBuild(
 		a: string | SemVer,
-		b: string | SemVer,
+		b: string | SemVer
 	): 1 | 0 | -1;
 
 	/**
@@ -267,14 +267,14 @@ declare namespace semver {
 	 */
 	export function sort<T extends string | SemVer>(
 		list: T[],
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): T[];
 	/**
 	 * Sorts an array of semver entries in descending order using `compareBuild()`.
 	 */
 	export function rsort<T extends string | SemVer>(
 		list: T[],
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): T[];
 
 	/**
@@ -283,7 +283,7 @@ declare namespace semver {
 	export function diff(
 		v1: string | SemVer,
 		v2: string | SemVer,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): ReleaseType | null;
 
 	// Ranges
@@ -292,7 +292,7 @@ declare namespace semver {
 	 */
 	export function validRange(
 		range: string | Range | null | undefined,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): string;
 	/**
 	 * Return true if the version satisfies the range.
@@ -300,7 +300,7 @@ declare namespace semver {
 	export function satisfies(
 		version: string | SemVer,
 		range: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * Return the highest version in the list that satisfies the range, or null if none of them do.
@@ -308,7 +308,7 @@ declare namespace semver {
 	export function maxSatisfying<T extends string | SemVer>(
 		versions: ReadonlyArray<T>,
 		range: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): T | null;
 	/**
 	 * Return the lowest version in the list that satisfies the range, or null if none of them do.
@@ -316,14 +316,14 @@ declare namespace semver {
 	export function minSatisfying<T extends string | SemVer>(
 		versions: ReadonlyArray<T>,
 		range: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): T | null;
 	/**
 	 * Return the lowest version that can possibly match the given range.
 	 */
 	export function minVersion(
 		range: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): SemVer | null;
 	/**
 	 * Return true if version is greater than all the versions possible in the range.
@@ -331,7 +331,7 @@ declare namespace semver {
 	export function gtr(
 		version: string | SemVer,
 		range: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * Return true if version is less than all the versions possible in the range.
@@ -339,7 +339,7 @@ declare namespace semver {
 	export function ltr(
 		version: string | SemVer,
 		range: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * Return true if the version is outside the bounds of the range in either the high or low direction.
@@ -349,7 +349,7 @@ declare namespace semver {
 		version: string | SemVer,
 		range: string | Range,
 		hilo: ">" | "<",
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 	/**
 	 * Return true if any of the ranges comparators intersect
@@ -357,13 +357,13 @@ declare namespace semver {
 	export function intersects(
 		range1: string | Range,
 		range2: string | Range,
-		optionsOrLoose?: boolean | Options,
+		optionsOrLoose?: boolean | Options
 	): boolean;
 
 	export class SemVer {
 		constructor(
 			version: string | SemVer,
-			optionsOrLoose?: boolean | Options,
+			optionsOrLoose?: boolean | Options
 		);
 
 		raw: string;
@@ -425,7 +425,7 @@ declare namespace semver {
 	export class Comparator {
 		constructor(
 			comp: string | Comparator,
-			optionsOrLoose?: boolean | Options,
+			optionsOrLoose?: boolean | Options
 		);
 
 		semver: SemVer;
@@ -437,7 +437,7 @@ declare namespace semver {
 		test(version: string | SemVer): boolean;
 		intersects(
 			comp: Comparator,
-			optionsOrLoose?: boolean | Options,
+			optionsOrLoose?: boolean | Options
 		): boolean;
 	}
 

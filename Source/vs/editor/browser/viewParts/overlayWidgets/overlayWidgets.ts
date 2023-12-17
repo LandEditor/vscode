@@ -69,14 +69,14 @@ export class ViewOverlayWidgets extends ViewPart {
 		this._domNode.setClassName("overlayWidgets");
 
 		this.overflowingOverlayWidgetsDomNode = createFastDomNode(
-			document.createElement("div"),
+			document.createElement("div")
 		);
 		PartFingerprints.write(
 			this.overflowingOverlayWidgetsDomNode,
-			PartFingerprint.OverflowingOverlayWidgets,
+			PartFingerprint.OverflowingOverlayWidgets
 		);
 		this.overflowingOverlayWidgetsDomNode.setClassName(
-			"overflowingOverlayWidgets",
+			"overflowingOverlayWidgets"
 		);
 	}
 
@@ -92,7 +92,7 @@ export class ViewOverlayWidgets extends ViewPart {
 	// ---- begin view event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
@@ -135,7 +135,7 @@ export class ViewOverlayWidgets extends ViewPart {
 		preference:
 			| OverlayWidgetPositionPreference
 			| IOverlayWidgetPositionCoordinates
-			| null,
+			| null
 	): boolean {
 		const widgetData = this._widgets[widget.getId()];
 		if (widgetData.preference === preference) {
@@ -191,7 +191,7 @@ export class ViewOverlayWidgets extends ViewPart {
 		) {
 			domNode.setTop(0);
 			domNode.setRight(
-				2 * this._verticalScrollbarWidth + this._minimapWidth,
+				2 * this._verticalScrollbarWidth + this._minimapWidth
 			);
 		} else if (
 			widgetData.preference ===
@@ -201,10 +201,10 @@ export class ViewOverlayWidgets extends ViewPart {
 			domNode.setTop(
 				this._editorHeight -
 					widgetHeight -
-					2 * this._horizontalScrollbarHeight,
+					2 * this._horizontalScrollbarHeight
 			);
 			domNode.setRight(
-				2 * this._verticalScrollbarWidth + this._minimapWidth,
+				2 * this._verticalScrollbarWidth + this._minimapWidth
 			);
 		} else if (
 			widgetData.preference === OverlayWidgetPositionPreference.TOP_CENTER
@@ -215,7 +215,7 @@ export class ViewOverlayWidgets extends ViewPart {
 			const { top, left } = widgetData.preference;
 			const fixedOverflowWidgets =
 				this._context.configuration.options.get(
-					EditorOption.fixedOverflowWidgets,
+					EditorOption.fixedOverflowWidgets
 				);
 			if (fixedOverflowWidgets && widgetData.widget.allowEditorOverflow) {
 				// top, left are computed relative to the editor and we need them relative to the page
@@ -233,7 +233,7 @@ export class ViewOverlayWidgets extends ViewPart {
 
 	public prepareRender(ctx: RenderingContext): void {
 		this._viewDomNodeRect = dom.getDomNodePagePosition(
-			this._viewDomNode.domNode,
+			this._viewDomNode.domNode
 		);
 	}
 

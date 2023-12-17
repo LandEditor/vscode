@@ -94,7 +94,7 @@
 
 				const indexOfUNCPath = maybeUNCPath.indexOf(
 					"\\",
-					uncRoot.length,
+					uncRoot.length
 				);
 				if (indexOfUNCPath === -1) {
 					continue; // no path component found
@@ -102,7 +102,7 @@
 
 				const hostCandidate = maybeUNCPath.substring(
 					uncRoot.length,
-					indexOfUNCPath,
+					indexOfUNCPath
 				);
 				if (hostCandidate) {
 					host = hostCandidate;
@@ -151,7 +151,7 @@
 		module.exports = factory();
 	} else {
 		console.trace(
-			"vs/base/node/unc defined in UNKNOWN context (neither requirejs or commonjs)",
+			"vs/base/node/unc defined in UNKNOWN context (neither requirejs or commonjs)"
 		);
 	}
 })();

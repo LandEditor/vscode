@@ -113,7 +113,7 @@ export const COPY_FILE_LABEL = nls.localize("copyFile", "Copy");
 export const PASTE_FILE_LABEL = nls.localize("pasteFile", "Paste");
 export const FileCopiedContext = new RawContextKey<boolean>(
 	"fileCopied",
-	false,
+	false
 );
 export const DOWNLOAD_COMMAND_ID = "explorer.download";
 export const DOWNLOAD_LABEL = nls.localize("download", "Download...");
@@ -132,7 +132,7 @@ function onError(notificationService: INotificationService, error: any): void {
 
 async function refreshIfSeparator(
 	value: string,
-	explorerService: IExplorerService,
+	explorerService: IExplorerService
 ): Promise<void> {
 	if (value && (value.indexOf("/") >= 0 || value.indexOf("\\") >= 0)) {
 		// New input contains separator, multiple resources will get created workaround for #68204
@@ -148,38 +148,38 @@ async function deleteFiles(
 	elements: ExplorerItem[],
 	useTrash: boolean,
 	skipConfirm = false,
-	ignoreIfNotExists = false,
+	ignoreIfNotExists = false
 ): Promise<void> {
 	let primaryButton: string;
 	if (useTrash) {
 		primaryButton = isWindows
 			? nls.localize(
 					"deleteButtonLabelRecycleBin",
-					"&&Move to Recycle Bin",
-			  )
+					"&&Move to Recycle Bin"
+				)
 			: nls.localize(
 					{
 						key: "deleteButtonLabelTrash",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Move to Trash",
-			  );
+					"&&Move to Trash"
+				);
 	} else {
 		primaryButton = nls.localize(
 			{ key: "deleteButtonLabel", comment: ["&& denotes a mnemonic"] },
-			"&&Delete",
+			"&&Delete"
 		);
 	}
 
 	// Handle dirty
 	const distinctElements = resources.distinctParents(
 		elements,
-		(e) => e.resource,
+		(e) => e.resource
 	);
 	const dirtyWorkingCopies = new Set<IWorkingCopy>();
 	for (const distinctElement of distinctElements) {
 		for (const dirtyWorkingCopy of workingCopyFileService.getDirty(
-			distinctElement.resource,
+			distinctElement.resource
 		)) {
 			dirtyWorkingCopies.add(dirtyWorkingCopy);
 		}
@@ -190,28 +190,28 @@ async function deleteFiles(
 		if (distinctElements.length > 1) {
 			message = nls.localize(
 				"dirtyMessageFilesDelete",
-				"You are deleting files with unsaved changes. Do you want to continue?",
+				"You are deleting files with unsaved changes. Do you want to continue?"
 			);
 		} else if (distinctElements[0].isDirectory) {
 			if (dirtyWorkingCopies.size === 1) {
 				message = nls.localize(
 					"dirtyMessageFolderOneDelete",
 					"You are deleting a folder {0} with unsaved changes in 1 file. Do you want to continue?",
-					distinctElements[0].name,
+					distinctElements[0].name
 				);
 			} else {
 				message = nls.localize(
 					"dirtyMessageFolderDelete",
 					"You are deleting a folder {0} with unsaved changes in {1} files. Do you want to continue?",
 					distinctElements[0].name,
-					dirtyWorkingCopies.size,
+					dirtyWorkingCopies.size
 				);
 			}
 		} else {
 			message = nls.localize(
 				"dirtyMessageFileDelete",
 				"You are deleting {0} with unsaved changes. Do you want to continue?",
-				distinctElements[0].name,
+				distinctElements[0].name
 			);
 		}
 
@@ -220,7 +220,7 @@ async function deleteFiles(
 			message,
 			detail: nls.localize(
 				"dirtyWarning",
-				"Your changes will be lost if you don't save them.",
+				"Your changes will be lost if you don't save them."
 			),
 			primaryButton,
 		});
@@ -242,21 +242,21 @@ async function deleteFiles(
 	const deleteDetail = distinctElements.some((e) => e.isDirectory)
 		? nls.localize("irreversible", "This action is irreversible!")
 		: distinctElements.length > 1
-		  ? nls.localize(
+			? nls.localize(
 					"restorePlural",
-					"You can restore these files using the Undo command",
-			  )
-		  : nls.localize(
+					"You can restore these files using the Undo command"
+				)
+			: nls.localize(
 					"restore",
-					"You can restore this file using the Undo command",
-			  );
+					"You can restore this file using the Undo command"
+				);
 
 	// Check if we need to ask for confirmation at all
 	if (
 		skipConfirm ||
 		(useTrash &&
 			configurationService.getValue<boolean>(
-				CONFIRM_DELETE_SETTING_KEY,
+				CONFIRM_DELETE_SETTING_KEY
 			) === false)
 	) {
 		confirmation = { confirmed: true };
@@ -271,23 +271,23 @@ async function deleteFiles(
 				distinctElements.length > 1
 					? nls.localize(
 							"undoBinFiles",
-							"You can restore these files from the Recycle Bin.",
-					  )
+							"You can restore these files from the Recycle Bin."
+						)
 					: nls.localize(
 							"undoBin",
-							"You can restore this file from the Recycle Bin.",
-					  );
+							"You can restore this file from the Recycle Bin."
+						);
 		} else {
 			detail +=
 				distinctElements.length > 1
 					? nls.localize(
 							"undoTrashFiles",
-							"You can restore these files from the Trash.",
-					  )
+							"You can restore these files from the Trash."
+						)
 					: nls.localize(
 							"undoTrash",
-							"You can restore this file from the Trash.",
-					  );
+							"You can restore this file from the Trash."
+						);
 		}
 
 		confirmation = await dialogService.confirm({
@@ -317,7 +317,7 @@ async function deleteFiles(
 	if (confirmation.confirmed && confirmation.checkboxChecked === true) {
 		await configurationService.updateValue(
 			CONFIRM_DELETE_SETTING_KEY,
-			false,
+			false
 		);
 	}
 
@@ -336,7 +336,7 @@ async function deleteFiles(
 					ignoreIfNotExists,
 					skipTrashBin: !useTrash,
 					maxSize: MAX_UNDO_FILE_SIZE,
-				}),
+				})
 		);
 		const options = {
 			undoLabel:
@@ -349,8 +349,8 @@ async function deleteFiles(
 								],
 							},
 							"Delete {0} files",
-							distinctElements.length,
-					  )
+							distinctElements.length
+						)
 					: nls.localize(
 							{
 								key: "deleteFileBulkEdit",
@@ -359,8 +359,8 @@ async function deleteFiles(
 								],
 							},
 							"Delete {0}",
-							distinctElements[0].name,
-					  ),
+							distinctElements[0].name
+						),
 			progressLabel:
 				distinctElements.length > 1
 					? nls.localize(
@@ -371,8 +371,8 @@ async function deleteFiles(
 								],
 							},
 							"Deleting {0} files",
-							distinctElements.length,
-					  )
+							distinctElements.length
+						)
 					: nls.localize(
 							{
 								key: "deletingFileBulkEdit",
@@ -381,8 +381,8 @@ async function deleteFiles(
 								],
 							},
 							"Deleting {0}",
-							distinctElements[0].name,
-					  ),
+							distinctElements[0].name
+						),
 		};
 		await explorerService.applyBulkEdit(resourceFileEdits, options);
 	} catch (error) {
@@ -394,25 +394,25 @@ async function deleteFiles(
 			errorMessage = isWindows
 				? nls.localize(
 						"binFailed",
-						"Failed to delete using the Recycle Bin. Do you want to permanently delete instead?",
-				  )
+						"Failed to delete using the Recycle Bin. Do you want to permanently delete instead?"
+					)
 				: nls.localize(
 						"trashFailed",
-						"Failed to delete using the Trash. Do you want to permanently delete instead?",
-				  );
+						"Failed to delete using the Trash. Do you want to permanently delete instead?"
+					);
 			detailMessage = deleteDetail;
 			primaryButton = nls.localize(
 				{
 					key: "deletePermanentlyButtonLabel",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Delete Permanently",
+				"&&Delete Permanently"
 			);
 		} else {
 			errorMessage = toErrorMessage(error, false);
 			primaryButton = nls.localize(
 				{ key: "retryButtonLabel", comment: ["&& denotes a mnemonic"] },
-				"&&Retry",
+				"&&Retry"
 			);
 		}
 
@@ -439,7 +439,7 @@ async function deleteFiles(
 				elements,
 				useTrash,
 				skipConfirm,
-				ignoreIfNotExists,
+				ignoreIfNotExists
 			);
 		}
 	}
@@ -454,10 +454,10 @@ function getMoveToTrashMessage(distinctElements: ExplorerItem[]): {
 			message: nls.localize(
 				"confirmMoveTrashMessageFilesAndDirectories",
 				"Are you sure you want to delete the following {0} files/directories and their contents?",
-				distinctElements.length,
+				distinctElements.length
 			),
 			detail: getFileNamesMessage(
-				distinctElements.map((e) => e.resource),
+				distinctElements.map((e) => e.resource)
 			),
 		};
 	}
@@ -468,10 +468,10 @@ function getMoveToTrashMessage(distinctElements: ExplorerItem[]): {
 				message: nls.localize(
 					"confirmMoveTrashMessageMultipleDirectories",
 					"Are you sure you want to delete the following {0} directories and their contents?",
-					distinctElements.length,
+					distinctElements.length
 				),
 				detail: getFileNamesMessage(
-					distinctElements.map((e) => e.resource),
+					distinctElements.map((e) => e.resource)
 				),
 			};
 		}
@@ -480,10 +480,10 @@ function getMoveToTrashMessage(distinctElements: ExplorerItem[]): {
 			message: nls.localize(
 				"confirmMoveTrashMessageMultiple",
 				"Are you sure you want to delete the following {0} files?",
-				distinctElements.length,
+				distinctElements.length
 			),
 			detail: getFileNamesMessage(
-				distinctElements.map((e) => e.resource),
+				distinctElements.map((e) => e.resource)
 			),
 		};
 	}
@@ -496,7 +496,7 @@ function getMoveToTrashMessage(distinctElements: ExplorerItem[]): {
 			message: nls.localize(
 				"confirmMoveTrashMessageFolder",
 				"Are you sure you want to delete '{0}' and its contents?",
-				distinctElements[0].name,
+				distinctElements[0].name
 			),
 			detail: "",
 		};
@@ -506,7 +506,7 @@ function getMoveToTrashMessage(distinctElements: ExplorerItem[]): {
 		message: nls.localize(
 			"confirmMoveTrashMessageFile",
 			"Are you sure you want to delete '{0}'?",
-			distinctElements[0].name,
+			distinctElements[0].name
 		),
 		detail: "",
 	};
@@ -521,10 +521,10 @@ function getDeleteMessage(distinctElements: ExplorerItem[]): {
 			message: nls.localize(
 				"confirmDeleteMessageFilesAndDirectories",
 				"Are you sure you want to permanently delete the following {0} files/directories and their contents?",
-				distinctElements.length,
+				distinctElements.length
 			),
 			detail: getFileNamesMessage(
-				distinctElements.map((e) => e.resource),
+				distinctElements.map((e) => e.resource)
 			),
 		};
 	}
@@ -535,10 +535,10 @@ function getDeleteMessage(distinctElements: ExplorerItem[]): {
 				message: nls.localize(
 					"confirmDeleteMessageMultipleDirectories",
 					"Are you sure you want to permanently delete the following {0} directories and their contents?",
-					distinctElements.length,
+					distinctElements.length
 				),
 				detail: getFileNamesMessage(
-					distinctElements.map((e) => e.resource),
+					distinctElements.map((e) => e.resource)
 				),
 			};
 		}
@@ -547,10 +547,10 @@ function getDeleteMessage(distinctElements: ExplorerItem[]): {
 			message: nls.localize(
 				"confirmDeleteMessageMultiple",
 				"Are you sure you want to permanently delete the following {0} files?",
-				distinctElements.length,
+				distinctElements.length
 			),
 			detail: getFileNamesMessage(
-				distinctElements.map((e) => e.resource),
+				distinctElements.map((e) => e.resource)
 			),
 		};
 	}
@@ -560,7 +560,7 @@ function getDeleteMessage(distinctElements: ExplorerItem[]): {
 			message: nls.localize(
 				"confirmDeleteMessageFolder",
 				"Are you sure you want to permanently delete '{0}' and its contents?",
-				distinctElements[0].name,
+				distinctElements[0].name
 			),
 			detail: "",
 		};
@@ -570,14 +570,14 @@ function getDeleteMessage(distinctElements: ExplorerItem[]): {
 		message: nls.localize(
 			"confirmDeleteMessageFile",
 			"Are you sure you want to permanently delete '{0}'?",
-			distinctElements[0].name,
+			distinctElements[0].name
 		),
 		detail: "",
 	};
 }
 
 function containsBothDirectoryAndFile(
-	distinctElements: ExplorerItem[],
+	distinctElements: ExplorerItem[]
 ): boolean {
 	const directory = distinctElements.find((element) => element.isDirectory);
 	const file = distinctElements.find((element) => !element.isDirectory);
@@ -595,7 +595,7 @@ export async function findValidPasteFileTarget(
 		isDirectory?: boolean;
 		allowOverwrite: boolean;
 	},
-	incrementalNaming: "simple" | "smart" | "disabled",
+	incrementalNaming: "simple" | "smart" | "disabled"
 ): Promise<URI | undefined> {
 	let name = resources.basenameOrAuthority(fileToPaste.resource);
 	let candidate = resources.joinPath(targetFolder.resource, name);
@@ -605,7 +605,7 @@ export async function findValidPasteFileTarget(
 		const canOverwrite = await askForOverwrite(
 			fileService,
 			dialogService,
-			candidate,
+			candidate
 		);
 		if (!canOverwrite) {
 			return;
@@ -621,7 +621,7 @@ export async function findValidPasteFileTarget(
 			name = incrementFileName(
 				name,
 				!!fileToPaste.isDirectory,
-				incrementalNaming,
+				incrementalNaming
 			);
 		}
 		candidate = resources.joinPath(targetFolder.resource, name);
@@ -633,7 +633,7 @@ export async function findValidPasteFileTarget(
 export function incrementFileName(
 	name: string,
 	isFolder: boolean,
-	incrementalNaming: "simple" | "smart",
+	incrementalNaming: "simple" | "smart"
 ): string {
 	if (incrementalNaming === "simple") {
 		let namePrefix = name;
@@ -653,8 +653,8 @@ export function incrementFileName(
 					return number === 0
 						? `${g1}`
 						: number < Constants.MAX_SAFE_SMALL_INTEGER
-						  ? `${g1} ${number + 1}`
-						  : `${g1}${g2} copy`;
+							? `${g1} ${number + 1}`
+							: `${g1}${g2} copy`;
 				}) + extSuffix
 			);
 		}
@@ -703,7 +703,7 @@ export function incrementFileName(
 	const lastIndexOfDot = name.lastIndexOf(".");
 	if (!isFolder && lastIndexOfDot >= 0) {
 		return `${name.substr(0, lastIndexOfDot)}.1${name.substr(
-			lastIndexOfDot,
+			lastIndexOfDot
 		)}`;
 	}
 
@@ -771,7 +771,7 @@ export function incrementFileName(
 async function askForOverwrite(
 	fileService: IFileService,
 	dialogService: IDialogService,
-	targetResource: URI,
+	targetResource: URI
 ): Promise<boolean> {
 	const exists = await fileService.exists(targetResource);
 	if (!exists) {
@@ -783,7 +783,7 @@ async function askForOverwrite(
 		message: nls.localize(
 			"confirmOverwrite",
 			"A file or folder with the name '{0}' already exists in the destination folder. Do you want to replace it?",
-			basename(targetResource.path),
+			basename(targetResource.path)
 		),
 		primaryButton: nls.localize("replaceButtonLabel", "&&Replace"),
 	});
@@ -795,7 +795,7 @@ export class GlobalCompareResourcesAction extends Action2 {
 	static readonly ID = "workbench.files.action.compareFileWith";
 	static readonly LABEL = nls.localize(
 		"globalCompareFile",
-		"Compare Active File With...",
+		"Compare Active File With..."
 	);
 
 	constructor() {
@@ -856,7 +856,7 @@ export class ToggleAutoSaveAction extends Action2 {
 			metadata: {
 				description: nls.localize2(
 					"toggleAutoSaveDescription",
-					"Toggle the ability to save files automatically after typing",
+					"Toggle the ability to save files automatically after typing"
 				),
 			},
 		});
@@ -864,7 +864,7 @@ export class ToggleAutoSaveAction extends Action2 {
 
 	override run(accessor: ServicesAccessor): Promise<void> {
 		const filesConfigurationService = accessor.get(
-			IFilesConfigurationService,
+			IFilesConfigurationService
 		);
 		return filesConfigurationService.toggleAutoSave();
 	}
@@ -878,7 +878,8 @@ abstract class BaseSaveAllAction extends Action {
 		label: string,
 		@ICommandService protected commandService: ICommandService,
 		@INotificationService private notificationService: INotificationService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService
 	) {
 		super(id, label);
 
@@ -894,8 +895,8 @@ abstract class BaseSaveAllAction extends Action {
 		// update enablement based on working copy changes
 		this._register(
 			this.workingCopyService.onDidChangeDirty((workingCopy) =>
-				this.updateEnablement(workingCopy),
-			),
+				this.updateEnablement(workingCopy)
+			)
 		);
 	}
 
@@ -929,7 +930,7 @@ export class SaveAllInGroupAction extends BaseSaveAllAction {
 		return this.commandService.executeCommand(
 			SAVE_ALL_IN_GROUP_COMMAND_ID,
 			{},
-			context,
+			context
 		);
 	}
 }
@@ -938,7 +939,11 @@ export class CloseGroupAction extends Action {
 	static readonly ID = "workbench.files.action.closeGroup";
 	static readonly LABEL = nls.localize("closeGroup", "Close Group");
 
-	constructor(id: string, label: string, @ICommandService private readonly commandService: ICommandService) {
+	constructor(
+		id: string,
+		label: string,
+		@ICommandService private readonly commandService: ICommandService
+	) {
 		super(id, label, ThemeIcon.asClassName(Codicon.closeAll));
 	}
 
@@ -946,7 +951,7 @@ export class CloseGroupAction extends Action {
 		return this.commandService.executeCommand(
 			CLOSE_EDITORS_AND_GROUP_COMMAND_ID,
 			{},
-			context,
+			context
 		);
 	}
 }
@@ -955,7 +960,7 @@ export class FocusFilesExplorer extends Action2 {
 	static readonly ID = "workbench.files.action.focusFilesExplorer";
 	static readonly LABEL = nls.localize(
 		"focusFilesExplorer",
-		"Focus on Files Explorer",
+		"Focus on Files Explorer"
 	);
 
 	constructor() {
@@ -975,7 +980,7 @@ export class FocusFilesExplorer extends Action2 {
 		await paneCompositeService.openPaneComposite(
 			VIEWLET_ID,
 			ViewContainerLocation.Sidebar,
-			true,
+			true
 		);
 	}
 }
@@ -984,7 +989,7 @@ export class ShowActiveFileInExplorer extends Action2 {
 	static readonly ID = "workbench.files.action.showActiveFileInExplorer";
 	static readonly LABEL = nls.localize(
 		"showInExplorer",
-		"Reveal Active File in Explorer View",
+		"Reveal Active File in Explorer View"
 	);
 
 	constructor() {
@@ -1004,12 +1009,12 @@ export class ShowActiveFileInExplorer extends Action2 {
 		const editorService = accessor.get(IEditorService);
 		const resource = EditorResourceAccessor.getOriginalUri(
 			editorService.activeEditor,
-			{ supportSideBySide: SideBySideEditor.PRIMARY },
+			{ supportSideBySide: SideBySideEditor.PRIMARY }
 		);
 		if (resource) {
 			commandService.executeCommand(
 				REVEAL_IN_EXPLORER_COMMAND_ID,
-				resource,
+				resource
 			);
 		}
 	}
@@ -1019,7 +1024,7 @@ export class OpenActiveFileInEmptyWorkspace extends Action2 {
 	static readonly ID = "workbench.action.files.showOpenedFileInNewWindow";
 	static readonly LABEL = nls.localize(
 		"openFileInEmptyWorkspace",
-		"Open Active File in New Empty Workspace",
+		"Open Active File in New Empty Workspace"
 	);
 
 	constructor() {
@@ -1047,7 +1052,7 @@ export class OpenActiveFileInEmptyWorkspace extends Action2 {
 
 		const fileResource = EditorResourceAccessor.getOriginalUri(
 			editorService.activeEditor,
-			{ supportSideBySide: SideBySideEditor.PRIMARY },
+			{ supportSideBySide: SideBySideEditor.PRIMARY }
 		);
 		if (fileResource) {
 			if (fileService.hasProvider(fileResource)) {
@@ -1058,8 +1063,8 @@ export class OpenActiveFileInEmptyWorkspace extends Action2 {
 				dialogService.error(
 					nls.localize(
 						"openFileToShowInNewWindow.unsupportedschema",
-						"The active editor must contain an openable resource.",
-					),
+						"The active editor must contain an openable resource."
+					)
 				);
 			}
 		}
@@ -1070,7 +1075,7 @@ export function validateFileName(
 	pathService: IPathService,
 	item: ExplorerItem,
 	name: string,
-	os: OperatingSystem,
+	os: OperatingSystem
 ): { content: string; severity: Severity } | null {
 	// Produce a well formed file name
 	name = getWellFormedFileName(name);
@@ -1080,7 +1085,7 @@ export function validateFileName(
 		return {
 			content: nls.localize(
 				"emptyFileNameError",
-				"A file or folder name must be provided.",
+				"A file or folder name must be provided."
 			),
 			severity: Severity.Error,
 		};
@@ -1091,7 +1096,7 @@ export function validateFileName(
 		return {
 			content: nls.localize(
 				"fileNameStartsWithSlashError",
-				"A file or folder name cannot start with a slash.",
+				"A file or folder name cannot start with a slash."
 			),
 			severity: Severity.Error,
 		};
@@ -1108,7 +1113,7 @@ export function validateFileName(
 				content: nls.localize(
 					"fileNameExistsError",
 					"A file or folder **{0}** already exists at this location. Please choose a different name.",
-					name,
+					name
 				),
 				severity: Severity.Error,
 			};
@@ -1119,7 +1124,7 @@ export function validateFileName(
 	if (
 		names.some(
 			(folderName) =>
-				!pathService.hasValidBasename(item.resource, os, folderName),
+				!pathService.hasValidBasename(item.resource, os, folderName)
 		)
 	) {
 		// Escape * characters
@@ -1128,7 +1133,7 @@ export function validateFileName(
 			content: nls.localize(
 				"invalidFileNameError",
 				"The name **{0}** is not valid as a file or folder name. Please choose a different name.",
-				trimLongName(escapedName),
+				trimLongName(escapedName)
 			),
 			severity: Severity.Error,
 		};
@@ -1138,7 +1143,7 @@ export function validateFileName(
 		return {
 			content: nls.localize(
 				"fileNameWhitespaceWarning",
-				"Leading or trailing whitespace detected in file or folder name.",
+				"Leading or trailing whitespace detected in file or folder name."
 			),
 			severity: Severity.Warning,
 		};
@@ -1174,7 +1179,7 @@ export class CompareNewUntitledTextFilesAction extends Action2 {
 	static readonly ID = "workbench.files.action.compareNewUntitledTextFiles";
 	static readonly LABEL = nls.localize(
 		"compareNewUntitledTextFiles",
-		"Compare New Untitled Text Files",
+		"Compare New Untitled Text Files"
 	);
 
 	constructor() {
@@ -1204,7 +1209,7 @@ export class CompareWithClipboardAction extends Action2 {
 	static readonly ID = "workbench.files.action.compareWithClipboard";
 	static readonly LABEL = nls.localize(
 		"compareWithClipboard",
-		"Compare Active File with Clipboard",
+		"Compare Active File with Clipboard"
 	);
 
 	private registrationDisposal: IDisposable | undefined;
@@ -1234,7 +1239,7 @@ export class CompareWithClipboardAction extends Action2 {
 
 		const resource = EditorResourceAccessor.getOriginalUri(
 			editorService.activeEditor,
-			{ supportSideBySide: SideBySideEditor.PRIMARY },
+			{ supportSideBySide: SideBySideEditor.PRIMARY }
 		);
 		const scheme = `clipboardCompare${CompareWithClipboardAction.SCHEME_COUNTER++}`;
 		if (
@@ -1244,12 +1249,12 @@ export class CompareWithClipboardAction extends Action2 {
 		) {
 			if (!this.registrationDisposal) {
 				const provider = instantiationService.createInstance(
-					ClipboardContentProvider,
+					ClipboardContentProvider
 				);
 				this.registrationDisposal =
 					textModelService.registerTextModelContentProvider(
 						scheme,
-						provider,
+						provider
 					);
 			}
 
@@ -1257,7 +1262,7 @@ export class CompareWithClipboardAction extends Action2 {
 			const editorLabel = nls.localize(
 				"clipboardComparisonLabel",
 				"Clipboard ↔ {0}",
-				name,
+				name
 			);
 
 			await editorService
@@ -1285,14 +1290,14 @@ class ClipboardContentProvider implements ITextModelContentProvider {
 		@IClipboardService private readonly clipboardService: IClipboardService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IModelService private readonly modelService: IModelService
-	) { }
+	) {}
 
 	async provideTextContent(resource: URI): Promise<ITextModel> {
 		const text = await this.clipboardService.readText();
 		const model = this.modelService.createModel(
 			text,
 			this.languageService.createByFilepathOrFirstLine(resource),
-			resource,
+			resource
 		);
 
 		return model;
@@ -1302,7 +1307,7 @@ class ClipboardContentProvider implements ITextModelContentProvider {
 function onErrorWithRetry(
 	notificationService: INotificationService,
 	error: unknown,
-	retry: () => Promise<unknown>,
+	retry: () => Promise<unknown>
 ): void {
 	notificationService.prompt(Severity.Error, toErrorMessage(error, false), [
 		{
@@ -1314,7 +1319,7 @@ function onErrorWithRetry(
 
 async function openExplorerAndCreate(
 	accessor: ServicesAccessor,
-	isFolder: boolean,
+	isFolder: boolean
 ): Promise<void> {
 	const explorerService = accessor.get(IExplorerService);
 	const fileService = accessor.get(IFileService);
@@ -1363,7 +1368,7 @@ async function openExplorerAndCreate(
 		configService,
 		filesConfigService,
 		folder,
-		isFolder,
+		isFolder
 	);
 	folder.addChild(newStat);
 
@@ -1383,15 +1388,15 @@ async function openExplorerAndCreate(
 					undoLabel: nls.localize(
 						"createBulkEdit",
 						"Create {0}",
-						value,
+						value
 					),
 					progressLabel: nls.localize(
 						"creatingBulkEdit",
 						"Creating {0}",
-						value,
+						value
 					),
 					confirmBeforeUndo: true,
-				},
+				}
 			);
 			await refreshIfSeparator(value, explorerService);
 
@@ -1405,7 +1410,7 @@ async function openExplorerAndCreate(
 			}
 		} catch (error) {
 			onErrorWithRetry(notificationService, error, () =>
-				onSuccess(value),
+				onSuccess(value)
 			);
 		}
 	};
@@ -1462,7 +1467,7 @@ export const renameHandler = async (accessor: ServicesAccessor) => {
 				const parentResource = stat.parent!.resource;
 				const targetResource = resources.joinPath(
 					parentResource,
-					value,
+					value
 				);
 				if (stat.resource.toString() !== targetResource.toString()) {
 					try {
@@ -1470,7 +1475,7 @@ export const renameHandler = async (accessor: ServicesAccessor) => {
 							[
 								new ResourceFileEdit(
 									stat.resource,
-									targetResource,
+									targetResource
 								),
 							],
 							{
@@ -1482,15 +1487,15 @@ export const renameHandler = async (accessor: ServicesAccessor) => {
 									"renameBulkEdit",
 									"Rename {0} to {1}",
 									stat.name,
-									value,
+									value
 								),
 								progressLabel: nls.localize(
 									"renamingBulkEdit",
 									"Renaming {0} to {1}",
 									stat.name,
-									value,
+									value
 								),
-							},
+							}
 						);
 						await refreshIfSeparator(value, explorerService);
 					} catch (e) {
@@ -1513,7 +1518,7 @@ export const moveFileToTrashHandler = async (accessor: ServicesAccessor) => {
 			accessor.get(IDialogService),
 			accessor.get(IConfigurationService),
 			stats,
-			true,
+			true
 		);
 	}
 };
@@ -1529,7 +1534,7 @@ export const deleteFileHandler = async (accessor: ServicesAccessor) => {
 			accessor.get(IDialogService),
 			accessor.get(IConfigurationService),
 			stats,
-			false,
+			false
 		);
 	}
 };
@@ -1606,7 +1611,7 @@ CommandsRegistry.registerCommand({
 
 export const pasteFileHandler = async (
 	accessor: ServicesAccessor,
-	fileList?: FileList,
+	fileList?: FileList
 ) => {
 	const clipboardService = accessor.get(IClipboardService);
 	const explorerService = accessor.get(IExplorerService);
@@ -1631,13 +1636,13 @@ export const pasteFileHandler = async (
 				? nls.localize(
 						"confirmMultiPasteNative",
 						"Are you sure you want to paste the following {0} items?",
-						toPaste.length,
-				  )
+						toPaste.length
+					)
 				: nls.localize(
 						"confirmPasteNative",
 						"Are you sure you want to paste '{0}'?",
-						basename(toPaste[0].fsPath),
-				  );
+						basename(toPaste[0].fsPath)
+					);
 		const detail =
 			toPaste.length > 1 ? getFileNamesMessage(toPaste) : undefined;
 		const confirmation = await dialogService.confirm({
@@ -1648,7 +1653,7 @@ export const pasteFileHandler = async (
 			},
 			primaryButton: nls.localize(
 				{ key: "pasteButtonLabel", comment: ["&& denotes a mnemonic"] },
-				"&&Paste",
+				"&&Paste"
 			),
 		});
 
@@ -1660,7 +1665,7 @@ export const pasteFileHandler = async (
 		if (confirmation.checkboxChecked === true) {
 			await configurationService.updateValue(
 				"explorer.confirmPasteNative",
-				false,
+				false
 			);
 		}
 	}
@@ -1688,8 +1693,8 @@ export const pasteFileHandler = async (
 						throw new Error(
 							nls.localize(
 								"fileIsAncestor",
-								"File to paste is an ancestor of the destination folder",
-							),
+								"File to paste is an ancestor of the destination folder"
+							)
 						);
 					}
 					const fileToPasteStat = await fileService.stat(fileToPaste);
@@ -1699,7 +1704,7 @@ export const pasteFileHandler = async (
 					if (
 						uriIdentityService.extUri.isEqual(
 							element.resource,
-							fileToPaste,
+							fileToPaste
 						)
 					) {
 						target = element.parent!;
@@ -1721,7 +1726,7 @@ export const pasteFileHandler = async (
 								pasteShouldMove ||
 								incrementalNaming === "disabled",
 						},
-						incrementalNaming,
+						incrementalNaming
 					);
 
 					if (!targetFile) {
@@ -1729,8 +1734,8 @@ export const pasteFileHandler = async (
 					}
 
 					return { source: fileToPaste, target: targetFile };
-				}),
-			),
+				})
+			)
 		);
 
 		if (sourceTargetPairs.length >= 1) {
@@ -1740,7 +1745,7 @@ export const pasteFileHandler = async (
 					(pair) =>
 						new ResourceFileEdit(pair.source, pair.target, {
 							overwrite: incrementalNaming === "disabled",
-						}),
+						})
 				);
 				const options = {
 					confirmBeforeUndo:
@@ -1756,8 +1761,8 @@ export const pasteFileHandler = async (
 										],
 									},
 									"Moving {0} files",
-									sourceTargetPairs.length,
-							  )
+									sourceTargetPairs.length
+								)
 							: nls.localize(
 									{
 										key: "movingFileBulkEdit",
@@ -1767,9 +1772,9 @@ export const pasteFileHandler = async (
 									},
 									"Moving {0}",
 									resources.basenameOrAuthority(
-										sourceTargetPairs[0].target,
-									),
-							  ),
+										sourceTargetPairs[0].target
+									)
+								),
 					undoLabel:
 						sourceTargetPairs.length > 1
 							? nls.localize(
@@ -1780,8 +1785,8 @@ export const pasteFileHandler = async (
 										],
 									},
 									"Move {0} files",
-									sourceTargetPairs.length,
-							  )
+									sourceTargetPairs.length
+								)
 							: nls.localize(
 									{
 										key: "moveFileBulkEdit",
@@ -1791,9 +1796,9 @@ export const pasteFileHandler = async (
 									},
 									"Move {0}",
 									resources.basenameOrAuthority(
-										sourceTargetPairs[0].target,
-									),
-							  ),
+										sourceTargetPairs[0].target
+									)
+								),
 				};
 				await explorerService.applyBulkEdit(resourceFileEdits, options);
 			} else {
@@ -1802,7 +1807,7 @@ export const pasteFileHandler = async (
 						new ResourceFileEdit(pair.source, pair.target, {
 							copy: true,
 							overwrite: incrementalNaming === "disabled",
-						}),
+						})
 				);
 				const undoLevel =
 					configurationService.getValue<IFilesConfiguration>()
@@ -1821,8 +1826,8 @@ export const pasteFileHandler = async (
 										],
 									},
 									"Copying {0} files",
-									sourceTargetPairs.length,
-							  )
+									sourceTargetPairs.length
+								)
 							: nls.localize(
 									{
 										key: "copyingFileBulkEdit",
@@ -1832,9 +1837,9 @@ export const pasteFileHandler = async (
 									},
 									"Copying {0}",
 									resources.basenameOrAuthority(
-										sourceTargetPairs[0].target,
-									),
-							  ),
+										sourceTargetPairs[0].target
+									)
+								),
 					undoLabel:
 						sourceTargetPairs.length > 1
 							? nls.localize(
@@ -1845,8 +1850,8 @@ export const pasteFileHandler = async (
 										],
 									},
 									"Paste {0} files",
-									sourceTargetPairs.length,
-							  )
+									sourceTargetPairs.length
+								)
 							: nls.localize(
 									{
 										key: "copyFileBulkEdit",
@@ -1856,9 +1861,9 @@ export const pasteFileHandler = async (
 									},
 									"Paste {0}",
 									resources.basenameOrAuthority(
-										sourceTargetPairs[0].target,
-									),
-							  ),
+										sourceTargetPairs[0].target
+									)
+								),
 				};
 				await explorerService.applyBulkEdit(resourceFileEdits, options);
 			}
@@ -1882,9 +1887,9 @@ export const pasteFileHandler = async (
 				nls.localize(
 					"fileDeleted",
 					"The file(s) to paste have been deleted or moved since you copied them. {0}",
-					getErrorMessage(e),
-				),
-			),
+					getErrorMessage(e)
+				)
+			)
 		);
 	} finally {
 		if (pasteShouldMove) {
@@ -1897,7 +1902,7 @@ export const pasteFileHandler = async (
 
 async function getFilesToPaste(
 	fileList: FileList | undefined,
-	clipboardService: IClipboardService,
+	clipboardService: IClipboardService
 ): Promise<readonly URI[]> {
 	if (fileList && fileList.length > 0) {
 		// with a `fileList` we support natively pasting files from clipboard
@@ -1908,13 +1913,13 @@ async function getFilesToPaste(
 		// otherwise we fallback to reading resources from our clipboard service
 		return resources.distinctParents(
 			await clipboardService.readResources(),
-			(resource) => resource,
+			(resource) => resource
 		);
 	}
 }
 
 export const openFilePreserveFocusHandler = async (
-	accessor: ServicesAccessor,
+	accessor: ServicesAccessor
 ) => {
 	const editorService = accessor.get(IEditorService);
 	const explorerService = accessor.get(IExplorerService);
@@ -1926,7 +1931,7 @@ export const openFilePreserveFocusHandler = async (
 			.map((s) => ({
 				resource: s.resource,
 				options: { preserveFocus: true },
-			})),
+			}))
 	);
 };
 
@@ -1934,7 +1939,7 @@ class BaseSetActiveEditorReadonlyInSession extends Action2 {
 	constructor(
 		id: string,
 		title: ILocalizedString,
-		private readonly newReadonlyState: true | false | "toggle" | "reset",
+		private readonly newReadonlyState: true | false | "toggle" | "reset"
 	) {
 		super({
 			id,
@@ -1948,12 +1953,12 @@ class BaseSetActiveEditorReadonlyInSession extends Action2 {
 	override async run(accessor: ServicesAccessor): Promise<void> {
 		const editorService = accessor.get(IEditorService);
 		const filesConfigurationService = accessor.get(
-			IFilesConfigurationService,
+			IFilesConfigurationService
 		);
 
 		const fileResource = EditorResourceAccessor.getOriginalUri(
 			editorService.activeEditor,
-			{ supportSideBySide: SideBySideEditor.PRIMARY },
+			{ supportSideBySide: SideBySideEditor.PRIMARY }
 		);
 		if (!fileResource) {
 			return;
@@ -1961,7 +1966,7 @@ class BaseSetActiveEditorReadonlyInSession extends Action2 {
 
 		await filesConfigurationService.updateReadonly(
 			fileResource,
-			this.newReadonlyState,
+			this.newReadonlyState
 		);
 	}
 }
@@ -1971,7 +1976,7 @@ export class SetActiveEditorReadonlyInSession extends BaseSetActiveEditorReadonl
 		"workbench.action.files.setActiveEditorReadonlyInSession";
 	static readonly LABEL = nls.localize(
 		"setActiveEditorReadonlyInSession",
-		"Set Active Editor Read-only in Session",
+		"Set Active Editor Read-only in Session"
 	);
 
 	constructor() {
@@ -1981,7 +1986,7 @@ export class SetActiveEditorReadonlyInSession extends BaseSetActiveEditorReadonl
 				value: SetActiveEditorReadonlyInSession.LABEL,
 				original: "Set Active Editor Readonly in Session",
 			},
-			true,
+			true
 		);
 	}
 }
@@ -1991,7 +1996,7 @@ export class SetActiveEditorWriteableInSession extends BaseSetActiveEditorReadon
 		"workbench.action.files.setActiveEditorWriteableInSession";
 	static readonly LABEL = nls.localize(
 		"setActiveEditorWriteableInSession",
-		"Set Active Editor Writeable in Session",
+		"Set Active Editor Writeable in Session"
 	);
 
 	constructor() {
@@ -2001,7 +2006,7 @@ export class SetActiveEditorWriteableInSession extends BaseSetActiveEditorReadon
 				value: SetActiveEditorWriteableInSession.LABEL,
 				original: "Set Active Editor Writeable in Session",
 			},
-			false,
+			false
 		);
 	}
 }
@@ -2011,7 +2016,7 @@ export class ToggleActiveEditorReadonlyInSession extends BaseSetActiveEditorRead
 		"workbench.action.files.toggleActiveEditorReadonlyInSession";
 	static readonly LABEL = nls.localize(
 		"toggleActiveEditorReadonlyInSession",
-		"Toggle Active Editor Read-only in Session",
+		"Toggle Active Editor Read-only in Session"
 	);
 
 	constructor() {
@@ -2021,7 +2026,7 @@ export class ToggleActiveEditorReadonlyInSession extends BaseSetActiveEditorRead
 				value: ToggleActiveEditorReadonlyInSession.LABEL,
 				original: "Toggle Active Editor Readonly in Session",
 			},
-			"toggle",
+			"toggle"
 		);
 	}
 }
@@ -2031,7 +2036,7 @@ export class ResetActiveEditorReadonlyInSession extends BaseSetActiveEditorReado
 		"workbench.action.files.resetActiveEditorReadonlyInSession";
 	static readonly LABEL = nls.localize(
 		"resetActiveEditorReadonlyInSession",
-		"Reset Active Editor Read-only in Session",
+		"Reset Active Editor Read-only in Session"
 	);
 
 	constructor() {
@@ -2041,7 +2046,7 @@ export class ResetActiveEditorReadonlyInSession extends BaseSetActiveEditorReado
 				value: ResetActiveEditorReadonlyInSession.LABEL,
 				original: "Reset Active Editor Readonly in Session",
 			},
-			"reset",
+			"reset"
 		);
 	}
 }

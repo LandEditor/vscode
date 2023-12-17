@@ -22,7 +22,7 @@ class SmartSelection implements vscode.SelectionRangeProvider {
 	public async provideSelectionRanges(
 		document: vscode.TextDocument,
 		positions: vscode.Position[],
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.SelectionRange[] | undefined> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -36,7 +36,7 @@ class SmartSelection implements vscode.SelectionRangeProvider {
 		const response = await this.client.execute(
 			"selectionRange",
 			args,
-			token,
+			token
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -45,28 +45,28 @@ class SmartSelection implements vscode.SelectionRangeProvider {
 	}
 
 	private static convertSelectionRange(
-		selectionRange: Proto.SelectionRange,
+		selectionRange: Proto.SelectionRange
 	): vscode.SelectionRange {
 		return new vscode.SelectionRange(
 			typeConverters.Range.fromTextSpan(selectionRange.textSpan),
 			selectionRange.parent
 				? SmartSelection.convertSelectionRange(selectionRange.parent)
-				: undefined,
+				: undefined
 		);
 	}
 }
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[requireMinVersion(client, SmartSelection.minVersion)],
 		() => {
 			return vscode.languages.registerSelectionRangeProvider(
 				selector.syntax,
-				new SmartSelection(client),
+				new SmartSelection(client)
 			);
-		},
+		}
 	);
 }

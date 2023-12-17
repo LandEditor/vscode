@@ -38,16 +38,16 @@ export class TextMateTokenizationSupport
 		private readonly _createBackgroundTokenizer:
 			| ((
 					textModel: ITextModel,
-					tokenStore: IBackgroundTokenizationStore,
+					tokenStore: IBackgroundTokenizationStore
 			  ) => IBackgroundTokenizer | undefined)
 			| undefined,
 		private readonly _backgroundTokenizerShouldOnlyVerifyTokens: () => boolean,
 		private readonly _reportTokenizationTime: (
 			timeMs: number,
 			lineLength: number,
-			isRandomSample: boolean,
+			isRandomSample: boolean
 		) => void,
-		private readonly _reportSlowTokenization: boolean,
+		private readonly _reportSlowTokenization: boolean
 	) {
 		super();
 	}
@@ -65,14 +65,14 @@ export class TextMateTokenizationSupport
 	public tokenize(
 		line: string,
 		hasEOL: boolean,
-		state: IState,
+		state: IState
 	): TokenizationResult {
 		throw new Error("Not supported!");
 	}
 
 	public createBackgroundTokenizer(
 		textModel: ITextModel,
-		store: IBackgroundTokenizationStore,
+		store: IBackgroundTokenizationStore
 	): IBackgroundTokenizer | undefined {
 		if (this._createBackgroundTokenizer) {
 			return this._createBackgroundTokenizer(textModel, store);
@@ -83,7 +83,7 @@ export class TextMateTokenizationSupport
 	public tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
-		state: StateStack,
+		state: StateStack
 	): EncodedTokenizationResult {
 		const isRandomSample = Math.random() * 10_000 < 1;
 		const shouldMeasure = this._reportSlowTokenization || isRandomSample;
@@ -95,7 +95,7 @@ export class TextMateTokenizationSupport
 				this._reportTokenizationTime!(
 					timeMS,
 					line.length,
-					isRandomSample,
+					isRandomSample
 				);
 			}
 		}
@@ -104,8 +104,8 @@ export class TextMateTokenizationSupport
 			console.warn(
 				`Time limit reached when tokenizing line: ${line.substring(
 					0,
-					100,
-				)}`,
+					100
+				)}`
 			);
 			// return the state at the beginning of the line
 			return new EncodedTokenizationResult(textMateResult.tokens, state);

@@ -36,7 +36,7 @@ export interface IWorkerFileSystemDirectoryHandle
 	getDirectoryHandle(name: string): Promise<IWorkerFileSystemDirectoryHandle>;
 	getFileHandle(name: string): Promise<IWorkerFileSystemFileHandle>;
 	resolve(
-		possibleDescendant: IWorkerFileSystemHandle,
+		possibleDescendant: IWorkerFileSystemHandle
 	): Promise<string[] | null>;
 	entries(): AsyncIterableIterator<
 		[string, IWorkerFileSystemDirectoryHandle | IWorkerFileSystemFileHandle]
@@ -58,20 +58,20 @@ export interface ILocalFileSearchSimpleWorker {
 		queryProps: IFileQueryProps<UriComponents>,
 		folderQuery: IFolderQuery,
 		ignorePathCasing: boolean,
-		queryId: number,
+		queryId: number
 	): Promise<IWorkerFileSearchComplete>;
 	searchDirectory(
 		handle: IWorkerFileSystemDirectoryHandle,
 		queryProps: ITextQueryProps<UriComponents>,
 		folderQuery: IFolderQuery,
 		ignorePathCasing: boolean,
-		queryId: number,
+		queryId: number
 	): Promise<IWorkerTextSearchComplete>;
 }
 
 export interface ILocalFileSearchSimpleWorkerHost {
 	sendTextSearchMatch(
 		match: IFileMatch<UriComponents>,
-		queryId: number,
+		queryId: number
 	): void;
 }

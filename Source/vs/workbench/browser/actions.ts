@@ -42,12 +42,12 @@ class MenuActions extends Disposable {
 		menuId: MenuId,
 		private readonly options: IMenuActionOptions | undefined,
 		private readonly menuService: IMenuService,
-		private readonly contextKeyService: IContextKeyService,
+		private readonly contextKeyService: IContextKeyService
 	) {
 		super();
 
 		this.menu = this._register(
-			menuService.createMenu(menuId, contextKeyService),
+			menuService.createMenu(menuId, contextKeyService)
 		);
 
 		this._register(this.menu.onDidChange(() => this.updateActions()));
@@ -65,15 +65,15 @@ class MenuActions extends Disposable {
 		this.disposables.add(
 			this.updateSubmenus(
 				[...this._primaryActions, ...this._secondaryActions],
-				{},
-			),
+				{}
+			)
 		);
 		this._onDidChange.fire();
 	}
 
 	private updateSubmenus(
 		actions: readonly IAction[],
-		submenus: Record<string, IMenu>,
+		submenus: Record<string, IMenu>
 	): IDisposable {
 		const disposables = new DisposableStore();
 
@@ -86,8 +86,8 @@ class MenuActions extends Disposable {
 					disposables.add(
 						this.menuService.createMenu(
 							action.item.submenu,
-							this.contextKeyService,
-						),
+							this.contextKeyService
+						)
 					));
 				disposables.add(menu.onDidChange(() => this.updateActions()));
 				disposables.add(this.updateSubmenus(action.actions, submenus));
@@ -108,14 +108,24 @@ export class CompositeMenuActions extends Disposable {
 		readonly menuId: MenuId,
 		private readonly contextMenuId: MenuId | undefined,
 		private readonly options: IMenuActionOptions | undefined,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IMenuService private readonly menuService: IMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IMenuService private readonly menuService: IMenuService
 	) {
 		super();
 
-		this.menuActions = this._register(new MenuActions(menuId, this.options, menuService, contextKeyService));
+		this.menuActions = this._register(
+			new MenuActions(
+				menuId,
+				this.options,
+				menuService,
+				contextKeyService
+			)
+		);
 
-		this._register(this.menuActions.onDidChange(() => this._onDidChange.fire()));
+		this._register(
+			this.menuActions.onDidChange(() => this._onDidChange.fire())
+		);
 	}
 
 	getPrimaryActions(): IAction[] {
@@ -132,7 +142,7 @@ export class CompositeMenuActions extends Disposable {
 		if (this.contextMenuId) {
 			const menu = this.menuService.createMenu(
 				this.contextMenuId,
-				this.contextKeyService,
+				this.contextKeyService
 			);
 			createAndFillInActionBarActions(menu, this.options, {
 				primary: [],

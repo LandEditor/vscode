@@ -36,16 +36,30 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 	) {
 		super();
 
-		this._memento = new Memento(ContributedExternalUriOpenersStore.STORAGE_ID, storageService);
-		this._mementoObject = this._memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
+		this._memento = new Memento(
+			ContributedExternalUriOpenersStore.STORAGE_ID,
+			storageService
+		);
+		this._mementoObject = this._memento.getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE
+		);
 		for (const [id, value] of Object.entries(this._mementoObject || {})) {
 			this.add(id, value.extensionId, { isCurrentlyRegistered: false });
 		}
 
 		this.invalidateOpenersOnExtensionsChanged();
 
-		this._register(this._extensionService.onDidChangeExtensions(() => this.invalidateOpenersOnExtensionsChanged()));
-		this._register(this._extensionService.onDidChangeExtensionsStatus(() => this.invalidateOpenersOnExtensionsChanged()));
+		this._register(
+			this._extensionService.onDidChangeExtensions(() =>
+				this.invalidateOpenersOnExtensionsChanged()
+			)
+		);
+		this._register(
+			this._extensionService.onDidChangeExtensionsStatus(() =>
+				this.invalidateOpenersOnExtensionsChanged()
+			)
+		);
 	}
 
 	public didRegisterOpener(id: string, extensionId: string): void {
@@ -57,7 +71,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 	private add(
 		id: string,
 		extensionId: string,
-		options: { isCurrentlyRegistered: boolean },
+		options: { isCurrentlyRegistered: boolean }
 	): void {
 		const existing = this._openers.get(id);
 		if (existing) {
@@ -93,7 +107,7 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 		for (const [id, entry] of this._openers) {
 			const extension = registeredExtensions.find(
-				(r) => r.identifier.value === entry.extensionId,
+				(r) => r.identifier.value === entry.extensionId
 			);
 			if (extension) {
 				if (!this._extensionService.canRemoveExtension(extension)) {

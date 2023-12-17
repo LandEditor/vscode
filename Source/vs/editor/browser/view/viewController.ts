@@ -47,14 +47,14 @@ export interface ICommandDelegate {
 		text: string,
 		pasteOnNewLine: boolean,
 		multicursorText: string[] | null,
-		mode: string | null,
+		mode: string | null
 	): void;
 	type(text: string): void;
 	compositionType(
 		text: string,
 		replacePrevCharCnt: number,
 		replaceNextCharCnt: number,
-		positionDelta: number,
+		positionDelta: number
 	): void;
 	startComposition(): void;
 	endComposition(): void;
@@ -71,7 +71,7 @@ export class ViewController {
 		configuration: IEditorConfiguration,
 		viewModel: IViewModel,
 		userInputEvents: ViewUserInputEvents,
-		commandDelegate: ICommandDelegate,
+		commandDelegate: ICommandDelegate
 	) {
 		this.configuration = configuration;
 		this.viewModel = viewModel;
@@ -83,7 +83,7 @@ export class ViewController {
 		text: string,
 		pasteOnNewLine: boolean,
 		multicursorText: string[] | null,
-		mode: string | null,
+		mode: string | null
 	): void {
 		this.commandDelegate.paste(text, pasteOnNewLine, multicursorText, mode);
 	}
@@ -96,13 +96,13 @@ export class ViewController {
 		text: string,
 		replacePrevCharCnt: number,
 		replaceNextCharCnt: number,
-		positionDelta: number,
+		positionDelta: number
 	): void {
 		this.commandDelegate.compositionType(
 			text,
 			replacePrevCharCnt,
 			replaceNextCharCnt,
-			positionDelta,
+			positionDelta
 		);
 	}
 
@@ -124,13 +124,13 @@ export class ViewController {
 			{
 				source: "keyboard",
 				selection: modelSelection,
-			},
+			}
 		);
 	}
 
 	private _validateViewColumn(viewPosition: Position): Position {
 		const minColumn = this.viewModel.getLineMinColumn(
-			viewPosition.lineNumber,
+			viewPosition.lineNumber
 		);
 		if (viewPosition.column < minColumn) {
 			return new Position(viewPosition.lineNumber, minColumn);
@@ -177,7 +177,7 @@ export class ViewController {
 			this._columnSelect(
 				data.position,
 				data.mouseColumn,
-				data.inSelectionMode,
+				data.inSelectionMode
 			);
 		} else if (data.startedOnLineNumbers) {
 			// If the dragging started on the gutter, then have operations work on the entire line
@@ -201,7 +201,7 @@ export class ViewController {
 				if (data.inSelectionMode) {
 					this._lastCursorLineSelectDrag(
 						data.position,
-						data.revealType,
+						data.revealType
 					);
 				} else {
 					this._lastCursorLineSelect(data.position, data.revealType);
@@ -232,14 +232,14 @@ export class ViewController {
 						this._columnSelect(
 							data.position,
 							data.mouseColumn,
-							true,
+							true
 						);
 					} else {
 						// Do multi-cursor operations only when purely alt is pressed
 						if (data.inSelectionMode) {
 							this._lastCursorMoveToSelect(
 								data.position,
-								data.revealType,
+								data.revealType
 							);
 						} else {
 							this._createCursor(data.position, false);
@@ -252,14 +252,14 @@ export class ViewController {
 						this._columnSelect(
 							data.position,
 							data.mouseColumn,
-							true,
+							true
 						);
 					} else {
 						if (columnSelection) {
 							this._columnSelect(
 								data.position,
 								data.mouseColumn,
-								true,
+								true
 							);
 						} else {
 							this._moveToSelect(data.position, data.revealType);
@@ -274,7 +274,7 @@ export class ViewController {
 
 	private _usualArgs(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): CoreNavigationCommands.MoveCommandOptions {
 		viewPosition = this._validateViewColumn(viewPosition);
 		return {
@@ -287,28 +287,28 @@ export class ViewController {
 
 	public moveTo(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.MoveTo.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _moveToSelect(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.MoveToSelect.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _columnSelect(
 		viewPosition: Position,
 		mouseColumn: number,
-		doColumnSelect: boolean,
+		doColumnSelect: boolean
 	): void {
 		viewPosition = this._validateViewColumn(viewPosition);
 		CoreNavigationCommands.ColumnSelect.runCoreEditorCommand(
@@ -319,7 +319,7 @@ export class ViewController {
 				viewPosition: viewPosition,
 				mouseColumn: mouseColumn,
 				doColumnSelect: doColumnSelect,
-			},
+			}
 		);
 	}
 
@@ -332,87 +332,87 @@ export class ViewController {
 				position: this._convertViewToModelPosition(viewPosition),
 				viewPosition: viewPosition,
 				wholeLine: wholeLine,
-			},
+			}
 		);
 	}
 
 	private _lastCursorMoveToSelect(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.LastCursorMoveToSelect.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _wordSelect(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.WordSelect.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _wordSelectDrag(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.WordSelectDrag.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _lastCursorWordSelect(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.LastCursorWordSelect.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _lineSelect(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.LineSelect.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _lineSelectDrag(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.LineSelectDrag.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _lastCursorLineSelect(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.LastCursorLineSelect.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
 	private _lastCursorLineSelectDrag(
 		viewPosition: Position,
-		revealType: NavigationCommandRevealType,
+		revealType: NavigationCommandRevealType
 	): void {
 		CoreNavigationCommands.LastCursorLineSelectDrag.runCoreEditorCommand(
 			this.viewModel,
-			this._usualArgs(viewPosition, revealType),
+			this._usualArgs(viewPosition, revealType)
 		);
 	}
 
@@ -426,7 +426,7 @@ export class ViewController {
 
 	private _convertViewToModelPosition(viewPosition: Position): Position {
 		return this.viewModel.coordinatesConverter.convertViewPositionToModelPosition(
-			viewPosition,
+			viewPosition
 		);
 	}
 

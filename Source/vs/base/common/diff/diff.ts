@@ -23,11 +23,11 @@ export class StringDiffSequence implements ISequence {
 export function stringDiff(
 	original: string,
 	modified: string,
-	pretty: boolean,
+	pretty: boolean
 ): IDiffChange[] {
 	return new LcsDiff(
 		new StringDiffSequence(original),
-		new StringDiffSequence(modified),
+		new StringDiffSequence(modified)
 	).ComputeDiff(pretty).changes;
 }
 
@@ -104,7 +104,7 @@ class MyArray {
 		sourceIndex: number,
 		destinationArray: any[],
 		destinationIndex: number,
-		length: number,
+		length: number
 	) {
 		for (let i = 0; i < length; i++) {
 			destinationArray[destinationIndex + i] =
@@ -116,7 +116,7 @@ class MyArray {
 		sourceIndex: number,
 		destinationArray: Int32Array,
 		destinationIndex: number,
-		length: number,
+		length: number
 	) {
 		for (let i = 0; i < length; i++) {
 			destinationArray[destinationIndex + i] =
@@ -179,8 +179,8 @@ class DiffChangeHelper {
 					this.m_originalStart,
 					this.m_originalCount,
 					this.m_modifiedStart,
-					this.m_modifiedCount,
-				),
+					this.m_modifiedCount
+				)
 			);
 		}
 
@@ -215,7 +215,7 @@ class DiffChangeHelper {
 	 */
 	public AddModifiedElement(
 		originalIndex: number,
-		modifiedIndex: number,
+		modifiedIndex: number
 	): void {
 		// The 'true' start index is the smallest of the ones we've seen
 		this.m_originalStart = Math.min(this.m_originalStart, originalIndex);
@@ -274,7 +274,7 @@ export class LcsDiff {
 	constructor(
 		originalSequence: ISequence,
 		modifiedSequence: ISequence,
-		continueProcessingPredicate: IContinueProcessingPredicate | null = null,
+		continueProcessingPredicate: IContinueProcessingPredicate | null = null
 	) {
 		this.ContinueProcessingPredicate = continueProcessingPredicate;
 
@@ -303,13 +303,13 @@ export class LcsDiff {
 	}
 
 	private static _isStringArray(
-		arr: Int32Array | number[] | string[],
+		arr: Int32Array | number[] | string[]
 	): arr is string[] {
 		return arr.length > 0 && typeof arr[0] === "string";
 	}
 
 	private static _getElements(
-		sequence: ISequence,
+		sequence: ISequence
 	): [string[], Int32Array, boolean] {
 		const elements = sequence.getElements();
 
@@ -343,25 +343,25 @@ export class LcsDiff {
 
 	private ElementsAreStrictEqual(
 		originalIndex: number,
-		newIndex: number,
+		newIndex: number
 	): boolean {
 		if (!this.ElementsAreEqual(originalIndex, newIndex)) {
 			return false;
 		}
 		const originalElement = LcsDiff._getStrictElement(
 			this._originalSequence,
-			originalIndex,
+			originalIndex
 		);
 		const modifiedElement = LcsDiff._getStrictElement(
 			this._modifiedSequence,
-			newIndex,
+			newIndex
 		);
 		return originalElement === modifiedElement;
 	}
 
 	private static _getStrictElement(
 		sequence: ISequence,
-		index: number,
+		index: number
 	): string | null {
 		if (typeof sequence.getStrictElement === "function") {
 			return sequence.getStrictElement(index);
@@ -401,7 +401,7 @@ export class LcsDiff {
 			this._originalElementsOrHash.length - 1,
 			0,
 			this._modifiedElementsOrHash.length - 1,
-			pretty,
+			pretty
 		);
 	}
 
@@ -415,7 +415,7 @@ export class LcsDiff {
 		originalEnd: number,
 		modifiedStart: number,
 		modifiedEnd: number,
-		pretty: boolean,
+		pretty: boolean
 	): IDiffResult {
 		const quitEarlyArr = [false];
 		let changes = this.ComputeDiffRecursive(
@@ -423,7 +423,7 @@ export class LcsDiff {
 			originalEnd,
 			modifiedStart,
 			modifiedEnd,
-			quitEarlyArr,
+			quitEarlyArr
 		);
 
 		if (pretty) {
@@ -449,7 +449,7 @@ export class LcsDiff {
 		originalEnd: number,
 		modifiedStart: number,
 		modifiedEnd: number,
-		quitEarlyArr: boolean[],
+		quitEarlyArr: boolean[]
 	): DiffChange[] {
 		quitEarlyArr[0] = false;
 
@@ -480,7 +480,7 @@ export class LcsDiff {
 			if (modifiedStart <= modifiedEnd) {
 				Debug.Assert(
 					originalStart === originalEnd + 1,
-					"originalStart should only be one more than originalEnd",
+					"originalStart should only be one more than originalEnd"
 				);
 
 				// All insertions
@@ -489,13 +489,13 @@ export class LcsDiff {
 						originalStart,
 						0,
 						modifiedStart,
-						modifiedEnd - modifiedStart + 1,
+						modifiedEnd - modifiedStart + 1
 					),
 				];
 			} else if (originalStart <= originalEnd) {
 				Debug.Assert(
 					modifiedStart === modifiedEnd + 1,
-					"modifiedStart should only be one more than modifiedEnd",
+					"modifiedStart should only be one more than modifiedEnd"
 				);
 
 				// All deletions
@@ -504,17 +504,17 @@ export class LcsDiff {
 						originalStart,
 						originalEnd - originalStart + 1,
 						modifiedStart,
-						0,
+						0
 					),
 				];
 			} else {
 				Debug.Assert(
 					originalStart === originalEnd + 1,
-					"originalStart should only be one more than originalEnd",
+					"originalStart should only be one more than originalEnd"
 				);
 				Debug.Assert(
 					modifiedStart === modifiedEnd + 1,
-					"modifiedStart should only be one more than modifiedEnd",
+					"modifiedStart should only be one more than modifiedEnd"
 				);
 
 				// Identical sequences - No differences
@@ -534,7 +534,7 @@ export class LcsDiff {
 			modifiedEnd,
 			midOriginalArr,
 			midModifiedArr,
-			quitEarlyArr,
+			quitEarlyArr
 		);
 
 		const midOriginal = midOriginalArr[0];
@@ -555,7 +555,7 @@ export class LcsDiff {
 				midOriginal,
 				modifiedStart,
 				midModified,
-				quitEarlyArr,
+				quitEarlyArr
 			);
 			let rightChanges: DiffChange[] = [];
 
@@ -565,7 +565,7 @@ export class LcsDiff {
 					originalEnd,
 					midModified + 1,
 					modifiedEnd,
-					quitEarlyArr,
+					quitEarlyArr
 				);
 			} else {
 				// We didn't have time to finish the first half, so we don't have time to compute this half.
@@ -575,7 +575,7 @@ export class LcsDiff {
 						midOriginal + 1,
 						originalEnd - (midOriginal + 1) + 1,
 						midModified + 1,
-						modifiedEnd - (midModified + 1) + 1,
+						modifiedEnd - (midModified + 1) + 1
 					),
 				];
 			}
@@ -589,7 +589,7 @@ export class LcsDiff {
 				originalStart,
 				originalEnd - originalStart + 1,
 				modifiedStart,
-				modifiedEnd - modifiedStart + 1,
+				modifiedEnd - modifiedStart + 1
 			),
 		];
 	}
@@ -612,7 +612,7 @@ export class LcsDiff {
 		modifiedEnd: number,
 		midModifiedArr: number[],
 		deltaIsEven: boolean,
-		quitEarlyArr: boolean[],
+		quitEarlyArr: boolean[]
 	): DiffChange[] {
 		let forwardChanges: DiffChange[] | null = null;
 		let reverseChanges: DiffChange[] | null = null;
@@ -646,7 +646,7 @@ export class LcsDiff {
 				lastOriginalIndex = originalIndex;
 				changeHelper.AddModifiedElement(
 					originalIndex + 1,
-					modifiedIndex,
+					modifiedIndex
 				);
 				diagonalRelative = diagonal + 1 - diagonalForwardBase; //Setup for the next iteration
 			} else {
@@ -660,7 +660,7 @@ export class LcsDiff {
 				lastOriginalIndex = originalIndex - 1;
 				changeHelper.AddOriginalElement(
 					originalIndex,
-					modifiedIndex + 1,
+					modifiedIndex + 1
 				);
 				diagonalRelative = diagonal - 1 - diagonalForwardBase; //Setup for the next iteration
 			}
@@ -689,11 +689,11 @@ export class LcsDiff {
 					forwardChanges[forwardChanges.length - 1];
 				originalStartPoint = Math.max(
 					originalStartPoint,
-					lastForwardChange.getOriginalEnd(),
+					lastForwardChange.getOriginalEnd()
 				);
 				modifiedStartPoint = Math.max(
 					modifiedStartPoint,
-					lastForwardChange.getModifiedEnd(),
+					lastForwardChange.getModifiedEnd()
 				);
 			}
 
@@ -702,7 +702,7 @@ export class LcsDiff {
 					originalStartPoint,
 					originalEnd - originalStartPoint + 1,
 					modifiedStartPoint,
-					modifiedEnd - modifiedStartPoint + 1,
+					modifiedEnd - modifiedStartPoint + 1
 				),
 			];
 		} else {
@@ -740,7 +740,7 @@ export class LcsDiff {
 					lastOriginalIndex = originalIndex + 1;
 					changeHelper.AddOriginalElement(
 						originalIndex + 1,
-						modifiedIndex + 1,
+						modifiedIndex + 1
 					);
 					diagonalRelative = diagonal + 1 - diagonalReverseBase; //Setup for the next iteration
 				} else {
@@ -756,7 +756,7 @@ export class LcsDiff {
 					lastOriginalIndex = originalIndex;
 					changeHelper.AddModifiedElement(
 						originalIndex + 1,
-						modifiedIndex + 1,
+						modifiedIndex + 1
 					);
 					diagonalRelative = diagonal - 1 - diagonalReverseBase; //Setup for the next iteration
 				}
@@ -800,7 +800,7 @@ export class LcsDiff {
 		modifiedEnd: number,
 		midOriginalArr: number[],
 		midModifiedArr: number[],
-		quitEarlyArr: boolean[],
+		quitEarlyArr: boolean[]
 	) {
 		let originalIndex = 0,
 			modifiedIndex = 0;
@@ -877,13 +877,13 @@ export class LcsDiff {
 				diagonalForwardBase - numDifferences,
 				numDifferences,
 				diagonalForwardBase,
-				numDiagonals,
+				numDiagonals
 			);
 			diagonalForwardEnd = this.ClipDiagonalBound(
 				diagonalForwardBase + numDifferences,
 				numDifferences,
 				diagonalForwardBase,
-				numDiagonals,
+				numDiagonals
 			);
 			for (
 				let diagonal = diagonalForwardStart;
@@ -969,7 +969,7 @@ export class LcsDiff {
 								modifiedEnd,
 								midModifiedArr,
 								deltaIsEven,
-								quitEarlyArr,
+								quitEarlyArr
 							);
 						} else {
 							// Either false overlap, or we didn't have enough memory for the full trace
@@ -992,7 +992,7 @@ export class LcsDiff {
 				this.ContinueProcessingPredicate !== null &&
 				!this.ContinueProcessingPredicate(
 					furthestOriginalIndex,
-					matchLengthOfLongest,
+					matchLengthOfLongest
 				)
 			) {
 				// We can't finish, so skip ahead to generating a result from what we have.
@@ -1026,7 +1026,7 @@ export class LcsDiff {
 						modifiedEnd,
 						midModifiedArr,
 						deltaIsEven,
-						quitEarlyArr,
+						quitEarlyArr
 					);
 				} else {
 					// We didn't actually remember enough of the history.
@@ -1041,7 +1041,7 @@ export class LcsDiff {
 							originalStart,
 							originalEnd - originalStart + 1,
 							modifiedStart,
-							modifiedEnd - modifiedStart + 1,
+							modifiedEnd - modifiedStart + 1
 						),
 					];
 				}
@@ -1052,13 +1052,13 @@ export class LcsDiff {
 				diagonalReverseBase - numDifferences,
 				numDifferences,
 				diagonalReverseBase,
-				numDiagonals,
+				numDiagonals
 			);
 			diagonalReverseEnd = this.ClipDiagonalBound(
 				diagonalReverseBase + numDifferences,
 				numDifferences,
 				diagonalReverseBase,
-				numDiagonals,
+				numDiagonals
 			);
 			for (
 				let diagonal = diagonalReverseStart;
@@ -1134,7 +1134,7 @@ export class LcsDiff {
 								modifiedEnd,
 								midModifiedArr,
 								deltaIsEven,
-								quitEarlyArr,
+								quitEarlyArr
 							);
 						} else {
 							// Either false overlap, or we didn't have enough memory for the full trace
@@ -1150,7 +1150,7 @@ export class LcsDiff {
 				// We are allocating space for one extra int, which we fill with
 				// the index of the diagonal base index
 				let temp = new Int32Array(
-					diagonalForwardEnd - diagonalForwardStart + 2,
+					diagonalForwardEnd - diagonalForwardStart + 2
 				);
 				temp[0] = diagonalForwardBase - diagonalForwardStart + 1;
 				MyArray.Copy2(
@@ -1158,12 +1158,12 @@ export class LcsDiff {
 					diagonalForwardStart,
 					temp,
 					1,
-					diagonalForwardEnd - diagonalForwardStart + 1,
+					diagonalForwardEnd - diagonalForwardStart + 1
 				);
 				this.m_forwardHistory.push(temp);
 
 				temp = new Int32Array(
-					diagonalReverseEnd - diagonalReverseStart + 2,
+					diagonalReverseEnd - diagonalReverseStart + 2
 				);
 				temp[0] = diagonalReverseBase - diagonalReverseStart + 1;
 				MyArray.Copy2(
@@ -1171,7 +1171,7 @@ export class LcsDiff {
 					diagonalReverseStart,
 					temp,
 					1,
-					diagonalReverseEnd - diagonalReverseStart + 1,
+					diagonalReverseEnd - diagonalReverseStart + 1
 				);
 				this.m_reverseHistory.push(temp);
 			}
@@ -1197,7 +1197,7 @@ export class LcsDiff {
 			modifiedEnd,
 			midModifiedArr,
 			deltaIsEven,
-			quitEarlyArr,
+			quitEarlyArr
 		);
 	}
 
@@ -1230,21 +1230,21 @@ export class LcsDiff {
 				(!checkOriginal ||
 					this.OriginalElementsAreEqual(
 						change.originalStart,
-						change.originalStart + change.originalLength,
+						change.originalStart + change.originalLength
 					)) &&
 				(!checkModified ||
 					this.ModifiedElementsAreEqual(
 						change.modifiedStart,
-						change.modifiedStart + change.modifiedLength,
+						change.modifiedStart + change.modifiedLength
 					))
 			) {
 				const startStrictEqual = this.ElementsAreStrictEqual(
 					change.originalStart,
-					change.modifiedStart,
+					change.modifiedStart
 				);
 				const endStrictEqual = this.ElementsAreStrictEqual(
 					change.originalStart + change.originalLength,
-					change.modifiedStart + change.modifiedLength,
+					change.modifiedStart + change.modifiedLength
 				);
 				if (endStrictEqual && !startStrictEqual) {
 					// moving the change down would create an equal change, but the elements are not strict equal
@@ -1288,7 +1288,7 @@ export class LcsDiff {
 				change.originalStart,
 				change.originalLength,
 				change.modifiedStart,
-				change.modifiedLength,
+				change.modifiedLength
 			);
 
 			for (let delta = 1; ; delta++) {
@@ -1306,7 +1306,7 @@ export class LcsDiff {
 					checkOriginal &&
 					!this.OriginalElementsAreEqual(
 						originalStart,
-						originalStart + change.originalLength,
+						originalStart + change.originalLength
 					)
 				) {
 					break;
@@ -1316,7 +1316,7 @@ export class LcsDiff {
 					checkModified &&
 					!this.ModifiedElementsAreEqual(
 						modifiedStart,
-						modifiedStart + change.modifiedLength,
+						modifiedStart + change.modifiedLength
 					)
 				) {
 					break;
@@ -1331,7 +1331,7 @@ export class LcsDiff {
 						originalStart,
 						change.originalLength,
 						modifiedStart,
-						change.modifiedLength,
+						change.modifiedLength
 					);
 
 				if (score > bestScore) {
@@ -1384,7 +1384,7 @@ export class LcsDiff {
 						abOriginalLength,
 						aModifiedStart,
 						abModifiedLength,
-						matchedLength,
+						matchedLength
 					);
 					if (t) {
 						const [originalMatchStart, modifiedMatchStart] = t;
@@ -1422,7 +1422,7 @@ export class LcsDiff {
 		originalLength: number,
 		modifiedStart: number,
 		modifiedLength: number,
-		desiredLength: number,
+		desiredLength: number
 	): [number, number] | null {
 		if (originalLength < desiredLength || modifiedLength < desiredLength) {
 			return null;
@@ -1437,7 +1437,7 @@ export class LcsDiff {
 				const score = this._contiguousSequenceScore(
 					i,
 					j,
-					desiredLength,
+					desiredLength
 				);
 				if (score > 0 && score > bestScore) {
 					bestScore = score;
@@ -1455,7 +1455,7 @@ export class LcsDiff {
 	private _contiguousSequenceScore(
 		originalStart: number,
 		modifiedStart: number,
-		length: number,
+		length: number
 	): number {
 		let score = 0;
 		for (let l = 0; l < length; l++) {
@@ -1479,7 +1479,7 @@ export class LcsDiff {
 
 	private _OriginalRegionIsBoundary(
 		originalStart: number,
-		originalLength: number,
+		originalLength: number
 	): boolean {
 		if (
 			this._OriginalIsBoundary(originalStart) ||
@@ -1511,7 +1511,7 @@ export class LcsDiff {
 
 	private _ModifiedRegionIsBoundary(
 		modifiedStart: number,
-		modifiedLength: number,
+		modifiedLength: number
 	): boolean {
 		if (
 			this._ModifiedIsBoundary(modifiedStart) ||
@@ -1535,17 +1535,17 @@ export class LcsDiff {
 		originalStart: number,
 		originalLength: number,
 		modifiedStart: number,
-		modifiedLength: number,
+		modifiedLength: number
 	): number {
 		const originalScore = this._OriginalRegionIsBoundary(
 			originalStart,
-			originalLength,
+			originalLength
 		)
 			? 1
 			: 0;
 		const modifiedScore = this._ModifiedRegionIsBoundary(
 			modifiedStart,
-			modifiedLength,
+			modifiedLength
 		)
 			? 1
 			: 0;
@@ -1561,7 +1561,7 @@ export class LcsDiff {
 	 */
 	private ConcatenateChanges(
 		left: DiffChange[],
-		right: DiffChange[],
+		right: DiffChange[]
 	): DiffChange[] {
 		const mergedChangeArr: DiffChange[] = [];
 
@@ -1571,7 +1571,7 @@ export class LcsDiff {
 			this.ChangesOverlap(
 				left[left.length - 1],
 				right[0],
-				mergedChangeArr,
+				mergedChangeArr
 			)
 		) {
 			// Since we break the problem down recursively, it is possible that we
@@ -1579,7 +1579,7 @@ export class LcsDiff {
 			// two changes. Here in the combining stage, we detect and fuse those
 			// changes back together
 			const result = new Array<DiffChange>(
-				left.length + right.length - 1,
+				left.length + right.length - 1
 			);
 			MyArray.Copy(left, 0, result, 0, left.length - 1);
 			result[left.length - 1] = mergedChangeArr[0];
@@ -1606,15 +1606,15 @@ export class LcsDiff {
 	private ChangesOverlap(
 		left: DiffChange,
 		right: DiffChange,
-		mergedChangeArr: Array<DiffChange | null>,
+		mergedChangeArr: Array<DiffChange | null>
 	): boolean {
 		Debug.Assert(
 			left.originalStart <= right.originalStart,
-			"Left change is not less than or equal to right change",
+			"Left change is not less than or equal to right change"
 		);
 		Debug.Assert(
 			left.modifiedStart <= right.modifiedStart,
-			"Left change is not less than or equal to right change",
+			"Left change is not less than or equal to right change"
 		);
 
 		if (
@@ -1649,7 +1649,7 @@ export class LcsDiff {
 				originalStart,
 				originalLength,
 				modifiedStart,
-				modifiedLength,
+				modifiedLength
 			);
 			return true;
 		} else {
@@ -1674,7 +1674,7 @@ export class LcsDiff {
 		diagonal: number,
 		numDifferences: number,
 		diagonalBaseIndex: number,
-		numDiagonals: number,
+		numDiagonals: number
 	): number {
 		if (diagonal >= 0 && diagonal < numDiagonals) {
 			// Nothing to clip, its in range

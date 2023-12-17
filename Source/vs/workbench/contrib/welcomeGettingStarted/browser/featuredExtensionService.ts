@@ -62,14 +62,16 @@ export class FeaturedExtensionsService
 		"workbench.welcomePage.extensionMetadata";
 
 	constructor(
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IProductService private readonly productService: IProductService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService
 	) {
 		super();
-		this.title = localize('gettingStarted.featuredTitle', 'Recommended');
+		this.title = localize("gettingStarted.featuredTitle", "Recommended");
 	}
 
 	title: string;
@@ -79,7 +81,7 @@ export class FeaturedExtensionsService
 
 		const featuredExtensions: IFeaturedExtension[] = [];
 		for (const extension of this.productService.featuredExtensions?.filter(
-			(e) => !this.ignoredExtensions.has(e.id),
+			(e) => !this.ignoredExtensions.has(e.id)
 		) ?? []) {
 			const resolvedExtension = await this.resolveExtension(extension);
 			if (resolvedExtension) {
@@ -106,7 +108,7 @@ export class FeaturedExtensionsService
 		for (const extension of featuredExtensions) {
 			if (
 				installed.some((e) =>
-					ExtensionIdentifier.equals(e.identifier.id, extension.id),
+					ExtensionIdentifier.equals(e.identifier.id, extension.id)
 				)
 			) {
 				this.ignoredExtensions.add(extension.id);
@@ -116,7 +118,7 @@ export class FeaturedExtensionsService
 					galleryExtension = (
 						await this.galleryService.getExtensions(
 							[{ id: extension.id }],
-							CancellationToken.None,
+							CancellationToken.None
 						)
 					)[0];
 				} catch (err) {
@@ -124,7 +126,7 @@ export class FeaturedExtensionsService
 				}
 				if (
 					!(await this.extensionManagementService.canInstall(
-						galleryExtension,
+						galleryExtension
 					))
 				) {
 					this.ignoredExtensions.add(extension.id);
@@ -135,25 +137,25 @@ export class FeaturedExtensionsService
 	}
 
 	private async resolveExtension(
-		productMetadata: IFeaturedExtension,
+		productMetadata: IFeaturedExtension
 	): Promise<IFeaturedExtension | undefined> {
 		const title =
 			productMetadata.title ??
 			(await this.getMetadata(
 				productMetadata.id,
-				FeaturedExtensionMetadataType.Title,
+				FeaturedExtensionMetadataType.Title
 			));
 		const description =
 			productMetadata.description ??
 			(await this.getMetadata(
 				productMetadata.id,
-				FeaturedExtensionMetadataType.Description,
+				FeaturedExtensionMetadataType.Description
 			));
 		const imagePath =
 			productMetadata.imagePath ??
 			(await this.getMetadata(
 				productMetadata.id,
-				FeaturedExtensionMetadataType.ImagePath,
+				FeaturedExtensionMetadataType.ImagePath
 			));
 
 		if (title && description && imagePath) {
@@ -169,7 +171,7 @@ export class FeaturedExtensionsService
 
 	private async getMetadata(
 		extensionId: string,
-		key: FeaturedExtensionMetadataType,
+		key: FeaturedExtensionMetadataType
 	): Promise<string | undefined> {
 		const storageMetadata = this.getStorageData(extensionId);
 		if (storageMetadata) {
@@ -192,11 +194,11 @@ export class FeaturedExtensionsService
 	}
 
 	private getStorageData(
-		extensionId: string,
+		extensionId: string
 	): FeaturedExtensionStorageData | undefined {
 		const metadata = this.storageService.get(
 			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId,
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 		if (metadata) {
 			const value = JSON.parse(metadata) as FeaturedExtensionStorageData;
@@ -210,7 +212,7 @@ export class FeaturedExtensionsService
 
 	private async getGalleryMetadata(
 		extensionId: string,
-		key: FeaturedExtensionMetadataType,
+		key: FeaturedExtensionMetadataType
 	): Promise<string | undefined> {
 		const storageKey =
 			FeaturedExtensionsService.STORAGE_KEY + "." + extensionId;
@@ -222,7 +224,7 @@ export class FeaturedExtensionsService
 			galleryExtension = (
 				await this.galleryService.getExtensions(
 					[{ id: extensionId }],
-					CancellationToken.None,
+					CancellationToken.None
 				)
 			)[0];
 		} catch (err) {}
@@ -255,7 +257,7 @@ export class FeaturedExtensionsService
 				date: new Date().getTime(),
 			}),
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 
 		return metadata;
@@ -265,5 +267,5 @@ export class FeaturedExtensionsService
 registerSingleton(
 	IFeaturedExtensionsService,
 	FeaturedExtensionsService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

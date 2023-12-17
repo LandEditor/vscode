@@ -51,7 +51,7 @@ export function registerTerminalContribution<Services extends BrandedService[]>(
 			...services: Services
 		): ITerminalContribution;
 	},
-	canRunInDetachedTerminals?: false,
+	canRunInDetachedTerminals?: false
 ): void;
 export function registerTerminalContribution<Services extends BrandedService[]>(
 	id: string,
@@ -63,7 +63,7 @@ export function registerTerminalContribution<Services extends BrandedService[]>(
 			...services: Services
 		): ITerminalContribution;
 	},
-	canRunInDetachedTerminals: true,
+	canRunInDetachedTerminals: true
 ): void;
 export function registerTerminalContribution<Services extends BrandedService[]>(
 	id: string,
@@ -75,7 +75,7 @@ export function registerTerminalContribution<Services extends BrandedService[]>(
 			...services: Services
 		): ITerminalContribution;
 	},
-	canRunInDetachedTerminals = false,
+	canRunInDetachedTerminals = false
 ): void {
 	TerminalContributionRegistry.INSTANCE.registerTerminalContribution({
 		id,
@@ -99,7 +99,7 @@ class TerminalContributionRegistry {
 	constructor() {}
 
 	public registerTerminalContribution(
-		description: ITerminalContributionDescription,
+		description: ITerminalContributionDescription
 	): void {
 		this._terminalContributions.push(description);
 	}
@@ -115,5 +115,5 @@ const enum Extensions {
 
 Registry.add(
 	Extensions.TerminalContributions,
-	TerminalContributionRegistry.INSTANCE,
+	TerminalContributionRegistry.INSTANCE
 );

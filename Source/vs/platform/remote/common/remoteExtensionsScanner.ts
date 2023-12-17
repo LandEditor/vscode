@@ -9,7 +9,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const IRemoteExtensionsScannerService =
 	createDecorator<IRemoteExtensionsScannerService>(
-		"IRemoteExtensionsScannerService",
+		"IRemoteExtensionsScannerService"
 	);
 
 export const RemoteExtensionsScannerChannelName = "remoteExtensionsScanner";
@@ -21,6 +21,6 @@ export interface IRemoteExtensionsScannerService {
 	scanExtensions(): Promise<IExtensionDescription[]>;
 	scanSingleExtension(
 		extensionLocation: URI,
-		isBuiltin: boolean,
+		isBuiltin: boolean
 	): Promise<IExtensionDescription | null>;
 }

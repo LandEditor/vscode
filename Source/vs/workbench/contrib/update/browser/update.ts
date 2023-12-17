@@ -70,15 +70,15 @@ import { Action } from "vs/base/common/actions";
 
 export const CONTEXT_UPDATE_STATE = new RawContextKey<string>(
 	"updateState",
-	StateType.Uninitialized,
+	StateType.Uninitialized
 );
 export const MAJOR_MINOR_UPDATE_AVAILABLE = new RawContextKey<boolean>(
 	"majorMinorUpdateAvailable",
-	false,
+	false
 );
 export const RELEASE_NOTES_URL = new RawContextKey<string>(
 	"releaseNotesUrl",
-	"",
+	""
 );
 export const DOWNLOAD_URL = new RawContextKey<string>("downloadUrl", "");
 
@@ -86,7 +86,7 @@ let releaseNotesManager: ReleaseNotesManager | undefined = undefined;
 
 export function showReleaseNotesInEditor(
 	instantiationService: IInstantiationService,
-	version: string,
+	version: string
 ) {
 	if (!releaseNotesManager) {
 		releaseNotesManager =
@@ -108,8 +108,8 @@ async function openLatestReleaseNotesInBrowser(accessor: ServicesAccessor) {
 			nls.localize(
 				"update.noReleaseNotesOnline",
 				"This version of {0} does not have release notes online",
-				productService.nameLong,
-			),
+				productService.nameLong
+			)
 		);
 	}
 }
@@ -121,7 +121,7 @@ async function showReleaseNotes(accessor: ServicesAccessor, version: string) {
 	} catch (err) {
 		try {
 			await instantiationService.invokeFunction(
-				openLatestReleaseNotesInBrowser,
+				openLatestReleaseNotesInBrowser
 			);
 		} catch (err2) {
 			throw new Error(`${err.message} and ${err2.message}`);
@@ -160,12 +160,13 @@ export class ProductContribution implements IWorkbenchContribution {
 		@IStorageService storageService: IStorageService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotificationService notificationService: INotificationService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IOpenerService openerService: IOpenerService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHostService hostService: IHostService,
 		@IProductService productService: IProductService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		if (productService.releaseNotesUrl) {
 			const releaseNotesUrlKey =
@@ -190,13 +191,13 @@ export class ProductContribution implements IWorkbenchContribution {
 				storageService.get(
 					ProductContribution.KEY,
 					StorageScope.APPLICATION,
-					"",
-				),
+					""
+				)
 			);
 			const currentVersion = parseVersion(productService.version);
 			const shouldShowReleaseNotes =
 				configurationService.getValue<boolean>(
-					"update.showReleaseNotes",
+					"update.showReleaseNotes"
 				);
 			const releaseNotesUrl = productService.releaseNotesUrl;
 
@@ -211,7 +212,7 @@ export class ProductContribution implements IWorkbenchContribution {
 			) {
 				showReleaseNotesInEditor(
 					instantiationService,
-					productService.version,
+					productService.version
 				).then(undefined, () => {
 					notificationService.prompt(
 						severity.Info,
@@ -219,20 +220,20 @@ export class ProductContribution implements IWorkbenchContribution {
 							"read the release notes",
 							"Welcome to {0} v{1}! Would you like to read the Release Notes?",
 							productService.nameLong,
-							productService.version,
+							productService.version
 						),
 						[
 							{
 								label: nls.localize(
 									"releaseNotes",
-									"Release Notes",
+									"Release Notes"
 								),
 								run: () => {
 									const uri = URI.parse(releaseNotesUrl);
 									openerService.open(uri);
 								},
 							},
-						],
+						]
 					);
 				});
 			}
@@ -241,7 +242,7 @@ export class ProductContribution implements IWorkbenchContribution {
 				ProductContribution.KEY,
 				productService.version,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		});
 	}
@@ -258,22 +259,30 @@ export class UpdateContribution
 
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IUpdateService private readonly updateService: IUpdateService,
 		@IActivityService private readonly activityService: IActivityService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IProductService private readonly productService: IProductService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IHostService private readonly hostService: IHostService
 	) {
 		super();
 		this.state = updateService.state;
-		this.updateStateContextKey = CONTEXT_UPDATE_STATE.bindTo(this.contextKeyService);
-		this.majorMinorUpdateAvailableContextKey = MAJOR_MINOR_UPDATE_AVAILABLE.bindTo(this.contextKeyService);
+		this.updateStateContextKey = CONTEXT_UPDATE_STATE.bindTo(
+			this.contextKeyService
+		);
+		this.majorMinorUpdateAvailableContextKey =
+			MAJOR_MINOR_UPDATE_AVAILABLE.bindTo(this.contextKeyService);
 
-		this._register(updateService.onStateChange(this.onUpdateStateChange, this));
+		this._register(
+			updateService.onStateChange(this.onUpdateStateChange, this)
+		);
 		this.onUpdateStateChange(this.updateService.state);
 
 		/*
@@ -285,12 +294,21 @@ export class UpdateContribution
 		*/
 
 		const currentVersion = this.productService.commit;
-		const lastKnownVersion = this.storageService.get('update/lastKnownVersion', StorageScope.APPLICATION);
+		const lastKnownVersion = this.storageService.get(
+			"update/lastKnownVersion",
+			StorageScope.APPLICATION
+		);
 
 		// if current version != stored version, clear both fields
 		if (currentVersion !== lastKnownVersion) {
-			this.storageService.remove('update/lastKnownVersion', StorageScope.APPLICATION);
-			this.storageService.remove('update/updateNotificationTime', StorageScope.APPLICATION);
+			this.storageService.remove(
+				"update/lastKnownVersion",
+				StorageScope.APPLICATION
+			);
+			this.storageService.remove(
+				"update/updateNotificationTime",
+				StorageScope.APPLICATION
+			);
 		}
 
 		this.registerGlobalActivityActions();
@@ -307,7 +325,7 @@ export class UpdateContribution
 						message: nls.localize(
 							"update service disabled",
 							"Updates are disabled because you are running the user-scope installation of {0} as Administrator.",
-							this.productService.nameLong,
+							this.productService.nameLong
 						),
 						actions: {
 							primary: [
@@ -318,9 +336,9 @@ export class UpdateContribution
 									undefined,
 									() => {
 										this.openerService.open(
-											"https://aka.ms/vscode-windows-setup",
+											"https://aka.ms/vscode-windows-setup"
 										);
-									},
+									}
 								),
 							],
 						},
@@ -351,15 +369,15 @@ export class UpdateContribution
 
 			case StateType.Ready: {
 				const currentVersion = parseVersion(
-					this.productService.version,
+					this.productService.version
 				);
 				const nextVersion = parseVersion(state.update.productVersion);
 				this.majorMinorUpdateAvailableContextKey.set(
 					Boolean(
 						currentVersion &&
 							nextVersion &&
-							isMajorMinorUpdate(currentVersion, nextVersion),
-					),
+							isMajorMinorUpdate(currentVersion, nextVersion)
+					)
 				);
 				this.onUpdateReady(state.update);
 				break;
@@ -378,22 +396,22 @@ export class UpdateContribution
 				nls.localize(
 					"updateIsReady",
 					"New {0} update available.",
-					this.productService.nameShort,
-				),
+					this.productService.nameShort
+				)
 			);
 		} else if (state.type === StateType.CheckingForUpdates) {
 			badge = new ProgressBadge(() =>
-				nls.localize("checkingForUpdates", "Checking for Updates..."),
+				nls.localize("checkingForUpdates", "Checking for Updates...")
 			);
 			priority = 1;
 		} else if (state.type === StateType.Downloading) {
 			badge = new ProgressBadge(() =>
-				nls.localize("downloading", "Downloading..."),
+				nls.localize("downloading", "Downloading...")
 			);
 			priority = 1;
 		} else if (state.type === StateType.Updating) {
 			badge = new ProgressBadge(() =>
-				nls.localize("updating", "Updating..."),
+				nls.localize("updating", "Updating...")
 			);
 			priority = 1;
 		}
@@ -417,7 +435,7 @@ export class UpdateContribution
 
 		error = error.replace(
 			/See https:\/\/github\.com\/Squirrel\/Squirrel\.Mac\/issues\/182 for more information/,
-			"This might mean the application was put on quarantine by macOS. See [this link](https://github.com/microsoft/vscode/issues/7426#issuecomment-425093469) for more information",
+			"This might mean the application was put on quarantine by macOS. See [this link](https://github.com/microsoft/vscode/issues/7426#issuecomment-425093469) for more information"
 		);
 
 		this.notificationService.notify({
@@ -431,8 +449,8 @@ export class UpdateContribution
 		this.dialogService.info(
 			nls.localize(
 				"noUpdatesAvailable",
-				"There are currently no updates available.",
-			),
+				"There are currently no updates available."
+			)
 		);
 	}
 
@@ -446,7 +464,7 @@ export class UpdateContribution
 			severity.Info,
 			nls.localize(
 				"thereIsUpdateAvailable",
-				"There is an available update.",
+				"There is an available update."
 			),
 			[
 				{
@@ -461,11 +479,11 @@ export class UpdateContribution
 					label: nls.localize("releaseNotes", "Release Notes"),
 					run: () => {
 						this.instantiationService.invokeFunction((accessor) =>
-							showReleaseNotes(accessor, update.productVersion),
+							showReleaseNotes(accessor, update.productVersion)
 						);
 					},
 				},
-			],
+			]
 		);
 	}
 
@@ -481,7 +499,7 @@ export class UpdateContribution
 				"updateAvailable",
 				"There's an update available: {0} {1}",
 				this.productService.nameLong,
-				update.productVersion,
+				update.productVersion
 			),
 			[
 				{
@@ -496,11 +514,11 @@ export class UpdateContribution
 					label: nls.localize("releaseNotes", "Release Notes"),
 					run: () => {
 						this.instantiationService.invokeFunction((accessor) =>
-							showReleaseNotes(accessor, update.productVersion),
+							showReleaseNotes(accessor, update.productVersion)
 						);
 					},
 				},
-			],
+			]
 		);
 	}
 
@@ -530,7 +548,7 @@ export class UpdateContribution
 				label: nls.localize("releaseNotes", "Release Notes"),
 				run: () => {
 					this.instantiationService.invokeFunction((accessor) =>
-						showReleaseNotes(accessor, update.productVersion),
+						showReleaseNotes(accessor, update.productVersion)
 					);
 				},
 			});
@@ -542,10 +560,10 @@ export class UpdateContribution
 			nls.localize(
 				"updateAvailableAfterRestart",
 				"Restart {0} to apply the latest update.",
-				this.productService.nameLong,
+				this.productService.nameLong
 			),
 			actions,
-			{ sticky: true },
+			{ sticky: true }
 		);
 	}
 
@@ -554,7 +572,7 @@ export class UpdateContribution
 		const currentMillis = new Date().getTime();
 		const lastKnownVersion = this.storageService.get(
 			"update/lastKnownVersion",
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 
 		// if version != stored version, save version and date
@@ -563,20 +581,20 @@ export class UpdateContribution
 				"update/lastKnownVersion",
 				currentVersion!,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 			this.storageService.store(
 				"update/updateNotificationTime",
 				currentMillis,
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		}
 
 		const updateNotificationMillis = this.storageService.getNumber(
 			"update/updateNotificationTime",
 			StorageScope.APPLICATION,
-			currentMillis,
+			currentMillis
 		);
 		const diffDays =
 			(currentMillis - updateNotificationMillis) / (1000 * 60 * 60 * 24);
@@ -586,7 +604,7 @@ export class UpdateContribution
 
 	private registerGlobalActivityActions(): void {
 		CommandsRegistry.registerCommand("update.check", () =>
-			this.updateService.checkForUpdates(true),
+			this.updateService.checkForUpdates(true)
 		);
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
@@ -604,7 +622,7 @@ export class UpdateContribution
 				id: "update.checking",
 				title: nls.localize(
 					"checkingForUpdates",
-					"Checking for Updates...",
+					"Checking for Updates..."
 				),
 				precondition: ContextKeyExpr.false(),
 			},
@@ -612,7 +630,7 @@ export class UpdateContribution
 		});
 
 		CommandsRegistry.registerCommand("update.downloadNow", () =>
-			this.updateService.downloadUpdate(),
+			this.updateService.downloadUpdate()
 		);
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
@@ -621,7 +639,7 @@ export class UpdateContribution
 				title: nls.localize("download update_1", "Download Update (1)"),
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(
-				StateType.AvailableForDownload,
+				StateType.AvailableForDownload
 			),
 		});
 
@@ -632,7 +650,7 @@ export class UpdateContribution
 				id: "update.downloading",
 				title: nls.localize(
 					"DownloadingUpdate",
-					"Downloading Update...",
+					"Downloading Update..."
 				),
 				precondition: ContextKeyExpr.false(),
 			},
@@ -640,7 +658,7 @@ export class UpdateContribution
 		});
 
 		CommandsRegistry.registerCommand("update.install", () =>
-			this.updateService.applyUpdate(),
+			this.updateService.applyUpdate()
 		);
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
@@ -648,7 +666,7 @@ export class UpdateContribution
 				id: "update.install",
 				title: nls.localize(
 					"installUpdate...",
-					"Install Update... (1)",
+					"Install Update... (1)"
 				),
 			},
 			when: CONTEXT_UPDATE_STATE.isEqualTo(StateType.Downloaded),
@@ -675,9 +693,9 @@ export class UpdateContribution
 
 					const version = this.updateService.state.update.version;
 					this.instantiationService.invokeFunction((accessor) =>
-						showReleaseNotes(accessor, version),
+						showReleaseNotes(accessor, version)
 					);
-				},
+				}
 			);
 			MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 				group: "7_update",
@@ -686,18 +704,18 @@ export class UpdateContribution
 					id: "update.showUpdateReleaseNotes",
 					title: nls.localize(
 						"showUpdateReleaseNotes",
-						"Show Update Release Notes",
+						"Show Update Release Notes"
 					),
 				},
 				when: ContextKeyExpr.and(
 					CONTEXT_UPDATE_STATE.isEqualTo(StateType.Ready),
-					MAJOR_MINOR_UPDATE_AVAILABLE,
+					MAJOR_MINOR_UPDATE_AVAILABLE
 				),
 			});
 		}
 
 		CommandsRegistry.registerCommand("update.restart", () =>
-			this.updateService.quitAndInstall(),
+			this.updateService.quitAndInstall()
 		);
 		MenuRegistry.appendMenuItem(MenuId.GlobalActivity, {
 			group: "7_update",
@@ -721,7 +739,8 @@ export class SwitchProductQualityContribution
 {
 	constructor(
 		@IProductService private readonly productService: IProductService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService
 	) {
 		super();
 
@@ -747,12 +766,12 @@ export class SwitchProductQualityContribution
 							title: isSwitchingToInsiders
 								? nls.localize(
 										"switchToInsiders",
-										"Switch to Insiders Version...",
-								  )
+										"Switch to Insiders Version..."
+									)
 								: nls.localize(
 										"switchToStable",
-										"Switch to Stable Version...",
-								  ),
+										"Switch to Stable Version..."
+									),
 							precondition: IsWebContext,
 							menu: {
 								id: MenuId.GlobalActivity,
@@ -765,14 +784,14 @@ export class SwitchProductQualityContribution
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const dialogService = accessor.get(IDialogService);
 						const userDataSyncEnablementService = accessor.get(
-							IUserDataSyncEnablementService,
+							IUserDataSyncEnablementService
 						);
 						const userDataSyncStoreManagementService = accessor.get(
-							IUserDataSyncStoreManagementService,
+							IUserDataSyncStoreManagementService
 						);
 						const storageService = accessor.get(IStorageService);
 						const userDataSyncWorkbenchService = accessor.get(
-							IUserDataSyncWorkbenchService,
+							IUserDataSyncWorkbenchService
 						);
 						const userDataSyncService =
 							accessor.get(IUserDataSyncService);
@@ -794,12 +813,12 @@ export class SwitchProductQualityContribution
 								!storageService.getBoolean(
 									selectSettingsSyncServiceDialogShownKey,
 									StorageScope.APPLICATION,
-									false,
+									false
 								)
 							) {
 								userDataSyncStoreType =
 									await this.selectSettingsSyncService(
-										dialogService,
+										dialogService
 									);
 								if (!userDataSyncStoreType) {
 									return;
@@ -808,12 +827,12 @@ export class SwitchProductQualityContribution
 									selectSettingsSyncServiceDialogShownKey,
 									true,
 									StorageScope.APPLICATION,
-									StorageTarget.USER,
+									StorageTarget.USER
 								);
 								if (userDataSyncStoreType === "stable") {
 									// Update the stable service type in the current window, so that it uses stable service after switched to insiders version (after reload).
 									await userDataSyncStoreManagementService.switch(
-										userDataSyncStoreType,
+										userDataSyncStoreType
 									);
 								}
 							}
@@ -822,24 +841,24 @@ export class SwitchProductQualityContribution
 								type: "info",
 								message: nls.localize(
 									"relaunchMessage",
-									"Changing the version requires a reload to take effect",
+									"Changing the version requires a reload to take effect"
 								),
 								detail:
 									newQuality === "insider"
 										? nls.localize(
 												"relaunchDetailInsiders",
-												"Press the reload button to switch to the Insiders version of VS Code.",
-										  )
+												"Press the reload button to switch to the Insiders version of VS Code."
+											)
 										: nls.localize(
 												"relaunchDetailStable",
-												"Press the reload button to switch to the Stable version of VS Code.",
-										  ),
+												"Press the reload button to switch to the Stable version of VS Code."
+											),
 								primaryButton: nls.localize(
 									{
 										key: "reload",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Reload",
+									"&&Reload"
 								),
 							});
 
@@ -857,9 +876,9 @@ export class SwitchProductQualityContribution
 												userDataSyncService.onDidChangeStatus,
 												(status) =>
 													status !==
-													SyncStatus.Syncing,
-											),
-										),
+													SyncStatus.Syncing
+											)
+										)
 									);
 								}
 
@@ -869,7 +888,7 @@ export class SwitchProductQualityContribution
 									userDataSyncStoreType
 								) {
 									promises.push(
-										userDataSyncWorkbenchService.synchroniseUserDataSyncStoreType(),
+										userDataSyncWorkbenchService.synchroniseUserDataSyncStoreType()
 									);
 								}
 
@@ -881,7 +900,7 @@ export class SwitchProductQualityContribution
 								if (userDataSyncStoreType) {
 									storageService.remove(
 										selectSettingsSyncServiceDialogShownKey,
-										StorageScope.APPLICATION,
+										StorageScope.APPLICATION
 									);
 								}
 							}
@@ -891,18 +910,18 @@ export class SwitchProductQualityContribution
 					}
 
 					private async selectSettingsSyncService(
-						dialogService: IDialogService,
+						dialogService: IDialogService
 					): Promise<UserDataSyncStoreType | undefined> {
 						const { result } =
 							await dialogService.prompt<UserDataSyncStoreType>({
 								type: Severity.Info,
 								message: nls.localize(
 									"selectSyncService.message",
-									"Choose the settings sync service to use after changing the version",
+									"Choose the settings sync service to use after changing the version"
 								),
 								detail: nls.localize(
 									"selectSyncService.detail",
-									"The Insiders version of VS Code will synchronize your settings, keybindings, extensions, snippets and UI State using separate insiders settings sync service by default.",
+									"The Insiders version of VS Code will synchronize your settings, keybindings, extensions, snippets and UI State using separate insiders settings sync service by default."
 								),
 								buttons: [
 									{
@@ -913,7 +932,7 @@ export class SwitchProductQualityContribution
 													"&& denotes a mnemonic",
 												],
 											},
-											"&&Insiders",
+											"&&Insiders"
 										),
 										run: () => "insiders",
 									},
@@ -925,7 +944,7 @@ export class SwitchProductQualityContribution
 													"&& denotes a mnemonic",
 												],
 											},
-											"&&Stable (current)",
+											"&&Stable (current)"
 										),
 										run: () => "stable",
 									},
@@ -934,7 +953,7 @@ export class SwitchProductQualityContribution
 							});
 						return result;
 					}
-				},
+				}
 			);
 		}
 	}

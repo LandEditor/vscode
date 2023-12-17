@@ -31,7 +31,7 @@ function createDefaultConfig(quality: string): Config {
 
 async function getConfig(
 	client: CosmosClient,
-	quality: string,
+	quality: string
 ): Promise<Config> {
 	const query = `SELECT TOP 1 * FROM c WHERE c.id = "${quality}"`;
 
@@ -55,7 +55,7 @@ async function main(force: boolean): Promise<void> {
 	const aadCredentials = new ClientSecretCredential(
 		process.env["AZURE_TENANT_ID"]!,
 		process.env["AZURE_CLIENT_ID"]!,
-		process.env["AZURE_CLIENT_SECRET"]!,
+		process.env["AZURE_CLIENT_SECRET"]!
 	);
 	const client = new CosmosClient({
 		endpoint: process.env["AZURE_DOCUMENTDB_ENDPOINT"]!,
@@ -69,7 +69,7 @@ async function main(force: boolean): Promise<void> {
 
 		if (config.frozen) {
 			console.log(
-				`Skipping release because quality ${quality} is frozen.`,
+				`Skipping release because quality ${quality} is frozen.`
 			);
 			return;
 		}
@@ -79,7 +79,7 @@ async function main(force: boolean): Promise<void> {
 
 	const scripts = client.database("builds").container(quality).scripts;
 	await retry(() =>
-		scripts.storedProcedure("releaseBuild").execute("", [commit]),
+		scripts.storedProcedure("releaseBuild").execute("", [commit])
 	);
 }
 
@@ -95,5 +95,5 @@ main(/^true$/i.test(force)).then(
 	(err) => {
 		console.error(err);
 		process.exit(1);
-	},
+	}
 );

@@ -38,7 +38,10 @@ interface ResourceMapKeyFn {
 }
 
 class ResourceMapEntry<T> {
-	constructor(readonly uri: URI, readonly value: T) {}
+	constructor(
+		readonly uri: URI,
+		readonly value: T
+	) {}
 }
 
 function isEntries<T>(
@@ -46,7 +49,7 @@ function isEntries<T>(
 		| ResourceMap<T>
 		| ResourceMapKeyFn
 		| readonly (readonly [URI, T])[]
-		| undefined,
+		| undefined
 ): arg is readonly (readonly [URI, T])[] {
 	return Array.isArray(arg);
 }
@@ -80,7 +83,7 @@ export class ResourceMap<T> implements Map<URI, T> {
 	 */
 	constructor(
 		entries?: readonly (readonly [URI, T])[],
-		toKey?: ResourceMapKeyFn,
+		toKey?: ResourceMapKeyFn
 	);
 
 	constructor(
@@ -88,7 +91,7 @@ export class ResourceMap<T> implements Map<URI, T> {
 			| ResourceMap<T>
 			| ResourceMapKeyFn
 			| readonly (readonly [URI, T])[],
-		toKey?: ResourceMapKeyFn,
+		toKey?: ResourceMapKeyFn
 	) {
 		if (arg instanceof ResourceMap) {
 			this.map = new Map(arg.map);
@@ -109,7 +112,7 @@ export class ResourceMap<T> implements Map<URI, T> {
 	set(resource: URI, value: T): this {
 		this.map.set(
 			this.toKey(resource),
-			new ResourceMapEntry(resource, value),
+			new ResourceMapEntry(resource, value)
 		);
 		return this;
 	}
@@ -136,7 +139,7 @@ export class ResourceMap<T> implements Map<URI, T> {
 
 	forEach(
 		clb: (value: T, key: URI, map: Map<URI, T>) => void,
-		thisArg?: any,
+		thisArg?: any
 	): void {
 		if (typeof thisArg !== "undefined") {
 			clb = clb.bind(thisArg);
@@ -180,7 +183,7 @@ export class ResourceSet implements Set<URI> {
 	constructor(entries: readonly URI[], toKey?: ResourceMapKeyFn);
 	constructor(
 		entriesOrKey?: readonly URI[] | ResourceMapKeyFn,
-		toKey?: ResourceMapKeyFn,
+		toKey?: ResourceMapKeyFn
 	) {
 		if (!entriesOrKey || typeof entriesOrKey === "function") {
 			this._map = new ResourceMap(entriesOrKey);
@@ -209,10 +212,10 @@ export class ResourceSet implements Set<URI> {
 
 	forEach(
 		callbackfn: (value: URI, value2: URI, set: Set<URI>) => void,
-		thisArg?: any,
+		thisArg?: any
 	): void {
 		this._map.forEach((_value, key) =>
-			callbackfn.call(thisArg, key, key, this),
+			callbackfn.call(thisArg, key, key, this)
 		);
 	}
 
@@ -367,7 +370,7 @@ export class LinkedMap<K, V> implements Map<K, V> {
 
 	forEach(
 		callbackfn: (value: V, key: K, map: LinkedMap<K, V>) => void,
-		thisArg?: any,
+		thisArg?: any
 	): void {
 		const state = this._state;
 		let current = this._head;
@@ -754,7 +757,7 @@ export class BidirectionalMap<K, V> {
 
 	forEach(
 		callbackfn: (value: V, key: K, map: BidirectionalMap<K, V>) => void,
-		thisArg?: any,
+		thisArg?: any
 	): void {
 		this._m1.forEach((value, key) => {
 			callbackfn.call(thisArg, value, key, this);

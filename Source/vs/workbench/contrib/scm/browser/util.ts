@@ -41,7 +41,7 @@ import { URI } from "vs/base/common/uri";
 import { IResourceNode, ResourceTree } from "vs/base/common/resourceTree";
 
 export function isSCMRepositoryArray(
-	element: any,
+	element: any
 ): element is ISCMRepository[] {
 	return Array.isArray(element) && element.every((r) => isSCMRepository(r));
 }
@@ -86,7 +86,7 @@ export function isSCMResource(element: any): element is ISCMResource {
 }
 
 export function isSCMResourceNode(
-	element: any,
+	element: any
 ): element is IResourceNode<ISCMResource, ISCMResourceGroup> {
 	return (
 		ResourceTree.isResourceNode(element) &&
@@ -95,7 +95,7 @@ export function isSCMResourceNode(
 }
 
 export function isSCMHistoryItemGroupTreeElement(
-	element: any,
+	element: any
 ): element is SCMHistoryItemGroupTreeElement {
 	return (
 		(element as SCMHistoryItemGroupTreeElement).type === "historyItemGroup"
@@ -103,13 +103,13 @@ export function isSCMHistoryItemGroupTreeElement(
 }
 
 export function isSCMHistoryItemTreeElement(
-	element: any,
+	element: any
 ): element is SCMHistoryItemTreeElement {
 	return (element as SCMHistoryItemTreeElement).type === "historyItem";
 }
 
 export function isSCMHistoryItemChangeTreeElement(
-	element: any,
+	element: any
 ): element is SCMHistoryItemChangeTreeElement {
 	return (
 		(element as SCMHistoryItemChangeTreeElement).type ===
@@ -118,7 +118,7 @@ export function isSCMHistoryItemChangeTreeElement(
 }
 
 export function isSCMHistoryItemChangeNode(
-	element: any,
+	element: any
 ): element is IResourceNode<
 	SCMHistoryItemChangeTreeElement,
 	SCMHistoryItemTreeElement
@@ -130,7 +130,7 @@ export function isSCMHistoryItemChangeNode(
 }
 
 export function isSCMViewSeparator(
-	element: any,
+	element: any
 ): element is SCMViewSeparatorElement {
 	return (element as SCMViewSeparatorElement).type === "separator";
 }
@@ -138,7 +138,7 @@ export function isSCMViewSeparator(
 export function toDiffEditorArguments(
 	uri: URI,
 	originalUri: URI,
-	modifiedUri: URI,
+	modifiedUri: URI
 ): unknown[] {
 	const basename = path.basename(uri.fsPath);
 	const originalQuery = JSON.parse(originalUri.query) as {
@@ -180,7 +180,7 @@ const compareActions = (a: IAction, b: IAction) => {
 export function connectPrimaryMenu(
 	menu: IMenu,
 	callback: (primary: IAction[], secondary: IAction[]) => void,
-	primaryGroup?: string,
+	primaryGroup?: string
 ): IDisposable {
 	let cachedPrimary: IAction[] = [];
 	let cachedSecondary: IAction[] = [];
@@ -193,7 +193,7 @@ export function connectPrimaryMenu(
 			menu,
 			{ shouldForwardArgs: true },
 			{ primary, secondary },
-			primaryGroup,
+			primaryGroup
 		);
 
 		if (
@@ -216,7 +216,7 @@ export function connectPrimaryMenu(
 
 export function connectPrimaryMenuToInlineActionBar(
 	menu: IMenu,
-	actionBar: ActionBar,
+	actionBar: ActionBar
 ): IDisposable {
 	return connectPrimaryMenu(
 		menu,
@@ -224,7 +224,7 @@ export function connectPrimaryMenuToInlineActionBar(
 			actionBar.clear();
 			actionBar.push(primary, { icon: true, label: false });
 		},
-		"inline",
+		"inline"
 	);
 }
 
@@ -235,7 +235,7 @@ export function collectContextMenuActions(menu: IMenu): IAction[] {
 		menu,
 		{ shouldForwardArgs: true },
 		{ primary, secondary: actions },
-		"inline",
+		"inline"
 	);
 	return actions;
 }
@@ -243,7 +243,7 @@ export function collectContextMenuActions(menu: IMenu): IAction[] {
 export class StatusBarAction extends Action {
 	constructor(
 		private command: Command,
-		private commandService: ICommandService,
+		private commandService: ICommandService
 	) {
 		super(`statusbaraction{${command.id}}`, command.title, "", true);
 		this.tooltip = command.tooltip || "";
@@ -252,7 +252,7 @@ export class StatusBarAction extends Action {
 	override run(): Promise<void> {
 		return this.commandService.executeCommand(
 			this.command.id,
-			...(this.command.arguments || []),
+			...(this.command.arguments || [])
 		);
 	}
 }
@@ -270,7 +270,7 @@ class StatusBarActionViewItem extends ActionViewItem {
 }
 
 export function getActionViewItemProvider(
-	instaService: IInstantiationService,
+	instaService: IInstantiationService
 ): IActionViewItemProvider {
 	return (action) => {
 		if (action instanceof StatusBarAction) {

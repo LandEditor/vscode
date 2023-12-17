@@ -54,11 +54,11 @@ export class MainThreadSpeech
 	$registerProvider(
 		handle: number,
 		identifier: string,
-		metadata: ISpeechProviderMetadata,
+		metadata: ISpeechProviderMetadata
 	): void {
 		this.logService.trace(
 			"[Speech] extension registered provider",
-			metadata.extension.value,
+			metadata.extension.value
 		);
 
 		const registration = this.speechService.registerSpeechProvider(
@@ -73,12 +73,12 @@ export class MainThreadSpeech
 					this.proxy.$createSpeechToTextSession(handle, session);
 					disposables.add(
 						token.onCancellationRequested(() =>
-							this.proxy.$cancelSpeechToTextSession(session),
-						),
+							this.proxy.$cancelSpeechToTextSession(session)
+						)
 					);
 
 					const onDidChange = disposables.add(
-						new Emitter<ISpeechToTextEvent>(),
+						new Emitter<ISpeechToTextEvent>()
 					);
 					this.providerSessions.set(session, { onDidChange });
 
@@ -91,7 +91,7 @@ export class MainThreadSpeech
 						},
 					};
 				},
-			},
+			}
 		);
 		this.providerRegistrations.set(handle, {
 			dispose: () => {

@@ -38,16 +38,20 @@ import { IHostService } from "vs/workbench/services/host/browser/host";
 
 export class WorkspaceWatcher extends Disposable {
 	private readonly watchedWorkspaces = new ResourceMap<IDisposable>(
-		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource),
+		(resource) => this.uriIdentityService.extUri.getComparisonKey(resource)
 	);
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IHostService private readonly hostService: IHostService
 	) {
 		super();
@@ -60,23 +64,23 @@ export class WorkspaceWatcher extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders((e) =>
-				this.onDidChangeWorkspaceFolders(e),
-			),
+				this.onDidChangeWorkspaceFolders(e)
+			)
 		);
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
-				this.onDidChangeWorkbenchState(),
-			),
+				this.onDidChangeWorkbenchState()
+			)
 		);
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
-				this.onDidChangeConfiguration(e),
-			),
+				this.onDidChangeConfiguration(e)
+			)
 		);
 		this._register(
 			this.fileService.onDidWatchError((error) =>
-				this.onDidWatchError(error),
-			),
+				this.onDidWatchError(error)
+			)
 		);
 	}
 
@@ -114,7 +118,7 @@ export class WorkspaceWatcher extends Disposable {
 				Severity.Warning,
 				localize(
 					"enospcError",
-					"Unable to watch for file changes in this large workspace folder. Please follow the instructions link to resolve this issue.",
+					"Unable to watch for file changes in this large workspace folder. Please follow the instructions link to resolve this issue."
 				),
 				[
 					{
@@ -122,8 +126,8 @@ export class WorkspaceWatcher extends Disposable {
 						run: () =>
 							this.openerService.open(
 								URI.parse(
-									"https://go.microsoft.com/fwlink/?linkid=867693",
-								),
+									"https://go.microsoft.com/fwlink/?linkid=867693"
+								)
 							),
 					},
 				],
@@ -134,7 +138,7 @@ export class WorkspaceWatcher extends Disposable {
 						isSecondary: true,
 						scope: NeverShowAgainScope.WORKSPACE,
 					},
-				},
+				}
 			);
 		}
 
@@ -144,7 +148,7 @@ export class WorkspaceWatcher extends Disposable {
 				Severity.Warning,
 				localize(
 					"eshutdownError",
-					"File changes watcher stopped unexpectedly. A reload of the window may enable the watcher again unless the workspace cannot be watched for file changes.",
+					"File changes watcher stopped unexpectedly. A reload of the window may enable the watcher again unless the workspace cannot be watched for file changes."
 				),
 				[
 					{
@@ -155,7 +159,7 @@ export class WorkspaceWatcher extends Disposable {
 				{
 					sticky: true,
 					priority: NotificationPriority.SILENT, // reduce potential spam since we don't really know how often this fires
-				},
+				}
 			);
 		}
 	}
@@ -175,7 +179,7 @@ export class WorkspaceWatcher extends Disposable {
 		}
 
 		const pathsToWatch = new ResourceMap<URI>((uri) =>
-			this.uriIdentityService.extUri.getComparisonKey(uri),
+			this.uriIdentityService.extUri.getComparisonKey(uri)
 		);
 
 		// Add the workspace as path to watch
@@ -196,7 +200,7 @@ export class WorkspaceWatcher extends Disposable {
 					if (
 						this.uriIdentityService.extUri.isEqualOrParent(
 							candidate,
-							workspace.uri,
+							workspace.uri
 						)
 					) {
 						pathsToWatch.set(candidate, candidate);
@@ -218,7 +222,7 @@ export class WorkspaceWatcher extends Disposable {
 				this.fileService.watch(pathToWatch, {
 					recursive: true,
 					excludes,
-				}),
+				})
 			);
 		}
 		this.watchedWorkspaces.set(workspace.uri, disposables);

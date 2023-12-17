@@ -28,7 +28,7 @@ function findNodeModulesFiles(location, inNodeModules, result) {
 			findNodeModulesFiles(
 				entryPath,
 				inNodeModules || entry === "node_modules",
-				result,
+				result
 			);
 		} else {
 			if (inNodeModules) {

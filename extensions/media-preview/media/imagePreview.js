@@ -265,7 +265,7 @@
 			const delta = e.deltaY > 0 ? 1 : -1;
 			updateScale(scale * (1 - delta * SCALE_PINCH_FACTOR));
 		},
-		{ passive: false },
+		{ passive: false }
 	);
 
 	window.addEventListener(
@@ -289,7 +289,7 @@
 				});
 			}
 		},
-		{ passive: true },
+		{ passive: true }
 	);
 
 	container.classList.add("image");
@@ -342,7 +342,7 @@
 	window.addEventListener("message", (e) => {
 		if (e.origin !== window.origin) {
 			console.error(
-				"Dropping message from unknown origin in image preview",
+				"Dropping message from unknown origin in image preview"
 			);
 			return;
 		}

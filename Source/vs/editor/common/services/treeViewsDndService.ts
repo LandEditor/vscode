@@ -17,10 +17,10 @@ import {
 export interface ITreeViewsDnDService
 	extends ITreeViewsDnDServiceCommon<VSDataTransfer> {}
 export const ITreeViewsDnDService = createDecorator<ITreeViewsDnDService>(
-	"treeViewsDndService",
+	"treeViewsDndService"
 );
 registerSingleton(
 	ITreeViewsDnDService,
 	TreeViewsDnDService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

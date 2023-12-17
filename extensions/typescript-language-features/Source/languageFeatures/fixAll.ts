@@ -33,7 +33,7 @@ async function buildIndividualFixes(
 	client: ITypeScriptServiceClient,
 	file: string,
 	diagnostics: readonly vscode.Diagnostic[],
-	token: vscode.CancellationToken,
+	token: vscode.CancellationToken
 ): Promise<void> {
 	for (const diagnostic of diagnostics) {
 		for (const { codes, fixName } of fixes) {
@@ -48,7 +48,7 @@ async function buildIndividualFixes(
 			const args: Proto.CodeFixRequestArgs = {
 				...typeConverters.Range.toFileRangeRequestArgs(
 					file,
-					diagnostic.range,
+					diagnostic.range
 				),
 				errorCodes: [+diagnostic.code!],
 			};
@@ -63,7 +63,7 @@ async function buildIndividualFixes(
 				typeConverters.WorkspaceEdit.withFileCodeEdits(
 					edit,
 					client,
-					fix.changes,
+					fix.changes
 				);
 				break;
 			}
@@ -77,7 +77,7 @@ async function buildCombinedFix(
 	client: ITypeScriptServiceClient,
 	file: string,
 	diagnostics: readonly vscode.Diagnostic[],
-	token: vscode.CancellationToken,
+	token: vscode.CancellationToken
 ): Promise<void> {
 	for (const diagnostic of diagnostics) {
 		for (const { codes, fixName } of fixes) {
@@ -92,7 +92,7 @@ async function buildCombinedFix(
 			const args: Proto.CodeFixRequestArgs = {
 				...typeConverters.Range.toFileRangeRequestArgs(
 					file,
-					diagnostic.range,
+					diagnostic.range
 				),
 				errorCodes: [+diagnostic.code!],
 			};
@@ -111,7 +111,7 @@ async function buildCombinedFix(
 				typeConverters.WorkspaceEdit.withFileCodeEdits(
 					edit,
 					client,
-					fix.changes,
+					fix.changes
 				);
 				return;
 			}
@@ -127,7 +127,7 @@ async function buildCombinedFix(
 			const combinedResponse = await client.execute(
 				"getCombinedCodeFix",
 				combinedArgs,
-				token,
+				token
 			);
 			if (
 				combinedResponse.type !== "response" ||
@@ -139,7 +139,7 @@ async function buildCombinedFix(
 			typeConverters.WorkspaceEdit.withFileCodeEdits(
 				edit,
 				client,
-				combinedResponse.body.changes,
+				combinedResponse.body.changes
 			);
 			return;
 		}
@@ -153,7 +153,7 @@ abstract class SourceAction extends vscode.CodeAction {
 		client: ITypeScriptServiceClient,
 		file: string,
 		diagnostics: readonly vscode.Diagnostic[],
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<void>;
 }
 
@@ -168,7 +168,7 @@ class SourceFixAll extends SourceAction {
 		client: ITypeScriptServiceClient,
 		file: string,
 		diagnostics: readonly vscode.Diagnostic[],
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<void> {
 		this.edit = new vscode.WorkspaceEdit();
 
@@ -187,7 +187,7 @@ class SourceFixAll extends SourceAction {
 			client,
 			file,
 			diagnostics,
-			token,
+			token
 		);
 
 		await buildCombinedFix(
@@ -201,7 +201,7 @@ class SourceFixAll extends SourceAction {
 			client,
 			file,
 			diagnostics,
-			token,
+			token
 		);
 	}
 }
@@ -218,7 +218,7 @@ class SourceRemoveUnused extends SourceAction {
 		client: ITypeScriptServiceClient,
 		file: string,
 		diagnostics: readonly vscode.Diagnostic[],
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<void> {
 		this.edit = new vscode.WorkspaceEdit();
 		await buildCombinedFix(
@@ -232,7 +232,7 @@ class SourceRemoveUnused extends SourceAction {
 			client,
 			file,
 			diagnostics,
-			token,
+			token
 		);
 	}
 }
@@ -244,7 +244,7 @@ class SourceAddMissingImports extends SourceAction {
 	constructor() {
 		super(
 			vscode.l10n.t("Add all missing imports"),
-			SourceAddMissingImports.kind,
+			SourceAddMissingImports.kind
 		);
 	}
 
@@ -252,7 +252,7 @@ class SourceAddMissingImports extends SourceAction {
 		client: ITypeScriptServiceClient,
 		file: string,
 		diagnostics: readonly vscode.Diagnostic[],
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<void> {
 		this.edit = new vscode.WorkspaceEdit();
 		await buildCombinedFix(
@@ -261,7 +261,7 @@ class SourceAddMissingImports extends SourceAction {
 			client,
 			file,
 			diagnostics,
-			token,
+			token
 		);
 	}
 }
@@ -278,7 +278,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 	constructor(
 		private readonly client: ITypeScriptServiceClient,
 		private readonly fileConfigurationManager: FileConfigurationManager,
-		private readonly diagnosticsManager: DiagnosticsManager,
+		private readonly diagnosticsManager: DiagnosticsManager
 	) {}
 
 	public get metadata(): vscode.CodeActionProviderMetadata {
@@ -292,7 +292,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 		document: vscode.TextDocument,
 		_range: vscode.Range,
 		context: vscode.CodeActionContext,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.CodeAction[] | undefined> {
 		if (
 			!context.only ||
@@ -308,7 +308,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 
 		const actions = this.getFixAllActions(context.only);
 		const diagnostics = this.diagnosticsManager.getDiagnostics(
-			document.uri,
+			document.uri
 		);
 		if (!diagnostics.length) {
 			// Actions are a no-op in this case but we still want to return them
@@ -317,7 +317,7 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 
 		await this.fileConfigurationManager.ensureConfigurationForDocument(
 			document,
-			token,
+			token
 		);
 
 		if (token.isCancellationRequested) {
@@ -326,8 +326,8 @@ class TypeScriptAutoFixProvider implements vscode.CodeActionProvider {
 
 		await Promise.all(
 			actions.map((action) =>
-				action.build(this.client, file, diagnostics, token),
-			),
+				action.build(this.client, file, diagnostics, token)
+			)
 		);
 
 		return actions;
@@ -344,7 +344,7 @@ export function register(
 	selector: DocumentSelector,
 	client: ITypeScriptServiceClient,
 	fileConfigurationManager: FileConfigurationManager,
-	diagnosticsManager: DiagnosticsManager,
+	diagnosticsManager: DiagnosticsManager
 ) {
 	return conditionalRegistration(
 		[
@@ -355,13 +355,13 @@ export function register(
 			const provider = new TypeScriptAutoFixProvider(
 				client,
 				fileConfigurationManager,
-				diagnosticsManager,
+				diagnosticsManager
 			);
 			return vscode.languages.registerCodeActionsProvider(
 				selector.semantic,
 				provider,
-				provider.metadata,
+				provider.metadata
 			);
-		},
+		}
 	);
 }

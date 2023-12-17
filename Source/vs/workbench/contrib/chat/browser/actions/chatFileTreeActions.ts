@@ -28,7 +28,7 @@ export function registerChatFileTreeActions() {
 					title: {
 						value: localize(
 							"interactive.nextFileTree.label",
-							"Next File Tree",
+							"Next File Tree"
 						),
 						original: "Next File Tree",
 					},
@@ -46,7 +46,7 @@ export function registerChatFileTreeActions() {
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateTrees(accessor, false);
 			}
-		},
+		}
 	);
 
 	registerAction2(
@@ -57,7 +57,7 @@ export function registerChatFileTreeActions() {
 					title: {
 						value: localize(
 							"interactive.previousFileTree.label",
-							"Previous File Tree",
+							"Previous File Tree"
 						),
 						original: "Previous File Tree",
 					},
@@ -75,7 +75,7 @@ export function registerChatFileTreeActions() {
 			run(accessor: ServicesAccessor, ...args: any[]) {
 				navigateTrees(accessor, true);
 			}
-		},
+		}
 	);
 }
 
@@ -108,10 +108,10 @@ function navigateTrees(accessor: ServicesAccessor, reverse: boolean) {
 		? (lastFocusedFileTree.treeIndex +
 				(reverse ? -1 : 1) +
 				responseFileTrees.length) %
-		  responseFileTrees.length
+			responseFileTrees.length
 		: reverse
-		  ? responseFileTrees.length - 1
-		  : 0;
+			? responseFileTrees.length - 1
+			: 0;
 
 	responseFileTrees[focusIdx]?.focus();
 }

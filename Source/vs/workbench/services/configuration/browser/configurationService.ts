@@ -152,7 +152,7 @@ import { runWhenWindowIdle } from "vs/base/browser/dom";
 
 function getLocalUserConfigurationScopes(
 	userDataProfile: IUserDataProfile,
-	hasRemote: boolean,
+	hasRemote: boolean
 ): ConfigurationScope[] | undefined {
 	return userDataProfile.isDefault ||
 		userDataProfile.useDefaultFlags?.settings
@@ -160,8 +160,8 @@ function getLocalUserConfigurationScopes(
 			? LOCAL_MACHINE_SCOPES
 			: undefined
 		: hasRemote
-		  ? LOCAL_MACHINE_PROFILE_SCOPES
-		  : PROFILE_SCOPES;
+			? LOCAL_MACHINE_PROFILE_SCOPES
+			: PROFILE_SCOPES;
 }
 
 class Workspace extends BaseWorkspace {
@@ -207,7 +207,7 @@ export class WorkspaceService
 		this._onDidChangeWorkspaceFolders.event;
 
 	private readonly _onDidChangeWorkspaceName: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	public readonly onDidChangeWorkspaceName: Event<void> =
 		this._onDidChangeWorkspaceName.event;
@@ -224,7 +224,7 @@ export class WorkspaceService
 		return this._restrictedSettings;
 	}
 	private readonly _onDidChangeRestrictedSettings = this._register(
-		new Emitter<RestrictedSettings>(),
+		new Emitter<RestrictedSettings>()
 	);
 	public readonly onDidChangeRestrictedSettings =
 		this._onDidChangeRestrictedSettings.event;
@@ -249,18 +249,18 @@ export class WorkspaceService
 		private readonly remoteAgentService: IRemoteAgentService,
 		private readonly uriIdentityService: IUriIdentityService,
 		private readonly logService: ILogService,
-		policyService: IPolicyService,
+		policyService: IPolicyService
 	) {
 		super();
 
 		this.configurationRegistry = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		);
 
 		this.initRemoteUserConfigurationBarrier = new Barrier();
 		this.completeWorkspaceBarrier = new Barrier();
 		this.defaultConfiguration = this._register(
-			new DefaultConfiguration(configurationCache, environmentService),
+			new DefaultConfiguration(configurationCache, environmentService)
 		);
 		this.policyConfiguration =
 			policyService instanceof NullPolicyService
@@ -269,9 +269,9 @@ export class WorkspaceService
 						new PolicyConfiguration(
 							this.defaultConfiguration,
 							policyService,
-							logService,
-						),
-				  );
+							logService
+						)
+					);
 		this.configurationCache = configurationCache;
 		this._configuration = new Configuration(
 			this.defaultConfiguration.configurationModel,
@@ -283,10 +283,10 @@ export class WorkspaceService
 			new ResourceMap(),
 			new ConfigurationModel(),
 			new ResourceMap<ConfigurationModel>(),
-			this.workspace,
+			this.workspace
 		);
 		this.applicationConfigurationDisposables = this._register(
-			new DisposableStore(),
+			new DisposableStore()
 		);
 		this.createApplicationConfiguration();
 		this.localUserConfiguration = this._register(
@@ -296,20 +296,20 @@ export class WorkspaceService
 				{
 					scopes: getLocalUserConfigurationScopes(
 						userDataProfileService.currentProfile,
-						!!remoteAuthority,
+						!!remoteAuthority
 					),
 				},
 				fileService,
 				uriIdentityService,
-				logService,
-			),
+				logService
+			)
 		);
 		this.cachedFolderConfigs = new ResourceMap<FolderConfiguration>();
 		this._register(
 			this.localUserConfiguration.onDidChangeConfiguration(
 				(userConfiguration) =>
-					this.onLocalUserConfigurationChanged(userConfiguration),
-			),
+					this.onLocalUserConfigurationChanged(userConfiguration)
+			)
 		);
 		if (remoteAuthority) {
 			const remoteUserConfiguration = (this.remoteUserConfiguration =
@@ -319,8 +319,8 @@ export class WorkspaceService
 						configurationCache,
 						fileService,
 						uriIdentityService,
-						remoteAgentService,
-					),
+						remoteAgentService
+					)
 				));
 			this._register(
 				remoteUserConfiguration.onDidInitialize(
@@ -329,16 +329,16 @@ export class WorkspaceService
 							remoteUserConfiguration.onDidChangeConfiguration(
 								(remoteUserConfigurationModel) =>
 									this.onRemoteUserConfigurationChanged(
-										remoteUserConfigurationModel,
-									),
-							),
+										remoteUserConfigurationModel
+									)
+							)
 						);
 						this.onRemoteUserConfigurationChanged(
-							remoteUserConfigurationModel,
+							remoteUserConfigurationModel
 						);
 						this.initRemoteUserConfigurationBarrier.open();
-					},
-				),
+					}
+				)
 			);
 		} else {
 			this.initRemoteUserConfigurationBarrier.open();
@@ -349,8 +349,8 @@ export class WorkspaceService
 				configurationCache,
 				fileService,
 				uriIdentityService,
-				logService,
-			),
+				logService
+			)
 		);
 		this._register(
 			this.workspaceConfiguration.onDidUpdateConfiguration(
@@ -360,26 +360,26 @@ export class WorkspaceService
 							this.workspaceConfiguration.initialized;
 						this.checkAndMarkWorkspaceComplete(fromCache);
 					});
-				},
-			),
+				}
+			)
 		);
 
 		this._register(
 			this.defaultConfiguration.onDidChangeConfiguration(
 				({ properties, defaults }) =>
-					this.onDefaultConfigurationChanged(defaults, properties),
-			),
+					this.onDefaultConfigurationChanged(defaults, properties)
+			)
 		);
 		this._register(
 			this.policyConfiguration.onDidChangeConfiguration(
 				(configurationModel) =>
-					this.onPolicyConfigurationChanged(configurationModel),
-			),
+					this.onPolicyConfigurationChanged(configurationModel)
+			)
 		);
 		this._register(
 			userDataProfileService.onDidChangeCurrentProfile((e) =>
-				this.onUserDataProfileChanged(e),
-			),
+				this.onUserDataProfileChanged(e)
+			)
 		);
 
 		this.workspaceEditingQueue = new Queue<void>();
@@ -399,17 +399,17 @@ export class WorkspaceService
 						new ApplicationConfiguration(
 							this.userDataProfilesService,
 							this.fileService,
-							this.uriIdentityService,
-						),
-					),
+							this.uriIdentityService
+						)
+					)
 				);
 			this.applicationConfigurationDisposables.add(
 				this.applicationConfiguration.onDidChangeConfiguration(
 					(configurationModel) =>
 						this.onApplicationConfigurationChanged(
-							configurationModel,
-						),
-				),
+							configurationModel
+						)
+				)
 			);
 		}
 	}
@@ -446,7 +446,7 @@ export class WorkspaceService
 
 	public addFolders(
 		foldersToAdd: IWorkspaceFolderCreationData[],
-		index?: number,
+		index?: number
 	): Promise<void> {
 		return this.updateFolders(foldersToAdd, [], index);
 	}
@@ -458,10 +458,10 @@ export class WorkspaceService
 	public async updateFolders(
 		foldersToAdd: IWorkspaceFolderCreationData[],
 		foldersToRemove: URI[],
-		index?: number,
+		index?: number
 	): Promise<void> {
 		return this.workspaceEditingQueue.queue(() =>
-			this.doUpdateFolders(foldersToAdd, foldersToRemove, index),
+			this.doUpdateFolders(foldersToAdd, foldersToRemove, index)
 		);
 	}
 
@@ -473,7 +473,7 @@ export class WorkspaceService
 		workspaceIdOrFolder:
 			| IWorkspaceIdentifier
 			| ISingleFolderWorkspaceIdentifier
-			| URI,
+			| URI
 	): boolean {
 		switch (this.getWorkbenchState()) {
 			case WorkbenchState.FOLDER: {
@@ -490,7 +490,7 @@ export class WorkspaceService
 					URI.isUri(folderUri) &&
 					this.uriIdentityService.extUri.isEqual(
 						folderUri,
-						this.workspace.folders[0].uri,
+						this.workspace.folders[0].uri
 					)
 				);
 			}
@@ -506,7 +506,7 @@ export class WorkspaceService
 	private async doUpdateFolders(
 		foldersToAdd: IWorkspaceFolderCreationData[],
 		foldersToRemove: URI[],
-		index?: number,
+		index?: number
 	): Promise<void> {
 		if (this.getWorkbenchState() !== WorkbenchState.WORKSPACE) {
 			return Promise.resolve(undefined); // we need a workspace to begin with
@@ -529,7 +529,7 @@ export class WorkspaceService
 
 				return !this.contains(
 					foldersToRemove,
-					currentWorkspaceFolders[index].uri,
+					currentWorkspaceFolders[index].uri
 				); // keep entries which are unrelated
 			});
 
@@ -545,10 +545,10 @@ export class WorkspaceService
 			currentWorkspaceFolders = toWorkspaceFolders(
 				newStoredFolders,
 				workspaceConfigPath,
-				this.uriIdentityService.extUri,
+				this.uriIdentityService.extUri
 			);
 			const currentWorkspaceFolderUris = currentWorkspaceFolders.map(
-				(folder) => folder.uri,
+				(folder) => folder.uri
 			);
 
 			const storedFoldersToAdd: IStoredWorkspaceFolder[] = [];
@@ -572,8 +572,8 @@ export class WorkspaceService
 						false,
 						folderToAdd.name,
 						workspaceConfigFolder,
-						this.uriIdentityService.extUri,
-					),
+						this.uriIdentityService.extUri
+					)
 				);
 			}
 
@@ -608,22 +608,22 @@ export class WorkspaceService
 	private async setFolders(folders: IStoredWorkspaceFolder[]): Promise<void> {
 		if (!this.instantiationService) {
 			throw new Error(
-				"Cannot update workspace folders because workspace service is not yet ready to accept writes.",
+				"Cannot update workspace folders because workspace service is not yet ready to accept writes."
 			);
 		}
 
 		await this.instantiationService.invokeFunction((accessor) =>
 			this.workspaceConfiguration.setFolders(
 				folders,
-				accessor.get(IJSONEditingService),
-			),
+				accessor.get(IJSONEditingService)
+			)
 		);
 		return this.onWorkspaceConfigurationChanged(false);
 	}
 
 	private contains(resources: URI[], toCheck: URI): boolean {
 		return resources.some((resource) =>
-			this.uriIdentityService.extUri.isEqual(resource, toCheck),
+			this.uriIdentityService.extUri.isEqual(resource, toCheck)
 		);
 	}
 
@@ -642,8 +642,8 @@ export class WorkspaceService
 		const overrides = isConfigurationOverrides(arg1)
 			? arg1
 			: isConfigurationOverrides(arg2)
-			  ? arg2
-			  : undefined;
+				? arg2
+				: undefined;
 		return this._configuration.getValue(section, overrides);
 	}
 
@@ -651,44 +651,44 @@ export class WorkspaceService
 	updateValue(
 		key: string,
 		value: any,
-		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
+		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides
 	): Promise<void>;
 	updateValue(
 		key: string,
 		value: any,
-		target: ConfigurationTarget,
+		target: ConfigurationTarget
 	): Promise<void>;
 	updateValue(
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | IConfigurationUpdateOverrides,
 		target: ConfigurationTarget,
-		options?: IConfigurationUpdateOptions,
+		options?: IConfigurationUpdateOptions
 	): Promise<void>;
 	async updateValue(
 		key: string,
 		value: any,
 		arg3?: any,
 		arg4?: any,
-		options?: any,
+		options?: any
 	): Promise<void> {
 		const overrides: IConfigurationUpdateOverrides | undefined =
 			isConfigurationUpdateOverrides(arg3)
 				? arg3
 				: isConfigurationOverrides(arg3)
-				  ? {
+					? {
 							resource: arg3.resource,
 							overrideIdentifiers: arg3.overrideIdentifier
 								? [arg3.overrideIdentifier]
 								: undefined,
-					  }
-				  : undefined;
+						}
+					: undefined;
 		const target: ConfigurationTarget | undefined = overrides ? arg4 : arg3;
 		const targets: ConfigurationTarget[] = target ? [target] : [];
 
 		if (overrides?.overrideIdentifiers) {
 			overrides.overrideIdentifiers = distinct(
-				overrides.overrideIdentifiers,
+				overrides.overrideIdentifiers
 			);
 			overrides.overrideIdentifiers = overrides.overrideIdentifiers.length
 				? overrides.overrideIdentifiers
@@ -701,7 +701,7 @@ export class WorkspaceService
 				overrides.overrideIdentifiers.length > 1
 			) {
 				throw new Error(
-					"Configuration Target is required while updating the value for multiple override identifiers",
+					"Configuration Target is required while updating the value for multiple override identifiers"
 				);
 			}
 			const inspect = this.inspect(key, {
@@ -711,7 +711,7 @@ export class WorkspaceService
 					: undefined,
 			});
 			targets.push(
-				...this.deriveConfigurationTargets(key, value, inspect),
+				...this.deriveConfigurationTargets(key, value, inspect)
 			);
 
 			// Remove the setting, if the value is same as default value and is updated only in user target
@@ -732,14 +732,14 @@ export class WorkspaceService
 					value,
 					target,
 					overrides,
-					options,
-				),
-			),
+					options
+				)
+			)
 		);
 	}
 
 	async reloadConfiguration(
-		target?: ConfigurationTarget | IWorkspaceFolder,
+		target?: ConfigurationTarget | IWorkspaceFolder
 	): Promise<void> {
 		if (target === undefined) {
 			this.reloadDefaultConfiguration();
@@ -766,7 +766,7 @@ export class WorkspaceService
 					this._configuration.applicationConfiguration,
 					local,
 					remote,
-					true,
+					true
 				);
 				return;
 			}
@@ -791,7 +791,7 @@ export class WorkspaceService
 
 	inspect<T>(
 		key: string,
-		overrides?: IConfigurationOverrides,
+		overrides?: IConfigurationOverrides
 	): IConfigurationValue<T> {
 		return this._configuration.inspect<T>(key, overrides);
 	}
@@ -830,7 +830,7 @@ export class WorkspaceService
 		const workspace = await this.createWorkspace(arg);
 		await this.updateWorkspaceAndInitializeConfiguration(
 			workspace,
-			trigger,
+			trigger
 		);
 		this.checkAndMarkWorkspaceComplete(false);
 
@@ -847,17 +847,17 @@ export class WorkspaceService
 			)[] = [];
 			for (const folder of this.workspace.folders) {
 				const folderConfiguration = this.cachedFolderConfigs.get(
-					folder.uri,
+					folder.uri
 				);
 				let configurationModel: ConfigurationModel | undefined;
 				if (folderConfiguration) {
 					configurationModel =
 						folderConfiguration.updateWorkspaceTrust(
-							this.isWorkspaceTrusted,
+							this.isWorkspaceTrusted
 						);
 					this._configuration.updateFolderConfiguration(
 						folder.uri,
-						configurationModel,
+						configurationModel
 					);
 				}
 				folderConfigurationModels.push(configurationModel);
@@ -865,14 +865,14 @@ export class WorkspaceService
 			if (this.getWorkbenchState() === WorkbenchState.FOLDER) {
 				if (folderConfigurationModels[0]) {
 					this._configuration.updateWorkspaceConfiguration(
-						folderConfigurationModels[0],
+						folderConfigurationModels[0]
 					);
 				}
 			} else {
 				this._configuration.updateWorkspaceConfiguration(
 					this.workspaceConfiguration.updateWorkspaceTrust(
-						this.isWorkspaceTrusted,
-					),
+						this.isWorkspaceTrusted
+					)
 				);
 			}
 			this.updateRestrictedSettings();
@@ -888,21 +888,21 @@ export class WorkspaceService
 				keys.push(...this.restrictedSettings.workspace);
 			}
 			this.restrictedSettings.workspaceFolder?.forEach((value) =>
-				keys.push(...value),
+				keys.push(...value)
 			);
 			keys = distinct(keys);
 			if (keys.length) {
 				this.triggerConfigurationChange(
 					{ keys, overrides: [] },
 					{ data, workspace: this.workspace },
-					ConfigurationTarget.WORKSPACE,
+					ConfigurationTarget.WORKSPACE
 				);
 			}
 		}
 	}
 
 	acquireInstantiationService(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): void {
 		this.instantiationService = instantiationService;
 	}
@@ -923,7 +923,7 @@ export class WorkspaceService
 	}
 
 	private async createWorkspace(
-		arg: IAnyWorkspaceIdentifier,
+		arg: IAnyWorkspaceIdentifier
 	): Promise<Workspace> {
 		if (isWorkspaceIdentifier(arg)) {
 			return this.createMultiFolderWorkspace(arg);
@@ -937,20 +937,20 @@ export class WorkspaceService
 	}
 
 	private async createMultiFolderWorkspace(
-		workspaceIdentifier: IWorkspaceIdentifier,
+		workspaceIdentifier: IWorkspaceIdentifier
 	): Promise<Workspace> {
 		await this.workspaceConfiguration.initialize(
 			{
 				id: workspaceIdentifier.id,
 				configPath: workspaceIdentifier.configPath,
 			},
-			this.isWorkspaceTrusted,
+			this.isWorkspaceTrusted
 		);
 		const workspaceConfigPath = workspaceIdentifier.configPath;
 		const workspaceFolders = toWorkspaceFolders(
 			this.workspaceConfiguration.getFolders(),
 			workspaceConfigPath,
-			this.uriIdentityService.extUri,
+			this.uriIdentityService.extUri
 		);
 		const workspaceId = workspaceIdentifier.id;
 		const workspace = new Workspace(
@@ -958,35 +958,35 @@ export class WorkspaceService
 			workspaceFolders,
 			this.workspaceConfiguration.isTransient(),
 			workspaceConfigPath,
-			(uri) => this.uriIdentityService.extUri.ignorePathCasing(uri),
+			(uri) => this.uriIdentityService.extUri.ignorePathCasing(uri)
 		);
 		workspace.initialized = this.workspaceConfiguration.initialized;
 		return workspace;
 	}
 
 	private createSingleFolderWorkspace(
-		singleFolderWorkspaceIdentifier: ISingleFolderWorkspaceIdentifier,
+		singleFolderWorkspaceIdentifier: ISingleFolderWorkspaceIdentifier
 	): Workspace {
 		const workspace = new Workspace(
 			singleFolderWorkspaceIdentifier.id,
 			[toWorkspaceFolder(singleFolderWorkspaceIdentifier.uri)],
 			false,
 			null,
-			(uri) => this.uriIdentityService.extUri.ignorePathCasing(uri),
+			(uri) => this.uriIdentityService.extUri.ignorePathCasing(uri)
 		);
 		workspace.initialized = true;
 		return workspace;
 	}
 
 	private createEmptyWorkspace(
-		emptyWorkspaceIdentifier: IEmptyWorkspaceIdentifier,
+		emptyWorkspaceIdentifier: IEmptyWorkspaceIdentifier
 	): Promise<Workspace> {
 		const workspace = new Workspace(
 			emptyWorkspaceIdentifier.id,
 			[],
 			false,
 			null,
-			(uri) => this.uriIdentityService.extUri.ignorePathCasing(uri),
+			(uri) => this.uriIdentityService.extUri.ignorePathCasing(uri)
 		);
 		workspace.initialized = true;
 		return Promise.resolve(workspace);
@@ -1004,7 +1004,7 @@ export class WorkspaceService
 
 	private async updateWorkspaceAndInitializeConfiguration(
 		workspace: Workspace,
-		trigger: boolean,
+		trigger: boolean
 	): Promise<void> {
 		const hasWorkspaceBefore = !!this.workspace;
 		let previousState: WorkbenchState | undefined;
@@ -1044,7 +1044,7 @@ export class WorkspaceService
 
 			const folderChanges = this.compareFolders(
 				previousFolders,
-				this.workspace.folders,
+				this.workspace.folders
 			);
 			if (
 				folderChanges &&
@@ -1054,7 +1054,7 @@ export class WorkspaceService
 			) {
 				await this.handleWillChangeWorkspaceFolders(
 					folderChanges,
-					false,
+					false
 				);
 				this._onDidChangeWorkspaceFolders.fire(folderChanges);
 			}
@@ -1066,16 +1066,16 @@ export class WorkspaceService
 				runWhenWindowIdle(mainWindow, () =>
 					this.reloadLocalUserConfiguration(
 						false,
-						this._configuration.localUserConfiguration,
-					),
-				),
+						this._configuration.localUserConfiguration
+					)
+				)
 			);
 		}
 	}
 
 	private compareFolders(
 		currentFolders: IWorkspaceFolder[],
-		newFolders: IWorkspaceFolder[],
+		newFolders: IWorkspaceFolder[]
 	): IWorkspaceFoldersChangeEvent {
 		const result: IWorkspaceFoldersChangeEvent = {
 			added: [],
@@ -1087,8 +1087,8 @@ export class WorkspaceService
 				!currentFolders.some(
 					(currentFolder) =>
 						newFolder.uri.toString() ===
-						currentFolder.uri.toString(),
-				),
+						currentFolder.uri.toString()
+				)
 		);
 		for (
 			let currentIndex = 0;
@@ -1140,7 +1140,7 @@ export class WorkspaceService
 					await initApplicationConfigurationPromise;
 				result[0] = this.localUserConfiguration.reparse({
 					exclude: applicationConfigurationModel.getValue(
-						APPLY_ALL_PROFILES_SETTING,
+						APPLY_ALL_PROFILES_SETTING
 					),
 				});
 			}
@@ -1164,7 +1164,7 @@ export class WorkspaceService
 	}
 
 	private async reloadApplicationConfiguration(
-		donotTrigger?: boolean,
+		donotTrigger?: boolean
 	): Promise<ConfigurationModel> {
 		if (!this.applicationConfiguration) {
 			return new ConfigurationModel();
@@ -1189,10 +1189,10 @@ export class WorkspaceService
 
 	async reloadLocalUserConfiguration(
 		donotTrigger?: boolean,
-		settingsConfiguration?: ConfigurationModel,
+		settingsConfiguration?: ConfigurationModel
 	): Promise<ConfigurationModel> {
 		const model = await this.localUserConfiguration.reload(
-			settingsConfiguration,
+			settingsConfiguration
 		);
 		if (!donotTrigger) {
 			this.onLocalUserConfigurationChanged(model);
@@ -1201,7 +1201,7 @@ export class WorkspaceService
 	}
 
 	private async reloadRemoteUserConfiguration(
-		donotTrigger?: boolean,
+		donotTrigger?: boolean
 	): Promise<ConfigurationModel> {
 		if (this.remoteUserConfiguration) {
 			const model = await this.remoteUserConfiguration.reload();
@@ -1217,7 +1217,7 @@ export class WorkspaceService
 		const workbenchState = this.getWorkbenchState();
 		if (workbenchState === WorkbenchState.FOLDER) {
 			return this.onWorkspaceFolderConfigurationChanged(
-				this.workspace.folders[0],
+				this.workspace.folders[0]
 			);
 		}
 		if (workbenchState === WorkbenchState.WORKSPACE) {
@@ -1228,7 +1228,7 @@ export class WorkspaceService
 	}
 
 	private reloadWorkspaceFolderConfiguration(
-		folder: IWorkspaceFolder,
+		folder: IWorkspaceFolder
 	): Promise<void> {
 		return this.onWorkspaceFolderConfigurationChanged(folder);
 	}
@@ -1237,7 +1237,7 @@ export class WorkspaceService
 		applicationConfigurationModel: ConfigurationModel,
 		userConfigurationModel: ConfigurationModel,
 		remoteUserConfigurationModel: ConfigurationModel,
-		trigger: boolean,
+		trigger: boolean
 	): Promise<void> {
 		// reset caches
 		this.cachedFolderConfigs = new ResourceMap<FolderConfiguration>();
@@ -1252,8 +1252,8 @@ export class WorkspaceService
 		folderConfigurations.forEach((folderConfiguration, index) =>
 			folderConfigurationModels.set(
 				folders[index].uri,
-				folderConfiguration,
-			),
+				folderConfiguration
+			)
 		);
 
 		const currentConfiguration = this._configuration;
@@ -1267,7 +1267,7 @@ export class WorkspaceService
 			folderConfigurationModels,
 			new ConfigurationModel(),
 			new ResourceMap<ConfigurationModel>(),
-			this.workspace,
+			this.workspace
 		);
 
 		this.initialized = true;
@@ -1280,7 +1280,7 @@ export class WorkspaceService
 					data: currentConfiguration.toData(),
 					workspace: this.workspace,
 				},
-				ConfigurationTarget.WORKSPACE,
+				ConfigurationTarget.WORKSPACE
 			);
 		}
 
@@ -1288,7 +1288,7 @@ export class WorkspaceService
 	}
 
 	private getWorkspaceConfigurationModel(
-		folderConfigurations: ConfigurationModel[],
+		folderConfigurations: ConfigurationModel[]
 	): ConfigurationModel {
 		switch (this.getWorkbenchState()) {
 			case WorkbenchState.FOLDER:
@@ -1311,10 +1311,10 @@ export class WorkspaceService
 						{
 							scopes: getLocalUserConfigurationScopes(
 								e.profile,
-								!!this.remoteUserConfiguration,
+								!!this.remoteUserConfiguration
 							),
-						},
-					),
+						}
+					)
 				);
 				if (
 					e.previous.isDefault !== e.profile.isDefault ||
@@ -1324,7 +1324,7 @@ export class WorkspaceService
 					this.createApplicationConfiguration();
 					if (this.applicationConfiguration) {
 						promises.push(
-							this.reloadApplicationConfiguration(true),
+							this.reloadApplicationConfiguration(true)
 						);
 					}
 				}
@@ -1334,7 +1334,7 @@ export class WorkspaceService
 				if (this.applicationConfiguration) {
 					localUser = this.localUserConfiguration.reparse({
 						exclude: application.getValue(
-							APPLY_ALL_PROFILES_SETTING,
+							APPLY_ALL_PROFILES_SETTING
 						),
 					});
 				}
@@ -1342,61 +1342,61 @@ export class WorkspaceService
 					application,
 					localUser,
 					this._configuration.remoteUserConfiguration,
-					true,
+					true
 				);
-			})(),
+			})()
 		);
 	}
 
 	private onDefaultConfigurationChanged(
 		configurationModel: ConfigurationModel,
-		properties?: string[],
+		properties?: string[]
 	): void {
 		if (this.workspace) {
 			const previousData = this._configuration.toData();
 			const change =
 				this._configuration.compareAndUpdateDefaultConfiguration(
 					configurationModel,
-					properties,
+					properties
 				);
 			if (this.applicationConfiguration) {
 				this._configuration.updateApplicationConfiguration(
-					this.applicationConfiguration.reparse(),
+					this.applicationConfiguration.reparse()
 				);
 			}
 			if (this.remoteUserConfiguration) {
 				this._configuration.updateLocalUserConfiguration(
-					this.localUserConfiguration.reparse(),
+					this.localUserConfiguration.reparse()
 				);
 				this._configuration.updateRemoteUserConfiguration(
-					this.remoteUserConfiguration.reparse(),
+					this.remoteUserConfiguration.reparse()
 				);
 			}
 			if (this.getWorkbenchState() === WorkbenchState.FOLDER) {
 				const folderConfiguration = this.cachedFolderConfigs.get(
-					this.workspace.folders[0].uri,
+					this.workspace.folders[0].uri
 				);
 				if (folderConfiguration) {
 					this._configuration.updateWorkspaceConfiguration(
-						folderConfiguration.reparse(),
+						folderConfiguration.reparse()
 					);
 					this._configuration.updateFolderConfiguration(
 						this.workspace.folders[0].uri,
-						folderConfiguration.reparse(),
+						folderConfiguration.reparse()
 					);
 				}
 			} else {
 				this._configuration.updateWorkspaceConfiguration(
-					this.workspaceConfiguration.reparseWorkspaceSettings(),
+					this.workspaceConfiguration.reparseWorkspaceSettings()
 				);
 				for (const folder of this.workspace.folders) {
 					const folderConfiguration = this.cachedFolderConfigs.get(
-						folder.uri,
+						folder.uri
 					);
 					if (folderConfiguration) {
 						this._configuration.updateFolderConfiguration(
 							folder.uri,
-							folderConfiguration.reparse(),
+							folderConfiguration.reparse()
 						);
 					}
 				}
@@ -1404,14 +1404,14 @@ export class WorkspaceService
 			this.triggerConfigurationChange(
 				change,
 				{ data: previousData, workspace: this.workspace },
-				ConfigurationTarget.DEFAULT,
+				ConfigurationTarget.DEFAULT
 			);
 			this.updateRestrictedSettings();
 		}
 	}
 
 	private onPolicyConfigurationChanged(
-		policyConfiguration: ConfigurationModel,
+		policyConfiguration: ConfigurationModel
 	): void {
 		const previous = {
 			data: this._configuration.toData(),
@@ -1419,17 +1419,17 @@ export class WorkspaceService
 		};
 		const change =
 			this._configuration.compareAndUpdatePolicyConfiguration(
-				policyConfiguration,
+				policyConfiguration
 			);
 		this.triggerConfigurationChange(
 			change,
 			previous,
-			ConfigurationTarget.DEFAULT,
+			ConfigurationTarget.DEFAULT
 		);
 	}
 
 	private onApplicationConfigurationChanged(
-		applicationConfiguration: ConfigurationModel,
+		applicationConfiguration: ConfigurationModel
 	): void {
 		const previous = {
 			data: this._configuration.toData(),
@@ -1437,11 +1437,11 @@ export class WorkspaceService
 		};
 		const previousAllProfilesSettings =
 			this._configuration.applicationConfiguration.getValue<string[]>(
-				APPLY_ALL_PROFILES_SETTING,
+				APPLY_ALL_PROFILES_SETTING
 			) ?? [];
 		const change =
 			this._configuration.compareAndUpdateApplicationConfiguration(
-				applicationConfiguration,
+				applicationConfiguration
 			);
 		const currentAllProfilesSettings =
 			this.getValue<string[]>(APPLY_ALL_PROFILES_SETTING) ?? [];
@@ -1458,7 +1458,7 @@ export class WorkspaceService
 					for (const previousAllProfileSetting of previousAllProfilesSettings) {
 						if (
 							!currentAllProfilesSettings.includes(
-								previousAllProfileSetting,
+								previousAllProfileSetting
 							)
 						) {
 							changedKeys.push(previousAllProfileSetting);
@@ -1467,7 +1467,7 @@ export class WorkspaceService
 					for (const currentAllProfileSetting of currentAllProfilesSettings) {
 						if (
 							!previousAllProfilesSettings.includes(
-								currentAllProfileSetting,
+								currentAllProfileSetting
 							)
 						) {
 							changedKeys.push(currentAllProfileSetting);
@@ -1483,18 +1483,18 @@ export class WorkspaceService
 			this._configuration.updateLocalUserConfiguration(
 				this.localUserConfiguration.reparse({
 					exclude: currentAllProfilesSettings,
-				}),
+				})
 			);
 		}
 		this.triggerConfigurationChange(
 			change,
 			previous,
-			ConfigurationTarget.USER,
+			ConfigurationTarget.USER
 		);
 	}
 
 	private onLocalUserConfigurationChanged(
-		userConfiguration: ConfigurationModel,
+		userConfiguration: ConfigurationModel
 	): void {
 		const previous = {
 			data: this._configuration.toData(),
@@ -1502,17 +1502,17 @@ export class WorkspaceService
 		};
 		const change =
 			this._configuration.compareAndUpdateLocalUserConfiguration(
-				userConfiguration,
+				userConfiguration
 			);
 		this.triggerConfigurationChange(
 			change,
 			previous,
-			ConfigurationTarget.USER,
+			ConfigurationTarget.USER
 		);
 	}
 
 	private onRemoteUserConfigurationChanged(
-		userConfiguration: ConfigurationModel,
+		userConfiguration: ConfigurationModel
 	): void {
 		const previous = {
 			data: this._configuration.toData(),
@@ -1520,37 +1520,37 @@ export class WorkspaceService
 		};
 		const change =
 			this._configuration.compareAndUpdateRemoteUserConfiguration(
-				userConfiguration,
+				userConfiguration
 			);
 		this.triggerConfigurationChange(
 			change,
 			previous,
-			ConfigurationTarget.USER,
+			ConfigurationTarget.USER
 		);
 	}
 
 	private async onWorkspaceConfigurationChanged(
-		fromCache: boolean,
+		fromCache: boolean
 	): Promise<void> {
 		if (this.workspace && this.workspace.configuration) {
 			let newFolders = toWorkspaceFolders(
 				this.workspaceConfiguration.getFolders(),
 				this.workspace.configuration,
-				this.uriIdentityService.extUri,
+				this.uriIdentityService.extUri
 			);
 
 			// Validate only if workspace is initialized
 			if (this.workspace.initialized) {
 				const { added, removed, changed } = this.compareFolders(
 					this.workspace.folders,
-					newFolders,
+					newFolders
 				);
 
 				/* If changed validate new folders */
 				if (added.length || removed.length || changed.length) {
 					newFolders = await this.toValidWorkspaceFolders(newFolders);
 				} else {
-				/* Otherwise use existing */
+					/* Otherwise use existing */
 					newFolders = this.workspace.folders;
 				}
 			}
@@ -1558,7 +1558,7 @@ export class WorkspaceService
 			await this.updateWorkspaceConfiguration(
 				newFolders,
 				this.workspaceConfiguration.getConfiguration(),
-				fromCache,
+				fromCache
 			);
 		}
 	}
@@ -1574,7 +1574,7 @@ export class WorkspaceService
 		const defaultDelta = delta(
 			defaultRestrictedSettings,
 			this._restrictedSettings.default,
-			(a, b) => a.localeCompare(b),
+			(a, b) => a.localeCompare(b)
 		);
 		changed.push(...defaultDelta.added, ...defaultDelta.removed);
 
@@ -1584,7 +1584,7 @@ export class WorkspaceService
 		const applicationDelta = delta(
 			application,
 			this._restrictedSettings.application || [],
-			(a, b) => a.localeCompare(b),
+			(a, b) => a.localeCompare(b)
 		);
 		changed.push(...applicationDelta.added, ...applicationDelta.removed);
 
@@ -1594,7 +1594,7 @@ export class WorkspaceService
 		const userLocalDelta = delta(
 			userLocal,
 			this._restrictedSettings.userLocal || [],
-			(a, b) => a.localeCompare(b),
+			(a, b) => a.localeCompare(b)
 		);
 		changed.push(...userLocalDelta.added, ...userLocalDelta.removed);
 
@@ -1604,14 +1604,14 @@ export class WorkspaceService
 		const userRemoteDelta = delta(
 			userRemote,
 			this._restrictedSettings.userRemote || [],
-			(a, b) => a.localeCompare(b),
+			(a, b) => a.localeCompare(b)
 		);
 		changed.push(...userRemoteDelta.added, ...userRemoteDelta.removed);
 
 		const workspaceFolderMap = new ResourceMap<ReadonlyArray<string>>();
 		for (const workspaceFolder of this.workspace.folders) {
 			const cachedFolderConfig = this.cachedFolderConfigs.get(
-				workspaceFolder.uri,
+				workspaceFolder.uri
 			);
 			const folderRestrictedSettings = (
 				cachedFolderConfig?.getRestrictedSettings() || []
@@ -1619,21 +1619,21 @@ export class WorkspaceService
 			if (folderRestrictedSettings.length) {
 				workspaceFolderMap.set(
 					workspaceFolder.uri,
-					folderRestrictedSettings,
+					folderRestrictedSettings
 				);
 			}
 			const previous =
 				this._restrictedSettings.workspaceFolder?.get(
-					workspaceFolder.uri,
+					workspaceFolder.uri
 				) || [];
 			const workspaceFolderDelta = delta(
 				folderRestrictedSettings,
 				previous,
-				(a, b) => a.localeCompare(b),
+				(a, b) => a.localeCompare(b)
 			);
 			changed.push(
 				...workspaceFolderDelta.added,
-				...workspaceFolderDelta.removed,
+				...workspaceFolderDelta.removed
 			);
 		}
 
@@ -1643,12 +1643,13 @@ export class WorkspaceService
 						.getRestrictedSettings()
 						.sort((a, b) => a.localeCompare(b))
 				: this.workspace.folders[0]
-				  ? workspaceFolderMap.get(this.workspace.folders[0].uri) || []
-				  : [];
+					? workspaceFolderMap.get(this.workspace.folders[0].uri) ||
+						[]
+					: [];
 		const workspaceDelta = delta(
 			workspace,
 			this._restrictedSettings.workspace || [],
-			(a, b) => a.localeCompare(b),
+			(a, b) => a.localeCompare(b)
 		);
 		changed.push(...workspaceDelta.added, ...workspaceDelta.removed);
 
@@ -1670,7 +1671,7 @@ export class WorkspaceService
 	private async updateWorkspaceConfiguration(
 		workspaceFolders: WorkspaceFolder[],
 		configuration: ConfigurationModel,
-		fromCache: boolean,
+		fromCache: boolean
 	): Promise<void> {
 		const previous = {
 			data: this._configuration.toData(),
@@ -1678,11 +1679,11 @@ export class WorkspaceService
 		};
 		const change =
 			this._configuration.compareAndUpdateWorkspaceConfiguration(
-				configuration,
+				configuration
 			);
 		const changes = this.compareFolders(
 			this.workspace.folders,
-			workspaceFolders,
+			workspaceFolders
 		);
 		if (
 			changes.added.length ||
@@ -1695,14 +1696,14 @@ export class WorkspaceService
 			this.triggerConfigurationChange(
 				change,
 				previous,
-				ConfigurationTarget.WORKSPACE_FOLDER,
+				ConfigurationTarget.WORKSPACE_FOLDER
 			);
 			this._onDidChangeWorkspaceFolders.fire(changes);
 		} else {
 			this.triggerConfigurationChange(
 				change,
 				previous,
-				ConfigurationTarget.WORKSPACE,
+				ConfigurationTarget.WORKSPACE
 			);
 		}
 		this.updateRestrictedSettings();
@@ -1710,7 +1711,7 @@ export class WorkspaceService
 
 	private async handleWillChangeWorkspaceFolders(
 		changes: IWorkspaceFoldersChangeEvent,
-		fromCache: boolean,
+		fromCache: boolean
 	): Promise<void> {
 		const joiners: Promise<void>[] = [];
 		this._onWillChangeWorkspaceFolders.fire({
@@ -1728,7 +1729,7 @@ export class WorkspaceService
 	}
 
 	private async onWorkspaceFolderConfigurationChanged(
-		folder: IWorkspaceFolder,
+		folder: IWorkspaceFolder
 	): Promise<void> {
 		const [folderConfiguration] = await this.loadFolderConfigurations([
 			folder,
@@ -1740,26 +1741,26 @@ export class WorkspaceService
 		const folderConfigurationChange =
 			this._configuration.compareAndUpdateFolderConfiguration(
 				folder.uri,
-				folderConfiguration,
+				folderConfiguration
 			);
 		if (this.getWorkbenchState() === WorkbenchState.FOLDER) {
 			const workspaceConfigurationChange =
 				this._configuration.compareAndUpdateWorkspaceConfiguration(
-					folderConfiguration,
+					folderConfiguration
 				);
 			this.triggerConfigurationChange(
 				mergeChanges(
 					folderConfigurationChange,
-					workspaceConfigurationChange,
+					workspaceConfigurationChange
 				),
 				previous,
-				ConfigurationTarget.WORKSPACE,
+				ConfigurationTarget.WORKSPACE
 			);
 		} else {
 			this.triggerConfigurationChange(
 				folderConfigurationChange,
 				previous,
-				ConfigurationTarget.WORKSPACE_FOLDER,
+				ConfigurationTarget.WORKSPACE_FOLDER
 			);
 		}
 		this.updateRestrictedSettings();
@@ -1772,22 +1773,20 @@ export class WorkspaceService
 		for (const key of this.cachedFolderConfigs.keys()) {
 			if (
 				!this.workspace.folders.filter(
-					(folder) => folder.uri.toString() === key.toString(),
+					(folder) => folder.uri.toString() === key.toString()
 				)[0]
 			) {
 				const folderConfiguration = this.cachedFolderConfigs.get(key);
 				folderConfiguration!.dispose();
 				this.cachedFolderConfigs.delete(key);
 				changes.push(
-					this._configuration.compareAndDeleteFolderConfiguration(
-						key,
-					),
+					this._configuration.compareAndDeleteFolderConfiguration(key)
 				);
 			}
 		}
 
 		const toInitialize = this.workspace.folders.filter(
-			(folder) => !this.cachedFolderConfigs.has(folder.uri),
+			(folder) => !this.cachedFolderConfigs.has(folder.uri)
 		);
 		if (toInitialize.length) {
 			const folderConfigurations =
@@ -1796,8 +1795,8 @@ export class WorkspaceService
 				changes.push(
 					this._configuration.compareAndUpdateFolderConfiguration(
 						toInitialize[index].uri,
-						folderConfiguration,
-					),
+						folderConfiguration
+					)
 				);
 			});
 		}
@@ -1805,12 +1804,12 @@ export class WorkspaceService
 	}
 
 	private loadFolderConfigurations(
-		folders: IWorkspaceFolder[],
+		folders: IWorkspaceFolder[]
 	): Promise<ConfigurationModel[]> {
 		return Promise.all([
 			...folders.map((folder) => {
 				let folderConfiguration = this.cachedFolderConfigs.get(
-					folder.uri,
+					folder.uri
 				);
 				if (!folderConfiguration) {
 					folderConfiguration = new FolderConfiguration(
@@ -1822,16 +1821,16 @@ export class WorkspaceService
 						this.fileService,
 						this.uriIdentityService,
 						this.logService,
-						this.configurationCache,
+						this.configurationCache
 					);
 					this._register(
 						folderConfiguration.onDidChange(() =>
-							this.onWorkspaceFolderConfigurationChanged(folder),
-						),
+							this.onWorkspaceFolderConfigurationChanged(folder)
+						)
 					);
 					this.cachedFolderConfigs.set(
 						folder.uri,
-						this._register(folderConfiguration),
+						this._register(folderConfiguration)
 					);
 				}
 				return folderConfiguration.loadConfiguration();
@@ -1840,20 +1839,20 @@ export class WorkspaceService
 	}
 
 	private async validateWorkspaceFoldersAndReload(
-		fromCache: boolean,
+		fromCache: boolean
 	): Promise<void> {
 		const validWorkspaceFolders = await this.toValidWorkspaceFolders(
-			this.workspace.folders,
+			this.workspace.folders
 		);
 		const { removed } = this.compareFolders(
 			this.workspace.folders,
-			validWorkspaceFolders,
+			validWorkspaceFolders
 		);
 		if (removed.length) {
 			await this.updateWorkspaceConfiguration(
 				validWorkspaceFolders,
 				this.workspaceConfiguration.getConfiguration(),
-				fromCache,
+				fromCache
 			);
 		}
 	}
@@ -1861,7 +1860,7 @@ export class WorkspaceService
 	// Filter out workspace folders which are files (not directories)
 	// Workspace folders those cannot be resolved are not filtered because they are handled by the Explorer.
 	private async toValidWorkspaceFolders(
-		workspaceFolders: WorkspaceFolder[],
+		workspaceFolders: WorkspaceFolder[]
 	): Promise<WorkspaceFolder[]> {
 		const validWorkspaceFolders: WorkspaceFolder[] = [];
 		for (const workspaceFolder of workspaceFolders) {
@@ -1873,8 +1872,8 @@ export class WorkspaceService
 			} catch (e) {
 				this.logService.warn(
 					`Ignoring the error while validating workspace folder ${workspaceFolder.uri.toString()} - ${toErrorMessage(
-						e,
-					)}`,
+						e
+					)}`
 				);
 			}
 			validWorkspaceFolders.push(workspaceFolder);
@@ -1887,11 +1886,11 @@ export class WorkspaceService
 		value: any,
 		target: ConfigurationTarget,
 		overrides: IConfigurationUpdateOverrides | undefined,
-		options?: IConfigurationUpdateOverrides,
+		options?: IConfigurationUpdateOverrides
 	): Promise<void> {
 		if (!this.instantiationService) {
 			throw new Error(
-				"Cannot write configuration because the configuration service is not yet ready to accept writes.",
+				"Cannot write configuration because the configuration service is not yet ready to accept writes."
 			);
 		}
 
@@ -1910,29 +1909,29 @@ export class WorkspaceService
 					keys: overrides?.overrideIdentifiers?.length
 						? [
 								keyFromOverrideIdentifiers(
-									overrides.overrideIdentifiers,
+									overrides.overrideIdentifiers
 								),
 								key,
-						  ]
+							]
 						: [key],
 					overrides: overrides?.overrideIdentifiers?.length
 						? overrides.overrideIdentifiers.map(
 								(overrideIdentifier) => [
 									overrideIdentifier,
 									[key],
-								],
-						  )
+								]
+							)
 						: [],
 				},
 				previous,
-				target,
+				target
 			);
 			return;
 		}
 
 		const editableConfigurationTarget = this.toEditableConfigurationTarget(
 			target,
-			key,
+			key
 		);
 		if (!editableConfigurationTarget) {
 			throw new Error("Invalid configuration target");
@@ -1952,7 +1951,7 @@ export class WorkspaceService
 		) {
 			const configurationModel = this.getConfigurationModel(
 				editableConfigurationTarget,
-				overrides.resource,
+				overrides.resource
 			);
 			if (configurationModel) {
 				const overrideIdentifiers =
@@ -1961,8 +1960,8 @@ export class WorkspaceService
 					(override) =>
 						arrayEquals(
 							[...override.identifiers].sort(),
-							overrideIdentifiers,
-						),
+							overrideIdentifiers
+						)
 				);
 				if (existingOverrides) {
 					overrides.overrideIdentifiers =
@@ -1977,12 +1976,12 @@ export class WorkspaceService
 			this.instantiationService.createInstance(
 				ConfigurationEditing,
 				(await this.remoteAgentService.getEnvironment())
-					?.settingsPath ?? null,
+					?.settingsPath ?? null
 			);
 		await this.configurationEditing.writeConfiguration(
 			editableConfigurationTarget,
 			{ key, value },
-			{ scopes: overrides, ...options },
+			{ scopes: overrides, ...options }
 		);
 		switch (editableConfigurationTarget) {
 			case EditableConfigurationTarget.USER_LOCAL:
@@ -1997,7 +1996,7 @@ export class WorkspaceService
 				return;
 			case EditableConfigurationTarget.USER_REMOTE:
 				return this.reloadRemoteUserConfiguration().then(
-					() => undefined,
+					() => undefined
 				);
 			case EditableConfigurationTarget.WORKSPACE:
 				return this.reloadWorkspaceConfiguration();
@@ -2008,7 +2007,7 @@ export class WorkspaceService
 						: null;
 				if (workspaceFolder) {
 					return this.reloadWorkspaceFolderConfiguration(
-						workspaceFolder,
+						workspaceFolder
 					);
 				}
 			}
@@ -2017,7 +2016,7 @@ export class WorkspaceService
 
 	private getConfigurationModel(
 		target: EditableConfigurationTarget,
-		resource?: URI | null,
+		resource?: URI | null
 	): ConfigurationModel | undefined {
 		switch (target) {
 			case EditableConfigurationTarget.USER_LOCAL:
@@ -2036,7 +2035,7 @@ export class WorkspaceService
 	private deriveConfigurationTargets(
 		key: string,
 		value: any,
-		inspect: IConfigurationValue<any>,
+		inspect: IConfigurationValue<any>
 	): ConfigurationTarget[] {
 		if (equals(value, inspect.value)) {
 			return [];
@@ -2069,22 +2068,22 @@ export class WorkspaceService
 		previous:
 			| { data: IConfigurationData; workspace?: Workspace }
 			| undefined,
-		target: ConfigurationTarget,
+		target: ConfigurationTarget
 	): void {
 		if (change.keys.length) {
 			if (target !== ConfigurationTarget.DEFAULT) {
 				this.logService.debug(
 					`Configuration keys changed in ${ConfigurationTargetToString(
-						target,
+						target
 					)} target`,
-					...change.keys,
+					...change.keys
 				);
 			}
 			const configurationChangeEvent = new ConfigurationChangeEvent(
 				change,
 				previous,
 				this._configuration,
-				this.workspace,
+				this.workspace
 			);
 			configurationChangeEvent.source = target;
 			configurationChangeEvent.sourceConfig =
@@ -2107,7 +2106,7 @@ export class WorkspaceService
 
 	private toEditableConfigurationTarget(
 		target: ConfigurationTarget,
-		key: string,
+		key: string
 	): EditableConfigurationTarget | null {
 		if (target === ConfigurationTarget.USER) {
 			if (this.remoteUserConfiguration) {
@@ -2147,21 +2146,38 @@ class RegisterConfigurationSchemasContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IExtensionService extensionService: IExtensionService,
-		@ILifecycleService lifecycleService: ILifecycleService,
+		@ILifecycleService lifecycleService: ILifecycleService
 	) {
 		super();
 
 		extensionService.whenInstalledExtensionsRegistered().then(() => {
 			this.registerConfigurationSchemas();
 
-			const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+			const configurationRegistry = Registry.as<IConfigurationRegistry>(
+				Extensions.Configuration
+			);
 			const delayer = this._register(new Delayer<void>(50));
-			this._register(Event.any(configurationRegistry.onDidUpdateConfiguration, configurationRegistry.onDidSchemaChange, workspaceTrustManagementService.onDidChangeTrust)(() =>
-				delayer.trigger(() => this.registerConfigurationSchemas(), lifecycleService.phase === LifecyclePhase.Eventually ? undefined : 2500 /* delay longer in early phases */)));
+			this._register(
+				Event.any(
+					configurationRegistry.onDidUpdateConfiguration,
+					configurationRegistry.onDidSchemaChange,
+					workspaceTrustManagementService.onDidChangeTrust
+				)(() =>
+					delayer.trigger(
+						() => this.registerConfigurationSchemas(),
+						lifecycleService.phase === LifecyclePhase.Eventually
+							? undefined
+							: 2500 /* delay longer in early phases */
+					)
+				)
+			);
 		});
 	}
 
@@ -2181,13 +2197,13 @@ class RegisterConfigurationSchemasContribution
 						{},
 						applicationSettings.properties,
 						windowSettings.properties,
-						resourceSettings.properties,
+						resourceSettings.properties
 					),
 					patternProperties: allSettings.patternProperties,
 					additionalProperties: true,
 					allowTrailingCommas: true,
 					allowComments: true,
-			  }
+				}
 			: allSettingsSchema;
 
 		const profileSettingsSchema: IJSONSchema = {
@@ -2196,7 +2212,7 @@ class RegisterConfigurationSchemasContribution
 				machineSettings.properties,
 				machineOverridableSettings.properties,
 				windowSettings.properties,
-				resourceSettings.properties,
+				resourceSettings.properties
 			),
 			patternProperties: allSettings.patternProperties,
 			additionalProperties: true,
@@ -2210,7 +2226,7 @@ class RegisterConfigurationSchemasContribution
 				machineSettings.properties,
 				machineOverridableSettings.properties,
 				windowSettings.properties,
-				resourceSettings.properties,
+				resourceSettings.properties
 			),
 			patternProperties: allSettings.patternProperties,
 			additionalProperties: true,
@@ -2222,14 +2238,14 @@ class RegisterConfigurationSchemasContribution
 			properties: Object.assign(
 				{},
 				this.checkAndFilterPropertiesRequiringTrust(
-					machineOverridableSettings.properties,
+					machineOverridableSettings.properties
 				),
 				this.checkAndFilterPropertiesRequiringTrust(
-					windowSettings.properties,
+					windowSettings.properties
 				),
 				this.checkAndFilterPropertiesRequiringTrust(
-					resourceSettings.properties,
-				),
+					resourceSettings.properties
+				)
 			),
 			patternProperties: allSettings.patternProperties,
 			additionalProperties: true,
@@ -2239,20 +2255,20 @@ class RegisterConfigurationSchemasContribution
 
 		const defaultSettingsSchema = {
 			properties: Object.keys(
-				allSettings.properties,
+				allSettings.properties
 			).reduce<IJSONSchemaMap>((result, key) => {
 				result[key] = Object.assign(
 					{ deprecationMessage: undefined },
-					allSettings.properties[key],
+					allSettings.properties[key]
 				);
 				return result;
 			}, {}),
 			patternProperties: Object.keys(
-				allSettings.patternProperties,
+				allSettings.patternProperties
 			).reduce<IJSONSchemaMap>((result, key) => {
 				result[key] = Object.assign(
 					{ deprecationMessage: undefined },
-					allSettings.patternProperties[key],
+					allSettings.patternProperties[key]
 				);
 				return result;
 			}, {}),
@@ -2268,30 +2284,30 @@ class RegisterConfigurationSchemasContribution
 						properties: Object.assign(
 							{},
 							this.checkAndFilterPropertiesRequiringTrust(
-								machineOverridableSettings.properties,
+								machineOverridableSettings.properties
 							),
 							this.checkAndFilterPropertiesRequiringTrust(
-								resourceSettings.properties,
-							),
+								resourceSettings.properties
+							)
 						),
 						patternProperties: allSettings.patternProperties,
 						additionalProperties: true,
 						allowTrailingCommas: true,
 						allowComments: true,
-				  }
+					}
 				: workspaceSettingsSchema;
 
 		const configDefaultsSchema: IJSONSchema = {
 			type: "object",
 			description: localize(
 				"configurationDefaults.description",
-				"Contribute defaults for configurations",
+				"Contribute defaults for configurations"
 			),
 			properties: Object.assign(
 				{},
 				machineOverridableSettings.properties,
 				windowSettings.properties,
-				resourceSettings.properties,
+				resourceSettings.properties
 			),
 			patternProperties: {
 				[OVERRIDE_PROPERTY_PATTERN]: {
@@ -2323,40 +2339,40 @@ class RegisterConfigurationSchemasContribution
 		configDefaultsSchema: IJSONSchema;
 	}): void {
 		const jsonRegistry = Registry.as<IJSONContributionRegistry>(
-			JSONExtensions.JSONContribution,
+			JSONExtensions.JSONContribution
 		);
 		jsonRegistry.registerSchema(
 			defaultSettingsSchemaId,
-			schemas.defaultSettingsSchema,
+			schemas.defaultSettingsSchema
 		);
 		jsonRegistry.registerSchema(
 			userSettingsSchemaId,
-			schemas.userSettingsSchema,
+			schemas.userSettingsSchema
 		);
 		jsonRegistry.registerSchema(
 			profileSettingsSchemaId,
-			schemas.profileSettingsSchema,
+			schemas.profileSettingsSchema
 		);
 		jsonRegistry.registerSchema(
 			machineSettingsSchemaId,
-			schemas.machineSettingsSchema,
+			schemas.machineSettingsSchema
 		);
 		jsonRegistry.registerSchema(
 			workspaceSettingsSchemaId,
-			schemas.workspaceSettingsSchema,
+			schemas.workspaceSettingsSchema
 		);
 		jsonRegistry.registerSchema(
 			folderSettingsSchemaId,
-			schemas.folderSettingsSchema,
+			schemas.folderSettingsSchema
 		);
 		jsonRegistry.registerSchema(
 			configurationDefaultsSchemaId,
-			schemas.configDefaultsSchema,
+			schemas.configDefaultsSchema
 		);
 	}
 
 	private checkAndFilterPropertiesRequiringTrust(
-		properties: IStringDictionary<IConfigurationPropertySchema>,
+		properties: IStringDictionary<IConfigurationPropertySchema>
 	): IStringDictionary<IConfigurationPropertySchema> {
 		if (this.workspaceTrustManagementService.isWorkspaceTrusted()) {
 			return properties;
@@ -2378,7 +2394,7 @@ class ResetConfigurationDefaultsOverridesCache
 {
 	constructor(
 		@IConfigurationService configurationService: WorkspaceService,
-		@IExtensionService extensionService: IExtensionService,
+		@IExtensionService extensionService: IExtensionService
 	) {
 		super();
 		if (configurationService.hasCachedConfigurationDefaultsOverrides()) {
@@ -2386,8 +2402,8 @@ class ResetConfigurationDefaultsOverridesCache
 				.whenInstalledExtensionsRegistered()
 				.then(() =>
 					configurationService.reloadConfiguration(
-						ConfigurationTarget.DEFAULT,
-					),
+						ConfigurationTarget.DEFAULT
+					)
 				);
 		}
 	}
@@ -2402,15 +2418,22 @@ class UpdateExperimentalSettingsDefaults
 		Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 
 	constructor(
-		@IWorkbenchAssignmentService private readonly workbenchAssignmentService: IWorkbenchAssignmentService
+		@IWorkbenchAssignmentService
+		private readonly workbenchAssignmentService: IWorkbenchAssignmentService
 	) {
 		super();
-		this.processExperimentalSettings(Object.keys(this.configurationRegistry.getConfigurationProperties()));
-		this._register(this.configurationRegistry.onDidUpdateConfiguration(({ properties }) => this.processExperimentalSettings(properties)));
+		this.processExperimentalSettings(
+			Object.keys(this.configurationRegistry.getConfigurationProperties())
+		);
+		this._register(
+			this.configurationRegistry.onDidUpdateConfiguration(
+				({ properties }) => this.processExperimentalSettings(properties)
+			)
+		);
 	}
 
 	private async processExperimentalSettings(
-		properties: Iterable<string>,
+		properties: Iterable<string>
 	): Promise<void> {
 		const overrides: IStringDictionary<any> = {};
 		const allProperties =
@@ -2427,7 +2450,7 @@ class UpdateExperimentalSettingsDefaults
 			try {
 				const value =
 					await this.workbenchAssignmentService.getTreatment(
-						`config.${property}`,
+						`config.${property}`
 					);
 				if (!isUndefined(value) && !equals(value, schema.default)) {
 					overrides[property] = value;
@@ -2448,19 +2471,19 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	RegisterConfigurationSchemasContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ResetConfigurationDefaultsOverridesCache,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	UpdateExperimentalSettingsDefaults,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	...workbenchConfigurationNodeBase,
@@ -2469,7 +2492,7 @@ configurationRegistry.registerConfiguration({
 			type: "array",
 			description: localize(
 				"setting description",
-				"Configure settings to be applied for all profiles.",
+				"Configure settings to be applied for all profiles."
 			),
 			default: [],
 			scope: ConfigurationScope.APPLICATION,

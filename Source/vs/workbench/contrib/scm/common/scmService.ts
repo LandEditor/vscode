@@ -116,7 +116,7 @@ class SCMInput implements ISCMInput {
 
 	showValidationMessage(
 		message: string | IMarkdownString,
-		type: InputValidationType,
+		type: InputValidationType
 	): void {
 		this._onDidChangeValidationMessage.fire({
 			message: message,
@@ -149,12 +149,12 @@ class SCMInput implements ISCMInput {
 
 	constructor(
 		readonly repository: ISCMRepository,
-		private readonly history: SCMInputHistory,
+		private readonly history: SCMInputHistory
 	) {
 		if (this.repository.provider.rootUri) {
 			this.historyNavigator = history.getHistory(
 				this.repository.provider.label,
-				this.repository.provider.rootUri,
+				this.repository.provider.rootUri
 			);
 			this.history.onWillSaveHistory((event) => {
 				if (this.historyNavigator.isAtEnd()) {
@@ -237,7 +237,7 @@ class SCMRepository implements ISCMRepository {
 		public readonly id: string,
 		public readonly provider: ISCMProvider,
 		private disposable: IDisposable,
-		inputHistory: SCMInputHistory,
+		inputHistory: SCMInputHistory
 	) {
 		this.input = new SCMInput(this, inputHistory);
 	}
@@ -275,17 +275,20 @@ class SCMInputHistory {
 	>();
 
 	private readonly _onWillSaveHistory = this.disposables.add(
-		new Emitter<WillSaveHistoryEvent>(),
+		new Emitter<WillSaveHistoryEvent>()
 	);
 	readonly onWillSaveHistory = this._onWillSaveHistory.event;
 
 	constructor(
 		@IStorageService private storageService: IStorageService,
-		@IWorkspaceContextService private workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private workspaceContextService: IWorkspaceContextService
 	) {
 		this.histories = new Map();
 
-		const entries = this.storageService.getObject<[string, URI, string[]][]>('scm.history', StorageScope.WORKSPACE, []);
+		const entries = this.storageService.getObject<
+			[string, URI, string[]][]
+		>("scm.history", StorageScope.WORKSPACE, []);
 
 		for (const [providerLabel, rootUri, history] of entries) {
 			let providerHistories = this.histories.get(providerLabel);
@@ -302,28 +305,38 @@ class SCMInputHistory {
 			this.saveToStorage();
 		}
 
-		this.disposables.add(this.storageService.onDidChangeValue(StorageScope.WORKSPACE, 'scm.history', this.disposables)(e => {
-			if (e.external && e.key === 'scm.history') {
-				const raw = this.storageService.getObject<[string, URI, string[]][]>('scm.history', StorageScope.WORKSPACE, []);
+		this.disposables.add(
+			this.storageService.onDidChangeValue(
+				StorageScope.WORKSPACE,
+				"scm.history",
+				this.disposables
+			)((e) => {
+				if (e.external && e.key === "scm.history") {
+					const raw = this.storageService.getObject<
+						[string, URI, string[]][]
+					>("scm.history", StorageScope.WORKSPACE, []);
 
-				for (const [providerLabel, uri, rawHistory] of raw) {
-					const history = this.getHistory(providerLabel, uri);
+					for (const [providerLabel, uri, rawHistory] of raw) {
+						const history = this.getHistory(providerLabel, uri);
 
-					for (const value of Iterable.reverse(rawHistory)) {
-						history.prepend(value);
+						for (const value of Iterable.reverse(rawHistory)) {
+							history.prepend(value);
+						}
 					}
 				}
-			}
-		}));
+			})
+		);
 
-		this.disposables.add(this.storageService.onWillSaveState(_ => {
-			const event = new WillSaveHistoryEvent();
-			this._onWillSaveHistory.fire(event);
+		this.disposables.add(
+			this.storageService.onWillSaveState((_) => {
+				const event = new WillSaveHistoryEvent();
+				this._onWillSaveHistory.fire(event);
 
-			if (event.didChangeHistory) {
-				this.saveToStorage();
-			}
-		}));
+				if (event.didChangeHistory) {
+					this.saveToStorage();
+				}
+			})
+		);
 	}
 
 	private saveToStorage(): void {
@@ -341,7 +354,7 @@ class SCMInputHistory {
 			"scm.history",
 			raw,
 			StorageScope.WORKSPACE,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 	}
 
@@ -370,15 +383,15 @@ class SCMInputHistory {
 		const machineKeys = Iterable.filter(
 			this.storageService.keys(
 				StorageScope.APPLICATION,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			),
-			(key) => key.startsWith("scm/input:"),
+			(key) => key.startsWith("scm/input:")
 		);
 
 		for (const key of machineKeys) {
 			try {
 				const legacyHistory = JSON.parse(
-					this.storageService.get(key, StorageScope.APPLICATION, ""),
+					this.storageService.get(key, StorageScope.APPLICATION, "")
 				);
 				const match = /^scm\/input:([^:]+):(.+)$/.exec(key);
 
@@ -398,7 +411,7 @@ class SCMInputHistory {
 					const history = this.getHistory(providerLabel, rootUri);
 
 					for (const entry of Iterable.reverse(
-						legacyHistory.history as string[],
+						legacyHistory.history as string[]
 					)) {
 						history.prepend(entry);
 					}
@@ -443,12 +456,19 @@ export class SCMService implements ISCMService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IStorageService storageService: IStorageService
 	) {
-		this.inputHistory = new SCMInputHistory(storageService, workspaceContextService);
-		this.providerCount = contextKeyService.createKey('scm.providerCount', 0);
+		this.inputHistory = new SCMInputHistory(
+			storageService,
+			workspaceContextService
+		);
+		this.providerCount = contextKeyService.createKey(
+			"scm.providerCount",
+			0
+		);
 	}
 
 	registerSCMProvider(provider: ISCMProvider): ISCMRepository {
@@ -468,7 +488,7 @@ export class SCMService implements ISCMService {
 			provider.id,
 			provider,
 			disposable,
-			this.inputHistory,
+			this.inputHistory
 		);
 		this._repositories.set(provider.id, repository);
 		this._onDidAddProvider.fire(repository);

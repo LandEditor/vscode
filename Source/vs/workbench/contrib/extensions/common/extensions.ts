@@ -119,52 +119,52 @@ export interface IExtensionsWorkbenchService {
 	queryGallery(token: CancellationToken): Promise<IPager<IExtension>>;
 	queryGallery(
 		options: IQueryOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IPager<IExtension>>;
 	getExtensions(
 		extensionInfos: IExtensionInfo[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IExtension[]>;
 	getExtensions(
 		extensionInfos: IExtensionInfo[],
 		options: IExtensionQueryOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IExtension[]>;
 	canInstall(extension: IExtension): Promise<boolean>;
 	install(
 		vsix: URI,
-		installOptions?: InstallVSIXOptions,
+		installOptions?: InstallVSIXOptions
 	): Promise<IExtension>;
 	install(
 		extension: IExtension,
 		installOptions?: InstallOptions,
-		progressLocation?: ProgressLocation,
+		progressLocation?: ProgressLocation
 	): Promise<IExtension>;
 	installInServer(
 		extension: IExtension,
-		server: IExtensionManagementServer,
+		server: IExtensionManagementServer
 	): Promise<void>;
 	uninstall(extension: IExtension): Promise<void>;
 	installVersion(
 		extension: IExtension,
 		version: string,
-		installOptions?: InstallOptions,
+		installOptions?: InstallOptions
 	): Promise<IExtension>;
 	reinstall(extension: IExtension): Promise<IExtension>;
 	canSetLanguage(extension: IExtension): boolean;
 	setLanguage(extension: IExtension): Promise<void>;
 	setEnablement(
 		extensions: IExtension | IExtension[],
-		enablementState: EnablementState,
+		enablementState: EnablementState
 	): Promise<void>;
 	isAutoUpdateEnabledFor(extensionOrPublisher: IExtension | string): boolean;
 	updateAutoUpdateEnablementFor(
 		extensionOrPublisher: IExtension | string,
-		enable: boolean,
+		enable: boolean
 	): Promise<void>;
 	open(
 		extension: IExtension | string,
-		options?: IExtensionEditorOptions,
+		options?: IExtensionEditorOptions
 	): Promise<void>;
 	isAutoUpdateEnabled(): boolean;
 	getAutoUpdateValue(): AutoUpdateConfigurationValue;
@@ -214,7 +214,8 @@ export interface IExtensionContainer extends IDisposable {
 export class ExtensionContainers extends Disposable {
 	constructor(
 		private readonly containers: IExtensionContainer[],
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService
 	) {
 		super();
 		this._register(extensionsWorkbenchService.onChange(this.update, this));
@@ -230,7 +231,7 @@ export class ExtensionContainers extends Disposable {
 				if (
 					areSameExtensions(
 						container.extension.identifier,
-						extension.identifier,
+						extension.identifier
 					)
 				) {
 					if (
@@ -269,11 +270,11 @@ export const LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID =
 // Context Keys
 export const HasOutdatedExtensionsContext = new RawContextKey<boolean>(
 	"hasOutdatedExtensions",
-	false,
+	false
 );
 export const CONTEXT_HAS_GALLERY = new RawContextKey<boolean>(
 	"hasGallery",
-	false,
+	false
 );
 
 // Context Menu Groups
@@ -282,5 +283,5 @@ export const INSTALL_ACTIONS_GROUP = "0_install";
 export const UPDATE_ACTIONS_GROUP = "0_update";
 
 export const extensionsSearchActionsMenu = new MenuId(
-	"extensionsSearchActionsMenu",
+	"extensionsSearchActionsMenu"
 );

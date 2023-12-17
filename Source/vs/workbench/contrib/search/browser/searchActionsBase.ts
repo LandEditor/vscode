@@ -35,13 +35,13 @@ export function isSearchViewFocused(viewsService: IViewsService): boolean {
 
 export function appendKeyBindingLabel(
 	label: string,
-	inputKeyBinding: ResolvedKeybinding | undefined,
+	inputKeyBinding: ResolvedKeybinding | undefined
 ): string {
 	return doAppendKeyBindingLabel(label, inputKeyBinding);
 }
 
 export function getSearchView(
-	viewsService: IViewsService,
+	viewsService: IViewsService
 ): SearchView | undefined {
 	return viewsService.getActiveViewWithId(VIEW_ID) as SearchView;
 }
@@ -49,7 +49,7 @@ export function getSearchView(
 export function getElementsToOperateOn(
 	viewer: WorkbenchCompressibleObjectTree<RenderableMatch, void>,
 	currElement: RenderableMatch | undefined,
-	sortConfig: ISearchConfigurationProperties,
+	sortConfig: ISearchConfigurationProperties
 ): RenderableMatch[] {
 	let elements: RenderableMatch[] = viewer
 		.getSelection()
@@ -74,7 +74,7 @@ export function getElementsToOperateOn(
  */
 export function shouldRefocus(
 	elements: RenderableMatch[],
-	focusElement: RenderableMatch | undefined,
+	focusElement: RenderableMatch | undefined
 ) {
 	if (!focusElement) {
 		return false;
@@ -88,7 +88,7 @@ export function shouldRefocus(
 
 function hasDownstreamMatch(
 	elements: RenderableMatch[],
-	focusElement: RenderableMatch,
+	focusElement: RenderableMatch
 ) {
 	for (const elem of elements) {
 		if (
@@ -100,7 +100,7 @@ function hasDownstreamMatch(
 					elem.getDownstreamFileMatch(focusElement.resource)) ||
 					(focusElement instanceof Match &&
 						elem.getDownstreamFileMatch(
-							focusElement.parent().resource,
+							focusElement.parent().resource
 						))))
 		) {
 			return true;
@@ -111,7 +111,7 @@ function hasDownstreamMatch(
 
 export function openSearchView(
 	viewsService: IViewsService,
-	focus?: boolean,
+	focus?: boolean
 ): Promise<SearchView | undefined> {
 	return viewsService
 		.openView(VIEW_ID, focus)
@@ -120,7 +120,7 @@ export function openSearchView(
 
 function doAppendKeyBindingLabel(
 	label: string,
-	keyBinding: ResolvedKeybinding | undefined,
+	keyBinding: ResolvedKeybinding | undefined
 ): string {
 	return keyBinding ? label + " (" + keyBinding.getLabel() + ")" : label;
 }

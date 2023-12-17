@@ -14,7 +14,7 @@ export default class TypeScriptDefinitionProviderBase {
 		definitionType: "definition" | "implementation" | "typeDefinition",
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.Location[] | undefined> {
 		const file = this.client.toOpenTsFilePath(document);
 		if (!file) {
@@ -23,7 +23,7 @@ export default class TypeScriptDefinitionProviderBase {
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			file,
-			position,
+			position
 		);
 		const response = await this.client.execute(definitionType, args, token);
 		if (response.type !== "response" || !response.body) {
@@ -33,8 +33,8 @@ export default class TypeScriptDefinitionProviderBase {
 		return response.body.map((location) =>
 			typeConverters.Location.fromTextSpan(
 				this.client.toResource(location.file),
-				location,
-			),
+				location
+			)
 		);
 	}
 }

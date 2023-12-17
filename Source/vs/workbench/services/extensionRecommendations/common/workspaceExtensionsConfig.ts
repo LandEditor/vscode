@@ -44,7 +44,7 @@ export interface IExtensionsConfigContent {
 
 export const IWorkspaceExtensionsConfigService =
 	createDecorator<IWorkspaceExtensionsConfigService>(
-		"IWorkspaceExtensionsConfigService",
+		"IWorkspaceExtensionsConfigService"
 	);
 
 export interface IWorkspaceExtensionsConfigService {
@@ -66,29 +66,42 @@ export class WorkspaceExtensionsConfigService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeExtensionsConfigs = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeExtensionsConfigs =
 		this._onDidChangeExtensionsConfigs.event;
 
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IFileService private readonly fileService: IFileService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService
 	) {
 		super();
-		this._register(workspaceContextService.onDidChangeWorkspaceFolders(e => this._onDidChangeExtensionsConfigs.fire()));
-		this._register(fileService.onDidFilesChange(e => {
-			const workspace = workspaceContextService.getWorkspace();
-			if ((workspace.configuration && e.affects(workspace.configuration))
-				|| workspace.folders.some(folder => e.affects(folder.toResource(EXTENSIONS_CONFIG)))
-			) {
-				this._onDidChangeExtensionsConfigs.fire();
-			}
-		}));
+		this._register(
+			workspaceContextService.onDidChangeWorkspaceFolders((e) =>
+				this._onDidChangeExtensionsConfigs.fire()
+			)
+		);
+		this._register(
+			fileService.onDidFilesChange((e) => {
+				const workspace = workspaceContextService.getWorkspace();
+				if (
+					(workspace.configuration &&
+						e.affects(workspace.configuration)) ||
+					workspace.folders.some((folder) =>
+						e.affects(folder.toResource(EXTENSIONS_CONFIG))
+					)
+				) {
+					this._onDidChangeExtensionsConfigs.fire();
+				}
+			})
+		);
 	}
 
 	async getExtensionsConfigs(): Promise<IExtensionsConfigContent[]> {
@@ -96,8 +109,8 @@ export class WorkspaceExtensionsConfigService
 		const result: IExtensionsConfigContent[] = [];
 		const workspaceExtensionsConfigContent = workspace.configuration
 			? await this.resolveWorkspaceExtensionConfig(
-					workspace.configuration,
-			  )
+					workspace.configuration
+				)
 			: undefined;
 		if (workspaceExtensionsConfigContent) {
 			result.push(workspaceExtensionsConfigContent);
@@ -105,9 +118,9 @@ export class WorkspaceExtensionsConfigService
 		result.push(
 			...(await Promise.all(
 				workspace.folders.map((workspaceFolder) =>
-					this.resolveWorkspaceFolderExtensionConfig(workspaceFolder),
-				),
-			)),
+					this.resolveWorkspaceFolderExtensionConfig(workspaceFolder)
+				)
+			))
 		);
 		return result;
 	}
@@ -119,9 +132,9 @@ export class WorkspaceExtensionsConfigService
 				configs.map((c) =>
 					c.recommendations
 						? c.recommendations.map((c) => c.toLowerCase())
-						: [],
-				),
-			),
+						: []
+				)
+			)
 		);
 	}
 
@@ -132,9 +145,9 @@ export class WorkspaceExtensionsConfigService
 				configs.map((c) =>
 					c.unwantedRecommendations
 						? c.unwantedRecommendations.map((c) => c.toLowerCase())
-						: [],
-				),
-			),
+						: []
+				)
+			)
 		);
 	}
 
@@ -143,8 +156,8 @@ export class WorkspaceExtensionsConfigService
 		const workspace = this.workspaceContextService.getWorkspace();
 		const workspaceExtensionsConfigContent = workspace.configuration
 			? await this.resolveWorkspaceExtensionConfig(
-					workspace.configuration,
-			  )
+					workspace.configuration
+				)
 			: undefined;
 		const workspaceFolderExtensionsConfigContents =
 			new ResourceMap<IExtensionsConfigContent>();
@@ -152,27 +165,27 @@ export class WorkspaceExtensionsConfigService
 			workspace.folders.map(async (workspaceFolder) => {
 				const extensionsConfigContent =
 					await this.resolveWorkspaceFolderExtensionConfig(
-						workspaceFolder,
+						workspaceFolder
 					);
 				workspaceFolderExtensionsConfigContents.set(
 					workspaceFolder.uri,
-					extensionsConfigContent,
+					extensionsConfigContent
 				);
-			}),
+			})
 		);
 
 		const isWorkspaceRecommended =
 			workspaceExtensionsConfigContent &&
 			workspaceExtensionsConfigContent.recommendations?.some(
-				(r) => r.toLowerCase() === extensionId,
+				(r) => r.toLowerCase() === extensionId
 			);
 		const recommendedWorksapceFolders = workspace.folders.filter(
 			(workspaceFolder) =>
 				workspaceFolderExtensionsConfigContents
 					.get(workspaceFolder.uri)
 					?.recommendations?.some(
-						(r) => r.toLowerCase() === extensionId,
-					),
+						(r) => r.toLowerCase() === extensionId
+					)
 		);
 		const isRecommended =
 			isWorkspaceRecommended || recommendedWorksapceFolders.length > 0;
@@ -183,17 +196,17 @@ export class WorkspaceExtensionsConfigService
 					isWorkspaceRecommended ? workspace : undefined,
 					localize(
 						"select for remove",
-						"Remove extension recommendation from",
-					),
-			  )
+						"Remove extension recommendation from"
+					)
+				)
 			: await this.pickWorkspaceOrFolders(
 					workspace.folders,
 					workspace.configuration ? workspace : undefined,
 					localize(
 						"select for add",
-						"Add extension recommendation to",
-					),
-			  );
+						"Add extension recommendation to"
+					)
+				);
 
 		for (const workspaceOrWorkspaceFolder of workspaceOrFolders) {
 			if (isWorkspace(workspaceOrWorkspaceFolder)) {
@@ -201,16 +214,16 @@ export class WorkspaceExtensionsConfigService
 					extensionId,
 					workspaceOrWorkspaceFolder,
 					workspaceExtensionsConfigContent,
-					!isRecommended,
+					!isRecommended
 				);
 			} else {
 				await this.addOrRemoveWorkspaceFolderRecommendation(
 					extensionId,
 					workspaceOrWorkspaceFolder,
 					workspaceFolderExtensionsConfigContents.get(
-						workspaceOrWorkspaceFolder.uri,
+						workspaceOrWorkspaceFolder.uri
 					)!,
-					!isRecommended,
+					!isRecommended
 				);
 			}
 		}
@@ -220,8 +233,8 @@ export class WorkspaceExtensionsConfigService
 		const workspace = this.workspaceContextService.getWorkspace();
 		const workspaceExtensionsConfigContent = workspace.configuration
 			? await this.resolveWorkspaceExtensionConfig(
-					workspace.configuration,
-			  )
+					workspace.configuration
+				)
 			: undefined;
 		const workspaceFolderExtensionsConfigContents =
 			new ResourceMap<IExtensionsConfigContent>();
@@ -229,25 +242,25 @@ export class WorkspaceExtensionsConfigService
 			workspace.folders.map(async (workspaceFolder) => {
 				const extensionsConfigContent =
 					await this.resolveWorkspaceFolderExtensionConfig(
-						workspaceFolder,
+						workspaceFolder
 					);
 				workspaceFolderExtensionsConfigContents.set(
 					workspaceFolder.uri,
-					extensionsConfigContent,
+					extensionsConfigContent
 				);
-			}),
+			})
 		);
 
 		const isWorkspaceUnwanted =
 			workspaceExtensionsConfigContent &&
 			workspaceExtensionsConfigContent.unwantedRecommendations?.some(
-				(r) => r === extensionId,
+				(r) => r === extensionId
 			);
 		const unWantedWorksapceFolders = workspace.folders.filter(
 			(workspaceFolder) =>
 				workspaceFolderExtensionsConfigContents
 					.get(workspaceFolder.uri)
-					?.unwantedRecommendations?.some((r) => r === extensionId),
+					?.unwantedRecommendations?.some((r) => r === extensionId)
 		);
 		const isUnwanted =
 			isWorkspaceUnwanted || unWantedWorksapceFolders.length > 0;
@@ -258,17 +271,17 @@ export class WorkspaceExtensionsConfigService
 					isWorkspaceUnwanted ? workspace : undefined,
 					localize(
 						"select for remove",
-						"Remove extension recommendation from",
-					),
-			  )
+						"Remove extension recommendation from"
+					)
+				)
 			: await this.pickWorkspaceOrFolders(
 					workspace.folders,
 					workspace.configuration ? workspace : undefined,
 					localize(
 						"select for add",
-						"Add extension recommendation to",
-					),
-			  );
+						"Add extension recommendation to"
+					)
+				);
 
 		for (const workspaceOrWorkspaceFolder of workspaceOrFolders) {
 			if (isWorkspace(workspaceOrWorkspaceFolder)) {
@@ -276,16 +289,16 @@ export class WorkspaceExtensionsConfigService
 					extensionId,
 					workspaceOrWorkspaceFolder,
 					workspaceExtensionsConfigContent,
-					!isUnwanted,
+					!isUnwanted
 				);
 			} else {
 				await this.addOrRemoveWorkspaceFolderUnwantedRecommendation(
 					extensionId,
 					workspaceOrWorkspaceFolder,
 					workspaceFolderExtensionsConfigContents.get(
-						workspaceOrWorkspaceFolder.uri,
+						workspaceOrWorkspaceFolder.uri
 					)!,
-					!isUnwanted,
+					!isUnwanted
 				);
 			}
 		}
@@ -295,7 +308,7 @@ export class WorkspaceExtensionsConfigService
 		extensionId: string,
 		workspaceFolder: IWorkspaceFolder,
 		extensionsConfigContent: IExtensionsConfigContent,
-		add: boolean,
+		add: boolean
 	): Promise<void> {
 		const values: IJSONValue[] = [];
 		if (add) {
@@ -314,7 +327,7 @@ export class WorkspaceExtensionsConfigService
 				this.getEditToRemoveValueFromArray(
 					["unwantedRecommendations"],
 					extensionsConfigContent.unwantedRecommendations,
-					extensionId,
+					extensionId
 				);
 			if (unwantedRecommendationEdit) {
 				values.push(unwantedRecommendationEdit);
@@ -323,7 +336,7 @@ export class WorkspaceExtensionsConfigService
 			const recommendationEdit = this.getEditToRemoveValueFromArray(
 				["recommendations"],
 				extensionsConfigContent.recommendations,
-				extensionId,
+				extensionId
 			);
 			if (recommendationEdit) {
 				values.push(recommendationEdit);
@@ -334,7 +347,7 @@ export class WorkspaceExtensionsConfigService
 			return this.jsonEditingService.write(
 				workspaceFolder.toResource(EXTENSIONS_CONFIG),
 				values,
-				true,
+				true
 			);
 		}
 	}
@@ -343,7 +356,7 @@ export class WorkspaceExtensionsConfigService
 		extensionId: string,
 		workspace: IWorkspace,
 		extensionsConfigContent: IExtensionsConfigContent | undefined,
-		add: boolean,
+		add: boolean
 	): Promise<void> {
 		const values: IJSONValue[] = [];
 		if (extensionsConfigContent) {
@@ -358,7 +371,7 @@ export class WorkspaceExtensionsConfigService
 					this.getEditToRemoveValueFromArray(
 						["extensions", "unwantedRecommendations"],
 						extensionsConfigContent.unwantedRecommendations,
-						extensionId,
+						extensionId
 					);
 				if (unwantedRecommendationEdit) {
 					values.push(unwantedRecommendationEdit);
@@ -367,7 +380,7 @@ export class WorkspaceExtensionsConfigService
 				const recommendationEdit = this.getEditToRemoveValueFromArray(
 					["extensions", "recommendations"],
 					extensionsConfigContent.recommendations,
-					extensionId,
+					extensionId
 				);
 				if (recommendationEdit) {
 					values.push(recommendationEdit);
@@ -384,7 +397,7 @@ export class WorkspaceExtensionsConfigService
 			return this.jsonEditingService.write(
 				workspace.configuration!,
 				values,
-				true,
+				true
 			);
 		}
 	}
@@ -393,7 +406,7 @@ export class WorkspaceExtensionsConfigService
 		extensionId: string,
 		workspaceFolder: IWorkspaceFolder,
 		extensionsConfigContent: IExtensionsConfigContent,
-		add: boolean,
+		add: boolean
 	): Promise<void> {
 		const values: IJSONValue[] = [];
 		if (add) {
@@ -408,7 +421,7 @@ export class WorkspaceExtensionsConfigService
 			const recommendationEdit = this.getEditToRemoveValueFromArray(
 				["recommendations"],
 				extensionsConfigContent.recommendations,
-				extensionId,
+				extensionId
 			);
 			if (recommendationEdit) {
 				values.push(recommendationEdit);
@@ -418,7 +431,7 @@ export class WorkspaceExtensionsConfigService
 				this.getEditToRemoveValueFromArray(
 					["unwantedRecommendations"],
 					extensionsConfigContent.unwantedRecommendations,
-					extensionId,
+					extensionId
 				);
 			if (unwantedRecommendationEdit) {
 				values.push(unwantedRecommendationEdit);
@@ -428,7 +441,7 @@ export class WorkspaceExtensionsConfigService
 			return this.jsonEditingService.write(
 				workspaceFolder.toResource(EXTENSIONS_CONFIG),
 				values,
-				true,
+				true
 			);
 		}
 	}
@@ -437,7 +450,7 @@ export class WorkspaceExtensionsConfigService
 		extensionId: string,
 		workspace: IWorkspace,
 		extensionsConfigContent: IExtensionsConfigContent | undefined,
-		add: boolean,
+		add: boolean
 	): Promise<void> {
 		const values: IJSONValue[] = [];
 		if (extensionsConfigContent) {
@@ -454,7 +467,7 @@ export class WorkspaceExtensionsConfigService
 				const recommendationEdit = this.getEditToRemoveValueFromArray(
 					["extensions", "recommendations"],
 					extensionsConfigContent.recommendations,
-					extensionId,
+					extensionId
 				);
 				if (recommendationEdit) {
 					values.push(recommendationEdit);
@@ -464,7 +477,7 @@ export class WorkspaceExtensionsConfigService
 					this.getEditToRemoveValueFromArray(
 						["extensions", "unwantedRecommendations"],
 						extensionsConfigContent.unwantedRecommendations,
-						extensionId,
+						extensionId
 					);
 				if (unwantedRecommendationEdit) {
 					values.push(unwantedRecommendationEdit);
@@ -481,7 +494,7 @@ export class WorkspaceExtensionsConfigService
 			return this.jsonEditingService.write(
 				workspace.configuration!,
 				values,
-				true,
+				true
 			);
 		}
 	}
@@ -489,7 +502,7 @@ export class WorkspaceExtensionsConfigService
 	private async pickWorkspaceOrFolders(
 		workspaceFolders: IWorkspaceFolder[],
 		workspace: IWorkspace | undefined,
-		placeHolder: string,
+		placeHolder: string
 	): Promise<(IWorkspace | IWorkspaceFolder)[]> {
 		const workspaceOrFolders = workspace
 			? [...workspaceFolders, workspace]
@@ -512,7 +525,7 @@ export class WorkspaceExtensionsConfigService
 					this.modelService,
 					this.languageService,
 					workspaceFolder.uri,
-					FileKind.ROOT_FOLDER,
+					FileKind.ROOT_FOLDER
 				),
 			};
 		});
@@ -534,11 +547,11 @@ export class WorkspaceExtensionsConfigService
 	}
 
 	private async resolveWorkspaceExtensionConfig(
-		workspaceConfigurationResource: URI,
+		workspaceConfigurationResource: URI
 	): Promise<IExtensionsConfigContent | undefined> {
 		try {
 			const content = await this.fileService.readFile(
-				workspaceConfigurationResource,
+				workspaceConfigurationResource
 			);
 			const extensionsConfigContent = <
 				IExtensionsConfigContent | undefined
@@ -553,11 +566,11 @@ export class WorkspaceExtensionsConfigService
 	}
 
 	private async resolveWorkspaceFolderExtensionConfig(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): Promise<IExtensionsConfigContent> {
 		try {
 			const content = await this.fileService.readFile(
-				workspaceFolder.toResource(EXTENSIONS_CONFIG),
+				workspaceFolder.toResource(EXTENSIONS_CONFIG)
 			);
 			const extensionsConfigContent = <IExtensionsConfigContent>(
 				parse(content.value.toString())
@@ -570,18 +583,18 @@ export class WorkspaceExtensionsConfigService
 	}
 
 	private parseExtensionConfig(
-		extensionsConfigContent: IExtensionsConfigContent,
+		extensionsConfigContent: IExtensionsConfigContent
 	): IExtensionsConfigContent {
 		return {
 			recommendations: distinct(
 				(extensionsConfigContent.recommendations || []).map((e) =>
-					e.toLowerCase(),
-				),
+					e.toLowerCase()
+				)
 			),
 			unwantedRecommendations: distinct(
 				(extensionsConfigContent.unwantedRecommendations || []).map(
-					(e) => e.toLowerCase(),
-				),
+					(e) => e.toLowerCase()
+				)
 			),
 		};
 	}
@@ -589,7 +602,7 @@ export class WorkspaceExtensionsConfigService
 	private getEditToRemoveValueFromArray(
 		path: JSONPath,
 		array: string[] | undefined,
-		value: string,
+		value: string
 	): IJSONValue | undefined {
 		const index = array?.indexOf(value);
 		if (index !== undefined && index !== -1) {
@@ -602,5 +615,5 @@ export class WorkspaceExtensionsConfigService
 registerSingleton(
 	IWorkspaceExtensionsConfigService,
 	WorkspaceExtensionsConfigService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

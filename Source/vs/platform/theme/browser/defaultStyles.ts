@@ -136,7 +136,7 @@ export const defaultKeybindingLabelStyles: IKeybindingLabelStyles = {
 };
 
 export function getKeybindingLabelStyles(
-	override: IStyleOverride<IKeybindingLabelStyles>,
+	override: IStyleOverride<IKeybindingLabelStyles>
 ): IKeybindingLabelStyles {
 	return overrideStyles(override, defaultKeybindingLabelStyles);
 }
@@ -148,13 +148,13 @@ export const defaultButtonStyles: IButtonStyles = {
 	buttonSecondaryForeground: asCssVariable(buttonSecondaryForeground),
 	buttonSecondaryBackground: asCssVariable(buttonSecondaryBackground),
 	buttonSecondaryHoverBackground: asCssVariable(
-		buttonSecondaryHoverBackground,
+		buttonSecondaryHoverBackground
 	),
 	buttonBorder: asCssVariable(buttonBorder),
 };
 
 export function getButtonStyles(
-	override: IStyleOverride<IButtonStyles>,
+	override: IStyleOverride<IButtonStyles>
 ): IButtonStyles {
 	return overrideStyles(override, defaultButtonStyles);
 }
@@ -164,7 +164,7 @@ export const defaultProgressBarStyles: IProgressBarStyles = {
 };
 
 export function getProgressBarStyles(
-	override: IStyleOverride<IProgressBarStyles>,
+	override: IStyleOverride<IProgressBarStyles>
 ): IProgressBarStyles {
 	return overrideStyles(override, defaultProgressBarStyles);
 }
@@ -176,7 +176,7 @@ export const defaultToggleStyles: IToggleStyles = {
 };
 
 export function getToggleStyles(
-	override: IStyleOverride<IToggleStyles>,
+	override: IStyleOverride<IToggleStyles>
 ): IToggleStyles {
 	return overrideStyles(override, defaultToggleStyles);
 }
@@ -188,7 +188,7 @@ export const defaultCheckboxStyles: ICheckboxStyles = {
 };
 
 export function getCheckboxStyles(
-	override: IStyleOverride<ICheckboxStyles>,
+	override: IStyleOverride<ICheckboxStyles>
 ): ICheckboxStyles {
 	return overrideStyles(override, defaultCheckboxStyles);
 }
@@ -205,7 +205,7 @@ export const defaultDialogStyles: IDialogStyles = {
 };
 
 export function getDialogStyle(
-	override: IStyleOverride<IDialogStyles>,
+	override: IStyleOverride<IDialogStyles>
 ): IDialogStyles {
 	return overrideStyles(override, defaultDialogStyles);
 }
@@ -219,22 +219,22 @@ export const defaultInputBoxStyles: IInputBoxStyles = {
 	inputValidationInfoForeground: asCssVariable(inputValidationInfoForeground),
 	inputValidationWarningBorder: asCssVariable(inputValidationWarningBorder),
 	inputValidationWarningBackground: asCssVariable(
-		inputValidationWarningBackground,
+		inputValidationWarningBackground
 	),
 	inputValidationWarningForeground: asCssVariable(
-		inputValidationWarningForeground,
+		inputValidationWarningForeground
 	),
 	inputValidationErrorBorder: asCssVariable(inputValidationErrorBorder),
 	inputValidationErrorBackground: asCssVariable(
-		inputValidationErrorBackground,
+		inputValidationErrorBackground
 	),
 	inputValidationErrorForeground: asCssVariable(
-		inputValidationErrorForeground,
+		inputValidationErrorForeground
 	),
 };
 
 export function getInputBoxStyle(
-	override: IStyleOverride<IInputBoxStyles>,
+	override: IStyleOverride<IInputBoxStyles>
 ): IInputBoxStyles {
 	return overrideStyles(override, defaultInputBoxStyles);
 }
@@ -243,7 +243,7 @@ export const defaultFindWidgetStyles: IFindWidgetStyles = {
 	listFilterWidgetBackground: asCssVariable(listFilterWidgetBackground),
 	listFilterWidgetOutline: asCssVariable(listFilterWidgetOutline),
 	listFilterWidgetNoMatchesOutline: asCssVariable(
-		listFilterWidgetNoMatchesOutline,
+		listFilterWidgetNoMatchesOutline
 	),
 	listFilterWidgetShadow: asCssVariable(listFilterWidgetShadow),
 	inputBoxStyles: defaultInputBoxStyles,
@@ -257,7 +257,7 @@ export const defaultCountBadgeStyles: ICountBadgeStyles = {
 };
 
 export function getCountBadgeStyle(
-	override: IStyleOverride<ICountBadgeStyles>,
+	override: IStyleOverride<ICountBadgeStyles>
 ): ICountBadgeStyles {
 	return overrideStyles(override, defaultCountBadgeStyles);
 }
@@ -268,12 +268,12 @@ export const defaultBreadcrumbsWidgetStyles: IBreadcrumbsWidgetStyles = {
 	breadcrumbsHoverForeground: asCssVariable(breadcrumbsFocusForeground),
 	breadcrumbsFocusForeground: asCssVariable(breadcrumbsFocusForeground),
 	breadcrumbsFocusAndSelectionForeground: asCssVariable(
-		breadcrumbsActiveSelectionForeground,
+		breadcrumbsActiveSelectionForeground
 	),
 };
 
 export function getBreadcrumbsWidgetStyles(
-	override: IStyleOverride<IBreadcrumbsWidgetStyles>,
+	override: IStyleOverride<IBreadcrumbsWidgetStyles>
 ): IBreadcrumbsWidgetStyles {
 	return overrideStyles(override, defaultBreadcrumbsWidgetStyles);
 }
@@ -287,23 +287,23 @@ export const defaultListStyles: IListStyles = {
 	listActiveSelectionBackground: asCssVariable(listActiveSelectionBackground),
 	listActiveSelectionForeground: asCssVariable(listActiveSelectionForeground),
 	listActiveSelectionIconForeground: asCssVariable(
-		listActiveSelectionIconForeground,
+		listActiveSelectionIconForeground
 	),
 	listFocusAndSelectionOutline: asCssVariable(listFocusAndSelectionOutline),
 	listFocusAndSelectionBackground: asCssVariable(
-		listActiveSelectionBackground,
+		listActiveSelectionBackground
 	),
 	listFocusAndSelectionForeground: asCssVariable(
-		listActiveSelectionForeground,
+		listActiveSelectionForeground
 	),
 	listInactiveSelectionBackground: asCssVariable(
-		listInactiveSelectionBackground,
+		listInactiveSelectionBackground
 	),
 	listInactiveSelectionIconForeground: asCssVariable(
-		listInactiveSelectionIconForeground,
+		listInactiveSelectionIconForeground
 	),
 	listInactiveSelectionForeground: asCssVariable(
-		listInactiveSelectionForeground,
+		listInactiveSelectionForeground
 	),
 	listInactiveFocusBackground: asCssVariable(listInactiveFocusBackground),
 	listInactiveFocusOutline: asCssVariable(listInactiveFocusOutline),
@@ -314,14 +314,14 @@ export const defaultListStyles: IListStyles = {
 	listHoverOutline: asCssVariable(activeContrastBorder),
 	treeIndentGuidesStroke: asCssVariable(treeIndentGuidesStroke),
 	treeInactiveIndentGuidesStroke: asCssVariable(
-		treeInactiveIndentGuidesStroke,
+		treeInactiveIndentGuidesStroke
 	),
 	tableColumnsBorder: asCssVariable(tableColumnsBorder),
 	tableOddRowsBackgroundColor: asCssVariable(tableOddRowsBackgroundColor),
 };
 
 export function getListStyles(
-	override: IStyleOverride<IListStyles>,
+	override: IStyleOverride<IListStyles>
 ): IListStyles {
 	return overrideStyles(override, defaultListStyles);
 }
@@ -335,12 +335,12 @@ export const defaultSelectBoxStyles: ISelectBoxStyles = {
 	focusBorder: asCssVariable(focusBorder),
 	listFocusBackground: asCssVariable(quickInputListFocusBackground),
 	listInactiveSelectionIconForeground: asCssVariable(
-		quickInputListFocusIconForeground,
+		quickInputListFocusIconForeground
 	),
 	listFocusForeground: asCssVariable(quickInputListFocusForeground),
 	listFocusOutline: asCssVariableWithDefault(
 		activeContrastBorder,
-		Color.transparent.toString(),
+		Color.transparent.toString()
 	),
 	listHoverBackground: asCssVariable(listHoverBackground),
 	listHoverForeground: asCssVariable(listHoverForeground),
@@ -367,7 +367,7 @@ export const defaultSelectBoxStyles: ISelectBoxStyles = {
 };
 
 export function getSelectBoxStyles(
-	override: IStyleOverride<ISelectBoxStyles>,
+	override: IStyleOverride<ISelectBoxStyles>
 ): ISelectBoxStyles {
 	return overrideStyles(override, defaultSelectBoxStyles);
 }
@@ -384,15 +384,15 @@ export const defaultMenuStyles: IMenuStyles = {
 	scrollbarShadow: asCssVariable(scrollbarShadow),
 	scrollbarSliderBackground: asCssVariable(scrollbarSliderBackground),
 	scrollbarSliderHoverBackground: asCssVariable(
-		scrollbarSliderHoverBackground,
+		scrollbarSliderHoverBackground
 	),
 	scrollbarSliderActiveBackground: asCssVariable(
-		scrollbarSliderActiveBackground,
+		scrollbarSliderActiveBackground
 	),
 };
 
 export function getMenuStyles(
-	override: IStyleOverride<IMenuStyles>,
+	override: IStyleOverride<IMenuStyles>
 ): IMenuStyles {
 	return overrideStyles(override, defaultMenuStyles);
 }

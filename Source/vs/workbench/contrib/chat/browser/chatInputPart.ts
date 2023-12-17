@@ -90,7 +90,7 @@ export class ChatInputPart
 		new Emitter<{
 			followup: IChatReplyFollowup;
 			response: IChatResponseViewModel | undefined;
-		}>(),
+		}>()
 	);
 	readonly onDidAcceptFollowup = this._onDidAcceptFollowup.event;
 
@@ -122,37 +122,56 @@ export class ChatInputPart
 	private cachedToolbarWidth: number | undefined;
 
 	readonly inputUri = URI.parse(
-		`${ChatInputPart.INPUT_SCHEME}:input-${ChatInputPart._counter++}`,
+		`${ChatInputPart.INPUT_SCHEME}:input-${ChatInputPart._counter++}`
 	);
 
 	constructor(
 		// private readonly editorOptions: ChatEditorOptions, // TODO this should be used
-		private readonly options: { renderFollowups: boolean; renderStyle?: 'default' | 'compact' },
-		@IChatWidgetHistoryService private readonly historyService: IChatWidgetHistoryService,
+		private readonly options: {
+			renderFollowups: boolean;
+			renderStyle?: "default" | "compact";
+		},
+		@IChatWidgetHistoryService
+		private readonly historyService: IChatWidgetHistoryService,
 		@IModelService private readonly modelService: IModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService
 	) {
 		super();
 
-		this.inputEditorHasText = CONTEXT_CHAT_INPUT_HAS_TEXT.bindTo(contextKeyService);
-		this.chatCursorAtTop = CONTEXT_CHAT_INPUT_CURSOR_AT_TOP.bindTo(contextKeyService);
+		this.inputEditorHasText =
+			CONTEXT_CHAT_INPUT_HAS_TEXT.bindTo(contextKeyService);
+		this.chatCursorAtTop =
+			CONTEXT_CHAT_INPUT_CURSOR_AT_TOP.bindTo(contextKeyService);
 
 		this.history = new HistoryNavigator([], 5);
-		this._register(this.historyService.onDidClearHistory(() => this.history.clear()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.Chat)) {
-				this.inputEditor.updateOptions({ ariaLabel: this._getAriaLabel() });
-			}
-		}));
+		this._register(
+			this.historyService.onDidClearHistory(() => this.history.clear())
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(AccessibilityVerbositySettingId.Chat)
+				) {
+					this.inputEditor.updateOptions({
+						ariaLabel: this._getAriaLabel(),
+					});
+				}
+			})
+		);
 	}
 
 	private _getAriaLabel(): string {
 		const verbose = this.configurationService.getValue<boolean>(
-			AccessibilityVerbositySettingId.Chat,
+			AccessibilityVerbositySettingId.Chat
 		);
 		if (verbose) {
 			const kbLabel = this.keybindingService
@@ -162,12 +181,12 @@ export class ChatInputPart
 				? localize(
 						"actions.chat.accessibiltyHelp",
 						"Chat Input,  Type to ask questions or type / for topics, press enter to send out the request. Use {0} for Chat Accessibility Help.",
-						kbLabel,
-				  )
+						kbLabel
+					)
 				: localize(
 						"chatInput.accessibilityHelpNoKb",
-						"Chat Input,  Type code here and press Enter to run. Use the Chat Accessibility Help command for more information.",
-				  );
+						"Chat Input,  Type code here and press Enter to run. Use the Chat Accessibility Help command for more information."
+					);
 		}
 		return localize("chatInput", "Chat Input");
 	}
@@ -275,19 +294,19 @@ export class ChatInputPart
 
 		this.followupsContainer = dom.append(
 			this.container,
-			$(".interactive-input-followups"),
+			$(".interactive-input-followups")
 		);
 		const inputAndSideToolbar = dom.append(
 			this.container,
-			$(".interactive-input-and-side-toolbar"),
+			$(".interactive-input-and-side-toolbar")
 		);
 		const inputContainer = dom.append(
 			inputAndSideToolbar,
-			$(".interactive-input-and-execute-toolbar"),
+			$(".interactive-input-and-execute-toolbar")
 		);
 
 		const inputScopedContextKeyService = this._register(
-			this.contextKeyService.createScoped(inputContainer),
+			this.contextKeyService.createScoped(inputContainer)
 		);
 		CONTEXT_IN_CHAT_INPUT.bindTo(inputScopedContextKeyService).set(true);
 		const scopedInstantiationService =
@@ -295,7 +314,7 @@ export class ChatInputPart
 				new ServiceCollection([
 					IContextKeyService,
 					inputScopedContextKeyService,
-				]),
+				])
 			);
 
 		const {
@@ -304,8 +323,8 @@ export class ChatInputPart
 		} = this._register(
 			registerAndCreateHistoryNavigationContext(
 				inputScopedContextKeyService,
-				this,
-			),
+				this
+			)
 		);
 		this.historyNavigationBackwardsEnablement =
 			historyNavigationBackwardsEnablement;
@@ -338,28 +357,28 @@ export class ChatInputPart
 
 		this._inputEditorElement = dom.append(
 			inputContainer,
-			$(".interactive-input-editor"),
+			$(".interactive-input-editor")
 		);
 		const editorOptions = getSimpleCodeEditorWidgetOptions();
 		editorOptions.contributions?.push(
 			...EditorExtensionsRegistry.getSomeEditorContributions([
 				HoverController.ID,
-			]),
+			])
 		);
 		this._inputEditor = this._register(
 			scopedInstantiationService.createInstance(
 				CodeEditorWidget,
 				this._inputEditorElement,
 				options,
-				editorOptions,
-			),
+				editorOptions
+			)
 		);
 
 		this._register(
 			this._inputEditor.onDidChangeModelContent(() => {
 				const currentHeight = Math.min(
 					this._inputEditor.getContentHeight(),
-					INPUT_EDITOR_MAX_HEIGHT,
+					INPUT_EDITOR_MAX_HEIGHT
 				);
 				if (currentHeight !== this.inputEditorHeight) {
 					this.inputEditorHeight = currentHeight;
@@ -371,20 +390,20 @@ export class ChatInputPart
 				const model = this._inputEditor.getModel();
 				const inputHasText = !!model && model.getValueLength() > 0;
 				this.inputEditorHasText.set(inputHasText);
-			}),
+			})
 		);
 		this._register(
 			this._inputEditor.onDidFocusEditorText(() => {
 				this._onDidFocus.fire();
 				inputContainer.classList.toggle("focused", true);
-			}),
+			})
 		);
 		this._register(
 			this._inputEditor.onDidBlurEditorText(() => {
 				inputContainer.classList.toggle("focused", false);
 
 				this._onDidBlur.fire();
-			}),
+			})
 		);
 		this._register(
 			this._inputEditor.onDidChangeCursorPosition((e) => {
@@ -398,9 +417,9 @@ export class ChatInputPart
 				this.historyNavigationBackwardsEnablement.set(atTop);
 				this.chatCursorAtTop.set(atTop);
 				this.historyNavigationForewardsEnablement.set(
-					e.position.equals(getLastPosition(model)),
+					e.position.equals(getLastPosition(model))
 				);
-			}),
+			})
 		);
 
 		this.toolbar = this._register(
@@ -418,14 +437,14 @@ export class ChatInputPart
 								SubmitButtonActionViewItem,
 								{ widget } satisfies IChatExecuteActionContext,
 								action,
-								options,
+								options
 							);
 						}
 
 						return undefined;
 					},
-				},
-			),
+				}
+			)
 		);
 		this.toolbar.getElement().classList.add("interactive-execute-toolbar");
 		this.toolbar.context = { widget } satisfies IChatExecuteActionContext;
@@ -438,10 +457,10 @@ export class ChatInputPart
 				) {
 					this.layout(
 						this.cachedDimensions.height,
-						this.cachedDimensions.width,
+						this.cachedDimensions.width
 					);
 				}
-			}),
+			})
 		);
 
 		if (this.options.renderStyle === "compact") {
@@ -454,8 +473,8 @@ export class ChatInputPart
 						menuOptions: {
 							shouldForwardArgs: true,
 						},
-					},
-				),
+					}
+				)
 			);
 			toolbarSide.getElement().classList.add("chat-side-toolbar");
 			toolbarSide.context = {
@@ -485,7 +504,7 @@ export class ChatInputPart
 
 	async renderFollowups(
 		items: IChatReplyFollowup[] | undefined,
-		response: IChatResponseViewModel | undefined,
+		response: IChatResponseViewModel | undefined
 	): Promise<void> {
 		if (!this.options.renderFollowups) {
 			return;
@@ -501,8 +520,8 @@ export class ChatInputPart
 					undefined,
 					(followup) =>
 						this._onDidAcceptFollowup.fire({ followup, response }),
-					this.contextKeyService,
-				),
+					this.contextKeyService
+				)
 			);
 		}
 	}
@@ -516,7 +535,7 @@ export class ChatInputPart
 	private _layout(
 		height: number,
 		width: number,
-		allowRecurse = true,
+		allowRecurse = true
 	): number {
 		const followupsHeight = this.followupsContainer.offsetHeight;
 
@@ -529,7 +548,7 @@ export class ChatInputPart
 				followupsHeight -
 				inputPartHorizontalPadding -
 				inputPartBorder,
-			INPUT_EDITOR_MAX_HEIGHT,
+			INPUT_EDITOR_MAX_HEIGHT
 		);
 
 		const inputEditorBorder = 2;
@@ -585,7 +604,7 @@ class SubmitButtonActionViewItem extends ActionViewItem {
 		action: IAction,
 		options: IActionViewItemOptions,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IChatAgentService chatAgentService: IChatAgentService,
+		@IChatAgentService chatAgentService: IChatAgentService
 	) {
 		super(context, action, options);
 

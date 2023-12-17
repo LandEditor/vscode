@@ -12,15 +12,16 @@ import { RemoteUserDataProfileStorageService } from "vs/platform/userDataProfile
 export class NativeUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(
 			mainProcessService,
 			userDataProfilesService,
 			storageService,
-			logService,
+			logService
 		);
 	}
 }

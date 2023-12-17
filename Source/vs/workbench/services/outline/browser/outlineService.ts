@@ -39,7 +39,7 @@ class OutlineService implements IOutlineService {
 	async createOutline(
 		pane: IEditorPane,
 		target: OutlineTarget,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IOutline<any> | undefined> {
 		for (const factory of this._factories) {
 			if (factory.matches(pane)) {

@@ -19,10 +19,10 @@ export class TerminalEnvironmentManager {
 		private readonly envProviders: (
 			| ITerminalEnvironmentProvider
 			| undefined
-		)[],
+		)[]
 	) {
 		this.disposable = filterEvent(workspace.onDidChangeConfiguration, (e) =>
-			e.affectsConfiguration("git"),
+			e.affectsConfiguration("git")
 		)(this.refresh, this);
 
 		this.refresh();
@@ -43,7 +43,7 @@ export class TerminalEnvironmentManager {
 			for (const name of Object.keys(terminalEnv)) {
 				this.context.environmentVariableCollection.replace(
 					name,
-					terminalEnv[name],
+					terminalEnv[name]
 				);
 			}
 			if (
@@ -56,7 +56,7 @@ export class TerminalEnvironmentManager {
 		if (features.length) {
 			this.context.environmentVariableCollection.description = l10n.t(
 				"Enables the following features: {0}",
-				features.join(", "),
+				features.join(", ")
 			);
 		}
 	}

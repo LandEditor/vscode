@@ -14,7 +14,7 @@ declare module "vscode" {
 		 */
 		export function runTests(
 			run: TestRunRequest,
-			token?: CancellationToken,
+			token?: CancellationToken
 		): Thenable<void>;
 
 		/**

@@ -56,7 +56,7 @@ export class WindowTitle extends Disposable {
 		: localize("userIsSudo", "[Superuser]");
 	private static readonly NLS_EXTENSION_HOST = localize(
 		"devExtensionWindowTitlePrefix",
-		"[Extension Development Host]",
+		"[Extension Development Host]"
 	);
 	private static readonly TITLE_DIRTY = "\u25cf ";
 
@@ -66,10 +66,10 @@ export class WindowTitle extends Disposable {
 		prefix: undefined,
 	};
 	private readonly activeEditorListeners = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private readonly titleUpdater = this._register(
-		new RunOnceScheduler(() => this.doUpdateTitle(), 0),
+		new RunOnceScheduler(() => this.doUpdateTitle(), 0)
 	);
 
 	private readonly onDidChangeEmitter = new Emitter<void>();
@@ -80,7 +80,7 @@ export class WindowTitle extends Disposable {
 	}
 	get workspaceName() {
 		return this.labelService.getWorkspaceLabel(
-			this.contextService.getWorkspace(),
+			this.contextService.getWorkspace()
 		);
 	}
 	get fileName() {
@@ -103,19 +103,26 @@ export class WindowTitle extends Disposable {
 
 	constructor(
 		private readonly targetWindow: Window,
-		editorGroupsContainer: IEditorGroupsContainer | 'main',
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		editorGroupsContainer: IEditorGroupsContainer | "main",
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IEditorService editorService: IEditorService,
-		@IBrowserWorkbenchEnvironmentService protected readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IBrowserWorkbenchEnvironmentService
+		protected readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IProductService private readonly productService: IProductService,
 		@IViewsService private readonly viewsService: IViewsService
 	) {
 		super();
 
-		this.editorService = editorService.createScoped(editorGroupsContainer, this._store);
+		this.editorService = editorService.createScoped(
+			editorGroupsContainer,
+			this._store
+		);
 
 		this.updateTitleIncludesFocusedView();
 		this.registerListeners();
@@ -124,45 +131,45 @@ export class WindowTitle extends Disposable {
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
-				this.onConfigurationChanged(e),
-			),
+				this.onConfigurationChanged(e)
+			)
 		);
 		this._register(
 			this.editorService.onDidActiveEditorChange(() =>
-				this.onActiveEditorChange(),
-			),
+				this.onActiveEditorChange()
+			)
 		);
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
-				this.titleUpdater.schedule(),
-			),
+				this.titleUpdater.schedule()
+			)
 		);
 		this._register(
 			this.contextService.onDidChangeWorkbenchState(() =>
-				this.titleUpdater.schedule(),
-			),
+				this.titleUpdater.schedule()
+			)
 		);
 		this._register(
 			this.contextService.onDidChangeWorkspaceName(() =>
-				this.titleUpdater.schedule(),
-			),
+				this.titleUpdater.schedule()
+			)
 		);
 		this._register(
 			this.labelService.onDidChangeFormatters(() =>
-				this.titleUpdater.schedule(),
-			),
+				this.titleUpdater.schedule()
+			)
 		);
 		this._register(
 			this.userDataProfileService.onDidChangeCurrentProfile(() =>
-				this.titleUpdater.schedule(),
-			),
+				this.titleUpdater.schedule()
+			)
 		);
 		this._register(
 			this.viewsService.onDidChangeFocusedView(() => {
 				if (this.titleIncludesFocusedView) {
 					this.titleUpdater.schedule();
 				}
-			}),
+			})
 		);
 	}
 
@@ -181,7 +188,7 @@ export class WindowTitle extends Disposable {
 
 	private updateTitleIncludesFocusedView(): void {
 		const titleTemplate = this.configurationService.getValue<unknown>(
-			WindowSettingNames.title,
+			WindowSettingNames.title
 		);
 		this.titleIncludesFocusedView =
 			typeof titleTemplate === "string" &&
@@ -200,13 +207,13 @@ export class WindowTitle extends Disposable {
 		if (activeEditor) {
 			this.activeEditorListeners.add(
 				activeEditor.onDidChangeDirty(() =>
-					this.titleUpdater.schedule(),
-				),
+					this.titleUpdater.schedule()
+				)
 			);
 			this.activeEditorListeners.add(
 				activeEditor.onDidChangeLabel(() =>
-					this.titleUpdater.schedule(),
-				),
+					this.titleUpdater.schedule()
+				)
 			);
 		}
 
@@ -220,20 +227,20 @@ export class WindowTitle extends Disposable {
 			} else if (isDiffEditor(activeTextEditorControl)) {
 				textEditorControls.push(
 					activeTextEditorControl.getOriginalEditor(),
-					activeTextEditorControl.getModifiedEditor(),
+					activeTextEditorControl.getModifiedEditor()
 				);
 			}
 
 			for (const textEditorControl of textEditorControls) {
 				this.activeEditorListeners.add(
 					textEditorControl.onDidBlurEditorText(() =>
-						this.titleUpdater.schedule(),
-					),
+						this.titleUpdater.schedule()
+					)
 				);
 				this.activeEditorListeners.add(
 					textEditorControl.onDidFocusEditorText(() =>
-						this.titleUpdater.schedule(),
-					),
+						this.titleUpdater.schedule()
+					)
 				);
 			}
 		}
@@ -395,7 +402,7 @@ export class WindowTitle extends Disposable {
 		if (this.environmentService.remoteAuthority && !isWeb) {
 			remoteName = this.labelService.getHostLabel(
 				Schemas.vscodeRemote,
-				this.environmentService.remoteAuthority,
+				this.environmentService.remoteAuthority
 			);
 		} else {
 			const virtualWorkspaceLocation =
@@ -403,7 +410,7 @@ export class WindowTitle extends Disposable {
 			if (virtualWorkspaceLocation) {
 				remoteName = this.labelService.getHostLabel(
 					virtualWorkspaceLocation.scheme,
-					virtualWorkspaceLocation.authority,
+					virtualWorkspaceLocation.authority
 				);
 			}
 		}
@@ -424,7 +431,7 @@ export class WindowTitle extends Disposable {
 		const activeFolderMedium = editorFolderResource
 			? this.labelService.getUriLabel(editorFolderResource, {
 					relative: true,
-			  })
+				})
 			: "";
 		const activeFolderLong = editorFolderResource
 			? this.labelService.getUriLabel(editorFolderResource)
@@ -447,10 +454,10 @@ export class WindowTitle extends Disposable {
 			? ""
 			: this.userDataProfileService.currentProfile.name;
 		const separator = this.configurationService.getValue<string>(
-			WindowSettingNames.titleSeparator,
+			WindowSettingNames.titleSeparator
 		);
 		const titleTemplate = this.configurationService.getValue<string>(
-			WindowSettingNames.title,
+			WindowSettingNames.title
 		);
 		const focusedView: string = this.viewsService.getFocusedViewName();
 
@@ -477,10 +484,10 @@ export class WindowTitle extends Disposable {
 
 	isCustomTitleFormat(): boolean {
 		const title = this.configurationService.inspect<string>(
-			WindowSettingNames.title,
+			WindowSettingNames.title
 		);
 		const titleSeparator = this.configurationService.inspect<string>(
-			WindowSettingNames.titleSeparator,
+			WindowSettingNames.titleSeparator
 		);
 
 		return (

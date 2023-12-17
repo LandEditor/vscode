@@ -17,7 +17,7 @@ export function dedupExtensions(
 	system: IExtensionDescription[],
 	user: IExtensionDescription[],
 	development: IExtensionDescription[],
-	logService: ILogService,
+	logService: ILogService
 ): IExtensionDescription[] {
 	const result = new ExtensionIdentifierMap<IExtensionDescription>();
 	system.forEach((systemExtension) => {
@@ -28,8 +28,8 @@ export function dedupExtensions(
 					"overwritingExtension",
 					"Overwriting extension {0} with {1}.",
 					extension.extensionLocation.fsPath,
-					systemExtension.extensionLocation.fsPath,
-				),
+					systemExtension.extensionLocation.fsPath
+				)
 			);
 		}
 		result.set(systemExtension.identifier, systemExtension);
@@ -40,7 +40,7 @@ export function dedupExtensions(
 			if (extension.isBuiltin) {
 				if (semver.gte(extension.version, userExtension.version)) {
 					logService.warn(
-						`Skipping extension ${userExtension.extensionLocation.path} in favour of the builtin extension ${extension.extensionLocation.path}.`,
+						`Skipping extension ${userExtension.extensionLocation.path} in favour of the builtin extension ${extension.extensionLocation.path}.`
 					);
 					return;
 				}
@@ -52,13 +52,13 @@ export function dedupExtensions(
 						"overwritingExtension",
 						"Overwriting extension {0} with {1}.",
 						extension.extensionLocation.fsPath,
-						userExtension.extensionLocation.fsPath,
-					),
+						userExtension.extensionLocation.fsPath
+					)
 				);
 			}
 		} else if (userExtension.isBuiltin) {
 			logService.warn(
-				`Skipping obsolete builtin extension ${userExtension.extensionLocation.path}`,
+				`Skipping obsolete builtin extension ${userExtension.extensionLocation.path}`
 			);
 			return;
 		}
@@ -69,16 +69,15 @@ export function dedupExtensions(
 			localize(
 				"extensionUnderDevelopment",
 				"Loading development extension at {0}",
-				developedExtension.extensionLocation.fsPath,
-			),
+				developedExtension.extensionLocation.fsPath
+			)
 		);
 		const extension = result.get(developedExtension.identifier);
 		if (extension) {
 			if (extension.isBuiltin) {
 				// Overwriting a builtin extension inherits the `isBuiltin` property
-				(<IRelaxedExtensionDescription>(
-					developedExtension
-				)).isBuiltin = true;
+				(<IRelaxedExtensionDescription>developedExtension).isBuiltin =
+					true;
 			}
 		}
 		result.set(developedExtension.identifier, developedExtension);

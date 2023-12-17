@@ -25,7 +25,7 @@ class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
 	async provideLinkedEditingRanges(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.LinkedEditingRanges | undefined> {
 		const filepath = this.client.toOpenTsFilePath(document);
 		if (!filepath) {
@@ -34,12 +34,12 @@ class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
-			position,
+			position
 		);
 		const response = await this.client.execute(
 			"linkedEditingRange",
 			args,
-			token,
+			token
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -50,16 +50,16 @@ class LinkedEditingSupport implements vscode.LinkedEditingRangeProvider {
 			: undefined;
 		return new vscode.LinkedEditingRanges(
 			response.body.ranges.map((range) =>
-				typeConverters.Range.fromTextSpan(range),
+				typeConverters.Range.fromTextSpan(range)
 			),
-			wordPattern,
+			wordPattern
 		);
 	}
 }
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
@@ -69,8 +69,8 @@ export function register(
 		() => {
 			return vscode.languages.registerLinkedEditingRangeProvider(
 				selector.syntax,
-				new LinkedEditingSupport(client),
+				new LinkedEditingSupport(client)
 			);
-		},
+		}
 	);
 }

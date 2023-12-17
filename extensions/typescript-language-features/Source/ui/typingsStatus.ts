@@ -19,14 +19,14 @@ export default class TypingsStatus extends Disposable {
 
 		this._register(
 			this._client.onDidBeginInstallTypings((event) =>
-				this.onBeginInstallTypings(event.eventId),
-			),
+				this.onBeginInstallTypings(event.eventId)
+			)
 		);
 
 		this._register(
 			this._client.onDidEndInstallTypings((event) =>
-				this.onEndInstallTypings(event.eventId),
-			),
+				this.onEndInstallTypings(event.eventId)
+			)
 		);
 	}
 
@@ -50,7 +50,7 @@ export default class TypingsStatus extends Disposable {
 			eventId,
 			setTimeout(() => {
 				this.onEndInstallTypings(eventId);
-			}, typingsInstallTimeout),
+			}, typingsInstallTimeout)
 		);
 	}
 
@@ -69,17 +69,17 @@ export class AtaProgressReporter extends Disposable {
 	constructor(client: ITypeScriptServiceClient) {
 		super();
 		this._register(
-			client.onDidBeginInstallTypings((e) => this._onBegin(e.eventId)),
+			client.onDidBeginInstallTypings((e) => this._onBegin(e.eventId))
 		);
 		this._register(
 			client.onDidEndInstallTypings((e) =>
-				this._onEndOrTimeout(e.eventId),
-			),
+				this._onEndOrTimeout(e.eventId)
+			)
 		);
 		this._register(
 			client.onTypesInstallerInitializationFailed((_) =>
-				this.onTypesInstallerInitializationFailed(),
-			),
+				this.onTypesInstallerInitializationFailed()
+			)
 		);
 	}
 
@@ -91,7 +91,7 @@ export class AtaProgressReporter extends Disposable {
 	private _onBegin(eventId: number): void {
 		const handle = setTimeout(
 			() => this._onEndOrTimeout(eventId),
-			typingsInstallTimeout,
+			typingsInstallTimeout
 		);
 		const promise = new Promise<void>((resolve) => {
 			this._promises.set(eventId, () => {
@@ -104,10 +104,10 @@ export class AtaProgressReporter extends Disposable {
 			{
 				location: vscode.ProgressLocation.Window,
 				title: vscode.l10n.t(
-					"Fetching data for better TypeScript IntelliSense",
+					"Fetching data for better TypeScript IntelliSense"
 				),
 			},
-			() => promise,
+			() => promise
 		);
 	}
 
@@ -129,9 +129,9 @@ export class AtaProgressReporter extends Disposable {
 			const selected = await vscode.window.showWarningMessage(
 				vscode.l10n.t(
 					"Could not install typings files for JavaScript language features. Please ensure that NPM is installed, or configure 'typescript.npm' in your user settings. Alternatively, check the [documentation]({0}) to learn more.",
-					"https://go.microsoft.com/fwlink/?linkid=847635",
+					"https://go.microsoft.com/fwlink/?linkid=847635"
 				),
-				dontShowAgain,
+				dontShowAgain
 			);
 
 			if (selected === dontShowAgain) {

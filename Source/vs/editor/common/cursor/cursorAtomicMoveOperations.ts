@@ -22,7 +22,7 @@ export class AtomicTabMoveOperations {
 	public static whitespaceVisibleColumn(
 		lineContent: string,
 		position: number,
-		tabSize: number,
+		tabSize: number
 	): [number, number, number] {
 		const lineLength = lineContent.length;
 		let visibleColumn = 0;
@@ -49,7 +49,7 @@ export class AtomicTabMoveOperations {
 					// Skip to the next multiple of tabSize.
 					visibleColumn = CursorColumns.nextRenderTabStop(
 						visibleColumn,
-						tabSize,
+						tabSize
 					);
 					break;
 				default:
@@ -79,7 +79,7 @@ export class AtomicTabMoveOperations {
 		lineContent: string,
 		position: number,
 		tabSize: number,
-		direction: Direction,
+		direction: Direction
 	): number {
 		const lineLength = lineContent.length;
 
@@ -89,7 +89,7 @@ export class AtomicTabMoveOperations {
 			AtomicTabMoveOperations.whitespaceVisibleColumn(
 				lineContent,
 				position,
-				tabSize,
+				tabSize
 			);
 
 		if (visibleColumn === -1) {
@@ -146,7 +146,7 @@ export class AtomicTabMoveOperations {
 					case CharCode.Tab:
 						currentVisibleColumn = CursorColumns.nextRenderTabStop(
 							currentVisibleColumn,
-							tabSize,
+							tabSize
 						);
 						break;
 					default:
@@ -163,7 +163,7 @@ export class AtomicTabMoveOperations {
 		// We are going right.
 		const targetVisibleColumn = CursorColumns.nextRenderTabStop(
 			visibleColumn,
-			tabSize,
+			tabSize
 		);
 
 		// We can just continue from where whitespaceVisibleColumn got to.
@@ -181,7 +181,7 @@ export class AtomicTabMoveOperations {
 				case CharCode.Tab:
 					currentVisibleColumn = CursorColumns.nextRenderTabStop(
 						currentVisibleColumn,
-						tabSize,
+						tabSize
 					);
 					break;
 				default:

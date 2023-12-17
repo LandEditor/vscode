@@ -14,7 +14,7 @@ export interface IDiffAlgorithm {
 	compute(
 		sequence1: ISequence,
 		sequence2: ISequence,
-		timeout?: ITimeout,
+		timeout?: ITimeout
 	): DiffAlgorithmResult;
 }
 
@@ -24,25 +24,25 @@ export class DiffAlgorithmResult {
 			[
 				new SequenceDiff(
 					OffsetRange.ofLength(seq1.length),
-					OffsetRange.ofLength(seq2.length),
+					OffsetRange.ofLength(seq2.length)
 				),
 			],
-			false,
+			false
 		);
 	}
 
 	static trivialTimedOut(
 		seq1: ISequence,
-		seq2: ISequence,
+		seq2: ISequence
 	): DiffAlgorithmResult {
 		return new DiffAlgorithmResult(
 			[
 				new SequenceDiff(
 					OffsetRange.ofLength(seq1.length),
-					OffsetRange.ofLength(seq2.length),
+					OffsetRange.ofLength(seq2.length)
 				),
 			],
-			true,
+			true
 		);
 	}
 
@@ -52,14 +52,14 @@ export class DiffAlgorithmResult {
 		 * Indicates if the time out was reached.
 		 * In that case, the diffs might be an approximation and the user should be asked to rerun the diff with more time.
 		 */
-		public readonly hitTimeout: boolean,
+		public readonly hitTimeout: boolean
 	) {}
 }
 
 export class SequenceDiff {
 	public static invert(
 		sequenceDiffs: SequenceDiff[],
-		doc1Length: number,
+		doc1Length: number
 	): SequenceDiff[] {
 		const result: SequenceDiff[] = [];
 		forEachAdjacent(sequenceDiffs, (a, b) => {
@@ -72,10 +72,10 @@ export class SequenceDiff {
 								doc1Length,
 								(a
 									? a.seq2Range.endExclusive -
-									  a.seq1Range.endExclusive
-									: 0) + doc1Length,
-						  ),
-				),
+										a.seq1Range.endExclusive
+									: 0) + doc1Length
+							)
+				)
 			);
 		});
 		return result;
@@ -83,17 +83,17 @@ export class SequenceDiff {
 
 	public static fromOffsetPairs(
 		start: OffsetPair,
-		endExclusive: OffsetPair,
+		endExclusive: OffsetPair
 	): SequenceDiff {
 		return new SequenceDiff(
 			new OffsetRange(start.offset1, endExclusive.offset1),
-			new OffsetRange(start.offset2, endExclusive.offset2),
+			new OffsetRange(start.offset2, endExclusive.offset2)
 		);
 	}
 
 	constructor(
 		public readonly seq1Range: OffsetRange,
-		public readonly seq2Range: OffsetRange,
+		public readonly seq2Range: OffsetRange
 	) {}
 
 	public swap(): SequenceDiff {
@@ -107,7 +107,7 @@ export class SequenceDiff {
 	public join(other: SequenceDiff): SequenceDiff {
 		return new SequenceDiff(
 			this.seq1Range.join(other.seq1Range),
-			this.seq2Range.join(other.seq2Range),
+			this.seq2Range.join(other.seq2Range)
 		);
 	}
 
@@ -117,7 +117,7 @@ export class SequenceDiff {
 		}
 		return new SequenceDiff(
 			this.seq1Range.delta(offset),
-			this.seq2Range.delta(offset),
+			this.seq2Range.delta(offset)
 		);
 	}
 
@@ -127,7 +127,7 @@ export class SequenceDiff {
 		}
 		return new SequenceDiff(
 			this.seq1Range.deltaStart(offset),
-			this.seq2Range.deltaStart(offset),
+			this.seq2Range.deltaStart(offset)
 		);
 	}
 
@@ -137,7 +137,7 @@ export class SequenceDiff {
 		}
 		return new SequenceDiff(
 			this.seq1Range.deltaEnd(offset),
-			this.seq2Range.deltaEnd(offset),
+			this.seq2Range.deltaEnd(offset)
 		);
 	}
 
@@ -164,7 +164,7 @@ export class SequenceDiff {
 	public getEndExclusives(): OffsetPair {
 		return new OffsetPair(
 			this.seq1Range.endExclusive,
-			this.seq2Range.endExclusive,
+			this.seq2Range.endExclusive
 		);
 	}
 }
@@ -173,12 +173,12 @@ export class OffsetPair {
 	public static readonly zero = new OffsetPair(0, 0);
 	public static readonly max = new OffsetPair(
 		Number.MAX_SAFE_INTEGER,
-		Number.MAX_SAFE_INTEGER,
+		Number.MAX_SAFE_INTEGER
 	);
 
 	constructor(
 		public readonly offset1: number,
-		public readonly offset2: number,
+		public readonly offset2: number
 	) {}
 
 	public toString(): string {

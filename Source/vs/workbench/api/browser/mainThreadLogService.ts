@@ -35,16 +35,20 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ILoggerService private readonly loggerService: ILoggerService,
+		@ILoggerService private readonly loggerService: ILoggerService
 	) {
-		const proxy = extHostContext.getProxy(ExtHostContext.ExtHostLogLevelServiceShape);
-		this.disposables.add(loggerService.onDidChangeLogLevel(arg => {
-			if (isLogLevel(arg)) {
-				proxy.$setLogLevel(arg);
-			} else {
-				proxy.$setLogLevel(arg[1], arg[0]);
-			}
-		}));
+		const proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostLogLevelServiceShape
+		);
+		this.disposables.add(
+			loggerService.onDidChangeLogLevel((arg) => {
+				if (isLogLevel(arg)) {
+					proxy.$setLogLevel(arg);
+				} else {
+					proxy.$setLogLevel(arg[1], arg[0]);
+				}
+			})
+		);
 	}
 
 	$log(file: UriComponents, messages: [LogLevel, string][]): void {
@@ -59,7 +63,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 
 	async $createLogger(
 		file: UriComponents,
-		options?: ILoggerOptions,
+		options?: ILoggerOptions
 	): Promise<void> {
 		this.loggerService.createLogger(URI.revive(file), options);
 	}
@@ -77,7 +81,7 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 
 	async $setVisibility(
 		resource: UriComponents,
-		visible: boolean,
+		visible: boolean
 	): Promise<void> {
 		this.loggerService.setVisibility(URI.revive(resource), visible);
 	}
@@ -112,7 +116,7 @@ CommandsRegistry.registerCommand(
 				loggerService.setLogLevel(logLevel);
 			}
 		}
-	},
+	}
 );
 
 CommandsRegistry.registerCommand(
@@ -121,5 +125,5 @@ CommandsRegistry.registerCommand(
 		const logService = accessor.get(ILogService);
 
 		return LogLevelToString(logService.getLevel());
-	},
+	}
 );

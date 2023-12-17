@@ -73,7 +73,7 @@ export const DEFAULT_EDITOR_ASSOCIATION = {
 	id: "default",
 	displayName: localize(
 		"promptOpenWith.defaultEditor.displayName",
-		"Text Editor",
+		"Text Editor"
 	),
 	providerDisplayName: localize("builtinProviderDisplayName", "Built-in"),
 };
@@ -283,7 +283,7 @@ export interface IEditorPaneSelection {
 	 * Asks to compare this selection to another selection.
 	 */
 	compare(
-		otherSelection: IEditorPaneSelection,
+		otherSelection: IEditorPaneSelection
 	): EditorPaneSelectionCompareResult;
 
 	/**
@@ -334,7 +334,7 @@ export interface IEditorPaneWithSelection extends IEditorPane {
 }
 
 export function isEditorPaneWithSelection(
-	editorPane: IEditorPane | undefined,
+	editorPane: IEditorPane | undefined
 ): editorPane is IEditorPaneWithSelection {
 	const candidate = editorPane as IEditorPaneWithSelection | undefined;
 
@@ -355,7 +355,7 @@ export function isEditorPaneWithSelection(
 export function findViewStateForEditor(
 	input: EditorInput,
 	group: GroupIdentifier,
-	editorService: IEditorService,
+	editorService: IEditorService
 ): object | undefined {
 	for (const editorPane of editorService.visibleEditorPanes) {
 		if (editorPane.group.id === group && input.matches(editorPane.input)) {
@@ -418,7 +418,7 @@ export interface IFileEditorFactory {
 		preferredEncoding: string | undefined,
 		preferredLanguageId: string | undefined,
 		preferredContents: string | undefined,
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): IFileEditorInput;
 
 	/**
@@ -448,7 +448,7 @@ export interface IEditorFactoryRegistry {
 	 */
 	registerEditorSerializer<Services extends BrandedService[]>(
 		editorTypeId: string,
-		ctor: { new (...Services: Services): IEditorSerializer },
+		ctor: { new (...Services: Services): IEditorSerializer }
 	): IDisposable;
 
 	/**
@@ -481,7 +481,7 @@ export interface IEditorSerializer {
 	 */
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditor: string,
+		serializedEditor: string
 	): EditorInput | undefined;
 }
 
@@ -602,7 +602,7 @@ export interface IResourceMergeEditorInput extends IBaseUntypedEditorInput {
 }
 
 export function isResourceEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is IResourceEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -614,7 +614,7 @@ export function isResourceEditorInput(
 }
 
 export function isResourceDiffEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is IResourceDiffEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -628,7 +628,7 @@ export function isResourceDiffEditorInput(
 }
 
 export function isResourceDiffListEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is IResourceMultiDiffEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -640,7 +640,7 @@ export function isResourceDiffListEditorInput(
 }
 
 export function isResourceSideBySideEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is IResourceSideBySideEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -658,7 +658,7 @@ export function isResourceSideBySideEditorInput(
 }
 
 export function isUntitledResourceEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is IUntitledTextResourceEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -677,7 +677,7 @@ export function isUntitledResourceEditorInput(
 }
 
 export function isResourceMergeEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is IResourceMergeEditorInput {
 	if (isEditorInput(editor)) {
 		return false; // make sure to not accidentally match on typed editor inputs
@@ -912,7 +912,7 @@ export interface EditorInputWithPreferredResource {
 }
 
 function isEditorInputWithPreferredResource(
-	editor: unknown,
+	editor: unknown
 ): editor is EditorInputWithPreferredResource {
 	const candidate = editor as EditorInputWithPreferredResource | undefined;
 
@@ -932,7 +932,7 @@ export interface ISideBySideEditorInput extends EditorInput {
 }
 
 export function isSideBySideEditorInput(
-	editor: unknown,
+	editor: unknown
 ): editor is ISideBySideEditorInput {
 	const candidate = editor as ISideBySideEditorInput | undefined;
 
@@ -1051,7 +1051,7 @@ export function createTooLargeFileError(
 	input: EditorInput,
 	options: IEditorOptions | undefined,
 	message: string,
-	preferencesService: IPreferencesService,
+	preferencesService: IPreferencesService
 ): Error {
 	return createEditorOpenError(
 		message,
@@ -1074,7 +1074,7 @@ export function createTooLargeFileError(
 				id: "workbench.action.configureEditorLargeFileConfirmation",
 				label: localize(
 					"configureEditorLargeFileConfirmation",
-					"Configure Limit",
+					"Configure Limit"
 				),
 				run: () => {
 					return preferencesService.openUserSettings({
@@ -1086,7 +1086,7 @@ export function createTooLargeFileError(
 		{
 			forceMessage: true,
 			forceSeverity: Severity.Warning,
-		},
+		}
 	);
 }
 
@@ -1100,7 +1100,7 @@ export interface EditorInputWithOptionsAndGroup extends EditorInputWithOptions {
 }
 
 export function isEditorInputWithOptions(
-	editor: unknown,
+	editor: unknown
 ): editor is EditorInputWithOptions {
 	const candidate = editor as EditorInputWithOptions | undefined;
 
@@ -1108,7 +1108,7 @@ export function isEditorInputWithOptions(
 }
 
 export function isEditorInputWithOptionsAndGroup(
-	editor: unknown,
+	editor: unknown
 ): editor is EditorInputWithOptionsAndGroup {
 	const candidate = editor as EditorInputWithOptionsAndGroup | undefined;
 
@@ -1136,7 +1136,7 @@ export interface IEditorIdentifier {
 }
 
 export function isEditorIdentifier(
-	identifier: unknown,
+	identifier: unknown
 ): identifier is IEditorIdentifier {
 	const candidate = identifier as IEditorIdentifier | undefined;
 
@@ -1385,7 +1385,7 @@ class EditorResourceAccessorImpl {
 	 * such, the original URI and the canonical URI can be different.
 	 */
 	getOriginalUri(
-		editor: EditorInput | IUntypedEditorInput | undefined | null,
+		editor: EditorInput | IUntypedEditorInput | undefined | null
 	): URI | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
@@ -1394,21 +1394,21 @@ class EditorResourceAccessorImpl {
 				| SideBySideEditor.PRIMARY
 				| SideBySideEditor.SECONDARY
 				| SideBySideEditor.ANY;
-		},
+		}
 	): URI | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
 		options: IEditorResourceAccessorOptions & {
 			supportSideBySide: SideBySideEditor.BOTH;
-		},
+		}
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions,
+		options?: IEditorResourceAccessorOptions
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getOriginalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions,
+		options?: IEditorResourceAccessorOptions
 	): URI | { primary?: URI; secondary?: URI } | undefined {
 		if (!editor) {
 			return undefined;
@@ -1418,7 +1418,7 @@ class EditorResourceAccessorImpl {
 		if (isResourceMergeEditorInput(editor)) {
 			return EditorResourceAccessor.getOriginalUri(
 				editor.result,
-				options,
+				options
 			);
 		}
 
@@ -1507,7 +1507,7 @@ class EditorResourceAccessorImpl {
 	 * such, the original URI and the canonical URI can be different.
 	 */
 	getCanonicalUri(
-		editor: EditorInput | IUntypedEditorInput | undefined | null,
+		editor: EditorInput | IUntypedEditorInput | undefined | null
 	): URI | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
@@ -1516,21 +1516,21 @@ class EditorResourceAccessorImpl {
 				| SideBySideEditor.PRIMARY
 				| SideBySideEditor.SECONDARY
 				| SideBySideEditor.ANY;
-		},
+		}
 	): URI | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
 		options: IEditorResourceAccessorOptions & {
 			supportSideBySide: SideBySideEditor.BOTH;
-		},
+		}
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions,
+		options?: IEditorResourceAccessorOptions
 	): URI | { primary?: URI; secondary?: URI } | undefined;
 	getCanonicalUri(
 		editor: EditorInput | IUntypedEditorInput | undefined | null,
-		options?: IEditorResourceAccessorOptions,
+		options?: IEditorResourceAccessorOptions
 	): URI | { primary?: URI; secondary?: URI } | undefined {
 		if (!editor) {
 			return undefined;
@@ -1540,7 +1540,7 @@ class EditorResourceAccessorImpl {
 		if (isResourceMergeEditorInput(editor)) {
 			return EditorResourceAccessor.getCanonicalUri(
 				editor.result,
-				options,
+				options
 			);
 		}
 
@@ -1597,7 +1597,7 @@ class EditorResourceAccessorImpl {
 
 	private filterUri(
 		resource: URI,
-		filter: string | string[],
+		filter: string | string[]
 	): URI | undefined {
 		// Multiple scheme filter
 		if (Array.isArray(filter)) {
@@ -1634,7 +1634,7 @@ export function preventEditorClose(
 	group: IEditorGroup | IReadonlyEditorGroupModel,
 	editor: EditorInput,
 	method: EditorCloseMethod,
-	configuration: IEditorPartConfiguration,
+	configuration: IEditorPartConfiguration
 ): boolean {
 	if (!group.isSticky(editor)) {
 		return false; // only interested in sticky editors
@@ -1693,7 +1693,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 
 	start(accessor: ServicesAccessor): void {
 		const instantiationService = (this.instantiationService = accessor.get(
-			IInstantiationService,
+			IInstantiationService
 		));
 
 		for (const [key, ctor] of this.editorSerializerConstructors) {
@@ -1706,7 +1706,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 	private createEditorSerializer(
 		editorTypeId: string,
 		ctor: IConstructorSignature<IEditorSerializer>,
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): void {
 		const instance = instantiationService.createInstance(ctor);
 		this.editorSerializerInstances.set(editorTypeId, instance);
@@ -1726,14 +1726,14 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 
 	registerEditorSerializer(
 		editorTypeId: string,
-		ctor: IConstructorSignature<IEditorSerializer>,
+		ctor: IConstructorSignature<IEditorSerializer>
 	): IDisposable {
 		if (
 			this.editorSerializerConstructors.has(editorTypeId) ||
 			this.editorSerializerInstances.has(editorTypeId)
 		) {
 			throw new Error(
-				`A editor serializer with type ID '${editorTypeId}' was already registered.`,
+				`A editor serializer with type ID '${editorTypeId}' was already registered.`
 			);
 		}
 
@@ -1743,7 +1743,7 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 			this.createEditorSerializer(
 				editorTypeId,
 				ctor,
-				this.instantiationService,
+				this.instantiationService
 			);
 		}
 
@@ -1756,10 +1756,10 @@ class EditorFactoryRegistry implements IEditorFactoryRegistry {
 	getEditorSerializer(editor: EditorInput): IEditorSerializer | undefined;
 	getEditorSerializer(editorTypeId: string): IEditorSerializer | undefined;
 	getEditorSerializer(
-		arg1: string | EditorInput,
+		arg1: string | EditorInput
 	): IEditorSerializer | undefined {
 		return this.editorSerializerInstances.get(
-			typeof arg1 === "string" ? arg1 : arg1.typeId,
+			typeof arg1 === "string" ? arg1 : arg1.typeId
 		);
 	}
 }
@@ -1769,7 +1769,7 @@ Registry.add(EditorExtensions.EditorFactory, new EditorFactoryRegistry());
 export async function pathsToEditors(
 	paths: IPathData[] | undefined,
 	fileService: IFileService,
-	logService: ILogService,
+	logService: ILogService
 ): Promise<
 	ReadonlyArray<
 		IResourceEditorInput | IUntitledTextResourceEditorInput | undefined
@@ -1785,7 +1785,7 @@ export async function pathsToEditors(
 			if (!resource) {
 				logService.info(
 					"Cannot resolve the path because it is not valid.",
-					path,
+					path
 				);
 				return undefined;
 			}
@@ -1795,7 +1795,7 @@ export async function pathsToEditors(
 			if (!canHandleResource) {
 				logService.info(
 					"Cannot resolve the path because it cannot be handled",
-					path,
+					path
 				);
 				return undefined;
 			}
@@ -1817,7 +1817,7 @@ export async function pathsToEditors(
 			if (!exists && path.openOnlyIfExists) {
 				logService.info(
 					"Cannot resolve the path because it does not exist",
-					path,
+					path
 				);
 				return undefined;
 			}
@@ -1825,7 +1825,7 @@ export async function pathsToEditors(
 			if (type === FileType.Directory) {
 				logService.info(
 					"Cannot resolve the path because it is a directory",
-					path,
+					path
 				);
 				return undefined;
 			}
@@ -1840,7 +1840,7 @@ export async function pathsToEditors(
 			}
 
 			return { resource, options };
-		}),
+		})
 	);
 }
 
@@ -1857,7 +1857,7 @@ export const enum EditorsOrder {
 }
 
 export function isTextEditorViewState(
-	candidate: unknown,
+	candidate: unknown
 ): candidate is IEditorViewState {
 	const viewState = candidate as IEditorViewState | undefined;
 	if (!viewState) {
@@ -1911,11 +1911,11 @@ export function isEditorOpenError(obj: unknown): obj is IEditorOpenError {
 export function createEditorOpenError(
 	messageOrError: string | Error,
 	actions: IAction[],
-	options?: IEditorOpenErrorOptions,
+	options?: IEditorOpenErrorOptions
 ): IEditorOpenError {
 	const error: IEditorOpenError = createErrorWithActions(
 		messageOrError,
-		actions,
+		actions
 	);
 
 	error.forceMessage = options?.forceMessage;

@@ -18,12 +18,12 @@ export class VSCodeTelemetryReporter implements TelemetryReporter {
 		private readonly reporter:
 			| IExperimentationTelemetryReporter
 			| undefined,
-		private readonly clientVersionDelegate: () => string,
+		private readonly clientVersionDelegate: () => string
 	) {}
 
 	public logTelemetry(
 		eventName: string,
-		properties: { [prop: string]: string } = {},
+		properties: { [prop: string]: string } = {}
 	) {
 		const reporter = this.reporter;
 		if (!reporter) {

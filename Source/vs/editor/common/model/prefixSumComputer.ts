@@ -35,7 +35,7 @@ export class PrefixSumComputer {
 
 	public insertValues(
 		insertIndex: number,
-		insertValues: Uint32Array,
+		insertValues: Uint32Array
 	): boolean {
 		insertIndex = toUint32(insertIndex);
 		const oldValues = this.values;
@@ -50,7 +50,7 @@ export class PrefixSumComputer {
 		this.values.set(oldValues.subarray(0, insertIndex), 0);
 		this.values.set(
 			oldValues.subarray(insertIndex),
-			insertIndex + insertValuesLen,
+			insertIndex + insertValuesLen
 		);
 		this.values.set(insertValues, insertIndex);
 
@@ -61,7 +61,7 @@ export class PrefixSumComputer {
 		this.prefixSum = new Uint32Array(this.values.length);
 		if (this.prefixSumValidIndex[0] >= 0) {
 			this.prefixSum.set(
-				oldPrefixSum.subarray(0, this.prefixSumValidIndex[0] + 1),
+				oldPrefixSum.subarray(0, this.prefixSumValidIndex[0] + 1)
 			);
 		}
 		return true;
@@ -111,7 +111,7 @@ export class PrefixSumComputer {
 		}
 		if (this.prefixSumValidIndex[0] >= 0) {
 			this.prefixSum.set(
-				oldPrefixSum.subarray(0, this.prefixSumValidIndex[0] + 1),
+				oldPrefixSum.subarray(0, this.prefixSumValidIndex[0] + 1)
 			);
 		}
 		return true;
@@ -157,7 +157,7 @@ export class PrefixSumComputer {
 		}
 		this.prefixSumValidIndex[0] = Math.max(
 			this.prefixSumValidIndex[0],
-			index,
+			index
 		);
 		return this.prefixSum[index];
 	}
@@ -309,7 +309,7 @@ export class PrefixSumIndexOfResult {
 
 	constructor(
 		public readonly index: number,
-		public readonly remainder: number,
+		public readonly remainder: number
 	) {
 		this.index = index;
 		this.remainder = remainder;

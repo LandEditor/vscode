@@ -71,10 +71,15 @@ export class NotebookCellTextDiffListDelegate
 	private readonly lineHeight: number;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
-		const editorOptions = this.configurationService.getValue<IEditorOptions>('editor');
-		this.lineHeight = BareFontInfo.createFromRawSettings(editorOptions, PixelRatio.value).lineHeight;
+		const editorOptions =
+			this.configurationService.getValue<IEditorOptions>("editor");
+		this.lineHeight = BareFontInfo.createFromRawSettings(
+			editorOptions,
+			PixelRatio.value
+		).lineHeight;
 	}
 
 	getHeight(element: DiffElementViewModelBase): number {
@@ -107,8 +112,9 @@ export class CellDiffSingleSideRenderer
 
 	constructor(
 		readonly notebookEditor: INotebookTextDiffEditor,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService
-	) { }
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService
+	) {}
 
 	get templateId() {
 		return CellDiffSingleSideRenderer.TEMPLATE_ID;
@@ -124,26 +130,26 @@ export class CellDiffSingleSideRenderer
 
 		const sourceContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".source-container"),
+			DOM.$(".source-container")
 		);
 		const editor = this._buildSourceEditor(sourceContainer);
 
 		const metadataHeaderContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".metadata-header-container"),
+			DOM.$(".metadata-header-container")
 		);
 		const metadataInfoContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".metadata-info-container"),
+			DOM.$(".metadata-info-container")
 		);
 
 		const outputHeaderContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".output-header-container"),
+			DOM.$(".output-header-container")
 		);
 		const outputInfoContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".output-info-container"),
+			DOM.$(".output-info-container")
 		);
 
 		const borderContainer = DOM.append(body, DOM.$(".border-container"));
@@ -152,7 +158,7 @@ export class CellDiffSingleSideRenderer
 		const topBorder = DOM.append(borderContainer, DOM.$(".top-border"));
 		const bottomBorder = DOM.append(
 			borderContainer,
-			DOM.$(".bottom-border"),
+			DOM.$(".bottom-border")
 		);
 
 		return {
@@ -176,7 +182,7 @@ export class CellDiffSingleSideRenderer
 	private _buildSourceEditor(sourceContainer: HTMLElement) {
 		const editorContainer = DOM.append(
 			sourceContainer,
-			DOM.$(".editor-container"),
+			DOM.$(".editor-container")
 		);
 
 		const editor = this.instantiationService.createInstance(
@@ -196,7 +202,7 @@ export class CellDiffSingleSideRenderer
 				overflowWidgetsDomNode:
 					this.notebookEditor.getOverflowContainerDomNode(),
 			},
-			{},
+			{}
 		);
 
 		return editor;
@@ -206,7 +212,7 @@ export class CellDiffSingleSideRenderer
 		element: SingleSideDiffElementViewModel,
 		index: number,
 		templateData: CellDiffSingleSideRenderTemplate,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.body.classList.remove("left", "right", "full");
 
@@ -217,8 +223,8 @@ export class CellDiffSingleSideRenderer
 						DeletedElement,
 						this.notebookEditor,
 						element,
-						templateData,
-					),
+						templateData
+					)
 				);
 				return;
 			case "insert":
@@ -227,8 +233,8 @@ export class CellDiffSingleSideRenderer
 						InsertElement,
 						this.notebookEditor,
 						element,
-						templateData,
-					),
+						templateData
+					)
 				);
 				return;
 			default:
@@ -245,7 +251,7 @@ export class CellDiffSingleSideRenderer
 	disposeElement(
 		element: SingleSideDiffElementViewModel,
 		index: number,
-		templateData: CellDiffSingleSideRenderTemplate,
+		templateData: CellDiffSingleSideRenderTemplate
 	): void {
 		templateData.elementDisposables.clear();
 	}
@@ -262,15 +268,21 @@ export class CellDiffSideBySideRenderer
 
 	constructor(
 		readonly notebookEditor: INotebookTextDiffEditor,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IContextMenuService protected readonly contextMenuService: IContextMenuService,
-		@IKeybindingService protected readonly keybindingService: IKeybindingService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		protected readonly contextMenuService: IContextMenuService,
+		@IKeybindingService
+		protected readonly keybindingService: IKeybindingService,
 		@IMenuService protected readonly menuService: IMenuService,
-		@IContextKeyService protected readonly contextKeyService: IContextKeyService,
-		@INotificationService protected readonly notificationService: INotificationService,
+		@IContextKeyService
+		protected readonly contextKeyService: IContextKeyService,
+		@INotificationService
+		protected readonly notificationService: INotificationService,
 		@IThemeService protected readonly themeService: IThemeService,
-		@IAccessibilityService protected readonly accessibilityService: IAccessibilityService
-	) { }
+		@IAccessibilityService
+		protected readonly accessibilityService: IAccessibilityService
+	) {}
 
 	get templateId() {
 		return CellDiffSideBySideRenderer.TEMPLATE_ID;
@@ -284,18 +296,18 @@ export class CellDiffSideBySideRenderer
 
 		const sourceContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".source-container"),
+			DOM.$(".source-container")
 		);
 		const { editor, editorContainer } =
 			this._buildSourceEditor(sourceContainer);
 
 		const inputToolbarContainer = DOM.append(
 			sourceContainer,
-			DOM.$(".editor-input-toolbar-container"),
+			DOM.$(".editor-input-toolbar-container")
 		);
 		const cellToolbarContainer = DOM.append(
 			inputToolbarContainer,
-			DOM.$("div.property-toolbar"),
+			DOM.$("div.property-toolbar")
 		);
 		const toolbar = this.instantiationService.createInstance(
 			WorkbenchToolBar,
@@ -311,32 +323,32 @@ export class CellDiffSideBySideRenderer
 							this.contextKeyService,
 							this.themeService,
 							this.contextMenuService,
-							this.accessibilityService,
+							this.accessibilityService
 						);
 						return item;
 					}
 
 					return undefined;
 				},
-			},
+			}
 		);
 
 		const metadataHeaderContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".metadata-header-container"),
+			DOM.$(".metadata-header-container")
 		);
 		const metadataInfoContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".metadata-info-container"),
+			DOM.$(".metadata-info-container")
 		);
 
 		const outputHeaderContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".output-header-container"),
+			DOM.$(".output-header-container")
 		);
 		const outputInfoContainer = DOM.append(
 			diffEditorContainer,
-			DOM.$(".output-info-container"),
+			DOM.$(".output-info-container")
 		);
 
 		const borderContainer = DOM.append(body, DOM.$(".border-container"));
@@ -345,7 +357,7 @@ export class CellDiffSideBySideRenderer
 		const topBorder = DOM.append(borderContainer, DOM.$(".top-border"));
 		const bottomBorder = DOM.append(
 			borderContainer,
-			DOM.$(".bottom-border"),
+			DOM.$(".bottom-border")
 		);
 
 		return {
@@ -371,7 +383,7 @@ export class CellDiffSideBySideRenderer
 	private _buildSourceEditor(sourceContainer: HTMLElement) {
 		const editorContainer = DOM.append(
 			sourceContainer,
-			DOM.$(".editor-container"),
+			DOM.$(".editor-container")
 		);
 
 		const editor = this.instantiationService.createInstance(
@@ -396,7 +408,7 @@ export class CellDiffSideBySideRenderer
 			{
 				originalEditor: getOptimizedNestedCodeEditorWidgetOptions(),
 				modifiedEditor: getOptimizedNestedCodeEditorWidgetOptions(),
-			},
+			}
 		);
 
 		return {
@@ -409,7 +421,7 @@ export class CellDiffSideBySideRenderer
 		element: SideBySideDiffElementViewModel,
 		index: number,
 		templateData: CellDiffSideBySideRenderTemplate,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		templateData.body.classList.remove("left", "right", "full");
 
@@ -420,8 +432,8 @@ export class CellDiffSideBySideRenderer
 						ModifiedElement,
 						this.notebookEditor,
 						element,
-						templateData,
-					),
+						templateData
+					)
 				);
 				return;
 			case "modified":
@@ -430,8 +442,8 @@ export class CellDiffSideBySideRenderer
 						ModifiedElement,
 						this.notebookEditor,
 						element,
-						templateData,
-					),
+						templateData
+					)
 				);
 				return;
 			default:
@@ -449,7 +461,7 @@ export class CellDiffSideBySideRenderer
 	disposeElement(
 		element: SideBySideDiffElementViewModel,
 		index: number,
-		templateData: CellDiffSideBySideRenderTemplate,
+		templateData: CellDiffSideBySideRenderTemplate
 	): void {
 		if (templateData.toolbar) {
 			templateData.toolbar.context = undefined;
@@ -491,7 +503,7 @@ export class NotebookTextDiffList
 		options: IWorkbenchListOptions<DiffElementViewModelBase>,
 		@IListService listService: IListService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super(
 			listUser,
@@ -502,12 +514,12 @@ export class NotebookTextDiffList
 			contextKeyService,
 			listService,
 			configurationService,
-			instantiationService,
+			instantiationService
 		);
 	}
 
 	protected override createMouseController(
-		options: IListOptions<DiffElementViewModelBase>,
+		options: IListOptions<DiffElementViewModelBase>
 	): MouseController<DiffElementViewModelBase> {
 		return new NotebookMouseController(this);
 	}
@@ -545,7 +557,7 @@ export class NotebookTextDiffList
 		this.view.updateElementHeight(
 			viewIndex,
 			size,
-			focused.length ? focused[0] : null,
+			focused.length ? focused[0] : null
 		);
 	}
 
@@ -559,37 +571,37 @@ export class NotebookTextDiffList
 
 		if (styles.listBackground) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows { background: ${styles.listBackground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows { background: ${styles.listBackground}; }`
 			);
 		}
 
 		if (styles.listFocusBackground) {
 			content.push(
-				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`,
+				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color: ${styles.listFocusBackground}; }`
 			);
 			content.push(
-				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`,
+				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color: ${styles.listFocusBackground}; }`
 			); // overwrite :hover style in this case!
 		}
 
 		if (styles.listFocusForeground) {
 			content.push(
-				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { color: ${styles.listFocusForeground}; }`,
+				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { color: ${styles.listFocusForeground}; }`
 			);
 		}
 
 		if (styles.listActiveSelectionBackground) {
 			content.push(
-				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`,
+				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color: ${styles.listActiveSelectionBackground}; }`
 			);
 			content.push(
-				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`,
+				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color: ${styles.listActiveSelectionBackground}; }`
 			); // overwrite :hover style in this case!
 		}
 
 		if (styles.listActiveSelectionForeground) {
 			content.push(
-				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { color: ${styles.listActiveSelectionForeground}; }`,
+				`.monaco-list${suffix}:focus > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { color: ${styles.listActiveSelectionForeground}; }`
 			);
 		}
 
@@ -609,43 +621,43 @@ export class NotebookTextDiffList
 
 		if (styles.listInactiveFocusBackground) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color:  ${styles.listInactiveFocusBackground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { background-color:  ${styles.listInactiveFocusBackground}; }`
 			);
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color:  ${styles.listInactiveFocusBackground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused:hover { background-color:  ${styles.listInactiveFocusBackground}; }`
 			); // overwrite :hover style in this case!
 		}
 
 		if (styles.listInactiveSelectionBackground) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color:  ${styles.listInactiveSelectionBackground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { background-color:  ${styles.listInactiveSelectionBackground}; }`
 			);
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color:  ${styles.listInactiveSelectionBackground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected:hover { background-color:  ${styles.listInactiveSelectionBackground}; }`
 			); // overwrite :hover style in this case!
 		}
 
 		if (styles.listInactiveSelectionForeground) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { color: ${styles.listInactiveSelectionForeground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { color: ${styles.listInactiveSelectionForeground}; }`
 			);
 		}
 
 		if (styles.listHoverBackground) {
 			content.push(
-				`.monaco-list${suffix}:not(.drop-target) > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row:hover:not(.selected):not(.focused) { background-color:  ${styles.listHoverBackground}; }`,
+				`.monaco-list${suffix}:not(.drop-target) > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row:hover:not(.selected):not(.focused) { background-color:  ${styles.listHoverBackground}; }`
 			);
 		}
 
 		if (styles.listHoverForeground) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row:hover:not(.selected):not(.focused) { color:  ${styles.listHoverForeground}; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row:hover:not(.selected):not(.focused) { color:  ${styles.listHoverForeground}; }`
 			);
 		}
 
 		if (styles.listSelectionOutline) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { outline: 1px dotted ${styles.listSelectionOutline}; outline-offset: -1px; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.selected { outline: 1px dotted ${styles.listSelectionOutline}; outline-offset: -1px; }`
 			);
 		}
 
@@ -658,13 +670,13 @@ export class NotebookTextDiffList
 
 		if (styles.listInactiveFocusOutline) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { outline: 1px dotted ${styles.listInactiveFocusOutline}; outline-offset: -1px; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row.focused { outline: 1px dotted ${styles.listInactiveFocusOutline}; outline-offset: -1px; }`
 			);
 		}
 
 		if (styles.listHoverOutline) {
 			content.push(
-				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row:hover { outline: 1px dashed ${styles.listHoverOutline}; outline-offset: -1px; }`,
+				`.monaco-list${suffix} > div.monaco-scrollable-element > .monaco-list-rows > .monaco-list-row:hover { outline: 1px dashed ${styles.listHoverOutline}; outline-offset: -1px; }`
 			);
 		}
 

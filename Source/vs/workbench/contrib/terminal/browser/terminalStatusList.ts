@@ -61,26 +61,27 @@ export class TerminalStatusList
 	private readonly _statusTimeouts: Map<string, number> = new Map();
 
 	private readonly _onDidAddStatus = this._register(
-		new Emitter<ITerminalStatus>(),
+		new Emitter<ITerminalStatus>()
 	);
 	get onDidAddStatus(): Event<ITerminalStatus> {
 		return this._onDidAddStatus.event;
 	}
 	private readonly _onDidRemoveStatus = this._register(
-		new Emitter<ITerminalStatus>(),
+		new Emitter<ITerminalStatus>()
 	);
 	get onDidRemoveStatus(): Event<ITerminalStatus> {
 		return this._onDidRemoveStatus.event;
 	}
 	private readonly _onDidChangePrimaryStatus = this._register(
-		new Emitter<ITerminalStatus | undefined>(),
+		new Emitter<ITerminalStatus | undefined>()
 	);
 	get onDidChangePrimaryStatus(): Event<ITerminalStatus | undefined> {
 		return this._onDidChangePrimaryStatus.event;
 	}
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -111,7 +112,7 @@ export class TerminalStatusList
 		if (duration && duration > 0) {
 			const timeout = mainWindow.setTimeout(
 				() => this.remove(status),
-				duration,
+				duration
 			);
 			this._statusTimeouts.set(status.id, timeout);
 		}
@@ -162,7 +163,7 @@ export class TerminalStatusList
 			!status.icon ||
 			ThemeIcon.getModifier(status.icon) !== "spin" ||
 			this._configurationService.getValue(
-				TerminalSettingId.TabsEnableAnimation,
+				TerminalSettingId.TabsEnableAnimation
 			)
 		) {
 			return status;

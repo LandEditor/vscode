@@ -65,21 +65,34 @@ export class PreferencesSearchService
 	private _remoteSearchProvider: IRemoteSearchProvider | undefined;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
 	) {
 		super();
 
 		// This request goes to the shared process but results won't change during a window's lifetime, so cache the results.
-		this._installedExtensions = this.extensionManagementService.getInstalled(ExtensionType.User).then(exts => {
-			// Filter to enabled extensions that have settings
-			return exts
-				.filter(ext => this.extensionEnablementService.isEnabled(ext))
-				.filter(ext => ext.manifest && ext.manifest.contributes && ext.manifest.contributes.configuration)
-				.filter(ext => !!ext.identifier.uuid);
-		});
+		this._installedExtensions = this.extensionManagementService
+			.getInstalled(ExtensionType.User)
+			.then((exts) => {
+				// Filter to enabled extensions that have settings
+				return exts
+					.filter((ext) =>
+						this.extensionEnablementService.isEnabled(ext)
+					)
+					.filter(
+						(ext) =>
+							ext.manifest &&
+							ext.manifest.contributes &&
+							ext.manifest.contributes.configuration
+					)
+					.filter((ext) => !!ext.identifier.uuid);
+			});
 	}
 
 	private get remoteSearchAllowed(): boolean {
@@ -91,7 +104,7 @@ export class PreferencesSearchService
 
 	getRemoteSearchProvider(
 		filter: string,
-		newExtensionsOnly = false,
+		newExtensionsOnly = false
 	): IRemoteSearchProvider | undefined {
 		if (!this.remoteSearchAllowed) {
 			return undefined;
@@ -106,7 +119,7 @@ export class PreferencesSearchService
 	getLocalSearchProvider(filter: string): LocalSearchProvider {
 		return this.instantiationService.createInstance(
 			LocalSearchProvider,
-			filter,
+			filter
 		);
 	}
 }
@@ -123,14 +136,15 @@ export class LocalSearchProvider implements ISearchProvider {
 
 	constructor(
 		private _filter: string,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		this._filter = cleanFilter(this._filter);
 	}
 
 	searchModel(
 		preferencesModel: ISettingsEditorModel,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchResult | null> {
 		if (!this._filter) {
 			return Promise.resolve(null);
@@ -145,7 +159,7 @@ export class LocalSearchProvider implements ISearchProvider {
 				true,
 				(filter, setting) =>
 					preferencesModel.findValueMatches(filter, setting),
-				this.configurationService,
+				this.configurationService
 			);
 			const score =
 				this._filter === setting.key
@@ -157,17 +171,17 @@ export class LocalSearchProvider implements ISearchProvider {
 						matches,
 						matchType,
 						score,
-				  }
+					}
 				: null;
 		};
 
 		const filterMatches = preferencesModel.filterSettings(
 			this._filter,
 			this.getGroupFilter(this._filter),
-			settingMatcher,
+			settingMatcher
 		);
 		const exactMatch = filterMatches.find(
-			(m) => m.score === LocalSearchProvider.EXACT_MATCH_SCORE,
+			(m) => m.score === LocalSearchProvider.EXACT_MATCH_SCORE
 		);
 		if (exactMatch) {
 			return Promise.resolve({
@@ -199,14 +213,19 @@ export class SettingMatches {
 		requireFullQueryMatch: boolean,
 		private searchDescription: boolean,
 		valuesMatcher: (filter: string, setting: ISetting) => IRange[],
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
-		this.matches = distinct(this._findMatchesInSetting(searchString, setting), (match) => `${match.startLineNumber}_${match.startColumn}_${match.endLineNumber}_${match.endColumn}_`);
+		this.matches = distinct(
+			this._findMatchesInSetting(searchString, setting),
+			(match) =>
+				`${match.startLineNumber}_${match.startColumn}_${match.endLineNumber}_${match.endColumn}_`
+		);
 	}
 
 	private _findMatchesInSetting(
 		searchString: string,
-		setting: ISetting,
+		setting: ISetting
 	): IRange[] {
 		const result = this._doFindMatchesInSetting(searchString, setting);
 		return result;
@@ -224,7 +243,7 @@ export class SettingMatches {
 
 	private _doFindMatchesInSetting(
 		searchString: string,
-		setting: ISetting,
+		setting: ISetting
 	): IRange[] {
 		const descriptionMatchingWords: Map<string, IRange[]> = new Map<
 			string,
@@ -249,7 +268,7 @@ export class SettingMatches {
 			if (keyMatches?.length) {
 				keyMatchingWords.set(
 					word,
-					keyMatches.map((match) => this.toKeyRange(setting, match)),
+					keyMatches.map((match) => this.toKeyRange(setting, match))
 				);
 			}
 		}
@@ -263,12 +282,12 @@ export class SettingMatches {
 		// Also check if the user tried searching by id.
 		const keyIdMatches = matchesContiguousSubString(
 			searchString,
-			setting.key,
+			setting.key
 		);
 		if (keyIdMatches?.length) {
 			keyMatchingWords.set(
 				setting.key,
-				keyIdMatches.map((match) => this.toKeyRange(setting, match)),
+				keyIdMatches.map((match) => this.toKeyRange(setting, match))
 			);
 			this.matchType |= SettingMatchType.KeyMatch;
 		}
@@ -297,7 +316,7 @@ export class SettingMatches {
 				) {
 					const descriptionMatches = matchesContiguousSubString(
 						word,
-						setting.description[lineIndex],
+						setting.description[lineIndex]
 					);
 					if (descriptionMatches?.length) {
 						descriptionMatchingWords.set(
@@ -306,9 +325,9 @@ export class SettingMatches {
 								this.toDescriptionRange(
 									setting,
 									match,
-									lineIndex,
-								),
-							),
+									lineIndex
+								)
+							)
 						);
 					}
 				}
@@ -333,14 +352,14 @@ export class SettingMatches {
 				for (const word of words) {
 					const valueMatches = matchesContiguousSubString(
 						word,
-						option,
+						option
 					);
 					if (valueMatches?.length) {
 						valueMatchingWords.set(
 							word,
 							valueMatches.map((match) =>
-								this.toValueRange(setting, match),
-							),
+								this.toValueRange(setting, match)
+							)
 						);
 					}
 				}
@@ -355,20 +374,20 @@ export class SettingMatches {
 		} else {
 			// Search single string value.
 			const settingValue = this.configurationService.getValue(
-				setting.key,
+				setting.key
 			);
 			if (typeof settingValue === "string") {
 				for (const word of words) {
 					const valueMatches = matchesContiguousSubString(
 						word,
-						settingValue,
+						settingValue
 					);
 					if (valueMatches?.length) {
 						valueMatchingWords.set(
 							word,
 							valueMatches.map((match) =>
-								this.toValueRange(setting, match),
-							),
+								this.toValueRange(setting, match)
+							)
 						);
 					}
 				}
@@ -405,7 +424,7 @@ export class SettingMatches {
 	private toDescriptionRange(
 		setting: ISetting,
 		match: IMatch,
-		lineIndex: number,
+		lineIndex: number
 	): IRange {
 		const descriptionRange = setting.descriptionRanges[lineIndex];
 		if (!descriptionRange) {
@@ -437,7 +456,7 @@ class AiRelatedInformationSearchKeysProvider {
 	private currentPreferencesModel: ISettingsEditorModel | undefined;
 
 	constructor(
-		private readonly aiRelatedInformationService: IAiRelatedInformationService,
+		private readonly aiRelatedInformationService: IAiRelatedInformationService
 	) {}
 
 	updateModel(preferencesModel: ISettingsEditorModel) {
@@ -490,9 +509,12 @@ class AiRelatedInformationSearchProvider implements IRemoteSearchProvider {
 	private _filter: string = "";
 
 	constructor(
-		@IAiRelatedInformationService private readonly aiRelatedInformationService: IAiRelatedInformationService
+		@IAiRelatedInformationService
+		private readonly aiRelatedInformationService: IAiRelatedInformationService
 	) {
-		this._keysProvider = new AiRelatedInformationSearchKeysProvider(aiRelatedInformationService);
+		this._keysProvider = new AiRelatedInformationSearchKeysProvider(
+			aiRelatedInformationService
+		);
 	}
 
 	setFilter(filter: string) {
@@ -501,7 +523,7 @@ class AiRelatedInformationSearchProvider implements IRemoteSearchProvider {
 
 	async searchModel(
 		preferencesModel: ISettingsEditorModel,
-		token?: CancellationToken | undefined,
+		token?: CancellationToken | undefined
 	): Promise<ISearchResult | null> {
 		if (!this._filter || !this.aiRelatedInformationService.isEnabled()) {
 			return null;
@@ -515,7 +537,7 @@ class AiRelatedInformationSearchProvider implements IRemoteSearchProvider {
 	}
 
 	private async getAiRelatedInformationItems(
-		token?: CancellationToken | undefined,
+		token?: CancellationToken | undefined
 	) {
 		const settingsRecord = this._keysProvider.getSettingsRecord();
 
@@ -524,7 +546,7 @@ class AiRelatedInformationSearchProvider implements IRemoteSearchProvider {
 			(await this.aiRelatedInformationService.getRelatedInformation(
 				this._filter,
 				[RelatedInformationType.SettingInformation],
-				token ?? CancellationToken.None,
+				token ?? CancellationToken.None
 			)) as SettingInformationResult[];
 		relatedInformation.sort((a, b) => b.weight - a.weight);
 
@@ -585,7 +607,7 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 
 	async searchModel(
 		preferencesModel: ISettingsEditorModel,
-		token?: CancellationToken | undefined,
+		token?: CancellationToken | undefined
 	): Promise<ISearchResult | null> {
 		if (!this._filter) {
 			return null;
@@ -620,14 +642,14 @@ class TfIdfSearchProvider implements IRemoteSearchProvider {
 	}
 
 	private async getTfIdfItems(
-		token?: CancellationToken | undefined,
+		token?: CancellationToken | undefined
 	): Promise<ISettingMatch[]> {
 		const filterMatches: ISettingMatch[] = [];
 		const tfIdfCalculator = new TfIdfCalculator();
 		tfIdfCalculator.updateDocuments(this._documents);
 		const tfIdfRankings = tfIdfCalculator.calculateScores(
 			this._filter,
-			token ?? CancellationToken.None,
+			token ?? CancellationToken.None
 		);
 		tfIdfRankings.sort((a, b) => b.score - a.score);
 		const maxScore = tfIdfRankings[0].score;
@@ -664,14 +686,14 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 	private filter: string = "";
 
 	constructor(
-		@IAiRelatedInformationService private readonly aiRelatedInformationService: IAiRelatedInformationService
-	) {
-	}
+		@IAiRelatedInformationService
+		private readonly aiRelatedInformationService: IAiRelatedInformationService
+	) {}
 
 	private initializeSearchProviders() {
 		if (this.aiRelatedInformationService.isEnabled()) {
 			this.adaSearchProvider ??= new AiRelatedInformationSearchProvider(
-				this.aiRelatedInformationService,
+				this.aiRelatedInformationService
 			);
 		} else {
 			this.tfIdfSearchProvider ??= new TfIdfSearchProvider();
@@ -690,7 +712,7 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 
 	searchModel(
 		preferencesModel: ISettingsEditorModel,
-		token?: CancellationToken,
+		token?: CancellationToken
 	): Promise<ISearchResult | null> {
 		if (!this.filter) {
 			return Promise.resolve(null);
@@ -701,7 +723,7 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 		} else {
 			return this.tfIdfSearchProvider!.searchModel(
 				preferencesModel,
-				token,
+				token
 			);
 		}
 	}
@@ -710,5 +732,5 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 registerSingleton(
 	IPreferencesSearchService,
 	PreferencesSearchService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

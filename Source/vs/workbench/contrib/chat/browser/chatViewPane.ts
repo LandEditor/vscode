@@ -72,35 +72,59 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IChatService private readonly chatService: IChatService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService
+		);
 
 		// View state for the ViewPane is currently global per-provider basically, but some other strictly per-model state will require a separate memento.
-		this.memento = new Memento('interactive-session-view-' + this.chatViewOptions.providerId, this.storageService);
-		this.viewState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IViewPaneState;
-		this._register(this.chatService.onDidRegisterProvider(({ providerId }) => {
-			if (providerId === this.chatViewOptions.providerId && !this._widget?.viewModel) {
-				const sessionId = this.getSessionId();
-				const model = sessionId ? this.chatService.getOrRestoreSession(sessionId) : undefined;
+		this.memento = new Memento(
+			"interactive-session-view-" + this.chatViewOptions.providerId,
+			this.storageService
+		);
+		this.viewState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE
+		) as IViewPaneState;
+		this._register(
+			this.chatService.onDidRegisterProvider(({ providerId }) => {
+				if (
+					providerId === this.chatViewOptions.providerId &&
+					!this._widget?.viewModel
+				) {
+					const sessionId = this.getSessionId();
+					const model = sessionId
+						? this.chatService.getOrRestoreSession(sessionId)
+						: undefined;
 
-				// The widget may be hidden at this point, because welcome views were allowed. Use setVisible to
-				// avoid doing a render while the widget is hidden. This is changing the condition in `shouldShowWelcome`
-				// so it should fire onDidChangeViewWelcomeState.
-				try {
-					this._widget.setVisible(false);
-					this.updateModel(model);
-					this._onDidChangeViewWelcomeState.fire();
-				} finally {
-					this.widget.setVisible(true);
+					// The widget may be hidden at this point, because welcome views were allowed. Use setVisible to
+					// avoid doing a render while the widget is hidden. This is changing the condition in `shouldShowWelcome`
+					// so it should fire onDidChangeViewWelcomeState.
+					try {
+						this._widget.setVisible(false);
+						this.updateModel(model);
+						this._onDidChangeViewWelcomeState.fire();
+					} finally {
+						this.widget.setVisible(true);
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private updateModel(
 		model?: IChatModel | undefined,
-		viewState?: IViewPaneState,
+		viewState?: IViewPaneState
 	): void {
 		this.modelDisposables.clear();
 
@@ -108,12 +132,12 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 			model ??
 			(this.chatService.transferredSessionData?.sessionId
 				? this.chatService.getOrRestoreSession(
-						this.chatService.transferredSessionData.sessionId,
-				  )
+						this.chatService.transferredSessionData.sessionId
+					)
 				: this.chatService.startSession(
 						this.chatViewOptions.providerId,
-						CancellationToken.None,
-				  ));
+						CancellationToken.None
+					));
 		if (!model) {
 			throw new Error("Could not start chat session");
 		}
@@ -124,7 +148,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 
 	override shouldShowWelcome(): boolean {
 		const noPersistedSessions = !this.chatService.hasSessions(
-			this.chatViewOptions.providerId,
+			this.chatViewOptions.providerId
 		);
 		return (
 			!this._widget?.viewModel &&
@@ -153,7 +177,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 					new ServiceCollection([
 						IContextKeyService,
 						this.scopedContextKeyService,
-					]),
+					])
 				);
 
 			this._widget = this._register(
@@ -166,13 +190,13 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 						listBackground: this.getBackgroundColor(),
 						inputEditorBackground: this.getBackgroundColor(),
 						resultEditorBackground: editorBackground,
-					},
-				),
+					}
+				)
 			);
 			this._register(
 				this.onDidChangeBodyVisibility((visible) => {
 					this._widget.setVisible(visible);
-				}),
+				})
 			);
 			this._register(this._widget.onDidClear(() => this.clear()));
 			this._widget.render(parent);
@@ -191,8 +215,8 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 								disposeListener?.dispose();
 								this._onDidChangeViewWelcomeState.fire();
 							}
-						}),
-				  )
+						})
+					)
 				: undefined;
 			const model = sessionId
 				? this.chatService.getOrRestoreSession(sessionId)

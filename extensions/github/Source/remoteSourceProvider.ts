@@ -67,7 +67,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 
 	private async getUserRemoteSources(
 		octokit: Octokit,
-		query?: string,
+		query?: string
 	): Promise<RemoteSource[]> {
 		if (!query) {
 			const user = await octokit.users.getAuthenticated({});
@@ -85,7 +85,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 
 	private async getQueryRemoteSources(
 		octokit: Octokit,
-		query?: string,
+		query?: string
 	): Promise<RemoteSource[]> {
 		if (!query) {
 			return [];
@@ -134,7 +134,7 @@ export class GithubRemoteSourceProvider implements RemoteSourceProvider {
 		const defaultBranch = repo.data.default_branch;
 
 		return branches.sort((a, b) =>
-			a === defaultBranch ? -1 : b === defaultBranch ? 1 : 0,
+			a === defaultBranch ? -1 : b === defaultBranch ? 1 : 0
 		);
 	}
 

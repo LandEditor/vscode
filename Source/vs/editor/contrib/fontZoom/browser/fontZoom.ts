@@ -18,7 +18,7 @@ class EditorFontZoomIn extends EditorAction {
 			id: "editor.action.fontZoomIn",
 			label: nls.localize(
 				"EditorFontZoomIn.label",
-				"Editor Font Zoom In",
+				"Editor Font Zoom In"
 			),
 			alias: "Editor Font Zoom In",
 			precondition: undefined,
@@ -36,7 +36,7 @@ class EditorFontZoomOut extends EditorAction {
 			id: "editor.action.fontZoomOut",
 			label: nls.localize(
 				"EditorFontZoomOut.label",
-				"Editor Font Zoom Out",
+				"Editor Font Zoom Out"
 			),
 			alias: "Editor Font Zoom Out",
 			precondition: undefined,
@@ -54,7 +54,7 @@ class EditorFontZoomReset extends EditorAction {
 			id: "editor.action.fontZoomReset",
 			label: nls.localize(
 				"EditorFontZoomReset.label",
-				"Editor Font Zoom Reset",
+				"Editor Font Zoom Reset"
 			),
 			alias: "Editor Font Zoom Reset",
 			precondition: undefined,

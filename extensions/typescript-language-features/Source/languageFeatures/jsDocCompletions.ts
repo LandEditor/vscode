@@ -15,7 +15,7 @@ const defaultJsDoc = new vscode.SnippetString(`/**\n * $0\n */`);
 class JsDocCompletionItem extends vscode.CompletionItem {
 	constructor(
 		public readonly document: vscode.TextDocument,
-		public readonly position: vscode.Position,
+		public readonly position: vscode.Position
 	) {
 		super("/** */", vscode.CompletionItemKind.Text);
 		this.detail = vscode.l10n.t("JSDoc comment");
@@ -27,7 +27,7 @@ class JsDocCompletionItem extends vscode.CompletionItem {
 		const start = position.translate(0, prefix ? -prefix[0].length : 0);
 		const range = new vscode.Range(
 			start,
-			position.translate(0, suffix ? suffix[0].length : 0),
+			position.translate(0, suffix ? suffix[0].length : 0)
 		);
 		this.range = { inserting: range, replacing: range };
 	}
@@ -37,13 +37,13 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 	constructor(
 		private readonly client: ITypeScriptServiceClient,
 		private readonly language: LanguageDescription,
-		private readonly fileConfigurationManager: FileConfigurationManager,
+		private readonly fileConfigurationManager: FileConfigurationManager
 	) {}
 
 	public async provideCompletionItems(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.CompletionItem[] | undefined> {
 		if (
 			!vscode.workspace
@@ -65,12 +65,12 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 		const response = await this.client.interruptGetErr(async () => {
 			await this.fileConfigurationManager.ensureConfigurationForDocument(
 				document,
-				token,
+				token
 			);
 
 			const args = typeConverters.Position.toFileLocationRequestArgs(
 				file,
-				position,
+				position
 			);
 			return this.client.execute("docCommentTemplate", args, token);
 		});
@@ -94,7 +94,7 @@ class JsDocCompletionProvider implements vscode.CompletionItemProvider {
 
 	private isPotentiallyValidDocCompletionPosition(
 		document: vscode.TextDocument,
-		position: vscode.Position,
+		position: vscode.Position
 	): boolean {
 		// Only show the JSdoc completion when the everything before the cursor is whitespace
 		// or could be the opening of a comment
@@ -127,12 +127,12 @@ export function templateToSnippet(template: string): vscode.SnippetString {
 			}
 			out += post + ` \${${snippetIndex++}}`;
 			return out;
-		},
+		}
 	);
 
 	template = template.replace(
 		/\* @returns[ \t]*$/gm,
-		`* @returns \${${snippetIndex++}}`,
+		`* @returns \${${snippetIndex++}}`
 	);
 
 	return new vscode.SnippetString(template);
@@ -142,11 +142,11 @@ export function register(
 	selector: DocumentSelector,
 	language: LanguageDescription,
 	client: ITypeScriptServiceClient,
-	fileConfigurationManager: FileConfigurationManager,
+	fileConfigurationManager: FileConfigurationManager
 ): vscode.Disposable {
 	return vscode.languages.registerCompletionItemProvider(
 		selector.syntax,
 		new JsDocCompletionProvider(client, language, fileConfigurationManager),
-		"*",
+		"*"
 	);
 }

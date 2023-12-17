@@ -9,11 +9,11 @@ import type * as md from "vscode-markdown-languageservice";
 
 //#region From server
 export const parse = new RequestType<{ uri: string }, md.Token[], any>(
-	"markdown/parse",
+	"markdown/parse"
 );
 
 export const fs_readFile = new RequestType<{ uri: string }, number[], any>(
-	"markdown/fs/readFile",
+	"markdown/fs/readFile"
 );
 export const fs_readDirectory = new RequestType<
 	{ uri: string },
@@ -37,11 +37,11 @@ export const fs_watcher_create = new RequestType<
 	any
 >("markdown/fs/watcher/create");
 export const fs_watcher_delete = new RequestType<{ id: number }, void, any>(
-	"markdown/fs/watcher/delete",
+	"markdown/fs/watcher/delete"
 );
 
 export const findMarkdownFilesInWorkspace = new RequestType<{}, string[], any>(
-	"markdown/findMarkdownFilesInWorkspace",
+	"markdown/findMarkdownFilesInWorkspace"
 );
 //#endregion
 

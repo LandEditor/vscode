@@ -65,15 +65,15 @@ export class ImplicitProjectConfiguration {
 		this.checkJs = ImplicitProjectConfiguration.readCheckJs(configuration);
 		this.experimentalDecorators =
 			ImplicitProjectConfiguration.readExperimentalDecorators(
-				configuration,
+				configuration
 			);
 		this.strictNullChecks =
 			ImplicitProjectConfiguration.readImplicitStrictNullChecks(
-				configuration,
+				configuration
 			);
 		this.strictFunctionTypes =
 			ImplicitProjectConfiguration.readImplicitStrictFunctionTypes(
-				configuration,
+				configuration
 			);
 	}
 
@@ -82,58 +82,58 @@ export class ImplicitProjectConfiguration {
 	}
 
 	private static readTarget(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | undefined {
 		return configuration.get<string>("js/ts.implicitProjectConfig.target");
 	}
 
 	private static readModule(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | undefined {
 		return configuration.get<string>("js/ts.implicitProjectConfig.module");
 	}
 
 	private static readCheckJs(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return (
 			configuration.get<boolean>("js/ts.implicitProjectConfig.checkJs") ??
 			configuration.get<boolean>(
 				"javascript.implicitProjectConfig.checkJs",
-				false,
+				false
 			)
 		);
 	}
 
 	private static readExperimentalDecorators(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return (
 			configuration.get<boolean>(
-				"js/ts.implicitProjectConfig.experimentalDecorators",
+				"js/ts.implicitProjectConfig.experimentalDecorators"
 			) ??
 			configuration.get<boolean>(
 				"javascript.implicitProjectConfig.experimentalDecorators",
-				false,
+				false
 			)
 		);
 	}
 
 	private static readImplicitStrictNullChecks(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"js/ts.implicitProjectConfig.strictNullChecks",
-			true,
+			true
 		);
 	}
 
 	private static readImplicitStrictFunctionTypes(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"js/ts.implicitProjectConfig.strictFunctionTypes",
-			true,
+			true
 		);
 	}
 }
@@ -165,7 +165,7 @@ export interface TypeScriptServiceConfiguration {
 
 export function areServiceConfigurationsEqual(
 	a: TypeScriptServiceConfiguration,
-	b: TypeScriptServiceConfiguration,
+	b: TypeScriptServiceConfiguration
 ): boolean {
 	return objects.equals(a, b);
 }
@@ -187,7 +187,7 @@ export abstract class BaseServiceConfigurationProvider
 			tsServerLogLevel: this.readTsServerLogLevel(configuration),
 			tsServerPluginPaths: this.readTsServerPluginPaths(configuration),
 			implicitProjectConfiguration: new ImplicitProjectConfiguration(
-				configuration,
+				configuration
 			),
 			disableAutomaticTypeAcquisition:
 				this.readDisableAutomaticTypeAcquisition(configuration),
@@ -196,7 +196,7 @@ export abstract class BaseServiceConfigurationProvider
 				this.readWebProjectWideIntellisenseEnable(configuration),
 			webProjectWideIntellisenseSuppressSemanticErrors:
 				this.readWebProjectWideIntellisenseSuppressSemanticErrors(
-					configuration,
+					configuration
 				),
 			webExperimentalTypeAcquisition:
 				this.readWebExperimentalTypeAcquisition(configuration),
@@ -220,73 +220,73 @@ export abstract class BaseServiceConfigurationProvider
 	}
 
 	protected abstract readGlobalTsdk(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | null;
 	protected abstract readLocalTsdk(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | null;
 	protected abstract readLocalNodePath(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | null;
 	protected abstract readGlobalNodePath(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | null;
 
 	protected readTsServerLogLevel(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): TsServerLogLevel {
 		const setting = configuration.get<string>(
 			"typescript.tsserver.log",
-			"off",
+			"off"
 		);
 		return TsServerLogLevel.fromString(setting);
 	}
 
 	protected readTsServerPluginPaths(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string[] {
 		return configuration.get<string[]>(
 			"typescript.tsserver.pluginPaths",
-			[],
+			[]
 		);
 	}
 
 	protected readNpmLocation(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | null {
 		return configuration.get<string | null>("typescript.npm", null);
 	}
 
 	protected readDisableAutomaticTypeAcquisition(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.disableAutomaticTypeAcquisition",
-			false,
+			false
 		);
 	}
 
 	protected readWebExperimentalTypeAcquisition(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.experimental.tsserver.web.typeAcquisition.enabled",
-			false,
+			false
 		);
 	}
 
 	protected readLocale(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): string | null {
 		const value = configuration.get<string>("typescript.locale", "auto");
 		return !value || value === "auto" ? null : value;
 	}
 
 	protected readUseSyntaxServer(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): SyntaxServerConfiguration {
 		const value = configuration.get<string>(
-			"typescript.tsserver.useSyntaxServer",
+			"typescript.tsserver.useSyntaxServer"
 		);
 		switch (value) {
 			case "never":
@@ -300,7 +300,7 @@ export abstract class BaseServiceConfigurationProvider
 		// Fallback to deprecated setting
 		const deprecatedValue = configuration.get<boolean | string>(
 			"typescript.tsserver.useSeparateSyntaxServer",
-			true,
+			true
 		);
 		if (deprecatedValue === "forAllRequests") {
 			// Undocumented setting
@@ -313,50 +313,50 @@ export abstract class BaseServiceConfigurationProvider
 	}
 
 	protected readEnableDiagnosticsTelemetry(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		// This setting does not appear in the settings view, as it is not to be enabled by users outside the team
 		return configuration.get<boolean>(
 			"typescript.enableDiagnosticsTelemetry",
-			false,
+			false
 		);
 	}
 
 	protected readEnableProjectDiagnostics(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.tsserver.experimental.enableProjectDiagnostics",
-			false,
+			false
 		);
 	}
 
 	protected readWatchOptions(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): Proto.WatchOptions | undefined {
 		const watchOptions = configuration.get<Proto.WatchOptions>(
-			"typescript.tsserver.watchOptions",
+			"typescript.tsserver.watchOptions"
 		);
 		// Returned value may be a proxy. Clone it into a normal object
 		return { ...(watchOptions ?? {}) };
 	}
 
 	protected readIncludePackageJsonAutoImports(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): "auto" | "on" | "off" | undefined {
 		return configuration.get<"auto" | "on" | "off">(
-			"typescript.preferences.includePackageJsonAutoImports",
+			"typescript.preferences.includePackageJsonAutoImports"
 		);
 	}
 
 	protected readMaxTsServerMemory(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): number {
 		const defaultMaxMemory = 3072;
 		const minimumMaxMemory = 128;
 		const memoryInMB = configuration.get<number>(
 			"typescript.tsserver.maxTsServerMemory",
-			defaultMaxMemory,
+			defaultMaxMemory
 		);
 		if (!Number.isSafeInteger(memoryInMB)) {
 			return defaultMaxMemory;
@@ -365,47 +365,47 @@ export abstract class BaseServiceConfigurationProvider
 	}
 
 	protected readEnablePromptUseWorkspaceTsdk(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.enablePromptUseWorkspaceTsdk",
-			false,
+			false
 		);
 	}
 
 	protected readEnableTsServerTracing(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.tsserver.enableTracing",
-			false,
+			false
 		);
 	}
 
 	private readWebProjectWideIntellisenseEnable(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.tsserver.web.projectWideIntellisense.enabled",
-			true,
+			true
 		);
 	}
 
 	private readWebProjectWideIntellisenseSuppressSemanticErrors(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.tsserver.web.projectWideIntellisense.suppressSemanticErrors",
-			true,
+			true
 		);
 	}
 
 	private readWorkspaceSymbolsExcludeLibrarySymbols(
-		configuration: vscode.WorkspaceConfiguration,
+		configuration: vscode.WorkspaceConfiguration
 	): boolean {
 		return configuration.get<boolean>(
 			"typescript.workspaceSymbols.excludeLibrarySymbols",
-			true,
+			true
 		);
 	}
 }

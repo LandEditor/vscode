@@ -18,7 +18,7 @@ export class RemoteRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IProductService private readonly productService: IProductService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
 	}
@@ -33,7 +33,7 @@ export class RemoteRecommendations extends ExtensionRecommendations {
 			.filter(
 				({ supportedPlatforms }) =>
 					!supportedPlatforms ||
-					supportedPlatforms.includes(currentPlatform),
+					supportedPlatforms.includes(currentPlatform)
 			)
 			.map((extension) => ({
 				extensionId: extension.extensionId.toLowerCase(),

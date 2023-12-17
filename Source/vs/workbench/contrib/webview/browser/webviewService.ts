@@ -23,10 +23,12 @@ export class WebviewService extends Disposable implements IWebviewService {
 	protected readonly _webviewThemeDataProvider: WebviewThemeDataProvider;
 
 	constructor(
-		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected readonly _instantiationService: IInstantiationService
 	) {
 		super();
-		this._webviewThemeDataProvider = this._instantiationService.createInstance(WebviewThemeDataProvider);
+		this._webviewThemeDataProvider =
+			this._instantiationService.createInstance(WebviewThemeDataProvider);
 	}
 
 	private _activeWebview?: IWebview;
@@ -49,7 +51,7 @@ export class WebviewService extends Disposable implements IWebviewService {
 	}
 
 	private readonly _onDidChangeActiveWebview = this._register(
-		new Emitter<IWebview | undefined>(),
+		new Emitter<IWebview | undefined>()
 	);
 	public readonly onDidChangeActiveWebview =
 		this._onDidChangeActiveWebview.event;
@@ -58,7 +60,7 @@ export class WebviewService extends Disposable implements IWebviewService {
 		const webview = this._instantiationService.createInstance(
 			WebviewElement,
 			initInfo,
-			this._webviewThemeDataProvider,
+			this._webviewThemeDataProvider
 		);
 		this.registerNewWebview(webview);
 		return webview;
@@ -67,7 +69,7 @@ export class WebviewService extends Disposable implements IWebviewService {
 	createWebviewOverlay(initInfo: WebviewInitInfo): IOverlayWebview {
 		const webview = this._instantiationService.createInstance(
 			OverlayWebview,
-			initInfo,
+			initInfo
 		);
 		this.registerNewWebview(webview);
 		return webview;

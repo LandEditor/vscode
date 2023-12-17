@@ -48,7 +48,10 @@ export interface ITelemetryService {
 	publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
-	>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
+	>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>
+	): void;
 
 	/**
 	 * @deprecated Use publicLogError2 and the typescript GDPR annotation where possible
@@ -58,7 +61,10 @@ export interface ITelemetryService {
 	publicLogError2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
-	>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
+	>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>
+	): void;
 
 	setExperimentProperty(name: string, value: string): void;
 }
@@ -71,7 +77,7 @@ export interface ITelemetryEndpoint {
 
 export const ICustomEndpointTelemetryService =
 	createDecorator<ICustomEndpointTelemetryService>(
-		"customEndpointTelemetryService",
+		"customEndpointTelemetryService"
 	);
 
 export interface ICustomEndpointTelemetryService {
@@ -80,12 +86,12 @@ export interface ICustomEndpointTelemetryService {
 	publicLog(
 		endpoint: ITelemetryEndpoint,
 		eventName: string,
-		data?: ITelemetryData,
+		data?: ITelemetryData
 	): void;
 	publicLogError(
 		endpoint: ITelemetryEndpoint,
 		errorEventName: string,
-		data?: ITelemetryData,
+		data?: ITelemetryData
 	): void;
 }
 

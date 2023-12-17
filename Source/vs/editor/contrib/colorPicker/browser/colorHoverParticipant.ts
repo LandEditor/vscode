@@ -56,7 +56,7 @@ export class ColorHover implements IHoverPart {
 		public readonly owner: IEditorHoverParticipant<ColorHover>,
 		public readonly range: Range,
 		public readonly model: ColorPickerModel,
-		public readonly provider: DocumentColorProvider,
+		public readonly provider: DocumentColorProvider
 	) {}
 
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
@@ -75,12 +75,12 @@ export class ColorHoverParticipant
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IThemeService private readonly _themeService: IThemeService,
-	) { }
+		@IThemeService private readonly _themeService: IThemeService
+	) {}
 
 	public computeSync(
 		_anchor: HoverAnchor,
-		_lineDecorations: IModelDecoration[],
+		_lineDecorations: IModelDecoration[]
 	): ColorHover[] {
 		return [];
 	}
@@ -88,17 +88,17 @@ export class ColorHoverParticipant
 	public computeAsync(
 		anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
-		token: CancellationToken,
+		token: CancellationToken
 	): AsyncIterableObject<ColorHover> {
 		return AsyncIterableObject.fromPromise(
-			this._computeAsync(anchor, lineDecorations, token),
+			this._computeAsync(anchor, lineDecorations, token)
 		);
 	}
 
 	private async _computeAsync(
 		_anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Promise<ColorHover[]> {
 		if (!this._editor.hasModel()) {
 			return [];
@@ -113,14 +113,14 @@ export class ColorHoverParticipant
 			}
 
 			const colorData = colorDetector.getColorData(
-				d.range.getStartPosition(),
+				d.range.getStartPosition()
 			);
 			if (colorData) {
 				const colorHover = await _createColorHover(
 					this,
 					this._editor.getModel(),
 					colorData.colorInfo,
-					colorData.provider,
+					colorData.provider
 				);
 				return [colorHover];
 			}
@@ -130,14 +130,14 @@ export class ColorHoverParticipant
 
 	public renderHoverParts(
 		context: IEditorHoverRenderContext,
-		hoverParts: ColorHover[],
+		hoverParts: ColorHover[]
 	): IDisposable {
 		return renderHoverParts(
 			this,
 			this._editor,
 			this._themeService,
 			hoverParts,
-			context,
+			context
 		);
 	}
 }
@@ -147,7 +147,7 @@ export class StandaloneColorPickerHover {
 		public readonly owner: StandaloneColorPickerParticipant,
 		public readonly range: Range,
 		public readonly model: ColorPickerModel,
-		public readonly provider: DocumentColorProvider,
+		public readonly provider: DocumentColorProvider
 	) {}
 }
 
@@ -157,13 +157,13 @@ export class StandaloneColorPickerParticipant {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IThemeService private readonly _themeService: IThemeService,
-	) { }
+		@IThemeService private readonly _themeService: IThemeService
+	) {}
 
 	public async createColorHover(
 		defaultColorInfo: IColorInformation,
 		defaultColorProvider: DocumentColorProvider,
-		colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>,
+		colorProviderRegistry: LanguageFeatureRegistry<DocumentColorProvider>
 	): Promise<{
 		colorHover: StandaloneColorPickerHover;
 		foundInEditor: boolean;
@@ -178,7 +178,7 @@ export class StandaloneColorPickerParticipant {
 		const colors = await getColors(
 			colorProviderRegistry,
 			this._editor.getModel(),
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		let foundColorInfo: IColorInformation | null = null;
 		let foundColorProvider: DocumentColorProvider | null = null;
@@ -197,14 +197,14 @@ export class StandaloneColorPickerParticipant {
 				this,
 				this._editor.getModel(),
 				colorInfo,
-				colorProvider,
+				colorProvider
 			),
 			foundInEditor: foundInEditor,
 		};
 	}
 
 	public async updateEditorModel(
-		colorHoverData: StandaloneColorPickerHover,
+		colorHoverData: StandaloneColorPickerHover
 	): Promise<void> {
 		if (!this._editor.hasModel()) {
 			return;
@@ -214,7 +214,7 @@ export class StandaloneColorPickerParticipant {
 			colorHoverData.range.startLineNumber,
 			colorHoverData.range.startColumn,
 			colorHoverData.range.endLineNumber,
-			colorHoverData.range.endColumn,
+			colorHoverData.range.endColumn
 		);
 		if (this._color) {
 			await _updateColorPresentations(
@@ -222,7 +222,7 @@ export class StandaloneColorPickerParticipant {
 				colorPickerModel,
 				this._color,
 				range,
-				colorHoverData,
+				colorHoverData
 			);
 			range = _updateEditorModel(this._editor, range, colorPickerModel);
 		}
@@ -230,14 +230,14 @@ export class StandaloneColorPickerParticipant {
 
 	public renderHoverParts(
 		context: IEditorHoverRenderContext,
-		hoverParts: ColorHover[] | StandaloneColorPickerHover[],
+		hoverParts: ColorHover[] | StandaloneColorPickerHover[]
 	): IDisposable {
 		return renderHoverParts(
 			this,
 			this._editor,
 			this._themeService,
 			hoverParts,
-			context,
+			context
 		);
 	}
 
@@ -256,7 +256,7 @@ async function _createColorHover<
 	participant: T,
 	editorModel: ITextModel,
 	colorInfo: IColorInformation,
-	provider: DocumentColorProvider,
+	provider: DocumentColorProvider
 ): Promise<
 	T extends ColorHoverParticipant ? ColorHover : StandaloneColorPickerHover
 >;
@@ -264,7 +264,7 @@ async function _createColorHover(
 	participant: ColorHoverParticipant | StandaloneColorPickerParticipant,
 	editorModel: ITextModel,
 	colorInfo: IColorInformation,
-	provider: DocumentColorProvider,
+	provider: DocumentColorProvider
 ): Promise<ColorHover | StandaloneColorPickerHover> {
 	const originalText = editorModel.getValueInRange(colorInfo.range);
 	const { red, green, blue, alpha } = colorInfo.color;
@@ -272,7 +272,7 @@ async function _createColorHover(
 		Math.round(red * 255),
 		Math.round(green * 255),
 		Math.round(blue * 255),
-		alpha,
+		alpha
 	);
 	const color = new Color(rgba);
 
@@ -280,7 +280,7 @@ async function _createColorHover(
 		editorModel,
 		colorInfo,
 		provider,
-		CancellationToken.None,
+		CancellationToken.None
 	);
 	const model = new ColorPickerModel(color, [], 0);
 	model.colorPresentations = colorPresentations || [];
@@ -291,14 +291,14 @@ async function _createColorHover(
 			participant,
 			Range.lift(colorInfo.range),
 			model,
-			provider,
+			provider
 		);
 	} else {
 		return new StandaloneColorPickerHover(
 			participant,
 			Range.lift(colorInfo.range),
 			model,
-			provider,
+			provider
 		);
 	}
 }
@@ -308,7 +308,7 @@ function renderHoverParts(
 	editor: ICodeEditor,
 	themeService: IThemeService,
 	hoverParts: ColorHover[] | StandaloneColorPickerHover[],
-	context: IEditorHoverRenderContext,
+	context: IEditorHoverRenderContext
 ) {
 	if (hoverParts.length === 0 || !editor.hasModel()) {
 		return Disposable.None;
@@ -328,8 +328,8 @@ function renderHoverParts(
 			model,
 			editor.getOption(EditorOption.pixelRatio),
 			themeService,
-			participant instanceof StandaloneColorPickerParticipant,
-		),
+			participant instanceof StandaloneColorPickerParticipant
+		)
 	);
 	context.setColorPicker(widget);
 
@@ -338,7 +338,7 @@ function renderHoverParts(
 		colorHover.range.startLineNumber,
 		colorHover.range.startColumn,
 		colorHover.range.endLineNumber,
-		colorHover.range.endColumn,
+		colorHover.range.endColumn
 	);
 	if (participant instanceof StandaloneColorPickerParticipant) {
 		const color = hoverParts[0].model.color;
@@ -347,7 +347,7 @@ function renderHoverParts(
 		disposables.add(
 			model.onColorFlushed((color: Color) => {
 				participant.color = color;
-			}),
+			})
 		);
 	} else {
 		disposables.add(
@@ -357,11 +357,11 @@ function renderHoverParts(
 					model,
 					color,
 					range,
-					colorHover,
+					colorHover
 				);
 				editorUpdatedByColorPicker = true;
 				range = _updateEditorModel(editor, range, model);
-			}),
+			})
 		);
 	}
 	disposables.add(
@@ -371,9 +371,9 @@ function renderHoverParts(
 				model,
 				color,
 				range,
-				colorHover,
+				colorHover
 			);
-		}),
+		})
 	);
 	disposables.add(
 		editor.onDidChangeModelContent((e) => {
@@ -383,7 +383,7 @@ function renderHoverParts(
 				context.hide();
 				editor.focus();
 			}
-		}),
+		})
 	);
 	return disposables;
 }
@@ -391,7 +391,7 @@ function renderHoverParts(
 function _updateEditorModel(
 	editor: IActiveCodeEditor,
 	range: Range,
-	model: ColorPickerModel,
+	model: ColorPickerModel
 ): Range {
 	const textEdits: ISingleEditOperation[] = [];
 	const edit = model.presentation.textEdit ?? {
@@ -410,7 +410,7 @@ function _updateEditorModel(
 		._setTrackedRange(
 			null,
 			replaceRange,
-			TrackedRangeStickiness.GrowsOnlyWhenTypingAfter,
+			TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
 		);
 	editor.executeEdits("colorpicker", textEdits);
 	editor.pushUndoStop();
@@ -422,7 +422,7 @@ async function _updateColorPresentations(
 	colorPickerModel: ColorPickerModel,
 	color: Color,
 	range: Range,
-	colorHover: ColorHover | StandaloneColorPickerHover,
+	colorHover: ColorHover | StandaloneColorPickerHover
 ) {
 	const colorPresentations = await getColorPresentations(
 		editorModel,
@@ -436,7 +436,7 @@ async function _updateColorPresentations(
 			},
 		},
 		colorHover.provider,
-		CancellationToken.None,
+		CancellationToken.None
 	);
 	colorPickerModel.colorPresentations = colorPresentations || [];
 }

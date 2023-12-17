@@ -38,12 +38,16 @@ export class MainThreadDocumentContentProviders
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocumentContentProviders);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostDocumentContentProviders
+		);
 	}
 
 	dispose(): void {
@@ -57,7 +61,7 @@ export class MainThreadDocumentContentProviders
 				scheme,
 				{
 					provideTextContent: (
-						uri: URI,
+						uri: URI
 					): Promise<ITextModel | null> => {
 						return this._proxy
 							.$provideTextDocumentContent(handle, uri)
@@ -65,23 +69,23 @@ export class MainThreadDocumentContentProviders
 								if (typeof value === "string") {
 									const firstLineText = value.substr(
 										0,
-										1 + value.search(/\r?\n/),
+										1 + value.search(/\r?\n/)
 									);
 									const languageSelection =
 										this._languageService.createByFilepathOrFirstLine(
 											uri,
-											firstLineText,
+											firstLineText
 										);
 									return this._modelService.createModel(
 										value,
 										languageSelection,
-										uri,
+										uri
 									);
 								}
 								return null;
 							});
 					},
-				},
+				}
 			);
 		this._resourceContentProvider.set(handle, registration);
 	}
@@ -92,7 +96,7 @@ export class MainThreadDocumentContentProviders
 
 	async $onVirtualDocumentChange(
 		uri: UriComponents,
-		value: string,
+		value: string
 	): Promise<void> {
 		const model = this._modelService.getModel(URI.revive(uri));
 		if (!model) {
@@ -111,7 +115,7 @@ export class MainThreadDocumentContentProviders
 			const edits =
 				await this._editorWorkerService.computeMoreMinimalEdits(
 					model.uri,
-					[{ text: value, range: model.getFullModelRange() }],
+					[{ text: value, range: model.getFullModelRange() }]
 				);
 
 			// remove token
@@ -125,11 +129,8 @@ export class MainThreadDocumentContentProviders
 				// use the evil-edit as these models show in readonly-editor only
 				model.applyEdits(
 					edits.map((edit) =>
-						EditOperation.replace(
-							Range.lift(edit.range),
-							edit.text,
-						),
-					),
+						EditOperation.replace(Range.lift(edit.range), edit.text)
+					)
 				);
 			}
 		} catch (error) {

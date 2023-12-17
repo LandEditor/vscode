@@ -22,34 +22,34 @@ export default class TypeScriptTypeDefinitionProvider
 	public provideTypeDefinition(
 		document: vscode.TextDocument,
 		position: vscode.Position,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.Definition | undefined> {
 		return this.getSymbolLocations(
 			"typeDefinition",
 			document,
 			position,
-			token,
+			token
 		);
 	}
 }
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
 			requireSomeCapability(
 				client,
 				ClientCapability.EnhancedSyntax,
-				ClientCapability.Semantic,
+				ClientCapability.Semantic
 			),
 		],
 		() => {
 			return vscode.languages.registerTypeDefinitionProvider(
 				selector.syntax,
-				new TypeScriptTypeDefinitionProvider(client),
+				new TypeScriptTypeDefinitionProvider(client)
 			);
-		},
+		}
 	);
 }

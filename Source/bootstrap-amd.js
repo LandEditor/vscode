@@ -26,7 +26,7 @@ if (process.env["VSCODE_DEV"]) {
 		const overrides = require("../product.overrides.json");
 		globalThis._VSCODE_PRODUCT_JSON = Object.assign(
 			globalThis._VSCODE_PRODUCT_JSON,
-			overrides,
+			overrides
 		);
 	} catch (error) {
 		/* ignore */
@@ -61,7 +61,7 @@ if (process.env["ELECTRON_RUN_AS_NODE"] || process.versions["electron"]) {
 		["original-fs"],
 		function (/** @type {import('fs')} */ originalFS) {
 			return originalFS; // replace the patched electron fs with the original node fs for all AMD code
-		},
+		}
 	);
 }
 

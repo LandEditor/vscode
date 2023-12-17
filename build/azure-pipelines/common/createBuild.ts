@@ -50,7 +50,7 @@ async function main(): Promise<void> {
 	const aadCredentials = new ClientSecretCredential(
 		process.env["AZURE_TENANT_ID"]!,
 		process.env["AZURE_CLIENT_ID"]!,
-		process.env["AZURE_CLIENT_SECRET"]!,
+		process.env["AZURE_CLIENT_SECRET"]!
 	);
 	const client = new CosmosClient({
 		endpoint: process.env["AZURE_DOCUMENTDB_ENDPOINT"]!,
@@ -60,7 +60,7 @@ async function main(): Promise<void> {
 	await retry(() =>
 		scripts
 			.storedProcedure("createBuild")
-			.execute("", [{ ...build, _partitionKey: "" }]),
+			.execute("", [{ ...build, _partitionKey: "" }])
 	);
 }
 
@@ -72,5 +72,5 @@ main().then(
 	(err) => {
 		console.error(err);
 		process.exit(1);
-	},
+	}
 );

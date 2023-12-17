@@ -18,7 +18,7 @@ export class CallsTreeInput implements SymbolTreeInput<CallItem> {
 
 	constructor(
 		readonly location: vscode.Location,
-		readonly direction: CallsDirection,
+		readonly direction: CallsDirection
 	) {
 		this.title =
 			direction === CallsDirection.Incoming
@@ -31,8 +31,8 @@ export class CallsTreeInput implements SymbolTreeInput<CallItem> {
 			vscode.commands.executeCommand<vscode.CallHierarchyItem[]>(
 				"vscode.prepareCallHierarchy",
 				this.location.uri,
-				this.location.range.start,
-			),
+				this.location.range.start
+			)
 		);
 		const model = new CallsModel(this.direction, items ?? []);
 		const provider = new CallItemDataProvider(model);
@@ -74,7 +74,7 @@ export class CallItem {
 		readonly model: CallsModel,
 		readonly item: vscode.CallHierarchyItem,
 		readonly parent: CallItem | undefined,
-		readonly locations: vscode.Location[] | undefined,
+		readonly locations: vscode.Location[] | undefined
 	) {}
 
 	remove(): void {
@@ -95,10 +95,10 @@ class CallsModel
 
 	constructor(
 		readonly direction: CallsDirection,
-		items: vscode.CallHierarchyItem[],
+		items: vscode.CallHierarchyItem[]
 	) {
 		this.roots = items.map(
-			(item) => new CallItem(this, item, undefined, undefined),
+			(item) => new CallItem(this, item, undefined, undefined)
 		);
 	}
 
@@ -118,11 +118,11 @@ class CallsModel
 									(range) =>
 										new vscode.Location(
 											item.from.uri,
-											range,
-										),
-								),
-							),
-				  )
+											range
+										)
+								)
+							)
+					)
 				: [];
 		} else {
 			const calls = await vscode.commands.executeCommand<
@@ -139,11 +139,11 @@ class CallsModel
 									(range) =>
 										new vscode.Location(
 											call.item.uri,
-											range,
-										),
-								),
-							),
-				  )
+											range
+										)
+								)
+							)
+					)
 				: [];
 		}
 	}
@@ -164,7 +164,7 @@ class CallsModel
 	nearest(uri: vscode.Uri, _position: vscode.Position): CallItem | undefined {
 		return (
 			this.roots.find(
-				(item) => item.item.uri.toString() === uri.toString(),
+				(item) => item.item.uri.toString() === uri.toString()
 			) ?? this.roots[0]
 		);
 	}
@@ -201,7 +201,7 @@ class CallsModel
 
 	getEditorHighlights(
 		item: CallItem,
-		uri: vscode.Uri,
+		uri: vscode.Uri
 	): vscode.Range[] | undefined {
 		if (!item.locations) {
 			return item.item.uri.toString() === uri.toString()
@@ -231,7 +231,7 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 
 	constructor(private _model: CallsModel) {
 		this._modelListener = _model.onDidChange((e) =>
-			this._emitter.fire(e instanceof CallItem ? e : undefined),
+			this._emitter.fire(e instanceof CallItem ? e : undefined)
 		);
 	}
 
@@ -247,8 +247,8 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 			item.label && element.item.detail
 				? `${item.label} - ${element.item.detail}`
 				: item.label
-				  ? `${item.label}`
-				  : element.item.detail;
+					? `${item.label}`
+					: element.item.detail;
 		item.contextValue = "call-item";
 		item.iconPath = getThemeIcon(element.item.kind);
 
@@ -271,7 +271,7 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 				for (const loc of element.locations) {
 					if (loc.uri.toString() === element.item.uri.toString()) {
 						firstLoctionStart = firstLoctionStart?.isBefore(
-							loc.range.start,
+							loc.range.start
 						)
 							? firstLoctionStart
 							: loc.range.start;
@@ -286,7 +286,7 @@ class CallItemDataProvider implements vscode.TreeDataProvider<CallItem> {
 				{
 					selection: new vscode.Range(
 						firstLoctionStart,
-						firstLoctionStart,
+						firstLoctionStart
 					),
 				},
 			];

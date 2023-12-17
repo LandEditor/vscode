@@ -19,15 +19,16 @@ export class TextResourceEditorModel extends BaseTextEditorModel {
 		resource: URI,
 		@ILanguageService languageService: ILanguageService,
 		@IModelService modelService: IModelService,
-		@ILanguageDetectionService languageDetectionService: ILanguageDetectionService,
-		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@ILanguageDetectionService
+		languageDetectionService: ILanguageDetectionService,
+		@IAccessibilityService accessibilityService: IAccessibilityService
 	) {
 		super(
 			modelService,
 			languageService,
 			languageDetectionService,
 			accessibilityService,
-			resource,
+			resource
 		);
 	}
 

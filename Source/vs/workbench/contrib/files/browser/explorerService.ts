@@ -76,22 +76,34 @@ export class ExplorerService implements IExplorerService {
 
 	constructor(
 		@IFileService private fileService: IFileService,
-		@IConfigurationService private configurationService: IConfigurationService,
-		@IWorkspaceContextService private contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private contextService: IWorkspaceContextService,
 		@IClipboardService private clipboardService: IClipboardService,
 		@IEditorService private editorService: IEditorService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IHostService hostService: IHostService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
-		this.config = this.configurationService.getValue('explorer');
+		this.config = this.configurationService.getValue("explorer");
 
-		this.model = new ExplorerModel(this.contextService, this.uriIdentityService, this.fileService, this.configurationService, this.filesConfigurationService);
+		this.model = new ExplorerModel(
+			this.contextService,
+			this.uriIdentityService,
+			this.fileService,
+			this.configurationService,
+			this.filesConfigurationService
+		);
 		this.disposables.add(this.model);
-		this.disposables.add(this.fileService.onDidRunOperation(e => this.onDidRunOperation(e)));
+		this.disposables.add(
+			this.fileService.onDidRunOperation((e) => this.onDidRunOperation(e))
+		);
 
 		this.onFileChangesScheduler = new RunOnceScheduler(async () => {
 			const events = this.fileChangeEvents;
@@ -105,17 +117,24 @@ export class ExplorerService implements IExplorerService {
 
 			let shouldRefresh = false;
 			// For DELETED and UPDATED events go through the explorer model and check if any of the items got affected
-			this.roots.forEach(r => {
+			this.roots.forEach((r) => {
 				if (this.view && !shouldRefresh) {
-					shouldRefresh = doesFileEventAffect(r, this.view, events, types);
+					shouldRefresh = doesFileEventAffect(
+						r,
+						this.view,
+						events,
+						types
+					);
 				}
 			});
 			// For ADDED events we need to go through all the events and check if the explorer is already aware of some of them
 			// Or if they affect not yet resolved parts of the explorer. If that is the case we will not refresh.
-			events.forEach(e => {
+			events.forEach((e) => {
 				if (!shouldRefresh) {
 					for (const resource of e.rawAdded) {
-						const parent = this.model.findClosest(dirname(resource));
+						const parent = this.model.findClosest(
+							dirname(resource)
+						);
 						// Parent of the added resource is resolved and the explorer model is not aware of the added resource - we need to refresh
 						if (parent && !parent.getChild(basename(resource))) {
 							shouldRefresh = true;
@@ -128,48 +147,69 @@ export class ExplorerService implements IExplorerService {
 			if (shouldRefresh) {
 				await this.refresh(false);
 			}
-
 		}, ExplorerService.EXPLORER_FILE_CHANGES_REACT_DELAY);
 
-		this.disposables.add(this.fileService.onDidFilesChange(e => {
-			this.fileChangeEvents.push(e);
-			// Don't mess with the file tree while in the process of editing. #112293
-			if (this.editable) {
-				return;
-			}
-			if (!this.onFileChangesScheduler.isScheduled()) {
-				this.onFileChangesScheduler.schedule();
-			}
-		}));
-		this.disposables.add(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationUpdated(e)));
-		this.disposables.add(Event.any<{ scheme: string }>(this.fileService.onDidChangeFileSystemProviderRegistrations, this.fileService.onDidChangeFileSystemProviderCapabilities)(async e => {
-			let affected = false;
-			this.model.roots.forEach(r => {
-				if (r.resource.scheme === e.scheme) {
-					affected = true;
-					r.forgetChildren();
+		this.disposables.add(
+			this.fileService.onDidFilesChange((e) => {
+				this.fileChangeEvents.push(e);
+				// Don't mess with the file tree while in the process of editing. #112293
+				if (this.editable) {
+					return;
 				}
-			});
-			if (affected) {
-				if (this.view) {
-					await this.view.setTreeInput();
+				if (!this.onFileChangesScheduler.isScheduled()) {
+					this.onFileChangesScheduler.schedule();
 				}
-			}
-		}));
-		this.disposables.add(this.model.onDidChangeRoots(() => {
-			this.view?.setTreeInput();
-		}));
+			})
+		);
+		this.disposables.add(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.onConfigurationUpdated(e)
+			)
+		);
+		this.disposables.add(
+			Event.any<{ scheme: string }>(
+				this.fileService.onDidChangeFileSystemProviderRegistrations,
+				this.fileService.onDidChangeFileSystemProviderCapabilities
+			)(async (e) => {
+				let affected = false;
+				this.model.roots.forEach((r) => {
+					if (r.resource.scheme === e.scheme) {
+						affected = true;
+						r.forgetChildren();
+					}
+				});
+				if (affected) {
+					if (this.view) {
+						await this.view.setTreeInput();
+					}
+				}
+			})
+		);
+		this.disposables.add(
+			this.model.onDidChangeRoots(() => {
+				this.view?.setTreeInput();
+			})
+		);
 
 		// Refresh explorer when window gets focus to compensate for missing file events #126817
-		this.disposables.add(hostService.onDidChangeFocus(hasFocus => {
-			if (hasFocus) {
-				this.refresh(false);
-			}
-		}));
+		this.disposables.add(
+			hostService.onDidChangeFocus((hasFocus) => {
+				if (hasFocus) {
+					this.refresh(false);
+				}
+			})
+		);
 		this.revealExcludeMatcher = new ResourceGlobMatcher(
-			(uri) => getRevealExcludes(configurationService.getValue<IFilesConfiguration>({ resource: uri })),
-			(event) => event.affectsConfiguration('explorer.autoRevealExclude'),
-			contextService, configurationService);
+			(uri) =>
+				getRevealExcludes(
+					configurationService.getValue<IFilesConfiguration>({
+						resource: uri,
+					})
+				),
+			(event) => event.affectsConfiguration("explorer.autoRevealExclude"),
+			contextService,
+			configurationService
+		);
 		this.disposables.add(this.revealExcludeMatcher);
 	}
 
@@ -190,14 +230,14 @@ export class ExplorerService implements IExplorerService {
 
 	getContext(
 		respectMultiSelection: boolean,
-		ignoreNestedChildren: boolean = false,
+		ignoreNestedChildren: boolean = false
 	): ExplorerItem[] {
 		if (!this.view) {
 			return [];
 		}
 
 		const items = new Set<ExplorerItem>(
-			this.view.getContext(respectMultiSelection),
+			this.view.getContext(respectMultiSelection)
 		);
 		items.forEach((item) => {
 			try {
@@ -230,7 +270,7 @@ export class ExplorerService implements IExplorerService {
 			progressLocation?:
 				| ProgressLocation.Explorer
 				| ProgressLocation.Window;
-		},
+		}
 	): Promise<void> {
 		const cancellationTokenSource = new CancellationTokenSource();
 		const promise = this.progressService.withProgress(
@@ -250,11 +290,11 @@ export class ExplorerService implements IExplorerService {
 					confirmBeforeUndo: options.confirmBeforeUndo,
 				});
 			},
-			() => cancellationTokenSource.cancel(),
+			() => cancellationTokenSource.cancel()
 		);
 		await this.progressService.withProgress(
 			{ location: ProgressLocation.Explorer, delay: 500 },
-			() => promise,
+			() => promise
 		);
 		cancellationTokenSource.dispose();
 	}
@@ -274,19 +314,19 @@ export class ExplorerService implements IExplorerService {
 			.filter((r) =>
 				this.uriIdentityService.extUri.isEqualOrParent(
 					resource,
-					r.resource,
-				),
+					r.resource
+				)
 			)
 			.sort(
 				(first, second) =>
-					second.resource.path.length - first.resource.path.length,
+					second.resource.path.length - first.resource.path.length
 			);
 		return parentRoots.length ? parentRoots[0] : null;
 	}
 
 	async setEditable(
 		stat: ExplorerItem,
-		data: IEditableData | null,
+		data: IEditableData | null
 	): Promise<void> {
 		if (!this.view) {
 			return;
@@ -410,7 +450,7 @@ export class ExplorerService implements IExplorerService {
 		const previouslyCutItems = this.cutItems;
 		this.cutItems = cut ? items : undefined;
 		await this.clipboardService.writeResources(
-			items.map((s) => s.resource),
+			items.map((s) => s.resource)
 		);
 
 		this.view?.itemsCopied(items, cut, previouslyCutItems);
@@ -422,8 +462,8 @@ export class ExplorerService implements IExplorerService {
 			this.cutItems.some((i) =>
 				this.uriIdentityService.extUri.isEqual(
 					i.resource,
-					item.resource,
-				),
+					item.resource
+				)
 			)
 		);
 	}
@@ -479,7 +519,7 @@ export class ExplorerService implements IExplorerService {
 				this.filesConfigurationService,
 				stat,
 				undefined,
-				options.resolveTo,
+				options.resolveTo
 			);
 			// Update Input with disk Stat
 			ExplorerItem.mergeLocalWithDisk(modelStat, root);
@@ -495,7 +535,7 @@ export class ExplorerService implements IExplorerService {
 			}
 			await this.view.selectResource(
 				item ? item.resource : undefined,
-				reveal,
+				reveal
 			);
 		} catch (error) {
 			root.error = error;
@@ -546,7 +586,7 @@ export class ExplorerService implements IExplorerService {
 						if (!p.isDirectoryResolved) {
 							const stat = await this.fileService.resolve(
 								p.resource,
-								{ resolveMetadata },
+								{ resolveMetadata }
 							);
 							if (stat) {
 								const modelStat = ExplorerItem.create(
@@ -554,7 +594,7 @@ export class ExplorerService implements IExplorerService {
 									this.configurationService,
 									this.filesConfigurationService,
 									stat,
-									p.parent,
+									p.parent
 								);
 								ExplorerItem.mergeLocalWithDisk(modelStat, p);
 							}
@@ -565,14 +605,14 @@ export class ExplorerService implements IExplorerService {
 							this.configurationService,
 							this.filesConfigurationService,
 							addedElement,
-							p.parent,
+							p.parent
 						);
 						// Make sure to remove any previous version of the file if any
 						p.removeChild(childElement);
 						p.addChild(childElement);
 						// Refresh the Parent (View)
 						await this.view?.refresh(shouldDeepRefresh, p);
-					}),
+					})
 				);
 			}
 		}
@@ -588,7 +628,7 @@ export class ExplorerService implements IExplorerService {
 				modelElements.every((e) => !e.nestedParent) &&
 				this.uriIdentityService.extUri.isEqual(
 					oldParentResource,
-					newParentResource,
+					newParentResource
 				);
 
 			// Handle Rename
@@ -599,9 +639,9 @@ export class ExplorerService implements IExplorerService {
 						modelElement.rename(newElement);
 						await this.view?.refresh(
 							shouldDeepRefresh,
-							modelElement.parent,
+							modelElement.parent
 						);
-					}),
+					})
 				);
 			}
 
@@ -618,15 +658,15 @@ export class ExplorerService implements IExplorerService {
 							if (oldNestedParent) {
 								await this.view?.refresh(
 									false,
-									oldNestedParent,
+									oldNestedParent
 								);
 							}
 							await this.view?.refresh(false, oldParent);
 							await this.view?.refresh(
 								shouldDeepRefresh,
-								newParents[index],
+								newParents[index]
 							);
-						}),
+						})
 					);
 				}
 			}
@@ -650,7 +690,7 @@ export class ExplorerService implements IExplorerService {
 						// Refresh Parent (View)
 						await this.view?.refresh(shouldDeepRefresh, parent);
 					}
-				}),
+				})
 			);
 		}
 	}
@@ -658,7 +698,7 @@ export class ExplorerService implements IExplorerService {
 	// Check if an item matches a explorer.autoRevealExclude pattern
 	private shouldAutoRevealItem(
 		item: ExplorerItem | undefined,
-		ignore: boolean,
+		ignore: boolean
 	): boolean {
 		if (item === undefined || ignore) {
 			return true;
@@ -666,7 +706,7 @@ export class ExplorerService implements IExplorerService {
 		if (
 			this.revealExcludeMatcher.matches(
 				item.resource,
-				(name) => !!(item.parent && item.parent.getChild(name)),
+				(name) => !!(item.parent && item.parent.getChild(name))
 			)
 		) {
 			return false;
@@ -686,7 +726,7 @@ export class ExplorerService implements IExplorerService {
 	}
 
 	private async onConfigurationUpdated(
-		event: IConfigurationChangeEvent,
+		event: IConfigurationChangeEvent
 	): Promise<void> {
 		if (!event.affectsConfiguration("explorer")) {
 			return;
@@ -735,7 +775,7 @@ function doesFileEventAffect(
 	item: ExplorerItem,
 	view: IExplorerView,
 	events: FileChangesEvent[],
-	types: FileChangeType[],
+	types: FileChangeType[]
 ): boolean {
 	for (const [_name, child] of item.children) {
 		if (view.isItemVisible(child)) {

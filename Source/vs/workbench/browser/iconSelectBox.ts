@@ -22,7 +22,7 @@ import {
 
 export const WorkbenchIconSelectBoxFocusContextKey = new RawContextKey<boolean>(
 	"iconSelectBoxFocus",
-	true,
+	true
 );
 export const WorkbenchIconSelectBoxInputFocusContextKey =
 	new RawContextKey<boolean>("iconSelectBoxInputFocus", true);
@@ -41,41 +41,41 @@ export class WorkbenchIconSelectBox extends IconSelectBox {
 
 	constructor(
 		options: IIconSelectBoxOptions,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		super(options);
 		this.contextKeyService = this._register(
-			contextKeyService.createScoped(this.domNode),
+			contextKeyService.createScoped(this.domNode)
 		);
 		WorkbenchIconSelectBoxFocusContextKey.bindTo(this.contextKeyService);
 		this.inputFocusContextKey =
 			WorkbenchIconSelectBoxInputFocusContextKey.bindTo(
-				this.contextKeyService,
+				this.contextKeyService
 			);
 		this.inputEmptyContextKey =
 			WorkbenchIconSelectBoxInputEmptyContextKey.bindTo(
-				this.contextKeyService,
+				this.contextKeyService
 			);
 		if (this.inputBox) {
 			const focusTracker = this._register(
-				dom.trackFocus(this.inputBox.inputElement),
+				dom.trackFocus(this.inputBox.inputElement)
 			);
 			this._register(
 				focusTracker.onDidFocus(() =>
-					this.inputFocusContextKey.set(true),
-				),
+					this.inputFocusContextKey.set(true)
+				)
 			);
 			this._register(
 				focusTracker.onDidBlur(() =>
-					this.inputFocusContextKey.set(false),
-				),
+					this.inputFocusContextKey.set(false)
+				)
 			);
 			this._register(
 				this.inputBox.onDidChange(() =>
 					this.inputEmptyContextKey.set(
-						this.inputBox?.value.length === 0,
-					),
-				),
+						this.inputBox?.value.length === 0
+					)
+				)
 			);
 		}
 	}
@@ -119,8 +119,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		WorkbenchIconSelectBoxFocusContextKey,
 		ContextKeyExpr.or(
 			WorkbenchIconSelectBoxInputEmptyContextKey,
-			WorkbenchIconSelectBoxInputFocusContextKey.toNegated(),
-		),
+			WorkbenchIconSelectBoxInputFocusContextKey.toNegated()
+		)
 	),
 	primary: KeyCode.RightArrow,
 	handler: () => {
@@ -138,8 +138,8 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		WorkbenchIconSelectBoxFocusContextKey,
 		ContextKeyExpr.or(
 			WorkbenchIconSelectBoxInputEmptyContextKey,
-			WorkbenchIconSelectBoxInputFocusContextKey.toNegated(),
-		),
+			WorkbenchIconSelectBoxInputFocusContextKey.toNegated()
+		)
 	),
 	primary: KeyCode.LeftArrow,
 	handler: () => {

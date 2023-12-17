@@ -36,41 +36,54 @@ class DiffEditorBreadcrumbsSource
 {
 	private readonly _currentModel = observableValue<OutlineModel | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 
 	constructor(
 		private readonly _textModel: ITextModel,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IOutlineModelService private readonly _outlineModelService: IOutlineModelService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IOutlineModelService
+		private readonly _outlineModelService: IOutlineModelService
 	) {
 		super();
 
 		const documentSymbolProviderChanged = observableSignalFromEvent(
-			'documentSymbolProvider.onDidChange',
+			"documentSymbolProvider.onDidChange",
 			this._languageFeaturesService.documentSymbolProvider.onDidChange
 		);
 
 		const textModelChanged = observableSignalFromEvent(
-			'_textModel.onDidChangeContent',
-			Event.debounce<any>(e => this._textModel.onDidChangeContent(e), () => undefined, 100)
+			"_textModel.onDidChangeContent",
+			Event.debounce<any>(
+				(e) => this._textModel.onDidChangeContent(e),
+				() => undefined,
+				100
+			)
 		);
 
-		this._register(autorunWithStore(async (reader, store) => {
-			documentSymbolProviderChanged.read(reader);
-			textModelChanged.read(reader);
+		this._register(
+			autorunWithStore(async (reader, store) => {
+				documentSymbolProviderChanged.read(reader);
+				textModelChanged.read(reader);
 
-			const src = store.add(new DisposableCancellationTokenSource());
-			const model = await this._outlineModelService.getOrCreate(this._textModel, src.token);
-			if (store.isDisposed) { return; }
+				const src = store.add(new DisposableCancellationTokenSource());
+				const model = await this._outlineModelService.getOrCreate(
+					this._textModel,
+					src.token
+				);
+				if (store.isDisposed) {
+					return;
+				}
 
-			this._currentModel.set(model, undefined);
-		}));
+				this._currentModel.set(model, undefined);
+			})
+		);
 	}
 
 	public getBreadcrumbItems(
 		startRange: LineRange,
-		reader: IReader,
+		reader: IReader
 	): { name: string; kind: SymbolKind; startLineNumber: number }[] {
 		const m = this._currentModel.read(reader);
 		if (!m) {
@@ -81,15 +94,15 @@ class DiffEditorBreadcrumbsSource
 			.filter(
 				(s) =>
 					startRange.contains(s.range.startLineNumber) &&
-					!startRange.contains(s.range.endLineNumber),
+					!startRange.contains(s.range.endLineNumber)
 			);
 		symbols.sort(
 			reverseOrder(
 				compareBy(
 					(s) => s.range.endLineNumber - s.range.startLineNumber,
-					numberComparator,
-				),
-			),
+					numberComparator
+				)
+			)
 		);
 		return symbols.map((s) => ({
 			name: s.name,
@@ -103,7 +116,7 @@ HideUnchangedRegionsFeature.setBreadcrumbsSourceFactory(
 	(textModel, instantiationService) => {
 		return instantiationService.createInstance(
 			DiffEditorBreadcrumbsSource,
-			textModel,
+			textModel
 		);
-	},
+	}
 );

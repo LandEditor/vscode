@@ -51,7 +51,7 @@ export class InsertImageFromWorkspace implements Command {
 			canSelectMany: true,
 			filters: {
 				[vscode.l10n.t("Media")]: Array.from(
-					mediaFileExtensions.keys(),
+					mediaFileExtensions.keys()
 				),
 			},
 			openLabel: vscode.l10n.t("Insert image"),
@@ -74,7 +74,7 @@ function getDefaultUri(document: vscode.TextDocument) {
 async function insertLink(
 	activeEditor: vscode.TextEditor,
 	selectedFiles: vscode.Uri[],
-	insertAsImage: boolean,
+	insertAsImage: boolean
 ): Promise<void> {
 	if (!selectedFiles.length) {
 		return;
@@ -83,7 +83,7 @@ async function insertLink(
 	const edit = createInsertLinkEdit(
 		activeEditor,
 		selectedFiles,
-		insertAsImage,
+		insertAsImage
 	);
 	await vscode.workspace.applyEdit(edit);
 }
@@ -95,7 +95,7 @@ function createInsertLinkEdit(
 	title = "",
 	placeholderValue = 0,
 	pasteAsMarkdownLink = true,
-	isExternalLink = false,
+	isExternalLink = false
 ) {
 	const snippetEdits = coalesce(
 		activeEditor.selections.map(
@@ -113,14 +113,14 @@ function createInsertLinkEdit(
 						placeholderText: selectionText,
 						placeholderStartIndex: (i + 1) * selectedFiles.length,
 						separator: insertAsMedia ? "\n" : " ",
-					},
+					}
 				);
 
 				return snippet
 					? new vscode.SnippetTextEdit(selection, snippet.snippet)
 					: undefined;
-			},
-		),
+			}
+		)
 	);
 
 	const edit = new vscode.WorkspaceEdit();

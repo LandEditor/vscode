@@ -29,7 +29,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 
 	private async openExtensionDevelopmentHostWindow(
 		args: string[],
-		debugRenderer: boolean,
+		debugRenderer: boolean
 	): Promise<IOpenExtensionWindowResult> {
 		const pargs = parseArgs(args, OPTIONS);
 		pargs.debugRenderer = debugRenderer;
@@ -47,7 +47,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 					cli: pargs,
 					forceProfile: pargs.profile,
 					forceTempProfile: pargs["profile-temp"],
-				},
+				}
 			);
 
 		if (!debugRenderer) {
@@ -79,7 +79,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 				_event: Electron.Event,
 				method: string,
 				params: unknown,
-				sessionId?: string,
+				sessionId?: string
 			) => writeMessage({ method, params, sessionId });
 
 			win.on("close", () => {
@@ -118,14 +118,14 @@ export class ElectronExtensionHostDebugBroadcastChannel<
 								id: data.id,
 								sessionId: data.sessionId,
 								result,
-							}),
+							})
 						)
 						.catch((error: Error) =>
 							writeMessage({
 								id: data.id,
 								sessionId: data.sessionId,
 								error: { code: 0, message: error.message },
-							}),
+							})
 						);
 				}
 			});

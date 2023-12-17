@@ -45,7 +45,7 @@ class StackElement {
 	constructor(
 		public readonly cursorState: CursorState,
 		public readonly scrollTop: number,
-		public readonly scrollLeft: number,
+		public readonly scrollLeft: number
 	) {}
 }
 
@@ -57,7 +57,7 @@ export class CursorUndoRedoController
 
 	public static get(editor: ICodeEditor): CursorUndoRedoController | null {
 		return editor.getContribution<CursorUndoRedoController>(
-			CursorUndoRedoController.ID,
+			CursorUndoRedoController.ID
 		);
 	}
 
@@ -79,13 +79,13 @@ export class CursorUndoRedoController
 			editor.onDidChangeModel((e) => {
 				this._undoStack = [];
 				this._redoStack = [];
-			}),
+			})
 		);
 		this._register(
 			editor.onDidChangeModelContent((e) => {
 				this._undoStack = [];
 				this._redoStack = [];
-			}),
+			})
 		);
 		this._register(
 			editor.onDidChangeCursorSelection((e) => {
@@ -109,8 +109,8 @@ export class CursorUndoRedoController
 						new StackElement(
 							prevState,
 							editor.getScrollTop(),
-							editor.getScrollLeft(),
-						),
+							editor.getScrollLeft()
+						)
 					);
 					this._redoStack = [];
 					if (this._undoStack.length > 50) {
@@ -118,7 +118,7 @@ export class CursorUndoRedoController
 						this._undoStack.shift();
 					}
 				}
-			}),
+			})
 		);
 	}
 
@@ -131,8 +131,8 @@ export class CursorUndoRedoController
 			new StackElement(
 				new CursorState(this._editor.getSelections()),
 				this._editor.getScrollTop(),
-				this._editor.getScrollLeft(),
-			),
+				this._editor.getScrollLeft()
+			)
 		);
 		this._applyState(this._undoStack.pop()!);
 	}
@@ -146,8 +146,8 @@ export class CursorUndoRedoController
 			new StackElement(
 				new CursorState(this._editor.getSelections()),
 				this._editor.getScrollTop(),
-				this._editor.getScrollLeft(),
-			),
+				this._editor.getScrollLeft()
+			)
 		);
 		this._applyState(this._redoStack.pop()!);
 	}
@@ -181,7 +181,7 @@ export class CursorUndo extends EditorAction {
 	public run(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): void {
 		CursorUndoRedoController.get(editor)?.cursorUndo();
 	}
@@ -200,7 +200,7 @@ export class CursorRedo extends EditorAction {
 	public run(
 		accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): void {
 		CursorUndoRedoController.get(editor)?.cursorRedo();
 	}
@@ -209,7 +209,7 @@ export class CursorRedo extends EditorAction {
 registerEditorContribution(
 	CursorUndoRedoController.ID,
 	CursorUndoRedoController,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // eager because it needs to listen to record cursor state ASAP
 registerEditorAction(CursorUndo);
 registerEditorAction(CursorRedo);

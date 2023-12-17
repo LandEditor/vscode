@@ -23,11 +23,11 @@ export class WordContextKey {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
 		this._ckAtEnd = WordContextKey.AtEnd.bindTo(contextKeyService);
 		this._configListener = this._editor.onDidChangeConfiguration(
-			(e) => e.hasChanged(EditorOption.tabCompletion) && this._update(),
+			(e) => e.hasChanged(EditorOption.tabCompletion) && this._update()
 		);
 		this._update();
 	}
@@ -56,14 +56,14 @@ export class WordContextKey {
 				const model = this._editor.getModel();
 				const selection = this._editor.getSelection();
 				const word = model.getWordAtPosition(
-					selection.getStartPosition(),
+					selection.getStartPosition()
 				);
 				if (!word) {
 					this._ckAtEnd.set(false);
 					return;
 				}
 				this._ckAtEnd.set(
-					word.endColumn === selection.getStartPosition().column,
+					word.endColumn === selection.getStartPosition().column
 				);
 			};
 			this._selectionListener =

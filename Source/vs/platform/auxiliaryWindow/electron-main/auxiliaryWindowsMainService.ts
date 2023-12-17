@@ -36,17 +36,17 @@ export class AuxiliaryWindowsMainService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidMaximizeWindow = this._register(
-		new Emitter<IAuxiliaryWindow>(),
+		new Emitter<IAuxiliaryWindow>()
 	);
 	readonly onDidMaximizeWindow = this._onDidMaximizeWindow.event;
 
 	private readonly _onDidUnmaximizeWindow = this._register(
-		new Emitter<IAuxiliaryWindow>(),
+		new Emitter<IAuxiliaryWindow>()
 	);
 	readonly onDidUnmaximizeWindow = this._onDidUnmaximizeWindow.event;
 
 	private readonly _onDidTriggerSystemContextMenu = this._register(
-		new Emitter<{ window: IAuxiliaryWindow; x: number; y: number }>(),
+		new Emitter<{ window: IAuxiliaryWindow; x: number; y: number }>()
 	);
 	readonly onDidTriggerSystemContextMenu =
 		this._onDidTriggerSystemContextMenu.event;
@@ -54,7 +54,8 @@ export class AuxiliaryWindowsMainService
 	private readonly windows = new Map<number, AuxiliaryWindow>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
@@ -73,7 +74,7 @@ export class AuxiliaryWindowsMainService
 			const auxiliaryWindow = this.getWindowById(browserWindow.id);
 			if (auxiliaryWindow) {
 				this.logService.trace(
-					'[aux window] app.on("browser-window-created"): Trying to claim auxiliary window',
+					'[aux window] app.on("browser-window-created"): Trying to claim auxiliary window'
 				);
 
 				auxiliaryWindow.tryClaimWindow();
@@ -86,14 +87,14 @@ export class AuxiliaryWindowsMainService
 				const auxiliaryWindow = this.getWindowById(event.sender.id);
 				if (auxiliaryWindow) {
 					this.logService.trace(
-						"[aux window] vscode:registerAuxiliaryWindow: Registering auxiliary window to main window",
+						"[aux window] vscode:registerAuxiliaryWindow: Registering auxiliary window to main window"
 					);
 
 					auxiliaryWindow.parentId = mainWindowId;
 				}
 
 				return event.sender.id;
-			},
+			}
 		);
 	}
 
@@ -104,10 +105,10 @@ export class AuxiliaryWindowsMainService
 			{
 				webPreferences: {
 					preload: FileAccess.asFileUri(
-						"vs/base/parts/sandbox/electron-sandbox/preload-aux.js",
+						"vs/base/parts/sandbox/electron-sandbox/preload-aux.js"
 					).fsPath,
 				},
-			},
+			}
 		);
 	}
 
@@ -116,23 +117,23 @@ export class AuxiliaryWindowsMainService
 
 		const auxiliaryWindow = this.instantiationService.createInstance(
 			AuxiliaryWindow,
-			webContents,
+			webContents
 		);
 
 		this.windows.set(auxiliaryWindow.id, auxiliaryWindow);
 		disposables.add(
-			toDisposable(() => this.windows.delete(auxiliaryWindow.id)),
+			toDisposable(() => this.windows.delete(auxiliaryWindow.id))
 		);
 
 		disposables.add(
 			auxiliaryWindow.onDidMaximize(() =>
-				this._onDidMaximizeWindow.fire(auxiliaryWindow),
-			),
+				this._onDidMaximizeWindow.fire(auxiliaryWindow)
+			)
 		);
 		disposables.add(
 			auxiliaryWindow.onDidUnmaximize(() =>
-				this._onDidUnmaximizeWindow.fire(auxiliaryWindow),
-			),
+				this._onDidUnmaximizeWindow.fire(auxiliaryWindow)
+			)
 		);
 		disposables.add(
 			auxiliaryWindow.onDidTriggerSystemContextMenu(({ x, y }) =>
@@ -140,8 +141,8 @@ export class AuxiliaryWindowsMainService
 					window: auxiliaryWindow,
 					x,
 					y,
-				}),
-			),
+				})
+			)
 		);
 
 		Event.once(auxiliaryWindow.onDidClose)(() => disposables.dispose());

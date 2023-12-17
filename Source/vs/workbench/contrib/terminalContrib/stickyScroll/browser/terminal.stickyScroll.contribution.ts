@@ -12,5 +12,5 @@ import "./terminalStickyScrollColorRegistry";
 registerTerminalContribution(
 	TerminalStickyScrollContribution.ID,
 	TerminalStickyScrollContribution,
-	true,
+	true
 );

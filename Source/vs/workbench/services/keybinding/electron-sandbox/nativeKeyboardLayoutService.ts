@@ -21,7 +21,7 @@ import { createDecorator } from "vs/platform/instantiation/common/instantiation"
 
 export const INativeKeyboardLayoutService =
 	createDecorator<INativeKeyboardLayoutService>(
-		"nativeKeyboardLayoutService",
+		"nativeKeyboardLayoutService"
 	);
 
 export interface INativeKeyboardLayoutService {
@@ -38,7 +38,7 @@ export class NativeKeyboardLayoutService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
@@ -47,26 +47,36 @@ export class NativeKeyboardLayoutService
 	private _keyboardMapping: IKeyboardMapping | null;
 	private _keyboardLayoutInfo: IKeyboardLayoutInfo | null;
 
-	constructor(
-		@IMainProcessService mainProcessService: IMainProcessService
-	) {
+	constructor(@IMainProcessService mainProcessService: IMainProcessService) {
 		super();
-		this._keyboardLayoutService = ProxyChannel.toService<IBaseNativeKeyboardLayoutService>(mainProcessService.getChannel('keyboardLayout'));
+		this._keyboardLayoutService =
+			ProxyChannel.toService<IBaseNativeKeyboardLayoutService>(
+				mainProcessService.getChannel("keyboardLayout")
+			);
 		this._initPromise = null;
 		this._keyboardMapping = null;
 		this._keyboardLayoutInfo = null;
 
-		this._register(this._keyboardLayoutService.onDidChangeKeyboardLayout(async ({ keyboardLayoutInfo, keyboardMapping }) => {
-			await this.initialize();
-			if (keyboardMappingEquals(this._keyboardMapping, keyboardMapping)) {
-				// the mappings are equal
-				return;
-			}
+		this._register(
+			this._keyboardLayoutService.onDidChangeKeyboardLayout(
+				async ({ keyboardLayoutInfo, keyboardMapping }) => {
+					await this.initialize();
+					if (
+						keyboardMappingEquals(
+							this._keyboardMapping,
+							keyboardMapping
+						)
+					) {
+						// the mappings are equal
+						return;
+					}
 
-			this._keyboardMapping = keyboardMapping;
-			this._keyboardLayoutInfo = keyboardLayoutInfo;
-			this._onDidChangeKeyboardLayout.fire();
-		}));
+					this._keyboardMapping = keyboardMapping;
+					this._keyboardLayoutInfo = keyboardLayoutInfo;
+					this._onDidChangeKeyboardLayout.fire();
+				}
+			)
+		);
 	}
 
 	public initialize(): Promise<void> {
@@ -95,17 +105,17 @@ export class NativeKeyboardLayoutService
 
 function keyboardMappingEquals(
 	a: IKeyboardMapping | null,
-	b: IKeyboardMapping | null,
+	b: IKeyboardMapping | null
 ): boolean {
 	if (OS === OperatingSystem.Windows) {
 		return windowsKeyboardMappingEquals(
 			<IWindowsKeyboardMapping | null>a,
-			<IWindowsKeyboardMapping | null>b,
+			<IWindowsKeyboardMapping | null>b
 		);
 	}
 
 	return macLinuxKeyboardMappingEquals(
 		<IMacLinuxKeyboardMapping | null>a,
-		<IMacLinuxKeyboardMapping | null>b,
+		<IMacLinuxKeyboardMapping | null>b
 	);
 }

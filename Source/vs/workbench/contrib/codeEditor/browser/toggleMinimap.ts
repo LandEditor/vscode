@@ -25,14 +25,14 @@ export class ToggleMinimapAction extends Action2 {
 				original: "Toggle Minimap",
 				mnemonicTitle: localize(
 					{ key: "miMinimap", comment: ["&& denotes a mnemonic"] },
-					"&&Minimap",
+					"&&Minimap"
 				),
 			},
 			category: Categories.View,
 			f1: true,
 			toggled: ContextKeyExpr.equals(
 				"config.editor.minimap.enabled",
-				true,
+				true
 			),
 			menu: {
 				id: MenuId.MenubarAppearanceMenu,
@@ -46,11 +46,11 @@ export class ToggleMinimapAction extends Action2 {
 		const configurationService = accessor.get(IConfigurationService);
 
 		const newValue = !configurationService.getValue(
-			"editor.minimap.enabled",
+			"editor.minimap.enabled"
 		);
 		return configurationService.updateValue(
 			"editor.minimap.enabled",
-			newValue,
+			newValue
 		);
 	}
 }

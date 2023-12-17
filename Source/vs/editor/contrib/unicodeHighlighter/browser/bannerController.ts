@@ -22,11 +22,14 @@ export class BannerController extends Disposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this.banner = this._register(this.instantiationService.createInstance(Banner));
+		this.banner = this._register(
+			this.instantiationService.createInstance(Banner)
+		);
 	}
 
 	public hide() {
@@ -57,13 +60,17 @@ class Banner extends Disposable {
 	private actionBar: ActionBar | undefined;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this.markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
+		this.markdownRenderer = this.instantiationService.createInstance(
+			MarkdownRenderer,
+			{}
+		);
 
-		this.element = $('div.editor-banner');
+		this.element = $("div.editor-banner");
 		this.element.tabIndex = 0;
 	}
 
@@ -108,14 +115,14 @@ class Banner extends Disposable {
 
 		if (item.icon) {
 			iconContainer.appendChild(
-				$(`div${ThemeIcon.asCSSSelector(item.icon)}`),
+				$(`div${ThemeIcon.asCSSSelector(item.icon)}`)
 			);
 		}
 
 		// Message
 		const messageContainer = append(
 			this.element,
-			$("div.message-container"),
+			$("div.message-container")
 		);
 		messageContainer.setAttribute("aria-hidden", "true");
 		messageContainer.appendChild(this.getBannerMessage(item.message));
@@ -123,7 +130,7 @@ class Banner extends Disposable {
 		// Message Actions
 		this.messageActionsContainer = append(
 			this.element,
-			$("div.message-actions-container"),
+			$("div.message-actions-container")
 		);
 		if (item.actions) {
 			for (const action of item.actions) {
@@ -132,8 +139,8 @@ class Banner extends Disposable {
 						Link,
 						this.messageActionsContainer,
 						{ ...action, tabIndex: -1 },
-						{},
-					),
+						{}
+					)
 				);
 			}
 		}
@@ -141,7 +148,7 @@ class Banner extends Disposable {
 		// Action
 		const actionBarContainer = append(
 			this.element,
-			$("div.action-container"),
+			$("div.action-container")
 		);
 		this.actionBar = this._register(new ActionBar(actionBarContainer));
 		this.actionBar.push(
@@ -155,10 +162,10 @@ class Banner extends Disposable {
 						if (typeof item.onClose === "function") {
 							item.onClose();
 						}
-					},
-				),
+					}
+				)
 			),
-			{ icon: true, label: false },
+			{ icon: true, label: false }
 		);
 		this.actionBar.setFocusable(false);
 	}

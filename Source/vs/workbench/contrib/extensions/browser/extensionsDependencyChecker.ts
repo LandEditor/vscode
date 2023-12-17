@@ -26,18 +26,26 @@ export class ExtensionDependencyChecker
 {
 	constructor(
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IHostService private readonly hostService: IHostService
 	) {
 		super();
-		CommandsRegistry.registerCommand('workbench.extensions.installMissingDependencies', () => this.installMissingDependencies());
+		CommandsRegistry.registerCommand(
+			"workbench.extensions.installMissingDependencies",
+			() => this.installMissingDependencies()
+		);
 		MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 			command: {
-				id: 'workbench.extensions.installMissingDependencies',
-				category: localize('extensions', "Extensions"),
-				title: localize('auto install missing deps', "Install Missing Dependencies")
-			}
+				id: "workbench.extensions.installMissingDependencies",
+				category: localize("extensions", "Extensions"),
+				title: localize(
+					"auto install missing deps",
+					"Install Missing Dependencies"
+				),
+			},
 		});
 	}
 
@@ -47,8 +55,8 @@ export class ExtensionDependencyChecker
 			await this.extensionsWorkbenchService.queryLocal();
 		return allMissingDependencies.filter((id) =>
 			localExtensions.every(
-				(l) => !areSameExtensions(l.identifier, { id }),
-			),
+				(l) => !areSameExtensions(l.identifier, { id })
+			)
 		);
 	}
 
@@ -79,19 +87,19 @@ export class ExtensionDependencyChecker
 			const extensions =
 				await this.extensionsWorkbenchService.getExtensions(
 					missingDependencies.map((id) => ({ id })),
-					CancellationToken.None,
+					CancellationToken.None
 				);
 			if (extensions.length) {
 				await Promises.settled(
 					extensions.map((extension) =>
-						this.extensionsWorkbenchService.install(extension),
-					),
+						this.extensionsWorkbenchService.install(extension)
+					)
 				);
 				this.notificationService.notify({
 					severity: Severity.Info,
 					message: localize(
 						"finished installing missing deps",
-						"Finished installing missing dependencies. Please reload the window now.",
+						"Finished installing missing dependencies. Please reload the window now."
 					),
 					actions: {
 						primary: [
@@ -100,7 +108,7 @@ export class ExtensionDependencyChecker
 								localize("reload", "Reload Window"),
 								"",
 								true,
-								() => this.hostService.reload(),
+								() => this.hostService.reload()
 							),
 						],
 					},
@@ -110,8 +118,8 @@ export class ExtensionDependencyChecker
 			this.notificationService.info(
 				localize(
 					"no missing deps",
-					"There are no missing dependencies to install.",
-				),
+					"There are no missing dependencies to install."
+				)
 			);
 		}
 	}

@@ -14,7 +14,7 @@ export class NoEditorTabsControl extends EditorTabsControl {
 	private activeEditor: EditorInput | null = null;
 
 	protected prepareEditorActions(
-		editorActions: IToolbarActions,
+		editorActions: IToolbarActions
 	): IToolbarActions {
 		return {
 			primary: [],
@@ -57,7 +57,7 @@ export class NoEditorTabsControl extends EditorTabsControl {
 	moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
-		targetIndex: number,
+		targetIndex: number
 	): void {}
 
 	pinEditor(editor: EditorInput): void {}

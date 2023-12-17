@@ -58,7 +58,7 @@ export interface Settings {
 
 export class ConfigurationManager extends Disposable {
 	private readonly _onDidChangeConfiguration = this._register(
-		new Emitter<Settings>(),
+		new Emitter<Settings>()
 	);
 	public readonly onDidChangeConfiguration =
 		this._onDidChangeConfiguration.event;
@@ -73,7 +73,7 @@ export class ConfigurationManager extends Disposable {
 			connection.onDidChangeConfiguration((change) => {
 				this._settings = change.settings;
 				this._onDidChangeConfiguration.fire(this._settings!);
-			}),
+			})
 		);
 	}
 

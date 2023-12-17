@@ -19,7 +19,7 @@ export interface IIssueDataProvider {
 }
 
 export const IWorkbenchIssueService = createDecorator<IWorkbenchIssueService>(
-	"workbenchIssueService",
+	"workbenchIssueService"
 );
 
 export interface IWorkbenchIssueService {
@@ -28,10 +28,10 @@ export interface IWorkbenchIssueService {
 	openProcessExplorer(): Promise<void>;
 	registerIssueUriRequestHandler(
 		extensionId: string,
-		handler: IIssueUriRequestHandler,
+		handler: IIssueUriRequestHandler
 	): IDisposable;
 	registerIssueDataProvider(
 		extensionId: string,
-		handler: IIssueDataProvider,
+		handler: IIssueDataProvider
 	): IDisposable;
 }

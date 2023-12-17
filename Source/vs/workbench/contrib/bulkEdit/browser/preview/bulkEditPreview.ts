@@ -82,7 +82,7 @@ export class CheckedStates<T extends object> {
 export class BulkTextEdit {
 	constructor(
 		readonly parent: BulkFileOperation,
-		readonly textEdit: ResourceTextEdit,
+		readonly textEdit: ResourceTextEdit
 	) {}
 }
 
@@ -99,12 +99,15 @@ export class BulkFileOperation {
 	originalEdits = new Map<number, ResourceTextEdit | ResourceFileEdit>();
 	newUri?: URI;
 
-	constructor(readonly uri: URI, readonly parent: BulkFileOperations) {}
+	constructor(
+		readonly uri: URI,
+		readonly parent: BulkFileOperations
+	) {}
 
 	addEdit(
 		index: number,
 		type: BulkFileOperationType,
-		edit: ResourceTextEdit | ResourceFileEdit,
+		edit: ResourceTextEdit | ResourceFileEdit
 	) {
 		this.type |= type;
 		this.originalEdits.set(index, edit);
@@ -139,7 +142,7 @@ export class BulkCategory {
 	readonly operationByResource = new Map<string, BulkFileOperation>();
 
 	constructor(
-		readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata,
+		readonly metadata: WorkspaceEditMetadata = BulkCategory._defaultMetadata
 	) {}
 
 	get fileOperations(): IterableIterator<BulkFileOperation> {
@@ -150,7 +153,7 @@ export class BulkCategory {
 export class BulkFileOperations {
 	static async create(
 		accessor: ServicesAccessor,
-		bulkEdit: ResourceEdit[],
+		bulkEdit: ResourceEdit[]
 	): Promise<BulkFileOperations> {
 		const result = accessor
 			.get(IInstantiationService)
@@ -167,9 +170,12 @@ export class BulkFileOperations {
 	constructor(
 		private readonly _bulkEdit: ResourceEdit[],
 		@IFileService private readonly _fileService: IFileService,
-		@IInstantiationService instaService: IInstantiationService,
+		@IInstantiationService instaService: IInstantiationService
 	) {
-		this.conflicts = instaService.createInstance(ConflictDetector, _bulkEdit);
+		this.conflicts = instaService.createInstance(
+			ConflictDetector,
+			_bulkEdit
+		);
 	}
 
 	dispose(): void {
@@ -343,9 +349,9 @@ export class BulkFileOperations {
 									!edit.textEdit.insertAsSnippet
 										? edit.textEdit.text
 										: SnippetParser.asInsertText(
-												edit.textEdit.text,
-										  ),
-								),
+												edit.textEdit.text
+											)
+								)
 							);
 						}
 					} else if (!this.checked.isChecked(edit)) {
@@ -359,7 +365,7 @@ export class BulkFileOperations {
 				}
 
 				return result.sort((a, b) =>
-					Range.compareRangesUsingStarts(a.range, b.range),
+					Range.compareRangesUsingStarts(a.range, b.range)
 				);
 			}
 		}
@@ -402,9 +408,15 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 		private readonly _operations: BulkFileOperations,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService
 	) {
-		this._disposables.add(this._textModelResolverService.registerTextModelContentProvider(BulkEditPreviewProvider.Schema, this));
+		this._disposables.add(
+			this._textModelResolverService.registerTextModelContentProvider(
+				BulkEditPreviewProvider.Schema,
+				this
+			)
+		);
 		this._ready = this._init();
 	}
 
@@ -429,11 +441,11 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			Event.debounce(
 				this._operations.checked.onDidChange,
 				(_last, e) => e,
-				MicrotaskDelay,
+				MicrotaskDelay
 			)((e) => {
 				const uri = this._operations.getUriOfEdit(e);
 				this._applyTextEditsToPreviewModel(uri);
-			}),
+			})
 		);
 	}
 
@@ -459,17 +471,17 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				// try: copy existing
 				const ref =
 					await this._textModelResolverService.createModelReference(
-						uri,
+						uri
 					);
 				const sourceModel = ref.object.textEditorModel;
 				model = this._modelService.createModel(
 					createTextBufferFactoryFromSnapshot(
-						sourceModel.createSnapshot(),
+						sourceModel.createSnapshot()
 					),
 					this._languageService.createById(
-						sourceModel.getLanguageId(),
+						sourceModel.getLanguageId()
 					),
-					previewUri,
+					previewUri
 				);
 				ref.dispose();
 			} catch {
@@ -477,9 +489,9 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 				model = this._modelService.createModel(
 					"",
 					this._languageService.createByFilepathOrFirstLine(
-						previewUri,
+						previewUri
 					),
-					previewUri,
+					previewUri
 				);
 			}
 			// this is a little weird but otherwise editors and other cusomers
@@ -488,8 +500,8 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 			queueMicrotask(async () => {
 				this._disposables.add(
 					await this._textModelResolverService.createModelReference(
-						model!.uri,
-					),
+						model!.uri
+					)
 				);
 			});
 		}

@@ -55,15 +55,19 @@ export class DebugContentProvider
 		@IDebugService private readonly debugService: IDebugService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService
 	) {
-		textModelResolverService.registerTextModelContentProvider(DEBUG_SCHEME, this);
+		textModelResolverService.registerTextModelContentProvider(
+			DEBUG_SCHEME,
+			this
+		);
 		DebugContentProvider.INSTANCE = this;
 	}
 
 	dispose(): void {
 		this.pendingUpdates.forEach((cancellationSource) =>
-			cancellationSource.dispose(),
+			cancellationSource.dispose()
 		);
 	}
 
@@ -78,7 +82,7 @@ export class DebugContentProvider
 	static refreshDebugContent(resource: uri): void {
 		DebugContentProvider.INSTANCE?.createOrUpdateContentModel(
 			resource,
-			false,
+			false
 		);
 	}
 
@@ -87,7 +91,7 @@ export class DebugContentProvider
 	 */
 	private createOrUpdateContentModel(
 		resource: uri,
-		createIfNotExists: boolean,
+		createIfNotExists: boolean
 	): Promise<ITextModel> | null {
 		const model = this.modelService.getModel(resource);
 		if (!model && !createIfNotExists) {
@@ -112,32 +116,32 @@ export class DebugContentProvider
 				new ErrorNoTelemetry(
 					localize(
 						"unable",
-						"Unable to resolve the resource without a debug session",
-					),
-				),
+						"Unable to resolve the resource without a debug session"
+					)
+				)
 			);
 		}
 		const createErrModel = (errMsg?: string) => {
 			this.debugService.sourceIsNotAvailable(resource);
 			const languageSelection = this.languageService.createById(
-				PLAINTEXT_LANGUAGE_ID,
+				PLAINTEXT_LANGUAGE_ID
 			);
 			const message = errMsg
 				? localize(
 						"canNotResolveSourceWithError",
 						"Could not load source '{0}': {1}.",
 						resource.path,
-						errMsg,
-				  )
+						errMsg
+					)
 				: localize(
 						"canNotResolveSource",
 						"Could not load source '{0}'.",
-						resource.path,
-				  );
+						resource.path
+					);
 			return this.modelService.createModel(
 				message,
 				languageSelection,
-				resource,
+				resource
 			);
 		};
 
@@ -149,7 +153,7 @@ export class DebugContentProvider
 
 						// cancel and dispose an existing update
 						const cancellationSource = this.pendingUpdates.get(
-							model.id,
+							model.id
 						);
 						cancellationSource?.cancel();
 
@@ -179,9 +183,9 @@ export class DebugContentProvider
 										edits.map((edit) =>
 											EditOperation.replace(
 												Range.lift(edit.range),
-												edit.text,
-											),
-										),
+												edit.text
+											)
+										)
 									);
 								}
 								return model;
@@ -195,14 +199,14 @@ export class DebugContentProvider
 						return this.modelService.createModel(
 							response.body.content,
 							languageSelection,
-							resource,
+							resource
 						);
 					}
 				}
 
 				return createErrModel();
 			},
-			(err: DebugProtocol.ErrorResponse) => createErrModel(err.message),
+			(err: DebugProtocol.ErrorResponse) => createErrModel(err.message)
 		);
 	}
 }

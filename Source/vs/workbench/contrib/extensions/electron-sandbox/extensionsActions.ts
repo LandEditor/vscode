@@ -24,7 +24,7 @@ export class OpenExtensionsFolderAction extends Action2 {
 			title: {
 				value: localize(
 					"openExtensionsFolder",
-					"Open Extensions Folder",
+					"Open Extensions Folder"
 				),
 				original: "Open Extensions Folder",
 			},
@@ -37,7 +37,7 @@ export class OpenExtensionsFolderAction extends Action2 {
 		const nativeHostService = accessor.get(INativeHostService);
 		const fileService = accessor.get(IFileService);
 		const environmentService = accessor.get(
-			INativeWorkbenchEnvironmentService,
+			INativeWorkbenchEnvironmentService
 		);
 
 		const extensionsHome = URI.file(environmentService.extensionsPath);
@@ -63,7 +63,7 @@ export class CleanUpExtensionsFolderAction extends Action2 {
 			title: {
 				value: localize(
 					"cleanUpExtensionsFolder",
-					"Cleanup Extensions Folder",
+					"Cleanup Extensions Folder"
 				),
 				original: "Cleanup Extensions Folder",
 			},
@@ -74,7 +74,7 @@ export class CleanUpExtensionsFolderAction extends Action2 {
 
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const extensionManagementService = accessor.get(
-			IExtensionManagementService,
+			IExtensionManagementService
 		);
 		return extensionManagementService.cleanUp();
 	}

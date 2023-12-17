@@ -38,7 +38,7 @@ export interface IGutterActionsGenerator {
 			editor: ICodeEditor;
 			accessor: ServicesAccessor;
 		},
-		result: { push(action: IAction, group?: string): void },
+		result: { push(action: IAction, group?: string): void }
 	): void;
 }
 
@@ -53,13 +53,13 @@ export class GutterActionsRegistryImpl {
 	 * If you want an action to show up in the gutter context menu, you should generally use MenuId.EditorLineNumberMenu instead.
 	 */
 	public registerGutterActionsGenerator(
-		gutterActionsGenerator: IGutterActionsGenerator,
+		gutterActionsGenerator: IGutterActionsGenerator
 	): IDisposable {
 		this._registeredGutterActionsGenerators.add(gutterActionsGenerator);
 		return {
 			dispose: () => {
 				this._registeredGutterActionsGenerators.delete(
-					gutterActionsGenerator,
+					gutterActionsGenerator
 				);
 			},
 		};
@@ -72,7 +72,7 @@ export class GutterActionsRegistryImpl {
 
 Registry.add("gutterActionsRegistry", new GutterActionsRegistryImpl());
 export const GutterActionsRegistry: GutterActionsRegistryImpl = Registry.as(
-	"gutterActionsRegistry",
+	"gutterActionsRegistry"
 );
 
 export class EditorLineNumberContextMenu
@@ -83,15 +83,21 @@ export class EditorLineNumberContextMenu
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		this._register(this.editor.onMouseDown((e: IEditorMouseEvent) => this.doShow(e, false)));
-
+		this._register(
+			this.editor.onMouseDown((e: IEditorMouseEvent) =>
+				this.doShow(e, false)
+			)
+		);
 	}
 
 	public show(e: IEditorMouseEvent) {
@@ -121,7 +127,7 @@ export class EditorLineNumberContextMenu
 		]);
 		const menu = this.menuService.createMenu(
 			MenuId.EditorLineNumberContext,
-			contextKeyService,
+			contextKeyService
 		);
 
 		const allActions: [
@@ -137,13 +143,13 @@ export class EditorLineNumberContextMenu
 					{
 						push: (
 							action: IAction,
-							group: string = "navigation",
+							group: string = "navigation"
 						) => {
 							const actions = collectedActions.get(group) ?? [];
 							actions.push(action);
 							collectedActions.set(group, actions);
 						},
-					},
+					}
 				);
 				for (const [group, actions] of collectedActions.entries()) {
 					allActions.push([group, actions]);
@@ -171,12 +177,12 @@ export class EditorLineNumberContextMenu
 				const containsSelection = currentSelections?.some(
 					(selection) =>
 						!selection.isEmpty() &&
-						selection.intersectRanges(lineRange) !== null,
+						selection.intersectRanges(lineRange) !== null
 				);
 				if (!containsSelection) {
 					this.editor.setSelection(
 						lineRange,
-						TextEditorSelectionSource.PROGRAMMATIC,
+						TextEditorSelectionSource.PROGRAMMATIC
 					);
 				}
 			}
@@ -194,5 +200,5 @@ export class EditorLineNumberContextMenu
 registerEditorContribution(
 	EditorLineNumberContextMenu.ID,
 	EditorLineNumberContextMenu,
-	EditorContributionInstantiation.AfterFirstRender,
+	EditorContributionInstantiation.AfterFirstRender
 );

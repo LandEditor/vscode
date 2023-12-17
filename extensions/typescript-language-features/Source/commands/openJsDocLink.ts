@@ -26,7 +26,7 @@ export class OpenJsDocLinkCommand implements Command {
 			vscode.Uri.from(args.file),
 			<vscode.TextDocumentShowOptions>{
 				selection: new vscode.Range(args.position, args.position),
-			},
+			}
 		);
 	}
 }

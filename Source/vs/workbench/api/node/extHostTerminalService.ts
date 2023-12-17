@@ -16,7 +16,7 @@ import { IExtHostCommands } from "vs/workbench/api/common/extHostCommands";
 export class ExtHostTerminalService extends BaseExtHostTerminalService {
 	constructor(
 		@IExtHostCommands extHostCommands: IExtHostCommands,
-		@IExtHostRpcService extHostRpc: IExtHostRpcService,
+		@IExtHostRpcService extHostRpc: IExtHostRpcService
 	) {
 		super(true, extHostCommands, extHostRpc);
 	}
@@ -24,25 +24,25 @@ export class ExtHostTerminalService extends BaseExtHostTerminalService {
 	public createTerminal(
 		name?: string,
 		shellPath?: string,
-		shellArgs?: string[] | string,
+		shellArgs?: string[] | string
 	): vscode.Terminal {
 		return this.createTerminalFromOptions({ name, shellPath, shellArgs });
 	}
 
 	public createTerminalFromOptions(
 		options: vscode.TerminalOptions,
-		internalOptions?: ITerminalInternalOptions,
+		internalOptions?: ITerminalInternalOptions
 	): vscode.Terminal {
 		const terminal = new ExtHostTerminal(
 			this._proxy,
 			generateUuid(),
 			options,
-			options.name,
+			options.name
 		);
 		this._terminals.push(terminal);
 		terminal.create(
 			options,
-			this._serializeParentTerminal(options, internalOptions),
+			this._serializeParentTerminal(options, internalOptions)
 		);
 		return terminal.value;
 	}

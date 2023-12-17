@@ -58,7 +58,7 @@ export interface INewFindReplaceState<
 
 function effectiveOptionValue(
 	override: FindOptionOverride,
-	value: boolean,
+	value: boolean
 ): boolean {
 	if (override === FindOptionOverride.True) {
 		return true;
@@ -92,7 +92,7 @@ export class FindReplaceState<
 	private _isSearching: boolean;
 	private _filters: T | null;
 	private readonly _onFindReplaceStateChange = this._register(
-		new Emitter<FindReplaceStateChangedEvent>(),
+		new Emitter<FindReplaceStateChangedEvent>()
 	);
 
 	public get searchString(): string {
@@ -119,7 +119,7 @@ export class FindReplaceState<
 	public get preserveCase(): boolean {
 		return effectiveOptionValue(
 			this._preserveCaseOverride,
-			this._preserveCase,
+			this._preserveCase
 		);
 	}
 
@@ -183,7 +183,7 @@ export class FindReplaceState<
 	public changeMatchInfo(
 		matchesPosition: number,
 		matchesCount: number,
-		currentMatch: Range | undefined,
+		currentMatch: Range | undefined
 	): void {
 		const changeEvent: FindReplaceStateChangedEvent = {
 			moveCursor: false,
@@ -240,7 +240,7 @@ export class FindReplaceState<
 	public change(
 		newState: INewFindReplaceState<T>,
 		moveCursor: boolean,
-		updateHistory: boolean = true,
+		updateHistory: boolean = true
 	): void {
 		const changeEvent: FindReplaceStateChangedEvent = {
 			moveCursor: moveCursor,
@@ -314,7 +314,7 @@ export class FindReplaceState<
 					return this._searchScope?.some((existingSearchScope) => {
 						return !Range.equalsRange(
 							existingSearchScope,
-							newSearchScope,
+							newSearchScope
 						);
 					});
 				})

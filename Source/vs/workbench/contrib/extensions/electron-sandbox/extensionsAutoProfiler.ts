@@ -54,26 +54,37 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 	private _perfBaseline: number = -1;
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IExtensionHostProfileService private readonly _extensionProfileService: IExtensionHostProfileService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IExtensionHostProfileService
+		private readonly _extensionProfileService: IExtensionHostProfileService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentServie: INativeWorkbenchEnvironmentService,
-		@IProfileAnalysisWorkerService private readonly _profileAnalysisService: IProfileAnalysisWorkerService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentServie: INativeWorkbenchEnvironmentService,
+		@IProfileAnalysisWorkerService
+		private readonly _profileAnalysisService: IProfileAnalysisWorkerService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 		@IFileService private readonly _fileService: IFileService,
 		@ITimerService timerService: ITimerService
 	) {
-
-		timerService.perfBaseline.then(value => {
+		timerService.perfBaseline.then((value) => {
 			if (value < 0) {
 				return; // too slow for profiling
 			}
 			this._perfBaseline = value;
-			this._unresponsiveListener = _extensionService.onDidChangeResponsiveChange(this._onDidChangeResponsiveChange, this);
+			this._unresponsiveListener =
+				_extensionService.onDidChangeResponsiveChange(
+					this._onDidChangeResponsiveChange,
+					this
+				);
 		});
 	}
 
@@ -83,7 +94,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 	}
 
 	private async _onDidChangeResponsiveChange(
-		event: IResponsiveStateChangeEvent,
+		event: IResponsiveStateChangeEvent
 	): Promise<void> {
 		if (event.extensionHostKind !== ExtensionHostKind.LocalProcess) {
 			return;
@@ -99,7 +110,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			// stop profiling when responsive again
 			this._session.cancel();
 			this._logService.info(
-				"UNRESPONSIVE extension host: received responsive event and cancelling profiling session",
+				"UNRESPONSIVE extension host: received responsive event and cancelling profiling session"
 			);
 		} else if (!event.isResponsive && !this._session) {
 			// start profiling if not yet profiling
@@ -119,7 +130,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				return;
 			}
 			this._logService.info(
-				"UNRESPONSIVE extension host: starting to profile NOW",
+				"UNRESPONSIVE extension host: starting to profile NOW"
 			);
 
 			// wait 5 seconds or until responsive again
@@ -149,7 +160,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		// send heavy samples iff enabled
 		if (
 			this._configService.getValue(
-				"application.experimental.rendererProfiling",
+				"application.experimental.rendererProfiling"
 			)
 		) {
 			const searchTree =
@@ -158,7 +169,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 				this._extensionService.extensions.map((e) => [
 					e.extensionLocation,
 					e,
-				]),
+				])
 			);
 
 			await this._profileAnalysisService.analyseBottomUp(
@@ -167,7 +178,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 					searchTree.findSubstr(URI.parse(url))?.identifier.value ??
 					"<<not-found>>",
 				this._perfBaseline,
-				false,
+				false
 			);
 		}
 
@@ -182,7 +193,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 
 		const data = await this._profileAnalysisService.analyseByLocation(
 			profile.data,
-			categories,
+			categories
 		);
 
 		//
@@ -210,16 +221,16 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		// print message to log
 		const path = joinPath(
 			this._environmentServie.tmpDir,
-			`exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`,
+			`exthost-${Math.random().toString(16).slice(2, 8)}.cpuprofile`
 		);
 		await this._fileService.writeFile(
 			path,
-			VSBuffer.fromString(JSON.stringify(profile.data)),
+			VSBuffer.fromString(JSON.stringify(profile.data))
 		);
 		this._logService.warn(
 			`UNRESPONSIVE extension host: '${top}' took ${topPercentage}% of ${
 				topAggregated / 1e3
-			}ms, saved PROFILE here: '${path}'`,
+			}ms, saved PROFILE here: '${path}'`
 		);
 
 		type UnresponsiveData = {
@@ -266,7 +277,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		// add to running extensions view
 		this._extensionProfileService.setUnresponsiveProfile(
 			extension.identifier,
-			profile,
+			profile
 		);
 
 		// prompt: when really slow/greedy
@@ -277,7 +288,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 		const action = await this._instantiationService.invokeFunction(
 			createSlowExtensionAction,
 			extension,
-			profile,
+			profile
 		);
 
 		if (!action) {
@@ -297,7 +308,7 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 			localize(
 				"unresponsive-exthost",
 				"The extension '{0}' took a very long time to complete its last operation and it has prevented other extensions from running.",
-				extension.displayName || extension.name,
+				extension.displayName || extension.name
 			),
 			[
 				{
@@ -305,12 +316,12 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 					run: () =>
 						this._editorService.openEditor(
 							RuntimeExtensionsInput.instance,
-							{ pinned: true },
+							{ pinned: true }
 						),
 				},
 				action,
 			],
-			{ priority: NotificationPriority.SILENT },
+			{ priority: NotificationPriority.SILENT }
 		);
 	}
 }

@@ -49,7 +49,7 @@ export class HoverResult<T> {
 	constructor(
 		public readonly value: T[],
 		public readonly isComplete: boolean,
-		public readonly hasLoadingMessage: boolean,
+		public readonly hasLoadingMessage: boolean
 	) {}
 }
 
@@ -68,13 +68,13 @@ export class HoverOperation<T> extends Disposable {
 	public readonly onResult = this._onResult.event;
 
 	private readonly _firstWaitScheduler = this._register(
-		new RunOnceScheduler(() => this._triggerAsyncComputation(), 0),
+		new RunOnceScheduler(() => this._triggerAsyncComputation(), 0)
 	);
 	private readonly _secondWaitScheduler = this._register(
-		new RunOnceScheduler(() => this._triggerSyncComputation(), 0),
+		new RunOnceScheduler(() => this._triggerSyncComputation(), 0)
 	);
 	private readonly _loadingMessageScheduler = this._register(
-		new RunOnceScheduler(() => this._triggerLoadingMessage(), 0),
+		new RunOnceScheduler(() => this._triggerLoadingMessage(), 0)
 	);
 
 	private _state = HoverOperationState.Idle;
@@ -84,7 +84,7 @@ export class HoverOperation<T> extends Disposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		private readonly _computer: IHoverComputer<T>,
+		private readonly _computer: IHoverComputer<T>
 	) {
 		super();
 	}
@@ -115,7 +115,7 @@ export class HoverOperation<T> extends Disposable {
 
 	private _setState(
 		state: HoverOperationState,
-		fireResult: boolean = true,
+		fireResult: boolean = true
 	): void {
 		this._state = state;
 		if (fireResult) {
@@ -130,7 +130,7 @@ export class HoverOperation<T> extends Disposable {
 		if (this._computer.computeAsync) {
 			this._asyncIterableDone = false;
 			this._asyncIterable = createCancelableAsyncIterable((token) =>
-				this._computer.computeAsync!(token),
+				this._computer.computeAsync!(token)
 			);
 
 			(async () => {
@@ -166,7 +166,7 @@ export class HoverOperation<T> extends Disposable {
 		this._setState(
 			this._asyncIterableDone
 				? HoverOperationState.Idle
-				: HoverOperationState.WaitingForAsync,
+				: HoverOperationState.WaitingForAsync
 		);
 	}
 
@@ -191,8 +191,8 @@ export class HoverOperation<T> extends Disposable {
 			new HoverResult(
 				this._result.slice(0),
 				isComplete,
-				hasLoadingMessage,
-			),
+				hasLoadingMessage
+			)
 		);
 	}
 
@@ -202,7 +202,7 @@ export class HoverOperation<T> extends Disposable {
 				this._setState(HoverOperationState.FirstWait);
 				this._firstWaitScheduler.schedule(this._firstWaitTime);
 				this._loadingMessageScheduler.schedule(
-					this._loadingMessageTime,
+					this._loadingMessageTime
 				);
 			}
 		} else {

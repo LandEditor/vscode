@@ -23,7 +23,7 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 
 	public async deserializeNotebook(
 		content: Uint8Array,
-		_token: vscode.CancellationToken,
+		_token: vscode.CancellationToken
 	): Promise<vscode.NotebookData> {
 		let contents = "";
 		try {
@@ -41,7 +41,7 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 			const folder = uri.with({
 				path: this.context.globalStorageUri.path.replace(
 					"vscode.ipynb",
-					"ms-toolsai.jupyter",
+					"ms-toolsai.jupyter"
 				),
 			});
 			const fileHash = fnv.fast1a32hex(backupId) as string;
@@ -53,7 +53,7 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 			if (json.contents && typeof json.contents === "string") {
 				contents = json.contents;
 				json = JSON.parse(
-					contents,
+					contents
 				) as Partial<nbformat.INotebookContent>;
 			}
 		}
@@ -94,7 +94,7 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 
 		const data = jupyterNotebookModelToNotebookData(
 			json,
-			preferredCellLanguage,
+			preferredCellLanguage
 		);
 		data.metadata = data.metadata || {};
 		data.metadata.indentAmount = indentAmount;
@@ -104,7 +104,7 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 
 	public serializeNotebook(
 		data: vscode.NotebookData,
-		_token: vscode.CancellationToken,
+		_token: vscode.CancellationToken
 	): Uint8Array {
 		return new TextEncoder().encode(this.serializeNotebookToString(data));
 	}
@@ -115,12 +115,12 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 		const preferredCellLanguage =
 			notebookContent.metadata?.language_info?.name ??
 			data.cells.find(
-				(cell) => cell.kind === vscode.NotebookCellKind.Code,
+				(cell) => cell.kind === vscode.NotebookCellKind.Code
 			)?.languageId;
 
 		notebookContent.cells = data.cells
 			.map((cell) =>
-				createJupyterCellFromNotebookCell(cell, preferredCellLanguage),
+				createJupyterCellFromNotebookCell(cell, preferredCellLanguage)
 			)
 			.map(pruneCell);
 
@@ -135,14 +135,14 @@ export class NotebookSerializer implements vscode.NotebookSerializer {
 			JSON.stringify(
 				sortObjectPropertiesRecursively(notebookContent),
 				undefined,
-				indentAmount,
+				indentAmount
 			) + "\n"
 		);
 	}
 }
 
 export function getNotebookMetadata(
-	document: vscode.NotebookDocument | vscode.NotebookData,
+	document: vscode.NotebookDocument | vscode.NotebookData
 ) {
 	const notebookContent: Partial<nbformat.INotebookContent> =
 		document.metadata?.custom || {};

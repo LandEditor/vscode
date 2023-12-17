@@ -28,10 +28,12 @@ export class NativeElevatedFileService implements IElevatedFileService {
 	readonly _serviceBrand: undefined;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IFileService private readonly fileService: IFileService,
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService
-	) { }
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService
+	) {}
 
 	isSupported(resource: URI): boolean {
 		// Saving elevated is currently only supported for local
@@ -44,10 +46,10 @@ export class NativeElevatedFileService implements IElevatedFileService {
 	async writeFileElevated(
 		resource: URI,
 		value: VSBuffer | VSBufferReadable | VSBufferReadableStream,
-		options?: IWriteFileOptions,
+		options?: IWriteFileOptions
 	): Promise<IFileStatWithMetadata> {
 		const source = URI.file(
-			randomPath(this.environmentService.userDataPath, "code-elevated"),
+			randomPath(this.environmentService.userDataPath, "code-elevated")
 		);
 		try {
 			// write into a tmp file first
@@ -57,7 +59,7 @@ export class NativeElevatedFileService implements IElevatedFileService {
 			await this.nativeHostService.writeElevated(
 				source,
 				resource,
-				options,
+				options
 			);
 		} finally {
 			// clean up
@@ -71,5 +73,5 @@ export class NativeElevatedFileService implements IElevatedFileService {
 registerSingleton(
 	IElevatedFileService,
 	NativeElevatedFileService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

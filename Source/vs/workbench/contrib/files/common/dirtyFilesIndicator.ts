@@ -30,8 +30,10 @@ export class DirtyFilesIndicator
 	constructor(
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IActivityService private readonly activityService: IActivityService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService
 	) {
 		super();
 
@@ -44,8 +46,8 @@ export class DirtyFilesIndicator
 		// Working copy dirty indicator
 		this._register(
 			this.workingCopyService.onDidChangeDirty((workingCopy) =>
-				this.onWorkingCopyDidChangeDirty(workingCopy),
-			),
+				this.onWorkingCopyDidChangeDirty(workingCopy)
+			)
 		);
 
 		// Lifecycle
@@ -58,7 +60,7 @@ export class DirtyFilesIndicator
 			gotDirty &&
 			!(workingCopy.capabilities & WorkingCopyCapabilities.Untitled) &&
 			this.filesConfigurationService.isShortAutoSaveDelayConfigured(
-				workingCopy.resource,
+				workingCopy.resource
 			)
 		) {
 			return; // do not indicate dirty of working copies that are auto saved after short delay
@@ -83,8 +85,8 @@ export class DirtyFilesIndicator
 							: nls.localize(
 									"dirtyFiles",
 									"{0} unsaved files",
-									dirtyCount,
-							  ),
+									dirtyCount
+								)
 					),
 				});
 		} else {

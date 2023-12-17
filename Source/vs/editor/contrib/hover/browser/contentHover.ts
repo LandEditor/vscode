@@ -76,41 +76,76 @@ export class ContentHoverController extends Disposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 
-		this._widget = this._register(this._instantiationService.createInstance(ContentHoverWidget, this._editor));
+		this._widget = this._register(
+			this._instantiationService.createInstance(
+				ContentHoverWidget,
+				this._editor
+			)
+		);
 
 		// Instantiate participants and sort them by `hoverOrdinal` which is relevant for rendering order.
 		this._participants = [];
 		for (const participant of HoverParticipantRegistry.getAll()) {
-			this._participants.push(this._instantiationService.createInstance(participant, this._editor));
+			this._participants.push(
+				this._instantiationService.createInstance(
+					participant,
+					this._editor
+				)
+			);
 		}
 		this._participants.sort((p1, p2) => p1.hoverOrdinal - p2.hoverOrdinal);
 
-		this._computer = new ContentHoverComputer(this._editor, this._participants);
-		this._hoverOperation = this._register(new HoverOperation(this._editor, this._computer));
+		this._computer = new ContentHoverComputer(
+			this._editor,
+			this._participants
+		);
+		this._hoverOperation = this._register(
+			new HoverOperation(this._editor, this._computer)
+		);
 
-		this._register(this._hoverOperation.onResult((result) => {
-			if (!this._computer.anchor) {
-				// invalid state, ignore result
-				return;
-			}
-			const messages = (result.hasLoadingMessage ? this._addLoadingMessage(result.value) : result.value);
-			this._withResult(new HoverResult(this._computer.anchor, messages, result.isComplete));
-		}));
-		this._register(dom.addStandardDisposableListener(this._widget.getDomNode(), 'keydown', (e) => {
-			if (e.equals(KeyCode.Escape)) {
-				this.hide();
-			}
-		}));
-		this._register(TokenizationRegistry.onDidChange(() => {
-			if (this._widget.position && this._currentResult) {
-				this._setCurrentResult(this._currentResult); // render again
-			}
-		}));
+		this._register(
+			this._hoverOperation.onResult((result) => {
+				if (!this._computer.anchor) {
+					// invalid state, ignore result
+					return;
+				}
+				const messages = result.hasLoadingMessage
+					? this._addLoadingMessage(result.value)
+					: result.value;
+				this._withResult(
+					new HoverResult(
+						this._computer.anchor,
+						messages,
+						result.isComplete
+					)
+				);
+			})
+		);
+		this._register(
+			dom.addStandardDisposableListener(
+				this._widget.getDomNode(),
+				"keydown",
+				(e) => {
+					if (e.equals(KeyCode.Escape)) {
+						this.hide();
+					}
+				}
+			)
+		);
+		this._register(
+			TokenizationRegistry.onDidChange(() => {
+				if (this._widget.position && this._currentResult) {
+					this._setCurrentResult(this._currentResult); // render again
+				}
+			})
+		);
 	}
 
 	/**
@@ -121,7 +156,7 @@ export class ContentHoverController extends Disposable {
 		mode: HoverStartMode,
 		source: HoverStartSource,
 		focus: boolean,
-		mouseEvent: IEditorMouseEvent | null,
+		mouseEvent: IEditorMouseEvent | null
 	): boolean {
 		if (!this._widget.position || !this._currentResult) {
 			// The hover is not visible
@@ -131,7 +166,7 @@ export class ContentHoverController extends Disposable {
 					mode,
 					source,
 					focus,
-					false,
+					false
 				);
 				return true;
 			}
@@ -145,7 +180,7 @@ export class ContentHoverController extends Disposable {
 			mouseEvent &&
 			this._widget.isMouseGettingCloser(
 				mouseEvent.event.posx,
-				mouseEvent.event.posy,
+				mouseEvent.event.posy
 			);
 
 		if (isGettingCloser) {
@@ -157,7 +192,7 @@ export class ContentHoverController extends Disposable {
 					mode,
 					source,
 					focus,
-					true,
+					true
 				);
 			}
 			return true;
@@ -176,7 +211,7 @@ export class ContentHoverController extends Disposable {
 		if (
 			!anchor.canAdoptVisibleHover(
 				this._currentResult.anchor,
-				this._widget.position,
+				this._widget.position
 			)
 		) {
 			// The new anchor is not compatible with the previous anchor
@@ -186,7 +221,7 @@ export class ContentHoverController extends Disposable {
 				mode,
 				source,
 				focus,
-				false,
+				false
 			);
 			return true;
 		}
@@ -199,7 +234,7 @@ export class ContentHoverController extends Disposable {
 			mode,
 			source,
 			focus,
-			false,
+			false
 		);
 		return true;
 	}
@@ -209,7 +244,7 @@ export class ContentHoverController extends Disposable {
 		mode: HoverStartMode,
 		source: HoverStartSource,
 		focus: boolean,
-		insistOnKeepingHoverVisible: boolean,
+		insistOnKeepingHoverVisible: boolean
 	): void {
 		if (this._computer.anchor && this._computer.anchor.equals(anchor)) {
 			// We have to start a hover operation at the exact same anchor as before, so no work is needed
@@ -236,7 +271,7 @@ export class ContentHoverController extends Disposable {
 		if (this._currentResult) {
 			this._renderMessages(
 				this._currentResult.anchor,
-				this._currentResult.messages,
+				this._currentResult.messages
 			);
 		} else {
 			this._widget.hide();
@@ -248,7 +283,7 @@ export class ContentHoverController extends Disposable {
 			for (const participant of this._participants) {
 				if (participant.createLoadingMessage) {
 					const loadingMessage = participant.createLoadingMessage(
-						this._computer.anchor,
+						this._computer.anchor
 					);
 					if (loadingMessage) {
 						return result.slice(0).concat([loadingMessage]);
@@ -289,12 +324,12 @@ export class ContentHoverController extends Disposable {
 			ContentHoverController.computeHoverRanges(
 				this._editor,
 				anchor.range,
-				messages,
+				messages
 			);
 
 		const disposables = new DisposableStore();
 		const statusBar = disposables.add(
-			new EditorHoverStatusBar(this._keybindingService),
+			new EditorHoverStatusBar(this._keybindingService)
 		);
 		const fragment = document.createDocumentFragment();
 
@@ -311,11 +346,11 @@ export class ContentHoverController extends Disposable {
 
 		for (const participant of this._participants) {
 			const hoverParts = messages.filter(
-				(msg) => msg.owner === participant,
+				(msg) => msg.owner === participant
 			);
 			if (hoverParts.length > 0) {
 				disposables.add(
-					participant.renderHoverParts(context, hoverParts),
+					participant.renderHoverParts(context, hoverParts)
 				);
 			}
 		}
@@ -339,7 +374,7 @@ export class ContentHoverController extends Disposable {
 				disposables.add(
 					toDisposable(() => {
 						highlightDecoration.clear();
-					}),
+					})
 				);
 			}
 
@@ -355,8 +390,8 @@ export class ContentHoverController extends Disposable {
 					this._computer.shouldFocus,
 					this._computer.source,
 					isBeforeContent,
-					disposables,
-				),
+					disposables
+				)
 			);
 		} else {
 			disposables.dispose();
@@ -372,7 +407,7 @@ export class ContentHoverController extends Disposable {
 	public static computeHoverRanges(
 		editor: ICodeEditor,
 		anchorRange: Range,
-		messages: IHoverPart[],
+		messages: IHoverPart[]
 	) {
 		let startColumnBoundary = 1;
 		if (editor.hasModel()) {
@@ -383,11 +418,11 @@ export class ContentHoverController extends Disposable {
 				coordinatesConverter.convertModelRangeToViewRange(anchorRange);
 			const anchorViewRangeStart = new Position(
 				anchorViewRange.startLineNumber,
-				viewModel.getLineMinColumn(anchorViewRange.startLineNumber),
+				viewModel.getLineMinColumn(anchorViewRange.startLineNumber)
 			);
 			startColumnBoundary =
 				coordinatesConverter.convertViewPositionToModelPosition(
-					anchorViewRangeStart,
+					anchorViewRangeStart
 				).column;
 		}
 
@@ -406,7 +441,7 @@ export class ContentHoverController extends Disposable {
 				// this message has a range that is completely sitting on the line of the anchor
 				renderStartColumn = Math.max(
 					Math.min(renderStartColumn, msg.range.startColumn),
-					startColumnBoundary,
+					startColumnBoundary
 				);
 			}
 			if (msg.forceShowAtRange) {
@@ -454,8 +489,8 @@ export class ContentHoverController extends Disposable {
 					0,
 					target.range,
 					mouseEvent.event.posx,
-					mouseEvent.event.posy,
-				),
+					mouseEvent.event.posy
+				)
 			);
 		}
 
@@ -474,8 +509,8 @@ export class ContentHoverController extends Disposable {
 						0,
 						target.range,
 						mouseEvent.event.posx,
-						mouseEvent.event.posy,
-					),
+						mouseEvent.event.posy
+					)
 				);
 			}
 		}
@@ -486,7 +521,7 @@ export class ContentHoverController extends Disposable {
 				HoverStartMode.Delayed,
 				HoverStartSource.Mouse,
 				false,
-				mouseEvent,
+				mouseEvent
 			);
 		}
 
@@ -496,7 +531,7 @@ export class ContentHoverController extends Disposable {
 			HoverStartMode.Delayed,
 			HoverStartSource.Mouse,
 			false,
-			mouseEvent,
+			mouseEvent
 		);
 	}
 
@@ -504,14 +539,14 @@ export class ContentHoverController extends Disposable {
 		range: Range,
 		mode: HoverStartMode,
 		source: HoverStartSource,
-		focus: boolean,
+		focus: boolean
 	): void {
 		this._startShowingOrUpdateHover(
 			new HoverRangeAnchor(0, range, undefined, undefined),
 			mode,
 			source,
 			focus,
-			null,
+			null
 		);
 	}
 
@@ -598,12 +633,12 @@ class HoverResult {
 	constructor(
 		public readonly anchor: HoverAnchor,
 		public readonly messages: IHoverPart[],
-		public readonly isComplete: boolean,
+		public readonly isComplete: boolean
 	) {}
 
 	public filter(anchor: HoverAnchor): HoverResult {
 		const filteredMessages = this.messages.filter((m) =>
-			m.isValidForHoverAnchor(anchor),
+			m.isValidForHoverAnchor(anchor)
 		);
 		if (filteredMessages.length === this.messages.length) {
 			return this;
@@ -612,7 +647,7 @@ class HoverResult {
 			this,
 			this.anchor,
 			filteredMessages,
-			this.isComplete,
+			this.isComplete
 		);
 	}
 }
@@ -622,7 +657,7 @@ class FilteredHoverResult extends HoverResult {
 		private readonly original: HoverResult,
 		anchor: HoverAnchor,
 		messages: IHoverPart[],
-		isComplete: boolean,
+		isComplete: boolean
 	) {
 		super(anchor, messages, isComplete);
 	}
@@ -645,7 +680,7 @@ class ContentHoverVisibleData {
 		public readonly stoleFocus: boolean,
 		public readonly source: HoverStartSource,
 		public readonly isBeforeContent: boolean,
-		public readonly disposables: DisposableStore,
+		public readonly disposables: DisposableStore
 	) {}
 }
 
@@ -685,9 +720,12 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		const minimumHeight = editor.getOption(EditorOption.lineHeight) + 8;
 		const minimumWidth = 150;
@@ -695,29 +733,43 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		super(editor, minimumSize);
 
 		this._minimumSize = minimumSize;
-		this._hoverVisibleKey = EditorContextKeys.hoverVisible.bindTo(contextKeyService);
-		this._hoverFocusedKey = EditorContextKeys.hoverFocused.bindTo(contextKeyService);
+		this._hoverVisibleKey =
+			EditorContextKeys.hoverVisible.bindTo(contextKeyService);
+		this._hoverFocusedKey =
+			EditorContextKeys.hoverFocused.bindTo(contextKeyService);
 
 		dom.append(this._resizableNode.domNode, this._hover.containerDomNode);
-		this._resizableNode.domNode.style.zIndex = '50';
+		this._resizableNode.domNode.style.zIndex = "50";
 
-		this._register(this._editor.onDidLayoutChange(() => {
-			if (this.isVisible) {
-				this._updateMaxDimensions();
-			}
-		}));
-		this._register(this._editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.fontInfo)) {
-				this._updateFont();
-			}
-		}));
-		const focusTracker = this._register(dom.trackFocus(this._resizableNode.domNode));
-		this._register(focusTracker.onDidFocus(() => {
-			this._hoverFocusedKey.set(true);
-		}));
-		this._register(focusTracker.onDidBlur(() => {
-			this._hoverFocusedKey.set(false);
-		}));
+		this._register(
+			this._editor.onDidLayoutChange(() => {
+				if (this.isVisible) {
+					this._updateMaxDimensions();
+				}
+			})
+		);
+		this._register(
+			this._editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (e.hasChanged(EditorOption.fontInfo)) {
+						this._updateFont();
+					}
+				}
+			)
+		);
+		const focusTracker = this._register(
+			dom.trackFocus(this._resizableNode.domNode)
+		);
+		this._register(
+			focusTracker.onDidFocus(() => {
+				this._hoverFocusedKey.set(true);
+			})
+		);
+		this._register(
+			focusTracker.onDidBlur(() => {
+				this._hoverFocusedKey.set(false);
+			})
+		);
 		this._setHoverData(undefined);
 		this._editor.addContentWidget(this);
 	}
@@ -735,7 +787,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	private static _applyDimensions(
 		container: HTMLElement,
 		width: number | string,
-		height: number | string,
+		height: number | string
 	): void {
 		const transformedWidth =
 			typeof width === "number" ? `${width}px` : width;
@@ -747,31 +799,31 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 	private _setContentsDomNodeDimensions(
 		width: number | string,
-		height: number | string,
+		height: number | string
 	): void {
 		const contentsDomNode = this._hover.contentsDomNode;
 		return ContentHoverWidget._applyDimensions(
 			contentsDomNode,
 			width,
-			height,
+			height
 		);
 	}
 
 	private _setContainerDomNodeDimensions(
 		width: number | string,
-		height: number | string,
+		height: number | string
 	): void {
 		const containerDomNode = this._hover.containerDomNode;
 		return ContentHoverWidget._applyDimensions(
 			containerDomNode,
 			width,
-			height,
+			height
 		);
 	}
 
 	private _setHoverWidgetDimensions(
 		width: number | string,
-		height: number | string,
+		height: number | string
 	): void {
 		this._setContentsDomNodeDimensions(width, height);
 		this._setContainerDomNodeDimensions(width, height);
@@ -781,7 +833,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	private static _applyMaxDimensions(
 		container: HTMLElement,
 		width: number | string,
-		height: number | string,
+		height: number | string
 	) {
 		const transformedWidth =
 			typeof width === "number" ? `${width}px` : width;
@@ -793,21 +845,21 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 	private _setHoverWidgetMaxDimensions(
 		width: number | string,
-		height: number | string,
+		height: number | string
 	): void {
 		ContentHoverWidget._applyMaxDimensions(
 			this._hover.contentsDomNode,
 			width,
-			height,
+			height
 		);
 		ContentHoverWidget._applyMaxDimensions(
 			this._hover.containerDomNode,
 			width,
-			height,
+			height
 		);
 		this._hover.containerDomNode.style.setProperty(
 			"--vscode-hover-maxWidth",
-			typeof width === "number" ? `${width}px` : width,
+			typeof width === "number" ? `${width}px` : width
 		);
 		this._layoutContentWidget();
 	}
@@ -845,18 +897,18 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			this._findMaximumRenderingHeight() ?? Infinity;
 		this._resizableNode.maxSize = new dom.Dimension(
 			maxRenderingWidth,
-			maxRenderingHeight,
+			maxRenderingHeight
 		);
 		this._setHoverWidgetMaxDimensions(
 			maxRenderingWidth,
-			maxRenderingHeight,
+			maxRenderingHeight
 		);
 	}
 
 	protected override _resize(size: dom.Dimension): void {
 		ContentHoverWidget._lastDimensions = new dom.Dimension(
 			size.width,
-			size.height,
+			size.height
 		);
 		this._setAdjustedHoverWidgetDimensions(size);
 		this._resizableNode.layout(size.height, size.width);
@@ -887,7 +939,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		Array.from(this._hover.contentsDomNode.children).forEach(
 			(hoverPart) => {
 				maximumHeight += hoverPart.clientHeight;
-			},
+			}
 		);
 
 		if (this._hasHorizontalScrollbar()) {
@@ -900,24 +952,24 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		// To find out if the text is overflowing, we will disable wrapping, check the widths, and then re-enable wrapping
 		this._hover.containerDomNode.style.setProperty(
 			"--vscode-hover-whiteSpace",
-			"nowrap",
+			"nowrap"
 		);
 		this._hover.containerDomNode.style.setProperty(
 			"--vscode-hover-sourceWhiteSpace",
-			"nowrap",
+			"nowrap"
 		);
 
 		const overflowing = Array.from(
-			this._hover.contentsDomNode.children,
+			this._hover.contentsDomNode.children
 		).some((hoverElement) => {
 			return hoverElement.scrollWidth > hoverElement.clientWidth;
 		});
 
 		this._hover.containerDomNode.style.removeProperty(
-			"--vscode-hover-whiteSpace",
+			"--vscode-hover-whiteSpace"
 		);
 		this._hover.containerDomNode.style.removeProperty(
-			"--vscode-hover-sourceWhiteSpace",
+			"--vscode-hover-sourceWhiteSpace"
 		);
 
 		return overflowing;
@@ -939,7 +991,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			this._hover.containerDomNode.clientWidth < initialWidth
 		) {
 			const bodyBoxWidth = dom.getClientArea(
-				this._hover.containerDomNode.ownerDocument.body,
+				this._hover.containerDomNode.ownerDocument.body
 			).width;
 			const horizontalPadding = 14;
 			return bodyBoxWidth - horizontalPadding;
@@ -970,7 +1022,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 					widgetRect.left,
 					widgetRect.top,
 					widgetRect.width,
-					widgetRect.height,
+					widgetRect.height
 				);
 		}
 
@@ -980,7 +1032,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			widgetRect.left,
 			widgetRect.top,
 			widgetRect.width,
-			widgetRect.height,
+			widgetRect.height
 		);
 		if (
 			distance >
@@ -993,13 +1045,13 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 		this._visibleData.closestMouseDistance = Math.min(
 			this._visibleData.closestMouseDistance,
-			distance,
+			distance
 		);
 		return true;
 	}
 
 	private _setHoverData(
-		hoverData: ContentHoverVisibleData | undefined,
+		hoverData: ContentHoverVisibleData | undefined
 	): void {
 		this._visibleData?.disposables.dispose();
 		this._visibleData = hoverData;
@@ -1009,13 +1061,13 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 	private _updateFont(): void {
 		const { fontSize, lineHeight } = this._editor.getOption(
-			EditorOption.fontInfo,
+			EditorOption.fontInfo
 		);
 		const contentsDomNode = this._hover.contentsDomNode;
 		contentsDomNode.style.fontSize = `${fontSize}px`;
 		contentsDomNode.style.lineHeight = `${lineHeight / fontSize}`;
 		const codeClasses: HTMLElement[] = Array.prototype.slice.call(
-			this._hover.contentsDomNode.getElementsByClassName("code"),
+			this._hover.contentsDomNode.getElementsByClassName("code")
 		);
 		codeClasses.forEach((node) => this._editor.applyFontInfo(node));
 	}
@@ -1036,19 +1088,19 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		const height = Math.max(
 			this._editor.getLayoutInfo().height / 4,
 			250,
-			ContentHoverWidget._lastDimensions.height,
+			ContentHoverWidget._lastDimensions.height
 		);
 		const width = Math.max(
 			this._editor.getLayoutInfo().width * 0.66,
 			500,
-			ContentHoverWidget._lastDimensions.width,
+			ContentHoverWidget._lastDimensions.width
 		);
 		this._setHoverWidgetMaxDimensions(width, height);
 	}
 
 	private _render(
 		node: DocumentFragment,
-		hoverData: ContentHoverVisibleData,
+		hoverData: ContentHoverVisibleData
 	) {
 		this._setHoverData(hoverData);
 		this._updateFont();
@@ -1079,7 +1131,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 	public showAt(
 		node: DocumentFragment,
-		hoverData: ContentHoverVisibleData,
+		hoverData: ContentHoverVisibleData
 	): void {
 		if (!this._editor || !this._editor.hasModel()) {
 			return;
@@ -1106,12 +1158,12 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			hoverFocused &&
 			getHoverAccessibleViewHint(
 				this._configurationService.getValue(
-					"accessibility.verbosity.hover",
+					"accessibility.verbosity.hover"
 				) === true &&
 					this._accessibilityService.isScreenReaderOptimized(),
 				this._keybindingService
 					.lookupKeybinding("editor.action.accessibleView")
-					?.getAriaLabel() ?? "",
+					?.getAriaLabel() ?? ""
 			);
 
 		if (accessibleViewHint) {
@@ -1152,11 +1204,11 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			this._findMaximumRenderingHeight() ?? Infinity;
 		this._setContainerDomNodeDimensions(
 			dom.getTotalWidth(containerDomNode),
-			Math.min(maxRenderingHeight, height),
+			Math.min(maxRenderingHeight, height)
 		);
 		this._setContentsDomNodeDimensions(
 			dom.getTotalWidth(contentsDomNode),
-			Math.min(maxRenderingHeight, height - SCROLLBAR_WIDTH),
+			Math.min(maxRenderingHeight, height - SCROLLBAR_WIDTH)
 		);
 	}
 
@@ -1164,7 +1216,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		// We combine the new minimum dimensions with the previous ones
 		this._minimumSize = new dom.Dimension(
 			Math.max(this._minimumSize.width, dimensions.width),
-			Math.max(this._minimumSize.height, dimensions.height),
+			Math.max(this._minimumSize.height, dimensions.height)
 		);
 		this._updateMinimumWidth();
 	}
@@ -1177,7 +1229,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		// We want to avoid that the hover is artificially large, so we use the content width as minimum width
 		this._resizableNode.minSize = new dom.Dimension(
 			width,
-			this._minimumSize.height,
+			this._minimumSize.height
 		);
 	}
 
@@ -1203,11 +1255,11 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		}
 		if (this._visibleData?.showAtPosition) {
 			const widgetHeight = dom.getTotalHeight(
-				this._hover.containerDomNode,
+				this._hover.containerDomNode
 			);
 			this._positionPreference = this._findPositionPreference(
 				widgetHeight,
-				this._visibleData.showAtPosition,
+				this._visibleData.showAtPosition
 			);
 		}
 		this._layoutContentWidget();
@@ -1287,11 +1339,12 @@ export class EditorHoverStatusBar
 	}
 
 	constructor(
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		super();
-		this.hoverElement = $('div.hover-row.status-bar');
-		this.actionsElement = dom.append(this.hoverElement, $('div.actions'));
+		this.hoverElement = $("div.hover-row.status-bar");
+		this.actionsElement = dom.append(this.hoverElement, $("div.actions"));
 	}
 
 	public addAction(actionOptions: {
@@ -1301,7 +1354,7 @@ export class EditorHoverStatusBar
 		commandId: string;
 	}): IEditorHoverAction {
 		const keybinding = this._keybindingService.lookupKeybinding(
-			actionOptions.commandId,
+			actionOptions.commandId
 		);
 		const keybindingLabel = keybinding ? keybinding.getLabel() : null;
 		this._hasContent = true;
@@ -1309,8 +1362,8 @@ export class EditorHoverStatusBar
 			HoverAction.render(
 				this.actionsElement,
 				actionOptions,
-				keybindingLabel,
-			),
+				keybindingLabel
+			)
 		);
 	}
 
@@ -1356,12 +1409,12 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		private readonly _participants: readonly IEditorHoverParticipant[],
+		private readonly _participants: readonly IEditorHoverParticipant[]
 	) {}
 
 	private static _getLineDecorations(
 		editor: IActiveCodeEditor,
-		anchor: HoverAnchor,
+		anchor: HoverAnchor
 	): IModelDecoration[] {
 		if (
 			anchor.type !== HoverAnchorType.Range &&
@@ -1416,7 +1469,7 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 	}
 
 	public computeAsync(
-		token: CancellationToken,
+		token: CancellationToken
 	): AsyncIterableObject<IHoverPart> {
 		const anchor = this._anchor;
 
@@ -1426,7 +1479,7 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 
 		const lineDecorations = ContentHoverComputer._getLineDecorations(
 			this._editor,
-			anchor,
+			anchor
 		);
 
 		return AsyncIterableObject.merge(
@@ -1435,7 +1488,7 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 					return AsyncIterableObject.EMPTY;
 				}
 				return participant.computeAsync(anchor, lineDecorations, token);
-			}),
+			})
 		);
 	}
 
@@ -1446,13 +1499,13 @@ class ContentHoverComputer implements IHoverComputer<IHoverPart> {
 
 		const lineDecorations = ContentHoverComputer._getLineDecorations(
 			this._editor,
-			this._anchor,
+			this._anchor
 		);
 
 		let result: IHoverPart[] = [];
 		for (const participant of this._participants) {
 			result = result.concat(
-				participant.computeSync(this._anchor, lineDecorations),
+				participant.computeSync(this._anchor, lineDecorations)
 			);
 		}
 
@@ -1466,7 +1519,7 @@ function computeDistanceFromPointToRectangle(
 	left: number,
 	top: number,
 	width: number,
-	height: number,
+	height: number
 ): number {
 	const x = left + width / 2; // x center of rectangle
 	const y = top + height / 2; // y center of rectangle

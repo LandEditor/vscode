@@ -30,7 +30,7 @@ import {
 export const ShareProviderCountContext = new RawContextKey<number>(
 	"shareProviderCount",
 	0,
-	localize("shareProviderCount", "The number of available share providers"),
+	localize("shareProviderCount", "The number of available share providers")
 );
 
 type ShareEvent = {
@@ -56,10 +56,13 @@ export class ShareService implements IShareService {
 		@IContextKeyService private contextKeyService: IContextKeyService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IQuickInputService private quickInputService: IQuickInputService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService
 	) {
-		this.providerCount = ShareProviderCountContext.bindTo(this.contextKeyService);
+		this.providerCount = ShareProviderCountContext.bindTo(
+			this.contextKeyService
+		);
 	}
 
 	registerShareProvider(provider: IShareProvider): IDisposable {
@@ -80,7 +83,7 @@ export class ShareService implements IShareService {
 
 	async provideShare(
 		item: IShareableItem,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<URI | string | undefined> {
 		const language =
 			this.codeEditorService
@@ -96,8 +99,8 @@ export class ShareService implements IShareService {
 						language,
 						true,
 						undefined,
-						undefined,
-					) > 0,
+						undefined
+					) > 0
 			)
 			.sort((a, b) => a.priority - b.priority);
 
@@ -108,7 +111,7 @@ export class ShareService implements IShareService {
 		if (providers.length === 1) {
 			this.telemetryService.publicLog2<ShareEvent, ShareClassification>(
 				"shareService.share",
-				{ providerId: providers[0].id },
+				{ providerId: providers[0].id }
 			);
 			return providers[0].provideShare(item, token);
 		}
@@ -122,16 +125,16 @@ export class ShareService implements IShareService {
 				placeHolder: localize(
 					"type to filter",
 					"Choose how to share {0}",
-					this.labelService.getUriLabel(item.resourceUri),
+					this.labelService.getUriLabel(item.resourceUri)
 				),
 			},
-			token,
+			token
 		);
 
 		if (selected !== undefined) {
 			this.telemetryService.publicLog2<ShareEvent, ShareClassification>(
 				"shareService.share",
-				{ providerId: selected.provider.id },
+				{ providerId: selected.provider.id }
 			);
 			return selected.provider.provideShare(item, token);
 		}

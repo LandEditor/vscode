@@ -25,7 +25,7 @@ export type ImageInfoWithScale = {
  * as well as URLs
  */
 export function getImageSize(
-	file: string,
+	file: string
 ): Promise<ImageInfoWithScale | undefined> {
 	file = file.replace(/^file:\/\//, "");
 	return reUrl.test(file)
@@ -37,7 +37,7 @@ export function getImageSize(
  * Get image size from file on local file system
  */
 function getImageSizeFromFile(
-	file: string,
+	file: string
 ): Promise<ImageInfoWithScale | undefined> {
 	return new Promise((resolve, reject) => {
 		const isDataUrl = file.match(/^data:.+?;base64,/);
@@ -47,7 +47,7 @@ function getImageSizeFromFile(
 			try {
 				const data = Buffer.from(
 					file.slice(isDataUrl[0].length),
-					"base64",
+					"base64"
 				);
 				return resolve(sizeForFileName("", imageSize(data)));
 			} catch (err) {
@@ -69,7 +69,7 @@ function getImageSizeFromFile(
  * Get image size from given remove URL
  */
 function getImageSizeFromURL(
-	urlStr: string,
+	urlStr: string
 ): Promise<ImageInfoWithScale | undefined> {
 	return new Promise((resolve, reject) => {
 		const url = new URL(urlStr);
@@ -87,7 +87,7 @@ function getImageSizeFromURL(
 			const trySize = (chunks: Buffer[]) => {
 				try {
 					const size: ISizeCalculationResult = imageSize(
-						Buffer.concat(chunks, bufSize),
+						Buffer.concat(chunks, bufSize)
 					);
 					resp.removeListener("data", onData);
 					resp.destroy(); // no need to read further
@@ -119,7 +119,7 @@ function getImageSizeFromURL(
  */
 function sizeForFileName(
 	fileName: string,
-	size?: ISizeCalculationResult,
+	size?: ISizeCalculationResult
 ): ImageInfoWithScale | undefined {
 	const m = fileName.match(/@(\d+)x\./);
 	const scale = m ? +m[1] : 1;

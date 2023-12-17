@@ -9,7 +9,7 @@ export { ProviderResult } from "vscode";
 export interface API {
 	registerRemoteSourceProvider(provider: RemoteSourceProvider): Disposable;
 	pickRemoteSource(
-		options: PickRemoteSourceOptions,
+		options: PickRemoteSourceOptions
 	): Promise<string | PickRemoteSourceResult | undefined>;
 }
 
@@ -82,7 +82,7 @@ export interface RemoteSourceProvider {
 	getBranches?(url: string): ProviderResult<string[]>;
 	getRemoteSourceActions?(url: string): ProviderResult<RemoteSourceAction[]>;
 	getRecentRemoteSources?(
-		query?: string,
+		query?: string
 	): ProviderResult<RecentRemoteSource[]>;
 	getRemoteSources(query?: string): ProviderResult<RemoteSource[]>;
 }

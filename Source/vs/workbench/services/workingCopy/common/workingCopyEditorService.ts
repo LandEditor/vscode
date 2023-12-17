@@ -41,7 +41,7 @@ export interface IWorkingCopyEditorHandler {
 	 * Create an editor that is suitable of opening the provided working copy.
 	 */
 	createEditor(
-		workingCopy: IWorkingCopyIdentifier,
+		workingCopy: IWorkingCopyIdentifier
 	): EditorInput | Promise<EditorInput>;
 }
 
@@ -71,13 +71,15 @@ export class WorkingCopyEditorService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidRegisterHandler = this._register(
-		new Emitter<IWorkingCopyEditorHandler>(),
+		new Emitter<IWorkingCopyEditorHandler>()
 	);
 	readonly onDidRegisterHandler = this._onDidRegisterHandler.event;
 
 	private readonly handlers = new Set<IWorkingCopyEditorHandler>();
 
-	constructor(@IEditorService private readonly editorService: IEditorService) {
+	constructor(
+		@IEditorService private readonly editorService: IEditorService
+	) {
 		super();
 	}
 
@@ -91,7 +93,7 @@ export class WorkingCopyEditorService
 
 	findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined {
 		for (const editorIdentifier of this.editorService.getEditors(
-			EditorsOrder.MOST_RECENTLY_ACTIVE,
+			EditorsOrder.MOST_RECENTLY_ACTIVE
 		)) {
 			if (this.isOpen(workingCopy, editorIdentifier.editor)) {
 				return editorIdentifier;
@@ -116,5 +118,5 @@ export class WorkingCopyEditorService
 registerSingleton(
 	IWorkingCopyEditorService,
 	WorkingCopyEditorService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

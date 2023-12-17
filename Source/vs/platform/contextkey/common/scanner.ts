@@ -93,14 +93,14 @@ function hintDidYouMean(...meant: string[]) {
 			return localize(
 				"contextkey.scanner.hint.didYouMean1",
 				"Did you mean {0}?",
-				meant[0],
+				meant[0]
 			);
 		case 2:
 			return localize(
 				"contextkey.scanner.hint.didYouMean2",
 				"Did you mean {0} or {1}?",
 				meant[0],
-				meant[1],
+				meant[1]
 			);
 		case 3:
 			return localize(
@@ -108,7 +108,7 @@ function hintDidYouMean(...meant: string[]) {
 				"Did you mean {0}, {1} or {2}?",
 				meant[0],
 				meant[1],
-				meant[2],
+				meant[2]
 			);
 		default: // we just don't expect that many
 			return undefined;
@@ -117,11 +117,11 @@ function hintDidYouMean(...meant: string[]) {
 
 const hintDidYouForgetToOpenOrCloseQuote = localize(
 	"contextkey.scanner.hint.didYouForgetToOpenOrCloseQuote",
-	"Did you forget to open or close the quote?",
+	"Did you forget to open or close the quote?"
 );
 const hintDidYouForgetToEscapeSlash = localize(
 	"contextkey.scanner.hint.didYouForgetToEscapeSlash",
-	"Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/'.",
+	"Did you forget to escape the '/' (slash) character? Put two backslashes before it to escape, e.g., '\\\\/'."
 );
 
 /**
@@ -187,14 +187,14 @@ export class Scanner {
 			default:
 				throw illegalState(
 					`unhandled token type: ${JSON.stringify(
-						token,
-					)}; have you forgotten to add a case?`,
+						token
+					)}; have you forgotten to add a case?`
 				);
 		}
 	}
 
 	private static _regexFlags = new Set(
-		["i", "g", "s", "m", "y", "u"].map((ch) => ch.charCodeAt(0)),
+		["i", "g", "s", "m", "y", "u"].map((ch) => ch.charCodeAt(0))
 	);
 
 	private static _keywords = new Map<string, KeywordTokenType>([
@@ -278,7 +278,7 @@ export class Scanner {
 					this._addToken(
 						this._match(CharCode.Equals)
 							? TokenType.LtEq
-							: TokenType.Lt,
+							: TokenType.Lt
 					);
 					break;
 
@@ -286,7 +286,7 @@ export class Scanner {
 					this._addToken(
 						this._match(CharCode.Equals)
 							? TokenType.GtEq
-							: TokenType.Gt,
+							: TokenType.Gt
 					);
 					break;
 

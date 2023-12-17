@@ -19,7 +19,7 @@ export interface TypeScriptServerPlugin {
 namespace TypeScriptServerPlugin {
 	export function equals(
 		a: TypeScriptServerPlugin,
-		b: TypeScriptServerPlugin,
+		b: TypeScriptServerPlugin
 	): boolean {
 		return (
 			a.uri.toString() === b.uri.toString() &&
@@ -50,7 +50,7 @@ export class PluginManager extends Disposable {
 					!arrays.equals(
 						Array.from(this._plugins.values()).flat(),
 						Array.from(newPlugins.values()).flat(),
-						TypeScriptServerPlugin.equals,
+						TypeScriptServerPlugin.equals
 					)
 				) {
 					this._plugins = newPlugins;
@@ -58,7 +58,7 @@ export class PluginManager extends Disposable {
 				}
 			},
 			undefined,
-			this._disposables,
+			this._disposables
 		);
 	}
 
@@ -68,12 +68,12 @@ export class PluginManager extends Disposable {
 	}
 
 	private readonly _onDidUpdatePlugins = this._register(
-		new vscode.EventEmitter<this>(),
+		new vscode.EventEmitter<this>()
 	);
 	public readonly onDidChangePlugins = this._onDidUpdatePlugins.event;
 
 	private readonly _onDidUpdateConfig = this._register(
-		new vscode.EventEmitter<{ pluginId: string; config: {} }>(),
+		new vscode.EventEmitter<{ pluginId: string; config: {} }>()
 	);
 	public readonly onDidUpdateConfig = this._onDidUpdateConfig.event;
 

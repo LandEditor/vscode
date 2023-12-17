@@ -52,23 +52,26 @@ export class TerminalWordLinkDetector
 
 	constructor(
 		readonly xterm: Terminal,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IProductService private readonly _productService: IProductService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IProductService private readonly _productService: IProductService
 	) {
 		super();
 
 		this._refreshSeparatorCodes();
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
-				this._refreshSeparatorCodes();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
+					this._refreshSeparatorCodes();
+				}
+			})
+		);
 	}
 
 	detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number,
+		endLine: number
 	): ITerminalSimpleLink[] {
 		const links: ITerminalSimpleLink[] = [];
 
@@ -77,7 +80,7 @@ export class TerminalWordLinkDetector
 			this.xterm.buffer.active,
 			startLine,
 			endLine,
-			this.xterm.cols,
+			this.xterm.cols
 		);
 		if (text === "" || text.length > Constants.MaxLineLength) {
 			return [];
@@ -107,7 +110,7 @@ export class TerminalWordLinkDetector
 					endColumn: word.endIndex + 1,
 					endLineNumber: 1,
 				},
-				startLine,
+				startLine
 			);
 
 			// Support this product's URL protocol
@@ -153,7 +156,7 @@ export class TerminalWordLinkDetector
 	private _refreshSeparatorCodes(): void {
 		const separators =
 			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION,
+				TERMINAL_CONFIG_SECTION
 			).wordSeparators;
 		let powerlineSymbols = "";
 		for (let i = 0xe0b0; i <= 0xe0bf; i++) {
@@ -161,7 +164,7 @@ export class TerminalWordLinkDetector
 		}
 		this._separatorRegex = new RegExp(
 			`[${escapeRegExpCharacters(separators)}${powerlineSymbols}]`,
-			"g",
+			"g"
 		);
 	}
 }

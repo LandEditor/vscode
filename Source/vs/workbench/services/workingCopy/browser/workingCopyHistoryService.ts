@@ -24,11 +24,12 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 	constructor(
 		@IFileService fileService: IFileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILabelService labelService: ILabelService,
 		@ILogService logService: ILogService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(
 			fileService,
@@ -37,13 +38,14 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 			uriIdentityService,
 			labelService,
 			logService,
-			configurationService,
+			configurationService
 		);
 	}
 
 	protected getModelOptions(): IWorkingCopyHistoryModelOptions {
 		return {
-			flushOnChange: true /* because browsers support no long running shutdown */,
+			flushOnChange:
+				true /* because browsers support no long running shutdown */,
 		};
 	}
 }
@@ -52,5 +54,5 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 registerSingleton(
 	IWorkingCopyHistoryService,
 	BrowserWorkingCopyHistoryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

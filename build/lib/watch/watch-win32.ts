@@ -86,7 +86,7 @@ const cache: { [cwd: string]: Stream } = Object.create(null);
 
 module.exports = function (
 	pattern: string | string[] | filter.FileFunction,
-	options?: { cwd?: string; base?: string },
+	options?: { cwd?: string; base?: string }
 ) {
 	options = options || {};
 
@@ -102,7 +102,7 @@ module.exports = function (
 		: es.mapSync(function (f: File) {
 				f.base = options!.base!;
 				return f;
-		  });
+			});
 
 	return watcher
 		.pipe(filter(["**", "!.git{,/**}"])) // ignore all things git
@@ -133,7 +133,7 @@ module.exports = function (
 						cb(undefined, file);
 					});
 				});
-			}),
+			})
 		)
 		.pipe(rebase);
 };

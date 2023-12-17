@@ -43,58 +43,96 @@ export class TerminalFindWidget extends SimpleFindWidget {
 		private _instance: ITerminalInstance | IDetachedTerminalInstance,
 		@IContextViewService _contextViewService: IContextViewService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IContextMenuService _contextMenuService: IContextMenuService,
 		@IClipboardService _clipboardService: IClipboardService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
-		super({
-			showCommonFindToggles: true,
-			checkImeCompletionState: true,
-			showResultCount: true,
-			initialWidth: TERMINAL_FIND_WIDGET_INITIAL_WIDTH,
-			enableSash: true,
-			appendCaseSensitiveActionId: TerminalCommandId.ToggleFindCaseSensitive,
-			appendRegexActionId: TerminalCommandId.ToggleFindRegex,
-			appendWholeWordsActionId: TerminalCommandId.ToggleFindWholeWord,
-			previousMatchActionId: TerminalCommandId.FindPrevious,
-			nextMatchActionId: TerminalCommandId.FindNext,
-			closeWidgetActionId: TerminalCommandId.FindHide,
-			type: 'Terminal',
-			matchesLimit: XtermTerminalConstants.SearchHighlightLimit
-		}, _contextViewService, _contextKeyService, keybindingService);
+		super(
+			{
+				showCommonFindToggles: true,
+				checkImeCompletionState: true,
+				showResultCount: true,
+				initialWidth: TERMINAL_FIND_WIDGET_INITIAL_WIDTH,
+				enableSash: true,
+				appendCaseSensitiveActionId:
+					TerminalCommandId.ToggleFindCaseSensitive,
+				appendRegexActionId: TerminalCommandId.ToggleFindRegex,
+				appendWholeWordsActionId: TerminalCommandId.ToggleFindWholeWord,
+				previousMatchActionId: TerminalCommandId.FindPrevious,
+				nextMatchActionId: TerminalCommandId.FindNext,
+				closeWidgetActionId: TerminalCommandId.FindHide,
+				type: "Terminal",
+				matchesLimit: XtermTerminalConstants.SearchHighlightLimit,
+			},
+			_contextViewService,
+			_contextKeyService,
+			keybindingService
+		);
 
-		this._register(this.state.onFindReplaceStateChange(() => {
-			this.show();
-		}));
-		this._findInputFocused = TerminalContextKeys.findInputFocus.bindTo(this._contextKeyService);
-		this._findWidgetFocused = TerminalContextKeys.findFocus.bindTo(this._contextKeyService);
-		this._findWidgetVisible = TerminalContextKeys.findVisible.bindTo(this._contextKeyService);
+		this._register(
+			this.state.onFindReplaceStateChange(() => {
+				this.show();
+			})
+		);
+		this._findInputFocused = TerminalContextKeys.findInputFocus.bindTo(
+			this._contextKeyService
+		);
+		this._findWidgetFocused = TerminalContextKeys.findFocus.bindTo(
+			this._contextKeyService
+		);
+		this._findWidgetVisible = TerminalContextKeys.findVisible.bindTo(
+			this._contextKeyService
+		);
 		const innerDom = this.getDomNode().firstChild;
 		if (innerDom) {
-			this._register(dom.addDisposableListener(innerDom, 'mousedown', (event) => {
-				event.stopPropagation();
-			}));
-			this._register(dom.addDisposableListener(innerDom, 'contextmenu', (event) => {
-				event.stopPropagation();
-			}));
+			this._register(
+				dom.addDisposableListener(innerDom, "mousedown", (event) => {
+					event.stopPropagation();
+				})
+			);
+			this._register(
+				dom.addDisposableListener(innerDom, "contextmenu", (event) => {
+					event.stopPropagation();
+				})
+			);
 		}
 		const findInputDomNode = this.getFindInputDomNode();
-		this._register(dom.addDisposableListener(findInputDomNode, 'contextmenu', (event) => {
-			openContextMenu(dom.getWindow(findInputDomNode), event, _clipboardService, _contextMenuService);
-			event.stopPropagation();
-		}));
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			if (this.isVisible()) {
-				this.find(true, true);
-			}
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('workbench.colorCustomizations') && this.isVisible()) {
-				this.find(true, true);
-			}
-		}));
+		this._register(
+			dom.addDisposableListener(
+				findInputDomNode,
+				"contextmenu",
+				(event) => {
+					openContextMenu(
+						dom.getWindow(findInputDomNode),
+						event,
+						_clipboardService,
+						_contextMenuService
+					);
+					event.stopPropagation();
+				}
+			)
+		);
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
+				if (this.isVisible()) {
+					this.find(true, true);
+				}
+			})
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("workbench.colorCustomizations") &&
+					this.isVisible()
+				) {
+					this.find(true, true);
+				}
+			})
+		);
 
 		this.updateResultCount();
 	}
@@ -139,8 +177,8 @@ export class TerminalFindWidget extends SimpleFindWidget {
 				this.updateButtons(foundMatch);
 				this._register(
 					Event.once(xterm.onDidChangeSelection)(() =>
-						xterm.clearActiveSearchDecoration(),
-					),
+						xterm.clearActiveSearchDecoration()
+					)
 				);
 			});
 		}
@@ -229,13 +267,13 @@ export class TerminalFindWidget extends SimpleFindWidget {
 	private async _findNextWithEvent(
 		xterm: IXtermTerminal,
 		term: string,
-		options: ISearchOptions,
+		options: ISearchOptions
 	): Promise<boolean> {
 		return xterm.findNext(term, options).then((foundMatch) => {
 			this._register(
 				Event.once(xterm.onDidChangeSelection)(() =>
-					xterm.clearActiveSearchDecoration(),
-				),
+					xterm.clearActiveSearchDecoration()
+				)
 			);
 			return foundMatch;
 		});
@@ -244,13 +282,13 @@ export class TerminalFindWidget extends SimpleFindWidget {
 	private async _findPreviousWithEvent(
 		xterm: IXtermTerminal,
 		term: string,
-		options: ISearchOptions,
+		options: ISearchOptions
 	): Promise<boolean> {
 		return xterm.findPrevious(term, options).then((foundMatch) => {
 			this._register(
 				Event.once(xterm.onDidChangeSelection)(() =>
-					xterm.clearActiveSearchDecoration(),
-				),
+					xterm.clearActiveSearchDecoration()
+				)
 			);
 			return foundMatch;
 		});

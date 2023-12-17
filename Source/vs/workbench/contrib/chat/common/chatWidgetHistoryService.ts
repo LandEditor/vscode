@@ -42,14 +42,17 @@ export class ChatWidgetHistoryService implements IChatWidgetHistoryService {
 	private readonly _onDidClearHistory = new Emitter<void>();
 	readonly onDidClearHistory: Event<void> = this._onDidClearHistory.event;
 
-	constructor(
-		@IStorageService storageService: IStorageService
-	) {
-		this.memento = new Memento('interactive-session', storageService);
-		const loadedState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IChatHistory;
+	constructor(@IStorageService storageService: IStorageService) {
+		this.memento = new Memento("interactive-session", storageService);
+		const loadedState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE
+		) as IChatHistory;
 		for (const provider in loadedState.history) {
 			// Migration from old format
-			loadedState.history[provider] = loadedState.history[provider].map(entry => typeof entry === 'string' ? { text: entry } : entry);
+			loadedState.history[provider] = loadedState.history[provider].map(
+				(entry) => (typeof entry === "string" ? { text: entry } : entry)
+			);
 		}
 
 		this.viewState = loadedState;

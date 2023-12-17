@@ -46,23 +46,23 @@ export class SettingsResourceInitializer
 	implements IProfileResourceInitializer
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const settingsContent: ISettingsContent = JSON.parse(content);
 		if (settingsContent.settings === null) {
 			this.logService.info(
-				`Initializing Profile: No settings to apply...`,
+				`Initializing Profile: No settings to apply...`
 			);
 			return;
 		}
 		await this.fileService.writeFile(
 			this.userDataProfileService.currentProfile.settingsResource,
-			VSBuffer.fromString(settingsContent.settings),
+			VSBuffer.fromString(settingsContent.settings)
 		);
 	}
 }
@@ -70,10 +70,10 @@ export class SettingsResourceInitializer
 export class SettingsResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataSyncUtilService private readonly userDataSyncUtilService: IUserDataSyncUtilService,
-		@ILogService private readonly logService: ILogService,
-	) {
-	}
+		@IUserDataSyncUtilService
+		private readonly userDataSyncUtilService: IUserDataSyncUtilService,
+		@ILogService private readonly logService: ILogService
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const settingsContent = await this.getSettingsContent(profile);
@@ -81,7 +81,7 @@ export class SettingsResource implements IProfileResource {
 	}
 
 	async getSettingsContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<ISettingsContent> {
 		const localContent = await this.getLocalFileContent(profile);
 		if (localContent === null) {
@@ -90,13 +90,13 @@ export class SettingsResource implements IProfileResource {
 			const ignoredSettings = this.getIgnoredSettings();
 			const formattingOptions =
 				await this.userDataSyncUtilService.resolveFormattingOptions(
-					profile.settingsResource,
+					profile.settingsResource
 				);
 			const settings = updateIgnoredSettings(
 				localContent || "{}",
 				"{}",
 				ignoredSettings,
-				formattingOptions,
+				formattingOptions
 			);
 			return { settings };
 		}
@@ -106,46 +106,46 @@ export class SettingsResource implements IProfileResource {
 		const settingsContent: ISettingsContent = JSON.parse(content);
 		if (settingsContent.settings === null) {
 			this.logService.info(
-				`Importing Profile (${profile.name}): No settings to apply...`,
+				`Importing Profile (${profile.name}): No settings to apply...`
 			);
 			return;
 		}
 		const localSettingsContent = await this.getLocalFileContent(profile);
 		const formattingOptions =
 			await this.userDataSyncUtilService.resolveFormattingOptions(
-				profile.settingsResource,
+				profile.settingsResource
 			);
 		const contentToUpdate = updateIgnoredSettings(
 			settingsContent.settings,
 			localSettingsContent || "{}",
 			this.getIgnoredSettings(),
-			formattingOptions,
+			formattingOptions
 		);
 		await this.fileService.writeFile(
 			profile.settingsResource,
-			VSBuffer.fromString(contentToUpdate),
+			VSBuffer.fromString(contentToUpdate)
 		);
 	}
 
 	private getIgnoredSettings(): string[] {
 		const allSettings = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		).getConfigurationProperties();
 		const ignoredSettings = Object.keys(allSettings).filter(
 			(key) =>
 				allSettings[key]?.scope === ConfigurationScope.MACHINE ||
 				allSettings[key]?.scope ===
-					ConfigurationScope.MACHINE_OVERRIDABLE,
+					ConfigurationScope.MACHINE_OVERRIDABLE
 		);
 		return ignoredSettings;
 	}
 
 	private async getLocalFileContent(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<string | null> {
 		try {
 			const content = await this.fileService.readFile(
-				profile.settingsResource,
+				profile.settingsResource
 			);
 			return content.value.toString();
 		} catch (error) {
@@ -171,9 +171,11 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [
@@ -184,7 +186,7 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 				parent: this,
 				accessibilityInformation: {
 					label: this.uriIdentityService.extUri.basename(
-						this.profile.settingsResource,
+						this.profile.settingsResource
 					),
 				},
 				command: {

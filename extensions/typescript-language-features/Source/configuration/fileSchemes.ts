@@ -23,7 +23,7 @@ export const officeScript = "office-script";
 export function getSemanticSupportedSchemes() {
 	if (isWeb() && vscode.workspace.workspaceFolders) {
 		return vscode.workspace.workspaceFolders.map(
-			(folder) => folder.uri.scheme,
+			(folder) => folder.uri.scheme
 		);
 	}
 

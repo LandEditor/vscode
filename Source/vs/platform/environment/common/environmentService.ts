@@ -96,7 +96,7 @@ export abstract class AbstractNativeEnvironmentService
 		if (!this.args.logsPath) {
 			const key = toLocalISOString(new Date()).replace(
 				/-|:|\.\d+Z$/g,
-				"",
+				""
 			);
 			this.args.logsPath = join(this.userDataPath, "logs", key);
 		}
@@ -113,7 +113,7 @@ export abstract class AbstractNativeEnvironmentService
 	get machineSettingsResource(): URI {
 		return joinPath(
 			URI.file(join(this.userDataPath, "Machine")),
-			"settings.json",
+			"settings.json"
 		);
 	}
 
@@ -142,7 +142,7 @@ export abstract class AbstractNativeEnvironmentService
 		return joinPath(
 			this.userHome,
 			this.productService.dataFolderName,
-			"argv.json",
+			"argv.json"
 		);
 	}
 
@@ -164,7 +164,7 @@ export abstract class AbstractNativeEnvironmentService
 		}
 
 		return normalize(
-			join(FileAccess.asFileUri("").fsPath, "..", "extensions"),
+			join(FileAccess.asFileUri("").fsPath, "..", "extensions")
 		);
 	}
 
@@ -197,7 +197,7 @@ export abstract class AbstractNativeEnvironmentService
 		return joinPath(
 			this.userHome,
 			this.productService.dataFolderName,
-			"extensions",
+			"extensions"
 		).fsPath;
 	}
 
@@ -222,7 +222,7 @@ export abstract class AbstractNativeEnvironmentService
 		return this.args.extensionDevelopmentKind?.map((kind) =>
 			kind === "ui" || kind === "workspace" || kind === "web"
 				? kind
-				: "workspace",
+				: "workspace"
 		);
 	}
 
@@ -280,7 +280,7 @@ export abstract class AbstractNativeEnvironmentService
 	@memoize
 	get logLevel(): string | undefined {
 		return this.args.log?.find(
-			(entry) => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry),
+			(entry) => !EXTENSION_IDENTIFIER_WITH_LOG_REGEX.test(entry)
 		);
 	}
 	@memoize
@@ -333,7 +333,7 @@ export abstract class AbstractNativeEnvironmentService
 			return joinPath(
 				this.userHome,
 				this.productService.dataFolderName,
-				"policy.json",
+				"policy.json"
 			);
 		}
 		return undefined;
@@ -356,13 +356,13 @@ export abstract class AbstractNativeEnvironmentService
 	constructor(
 		private readonly _args: NativeParsedArgs,
 		private readonly paths: INativeEnvironmentPaths,
-		protected readonly productService: IProductService,
+		protected readonly productService: IProductService
 	) {}
 }
 
 export function parseExtensionHostDebugPort(
 	args: NativeParsedArgs,
-	isBuilt: boolean,
+	isBuilt: boolean
 ): IExtensionHostDebugParams {
 	return parseDebugParams(
 		args["inspect-extensions"],
@@ -370,7 +370,7 @@ export function parseExtensionHostDebugPort(
 		5870,
 		isBuilt,
 		args.debugId,
-		args.extensionEnvironment,
+		args.extensionEnvironment
 	);
 }
 
@@ -380,7 +380,7 @@ export function parseDebugParams(
 	defaultBuildPort: number,
 	isBuilt: boolean,
 	debugId?: string,
-	environmentString?: string,
+	environmentString?: string
 ): IExtensionHostDebugParams {
 	const portStr = debugBrkArg || debugArg;
 	const port = Number(portStr) || (!isBuilt ? defaultBuildPort : null);

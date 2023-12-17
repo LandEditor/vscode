@@ -79,7 +79,7 @@ export class DiffNestedCellViewModel
 	protected _outputsTop: PrefixSumComputer | null = null;
 
 	protected readonly _onDidChangeOutputLayout = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidChangeOutputLayout = this._onDidChangeOutputLayout.event;
 
@@ -90,15 +90,35 @@ export class DiffNestedCellViewModel
 		super();
 		this._id = generateUuid();
 
-		this._outputViewModels = this.textModel.outputs.map(output => new CellOutputViewModel(this, output, this._notebookService));
-		this._register(this.textModel.onDidChangeOutputs((splice) => {
-			this._outputCollection.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(() => 0));
-			const removed = this._outputViewModels.splice(splice.start, splice.deleteCount, ...splice.newOutputs.map(output => new CellOutputViewModel(this, output, this._notebookService)));
-			removed.forEach(vm => vm.dispose());
+		this._outputViewModels = this.textModel.outputs.map(
+			(output) =>
+				new CellOutputViewModel(this, output, this._notebookService)
+		);
+		this._register(
+			this.textModel.onDidChangeOutputs((splice) => {
+				this._outputCollection.splice(
+					splice.start,
+					splice.deleteCount,
+					...splice.newOutputs.map(() => 0)
+				);
+				const removed = this._outputViewModels.splice(
+					splice.start,
+					splice.deleteCount,
+					...splice.newOutputs.map(
+						(output) =>
+							new CellOutputViewModel(
+								this,
+								output,
+								this._notebookService
+							)
+					)
+				);
+				removed.forEach((vm) => vm.dispose());
 
-			this._outputsTop = null;
-			this._onDidChangeOutputLayout.fire();
-		}));
+				this._outputsTop = null;
+				this._onDidChangeOutputLayout.fire();
+			})
+		);
 		this._outputCollection = new Array(this.textModel.outputs.length);
 	}
 

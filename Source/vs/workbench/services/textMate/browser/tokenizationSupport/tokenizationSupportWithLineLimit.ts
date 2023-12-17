@@ -28,7 +28,7 @@ export class TokenizationSupportWithLineLimit
 	constructor(
 		private readonly _encodedLanguageId: LanguageId,
 		private readonly _actual: ITokenizationSupport,
-		private readonly _maxTokenizationLineLength: IObservable<number>,
+		private readonly _maxTokenizationLineLength: IObservable<number>
 	) {
 		super();
 
@@ -46,7 +46,7 @@ export class TokenizationSupportWithLineLimit
 	tokenizeEncoded(
 		line: string,
 		hasEOL: boolean,
-		state: IState,
+		state: IState
 	): EncodedTokenizationResult {
 		// Do not attempt to tokenize if a line is too long
 		if (line.length >= this._maxTokenizationLineLength.get()) {
@@ -58,7 +58,7 @@ export class TokenizationSupportWithLineLimit
 
 	createBackgroundTokenizer(
 		textModel: ITextModel,
-		store: IBackgroundTokenizationStore,
+		store: IBackgroundTokenizationStore
 	): IBackgroundTokenizer | undefined {
 		if (this._actual.createBackgroundTokenizer) {
 			return this._actual.createBackgroundTokenizer(textModel, store);

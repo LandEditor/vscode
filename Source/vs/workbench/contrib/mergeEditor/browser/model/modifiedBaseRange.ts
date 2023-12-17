@@ -39,7 +39,7 @@ export class ModifiedBaseRange {
 		diffs2: readonly DetailedLineRangeMapping[],
 		baseTextModel: ITextModel,
 		input1TextModel: ITextModel,
-		input2TextModel: ITextModel,
+		input2TextModel: ITextModel
 	): ModifiedBaseRange[] {
 		const alignments = MappingAlignment.compute(diffs1, diffs2);
 		return alignments.map(
@@ -52,21 +52,21 @@ export class ModifiedBaseRange {
 					a.output1LineMappings,
 					a.output2Range,
 					input2TextModel,
-					a.output2LineMappings,
-				),
+					a.output2LineMappings
+				)
 		);
 	}
 
 	public readonly input1CombinedDiff = DetailedLineRangeMapping.join(
-		this.input1Diffs,
+		this.input1Diffs
 	);
 	public readonly input2CombinedDiff = DetailedLineRangeMapping.join(
-		this.input2Diffs,
+		this.input2Diffs
 	);
 	public readonly isEqualChange = equals(
 		this.input1Diffs,
 		this.input2Diffs,
-		(a, b) => a.getLineEdit().equals(b.getLineEdit()),
+		(a, b) => a.getLineEdit().equals(b.getLineEdit())
 	);
 
 	constructor(
@@ -85,7 +85,7 @@ export class ModifiedBaseRange {
 		/**
 		 * From base to input2
 		 */
-		public readonly input2Diffs: readonly DetailedLineRangeMapping[],
+		public readonly input2Diffs: readonly DetailedLineRangeMapping[]
 	) {
 		if (this.input1Diffs.length === 0 && this.input2Diffs.length === 0) {
 			throw new BugIndicatingError("must have at least one diff");
@@ -97,7 +97,7 @@ export class ModifiedBaseRange {
 	}
 
 	public getInputCombinedDiff(
-		inputNumber: 1 | 2,
+		inputNumber: 1 | 2
 	): DetailedLineRangeMapping | undefined {
 		return inputNumber === 1
 			? this.input1CombinedDiff
@@ -105,7 +105,7 @@ export class ModifiedBaseRange {
 	}
 
 	public getInputDiffs(
-		inputNumber: 1 | 2,
+		inputNumber: 1 | 2
 	): readonly DetailedLineRangeMapping[] {
 		return inputNumber === 1 ? this.input1Diffs : this.input2Diffs;
 	}
@@ -154,7 +154,7 @@ export class ModifiedBaseRange {
 				effectiveState: ModifiedBaseRangeState.base.withInputValue(
 					diffs[0].inputNumber,
 					true,
-					false,
+					false
 				),
 			};
 		}
@@ -177,7 +177,7 @@ export class ModifiedBaseRange {
 			effectiveState: ModifiedBaseRangeState.base.withInputValue(
 				getOtherInputNumber(state.firstInput),
 				true,
-				false,
+				false
 			),
 		};
 	}
@@ -197,25 +197,25 @@ export class ModifiedBaseRange {
 				diffs.rangeMappings.map((diff) => ({
 					diff,
 					input: 1 as const,
-				})),
+				}))
 			),
 			this.input2Diffs.flatMap((diffs) =>
 				diffs.rangeMappings.map((diff) => ({
 					diff,
 					input: 2 as const,
-				})),
-			),
+				}))
+			)
 		).sort(
 			tieBreakComparators(
 				compareBy(
 					(d) => d.diff.inputRange,
-					Range.compareRangesUsingStarts,
+					Range.compareRangesUsingStarts
 				),
 				compareBy(
 					(d) => (d.input === firstInput ? 1 : 2),
-					numberComparator,
-				),
-			),
+					numberComparator
+				)
+			)
 		);
 
 		const sortedEdits = combinedDiffs.map((d) => {
@@ -223,14 +223,14 @@ export class ModifiedBaseRange {
 				d.input === 1 ? this.input1TextModel : this.input2TextModel;
 			return new RangeEdit(
 				d.diff.inputRange,
-				sourceTextModel.getValueInRange(d.diff.outputRange),
+				sourceTextModel.getValueInRange(d.diff.outputRange)
 			);
 		});
 
 		const result = editsToLineRangeEdit(
 			this.baseRange,
 			sortedEdits,
-			this.baseTextModel,
+			this.baseTextModel
 		);
 		if (firstInput === 1) {
 			this.smartInput1LineRangeEdit = result;
@@ -258,7 +258,7 @@ export class ModifiedBaseRange {
 
 		const result = new LineRangeEdit(
 			this.baseRange,
-			input1Lines.concat(input2Lines),
+			input1Lines.concat(input2Lines)
 		);
 		if (firstInput === 1) {
 			this.dumbInput1LineRangeEdit = result;
@@ -272,15 +272,15 @@ export class ModifiedBaseRange {
 function editsToLineRangeEdit(
 	range: LineRange,
 	sortedEdits: RangeEdit[],
-	textModel: ITextModel,
+	textModel: ITextModel
 ): LineRangeEdit | undefined {
 	let text = "";
 	const startsLineBefore = range.startLineNumber > 1;
 	let currentPosition = startsLineBefore
 		? new Position(
 				range.startLineNumber - 1,
-				textModel.getLineMaxColumn(range.startLineNumber - 1),
-		  )
+				textModel.getLineMaxColumn(range.startLineNumber - 1)
+			)
 		: new Position(range.startLineNumber, 1);
 
 	for (const edit of sortedEdits) {
@@ -289,7 +289,7 @@ function editsToLineRangeEdit(
 			return undefined;
 		}
 		let originalText = textModel.getValueInRange(
-			Range.fromPositions(currentPosition, diffStart),
+			Range.fromPositions(currentPosition, diffStart)
 		);
 		if (diffStart.lineNumber > textModel.getLineCount()) {
 			// assert diffStart.lineNumber === textModel.getLineCount() + 1
@@ -308,11 +308,11 @@ function editsToLineRangeEdit(
 		? new Position(range.endLineNumberExclusive, 1)
 		: new Position(
 				range.endLineNumberExclusive - 1,
-				Constants.MAX_SAFE_SMALL_INTEGER,
-		  );
+				Constants.MAX_SAFE_SMALL_INTEGER
+			);
 
 	const originalText = textModel.getValueInRange(
-		Range.fromPositions(currentPosition, end),
+		Range.fromPositions(currentPosition, end)
 	);
 	text += originalText;
 
@@ -373,7 +373,7 @@ export abstract class AbstractModifiedBaseRangeState {
 	public abstract withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
-		smartCombination?: boolean,
+		smartCombination?: boolean
 	): ModifiedBaseRangeState;
 
 	public abstract equals(other: ModifiedBaseRangeState): boolean;
@@ -382,7 +382,7 @@ export abstract class AbstractModifiedBaseRangeState {
 		return this.withInputValue(
 			inputNumber,
 			!this.includesInput(inputNumber),
-			true,
+			true
 		);
 	}
 
@@ -408,7 +408,7 @@ export class ModifiedBaseRangeStateBase extends AbstractModifiedBaseRangeState {
 	public override withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
-		smartCombination: boolean = false,
+		smartCombination: boolean = false
 	): ModifiedBaseRangeState {
 		if (inputNumber === 1) {
 			return value ? new ModifiedBaseRangeStateInput1() : this;
@@ -439,7 +439,7 @@ export class ModifiedBaseRangeStateInput1 extends AbstractModifiedBaseRangeState
 	public override withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
-		smartCombination: boolean = false,
+		smartCombination: boolean = false
 	): ModifiedBaseRangeState {
 		if (inputNumber === 1) {
 			return value ? this : new ModifiedBaseRangeStateBase();
@@ -472,7 +472,7 @@ export class ModifiedBaseRangeStateInput2 extends AbstractModifiedBaseRangeState
 	public withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
-		smartCombination: boolean = false,
+		smartCombination: boolean = false
 	): ModifiedBaseRangeState {
 		if (inputNumber === 2) {
 			return value ? this : new ModifiedBaseRangeStateBase();
@@ -491,7 +491,7 @@ export class ModifiedBaseRangeStateInput2 extends AbstractModifiedBaseRangeState
 export class ModifiedBaseRangeStateBoth extends AbstractModifiedBaseRangeState {
 	constructor(
 		public readonly firstInput: InputNumber,
-		public readonly smartCombination: boolean,
+		public readonly smartCombination: boolean
 	) {
 		super();
 	}
@@ -513,14 +513,14 @@ export class ModifiedBaseRangeStateBoth extends AbstractModifiedBaseRangeState {
 	public override swap(): ModifiedBaseRangeState {
 		return new ModifiedBaseRangeStateBoth(
 			getOtherInputNumber(this.firstInput),
-			this.smartCombination,
+			this.smartCombination
 		);
 	}
 
 	public withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
-		smartCombination: boolean = false,
+		smartCombination: boolean = false
 	): ModifiedBaseRangeState {
 		if (value) {
 			return this;
@@ -559,7 +559,7 @@ export class ModifiedBaseRangeStateUnrecognized extends AbstractModifiedBaseRang
 	public withInputValue(
 		inputNumber: InputNumber,
 		value: boolean,
-		smartCombination: boolean = false,
+		smartCombination: boolean = false
 	): ModifiedBaseRangeState {
 		if (!value) {
 			return this;

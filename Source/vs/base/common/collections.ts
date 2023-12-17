@@ -21,7 +21,7 @@ export type INumberDictionary<V> = Record<number, V>;
  */
 export function groupBy<K extends string | number | symbol, V>(
 	data: V[],
-	groupFn: (element: V) => K,
+	groupFn: (element: V) => K
 ): Record<K, V[]> {
 	const result: Record<K, V[]> = Object.create(null);
 	for (const element of data) {
@@ -37,7 +37,7 @@ export function groupBy<K extends string | number | symbol, V>(
 
 export function diffSets<T>(
 	before: Set<T>,
-	after: Set<T>,
+	after: Set<T>
 ): { removed: T[]; added: T[] } {
 	const removed: T[] = [];
 	const added: T[] = [];
@@ -56,7 +56,7 @@ export function diffSets<T>(
 
 export function diffMaps<K, V>(
 	before: Map<K, V>,
-	after: Map<K, V>,
+	after: Map<K, V>
 ): { removed: V[]; added: V[] } {
 	const removed: V[] = [];
 	const added: V[] = [];

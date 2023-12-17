@@ -35,26 +35,26 @@ declare namespace DOMPurify {
 		sanitize(source: string | Node): string;
 		sanitize(
 			source: string | Node,
-			config: Config & { RETURN_TRUSTED_TYPE: true },
+			config: Config & { RETURN_TRUSTED_TYPE: true }
 		): TrustedHTML;
 		sanitize(
 			source: string | Node,
 			config: Config & {
 				RETURN_DOM_FRAGMENT?: false | undefined;
 				RETURN_DOM?: false | undefined;
-			},
+			}
 		): string;
 		sanitize(
 			source: string | Node,
-			config: Config & { RETURN_DOM_FRAGMENT: true },
+			config: Config & { RETURN_DOM_FRAGMENT: true }
 		): DocumentFragment;
 		sanitize(
 			source: string | Node,
-			config: Config & { RETURN_DOM: true },
+			config: Config & { RETURN_DOM: true }
 		): HTMLElement;
 		sanitize(
 			source: string | Node,
-			config: Config,
+			config: Config
 		): string | HTMLElement | DocumentFragment;
 
 		addHook(
@@ -62,20 +62,20 @@ declare namespace DOMPurify {
 			cb: (
 				currentNode: Element,
 				data: SanitizeElementHookEvent,
-				config: Config,
-			) => void,
+				config: Config
+			) => void
 		): void;
 		addHook(
 			hook: "uponSanitizeAttribute",
 			cb: (
 				currentNode: Element,
 				data: SanitizeAttributeHookEvent,
-				config: Config,
-			) => void,
+				config: Config
+			) => void
 		): void;
 		addHook(
 			hook: HookName,
-			cb: (currentNode: Element, data: HookEvent, config: Config) => void,
+			cb: (currentNode: Element, data: HookEvent, config: Config) => void
 		): void;
 
 		setConfig(cfg: Config): void;

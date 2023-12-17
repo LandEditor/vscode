@@ -111,54 +111,137 @@ export class TelemetryContribution
 
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IEditorService editorService: IEditorService,
 		@IKeybindingService keybindingsService: IKeybindingService,
 		@IWorkbenchThemeService themeService: IWorkbenchThemeService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
 		@ITextFileService textFileService: ITextFileService
 	) {
 		super();
 
-		const { filesToOpenOrCreate, filesToDiff, filesToMerge } = environmentService;
-		const activeViewlet = paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
+		const { filesToOpenOrCreate, filesToDiff, filesToMerge } =
+			environmentService;
+		const activeViewlet = paneCompositeService.getActivePaneComposite(
+			ViewContainerLocation.Sidebar
+		);
 
 		type WindowSizeFragment = {
-			innerHeight: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The height of the current window.' };
-			innerWidth: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The width of the current window.' };
-			outerHeight: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The height of the current window with all decoration removed.' };
-			outerWidth: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The width of the current window with all decoration removed.' };
-			owner: 'bpasero';
-			comment: 'The size of the window.';
+			innerHeight: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "The height of the current window.";
+			};
+			innerWidth: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "The width of the current window.";
+			};
+			outerHeight: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "The height of the current window with all decoration removed.";
+			};
+			outerWidth: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "The width of the current window with all decoration removed.";
+			};
+			owner: "bpasero";
+			comment: "The size of the window.";
 		};
 
 		type WorkspaceLoadClassification = {
-			owner: 'bpasero';
-			emptyWorkbench: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'Whether a folder or workspace is opened or not.' };
+			owner: "bpasero";
+			emptyWorkbench: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "Whether a folder or workspace is opened or not.";
+			};
 			windowSize: WindowSizeFragment;
-			'workbench.filesToOpenOrCreate': { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'Number of files that should open or be created.' };
-			'workbench.filesToDiff': { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'Number of files that should be compared.' };
-			'workbench.filesToMerge': { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'Number of files that should be merged.' };
-			customKeybindingsCount: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'Number of custom keybindings' };
-			theme: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The current theme of the window.' };
-			language: { classification: 'SystemMetaData'; purpose: 'BusinessInsight'; comment: 'The display language of the window.' };
-			pinnedViewlets: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The identifiers of views that are pinned.' };
-			restoredViewlet?: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The identifier of the view that is restored.' };
-			restoredEditors: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'The number of editors that restored.' };
-			startupKind: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; isMeasurement: true; comment: 'How the window was opened, e.g via reload or not.' };
-			comment: 'Metadata around the workspace that is being loaded into a window.';
+			"workbench.filesToOpenOrCreate": {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "Number of files that should open or be created.";
+			};
+			"workbench.filesToDiff": {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "Number of files that should be compared.";
+			};
+			"workbench.filesToMerge": {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "Number of files that should be merged.";
+			};
+			customKeybindingsCount: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "Number of custom keybindings";
+			};
+			theme: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The current theme of the window.";
+			};
+			language: {
+				classification: "SystemMetaData";
+				purpose: "BusinessInsight";
+				comment: "The display language of the window.";
+			};
+			pinnedViewlets: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The identifiers of views that are pinned.";
+			};
+			restoredViewlet?: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The identifier of the view that is restored.";
+			};
+			restoredEditors: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "The number of editors that restored.";
+			};
+			startupKind: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				isMeasurement: true;
+				comment: "How the window was opened, e.g via reload or not.";
+			};
+			comment: "Metadata around the workspace that is being loaded into a window.";
 		};
 
 		type WorkspaceLoadEvent = {
-			windowSize: { innerHeight: number; innerWidth: number; outerHeight: number; outerWidth: number };
+			windowSize: {
+				innerHeight: number;
+				innerWidth: number;
+				outerHeight: number;
+				outerWidth: number;
+			};
 			emptyWorkbench: boolean;
-			'workbench.filesToOpenOrCreate': number;
-			'workbench.filesToDiff': number;
-			'workbench.filesToMerge': number;
+			"workbench.filesToOpenOrCreate": number;
+			"workbench.filesToDiff": number;
+			"workbench.filesToMerge": number;
 			customKeybindingsCount: number;
 			theme: string;
 			language: string;
@@ -168,30 +251,51 @@ export class TelemetryContribution
 			startupKind: StartupKind;
 		};
 
-		telemetryService.publicLog2<WorkspaceLoadEvent, WorkspaceLoadClassification>('workspaceLoad', {
-			windowSize: { innerHeight: mainWindow.innerHeight, innerWidth: mainWindow.innerWidth, outerHeight: mainWindow.outerHeight, outerWidth: mainWindow.outerWidth },
-			emptyWorkbench: contextService.getWorkbenchState() === WorkbenchState.EMPTY,
-			'workbench.filesToOpenOrCreate': filesToOpenOrCreate && filesToOpenOrCreate.length || 0,
-			'workbench.filesToDiff': filesToDiff && filesToDiff.length || 0,
-			'workbench.filesToMerge': filesToMerge && filesToMerge.length || 0,
+		telemetryService.publicLog2<
+			WorkspaceLoadEvent,
+			WorkspaceLoadClassification
+		>("workspaceLoad", {
+			windowSize: {
+				innerHeight: mainWindow.innerHeight,
+				innerWidth: mainWindow.innerWidth,
+				outerHeight: mainWindow.outerHeight,
+				outerWidth: mainWindow.outerWidth,
+			},
+			emptyWorkbench:
+				contextService.getWorkbenchState() === WorkbenchState.EMPTY,
+			"workbench.filesToOpenOrCreate":
+				(filesToOpenOrCreate && filesToOpenOrCreate.length) || 0,
+			"workbench.filesToDiff": (filesToDiff && filesToDiff.length) || 0,
+			"workbench.filesToMerge":
+				(filesToMerge && filesToMerge.length) || 0,
 			customKeybindingsCount: keybindingsService.customKeybindingsCount(),
 			theme: themeService.getColorTheme().id,
 			language,
-			pinnedViewlets: paneCompositeService.getPinnedPaneCompositeIds(ViewContainerLocation.Sidebar),
+			pinnedViewlets: paneCompositeService.getPinnedPaneCompositeIds(
+				ViewContainerLocation.Sidebar
+			),
 			restoredViewlet: activeViewlet ? activeViewlet.getId() : undefined,
 			restoredEditors: editorService.visibleEditors.length,
-			startupKind: lifecycleService.startupKind
+			startupKind: lifecycleService.startupKind,
 		});
 
 		// Error Telemetry
 		this._register(new ErrorTelemetry(telemetryService));
 
 		// Configuration Telemetry
-		this._register(configurationTelemetry(telemetryService, configurationService));
+		this._register(
+			configurationTelemetry(telemetryService, configurationService)
+		);
 
 		//  Files Telemetry
-		this._register(textFileService.files.onDidResolve(e => this.onTextFileModelResolved(e)));
-		this._register(textFileService.files.onDidSave(e => this.onTextFileModelSaved(e)));
+		this._register(
+			textFileService.files.onDidResolve((e) =>
+				this.onTextFileModelResolved(e)
+			)
+		);
+		this._register(
+			textFileService.files.onDidSave((e) => this.onTextFileModelSaved(e))
+		);
 
 		// Lifecycle
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
@@ -264,7 +368,7 @@ export class TelemetryContribution
 		if (
 			isEqual(
 				resource,
-				this.userDataProfileService.currentProfile.settingsResource,
+				this.userDataProfileService.currentProfile.settingsResource
 			)
 		) {
 			return "global-settings";
@@ -274,7 +378,7 @@ export class TelemetryContribution
 		if (
 			isEqual(
 				resource,
-				this.userDataProfileService.currentProfile.keybindingsResource,
+				this.userDataProfileService.currentProfile.keybindingsResource
 			)
 		) {
 			return "keybindings";
@@ -284,7 +388,7 @@ export class TelemetryContribution
 		if (
 			isEqualOrParent(
 				resource,
-				this.userDataProfileService.currentProfile.snippetsHome,
+				this.userDataProfileService.currentProfile.snippetsHome
 			)
 		) {
 			return "snippets";
@@ -297,7 +401,7 @@ export class TelemetryContribution
 				const filename = basename(resource);
 				if (
 					TelemetryContribution.ALLOWLIST_WORKSPACE_JSON.indexOf(
-						filename,
+						filename
 					) > -1
 				) {
 					return `.vscode/${filename}`;
@@ -321,7 +425,7 @@ export class TelemetryContribution
 			resource.scheme === Schemas.file ? resource.fsPath : resource.path;
 		const telemetryData = {
 			mimeType: new TelemetryTrustedValue(
-				getMimeTypes(resource).join(", "),
+				getMimeTypes(resource).join(", ")
 			),
 			ext,
 			path: hash(path),
@@ -341,5 +445,5 @@ export class TelemetryContribution
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(TelemetryContribution, LifecyclePhase.Restored);

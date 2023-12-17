@@ -13,7 +13,7 @@ async function copyVscodeDevLink(
 	gitAPI: GitAPI,
 	useSelection: boolean,
 	context: LinkContext,
-	includeRange = true,
+	includeRange = true
 ) {
 	try {
 		const permalink = await getLink(
@@ -23,7 +23,7 @@ async function copyVscodeDevLink(
 			getVscodeDevHost(),
 			"headlink",
 			context,
-			includeRange,
+			includeRange
 		);
 		if (permalink) {
 			return vscode.env.clipboard.writeText(permalink);
@@ -36,7 +36,7 @@ async function copyVscodeDevLink(
 }
 
 async function openVscodeDevLink(
-	gitAPI: GitAPI,
+	gitAPI: GitAPI
 ): Promise<vscode.Uri | undefined> {
 	try {
 		const headlink = await getLink(
@@ -44,7 +44,7 @@ async function openVscodeDevLink(
 			true,
 			false,
 			getVscodeDevHost(),
-			"headlink",
+			"headlink"
 		);
 		return headlink ? vscode.Uri.parse(headlink) : undefined;
 	} catch (err) {
@@ -65,7 +65,7 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			} catch (err) {
 				vscode.window.showErrorMessage(err.message);
 			}
-		}),
+		})
 	);
 
 	disposables.add(
@@ -73,8 +73,8 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			"github.copyVscodeDevLink",
 			async (context: LinkContext) => {
 				return copyVscodeDevLink(gitAPI, true, context);
-			},
-		),
+			}
+		)
 	);
 
 	disposables.add(
@@ -82,8 +82,8 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			"github.copyVscodeDevLinkFile",
 			async (context: LinkContext) => {
 				return copyVscodeDevLink(gitAPI, false, context);
-			},
-		),
+			}
+		)
 	);
 
 	disposables.add(
@@ -91,14 +91,14 @@ export function registerCommands(gitAPI: GitAPI): vscode.Disposable {
 			"github.copyVscodeDevLinkWithoutRange",
 			async (context: LinkContext) => {
 				return copyVscodeDevLink(gitAPI, true, context, false);
-			},
-		),
+			}
+		)
 	);
 
 	disposables.add(
 		vscode.commands.registerCommand("github.openOnVscodeDev", async () => {
 			return openVscodeDevLink(gitAPI);
-		}),
+		})
 	);
 
 	return disposables;

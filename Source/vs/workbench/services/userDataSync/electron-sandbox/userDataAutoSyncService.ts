@@ -21,20 +21,20 @@ class UserDataAutoSyncService implements IUserDataAutoSyncService {
 	private readonly channel: IChannel;
 	get onError(): Event<UserDataSyncError> {
 		return Event.map(this.channel.listen<Error>("onError"), (e) =>
-			UserDataSyncError.toUserDataSyncError(e),
+			UserDataSyncError.toUserDataSyncError(e)
 		);
 	}
 
 	constructor(
-		@ISharedProcessService sharedProcessService: ISharedProcessService,
+		@ISharedProcessService sharedProcessService: ISharedProcessService
 	) {
-		this.channel = sharedProcessService.getChannel('userDataAutoSync');
+		this.channel = sharedProcessService.getChannel("userDataAutoSync");
 	}
 
 	triggerSync(
 		sources: string[],
 		hasToLimitSync: boolean,
-		disableCache: boolean,
+		disableCache: boolean
 	): Promise<void> {
 		return this.channel.call("triggerSync", [
 			sources,
@@ -55,5 +55,5 @@ class UserDataAutoSyncService implements IUserDataAutoSyncService {
 registerSingleton(
 	IUserDataAutoSyncService,
 	UserDataAutoSyncService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

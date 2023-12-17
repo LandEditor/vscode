@@ -23,9 +23,11 @@ import { ILayoutService } from "vs/platform/layout/browser/layoutService";
 
 export class BrowserClipboardService extends BaseBrowserClipboardService {
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ILogService logService: ILogService,
 		@ILayoutService layoutService: ILayoutService
 	) {
@@ -51,7 +53,7 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 					Severity.Error,
 					localize(
 						"clipboardError",
-						"Unable to read from the browser's clipboard. Please make sure you have granted access for this website to read from the clipboard.",
+						"Unable to read from the browser's clipboard. Please make sure you have granted access for this website to read from the clipboard."
 					),
 					[
 						{
@@ -65,13 +67,13 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 							label: localize("learnMore", "Learn More"),
 							run: () =>
 								this.openerService.open(
-									"https://go.microsoft.com/fwlink/?linkid=2151362",
+									"https://go.microsoft.com/fwlink/?linkid=2151362"
 								),
 						},
 					],
 					{
 						sticky: true,
-					},
+					}
 				);
 
 				// Always resolve the promise once the notification closes
@@ -84,5 +86,5 @@ export class BrowserClipboardService extends BaseBrowserClipboardService {
 registerSingleton(
 	IClipboardService,
 	BrowserClipboardService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

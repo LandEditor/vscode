@@ -48,16 +48,16 @@ const _ctxHasTypeHierarchyProvider = new RawContextKey<boolean>(
 	false,
 	localize(
 		"editorHasTypeHierarchyProvider",
-		"Whether a type hierarchy provider is available",
-	),
+		"Whether a type hierarchy provider is available"
+	)
 );
 const _ctxTypeHierarchyVisible = new RawContextKey<boolean>(
 	"typeHierarchyVisible",
 	false,
 	localize(
 		"typeHierarchyVisible",
-		"Whether type hierarchy peek is currently showing",
-	),
+		"Whether type hierarchy peek is currently showing"
+	)
 );
 const _ctxTypeHierarchyDirection = new RawContextKey<string>(
 	"typeHierarchyDirection",
@@ -66,9 +66,9 @@ const _ctxTypeHierarchyDirection = new RawContextKey<string>(
 		type: "string",
 		description: localize(
 			"typeHierarchyDirection",
-			"whether type hierarchy shows super types or subtypes",
+			"whether type hierarchy shows super types or subtypes"
 		),
-	},
+	}
 );
 
 function sanitizedDirection(candidate: string): TypeHierarchyDirection {
@@ -83,7 +83,7 @@ class TypeHierarchyController implements IEditorContribution {
 
 	static get(editor: ICodeEditor): TypeHierarchyController | null {
 		return editor.getContribution<TypeHierarchyController>(
-			TypeHierarchyController.Id,
+			TypeHierarchyController.Id
 		);
 	}
 
@@ -100,17 +100,34 @@ class TypeHierarchyController implements IEditorContribution {
 
 	constructor(
 		readonly _editor: ICodeEditor,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
-		this._ctxHasProvider = _ctxHasTypeHierarchyProvider.bindTo(this._contextKeyService);
-		this._ctxIsVisible = _ctxTypeHierarchyVisible.bindTo(this._contextKeyService);
-		this._ctxDirection = _ctxTypeHierarchyDirection.bindTo(this._contextKeyService);
-		this._disposables.add(Event.any<any>(_editor.onDidChangeModel, _editor.onDidChangeModelLanguage, TypeHierarchyProviderRegistry.onDidChange)(() => {
-			this._ctxHasProvider.set(_editor.hasModel() && TypeHierarchyProviderRegistry.has(_editor.getModel()));
-		}));
+		this._ctxHasProvider = _ctxHasTypeHierarchyProvider.bindTo(
+			this._contextKeyService
+		);
+		this._ctxIsVisible = _ctxTypeHierarchyVisible.bindTo(
+			this._contextKeyService
+		);
+		this._ctxDirection = _ctxTypeHierarchyDirection.bindTo(
+			this._contextKeyService
+		);
+		this._disposables.add(
+			Event.any<any>(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelLanguage,
+				TypeHierarchyProviderRegistry.onDidChange
+			)(() => {
+				this._ctxHasProvider.set(
+					_editor.hasModel() &&
+						TypeHierarchyProviderRegistry.has(_editor.getModel())
+				);
+			})
+		);
 		this._disposables.add(this._sessionDisposables);
 	}
 
@@ -138,8 +155,8 @@ class TypeHierarchyController implements IEditorContribution {
 			this._storageService.get(
 				TypeHierarchyController._storageDirectionKey,
 				StorageScope.PROFILE,
-				TypeHierarchyDirection.Subtypes,
-			),
+				TypeHierarchyDirection.Subtypes
+			)
 		);
 
 		this._showTypeHierarchyWidget(position, direction, model, cts);
@@ -149,19 +166,19 @@ class TypeHierarchyController implements IEditorContribution {
 		position: Position,
 		direction: TypeHierarchyDirection,
 		model: Promise<TypeHierarchyModel | undefined>,
-		cts: CancellationTokenSource,
+		cts: CancellationTokenSource
 	) {
 		this._ctxIsVisible.set(true);
 		this._ctxDirection.set(direction);
 		Event.any<any>(
 			this._editor.onDidChangeModel,
-			this._editor.onDidChangeModelLanguage,
+			this._editor.onDidChangeModelLanguage
 		)(this.endTypeHierarchy, this, this._sessionDisposables);
 		this._widget = this._instantiationService.createInstance(
 			TypeHierarchyTreePeekWidget,
 			this._editor,
 			position,
-			direction,
+			direction
 		);
 		this._widget.showLoading();
 		this._sessionDisposables.add(
@@ -171,9 +188,9 @@ class TypeHierarchyController implements IEditorContribution {
 					TypeHierarchyController._storageDirectionKey,
 					this._widget!.direction,
 					StorageScope.PROFILE,
-					StorageTarget.USER,
+					StorageTarget.USER
 				);
-			}),
+			})
 		);
 		this._sessionDisposables.add({
 			dispose() {
@@ -192,7 +209,7 @@ class TypeHierarchyController implements IEditorContribution {
 					this._widget!.showModel(model);
 				} else {
 					this._widget!.showMessage(
-						localize("no.item", "No results"),
+						localize("no.item", "No results")
 					);
 				}
 			})
@@ -202,7 +219,7 @@ class TypeHierarchyController implements IEditorContribution {
 					return;
 				}
 				this._widget!.showMessage(
-					localize("error", "Failed to show type hierarchy"),
+					localize("error", "Failed to show type hierarchy")
 				);
 			});
 	}
@@ -218,7 +235,7 @@ class TypeHierarchyController implements IEditorContribution {
 		}
 		const newEditor = await this._editorService.openCodeEditor(
 			{ resource: typeItem.item.uri },
-			this._editor,
+			this._editor
 		);
 		if (!newEditor) {
 			return;
@@ -230,7 +247,7 @@ class TypeHierarchyController implements IEditorContribution {
 			Range.lift(newModel.root.selectionRange).getStartPosition(),
 			this._widget.direction,
 			Promise.resolve(newModel),
-			new CancellationTokenSource(),
+			new CancellationTokenSource()
 		);
 	}
 
@@ -254,7 +271,7 @@ class TypeHierarchyController implements IEditorContribution {
 registerEditorContribution(
 	TypeHierarchyController.Id,
 	TypeHierarchyController,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // eager because it needs to define a context key
 
 // Peek
@@ -273,12 +290,12 @@ registerAction2(
 					order: 1000,
 					when: ContextKeyExpr.and(
 						_ctxHasTypeHierarchyProvider,
-						PeekContext.notInPeekEditor,
+						PeekContext.notInPeekEditor
 					),
 				},
 				precondition: ContextKeyExpr.and(
 					_ctxHasTypeHierarchyProvider,
-					PeekContext.notInPeekEditor,
+					PeekContext.notInPeekEditor
 				),
 				f1: true,
 			});
@@ -286,13 +303,13 @@ registerAction2(
 
 		async runEditorCommand(
 			_accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			return TypeHierarchyController.get(
-				editor,
+				editor
 			)?.startTypeHierarchyFromEditor();
 		}
-	},
+	}
 );
 
 // actions for peek widget
@@ -309,8 +326,8 @@ registerAction2(
 				precondition: ContextKeyExpr.and(
 					_ctxTypeHierarchyVisible,
 					_ctxTypeHierarchyDirection.isEqualTo(
-						TypeHierarchyDirection.Subtypes,
-					),
+						TypeHierarchyDirection.Subtypes
+					)
 				),
 				keybinding: {
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -319,7 +336,7 @@ registerAction2(
 				menu: {
 					id: TypeHierarchyTreePeekWidget.TitleMenu,
 					when: _ctxTypeHierarchyDirection.isEqualTo(
-						TypeHierarchyDirection.Subtypes,
+						TypeHierarchyDirection.Subtypes
 					),
 					order: 1,
 				},
@@ -329,7 +346,7 @@ registerAction2(
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			return TypeHierarchyController.get(editor)?.showSupertypes();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -345,8 +362,8 @@ registerAction2(
 				precondition: ContextKeyExpr.and(
 					_ctxTypeHierarchyVisible,
 					_ctxTypeHierarchyDirection.isEqualTo(
-						TypeHierarchyDirection.Supertypes,
-					),
+						TypeHierarchyDirection.Supertypes
+					)
 				),
 				keybinding: {
 					weight: KeybindingWeight.WorkbenchContrib,
@@ -355,7 +372,7 @@ registerAction2(
 				menu: {
 					id: TypeHierarchyTreePeekWidget.TitleMenu,
 					when: _ctxTypeHierarchyDirection.isEqualTo(
-						TypeHierarchyDirection.Supertypes,
+						TypeHierarchyDirection.Supertypes
 					),
 					order: 1,
 				},
@@ -365,7 +382,7 @@ registerAction2(
 		runEditorCommand(_accessor: ServicesAccessor, editor: ICodeEditor) {
 			return TypeHierarchyController.get(editor)?.showSubtypes();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -376,7 +393,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"title.refocusTypeHierarchy",
-						"Refocus Type Hierarchy",
+						"Refocus Type Hierarchy"
 					),
 					original: "Refocus Type Hierarchy",
 				},
@@ -390,13 +407,13 @@ registerAction2(
 
 		async runEditorCommand(
 			_accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			return TypeHierarchyController.get(
-				editor,
+				editor
 			)?.startTypeHierarchyFromTypeHierarchy();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -421,9 +438,9 @@ registerAction2(
 
 		runEditorCommand(
 			_accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): void {
 			return TypeHierarchyController.get(editor)?.endTypeHierarchy();
 		}
-	},
+	}
 );

@@ -24,8 +24,8 @@ const KeybindingsEditorIcon = registerIcon(
 	Codicon.keyboard,
 	nls.localize(
 		"keybindingsEditorLabelIcon",
-		"Icon of the keybindings editor label.",
-	),
+		"Icon of the keybindings editor label."
+	)
 );
 
 export class KeybindingsEditorInput extends EditorInput {
@@ -36,10 +36,15 @@ export class KeybindingsEditorInput extends EditorInput {
 
 	readonly resource = undefined;
 
-	constructor(@IInstantiationService instantiationService: IInstantiationService) {
+	constructor(
+		@IInstantiationService instantiationService: IInstantiationService
+	) {
 		super();
 
-		this.keybindingsModel = instantiationService.createInstance(KeybindingsEditorModel, OS);
+		this.keybindingsModel = instantiationService.createInstance(
+			KeybindingsEditorModel,
+			OS
+		);
 	}
 
 	override get typeId(): string {

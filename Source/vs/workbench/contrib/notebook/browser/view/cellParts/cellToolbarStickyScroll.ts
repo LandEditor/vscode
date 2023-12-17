@@ -14,7 +14,7 @@ export function registerCellToolbarStickyScroll(
 	notebookEditor: INotebookEditor,
 	cell: ICellViewModel,
 	element: HTMLElement,
-	opts?: { extraOffset?: number; min?: number },
+	opts?: { extraOffset?: number; min?: number }
 ): IDisposable {
 	const extraOffset = opts?.extraOffset ?? 0;
 	const min = opts?.min ?? 0;
@@ -34,7 +34,7 @@ export function registerCellToolbarStickyScroll(
 			const top =
 				maxTop > 20
 					? // Don't move the run button if it can only move a very short distance
-					  clamp(min, diff, maxTop)
+						clamp(min, diff, maxTop)
 					: min;
 			element.style.top = `${top}px`;
 		}

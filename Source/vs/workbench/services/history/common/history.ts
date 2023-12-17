@@ -105,7 +105,7 @@ export interface IHistoryService {
 	 */
 	getLastActiveWorkspaceRoot(
 		schemeFilter?: string,
-		authorityFilter?: string,
+		authorityFilter?: string
 	): URI | undefined;
 
 	/**
@@ -115,7 +115,7 @@ export interface IHistoryService {
 	 */
 	getLastActiveFile(
 		schemeFilter: string,
-		authorityFilter?: string,
+		authorityFilter?: string
 	): URI | undefined;
 
 	/**

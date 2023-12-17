@@ -25,8 +25,10 @@ export class CellChatPart extends CellContentPart {
 	constructor(
 		private readonly _notebookEditor: INotebookEditorDelegate,
 		private readonly _partContainer: HTMLElement,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -34,7 +36,7 @@ export class CellChatPart extends CellContentPart {
 	override didRenderCell(element: ICellViewModel): void {
 		this._controller?.dispose();
 		const enabled = this._configurationService.getValue<boolean>(
-			NotebookSetting.cellChat,
+			NotebookSetting.cellChat
 		);
 		if (enabled) {
 			this._controller = this._instantiationService.createInstance(
@@ -42,7 +44,7 @@ export class CellChatPart extends CellContentPart {
 				this._notebookEditor,
 				this,
 				element,
-				this._partContainer,
+				this._partContainer
 			);
 		}
 

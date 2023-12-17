@@ -9,7 +9,7 @@ realdir() {
 		SOURCE=$(readlink "$SOURCE")
 		[[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE
 	done
-	echo "$(cd -P "$(dirname "$SOURCE")" >/dev/null 2>&1 && pwd)"
+	echo "$(cd -P "$(dirname "$SOURCE")" > /dev/null 2>&1 && pwd)"
 }
 
 ROOT="$(dirname "$(dirname "$(realdir "$0")")")"

@@ -32,7 +32,7 @@ export class MinimapTokensColorTracker extends Disposable {
 				if (e.changedColorMap) {
 					this._updateColorMap();
 				}
-			}),
+			})
 		);
 	}
 
@@ -51,7 +51,7 @@ export class MinimapTokensColorTracker extends Disposable {
 				source.r,
 				source.g,
 				source.b,
-				Math.round(source.a * 255),
+				Math.round(source.a * 255)
 			);
 		}
 		const backgroundLuminosity =

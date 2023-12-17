@@ -13,16 +13,17 @@ import {
 import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 export class ListContext implements IWorkbenchContribution {
-	constructor(
-		@IContextKeyService contextKeyService: IContextKeyService
-	) {
-		contextKeyService.createKey<boolean>('listSupportsTypeNavigation', true);
+	constructor(@IContextKeyService contextKeyService: IContextKeyService) {
+		contextKeyService.createKey<boolean>(
+			"listSupportsTypeNavigation",
+			true
+		);
 
 		// @deprecated in favor of listSupportsTypeNavigation
-		contextKeyService.createKey('listSupportsKeyboardNavigation', true);
+		contextKeyService.createKey("listSupportsKeyboardNavigation", true);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(ListContext, LifecyclePhase.Starting);

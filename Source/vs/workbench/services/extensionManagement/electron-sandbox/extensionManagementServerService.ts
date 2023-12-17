@@ -42,16 +42,18 @@ export class ExtensionManagementServerService
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@ILabelService labelService: ILabelService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 		const localExtensionManagementService = this._register(
 			instantiationService.createInstance(
 				NativeExtensionManagementService,
-				sharedProcessService.getChannel("extensions"),
-			),
+				sharedProcessService.getChannel("extensions")
+			)
 		);
 		this.localExtensionManagementServer = {
 			extensionManagementService: localExtensionManagementService,
@@ -64,7 +66,7 @@ export class ExtensionManagementServerService
 				instantiationService.createInstance(
 					NativeRemoteExtensionManagementService,
 					remoteAgentConnection.getChannel<IChannel>("extensions"),
-					this.localExtensionManagementServer,
+					this.localExtensionManagementServer
 				);
 			this.remoteExtensionManagementServer = {
 				id: "remote",
@@ -73,7 +75,7 @@ export class ExtensionManagementServerService
 					return (
 						labelService.getHostLabel(
 							Schemas.vscodeRemote,
-							remoteAgentConnection!.remoteAuthority,
+							remoteAgentConnection!.remoteAuthority
 						) || localize("remote", "Remote")
 					);
 				},
@@ -82,7 +84,7 @@ export class ExtensionManagementServerService
 	}
 
 	getExtensionManagementServer(
-		extension: IExtension,
+		extension: IExtension
 	): IExtensionManagementServer {
 		if (extension.location.scheme === Schemas.file) {
 			return this.localExtensionManagementServer;
@@ -97,7 +99,7 @@ export class ExtensionManagementServerService
 	}
 
 	getExtensionInstallLocation(
-		extension: IExtension,
+		extension: IExtension
 	): ExtensionInstallLocation | null {
 		const server = this.getExtensionManagementServer(extension);
 		return server === this.remoteExtensionManagementServer
@@ -109,5 +111,5 @@ export class ExtensionManagementServerService
 registerSingleton(
 	IExtensionManagementServerService,
 	ExtensionManagementServerService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

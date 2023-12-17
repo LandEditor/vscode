@@ -18,7 +18,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 
 	provideSelectionRanges(
 		model: ITextModel,
-		positions: Position[],
+		positions: Position[]
 	): SelectionRange[][] {
 		const result: SelectionRange[][] = [];
 		for (const position of positions) {
@@ -37,7 +37,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	private _addInWordRanges(
 		bucket: SelectionRange[],
 		model: ITextModel,
-		pos: Position,
+		pos: Position
 	): void {
 		const obj = model.getWordAtPosition(pos);
 		if (!obj) {
@@ -86,7 +86,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 					pos.lineNumber,
 					startColumn + start,
 					pos.lineNumber,
-					startColumn + end,
+					startColumn + end
 				),
 			});
 		}
@@ -95,7 +95,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	private _addWordRanges(
 		bucket: SelectionRange[],
 		model: ITextModel,
-		pos: Position,
+		pos: Position
 	): void {
 		const word = model.getWordAtPosition(pos);
 		if (word) {
@@ -104,7 +104,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 					pos.lineNumber,
 					word.startColumn,
 					pos.lineNumber,
-					word.endColumn,
+					word.endColumn
 				),
 			});
 		}
@@ -113,7 +113,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 	private _addWhitespaceLine(
 		bucket: SelectionRange[],
 		model: ITextModel,
-		pos: Position,
+		pos: Position
 	): void {
 		if (
 			model.getLineLength(pos.lineNumber) > 0 &&
@@ -125,7 +125,7 @@ export class WordSelectionRangeProvider implements SelectionRangeProvider {
 					pos.lineNumber,
 					1,
 					pos.lineNumber,
-					model.getLineMaxColumn(pos.lineNumber),
+					model.getLineMaxColumn(pos.lineNumber)
 				),
 			});
 		}

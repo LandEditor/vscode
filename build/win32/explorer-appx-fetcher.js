@@ -15,7 +15,7 @@ const d = debug("explorer-appx-fetcher");
 async function downloadExplorerAppx(
 	outDir,
 	quality = "stable",
-	targetArch = "x64",
+	targetArch = "x64"
 ) {
 	const fileNamePrefix = quality === "insider" ? "code_insiders" : "code";
 	const fileName = `${fileNamePrefix}_explorer_${targetArch}.zip`;
@@ -47,7 +47,7 @@ async function main(outputDir) {
 		throw new Error("Required build env not set");
 	}
 	const product = JSON.parse(
-		fs.readFileSync(path.join(root, "product.json"), "utf8"),
+		fs.readFileSync(path.join(root, "product.json"), "utf8")
 	);
 	await downloadExplorerAppx(outputDir, product.quality, arch);
 }

@@ -56,13 +56,13 @@ export type MenubarMenuItem =
 	| IMenubarMenuRecentItemAction;
 
 export function isMenubarMenuItemSubmenu(
-	menuItem: MenubarMenuItem,
+	menuItem: MenubarMenuItem
 ): menuItem is IMenubarMenuItemSubmenu {
 	return (<IMenubarMenuItemSubmenu>menuItem).submenu !== undefined;
 }
 
 export function isMenubarMenuItemSeparator(
-	menuItem: MenubarMenuItem,
+	menuItem: MenubarMenuItem
 ): menuItem is IMenubarMenuItemSeparator {
 	return (
 		(<IMenubarMenuItemSeparator>menuItem).id === "vscode.menubar.separator"
@@ -70,13 +70,13 @@ export function isMenubarMenuItemSeparator(
 }
 
 export function isMenubarMenuItemRecentAction(
-	menuItem: MenubarMenuItem,
+	menuItem: MenubarMenuItem
 ): menuItem is IMenubarMenuRecentItemAction {
 	return (<IMenubarMenuRecentItemAction>menuItem).uri !== undefined;
 }
 
 export function isMenubarMenuItemAction(
-	menuItem: MenubarMenuItem,
+	menuItem: MenubarMenuItem
 ): menuItem is IMenubarMenuItemAction {
 	return (
 		!isMenubarMenuItemSubmenu(menuItem) &&

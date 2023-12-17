@@ -48,8 +48,9 @@ class ImplictKernelSelector implements IDisposable {
 		notebook: NotebookTextModel,
 		suggested: INotebookKernel,
 		@INotebookKernelService notebookKernelService: INotebookKernelService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@ILogService logService: ILogService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@ILogService logService: ILogService
 	) {
 		const disposables = new DisposableStore();
 		this.dispose = disposables.dispose.bind(disposables);
@@ -71,13 +72,13 @@ class ImplictKernelSelector implements IDisposable {
 						case NotebookCellsChangeType.ChangeCellLanguage:
 							logService.trace(
 								"IMPLICIT kernel selection because of change event",
-								event.kind,
+								event.kind
 							);
 							selectKernel();
 							break;
 					}
 				}
-			}),
+			})
 		);
 
 		// IMPLICITLY select a suggested kernel when users start to hover. This should
@@ -92,13 +93,13 @@ class ImplictKernelSelector implements IDisposable {
 				{
 					provideHover() {
 						logService.trace(
-							"IMPLICIT kernel selection because of hover",
+							"IMPLICIT kernel selection because of hover"
 						);
 						selectKernel();
 						return undefined;
 					},
-				},
-			),
+				}
+			)
 		);
 	}
 }
@@ -109,19 +110,26 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
-		this._register(this._editorService.onDidActiveEditorChange(() => this._updateStatusbar()));
+		this._register(
+			this._editorService.onDidActiveEditorChange(() =>
+				this._updateStatusbar()
+			)
+		);
 	}
 
 	private _updateStatusbar() {
 		this._editorDisposables.clear();
 
 		const activeEditor = getNotebookEditorFromEditorPane(
-			this._editorService.activeEditorPane,
+			this._editorService.activeEditorPane
 		);
 		if (!activeEditor) {
 			// not a notebook -> clean-up, done
@@ -147,23 +155,23 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 		};
 
 		this._editorDisposables.add(
-			this._notebookKernelService.onDidAddKernel(updateStatus),
+			this._notebookKernelService.onDidAddKernel(updateStatus)
 		);
 		this._editorDisposables.add(
 			this._notebookKernelService.onDidChangeSelectedNotebooks(
-				updateStatus,
-			),
+				updateStatus
+			)
 		);
 		this._editorDisposables.add(
 			this._notebookKernelService.onDidChangeNotebookAffinity(
-				updateStatus,
-			),
+				updateStatus
+			)
 		);
 		this._editorDisposables.add(
-			activeEditor.onDidChangeModel(updateStatus),
+			activeEditor.onDidChangeModel(updateStatus)
 		);
 		this._editorDisposables.add(
-			activeEditor.notebookOptions.onDidChangeOptions(updateStatus),
+			activeEditor.notebookOptions.onDidChangeOptions(updateStatus)
 		);
 		updateStatus();
 	}
@@ -196,8 +204,8 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 					this._instantiationService.createInstance(
 						ImplictKernelSelector,
 						notebook,
-						kernel,
-					),
+						kernel
+					)
 				);
 			}
 			const tooltip = kernel.description ?? kernel.detail ?? kernel.label;
@@ -206,7 +214,7 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 					{
 						name: nls.localize(
 							"notebook.info",
-							"Notebook Kernel Info",
+							"Notebook Kernel Info"
 						),
 						text: `$(notebook-kernel-select) ${kernel.label}`,
 						ariaLabel: kernel.label,
@@ -214,19 +222,19 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 							? nls.localize(
 									"tooltop",
 									"{0} (suggestion)",
-									tooltip,
-							  )
+									tooltip
+								)
 							: tooltip,
 						command: SELECT_KERNEL_ID,
 					},
 					SELECT_KERNEL_ID,
 					StatusbarAlignment.RIGHT,
-					10,
-				),
+					10
+				)
 			);
 
 			this._kernelInfoElement.add(
-				kernel.onDidChange(() => this._showKernelStatus(notebook)),
+				kernel.onDidChange(() => this._showKernelStatus(notebook))
 			);
 		} else {
 			// multiple kernels -> show selection hint
@@ -235,30 +243,30 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 					{
 						name: nls.localize(
 							"notebook.select",
-							"Notebook Kernel Selection",
+							"Notebook Kernel Selection"
 						),
 						text: nls.localize(
 							"kernel.select.label",
-							"Select Kernel",
+							"Select Kernel"
 						),
 						ariaLabel: nls.localize(
 							"kernel.select.label",
-							"Select Kernel",
+							"Select Kernel"
 						),
 						command: SELECT_KERNEL_ID,
 						kind: "prominent",
 					},
 					SELECT_KERNEL_ID,
 					StatusbarAlignment.RIGHT,
-					10,
-				),
+					10
+				)
 			);
 		}
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(KernelStatus, LifecyclePhase.Restored);
 
 export class ActiveCellStatus
@@ -267,32 +275,34 @@ export class ActiveCellStatus
 {
 	private readonly _itemDisposables = this._register(new DisposableStore());
 	private readonly _accessor = this._register(
-		new MutableDisposable<IStatusbarEntryAccessor>(),
+		new MutableDisposable<IStatusbarEntryAccessor>()
 	);
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
+		@IStatusbarService private readonly _statusbarService: IStatusbarService
 	) {
 		super();
-		this._register(this._editorService.onDidActiveEditorChange(() => this._update()));
+		this._register(
+			this._editorService.onDidActiveEditorChange(() => this._update())
+		);
 	}
 
 	private _update() {
 		this._itemDisposables.clear();
 		const activeEditor = getNotebookEditorFromEditorPane(
-			this._editorService.activeEditorPane,
+			this._editorService.activeEditorPane
 		);
 		if (activeEditor) {
 			this._itemDisposables.add(
 				activeEditor.onDidChangeSelection(() =>
-					this._show(activeEditor),
-				),
+					this._show(activeEditor)
+				)
 			);
 			this._itemDisposables.add(
 				activeEditor.onDidChangeActiveCell(() =>
-					this._show(activeEditor),
-				),
+					this._show(activeEditor)
+				)
 			);
 			this._show(activeEditor);
 		} else {
@@ -315,7 +325,7 @@ export class ActiveCellStatus
 		const entry: IStatusbarEntry = {
 			name: nls.localize(
 				"notebook.activeCellStatusName",
-				"Notebook Editor Selections",
+				"Notebook Editor Selections"
 			),
 			text: newText,
 			ariaLabel: newText,
@@ -326,7 +336,7 @@ export class ActiveCellStatus
 				entry,
 				"notebook.activeCellStatus",
 				StatusbarAlignment.RIGHT,
-				100,
+				100
 			);
 		} else {
 			this._accessor.value.update(entry);
@@ -353,17 +363,17 @@ export class ActiveCellStatus
 					"notebook.multiActiveCellIndicator",
 					"Cell {0} ({1} selected)",
 					idxFocused,
-					numSelected,
-			  )
+					numSelected
+				)
 			: nls.localize(
 					"notebook.singleActiveCellIndicator",
 					"Cell {0} of {1}",
 					idxFocused,
-					totalCells,
-			  );
+					totalCells
+				);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(ActiveCellStatus, LifecyclePhase.Restored);

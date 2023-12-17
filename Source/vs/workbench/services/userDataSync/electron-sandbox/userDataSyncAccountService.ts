@@ -39,21 +39,27 @@ export class UserDataSyncAccountService
 		this._onDidChangeAccount.event;
 
 	constructor(
-		@ISharedProcessService sharedProcessService: ISharedProcessService,
+		@ISharedProcessService sharedProcessService: ISharedProcessService
 	) {
 		super();
-		this.channel = sharedProcessService.getChannel('userDataSyncAccount');
-		this.channel.call<IUserDataSyncAccount | undefined>('_getInitialData').then(account => {
-			this._account = account;
-			this._register(this.channel.listen<IUserDataSyncAccount | undefined>('onDidChangeAccount')(account => {
+		this.channel = sharedProcessService.getChannel("userDataSyncAccount");
+		this.channel
+			.call<IUserDataSyncAccount | undefined>("_getInitialData")
+			.then((account) => {
 				this._account = account;
-				this._onDidChangeAccount.fire(account);
-			}));
-		});
+				this._register(
+					this.channel.listen<IUserDataSyncAccount | undefined>(
+						"onDidChangeAccount"
+					)((account) => {
+						this._account = account;
+						this._onDidChangeAccount.fire(account);
+					})
+				);
+			});
 	}
 
 	updateAccount(
-		account: IUserDataSyncAccount | undefined,
+		account: IUserDataSyncAccount | undefined
 	): Promise<undefined> {
 		return this.channel.call("updateAccount", account);
 	}
@@ -62,5 +68,5 @@ export class UserDataSyncAccountService
 registerSingleton(
 	IUserDataSyncAccountService,
 	UserDataSyncAccountService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -24,7 +24,7 @@ interface IColorExtensionPoint {
 }
 
 const colorRegistry: IColorRegistry = Registry.as<IColorRegistry>(
-	ColorRegistryExtensions.ColorContribution,
+	ColorRegistryExtensions.ColorContribution
 );
 
 const colorReferenceSchema = colorRegistry.getColorReferenceSchema();
@@ -37,7 +37,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: {
 		description: nls.localize(
 			"contributes.color",
-			"Contributes extension defined themable colors",
+			"Contributes extension defined themable colors"
 		),
 		type: "array",
 		items: {
@@ -47,19 +47,19 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 					type: "string",
 					description: nls.localize(
 						"contributes.color.id",
-						"The identifier of the themable color",
+						"The identifier of the themable color"
 					),
 					pattern: colorIdPattern,
 					patternErrorMessage: nls.localize(
 						"contributes.color.id.format",
-						"Identifiers must only contain letters, digits and dots and can not start with a dot",
+						"Identifiers must only contain letters, digits and dots and can not start with a dot"
 					),
 				},
 				description: {
 					type: "string",
 					description: nls.localize(
 						"contributes.color.description",
-						"The description of the themable color",
+						"The description of the themable color"
 					),
 				},
 				defaults: {
@@ -68,7 +68,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 						light: {
 							description: nls.localize(
 								"contributes.defaults.light",
-								"The default color for light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.",
+								"The default color for light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default."
 							),
 							type: "string",
 							anyOf: [
@@ -79,7 +79,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 						dark: {
 							description: nls.localize(
 								"contributes.defaults.dark",
-								"The default color for dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default.",
+								"The default color for dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default."
 							),
 							type: "string",
 							anyOf: [
@@ -90,7 +90,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 						highContrast: {
 							description: nls.localize(
 								"contributes.defaults.highContrast",
-								"The default color for high contrast dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `dark` color is used as default for high contrast dark themes.",
+								"The default color for high contrast dark themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `dark` color is used as default for high contrast dark themes."
 							),
 							type: "string",
 							anyOf: [
@@ -101,7 +101,7 @@ const configurationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 						highContrastLight: {
 							description: nls.localize(
 								"contributes.defaults.highContrastLight",
-								"The default color for high contrast light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `light` color is used as default for high contrast light themes.",
+								"The default color for high contrast light themes. Either a color value in hex (#RRGGBB[AA]) or the identifier of a themable color which provides the default. If not provided, the `light` color is used as default for high contrast light themes."
 							),
 							type: "string",
 							anyOf: [
@@ -128,8 +128,8 @@ export class ColorExtensionPoint {
 					collector.error(
 						nls.localize(
 							"invalid.colorConfiguration",
-							"'configuration.colors' must be a array",
-						),
+							"'configuration.colors' must be a array"
+						)
 					);
 					return;
 				}
@@ -145,8 +145,8 @@ export class ColorExtensionPoint {
 						nls.localize(
 							"invalid.default.colorType",
 							"{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.",
-							name,
-						),
+							name
+						)
 					);
 					return Color.red;
 				};
@@ -159,8 +159,8 @@ export class ColorExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.id",
-								"'configuration.colors.id' must be defined and can not be empty",
-							),
+								"'configuration.colors.id' must be defined and can not be empty"
+							)
 						);
 						return;
 					}
@@ -168,8 +168,8 @@ export class ColorExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.id.format",
-								"'configuration.colors.id' must only contain letters, digits and dots and can not start with a dot",
-							),
+								"'configuration.colors.id' must only contain letters, digits and dots and can not start with a dot"
+							)
 						);
 						return;
 					}
@@ -180,8 +180,8 @@ export class ColorExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.description",
-								"'configuration.colors.description' must be defined and can not be empty",
-							),
+								"'configuration.colors.description' must be defined and can not be empty"
+							)
 						);
 						return;
 					}
@@ -195,8 +195,8 @@ export class ColorExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.defaults",
-								"'configuration.colors.defaults' must be defined and must contain 'light' and 'dark'",
-							),
+								"'configuration.colors.defaults' must be defined and must contain 'light' and 'dark'"
+							)
 						);
 						return;
 					}
@@ -207,8 +207,8 @@ export class ColorExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.defaults.highContrast",
-								"If defined, 'configuration.colors.defaults.highContrast' must be a string.",
-							),
+								"If defined, 'configuration.colors.defaults.highContrast' must be a string."
+							)
 						);
 						return;
 					}
@@ -219,8 +219,8 @@ export class ColorExtensionPoint {
 						collector.error(
 							nls.localize(
 								"invalid.defaults.highContrastLight",
-								"If defined, 'configuration.colors.defaults.highContrastLight' must be a string.",
-							),
+								"If defined, 'configuration.colors.defaults.highContrastLight' must be a string."
+							)
 						);
 						return;
 					}
@@ -230,22 +230,22 @@ export class ColorExtensionPoint {
 						{
 							light: parseColorValue(
 								defaults.light,
-								"configuration.colors.defaults.light",
+								"configuration.colors.defaults.light"
 							),
 							dark: parseColorValue(
 								defaults.dark,
-								"configuration.colors.defaults.dark",
+								"configuration.colors.defaults.dark"
 							),
 							hcDark: parseColorValue(
 								defaults.highContrast ?? defaults.dark,
-								"configuration.colors.defaults.highContrast",
+								"configuration.colors.defaults.highContrast"
 							),
 							hcLight: parseColorValue(
 								defaults.highContrastLight ?? defaults.light,
-								"configuration.colors.defaults.highContrastLight",
+								"configuration.colors.defaults.highContrastLight"
 							),
 						},
-						colorContribution.description,
+						colorContribution.description
 					);
 				}
 			}

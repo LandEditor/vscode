@@ -53,7 +53,7 @@ export class Link implements ILink {
 
 		if (typeof this._provider.resolveLink === "function") {
 			return Promise.resolve(
-				this._provider.resolveLink(this._link, token),
+				this._provider.resolveLink(this._link, token)
 			).then((value) => {
 				this._link = value || this._link;
 				if (this._link.url) {
@@ -107,6 +107,7 @@ export class LinksList {
 				oldLen = oldLinks.length,
 				newLen = newLinks.length;
 			oldIndex < oldLen && newIndex < newLen;
+
 		) {
 			const oldLink = oldLinks[oldIndex];
 			const newLink = newLinks[newIndex];
@@ -119,7 +120,7 @@ export class LinksList {
 
 			const comparisonResult = Range.compareRangesUsingStarts(
 				oldLink.range,
-				newLink.range,
+				newLink.range
 			);
 
 			if (comparisonResult < 0) {
@@ -147,7 +148,7 @@ export class LinksList {
 export function getLinks(
 	providers: LanguageFeatureRegistry<LinkProvider>,
 	model: ITextModel,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<LinksList> {
 	const lists: [ILinksList, LinkProvider][] = [];
 
@@ -162,7 +163,7 @@ export function getLinks(
 						lists[i] = [result, provider];
 					}
 				},
-				onUnexpectedExternalError,
+				onUnexpectedExternalError
 			);
 		});
 
@@ -194,7 +195,7 @@ CommandsRegistry.registerCommand(
 		const list = await getLinks(
 			linkProvider,
 			model,
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		if (!list) {
 			return [];
@@ -208,5 +209,5 @@ CommandsRegistry.registerCommand(
 		const result = list.links.slice(0);
 		list.dispose();
 		return result;
-	},
+	}
 );

@@ -66,7 +66,8 @@ export abstract class BaseFileWorkingCopyManager<
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
 		@ILogService protected readonly logService: ILogService,
-		@IWorkingCopyBackupService protected readonly workingCopyBackupService: IWorkingCopyBackupService
+		@IWorkingCopyBackupService
+		protected readonly workingCopyBackupService: IWorkingCopyBackupService
 	) {
 		super();
 	}
@@ -88,7 +89,7 @@ export abstract class BaseFileWorkingCopyManager<
 		this.mapResourceToDisposeListener.get(resource)?.dispose();
 		this.mapResourceToDisposeListener.set(
 			resource,
-			workingCopy.onWillDispose(() => this.remove(resource)),
+			workingCopy.onWillDispose(() => this.remove(resource))
 		);
 
 		// Signal creation event
@@ -147,7 +148,7 @@ export abstract class BaseFileWorkingCopyManager<
 					if (workingCopy.isDirty()) {
 						await this.saveWithFallback(workingCopy);
 					}
-				}),
+				})
 			);
 		} catch (error) {
 			this.logService.error(error);
@@ -177,7 +178,7 @@ export abstract class BaseFileWorkingCopyManager<
 				await this.fileService.writeFile(
 					workingCopy.resource,
 					backup.value,
-					{ unlock: true },
+					{ unlock: true }
 				);
 			}
 		}

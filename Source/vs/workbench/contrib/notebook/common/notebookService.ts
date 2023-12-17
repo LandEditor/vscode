@@ -41,7 +41,7 @@ export interface INotebookContentProvider {
 		uri: URI,
 		backupId: string | VSBuffer | undefined,
 		untitledDocumentData: VSBuffer | undefined,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<{ data: NotebookData; transientOptions: TransientOptions }>;
 	backup(uri: URI, token: CancellationToken): Promise<string | VSBuffer>;
 }
@@ -54,12 +54,12 @@ export interface INotebookSerializer {
 		uri: URI,
 		versionId: number,
 		options: IWriteFileOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IFileStatWithMetadata>;
 	searchInNotebooks(
 		textQuery: ITextQuery,
 		token: CancellationToken,
-		allPriorityInfo: Map<string, NotebookPriorityInfo[]>,
+		allPriorityInfo: Map<string, NotebookPriorityInfo[]>
 	): Promise<{
 		results: INotebookFileMatchNoModel<URI>[];
 		limitHit: boolean;
@@ -75,7 +75,7 @@ export class SimpleNotebookProviderInfo {
 	constructor(
 		readonly viewType: string,
 		readonly serializer: INotebookSerializer,
-		readonly extensionData: NotebookExtensionDescription,
+		readonly extensionData: NotebookExtensionDescription
 	) {}
 }
 
@@ -95,16 +95,16 @@ export interface INotebookService {
 	registerNotebookSerializer(
 		viewType: string,
 		extensionData: NotebookExtensionDescription,
-		serializer: INotebookSerializer,
+		serializer: INotebookSerializer
 	): IDisposable;
 	withNotebookDataProvider(
-		viewType: string,
+		viewType: string
 	): Promise<SimpleNotebookProviderInfo>;
 
 	getOutputMimeTypeInfo(
 		textModel: NotebookTextModel,
 		kernelProvides: readonly string[] | undefined,
-		output: IOutputDto,
+		output: IOutputDto
 	): readonly IOrderedMimeType[];
 
 	getViewTypeProvider(viewType: string): string | undefined;
@@ -118,7 +118,7 @@ export interface INotebookService {
 		viewType: string,
 		mimeType: string,
 		rendererId: string,
-		otherMimetypes: readonly string[],
+		otherMimetypes: readonly string[]
 	): void;
 	saveMimeDisplayOrder(target: ConfigurationTarget): void;
 
@@ -126,7 +126,7 @@ export interface INotebookService {
 		viewType: string,
 		uri: URI,
 		data: NotebookData,
-		transientOptions: TransientOptions,
+		transientOptions: TransientOptions
 	): NotebookTextModel;
 	getNotebookTextModel(uri: URI): NotebookTextModel | undefined;
 	getNotebookTextModels(): Iterable<NotebookTextModel>;
@@ -135,13 +135,13 @@ export interface INotebookService {
 	/**	Register a notebook type that we will handle. The notebook editor will be registered for notebook types contributed by extensions */
 	registerContributedNotebookType(
 		viewType: string,
-		data: INotebookContributionData,
+		data: INotebookContributionData
 	): IDisposable;
 	getContributedNotebookType(
-		viewType: string,
+		viewType: string
 	): NotebookProviderInfo | undefined;
 	getContributedNotebookTypes(
-		resource?: URI,
+		resource?: URI
 	): readonly NotebookProviderInfo[];
 	getNotebookProviderResourceRoots(): URI[];
 

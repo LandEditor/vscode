@@ -49,13 +49,13 @@ export interface ICodeEditorService {
 		key: string,
 		options: IDecorationRenderOptions,
 		parentTypeKey?: string,
-		editor?: ICodeEditor,
+		editor?: ICodeEditor
 	): void;
 	listDecorationTypes(): string[];
 	removeDecorationType(key: string): void;
 	resolveDecorationOptions(
 		typeKey: string,
-		writable: boolean,
+		writable: boolean
 	): IModelDecorationOptions;
 	resolveDecorationCSSRules(decorationTypeKey: string): CSSRuleList | null;
 
@@ -70,7 +70,7 @@ export interface ICodeEditorService {
 	openCodeEditor(
 		input: ITextResourceEditorInput,
 		source: ICodeEditor | null,
-		sideBySide?: boolean,
+		sideBySide?: boolean
 	): Promise<ICodeEditor | null>;
 	registerCodeEditorOpenHandler(handler: ICodeEditorOpenHandler): IDisposable;
 }
@@ -79,6 +79,6 @@ export interface ICodeEditorOpenHandler {
 	(
 		input: ITextResourceEditorInput,
 		source: ICodeEditor | null,
-		sideBySide?: boolean,
+		sideBySide?: boolean
 	): Promise<ICodeEditor | null>;
 }

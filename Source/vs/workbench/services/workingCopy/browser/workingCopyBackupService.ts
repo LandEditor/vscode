@@ -25,18 +25,19 @@ import { BrowserWorkingCopyBackupTracker } from "vs/workbench/services/workingCo
 export class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 	constructor(
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(
 			joinPath(
 				environmentService.userRoamingDataHome,
 				"Backups",
-				contextService.getWorkspace().id,
+				contextService.getWorkspace().id
 			),
 			fileService,
-			logService,
+			logService
 		);
 	}
 }
@@ -45,13 +46,13 @@ export class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 registerSingleton(
 	IWorkingCopyBackupService,
 	BrowserWorkingCopyBackupService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 
 // Register Backup Tracker
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	BrowserWorkingCopyBackupTracker,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );

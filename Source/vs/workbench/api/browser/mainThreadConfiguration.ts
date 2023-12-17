@@ -39,16 +39,25 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService
 	) {
-		const proxy = extHostContext.getProxy(ExtHostContext.ExtHostConfiguration);
+		const proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostConfiguration
+		);
 
 		proxy.$initializeConfiguration(this._getConfigurationData());
-		this._configurationListener = configurationService.onDidChangeConfiguration(e => {
-			proxy.$acceptConfigurationChanged(this._getConfigurationData(), e.change);
-		});
+		this._configurationListener =
+			configurationService.onDidChangeConfiguration((e) => {
+				proxy.$acceptConfigurationChanged(
+					this._getConfigurationData(),
+					e.change
+				);
+			});
 	}
 
 	private _getConfigurationData(): IConfigurationInitData {
@@ -75,7 +84,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides | undefined,
-		scopeToLanguage: boolean | undefined,
+		scopeToLanguage: boolean | undefined
 	): Promise<void> {
 		overrides = {
 			resource: overrides?.resource
@@ -88,7 +97,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 			key,
 			value,
 			overrides,
-			scopeToLanguage,
+			scopeToLanguage
 		);
 	}
 
@@ -96,7 +105,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		target: ConfigurationTarget | null,
 		key: string,
 		overrides: IConfigurationOverrides | undefined,
-		scopeToLanguage: boolean | undefined,
+		scopeToLanguage: boolean | undefined
 	): Promise<void> {
 		overrides = {
 			resource: overrides?.resource
@@ -109,7 +118,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 			key,
 			undefined,
 			overrides,
-			scopeToLanguage,
+			scopeToLanguage
 		);
 	}
 
@@ -118,7 +127,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		key: string,
 		value: any,
 		overrides: IConfigurationOverrides,
-		scopeToLanguage: boolean | undefined,
+		scopeToLanguage: boolean | undefined
 	): Promise<void> {
 		target =
 			target !== null && target !== undefined
@@ -126,7 +135,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				: this.deriveConfigurationTarget(key, overrides);
 		const configurationValue = this.configurationService.inspect(
 			key,
-			overrides,
+			overrides
 		);
 		switch (target) {
 			case ConfigurationTarget.MEMORY:
@@ -136,7 +145,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.memory?.override,
 					overrides,
-					scopeToLanguage,
+					scopeToLanguage
 				);
 			case ConfigurationTarget.WORKSPACE_FOLDER:
 				return this._updateValue(
@@ -145,7 +154,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.workspaceFolder?.override,
 					overrides,
-					scopeToLanguage,
+					scopeToLanguage
 				);
 			case ConfigurationTarget.WORKSPACE:
 				return this._updateValue(
@@ -154,7 +163,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.workspace?.override,
 					overrides,
-					scopeToLanguage,
+					scopeToLanguage
 				);
 			case ConfigurationTarget.USER_REMOTE:
 				return this._updateValue(
@@ -163,7 +172,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.userRemote?.override,
 					overrides,
-					scopeToLanguage,
+					scopeToLanguage
 				);
 			default:
 				return this._updateValue(
@@ -172,7 +181,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 					target,
 					configurationValue?.userLocal?.override,
 					overrides,
-					scopeToLanguage,
+					scopeToLanguage
 				);
 		}
 	}
@@ -183,29 +192,29 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 		configurationTarget: ConfigurationTarget,
 		overriddenValue: any | undefined,
 		overrides: IConfigurationOverrides,
-		scopeToLanguage: boolean | undefined,
+		scopeToLanguage: boolean | undefined
 	): Promise<void> {
 		overrides =
 			scopeToLanguage === true
 				? overrides
 				: scopeToLanguage === false
-				  ? { resource: overrides.resource }
-				  : overrides.overrideIdentifier &&
+					? { resource: overrides.resource }
+					: overrides.overrideIdentifier &&
 						  overriddenValue !== undefined
-					  ? overrides
-					  : { resource: overrides.resource };
+						? overrides
+						: { resource: overrides.resource };
 		return this.configurationService.updateValue(
 			key,
 			value,
 			overrides,
 			configurationTarget,
-			{ donotNotifyError: true },
+			{ donotNotifyError: true }
 		);
 	}
 
 	private deriveConfigurationTarget(
 		key: string,
-		overrides: IConfigurationOverrides,
+		overrides: IConfigurationOverrides
 	): ConfigurationTarget {
 		if (
 			overrides.resource &&
@@ -213,7 +222,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				WorkbenchState.WORKSPACE
 		) {
 			const configurationProperties = Registry.as<IConfigurationRegistry>(
-				ConfigurationExtensions.Configuration,
+				ConfigurationExtensions.Configuration
 			).getConfigurationProperties();
 			if (
 				configurationProperties[key] &&

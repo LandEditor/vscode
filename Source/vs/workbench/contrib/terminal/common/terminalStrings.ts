@@ -14,11 +14,11 @@ export const terminalStrings = {
 	doNotShowAgain: localize("doNotShowAgain", "Do Not Show Again"),
 	currentSessionCategory: localize(
 		"currentSessionCategory",
-		"current session",
+		"current session"
 	),
 	previousSessionCategory: localize(
 		"previousSessionCategory",
-		"previous session",
+		"previous session"
 	),
 	typeTask: localize("task", "Task"),
 	typeLocal: localize("local", "Local"),
@@ -33,7 +33,7 @@ export const terminalStrings = {
 	focusAndHideAccessibleBuffer: {
 		value: localize(
 			"workbench.action.terminal.focusAndHideAccessibleBuffer",
-			"Focus Terminal and Hide Accessible Buffer",
+			"Focus Terminal and Hide Accessible Buffer"
 		),
 		original: "Focus Terminal and Hide Accessible Buffer",
 	},
@@ -49,21 +49,21 @@ export const terminalStrings = {
 	moveToTerminalPanel: {
 		value: localize(
 			"workbench.action.terminal.moveToTerminalPanel",
-			"Move Terminal into Panel",
+			"Move Terminal into Panel"
 		),
 		original: "Move Terminal into Panel",
 	},
 	changeIcon: {
 		value: localize(
 			"workbench.action.terminal.changeIcon",
-			"Change Icon...",
+			"Change Icon..."
 		),
 		original: "Change Icon...",
 	},
 	changeColor: {
 		value: localize(
 			"workbench.action.terminal.changeColor",
-			"Change Color...",
+			"Change Color..."
 		),
 		original: "Change Color...",
 	},
@@ -83,7 +83,7 @@ export const terminalStrings = {
 	toggleSizeToContentWidth: {
 		value: localize(
 			"workbench.action.terminal.sizeToContentWidthInstance",
-			"Toggle Size to Content Width",
+			"Toggle Size to Content Width"
 		),
 		original: "Toggle Size to Content Width",
 	},
@@ -94,21 +94,21 @@ export const terminalStrings = {
 	sendSequence: {
 		value: localize(
 			"workbench.action.terminal.sendSequence",
-			"Send Custom Sequence To Terminal",
+			"Send Custom Sequence To Terminal"
 		),
 		original: "Send Custom Sequence To Terminal",
 	},
 	newWithCwd: {
 		value: localize(
 			"workbench.action.terminal.newWithCwd",
-			"Create New Terminal Starting in a Custom Working Directory",
+			"Create New Terminal Starting in a Custom Working Directory"
 		),
 		original: "Create New Terminal Starting in a Custom Working Directory",
 	},
 	renameWithArgs: {
 		value: localize(
 			"workbench.action.terminal.renameWithArg",
-			"Rename the Currently Active Terminal",
+			"Rename the Currently Active Terminal"
 		),
 		original: "Rename the Currently Active Terminal",
 	},
@@ -119,14 +119,14 @@ export const terminalStrings = {
 	scrollToPreviousCommand: {
 		value: localize(
 			"workbench.action.terminal.scrollToPreviousCommand",
-			"Scroll To Previous Command",
+			"Scroll To Previous Command"
 		),
 		original: "Scroll To Previous Command",
 	},
 	scrollToNextCommand: {
 		value: localize(
 			"workbench.action.terminal.scrollToNextCommand",
-			"Scroll To Next Command",
+			"Scroll To Next Command"
 		),
 		original: "Scroll To Next Command",
 	},

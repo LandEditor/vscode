@@ -18,7 +18,7 @@ const d = debug("libcxx-fetcher");
 export async function downloadLibcxxHeaders(
 	outDir: string,
 	electronVersion: string,
-	lib_name: string,
+	lib_name: string
 ): Promise<void> {
 	if (await fs.existsSync(path.resolve(outDir, "include"))) {
 		return;
@@ -41,7 +41,7 @@ export async function downloadLibcxxHeaders(
 export async function downloadLibcxxObjects(
 	outDir: string,
 	electronVersion: string,
-	targetArch: string = "x64",
+	targetArch: string = "x64"
 ): Promise<void> {
 	if (await fs.existsSync(path.resolve(outDir, "libc++.a"))) {
 		return;
@@ -69,7 +69,7 @@ async function main(): Promise<void> {
 		process.env["VSCODE_LIBCXXABI_HEADERS_DIR"];
 	const arch = process.env["VSCODE_ARCH"];
 	const packageJSON = JSON.parse(
-		fs.readFileSync(path.join(root, "package.json"), "utf8"),
+		fs.readFileSync(path.join(root, "package.json"), "utf8")
 	);
 	const electronVersion = packageJSON.devDependencies.electron;
 
@@ -85,12 +85,12 @@ async function main(): Promise<void> {
 	await downloadLibcxxHeaders(
 		libcxxHeadersDownloadDir,
 		electronVersion,
-		"libcxx",
+		"libcxx"
 	);
 	await downloadLibcxxHeaders(
 		libcxxabiHeadersDownloadDir,
 		electronVersion,
-		"libcxxabi",
+		"libcxxabi"
 	);
 }
 

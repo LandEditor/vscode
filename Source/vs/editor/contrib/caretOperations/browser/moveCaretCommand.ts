@@ -23,7 +23,7 @@ export class MoveCaretCommand implements ICommand {
 
 	public getEditOperations(
 		model: ITextModel,
-		builder: IEditOperationBuilder,
+		builder: IEditOperationBuilder
 	): void {
 		if (
 			this._selection.startLineNumber !== this._selection.endLineNumber ||
@@ -49,47 +49,47 @@ export class MoveCaretCommand implements ICommand {
 				lineNumber,
 				startColumn - 1,
 				lineNumber,
-				startColumn,
+				startColumn
 			);
 			const charBefore = model.getValueInRange(rangeBefore);
 			builder.addEditOperation(rangeBefore, null);
 			builder.addEditOperation(
 				new Range(lineNumber, endColumn, lineNumber, endColumn),
-				charBefore,
+				charBefore
 			);
 		} else {
 			const rangeAfter = new Range(
 				lineNumber,
 				endColumn,
 				lineNumber,
-				endColumn + 1,
+				endColumn + 1
 			);
 			const charAfter = model.getValueInRange(rangeAfter);
 			builder.addEditOperation(rangeAfter, null);
 			builder.addEditOperation(
 				new Range(lineNumber, startColumn, lineNumber, startColumn),
-				charAfter,
+				charAfter
 			);
 		}
 	}
 
 	public computeCursorState(
 		model: ITextModel,
-		helper: ICursorStateComputerData,
+		helper: ICursorStateComputerData
 	): Selection {
 		if (this._isMovingLeft) {
 			return new Selection(
 				this._selection.startLineNumber,
 				this._selection.startColumn - 1,
 				this._selection.endLineNumber,
-				this._selection.endColumn - 1,
+				this._selection.endColumn - 1
 			);
 		} else {
 			return new Selection(
 				this._selection.startLineNumber,
 				this._selection.startColumn + 1,
 				this._selection.endLineNumber,
-				this._selection.endColumn + 1,
+				this._selection.endColumn + 1
 			);
 		}
 	}

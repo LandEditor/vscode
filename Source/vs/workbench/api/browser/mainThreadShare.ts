@@ -41,7 +41,7 @@ export class MainThreadShare implements MainThreadShareShape {
 		selector: IDocumentFilterDto[],
 		id: string,
 		label: string,
-		priority: number,
+		priority: number
 	): void {
 		const provider: IShareProvider = {
 			id,
@@ -52,7 +52,7 @@ export class MainThreadShare implements MainThreadShareShape {
 				const result = await this.proxy.$provideShare(
 					handle,
 					item,
-					new CancellationTokenSource().token,
+					new CancellationTokenSource().token
 				);
 				return typeof result === "string" ? result : URI.revive(result);
 			},

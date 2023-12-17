@@ -25,7 +25,7 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 		providers: string[],
 		selected: string,
 		@IContextViewService contextViewService: IContextViewService,
-		@IThemeService themeService: IThemeService,
+		@IThemeService themeService: IThemeService
 	) {
 		const items = providers.map((provider) => ({
 			provider,
@@ -50,21 +50,21 @@ export class SwitchQuickDiffViewItem extends SelectActionViewItem<IQuickDiffSele
 			startingSelection,
 			contextViewService,
 			styles,
-			{ ariaLabel: nls.localize("remotes", "Switch quick diff base") },
+			{ ariaLabel: nls.localize("remotes", "Switch quick diff base") }
 		);
 		this.optionsItems = items;
 	}
 
 	public setSelection(provider: string) {
 		const index = this.optionsItems.findIndex(
-			(item) => item.provider === provider,
+			(item) => item.provider === provider
 		);
 		this.select(index);
 	}
 
 	protected override getActionContext(
 		_: string,
-		index: number,
+		index: number
 	): IQuickDiffSelectItem {
 		return this.optionsItems[index];
 	}
@@ -79,17 +79,17 @@ export class SwitchQuickDiffBaseAction extends Action {
 	public static readonly ID = "quickDiff.base.switch";
 	public static readonly LABEL = nls.localize(
 		"quickDiff.base.switch",
-		"Switch Quick Diff Base",
+		"Switch Quick Diff Base"
 	);
 
 	constructor(
-		private readonly callback: (event?: IQuickDiffSelectItem) => void,
+		private readonly callback: (event?: IQuickDiffSelectItem) => void
 	) {
 		super(
 			SwitchQuickDiffBaseAction.ID,
 			SwitchQuickDiffBaseAction.LABEL,
 			undefined,
-			undefined,
+			undefined
 		);
 	}
 

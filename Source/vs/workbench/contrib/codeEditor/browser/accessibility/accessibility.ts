@@ -25,7 +25,7 @@ class ToggleScreenReaderMode extends Action2 {
 			title: {
 				value: nls.localize(
 					"toggleScreenReaderMode",
-					"Toggle Screen Reader Accessibility Mode",
+					"Toggle Screen Reader Accessibility Mode"
 				),
 				original: "Toggle Screen Reader Accessibility Mode",
 			},
@@ -53,12 +53,12 @@ class ToggleScreenReaderMode extends Action2 {
 		configurationService.updateValue(
 			"editor.accessibilitySupport",
 			isScreenReaderOptimized ? "off" : "on",
-			ConfigurationTarget.USER,
+			ConfigurationTarget.USER
 		);
 		alert(
 			isScreenReaderOptimized
 				? AccessibilityHelpNLS.screenReaderModeDisabled
-				: AccessibilityHelpNLS.screenReaderModeEnabled,
+				: AccessibilityHelpNLS.screenReaderModeEnabled
 		);
 	}
 }

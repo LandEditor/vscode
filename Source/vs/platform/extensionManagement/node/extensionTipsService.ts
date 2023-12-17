@@ -15,14 +15,17 @@ import { AbstractNativeExtensionTipsService } from "vs/platform/extensionManagem
 
 export class ExtensionTipsService extends AbstractNativeExtensionTipsService {
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
 		@IStorageService storageService: IStorageService,
 		@INativeHostService nativeHostService: INativeHostService,
-		@IExtensionRecommendationNotificationService extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
+		@IExtensionRecommendationNotificationService
+		extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
 		@IFileService fileService: IFileService,
-		@IProductService productService: IProductService,
+		@IProductService productService: IProductService
 	) {
 		super(
 			environmentService.userHome,
@@ -32,7 +35,7 @@ export class ExtensionTipsService extends AbstractNativeExtensionTipsService {
 			storageService,
 			extensionRecommendationNotificationService,
 			fileService,
-			productService,
+			productService
 		);
 	}
 }

@@ -14,5 +14,5 @@ import { LocalHistoryTimeline } from "vs/workbench/contrib/localHistory/browser/
 
 // Register Local History Timeline
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(LocalHistoryTimeline, LifecyclePhase.Ready);

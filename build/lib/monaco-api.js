@@ -120,7 +120,7 @@ function isStatic(ts, member) {
 	if (ts.canHaveModifiers(member)) {
 		return hasModifier(
 			ts.getModifiers(member),
-			ts.SyntaxKind.StaticKeyword,
+			ts.SyntaxKind.StaticKeyword
 		);
 	}
 	return false;
@@ -137,7 +137,7 @@ function getMassagedTopLevelDeclarationText(
 	declaration,
 	importName,
 	usage,
-	enums,
+	enums
 ) {
 	let result = getNodeText(sourceFile, declaration);
 	if (
@@ -178,7 +178,7 @@ function getMassagedTopLevelDeclarationText(
 						usage.push(`a = ${staticTypeName}${memberAccess};`);
 					} else {
 						usage.push(
-							`a = (<${instanceTypeName}>b)${memberAccess};`,
+							`a = (<${instanceTypeName}>b)${memberAccess};`
 						);
 					}
 				}
@@ -219,13 +219,13 @@ function format(ts, text, endl) {
 		"file.ts",
 		text,
 		ts.ScriptTarget.Latest,
-		/*setParentPointers*/ true,
+		/*setParentPointers*/ true
 	);
 	// Get the formatting edits on the input sources
 	const edits = ts.formatting.formatDocument(
 		sourceFile,
 		getRuleProvider(tsfmt),
-		tsfmt,
+		tsfmt
 	);
 	// Apply the edits on the input code
 	return applyEdits(text, edits);
@@ -356,7 +356,7 @@ function createReplacer(data) {
 		const replaceStr = pieces[1];
 		findStr = findStr.replace(
 			/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g,
-			"\\$&",
+			"\\$&"
 		);
 		findStr = "\\b" + findStr + "\\b";
 		directives.push([new RegExp(findStr, "g"), replaceStr]);
@@ -378,8 +378,8 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
 		usageImports.push(
 			`import * as ${importName} from './${moduleId.replace(
 				/\.d\.ts$/,
-				"",
-			)}';`,
+				""
+			)}';`
 		);
 		return importName;
 	};
@@ -414,7 +414,7 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
 				const declaration = getTopLevelDeclaration(
 					ts,
 					sourceFile,
-					typeName,
+					typeName
 				);
 				if (!declaration) {
 					logErr(`While handling ${line}`);
@@ -430,9 +430,9 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
 							declaration,
 							importName,
 							usage,
-							enums,
-						),
-					),
+							enums
+						)
+					)
 				);
 			});
 			return;
@@ -483,11 +483,11 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
 								declaration,
 								importName,
 								usage,
-								enums,
-							),
-						),
+								enums
+							)
+						)
 					);
-				},
+				}
 			);
 			return;
 		}
@@ -499,11 +499,11 @@ function generateDeclarationFile(ts, recipe, sourceFileGetter) {
 	if (version !== dtsv) {
 		if (!version) {
 			logErr(
-				`gulp watch restart required. 'monaco.d.ts.recipe' is written before versioning was introduced.`,
+				`gulp watch restart required. 'monaco.d.ts.recipe' is written before versioning was introduced.`
 			);
 		} else {
 			logErr(
-				`gulp watch restart required. 'monaco.d.ts.recipe' v${version} does not match runtime v${dtsv}.`,
+				`gulp watch restart required. 'monaco.d.ts.recipe' v${version} does not match runtime v${dtsv}.`
 			);
 		}
 		return null;
@@ -634,9 +634,9 @@ class DeclarationResolver {
 				this.ts.createSourceFile(
 					fileName,
 					fileContents,
-					this.ts.ScriptTarget.ES5,
+					this.ts.ScriptTarget.ES5
 				),
-				mtime,
+				mtime
 			);
 		}
 		const fileContents = this._fsProvider
@@ -646,13 +646,13 @@ class DeclarationResolver {
 			"file.ts": fileContents,
 		};
 		const service = this.ts.createLanguageService(
-			new TypeScriptLanguageServiceHost(this.ts, {}, fileMap, {}),
+			new TypeScriptLanguageServiceHost(this.ts, {}, fileMap, {})
 		);
 		const text = service.getEmitOutput("file.ts", true, true).outputFiles[0]
 			.text;
 		return new CacheEntry(
 			this.ts.createSourceFile(fileName, text, this.ts.ScriptTarget.ES5),
-			mtime,
+			mtime
 		);
 	}
 }

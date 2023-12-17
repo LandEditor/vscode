@@ -12,7 +12,7 @@ import { SemanticTokensProviderStyling } from "vs/editor/common/services/semanti
 
 export const ISemanticTokensStylingService =
 	createDecorator<ISemanticTokensStylingService>(
-		"semanticTokensStylingService",
+		"semanticTokensStylingService"
 	);
 
 export type DocumentTokensProvider =

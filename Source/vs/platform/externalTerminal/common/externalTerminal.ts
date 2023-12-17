@@ -25,14 +25,14 @@ export interface IExternalTerminalService {
 	readonly _serviceBrand: undefined;
 	openTerminal(
 		configuration: IExternalTerminalSettings,
-		cwd: string | undefined,
+		cwd: string | undefined
 	): Promise<void>;
 	runInTerminal(
 		title: string,
 		cwd: string,
 		args: string[],
 		env: ITerminalEnvironment,
-		settings: IExternalTerminalSettings,
+		settings: IExternalTerminalSettings
 	): Promise<number | undefined>;
 	getDefaultTerminalForPlatforms(): Promise<ITerminalForPlatform>;
 }

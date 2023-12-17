@@ -47,7 +47,7 @@ export class NotebookGettingStarted
 		@IStorageService _storageService: IStorageService,
 		@IContextKeyService _contextKeyService: IContextKeyService,
 		@ICommandService _commandService: ICommandService,
-		@IConfigurationService _configurationService: IConfigurationService,
+		@IConfigurationService _configurationService: IConfigurationService
 	) {
 		super();
 
@@ -56,7 +56,7 @@ export class NotebookGettingStarted
 		const memento = new Memento("notebookGettingStarted2", _storageService);
 		const storedValue = memento.getMemento(
 			StorageScope.PROFILE,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 		if (storedValue[hasOpenedNotebookKey]) {
 			hasOpenedNotebook.set(true);
@@ -64,7 +64,7 @@ export class NotebookGettingStarted
 
 		const needToShowGettingStarted =
 			_configurationService.getValue(
-				NotebookSetting.openGettingStarted,
+				NotebookSetting.openGettingStarted
 			) && !storedValue[hasShownGettingStartedKey];
 		if (!storedValue[hasOpenedNotebookKey] || needToShowGettingStarted) {
 			const onDidOpenNotebook = () => {
@@ -75,7 +75,7 @@ export class NotebookGettingStarted
 					_commandService.executeCommand(
 						"workbench.action.openWalkthrough",
 						{ category: "notebooks", step: "notebookProfile" },
-						true,
+						true
 					);
 					storedValue[hasShownGettingStartedKey] = true;
 				}
@@ -100,17 +100,17 @@ export class NotebookGettingStarted
 						listener.dispose();
 						onDidOpenNotebook();
 					}
-				}),
+				})
 			);
 		}
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	NotebookGettingStarted,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 registerAction2(
@@ -121,14 +121,14 @@ registerAction2(
 				title: {
 					value: localize(
 						"workbench.notebook.layout.gettingStarted.label",
-						"Reset notebook getting started",
+						"Reset notebook getting started"
 					),
 					original: "Reset notebook getting started",
 				},
 				f1: true,
 				precondition: ContextKeyExpr.equals(
 					`config.${NotebookSetting.openGettingStarted}`,
-					true,
+					true
 				),
 				category: Categories.Developer,
 			});
@@ -137,15 +137,15 @@ registerAction2(
 			const storageService = accessor.get(IStorageService);
 			const memento = new Memento(
 				"notebookGettingStarted",
-				storageService,
+				storageService
 			);
 
 			const storedValue = memento.getMemento(
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			storedValue[hasOpenedNotebookKey] = undefined;
 			memento.saveMemento();
 		}
-	},
+	}
 );

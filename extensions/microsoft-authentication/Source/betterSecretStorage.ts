@@ -24,7 +24,7 @@ export class BetterTokenStorage<T> {
 	// the current state. Don't use this directly and call getTokens() so that you ensure you
 	// have awaited for all operations.
 	private _tokensPromise: Promise<Map<string, T>> = Promise.resolve(
-		new Map(),
+		new Map()
 	);
 
 	// The vscode SecretStorage instance for this extension.
@@ -41,10 +41,13 @@ export class BetterTokenStorage<T> {
 	 * @param keylistKey The key in the secret storage that will hold the list of keys associated with this instance of BetterTokenStorage
 	 * @param context the vscode Context used to register disposables and retreive the vscode.SecretStorage for this instance of VS Code
 	 */
-	constructor(private keylistKey: string, context: ExtensionContext) {
+	constructor(
+		private keylistKey: string,
+		context: ExtensionContext
+	) {
 		this._secretStorage = context.secrets;
 		context.subscriptions.push(
-			context.secrets.onDidChange((e) => this.handleSecretChange(e)),
+			context.secrets.onDidChange((e) => this.handleSecretChange(e))
 		);
 		this.initialize();
 	}
@@ -70,7 +73,7 @@ export class BetterTokenStorage<T> {
 								this._secretStorage.get(key).then((value) => {
 									res({ key, value });
 								}, rej);
-							}),
+							})
 					);
 					Promise.allSettled(promises).then((results) => {
 						const tokens = new Map<string, T>();
@@ -82,7 +85,7 @@ export class BetterTokenStorage<T> {
 								Logger.error(p.reason);
 							} else {
 								Logger.error(
-									"Key was not found in SecretStorage.",
+									"Key was not found in SecretStorage."
 								);
 							}
 						});
@@ -92,7 +95,7 @@ export class BetterTokenStorage<T> {
 				(err) => {
 					Logger.error(err);
 					resolve(new Map());
-				},
+				}
 			);
 		});
 		this._operationInProgress = false;
@@ -279,7 +282,7 @@ export class BetterTokenStorage<T> {
 					(err) => {
 						Logger.error(err);
 						return tokens;
-					},
+					}
 				)
 				.then(resolve);
 		});

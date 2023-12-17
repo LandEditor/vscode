@@ -117,7 +117,7 @@ export interface ITerminalCapabilityStore {
 	 * Gets the implementation of a capability if it has been added to the store.
 	 */
 	get<T extends TerminalCapability>(
-		capability: T,
+		capability: T
 	): ITerminalCapabilityImplMap[T] | undefined;
 }
 
@@ -191,7 +191,7 @@ export interface ICommandDetectionCapability {
 	 */
 	getCwdForLine(line: number): string | undefined;
 	getCommandForLine(
-		line: number,
+		line: number
 	): ITerminalCommand | ICurrentPartialCommand | undefined;
 	handlePromptStart(options?: IHandleCommandOptions): void;
 	handleContinuationStart(): void;
@@ -202,7 +202,7 @@ export interface ICommandDetectionCapability {
 	handleCommandExecuted(options?: IHandleCommandOptions): void;
 	handleCommandFinished(
 		exitCode?: number,
-		options?: IHandleCommandOptions,
+		options?: IHandleCommandOptions
 	): void;
 	/**
 	 * Set the command line explicitly.
@@ -272,7 +272,7 @@ export interface ITerminalCommand extends IBaseTerminalCommand {
 
 	getOutput(): string | undefined;
 	getOutputMatch(
-		outputMatcher: ITerminalOutputMatcher,
+		outputMatcher: ITerminalOutputMatcher
 	): ITerminalOutputMatch | undefined;
 	hasOutput(): boolean;
 	getPromptRowCount(): number;

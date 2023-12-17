@@ -19,7 +19,7 @@ export class ApiImpl implements API {
 	constructor(private _model: Model) {}
 
 	pickRemoteSource(
-		options: PickRemoteSourceOptions,
+		options: PickRemoteSourceOptions
 	): Promise<PickRemoteSourceResult | string | undefined> {
 		return pickRemoteSource(this._model, options as any);
 	}
@@ -34,7 +34,7 @@ export class ApiImpl implements API {
 }
 
 export function registerAPICommands(
-	extension: GitBaseExtensionImpl,
+	extension: GitBaseExtensionImpl
 ): Disposable {
 	const disposables: Disposable[] = [];
 
@@ -47,8 +47,8 @@ export function registerAPICommands(
 				}
 
 				return pickRemoteSource(extension.model, opts as any);
-			},
-		),
+			}
+		)
 	);
 
 	return Disposable.from(...disposables);

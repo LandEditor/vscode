@@ -37,7 +37,7 @@ export class DiffEditorEditors extends Disposable {
 	public readonly original: CodeEditorWidget;
 
 	private readonly _onDidContentSizeChange = this._register(
-		new Emitter<IContentSizeChangedEvent>(),
+		new Emitter<IContentSizeChangedEvent>()
 	);
 	public get onDidContentSizeChange() {
 		return this._onDidContentSizeChange.event;
@@ -56,55 +56,108 @@ export class DiffEditorEditors extends Disposable {
 		private readonly modifiedEditorElement: HTMLElement,
 		private readonly _options: DiffEditorOptions,
 		codeEditorWidgetOptions: IDiffCodeEditorWidgetOptions,
-		private readonly _createInnerEditor: (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>, editorWidgetOptions: ICodeEditorWidgetOptions) => CodeEditorWidget,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		private readonly _createInnerEditor: (
+			instantiationService: IInstantiationService,
+			container: HTMLElement,
+			options: Readonly<IEditorOptions>,
+			editorWidgetOptions: ICodeEditorWidgetOptions
+		) => CodeEditorWidget,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
 	) {
 		super();
 
-		this.original = this._register(this._createLeftHandSideEditor(_options.editorOptions.get(), codeEditorWidgetOptions.originalEditor || {}));
-		this.modified = this._register(this._createRightHandSideEditor(_options.editorOptions.get(), codeEditorWidgetOptions.modifiedEditor || {}));
+		this.original = this._register(
+			this._createLeftHandSideEditor(
+				_options.editorOptions.get(),
+				codeEditorWidgetOptions.originalEditor || {}
+			)
+		);
+		this.modified = this._register(
+			this._createRightHandSideEditor(
+				_options.editorOptions.get(),
+				codeEditorWidgetOptions.modifiedEditor || {}
+			)
+		);
 
-		this.modifiedModel = observableFromEvent(this.modified.onDidChangeModel, () => /** @description modified.model */ this.modified.getModel());
+		this.modifiedModel = observableFromEvent(
+			this.modified.onDidChangeModel,
+			() => /** @description modified.model */ this.modified.getModel()
+		);
 
-		this.modifiedScrollTop = observableFromEvent(this.modified.onDidScrollChange, () => /** @description modified.getScrollTop */ this.modified.getScrollTop());
-		this.modifiedScrollHeight = observableFromEvent(this.modified.onDidScrollChange, () => /** @description modified.getScrollHeight */ this.modified.getScrollHeight());
+		this.modifiedScrollTop = observableFromEvent(
+			this.modified.onDidScrollChange,
+			() =>
+				/** @description modified.getScrollTop */ this.modified.getScrollTop()
+		);
+		this.modifiedScrollHeight = observableFromEvent(
+			this.modified.onDidScrollChange,
+			() =>
+				/** @description modified.getScrollHeight */ this.modified.getScrollHeight()
+		);
 
-		this.modifiedSelections = observableFromEvent(this.modified.onDidChangeCursorSelection, () => this.modified.getSelections() ?? []);
-		this.modifiedCursor = observableFromEvent(this.modified.onDidChangeCursorPosition, () => this.modified.getPosition() ?? new Position(1, 1));
+		this.modifiedSelections = observableFromEvent(
+			this.modified.onDidChangeCursorSelection,
+			() => this.modified.getSelections() ?? []
+		);
+		this.modifiedCursor = observableFromEvent(
+			this.modified.onDidChangeCursorPosition,
+			() => this.modified.getPosition() ?? new Position(1, 1)
+		);
 
-		this._register(autorunHandleChanges({
-			createEmptyChangeSummary: () => ({} as IDiffEditorConstructionOptions),
-			handleChange: (ctx, changeSummary) => {
-				if (ctx.didChange(_options.editorOptions)) {
-					Object.assign(changeSummary, ctx.change.changedOptions);
+		this._register(
+			autorunHandleChanges(
+				{
+					createEmptyChangeSummary: () =>
+						({}) as IDiffEditorConstructionOptions,
+					handleChange: (ctx, changeSummary) => {
+						if (ctx.didChange(_options.editorOptions)) {
+							Object.assign(
+								changeSummary,
+								ctx.change.changedOptions
+							);
+						}
+						return true;
+					},
+				},
+				(reader, changeSummary) => {
+					/** @description update editor options */
+					_options.editorOptions.read(reader);
+
+					this._options.renderSideBySide.read(reader);
+
+					this.modified.updateOptions(
+						this._adjustOptionsForRightHandSide(
+							reader,
+							changeSummary
+						)
+					);
+					this.original.updateOptions(
+						this._adjustOptionsForLeftHandSide(
+							reader,
+							changeSummary
+						)
+					);
 				}
-				return true;
-			}
-		}, (reader, changeSummary) => {
-			/** @description update editor options */
-			_options.editorOptions.read(reader);
-
-			this._options.renderSideBySide.read(reader);
-
-			this.modified.updateOptions(this._adjustOptionsForRightHandSide(reader, changeSummary));
-			this.original.updateOptions(this._adjustOptionsForLeftHandSide(reader, changeSummary));
-		}));
+			)
+		);
 	}
 
 	private _createLeftHandSideEditor(
 		options: Readonly<IDiffEditorConstructionOptions>,
-		codeEditorWidgetOptions: ICodeEditorWidgetOptions,
+		codeEditorWidgetOptions: ICodeEditorWidgetOptions
 	): CodeEditorWidget {
 		const leftHandSideOptions = this._adjustOptionsForLeftHandSide(
 			undefined,
-			options,
+			options
 		);
 		const editor = this._constructInnerEditor(
 			this._instantiationService,
 			this.originalEditorElement,
 			leftHandSideOptions,
-			codeEditorWidgetOptions,
+			codeEditorWidgetOptions
 		);
 		editor.setContextValue("isInDiffLeftEditor", true);
 		return editor;
@@ -112,17 +165,17 @@ export class DiffEditorEditors extends Disposable {
 
 	private _createRightHandSideEditor(
 		options: Readonly<IDiffEditorConstructionOptions>,
-		codeEditorWidgetOptions: ICodeEditorWidgetOptions,
+		codeEditorWidgetOptions: ICodeEditorWidgetOptions
 	): CodeEditorWidget {
 		const rightHandSideOptions = this._adjustOptionsForRightHandSide(
 			undefined,
-			options,
+			options
 		);
 		const editor = this._constructInnerEditor(
 			this._instantiationService,
 			this.modifiedEditorElement,
 			rightHandSideOptions,
-			codeEditorWidgetOptions,
+			codeEditorWidgetOptions
 		);
 		editor.setContextValue("isInDiffRightEditor", true);
 		return editor;
@@ -132,13 +185,13 @@ export class DiffEditorEditors extends Disposable {
 		instantiationService: IInstantiationService,
 		container: HTMLElement,
 		options: Readonly<IEditorConstructionOptions>,
-		editorWidgetOptions: ICodeEditorWidgetOptions,
+		editorWidgetOptions: ICodeEditorWidgetOptions
 	): CodeEditorWidget {
 		const editor = this._createInnerEditor(
 			instantiationService,
 			container,
 			options,
-			editorWidgetOptions,
+			editorWidgetOptions
 		);
 
 		this._register(
@@ -149,7 +202,7 @@ export class DiffEditorEditors extends Disposable {
 					OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
 				const height = Math.max(
 					this.modified.getContentHeight(),
-					this.original.getContentHeight(),
+					this.original.getContentHeight()
 				);
 
 				this._onDidContentSizeChange.fire({
@@ -158,14 +211,14 @@ export class DiffEditorEditors extends Disposable {
 					contentHeightChanged: e.contentHeightChanged,
 					contentWidthChanged: e.contentWidthChanged,
 				});
-			}),
+			})
 		);
 		return editor;
 	}
 
 	private _adjustOptionsForLeftHandSide(
 		_reader: IReader | undefined,
-		changedOptions: Readonly<IDiffEditorConstructionOptions>,
+		changedOptions: Readonly<IDiffEditorConstructionOptions>
 	): IEditorConstructionOptions {
 		const result = this._adjustOptionsForSubEditor(changedOptions);
 		if (!this._options.renderSideBySide.get()) {
@@ -199,7 +252,7 @@ export class DiffEditorEditors extends Disposable {
 
 	private _adjustOptionsForRightHandSide(
 		reader: IReader | undefined,
-		changedOptions: Readonly<IDiffEditorConstructionOptions>,
+		changedOptions: Readonly<IDiffEditorConstructionOptions>
 	): IEditorConstructionOptions {
 		const result = this._adjustOptionsForSubEditor(changedOptions);
 		if (changedOptions.modifiedAriaLabel) {
@@ -216,7 +269,7 @@ export class DiffEditorEditors extends Disposable {
 	}
 
 	private _adjustOptionsForSubEditor(
-		options: Readonly<IDiffEditorConstructionOptions>,
+		options: Readonly<IDiffEditorConstructionOptions>
 	): IEditorConstructionOptions {
 		const clonedOptions = {
 			...options,
@@ -248,7 +301,7 @@ export class DiffEditorEditors extends Disposable {
 	}
 
 	private _updateAriaLabel(
-		ariaLabel: string | undefined,
+		ariaLabel: string | undefined
 	): string | undefined {
 		if (!ariaLabel) {
 			ariaLabel = "";
@@ -258,7 +311,7 @@ export class DiffEditorEditors extends Disposable {
 			" use {0} to open the accessibility help.",
 			this._keybindingService
 				.lookupKeybinding("editor.action.accessibilityHelp")
-				?.getAriaLabel(),
+				?.getAriaLabel()
 		);
 		if (this._options.accessibilityVerbose.get()) {
 			return ariaLabel + ariaNavigationTip;

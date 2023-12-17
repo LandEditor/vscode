@@ -13,7 +13,7 @@ import {
 } from "vs/workbench/services/search/common/search";
 
 export const INotebookSearchService = createDecorator<INotebookSearchService>(
-	"notebookSearchService",
+	"notebookSearchService"
 );
 
 export interface INotebookSearchService {
@@ -23,7 +23,7 @@ export interface INotebookSearchService {
 		query: ITextQuery,
 		token: CancellationToken | undefined,
 		searchInstanceID: string,
-		onProgress?: (result: ISearchProgressItem) => void,
+		onProgress?: (result: ISearchProgressItem) => void
 	): {
 		openFilesToScan: ResourceSet;
 		completeData: Promise<ISearchComplete>;

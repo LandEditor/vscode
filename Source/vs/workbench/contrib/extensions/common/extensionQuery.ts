@@ -10,7 +10,7 @@ export class Query {
 	constructor(
 		public value: string,
 		public sortBy: string,
-		public groupBy: string,
+		public groupBy: string
 	) {
 		this.value = value.trim();
 	}
@@ -44,10 +44,10 @@ export class Query {
 
 		const queryContains = (substr: string) => query.indexOf(substr) > -1;
 		const hasSort = subcommands.sort.some((subcommand) =>
-			queryContains(`@sort:${subcommand}`),
+			queryContains(`@sort:${subcommand}`)
 		);
 		const hasCategory = subcommands.category.some((subcommand) =>
-			queryContains(`@category:${subcommand}`),
+			queryContains(`@category:${subcommand}`)
 		);
 
 		return flatten(
@@ -65,12 +65,12 @@ export class Query {
 						(subcommand) =>
 							`@${command}:${subcommand}${
 								subcommand === "" ? "" : " "
-							}`,
+							}`
 					);
 				} else {
 					return queryContains(`@${command}`) ? [] : [`@${command} `];
 				}
-			}),
+			})
 		);
 	}
 
@@ -82,7 +82,7 @@ export class Query {
 				sortBy = by;
 
 				return "";
-			},
+			}
 		);
 
 		let groupBy = "";
@@ -92,7 +92,7 @@ export class Query {
 				groupBy = by;
 
 				return "";
-			},
+			}
 		);
 
 		return new Query(value, sortBy, groupBy);

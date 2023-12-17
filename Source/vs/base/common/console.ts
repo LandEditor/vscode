@@ -60,13 +60,13 @@ export function parse(entry: IRemoteConsoleLog): {
 }
 
 export function getFirstFrame(
-	entry: IRemoteConsoleLog,
+	entry: IRemoteConsoleLog
 ): IStackFrame | undefined;
 export function getFirstFrame(
-	stack: string | undefined,
+	stack: string | undefined
 ): IStackFrame | undefined;
 export function getFirstFrame(
-	arg0: IRemoteConsoleLog | string | undefined,
+	arg0: IRemoteConsoleLog | string | undefined
 ): IStackFrame | undefined {
 	if (typeof arg0 !== "string") {
 		return getFirstFrame(parse(arg0!).stack);
@@ -90,7 +90,7 @@ export function getFirstFrame(
 		// :(?:\d+):(?:\d+) => :line:column data
 		const matches =
 			/at [^\/]*((?:(?:[a-zA-Z]+:)|(?:[\/])|(?:\\\\))(?:.+)):(\d+):(\d+)/.exec(
-				topFrame || "",
+				topFrame || ""
 			);
 		if (matches && matches.length === 4) {
 			return {

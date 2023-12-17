@@ -22,7 +22,7 @@ export interface IMergeResult {
 export function merge(
 	local: IStringDictionary<string>,
 	remote: IStringDictionary<string> | null,
-	base: IStringDictionary<string> | null,
+	base: IStringDictionary<string> | null
 ): IMergeResult {
 	const localAdded: IStringDictionary<string> = {};
 	const localUpdated: IStringDictionary<string> = {};
@@ -176,7 +176,7 @@ export function merge(
 
 function compare(
 	from: IStringDictionary<string> | null,
-	to: IStringDictionary<string> | null,
+	to: IStringDictionary<string> | null
 ): { added: Set<string>; removed: Set<string>; updated: Set<string> } {
 	const fromKeys = from ? Object.keys(from) : [];
 	const toKeys = to ? Object.keys(to) : [];
@@ -210,7 +210,7 @@ function compare(
 
 export function areSame(
 	a: IStringDictionary<string>,
-	b: IStringDictionary<string>,
+	b: IStringDictionary<string>
 ): boolean {
 	const { added, removed, updated } = compare(a, b);
 	return added.size === 0 && removed.size === 0 && updated.size === 0;

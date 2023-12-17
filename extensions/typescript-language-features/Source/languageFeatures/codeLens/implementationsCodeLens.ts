@@ -30,29 +30,29 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 	public constructor(
 		client: ITypeScriptServiceClient,
 		protected _cachedResponse: CachedResponse<Proto.NavTreeResponse>,
-		private readonly language: LanguageDescription,
+		private readonly language: LanguageDescription
 	) {
 		super(client, _cachedResponse);
 		this._register(
 			vscode.workspace.onDidChangeConfiguration((evt) => {
 				if (
 					evt.affectsConfiguration(
-						`${language.id}.implementationsCodeLens.showOnInterfaceMethods`,
+						`${language.id}.implementationsCodeLens.showOnInterfaceMethods`
 					)
 				) {
 					this.changeEmitter.fire();
 				}
-			}),
+			})
 		);
 	}
 
 	public async resolveCodeLens(
 		codeLens: ReferencesCodeLens,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.CodeLens> {
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			codeLens.file,
-			codeLens.range.start,
+			codeLens.range.start
 		);
 		const response = await this.client.execute(
 			"implementation",
@@ -62,7 +62,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 				lowPriority: true,
 				executionTarget: ExecutionTarget.Semantic,
 				cancelOnResourceChange: codeLens.document,
-			},
+			}
 		);
 		if (response.type !== "response" || !response.body) {
 			codeLens.command =
@@ -82,14 +82,11 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 							? typeConverters.Range.fromTextSpan(reference)
 							: new vscode.Range(
 									typeConverters.Position.fromLocation(
-										reference.start,
+										reference.start
 									),
-									new vscode.Position(
-										reference.start.line,
-										0,
-									),
-							  ),
-					),
+									new vscode.Position(reference.start.line, 0)
+								)
+					)
 			)
 			// Exclude original from implementations
 			.filter(
@@ -101,7 +98,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 							codeLens.range.start.line &&
 						location.range.start.character ===
 							codeLens.range.start.character
-					),
+					)
 			);
 
 		codeLens.command = this.getCommand(locations, codeLens);
@@ -110,7 +107,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 
 	private getCommand(
 		locations: vscode.Location[],
-		codeLens: ReferencesCodeLens,
+		codeLens: ReferencesCodeLens
 	): vscode.Command | undefined {
 		return {
 			title: this.getTitle(locations),
@@ -128,7 +125,7 @@ export default class TypeScriptImplementationsCodeLensProvider extends TypeScrip
 	protected extractSymbol(
 		document: vscode.TextDocument,
 		item: Proto.NavigationTree,
-		parent: Proto.NavigationTree | undefined,
+		parent: Proto.NavigationTree | undefined
 	): vscode.Range | undefined {
 		if (
 			item.kind === PConst.Kind.method &&
@@ -162,13 +159,13 @@ export function register(
 	selector: DocumentSelector,
 	language: LanguageDescription,
 	client: ITypeScriptServiceClient,
-	cachedResponse: CachedResponse<Proto.NavTreeResponse>,
+	cachedResponse: CachedResponse<Proto.NavTreeResponse>
 ) {
 	return conditionalRegistration(
 		[
 			requireGlobalConfiguration(
 				language.id,
-				"implementationsCodeLens.enabled",
+				"implementationsCodeLens.enabled"
 			),
 			requireSomeCapability(client, ClientCapability.Semantic),
 		],
@@ -178,9 +175,9 @@ export function register(
 				new TypeScriptImplementationsCodeLensProvider(
 					client,
 					cachedResponse,
-					language,
-				),
+					language
+				)
 			);
-		},
+		}
 	);
 }

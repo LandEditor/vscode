@@ -29,13 +29,18 @@ export class NotebookVariables
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super();
 
 		this.listener = this.editorService.onDidEditorsChange(() => {
-			if (configurationService.getValue('notebook.experimental.notebookVariablesView')
-				&& this.editorService.activeEditorPane?.getId() === 'workbench.editor.notebook') {
+			if (
+				configurationService.getValue(
+					"notebook.experimental.notebookVariablesView"
+				) &&
+				this.editorService.activeEditorPane?.getId() ===
+					"workbench.editor.notebook"
+			) {
 				if (this.initializeView()) {
 					this.listener?.dispose();
 				}
@@ -45,12 +50,12 @@ export class NotebookVariables
 
 	private initializeView() {
 		const debugViewContainer = Registry.as<IViewContainersRegistry>(
-			"workbench.registry.view.containers",
+			"workbench.registry.view.containers"
 		).get(debugContainerId);
 
 		if (debugViewContainer) {
 			const viewsRegistry = Registry.as<IViewsRegistry>(
-				Extensions.ViewsRegistry,
+				Extensions.ViewsRegistry
 			);
 			const viewDescriptor = {
 				id: "NOTEBOOK_VARIABLES",

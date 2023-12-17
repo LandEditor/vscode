@@ -34,45 +34,45 @@ registerAccessibilityConfiguration();
 registerSingleton(
 	IAccessibleViewService,
 	AccessibleViewService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IAccessibleNotificationService,
 	AccessibleNotificationService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	EditorAccessibilityHelpContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchRegistry.registerWorkbenchContribution(
 	CommentsAccessibilityHelpContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchRegistry.registerWorkbenchContribution(
 	UnfocusedViewDimmingContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	HoverAccessibleViewContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	NotificationAccessibleViewContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	InlineCompletionsAccessibleViewContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	AccessibilityStatus,
-	LifecyclePhase.Ready,
+	LifecyclePhase.Ready
 );

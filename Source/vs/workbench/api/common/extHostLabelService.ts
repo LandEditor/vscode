@@ -21,7 +21,7 @@ export class ExtHostLabelService implements ExtHostLabelServiceShape {
 	}
 
 	$registerResourceLabelFormatter(
-		formatter: ResourceLabelFormatter,
+		formatter: ResourceLabelFormatter
 	): IDisposable {
 		const handle = this._handlePool++;
 		this._proxy.$registerResourceLabelFormatter(handle, formatter);

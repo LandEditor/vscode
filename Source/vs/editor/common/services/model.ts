@@ -30,7 +30,7 @@ export interface IModelService {
 		value: string | ITextBufferFactory,
 		languageSelection: ILanguageSelection | null,
 		resource?: URI,
-		isForSimpleWidget?: boolean,
+		isForSimpleWidget?: boolean
 	): ITextModel;
 
 	updateModel(model: ITextModel, value: string | ITextBufferFactory): void;
@@ -42,7 +42,7 @@ export interface IModelService {
 	getCreationOptions(
 		language: string,
 		resource: URI,
-		isForSimpleWidget: boolean,
+		isForSimpleWidget: boolean
 	): ITextModelCreationOptions;
 
 	getModel(resource: URI): ITextModel | null;

@@ -88,7 +88,7 @@ export const KERNEL_RECOMMENDATIONS = new Map<
 >();
 KERNEL_RECOMMENDATIONS.set(
 	IPYNB_VIEW_TYPE,
-	new Map<string, INotebookExtensionRecommendation>(),
+	new Map<string, INotebookExtensionRecommendation>()
 );
 KERNEL_RECOMMENDATIONS.get(IPYNB_VIEW_TYPE)?.set("python", {
 	extensionIds: ["ms-python.python", JUPYTER_EXTENSION_ID],
@@ -139,7 +139,7 @@ export interface ICellOutputViewModel extends IDisposable {
 	model: ICellOutput;
 	resolveMimeTypes(
 		textModel: NotebookTextModel,
-		kernelProvides: readonly string[] | undefined,
+		kernelProvides: readonly string[] | undefined
 	): [readonly IOrderedMimeType[], number];
 	pickedMimeType: IOrderedMimeType | undefined;
 	hasMultiMimeType(): boolean;
@@ -151,7 +151,7 @@ export interface ICellOutputViewModel extends IDisposable {
 export interface IDisplayOutputViewModel extends ICellOutputViewModel {
 	resolveMimeTypes(
 		textModel: NotebookTextModel,
-		kernelProvides: readonly string[] | undefined,
+		kernelProvides: readonly string[] | undefined
 	): [readonly IOrderedMimeType[], number];
 }
 
@@ -321,7 +321,7 @@ export interface ICellViewModel extends IGenericCellViewModel {
 	updateEditState(state: CellEditState, source: string): void;
 	deltaModelDecorations(
 		oldDecorations: readonly string[],
-		newDecorations: readonly IModelDeltaDecoration[],
+		newDecorations: readonly IModelDeltaDecoration[]
 	): string[];
 	getCellDecorationRange(id: string): Range | null;
 }
@@ -469,7 +469,7 @@ export interface ICellModelDeltaDecorations {
 export interface IModelDecorationsChangeAccessor {
 	deltaDecorations(
 		oldDecorations: ICellModelDecorations[],
-		newDecorations: ICellModelDeltaDecorations[],
+		newDecorations: ICellModelDeltaDecorations[]
 	): ICellModelDecorations[];
 }
 
@@ -495,19 +495,19 @@ export interface INotebookViewModel {
 	setTrackedRange(
 		id: string | null,
 		newRange: ICellRange | null,
-		newStickiness: TrackedRangeStickiness,
+		newStickiness: TrackedRangeStickiness
 	): string | null;
 	getSelections(): ICellRange[];
 	getCellIndex(cell: ICellViewModel): number;
 	deltaCellStatusBarItems(
 		oldItems: string[],
-		newItems: INotebookDeltaCellStatusBarItems[],
+		newItems: INotebookDeltaCellStatusBarItems[]
 	): string[];
 	getFoldedLength(index: number): number;
 	replaceOne(cell: ICellViewModel, range: Range, text: string): Promise<void>;
 	replaceAll(
 		matches: CellFindMatchWithIndex[],
-		texts: string[],
+		texts: string[]
 	): Promise<void>;
 }
 //#endregion
@@ -597,7 +597,7 @@ export interface INotebookEditor {
 	focusNotebookCell(
 		cell: ICellViewModel,
 		focus: "editor" | "container" | "output",
-		options?: IFocusNotebookCellOptions,
+		options?: IFocusNotebookCellOptions
 	): Promise<void>;
 
 	/**
@@ -627,7 +627,7 @@ export interface INotebookEditor {
 		cell: ICellViewModel,
 		output: IInsetRenderOutput,
 		offset: number,
-		createWhenIdle: boolean,
+		createWhenIdle: boolean
 	): Promise<void>;
 
 	/**
@@ -636,7 +636,7 @@ export interface INotebookEditor {
 	updateOutput(
 		cell: ICellViewModel,
 		output: IInsetRenderOutput,
-		offset: number,
+		offset: number
 	): Promise<void>;
 
 	/**
@@ -706,7 +706,7 @@ export interface INotebookEditor {
 	 */
 	revealLineInCenterIfOutsideViewportAsync(
 		cell: ICellViewModel,
-		line: number,
+		line: number
 	): Promise<void>;
 
 	/**
@@ -714,7 +714,7 @@ export interface INotebookEditor {
 	 */
 	revealRangeInViewAsync(
 		cell: ICellViewModel,
-		range: Selection | Range,
+		range: Selection | Range
 	): Promise<void>;
 
 	/**
@@ -722,7 +722,7 @@ export interface INotebookEditor {
 	 */
 	revealRangeInCenterAsync(
 		cell: ICellViewModel,
-		range: Selection | Range,
+		range: Selection | Range
 	): Promise<void>;
 
 	/**
@@ -730,7 +730,7 @@ export interface INotebookEditor {
 	 */
 	revealRangeInCenterIfOutsideViewportAsync(
 		cell: ICellViewModel,
-		range: Selection | Range,
+		range: Selection | Range
 	): Promise<void>;
 
 	/**
@@ -745,7 +745,7 @@ export interface INotebookEditor {
 	 */
 	getCellRangeFromViewRange(
 		startIndex: number,
-		endIndex: number,
+		endIndex: number
 	): ICellRange | undefined;
 
 	/**
@@ -765,7 +765,7 @@ export interface INotebookEditor {
 
 	deltaCellDecorations(
 		oldDecorations: string[],
-		newDecorations: INotebookDeltaDecoration[],
+		newDecorations: INotebookDeltaDecoration[]
 	): string[];
 
 	/**
@@ -773,7 +773,7 @@ export interface INotebookEditor {
 	 * The notebook is virtualized and this method should be called to create/delete editor decorations safely.
 	 */
 	changeModelDecorations<T>(
-		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T,
+		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T
 	): T | null;
 
 	/**
@@ -799,7 +799,7 @@ export interface INotebookEditor {
 		token: CancellationToken,
 		skipWarmup?: boolean,
 		shouldGetSearchPreviewInfo?: boolean,
-		ownerID?: string,
+		ownerID?: string
 	): Promise<CellFindMatchWithIndex[]>;
 	findHighlightCurrent(matchIndex: number, ownerID?: string): Promise<number>;
 	findUnHighlightCurrent(matchIndex: number, ownerID?: string): Promise<void>;
@@ -856,7 +856,7 @@ export interface INotebookEditorDelegate extends INotebookEditor {
 	deltaCellContainerClassNames(
 		cellId: string,
 		added: string[],
-		removed: string[],
+		removed: string[]
 	): void;
 }
 
@@ -934,7 +934,7 @@ export enum CursorAtLineBoundary {
 }
 
 export function getNotebookEditorFromEditorPane(
-	editorPane?: IEditorPane,
+	editorPane?: IEditorPane
 ): INotebookEditor | undefined {
 	if (!editorPane) {
 		return;
@@ -963,7 +963,7 @@ export function getNotebookEditorFromEditorPane(
  */
 export function expandCellRangesWithHiddenCells(
 	editor: INotebookEditor,
-	ranges: ICellRange[],
+	ranges: ICellRange[]
 ) {
 	// assuming ranges are sorted and no overlap
 	const indexes = cellRangesToIndexes(ranges);
@@ -983,7 +983,7 @@ export function expandCellRangesWithHiddenCells(
 		const nextViewIndex = viewIndex + 1;
 		const range = editor.getCellRangeFromViewRange(
 			viewIndex,
-			nextViewIndex,
+			nextViewIndex
 		);
 
 		if (range) {
@@ -996,7 +996,7 @@ export function expandCellRangesWithHiddenCells(
 
 export function cellRangeToViewCells(
 	editor: IActiveNotebookEditor,
-	ranges: ICellRange[],
+	ranges: ICellRange[]
 ) {
 	const cells: ICellViewModel[] = [];
 	reduceCellRanges(ranges).forEach((range) => {

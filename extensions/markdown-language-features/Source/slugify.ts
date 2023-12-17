@@ -25,10 +25,10 @@ export const githubSlugifier: Slugifier = new (class implements Slugifier {
 				// allow-any-unicode-next-line
 				.replace(
 					/[\]\[\!\/\'\"\#\$\%\&\(\)\*\+\,\.\/\:\;\<\=\>\?\@\\\^\{\|\}\~\`。，、；：？！…—·ˉ¨‘’“”々～‖∶＂＇｀｜〃〔〕〈〉《》「」『』．〖〗【】（）［］｛｝]/g,
-					"",
+					""
 				) // Remove known punctuators
 				.replace(/^\-+/, "") // Remove leading -
-				.replace(/\-+$/, ""), // Remove trailing -
+				.replace(/\-+$/, "") // Remove trailing -
 		);
 		return new Slug(slugifiedHeading);
 	}

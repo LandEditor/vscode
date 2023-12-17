@@ -45,7 +45,7 @@ class LanguageSurvey extends Disposable {
 		languageService: ILanguageService,
 		textFileService: ITextFileService,
 		openerService: IOpenerService,
-		productService: IProductService,
+		productService: IProductService
 	) {
 		super();
 
@@ -59,7 +59,7 @@ class LanguageSurvey extends Disposable {
 		const skipVersion = storageService.get(
 			SKIP_VERSION_KEY,
 			StorageScope.APPLICATION,
-			"",
+			""
 		);
 		if (skipVersion) {
 			return;
@@ -71,7 +71,7 @@ class LanguageSurvey extends Disposable {
 			storageService.getNumber(
 				EDITED_LANGUAGE_COUNT_KEY,
 				StorageScope.APPLICATION,
-				0,
+				0
 			) < data.editCount
 		) {
 			// Process model-save event every 250ms to reduce load
@@ -83,43 +83,43 @@ class LanguageSurvey extends Disposable {
 							date !==
 								storageService.get(
 									EDITED_LANGUAGE_DATE_KEY,
-									StorageScope.APPLICATION,
+									StorageScope.APPLICATION
 								)
 						) {
 							const editedCount =
 								storageService.getNumber(
 									EDITED_LANGUAGE_COUNT_KEY,
 									StorageScope.APPLICATION,
-									0,
+									0
 								) + 1;
 							storageService.store(
 								EDITED_LANGUAGE_COUNT_KEY,
 								editedCount,
 								StorageScope.APPLICATION,
-								StorageTarget.USER,
+								StorageTarget.USER
 							);
 							storageService.store(
 								EDITED_LANGUAGE_DATE_KEY,
 								date,
 								StorageScope.APPLICATION,
-								StorageTarget.USER,
+								StorageTarget.USER
 							);
 						}
 					});
-				}, 250),
+				}, 250)
 			);
 
 			this._register(
 				textFileService.files.onDidSave((e) =>
-					onModelsSavedWorker.work(e.model),
-				),
+					onModelsSavedWorker.work(e.model)
+				)
 			);
 		}
 
 		const lastSessionDate = storageService.get(
 			LAST_SESSION_DATE_KEY,
 			StorageScope.APPLICATION,
-			new Date(0).toDateString(),
+			new Date(0).toDateString()
 		);
 		if (date === lastSessionDate) {
 			return;
@@ -129,19 +129,19 @@ class LanguageSurvey extends Disposable {
 			storageService.getNumber(
 				SESSION_COUNT_KEY,
 				StorageScope.APPLICATION,
-				0,
+				0
 			) + 1;
 		storageService.store(
 			LAST_SESSION_DATE_KEY,
 			date,
 			StorageScope.APPLICATION,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 		storageService.store(
 			SESSION_COUNT_KEY,
 			sessionCount,
 			StorageScope.APPLICATION,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 
 		if (sessionCount < 9) {
@@ -152,7 +152,7 @@ class LanguageSurvey extends Disposable {
 			storageService.getNumber(
 				EDITED_LANGUAGE_COUNT_KEY,
 				StorageScope.APPLICATION,
-				0,
+				0
 			) < data.editCount
 		) {
 			return;
@@ -162,14 +162,14 @@ class LanguageSurvey extends Disposable {
 			storageService.getBoolean(
 				IS_CANDIDATE_KEY,
 				StorageScope.APPLICATION,
-				false,
+				false
 			) || Math.random() < data.userProbability;
 
 		storageService.store(
 			IS_CANDIDATE_KEY,
 			isCandidate,
 			StorageScope.APPLICATION,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 
 		if (!isCandidate) {
@@ -177,7 +177,7 @@ class LanguageSurvey extends Disposable {
 				SKIP_VERSION_KEY,
 				productService.version,
 				StorageScope.APPLICATION,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 			return;
 		}
@@ -188,37 +188,37 @@ class LanguageSurvey extends Disposable {
 				"helpUs",
 				"Help us improve our support for {0}",
 				languageService.getLanguageName(data.languageId) ??
-					data.languageId,
+					data.languageId
 			),
 			[
 				{
 					label: localize("takeShortSurvey", "Take Short Survey"),
 					run: () => {
 						telemetryService.publicLog(
-							`${data.surveyId}.survey/takeShortSurvey`,
+							`${data.surveyId}.survey/takeShortSurvey`
 						);
 						openerService.open(
 							URI.parse(
 								`${data.surveyUrl}?o=${encodeURIComponent(
-									platform,
+									platform
 								)}&v=${encodeURIComponent(
-									productService.version,
+									productService.version
 								)}&m=${encodeURIComponent(
-									telemetryService.machineId,
-								)}`,
-							),
+									telemetryService.machineId
+								)}`
+							)
 						);
 						storageService.store(
 							IS_CANDIDATE_KEY,
 							false,
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 						storageService.store(
 							SKIP_VERSION_KEY,
 							productService.version,
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 					},
 				},
@@ -226,13 +226,13 @@ class LanguageSurvey extends Disposable {
 					label: localize("remindLater", "Remind Me Later"),
 					run: () => {
 						telemetryService.publicLog(
-							`${data.surveyId}.survey/remindMeLater`,
+							`${data.surveyId}.survey/remindMeLater`
 						);
 						storageService.store(
 							SESSION_COUNT_KEY,
 							sessionCount - 3,
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 					},
 				},
@@ -241,24 +241,24 @@ class LanguageSurvey extends Disposable {
 					isSecondary: true,
 					run: () => {
 						telemetryService.publicLog(
-							`${data.surveyId}.survey/dontShowAgain`,
+							`${data.surveyId}.survey/dontShowAgain`
 						);
 						storageService.store(
 							IS_CANDIDATE_KEY,
 							false,
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 						storageService.store(
 							SKIP_VERSION_KEY,
 							productService.version,
 							StorageScope.APPLICATION,
-							StorageTarget.USER,
+							StorageTarget.USER
 						);
 					},
 				},
 			],
-			{ sticky: true },
+			{ sticky: true }
 		);
 	}
 }
@@ -266,7 +266,8 @@ class LanguageSurvey extends Disposable {
 class LanguageSurveysContribution implements IWorkbenchContribution {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IOpenerService private readonly openerService: IOpenerService,
@@ -295,7 +296,7 @@ class LanguageSurveysContribution implements IWorkbenchContribution {
 					surveyData.editCount &&
 					surveyData.languageId &&
 					surveyData.surveyUrl &&
-					surveyData.userProbability,
+					surveyData.userProbability
 			)
 			.map(
 				(surveyData) =>
@@ -307,18 +308,18 @@ class LanguageSurveysContribution implements IWorkbenchContribution {
 						this.languageService,
 						this.textFileService,
 						this.openerService,
-						this.productService,
-					),
+						this.productService
+					)
 			);
 	}
 }
 
 if (language === "en") {
 	const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-		WorkbenchExtensions.Workbench,
+		WorkbenchExtensions.Workbench
 	);
 	workbenchRegistry.registerWorkbenchContribution(
 		LanguageSurveysContribution,
-		LifecyclePhase.Restored,
+		LifecyclePhase.Restored
 	);
 }

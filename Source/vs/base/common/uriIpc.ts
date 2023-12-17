@@ -81,7 +81,7 @@ export const DefaultURITransformer: IURITransformer = new (class {
 function _transformOutgoingURIs(
 	obj: any,
 	transformer: IURITransformer,
-	depth: number,
+	depth: number
 ): any {
 	if (!obj || depth > 200) {
 		return null;
@@ -98,7 +98,7 @@ function _transformOutgoingURIs(
 				const r = _transformOutgoingURIs(
 					obj[key],
 					transformer,
-					depth + 1,
+					depth + 1
 				);
 				if (r !== null) {
 					obj[key] = r;
@@ -112,7 +112,7 @@ function _transformOutgoingURIs(
 
 export function transformOutgoingURIs<T>(
 	obj: T,
-	transformer: IURITransformer,
+	transformer: IURITransformer
 ): T {
 	const result = _transformOutgoingURIs(obj, transformer, 0);
 	if (result === null) {
@@ -126,7 +126,7 @@ function _transformIncomingURIs(
 	obj: any,
 	transformer: IURITransformer,
 	revive: boolean,
-	depth: number,
+	depth: number
 ): any {
 	if (!obj || depth > 200) {
 		return null;
@@ -150,7 +150,7 @@ function _transformIncomingURIs(
 					obj[key],
 					transformer,
 					revive,
-					depth + 1,
+					depth + 1
 				);
 				if (r !== null) {
 					obj[key] = r;
@@ -164,7 +164,7 @@ function _transformIncomingURIs(
 
 export function transformIncomingURIs<T>(
 	obj: T,
-	transformer: IURITransformer,
+	transformer: IURITransformer
 ): T {
 	const result = _transformIncomingURIs(obj, transformer, false, 0);
 	if (result === null) {
@@ -176,7 +176,7 @@ export function transformIncomingURIs<T>(
 
 export function transformAndReviveIncomingURIs<T>(
 	obj: T,
-	transformer: IURITransformer,
+	transformer: IURITransformer
 ): T {
 	const result = _transformIncomingURIs(obj, transformer, true, 0);
 	if (result === null) {

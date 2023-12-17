@@ -71,7 +71,7 @@ interface ISideBySideEditorViewState {
 }
 
 function isSideBySideEditorViewState(
-	thing: unknown,
+	thing: unknown
 ): thing is ISideBySideEditorViewState {
 	const candidate = thing as ISideBySideEditorViewState | undefined;
 
@@ -179,19 +179,19 @@ export class SideBySideEditor
 	//#region Events
 
 	private onDidCreateEditors = this._register(
-		new Emitter<{ width: number; height: number } | undefined>(),
+		new Emitter<{ width: number; height: number } | undefined>()
 	);
 
 	private _onDidChangeSizeConstraints = this._register(
-		new Relay<{ width: number; height: number } | undefined>(),
+		new Relay<{ width: number; height: number } | undefined>()
 	);
 	override readonly onDidChangeSizeConstraints = Event.any(
 		this.onDidCreateEditors.event,
-		this._onDidChangeSizeConstraints.event,
+		this._onDidChangeSizeConstraints.event
 	);
 
 	private readonly _onDidChangeSelection = this._register(
-		new Emitter<IEditorPaneSelectionChangeEvent>(),
+		new Emitter<IEditorPaneSelectionChangeEvent>()
 	);
 	readonly onDidChangeSelection = this._onDidChangeSelection.event;
 
@@ -206,13 +206,13 @@ export class SideBySideEditor
 	private splitview: SplitView | undefined;
 
 	private readonly splitviewDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private readonly editorDisposables = this._register(new DisposableStore());
 
 	private orientation =
 		this.configurationService.getValue<"vertical" | "horizontal">(
-			SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING,
+			SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING
 		) === "vertical"
 			? Orientation.VERTICAL
 			: Orientation.HORIZONTAL;
@@ -226,12 +226,24 @@ export class SideBySideEditor
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService
 	) {
-		super(SideBySideEditor.ID, SideBySideEditor.VIEW_STATE_PREFERENCE_KEY, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService);
+		super(
+			SideBySideEditor.ID,
+			SideBySideEditor.VIEW_STATE_PREFERENCE_KEY,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService
+		);
 
 		this.registerListeners();
 	}
@@ -239,20 +251,20 @@ export class SideBySideEditor
 	private registerListeners(): void {
 		this._register(
 			this.configurationService.onDidChangeConfiguration((e) =>
-				this.onConfigurationUpdated(e),
-			),
+				this.onConfigurationUpdated(e)
+			)
 		);
 	}
 
 	private onConfigurationUpdated(event: IConfigurationChangeEvent): void {
 		if (
 			event.affectsConfiguration(
-				SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING,
+				SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING
 			)
 		) {
 			this.orientation =
 				this.configurationService.getValue<"vertical" | "horizontal">(
-					SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING,
+					SideBySideEditor.SIDE_BY_SIDE_LAYOUT_SETTING
 				) === "vertical"
 					? Orientation.VERTICAL
 					: Orientation.HORIZONTAL;
@@ -308,10 +320,10 @@ export class SideBySideEditor
 
 		// Editor pane containers
 		this.secondaryEditorContainer = $(
-			".side-by-side-editor-container.editor-instance",
+			".side-by-side-editor-container.editor-instance"
 		);
 		this.primaryEditorContainer = $(
-			".side-by-side-editor-container.editor-instance",
+			".side-by-side-editor-container.editor-instance"
 		);
 
 		// Split view
@@ -321,12 +333,12 @@ export class SideBySideEditor
 	private createSplitView(parent: HTMLElement, ratio?: number): void {
 		// Splitview widget
 		this.splitview = this.splitviewDisposables.add(
-			new SplitView(parent, { orientation: this.orientation }),
+			new SplitView(parent, { orientation: this.orientation })
 		);
 		this.splitviewDisposables.add(
-			this.splitview.onDidSashReset(() =>
-				this.splitview?.distributeViewSizes(),
-			),
+			this.splitview.onDidSashReset(
+				() => this.splitview?.distributeViewSizes()
+			)
 		);
 
 		if (this.orientation === Orientation.HORIZONTAL) {
@@ -352,13 +364,13 @@ export class SideBySideEditor
 			this.splitview.layout(
 				this.orientation === Orientation.HORIZONTAL
 					? this.dimension.width
-					: this.dimension.height,
+					: this.dimension.height
 			);
 		}
 
 		// Secondary (left)
 		const secondaryEditorContainer = assertIsDefined(
-			this.secondaryEditorContainer,
+			this.secondaryEditorContainer
 		);
 		this.splitview.addView(
 			{
@@ -372,12 +384,12 @@ export class SideBySideEditor
 				maximumSize: Number.POSITIVE_INFINITY,
 				onDidChange: Event.None,
 			},
-			leftSizing,
+			leftSizing
 		);
 
 		// Primary (right)
 		const primaryEditorContainer = assertIsDefined(
-			this.primaryEditorContainer,
+			this.primaryEditorContainer
 		);
 		this.splitview.addView(
 			{
@@ -390,7 +402,7 @@ export class SideBySideEditor
 				maximumSize: Number.POSITIVE_INFINITY,
 				onDidChange: Event.None,
 			},
-			rightSizing,
+			rightSizing
 		);
 
 		this.updateStyles();
@@ -408,7 +420,7 @@ export class SideBySideEditor
 		input: SideBySideEditorInput,
 		options: ISideBySideEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		const oldInput = this.input;
 		await super.setInput(input, options, context, token);
@@ -427,7 +439,7 @@ export class SideBySideEditor
 		const { primary, secondary, viewState } = this.loadViewState(
 			input,
 			options,
-			context,
+			context
 		);
 		this.lastFocusedSide = viewState?.focus;
 
@@ -439,7 +451,7 @@ export class SideBySideEditor
 
 			this.splitview.resizeView(
 				0,
-				Math.round(totalSize * viewState.ratio),
+				Math.round(totalSize * viewState.ratio)
 			);
 		} else {
 			this.splitview?.distributeViewSizes();
@@ -451,13 +463,13 @@ export class SideBySideEditor
 				input.secondary,
 				secondary,
 				context,
-				token,
+				token
 			),
 			this.primaryEditorPane?.setInput(
 				input.primary,
 				primary,
 				context,
-				token,
+				token
 			),
 		]);
 
@@ -470,7 +482,7 @@ export class SideBySideEditor
 	private loadViewState(
 		input: SideBySideEditorInput,
 		options: ISideBySideEditorOptions | undefined,
-		context: IEditorOpenContext,
+		context: IEditorOpenContext
 	): {
 		primary: IEditorOptions | undefined;
 		secondary: IEditorOptions | undefined;
@@ -514,11 +526,11 @@ export class SideBySideEditor
 		// Create editors
 		this.secondaryEditorPane = this.doCreateEditor(
 			newInput.secondary,
-			assertIsDefined(this.secondaryEditorContainer),
+			assertIsDefined(this.secondaryEditorContainer)
 		);
 		this.primaryEditorPane = this.doCreateEditor(
 			newInput.primary,
-			assertIsDefined(this.primaryEditorContainer),
+			assertIsDefined(this.primaryEditorContainer)
 		);
 
 		// Layout
@@ -528,34 +540,34 @@ export class SideBySideEditor
 		this._onDidChangeSizeConstraints.input = Event.any(
 			Event.map(
 				this.secondaryEditorPane.onDidChangeSizeConstraints,
-				() => undefined,
+				() => undefined
 			),
 			Event.map(
 				this.primaryEditorPane.onDidChangeSizeConstraints,
-				() => undefined,
-			),
+				() => undefined
+			)
 		);
 		this.onDidCreateEditors.fire(undefined);
 
 		// Track focus and signal active control change via event
 		this.editorDisposables.add(
 			this.primaryEditorPane.onDidFocus(() =>
-				this.onDidFocusChange(Side.PRIMARY),
-			),
+				this.onDidFocusChange(Side.PRIMARY)
+			)
 		);
 		this.editorDisposables.add(
 			this.secondaryEditorPane.onDidFocus(() =>
-				this.onDidFocusChange(Side.SECONDARY),
-			),
+				this.onDidFocusChange(Side.SECONDARY)
+			)
 		);
 	}
 
 	private doCreateEditor(
 		editorInput: EditorInput,
-		container: HTMLElement,
+		container: HTMLElement
 	): EditorPane {
 		const editorPaneDescriptor = Registry.as<IEditorPaneRegistry>(
-			EditorExtensions.EditorPane,
+			EditorExtensions.EditorPane
 		).getEditorPane(editorInput);
 		if (!editorPaneDescriptor) {
 			throw new Error("No editor pane descriptor for editor found");
@@ -563,7 +575,7 @@ export class SideBySideEditor
 
 		// Create editor pane and make visible
 		const editorPane = editorPaneDescriptor.instantiate(
-			this.instantiationService,
+			this.instantiationService
 		);
 		editorPane.create(container);
 		editorPane.setVisible(this.isVisible(), this.group);
@@ -572,8 +584,8 @@ export class SideBySideEditor
 		if (isEditorPaneWithSelection(editorPane)) {
 			this.editorDisposables.add(
 				editorPane.onDidChangeSelection((e) =>
-					this._onDidChangeSelection.fire(e),
-				),
+					this._onDidChangeSelection.fire(e)
+				)
 			);
 		}
 
@@ -599,7 +611,7 @@ export class SideBySideEditor
 					selection,
 					lastFocusedEditorPane === this.primaryEditorPane
 						? Side.PRIMARY
-						: Side.SECONDARY,
+						: Side.SECONDARY
 				);
 			}
 		}
@@ -621,7 +633,7 @@ export class SideBySideEditor
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined,
+		group: IEditorGroup | undefined
 	): void {
 		// Forward to both sides
 		this.primaryEditorPane?.setVisible(visible, group);
@@ -663,7 +675,7 @@ export class SideBySideEditor
 		splitview.layout(
 			this.orientation === Orientation.HORIZONTAL
 				? dimension.width
-				: dimension.height,
+				: dimension.height
 		);
 	}
 
@@ -679,7 +691,7 @@ export class SideBySideEditor
 		pane?.layout(
 			this.orientation === Orientation.HORIZONTAL
 				? new Dimension(size, this.dimension.height)
-				: new Dimension(this.dimension.width, size),
+				: new Dimension(this.dimension.width, size)
 		);
 	}
 
@@ -700,7 +712,7 @@ export class SideBySideEditor
 	}
 
 	protected computeEditorViewState(
-		resource: URI,
+		resource: URI
 	): ISideBySideEditorViewState | undefined {
 		if (
 			!this.input ||
@@ -741,7 +753,7 @@ export class SideBySideEditor
 		return URI.from({
 			scheme: "sideBySide",
 			path: `${multibyteAwareBtoa(
-				secondary.toString(),
+				secondary.toString()
 			)}${multibyteAwareBtoa(primary.toString())}`,
 		});
 	}
@@ -795,7 +807,7 @@ export class SideBySideEditor
 class SideBySideAwareEditorPaneSelection implements IEditorPaneSelection {
 	constructor(
 		private readonly selection: IEditorPaneSelection,
-		private readonly side: Side.PRIMARY | Side.SECONDARY,
+		private readonly side: Side.PRIMARY | Side.SECONDARY
 	) {}
 
 	compare(other: IEditorPaneSelection): EditorPaneSelectionCompareResult {

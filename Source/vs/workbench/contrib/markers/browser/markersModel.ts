@@ -28,7 +28,7 @@ export function compareMarkersByUri(a: IMarker, b: IMarker) {
 
 function compareResourceMarkers(
 	a: ResourceMarkers,
-	b: ResourceMarkers,
+	b: ResourceMarkers
 ): number {
 	const [firstMarkerOfA] = a.markers;
 	const [firstMarkerOfB] = b.markers;
@@ -36,7 +36,7 @@ function compareResourceMarkers(
 	if (firstMarkerOfA && firstMarkerOfB) {
 		res = MarkerSeverity.compare(
 			firstMarkerOfA.marker.severity,
-			firstMarkerOfB.marker.severity,
+			firstMarkerOfB.marker.severity
 		);
 	}
 	if (res === 0) {
@@ -54,7 +54,10 @@ export class ResourceMarkers {
 	private _cachedMarkers: Marker[] | undefined;
 	private _total: number = 0;
 
-	constructor(readonly id: string, readonly resource: URI) {
+	constructor(
+		readonly id: string,
+		readonly resource: URI
+	) {
 		this.path = this.resource.fsPath;
 		this.name = basename(this.resource);
 	}
@@ -62,7 +65,7 @@ export class ResourceMarkers {
 	get markers(): readonly Marker[] {
 		if (!this._cachedMarkers) {
 			this._cachedMarkers = flatten([...this._markersMap.values()]).sort(
-				ResourceMarkers._compareMarkers,
+				ResourceMarkers._compareMarkers
 			);
 		}
 		return this._cachedMarkers;
@@ -122,7 +125,7 @@ export class Marker {
 	constructor(
 		readonly id: string,
 		readonly marker: IMarker,
-		readonly relatedInformation: RelatedInformation[] = [],
+		readonly relatedInformation: RelatedInformation[] = []
 	) {}
 
 	toString(): string {
@@ -134,11 +137,11 @@ export class Marker {
 					? this.relatedInformation.map((r) => ({
 							...r.raw,
 							resource: r.raw.resource.path,
-					  }))
+						}))
 					: undefined,
 			},
 			null,
-			"\t",
+			"\t"
 		);
 	}
 }
@@ -150,7 +153,7 @@ export class MarkerTableItem extends Marker {
 		readonly codeMatches?: IMatch[],
 		readonly messageMatches?: IMatch[],
 		readonly fileMatches?: IMatch[],
-		readonly ownerMatches?: IMatch[],
+		readonly ownerMatches?: IMatch[]
 	) {
 		super(marker.id, marker.marker, marker.relatedInformation);
 	}
@@ -160,7 +163,7 @@ export class RelatedInformation {
 	constructor(
 		readonly id: string,
 		readonly marker: IMarker,
-		readonly raw: IRelatedInformation,
+		readonly raw: IRelatedInformation
 	) {}
 }
 
@@ -179,7 +182,7 @@ export class MarkersModel {
 	get resourceMarkers(): ResourceMarkers[] {
 		if (!this.cachedSortedResources) {
 			this.cachedSortedResources = [...this.resourcesByUri.values()].sort(
-				compareResourceMarkers,
+				compareResourceMarkers
 			);
 		}
 		return this.cachedSortedResources;
@@ -237,7 +240,7 @@ export class MarkersModel {
 					const resourceMarkersId = this.id(resource.toString());
 					resourceMarkers = new ResourceMarkers(
 						resourceMarkersId,
-						resource.with({ fragment: null }),
+						resource.with({ fragment: null })
 					);
 					this.resourcesByUri.set(key, resourceMarkers);
 					change.added.add(resourceMarkers);
@@ -254,7 +257,7 @@ export class MarkersModel {
 						resourceMarkers!.id,
 						key,
 						index,
-						rawMarker.resource.toString(),
+						rawMarker.resource.toString()
 					);
 
 					let relatedInformation: RelatedInformation[] | undefined =
@@ -270,11 +273,11 @@ export class MarkersModel {
 										r.startColumn,
 										r.endLineNumber,
 										r.endColumn,
-										index,
+										index
 									),
 									rawMarker,
-									r,
-								),
+									r
+								)
 						);
 					}
 

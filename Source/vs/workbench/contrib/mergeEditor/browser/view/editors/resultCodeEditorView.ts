@@ -49,89 +49,128 @@ export class ResultCodeEditorView extends CodeEditorView {
 		viewModel: IObservable<MergeEditorViewModel | undefined>,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(instantiationService, viewModel, configurationService);
 
-		this.editor.invokeWithinContext(accessor => {
+		this.editor.invokeWithinContext((accessor) => {
 			const contextKeyService = accessor.get(IContextKeyService);
-			const isMergeResultEditor = ctxIsMergeResultEditor.bindTo(contextKeyService);
+			const isMergeResultEditor =
+				ctxIsMergeResultEditor.bindTo(contextKeyService);
 			isMergeResultEditor.set(true);
 			this._register(toDisposable(() => isMergeResultEditor.reset()));
 		});
 
-		this.htmlElements.gutterDiv.style.width = '5px';
+		this.htmlElements.gutterDiv.style.width = "5px";
 		this.htmlElements.root.classList.add(`result`);
 
 		this._register(
 			autorunWithStore((reader, store) => {
 				/** @description update checkboxes */
 				if (this.checkboxesVisible.read(reader)) {
-					store.add(new EditorGutter(this.editor, this.htmlElements.gutterDiv, {
-						getIntersectingGutterItems: (range, reader) => [],
-						createView: (item, target) => { throw new BugIndicatingError(); },
-					}));
+					store.add(
+						new EditorGutter(
+							this.editor,
+							this.htmlElements.gutterDiv,
+							{
+								getIntersectingGutterItems: (
+									range,
+									reader
+								) => [],
+								createView: (item, target) => {
+									throw new BugIndicatingError();
+								},
+							}
+						)
+					);
 				}
 			})
 		);
 
-		this._register(autorun(reader => {
-			/** @description update labels & text model */
-			const vm = this.viewModel.read(reader);
-			if (!vm) {
-				return;
-			}
-			this.editor.setModel(vm.model.resultTextModel);
-			reset(this.htmlElements.title, ...renderLabelWithIcons(localize('result', 'Result')));
-			reset(this.htmlElements.description, ...renderLabelWithIcons(this._labelService.getUriLabel(vm.model.resultTextModel.uri, { relative: true })));
-		}));
-
-
-		const remainingConflictsActionBar = this._register(new ActionBar(this.htmlElements.detail));
-
-		this._register(autorun(reader => {
-			/** @description update remainingConflicts label */
-			const vm = this.viewModel.read(reader);
-			if (!vm) {
-				return;
-			}
-
-			const model = vm.model;
-			if (!model) {
-				return;
-			}
-			const count = model.unhandledConflictsCount.read(reader);
-
-			const text = count === 1
-				? localize(
-					'mergeEditor.remainingConflicts',
-					'{0} Conflict Remaining',
-					count
-				)
-				: localize(
-					'mergeEditor.remainingConflict',
-					'{0} Conflicts Remaining ',
-					count
+		this._register(
+			autorun((reader) => {
+				/** @description update labels & text model */
+				const vm = this.viewModel.read(reader);
+				if (!vm) {
+					return;
+				}
+				this.editor.setModel(vm.model.resultTextModel);
+				reset(
+					this.htmlElements.title,
+					...renderLabelWithIcons(localize("result", "Result"))
 				);
+				reset(
+					this.htmlElements.description,
+					...renderLabelWithIcons(
+						this._labelService.getUriLabel(
+							vm.model.resultTextModel.uri,
+							{ relative: true }
+						)
+					)
+				);
+			})
+		);
 
-			remainingConflictsActionBar.clear();
-			remainingConflictsActionBar.push({
-				class: undefined,
-				enabled: count > 0,
-				id: 'nextConflict',
-				label: text,
-				run() {
-					vm.model.telemetry.reportConflictCounterClicked();
-					vm.goToNextModifiedBaseRange(m => !model.isHandled(m).get());
-				},
-				tooltip: count > 0
-					? localize('goToNextConflict', 'Go to next conflict')
-					: localize('allConflictHandled', 'All conflicts handled, the merge can be completed now.'),
-			});
-		}));
+		const remainingConflictsActionBar = this._register(
+			new ActionBar(this.htmlElements.detail)
+		);
 
+		this._register(
+			autorun((reader) => {
+				/** @description update remainingConflicts label */
+				const vm = this.viewModel.read(reader);
+				if (!vm) {
+					return;
+				}
 
-		this._register(applyObservableDecorations(this.editor, this.decorations));
+				const model = vm.model;
+				if (!model) {
+					return;
+				}
+				const count = model.unhandledConflictsCount.read(reader);
+
+				const text =
+					count === 1
+						? localize(
+								"mergeEditor.remainingConflicts",
+								"{0} Conflict Remaining",
+								count
+							)
+						: localize(
+								"mergeEditor.remainingConflict",
+								"{0} Conflicts Remaining ",
+								count
+							);
+
+				remainingConflictsActionBar.clear();
+				remainingConflictsActionBar.push({
+					class: undefined,
+					enabled: count > 0,
+					id: "nextConflict",
+					label: text,
+					run() {
+						vm.model.telemetry.reportConflictCounterClicked();
+						vm.goToNextModifiedBaseRange(
+							(m) => !model.isHandled(m).get()
+						);
+					},
+					tooltip:
+						count > 0
+							? localize(
+									"goToNextConflict",
+									"Go to next conflict"
+								)
+							: localize(
+									"allConflictHandled",
+									"All conflicts handled, the merge can be completed now."
+								),
+				});
+			})
+		);
+
+		this._register(
+			applyObservableDecorations(this.editor, this.decorations)
+		);
 
 		this._register(
 			createSelectionsAutorun(this, (baseRange, viewModel) =>
@@ -165,8 +204,8 @@ export class ResultCodeEditorView extends CodeEditorView {
 					? CompareResult.neitherLessOrGreaterThan
 					: LineRange.compareByStart(
 							baseRange.baseRange,
-							diff.inputRange,
-					  ),
+							diff.inputRange
+						)
 		);
 
 		const activeModifiedBaseRange =
@@ -211,7 +250,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 
 				const range = model.getLineRangeInResult(
 					modifiedBaseRange.baseRange,
-					reader,
+					reader
 				);
 				result.push({
 					range: range.toInclusiveRangeOrEmpty(),
@@ -238,7 +277,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 											? handledConflictMinimapOverViewRulerColor
 											: unhandledConflictMinimapOverViewRulerColor,
 									},
-							  }
+								}
 							: undefined,
 					},
 				});

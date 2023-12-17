@@ -27,12 +27,21 @@ import { NativeWorkingCopyBackupTracker } from "vs/workbench/services/workingCop
 
 export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService
 	) {
-		super(environmentService.backupPath ? URI.file(environmentService.backupPath).with({ scheme: environmentService.userRoamingDataHome.scheme }) : undefined, fileService, logService);
+		super(
+			environmentService.backupPath
+				? URI.file(environmentService.backupPath).with({
+						scheme: environmentService.userRoamingDataHome.scheme,
+					})
+				: undefined,
+			fileService,
+			logService
+		);
 
 		this.registerListeners();
 	}
@@ -47,10 +56,10 @@ export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 					id: "join.workingCopyBackups",
 					label: localize(
 						"join.workingCopyBackups",
-						"Backup working copies",
+						"Backup working copies"
 					),
-				}),
-			),
+				})
+			)
 		);
 	}
 }
@@ -59,13 +68,13 @@ export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 registerSingleton(
 	IWorkingCopyBackupService,
 	NativeWorkingCopyBackupService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );
 
 // Register Backup Tracker
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	NativeWorkingCopyBackupTracker,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );

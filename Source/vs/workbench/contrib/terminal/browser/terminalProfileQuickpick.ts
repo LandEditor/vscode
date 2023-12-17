@@ -50,16 +50,21 @@ import {
 type DefaultProfileName = string;
 export class TerminalProfileQuickpick {
 	constructor(
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@INotificationService private readonly _notificationService: INotificationService
-	) { }
+		@INotificationService
+		private readonly _notificationService: INotificationService
+	) {}
 
 	async showAndGetResult(
-		type: "setDefault" | "createInstance",
+		type: "setDefault" | "createInstance"
 	): Promise<IQuickPickTerminalObject | DefaultProfileName | undefined> {
 		const platformKey = await this._terminalProfileService.getPlatformKey();
 		const profilesKey = TerminalSettingPrefix.Profiles + platformKey;
@@ -76,7 +81,7 @@ export class TerminalProfileQuickpick {
 				await this._configurationService.updateValue(
 					defaultProfileKey,
 					result.profile.title,
-					ConfigurationTarget.USER,
+					ConfigurationTarget.USER
 				);
 				return {
 					config: {
@@ -112,14 +117,14 @@ export class TerminalProfileQuickpick {
 				await this._configurationService.updateValue(
 					profilesKey,
 					profilesConfig,
-					ConfigurationTarget.USER,
+					ConfigurationTarget.USER
 				);
 			}
 			// Set the default profile
 			await this._configurationService.updateValue(
 				defaultProfileKey,
 				result.profileName,
-				ConfigurationTarget.USER,
+				ConfigurationTarget.USER
 			);
 		} else if (type === "createInstance") {
 			if ("id" in result.profile) {
@@ -146,7 +151,7 @@ export class TerminalProfileQuickpick {
 	}
 
 	private async _createAndShow(
-		type: "setDefault" | "createInstance",
+		type: "setDefault" | "createInstance"
 	): Promise<IProfileQuickPickItem | undefined> {
 		const platformKey = await this._terminalProfileService.getPlatformKey();
 		const profiles = this._terminalProfileService.availableProfiles;
@@ -159,12 +164,12 @@ export class TerminalProfileQuickpick {
 				type === "createInstance"
 					? nls.localize(
 							"terminal.integrated.selectProfileToCreate",
-							"Select the terminal profile to create",
-					  )
+							"Select the terminal profile to create"
+						)
 					: nls.localize(
 							"terminal.integrated.chooseDefaultProfile",
-							"Select your default terminal profile",
-					  ),
+							"Select your default terminal profile"
+						),
 			onDidTriggerItemButton: async (context) => {
 				// Get the user's explicit permission to use a potentially unsafe path
 				if (!(await this._isProfileSafe(context.item.profile))) {
@@ -178,7 +183,7 @@ export class TerminalProfileQuickpick {
 				}
 				const configProfiles: { [key: string]: any } =
 					this._configurationService.getValue(
-						TerminalSettingPrefix.Profiles + platformKey,
+						TerminalSettingPrefix.Profiles + platformKey
 					);
 				const existingProfiles = !!configProfiles
 					? Object.keys(configProfiles)
@@ -186,14 +191,14 @@ export class TerminalProfileQuickpick {
 				const name = await this._quickInputService.input({
 					prompt: nls.localize(
 						"enterTerminalProfileName",
-						"Enter terminal profile name",
+						"Enter terminal profile name"
 					),
 					value: context.item.profile.profileName,
 					validateInput: async (input) => {
 						if (existingProfiles.includes(input)) {
 							return nls.localize(
 								"terminalProfileAlreadyExists",
-								"A terminal profile already exists with that name",
+								"A terminal profile already exists with that name"
 							);
 						}
 						return undefined;
@@ -212,7 +217,7 @@ export class TerminalProfileQuickpick {
 				await this._configurationService.updateValue(
 					profilesKey,
 					newConfigValue,
-					ConfigurationTarget.USER,
+					ConfigurationTarget.USER
 				);
 			},
 			onKeyMods: (mods) => (keyMods = mods),
@@ -232,10 +237,10 @@ export class TerminalProfileQuickpick {
 			quickPickItems.push(
 				...this._sortProfileQuickPickItems(
 					configProfiles.map((e) =>
-						this._createProfileQuickPickItem(e),
+						this._createProfileQuickPickItem(e)
 					),
-					defaultProfileName!,
-				),
+					defaultProfileName!
+				)
 			);
 		}
 
@@ -243,7 +248,7 @@ export class TerminalProfileQuickpick {
 			type: "separator",
 			label: nls.localize(
 				"ICreateContributedTerminalProfileOptions",
-				"contributed",
+				"contributed"
 			),
 		});
 		const contributedProfiles: IProfileQuickPickItem[] = [];
@@ -263,7 +268,7 @@ export class TerminalProfileQuickpick {
 			const uriClasses = getUriClasses(
 				contributed,
 				this._themeService.getColorTheme().type,
-				true,
+				true
 			);
 			const colorClass = getColorClass(contributed);
 			const iconClasses = [];
@@ -291,8 +296,8 @@ export class TerminalProfileQuickpick {
 			quickPickItems.push(
 				...this._sortProfileQuickPickItems(
 					contributedProfiles,
-					defaultProfileName!,
-				),
+					defaultProfileName!
+				)
 			);
 		}
 
@@ -304,19 +309,19 @@ export class TerminalProfileQuickpick {
 			quickPickItems.push(
 				...this._sortProfileQuickPickItems(
 					autoDetectedProfiles.map((e) =>
-						this._createProfileQuickPickItem(e),
+						this._createProfileQuickPickItem(e)
 					),
-					defaultProfileName!,
-				),
+					defaultProfileName!
+				)
 			);
 		}
 		const colorStyleDisposable = createColorStyleElement(
-			this._themeService.getColorTheme(),
+			this._themeService.getColorTheme()
 		);
 
 		const result = await this._quickInputService.pick(
 			quickPickItems,
-			options,
+			options
 		);
 		colorStyleDisposable.dispose();
 		if (!result) {
@@ -332,7 +337,7 @@ export class TerminalProfileQuickpick {
 	}
 
 	private async _isProfileSafe(
-		profile: ITerminalProfile | IExtensionTerminalProfile,
+		profile: ITerminalProfile | IExtensionTerminalProfile
 	): Promise<boolean> {
 		const isUnsafePath = "isUnsafePath" in profile && profile.isUnsafePath;
 		const requiresUnsafePath =
@@ -357,7 +362,7 @@ export class TerminalProfileQuickpick {
 				nls.localize(
 					"unsafePathWarning",
 					"This terminal profile uses a potentially unsafe path that can be modified by another user: {0}. Are you sure you want to use it?",
-					`"${unsafePaths.join(",")}"`,
+					`"${unsafePaths.join(",")}"`
 				),
 				[
 					{
@@ -368,21 +373,21 @@ export class TerminalProfileQuickpick {
 						label: nls.localize("cancel", "Cancel"),
 						run: () => r(false),
 					},
-				],
+				]
 			);
 			handle.onDidClose(() => r(false));
 		});
 	}
 
 	private _createProfileQuickPickItem(
-		profile: ITerminalProfile,
+		profile: ITerminalProfile
 	): IProfileQuickPickItem {
 		const buttons: IQuickInputButton[] = [
 			{
 				iconClass: ThemeIcon.asClassName(configureTerminalProfileIcon),
 				tooltip: nls.localize(
 					"createQuickLaunchProfile",
-					"Configure Terminal Profile",
+					"Configure Terminal Profile"
 				),
 			},
 		];
@@ -440,7 +445,7 @@ export class TerminalProfileQuickpick {
 
 	private _sortProfileQuickPickItems(
 		items: IProfileQuickPickItem[],
-		defaultProfileName: string,
+		defaultProfileName: string
 	) {
 		return items.sort((a, b) => {
 			if (b.profileName === defaultProfileName) {

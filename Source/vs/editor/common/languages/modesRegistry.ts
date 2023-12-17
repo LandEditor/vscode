@@ -64,7 +64,7 @@ ModesRegistry.registerLanguage({
 });
 
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerDefaultConfigurations([
 	{
 		overrides: {

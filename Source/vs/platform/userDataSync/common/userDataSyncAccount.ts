@@ -39,42 +39,58 @@ export class UserDataSyncAccountService
 		return this._account;
 	}
 	private _onDidChangeAccount = this._register(
-		new Emitter<IUserDataSyncAccount | undefined>(),
+		new Emitter<IUserDataSyncAccount | undefined>()
 	);
 	readonly onDidChangeAccount = this._onDidChangeAccount.event;
 
 	private _onTokenFailed: Emitter<boolean> = this._register(
-		new Emitter<boolean>(),
+		new Emitter<boolean>()
 	);
 	readonly onTokenFailed: Event<boolean> = this._onTokenFailed.event;
 
 	private wasTokenFailed: boolean = false;
 
 	constructor(
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService
 	) {
 		super();
-		this._register(userDataSyncStoreService.onTokenFailed(code => {
-			this.logService.info('Settings Sync auth token failed', this.account?.authenticationProviderId, this.wasTokenFailed, code);
-			this.updateAccount(undefined);
-			if (code === UserDataSyncErrorCode.Forbidden) {
-				this._onTokenFailed.fire(true /*bail out immediately*/);
-			} else {
-				this._onTokenFailed.fire(this.wasTokenFailed /* bail out if token failed before */);
-			}
-			this.wasTokenFailed = true;
-		}));
-		this._register(userDataSyncStoreService.onTokenSucceed(() => this.wasTokenFailed = false));
+		this._register(
+			userDataSyncStoreService.onTokenFailed((code) => {
+				this.logService.info(
+					"Settings Sync auth token failed",
+					this.account?.authenticationProviderId,
+					this.wasTokenFailed,
+					code
+				);
+				this.updateAccount(undefined);
+				if (code === UserDataSyncErrorCode.Forbidden) {
+					this._onTokenFailed.fire(true /*bail out immediately*/);
+				} else {
+					this._onTokenFailed.fire(
+						this
+							.wasTokenFailed /* bail out if token failed before */
+					);
+				}
+				this.wasTokenFailed = true;
+			})
+		);
+		this._register(
+			userDataSyncStoreService.onTokenSucceed(
+				() => (this.wasTokenFailed = false)
+			)
+		);
 	}
 
 	async updateAccount(
-		account: IUserDataSyncAccount | undefined,
+		account: IUserDataSyncAccount | undefined
 	): Promise<void> {
 		if (
 			account && this._account
 				? account.token !== this._account.token ||
-				  account.authenticationProviderId !==
+					account.authenticationProviderId !==
 						this._account.authenticationProviderId
 				: account !== this._account
 		) {
@@ -82,7 +98,7 @@ export class UserDataSyncAccountService
 			if (this._account) {
 				this.userDataSyncStoreService.setAuthToken(
 					this._account.token,
-					this._account.authenticationProviderId,
+					this._account.authenticationProviderId
 				);
 			}
 			this._onDidChangeAccount.fire(account);

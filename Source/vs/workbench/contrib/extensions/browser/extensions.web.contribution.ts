@@ -16,12 +16,12 @@ import { EditorExtensions } from "vs/workbench/common/editor";
 
 // Running Extensions
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		RuntimeExtensionsEditor,
 		RuntimeExtensionsEditor.ID,
-		localize("runtimeExtension", "Running Extensions"),
+		localize("runtimeExtension", "Running Extensions")
 	),
-	[new SyncDescriptor(RuntimeExtensionsInput)],
+	[new SyncDescriptor(RuntimeExtensionsInput)]
 );

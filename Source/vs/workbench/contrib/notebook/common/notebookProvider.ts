@@ -84,7 +84,7 @@ export class NotebookProviderInfo {
 
 	matches(resource: URI): boolean {
 		return this.selectors?.some((selector) =>
-			NotebookProviderInfo.selectorMatches(selector, resource),
+			NotebookProviderInfo.selectorMatches(selector, resource)
 		);
 	}
 
@@ -94,7 +94,7 @@ export class NotebookProviderInfo {
 			if (
 				glob.match(
 					selector.toLowerCase(),
-					basename(resource.fsPath).toLowerCase(),
+					basename(resource.fsPath).toLowerCase()
 				)
 			) {
 				return true;
@@ -121,7 +121,7 @@ export class NotebookProviderInfo {
 				if (
 					glob.match(
 						excludeFilenamePattern,
-						basename(resource.fsPath).toLowerCase(),
+						basename(resource.fsPath).toLowerCase()
 					)
 				) {
 					return false;
@@ -134,7 +134,7 @@ export class NotebookProviderInfo {
 	}
 
 	static possibleFileEnding(
-		selectors: NotebookSelector[],
+		selectors: NotebookSelector[]
 	): string | undefined {
 		for (const selector of selectors) {
 			const ending = NotebookProviderInfo._possibleFileEnding(selector);
@@ -146,7 +146,7 @@ export class NotebookProviderInfo {
 	}
 
 	private static _possibleFileEnding(
-		selector: NotebookSelector,
+		selector: NotebookSelector
 	): string | undefined {
 		const pattern = /^.*(\.[a-zA-Z0-9_-]+)$/;
 

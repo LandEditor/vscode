@@ -12,7 +12,7 @@ import { IFileReadLimits } from "vs/platform/files/common/files";
 
 export const INotebookEditorModelResolverService =
 	createDecorator<INotebookEditorModelResolverService>(
-		"INotebookModelResolverService",
+		"INotebookModelResolverService"
 	);
 
 /**
@@ -56,11 +56,11 @@ export interface INotebookEditorModelResolverService {
 	resolve(
 		resource: URI,
 		viewType?: string,
-		limits?: IFileReadLimits,
+		limits?: IFileReadLimits
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
 	resolve(
 		resource: IUntitledNotebookResource,
 		viewType: string,
-		limits?: IFileReadLimits,
+		limits?: IFileReadLimits
 	): Promise<IReference<IResolvedNotebookEditorModel>>;
 }

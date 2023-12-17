@@ -46,7 +46,7 @@ class PagedRenderer<TElement, TTemplateData>
 
 	constructor(
 		private renderer: IPagedRenderer<TElement, TTemplateData>,
-		private modelProvider: () => IPagedModel<TElement>,
+		private modelProvider: () => IPagedModel<TElement>
 	) {}
 
 	renderTemplate(container: HTMLElement): ITemplateData<TTemplateData> {
@@ -58,7 +58,7 @@ class PagedRenderer<TElement, TTemplateData>
 		index: number,
 		_: number,
 		data: ITemplateData<TTemplateData>,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		data.disposable?.dispose();
 
@@ -73,7 +73,7 @@ class PagedRenderer<TElement, TTemplateData>
 				model.get(index),
 				index,
 				data.data,
-				height,
+				height
 			);
 		}
 
@@ -83,7 +83,7 @@ class PagedRenderer<TElement, TTemplateData>
 
 		this.renderer.renderPlaceholder(index, data.data);
 		promise.then((entry) =>
-			this.renderer.renderElement(entry, index, data.data!, height),
+			this.renderer.renderElement(entry, index, data.data!, height)
 		);
 	}
 
@@ -104,7 +104,7 @@ class PagedAccessibilityProvider<T>
 {
 	constructor(
 		private modelProvider: () => IPagedModel<T>,
-		private accessibilityProvider: IListAccessibilityProvider<T>,
+		private accessibilityProvider: IListAccessibilityProvider<T>
 	) {}
 
 	getWidgetAriaLabel(): string {
@@ -144,7 +144,7 @@ export interface IPagedListOptions<T> {
 
 function fromPagedListOptions<T>(
 	modelProvider: () => IPagedModel<T>,
-	options: IPagedListOptions<T>,
+	options: IPagedListOptions<T>
 ): IListOptions<number> {
 	return {
 		...options,
@@ -152,7 +152,7 @@ function fromPagedListOptions<T>(
 			options.accessibilityProvider &&
 			new PagedAccessibilityProvider(
 				modelProvider,
-				options.accessibilityProvider,
+				options.accessibilityProvider
 			),
 	};
 }
@@ -166,18 +166,18 @@ export class PagedList<T> implements IDisposable {
 		container: HTMLElement,
 		virtualDelegate: IListVirtualDelegate<number>,
 		renderers: IPagedRenderer<T, any>[],
-		options: IPagedListOptions<T> = {},
+		options: IPagedListOptions<T> = {}
 	) {
 		const modelProvider = () => this.model;
 		const pagedRenderers = renderers.map(
-			(r) => new PagedRenderer<T, ITemplateData<T>>(r, modelProvider),
+			(r) => new PagedRenderer<T, ITemplateData<T>>(r, modelProvider)
 		);
 		this.list = new List(
 			user,
 			container,
 			virtualDelegate,
 			pagedRenderers,
-			fromPagedListOptions(modelProvider, options),
+			fromPagedListOptions(modelProvider, options)
 		);
 	}
 
@@ -223,7 +223,7 @@ export class PagedList<T> implements IDisposable {
 						: this._model.get(element),
 				index,
 				browserEvent,
-			}),
+			})
 		);
 	}
 
@@ -237,7 +237,7 @@ export class PagedList<T> implements IDisposable {
 						: this._model.get(element),
 				index,
 				browserEvent,
-			}),
+			})
 		);
 	}
 
@@ -251,7 +251,7 @@ export class PagedList<T> implements IDisposable {
 						: this._model.get(element),
 				index,
 				browserEvent,
-			}),
+			})
 		);
 	}
 
@@ -265,7 +265,7 @@ export class PagedList<T> implements IDisposable {
 						: this._model.get(element),
 				index,
 				browserEvent,
-			}),
+			})
 		);
 	}
 
@@ -276,7 +276,7 @@ export class PagedList<T> implements IDisposable {
 				elements: elements.map((e) => this._model.get(e)),
 				indexes,
 				browserEvent,
-			}),
+			})
 		);
 	}
 
@@ -287,7 +287,7 @@ export class PagedList<T> implements IDisposable {
 				elements: elements.map((e) => this._model.get(e)),
 				indexes,
 				browserEvent,
-			}),
+			})
 		);
 	}
 
@@ -302,7 +302,7 @@ export class PagedList<T> implements IDisposable {
 							index,
 							anchor,
 							browserEvent,
-					  },
+						}
 		);
 	}
 

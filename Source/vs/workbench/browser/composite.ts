@@ -77,25 +77,25 @@ export abstract class Composite extends Component implements IComposite {
 		const focusTracker = this._register(trackFocus(container));
 
 		const onDidFocus = (this._onDidFocus = this._register(
-			new Emitter<void>(),
+			new Emitter<void>()
 		));
 		this._register(
 			focusTracker.onDidFocus(() => {
 				this._hasFocus = true;
 
 				onDidFocus.fire();
-			}),
+			})
 		);
 
 		const onDidBlur = (this._onDidBlur = this._register(
-			new Emitter<void>(),
+			new Emitter<void>()
 		));
 		this._register(
 			focusTracker.onDidBlur(() => {
 				this._hasFocus = false;
 
 				onDidBlur.fire();
-			}),
+			})
 		);
 
 		return { onDidFocus, onDidBlur };
@@ -115,7 +115,7 @@ export abstract class Composite extends Component implements IComposite {
 		id: string,
 		telemetryService: ITelemetryService,
 		themeService: IThemeService,
-		storageService: IStorageService,
+		storageService: IStorageService
 	) {
 		super(id, themeService, storageService);
 
@@ -282,7 +282,7 @@ export abstract class CompositeDescriptor<T extends Composite> {
 		readonly name: string,
 		readonly cssClass?: string,
 		readonly order?: number,
-		readonly requestedIndex?: number,
+		readonly requestedIndex?: number
 	) {}
 
 	instantiate(instantiationService: IInstantiationService): T {
@@ -294,12 +294,12 @@ export abstract class CompositeRegistry<
 	T extends Composite,
 > extends Disposable {
 	private readonly _onDidRegister = this._register(
-		new Emitter<CompositeDescriptor<T>>(),
+		new Emitter<CompositeDescriptor<T>>()
 	);
 	readonly onDidRegister = this._onDidRegister.event;
 
 	private readonly _onDidDeregister = this._register(
-		new Emitter<CompositeDescriptor<T>>(),
+		new Emitter<CompositeDescriptor<T>>()
 	);
 	readonly onDidDeregister = this._onDidDeregister.event;
 

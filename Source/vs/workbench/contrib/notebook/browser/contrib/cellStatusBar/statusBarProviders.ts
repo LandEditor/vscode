@@ -44,13 +44,13 @@ class CellStatusBarLanguagePickerProvider
 
 	constructor(
 		@INotebookService private readonly _notebookService: INotebookService,
-		@ILanguageService private readonly _languageService: ILanguageService,
-	) { }
+		@ILanguageService private readonly _languageService: ILanguageService
+	) {}
 
 	async provideCellStatusBarItems(
 		uri: URI,
 		index: number,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Promise<INotebookCellStatusBarItemList | undefined> {
 		const doc = this._notebookService.getNotebookTextModel(uri);
 		const cell = doc?.cells[index];
@@ -65,7 +65,7 @@ class CellStatusBarLanguagePickerProvider
 		} else {
 			const registeredId =
 				this._languageService.getLanguageIdByLanguageName(
-					cell.language,
+					cell.language
 				);
 			if (registeredId) {
 				displayLanguage =
@@ -76,7 +76,7 @@ class CellStatusBarLanguagePickerProvider
 				const searchTooltip = localize(
 					"notebook.cell.status.searchLanguageExtensions",
 					"Unknown cell language. Click to search for '{0}' extensions",
-					cell.language,
+					cell.language
 				);
 				statusBarItems.push({
 					text: `$(dialog-warning)`,
@@ -97,7 +97,7 @@ class CellStatusBarLanguagePickerProvider
 			command: CHANGE_CELL_LANGUAGE,
 			tooltip: localize(
 				"notebook.cell.status.language",
-				"Select Cell Language Mode",
+				"Select Cell Language Mode"
 			),
 			alignment: CellStatusbarAlignment.Right,
 			priority: -Number.MAX_SAFE_INTEGER,
@@ -123,17 +123,21 @@ class CellStatusBarLanguageDetectionProvider
 
 	constructor(
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageDetectionService private readonly _languageDetectionService: ILanguageDetectionService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-	) { }
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageDetectionService
+		private readonly _languageDetectionService: ILanguageDetectionService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService
+	) {}
 
 	async provideCellStatusBarItems(
 		uri: URI,
 		index: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<INotebookCellStatusBarItemList | undefined> {
 		const doc = this._notebookService.getNotebookTextModel(uri);
 		const cell = doc?.cells[index];
@@ -143,7 +147,7 @@ class CellStatusBarLanguageDetectionProvider
 
 		const enablementConfig =
 			this._configurationService.getValue<LanguageDetectionHintConfig>(
-				"workbench.editor.languageDetectionHints",
+				"workbench.editor.languageDetectionHints"
 			);
 		const enabled =
 			typeof enablementConfig === "object" &&
@@ -161,8 +165,8 @@ class CellStatusBarLanguageDetectionProvider
 			cell.cellKind === CellKind.Markup
 				? "markdown"
 				: this._languageService.getLanguageIdByLanguageName(
-						cell.language,
-				  ) || cell.language;
+						cell.language
+					) || cell.language;
 
 		if (!this.cache.has(cellUri)) {
 			this.cache.set(cellUri, {
@@ -192,7 +196,7 @@ class CellStatusBarLanguageDetectionProvider
 				cached.guess =
 					await this._languageDetectionService.detectLanguage(
 						cell.uri,
-						supportedLangs,
+						supportedLangs
 					);
 			}
 		}
@@ -205,7 +209,7 @@ class CellStatusBarLanguageDetectionProvider
 			let tooltip = localize(
 				"notebook.cell.status.autoDetectLanguage",
 				"Accept Detected Language: {0}",
-				detectedName,
+				detectedName
 			);
 			const keybinding =
 				this._keybindingService.lookupKeybinding(DETECT_CELL_LANGUAGE);
@@ -229,7 +233,8 @@ class CellStatusBarLanguageDetectionProvider
 class BuiltinCellStatusBarProviders extends Disposable {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@INotebookCellStatusBarService notebookCellStatusBarService: INotebookCellStatusBarService,
+		@INotebookCellStatusBarService
+		notebookCellStatusBarService: INotebookCellStatusBarService
 	) {
 		super();
 
@@ -240,16 +245,16 @@ class BuiltinCellStatusBarProviders extends Disposable {
 		builtinProviders.forEach((p) => {
 			this._register(
 				notebookCellStatusBarService.registerCellStatusBarItemProvider(
-					instantiationService.createInstance(p),
-				),
+					instantiationService.createInstance(p)
+				)
 			);
 		});
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	BuiltinCellStatusBarProviders,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

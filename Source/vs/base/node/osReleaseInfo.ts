@@ -15,7 +15,7 @@ type ReleaseInfo = {
 };
 
 export async function getOSReleaseInfo(
-	errorLogger: (error: any) => void,
+	errorLogger: (error: any) => void
 ): Promise<ReleaseInfo | undefined> {
 	if (Platform.isMacintosh || Platform.isWindows) {
 		return;
@@ -38,7 +38,7 @@ export async function getOSReleaseInfo(
 
 	if (!handle) {
 		errorLogger(
-			"Unable to retrieve release information from known identifier paths.",
+			"Unable to retrieve release information from known identifier paths."
 		);
 		return;
 	}

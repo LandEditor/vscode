@@ -143,7 +143,7 @@ export class ModelRawFlush {
 export class LineInjectedText {
 	public static applyInjectedText(
 		lineText: string,
-		injectedTexts: LineInjectedText[] | null,
+		injectedTexts: LineInjectedText[] | null
 	): string {
 		if (!injectedTexts || injectedTexts.length === 0) {
 			return lineText;
@@ -153,7 +153,7 @@ export class LineInjectedText {
 		for (const injectedText of injectedTexts) {
 			result += lineText.substring(
 				lastOriginalOffset,
-				injectedText.column - 1,
+				injectedText.column - 1
 			);
 			lastOriginalOffset = injectedText.column - 1;
 			result += injectedText.options.content;
@@ -163,7 +163,7 @@ export class LineInjectedText {
 	}
 
 	public static fromDecorations(
-		decorations: IModelDecoration[],
+		decorations: IModelDecoration[]
 	): LineInjectedText[] {
 		const result: LineInjectedText[] = [];
 		for (const decoration of decorations) {
@@ -177,8 +177,8 @@ export class LineInjectedText {
 						decoration.range.startLineNumber,
 						decoration.range.startColumn,
 						decoration.options.before,
-						0,
-					),
+						0
+					)
 				);
 			}
 			if (
@@ -191,8 +191,8 @@ export class LineInjectedText {
 						decoration.range.endLineNumber,
 						decoration.range.endColumn,
 						decoration.options.after,
-						1,
-					),
+						1
+					)
 				);
 			}
 		}
@@ -213,7 +213,7 @@ export class LineInjectedText {
 		public readonly lineNumber: number,
 		public readonly column: number,
 		public readonly options: InjectedTextOptions,
-		public readonly order: number,
+		public readonly order: number
 	) {}
 
 	public withText(text: string): LineInjectedText {
@@ -222,7 +222,7 @@ export class LineInjectedText {
 			this.lineNumber,
 			this.column,
 			{ ...this.options, content: text },
-			this.order,
+			this.order
 		);
 	}
 }
@@ -249,7 +249,7 @@ export class ModelRawLineChanged {
 	constructor(
 		lineNumber: number,
 		detail: string,
-		injectedText: LineInjectedText[] | null,
+		injectedText: LineInjectedText[] | null
 	) {
 		this.lineNumber = lineNumber;
 		this.detail = detail;
@@ -305,7 +305,7 @@ export class ModelRawLinesInserted {
 		fromLineNumber: number,
 		toLineNumber: number,
 		detail: string[],
-		injectedTexts: (LineInjectedText[] | null)[],
+		injectedTexts: (LineInjectedText[] | null)[]
 	) {
 		this.injectedTexts = injectedTexts;
 		this.fromLineNumber = fromLineNumber;
@@ -357,7 +357,7 @@ export class ModelRawContentChangedEvent {
 		changes: ModelRawChange[],
 		versionId: number,
 		isUndoing: boolean,
-		isRedoing: boolean,
+		isRedoing: boolean
 	) {
 		this.changes = changes;
 		this.versionId = versionId;
@@ -378,7 +378,7 @@ export class ModelRawContentChangedEvent {
 
 	public static merge(
 		a: ModelRawContentChangedEvent,
-		b: ModelRawContentChangedEvent,
+		b: ModelRawContentChangedEvent
 	): ModelRawContentChangedEvent {
 		const changes = ([] as ModelRawChange[])
 			.concat(a.changes)
@@ -390,7 +390,7 @@ export class ModelRawContentChangedEvent {
 			changes,
 			versionId,
 			isUndoing,
-			isRedoing,
+			isRedoing
 		);
 	}
 }
@@ -413,30 +413,30 @@ export class ModelInjectedTextChangedEvent {
 export class InternalModelContentChangeEvent {
 	constructor(
 		public readonly rawContentChangedEvent: ModelRawContentChangedEvent,
-		public readonly contentChangedEvent: IModelContentChangedEvent,
+		public readonly contentChangedEvent: IModelContentChangedEvent
 	) {}
 
 	public merge(
-		other: InternalModelContentChangeEvent,
+		other: InternalModelContentChangeEvent
 	): InternalModelContentChangeEvent {
 		const rawContentChangedEvent = ModelRawContentChangedEvent.merge(
 			this.rawContentChangedEvent,
-			other.rawContentChangedEvent,
+			other.rawContentChangedEvent
 		);
 		const contentChangedEvent =
 			InternalModelContentChangeEvent._mergeChangeEvents(
 				this.contentChangedEvent,
-				other.contentChangedEvent,
+				other.contentChangedEvent
 			);
 		return new InternalModelContentChangeEvent(
 			rawContentChangedEvent,
-			contentChangedEvent,
+			contentChangedEvent
 		);
 	}
 
 	private static _mergeChangeEvents(
 		a: IModelContentChangedEvent,
-		b: IModelContentChangedEvent,
+		b: IModelContentChangedEvent
 	): IModelContentChangedEvent {
 		const changes = ([] as IModelContentChange[])
 			.concat(a.changes)

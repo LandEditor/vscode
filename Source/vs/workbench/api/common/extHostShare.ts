@@ -27,7 +27,7 @@ export class ExtHostShare implements ExtHostShareShape {
 
 	constructor(
 		mainContext: IMainContext,
-		private readonly uriTransformer: IURITransformer | undefined,
+		private readonly uriTransformer: IURITransformer | undefined
 	) {
 		this.proxy = mainContext.getProxy(MainContext.MainThreadShare);
 	}
@@ -35,7 +35,7 @@ export class ExtHostShare implements ExtHostShareShape {
 	async $provideShare(
 		handle: number,
 		shareableItem: IShareableItemDto,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<UriComponents | string | undefined> {
 		const provider = this.providers.get(handle);
 		const result = await provider?.provideShare(
@@ -43,14 +43,14 @@ export class ExtHostShare implements ExtHostShareShape {
 				selection: Range.to(shareableItem.selection),
 				resourceUri: URI.revive(shareableItem.resourceUri),
 			},
-			token,
+			token
 		);
 		return result ?? undefined;
 	}
 
 	registerShareProvider(
 		selector: vscode.DocumentSelector,
-		provider: vscode.ShareProvider,
+		provider: vscode.ShareProvider
 	): vscode.Disposable {
 		const handle = ExtHostShare.handlePool++;
 		this.providers.set(handle, provider);
@@ -59,7 +59,7 @@ export class ExtHostShare implements ExtHostShareShape {
 			DocumentSelector.from(selector, this.uriTransformer),
 			provider.id,
 			provider.label,
-			provider.priority,
+			provider.priority
 		);
 		return {
 			dispose: () => {

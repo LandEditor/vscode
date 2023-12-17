@@ -17,18 +17,18 @@ export interface IDiagnosticsService {
 
 	getPerformanceInfo(
 		mainProcessInfo: IMainProcessDiagnostics,
-		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<PerformanceInfo>;
 	getSystemInfo(
 		mainProcessInfo: IMainProcessDiagnostics,
-		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<SystemInfo>;
 	getDiagnostics(
 		mainProcessInfo: IMainProcessDiagnostics,
-		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<string>;
 	getWorkspaceFileExtensions(
-		workspace: IWorkspace,
+		workspace: IWorkspace
 	): Promise<{ extensions: string[] }>;
 	reportWorkspaceStats(workspace: IWorkspaceInformation): Promise<void>;
 }
@@ -112,14 +112,14 @@ export class NullDiagnosticsService implements IDiagnosticsService {
 
 	async getPerformanceInfo(
 		mainProcessInfo: IMainProcessDiagnostics,
-		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<PerformanceInfo> {
 		return {};
 	}
 
 	async getSystemInfo(
 		mainProcessInfo: IMainProcessDiagnostics,
-		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<SystemInfo> {
 		return {
 			processArgs: "nullProcessArgs",
@@ -134,19 +134,19 @@ export class NullDiagnosticsService implements IDiagnosticsService {
 
 	async getDiagnostics(
 		mainProcessInfo: IMainProcessDiagnostics,
-		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[],
+		remoteInfo: (IRemoteDiagnosticInfo | IRemoteDiagnosticError)[]
 	): Promise<string> {
 		return "";
 	}
 
 	async getWorkspaceFileExtensions(
-		workspace: IWorkspace,
+		workspace: IWorkspace
 	): Promise<{ extensions: string[] }> {
 		return { extensions: [] };
 	}
 
 	async reportWorkspaceStats(
-		workspace: IWorkspaceInformation,
+		workspace: IWorkspaceInformation
 	): Promise<void> {}
 }
 

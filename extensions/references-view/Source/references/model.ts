@@ -22,7 +22,7 @@ export class ReferencesTreeInput
 		readonly title: string,
 		readonly location: vscode.Location,
 		private readonly _command: string,
-		private readonly _result?: vscode.Location[] | vscode.LocationLink[],
+		private readonly _result?: vscode.Location[] | vscode.LocationLink[]
 	) {
 		this.contextValue = _command;
 	}
@@ -35,7 +35,7 @@ export class ReferencesTreeInput
 			const resut = await Promise.resolve(
 				vscode.commands.executeCommand<
 					vscode.Location[] | vscode.LocationLink[]
-				>(this._command, this.location.uri, this.location.range.start),
+				>(this._command, this.location.uri, this.location.range.start)
 			);
 			model = new ReferencesModel(resut ?? []);
 		}
@@ -100,7 +100,7 @@ export class ReferencesModel
 
 	private static _compareUriIgnoreFragment(
 		a: vscode.Uri,
-		b: vscode.Uri,
+		b: vscode.Uri
 	): number {
 		const aStr = a.with({ fragment: "" }).toString();
 		const bStr = b.with({ fragment: "" }).toString();
@@ -114,7 +114,7 @@ export class ReferencesModel
 
 	private static _compareLocations(
 		a: vscode.Location | vscode.LocationLink,
-		b: vscode.Location | vscode.LocationLink,
+		b: vscode.Location | vscode.LocationLink
 	): number {
 		const aUri = a instanceof vscode.Location ? a.uri : a.targetUri;
 		const bUri = b instanceof vscode.Location ? b.uri : b.targetUri;
@@ -143,7 +143,7 @@ export class ReferencesModel
 		}
 		const total = this.items.reduce(
 			(prev, cur) => prev + cur.references.length,
-			0,
+			0
 		);
 		const files = this.items.length;
 		if (total === 1 && files === 1) {
@@ -163,13 +163,13 @@ export class ReferencesModel
 			: new vscode.Location(
 					item.uri,
 					item.references[0]?.location.range ??
-						new vscode.Position(0, 0),
-			  );
+						new vscode.Position(0, 0)
+				);
 	}
 
 	nearest(
 		uri: vscode.Uri,
-		position: vscode.Position,
+		position: vscode.Position
 	): FileItem | ReferenceItem | undefined {
 		if (this.items.length === 0) {
 			return;
@@ -203,13 +203,13 @@ export class ReferencesModel
 		let best = 0;
 		const bestValue = ReferencesModel._prefixLen(
 			this.items[best].toString(),
-			uri.toString(),
+			uri.toString()
 		);
 
 		for (let i = 1; i < this.items.length; i++) {
 			const value = ReferencesModel._prefixLen(
 				this.items[i].uri.toString(),
-				uri.toString(),
+				uri.toString()
 			);
 			if (value > bestValue) {
 				best = i;
@@ -241,7 +241,7 @@ export class ReferencesModel
 
 	private _move(
 		item: FileItem | ReferenceItem,
-		fwd: boolean,
+		fwd: boolean
 	): ReferenceItem | void {
 		const delta = fwd ? +1 : -1;
 
@@ -274,10 +274,10 @@ export class ReferencesModel
 
 	getEditorHighlights(
 		_item: FileItem | ReferenceItem,
-		uri: vscode.Uri,
+		uri: vscode.Uri
 	): vscode.Range[] | undefined {
 		const file = this.items.find(
-			(file) => file.uri.toString() === uri.toString(),
+			(file) => file.uri.toString() === uri.toString()
 		);
 		return file?.references.map((ref) => ref.location.range);
 	}
@@ -326,7 +326,7 @@ class ReferencesTreeDataProvider
 
 	constructor(private readonly _model: ReferencesModel) {
 		this._listener = _model.onDidChangeTreeData(() =>
-			this._onDidChange.fire(undefined),
+			this._onDidChange.fire(undefined)
 		);
 	}
 
@@ -391,7 +391,7 @@ export class FileItem {
 	constructor(
 		readonly uri: vscode.Uri,
 		readonly references: Array<ReferenceItem>,
-		readonly model: ReferencesModel,
+		readonly model: ReferencesModel
 	) {}
 
 	// --- adapter
@@ -412,12 +412,15 @@ export class FileItem {
 export class ReferenceItem {
 	private _document: Thenable<vscode.TextDocument> | undefined;
 
-	constructor(readonly location: vscode.Location, readonly file: FileItem) {}
+	constructor(
+		readonly location: vscode.Location,
+		readonly file: FileItem
+	) {}
 
 	async getDocument(warmUpNext?: boolean) {
 		if (!this._document) {
 			this._document = vscode.workspace.openTextDocument(
-				this.location.uri,
+				this.location.uri
 			);
 		}
 		if (warmUpNext) {

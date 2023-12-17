@@ -29,10 +29,10 @@ class TerminalTypeAheadContribution
 	static readonly ID = "terminal.typeAhead";
 
 	static get(
-		instance: ITerminalInstance,
+		instance: ITerminalInstance
 	): TerminalTypeAheadContribution | null {
 		return instance.getContribution<TerminalTypeAheadContribution>(
-			TerminalTypeAheadContribution.ID,
+			TerminalTypeAheadContribution.ID
 		);
 	}
 
@@ -42,8 +42,10 @@ class TerminalTypeAheadContribution
 		instance: ITerminalInstance,
 		private readonly _processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 		this.add(toDisposable(() => this._addon?.dispose()));
@@ -58,21 +60,21 @@ class TerminalTypeAheadContribution
 				) {
 					this._loadTypeAheadAddon(xterm.raw);
 				}
-			}),
+			})
 		);
 
 		// Reset the addon when the terminal launches or relaunches
 		this.add(
 			this._processManager.onProcessReady(() => {
 				this._addon?.reset();
-			}),
+			})
 		);
 	}
 
 	private _loadTypeAheadAddon(xterm: RawXtermTerminal): void {
 		const enabled =
 			this._configurationService.getValue<ITerminalConfiguration>(
-				TERMINAL_CONFIG_SECTION,
+				TERMINAL_CONFIG_SECTION
 			).localEchoEnabled;
 		const isRemote = !!this._processManager.remoteAuthority;
 		if (enabled === "off" || (enabled === "auto" && !isRemote)) {
@@ -86,7 +88,7 @@ class TerminalTypeAheadContribution
 		if (enabled === "on" || (enabled === "auto" && isRemote)) {
 			this._addon = this._instantiationService.createInstance(
 				TypeAheadAddon,
-				this._processManager,
+				this._processManager
 			);
 			xterm.loadAddon(this._addon);
 		}
@@ -95,5 +97,5 @@ class TerminalTypeAheadContribution
 
 registerTerminalContribution(
 	TerminalTypeAheadContribution.ID,
-	TerminalTypeAheadContribution,
+	TerminalTypeAheadContribution
 );

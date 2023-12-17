@@ -41,10 +41,10 @@ class TerminalMouseWheelZoomContribution
 	static activeFindWidget?: TerminalMouseWheelZoomContribution;
 
 	static get(
-		instance: ITerminalInstance | IDetachedTerminalInstance,
+		instance: ITerminalInstance | IDetachedTerminalInstance
 	): TerminalMouseWheelZoomContribution | null {
 		return instance.getContribution<TerminalMouseWheelZoomContribution>(
-			TerminalMouseWheelZoomContribution.ID,
+			TerminalMouseWheelZoomContribution.ID
 		);
 	}
 
@@ -54,7 +54,8 @@ class TerminalMouseWheelZoomContribution
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 		processManager: ITerminalProcessManager | ITerminalProcessInfo,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -70,7 +71,7 @@ class TerminalMouseWheelZoomContribution
 					) {
 						if (
 							!!this._configurationService.getValue(
-								TerminalSettingId.MouseWheelZoom,
+								TerminalSettingId.MouseWheelZoom
 							)
 						) {
 							this._setupMouseWheelZoomListener(xterm.raw);
@@ -78,8 +79,8 @@ class TerminalMouseWheelZoomContribution
 							this._listener.clear();
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -104,7 +105,7 @@ class TerminalMouseWheelZoomContribution
 					const delta = browserEvent.deltaY > 0 ? -1 : 1;
 					this._configurationService.updateValue(
 						TerminalSettingId.FontSize,
-						this._getConfigFontSize() + delta,
+						this._getConfigFontSize() + delta
 					);
 					// EditorZoom.setZoomLevel(zoomLevel + delta);
 					browserEvent.preventDefault();
@@ -128,13 +129,13 @@ class TerminalMouseWheelZoomContribution
 
 				if (gestureHasZoomModifiers) {
 					const deltaAbs = Math.ceil(
-						Math.abs(gestureAccumulatedDelta / 5),
+						Math.abs(gestureAccumulatedDelta / 5)
 					);
 					const deltaDirection = gestureAccumulatedDelta > 0 ? -1 : 1;
 					const delta = deltaAbs * deltaDirection;
 					this._configurationService.updateValue(
 						TerminalSettingId.FontSize,
-						gestureStartFontSize + delta,
+						gestureStartFontSize + delta
 					);
 					gestureAccumulatedDelta += browserEvent.deltaY;
 					browserEvent.preventDefault();
@@ -145,7 +146,7 @@ class TerminalMouseWheelZoomContribution
 			return true;
 		});
 		this._listener.value = toDisposable(() =>
-			raw.attachCustomWheelEventHandler(() => true),
+			raw.attachCustomWheelEventHandler(() => true)
 		);
 	}
 }
@@ -153,14 +154,14 @@ class TerminalMouseWheelZoomContribution
 registerTerminalContribution(
 	TerminalMouseWheelZoomContribution.ID,
 	TerminalMouseWheelZoomContribution,
-	true,
+	true
 );
 
 function hasMouseWheelZoomModifiers(browserEvent: IMouseWheelEvent): boolean {
 	return isMacintosh
 		? // on macOS we support cmd + two fingers scroll (`metaKey` set)
-		  // and also the two fingers pinch gesture (`ctrKey` set)
-		  (browserEvent.metaKey || browserEvent.ctrlKey) &&
+			// and also the two fingers pinch gesture (`ctrKey` set)
+			(browserEvent.metaKey || browserEvent.ctrlKey) &&
 				!browserEvent.shiftKey &&
 				!browserEvent.altKey
 		: browserEvent.ctrlKey &&

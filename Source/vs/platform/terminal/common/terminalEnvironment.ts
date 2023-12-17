@@ -27,7 +27,7 @@ export function escapeNonWindowsPath(path: string): string {
 export function collapseTildePath(
 	path: string | undefined,
 	userHome: string | undefined,
-	separator: string,
+	separator: string
 ): string {
 	if (!path) {
 		return "";

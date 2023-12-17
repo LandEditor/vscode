@@ -24,7 +24,7 @@ import { Event } from "vs/base/common/event";
 export class MultiDiffEditorWidget extends Disposable {
 	private readonly _dimension = observableValue<Dimension | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 	private readonly _viewModel = observableValue<
 		MultiDiffEditorViewModel | undefined
@@ -38,15 +38,16 @@ export class MultiDiffEditorWidget extends Disposable {
 				this._element,
 				this._dimension,
 				this._viewModel,
-				this._workbenchUIElementFactory,
-			),
+				this._workbenchUIElementFactory
+			)
 		);
 	});
 
 	constructor(
 		private readonly _element: HTMLElement,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -54,7 +55,7 @@ export class MultiDiffEditorWidget extends Disposable {
 	}
 
 	public createViewModel(
-		model: IMultiDiffEditorModel,
+		model: IMultiDiffEditorModel
 	): MultiDiffEditorViewModel {
 		return new MultiDiffEditorViewModel(model, this._instantiationService);
 	}
@@ -68,7 +69,7 @@ export class MultiDiffEditorWidget extends Disposable {
 	}
 
 	private readonly _activeControl = derived(this, (reader) =>
-		this._widgetImpl.read(reader).activeControl.read(reader),
+		this._widgetImpl.read(reader).activeControl.read(reader)
 	);
 
 	public getActiveControl(): any | undefined {
@@ -76,7 +77,7 @@ export class MultiDiffEditorWidget extends Disposable {
 	}
 
 	public readonly onDidChangeActiveControl = Event.fromObservableLight(
-		this._activeControl,
+		this._activeControl
 	);
 
 	private readonly _scrollState = derived(this, (reader) => {
@@ -96,6 +97,6 @@ export class MultiDiffEditorWidget extends Disposable {
 	}
 
 	public readonly onDidChangeScrollState = Event.fromObservableLight(
-		this._scrollState,
+		this._scrollState
 	);
 }

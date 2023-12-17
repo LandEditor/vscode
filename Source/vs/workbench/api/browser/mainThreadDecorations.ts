@@ -33,7 +33,7 @@ class DecorationRequestsQueue {
 
 	constructor(
 		private readonly _proxy: ExtHostDecorationsShape,
-		private readonly _handle: number,
+		private readonly _handle: number
 	) {
 		//
 	}
@@ -65,7 +65,7 @@ class DecorationRequestsQueue {
 				.$provideDecorations(
 					this._handle,
 					[...requests.values()],
-					CancellationToken.None,
+					CancellationToken.None
 				)
 				.then((data) => {
 					for (const [id, resolve] of resolver) {
@@ -91,7 +91,8 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 
 	constructor(
 		context: IExtHostContext,
-		@IDecorationsService private readonly _decorationsService: IDecorationsService
+		@IDecorationsService
+		private readonly _decorationsService: IDecorationsService
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostDecorations);
 	}

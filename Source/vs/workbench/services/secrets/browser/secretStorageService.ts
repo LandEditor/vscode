@@ -25,8 +25,9 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 	constructor(
 		@IStorageService storageService: IStorageService,
 		@IEncryptionService encryptionService: IEncryptionService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
-		@ILogService logService: ILogService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
+		@ILogService logService: ILogService
 	) {
 		// We don't have encryption in the browser so instead we use the
 		// in-memory base class implementation instead.
@@ -42,7 +43,7 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 	override get(key: string): Promise<string | undefined> {
 		if (this._secretStorageProvider) {
 			return this._embedderSequencer!.queue(key, () =>
-				this._secretStorageProvider!.get(key),
+				this._secretStorageProvider!.get(key)
 			);
 		}
 
@@ -83,5 +84,5 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 registerSingleton(
 	ISecretStorageService,
 	BrowserSecretStorageService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

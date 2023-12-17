@@ -9,7 +9,7 @@
 export function createSingleCallFunction<T extends Function>(
 	this: unknown,
 	fn: T,
-	fnDidRunCallback?: () => void,
+	fnDidRunCallback?: () => void
 ): T {
 	const _this = this;
 	let didCall = false;

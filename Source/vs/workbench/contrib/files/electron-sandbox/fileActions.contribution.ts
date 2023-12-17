@@ -39,11 +39,11 @@ const REVEAL_IN_OS_COMMAND_ID = "revealFileInOS";
 const REVEAL_IN_OS_LABEL = isWindows
 	? nls.localize("revealInWindows", "Reveal in File Explorer")
 	: isMacintosh
-	  ? nls.localize("revealInMac", "Reveal in Finder")
-	  : nls.localize("openContainer", "Open Containing Folder");
+		? nls.localize("revealInMac", "Reveal in Finder")
+		: nls.localize("openContainer", "Open Containing Folder");
 const REVEAL_IN_OS_WHEN_CONTEXT = ContextKeyExpr.or(
 	ResourceContextKey.Scheme.isEqualTo(Schemas.file),
-	ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeUserData),
+	ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeUserData)
 );
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
@@ -59,12 +59,12 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			resource,
 			accessor.get(IListService),
 			accessor.get(IEditorService),
-			accessor.get(IExplorerService),
+			accessor.get(IExplorerService)
 		);
 		revealResourcesInOS(
 			resources,
 			accessor.get(INativeHostService),
-			accessor.get(IWorkspaceContextService),
+			accessor.get(IWorkspaceContextService)
 		);
 	},
 });
@@ -88,7 +88,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		revealResourcesInOS(
 			resources,
 			accessor.get(INativeHostService),
-			accessor.get(IWorkspaceContextService),
+			accessor.get(IWorkspaceContextService)
 		);
 	},
 });
@@ -98,7 +98,7 @@ appendEditorTitleContextMenuItem(
 	REVEAL_IN_OS_LABEL,
 	REVEAL_IN_OS_WHEN_CONTEXT,
 	"2_files",
-	0,
+	0
 );
 
 // Menu registration - open editors
@@ -143,10 +143,10 @@ appendToCommandPalette(
 			original: isWindows
 				? "Reveal in File Explorer"
 				: isMacintosh
-				  ? "Reveal in Finder"
-				  : "Open Containing Folder",
+					? "Reveal in Finder"
+					: "Open Containing Folder",
 		},
 		category: category,
 	},
-	REVEAL_IN_OS_WHEN_CONTEXT,
+	REVEAL_IN_OS_WHEN_CONTEXT
 );

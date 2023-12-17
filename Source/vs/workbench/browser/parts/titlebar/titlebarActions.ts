@@ -30,7 +30,7 @@ class ToggleConfigAction extends Action2 {
 		private readonly section: string,
 		title: string,
 		order: number,
-		mainWindowOnly: boolean,
+		mainWindowOnly: boolean
 	) {
 		super({
 			id: `toggle.${section}`,
@@ -70,10 +70,10 @@ registerAction2(
 				LayoutSettings.COMMAND_CENTER,
 				localize("toggle.commandCenter", "Command Center"),
 				1,
-				false,
+				false
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -83,10 +83,10 @@ registerAction2(
 				"workbench.layoutControl.enabled",
 				localize("toggle.layout", "Layout Controls"),
 				2,
-				true,
+				true
 			);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -96,12 +96,12 @@ registerAction2(
 			const titleBarContextCondition = ContextKeyExpr.and(
 				ContextKeyExpr.equals(
 					`config.workbench.editor.showTabs`,
-					"none",
+					"none"
 				).negate(),
 				ContextKeyExpr.equals(
 					`config.${ToggleEditorActions.settingsID}`,
-					"default",
-				),
+					"default"
+				)
 			)?.negate();
 
 			super({
@@ -109,7 +109,7 @@ registerAction2(
 				title: localize("toggle.editorActions", "Editor Actions"),
 				toggled: ContextKeyExpr.equals(
 					`config.${ToggleEditorActions.settingsID}`,
-					"hidden",
+					"hidden"
 				).negate(),
 				menu: [
 					{
@@ -132,18 +132,18 @@ registerAction2(
 			const storageService = accessor.get(IStorageService);
 
 			const location = configService.getValue<string>(
-				ToggleEditorActions.settingsID,
+				ToggleEditorActions.settingsID
 			);
 			if (location === "hidden") {
 				const showTabs = configService.getValue<string>(
-					LayoutSettings.EDITOR_TABS_MODE,
+					LayoutSettings.EDITOR_TABS_MODE
 				);
 
 				// If tabs are visible, then set the editor actions to be in the title bar
 				if (showTabs !== "none") {
 					configService.updateValue(
 						ToggleEditorActions.settingsID,
-						"titleBar",
+						"titleBar"
 					);
 				}
 
@@ -151,34 +151,34 @@ registerAction2(
 				else {
 					const storedValue = storageService.get(
 						ToggleEditorActions.settingsID,
-						StorageScope.PROFILE,
+						StorageScope.PROFILE
 					);
 					configService.updateValue(
 						ToggleEditorActions.settingsID,
-						storedValue ?? "default",
+						storedValue ?? "default"
 					);
 				}
 
 				storageService.remove(
 					ToggleEditorActions.settingsID,
-					StorageScope.PROFILE,
+					StorageScope.PROFILE
 				);
 			}
 			// Store the current value (titleBar or default) in the storage service for later to restore
 			else {
 				configService.updateValue(
 					ToggleEditorActions.settingsID,
-					"hidden",
+					"hidden"
 				);
 				storageService.store(
 					ToggleEditorActions.settingsID,
 					location,
 					StorageScope.PROFILE,
-					StorageTarget.USER,
+					StorageTarget.USER
 				);
 			}
 		}
-	},
+	}
 );
 
 export const ACCOUNTS_ACTIVITY_TILE_ACTION: IAction = {

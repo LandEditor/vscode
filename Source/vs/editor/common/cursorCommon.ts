@@ -118,7 +118,7 @@ export class CursorConfiguration {
 		languageId: string,
 		modelOptions: TextModelResolvedOptions,
 		configuration: IEditorConfiguration,
-		public readonly languageConfigurationService: ILanguageConfigurationService,
+		public readonly languageConfigurationService: ILanguageConfigurationService
 	) {
 		this._languageId = languageId;
 
@@ -136,31 +136,31 @@ export class CursorConfiguration {
 			fontInfo.typicalHalfwidthCharacterWidth;
 		this.pageSize = Math.max(
 			1,
-			Math.floor(layoutInfo.height / this.lineHeight) - 2,
+			Math.floor(layoutInfo.height / this.lineHeight) - 2
 		);
 		this.useTabStops = options.get(EditorOption.useTabStops);
 		this.wordSeparators = options.get(EditorOption.wordSeparators);
 		this.emptySelectionClipboard = options.get(
-			EditorOption.emptySelectionClipboard,
+			EditorOption.emptySelectionClipboard
 		);
 		this.copyWithSyntaxHighlighting = options.get(
-			EditorOption.copyWithSyntaxHighlighting,
+			EditorOption.copyWithSyntaxHighlighting
 		);
 		this.multiCursorMergeOverlapping = options.get(
-			EditorOption.multiCursorMergeOverlapping,
+			EditorOption.multiCursorMergeOverlapping
 		);
 		this.multiCursorPaste = options.get(EditorOption.multiCursorPaste);
 		this.multiCursorLimit = options.get(EditorOption.multiCursorLimit);
 		this.autoClosingBrackets = options.get(
-			EditorOption.autoClosingBrackets,
+			EditorOption.autoClosingBrackets
 		);
 		this.autoClosingComments = options.get(
-			EditorOption.autoClosingComments,
+			EditorOption.autoClosingComments
 		);
 		this.autoClosingQuotes = options.get(EditorOption.autoClosingQuotes);
 		this.autoClosingDelete = options.get(EditorOption.autoClosingDelete);
 		this.autoClosingOvertype = options.get(
-			EditorOption.autoClosingOvertype,
+			EditorOption.autoClosingOvertype
 		);
 		this.autoSurround = options.get(EditorOption.autoSurround);
 		this.autoIndent = options.get(EditorOption.autoIndent);
@@ -172,17 +172,17 @@ export class CursorConfiguration {
 			quote: this._getShouldAutoClose(
 				languageId,
 				this.autoClosingQuotes,
-				true,
+				true
 			),
 			comment: this._getShouldAutoClose(
 				languageId,
 				this.autoClosingComments,
-				false,
+				false
 			),
 			bracket: this._getShouldAutoClose(
 				languageId,
 				this.autoClosingBrackets,
-				false,
+				false
 			),
 		};
 
@@ -201,7 +201,7 @@ export class CursorConfiguration {
 
 		const commentsConfiguration =
 			this.languageConfigurationService.getLanguageConfiguration(
-				languageId,
+				languageId
 			).comments;
 		this.blockCommentStartToken =
 			commentsConfiguration?.blockCommentStartToken ?? null;
@@ -228,12 +228,12 @@ export class CursorConfiguration {
 	public onElectricCharacter(
 		character: string,
 		context: LineTokens,
-		column: number,
+		column: number
 	): IElectricAction | null {
 		const scopedLineTokens = createScopedLineTokens(context, column - 1);
 		const electricCharacterSupport =
 			this.languageConfigurationService.getLanguageConfiguration(
-				scopedLineTokens.languageId,
+				scopedLineTokens.languageId
 			).electricCharacter;
 		if (!electricCharacterSupport) {
 			return null;
@@ -241,7 +241,7 @@ export class CursorConfiguration {
 		return electricCharacterSupport.onElectricCharacter(
 			character,
 			scopedLineTokens,
-			column - scopedLineTokens.firstCharOffset,
+			column - scopedLineTokens.firstCharOffset
 		);
 	}
 
@@ -252,7 +252,7 @@ export class CursorConfiguration {
 	private _getShouldAutoClose(
 		languageId: string,
 		autoCloseConfig: EditorAutoClosingStrategy,
-		forQuotes: boolean,
+		forQuotes: boolean
 	): (ch: string) => boolean {
 		switch (autoCloseConfig) {
 			case "beforeWhitespace":
@@ -260,7 +260,7 @@ export class CursorConfiguration {
 			case "languageDefined":
 				return this._getLanguageDefinedShouldAutoClose(
 					languageId,
-					forQuotes,
+					forQuotes
 				);
 			case "always":
 				return autoCloseAlways;
@@ -271,7 +271,7 @@ export class CursorConfiguration {
 
 	private _getLanguageDefinedShouldAutoClose(
 		languageId: string,
-		forQuotes: boolean,
+		forQuotes: boolean
 	): (ch: string) => boolean {
 		const autoCloseBeforeSet = this.languageConfigurationService
 			.getLanguageConfiguration(languageId)
@@ -285,12 +285,12 @@ export class CursorConfiguration {
 	 */
 	public visibleColumnFromColumn(
 		model: ICursorSimpleModel,
-		position: Position,
+		position: Position
 	): number {
 		return CursorColumns.visibleColumnFromColumn(
 			model.getLineContent(position.lineNumber),
 			position.column,
-			this.tabSize,
+			this.tabSize
 		);
 	}
 
@@ -301,12 +301,12 @@ export class CursorConfiguration {
 	public columnFromVisibleColumn(
 		model: ICursorSimpleModel,
 		lineNumber: number,
-		visibleColumn: number,
+		visibleColumn: number
 	): number {
 		const result = CursorColumns.columnFromVisibleColumn(
 			model.getLineContent(lineNumber),
 			visibleColumn,
-			this.tabSize,
+			this.tabSize
 		);
 
 		const minColumn = model.getLineMinColumn(lineNumber);
@@ -351,19 +351,19 @@ export class CursorState {
 	_cursorStateBrand: void = undefined;
 
 	public static fromModelState(
-		modelState: SingleCursorState,
+		modelState: SingleCursorState
 	): PartialModelCursorState {
 		return new PartialModelCursorState(modelState);
 	}
 
 	public static fromViewState(
-		viewState: SingleCursorState,
+		viewState: SingleCursorState
 	): PartialViewCursorState {
 		return new PartialViewCursorState(viewState);
 	}
 
 	public static fromModelSelection(
-		modelSelection: ISelection,
+		modelSelection: ISelection
 	): PartialModelCursorState {
 		const selection = Selection.liftSelection(modelSelection);
 		const modelState = new SingleCursorState(
@@ -371,13 +371,13 @@ export class CursorState {
 			SelectionStartKind.Simple,
 			0,
 			selection.getPosition(),
-			0,
+			0
 		);
 		return CursorState.fromModelState(modelState);
 	}
 
 	public static fromModelSelections(
-		modelSelections: readonly ISelection[],
+		modelSelections: readonly ISelection[]
 	): PartialModelCursorState[] {
 		const states: PartialModelCursorState[] = [];
 		for (let i = 0, len = modelSelections.length; i < len; i++) {
@@ -441,11 +441,11 @@ export class SingleCursorState {
 		public readonly selectionStartKind: SelectionStartKind,
 		public readonly selectionStartLeftoverVisibleColumns: number,
 		public readonly position: Position,
-		public readonly leftoverVisibleColumns: number,
+		public readonly leftoverVisibleColumns: number
 	) {
 		this.selection = SingleCursorState._computeSelection(
 			this.selectionStart,
-			this.position,
+			this.position
 		);
 	}
 
@@ -468,7 +468,7 @@ export class SingleCursorState {
 		inSelectionMode: boolean,
 		lineNumber: number,
 		column: number,
-		leftoverVisibleColumns: number,
+		leftoverVisibleColumns: number
 	): SingleCursorState {
 		if (inSelectionMode) {
 			// move just position
@@ -477,7 +477,7 @@ export class SingleCursorState {
 				this.selectionStartKind,
 				this.selectionStartLeftoverVisibleColumns,
 				new Position(lineNumber, column),
-				leftoverVisibleColumns,
+				leftoverVisibleColumns
 			);
 		} else {
 			// move everything
@@ -486,14 +486,14 @@ export class SingleCursorState {
 				SelectionStartKind.Simple,
 				leftoverVisibleColumns,
 				new Position(lineNumber, column),
-				leftoverVisibleColumns,
+				leftoverVisibleColumns
 			);
 		}
 	}
 
 	private static _computeSelection(
 		selectionStart: Range,
-		position: Position,
+		position: Position
 	): Selection {
 		if (
 			selectionStart.isEmpty() ||
@@ -501,12 +501,12 @@ export class SingleCursorState {
 		) {
 			return Selection.fromPositions(
 				selectionStart.getStartPosition(),
-				position,
+				position
 			);
 		} else {
 			return Selection.fromPositions(
 				selectionStart.getEndPosition(),
-				position,
+				position
 			);
 		}
 	}
@@ -526,7 +526,7 @@ export class EditOperationResult {
 		opts: {
 			shouldPushStackElementBefore: boolean;
 			shouldPushStackElementAfter: boolean;
-		},
+		}
 	) {
 		this.type = type;
 		this.commands = commands;

@@ -42,11 +42,11 @@ export interface IEditSessionsStorageService {
 	initialize(reason: "read" | "write", silent?: boolean): Promise<boolean>;
 	read(
 		resource: SyncResource,
-		ref: string | undefined,
+		ref: string | undefined
 	): Promise<{ ref: string; content: string } | undefined>;
 	write(
 		resource: SyncResource,
-		content: string | EditSession,
+		content: string | EditSession
 	): Promise<string>;
 	delete(resource: SyncResource, ref: string | null): Promise<void>;
 	list(resource: SyncResource): Promise<IResourceRefHandle[]>;
@@ -54,7 +54,7 @@ export interface IEditSessionsStorageService {
 }
 
 export const IEditSessionsLogService = createDecorator<IEditSessionsLogService>(
-	"IEditSessionsLogService",
+	"IEditSessionsLogService"
 );
 export interface IEditSessionsLogService extends ILogService {}
 
@@ -102,38 +102,38 @@ export interface EditSession {
 export const EDIT_SESSIONS_SIGNED_IN_KEY = "editSessionsSignedIn";
 export const EDIT_SESSIONS_SIGNED_IN = new RawContextKey<boolean>(
 	EDIT_SESSIONS_SIGNED_IN_KEY,
-	false,
+	false
 );
 
 export const EDIT_SESSIONS_PENDING_KEY = "editSessionsPending";
 export const EDIT_SESSIONS_PENDING = new RawContextKey<boolean>(
 	EDIT_SESSIONS_PENDING_KEY,
-	false,
+	false
 );
 
 export const EDIT_SESSIONS_CONTAINER_ID = "workbench.view.editSessions";
 export const EDIT_SESSIONS_DATA_VIEW_ID = "workbench.views.editSessions.data";
 export const EDIT_SESSIONS_TITLE: ILocalizedString = localize2(
 	"cloud changes",
-	"Cloud Changes",
+	"Cloud Changes"
 );
 
 export const EDIT_SESSIONS_VIEW_ICON = registerIcon(
 	"edit-sessions-view-icon",
 	Codicon.cloudDownload,
-	localize("editSessionViewIcon", "View icon of the cloud changes view."),
+	localize("editSessionViewIcon", "View icon of the cloud changes view.")
 );
 
 export const EDIT_SESSIONS_SHOW_VIEW = new RawContextKey<boolean>(
 	"editSessionsShowView",
-	false,
+	false
 );
 
 export const EDIT_SESSIONS_SCHEME = "vscode-edit-sessions";
 
 export function decodeEditSessionFileContent(
 	version: number,
-	content: string,
+	content: string
 ): VSBuffer {
 	switch (version) {
 		case 1:
@@ -142,7 +142,7 @@ export function decodeEditSessionFileContent(
 			return decodeBase64(content);
 		default:
 			throw new Error(
-				"Upgrade to a newer version to decode this content.",
+				"Upgrade to a newer version to decode this content."
 			);
 	}
 }

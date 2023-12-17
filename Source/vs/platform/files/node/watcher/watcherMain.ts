@@ -20,5 +20,5 @@ if (isUtilityProcess(process)) {
 const service = new UniversalWatcher();
 server.registerChannel(
 	"watcher",
-	ProxyChannel.fromService(service, new DisposableStore()),
+	ProxyChannel.fromService(service, new DisposableStore())
 );

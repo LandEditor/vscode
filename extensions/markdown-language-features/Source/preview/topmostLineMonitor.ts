@@ -42,7 +42,7 @@ export class TopmostLineMonitor extends Disposable {
 						});
 					}
 				}
-			}),
+			})
 		);
 	}
 
@@ -50,18 +50,18 @@ export class TopmostLineMonitor extends Disposable {
 		new vscode.EventEmitter<{
 			readonly resource: vscode.Uri;
 			readonly line: number;
-		}>(),
+		}>()
 	);
 	public readonly onDidChanged = this._onChanged.event;
 
 	public setPreviousStaticEditorLine(
-		scrollLocation: LastScrollLocation,
+		scrollLocation: LastScrollLocation
 	): void {
 		this._previousStaticEditorInfo.set(scrollLocation.uri, scrollLocation);
 	}
 
 	public getPreviousStaticEditorLineByUri(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): number | undefined {
 		const scrollLoc = this._previousStaticEditorInfo.get(resource);
 		this._previousStaticEditorInfo.delete(resource);
@@ -73,7 +73,7 @@ export class TopmostLineMonitor extends Disposable {
 	}
 
 	public getPreviousTextEditorLineByUri(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): number | undefined {
 		const scrollLoc = this._previousTextEditorInfo.get(resource);
 		this._previousTextEditorInfo.delete(resource);
@@ -81,7 +81,7 @@ export class TopmostLineMonitor extends Disposable {
 	}
 
 	public getPreviousStaticTextEditorLineByUri(
-		resource: vscode.Uri,
+		resource: vscode.Uri
 	): number | undefined {
 		const state = this._previousStaticEditorInfo.get(resource);
 		return state?.line;

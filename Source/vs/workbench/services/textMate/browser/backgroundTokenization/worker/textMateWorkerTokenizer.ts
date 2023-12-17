@@ -30,19 +30,19 @@ import { StateDeltas } from "vs/workbench/services/textMate/browser/backgroundTo
 export interface TextMateModelTokenizerHost {
 	getOrCreateGrammar(
 		languageId: string,
-		encodedLanguageId: LanguageId,
+		encodedLanguageId: LanguageId
 	): Promise<ICreateGrammarResult | null>;
 	setTokensAndStates(
 		versionId: number,
 		tokens: Uint8Array,
-		stateDeltas: StateDeltas[],
+		stateDeltas: StateDeltas[]
 	): void;
 	reportTokenizationTime(
 		timeMs: number,
 		languageId: string,
 		sourceExtensionId: string | undefined,
 		lineLength: number,
-		isRandomSample: boolean,
+		isRandomSample: boolean
 	): void;
 }
 
@@ -54,7 +54,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 	private _diffStateStacksRefEqFn?: typeof diffStateStacksRefEq;
 	private readonly _tokenizeDebouncer = new RunOnceScheduler(
 		() => this._tokenize(),
-		10,
+		10
 	);
 
 	constructor(
@@ -65,12 +65,12 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 		private readonly _host: TextMateModelTokenizerHost,
 		private _languageId: string,
 		private _encodedLanguageId: LanguageId,
-		maxTokenizationLineLength: number,
+		maxTokenizationLineLength: number
 	) {
 		super(uri, lines, eol, versionId);
 		this._maxTokenizationLineLength.set(
 			maxTokenizationLineLength,
-			undefined,
+			undefined
 		);
 		this._resetTokenization();
 	}
@@ -82,7 +82,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 
 	public onLanguageId(
 		languageId: string,
-		encodedLanguageId: LanguageId,
+		encodedLanguageId: LanguageId
 	): void {
 		this._languageId = languageId;
 		this._encodedLanguageId = encodedLanguageId;
@@ -97,18 +97,18 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 	}
 
 	public acceptMaxTokenizationLineLength(
-		maxTokenizationLineLength: number,
+		maxTokenizationLineLength: number
 	): void {
 		this._maxTokenizationLineLength.set(
 			maxTokenizationLineLength,
-			undefined,
+			undefined
 		);
 	}
 
 	public retokenize(startLineNumber: number, endLineNumberExclusive: number) {
 		if (this._tokenizerWithStateStore) {
 			this._tokenizerWithStateStore.store.invalidateEndStateRange(
-				new LineRange(startLineNumber, endLineNumberExclusive),
+				new LineRange(startLineNumber, endLineNumberExclusive)
 			);
 			this._tokenizeDebouncer.schedule();
 		}
@@ -122,7 +122,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 
 		const r = await this._host.getOrCreateGrammar(
 			languageId,
-			encodedLanguageId,
+			encodedLanguageId
 		);
 
 		if (
@@ -149,16 +149,16 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 							languageId,
 							r.sourceExtensionId,
 							lineLength,
-							isRandomSample,
+							isRandomSample
 						);
 					},
-					false,
+					false
 				),
-				this._maxTokenizationLineLength,
+				this._maxTokenizationLineLength
 			);
 			this._tokenizerWithStateStore = new TokenizerWithStateStore(
 				this._lines.length,
-				tokenizationSupport,
+				tokenizationSupport
 			);
 		} else {
 			this._tokenizerWithStateStore = null;
@@ -199,21 +199,21 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 					this._tokenizerWithStateStore.tokenizationSupport.tokenizeEncoded(
 						text,
 						true,
-						lineToTokenize.startState,
+						lineToTokenize.startState
 					);
 				if (
 					this._tokenizerWithStateStore.store.setEndState(
 						lineToTokenize.lineNumber,
-						r.endState as StateStack,
+						r.endState as StateStack
 					)
 				) {
 					const delta = this._diffStateStacksRefEqFn(
 						lineToTokenize.startState,
-						r.endState as StateStack,
+						r.endState as StateStack
 					);
 					stateDeltaBuilder.setState(
 						lineToTokenize.lineNumber,
-						delta,
+						delta
 					);
 				} else {
 					stateDeltaBuilder.setState(lineToTokenize.lineNumber, null);
@@ -237,7 +237,7 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 			this._host.setTokensAndStates(
 				this._versionId,
 				tokenBuilder.serialize(),
-				stateDeltas,
+				stateDeltas
 			);
 
 			const deltaMs = new Date().getTime() - startTime;
@@ -257,7 +257,7 @@ class StateDeltaBuilder {
 	public setState(lineNumber: number, stackDiff: StackDiff | null): void {
 		if (lineNumber === this._lastStartLineNumber + 1) {
 			this._stateDeltas[this._stateDeltas.length - 1].stateDeltas.push(
-				stackDiff,
+				stackDiff
 			);
 		} else {
 			this._stateDeltas.push({

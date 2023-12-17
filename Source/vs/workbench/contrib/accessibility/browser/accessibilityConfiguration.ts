@@ -17,37 +17,37 @@ import { workbenchConfigurationNodeBase } from "vs/workbench/common/configuratio
 export const accessibilityHelpIsShown = new RawContextKey<boolean>(
 	"accessibilityHelpIsShown",
 	false,
-	true,
+	true
 );
 export const accessibleViewIsShown = new RawContextKey<boolean>(
 	"accessibleViewIsShown",
 	false,
-	true,
+	true
 );
 export const accessibleViewSupportsNavigation = new RawContextKey<boolean>(
 	"accessibleViewSupportsNavigation",
 	false,
-	true,
+	true
 );
 export const accessibleViewVerbosityEnabled = new RawContextKey<boolean>(
 	"accessibleViewVerbosityEnabled",
 	false,
-	true,
+	true
 );
 export const accessibleViewGoToSymbolSupported = new RawContextKey<boolean>(
 	"accessibleViewGoToSymbolSupported",
 	false,
-	true,
+	true
 );
 export const accessibleViewOnLastLine = new RawContextKey<boolean>(
 	"accessibleViewOnLastLine",
 	false,
-	true,
+	true
 );
 export const accessibleViewCurrentProviderId = new RawContextKey<string>(
 	"accessibleViewCurrentProviderId",
 	undefined,
-	undefined,
+	undefined
 );
 
 /**
@@ -122,77 +122,77 @@ const configuration: IConfigurationNode = {
 		[AccessibilityVerbositySettingId.Terminal]: {
 			description: localize(
 				"verbosity.terminal.description",
-				"Provide information about how to access the terminal accessibility help menu when the terminal is focused.",
+				"Provide information about how to access the terminal accessibility help menu when the terminal is focused."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.DiffEditor]: {
 			description: localize(
 				"verbosity.diffEditor.description",
-				"Provide information about how to navigate changes in the diff editor when it is focused.",
+				"Provide information about how to navigate changes in the diff editor when it is focused."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.Chat]: {
 			description: localize(
 				"verbosity.chat.description",
-				"Provide information about how to access the chat help menu when the chat input is focused.",
+				"Provide information about how to access the chat help menu when the chat input is focused."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.InlineChat]: {
 			description: localize(
 				"verbosity.interactiveEditor.description",
-				"Provide information about how to access the inline editor chat accessibility help menu and alert with hints that describe how to use the feature when the input is focused.",
+				"Provide information about how to access the inline editor chat accessibility help menu and alert with hints that describe how to use the feature when the input is focused."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.InlineCompletions]: {
 			description: localize(
 				"verbosity.inlineCompletions.description",
-				"Provide information about how to access the inline completions hover and Accessible View.",
+				"Provide information about how to access the inline completions hover and Accessible View."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.KeybindingsEditor]: {
 			description: localize(
 				"verbosity.keybindingsEditor.description",
-				"Provide information about how to change a keybinding in the keybindings editor when a row is focused.",
+				"Provide information about how to change a keybinding in the keybindings editor when a row is focused."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.Notebook]: {
 			description: localize(
 				"verbosity.notebook",
-				"Provide information about how to focus the cell container or inner editor when a notebook cell is focused.",
+				"Provide information about how to focus the cell container or inner editor when a notebook cell is focused."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.Hover]: {
 			description: localize(
 				"verbosity.hover",
-				"Provide information about how to open the hover in an Accessible View.",
+				"Provide information about how to open the hover in an Accessible View."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.Notification]: {
 			description: localize(
 				"verbosity.notification",
-				"Provide information about how to open the notification in an Accessible View.",
+				"Provide information about how to open the notification in an Accessible View."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.EmptyEditorHint]: {
 			description: localize(
 				"verbosity.emptyEditorHint",
-				"Provide information about relevant actions in an empty text editor.",
+				"Provide information about relevant actions in an empty text editor."
 			),
 			...baseProperty,
 		},
 		[AccessibilityVerbositySettingId.Comments]: {
 			description: localize(
 				"verbosity.comments",
-				"Provide information about actions that can be taken in the comment widget or in a file which contains comments.",
+				"Provide information about actions that can be taken in the comment widget or in a file which contains comments."
 			),
 			...baseProperty,
 		},
@@ -200,7 +200,7 @@ const configuration: IConfigurationNode = {
 			markdownDescription: localize(
 				"alert.save",
 				"When in screen reader mode, alerts when a file is saved. Note that this will be ignored when {0} is enabled.",
-				"`#audioCues.save#`",
+				"`#audioCues.save#`"
 			),
 			type: "string",
 			enum: ["userGesture", "always", "never"],
@@ -208,11 +208,11 @@ const configuration: IConfigurationNode = {
 			enumDescriptions: [
 				localize(
 					"alert.save.userGesture",
-					"Alerts when a file is saved via user gesture.",
+					"Alerts when a file is saved via user gesture."
 				),
 				localize(
 					"alert.save.always",
-					"Alerts whenever is a file is saved, including auto save.",
+					"Alerts whenever is a file is saved, including auto save."
 				),
 				localize("alert.save.never", "Never alerts."),
 			],
@@ -222,7 +222,7 @@ const configuration: IConfigurationNode = {
 			markdownDescription: localize(
 				"alert.format",
 				"When in screen reader mode, alerts when a file or notebook cell is formatted. Note that this will be ignored when {0} is enabled.",
-				"`#audioCues.format#`",
+				"`#audioCues.format#`"
 			),
 			type: "string",
 			enum: ["userGesture", "always", "never"],
@@ -230,11 +230,11 @@ const configuration: IConfigurationNode = {
 			enumDescriptions: [
 				localize(
 					"alert.format.userGesture",
-					"Alerts when a file is formatted via user gesture.",
+					"Alerts when a file is formatted via user gesture."
 				),
 				localize(
 					"alert.format.always",
-					"Alerts whenever is a file is formatted, including auto save, on cell execution, and more.",
+					"Alerts whenever is a file is formatted, including auto save, on cell execution, and more."
 				),
 				localize("alert.format.never", "Never alerts."),
 			],
@@ -243,7 +243,7 @@ const configuration: IConfigurationNode = {
 		[AccessibilityVoiceSettingId.SpeechTimeout]: {
 			markdownDescription: localize(
 				"voice.speechTimeout",
-				"The duration in milliseconds that voice speech recognition remains active after you stop speaking. For example in a chat session, the transcribed text is submitted automatically after the timeout is met. Set to `0` to disable this feature.",
+				"The duration in milliseconds that voice speech recognition remains active after you stop speaking. For example in a chat session, the transcribed text is submitted automatically after the timeout is met. Set to `0` to disable this feature."
 			),
 			type: "number",
 			default: SpeechTimeoutDefault,
@@ -253,7 +253,7 @@ const configuration: IConfigurationNode = {
 		[AccessibilityWorkbenchSettingId.AccessibleViewCloseOnKeyPress]: {
 			markdownDescription: localize(
 				"terminal.integrated.accessibleView.closeOnKeyPress",
-				"On keypress, close the Accessible View and focus the element from which it was invoked.",
+				"On keypress, close the Accessible View and focus the element from which it was invoked."
 			),
 			type: "boolean",
 			default: true,
@@ -263,7 +263,7 @@ const configuration: IConfigurationNode = {
 
 export function registerAccessibilityConfiguration() {
 	const registry = Registry.as<IConfigurationRegistry>(
-		Extensions.Configuration,
+		Extensions.Configuration
 	);
 	registry.registerConfiguration(configuration);
 
@@ -273,7 +273,7 @@ export function registerAccessibilityConfiguration() {
 			[AccessibilityWorkbenchSettingId.DimUnfocusedEnabled]: {
 				description: localize(
 					"dimUnfocusedEnabled",
-					"Whether to dim unfocused editors and terminals, which makes it more clear where typed input will go to. This works with the majority of editors with the notable exceptions of those that utilize iframes like notebooks and extension webview editors.",
+					"Whether to dim unfocused editors and terminals, which makes it more clear where typed input will go to. This works with the majority of editors with the notable exceptions of those that utilize iframes like notebooks and extension webview editors."
 				),
 				type: "boolean",
 				default: false,
@@ -284,7 +284,7 @@ export function registerAccessibilityConfiguration() {
 				markdownDescription: localize(
 					"dimUnfocusedOpacity",
 					"The opacity fraction (0.2 to 1.0) to use for unfocused editors and terminals. This will only take effect when {0} is enabled.",
-					`\`#${AccessibilityWorkbenchSettingId.DimUnfocusedEnabled}#\``,
+					`\`#${AccessibilityWorkbenchSettingId.DimUnfocusedEnabled}#\``
 				),
 				type: "number",
 				minimum: ViewDimUnfocusedOpacityProperties.Minimum,
@@ -296,7 +296,7 @@ export function registerAccessibilityConfiguration() {
 			[AccessibilityWorkbenchSettingId.HideAccessibleView]: {
 				description: localize(
 					"accessibility.hideAccessibleView",
-					"Controls whether the Accessible View is hidden.",
+					"Controls whether the Accessible View is hidden."
 				),
 				type: "boolean",
 				default: false,

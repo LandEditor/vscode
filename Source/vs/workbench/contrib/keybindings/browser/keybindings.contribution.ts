@@ -18,7 +18,7 @@ class ToggleKeybindingsLogAction extends Action2 {
 			title: {
 				value: nls.localize(
 					"toggleKeybindingsLog",
-					"Toggle Keyboard Shortcuts Troubleshooting",
+					"Toggle Keyboard Shortcuts Troubleshooting"
 				),
 				original: "Toggle Keyboard Shortcuts Troubleshooting",
 			},

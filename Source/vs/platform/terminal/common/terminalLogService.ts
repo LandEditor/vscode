@@ -29,14 +29,25 @@ export class TerminalLogService
 
 	constructor(
 		@ILoggerService private readonly _loggerService: ILoggerService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
-		@IEnvironmentService environmentService: IEnvironmentService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
+		@IEnvironmentService environmentService: IEnvironmentService
 	) {
 		super();
-		this._logger = this._loggerService.createLogger(joinPath(environmentService.logsHome, 'terminal.log'), { id: 'terminal', name: localize('terminalLoggerName', 'Terminal') });
-		this._register(Event.runAndSubscribe(workspaceContextService.onDidChangeWorkspaceFolders, () => {
-			this._workspaceId = workspaceContextService.getWorkspace().id.substring(0, 7);
-		}));
+		this._logger = this._loggerService.createLogger(
+			joinPath(environmentService.logsHome, "terminal.log"),
+			{ id: "terminal", name: localize("terminalLoggerName", "Terminal") }
+		);
+		this._register(
+			Event.runAndSubscribe(
+				workspaceContextService.onDidChangeWorkspaceFolders,
+				() => {
+					this._workspaceId = workspaceContextService
+						.getWorkspace()
+						.id.substring(0, 7);
+				}
+			)
+		);
 	}
 
 	getLevel(): LogLevel {

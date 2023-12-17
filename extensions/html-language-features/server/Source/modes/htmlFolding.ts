@@ -17,12 +17,12 @@ export async function getFoldingRanges(
 	languageModes: LanguageModes,
 	document: TextDocument,
 	maxRanges: number | undefined,
-	_cancellationToken: CancellationToken | null,
+	_cancellationToken: CancellationToken | null
 ): Promise<FoldingRange[]> {
 	const htmlMode = languageModes.getMode("html");
 	const range = Range.create(
 		Position.create(0, 0),
-		Position.create(document.lineCount, 0),
+		Position.create(document.lineCount, 0)
 	);
 	let result: FoldingRange[] = [];
 	if (htmlMode && htmlMode.getFoldingRanges) {
@@ -53,8 +53,8 @@ export async function getFoldingRanges(
 				...ranges.filter(
 					(r) =>
 						r.startLine >= modeRange.start.line &&
-						r.endLine < modeRange.end.line,
-				),
+						r.endLine < modeRange.end.line
+				)
 			);
 		}
 	}

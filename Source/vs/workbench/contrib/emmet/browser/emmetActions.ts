@@ -31,7 +31,7 @@ class GrammarContributions implements IGrammarContributions {
 	private static _grammars: ModeScopeMap = {};
 
 	constructor(
-		contributions: ExtensionPointContribution<ITMSyntaxExtensionPoint[]>[],
+		contributions: ExtensionPointContribution<ITMSyntaxExtensionPoint[]>[]
 	) {
 		if (!Object.keys(GrammarContributions._grammars).length) {
 			this.fillModeScopeMap(contributions);
@@ -39,7 +39,7 @@ class GrammarContributions implements IGrammarContributions {
 	}
 
 	private fillModeScopeMap(
-		contributions: ExtensionPointContribution<ITMSyntaxExtensionPoint[]>[],
+		contributions: ExtensionPointContribution<ITMSyntaxExtensionPoint[]>[]
 	) {
 		contributions.forEach((contribution) => {
 			contribution.value.forEach((grammar) => {
@@ -89,7 +89,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 		null;
 	private _lastExtensionService: IExtensionService | null = null;
 	private _withGrammarContributions(
-		extensionService: IExtensionService,
+		extensionService: IExtensionService
 	): Promise<GrammarContributions | null> {
 		if (this._lastExtensionService !== extensionService) {
 			this._lastExtensionService = extensionService;
@@ -116,19 +116,19 @@ export abstract class EmmetEditorAction extends EditorAction {
 						"emmet.expandAbbreviation",
 						EmmetEditorAction.getLanguage(
 							editor,
-							grammarContributions,
-						),
+							grammarContributions
+						)
 					);
 				}
 
 				return undefined;
-			},
+			}
 		);
 	}
 
 	public static getLanguage(
 		editor: ICodeEditor,
-		grammars: IGrammarContributions,
+		grammars: IGrammarContributions
 	) {
 		const model = editor.getModel();
 		const selection = editor.getSelection();
@@ -141,7 +141,7 @@ export abstract class EmmetEditorAction extends EditorAction {
 		model.tokenization.tokenizeIfCheap(position.lineNumber);
 		const languageId = model.getLanguageIdAtPosition(
 			position.lineNumber,
-			position.column,
+			position.column
 		);
 		const syntax = languageId.split(".").pop();
 

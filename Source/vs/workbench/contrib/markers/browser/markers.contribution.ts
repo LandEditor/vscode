@@ -99,7 +99,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			markersView.getFocusElement(),
 			false,
 			false,
-			true,
+			true
 		);
 	},
 });
@@ -120,7 +120,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			markersView.getFocusElement(),
 			false,
 			true,
-			true,
+			true
 		);
 	},
 });
@@ -153,7 +153,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 
 // configuration
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration({
 	id: "problems",
 	order: 101,
@@ -193,7 +193,7 @@ Registry.as<IConfigurationRegistry>(
 			tags: ["experimental"],
 			description: localize(
 				"problems.visibility",
-				"Controls whether the problems are visible throughout the editor and workbench.",
+				"Controls whether the problems are visible throughout the editor and workbench."
 			),
 		},
 	},
@@ -202,12 +202,12 @@ Registry.as<IConfigurationRegistry>(
 const markersViewIcon = registerIcon(
 	"markers-view-icon",
 	Codicon.warning,
-	localize("markersViewIcon", "View icon of the markers view."),
+	localize("markersViewIcon", "View icon of the markers view.")
 );
 
 // markers view container
 const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
-	ViewContainerExtensions.ViewContainersRegistry,
+	ViewContainerExtensions.ViewContainersRegistry
 ).registerViewContainer(
 	{
 		id: Markers.MARKERS_CONTAINER_ID,
@@ -222,11 +222,11 @@ const VIEW_CONTAINER: ViewContainer = Registry.as<IViewContainersRegistry>(
 		storageId: Markers.MARKERS_VIEW_STORAGE_ID,
 	},
 	ViewContainerLocation.Panel,
-	{ doNotRegisterOpenCommand: true },
+	{ doNotRegisterOpenCommand: true }
 );
 
 Registry.as<IViewsRegistry>(
-	ViewContainerExtensions.ViewsRegistry,
+	ViewContainerExtensions.ViewsRegistry
 ).registerViews(
 	[
 		{
@@ -240,7 +240,7 @@ Registry.as<IViewsRegistry>(
 				id: "workbench.actions.view.problems",
 				mnemonicTitle: localize(
 					{ key: "miMarker", comment: ["&& denotes a mnemonic"] },
-					"&&Problems",
+					"&&Problems"
 				),
 				keybindings: {
 					primary: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyM,
@@ -249,12 +249,12 @@ Registry.as<IViewsRegistry>(
 			},
 		},
 	],
-	VIEW_CONTAINER,
+	VIEW_CONTAINER
 );
 
 // workbench
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 
 // actions
@@ -269,8 +269,8 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", Markers.MARKERS_VIEW_ID),
 						MarkersContextKeys.MarkersViewModeContextKey.isEqualTo(
-							MarkersViewMode.Table,
-						),
+							MarkersViewMode.Table
+						)
 					),
 					group: "navigation",
 					order: 3,
@@ -282,11 +282,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.setViewMode(MarkersViewMode.Tree);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -300,8 +300,8 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", Markers.MARKERS_VIEW_ID),
 						MarkersContextKeys.MarkersViewModeContextKey.isEqualTo(
-							MarkersViewMode.Tree,
-						),
+							MarkersViewMode.Tree
+						)
 					),
 					group: "navigation",
 					order: 3,
@@ -313,11 +313,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.setViewMode(MarkersViewMode.Table);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -336,7 +336,7 @@ registerAction2(
 					group: "1_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID,
+						Markers.MARKERS_VIEW_ID
 					),
 					order: 1,
 				},
@@ -346,11 +346,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.filters.showErrors = !view.filters.showErrors;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -369,7 +369,7 @@ registerAction2(
 					group: "1_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID,
+						Markers.MARKERS_VIEW_ID
 					),
 					order: 2,
 				},
@@ -379,11 +379,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.filters.showWarnings = !view.filters.showWarnings;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -402,7 +402,7 @@ registerAction2(
 					group: "1_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID,
+						Markers.MARKERS_VIEW_ID
 					),
 					order: 3,
 				},
@@ -412,11 +412,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.filters.showInfos = !view.filters.showInfos;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -436,7 +436,7 @@ registerAction2(
 					group: "2_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID,
+						Markers.MARKERS_VIEW_ID
 					),
 					order: 1,
 				},
@@ -446,11 +446,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.filters.activeFile = !view.filters.activeFile;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -460,7 +460,7 @@ registerAction2(
 				id: `workbench.actions.${Markers.MARKERS_VIEW_ID}.toggleExcludedFiles`,
 				title: localize(
 					"toggle Excluded Files",
-					"Toggle Excluded Files",
+					"Toggle Excluded Files"
 				),
 				category: localize("problems", "Problems"),
 				toggled: {
@@ -473,7 +473,7 @@ registerAction2(
 					group: "2_filter",
 					when: ContextKeyExpr.equals(
 						"view",
-						Markers.MARKERS_VIEW_ID,
+						Markers.MARKERS_VIEW_ID
 					),
 					order: 2,
 				},
@@ -483,11 +483,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			view.filters.excludedFiles = !view.filters.excludedFiles;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -506,7 +506,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<void> {
 			accessor.get(IViewsService).openView(Markers.MARKERS_VIEW_ID, true);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -515,7 +515,7 @@ registerAction2(
 			const when = ContextKeyExpr.and(
 				FocusedViewContext.isEqualTo(Markers.MARKERS_VIEW_ID),
 				MarkersContextKeys.MarkersTreeVisibilityContextKey,
-				MarkersContextKeys.RelatedInformationFocusContextKey.toNegated(),
+				MarkersContextKeys.RelatedInformationFocusContextKey.toNegated()
 			);
 			super({
 				id: Markers.MARKER_COPY_ACTION_ID,
@@ -538,7 +538,7 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			const clipboardService = serviceAccessor.get(IClipboardService);
 			const selection =
@@ -561,7 +561,7 @@ registerAction2(
 				await clipboardService.writeText(`[${markers}]`);
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -583,7 +583,7 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			const clipboardService = serviceAccessor.get(IClipboardService);
 			const element = markersView.getFocusElement();
@@ -591,7 +591,7 @@ registerAction2(
 				await clipboardService.writeText(element.marker.message);
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -613,7 +613,7 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			const clipboardService = serviceAccessor.get(IClipboardService);
 			const element = markersView.getFocusElement();
@@ -621,7 +621,7 @@ registerAction2(
 				await clipboardService.writeText(element.raw.message);
 			}
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -640,11 +640,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			markersView.focus();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -663,11 +663,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			markersView.focusFilter();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -678,7 +678,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"show multiline",
-						"Show message in multiple lines",
+						"Show message in multiple lines"
 					),
 					original: "Problems: Show message in multiple lines",
 				},
@@ -686,7 +686,7 @@ registerAction2(
 				menu: {
 					id: MenuId.CommandPalette,
 					when: ContextKeyExpr.has(
-						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID),
+						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID)
 					),
 				},
 				viewId: Markers.MARKERS_VIEW_ID,
@@ -694,11 +694,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			markersView.setMultiline(true);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -709,7 +709,7 @@ registerAction2(
 				title: {
 					value: localize(
 						"show singleline",
-						"Show message in single line",
+						"Show message in single line"
 					),
 					original: "Problems: Show message in single line",
 				},
@@ -717,7 +717,7 @@ registerAction2(
 				menu: {
 					id: MenuId.CommandPalette,
 					when: ContextKeyExpr.has(
-						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID),
+						getVisbileViewContextKey(Markers.MARKERS_VIEW_ID)
 					),
 				},
 				viewId: Markers.MARKERS_VIEW_ID,
@@ -725,11 +725,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			markersView.setMultiline(false);
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -749,11 +749,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			markersView: IMarkersView,
+			markersView: IMarkersView
 		): Promise<void> {
 			markersView.clearFilterText();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -767,8 +767,8 @@ registerAction2(
 					when: ContextKeyExpr.and(
 						ContextKeyExpr.equals("view", Markers.MARKERS_VIEW_ID),
 						MarkersContextKeys.MarkersViewModeContextKey.isEqualTo(
-							MarkersViewMode.Tree,
-						),
+							MarkersViewMode.Tree
+						)
 					),
 					group: "navigation",
 					order: 2,
@@ -779,11 +779,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: IMarkersView,
+			view: IMarkersView
 		): Promise<void> {
 			return view.collapseAll();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -802,7 +802,7 @@ registerAction2(
 				viewsService.openView(Markers.MARKERS_VIEW_ID, true);
 			}
 		}
-	},
+	}
 );
 
 class MarkersStatusBarContributions
@@ -815,39 +815,58 @@ class MarkersStatusBarContributions
 	constructor(
 		@IMarkerService private readonly markerService: IMarkerService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
-		this.markersStatusItem = this._register(this.statusbarService.addEntry(this.getMarkersItem(), 'status.problems', StatusbarAlignment.LEFT, 50 /* Medium Priority */));
+		this.markersStatusItem = this._register(
+			this.statusbarService.addEntry(
+				this.getMarkersItem(),
+				"status.problems",
+				StatusbarAlignment.LEFT,
+				50 /* Medium Priority */
+			)
+		);
 
 		const addStatusBarEntry = () => {
-			this.markersStatusItemOff = this.statusbarService.addEntry(this.getMarkersItemTurnedOff(), 'status.problemsVisibility', StatusbarAlignment.LEFT, 49);
+			this.markersStatusItemOff = this.statusbarService.addEntry(
+				this.getMarkersItemTurnedOff(),
+				"status.problemsVisibility",
+				StatusbarAlignment.LEFT,
+				49
+			);
 		};
 
 		// Add the status bar entry if the problems is not visible
-		let config = this.configurationService.getValue('problems.visibility');
+		let config = this.configurationService.getValue("problems.visibility");
 		if (!config) {
 			addStatusBarEntry();
 		}
 
-		this._register(this.markerService.onMarkerChanged(() => {
-			this.markersStatusItem.update(this.getMarkersItem());
-		}));
-
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('problems.visibility')) {
+		this._register(
+			this.markerService.onMarkerChanged(() => {
 				this.markersStatusItem.update(this.getMarkersItem());
+			})
+		);
 
-				// Update based on what setting was changed to.
-				config = this.configurationService.getValue('problems.visibility');
-				if (!config && !this.markersStatusItemOff) {
-					addStatusBarEntry();
-				} else if (config && this.markersStatusItemOff) {
-					this.markersStatusItemOff.dispose();
-					this.markersStatusItemOff = undefined;
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("problems.visibility")) {
+					this.markersStatusItem.update(this.getMarkersItem());
+
+					// Update based on what setting was changed to.
+					config = this.configurationService.getValue(
+						"problems.visibility"
+					);
+					if (!config && !this.markersStatusItemOff) {
+						addStatusBarEntry();
+					} else if (config && this.markersStatusItemOff) {
+						this.markersStatusItemOff.dispose();
+						this.markersStatusItemOff = undefined;
+					}
 				}
-			}
-		}));
+			})
+		);
 	}
 
 	private getMarkersItem(): IStatusbarEntry {
@@ -866,13 +885,13 @@ class MarkersStatusBarContributions
 		// Update to true, config checked before `getMarkersItemTurnedOff` is called.
 		this.statusbarService.updateEntryVisibility(
 			"status.problemsVisibility",
-			true,
+			true
 		);
 		const openSettingsCommand = "workbench.action.openSettings";
 		const configureSettingsLabel = "@id:problems.visibility";
 		const tooltip = localize(
 			"status.problemsVisibilityOff",
-			"Problems are turned off. Click to open settings.",
+			"Problems are turned off. Click to open settings."
 		);
 		return {
 			name: localize("status.problemsVisibility", "Problems Visibility"),
@@ -939,19 +958,19 @@ class MarkersStatusBarContributions
 		return n > 9999
 			? manyProblems
 			: n > 999
-			  ? n.toString().charAt(0) + "K"
-			  : n.toString();
+				? n.toString().charAt(0) + "K"
+				: n.toString();
 	}
 }
 
 workbenchRegistry.registerWorkbenchContribution(
 	MarkersStatusBarContributions,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 	private readonly activity = this._register(
-		new MutableDisposable<IDisposable>(),
+		new MutableDisposable<IDisposable>()
 	);
 
 	constructor(
@@ -959,7 +978,9 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 		@IMarkerService private readonly markerService: IMarkerService
 	) {
 		super();
-		this._register(this.markerService.onMarkerChanged(() => this.updateBadge()));
+		this._register(
+			this.markerService.onMarkerChanged(() => this.updateBadge())
+		);
 		this.updateBadge();
 	}
 
@@ -970,11 +991,11 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 			const message = localize(
 				"totalProblems",
 				"Total {0} Problems",
-				total,
+				total
 			);
 			this.activity.value = this.activityService.showViewActivity(
 				Markers.MARKERS_VIEW_ID,
-				{ badge: new NumberBadge(total, () => message) },
+				{ badge: new NumberBadge(total, () => message) }
 			);
 		} else {
 			this.activity.value = undefined;
@@ -984,5 +1005,5 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 
 workbenchRegistry.registerWorkbenchContribution(
 	ActivityUpdater,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

@@ -20,7 +20,7 @@ export interface IPolicyService {
 
 	readonly onDidChange: Event<readonly PolicyName[]>;
 	updatePolicyDefinitions(
-		policyDefinitions: IStringDictionary<PolicyDefinition>,
+		policyDefinitions: IStringDictionary<PolicyDefinition>
 	): Promise<IStringDictionary<PolicyValue>>;
 	getPolicyValue(name: PolicyName): PolicyValue | undefined;
 	serialize():
@@ -41,12 +41,12 @@ export abstract class AbstractPolicyService
 	protected policies = new Map<PolicyName, PolicyValue>();
 
 	protected readonly _onDidChange = this._register(
-		new Emitter<readonly PolicyName[]>(),
+		new Emitter<readonly PolicyName[]>()
 	);
 	readonly onDidChange = this._onDidChange.event;
 
 	async updatePolicyDefinitions(
-		policyDefinitions: IStringDictionary<PolicyDefinition>,
+		policyDefinitions: IStringDictionary<PolicyDefinition>
 	): Promise<IStringDictionary<PolicyValue>> {
 		const size = Object.keys(this.policyDefinitions).length;
 		this.policyDefinitions = {
@@ -61,7 +61,7 @@ export abstract class AbstractPolicyService
 		return Iterable.reduce(
 			this.policies.entries(),
 			(r, [name, value]) => ({ ...r, [name]: value }),
-			{},
+			{}
 		);
 	}
 
@@ -85,12 +85,12 @@ export abstract class AbstractPolicyService
 				...r,
 				[name]: { definition, value: this.policies.get(name)! },
 			}),
-			{},
+			{}
 		);
 	}
 
 	protected abstract _updatePolicyDefinitions(
-		policyDefinitions: IStringDictionary<PolicyDefinition>,
+		policyDefinitions: IStringDictionary<PolicyDefinition>
 	): Promise<void>;
 }
 

@@ -43,18 +43,18 @@ export interface INotebookExecutionService {
 	executeNotebookCells(
 		notebook: INotebookTextModel,
 		cells: Iterable<NotebookCellTextModel>,
-		contextKeyService: IContextKeyService,
+		contextKeyService: IContextKeyService
 	): Promise<void>;
 	cancelNotebookCells(
 		notebook: INotebookTextModel,
-		cells: Iterable<NotebookCellTextModel>,
+		cells: Iterable<NotebookCellTextModel>
 	): Promise<void>;
 	cancelNotebookCellHandles(
 		notebook: INotebookTextModel,
-		cells: Iterable<number>,
+		cells: Iterable<number>
 	): Promise<void>;
 	registerExecutionParticipant(
-		participant: ICellExecutionParticipant,
+		participant: ICellExecutionParticipant
 	): IDisposable;
 }
 

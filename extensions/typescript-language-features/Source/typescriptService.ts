@@ -229,7 +229,7 @@ export interface ITypeScriptServiceClient {
 		document: vscode.TextDocument,
 		options?: {
 			suppressAlertOnFailure?: boolean;
-		},
+		}
 	): string | undefined;
 
 	/**
@@ -237,7 +237,7 @@ export interface ITypeScriptServiceClient {
 	 */
 	hasCapabilityForResource(
 		resource: vscode.Uri,
-		capability: ClientCapability,
+		capability: ClientCapability
 	): boolean;
 
 	getWorkspaceRootForResource(resource: vscode.Uri): vscode.Uri | undefined;
@@ -269,17 +269,20 @@ export interface ITypeScriptServiceClient {
 		command: K,
 		args: StandardTsServerRequests[K][0],
 		token: vscode.CancellationToken,
-		config?: ExecConfig,
+		config?: ExecConfig
 	): Promise<ServerResponse.Response<StandardTsServerRequests[K][1]>>;
 
 	executeWithoutWaitingForResponse<
 		K extends keyof NoResponseTsServerRequests,
-	>(command: K, args: NoResponseTsServerRequests[K][0]): void;
+	>(
+		command: K,
+		args: NoResponseTsServerRequests[K][0]
+	): void;
 
 	executeAsync<K extends keyof AsyncTsServerRequests>(
 		command: K,
 		args: AsyncTsServerRequests[K][0],
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<ServerResponse.Response<Proto.Response>>;
 
 	/**

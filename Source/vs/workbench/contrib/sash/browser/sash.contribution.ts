@@ -20,15 +20,15 @@ import { isIOS } from "vs/base/common/platform";
 
 // Sash size contribution
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	SashSettingsController,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 // Sash size configuration contribution
 Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 ).registerConfiguration({
 	...workbenchConfigurationNodeBase,
 	properties: {
@@ -39,7 +39,7 @@ Registry.as<IConfigurationRegistry>(
 			maximum: 20,
 			description: localize(
 				"sashSize",
-				"Controls the feedback area size in pixels of the dragging area in between views/editors. Set it to a larger value if you feel it's hard to resize views using the mouse.",
+				"Controls the feedback area size in pixels of the dragging area in between views/editors. Set it to a larger value if you feel it's hard to resize views using the mouse."
 			),
 		},
 		"workbench.sash.hoverDelay": {
@@ -49,7 +49,7 @@ Registry.as<IConfigurationRegistry>(
 			maximum: 2000,
 			description: localize(
 				"sashHoverDelay",
-				"Controls the hover feedback delay in milliseconds of the dragging area in between views/editors.",
+				"Controls the hover feedback delay in milliseconds of the dragging area in between views/editors."
 			),
 		},
 	},

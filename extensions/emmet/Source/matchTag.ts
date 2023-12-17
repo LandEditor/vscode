@@ -25,7 +25,7 @@ export function matchTag() {
 		const updatedSelection = getUpdatedSelections(
 			document,
 			rootNode,
-			selection.start,
+			selection.start
 		);
 		if (updatedSelection) {
 			updatedSelections.push(updatedSelection);
@@ -40,14 +40,14 @@ export function matchTag() {
 function getUpdatedSelections(
 	document: vscode.TextDocument,
 	rootNode: HtmlFlatNode,
-	position: vscode.Position,
+	position: vscode.Position
 ): vscode.Selection | undefined {
 	const offset = document.offsetAt(position);
 	const currentNode = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		offset,
-		true,
+		true
 	);
 	if (!currentNode) {
 		return;

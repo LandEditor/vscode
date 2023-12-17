@@ -17,7 +17,7 @@ export interface Matcher<T> {
 export function createMatchers<T>(
 	selector: string,
 	matchesName: (names: string[], matcherInput: T) => number,
-	results: MatcherWithPriority<T>[],
+	results: MatcherWithPriority<T>[]
 ): void {
 	const tokenizer = newTokenizer(selector);
 	let token = tokenizer.next();

@@ -50,7 +50,7 @@ function hygiene(some, linting = true) {
 		const lines = file.contents.toString("utf8").split(/\r\n|\r|\n/);
 		file.__lines = lines;
 		const allowInComments = lines.some((line) =>
-			/allow-any-unicode-comment-file/.test(line),
+			/allow-any-unicode-comment-file/.test(line)
 		);
 		let skipNext = false;
 		lines.forEach((line, i) => {
@@ -75,7 +75,7 @@ function hygiene(some, linting = true) {
 			// Please do not add symbols that resemble ASCII letters!
 			const m =
 				/([^\t\n\r\x20-\x7E⊃⊇✔︎✓🎯⚠️🛑🔴🚗🚙🚕🎉✨❗⇧⌥⌘×÷¦⋯…↑↓￫→←↔⟷·•●◆▼⟪⟫┌└├⏎↩√φ]+)/g.exec(
-					line,
+					line
 				);
 			if (m) {
 				console.error(
@@ -85,8 +85,8 @@ function hygiene(some, linting = true) {
 						}): Unexpected unicode character: "${
 							m[0]
 						}" (charCode: ${m[0].charCodeAt(
-							0,
-						)}). To suppress, use // allow-any-unicode-next-line`,
+							0
+						)}). To suppress, use // allow-any-unicode-next-line`
 				);
 				errorCount++;
 			}
@@ -112,7 +112,7 @@ function hygiene(some, linting = true) {
 					file.relative +
 						"(" +
 						(i + 1) +
-						",1): Bad whitespace indentation",
+						",1): Bad whitespace indentation"
 				);
 				errorCount++;
 			}
@@ -127,7 +127,7 @@ function hygiene(some, linting = true) {
 		for (let i = 0; i < copyrightHeaderLines.length; i++) {
 			if (lines[i] !== copyrightHeaderLines[i]) {
 				console.error(
-					file.relative + ": Missing or bad copyright statement",
+					file.relative + ": Missing or bad copyright statement"
 				);
 				errorCount++;
 				break;
@@ -160,7 +160,7 @@ function hygiene(some, linting = true) {
 					if (original !== formatted) {
 						console.error(
 							`File not formatted. Run the 'Format Document' command to fix it:`,
-							file.relative,
+							file.relative
 						);
 						errorCount++;
 					}
@@ -168,7 +168,7 @@ function hygiene(some, linting = true) {
 				},
 				(err) => {
 					cb(err);
-				},
+				}
 			);
 	});
 
@@ -212,15 +212,15 @@ function hygiene(some, linting = true) {
 				.pipe(
 					gulpeslint({
 						configFile: ".eslintrc.json",
-					}),
+					})
 				)
 				.pipe(gulpeslint.formatEach("compact"))
 				.pipe(
 					gulpeslint.results((results) => {
 						errorCount += results.warningCount;
 						errorCount += results.errorCount;
-					}),
-				),
+					})
+				)
 		);
 		streams.push(
 			result.pipe(filter(stylelintFilter)).pipe(
@@ -231,8 +231,8 @@ function hygiene(some, linting = true) {
 					} else {
 						console.warn(message);
 					}
-				}),
-			),
+				})
+			)
 		);
 	}
 
@@ -253,13 +253,13 @@ function hygiene(some, linting = true) {
 						"error",
 						"Hygiene failed with " +
 							errorCount +
-							` errors. Check 'build / gulpfile.hygiene.js'.`,
+							` errors. Check 'build / gulpfile.hygiene.js'.`
 					);
 				} else {
 					this.emit("end");
 				}
-			},
-		),
+			}
+		)
 	);
 }
 
@@ -298,12 +298,12 @@ function createGitIndexVinyls(paths) {
 									base: repositoryPath,
 									contents: out,
 									stat,
-								}),
+								})
 							);
-						},
+						}
 					);
 				});
-			}),
+			})
 	);
 
 	return pall(fns, { concurrency: 4 }).then((r) => r.filter((p) => !!p));
@@ -345,11 +345,11 @@ if (require.main === module) {
 							(vinyls) =>
 								new Promise((c, e) =>
 									hygiene(
-										es.readArray(vinyls).pipe(filter(all)),
+										es.readArray(vinyls).pipe(filter(all))
 									)
 										.on("end", () => c())
-										.on("error", e),
-								),
+										.on("error", e)
+								)
 						)
 						.catch((err) => {
 							console.error();
@@ -357,7 +357,7 @@ if (require.main === module) {
 							process.exit(1);
 						});
 				}
-			},
+			}
 		);
 	}
 }

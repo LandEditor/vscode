@@ -24,31 +24,58 @@ export class UserDataSyncTrigger
 {
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@IViewsService viewsService: IViewsService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@IHostService hostService: IHostService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@IHostService hostService: IHostService
 	) {
 		super();
 		const event = Event.filter(
 			Event.any<string | undefined>(
-				Event.map(editorService.onDidActiveEditorChange, () => this.getUserDataEditorInputSource(editorService.activeEditor)),
-				Event.map(Event.filter(viewsService.onDidChangeViewContainerVisibility, e => e.id === VIEWLET_ID && e.visible), e => e.id)
-			), source => source !== undefined);
+				Event.map(editorService.onDidActiveEditorChange, () =>
+					this.getUserDataEditorInputSource(
+						editorService.activeEditor
+					)
+				),
+				Event.map(
+					Event.filter(
+						viewsService.onDidChangeViewContainerVisibility,
+						(e) => e.id === VIEWLET_ID && e.visible
+					),
+					(e) => e.id
+				)
+			),
+			(source) => source !== undefined
+		);
 		if (isWeb) {
-			this._register(Event.debounce<string, string[]>(
-				Event.any<string>(
-					Event.map(hostService.onDidChangeFocus, () => 'windowFocus'),
-					Event.map(event, source => source!),
-				), (last, source) => last ? [...last, source] : [source], 1000)
-				(sources => userDataAutoSyncService.triggerSync(sources, true, false)));
+			this._register(
+				Event.debounce<string, string[]>(
+					Event.any<string>(
+						Event.map(
+							hostService.onDidChangeFocus,
+							() => "windowFocus"
+						),
+						Event.map(event, (source) => source!)
+					),
+					(last, source) => (last ? [...last, source] : [source]),
+					1000
+				)((sources) =>
+					userDataAutoSyncService.triggerSync(sources, true, false)
+				)
+			);
 		} else {
-			this._register(event(source => userDataAutoSyncService.triggerSync([source!], true, false)));
+			this._register(
+				event((source) =>
+					userDataAutoSyncService.triggerSync([source!], true, false)
+				)
+			);
 		}
 	}
 
 	private getUserDataEditorInputSource(
-		editorInput: EditorInput | undefined,
+		editorInput: EditorInput | undefined
 	): string | undefined {
 		if (!editorInput) {
 			return undefined;
@@ -63,7 +90,7 @@ export class UserDataSyncTrigger
 		if (
 			isEqual(
 				resource,
-				this.userDataProfilesService.defaultProfile.settingsResource,
+				this.userDataProfilesService.defaultProfile.settingsResource
 			)
 		) {
 			return "settingsEditor";
@@ -71,7 +98,7 @@ export class UserDataSyncTrigger
 		if (
 			isEqual(
 				resource,
-				this.userDataProfilesService.defaultProfile.keybindingsResource,
+				this.userDataProfilesService.defaultProfile.keybindingsResource
 			)
 		) {
 			return "keybindingsEditor";

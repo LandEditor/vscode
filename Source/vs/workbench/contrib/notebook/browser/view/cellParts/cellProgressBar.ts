@@ -21,13 +21,19 @@ export class CellProgressBar extends CellContentPart {
 	constructor(
 		editorContainer: HTMLElement,
 		collapsedInputContainer: HTMLElement,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService) {
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService
+	) {
 		super();
 
-		this._progressBar = this._register(new ProgressBar(editorContainer, defaultProgressBarStyles));
+		this._progressBar = this._register(
+			new ProgressBar(editorContainer, defaultProgressBarStyles)
+		);
 		this._progressBar.hide();
 
-		this._collapsedProgressBar = this._register(new ProgressBar(collapsedInputContainer, defaultProgressBarStyles));
+		this._collapsedProgressBar = this._register(
+			new ProgressBar(collapsedInputContainer, defaultProgressBarStyles)
+		);
 		this._collapsedProgressBar.hide();
 	}
 
@@ -37,14 +43,14 @@ export class CellProgressBar extends CellContentPart {
 
 	override updateForExecutionState(
 		element: ICellViewModel,
-		e: ICellExecutionStateChangedEvent,
+		e: ICellExecutionStateChangedEvent
 	): void {
 		this._updateForExecutionState(element, e);
 	}
 
 	override updateState(
 		element: ICellViewModel,
-		e: CellViewModelStateChangeEvent,
+		e: CellViewModelStateChangeEvent
 	): void {
 		if (e.metadataChanged || e.internalMetadataChanged) {
 			this._updateForExecutionState(element);
@@ -53,7 +59,7 @@ export class CellProgressBar extends CellContentPart {
 		if (e.inputCollapsedChanged) {
 			const exeState =
 				this._notebookExecutionStateService.getCellExecution(
-					element.uri,
+					element.uri
 				);
 			if (element.isInputCollapsed) {
 				this._progressBar.hide();
@@ -71,7 +77,7 @@ export class CellProgressBar extends CellContentPart {
 
 	private _updateForExecutionState(
 		element: ICellViewModel,
-		e?: ICellExecutionStateChangedEvent,
+		e?: ICellExecutionStateChangedEvent
 	): void {
 		const exeState =
 			e?.changed ??

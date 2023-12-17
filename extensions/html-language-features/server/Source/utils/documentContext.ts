@@ -10,7 +10,7 @@ import { URI, Utils } from "vscode-uri";
 
 export function getDocumentContext(
 	documentUri: string,
-	workspaceFolders: WorkspaceFolder[],
+	workspaceFolders: WorkspaceFolder[]
 ): DocumentContext {
 	function getRootFolder(): string | undefined {
 		for (const folder of workspaceFolders) {

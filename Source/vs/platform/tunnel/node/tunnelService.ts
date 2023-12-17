@@ -44,7 +44,7 @@ async function createRemoteTunnel(
 	defaultTunnelHost: string,
 	tunnelRemoteHost: string,
 	tunnelRemotePort: number,
-	tunnelLocalPort?: number,
+	tunnelLocalPort?: number
 ): Promise<RemoteTunnel> {
 	let readyTunnel: NodeRemoteTunnel | undefined;
 	for (let attempts = 3; attempts; attempts--) {
@@ -54,7 +54,7 @@ async function createRemoteTunnel(
 			defaultTunnelHost,
 			tunnelRemoteHost,
 			tunnelRemotePort,
-			tunnelLocalPort,
+			tunnelLocalPort
 		);
 		readyTunnel = await tunnel.waitForReady();
 		if (
@@ -89,7 +89,7 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		private readonly defaultTunnelHost: string,
 		tunnelRemoteHost: string,
 		tunnelRemotePort: number,
-		private readonly suggestedLocalPort?: number,
+		private readonly suggestedLocalPort?: number
 	) {
 		super();
 		this._options = options;
@@ -163,7 +163,7 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		const protocol = await connectRemoteAgentTunnel(
 			this._options,
 			tunnelRemoteHost,
-			this.tunnelRemotePort,
+			this.tunnelRemotePort
 		);
 		const remoteSocket = protocol.getSocket();
 		const dataChunk = protocol.readEntireBuffer();
@@ -208,7 +208,7 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 
 	private _mirrorGenericSocket(
 		localSocket: net.Socket,
-		remoteSocket: ISocket,
+		remoteSocket: ISocket
 	) {
 		remoteSocket.onClose(() => localSocket.destroy());
 		remoteSocket.onEnd(() => localSocket.end());
@@ -219,7 +219,7 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 
 	private _mirrorNodeSocket(
 		localSocket: net.Socket,
-		remoteNodeSocket: NodeSocket,
+		remoteNodeSocket: NodeSocket
 	) {
 		const remoteSocket = remoteNodeSocket.socket;
 		remoteSocket.on("end", () => localSocket.end());
@@ -235,7 +235,8 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 
 export class BaseTunnelService extends AbstractTunnelService {
 	public constructor(
-		@IRemoteSocketFactoryService private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@ILogService logService: ILogService,
 		@ISignService private readonly signService: ISignService,
 		@IProductService private readonly productService: IProductService,
@@ -256,7 +257,7 @@ export class BaseTunnelService extends AbstractTunnelService {
 		localPort: number | undefined,
 		elevateIfNeeded: boolean,
 		privacy?: string,
-		protocol?: string,
+		protocol?: string
 	): Promise<RemoteTunnel | string | undefined> | undefined {
 		const existing = this.getTunnelFromMap(remoteHost, remotePort);
 		if (existing) {
@@ -272,11 +273,11 @@ export class BaseTunnelService extends AbstractTunnelService {
 				localPort,
 				elevateIfNeeded,
 				privacy,
-				protocol,
+				protocol
 			);
 		} else {
 			this.logService.trace(
-				`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`,
+				`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`
 			);
 			const options: IConnectionOptions = {
 				commit: this.productService.commit,
@@ -293,10 +294,10 @@ export class BaseTunnelService extends AbstractTunnelService {
 				localHost,
 				remoteHost,
 				remotePort,
-				localPort,
+				localPort
 			);
 			this.logService.trace(
-				"ForwardedPorts: (TunnelService) Tunnel created without provider.",
+				"ForwardedPorts: (TunnelService) Tunnel created without provider."
 			);
 			this.addTunnelToMap(remoteHost, remotePort, tunnel);
 			return tunnel;
@@ -306,18 +307,19 @@ export class BaseTunnelService extends AbstractTunnelService {
 
 export class TunnelService extends BaseTunnelService {
 	public constructor(
-		@IRemoteSocketFactoryService remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@ILogService logService: ILogService,
 		@ISignService signService: ISignService,
 		@IProductService productService: IProductService,
-		@IConfigurationService configurationService: IConfigurationService,
+		@IConfigurationService configurationService: IConfigurationService
 	) {
 		super(
 			remoteSocketFactoryService,
 			logService,
 			signService,
 			productService,
-			configurationService,
+			configurationService
 		);
 	}
 }
@@ -330,11 +332,13 @@ export class SharedTunnelsService
 	private readonly _tunnelServices: Map<string, ITunnelService> = new Map();
 
 	public constructor(
-		@IRemoteSocketFactoryService protected readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		protected readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@ILogService protected readonly logService: ILogService,
 		@IProductService private readonly productService: IProductService,
 		@ISignService private readonly signService: ISignService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -348,10 +352,10 @@ export class SharedTunnelsService
 		localPort?: number,
 		elevateIfNeeded?: boolean,
 		privacy?: string,
-		protocol?: string,
+		protocol?: string
 	): Promise<RemoteTunnel | string | undefined> {
 		this.logService.trace(
-			`ForwardedPorts: (SharedTunnelService) openTunnel request for ${remoteHost}:${remotePort} on local port ${localPort}.`,
+			`ForwardedPorts: (SharedTunnelService) openTunnel request for ${remoteHost}:${remotePort} on local port ${localPort}.`
 		);
 		if (!this._tunnelServices.has(authority)) {
 			const tunnelService = new TunnelService(
@@ -359,7 +363,7 @@ export class SharedTunnelsService
 				this.logService,
 				this.signService,
 				this.productService,
-				this.configurationService,
+				this.configurationService
 			);
 			this._register(tunnelService);
 			this._tunnelServices.set(authority, tunnelService);
@@ -380,7 +384,7 @@ export class SharedTunnelsService
 				localPort,
 				elevateIfNeeded,
 				privacy,
-				protocol,
+				protocol
 			);
 	}
 }

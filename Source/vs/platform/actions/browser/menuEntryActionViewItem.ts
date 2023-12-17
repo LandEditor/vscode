@@ -80,7 +80,7 @@ export function createAndFillInContextMenuActions(
 	menu: IMenu,
 	options: IMenuActionOptions | undefined,
 	target: IAction[] | { primary: IAction[]; secondary: IAction[] },
-	primaryGroup?: string,
+	primaryGroup?: string
 ): void {
 	const groups = menu.getActions(options);
 	const modifierKeyEmitter = ModifierKeyEmitter.getInstance();
@@ -93,7 +93,7 @@ export function createAndFillInContextMenuActions(
 		useAlternativeActions,
 		primaryGroup
 			? (actionGroup) => actionGroup === primaryGroup
-			: (actionGroup) => actionGroup === "navigation",
+			: (actionGroup) => actionGroup === "navigation"
 	);
 }
 
@@ -105,9 +105,9 @@ export function createAndFillInActionBarActions(
 	shouldInlineSubmenu?: (
 		action: SubmenuAction,
 		group: string,
-		groupSize: number,
+		groupSize: number
 	) => boolean,
-	useSeparatorsInPrimaryActions?: boolean,
+	useSeparatorsInPrimaryActions?: boolean
 ): void {
 	const groups = menu.getActions(options);
 	const isPrimaryAction =
@@ -122,7 +122,7 @@ export function createAndFillInActionBarActions(
 		false,
 		isPrimaryAction,
 		shouldInlineSubmenu,
-		useSeparatorsInPrimaryActions,
+		useSeparatorsInPrimaryActions
 	);
 }
 
@@ -137,9 +137,9 @@ function fillInActions(
 	shouldInlineSubmenu: (
 		action: SubmenuAction,
 		group: string,
-		groupSize: number,
+		groupSize: number
 	) => boolean = () => false,
-	useSeparatorsInPrimaryActions: boolean = false,
+	useSeparatorsInPrimaryActions: boolean = false
 ): void {
 	let primaryBucket: IAction[];
 	let secondaryBucket: IAction[];
@@ -209,21 +209,30 @@ export interface IMenuEntryActionViewItemOptions {
 export class MenuEntryActionViewItem extends ActionViewItem {
 	private _wantsAltCommand: boolean = false;
 	private readonly _itemClassDispose = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 	private readonly _altKey: ModifierKeyEmitter;
 
 	constructor(
 		action: MenuItemAction,
 		options: IMenuEntryActionViewItemOptions | undefined,
-		@IKeybindingService protected readonly _keybindingService: IKeybindingService,
-		@INotificationService protected _notificationService: INotificationService,
+		@IKeybindingService
+		protected readonly _keybindingService: IKeybindingService,
+		@INotificationService
+		protected _notificationService: INotificationService,
 		@IContextKeyService protected _contextKeyService: IContextKeyService,
 		@IThemeService protected _themeService: IThemeService,
 		@IContextMenuService protected _contextMenuService: IContextMenuService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService
 	) {
-		super(undefined, action, { icon: !!(action.class || action.item.icon), label: !action.class && !action.item.icon, draggable: options?.draggable, keybinding: options?.keybinding, hoverDelegate: options?.hoverDelegate });
+		super(undefined, action, {
+			icon: !!(action.class || action.item.icon),
+			label: !action.class && !action.item.icon,
+			draggable: options?.draggable,
+			keybinding: options?.keybinding,
+			hoverDelegate: options?.hoverDelegate,
+		});
 		this._altKey = ModifierKeyEmitter.getInstance();
 	}
 
@@ -282,14 +291,14 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 				addDisposableListener(container, "mouseleave", (_) => {
 					isMouseOver = false;
 					updateAltState();
-				}),
+				})
 			);
 
 			this._register(
 				addDisposableListener(container, "mouseenter", (_) => {
 					isMouseOver = true;
 					updateAltState();
-				}),
+				})
 			);
 
 			updateAltState();
@@ -305,7 +314,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 	protected override getTooltip() {
 		const keybinding = this._keybindingService.lookupKeybinding(
 			this._commandAction.id,
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		const keybindingLabel = keybinding && keybinding.getLabel();
 
@@ -320,7 +329,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 				this._menuItemAction.alt.label;
 			const altKeybinding = this._keybindingService.lookupKeybinding(
 				this._menuItemAction.alt.id,
-				this._contextKeyService,
+				this._contextKeyService
 			);
 			const altKeybindingLabel =
 				altKeybinding && altKeybinding.getLabel();
@@ -329,8 +338,8 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 						"titleAndKb",
 						"{0} ({1})",
 						altTooltip,
-						altKeybindingLabel,
-				  )
+						altKeybindingLabel
+					)
 				: altTooltip;
 
 			title = localize(
@@ -338,7 +347,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 				"{0}\n[{1}] {2}",
 				title,
 				UILabelProvider.modifierLabels[OS].altKey,
-				altTitleSection,
+				altTitleSection
 			);
 		}
 		return title;
@@ -385,7 +394,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 		} else {
 			// icon path/url
 			label.style.backgroundImage = isDark(
-				this._themeService.getColorTheme().type,
+				this._themeService.getColorTheme().type
 			)
 				? asCSSUrl(icon.dark)
 				: asCSSUrl(icon.light);
@@ -398,7 +407,7 @@ export class MenuEntryActionViewItem extends ActionViewItem {
 				this._themeService.onDidColorThemeChange(() => {
 					// refresh when the theme changes in case we go between dark <-> light
 					this.updateClass();
-				}),
+				})
 			);
 		}
 	}
@@ -415,11 +424,22 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 		const dropdownOptions: IDropdownMenuActionViewItemOptions = {
 			...options,
 			menuAsChild: options?.menuAsChild ?? false,
-			classNames: options?.classNames ?? (ThemeIcon.isThemeIcon(action.item.icon) ? ThemeIcon.asClassName(action.item.icon) : undefined),
-			keybindingProvider: options?.keybindingProvider ?? (action => _keybindingService.lookupKeybinding(action.id))
+			classNames:
+				options?.classNames ??
+				(ThemeIcon.isThemeIcon(action.item.icon)
+					? ThemeIcon.asClassName(action.item.icon)
+					: undefined),
+			keybindingProvider:
+				options?.keybindingProvider ??
+				((action) => _keybindingService.lookupKeybinding(action.id)),
 		};
 
-		super(action, { getActions: () => action.actions }, _contextMenuService, dropdownOptions);
+		super(
+			action,
+			{ getActions: () => action.actions },
+			_contextMenuService,
+			dropdownOptions
+		);
 	}
 
 	override render(container: HTMLElement): void {
@@ -434,7 +454,7 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 			const setBackgroundImage = () => {
 				if (this.element) {
 					this.element.style.backgroundImage = isDark(
-						this._themeService.getColorTheme().type,
+						this._themeService.getColorTheme().type
 					)
 						? asCSSUrl(icon.dark)
 						: asCSSUrl(icon.light);
@@ -445,7 +465,7 @@ export class SubmenuEntryActionViewItem extends DropdownMenuActionViewItem {
 				this._themeService.onDidColorThemeChange(() => {
 					// refresh when the theme changes in case we go between dark <-> light
 					setBackgroundImage();
-				}),
+				})
 			);
 		}
 	}
@@ -473,8 +493,10 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 	constructor(
 		submenuAction: SubmenuItemAction,
 		options: IDropdownWithDefaultActionViewItemOptions | undefined,
-		@IKeybindingService protected readonly _keybindingService: IKeybindingService,
-		@INotificationService protected _notificationService: INotificationService,
+		@IKeybindingService
+		protected readonly _keybindingService: IKeybindingService,
+		@INotificationService
+		protected _notificationService: INotificationService,
 		@IContextMenuService protected _contextMenuService: IContextMenuService,
 		@IMenuService protected _menuService: IMenuService,
 		@IInstantiationService protected _instaService: IInstantiationService,
@@ -486,30 +508,49 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 		// determine default action
 		let defaultAction: IAction | undefined;
-		const defaultActionId = options?.persistLastActionId ? _storageService.get(this._storageKey, StorageScope.WORKSPACE) : undefined;
+		const defaultActionId = options?.persistLastActionId
+			? _storageService.get(this._storageKey, StorageScope.WORKSPACE)
+			: undefined;
 		if (defaultActionId) {
-			defaultAction = submenuAction.actions.find(a => defaultActionId === a.id);
+			defaultAction = submenuAction.actions.find(
+				(a) => defaultActionId === a.id
+			);
 		}
 		if (!defaultAction) {
 			defaultAction = submenuAction.actions[0];
 		}
 
-		this._defaultAction = this._instaService.createInstance(MenuEntryActionViewItem, <MenuItemAction>defaultAction, { keybinding: this._getDefaultActionKeybindingLabel(defaultAction) });
+		this._defaultAction = this._instaService.createInstance(
+			MenuEntryActionViewItem,
+			<MenuItemAction>defaultAction,
+			{ keybinding: this._getDefaultActionKeybindingLabel(defaultAction) }
+		);
 
 		const dropdownOptions: IDropdownMenuActionViewItemOptions = {
-			keybindingProvider: action => this._keybindingService.lookupKeybinding(action.id),
+			keybindingProvider: (action) =>
+				this._keybindingService.lookupKeybinding(action.id),
 			...options,
 			menuAsChild: options?.menuAsChild ?? true,
-			classNames: options?.classNames ?? ['codicon', 'codicon-chevron-down'],
+			classNames: options?.classNames ?? [
+				"codicon",
+				"codicon-chevron-down",
+			],
 			actionRunner: options?.actionRunner ?? new ActionRunner(),
 		};
 
-		this._dropdown = new DropdownMenuActionViewItem(submenuAction, submenuAction.actions, this._contextMenuService, dropdownOptions);
-		this._register(this._dropdown.actionRunner.onDidRun((e: IRunEvent) => {
-			if (e.action instanceof MenuItemAction) {
-				this.update(e.action);
-			}
-		}));
+		this._dropdown = new DropdownMenuActionViewItem(
+			submenuAction,
+			submenuAction.actions,
+			this._contextMenuService,
+			dropdownOptions
+		);
+		this._register(
+			this._dropdown.actionRunner.onDidRun((e: IRunEvent) => {
+				if (e.action instanceof MenuItemAction) {
+					this.update(e.action);
+				}
+			})
+		);
 	}
 
 	private update(lastAction: MenuItemAction): void {
@@ -518,7 +559,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 				this._storageKey,
 				lastAction.id,
 				StorageScope.WORKSPACE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		}
 
@@ -526,12 +567,12 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		this._defaultAction = this._instaService.createInstance(
 			MenuEntryActionViewItem,
 			lastAction,
-			{ keybinding: this._getDefaultActionKeybindingLabel(lastAction) },
+			{ keybinding: this._getDefaultActionKeybindingLabel(lastAction) }
 		);
 		this._defaultAction.actionRunner = new (class extends ActionRunner {
 			protected override async runAction(
 				action: IAction,
-				context?: unknown,
+				context?: unknown
 			): Promise<void> {
 				await action.run(undefined);
 			}
@@ -539,7 +580,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 
 		if (this._container) {
 			this._defaultAction.render(
-				prepend(this._container, $(".action-container")),
+				prepend(this._container, $(".action-container"))
 			);
 		}
 	}
@@ -548,7 +589,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 		let defaultActionKeybinding: string | undefined;
 		if (this._options?.renderKeybindingWithDefaultActionLabel) {
 			const kb = this._keybindingService.lookupKeybinding(
-				defaultAction.id,
+				defaultAction.id
 			);
 			if (kb) {
 				defaultActionKeybinding = `(${kb.getLabel()})`;
@@ -582,8 +623,8 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 						this._dropdown.focus();
 						event.stopPropagation();
 					}
-				},
-			),
+				}
+			)
 		);
 
 		const dropdownContainer = $(".dropdown-action-container");
@@ -600,8 +641,8 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 						this._defaultAction.element?.focus();
 						event.stopPropagation();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -639,7 +680,7 @@ export class DropdownWithDefaultActionViewItem extends BaseActionViewItem {
 class SubmenuEntrySelectActionViewItem extends SelectActionViewItem {
 	constructor(
 		action: SubmenuItemAction,
-		@IContextViewService contextViewService: IContextViewService,
+		@IContextViewService contextViewService: IContextViewService
 	) {
 		super(
 			null,
@@ -654,13 +695,13 @@ class SubmenuEntrySelectActionViewItem extends SelectActionViewItem {
 			0,
 			contextViewService,
 			defaultSelectBoxStyles,
-			{ ariaLabel: action.tooltip, optionsAsChildren: true },
+			{ ariaLabel: action.tooltip, optionsAsChildren: true }
 		);
 		this.select(
 			Math.max(
 				0,
-				action.actions.findIndex((a) => a.checked),
-			),
+				action.actions.findIndex((a) => a.checked)
+			)
 		);
 	}
 
@@ -685,7 +726,7 @@ export function createActionViewItem(
 	action: IAction,
 	options?:
 		| IDropdownMenuActionViewItemOptions
-		| IMenuEntryActionViewItemOptions,
+		| IMenuEntryActionViewItemOptions
 ):
 	| undefined
 	| MenuEntryActionViewItem
@@ -695,26 +736,26 @@ export function createActionViewItem(
 		return instaService.createInstance(
 			MenuEntryActionViewItem,
 			action,
-			options,
+			options
 		);
 	} else if (action instanceof SubmenuItemAction) {
 		if (action.item.isSelection) {
 			return instaService.createInstance(
 				SubmenuEntrySelectActionViewItem,
-				action,
+				action
 			);
 		} else {
 			if (action.item.rememberDefaultAction) {
 				return instaService.createInstance(
 					DropdownWithDefaultActionViewItem,
 					action,
-					{ ...options, persistLastActionId: true },
+					{ ...options, persistLastActionId: true }
 				);
 			} else {
 				return instaService.createInstance(
 					SubmenuEntryActionViewItem,
 					action,
-					options,
+					options
 				);
 			}
 		}

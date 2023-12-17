@@ -17,7 +17,7 @@ import {
 type OnCompleteFunc = (
 	status: number,
 	headers: { [headerName: string]: string },
-	response?: string,
+	response?: string
 ) => void;
 
 interface IResponseData {
@@ -34,11 +34,11 @@ interface IResponseData {
  */
 async function makeTelemetryRequest(
 	options: IRequestOptions,
-	requestService: IRequestService,
+	requestService: IRequestService
 ): Promise<IResponseData> {
 	const response = await requestService.request(
 		options,
-		CancellationToken.None,
+		CancellationToken.None
 	);
 	const responseData = (await streamToBuffer(response.stream)).toString();
 	const statusCode = response.res.statusCode ?? 200;
@@ -56,7 +56,7 @@ async function makeTelemetryRequest(
  * @returns An object containing the headers, statusCode, and responseData
  */
 async function makeLegacyTelemetryRequest(
-	options: IRequestOptions,
+	options: IRequestOptions
 ): Promise<IResponseData> {
 	const httpsOptions = {
 		method: options.type,
@@ -89,7 +89,7 @@ async function makeLegacyTelemetryRequest(
 async function sendPostAsync(
 	requestService: IRequestService | undefined,
 	payload: IPayloadData,
-	oncomplete: OnCompleteFunc,
+	oncomplete: OnCompleteFunc
 ) {
 	const telemetryRequestData =
 		typeof payload.data === "string"
@@ -113,7 +113,7 @@ async function sendPostAsync(
 		oncomplete(
 			responseData.statusCode,
 			responseData.headers,
-			responseData.responseData,
+			responseData.responseData
 		);
 	} catch {
 		// If it errors out, send status of 0 and a blank response to oncomplete so we can retry events
@@ -127,7 +127,7 @@ export class OneDataSystemAppender extends AbstractOneDataSystemAppender {
 		isInternalTelemetry: boolean,
 		eventPrefix: string,
 		defaultData: { [key: string]: any } | null,
-		iKeyOrClientFactory: string | (() => IAppInsightsCore), // allow factory function for testing
+		iKeyOrClientFactory: string | (() => IAppInsightsCore) // allow factory function for testing
 	) {
 		// Override the way events get sent since node doesn't have XHTMLRequest
 		const customHttpXHROverride: IXHROverride = {
@@ -142,7 +142,7 @@ export class OneDataSystemAppender extends AbstractOneDataSystemAppender {
 			eventPrefix,
 			defaultData,
 			iKeyOrClientFactory,
-			customHttpXHROverride,
+			customHttpXHROverride
 		);
 	}
 }

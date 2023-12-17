@@ -42,7 +42,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 		private readonly _connectionToken: ServerConnectionToken,
 		private readonly _environmentService: IServerEnvironmentService,
 		private readonly _userDataProfilesService: IUserDataProfilesService,
-		private readonly _extensionHostStatusService: IExtensionHostStatusService,
+		private readonly _extensionHostStatusService: IExtensionHostStatusService
 	) {}
 
 	async call(_: any, command: string, arg?: any): Promise<any> {
@@ -50,15 +50,15 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			case "getEnvironmentData": {
 				const args = <IGetEnvironmentDataArguments>arg;
 				const uriTransformer = createURITransformer(
-					args.remoteAuthority,
+					args.remoteAuthority
 				);
 
 				let environmentData = await this._getEnvironmentData(
-					args.profile,
+					args.profile
 				);
 				environmentData = transformOutgoingURIs(
 					environmentData,
-					uriTransformer,
+					uriTransformer
 				);
 
 				return environmentData;
@@ -67,7 +67,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			case "getExtensionHostExitInfo": {
 				const args = <IGetExtensionHostExitInfoArguments>arg;
 				return this._extensionHostStatusService.getExitInfo(
-					args.reconnectionToken,
+					args.reconnectionToken
 				);
 			}
 
@@ -89,9 +89,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 					const uriTransformer = createURITransformer("");
 					const folderPaths = options.folders
 						.map((folder) =>
-							URI.revive(
-								uriTransformer.transformIncoming(folder),
-							),
+							URI.revive(uriTransformer.transformIncoming(folder))
 						)
 						.filter((uri) => uri.scheme === "file");
 
@@ -126,12 +124,12 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 	}
 
 	private async _getEnvironmentData(
-		profile?: string,
+		profile?: string
 	): Promise<IRemoteAgentEnvironmentDTO> {
 		if (
 			profile &&
 			!this._userDataProfilesService.profiles.some(
-				(p) => p.id === profile,
+				(p) => p.id === profile
 			)
 		) {
 			await this._userDataProfilesService.createProfile(profile, profile);
@@ -147,7 +145,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			logsPath: this._environmentService.logsHome,
 			extensionHostLogsPath: joinPath(
 				this._environmentService.logsHome,
-				`exthost${RemoteAgentEnvironmentChannel._namePool++}`,
+				`exthost${RemoteAgentEnvironmentChannel._namePool++}`
 			),
 			globalStorageHome:
 				this._userDataProfilesService.defaultProfile.globalStorageHome,
@@ -161,7 +159,7 @@ export class RemoteAgentEnvironmentChannel implements IServerChannel {
 			profiles: {
 				home: this._userDataProfilesService.profilesHome,
 				all: [...this._userDataProfilesService.profiles].map(
-					(profile) => ({ ...profile }),
+					(profile) => ({ ...profile })
 				),
 			},
 		};

@@ -54,7 +54,7 @@ class TokenCache {
 
 	public tryGetCached(
 		document: ITextDocument,
-		config: MarkdownItConfig,
+		config: MarkdownItConfig
 	): Token[] | undefined {
 		if (
 			this._cachedDocument &&
@@ -71,7 +71,7 @@ class TokenCache {
 	public update(
 		document: ITextDocument,
 		config: MarkdownItConfig,
-		tokens: Token[],
+		tokens: Token[]
 	) {
 		this._cachedDocument = {
 			uri: document.uri,
@@ -115,7 +115,7 @@ export class MarkdownItEngine implements IMdParser {
 	public constructor(
 		private readonly _contributionProvider: MarkdownContributionProvider,
 		slugifier: Slugifier,
-		private readonly _logger: ILogger,
+		private readonly _logger: ILogger
 	) {
 		this.slugifier = slugifier;
 
@@ -131,7 +131,7 @@ export class MarkdownItEngine implements IMdParser {
 			this._md = (async () => {
 				const markdownIt = await import("markdown-it");
 				let md: MarkdownIt = markdownIt(
-					await getMarkdownOptions(() => md),
+					await getMarkdownOptions(() => md)
 				);
 				md.linkify.set({ fuzzyLink: false });
 
@@ -160,7 +160,7 @@ export class MarkdownItEngine implements IMdParser {
 					},
 					() => {
 						/* noop */
-					},
+					}
 				);
 
 				md.block.ruler.before("fence", "front_matter", fontMatterRule, {
@@ -190,7 +190,7 @@ export class MarkdownItEngine implements IMdParser {
 	private _tokenizeDocument(
 		document: ITextDocument,
 		config: MarkdownItConfig,
-		engine: MarkdownIt,
+		engine: MarkdownIt
 	): Token[] {
 		const cached = this._tokenCache.tryGetCached(document, config);
 		if (cached) {
@@ -200,7 +200,7 @@ export class MarkdownItEngine implements IMdParser {
 
 		this._logger.verbose(
 			"MarkdownItEngine",
-			`tokenizeDocument - ${document.uri}`,
+			`tokenizeDocument - ${document.uri}`
 		);
 		const tokens = this._tokenizeString(document.getText(), engine);
 		this._tokenCache.update(document, config, tokens);
@@ -219,10 +219,10 @@ export class MarkdownItEngine implements IMdParser {
 
 	public async render(
 		input: ITextDocument | string,
-		resourceProvider?: WebviewResourceProvider,
+		resourceProvider?: WebviewResourceProvider
 	): Promise<RenderOutput> {
 		const config = this._getConfig(
-			typeof input === "string" ? undefined : input.uri,
+			typeof input === "string" ? undefined : input.uri
 		);
 		const engine = await this._getEngine(config);
 
@@ -243,7 +243,7 @@ export class MarkdownItEngine implements IMdParser {
 				...engine.options,
 				...config,
 			},
-			env,
+			env
 		);
 
 		return {
@@ -265,7 +265,7 @@ export class MarkdownItEngine implements IMdParser {
 	private _getConfig(resource?: vscode.Uri): MarkdownItConfig {
 		const config = vscode.workspace.getConfiguration(
 			"markdown",
-			resource ?? null,
+			resource ?? null
 		);
 		return {
 			breaks: config.get<boolean>("preview.breaks", false),
@@ -281,7 +281,7 @@ export class MarkdownItEngine implements IMdParser {
 			idx: number,
 			options,
 			env: RenderEnv,
-			self,
+			self
 		) => {
 			const token = tokens[idx];
 			const src = token.attrGet("src");
@@ -294,8 +294,8 @@ export class MarkdownItEngine implements IMdParser {
 						this._toResourceUri(
 							src,
 							env.currentDocument,
-							env.resourceProvider,
-						),
+							env.resourceProvider
+						)
 					);
 					token.attrSet("data-src", src);
 				}
@@ -316,7 +316,7 @@ export class MarkdownItEngine implements IMdParser {
 			idx: number,
 			options,
 			env,
-			self,
+			self
 		) => {
 			const token = tokens[idx];
 			if (token.map?.length) {
@@ -343,7 +343,7 @@ export class MarkdownItEngine implements IMdParser {
 					return normalizeLink(
 						vscode.Uri.parse(link)
 							.with({ scheme: vscode.env.uriScheme })
-							.toString(),
+							.toString()
 					);
 				}
 			} catch (e) {
@@ -372,11 +372,11 @@ export class MarkdownItEngine implements IMdParser {
 			idx: number,
 			options,
 			env,
-			self,
+			self
 		) => {
 			const title = tokens[idx + 1].children!.reduce<string>(
 				(acc, t) => acc + t.content,
-				"",
+				""
 			);
 			let slug = this.slugifier.fromHeading(title);
 
@@ -384,7 +384,7 @@ export class MarkdownItEngine implements IMdParser {
 				const count = this._slugCount.get(slug.value)!;
 				this._slugCount.set(slug.value, count + 1);
 				slug = this.slugifier.fromHeading(
-					slug.value + "-" + (count + 1),
+					slug.value + "-" + (count + 1)
 				);
 			} else {
 				this._slugCount.set(slug.value, 0);
@@ -408,7 +408,7 @@ export class MarkdownItEngine implements IMdParser {
 			idx: number,
 			options,
 			env,
-			self,
+			self
 		) => {
 			const token = tokens[idx];
 			const href = token.attrGet("href");
@@ -427,7 +427,7 @@ export class MarkdownItEngine implements IMdParser {
 	private _toResourceUri(
 		href: string,
 		currentDocument: vscode.Uri | undefined,
-		resourceProvider: WebviewResourceProvider | undefined,
+		resourceProvider: WebviewResourceProvider | undefined
 	): string {
 		try {
 			// Support file:// links
@@ -477,7 +477,7 @@ export class MarkdownItEngine implements IMdParser {
 }
 
 async function getMarkdownOptions(
-	md: () => MarkdownIt,
+	md: () => MarkdownIt
 ): Promise<MarkdownIt.Options> {
 	const hljs = (await import("highlight.js")).default;
 	return {

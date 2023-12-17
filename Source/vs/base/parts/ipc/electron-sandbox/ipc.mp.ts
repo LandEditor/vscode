@@ -20,7 +20,7 @@ interface IMessageChannelResult {
 export async function acquirePort(
 	requestChannel: string | undefined,
 	responseChannel: string,
-	nonce = generateUuid(),
+	nonce = generateUuid()
 ): Promise<MessagePort> {
 	// Get ready to acquire the message port from the
 	// provided `responseChannel` via preload helper.
@@ -43,15 +43,15 @@ export async function acquirePort(
 				nonce: e.data,
 				port: e.ports[0],
 				source: e.source,
-			}),
+			})
 		);
 	const { port } = await Event.toPromise(
 		Event.once(
 			Event.filter(
 				onMessageChannelResult,
-				(e) => e.nonce === nonce && e.source === mainWindow,
-			),
-		),
+				(e) => e.nonce === nonce && e.source === mainWindow
+			)
+		)
 	);
 
 	return port;

@@ -48,7 +48,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 
 	public register(
 		languageId: string,
-		support: ITokenizationSupport,
+		support: ITokenizationSupport
 	): IDisposable {
 		this._tokenizationSupports.set(languageId, support);
 		this.handleChange([languageId]);
@@ -67,13 +67,13 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 
 	public registerFactory(
 		languageId: string,
-		factory: ILazyTokenizationSupport,
+		factory: ILazyTokenizationSupport
 	): IDisposable {
 		this._factories.get(languageId)?.dispose();
 		const myData = new TokenizationSupportFactoryData(
 			this,
 			languageId,
-			factory,
+			factory
 		);
 		this._factories.set(languageId, myData);
 		return toDisposable(() => {
@@ -87,7 +87,7 @@ export class TokenizationRegistry implements ITokenizationRegistry {
 	}
 
 	public async getOrCreate(
-		languageId: string,
+		languageId: string
 	): Promise<ITokenizationSupport | null> {
 		// check first if the support is already set
 		const tokenizationSupport = this.get(languageId);
@@ -155,7 +155,7 @@ class TokenizationSupportFactoryData extends Disposable {
 	constructor(
 		private readonly _registry: TokenizationRegistry,
 		private readonly _languageId: string,
-		private readonly _factory: ILazyTokenizationSupport,
+		private readonly _factory: ILazyTokenizationSupport
 	) {
 		super();
 	}

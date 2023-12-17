@@ -90,14 +90,14 @@ export default abstract class BaseErrorTelemetry {
 
 	constructor(
 		telemetryService: ITelemetryService,
-		flushDelay = BaseErrorTelemetry.ERROR_FLUSH_TIMEOUT,
+		flushDelay = BaseErrorTelemetry.ERROR_FLUSH_TIMEOUT
 	) {
 		this._telemetryService = telemetryService;
 		this._flushDelay = flushDelay;
 
 		// (1) check for unexpected but handled errors
 		const unbind = errorHandler.addListener((err) =>
-			this._onErrorEvent(err),
+			this._onErrorEvent(err)
 		);
 		this._disposables.add(toDisposable(unbind));
 

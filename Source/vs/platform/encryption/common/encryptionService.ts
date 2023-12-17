@@ -13,7 +13,7 @@ export interface IEncryptionService extends ICommonEncryptionService {
 }
 
 export const IEncryptionMainService = createDecorator<IEncryptionMainService>(
-	"encryptionMainService",
+	"encryptionMainService"
 );
 export interface IEncryptionMainService extends IEncryptionService {}
 

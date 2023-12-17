@@ -14,8 +14,8 @@ const DisassemblyEditorIcon = registerIcon(
 	Codicon.debug,
 	localize(
 		"disassemblyEditorLabelIcon",
-		"Icon of the disassembly editor label.",
-	),
+		"Icon of the disassembly editor label."
+	)
 );
 
 export class DisassemblyViewInput extends EditorInput {

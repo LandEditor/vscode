@@ -42,20 +42,20 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@ILogService private readonly _logService: ILogService,
+		@ILogService private readonly _logService: ILogService
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadDecorations);
 	}
 
 	registerFileDecorationProvider(
 		provider: vscode.FileDecorationProvider,
-		extensionDescription: IExtensionDescription,
+		extensionDescription: IExtensionDescription
 	): vscode.Disposable {
 		const handle = ExtHostDecorations._handlePool++;
 		this._provider.set(handle, { provider, extensionDescription });
 		this._proxy.$registerDecorationProvider(
 			handle,
-			extensionDescription.identifier.value,
+			extensionDescription.identifier.value
 		);
 
 		const listener =
@@ -76,7 +76,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 				this._logService.warn(
 					"[Decorations] CAPPING events from decorations provider",
 					extensionDescription.identifier.value,
-					array.length,
+					array.length
 				);
 				const mapped = array.map((uri) => ({
 					uri,
@@ -84,8 +84,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 				}));
 				const groups = groupBy(
 					mapped,
-					(a, b) =>
-						a.rank - b.rank || compare(a.uri.path, b.uri.path),
+					(a, b) => a.rank - b.rank || compare(a.uri.path, b.uri.path)
 				);
 				const picked: URI[] = [];
 				outer: for (const uris of groups) {
@@ -116,7 +115,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 	async $provideDecorations(
 		handle: number,
 		requests: DecorationRequest[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<DecorationReply> {
 		if (!this._provider.has(handle)) {
 			// might have been unregistered in the meantime
@@ -132,7 +131,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 				try {
 					const { uri, id } = request;
 					const data = await Promise.resolve(
-						provider.provideFileDecoration(URI.revive(uri), token),
+						provider.provideFileDecoration(URI.revive(uri), token)
 					);
 					if (!data) {
 						return;
@@ -142,7 +141,7 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 						if (data.badge && typeof data.badge !== "string") {
 							checkProposedApiEnabled(
 								extensionId,
-								"codiconDecoration",
+								"codiconDecoration"
 							);
 						}
 						result[id] = <DecorationData>[
@@ -153,13 +152,13 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 						];
 					} catch (e) {
 						this._logService.warn(
-							`INVALID decoration from extension '${extensionId.identifier.value}': ${e}`,
+							`INVALID decoration from extension '${extensionId.identifier.value}': ${e}`
 						);
 					}
 				} catch (err) {
 					this._logService.error(err);
 				}
-			}),
+			})
 		);
 
 		return result;
@@ -167,6 +166,6 @@ export class ExtHostDecorations implements ExtHostDecorationsShape {
 }
 
 export const IExtHostDecorations = createDecorator<IExtHostDecorations>(
-	"IExtHostDecorations",
+	"IExtHostDecorations"
 );
 export interface IExtHostDecorations extends ExtHostDecorations {}

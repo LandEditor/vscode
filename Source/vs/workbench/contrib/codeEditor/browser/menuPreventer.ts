@@ -37,7 +37,7 @@ export class MenuPreventer extends Disposable implements IEditorContribution {
 				if (this._altListeningMouse) {
 					this._altMouseTriggered = true;
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -48,7 +48,7 @@ export class MenuPreventer extends Disposable implements IEditorContribution {
 					}
 					this._altListeningMouse = true;
 				}
-			}),
+			})
 		);
 
 		this._register(
@@ -60,7 +60,7 @@ export class MenuPreventer extends Disposable implements IEditorContribution {
 					this._altListeningMouse = false;
 					this._altMouseTriggered = false;
 				}
-			}),
+			})
 		);
 	}
 }
@@ -68,5 +68,5 @@ export class MenuPreventer extends Disposable implements IEditorContribution {
 registerEditorContribution(
 	MenuPreventer.ID,
 	MenuPreventer,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );

@@ -43,12 +43,12 @@ export const CONTEXT_IN_OUTPUT = new RawContextKey<boolean>("inOutput", false);
 
 export const CONTEXT_ACTIVE_FILE_OUTPUT = new RawContextKey<boolean>(
 	"activeLogOutput",
-	false,
+	false
 );
 
 export const CONTEXT_OUTPUT_SCROLL_LOCK = new RawContextKey<boolean>(
 	`outputView.scrollLock`,
-	false,
+	false
 );
 
 export const IOutputService = createDecorator<IOutputService>("outputService");
@@ -220,5 +220,5 @@ Registry.add(Extensions.OutputChannels, new OutputChannelRegistry());
 
 export const ACTIVE_OUTPUT_CHANNEL_CONTEXT = new RawContextKey<string>(
 	"activeOutputChannel",
-	"",
+	""
 );

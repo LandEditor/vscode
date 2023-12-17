@@ -34,25 +34,31 @@ const codeActionsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 >(codeActionsExtensionPointDescriptor);
 const documentationExtensionPoint =
 	ExtensionsRegistry.registerExtensionPoint<DocumentationExtensionPoint>(
-		documentationExtensionPointDescriptor,
+		documentationExtensionPointDescriptor
 	);
 
 Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
+	Extensions.Configuration
 ).registerConfiguration(editorConfiguration);
 
 class WorkbenchConfigurationContribution {
 	constructor(
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-		instantiationService.createInstance(CodeActionsContribution, codeActionsExtensionPoint);
-		instantiationService.createInstance(CodeActionDocumentationContribution, documentationExtensionPoint);
+		instantiationService.createInstance(
+			CodeActionsContribution,
+			codeActionsExtensionPoint
+		);
+		instantiationService.createInstance(
+			CodeActionDocumentationContribution,
+			documentationExtensionPoint
+		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	WorkbenchConfigurationContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

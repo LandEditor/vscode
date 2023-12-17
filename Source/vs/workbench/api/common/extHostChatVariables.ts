@@ -43,7 +43,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 	async $resolveVariable(
 		handle: number,
 		messageText: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatRequestVariableValue[] | undefined> {
 		const item = this._resolver.get(handle);
 		if (!item) {
@@ -53,7 +53,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 			const value = await item.resolver.resolve(
 				item.data.name,
 				{ message: messageText },
-				token,
+				token
 			);
 			if (value) {
 				return value.map(ChatVariable.from);
@@ -68,7 +68,7 @@ export class ExtHostChatVariables implements ExtHostChatVariablesShape {
 		extension: IExtensionDescription,
 		name: string,
 		description: string,
-		resolver: vscode.ChatVariableResolver,
+		resolver: vscode.ChatVariableResolver
 	): IDisposable {
 		const handle = ExtHostChatVariables._idPool++;
 		this._resolver.set(handle, {

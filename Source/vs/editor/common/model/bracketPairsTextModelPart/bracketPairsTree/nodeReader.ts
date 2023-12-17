@@ -28,7 +28,7 @@ export class NodeReader {
 	 */
 	readLongestNodeAt(
 		offset: Length,
-		predicate: (node: AstNode) => boolean,
+		predicate: (node: AstNode) => boolean
 	): AstNode | undefined {
 		if (lengthLessThan(offset, this.lastOffset)) {
 			throw new Error("Invalid offset");
@@ -108,13 +108,13 @@ export class NodeReader {
 			const parent = lastOrUndefined(this.nextNodes)!;
 			const nextChildIdx = getNextChildIdx(
 				parent,
-				this.idxs[this.idxs.length - 1],
+				this.idxs[this.idxs.length - 1]
 			);
 
 			if (nextChildIdx !== -1) {
 				this.nextNodes.push(parent.getChild(nextChildIdx)!);
 				this.offsets.push(
-					lengthAdd(currentOffset!, currentNode!.length),
+					lengthAdd(currentOffset!, currentNode!.length)
 				);
 				this.idxs[this.idxs.length - 1] = nextChildIdx;
 				break;

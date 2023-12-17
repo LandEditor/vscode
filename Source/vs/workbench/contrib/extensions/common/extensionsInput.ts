@@ -27,8 +27,8 @@ const ExtensionEditorIcon = registerIcon(
 	Codicon.extensions,
 	localize(
 		"extensionsEditorLabelIcon",
-		"Icon of the extensions editor label.",
-	),
+		"Icon of the extensions editor label."
+	)
 );
 
 export interface IExtensionEditorOptions extends IEditorOptions {
@@ -71,7 +71,7 @@ export class ExtensionsInput extends EditorInput {
 		return localize(
 			"extensionsInputName",
 			"Extension: {0}",
-			this._extension.displayName,
+			this._extension.displayName
 		);
 	}
 
@@ -88,7 +88,7 @@ export class ExtensionsInput extends EditorInput {
 			other instanceof ExtensionsInput &&
 			areSameExtensions(
 				this._extension.identifier,
-				other._extension.identifier,
+				other._extension.identifier
 			)
 		);
 	}

@@ -27,7 +27,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		document: vscode.TextDocument,
 		position: vscode.Position,
 		token: vscode.CancellationToken,
-		context: vscode.SignatureHelpContext,
+		context: vscode.SignatureHelpContext
 	): Promise<vscode.SignatureHelp | undefined> {
 		const filepath = this.client.toOpenTsFilePath(document);
 		if (!filepath) {
@@ -37,12 +37,12 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		const args: Proto.SignatureHelpRequestArgs = {
 			...typeConverters.Position.toFileLocationRequestArgs(
 				filepath,
-				position,
+				position
 			),
 			triggerReason: toTsTriggerReason(context),
 		};
 		const response = await this.client.interruptGetErr(() =>
-			this.client.execute("signatureHelp", args, token),
+			this.client.execute("signatureHelp", args, token)
 		);
 		if (response.type !== "response" || !response.body) {
 			return undefined;
@@ -51,12 +51,12 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		const info = response.body;
 		const result = new vscode.SignatureHelp();
 		result.signatures = info.items.map((signature) =>
-			this.convertSignature(signature, document.uri),
+			this.convertSignature(signature, document.uri)
 		);
 		result.activeSignature = this.getActiveSignature(
 			context,
 			info,
-			result.signatures,
+			result.signatures
 		);
 		result.activeParameter = this.getActiveParameter(info);
 
@@ -66,7 +66,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 	private getActiveSignature(
 		context: vscode.SignatureHelpContext,
 		info: Proto.SignatureHelpItems,
-		signatures: readonly vscode.SignatureInformation[],
+		signatures: readonly vscode.SignatureInformation[]
 	): number {
 		// Try matching the previous active signature's label to keep it selected
 		const previouslyActiveSignature =
@@ -75,7 +75,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 			];
 		if (previouslyActiveSignature && context.isRetrigger) {
 			const existingIndex = signatures.findIndex(
-				(other) => other.label === previouslyActiveSignature?.label,
+				(other) => other.label === previouslyActiveSignature?.label
 			);
 			if (existingIndex >= 0) {
 				return existingIndex;
@@ -90,7 +90,7 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 		if (activeSignature?.isVariadic) {
 			return Math.min(
 				info.argumentIndex,
-				activeSignature.parameters.length - 1,
+				activeSignature.parameters.length - 1
 			);
 		}
 		return info.argumentIndex;
@@ -98,31 +98,31 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 
 	private convertSignature(
 		item: Proto.SignatureHelpItem,
-		baseUri: vscode.Uri,
+		baseUri: vscode.Uri
 	) {
 		const signature = new vscode.SignatureInformation(
 			Previewer.asPlainTextWithLinks(
 				item.prefixDisplayParts,
-				this.client,
+				this.client
 			),
 			Previewer.documentationToMarkdown(
 				item.documentation,
 				item.tags.filter((x) => x.name !== "param"),
 				this.client,
-				baseUri,
-			),
+				baseUri
+			)
 		);
 
 		let textIndex = signature.label.length;
 		const separatorLabel = Previewer.asPlainTextWithLinks(
 			item.separatorDisplayParts,
-			this.client,
+			this.client
 		);
 		for (let i = 0; i < item.parameters.length; ++i) {
 			const parameter = item.parameters[i];
 			const label = Previewer.asPlainTextWithLinks(
 				parameter.displayParts,
-				this.client,
+				this.client
 			);
 
 			signature.parameters.push(
@@ -132,9 +132,9 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 						parameter.documentation,
 						[],
 						this.client,
-						baseUri,
-					),
-				),
+						baseUri
+					)
+				)
 			);
 
 			textIndex += label.length;
@@ -148,14 +148,14 @@ class TypeScriptSignatureHelpProvider implements vscode.SignatureHelpProvider {
 
 		signature.label += Previewer.asPlainTextWithLinks(
 			item.suffixDisplayParts,
-			this.client,
+			this.client
 		);
 		return signature;
 	}
 }
 
 function toTsTriggerReason(
-	context: vscode.SignatureHelpContext,
+	context: vscode.SignatureHelpContext
 ): Proto.SignatureHelpTriggerReason {
 	switch (context.triggerKind) {
 		case vscode.SignatureHelpTriggerKind.TriggerCharacter:
@@ -187,14 +187,14 @@ function toTsTriggerReason(
 }
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
 			requireSomeCapability(
 				client,
 				ClientCapability.EnhancedSyntax,
-				ClientCapability.Semantic,
+				ClientCapability.Semantic
 			),
 		],
 		() => {
@@ -206,8 +206,8 @@ export function register(
 						TypeScriptSignatureHelpProvider.triggerCharacters,
 					retriggerCharacters:
 						TypeScriptSignatureHelpProvider.retriggerCharacters,
-				},
+				}
 			);
-		},
+		}
 	);
 }

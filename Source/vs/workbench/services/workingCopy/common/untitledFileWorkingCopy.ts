@@ -83,7 +83,7 @@ export interface IUntitledFileWorkingCopySaveDelegate<
 	 */
 	(
 		workingCopy: IUntitledFileWorkingCopy<M>,
-		options?: ISaveOptions,
+		options?: ISaveOptions
 	): Promise<boolean>;
 }
 
@@ -125,7 +125,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
 
 	private readonly _onDidSave = this._register(
-		new Emitter<IWorkingCopySaveEvent>(),
+		new Emitter<IWorkingCopySaveEvent>()
 	);
 	readonly onDidSave = this._onDidSave.event;
 
@@ -143,11 +143,14 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		readonly name: string,
 		readonly hasAssociatedFilePath: boolean,
 		private readonly isScratchpad: boolean,
-		private readonly initialContents: IUntitledFileWorkingCopyInitialContents | undefined,
+		private readonly initialContents:
+			| IUntitledFileWorkingCopyInitialContents
+			| undefined,
 		private readonly modelFactory: IUntitledFileWorkingCopyModelFactory<M>,
 		private readonly saveDelegate: IUntitledFileWorkingCopySaveDelegate<M>,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
@@ -161,7 +164,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	private modified =
 		this.hasAssociatedFilePath ||
 		Boolean(
-			this.initialContents && this.initialContents.markModified !== false,
+			this.initialContents && this.initialContents.markModified !== false
 		);
 
 	isDirty(): boolean {
@@ -226,8 +229,8 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 				!!backup ||
 				Boolean(
 					this.initialContents &&
-						this.initialContents.markModified !== false,
-				),
+						this.initialContents.markModified !== false
+				)
 		);
 
 		// If we have initial contents, make sure to emit this
@@ -238,7 +241,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	}
 
 	private async doCreateModel(
-		contents: VSBufferReadableStream,
+		contents: VSBufferReadableStream
 	): Promise<void> {
 		this.trace("doCreateModel()");
 
@@ -247,8 +250,8 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 			await this.modelFactory.createModel(
 				this.resource,
 				contents,
-				CancellationToken.None,
-			),
+				CancellationToken.None
+			)
 		);
 
 		// Model listeners
@@ -258,7 +261,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	private installModelListeners(model: M): void {
 		// Content Change
 		this._register(
-			model.onDidChangeContent((e) => this.onModelContentChanged(e)),
+			model.onDidChangeContent((e) => this.onModelContentChanged(e))
 		);
 
 		// Lifecycle
@@ -266,7 +269,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 	}
 
 	private onModelContentChanged(
-		e: IUntitledFileWorkingCopyModelContentChangedEvent,
+		e: IUntitledFileWorkingCopyModelContentChangedEvent
 	): void {
 		// Mark the untitled file working copy as non-modified once its
 		// in case provided by the change event and in case we do not
@@ -365,7 +368,7 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		this.logService.trace(
 			`[untitled file working copy] ${msg}`,
 			this.resource.toString(),
-			this.typeId,
+			this.typeId
 		);
 	}
 }

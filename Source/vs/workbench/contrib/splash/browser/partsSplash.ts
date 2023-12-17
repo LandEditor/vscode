@@ -44,33 +44,53 @@ export class PartsSplash {
 
 	constructor(
 		@IThemeService private readonly _themeService: IThemeService,
-		@IWorkbenchLayoutService private readonly _layoutService: IWorkbenchLayoutService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-		@ISplashStorageService private readonly _partSplashService: ISplashStorageService,
+		@IWorkbenchLayoutService
+		private readonly _layoutService: IWorkbenchLayoutService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+		@ISplashStorageService
+		private readonly _partSplashService: ISplashStorageService,
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
-		@ILifecycleService lifecycleService: ILifecycleService,
+		@ILifecycleService lifecycleService: ILifecycleService
 	) {
-		Event.once(_layoutService.onDidLayoutMainContainer)(() => {
-			this._removePartsSplash();
-			perf.mark('code/didRemovePartsSplash');
-		}, undefined, this._disposables);
+		Event.once(_layoutService.onDidLayoutMainContainer)(
+			() => {
+				this._removePartsSplash();
+				perf.mark("code/didRemovePartsSplash");
+			},
+			undefined,
+			this._disposables
+		);
 
 		const lastIdleSchedule = this._disposables.add(new MutableDisposable());
 		const savePartsSplashSoon = () => {
-			lastIdleSchedule.value = dom.runWhenWindowIdle(mainWindow, () => this._savePartsSplash(), 2500);
+			lastIdleSchedule.value = dom.runWhenWindowIdle(
+				mainWindow,
+				() => this._savePartsSplash(),
+				2500
+			);
 		};
 		lifecycleService.when(LifecyclePhase.Restored).then(() => {
-			Event.any(onDidChangeFullscreen, editorGroupsService.mainPart.onDidLayout, _themeService.onDidColorThemeChange)(savePartsSplashSoon, undefined, this._disposables);
+			Event.any(
+				onDidChangeFullscreen,
+				editorGroupsService.mainPart.onDidLayout,
+				_themeService.onDidColorThemeChange
+			)(savePartsSplashSoon, undefined, this._disposables);
 			savePartsSplashSoon();
 		});
 
-		_configService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('window.titleBarStyle')) {
-				this._didChangeTitleBarStyle = true;
-				this._savePartsSplash();
-			}
-		}, this, this._disposables);
+		_configService.onDidChangeConfiguration(
+			(e) => {
+				if (e.affectsConfiguration("window.titleBarStyle")) {
+					this._didChangeTitleBarStyle = true;
+					this._savePartsSplash();
+				}
+			},
+			this,
+			this._disposables
+		);
 	}
 
 	dispose(): void {
@@ -88,7 +108,7 @@ export class PartsSplash {
 				foreground: theme.getColor(foreground)?.toString(),
 				background: Color.Format.CSS.formatHex(
 					theme.getColor(editorBackground) ||
-						themes.WORKBENCH_BACKGROUND(theme),
+						themes.WORKBENCH_BACKGROUND(theme)
 				),
 				editorBackground: theme.getColor(editorBackground)?.toString(),
 				titleBarBackground: theme
@@ -121,58 +141,58 @@ export class PartsSplash {
 						editorPartMinWidth: DEFAULT_EDITOR_MIN_DIMENSIONS.width,
 						titleBarHeight: this._layoutService.isVisible(
 							Parts.TITLEBAR_PART,
-							mainWindow,
+							mainWindow
 						)
 							? dom.getTotalHeight(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.TITLEBAR_PART,
-										),
-									),
-							  )
+											Parts.TITLEBAR_PART
+										)
+									)
+								)
 							: 0,
 						activityBarWidth: this._layoutService.isVisible(
-							Parts.ACTIVITYBAR_PART,
+							Parts.ACTIVITYBAR_PART
 						)
 							? dom.getTotalWidth(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.ACTIVITYBAR_PART,
-										),
-									),
-							  )
+											Parts.ACTIVITYBAR_PART
+										)
+									)
+								)
 							: 0,
 						sideBarWidth: this._layoutService.isVisible(
-							Parts.SIDEBAR_PART,
+							Parts.SIDEBAR_PART
 						)
 							? dom.getTotalWidth(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.SIDEBAR_PART,
-										),
-									),
-							  )
+											Parts.SIDEBAR_PART
+										)
+									)
+								)
 							: 0,
 						statusBarHeight: this._layoutService.isVisible(
 							Parts.STATUSBAR_PART,
-							mainWindow,
+							mainWindow
 						)
 							? dom.getTotalHeight(
 									assertIsDefined(
 										this._layoutService.getContainer(
 											mainWindow,
-											Parts.STATUSBAR_PART,
-										),
-									),
-							  )
+											Parts.STATUSBAR_PART
+										)
+									)
+								)
 							: 0,
 						windowBorder: this._layoutService.hasMainWindowBorder(),
 						windowBorderRadius:
 							this._layoutService.getMainWindowBorderRadius(),
-				  },
+					},
 		});
 	}
 
@@ -186,7 +206,7 @@ export class PartsSplash {
 
 	private _removePartsSplash(): void {
 		const element = mainWindow.document.getElementById(
-			PartsSplash._splashElementId,
+			PartsSplash._splashElementId
 		);
 		if (element) {
 			element.style.display = "none";
@@ -195,7 +215,7 @@ export class PartsSplash {
 		// remove initial colors
 		const defaultStyles =
 			mainWindow.document.head.getElementsByClassName(
-				"initialShellColors",
+				"initialShellColors"
 			);
 		if (defaultStyles.length) {
 			mainWindow.document.head.removeChild(defaultStyles[0]);

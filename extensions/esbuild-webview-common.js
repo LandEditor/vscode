@@ -84,7 +84,7 @@ module.exports.run = async function (config, args, didBuild) {
 
 		const watcher = require("@parcel/watcher");
 		watcher.subscribe(config.srcDir, () =>
-			tryBuild(resolvedOptions, didBuild),
+			tryBuild(resolvedOptions, didBuild)
 		);
 	} else {
 		return build(resolvedOptions, didBuild).catch(() => process.exit(1));

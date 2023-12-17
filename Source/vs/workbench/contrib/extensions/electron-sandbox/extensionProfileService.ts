@@ -46,13 +46,13 @@ export class ExtensionHostProfileService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onDidChangeState: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	public readonly onDidChangeState: Event<void> =
 		this._onDidChangeState.event;
 
 	private readonly _onDidChangeLastProfile: Emitter<void> = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	public readonly onDidChangeLastProfile: Event<void> =
 		this._onDidChangeLastProfile.event;
@@ -65,7 +65,7 @@ export class ExtensionHostProfileService
 
 	private profilingStatusBarIndicator: IStatusbarEntryAccessor | undefined;
 	private readonly profilingStatusBarIndicatorLabelUpdater = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 
 	public get state() {
@@ -76,12 +76,16 @@ export class ExtensionHostProfileService
 	}
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
 		@IProductService private readonly _productService: IProductService
 	) {
 		super();
@@ -89,10 +93,16 @@ export class ExtensionHostProfileService
 		this._profileSession = null;
 		this._setState(ProfileSessionState.None);
 
-		CommandsRegistry.registerCommand('workbench.action.extensionHostProfiler.stop', () => {
-			this.stopProfiling();
-			this._editorService.openEditor(RuntimeExtensionsInput.instance, { pinned: true });
-		});
+		CommandsRegistry.registerCommand(
+			"workbench.action.extensionHostProfiler.stop",
+			() => {
+				this.stopProfiling();
+				this._editorService.openEditor(
+					RuntimeExtensionsInput.instance,
+					{ pinned: true }
+				);
+			}
+		);
 	}
 
 	private _setState(state: ProfileSessionState): void {
@@ -118,16 +128,16 @@ export class ExtensionHostProfileService
 				name: nls.localize("status.profiler", "Extension Profiler"),
 				text: nls.localize(
 					"profilingExtensionHost",
-					"Profiling Extension Host",
+					"Profiling Extension Host"
 				),
 				showProgress: true,
 				ariaLabel: nls.localize(
 					"profilingExtensionHost",
-					"Profiling Extension Host",
+					"Profiling Extension Host"
 				),
 				tooltip: nls.localize(
 					"selectAndStartDebug",
-					"Click to stop profiling.",
+					"Click to stop profiling."
 				),
 				command: "workbench.action.extensionHostProfiler.stop",
 			};
@@ -142,12 +152,12 @@ export class ExtensionHostProfileService
 							"profilingExtensionHostTime",
 							"Profiling Extension Host ({0} sec)",
 							Math.round(
-								(new Date().getTime() - timeStarted) / 1000,
-							),
+								(new Date().getTime() - timeStarted) / 1000
+							)
 						),
 					});
 				},
-				1000,
+				1000
 			);
 			this.profilingStatusBarIndicatorLabelUpdater.value = handle;
 
@@ -156,7 +166,7 @@ export class ExtensionHostProfileService
 					this._statusbarService.addEntry(
 						indicator,
 						"status.profiler",
-						StatusbarAlignment.RIGHT,
+						StatusbarAlignment.RIGHT
 					);
 			} else {
 				this.profilingStatusBarIndicator.update(indicator);
@@ -176,7 +186,7 @@ export class ExtensionHostProfileService
 
 		const inspectPorts = await this._extensionService.getInspectPorts(
 			ExtensionHostKind.LocalProcess,
-			true,
+			true
 		);
 
 		if (inspectPorts.length === 0) {
@@ -187,11 +197,11 @@ export class ExtensionHostProfileService
 					detail: nls.localize(
 						"restart2",
 						"In order to profile extensions a restart is required. Do you want to restart '{0}' now?",
-						this._productService.nameLong,
+						this._productService.nameLong
 					),
 					primaryButton: nls.localize(
 						{ key: "restart3", comment: ["&& denotes a mnemonic"] },
-						"&&Restart",
+						"&&Restart"
 					),
 				})
 				.then((res) => {
@@ -206,7 +216,7 @@ export class ExtensionHostProfileService
 		if (inspectPorts.length > 1) {
 			// TODO
 			console.warn(
-				`There are multiple extension hosts available for profiling. Picking the first one...`,
+				`There are multiple extension hosts available for profiling. Picking the first one...`
 			);
 		}
 
@@ -223,7 +233,7 @@ export class ExtensionHostProfileService
 				(err) => {
 					onUnexpectedError(err);
 					this._setState(ProfileSessionState.None);
-				},
+				}
 			);
 	}
 
@@ -244,7 +254,7 @@ export class ExtensionHostProfileService
 			(err) => {
 				onUnexpectedError(err);
 				this._setState(ProfileSessionState.None);
-			},
+			}
 		);
 		this._profileSession = null;
 	}
@@ -255,14 +265,14 @@ export class ExtensionHostProfileService
 	}
 
 	getUnresponsiveProfile(
-		extensionId: ExtensionIdentifier,
+		extensionId: ExtensionIdentifier
 	): IExtensionHostProfile | undefined {
 		return this._unresponsiveProfiles.get(extensionId);
 	}
 
 	setUnresponsiveProfile(
 		extensionId: ExtensionIdentifier,
-		profile: IExtensionHostProfile,
+		profile: IExtensionHostProfile
 	): void {
 		this._unresponsiveProfiles.set(extensionId, profile);
 		this._setLastProfile(profile);

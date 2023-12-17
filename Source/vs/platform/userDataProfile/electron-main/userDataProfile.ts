@@ -28,11 +28,11 @@ export const IUserDataProfilesMainService = refineServiceDecorator<
 >(IUserDataProfilesService);
 export interface IUserDataProfilesMainService extends IUserDataProfilesService {
 	getProfileForWorkspace(
-		workspaceIdentifier: IAnyWorkspaceIdentifier,
+		workspaceIdentifier: IAnyWorkspaceIdentifier
 	): IUserDataProfile | undefined;
 	unsetWorkspace(
 		workspaceIdentifier: IAnyWorkspaceIdentifier,
-		transient?: boolean,
+		transient?: boolean
 	): void;
 	getAssociatedEmptyWindows(): IEmptyWorkspaceIdentifier[];
 	readonly onWillCreateProfile: Event<WillCreateProfileEvent>;
@@ -46,16 +46,17 @@ export class UserDataProfilesMainService
 	constructor(
 		@IStateService stateService: IStateService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super(
 			stateService,
 			uriIdentityService,
 			environmentService,
 			fileService,
-			logService,
+			logService
 		);
 	}
 

@@ -36,7 +36,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 		protected readonly configurationService: IConfigurationService,
 		protected readonly productService: IProductService,
 		protected telemetry: IExperimentationTelemetry,
-		private keyValueStorage?: IKeyValueStorage,
+		private keyValueStorage?: IKeyValueStorage
 	) {
 		if (
 			productService.tasConfig &&
@@ -49,22 +49,22 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 
 		// For development purposes, configure the delay until tas local tas treatment ovverrides are available
 		const overrideDelaySetting = this.configurationService.getValue(
-			"experiments.overrideDelay",
+			"experiments.overrideDelay"
 		);
 		const overrideDelay =
 			typeof overrideDelaySetting === "number" ? overrideDelaySetting : 0;
 		this.overrideInitDelay = new Promise((resolve) =>
-			setTimeout(resolve, overrideDelay),
+			setTimeout(resolve, overrideDelay)
 		);
 	}
 
 	async getTreatment<T extends string | number | boolean>(
-		name: string,
+		name: string
 	): Promise<T | undefined> {
 		// For development purposes, allow overriding tas assignments to test variants locally.
 		await this.overrideInitDelay;
 		const override = this.configurationService.getValue<T>(
-			"experiments.override." + name,
+			"experiments.override." + name
 		);
 		if (override !== undefined) {
 			return override;
@@ -91,7 +91,7 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 			result = await client.getTreatmentVariableAsync<T>(
 				"vscode",
 				name,
-				true,
+				true
 			);
 		}
 
@@ -104,21 +104,21 @@ export abstract class BaseAssignmentService implements IAssignmentService {
 			this.productService.quality === "stable"
 				? TargetPopulation.Public
 				: this.productService.quality === "exploration"
-				  ? TargetPopulation.Exploration
-				  : TargetPopulation.Insiders;
+					? TargetPopulation.Exploration
+					: TargetPopulation.Insiders;
 
 		const filterProvider = new AssignmentFilterProvider(
 			this.productService.version,
 			this.productService.nameLong,
 			this.machineId,
-			targetPopulation,
+			targetPopulation
 		);
 
 		const tasConfig = this.productService.tasConfig!;
 		const tasClient = new (
 			await importAMDNodeModule<typeof import("tas-client-umd")>(
 				"tas-client-umd",
-				"lib/tas-client-umd.js",
+				"lib/tas-client-umd.js"
 			)
 		).ExperimentationService({
 			filterProviders: [filterProvider],

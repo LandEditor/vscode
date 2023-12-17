@@ -8,5 +8,5 @@ export const ttPolicy =
 		? window.trustedTypes?.createPolicy("notebookRenderer", {
 				createHTML: (value) => value,
 				createScript: (value) => value,
-		  })
+			})
 		: undefined;

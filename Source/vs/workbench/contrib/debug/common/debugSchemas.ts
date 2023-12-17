@@ -24,7 +24,7 @@ export const debuggersExtPoint =
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.debuggers",
-				"Contributes debug adapters.",
+				"Contributes debug adapters."
 			),
 			type: "array",
 			defaultSnippets: [{ body: [{ type: "" }] }],
@@ -38,84 +38,84 @@ export const debuggersExtPoint =
 					type: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.type",
-							"Unique identifier for this debug adapter.",
+							"Unique identifier for this debug adapter."
 						),
 						type: "string",
 					},
 					label: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.label",
-							"Display name for this debug adapter.",
+							"Display name for this debug adapter."
 						),
 						type: "string",
 					},
 					program: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.program",
-							"Path to the debug adapter program. Path is either absolute or relative to the extension folder.",
+							"Path to the debug adapter program. Path is either absolute or relative to the extension folder."
 						),
 						type: "string",
 					},
 					args: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.args",
-							"Optional arguments to pass to the adapter.",
+							"Optional arguments to pass to the adapter."
 						),
 						type: "array",
 					},
 					runtime: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.runtime",
-							"Optional runtime in case the program attribute is not an executable but requires a runtime.",
+							"Optional runtime in case the program attribute is not an executable but requires a runtime."
 						),
 						type: "string",
 					},
 					runtimeArgs: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.runtimeArgs",
-							"Optional runtime arguments.",
+							"Optional runtime arguments."
 						),
 						type: "array",
 					},
 					variables: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.variables",
-							"Mapping from interactive variables (e.g. ${action.pickProcess}) in `launch.json` to a command.",
+							"Mapping from interactive variables (e.g. ${action.pickProcess}) in `launch.json` to a command."
 						),
 						type: "object",
 					},
 					initialConfigurations: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.initialConfigurations",
-							"Configurations for generating the initial 'launch.json'.",
+							"Configurations for generating the initial 'launch.json'."
 						),
 						type: ["array", "string"],
 					},
 					languages: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.languages",
-							'List of languages for which the debug extension could be considered the "default debugger".',
+							'List of languages for which the debug extension could be considered the "default debugger".'
 						),
 						type: "array",
 					},
 					configurationSnippets: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.configurationSnippets",
-							"Snippets for adding new configurations in 'launch.json'.",
+							"Snippets for adding new configurations in 'launch.json'."
 						),
 						type: "array",
 					},
 					configurationAttributes: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.configurationAttributes",
-							"JSON schema configurations for validating 'launch.json'.",
+							"JSON schema configurations for validating 'launch.json'."
 						),
 						type: "object",
 					},
 					when: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.when",
-							"Condition which must be true to enable this type of debugger. Consider using 'shellExecutionSupported', 'virtualWorkspace', 'resourceScheme' or an extension-defined context key as appropriate for this.",
+							"Condition which must be true to enable this type of debugger. Consider using 'shellExecutionSupported', 'virtualWorkspace', 'resourceScheme' or an extension-defined context key as appropriate for this."
 						),
 						type: "string",
 						default: "",
@@ -123,7 +123,7 @@ export const debuggersExtPoint =
 					hiddenWhen: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.hiddenWhen",
-							"When this condition is true, this debugger type is hidden from the debugger list, but is still enabled.",
+							"When this condition is true, this debugger type is hidden from the debugger list, but is still enabled."
 						),
 						type: "string",
 						default: "",
@@ -131,7 +131,7 @@ export const debuggersExtPoint =
 					deprecated: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.deprecated",
-							"Optional message to mark this debug type as being deprecated.",
+							"Optional message to mark this debug type as being deprecated."
 						),
 						type: "string",
 						default: "",
@@ -139,14 +139,14 @@ export const debuggersExtPoint =
 					windows: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.windows",
-							"Windows specific settings.",
+							"Windows specific settings."
 						),
 						type: "object",
 						properties: {
 							runtime: {
 								description: nls.localize(
 									"vscode.extension.contributes.debuggers.windows.runtime",
-									"Runtime used for Windows.",
+									"Runtime used for Windows."
 								),
 								type: "string",
 							},
@@ -155,14 +155,14 @@ export const debuggersExtPoint =
 					osx: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.osx",
-							"macOS specific settings.",
+							"macOS specific settings."
 						),
 						type: "object",
 						properties: {
 							runtime: {
 								description: nls.localize(
 									"vscode.extension.contributes.debuggers.osx.runtime",
-									"Runtime used for macOS.",
+									"Runtime used for macOS."
 								),
 								type: "string",
 							},
@@ -171,14 +171,14 @@ export const debuggersExtPoint =
 					linux: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.linux",
-							"Linux specific settings.",
+							"Linux specific settings."
 						),
 						type: "object",
 						properties: {
 							runtime: {
 								description: nls.localize(
 									"vscode.extension.contributes.debuggers.linux.runtime",
-									"Runtime used for Linux.",
+									"Runtime used for Linux."
 								),
 								type: "string",
 							},
@@ -187,14 +187,14 @@ export const debuggersExtPoint =
 					strings: {
 						description: nls.localize(
 							"vscode.extension.contributes.debuggers.strings",
-							"UI strings contributed by this debug adapter.",
+							"UI strings contributed by this debug adapter."
 						),
 						type: "object",
 						properties: {
 							unverifiedBreakpoints: {
 								description: nls.localize(
 									"vscode.extension.contributes.debuggers.strings.unverifiedBreakpoints",
-									"When there are unverified breakpoints in a language supported by this debug adapter, this message will appear on the breakpoint hover and in the breakpoints view. Markdown and command links are supported.",
+									"When there are unverified breakpoints in a language supported by this debug adapter, this message will appear on the breakpoint hover and in the breakpoints view. Markdown and command links are supported."
 								),
 								type: "string",
 							},
@@ -214,7 +214,7 @@ export const breakpointsExtPoint =
 		jsonSchema: {
 			description: nls.localize(
 				"vscode.extension.contributes.breakpoints",
-				"Contributes breakpoints.",
+				"Contributes breakpoints."
 			),
 			type: "array",
 			defaultSnippets: [{ body: [{ language: "" }] }],
@@ -226,14 +226,14 @@ export const breakpointsExtPoint =
 					language: {
 						description: nls.localize(
 							"vscode.extension.contributes.breakpoints.language",
-							"Allow breakpoints for this language.",
+							"Allow breakpoints for this language."
 						),
 						type: "string",
 					},
 					when: {
 						description: nls.localize(
 							"vscode.extension.contributes.breakpoints.when",
-							"Condition which must be true to enable breakpoints in this language. Consider matching this to the debugger when clause as appropriate.",
+							"Condition which must be true to enable breakpoints in this language. Consider matching this to the debugger when clause as appropriate."
 						),
 						type: "string",
 						default: "",
@@ -249,7 +249,7 @@ export const presentationSchema: IJSONSchema = {
 	type: "object",
 	description: nls.localize(
 		"presentation",
-		"Presentation options on how to show this configuration in the debug configuration dropdown and the command palette.",
+		"Presentation options on how to show this configuration in the debug configuration dropdown and the command palette."
 	),
 	properties: {
 		hidden: {
@@ -257,7 +257,7 @@ export const presentationSchema: IJSONSchema = {
 			default: false,
 			description: nls.localize(
 				"presentation.hidden",
-				"Controls if this configuration should be shown in the configuration dropdown and the command palette.",
+				"Controls if this configuration should be shown in the configuration dropdown and the command palette."
 			),
 		},
 		group: {
@@ -265,7 +265,7 @@ export const presentationSchema: IJSONSchema = {
 			default: "",
 			description: nls.localize(
 				"presentation.group",
-				"Group that this configuration belongs to. Used for grouping and sorting in the configuration dropdown and the command palette.",
+				"Group that this configuration belongs to. Used for grouping and sorting in the configuration dropdown and the command palette."
 			),
 		},
 		order: {
@@ -273,7 +273,7 @@ export const presentationSchema: IJSONSchema = {
 			default: 1,
 			description: nls.localize(
 				"presentation.order",
-				"Order of this configuration within a group. Used for grouping and sorting in the configuration dropdown and the command palette.",
+				"Order of this configuration within a group. Used for grouping and sorting in the configuration dropdown and the command palette."
 			),
 		},
 	},
@@ -297,7 +297,7 @@ export const launchSchema: IJSONSchema = {
 			type: "string",
 			description: nls.localize(
 				"app.launch.json.version",
-				"Version of this file format.",
+				"Version of this file format."
 			),
 			default: "0.2.0",
 		},
@@ -305,7 +305,7 @@ export const launchSchema: IJSONSchema = {
 			type: "array",
 			description: nls.localize(
 				"app.launch.json.configurations",
-				"List of configurations. Add new configurations or edit existing ones by using IntelliSense.",
+				"List of configurations. Add new configurations or edit existing ones by using IntelliSense."
 			),
 			items: {
 				defaultSnippets: [],
@@ -317,7 +317,7 @@ export const launchSchema: IJSONSchema = {
 			type: "array",
 			description: nls.localize(
 				"app.launch.json.compounds",
-				"List of compounds. Each compound references multiple configurations which will get launched together.",
+				"List of compounds. Each compound references multiple configurations which will get launched together."
 			),
 			items: {
 				type: "object",
@@ -327,7 +327,7 @@ export const launchSchema: IJSONSchema = {
 						type: "string",
 						description: nls.localize(
 							"app.launch.json.compound.name",
-							"Name of compound. Appears in the launch configuration drop down menu.",
+							"Name of compound. Appears in the launch configuration drop down menu."
 						),
 					},
 					presentation: presentationSchema,
@@ -340,7 +340,7 @@ export const launchSchema: IJSONSchema = {
 									enum: [],
 									description: nls.localize(
 										"useUniqueNames",
-										"Please use unique configuration names.",
+										"Please use unique configuration names."
 									),
 								},
 								{
@@ -351,14 +351,14 @@ export const launchSchema: IJSONSchema = {
 											enum: [],
 											description: nls.localize(
 												"app.launch.json.compound.name",
-												"Name of compound. Appears in the launch configuration drop down menu.",
+												"Name of compound. Appears in the launch configuration drop down menu."
 											),
 										},
 										folder: {
 											enum: [],
 											description: nls.localize(
 												"app.launch.json.compound.folder",
-												"Name of folder in which the compound is located.",
+												"Name of folder in which the compound is located."
 											),
 										},
 									},
@@ -367,7 +367,7 @@ export const launchSchema: IJSONSchema = {
 						},
 						description: nls.localize(
 							"app.launch.json.compounds.configurations",
-							"Names of configurations that will be started as part of this compound.",
+							"Names of configurations that will be started as part of this compound."
 						),
 					},
 					stopAll: {
@@ -375,7 +375,7 @@ export const launchSchema: IJSONSchema = {
 						default: false,
 						description: nls.localize(
 							"app.launch.json.compound.stopAll",
-							"Controls whether manually terminating one session will stop all of the compound sessions.",
+							"Controls whether manually terminating one session will stop all of the compound sessions."
 						),
 					},
 					preLaunchTask: {
@@ -383,7 +383,7 @@ export const launchSchema: IJSONSchema = {
 						default: "",
 						description: nls.localize(
 							"compoundPrelaunchTask",
-							"Task to run before any of the compound configurations start.",
+							"Task to run before any of the compound configurations start."
 						),
 					},
 				},

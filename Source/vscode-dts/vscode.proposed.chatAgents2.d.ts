@@ -121,7 +121,7 @@ declare module "vscode" {
 		 * an empty array.
 		 */
 		provideSlashCommands(
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<ChatAgentSlashCommand[]>;
 	}
 
@@ -169,7 +169,7 @@ declare module "vscode" {
 		 */
 		provideFollowups(
 			result: ChatAgentResult2,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<ChatAgentFollowup[]>;
 	}
 
@@ -369,7 +369,7 @@ declare module "vscode" {
 		request: ChatAgentRequest,
 		context: ChatAgentContext,
 		progress: Progress<ChatAgentProgress>,
-		token: CancellationToken,
+		token: CancellationToken
 	) => ProviderResult<ChatAgentResult2>;
 
 	export namespace chat {
@@ -382,7 +382,7 @@ declare module "vscode" {
 		 */
 		export function createChatAgent(
 			name: string,
-			handler: ChatAgentHandler,
+			handler: ChatAgentHandler
 		): ChatAgent2;
 	}
 }

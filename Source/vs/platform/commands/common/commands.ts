@@ -84,7 +84,7 @@ export const CommandsRegistry: ICommandRegistry = new (class
 
 	registerCommand(
 		idOrCommand: string | ICommand,
-		handler?: ICommandHandler,
+		handler?: ICommandHandler
 	): IDisposable {
 		if (!idOrCommand) {
 			throw new Error(`invalid command`);
@@ -137,7 +137,7 @@ export const CommandsRegistry: ICommandRegistry = new (class
 
 	registerCommandAlias(oldId: string, newId: string): IDisposable {
 		return CommandsRegistry.registerCommand(oldId, (accessor, ...args) =>
-			accessor.get(ICommandService).executeCommand(newId, ...args),
+			accessor.get(ICommandService).executeCommand(newId, ...args)
 		);
 	}
 

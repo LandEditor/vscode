@@ -13,5 +13,5 @@ import { NativeParsedArgs } from "vs/platform/environment/common/argv";
  */
 export function getUserDataPath(
 	args: NativeParsedArgs,
-	productName: string,
+	productName: string
 ): string;

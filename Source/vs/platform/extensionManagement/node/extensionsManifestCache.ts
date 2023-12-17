@@ -29,23 +29,23 @@ export class ExtensionsManifestCache extends Disposable {
 		private readonly fileService: IFileService,
 		private readonly uriIdentityService: IUriIdentityService,
 		extensionsManagementService: IExtensionManagementService,
-		private readonly logService: ILogService,
+		private readonly logService: ILogService
 	) {
 		super();
 		this._register(
 			extensionsManagementService.onDidInstallExtensions((e) =>
-				this.onDidInstallExtensions(e),
-			),
+				this.onDidInstallExtensions(e)
+			)
 		);
 		this._register(
 			extensionsManagementService.onDidUninstallExtension((e) =>
-				this.onDidUnInstallExtension(e),
-			),
+				this.onDidUnInstallExtension(e)
+			)
 		);
 	}
 
 	private onDidInstallExtensions(
-		results: readonly InstallExtensionResult[],
+		results: readonly InstallExtensionResult[]
 	): void {
 		for (const r of results) {
 			if (r.local) {
@@ -61,14 +61,14 @@ export class ExtensionsManifestCache extends Disposable {
 	}
 
 	async invalidate(
-		extensionsManifestLocation: URI | undefined,
+		extensionsManifestLocation: URI | undefined
 	): Promise<void> {
 		if (extensionsManifestLocation) {
 			for (const profile of this.userDataProfilesService.profiles) {
 				if (
 					this.uriIdentityService.extUri.isEqual(
 						profile.extensionsResource,
-						extensionsManifestLocation,
+						extensionsManifestLocation
 					)
 				) {
 					await this.deleteUserCacheFile(profile);
@@ -76,20 +76,20 @@ export class ExtensionsManifestCache extends Disposable {
 			}
 		} else {
 			await this.deleteUserCacheFile(
-				this.userDataProfilesService.defaultProfile,
+				this.userDataProfilesService.defaultProfile
 			);
 		}
 	}
 
 	private async deleteUserCacheFile(
-		profile: IUserDataProfile,
+		profile: IUserDataProfile
 	): Promise<void> {
 		try {
 			await this.fileService.del(
 				this.uriIdentityService.extUri.joinPath(
 					profile.cacheHome,
-					USER_MANIFEST_CACHE_FILE,
-				),
+					USER_MANIFEST_CACHE_FILE
+				)
 			);
 		} catch (error) {
 			if (

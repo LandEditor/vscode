@@ -36,25 +36,25 @@ const fallback: IReducedTokenizationSupport = {
 export function tokenizeToStringSync(
 	languageService: ILanguageService,
 	text: string,
-	languageId: string,
+	languageId: string
 ): string {
 	return _tokenizeToString(
 		text,
 		languageService.languageIdCodec,
-		TokenizationRegistry.get(languageId) || fallback,
+		TokenizationRegistry.get(languageId) || fallback
 	);
 }
 
 export async function tokenizeToString(
 	languageService: ILanguageService,
 	text: string,
-	languageId: string | null,
+	languageId: string | null
 ): Promise<string> {
 	if (!languageId) {
 		return _tokenizeToString(
 			text,
 			languageService.languageIdCodec,
-			fallback,
+			fallback
 		);
 	}
 	const tokenizationSupport =
@@ -62,7 +62,7 @@ export async function tokenizeToString(
 	return _tokenizeToString(
 		text,
 		languageService.languageIdCodec,
-		tokenizationSupport || fallback,
+		tokenizationSupport || fallback
 	);
 }
 
@@ -73,7 +73,7 @@ export function tokenizeLineToHTML(
 	startOffset: number,
 	endOffset: number,
 	tabSize: number,
-	useNbsp: boolean,
+	useNbsp: boolean
 ): string {
 	let result = `<div>`;
 	let charIndex = startOffset;
@@ -170,7 +170,7 @@ export function tokenizeLineToHTML(
 
 		result += `<span style="${viewLineTokens.getInlineStyle(
 			tokenIndex,
-			colorMap,
+			colorMap
 		)}">${partContent}</span>`;
 
 		if (tokenEndIndex > endOffset || charIndex >= endOffset) {
@@ -185,7 +185,7 @@ export function tokenizeLineToHTML(
 export function _tokenizeToString(
 	text: string,
 	languageIdCodec: ILanguageIdCodec,
-	tokenizationSupport: IReducedTokenizationSupport,
+	tokenizationSupport: IReducedTokenizationSupport
 ): string {
 	let result = `<div class="monaco-tokenized-source">`;
 	const lines = strings.splitLines(text);
@@ -200,13 +200,13 @@ export function _tokenizeToString(
 		const tokenizationResult = tokenizationSupport.tokenizeEncoded(
 			line,
 			true,
-			currentState,
+			currentState
 		);
 		LineTokens.convertToEndOffset(tokenizationResult.tokens, line.length);
 		const lineTokens = new LineTokens(
 			tokenizationResult.tokens,
 			line,
-			languageIdCodec,
+			languageIdCodec
 		);
 		const viewLineTokens = lineTokens.inflate();
 
@@ -215,7 +215,7 @@ export function _tokenizeToString(
 			const type = viewLineTokens.getClassName(j);
 			const endIndex = viewLineTokens.getEndOffset(j);
 			result += `<span class="${type}">${strings.escape(
-				line.substring(startOffset, endIndex),
+				line.substring(startOffset, endIndex)
 			)}</span>`;
 			startOffset = endIndex;
 		}

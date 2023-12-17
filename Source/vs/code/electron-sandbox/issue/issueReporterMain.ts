@@ -34,7 +34,7 @@ export function startup(configuration: IssueReporterWindowConfiguration) {
 
 	const issueReporter = instantiationService.createInstance(
 		IssueReporter,
-		configuration,
+		configuration
 	);
 	issueReporter.render();
 	mainWindow.document.body.style.display = "block";
@@ -51,11 +51,11 @@ function initServices(windowId: number) {
 
 	services.set(
 		IMainProcessService,
-		new SyncDescriptor(ElectronIPCMainProcessService, [windowId]),
+		new SyncDescriptor(ElectronIPCMainProcessService, [windowId])
 	);
 	services.set(
 		INativeHostService,
-		new SyncDescriptor(NativeHostService, [windowId]),
+		new SyncDescriptor(NativeHostService, [windowId])
 	);
 
 	return new InstantiationService(services, true);

@@ -45,12 +45,15 @@ export class DocumentSemanticTokensFeature extends Disposable {
 	private readonly _watchers: Record<string, ModelSemanticColoring>;
 
 	constructor(
-		@ISemanticTokensStylingService semanticTokensStylingService: ISemanticTokensStylingService,
+		@ISemanticTokensStylingService
+		semanticTokensStylingService: ISemanticTokensStylingService,
 		@IModelService modelService: IModelService,
 		@IThemeService themeService: IThemeService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 		this._watchers = Object.create(null);
@@ -61,12 +64,12 @@ export class DocumentSemanticTokensFeature extends Disposable {
 				semanticTokensStylingService,
 				themeService,
 				languageFeatureDebounceService,
-				languageFeaturesService,
+				languageFeaturesService
 			);
 		};
 		const deregister = (
 			model: ITextModel,
-			modelSemanticColoring: ModelSemanticColoring,
+			modelSemanticColoring: ModelSemanticColoring
 		) => {
 			modelSemanticColoring.dispose();
 			delete this._watchers[model.uri.toString()];
@@ -78,7 +81,7 @@ export class DocumentSemanticTokensFeature extends Disposable {
 					isSemanticColoringEnabled(
 						model,
 						themeService,
-						configurationService,
+						configurationService
 					)
 				) {
 					if (!curr) {
@@ -96,7 +99,7 @@ export class DocumentSemanticTokensFeature extends Disposable {
 				isSemanticColoringEnabled(
 					model,
 					themeService,
-					configurationService,
+					configurationService
 				)
 			) {
 				register(model);
@@ -108,12 +111,12 @@ export class DocumentSemanticTokensFeature extends Disposable {
 					isSemanticColoringEnabled(
 						model,
 						themeService,
-						configurationService,
+						configurationService
 					)
 				) {
 					register(model);
 				}
-			}),
+			})
 		);
 		this._register(
 			modelService.onModelRemoved((model) => {
@@ -121,17 +124,17 @@ export class DocumentSemanticTokensFeature extends Disposable {
 				if (curr) {
 					deregister(model, curr);
 				}
-			}),
+			})
 		);
 		this._register(
 			configurationService.onDidChangeConfiguration((e) => {
 				if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
 					handleSettingOrThemeChange();
 				}
-			}),
+			})
 		);
 		this._register(
-			themeService.onDidColorThemeChange(handleSettingOrThemeChange),
+			themeService.onDidColorThemeChange(handleSettingOrThemeChange)
 		);
 	}
 
@@ -160,74 +163,112 @@ class ModelSemanticColoring extends Disposable {
 
 	constructor(
 		model: ITextModel,
-		@ISemanticTokensStylingService private readonly _semanticTokensStylingService: ISemanticTokensStylingService,
+		@ISemanticTokensStylingService
+		private readonly _semanticTokensStylingService: ISemanticTokensStylingService,
 		@IThemeService themeService: IThemeService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService
 	) {
 		super();
 
 		this._isDisposed = false;
 		this._model = model;
 		this._provider = languageFeaturesService.documentSemanticTokensProvider;
-		this._debounceInformation = languageFeatureDebounceService.for(this._provider, 'DocumentSemanticTokens', { min: ModelSemanticColoring.REQUEST_MIN_DELAY, max: ModelSemanticColoring.REQUEST_MAX_DELAY });
-		this._fetchDocumentSemanticTokens = this._register(new RunOnceScheduler(() => this._fetchDocumentSemanticTokensNow(), ModelSemanticColoring.REQUEST_MIN_DELAY));
+		this._debounceInformation = languageFeatureDebounceService.for(
+			this._provider,
+			"DocumentSemanticTokens",
+			{
+				min: ModelSemanticColoring.REQUEST_MIN_DELAY,
+				max: ModelSemanticColoring.REQUEST_MAX_DELAY,
+			}
+		);
+		this._fetchDocumentSemanticTokens = this._register(
+			new RunOnceScheduler(
+				() => this._fetchDocumentSemanticTokensNow(),
+				ModelSemanticColoring.REQUEST_MIN_DELAY
+			)
+		);
 		this._currentDocumentResponse = null;
 		this._currentDocumentRequestCancellationTokenSource = null;
 		this._documentProvidersChangeListeners = [];
 		this._providersChangedDuringRequest = false;
 
-		this._register(this._model.onDidChangeContent(() => {
-			if (!this._fetchDocumentSemanticTokens.isScheduled()) {
-				this._fetchDocumentSemanticTokens.schedule(this._debounceInformation.get(this._model));
-			}
-		}));
-		this._register(this._model.onDidChangeAttached(() => {
-			if (!this._fetchDocumentSemanticTokens.isScheduled()) {
-				this._fetchDocumentSemanticTokens.schedule(this._debounceInformation.get(this._model));
-			}
-		}));
-		this._register(this._model.onDidChangeLanguage(() => {
-			// clear any outstanding state
-			if (this._currentDocumentResponse) {
-				this._currentDocumentResponse.dispose();
-				this._currentDocumentResponse = null;
-			}
-			if (this._currentDocumentRequestCancellationTokenSource) {
-				this._currentDocumentRequestCancellationTokenSource.cancel();
-				this._currentDocumentRequestCancellationTokenSource = null;
-			}
-			this._setDocumentSemanticTokens(null, null, null, []);
-			this._fetchDocumentSemanticTokens.schedule(0);
-		}));
+		this._register(
+			this._model.onDidChangeContent(() => {
+				if (!this._fetchDocumentSemanticTokens.isScheduled()) {
+					this._fetchDocumentSemanticTokens.schedule(
+						this._debounceInformation.get(this._model)
+					);
+				}
+			})
+		);
+		this._register(
+			this._model.onDidChangeAttached(() => {
+				if (!this._fetchDocumentSemanticTokens.isScheduled()) {
+					this._fetchDocumentSemanticTokens.schedule(
+						this._debounceInformation.get(this._model)
+					);
+				}
+			})
+		);
+		this._register(
+			this._model.onDidChangeLanguage(() => {
+				// clear any outstanding state
+				if (this._currentDocumentResponse) {
+					this._currentDocumentResponse.dispose();
+					this._currentDocumentResponse = null;
+				}
+				if (this._currentDocumentRequestCancellationTokenSource) {
+					this._currentDocumentRequestCancellationTokenSource.cancel();
+					this._currentDocumentRequestCancellationTokenSource = null;
+				}
+				this._setDocumentSemanticTokens(null, null, null, []);
+				this._fetchDocumentSemanticTokens.schedule(0);
+			})
+		);
 
 		const bindDocumentChangeListeners = () => {
 			dispose(this._documentProvidersChangeListeners);
 			this._documentProvidersChangeListeners = [];
 			for (const provider of this._provider.all(model)) {
-				if (typeof provider.onDidChange === 'function') {
-					this._documentProvidersChangeListeners.push(provider.onDidChange(() => {
-						if (this._currentDocumentRequestCancellationTokenSource) {
-							// there is already a request running,
-							this._providersChangedDuringRequest = true;
-							return;
-						}
-						this._fetchDocumentSemanticTokens.schedule(0);
-					}));
+				if (typeof provider.onDidChange === "function") {
+					this._documentProvidersChangeListeners.push(
+						provider.onDidChange(() => {
+							if (
+								this
+									._currentDocumentRequestCancellationTokenSource
+							) {
+								// there is already a request running,
+								this._providersChangedDuringRequest = true;
+								return;
+							}
+							this._fetchDocumentSemanticTokens.schedule(0);
+						})
+					);
 				}
 			}
 		};
 		bindDocumentChangeListeners();
-		this._register(this._provider.onDidChange(() => {
-			bindDocumentChangeListeners();
-			this._fetchDocumentSemanticTokens.schedule(this._debounceInformation.get(this._model));
-		}));
+		this._register(
+			this._provider.onDidChange(() => {
+				bindDocumentChangeListeners();
+				this._fetchDocumentSemanticTokens.schedule(
+					this._debounceInformation.get(this._model)
+				);
+			})
+		);
 
-		this._register(themeService.onDidColorThemeChange(_ => {
-			// clear out existing tokens
-			this._setDocumentSemanticTokens(null, null, null, []);
-			this._fetchDocumentSemanticTokens.schedule(this._debounceInformation.get(this._model));
-		}));
+		this._register(
+			themeService.onDidColorThemeChange((_) => {
+				// clear out existing tokens
+				this._setDocumentSemanticTokens(null, null, null, []);
+				this._fetchDocumentSemanticTokens.schedule(
+					this._debounceInformation.get(this._model)
+				);
+			})
+		);
 
 		this._fetchDocumentSemanticTokens.schedule(0);
 	}
@@ -281,7 +322,7 @@ class ModelSemanticColoring extends Disposable {
 			this._model,
 			lastProvider,
 			lastResultId,
-			cancellationTokenSource.token,
+			cancellationTokenSource.token
 		);
 		this._currentDocumentRequestCancellationTokenSource =
 			cancellationTokenSource;
@@ -304,7 +345,7 @@ class ModelSemanticColoring extends Disposable {
 						null,
 						null,
 						null,
-						pendingChanges,
+						pendingChanges
 					);
 				} else {
 					const { provider, tokens } = res;
@@ -314,7 +355,7 @@ class ModelSemanticColoring extends Disposable {
 						provider,
 						tokens || null,
 						styling,
-						pendingChanges,
+						pendingChanges
 					);
 				}
 			},
@@ -340,11 +381,11 @@ class ModelSemanticColoring extends Disposable {
 					// More changes occurred while the request was running
 					if (!this._fetchDocumentSemanticTokens.isScheduled()) {
 						this._fetchDocumentSemanticTokens.schedule(
-							this._debounceInformation.get(this._model),
+							this._debounceInformation.get(this._model)
 						);
 					}
 				}
-			},
+			}
 		);
 	}
 
@@ -353,13 +394,13 @@ class ModelSemanticColoring extends Disposable {
 		srcOffset: number,
 		dest: Uint32Array,
 		destOffset: number,
-		length: number,
+		length: number
 	): void {
 		// protect against overflows
 		length = Math.min(
 			length,
 			dest.length - destOffset,
-			src.length - srcOffset,
+			src.length - srcOffset
 		);
 		for (let i = 0; i < length; i++) {
 			dest[destOffset + i] = src[srcOffset + i];
@@ -370,7 +411,7 @@ class ModelSemanticColoring extends Disposable {
 		provider: DocumentSemanticTokensProvider | null,
 		tokens: SemanticTokens | SemanticTokensEdits | null,
 		styling: SemanticTokensProviderStyling | null,
-		pendingChanges: IModelContentChangedEvent[],
+		pendingChanges: IModelContentChangedEvent[]
 	): void {
 		const currentResponse = this._currentDocumentResponse;
 		const rescheduleIfNeeded = () => {
@@ -380,7 +421,7 @@ class ModelSemanticColoring extends Disposable {
 				!this._fetchDocumentSemanticTokens.isScheduled()
 			) {
 				this._fetchDocumentSemanticTokens.schedule(
-					this._debounceInformation.get(this._model),
+					this._debounceInformation.get(this._model)
 				);
 			}
 		};
@@ -439,7 +480,7 @@ class ModelSemanticColoring extends Disposable {
 							tokens.resultId,
 							i,
 							edit.start,
-							srcData.length,
+							srcData.length
 						);
 						// The edits are invalid and there's no way to recover
 						this._model.tokenization.setSemanticTokens(null, true);
@@ -454,7 +495,7 @@ class ModelSemanticColoring extends Disposable {
 							srcLastStart - copyCount,
 							destData,
 							destLastStart - copyCount,
-							copyCount,
+							copyCount
 						);
 						destLastStart -= copyCount;
 					}
@@ -465,7 +506,7 @@ class ModelSemanticColoring extends Disposable {
 							0,
 							destData,
 							destLastStart - edit.data.length,
-							edit.data.length,
+							edit.data.length
 						);
 						destLastStart -= edit.data.length;
 					}
@@ -479,7 +520,7 @@ class ModelSemanticColoring extends Disposable {
 						0,
 						destData,
 						0,
-						srcLastStart,
+						srcLastStart
 					);
 				}
 
@@ -494,13 +535,13 @@ class ModelSemanticColoring extends Disposable {
 			this._currentDocumentResponse = new SemanticTokensResponse(
 				provider,
 				tokens.resultId,
-				tokens.data,
+				tokens.data
 			);
 
 			const result = toMultilineTokens2(
 				tokens,
 				styling,
-				this._model.getLanguageId(),
+				this._model.getLanguageId()
 			);
 
 			// Adjust incoming semantic tokens
@@ -514,7 +555,7 @@ class ModelSemanticColoring extends Disposable {
 						for (const singleChange of change.changes) {
 							area.applyEdit(
 								singleChange.range,
-								singleChange.text,
+								singleChange.text
 							);
 						}
 					}
@@ -534,7 +575,7 @@ class SemanticTokensResponse {
 	constructor(
 		public readonly provider: DocumentSemanticTokensProvider,
 		public readonly resultId: string | undefined,
-		public readonly data: Uint32Array,
+		public readonly data: Uint32Array
 	) {}
 
 	public dispose(): void {

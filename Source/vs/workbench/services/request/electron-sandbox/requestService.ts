@@ -34,5 +34,5 @@ export class NativeRequestService extends RequestService {
 registerSingleton(
 	IRequestService,
 	NativeRequestService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

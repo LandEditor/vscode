@@ -15,7 +15,7 @@ const outDir = path.join(__dirname, "notebook-out");
 function postBuild(outDir) {
 	fse.copySync(
 		path.join(__dirname, "node_modules", "katex", "dist", "katex.min.css"),
-		path.join(outDir, "katex.min.css"),
+		path.join(outDir, "katex.min.css")
 	);
 
 	const fontsDir = path.join(
@@ -23,7 +23,7 @@ function postBuild(outDir) {
 		"node_modules",
 		"katex",
 		"dist",
-		"fonts",
+		"fonts"
 	);
 	const fontsOutDir = path.join(outDir, "fonts/");
 
@@ -33,7 +33,7 @@ function postBuild(outDir) {
 		if (file.endsWith(".woff2")) {
 			fse.copyFileSync(
 				path.join(fontsDir, file),
-				path.join(fontsOutDir, file),
+				path.join(fontsOutDir, file)
 			);
 		}
 	}
@@ -46,5 +46,5 @@ require("../esbuild-webview-common").run(
 		outdir: outDir,
 	},
 	process.argv,
-	postBuild,
+	postBuild
 );

@@ -22,33 +22,33 @@ export class NativeEnvironmentService extends AbstractNativeEnvironmentService {
 				tmpDir: tmpdir(),
 				userDataDir: getUserDataPath(args, productService.nameShort),
 			},
-			productService,
+			productService
 		);
 	}
 }
 
 export function parsePtyHostDebugPort(
 	args: NativeParsedArgs,
-	isBuilt: boolean,
+	isBuilt: boolean
 ): IDebugParams {
 	return parseDebugParams(
 		args["inspect-ptyhost"],
 		args["inspect-brk-ptyhost"],
 		5877,
 		isBuilt,
-		args.extensionEnvironment,
+		args.extensionEnvironment
 	);
 }
 
 export function parseSharedProcessDebugPort(
 	args: NativeParsedArgs,
-	isBuilt: boolean,
+	isBuilt: boolean
 ): IDebugParams {
 	return parseDebugParams(
 		args["inspect-sharedprocess"],
 		args["inspect-brk-sharedprocess"],
 		5879,
 		isBuilt,
-		args.extensionEnvironment,
+		args.extensionEnvironment
 	);
 }

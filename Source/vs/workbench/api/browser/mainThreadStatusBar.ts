@@ -33,7 +33,8 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IExtensionStatusBarItemService private readonly statusbarService: IExtensionStatusBarItemService
+		@IExtensionStatusBarItemService
+		private readonly statusbarService: IExtensionStatusBarItemService
 	) {
 		const proxy = extHostContext.getProxy(ExtHostContext.ExtHostStatusBar);
 
@@ -45,22 +46,38 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 
 		proxy.$acceptStaticEntries(entries);
 
-		this._store.add(statusbarService.onDidChange(e => {
-			if (e.added) {
-				proxy.$acceptStaticEntries([asDto(e.added[0], e.added[1])]);
-			}
-		}));
+		this._store.add(
+			statusbarService.onDidChange((e) => {
+				if (e.added) {
+					proxy.$acceptStaticEntries([asDto(e.added[0], e.added[1])]);
+				}
+			})
+		);
 
-		function asDto(entryId: string, item: { entry: IStatusbarEntry; alignment: StatusbarAlignment; priority: number }): StatusBarItemDto {
+		function asDto(
+			entryId: string,
+			item: {
+				entry: IStatusbarEntry;
+				alignment: StatusbarAlignment;
+				priority: number;
+			}
+		): StatusBarItemDto {
 			return {
 				entryId,
 				name: item.entry.name,
 				text: item.entry.text,
 				tooltip: item.entry.tooltip as string | undefined,
-				command: typeof item.entry.command === 'string' ? item.entry.command : typeof item.entry.command === 'object' ? item.entry.command.id : undefined,
+				command:
+					typeof item.entry.command === "string"
+						? item.entry.command
+						: typeof item.entry.command === "object"
+							? item.entry.command.id
+							: undefined,
 				priority: item.priority,
 				alignLeft: item.alignment === StatusbarAlignment.LEFT,
-				accessibilityInformation: item.entry.ariaLabel ? { label: item.entry.ariaLabel, role: item.entry.role } : undefined
+				accessibilityInformation: item.entry.ariaLabel
+					? { label: item.entry.ariaLabel, role: item.entry.role }
+					: undefined,
 			};
 		}
 	}
@@ -81,7 +98,7 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 		backgroundColor: ThemeColor | undefined,
 		alignLeft: boolean,
 		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined,
+		accessibilityInformation: IAccessibilityInformation | undefined
 	): void {
 		const kind = this.statusbarService.setOrUpdateEntry(
 			entryId,
@@ -95,11 +112,11 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 			backgroundColor,
 			alignLeft,
 			priority,
-			accessibilityInformation,
+			accessibilityInformation
 		);
 		if (kind === StatusBarUpdateKind.DidDefine) {
 			this._store.add(
-				toDisposable(() => this.statusbarService.unsetEntry(entryId)),
+				toDisposable(() => this.statusbarService.unsetEntry(entryId))
 			);
 		}
 	}

@@ -29,17 +29,25 @@ export class SemanticTokensStylingService
 	constructor(
 		@IThemeService private readonly _themeService: IThemeService,
 		@ILogService private readonly _logService: ILogService,
-		@ILanguageService private readonly _languageService: ILanguageService,
+		@ILanguageService private readonly _languageService: ILanguageService
 	) {
 		super();
-		this._caches = new WeakMap<DocumentTokensProvider, SemanticTokensProviderStyling>();
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._caches = new WeakMap<DocumentTokensProvider, SemanticTokensProviderStyling>();
-		}));
+		this._caches = new WeakMap<
+			DocumentTokensProvider,
+			SemanticTokensProviderStyling
+		>();
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
+				this._caches = new WeakMap<
+					DocumentTokensProvider,
+					SemanticTokensProviderStyling
+				>();
+			})
+		);
 	}
 
 	public getStyling(
-		provider: DocumentTokensProvider,
+		provider: DocumentTokensProvider
 	): SemanticTokensProviderStyling {
 		if (!this._caches.has(provider)) {
 			this._caches.set(
@@ -48,8 +56,8 @@ export class SemanticTokensStylingService
 					provider.getLegend(),
 					this._themeService,
 					this._languageService,
-					this._logService,
-				),
+					this._logService
+				)
 			);
 		}
 		return this._caches.get(provider)!;
@@ -59,5 +67,5 @@ export class SemanticTokensStylingService
 registerSingleton(
 	ISemanticTokensStylingService,
 	SemanticTokensStylingService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -51,7 +51,7 @@ export class MainThreadChatAgents implements MainThreadChatAgentsShape {
 	$registerAgent(
 		handle: number,
 		name: string,
-		metadata: IChatAgentMetadata & { subCommands: IChatAgentCommand[] },
+		metadata: IChatAgentMetadata & { subCommands: IChatAgentCommand[] }
 	): void {
 		const d = this._chatAgentService.registerAgent({
 			id: name,
@@ -68,7 +68,7 @@ export class MainThreadChatAgents implements MainThreadChatAgentsShape {
 						requestId,
 						message,
 						{ history },
-						token,
+						token
 					);
 					return {
 						followUp: result?.followUp ?? [],
@@ -86,7 +86,7 @@ export class MainThreadChatAgents implements MainThreadChatAgentsShape {
 
 	async $handleProgressChunk(
 		requestId: number,
-		chunk: IChatSlashFragment,
+		chunk: IChatSlashFragment
 	): Promise<void> {
 		// An extra step because TS really struggles with type inference in the Revived generic parameter?
 		const revived = revive<IChatSlashFragment>(chunk);

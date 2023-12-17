@@ -39,7 +39,7 @@ import { MergeEditorViewModel } from "vs/workbench/contrib/mergeEditor/browser/v
 
 export abstract class CodeEditorView extends Disposable {
 	readonly model = this.viewModel.map(
-		(m) => /** @description model */ m?.model,
+		(m) => /** @description model */ m?.model
 	);
 
 	protected readonly htmlElements = h("div.code-view", [
@@ -77,18 +77,18 @@ export abstract class CodeEditorView extends Disposable {
 	protected readonly checkboxesVisible = observableConfigValue<boolean>(
 		"mergeEditor.showCheckboxes",
 		false,
-		this.configurationService,
+		this.configurationService
 	);
 	protected readonly showDeletionMarkers = observableConfigValue<boolean>(
 		"mergeEditor.showDeletionMarkers",
 		true,
-		this.configurationService,
+		this.configurationService
 	);
 	protected readonly useSimplifiedDecorations =
 		observableConfigValue<boolean>(
 			"mergeEditor.useSimplifiedDecorations",
 			false,
-			this.configurationService,
+			this.configurationService
 		);
 
 	public readonly editor = this.instantiationService.createInstance(
@@ -97,7 +97,7 @@ export abstract class CodeEditorView extends Disposable {
 		{},
 		{
 			contributions: this.getEditorContributions(),
-		},
+		}
 	);
 
 	public updateOptions(newOptions: Readonly<IEditorOptions>): void {
@@ -107,25 +107,25 @@ export abstract class CodeEditorView extends Disposable {
 	public readonly isFocused = observableFromEvent(
 		Event.any(
 			this.editor.onDidBlurEditorWidget,
-			this.editor.onDidFocusEditorWidget,
+			this.editor.onDidFocusEditorWidget
 		),
 		() =>
-			/** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus(),
+			/** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus()
 	);
 
 	public readonly cursorPosition = observableFromEvent(
 		this.editor.onDidChangeCursorPosition,
-		() => /** @description editor.getPosition */ this.editor.getPosition(),
+		() => /** @description editor.getPosition */ this.editor.getPosition()
 	);
 
 	public readonly selection = observableFromEvent(
 		this.editor.onDidChangeCursorSelection,
 		() =>
-			/** @description editor.getSelections */ this.editor.getSelections(),
+			/** @description editor.getSelections */ this.editor.getSelections()
 	);
 
 	public readonly cursorLineNumber = this.cursorPosition.map(
-		(p) => /** @description cursorPosition.lineNumber */ p?.lineNumber,
+		(p) => /** @description cursorPosition.lineNumber */ p?.lineNumber
 	);
 
 	constructor(
@@ -133,7 +133,7 @@ export abstract class CodeEditorView extends Disposable {
 		public readonly viewModel: IObservable<
 			undefined | MergeEditorViewModel
 		>,
-		private readonly configurationService: IConfigurationService,
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -142,17 +142,14 @@ export abstract class CodeEditorView extends Disposable {
 		return EditorExtensionsRegistry.getEditorContributions().filter(
 			(c) =>
 				c.id !== FoldingController.ID &&
-				c.id !== CodeLensContribution.ID,
+				c.id !== CodeLensContribution.ID
 		);
 	}
 }
 
 export function createSelectionsAutorun(
 	codeEditorView: CodeEditorView,
-	translateRange: (
-		baseRange: Range,
-		viewModel: MergeEditorViewModel,
-	) => Range,
+	translateRange: (baseRange: Range, viewModel: MergeEditorViewModel) => Range
 ): IDisposable {
 	const selections = derived((reader) => {
 		/** @description selections */
@@ -180,9 +177,9 @@ export function createSelectionsAutorun(
 						r.startLineNumber,
 						r.startColumn,
 						r.endLineNumber,
-						r.endColumn,
-					),
-			),
+						r.endColumn
+					)
+			)
 		);
 	});
 }
@@ -191,7 +188,7 @@ export class TitleMenu extends Disposable {
 	constructor(
 		menuId: MenuId,
 		targetHtmlElement: HTMLElement,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -202,7 +199,7 @@ export class TitleMenu extends Disposable {
 			{
 				menuOptions: { renderShortTitle: true },
 				toolbarOptions: { primaryGroup: (g) => g === "primary" },
-			},
+			}
 		);
 		this._store.add(toolbar);
 	}

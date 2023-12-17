@@ -25,7 +25,7 @@ export class SimpleBrowserManager {
 			const view = SimpleBrowserView.create(
 				this.extensionUri,
 				url,
-				options,
+				options
 			);
 			this.registerWebviewListeners(view);
 

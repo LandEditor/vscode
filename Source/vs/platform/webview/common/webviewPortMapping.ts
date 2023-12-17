@@ -27,12 +27,12 @@ export class WebviewPortMappingManager implements IDisposable {
 	constructor(
 		private readonly _getExtensionLocation: () => URI | undefined,
 		private readonly _getMappings: () => readonly IWebviewPortMapping[],
-		private readonly tunnelService: ITunnelService,
+		private readonly tunnelService: ITunnelService
 	) {}
 
 	public async getRedirect(
 		resolveAuthority: IAddress | null | undefined,
-		url: string,
+		url: string
 	): Promise<string | undefined> {
 		const uri = URI.parse(url);
 		const requestLocalHostInfo =
@@ -52,7 +52,7 @@ export class WebviewPortMappingManager implements IDisposable {
 						resolveAuthority &&
 						(await this.getOrCreateTunnel(
 							resolveAuthority,
-							mapping.extensionHostPort,
+							mapping.extensionHostPort
 						));
 					if (tunnel) {
 						if (tunnel.tunnelLocalPort === mapping.webviewPort) {
@@ -63,7 +63,7 @@ export class WebviewPortMappingManager implements IDisposable {
 								.with({
 									authority: `127.0.0.1:${tunnel.tunnelLocalPort}`,
 								})
-								.toString(true),
+								.toString(true)
 						);
 					}
 				}
@@ -74,7 +74,7 @@ export class WebviewPortMappingManager implements IDisposable {
 							.with({
 								authority: `${requestLocalHostInfo.address}:${mapping.extensionHostPort}`,
 							})
-							.toString(true),
+							.toString(true)
 					);
 				}
 			}
@@ -92,7 +92,7 @@ export class WebviewPortMappingManager implements IDisposable {
 
 	private async getOrCreateTunnel(
 		remoteAuthority: IAddress,
-		remotePort: number,
+		remotePort: number
 	): Promise<RemoteTunnel | undefined> {
 		const existing = this._tunnels.get(remotePort);
 		if (existing) {
@@ -101,7 +101,7 @@ export class WebviewPortMappingManager implements IDisposable {
 		const tunnelOrError = await this.tunnelService.openTunnel(
 			{ getAddress: async () => remoteAuthority },
 			undefined,
-			remotePort,
+			remotePort
 		);
 		let tunnel: RemoteTunnel | undefined;
 		if (typeof tunnelOrError === "string") {

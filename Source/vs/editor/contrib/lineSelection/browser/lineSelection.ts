@@ -34,7 +34,7 @@ export class ExpandLineSelectionAction extends EditorAction {
 	public run(
 		_accessor: ServicesAccessor,
 		editor: ICodeEditor,
-		args: any,
+		args: any
 	): void {
 		args = args || {};
 		if (!editor.hasModel()) {
@@ -47,8 +47,8 @@ export class ExpandLineSelectionAction extends EditorAction {
 			CursorChangeReason.Explicit,
 			CursorMoveCommands.expandLineSelection(
 				viewModel,
-				viewModel.getCursorStates(),
-			),
+				viewModel.getCursorStates()
+			)
 		);
 		viewModel.revealPrimaryCursor(args.source, true);
 	}

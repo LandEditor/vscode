@@ -33,7 +33,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 
 	constructor(
 		@ILogService logService: ILogService,
-		@IStorageService storageService: IStorageService,
+		@IStorageService storageService: IStorageService
 	) {
 		super(logService, storageService);
 
@@ -45,7 +45,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		this.beforeUnloadListener = addDisposableListener(
 			mainWindow,
 			EventType.BEFORE_UNLOAD,
-			(e: BeforeUnloadEvent) => this.onBeforeUnload(e),
+			(e: BeforeUnloadEvent) => this.onBeforeUnload(e)
 		);
 
 		// Listen to `pagehide` to support orderly shutdown
@@ -56,7 +56,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		this.unloadListener = addDisposableListener(
 			mainWindow,
 			EventType.PAGE_HIDE,
-			() => this.onUnload(),
+			() => this.onUnload()
 		);
 	}
 
@@ -64,7 +64,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		// Before unload ignored (once)
 		if (this.ignoreBeforeUnload) {
 			this.logService.info(
-				"[lifecycle] onBeforeUnload triggered but ignored once",
+				"[lifecycle] onBeforeUnload triggered but ignored once"
 			);
 
 			this.ignoreBeforeUnload = false;
@@ -73,7 +73,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		// Before unload with veto support
 		else {
 			this.logService.info(
-				"[lifecycle] onBeforeUnload triggered and handled with veto support",
+				"[lifecycle] onBeforeUnload triggered and handled with veto support"
 			);
 
 			this.doShutdown(() => this.vetoBeforeUnload(event));
@@ -84,18 +84,18 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		event.preventDefault();
 		event.returnValue = localize(
 			"lifecycleVeto",
-			"Changes that you made may not be saved. Please check press 'Cancel' and try again.",
+			"Changes that you made may not be saved. Please check press 'Cancel' and try again."
 		);
 	}
 
 	withExpectedShutdown(reason: ShutdownReason): Promise<void>;
 	withExpectedShutdown(
 		reason: { disableShutdownHandling: true },
-		callback: Function,
+		callback: Function
 	): void;
 	withExpectedShutdown(
 		reason: ShutdownReason | { disableShutdownHandling: true },
-		callback?: Function,
+		callback?: Function
 	): Promise<void> | void {
 		// Standard shutdown
 		if (typeof reason === "number") {
@@ -145,7 +145,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 
 		function handleVeto(
 			vetoResult: boolean | Promise<boolean>,
-			id: string,
+			id: string
 		) {
 			if (typeof vetoShutdown !== "function") {
 				return; // veto handling disabled
@@ -153,7 +153,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 
 			if (vetoResult instanceof Promise) {
 				logService.error(
-					`[lifecycle] Long running operations before shutdown are unsupported in the web (id: ${id})`,
+					`[lifecycle] Long running operations before shutdown are unsupported in the web (id: ${id})`
 				);
 
 				veto = true; // implicitly vetos since we cannot handle promises in web
@@ -161,7 +161,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 
 			if (vetoResult === true) {
 				logService.info(
-					`[lifecycle]: Unload was prevented (id: ${id})`,
+					`[lifecycle]: Unload was prevented (id: ${id})`
 				);
 
 				veto = true;
@@ -200,8 +200,8 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			addDisposableListener(
 				mainWindow,
 				EventType.PAGE_SHOW,
-				(e: PageTransitionEvent) => this.onLoadAfterUnload(e),
-			),
+				(e: PageTransitionEvent) => this.onLoadAfterUnload(e)
+			)
 		);
 
 		// First indicate will-shutdown
@@ -212,7 +212,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 			token: CancellationToken.None, // Unsupported in web
 			join(promise, joiner) {
 				logService.error(
-					`[lifecycle] Long running operations during shutdown are unsupported in the web (id: ${joiner.id})`,
+					`[lifecycle] Long running operations during shutdown are unsupported in the web (id: ${joiner.id})`
 				);
 			},
 			force: () => {
@@ -241,7 +241,7 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 		// Docs: https://web.dev/bfcache/#optimize-your-pages-for-bfcache
 		// Refs: https://github.com/microsoft/vscode/issues/136035
 		this.withExpectedShutdown({ disableShutdownHandling: true }, () =>
-			mainWindow.location.reload(),
+			mainWindow.location.reload()
 		);
 	}
 }
@@ -249,5 +249,5 @@ export class BrowserLifecycleService extends AbstractLifecycleService {
 registerSingleton(
 	ILifecycleService,
 	BrowserLifecycleService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

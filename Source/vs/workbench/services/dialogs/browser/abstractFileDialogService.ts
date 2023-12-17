@@ -63,39 +63,45 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	constructor(
 		@IHostService protected readonly hostService: IHostService,
-		@IWorkspaceContextService protected readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		protected readonly contextService: IWorkspaceContextService,
 		@IHistoryService protected readonly historyService: IHistoryService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IFileService protected readonly fileService: IFileService,
 		@IOpenerService protected readonly openerService: IOpenerService,
 		@IDialogService protected readonly dialogService: IDialogService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkspacesService private readonly workspacesService: IWorkspacesService,
+		@IWorkspacesService
+		private readonly workspacesService: IWorkspacesService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IPathService private readonly pathService: IPathService,
 		@ICommandService protected readonly commandService: ICommandService,
 		@IEditorService protected readonly editorService: IEditorService,
-		@ICodeEditorService protected readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		protected readonly codeEditorService: ICodeEditorService,
 		@ILogService private readonly logService: ILogService
-	) { }
+	) {}
 
 	async defaultFilePath(
 		schemeFilter = this.getSchemeFilterForWindow(),
-		authorityFilter = this.getAuthorityFilterForWindow(),
+		authorityFilter = this.getAuthorityFilterForWindow()
 	): Promise<URI> {
 		// Check for last active file first...
 		let candidate = this.historyService.getLastActiveFile(
 			schemeFilter,
-			authorityFilter,
+			authorityFilter
 		);
 
 		// ...then for last active file root
 		if (!candidate) {
 			candidate = this.historyService.getLastActiveWorkspaceRoot(
 				schemeFilter,
-				authorityFilter,
+				authorityFilter
 			);
 		} else {
 			candidate = resources.dirname(candidate);
@@ -110,19 +116,19 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	async defaultFolderPath(
 		schemeFilter = this.getSchemeFilterForWindow(),
-		authorityFilter = this.getAuthorityFilterForWindow(),
+		authorityFilter = this.getAuthorityFilterForWindow()
 	): Promise<URI> {
 		// Check for last active file root first...
 		let candidate = this.historyService.getLastActiveWorkspaceRoot(
 			schemeFilter,
-			authorityFilter,
+			authorityFilter
 		);
 
 		// ...then for last active file
 		if (!candidate) {
 			candidate = this.historyService.getLastActiveFile(
 				schemeFilter,
-				authorityFilter,
+				authorityFilter
 			);
 		}
 
@@ -134,11 +140,11 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	}
 
 	async preferredHome(
-		schemeFilter = this.getSchemeFilterForWindow(),
+		schemeFilter = this.getSchemeFilterForWindow()
 	): Promise<URI> {
 		const preferLocal = schemeFilter === Schemas.file;
 		const preferredHomeConfig = this.configurationService.inspect<string>(
-			"files.dialog.defaultPath",
+			"files.dialog.defaultPath"
 		);
 		const preferredHomeCandidate = preferLocal
 			? preferredHomeConfig.userLocalValue
@@ -147,18 +153,18 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 			const isPreferredHomeCandidateAbsolute = preferLocal
 				? localPathIsAbsolute(preferredHomeCandidate)
 				: (await this.pathService.path).isAbsolute(
-						preferredHomeCandidate,
-				  );
+						preferredHomeCandidate
+					);
 			if (isPreferredHomeCandidateAbsolute) {
 				const preferredHomeNormalized = preferLocal
 					? localPathNormalize(preferredHomeCandidate)
 					: (await this.pathService.path).normalize(
-							preferredHomeCandidate,
-					  );
+							preferredHomeCandidate
+						);
 				const preferredHome = resources.toLocalResource(
 					await this.pathService.fileURI(preferredHomeNormalized),
 					this.environmentService.remoteAuthority,
-					this.pathService.defaultUriScheme,
+					this.pathService.defaultUriScheme
 				);
 				if (await this.fileService.exists(preferredHome)) {
 					return preferredHome;
@@ -170,7 +176,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	}
 
 	async defaultWorkspacePath(
-		schemeFilter = this.getSchemeFilterForWindow(),
+		schemeFilter = this.getSchemeFilterForWindow()
 	): Promise<URI> {
 		let defaultWorkspacePath: URI | undefined;
 
@@ -198,11 +204,11 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	}
 
 	async showSaveConfirm(
-		fileNamesOrResources: (string | URI)[],
+		fileNamesOrResources: (string | URI)[]
 	): Promise<ConfirmResult> {
 		if (this.skipDialogs()) {
 			this.logService.trace(
-				"FileDialogService: refused to show save confirmation dialog in tests.",
+				"FileDialogService: refused to show save confirmation dialog in tests."
 			);
 
 			// no veto when we are in extension dev testing mode because we cannot assume we run interactive
@@ -224,7 +230,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	}
 
 	private async doShowSaveConfirm(
-		fileNamesOrResources: (string | URI)[],
+		fileNamesOrResources: (string | URI)[]
 	): Promise<ConfirmResult> {
 		if (fileNamesOrResources.length === 0) {
 			return ConfirmResult.DONT_SAVE;
@@ -233,7 +239,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 		let message: string;
 		let detail = nls.localize(
 			"saveChangesDetail",
-			"Your changes will be lost if you don't save them.",
+			"Your changes will be lost if you don't save them."
 		);
 		if (fileNamesOrResources.length === 1) {
 			message = nls.localize(
@@ -241,13 +247,13 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 				"Do you want to save the changes you made to {0}?",
 				typeof fileNamesOrResources[0] === "string"
 					? fileNamesOrResources[0]
-					: resources.basename(fileNamesOrResources[0]),
+					: resources.basename(fileNamesOrResources[0])
 			);
 		} else {
 			message = nls.localize(
 				"saveChangesMessages",
 				"Do you want to save the changes to the following {0} files?",
-				fileNamesOrResources.length,
+				fileNamesOrResources.length
 			);
 			detail = getFileNamesMessage(fileNamesOrResources) + "\n" + detail;
 		}
@@ -265,21 +271,21 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 										key: "saveAll",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Save All",
-							  )
+									"&&Save All"
+								)
 							: nls.localize(
 									{
 										key: "save",
 										comment: ["&& denotes a mnemonic"],
 									},
-									"&&Save",
-							  ),
+									"&&Save"
+								),
 					run: () => ConfirmResult.SAVE,
 				},
 				{
 					label: nls.localize(
 						{ key: "dontSave", comment: ["&& denotes a mnemonic"] },
-						"Do&&n't Save",
+						"Do&&n't Save"
 					),
 					run: () => ConfirmResult.DONT_SAVE,
 				},
@@ -294,23 +300,23 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	protected addFileSchemaIfNeeded(
 		schema: string,
-		_isFolder?: boolean,
+		_isFolder?: boolean
 	): string[] {
 		return schema === Schemas.untitled
 			? [Schemas.file]
 			: schema !== Schemas.file
-			  ? [schema, Schemas.file]
-			  : [schema];
+				? [schema, Schemas.file]
+				: [schema];
 	}
 
 	protected async pickFileFolderAndOpenSimplified(
 		schema: string,
 		options: IPickAndOpenOptions,
-		preferNewWindow: boolean,
+		preferNewWindow: boolean
 	): Promise<void> {
 		const title = nls.localize(
 			"openFileOrFolder.title",
-			"Open File or Folder",
+			"Open File or Folder"
 		);
 		const availableFileSystems = this.addFileSchemaIfNeeded(schema);
 
@@ -350,7 +356,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 						},
 					],
 					undefined,
-					{ validateTrust: true },
+					{ validateTrust: true }
 				);
 			}
 		}
@@ -359,7 +365,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	protected async pickFileAndOpenSimplified(
 		schema: string,
 		options: IPickAndOpenOptions,
-		preferNewWindow: boolean,
+		preferNewWindow: boolean
 	): Promise<void> {
 		const title = nls.localize("openFile.title", "Open File");
 		const availableFileSystems = this.addFileSchemaIfNeeded(schema);
@@ -392,7 +398,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 						},
 					],
 					undefined,
-					{ validateTrust: true },
+					{ validateTrust: true }
 				);
 			}
 		}
@@ -406,7 +412,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	protected async pickFolderAndOpenSimplified(
 		schema: string,
-		options: IPickAndOpenOptions,
+		options: IPickAndOpenOptions
 	): Promise<void> {
 		const title = nls.localize("openFolder.title", "Open Folder");
 		const availableFileSystems = this.addFileSchemaIfNeeded(schema, true);
@@ -429,11 +435,11 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	protected async pickWorkspaceAndOpenSimplified(
 		schema: string,
-		options: IPickAndOpenOptions,
+		options: IPickAndOpenOptions
 	): Promise<void> {
 		const title = nls.localize(
 			"openWorkspace.title",
-			"Open Workspace from File",
+			"Open Workspace from File"
 		);
 		const filters: FileFilter[] = [
 			{
@@ -462,7 +468,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	protected async pickFileToSaveSimplified(
 		schema: string,
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): Promise<URI | undefined> {
 		if (!options.availableFileSystems) {
 			options.availableFileSystems = this.addFileSchemaIfNeeded(schema);
@@ -480,7 +486,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	protected async showSaveDialogSimplified(
 		schema: string,
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): Promise<URI | undefined> {
 		if (!options.availableFileSystems) {
 			options.availableFileSystems = this.addFileSchemaIfNeeded(schema);
@@ -491,12 +497,12 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	protected async showOpenDialogSimplified(
 		schema: string,
-		options: IOpenDialogOptions,
+		options: IOpenDialogOptions
 	): Promise<URI[] | undefined> {
 		if (!options.availableFileSystems) {
 			options.availableFileSystems = this.addFileSchemaIfNeeded(
 				schema,
-				options.canSelectFolders,
+				options.canSelectFolders
 			);
 		}
 
@@ -510,13 +516,13 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	}
 
 	private pickResource(
-		options: IOpenDialogOptions,
+		options: IOpenDialogOptions
 	): Promise<URI | undefined> {
 		return this.getSimpleFileDialog().showOpenDialog(options);
 	}
 
 	private saveRemoteResource(
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): Promise<URI | undefined> {
 		return this.getSimpleFileDialog().showSaveDialog(options);
 	}
@@ -544,7 +550,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 	abstract pickFolderAndOpen(options: IPickAndOpenOptions): Promise<void>;
 	abstract pickWorkspaceAndOpen(options: IPickAndOpenOptions): Promise<void>;
 	protected getWorkspaceAvailableFileSystems(
-		options: IPickAndOpenOptions,
+		options: IPickAndOpenOptions
 	): string[] {
 		if (
 			options.availableFileSystems &&
@@ -559,20 +565,20 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 		return availableFileSystems;
 	}
 	abstract showSaveDialog(
-		options: ISaveDialogOptions,
+		options: ISaveDialogOptions
 	): Promise<URI | undefined>;
 	abstract showOpenDialog(
-		options: IOpenDialogOptions,
+		options: IOpenDialogOptions
 	): Promise<URI[] | undefined>;
 
 	abstract pickFileToSave(
 		defaultUri: URI,
-		availableFileSystems?: string[],
+		availableFileSystems?: string[]
 	): Promise<URI | undefined>;
 
 	protected getPickFileToSaveDialogOptions(
 		defaultUri: URI,
-		availableFileSystems?: string[],
+		availableFileSystems?: string[]
 	): ISaveDialogOptions {
 		const options: ISaveDialogOptions = {
 			defaultUri,
@@ -624,7 +630,7 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 				}
 
 				return filter;
-			}),
+			})
 		);
 
 		// We have no matching filter, e.g. because the language

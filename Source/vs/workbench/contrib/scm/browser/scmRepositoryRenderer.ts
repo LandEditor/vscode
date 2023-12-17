@@ -67,14 +67,14 @@ export class RepositoryRenderer
 		@IKeybindingService private keybindingService: IKeybindingService,
 		@IMenuService private menuService: IMenuService,
 		@ITelemetryService private telemetryService: ITelemetryService
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement): RepositoryTemplate {
 		// hack
 		if (container.classList.contains("monaco-tl-contents")) {
 			(
 				container.parentElement!.parentElement!.querySelector(
-					".monaco-tl-twistie",
+					".monaco-tl-twistie"
 				)! as HTMLElement
 			).classList.add("force-twistie");
 		}
@@ -94,21 +94,21 @@ export class RepositoryRenderer
 			this.contextKeyService,
 			this.contextMenuService,
 			this.keybindingService,
-			this.telemetryService,
+			this.telemetryService
 		);
 		const countContainer = append(provider, $(".count"));
 		const count = new CountBadge(
 			countContainer,
 			{},
-			defaultCountBadgeStyles,
+			defaultCountBadgeStyles
 		);
 		const visibilityDisposable = toolBar.onDidChangeDropdownVisibility(
-			(e) => provider.classList.toggle("active", e),
+			(e) => provider.classList.toggle("active", e)
 		);
 
 		const templateDisposable = combinedDisposable(
 			visibilityDisposable,
-			toolBar,
+			toolBar
 		);
 
 		return {
@@ -127,7 +127,7 @@ export class RepositoryRenderer
 		arg: ISCMRepository | ITreeNode<ISCMRepository, FuzzyScore>,
 		index: number,
 		templateData: RepositoryTemplate,
-		height: number | undefined,
+		height: number | undefined
 	): void {
 		const repository = isSCMRepository(arg) ? arg : arg.element;
 
@@ -146,21 +146,21 @@ export class RepositoryRenderer
 		const updateToolbar = () => {
 			templateData.toolBar.setActions(
 				[...statusPrimaryActions, ...menuPrimaryActions],
-				menuSecondaryActions,
+				menuSecondaryActions
 			);
 		};
 
 		const onDidChangeProvider = () => {
 			const commands = repository.provider.statusBarCommands || [];
 			statusPrimaryActions = commands.map(
-				(c) => new StatusBarAction(c, this.commandService),
+				(c) => new StatusBarAction(c, this.commandService)
 			);
 			updateToolbar();
 
 			const count = repository.provider.count || 0;
 			templateData.countContainer.setAttribute(
 				"data-count",
-				String(count),
+				String(count)
 			);
 			templateData.count.setCount(count);
 		};
@@ -168,7 +168,7 @@ export class RepositoryRenderer
 		// TODO@joao TODO@lszomoru
 		let disposed = false;
 		templateData.elementDisposables.add(
-			toDisposable(() => (disposed = true)),
+			toDisposable(() => (disposed = true))
 		);
 		templateData.elementDisposables.add(
 			repository.provider.onDidChange(() => {
@@ -177,13 +177,13 @@ export class RepositoryRenderer
 				}
 
 				onDidChangeProvider();
-			}),
+			})
 		);
 
 		onDidChangeProvider();
 
 		const repositoryMenus = this.scmViewService.menus.getRepositoryMenus(
-			repository.provider,
+			repository.provider
 		);
 		const menu =
 			this.toolbarMenuId === MenuId.SCMTitle
@@ -194,7 +194,7 @@ export class RepositoryRenderer
 				menuPrimaryActions = primary;
 				menuSecondaryActions = secondary;
 				updateToolbar();
-			}),
+			})
 		);
 		templateData.toolBar.context = repository.provider;
 	}
@@ -206,7 +206,7 @@ export class RepositoryRenderer
 	disposeElement(
 		group: ISCMRepository | ITreeNode<ISCMRepository, FuzzyScore>,
 		index: number,
-		template: RepositoryTemplate,
+		template: RepositoryTemplate
 	): void {
 		template.elementDisposables.clear();
 	}

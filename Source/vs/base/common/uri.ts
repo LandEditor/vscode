@@ -16,7 +16,7 @@ function _validateUri(ret: URI, _strict?: boolean): void {
 	// scheme, must be set
 	if (!ret.scheme && _strict) {
 		throw new Error(
-			`[UriError]: Scheme is missing: {scheme: "", authority: "${ret.authority}", path: "${ret.path}", query: "${ret.query}", fragment: "${ret.fragment}"}`,
+			`[UriError]: Scheme is missing: {scheme: "", authority: "${ret.authority}", path: "${ret.path}", query: "${ret.query}", fragment: "${ret.fragment}"}`
 		);
 	}
 
@@ -35,13 +35,13 @@ function _validateUri(ret: URI, _strict?: boolean): void {
 		if (ret.authority) {
 			if (!_singleSlashStart.test(ret.path)) {
 				throw new Error(
-					'[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character',
+					'[UriError]: If a URI contains an authority component, then the path component must either be empty or begin with a slash ("/") character'
 				);
 			}
 		} else {
 			if (_doubleSlashStart.test(ret.path)) {
 				throw new Error(
-					'[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")',
+					'[UriError]: If a URI does not contain an authority component, then the path cannot begin with two slash characters ("//")'
 				);
 			}
 		}
@@ -155,7 +155,7 @@ export class URI implements UriComponents {
 		path?: string,
 		query?: string,
 		fragment?: string,
-		_strict?: boolean,
+		_strict?: boolean
 	);
 
 	/**
@@ -172,7 +172,7 @@ export class URI implements UriComponents {
 		path?: string,
 		query?: string,
 		fragment?: string,
-		_strict: boolean = false,
+		_strict: boolean = false
 	) {
 		if (typeof schemeOrData === "object") {
 			this.scheme = schemeOrData.scheme || _empty;
@@ -299,7 +299,7 @@ export class URI implements UriComponents {
 			percentDecode(match[5] || _empty),
 			percentDecode(match[7] || _empty),
 			percentDecode(match[9] || _empty),
-			_strict,
+			_strict
 		);
 	}
 
@@ -364,7 +364,7 @@ export class URI implements UriComponents {
 			components.path,
 			components.query,
 			components.fragment,
-			strict,
+			strict
 		);
 		return result;
 	}
@@ -379,13 +379,13 @@ export class URI implements UriComponents {
 	static joinPath(uri: URI, ...pathFragment: string[]): URI {
 		if (!uri.path) {
 			throw new Error(
-				`[UriError]: cannot call joinPath on URI without path`,
+				`[UriError]: cannot call joinPath on URI without path`
 			);
 		}
 		let newPath: string;
 		if (isWindows && uri.scheme === "file") {
 			newPath = URI.file(
-				paths.win32.join(uriToFsPath(uri, true), ...pathFragment),
+				paths.win32.join(uriToFsPath(uri, true), ...pathFragment)
 			).path;
 		} else {
 			newPath = paths.posix.join(uri.path, ...pathFragment);
@@ -428,10 +428,10 @@ export class URI implements UriComponents {
 	static revive(data: UriComponents | URI | undefined): URI | undefined;
 	static revive(data: UriComponents | URI | null): URI | null;
 	static revive(
-		data: UriComponents | URI | undefined | null,
+		data: UriComponents | URI | undefined | null
 	): URI | undefined | null;
 	static revive(
-		data: UriComponents | URI | undefined | null,
+		data: UriComponents | URI | undefined | null
 	): URI | undefined | null {
 		if (!data) {
 			return data;
@@ -571,7 +571,7 @@ const encodeTable: { [ch: number]: string } = {
 function encodeURIComponentFast(
 	uriComponent: string,
 	isPath: boolean,
-	isAuthority: boolean,
+	isAuthority: boolean
 ): string {
 	let res: string | undefined = undefined;
 	let nativeEncodePos = -1;
@@ -596,7 +596,7 @@ function encodeURIComponentFast(
 			// check if we are delaying native encode
 			if (nativeEncodePos !== -1) {
 				res += encodeURIComponent(
-					uriComponent.substring(nativeEncodePos, pos),
+					uriComponent.substring(nativeEncodePos, pos)
 				);
 				nativeEncodePos = -1;
 			}
@@ -616,7 +616,7 @@ function encodeURIComponentFast(
 				// check if we are delaying native encode
 				if (nativeEncodePos !== -1) {
 					res += encodeURIComponent(
-						uriComponent.substring(nativeEncodePos, pos),
+						uriComponent.substring(nativeEncodePos, pos)
 					);
 					nativeEncodePos = -1;
 				}
@@ -786,7 +786,7 @@ function percentDecode(str: string): string {
 		return str;
 	}
 	return str.replace(_rEncodedAsHex, (match) =>
-		decodeURIComponentGraceful(match),
+		decodeURIComponentGraceful(match)
 	);
 }
 

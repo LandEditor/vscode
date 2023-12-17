@@ -36,8 +36,10 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IInlineChatService private readonly _inlineChatService: IInlineChatService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService,
+		@IInlineChatService
+		private readonly _inlineChatService: IInlineChatService,
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostInlineChat);
 	}
@@ -52,7 +54,7 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 		debugName: string,
 		supportsFeedback: boolean,
 		supportsFollowups: boolean,
-		supportIssueReporting: boolean,
+		supportIssueReporting: boolean
 	): Promise<void> {
 		const unreg = this._inlineChatService.addProvider({
 			debugName,
@@ -63,7 +65,7 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 					handle,
 					model.uri,
 					range,
-					token,
+					token
 				);
 				if (!session) {
 					return undefined;
@@ -82,13 +84,13 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 						handle,
 						item,
 						request,
-						token,
+						token
 					);
 					if (result?.type === "bulkEdit") {
 						(<IInlineChatBulkEditResponse>result).edits =
 							reviveWorkspaceEditDto(
 								result.edits,
-								this._uriIdentService,
+								this._uriIdentService
 							);
 					}
 					return <IInlineChatResponse | undefined>result;
@@ -103,9 +105,9 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 							handle,
 							session.id,
 							response.id,
-							token,
+							token
 						);
-				  },
+					},
 			handleInlineChatResponseFeedback: !supportsFeedback
 				? undefined
 				: async (session, response, kind) => {
@@ -113,9 +115,9 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 							handle,
 							session.id,
 							response.id,
-							kind,
+							kind
 						);
-				  },
+					},
 		});
 
 		this._registrations.set(handle, unreg);
@@ -123,7 +125,7 @@ export class MainThreadInlineChat implements MainThreadInlineChatShape {
 
 	async $handleProgressChunk(
 		requestId: string,
-		chunk: IInlineChatProgressItem,
+		chunk: IInlineChatProgressItem
 	): Promise<void> {
 		await Promise.resolve(this._progresses.get(requestId)?.report(chunk));
 	}

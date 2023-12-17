@@ -25,18 +25,21 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IKeybindingService private readonly keybindingsService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingsService: IKeybindingService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ITextResourcePropertiesService private readonly textResourcePropertiesService: ITextResourcePropertiesService,
-		@ITextResourceConfigurationService private readonly textResourceConfigurationService: ITextResourceConfigurationService,
-	) { }
+		@ITextResourcePropertiesService
+		private readonly textResourcePropertiesService: ITextResourcePropertiesService,
+		@ITextResourceConfigurationService
+		private readonly textResourceConfigurationService: ITextResourceConfigurationService
+	) {}
 
 	async resolveDefaultIgnoredSettings(): Promise<string[]> {
 		return getDefaultIgnoredSettings();
 	}
 
 	async resolveUserBindings(
-		userBindings: string[],
+		userBindings: string[]
 	): Promise<IStringDictionary<string>> {
 		const keys: IStringDictionary<string> = {};
 		for (const userbinding of userBindings) {
@@ -62,11 +65,11 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 			eol: this.textResourcePropertiesService.getEOL(resource),
 			insertSpaces: !!this.textResourceConfigurationService.getValue(
 				resource,
-				"editor.insertSpaces",
+				"editor.insertSpaces"
 			),
 			tabSize: this.textResourceConfigurationService.getValue(
 				resource,
-				"editor.tabSize",
+				"editor.tabSize"
 			),
 		};
 	}
@@ -75,5 +78,5 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 registerSingleton(
 	IUserDataSyncUtilService,
 	UserDataSyncUtilService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -38,7 +38,7 @@ import { ILogService } from "vs/platform/log/common/log";
 
 export function mergeEnvironments(
 	parent: IProcessEnvironment,
-	other: ITerminalEnvironment | undefined,
+	other: ITerminalEnvironment | undefined
 ): void {
 	if (!other) {
 		return;
@@ -73,7 +73,7 @@ export function mergeEnvironments(
 function _mergeEnvironmentValue(
 	env: ITerminalEnvironment,
 	key: string,
-	value: string | null,
+	value: string | null
 ): void {
 	if (typeof value === "string") {
 		env[key] = value;
@@ -86,7 +86,7 @@ export function addTerminalEnvironmentKeys(
 	env: IProcessEnvironment,
 	version: string | undefined,
 	locale: string | undefined,
-	detectLocale: "auto" | "off" | "on",
+	detectLocale: "auto" | "off" | "on"
 ): void {
 	env["TERM_PROGRAM"] = "vscode";
 	if (version) {
@@ -100,7 +100,7 @@ export function addTerminalEnvironmentKeys(
 
 function mergeNonNullKeys(
 	env: IProcessEnvironment,
-	other: ITerminalEnvironment | undefined,
+	other: ITerminalEnvironment | undefined
 ) {
 	if (!other) {
 		return;
@@ -115,7 +115,7 @@ function mergeNonNullKeys(
 
 async function resolveConfigurationVariables(
 	variableResolver: VariableResolver,
-	env: ITerminalEnvironment,
+	env: ITerminalEnvironment
 ): Promise<ITerminalEnvironment> {
 	await Promise.all(
 		Object.entries(env).map(async ([key, value]) => {
@@ -126,7 +126,7 @@ async function resolveConfigurationVariables(
 					env[key] = value;
 				}
 			}
-		}),
+		})
 	);
 
 	return env;
@@ -134,7 +134,7 @@ async function resolveConfigurationVariables(
 
 export function shouldSetLangEnvVariable(
 	env: IProcessEnvironment,
-	detectLocale: "auto" | "off" | "on",
+	detectLocale: "auto" | "off" | "on"
 ): boolean {
 	if (detectLocale === "on") {
 		return true;
@@ -233,7 +233,7 @@ export async function getCwd(
 	variableResolver: VariableResolver | undefined,
 	root: URI | undefined,
 	customCwd: string | undefined,
-	logService?: ILogService,
+	logService?: ILogService
 ): Promise<string> {
 	if (shell.cwd) {
 		const unresolved =
@@ -249,7 +249,7 @@ export async function getCwd(
 			customCwd = await _resolveCwd(
 				customCwd,
 				variableResolver,
-				logService,
+				logService
 			);
 		}
 		if (customCwd) {
@@ -272,7 +272,7 @@ export async function getCwd(
 async function _resolveCwd(
 	cwd: string,
 	variableResolver: VariableResolver | undefined,
-	logService?: ILogService,
+	logService?: ILogService
 ): Promise<string | undefined> {
 	if (variableResolver) {
 		try {
@@ -290,7 +290,7 @@ export type VariableResolver = (str: string) => Promise<string>;
 export function createVariableResolver(
 	lastActiveWorkspace: IWorkspaceFolder | undefined,
 	env: IProcessEnvironment,
-	configurationResolverService: IConfigurationResolverService | undefined,
+	configurationResolverService: IConfigurationResolverService | undefined
 ): VariableResolver | undefined {
 	if (!configurationResolverService) {
 		return undefined;
@@ -299,7 +299,7 @@ export function createVariableResolver(
 		configurationResolverService.resolveWithEnvironment(
 			env,
 			lastActiveWorkspace,
-			str,
+			str
 		);
 }
 
@@ -309,7 +309,7 @@ export async function createTerminalEnvironment(
 	variableResolver: VariableResolver | undefined,
 	version: string | undefined,
 	detectLocale: "auto" | "off" | "on",
-	baseEnv: IProcessEnvironment,
+	baseEnv: IProcessEnvironment
 ): Promise<IProcessEnvironment> {
 	// Create a terminal environment based on settings, launch config and permissions
 	const env: IProcessEnvironment = {};
@@ -327,13 +327,13 @@ export async function createTerminalEnvironment(
 			if (allowedEnvFromConfig) {
 				await resolveConfigurationVariables(
 					variableResolver,
-					allowedEnvFromConfig,
+					allowedEnvFromConfig
 				);
 			}
 			if (shellLaunchConfig.env) {
 				await resolveConfigurationVariables(
 					variableResolver,
-					shellLaunchConfig.env,
+					shellLaunchConfig.env
 				);
 			}
 		}
@@ -372,7 +372,7 @@ export async function preparePathForShell(
 	shellType: TerminalShellType | undefined,
 	backend: Pick<ITerminalBackend, "getWslPath"> | undefined,
 	os: OperatingSystem | undefined,
-	isWindowsFrontend: boolean = isWindows,
+	isWindowsFrontend: boolean = isWindows
 ): Promise<string> {
 	let originalPath: string;
 	if (isString(resource)) {
@@ -446,7 +446,7 @@ export async function preparePathForShell(
 export function getWorkspaceForTerminal(
 	cwd: URI | string | undefined,
 	workspaceContextService: IWorkspaceContextService,
-	historyService: IHistoryService,
+	historyService: IHistoryService
 ): IWorkspaceFolder | undefined {
 	const cwdUri = typeof cwd === "string" ? URI.parse(cwd) : cwd;
 	let workspaceFolder = cwdUri
@@ -459,8 +459,8 @@ export function getWorkspaceForTerminal(
 			historyService.getLastActiveWorkspaceRoot();
 		workspaceFolder = activeWorkspaceRootUri
 			? workspaceContextService.getWorkspaceFolder(
-					activeWorkspaceRootUri,
-			  ) ?? undefined
+					activeWorkspaceRootUri
+				) ?? undefined
 			: undefined;
 	}
 	return workspaceFolder;

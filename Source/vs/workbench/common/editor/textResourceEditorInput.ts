@@ -44,15 +44,24 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		@ITextFileService protected readonly textFileService: ITextFileService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService
 	) {
-		super(resource, preferredResource, labelService, fileService, filesConfigurationService, textResourceConfigurationService);
+		super(
+			resource,
+			preferredResource,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService
+		);
 	}
 
 	override save(
 		group: GroupIdentifier,
-		options?: ITextFileSaveOptions,
+		options?: ITextFileSaveOptions
 	): Promise<IUntypedEditorInput | undefined> {
 		// If this is neither an `untitled` resource, nor a resource
 		// we can handle with the file service, we can only "Save As..."
@@ -69,7 +78,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 
 	override saveAs(
 		group: GroupIdentifier,
-		options?: ITextFileSaveOptions,
+		options?: ITextFileSaveOptions
 	): Promise<IUntypedEditorInput | undefined> {
 		return this.doSave(options, true, group);
 	}
@@ -77,7 +86,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 	private async doSave(
 		options: ITextFileSaveOptions | undefined,
 		saveAs: boolean,
-		group: GroupIdentifier | undefined,
+		group: GroupIdentifier | undefined
 	): Promise<IUntypedEditorInput | undefined> {
 		// Save / Save As
 		let target: URI | undefined;
@@ -85,7 +94,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 			target = await this.textFileService.saveAs(
 				this.resource,
 				undefined,
-				{ ...options, suggestedTarget: this.preferredResource },
+				{ ...options, suggestedTarget: this.preferredResource }
 			);
 		} else {
 			target = await this.textFileService.save(this.resource, options);
@@ -100,7 +109,7 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 
 	override async revert(
 		group: GroupIdentifier,
-		options?: IRevertOptions,
+		options?: IRevertOptions
 	): Promise<void> {
 		await this.textFileService.revert(this.resource, options);
 	}
@@ -139,10 +148,21 @@ export class TextResourceEditorInput
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
 		@ILabelService labelService: ILabelService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService
 	) {
-		super(resource, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService);
+		super(
+			resource,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService
+		);
 	}
 
 	override getName(): string {
@@ -196,7 +216,7 @@ export class TextResourceEditorInput
 
 		if (!this.modelReference) {
 			this.modelReference = this.textModelService.createModelReference(
-				this.resource,
+				this.resource
 			);
 		}
 
@@ -209,7 +229,7 @@ export class TextResourceEditorInput
 			this.modelReference = undefined;
 
 			throw new Error(
-				`Unexpected model for TextResourceEditorInput: ${this.resource}`,
+				`Unexpected model for TextResourceEditorInput: ${this.resource}`
 			);
 		}
 
@@ -224,7 +244,7 @@ export class TextResourceEditorInput
 				typeof preferredContents === "string"
 					? createTextBufferFactory(preferredContents)
 					: undefined,
-				preferredLanguageId,
+				preferredLanguageId
 			);
 		}
 

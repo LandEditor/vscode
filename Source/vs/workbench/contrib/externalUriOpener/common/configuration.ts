@@ -45,7 +45,7 @@ export const externalUriOpenersConfigurationNode: IConfigurationNode = {
 			type: "object",
 			markdownDescription: nls.localize(
 				"externalUriOpeners",
-				"Configure the opener to use for external URIs (http, https).",
+				"Configure the opener to use for external URIs (http, https)."
 			),
 			defaultSnippets: [
 				{
@@ -61,7 +61,7 @@ export const externalUriOpenersConfigurationNode: IConfigurationNode = {
 						markdownDescription: nls.localize(
 							"externalUriOpeners.uri",
 							"Map URI pattern to an opener id.\nExample patterns: \n{0}",
-							exampleUriPatterns,
+							exampleUriPatterns
 						),
 					},
 					{
@@ -69,13 +69,13 @@ export const externalUriOpenersConfigurationNode: IConfigurationNode = {
 						markdownDescription: nls.localize(
 							"externalUriOpeners.uri",
 							"Map URI pattern to an opener id.\nExample patterns: \n{0}",
-							exampleUriPatterns,
+							exampleUriPatterns
 						),
 						enum: [defaultExternalUriOpenerId],
 						enumDescriptions: [
 							nls.localize(
 								"externalUriOpeners.defaultId",
-								"Open using VS Code's standard opener.",
+								"Open using VS Code's standard opener."
 							),
 						],
 					},
@@ -88,12 +88,12 @@ export const externalUriOpenersConfigurationNode: IConfigurationNode = {
 
 export function updateContributedOpeners(
 	enumValues: string[],
-	enumDescriptions: string[],
+	enumDescriptions: string[]
 ): void {
 	externalUriOpenerIdSchemaAddition.enum = enumValues;
 	externalUriOpenerIdSchemaAddition.enumDescriptions = enumDescriptions;
 
 	Registry.as<IConfigurationRegistry>(
-		Extensions.Configuration,
+		Extensions.Configuration
 	).notifyConfigurationSchemaUpdated(externalUriOpenersConfigurationNode);
 }

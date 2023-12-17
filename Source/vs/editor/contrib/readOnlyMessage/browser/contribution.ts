@@ -25,8 +25,8 @@ export class ReadOnlyMessageController
 		super();
 		this._register(
 			this.editor.onDidAttemptReadOnlyEdit(() =>
-				this._onDidAttemptReadOnlyEdit(),
-			),
+				this._onDidAttemptReadOnlyEdit()
+			)
 		);
 	}
 
@@ -41,15 +41,15 @@ export class ReadOnlyMessageController
 					message = new MarkdownString(
 						nls.localize(
 							"editor.simple.readonly",
-							"Cannot edit in read-only input",
-						),
+							"Cannot edit in read-only input"
+						)
 					);
 				} else {
 					message = new MarkdownString(
 						nls.localize(
 							"editor.readonly",
-							"Cannot edit in read-only editor",
-						),
+							"Cannot edit in read-only editor"
+						)
 					);
 				}
 			}
@@ -62,5 +62,5 @@ export class ReadOnlyMessageController
 registerEditorContribution(
 	ReadOnlyMessageController.ID,
 	ReadOnlyMessageController,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );

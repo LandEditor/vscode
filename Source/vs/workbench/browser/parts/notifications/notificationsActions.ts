@@ -24,43 +24,40 @@ import { ThemeIcon } from "vs/base/common/themables";
 const clearIcon = registerIcon(
 	"notifications-clear",
 	Codicon.close,
-	localize("clearIcon", "Icon for the clear action in notifications."),
+	localize("clearIcon", "Icon for the clear action in notifications.")
 );
 const clearAllIcon = registerIcon(
 	"notifications-clear-all",
 	Codicon.clearAll,
-	localize("clearAllIcon", "Icon for the clear all action in notifications."),
+	localize("clearAllIcon", "Icon for the clear all action in notifications.")
 );
 const hideIcon = registerIcon(
 	"notifications-hide",
 	Codicon.chevronDown,
-	localize("hideIcon", "Icon for the hide action in notifications."),
+	localize("hideIcon", "Icon for the hide action in notifications.")
 );
 const expandIcon = registerIcon(
 	"notifications-expand",
 	Codicon.chevronUp,
-	localize("expandIcon", "Icon for the expand action in notifications."),
+	localize("expandIcon", "Icon for the expand action in notifications.")
 );
 const collapseIcon = registerIcon(
 	"notifications-collapse",
 	Codicon.chevronDown,
-	localize("collapseIcon", "Icon for the collapse action in notifications."),
+	localize("collapseIcon", "Icon for the collapse action in notifications.")
 );
 const configureIcon = registerIcon(
 	"notifications-configure",
 	Codicon.gear,
-	localize(
-		"configureIcon",
-		"Icon for the configure action in notifications.",
-	),
+	localize("configureIcon", "Icon for the configure action in notifications.")
 );
 const doNotDisturbIcon = registerIcon(
 	"notifications-do-not-disturb",
 	Codicon.bellSlash,
 	localize(
 		"doNotDisturbIcon",
-		"Icon for the mute all action in notifications.",
-	),
+		"Icon for the mute all action in notifications."
+	)
 );
 
 export class ClearNotificationAction extends Action {
@@ -84,7 +81,7 @@ export class ClearAllNotificationsAction extends Action {
 	static readonly ID = CLEAR_ALL_NOTIFICATIONS;
 	static readonly LABEL = localize(
 		"clearNotifications",
-		"Clear All Notifications",
+		"Clear All Notifications"
 	);
 
 	constructor(
@@ -104,7 +101,7 @@ export class ToggleDoNotDisturbAction extends Action {
 	static readonly ID = TOGGLE_DO_NOT_DISTURB_MODE;
 	static readonly LABEL = localize(
 		"toggleDoNotDisturbMode",
-		"Toggle Do Not Disturb Mode",
+		"Toggle Do Not Disturb Mode"
 	);
 
 	constructor(
@@ -124,7 +121,7 @@ export class HideNotificationsCenterAction extends Action {
 	static readonly ID = HIDE_NOTIFICATIONS_CENTER;
 	static readonly LABEL = localize(
 		"hideNotificationsCenter",
-		"Hide Notifications",
+		"Hide Notifications"
 	);
 
 	constructor(
@@ -144,7 +141,7 @@ export class ExpandNotificationAction extends Action {
 	static readonly ID = EXPAND_NOTIFICATION;
 	static readonly LABEL = localize(
 		"expandNotification",
-		"Expand Notification",
+		"Expand Notification"
 	);
 
 	constructor(
@@ -164,7 +161,7 @@ export class CollapseNotificationAction extends Action {
 	static readonly ID = COLLAPSE_NOTIFICATION;
 	static readonly LABEL = localize(
 		"collapseNotification",
-		"Collapse Notification",
+		"Collapse Notification"
 	);
 
 	constructor(
@@ -184,13 +181,13 @@ export class ConfigureNotificationAction extends Action {
 	static readonly ID = "workbench.action.configureNotification";
 	static readonly LABEL = localize(
 		"configureNotification",
-		"More Actions...",
+		"More Actions..."
 	);
 
 	constructor(
 		id: string,
 		label: string,
-		readonly configurationActions: readonly IAction[],
+		readonly configurationActions: readonly IAction[]
 	) {
 		super(id, label, ThemeIcon.asClassName(configureIcon));
 	}

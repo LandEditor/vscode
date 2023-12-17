@@ -9,7 +9,7 @@ import { Runtime } from "./htmlClient";
 
 export namespace FsStatRequest {
 	export const type: RequestType<string, FileStat, any> = new RequestType(
-		"fs/stat",
+		"fs/stat"
 	);
 }
 
@@ -20,7 +20,7 @@ export namespace FsReadDirRequest {
 
 export function serveFileSystemRequests(
 	client: BaseLanguageClient,
-	runtime: Runtime,
+	runtime: Runtime
 ): Disposable {
 	const disposables = [];
 	disposables.push(
@@ -30,7 +30,7 @@ export function serveFileSystemRequests(
 				return runtime.fileFs.readDirectory(uriString);
 			}
 			return workspace.fs.readDirectory(uri);
-		}),
+		})
 	);
 	disposables.push(
 		client.onRequest(FsStatRequest.type, (uriString: string) => {
@@ -39,7 +39,7 @@ export function serveFileSystemRequests(
 				return runtime.fileFs.stat(uriString);
 			}
 			return workspace.fs.stat(uri);
-		}),
+		})
 	);
 	return Disposable.from(...disposables);
 }

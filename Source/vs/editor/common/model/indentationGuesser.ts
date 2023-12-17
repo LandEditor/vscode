@@ -19,7 +19,7 @@ function spacesDiff(
 	aLength: number,
 	b: string,
 	bLength: number,
-	result: SpacesDiffResult,
+	result: SpacesDiffResult
 ): void {
 	result.spacesDiff = 0;
 	result.looksLikeAlignment = false;
@@ -120,7 +120,7 @@ export interface IGuessedIndentation {
 export function guessIndentation(
 	source: ITextBuffer,
 	defaultTabSize: number,
-	defaultInsertSpaces: boolean,
+	defaultInsertSpaces: boolean
 ): IGuessedIndentation {
 	// Look at most at the first 10k lines
 	const linesCount = Math.min(source.getLineCount(), 10000);
@@ -182,7 +182,7 @@ export function guessIndentation(
 			previousLineIndentation,
 			currentLineText,
 			currentLineIndentation,
-			tmp,
+			tmp
 		);
 
 		if (tmp.looksLikeAlignment) {

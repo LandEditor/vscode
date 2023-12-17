@@ -42,8 +42,8 @@ export function activate(context: vscode.ExtensionContext) {
 				deserializeWebviewPanel: async (panel, state) => {
 					manager.restore(panel, state);
 				},
-			},
-		),
+			}
+		)
 	);
 
 	context.subscriptions.push(
@@ -58,7 +58,7 @@ export function activate(context: vscode.ExtensionContext) {
 			if (url) {
 				manager.show(url);
 			}
-		}),
+		})
 	);
 
 	context.subscriptions.push(
@@ -69,11 +69,11 @@ export function activate(context: vscode.ExtensionContext) {
 				showOptions?: {
 					preserveFocus?: boolean;
 					viewColumn: vscode.ViewColumn;
-				},
+				}
 			) => {
 				manager.show(url, showOptions);
-			},
-		),
+			}
+		)
 	);
 
 	context.subscriptions.push(
@@ -102,8 +102,8 @@ export function activate(context: vscode.ExtensionContext) {
 			{
 				schemes: ["http", "https"],
 				label: vscode.l10n.t("Open in simple browser"),
-			},
-		),
+			}
+		)
 	);
 }
 

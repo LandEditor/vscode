@@ -27,20 +27,27 @@ export class ExecutionEditorProgressController
 
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
-		@IUserActivityService private readonly _userActivity: IUserActivityService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@IUserActivityService
+		private readonly _userActivity: IUserActivityService
 	) {
 		super();
 
 		this._register(_notebookEditor.onDidScroll(() => this._update()));
 
-		this._register(_notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.notebook.toString() !== this._notebookEditor.textModel?.uri.toString()) {
-				return;
-			}
+		this._register(
+			_notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (
+					e.notebook.toString() !==
+					this._notebookEditor.textModel?.uri.toString()
+				) {
+					return;
+				}
 
-			this._update();
-		}));
+				this._update();
+			})
+		);
 
 		this._register(_notebookEditor.onDidChangeModel(() => this._update()));
 	}
@@ -54,16 +61,16 @@ export class ExecutionEditorProgressController
 		const cellExecutions = this._notebookExecutionStateService
 			.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
 			.filter(
-				(exe) => exe.state === NotebookCellExecutionState.Executing,
+				(exe) => exe.state === NotebookCellExecutionState.Executing
 			);
 		const notebookExecution =
 			this._notebookExecutionStateService.getExecution(
-				this._notebookEditor.textModel?.uri,
+				this._notebookEditor.textModel?.uri
 			);
 		const executionIsVisible = (exe: INotebookCellExecution) => {
 			for (const range of this._notebookEditor.visibleRanges) {
 				for (const cell of this._notebookEditor.getCellsInRange(
-					range,
+					range
 				)) {
 					if (cell.handle === exe.cellHandle) {
 						const top =
@@ -101,5 +108,5 @@ export class ExecutionEditorProgressController
 
 registerNotebookContribution(
 	ExecutionEditorProgressController.id,
-	ExecutionEditorProgressController,
+	ExecutionEditorProgressController
 );

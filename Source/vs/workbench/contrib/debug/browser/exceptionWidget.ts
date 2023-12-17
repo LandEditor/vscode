@@ -40,10 +40,7 @@ const debugExceptionWidgetBorder = registerColor(
 		hcDark: "#a31515",
 		hcLight: "#a31515",
 	},
-	nls.localize(
-		"debugExceptionWidgetBorder",
-		"Exception widget border color.",
-	),
+	nls.localize("debugExceptionWidgetBorder", "Exception widget border color.")
 );
 const debugExceptionWidgetBackground = registerColor(
 	"debugExceptionWidget.background",
@@ -55,8 +52,8 @@ const debugExceptionWidgetBackground = registerColor(
 	},
 	nls.localize(
 		"debugExceptionWidgetBackground",
-		"Exception widget background color.",
-	),
+		"Exception widget background color."
+	)
 );
 
 export class ExceptionWidget extends ZoneWidget {
@@ -67,16 +64,32 @@ export class ExceptionWidget extends ZoneWidget {
 		private exceptionInfo: IExceptionInfo,
 		private debugSession: IDebugSession | undefined,
 		@IThemeService themeService: IThemeService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
-		super(editor, { showFrame: true, showArrow: true, isAccessible: true, frameWidth: 1, className: 'exception-widget-container' });
+		super(editor, {
+			showFrame: true,
+			showArrow: true,
+			isAccessible: true,
+			frameWidth: 1,
+			className: "exception-widget-container",
+		});
 
 		this.applyTheme(themeService.getColorTheme());
-		this._disposables.add(themeService.onDidColorThemeChange(this.applyTheme.bind(this)));
+		this._disposables.add(
+			themeService.onDidColorThemeChange(this.applyTheme.bind(this))
+		);
 
 		this.create();
-		const onDidLayoutChangeScheduler = new RunOnceScheduler(() => this._doLayout(undefined, undefined), 50);
-		this._disposables.add(this.editor.onDidLayoutChange(() => onDidLayoutChangeScheduler.schedule()));
+		const onDidLayoutChangeScheduler = new RunOnceScheduler(
+			() => this._doLayout(undefined, undefined),
+			50
+		);
+		this._disposables.add(
+			this.editor.onDidLayoutChange(() =>
+				onDidLayoutChangeScheduler.schedule()
+			)
+		);
 		this._disposables.add(onDidLayoutChangeScheduler);
 	}
 
@@ -114,8 +127,8 @@ export class ExceptionWidget extends ZoneWidget {
 			? nls.localize(
 					"exceptionThrownWithId",
 					"Exception has occurred: {0}",
-					this.exceptionInfo.id,
-			  )
+					this.exceptionInfo.id
+				)
 			: nls.localize("exceptionThrown", "Exception has occurred.");
 		let ariaLabel = label.textContent;
 
@@ -129,12 +142,12 @@ export class ExceptionWidget extends ZoneWidget {
 				async () => {
 					const contribution =
 						this.editor.getContribution<IDebugEditorContribution>(
-							EDITOR_CONTRIBUTION_ID,
+							EDITOR_CONTRIBUTION_ID
 						);
 					contribution?.closeExceptionWidget();
-				},
+				}
 			),
-			{ label: false, icon: true },
+			{ label: false, icon: true }
 		);
 
 		dom.append(container, title);
@@ -156,7 +169,7 @@ export class ExceptionWidget extends ZoneWidget {
 			const linkedStackTrace = linkDetector.linkify(
 				this.exceptionInfo.details.stackTrace,
 				true,
-				this.debugSession ? this.debugSession.root : undefined,
+				this.debugSession ? this.debugSession.root : undefined
 			);
 			stackTrace.appendChild(linkedStackTrace);
 			dom.append(container, stackTrace);
@@ -167,7 +180,7 @@ export class ExceptionWidget extends ZoneWidget {
 
 	protected override _doLayout(
 		_heightInPixel: number | undefined,
-		_widthInPixel: number | undefined,
+		_widthInPixel: number | undefined
 	): void {
 		// Reload the height with respect to the exception text content and relayout it to match the line count.
 		this.container!.style.height = "initial";
@@ -175,7 +188,7 @@ export class ExceptionWidget extends ZoneWidget {
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 		const arrowHeight = Math.round(lineHeight / 3);
 		const computedLinesNumber = Math.ceil(
-			(this.container!.offsetHeight + arrowHeight) / lineHeight,
+			(this.container!.offsetHeight + arrowHeight) / lineHeight
 		);
 
 		this._relayout(computedLinesNumber);

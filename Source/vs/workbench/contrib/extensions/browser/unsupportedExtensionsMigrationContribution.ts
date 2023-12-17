@@ -17,11 +17,15 @@ export class UnsupportedExtensionsMigrationContrib
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@IExtensionStorageService extensionStorageService: IExtensionStorageService,
-		@IGlobalExtensionEnablementService extensionEnablementService: IGlobalExtensionEnablementService,
-		@ILogService logService: ILogService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@IExtensionStorageService
+		extensionStorageService: IExtensionStorageService,
+		@IGlobalExtensionEnablementService
+		extensionEnablementService: IGlobalExtensionEnablementService,
+		@ILogService logService: ILogService
 	) {
 		// Unsupported extensions are not migrated for local extension management server, because it is done in shared process
 		if (extensionManagementServerService.remoteExtensionManagementServer) {
@@ -31,7 +35,7 @@ export class UnsupportedExtensionsMigrationContrib
 				extensionGalleryService,
 				extensionStorageService,
 				extensionEnablementService,
-				logService,
+				logService
 			);
 		}
 		if (extensionManagementServerService.webExtensionManagementServer) {
@@ -41,7 +45,7 @@ export class UnsupportedExtensionsMigrationContrib
 				extensionGalleryService,
 				extensionStorageService,
 				extensionEnablementService,
-				logService,
+				logService
 			);
 		}
 	}

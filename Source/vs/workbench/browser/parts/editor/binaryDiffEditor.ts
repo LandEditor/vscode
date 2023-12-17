@@ -28,9 +28,10 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IEditorService editorService: IEditorService,
-		@IEditorGroupsService editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService editorGroupService: IEditorGroupsService
 	) {
 		super(
 			telemetryService,
@@ -40,7 +41,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 			configurationService,
 			textResourceConfigurationService,
 			editorService,
-			editorGroupService,
+			editorGroupService
 		);
 	}
 
@@ -56,7 +57,7 @@ export class BinaryResourceDiffEditor extends SideBySideEditor {
 				"metadataDiff",
 				"{0} ↔ {1}",
 				secondary.getMetadata(),
-				primary.getMetadata(),
+				primary.getMetadata()
 			);
 		}
 

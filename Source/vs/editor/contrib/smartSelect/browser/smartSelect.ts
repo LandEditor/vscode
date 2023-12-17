@@ -38,7 +38,10 @@ import { assertType } from "vs/base/common/types";
 import { URI } from "vs/base/common/uri";
 
 class SelectionRanges {
-	constructor(readonly index: number, readonly ranges: Range[]) {}
+	constructor(
+		readonly index: number,
+		readonly ranges: Range[]
+	) {}
 
 	mov(fwd: boolean): SelectionRanges {
 		const index = this.index + (fwd ? 1 : -1);
@@ -59,7 +62,7 @@ export class SmartSelectController implements IEditorContribution {
 
 	static get(editor: ICodeEditor): SmartSelectController | null {
 		return editor.getContribution<SmartSelectController>(
-			SmartSelectController.ID,
+			SmartSelectController.ID
 		);
 	}
 
@@ -69,8 +72,9 @@ export class SmartSelectController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-	) { }
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService
+	) {}
 
 	dispose(): void {
 		this._selectionListener?.dispose();
@@ -90,7 +94,7 @@ export class SmartSelectController implements IEditorContribution {
 				model,
 				selections.map((s) => s.getPosition()),
 				this._editor.getOption(EditorOption.smartSelect),
-				CancellationToken.None,
+				CancellationToken.None
 			).then((ranges) => {
 				if (
 					!arrays.isNonEmptyArray(ranges) ||
@@ -104,7 +108,7 @@ export class SmartSelectController implements IEditorContribution {
 					!arrays.equals(
 						this._editor.getSelections(),
 						selections,
-						(a, b) => a.equalsSelection(b),
+						(a, b) => a.equalsSelection(b)
 					)
 				) {
 					// invalid editor state
@@ -116,10 +120,10 @@ export class SmartSelectController implements IEditorContribution {
 						// filter ranges inside the selection
 						return (
 							range.containsPosition(
-								selections[i].getStartPosition(),
+								selections[i].getStartPosition()
 							) &&
 							range.containsPosition(
-								selections[i].getEndPosition(),
+								selections[i].getEndPosition()
 							)
 						);
 					});
@@ -128,7 +132,7 @@ export class SmartSelectController implements IEditorContribution {
 				}
 
 				this._state = ranges.map(
-					(ranges) => new SelectionRanges(0, ranges),
+					(ranges) => new SelectionRanges(0, ranges)
 				);
 
 				// listen to caret move and forget about state
@@ -151,8 +155,8 @@ export class SmartSelectController implements IEditorContribution {
 		const newSelections = this._state.map((state) =>
 			Selection.fromPositions(
 				state.ranges[state.index].getStartPosition(),
-				state.ranges[state.index].getEndPosition(),
-			),
+				state.ranges[state.index].getEndPosition()
+			)
 		);
 		this._ignoreSelection = true;
 		try {
@@ -209,7 +213,7 @@ class GrowSelectionAction extends AbstractSmartSelect {
 						key: "miSmartSelectGrow",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Expand Selection",
+					"&&Expand Selection"
 				),
 				order: 2,
 			},
@@ -220,7 +224,7 @@ class GrowSelectionAction extends AbstractSmartSelect {
 // renamed command id
 CommandsRegistry.registerCommandAlias(
 	"editor.action.smartSelect.grow",
-	"editor.action.smartSelect.expand",
+	"editor.action.smartSelect.expand"
 );
 
 class ShrinkSelectionAction extends AbstractSmartSelect {
@@ -253,7 +257,7 @@ class ShrinkSelectionAction extends AbstractSmartSelect {
 						key: "miSmartSelectShrink",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"&&Shrink Selection",
+					"&&Shrink Selection"
 				),
 				order: 3,
 			},
@@ -264,7 +268,7 @@ class ShrinkSelectionAction extends AbstractSmartSelect {
 registerEditorContribution(
 	SmartSelectController.ID,
 	SmartSelectController,
-	EditorContributionInstantiation.Lazy,
+	EditorContributionInstantiation.Lazy
 );
 registerEditorAction(GrowSelectionAction);
 registerEditorAction(ShrinkSelectionAction);
@@ -279,7 +283,7 @@ export async function provideSelectionRanges(
 	model: ITextModel,
 	positions: Position[],
 	options: SelectionRangesOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<Range[][]> {
 	const providers = registry
 		.all(model)
@@ -296,7 +300,7 @@ export async function provideSelectionRanges(
 	for (const provider of providers) {
 		work.push(
 			Promise.resolve(
-				provider.provideSelectionRanges(model, positions, token),
+				provider.provideSelectionRanges(model, positions, token)
 			).then((allProviderRanges) => {
 				if (
 					arrays.isNonEmptyArray(allProviderRanges) &&
@@ -311,17 +315,17 @@ export async function provideSelectionRanges(
 								Range.isIRange(oneProviderRanges.range) &&
 								Range.containsPosition(
 									oneProviderRanges.range,
-									positions[i],
+									positions[i]
 								)
 							) {
 								allRawRanges[i].push(
-									Range.lift(oneProviderRanges.range),
+									Range.lift(oneProviderRanges.range)
 								);
 							}
 						}
 					}
 				}
-			}, onUnexpectedExternalError),
+			}, onUnexpectedExternalError)
 		);
 	}
 
@@ -387,7 +391,7 @@ export async function provideSelectionRanges(
 					prev.startLineNumber,
 					model.getLineFirstNonWhitespaceColumn(prev.startLineNumber),
 					prev.endLineNumber,
-					model.getLineLastNonWhitespaceColumn(prev.endLineNumber),
+					model.getLineLastNonWhitespaceColumn(prev.endLineNumber)
 				);
 				if (
 					rangeNoWhitespace.containsRange(prev) &&
@@ -402,7 +406,7 @@ export async function provideSelectionRanges(
 					prev.startLineNumber,
 					1,
 					prev.endLineNumber,
-					model.getLineMaxColumn(prev.endLineNumber),
+					model.getLineMaxColumn(prev.endLineNumber)
 				);
 				if (
 					rangeFull.containsRange(prev) &&
@@ -426,7 +430,7 @@ CommandsRegistry.registerCommand(
 		assertType(URI.isUri(resource));
 
 		const registry = accessor.get(
-			ILanguageFeaturesService,
+			ILanguageFeaturesService
 		).selectionRangeProvider;
 		const reference = await accessor
 			.get(ITextModelService)
@@ -441,10 +445,10 @@ CommandsRegistry.registerCommand(
 					selectLeadingAndTrailingWhitespace: true,
 					selectSubwords: true,
 				},
-				CancellationToken.None,
+				CancellationToken.None
 			);
 		} finally {
 			reference.dispose();
 		}
-	},
+	}
 );

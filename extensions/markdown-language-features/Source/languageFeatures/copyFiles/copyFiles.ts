@@ -16,7 +16,7 @@ interface CopyFileConfiguration {
 }
 
 function getCopyFileConfiguration(
-	document: vscode.TextDocument,
+	document: vscode.TextDocument
 ): CopyFileConfiguration {
 	const config = vscode.workspace.getConfiguration("markdown", document);
 	return {
@@ -27,7 +27,7 @@ function getCopyFileConfiguration(
 }
 
 function readOverwriteBehavior(
-	config: vscode.WorkspaceConfiguration,
+	config: vscode.WorkspaceConfiguration
 ): OverwriteBehavior {
 	switch (config.get("copyFiles.overwriteBehavior")) {
 		case "overwrite":
@@ -43,7 +43,7 @@ export class NewFilePathGenerator {
 	async getNewFilePath(
 		document: vscode.TextDocument,
 		file: vscode.DataTransferFile,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<
 		{ readonly uri: vscode.Uri; readonly overwrite: boolean } | undefined
 	> {
@@ -92,7 +92,7 @@ export class NewFilePathGenerator {
 function getDesiredNewFilePath(
 	config: CopyFileConfiguration,
 	document: vscode.TextDocument,
-	file: vscode.DataTransferFile,
+	file: vscode.DataTransferFile
 ): vscode.Uri {
 	const docUri = getParentDocumentUri(document.uri);
 	for (const [rawGlob, rawDest] of Object.entries(config.destination)) {
@@ -102,7 +102,7 @@ function getDesiredNewFilePath(
 					docUri,
 					file.name,
 					rawDest,
-					(uri) => vscode.workspace.getWorkspaceFolder(uri)?.uri,
+					(uri) => vscode.workspace.getWorkspaceFolder(uri)?.uri
 				);
 			}
 		}
@@ -116,7 +116,7 @@ function parseGlob(rawGlob: string): Iterable<string> {
 	if (rawGlob.startsWith("/")) {
 		// Anchor to workspace folders
 		return (vscode.workspace.workspaceFolders ?? []).map(
-			(folder) => vscode.Uri.joinPath(folder.uri, rawGlob).path,
+			(folder) => vscode.Uri.joinPath(folder.uri, rawGlob).path
 		);
 	}
 
@@ -134,13 +134,13 @@ export function resolveCopyDestination(
 	documentUri: vscode.Uri,
 	fileName: string,
 	dest: string,
-	getWorkspaceFolder: GetWorkspaceFolder,
+	getWorkspaceFolder: GetWorkspaceFolder
 ): vscode.Uri {
 	const resolvedDest = resolveCopyDestinationSetting(
 		documentUri,
 		fileName,
 		dest,
-		getWorkspaceFolder,
+		getWorkspaceFolder
 	);
 
 	if (resolvedDest.startsWith("/")) {
@@ -157,7 +157,7 @@ function resolveCopyDestinationSetting(
 	documentUri: vscode.Uri,
 	fileName: string,
 	dest: string,
-	getWorkspaceFolder: GetWorkspaceFolder,
+	getWorkspaceFolder: GetWorkspaceFolder
 ): string {
 	let outDest = dest.trim();
 	if (!outDest) {
@@ -188,8 +188,8 @@ function resolveCopyDestinationSetting(
 			workspaceFolder
 				? path.posix.relative(
 						workspaceFolder.path,
-						documentDirName.path,
-				  )
+						documentDirName.path
+					)
 				: documentDirName.path,
 		], // Absolute parent directory path
 		["documentFileName", documentBaseName], // Full filename: file.md
@@ -197,7 +197,7 @@ function resolveCopyDestinationSetting(
 			"documentBaseName",
 			documentBaseName.slice(
 				0,
-				documentBaseName.length - documentExtName.length,
+				documentBaseName.length - documentExtName.length
 			),
 		], // Just the name: file
 		["documentExtName", documentExtName.replace(".", "")], // The document ext (without dot): md
@@ -232,12 +232,12 @@ function resolveCopyDestinationSetting(
 			if (pattern && replacement) {
 				return entry.replace(
 					new RegExp(replaceTransformEscapes(pattern)),
-					replaceTransformEscapes(replacement),
+					replaceTransformEscapes(replacement)
 				);
 			}
 
 			return entry;
-		},
+		}
 	);
 }
 

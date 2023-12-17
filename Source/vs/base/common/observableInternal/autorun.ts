@@ -34,7 +34,7 @@ export function autorun(fn: (reader: IReader) => void): IDisposable {
  */
 export function autorunOpts(
 	options: { debugName?: string | (() => string | undefined) },
-	fn: (reader: IReader) => void,
+	fn: (reader: IReader) => void
 ): IDisposable {
 	return new AutorunObserver(options.debugName, fn, undefined, undefined);
 }
@@ -56,16 +56,16 @@ export function autorunHandleChanges<TChangeSummary>(
 		createEmptyChangeSummary?: () => TChangeSummary;
 		handleChange: (
 			context: IChangeContext,
-			changeSummary: TChangeSummary,
+			changeSummary: TChangeSummary
 		) => boolean;
 	},
-	fn: (reader: IReader, changeSummary: TChangeSummary) => void,
+	fn: (reader: IReader, changeSummary: TChangeSummary) => void
 ): IDisposable {
 	return new AutorunObserver(
 		options.debugName,
 		fn,
 		options.createEmptyChangeSummary,
-		options.handleChange,
+		options.handleChange
 	);
 }
 
@@ -78,14 +78,14 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(
 		createEmptyChangeSummary?: () => TChangeSummary;
 		handleChange: (
 			context: IChangeContext,
-			changeSummary: TChangeSummary,
+			changeSummary: TChangeSummary
 		) => boolean;
 	},
 	fn: (
 		reader: IReader,
 		changeSummary: TChangeSummary,
-		store: DisposableStore,
-	) => void,
+		store: DisposableStore
+	) => void
 ): IDisposable {
 	const store = new DisposableStore();
 	const disposable = autorunHandleChanges(
@@ -97,7 +97,7 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(
 		(reader, changeSummary) => {
 			store.clear();
 			fn(reader, changeSummary, store);
-		},
+		}
 	);
 	return toDisposable(() => {
 		disposable.dispose();
@@ -109,7 +109,7 @@ export function autorunWithStoreHandleChanges<TChangeSummary>(
  * @see autorun (but with a disposable store that is cleared before the next run or on dispose)
  */
 export function autorunWithStore(
-	fn: (reader: IReader, store: DisposableStore) => void,
+	fn: (reader: IReader, store: DisposableStore) => void
 ): IDisposable {
 	const store = new DisposableStore();
 	const disposable = autorunOpts(
@@ -119,7 +119,7 @@ export function autorunWithStore(
 		(reader) => {
 			store.clear();
 			fn(reader, store);
-		},
+		}
 	);
 	return toDisposable(() => {
 		disposable.dispose();
@@ -176,14 +176,14 @@ export class AutorunObserver<TChangeSummary = any>
 			| undefined,
 		public readonly _runFn: (
 			reader: IReader,
-			changeSummary: TChangeSummary,
+			changeSummary: TChangeSummary
 		) => void,
 		private readonly createChangeSummary:
 			| (() => TChangeSummary)
 			| undefined,
 		private readonly _handleChange:
 			| ((context: IChangeContext, summary: TChangeSummary) => boolean)
-			| undefined,
+			| undefined
 	) {
 		this.changeSummary = this.createChangeSummary?.();
 		getLogger()?.handleAutorunCreated(this);
@@ -282,7 +282,7 @@ export class AutorunObserver<TChangeSummary = any>
 
 	public handleChange<T, TChange>(
 		observable: IObservable<T, TChange>,
-		change: TChange,
+		change: TChange
 	): void {
 		if (
 			this.dependencies.has(observable) &&
@@ -295,8 +295,8 @@ export class AutorunObserver<TChangeSummary = any>
 							change,
 							didChange: (o) => o === (observable as any),
 						},
-						this.changeSummary!,
-				  )
+						this.changeSummary!
+					)
 				: true;
 			if (shouldReact) {
 				this.state = AutorunState.stale;
@@ -325,7 +325,7 @@ export namespace autorun {
 
 export function autorunDelta<T>(
 	observable: IObservable<T>,
-	handler: (args: { lastValue: T | undefined; newValue: T }) => void,
+	handler: (args: { lastValue: T | undefined; newValue: T }) => void
 ): IDisposable {
 	let _lastValue: T | undefined;
 	return autorunOpts(
@@ -335,6 +335,6 @@ export function autorunDelta<T>(
 			const lastValue = _lastValue;
 			_lastValue = newValue;
 			handler({ lastValue, newValue });
-		},
+		}
 	);
 }

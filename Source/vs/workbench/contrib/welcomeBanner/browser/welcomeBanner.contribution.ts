@@ -26,7 +26,8 @@ class WelcomeBannerContribution {
 	constructor(
 		@IBannerService bannerService: IBannerService,
 		@IStorageService storageService: IStorageService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService
 	) {
 		const welcomeBanner = environmentService.options?.welcomeBanner;
 		if (!welcomeBanner) {
@@ -37,7 +38,7 @@ class WelcomeBannerContribution {
 			storageService.getBoolean(
 				WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY,
 				StorageScope.PROFILE,
-				false,
+				false
 			)
 		) {
 			return; // welcome banner dismissed
@@ -60,7 +61,7 @@ class WelcomeBannerContribution {
 					WelcomeBannerContribution.WELCOME_BANNER_DISMISSED_KEY,
 					true,
 					StorageScope.PROFILE,
-					StorageTarget.MACHINE,
+					StorageTarget.MACHINE
 				);
 			},
 		});
@@ -68,8 +69,8 @@ class WelcomeBannerContribution {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	WelcomeBannerContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

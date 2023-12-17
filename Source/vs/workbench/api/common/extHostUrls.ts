@@ -31,12 +31,12 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 
 	registerUriHandler(
 		extension: IExtensionDescription,
-		handler: vscode.UriHandler,
+		handler: vscode.UriHandler
 	): vscode.Disposable {
 		const extensionId = extension.identifier;
 		if (this.handles.has(extensionId)) {
 			throw new Error(
-				`Protocol handler already registered for extension ${extensionId}`,
+				`Protocol handler already registered for extension ${extensionId}`
 			);
 		}
 
@@ -46,7 +46,7 @@ export class ExtHostUrls implements ExtHostUrlsShape {
 		this._proxy.$registerUriHandler(
 			handle,
 			extensionId,
-			extension.displayName || extension.name,
+			extension.displayName || extension.name
 		);
 
 		return toDisposable(() => {

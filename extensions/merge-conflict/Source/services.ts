@@ -32,7 +32,7 @@ export default class ServiceWrapper implements vscode.Disposable {
 			new CommandHandler(documentTracker),
 			new CodeLensProvider(documentTracker),
 			new ContentProvider(this.context),
-			new Decorator(this.context, documentTracker),
+			new Decorator(this.context, documentTracker)
 		);
 
 		this.services.forEach((service: any) => {
@@ -48,7 +48,7 @@ export default class ServiceWrapper implements vscode.Disposable {
 					service.configurationUpdated instanceof Function
 				) {
 					service.configurationUpdated(
-						this.createExtensionConfiguration(),
+						this.createExtensionConfiguration()
 					);
 				}
 			});
@@ -57,15 +57,15 @@ export default class ServiceWrapper implements vscode.Disposable {
 
 	createExtensionConfiguration(): interfaces.IExtensionConfiguration {
 		const workspaceConfiguration = vscode.workspace.getConfiguration(
-			ConfigurationSectionName,
+			ConfigurationSectionName
 		);
 		const codeLensEnabled: boolean = workspaceConfiguration.get(
 			"codeLens.enabled",
-			true,
+			true
 		);
 		const decoratorsEnabled: boolean = workspaceConfiguration.get(
 			"decorators.enabled",
-			true,
+			true
 		);
 
 		return {

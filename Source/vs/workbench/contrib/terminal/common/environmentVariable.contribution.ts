@@ -13,5 +13,5 @@ import { IEnvironmentVariableService } from "vs/workbench/contrib/terminal/commo
 registerSingleton(
 	IEnvironmentVariableService,
 	EnvironmentVariableService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

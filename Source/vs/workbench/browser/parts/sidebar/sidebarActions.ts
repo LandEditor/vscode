@@ -47,7 +47,7 @@ export class FocusSideBarAction extends Action2 {
 
 		// Focus into active viewlet
 		const viewlet = paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Sidebar,
+			ViewContainerLocation.Sidebar
 		);
 		viewlet?.focus();
 	}

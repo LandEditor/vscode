@@ -48,14 +48,14 @@ import {
 } from "./webviewWorkbenchService";
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		WebviewEditor,
 		WebviewEditor.ID,
-		localize("webview.editor.label", "webview editor"),
+		localize("webview.editor.label", "webview editor")
 	),
-	[new SyncDescriptor(WebviewInput)],
+	[new SyncDescriptor(WebviewInput)]
 );
 
 class WebviewPanelContribution
@@ -63,22 +63,29 @@ class WebviewPanelContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService
 	) {
 		super();
 
 		// Add all the initial groups to be listened to
-		this.editorGroupService.mainPart.whenReady.then(() => this.editorGroupService.groups.forEach(group => {
-			this.registerGroupListener(group);
-		}));
+		this.editorGroupService.mainPart.whenReady.then(() =>
+			this.editorGroupService.groups.forEach((group) => {
+				this.registerGroupListener(group);
+			})
+		);
 
 		// Additional groups added should also be listened to
-		this._register(this.editorGroupService.onDidAddGroup(group => this.registerGroupListener(group)));
+		this._register(
+			this.editorGroupService.onDidAddGroup((group) =>
+				this.registerGroupListener(group)
+			)
+		);
 	}
 
 	private registerGroupListener(group: IEditorGroup): void {
 		const listener = group.onWillOpenEditor((e) =>
-			this.onEditorOpening(e.editor, group),
+			this.onEditorOpening(e.editor, group)
 		);
 
 		Event.once(group.onWillDispose)(() => {
@@ -119,20 +126,20 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	WebviewPanelContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(
 	WebviewEditorInputSerializer.ID,
-	WebviewEditorInputSerializer,
+	WebviewEditorInputSerializer
 );
 
 registerSingleton(
 	IWebviewWorkbenchService,
 	WebviewEditorService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 
 registerAction2(ShowWebViewEditorFindWidgetAction);

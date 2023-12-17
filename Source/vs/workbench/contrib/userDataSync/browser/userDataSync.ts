@@ -171,7 +171,7 @@ const syncNowCommand = {
 			return localize(
 				"synced with time",
 				"synced {0}",
-				fromNow(userDataSyncService.lastSyncTime, true),
+				fromNow(userDataSyncService.lastSyncTime, true)
 			);
 		}
 		return undefined;
@@ -194,7 +194,7 @@ const showSyncedDataCommand = {
 
 const CONTEXT_TURNING_ON_STATE = new RawContextKey<false>(
 	"userDataSyncTurningOn",
-	false,
+	false
 );
 
 export class UserDataSyncWorkbenchContribution
@@ -204,41 +204,55 @@ export class UserDataSyncWorkbenchContribution
 	private readonly turningOnSyncContext: IContextKey<boolean>;
 
 	private readonly globalActivityBadgeDisposable = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 	private readonly accountBadgeDisposable = this._register(
-		new MutableDisposable(),
+		new MutableDisposable()
 	);
 
 	constructor(
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IActivityService private readonly activityService: IActivityService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IOutputService private readonly outputService: IOutputService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
 		@ITextModelService textModelResolverService: ITextModelService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@IHostService private readonly hostService: IHostService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkbenchIssueService private readonly workbenchIssueService: IWorkbenchIssueService
+		@IWorkbenchIssueService
+		private readonly workbenchIssueService: IWorkbenchIssueService
 	) {
 		super();
 
-		this.turningOnSyncContext = CONTEXT_TURNING_ON_STATE.bindTo(contextKeyService);
+		this.turningOnSyncContext =
+			CONTEXT_TURNING_ON_STATE.bindTo(contextKeyService);
 
 		if (userDataSyncWorkbenchService.enabled) {
 			registerConfiguration();
@@ -247,26 +261,66 @@ export class UserDataSyncWorkbenchContribution
 			this.updateGlobalActivityBadge();
 			this.onDidChangeConflicts(this.userDataSyncService.conflicts);
 
-			this._register(Event.any(
-				Event.debounce(userDataSyncService.onDidChangeStatus, () => undefined, 500),
-				this.userDataSyncEnablementService.onDidChangeEnablement,
-				this.userDataSyncWorkbenchService.onDidChangeAccountStatus
-			)(() => {
-				this.updateAccountBadge();
-				this.updateGlobalActivityBadge();
-			}));
-			this._register(userDataSyncService.onDidChangeConflicts(() => this.onDidChangeConflicts(this.userDataSyncService.conflicts)));
-			this._register(userDataSyncEnablementService.onDidChangeEnablement(() => this.onDidChangeConflicts(this.userDataSyncService.conflicts)));
-			this._register(userDataSyncService.onSyncErrors(errors => this.onSynchronizerErrors(errors)));
-			this._register(userDataAutoSyncService.onError(error => this.onAutoSyncError(error)));
+			this._register(
+				Event.any(
+					Event.debounce(
+						userDataSyncService.onDidChangeStatus,
+						() => undefined,
+						500
+					),
+					this.userDataSyncEnablementService.onDidChangeEnablement,
+					this.userDataSyncWorkbenchService.onDidChangeAccountStatus
+				)(() => {
+					this.updateAccountBadge();
+					this.updateGlobalActivityBadge();
+				})
+			);
+			this._register(
+				userDataSyncService.onDidChangeConflicts(() =>
+					this.onDidChangeConflicts(
+						this.userDataSyncService.conflicts
+					)
+				)
+			);
+			this._register(
+				userDataSyncEnablementService.onDidChangeEnablement(() =>
+					this.onDidChangeConflicts(
+						this.userDataSyncService.conflicts
+					)
+				)
+			);
+			this._register(
+				userDataSyncService.onSyncErrors((errors) =>
+					this.onSynchronizerErrors(errors)
+				)
+			);
+			this._register(
+				userDataAutoSyncService.onError((error) =>
+					this.onAutoSyncError(error)
+				)
+			);
 
 			this.registerActions();
 			this.registerViews();
 
-			textModelResolverService.registerTextModelContentProvider(USER_DATA_SYNC_SCHEME, instantiationService.createInstance(UserDataRemoteContentProvider));
+			textModelResolverService.registerTextModelContentProvider(
+				USER_DATA_SYNC_SCHEME,
+				instantiationService.createInstance(
+					UserDataRemoteContentProvider
+				)
+			);
 
-			this._register(Event.any(userDataSyncService.onDidChangeStatus, userDataSyncEnablementService.onDidChangeEnablement)
-				(() => this.turningOnSync = !userDataSyncEnablementService.isEnabled() && userDataSyncService.status !== SyncStatus.Idle));
+			this._register(
+				Event.any(
+					userDataSyncService.onDidChangeStatus,
+					userDataSyncEnablementService.onDidChangeEnablement
+				)(
+					() =>
+						(this.turningOnSync =
+							!userDataSyncEnablementService.isEnabled() &&
+							userDataSyncService.status !== SyncStatus.Idle)
+				)
+			);
 		}
 	}
 
@@ -312,20 +366,20 @@ export class UserDataSyncWorkbenchContribution
 				// Show conflicts notification if not shown before
 				if (!this.conflictsDisposables.has(key)) {
 					const conflictsArea = getSyncAreaLabel(
-						conflict.syncResource,
+						conflict.syncResource
 					);
 					const handle = this.notificationService.prompt(
 						Severity.Warning,
 						localize(
 							"conflicts detected",
 							"Unable to sync due to conflicts in {0}. Please resolve them to continue.",
-							conflictsArea.toLowerCase(),
+							conflictsArea.toLowerCase()
 						),
 						[
 							{
 								label: localize(
 									"replace remote",
-									"Replace Remote",
+									"Replace Remote"
 								),
 								run: () => {
 									this.telemetryService.publicLog2<
@@ -337,14 +391,14 @@ export class UserDataSyncWorkbenchContribution
 									});
 									this.acceptLocal(
 										conflict,
-										conflict.conflicts[0],
+										conflict.conflicts[0]
 									);
 								},
 							},
 							{
 								label: localize(
 									"replace local",
-									"Replace Local",
+									"Replace Local"
 								),
 								run: () => {
 									this.telemetryService.publicLog2<
@@ -356,14 +410,14 @@ export class UserDataSyncWorkbenchContribution
 									});
 									this.acceptRemote(
 										conflict,
-										conflict.conflicts[0],
+										conflict.conflicts[0]
 									);
 								},
 							},
 							{
 								label: localize(
 									"show conflicts",
-									"Show Conflicts",
+									"Show Conflicts"
 								),
 								run: () => {
 									this.telemetryService.publicLog2<
@@ -373,14 +427,14 @@ export class UserDataSyncWorkbenchContribution
 										source: conflict.syncResource,
 									});
 									this.userDataSyncWorkbenchService.showConflicts(
-										conflict.conflicts[0],
+										conflict.conflicts[0]
 									);
 								},
 							},
 						],
 						{
 							sticky: true,
-						},
+						}
 					);
 					this.conflictsDisposables.set(
 						key,
@@ -388,13 +442,13 @@ export class UserDataSyncWorkbenchContribution
 							// close the conflicts warning notification
 							handle.close();
 							this.conflictsDisposables.delete(key);
-						}),
+						})
 					);
 				}
 			}
 		} else {
 			this.conflictsDisposables.forEach((disposable) =>
-				disposable.dispose(),
+				disposable.dispose()
 			);
 			this.conflictsDisposables.clear();
 		}
@@ -402,44 +456,44 @@ export class UserDataSyncWorkbenchContribution
 
 	private async acceptRemote(
 		syncResource: IUserDataSyncResource,
-		conflict: IResourcePreview,
+		conflict: IResourcePreview
 	) {
 		try {
 			await this.userDataSyncService.accept(
 				syncResource,
 				conflict.remoteResource,
 				undefined,
-				this.userDataSyncEnablementService.isEnabled(),
+				this.userDataSyncEnablementService.isEnabled()
 			);
 		} catch (e) {
 			this.notificationService.error(
 				localize(
 					"accept failed",
 					"Error while accepting changes. Please check [logs]({0}) for more details.",
-					`command:${SHOW_SYNC_LOG_COMMAND_ID}`,
-				),
+					`command:${SHOW_SYNC_LOG_COMMAND_ID}`
+				)
 			);
 		}
 	}
 
 	private async acceptLocal(
 		syncResource: IUserDataSyncResource,
-		conflict: IResourcePreview,
+		conflict: IResourcePreview
 	): Promise<void> {
 		try {
 			await this.userDataSyncService.accept(
 				syncResource,
 				conflict.localResource,
 				undefined,
-				this.userDataSyncEnablementService.isEnabled(),
+				this.userDataSyncEnablementService.isEnabled()
 			);
 		} catch (e) {
 			this.notificationService.error(
 				localize(
 					"accept failed",
 					"Error while accepting changes. Please check [logs]({0}) for more details.",
-					`command:${SHOW_SYNC_LOG_COMMAND_ID}`,
-				),
+					`command:${SHOW_SYNC_LOG_COMMAND_ID}`
+				)
 			);
 		}
 	}
@@ -451,7 +505,7 @@ export class UserDataSyncWorkbenchContribution
 					severity: Severity.Info,
 					message: localize(
 						"session expired",
-						"Settings sync was turned off because current session is expired, please sign in again to turn on sync.",
+						"Settings sync was turned off because current session is expired, please sign in again to turn on sync."
 					),
 					actions: {
 						primary: [
@@ -459,11 +513,11 @@ export class UserDataSyncWorkbenchContribution
 								"turn on sync",
 								localize(
 									"turn on sync",
-									"Turn on Settings Sync...",
+									"Turn on Settings Sync..."
 								),
 								undefined,
 								true,
-								() => this.turnOn(),
+								() => this.turnOn()
 							),
 						],
 					},
@@ -474,7 +528,7 @@ export class UserDataSyncWorkbenchContribution
 					severity: Severity.Info,
 					message: localize(
 						"turned off",
-						"Settings sync was turned off from another device, please turn on sync again.",
+						"Settings sync was turned off from another device, please turn on sync again."
 					),
 					actions: {
 						primary: [
@@ -482,11 +536,11 @@ export class UserDataSyncWorkbenchContribution
 								"turn on sync",
 								localize(
 									"turn on sync",
-									"Turn on Settings Sync...",
+									"Turn on Settings Sync..."
 								),
 								undefined,
 								true,
-								() => this.turnOn(),
+								() => this.turnOn()
 							),
 						],
 					},
@@ -507,9 +561,9 @@ export class UserDataSyncWorkbenchContribution
 							"Disabled syncing {0} because size of the {1} file to sync is larger than {2}. Please open the file and reduce the size and enable sync",
 							sourceArea.toLowerCase(),
 							sourceArea.toLowerCase(),
-							"100kb",
+							"100kb"
 						),
-						error,
+						error
 					);
 				}
 				break;
@@ -518,8 +572,8 @@ export class UserDataSyncWorkbenchContribution
 				this.notificationService.error(
 					localize(
 						"too many profiles",
-						"Disabled syncing profiles because there are too many profiles to sync. Settings Sync supports syncing maximum 20 profiles. Please reduce the number of profiles and enable sync",
-					),
+						"Disabled syncing profiles because there are too many profiles to sync. Settings Sync supports syncing maximum 20 profiles. Please reduce the number of profiles and enable sync"
+					)
 				);
 				break;
 			case UserDataSyncErrorCode.IncompatibleLocalContent:
@@ -529,14 +583,14 @@ export class UserDataSyncWorkbenchContribution
 					"error upgrade required",
 					"Settings sync is disabled because the current version ({0}, {1}) is not compatible with the sync service. Please update before turning on sync.",
 					this.productService.version,
-					this.productService.commit,
+					this.productService.commit
 				);
 				const operationId = error.operationId
 					? localize(
 							"operationId",
 							"Operation Id: {0}",
-							error.operationId,
-					  )
+							error.operationId
+						)
 					: undefined;
 				this.notificationService.notify({
 					severity: Severity.Error,
@@ -549,14 +603,14 @@ export class UserDataSyncWorkbenchContribution
 			case UserDataSyncErrorCode.MethodNotFound: {
 				const message = localize(
 					"method not found",
-					"Settings sync is disabled because the client is making invalid requests. Please report an issue with the logs.",
+					"Settings sync is disabled because the client is making invalid requests. Please report an issue with the logs."
 				);
 				const operationId = error.operationId
 					? localize(
 							"operationId",
 							"Operation Id: {0}",
-							error.operationId,
-					  )
+							error.operationId
+						)
 					: undefined;
 				this.notificationService.notify({
 					severity: Severity.Error,
@@ -572,15 +626,15 @@ export class UserDataSyncWorkbenchContribution
 								true,
 								() =>
 									this.commandService.executeCommand(
-										SHOW_SYNC_LOG_COMMAND_ID,
-									),
+										SHOW_SYNC_LOG_COMMAND_ID
+									)
 							),
 							new Action(
 								"Report Issue",
 								localize("report issue", "Report Issue"),
 								undefined,
 								true,
-								() => this.workbenchIssueService.openReporter(),
+								() => this.workbenchIssueService.openReporter()
 							),
 						],
 					},
@@ -592,7 +646,7 @@ export class UserDataSyncWorkbenchContribution
 					severity: Severity.Error,
 					message: localize(
 						"error reset required",
-						"Settings sync is disabled because your data in the cloud is older than that of the client. Please clear your data in the cloud before turning on sync.",
+						"Settings sync is disabled because your data in the cloud is older than that of the client. Please clear your data in the cloud before turning on sync."
 					),
 					actions: {
 						primary: [
@@ -602,18 +656,18 @@ export class UserDataSyncWorkbenchContribution
 								undefined,
 								true,
 								() =>
-									this.userDataSyncWorkbenchService.resetSyncedData(),
+									this.userDataSyncWorkbenchService.resetSyncedData()
 							),
 							new Action(
 								"show synced data",
 								localize(
 									"show synced data action",
-									"Show Synced Data",
+									"Show Synced Data"
 								),
 								undefined,
 								true,
 								() =>
-									this.userDataSyncWorkbenchService.showSyncActivity(),
+									this.userDataSyncWorkbenchService.showSyncActivity()
 							),
 						],
 					},
@@ -628,12 +682,12 @@ export class UserDataSyncWorkbenchContribution
 							.userDataSyncStore?.type === "insiders"
 							? localize(
 									"service switched to insiders",
-									"Settings Sync has been switched to insiders service",
-							  )
+									"Settings Sync has been switched to insiders service"
+								)
 							: localize(
 									"service switched to stable",
-									"Settings Sync has been switched to stable service",
-							  ),
+									"Settings Sync has been switched to stable service"
+								),
 				});
 
 				return;
@@ -645,7 +699,7 @@ export class UserDataSyncWorkbenchContribution
 						severity: Severity.Info,
 						message: localize(
 							"using separate service",
-							"Settings sync now uses a separate service, more information is available in the [Settings Sync Documentation](https://aka.ms/vscode-settings-sync-help#_syncing-stable-versus-insiders).",
+							"Settings sync now uses a separate service, more information is available in the [Settings Sync Documentation](https://aka.ms/vscode-settings-sync-help#_syncing-stable-versus-insiders)."
 						),
 					});
 				}
@@ -657,7 +711,7 @@ export class UserDataSyncWorkbenchContribution
 						message: localize(
 							"service changed and turned off",
 							"Settings sync was turned off because {0} now uses a separate service. Please turn on sync again.",
-							this.productService.nameLong,
+							this.productService.nameLong
 						),
 						actions: {
 							primary: [
@@ -665,11 +719,11 @@ export class UserDataSyncWorkbenchContribution
 									"turn on sync",
 									localize(
 										"turn on sync",
-										"Turn on Settings Sync...",
+										"Turn on Settings Sync..."
 									),
 									undefined,
 									true,
-									() => this.turnOn(),
+									() => this.turnOn()
 								),
 							],
 						},
@@ -682,7 +736,7 @@ export class UserDataSyncWorkbenchContribution
 	private handleTooLargeError(
 		resource: SyncResource,
 		message: string,
-		error: UserDataSyncError,
+		error: UserDataSyncError
 	): void {
 		const operationId = error.operationId
 			? localize("operationId", "Operation Id: {0}", error.operationId)
@@ -697,7 +751,7 @@ export class UserDataSyncWorkbenchContribution
 						localize(
 							"open file",
 							"Open {0} File",
-							getSyncAreaLabel(resource),
+							getSyncAreaLabel(resource)
 						),
 						undefined,
 						true,
@@ -705,10 +759,10 @@ export class UserDataSyncWorkbenchContribution
 							resource === SyncResource.Settings
 								? this.preferencesService.openUserSettings({
 										jsonEditor: true,
-								  })
+									})
 								: this.preferencesService.openGlobalKeybindingSettings(
-										true,
-								  ),
+										true
+									)
 					),
 				],
 			},
@@ -742,7 +796,7 @@ export class UserDataSyncWorkbenchContribution
 			}
 		} else {
 			this.invalidContentErrorDisposables.forEach((disposable) =>
-				disposable.dispose(),
+				disposable.dispose()
 			);
 			this.invalidContentErrorDisposables.clear();
 		}
@@ -773,12 +827,12 @@ export class UserDataSyncWorkbenchContribution
 			source === SyncResource.Settings
 				? this.userDataProfileService.currentProfile.settingsResource
 				: source === SyncResource.Keybindings
-				  ? this.userDataProfileService.currentProfile
+					? this.userDataProfileService.currentProfile
 							.keybindingsResource
-				  : this.userDataProfileService.currentProfile.tasksResource;
+					: this.userDataProfileService.currentProfile.tasksResource;
 		const editorUri = EditorResourceAccessor.getCanonicalUri(
 			this.editorService.activeEditor,
-			{ supportSideBySide: SideBySideEditor.PRIMARY },
+			{ supportSideBySide: SideBySideEditor.PRIMARY }
 		);
 		if (isEqual(resource, editorUri)) {
 			// Do not show notification if the file in error is active
@@ -790,7 +844,7 @@ export class UserDataSyncWorkbenchContribution
 			message: localize(
 				"errorInvalidConfiguration",
 				"Unable to sync {0} because the content in the file is not valid. Please open the file and correct it.",
-				errorArea.toLowerCase(),
+				errorArea.toLowerCase()
 			),
 			actions: {
 				primary: [
@@ -803,10 +857,10 @@ export class UserDataSyncWorkbenchContribution
 							source === SyncResource.Settings
 								? this.preferencesService.openUserSettings({
 										jsonEditor: true,
-								  })
+									})
 								: this.preferencesService.openGlobalKeybindingSettings(
-										true,
-								  ),
+										true
+									)
 					),
 				],
 			},
@@ -817,7 +871,7 @@ export class UserDataSyncWorkbenchContribution
 				// close the error warning notification
 				handle.close();
 				this.invalidContentErrorDisposables.delete(key);
-			}),
+			})
 		);
 	}
 
@@ -826,7 +880,7 @@ export class UserDataSyncWorkbenchContribution
 			(result, { conflicts }) => {
 				return result + conflicts.length;
 			},
-			0,
+			0
 		);
 	}
 
@@ -844,12 +898,12 @@ export class UserDataSyncWorkbenchContribution
 				localize(
 					"has conflicts",
 					"{0}: Conflicts Detected",
-					SYNC_TITLE.value,
-				),
+					SYNC_TITLE.value
+				)
 			);
 		} else if (this.turningOnSync) {
 			badge = new ProgressBadge(() =>
-				localize("turning on syncing", "Turning on Settings Sync..."),
+				localize("turning on syncing", "Turning on Settings Sync...")
 			);
 			priority = 1;
 		}
@@ -872,7 +926,7 @@ export class UserDataSyncWorkbenchContribution
 				AccountStatus.Unavailable
 		) {
 			badge = new NumberBadge(1, () =>
-				localize("sign in to sync", "Sign in to Sync Settings"),
+				localize("sign in to sync", "Sign in to Sync Settings")
 			);
 		}
 
@@ -894,8 +948,8 @@ export class UserDataSyncWorkbenchContribution
 				throw new Error(
 					localize(
 						"no authentication providers",
-						"No authentication providers are available.",
-					),
+						"No authentication providers are available."
+					)
 				);
 			}
 			const turnOn = await this.askToConfigure();
@@ -907,7 +961,7 @@ export class UserDataSyncWorkbenchContribution
 					?.canSwitch
 			) {
 				await this.selectSettingsSyncService(
-					this.userDataSyncStoreManagementService.userDataSyncStore,
+					this.userDataSyncStoreManagementService.userDataSyncStore
 				);
 			}
 			await this.userDataSyncWorkbenchService.turnOn();
@@ -929,9 +983,9 @@ export class UserDataSyncWorkbenchContribution
 									"too large while starting sync",
 									"Settings sync cannot be turned on because size of the {0} file to sync is larger than {1}. Please open the file and reduce the size and turn on sync",
 									getSyncAreaLabel(e.resource).toLowerCase(),
-									"100kb",
+									"100kb"
 								),
-								e,
+								e
 							);
 							return;
 						}
@@ -943,14 +997,14 @@ export class UserDataSyncWorkbenchContribution
 							"error upgrade required while starting sync",
 							"Settings sync cannot be turned on because the current version ({0}, {1}) is not compatible with the sync service. Please update before turning on sync.",
 							this.productService.version,
-							this.productService.commit,
+							this.productService.commit
 						);
 						const operationId = e.operationId
 							? localize(
 									"operationId",
 									"Operation Id: {0}",
-									e.operationId,
-							  )
+									e.operationId
+								)
 							: undefined;
 						this.notificationService.notify({
 							severity: Severity.Error,
@@ -965,7 +1019,7 @@ export class UserDataSyncWorkbenchContribution
 							severity: Severity.Error,
 							message: localize(
 								"error reset required while starting sync",
-								"Settings sync cannot be turned on because your data in the cloud is older than that of the client. Please clear your data in the cloud before turning on sync.",
+								"Settings sync cannot be turned on because your data in the cloud is older than that of the client. Please clear your data in the cloud before turning on sync."
 							),
 							actions: {
 								primary: [
@@ -973,23 +1027,23 @@ export class UserDataSyncWorkbenchContribution
 										"reset",
 										localize(
 											"reset",
-											"Clear Data in Cloud...",
+											"Clear Data in Cloud..."
 										),
 										undefined,
 										true,
 										() =>
-											this.userDataSyncWorkbenchService.resetSyncedData(),
+											this.userDataSyncWorkbenchService.resetSyncedData()
 									),
 									new Action(
 										"show synced data",
 										localize(
 											"show synced data action",
-											"Show Synced Data",
+											"Show Synced Data"
 										),
 										undefined,
 										true,
 										() =>
-											this.userDataSyncWorkbenchService.showSyncActivity(),
+											this.userDataSyncWorkbenchService.showSyncActivity()
 									),
 								],
 							},
@@ -1000,8 +1054,8 @@ export class UserDataSyncWorkbenchContribution
 						this.notificationService.error(
 							localize(
 								"auth failed",
-								"Error while turning on Settings Sync: Authentication failed.",
-							),
+								"Error while turning on Settings Sync: Authentication failed."
+							)
 						);
 						return;
 				}
@@ -1009,8 +1063,8 @@ export class UserDataSyncWorkbenchContribution
 					localize(
 						"turn on failed with user data sync error",
 						"Error while turning on Settings Sync. Please check [logs]({0}) for more details.",
-						`command:${SHOW_SYNC_LOG_COMMAND_ID}`,
-					),
+						`command:${SHOW_SYNC_LOG_COMMAND_ID}`
+					)
 				);
 			} else {
 				this.notificationService.error(
@@ -1020,8 +1074,8 @@ export class UserDataSyncWorkbenchContribution
 							comment: ["Substitution is for error reason"],
 						},
 						"Error while turning on Settings Sync. {0}",
-						getErrorMessage(e),
-					),
+						getErrorMessage(e)
+					)
 				);
 			}
 		}
@@ -1039,7 +1093,7 @@ export class UserDataSyncWorkbenchContribution
 			quickPick.customLabel = localize("sign in and turn on", "Sign in");
 			quickPick.description = localize(
 				"configure and turn on sync detail",
-				"Please sign in to backup and sync your data across devices.",
+				"Please sign in to backup and sync your data across devices."
 			);
 			quickPick.canSelectMany = true;
 			quickPick.ignoreFocusOut = true;
@@ -1049,17 +1103,17 @@ export class UserDataSyncWorkbenchContribution
 			const items = this.getConfigureSyncQuickPickItems();
 			quickPick.items = items;
 			quickPick.selectedItems = items.filter((item) =>
-				this.userDataSyncEnablementService.isResourceEnabled(item.id),
+				this.userDataSyncEnablementService.isResourceEnabled(item.id)
 			);
 			let accepted: boolean = false;
 			disposables.add(
 				Event.any(
 					quickPick.onDidAccept,
-					quickPick.onDidCustom,
+					quickPick.onDidCustom
 				)(() => {
 					accepted = true;
 					quickPick.hide();
-				}),
+				})
 			);
 			disposables.add(
 				quickPick.onDidHide(() => {
@@ -1067,7 +1121,7 @@ export class UserDataSyncWorkbenchContribution
 						if (accepted) {
 							this.updateConfiguration(
 								items,
-								quickPick.selectedItems,
+								quickPick.selectedItems
 							);
 						}
 						c(accepted);
@@ -1076,7 +1130,7 @@ export class UserDataSyncWorkbenchContribution
 					} finally {
 						disposables.dispose();
 					}
-				}),
+				})
 			);
 			quickPick.show();
 		});
@@ -1120,18 +1174,18 @@ export class UserDataSyncWorkbenchContribution
 
 	private updateConfiguration(
 		items: ConfigureSyncQuickPickItem[],
-		selectedItems: ReadonlyArray<ConfigureSyncQuickPickItem>,
+		selectedItems: ReadonlyArray<ConfigureSyncQuickPickItem>
 	): void {
 		for (const item of items) {
 			const wasEnabled =
 				this.userDataSyncEnablementService.isResourceEnabled(item.id);
 			const isEnabled = !!selectedItems.filter(
-				(selected) => selected.id === item.id,
+				(selected) => selected.id === item.id
 			)[0];
 			if (wasEnabled !== isEnabled) {
 				this.userDataSyncEnablementService.setResourceEnablement(
 					item.id!,
-					isEnabled,
+					isEnabled
 				);
 			}
 		}
@@ -1146,11 +1200,11 @@ export class UserDataSyncWorkbenchContribution
 			quickPick.title = localize(
 				"configure sync title",
 				"{0}: Configure...",
-				SYNC_TITLE.value,
+				SYNC_TITLE.value
 			);
 			quickPick.placeholder = localize(
 				"configure sync placeholder",
-				"Choose what to sync",
+				"Choose what to sync"
 			);
 			quickPick.canSelectMany = true;
 			quickPick.ignoreFocusOut = true;
@@ -1158,24 +1212,24 @@ export class UserDataSyncWorkbenchContribution
 			const items = this.getConfigureSyncQuickPickItems();
 			quickPick.items = items;
 			quickPick.selectedItems = items.filter((item) =>
-				this.userDataSyncEnablementService.isResourceEnabled(item.id),
+				this.userDataSyncEnablementService.isResourceEnabled(item.id)
 			);
 			disposables.add(
 				quickPick.onDidAccept(async () => {
 					if (quickPick.selectedItems.length) {
 						this.updateConfiguration(
 							items,
-							quickPick.selectedItems,
+							quickPick.selectedItems
 						);
 						quickPick.hide();
 					}
-				}),
+				})
 			);
 			disposables.add(
 				quickPick.onDidHide(() => {
 					disposables.dispose();
 					c();
-				}),
+				})
 			);
 			quickPick.show();
 		});
@@ -1185,15 +1239,15 @@ export class UserDataSyncWorkbenchContribution
 		const result = await this.dialogService.confirm({
 			message: localize(
 				"turn off sync confirmation",
-				"Do you want to turn off sync?",
+				"Do you want to turn off sync?"
 			),
 			detail: localize(
 				"turn off sync detail",
-				"Your settings, keybindings, extensions, snippets and UI State will no longer be synced.",
+				"Your settings, keybindings, extensions, snippets and UI State will no longer be synced."
 			),
 			primaryButton: localize(
 				{ key: "turn off", comment: ["&& denotes a mnemonic"] },
-				"&&Turn off",
+				"&&Turn off"
 			),
 			checkbox:
 				this.userDataSyncWorkbenchService.accountStatus ===
@@ -1201,14 +1255,14 @@ export class UserDataSyncWorkbenchContribution
 					? {
 							label: localize(
 								"turn off sync everywhere",
-								"Turn off sync on all your devices and clear the data from the cloud.",
+								"Turn off sync on all your devices and clear the data from the cloud."
 							),
-					  }
+						}
 					: undefined,
 		});
 		if (result.confirmed) {
 			return this.userDataSyncWorkbenchService.turnoff(
-				!!result.checkboxChecked,
+				!!result.checkboxChecked
 			);
 		}
 	}
@@ -1218,37 +1272,37 @@ export class UserDataSyncWorkbenchContribution
 			case SyncResource.Settings:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.Settings,
-					false,
+					false
 				);
 			case SyncResource.Keybindings:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.Keybindings,
-					false,
+					false
 				);
 			case SyncResource.Snippets:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.Snippets,
-					false,
+					false
 				);
 			case SyncResource.Tasks:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.Tasks,
-					false,
+					false
 				);
 			case SyncResource.Extensions:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.Extensions,
-					false,
+					false
 				);
 			case SyncResource.GlobalState:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.GlobalState,
-					false,
+					false
 				);
 			case SyncResource.Profiles:
 				return this.userDataSyncEnablementService.setResourceEnablement(
 					SyncResource.Profiles,
-					false,
+					false
 				);
 		}
 	}
@@ -1258,7 +1312,7 @@ export class UserDataSyncWorkbenchContribution
 	}
 
 	private async selectSettingsSyncService(
-		userDataSyncStore: IUserDataSyncStore,
+		userDataSyncStore: IUserDataSyncStore
 	): Promise<void> {
 		return new Promise<void>((c, e) => {
 			const disposables: DisposableStore = new DisposableStore();
@@ -1267,16 +1321,16 @@ export class UserDataSyncWorkbenchContribution
 					id: UserDataSyncStoreType;
 					label: string;
 					description?: string;
-				}>(),
+				}>()
 			);
 			quickPick.title = localize(
 				"switchSyncService.title",
 				"{0}: Select Service",
-				SYNC_TITLE.value,
+				SYNC_TITLE.value
 			);
 			quickPick.description = localize(
 				"switchSyncService.description",
-				"Ensure you are using the same settings sync service when syncing with multiple environments",
+				"Ensure you are using the same settings sync service when syncing with multiple environments"
 			);
 			quickPick.hideInput = true;
 			quickPick.ignoreFocusOut = true;
@@ -1303,7 +1357,7 @@ export class UserDataSyncWorkbenchContribution
 				quickPick.onDidAccept(async () => {
 					try {
 						await this.userDataSyncStoreManagementService.switch(
-							quickPick.selectedItems[0].id,
+							quickPick.selectedItems[0].id
 						);
 						c();
 					} catch (error) {
@@ -1311,7 +1365,7 @@ export class UserDataSyncWorkbenchContribution
 					} finally {
 						quickPick.hide();
 					}
-				}),
+				})
 			);
 			disposables.add(quickPick.onDidHide(() => disposables.dispose()));
 			quickPick.show();
@@ -1348,7 +1402,7 @@ export class UserDataSyncWorkbenchContribution
 		const when = ContextKeyExpr.and(
 			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
 			CONTEXT_SYNC_ENABLEMENT.toNegated(),
-			CONTEXT_TURNING_ON_STATE.negate(),
+			CONTEXT_TURNING_ON_STATE.negate()
 		);
 		this._register(
 			registerAction2(
@@ -1359,7 +1413,7 @@ export class UserDataSyncWorkbenchContribution
 							title: {
 								value: localize(
 									"global activity turn on sync",
-									"Backup and Sync Settings...",
+									"Backup and Sync Settings..."
 								),
 								original: "Backup and Sync Settings...",
 							},
@@ -1391,8 +1445,8 @@ export class UserDataSyncWorkbenchContribution
 					async run(): Promise<any> {
 						return that.turnOn();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1400,7 +1454,7 @@ export class UserDataSyncWorkbenchContribution
 		const when = ContextKeyExpr.and(
 			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
 			CONTEXT_SYNC_ENABLEMENT.toNegated(),
-			CONTEXT_TURNING_ON_STATE,
+			CONTEXT_TURNING_ON_STATE
 		);
 		this._register(
 			registerAction2(
@@ -1410,7 +1464,7 @@ export class UserDataSyncWorkbenchContribution
 							id: "workbench.userData.actions.turningOn",
 							title: localize(
 								"turnin on sync",
-								"Turning on Settings Sync...",
+								"Turning on Settings Sync..."
 							),
 							precondition: ContextKeyExpr.false(),
 							menu: [
@@ -1429,8 +1483,8 @@ export class UserDataSyncWorkbenchContribution
 						});
 					}
 					async run(): Promise<any> {}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1450,8 +1504,8 @@ export class UserDataSyncWorkbenchContribution
 									CONTEXT_TURNING_ON_STATE,
 									ContextKeyExpr.equals(
 										"viewContainer",
-										SYNC_VIEW_CONTAINER_ID,
-									),
+										SYNC_VIEW_CONTAINER_ID
+									)
 								),
 								group: "navigation",
 								order: 1,
@@ -1461,8 +1515,8 @@ export class UserDataSyncWorkbenchContribution
 					async run(): Promise<any> {
 						return that.userDataSyncWorkbenchService.turnoff(false);
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1472,7 +1526,7 @@ export class UserDataSyncWorkbenchContribution
 		const when = ContextKeyExpr.and(
 			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
 			CONTEXT_SYNC_ENABLEMENT,
-			CONTEXT_ACCOUNT_STATE.isEqualTo(AccountStatus.Unavailable),
+			CONTEXT_ACCOUNT_STATE.isEqualTo(AccountStatus.Unavailable)
 		);
 		this._register(
 			registerAction2(
@@ -1482,7 +1536,7 @@ export class UserDataSyncWorkbenchContribution
 							id: "workbench.userData.actions.signin",
 							title: localize(
 								"sign in global",
-								"Sign in to Sync Settings",
+								"Sign in to Sync Settings"
 							),
 							menu: {
 								group: "3_settings_sync",
@@ -1499,8 +1553,8 @@ export class UserDataSyncWorkbenchContribution
 							that.notificationService.error(e);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 		this._register(
 			MenuRegistry.appendMenuItem(MenuId.AccountsContext, {
@@ -1509,11 +1563,11 @@ export class UserDataSyncWorkbenchContribution
 					id,
 					title: localize(
 						"sign in accounts",
-						"Sign in to Sync Settings (1)",
+						"Sign in to Sync Settings (1)"
 					),
 				},
 				when,
-			}),
+			})
 		);
 	}
 
@@ -1522,7 +1576,7 @@ export class UserDataSyncWorkbenchContribution
 			value: localize(
 				"resolveConflicts_global",
 				"Show Conflicts ({0})",
-				this.getConflictsCount(),
+				this.getConflictsCount()
 			),
 			original: `Show Conflicts (${this.getConflictsCount()})`,
 		};
@@ -1561,7 +1615,7 @@ export class UserDataSyncWorkbenchContribution
 				async run(): Promise<any> {
 					return that.userDataSyncWorkbenchService.showConflicts();
 				}
-			},
+			}
 		);
 	}
 
@@ -1570,7 +1624,7 @@ export class UserDataSyncWorkbenchContribution
 		const when = ContextKeyExpr.and(
 			CONTEXT_SYNC_ENABLEMENT,
 			CONTEXT_ACCOUNT_STATE.isEqualTo(AccountStatus.Available),
-			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
+			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized)
 		);
 		this._register(
 			registerAction2(
@@ -1580,7 +1634,7 @@ export class UserDataSyncWorkbenchContribution
 							id: "workbench.userDataSync.actions.manage",
 							title: localize(
 								"sync is on",
-								"Settings Sync is On",
+								"Settings Sync is On"
 							),
 							toggled: ContextKeyTrueExpr.INSTANCE,
 							menu: [
@@ -1641,7 +1695,7 @@ export class UserDataSyncWorkbenchContribution
 								id: syncNowCommand.id,
 								label: `${SYNC_TITLE.value}: ${syncNowCommand.title.original}`,
 								description: syncNowCommand.description(
-									that.userDataSyncService,
+									that.userDataSyncService
 								),
 							});
 							if (
@@ -1655,9 +1709,9 @@ export class UserDataSyncWorkbenchContribution
 									description: account
 										? `${
 												account.accountName
-										  } (${that.authenticationService.getLabel(
-												account.authenticationProviderId,
-										  )})`
+											} (${that.authenticationService.getLabel(
+												account.authenticationProviderId
+											)})`
 										: undefined,
 								});
 							}
@@ -1669,23 +1723,23 @@ export class UserDataSyncWorkbenchContribution
 										quickPick.selectedItems[0].id
 									) {
 										commandService.executeCommand(
-											quickPick.selectedItems[0].id,
+											quickPick.selectedItems[0].id
 										);
 									}
 									quickPick.hide();
-								}),
+								})
 							);
 							disposables.add(
 								quickPick.onDidHide(() => {
 									disposables.dispose();
 									c();
-								}),
+								})
 							);
 							quickPick.show();
 						});
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1693,7 +1747,7 @@ export class UserDataSyncWorkbenchContribution
 		const that = this;
 		const when = ContextKeyExpr.and(
 			CONTEXT_ACCOUNT_STATE.isEqualTo(AccountStatus.Available),
-			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
+			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized)
 		);
 		this._register(
 			registerAction2(
@@ -1713,8 +1767,8 @@ export class UserDataSyncWorkbenchContribution
 					run(accessor: ServicesAccessor): Promise<void> {
 						return that.userDataSyncWorkbenchService.showSyncActivity();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1733,11 +1787,11 @@ export class UserDataSyncWorkbenchContribution
 								when: ContextKeyExpr.and(
 									CONTEXT_SYNC_ENABLEMENT,
 									CONTEXT_ACCOUNT_STATE.isEqualTo(
-										AccountStatus.Available,
+										AccountStatus.Available
 									),
 									CONTEXT_SYNC_STATE.notEqualsTo(
-										SyncStatus.Uninitialized,
-									),
+										SyncStatus.Uninitialized
+									)
 								),
 							},
 						});
@@ -1745,8 +1799,8 @@ export class UserDataSyncWorkbenchContribution
 					run(accessor: ServicesAccessor): Promise<any> {
 						return that.userDataSyncWorkbenchService.syncNow();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1764,9 +1818,9 @@ export class UserDataSyncWorkbenchContribution
 								id: MenuId.CommandPalette,
 								when: ContextKeyExpr.and(
 									CONTEXT_SYNC_STATE.notEqualsTo(
-										SyncStatus.Uninitialized,
+										SyncStatus.Uninitialized
 									),
-									CONTEXT_SYNC_ENABLEMENT,
+									CONTEXT_SYNC_ENABLEMENT
 								),
 							},
 						});
@@ -1780,14 +1834,14 @@ export class UserDataSyncWorkbenchContribution
 									localize(
 										"turn off failed",
 										"Error while turning off Settings Sync. Please check [logs]({0}) for more details.",
-										`command:${SHOW_SYNC_LOG_COMMAND_ID}`,
-									),
+										`command:${SHOW_SYNC_LOG_COMMAND_ID}`
+									)
 								);
 							}
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1795,7 +1849,7 @@ export class UserDataSyncWorkbenchContribution
 		const that = this;
 		const when = ContextKeyExpr.and(
 			CONTEXT_SYNC_STATE.notEqualsTo(SyncStatus.Uninitialized),
-			CONTEXT_SYNC_ENABLEMENT,
+			CONTEXT_SYNC_ENABLEMENT
 		);
 		this._register(
 			registerAction2(
@@ -1818,8 +1872,8 @@ export class UserDataSyncWorkbenchContribution
 										CONTEXT_SYNC_ENABLEMENT,
 										ContextKeyExpr.equals(
 											"viewContainer",
-											SYNC_VIEW_CONTAINER_ID,
-										),
+											SYNC_VIEW_CONTAINER_ID
+										)
 									),
 									group: "navigation",
 									order: 2,
@@ -1830,8 +1884,8 @@ export class UserDataSyncWorkbenchContribution
 					run(): any {
 						return that.configureSyncOptions();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1846,11 +1900,11 @@ export class UserDataSyncWorkbenchContribution
 							title: localize(
 								"show sync log title",
 								"{0}: Show Log",
-								SYNC_TITLE.value,
+								SYNC_TITLE.value
 							),
 							tooltip: localize(
 								"show sync log toolrip",
-								"Show Log",
+								"Show Log"
 							),
 							icon: Codicon.output,
 							menu: [
@@ -1858,15 +1912,15 @@ export class UserDataSyncWorkbenchContribution
 									id: MenuId.CommandPalette,
 									when: ContextKeyExpr.and(
 										CONTEXT_SYNC_STATE.notEqualsTo(
-											SyncStatus.Uninitialized,
-										),
+											SyncStatus.Uninitialized
+										)
 									),
 								},
 								{
 									id: MenuId.ViewContainerTitle,
 									when: ContextKeyExpr.equals(
 										"viewContainer",
-										SYNC_VIEW_CONTAINER_ID,
+										SYNC_VIEW_CONTAINER_ID
 									),
 									group: "navigation",
 									order: 1,
@@ -1877,8 +1931,8 @@ export class UserDataSyncWorkbenchContribution
 					run(): any {
 						return that.showSyncActivity();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1895,22 +1949,20 @@ export class UserDataSyncWorkbenchContribution
 								id: MenuId.CommandPalette,
 								when: ContextKeyExpr.and(
 									CONTEXT_SYNC_STATE.notEqualsTo(
-										SyncStatus.Uninitialized,
-									),
+										SyncStatus.Uninitialized
+									)
 								),
 							},
 						});
 					}
 					run(accessor: ServicesAccessor): any {
-						accessor
-							.get(IPreferencesService)
-							.openUserSettings({
-								jsonEditor: false,
-								query: "@tag:sync",
-							});
+						accessor.get(IPreferencesService).openUserSettings({
+							jsonEditor: false,
+							query: "@tag:sync",
+						});
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -1929,8 +1981,8 @@ export class UserDataSyncWorkbenchContribution
 									id: MenuId.CommandPalette,
 									when: ContextKeyExpr.and(
 										CONTEXT_SYNC_STATE.notEqualsTo(
-											SyncStatus.Uninitialized,
-										),
+											SyncStatus.Uninitialized
+										)
 									),
 								},
 							],
@@ -1939,12 +1991,12 @@ export class UserDataSyncWorkbenchContribution
 					run(): any {
 						return that.openerService.open(
 							URI.parse(
-								"https://aka.ms/vscode-settings-sync-help",
-							),
+								"https://aka.ms/vscode-settings-sync-help"
+							)
 						);
 					}
-				},
-			),
+				}
+			)
 		);
 		MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
 			command: {
@@ -1953,7 +2005,7 @@ export class UserDataSyncWorkbenchContribution
 			},
 			when: ContextKeyExpr.equals(
 				"viewContainer",
-				SYNC_VIEW_CONTAINER_ID,
+				SYNC_VIEW_CONTAINER_ID
 			),
 			group: "1_help",
 		});
@@ -1969,7 +2021,7 @@ export class UserDataSyncWorkbenchContribution
 							id: "workbench.userDataSync.actions.acceptMerges",
 							title: localize(
 								"complete merges title",
-								"Complete Merge",
+								"Complete Merge"
 							),
 							menu: [
 								{
@@ -1979,9 +2031,9 @@ export class UserDataSyncWorkbenchContribution
 										ContextKeyExpr.regex(
 											ctxMergeBaseUri.key,
 											new RegExp(
-												`^${USER_DATA_SYNC_SCHEME}:`,
-											),
-										),
+												`^${USER_DATA_SYNC_SCHEME}:`
+											)
+										)
 									),
 								},
 							],
@@ -1990,7 +2042,7 @@ export class UserDataSyncWorkbenchContribution
 
 					async run(
 						accessor: ServicesAccessor,
-						previewResource: URI,
+						previewResource: URI
 					): Promise<void> {
 						const textFileService = accessor.get(ITextFileService);
 						await textFileService.save(previewResource);
@@ -2000,12 +2052,12 @@ export class UserDataSyncWorkbenchContribution
 							this.getSyncResource(previewResource),
 							previewResource,
 							content.value,
-							true,
+							true
 						);
 					}
 
 					private getSyncResource(
-						previewResource: URI,
+						previewResource: URI
 					): IUserDataSyncResource {
 						const conflict =
 							that.userDataSyncService.conflicts.find(
@@ -2013,19 +2065,19 @@ export class UserDataSyncWorkbenchContribution
 									conflicts.some((conflict) =>
 										isEqual(
 											conflict.previewResource,
-											previewResource,
-										),
-									),
+											previewResource
+										)
+									)
 							);
 						if (conflict) {
 							return conflict;
 						}
 						throw new Error(
-							`Unknown resource: ${previewResource.toString()}`,
+							`Unknown resource: ${previewResource.toString()}`
 						);
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -2038,7 +2090,7 @@ export class UserDataSyncWorkbenchContribution
 					}
 					async run(accessor: ServicesAccessor): Promise<void> {
 						const userDataSyncWorkbenchService = accessor.get(
-							IUserDataSyncWorkbenchService,
+							IUserDataSyncWorkbenchService
 						);
 						const notificationService =
 							accessor.get(INotificationService);
@@ -2048,13 +2100,13 @@ export class UserDataSyncWorkbenchContribution
 							notificationService.info(
 								localize(
 									"download sync activity complete",
-									"Successfully downloaded Settings Sync activity.",
-								),
+									"Successfully downloaded Settings Sync activity."
+								)
 							);
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -2065,7 +2117,7 @@ export class UserDataSyncWorkbenchContribution
 
 	private registerViewContainer(): ViewContainer {
 		return Registry.as<IViewContainersRegistry>(
-			Extensions.ViewContainersRegistry,
+			Extensions.ViewContainersRegistry
 		).registerViewContainer(
 			{
 				id: SYNC_VIEW_CONTAINER_ID,
@@ -2077,7 +2129,7 @@ export class UserDataSyncWorkbenchContribution
 				icon: SYNC_VIEW_ICON,
 				hideIfEmpty: true,
 			},
-			ViewContainerLocation.Sidebar,
+			ViewContainerLocation.Sidebar
 		);
 	}
 
@@ -2091,14 +2143,14 @@ export class UserDataSyncWorkbenchContribution
 							id: "workbench.actions.syncData.reset",
 							title: localize(
 								"workbench.actions.syncData.reset",
-								"Clear Data in Cloud...",
+								"Clear Data in Cloud..."
 							),
 							menu: [
 								{
 									id: MenuId.ViewContainerTitle,
 									when: ContextKeyExpr.equals(
 										"viewContainer",
-										SYNC_VIEW_CONTAINER_ID,
+										SYNC_VIEW_CONTAINER_ID
 									),
 									group: "0_configure",
 								},
@@ -2108,8 +2160,8 @@ export class UserDataSyncWorkbenchContribution
 					run(): any {
 						return that.userDataSyncWorkbenchService.resetSyncedData();
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 
@@ -2117,19 +2169,19 @@ export class UserDataSyncWorkbenchContribution
 		this._register(
 			this.instantiationService.createInstance(
 				UserDataSyncDataViews,
-				container,
-			),
+				container
+			)
 		);
 	}
 }
 
 class UserDataRemoteContentProvider implements ITextModelContentProvider {
 	constructor(
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageService private readonly languageService: ILanguageService,
-	) {
-	}
+		@ILanguageService private readonly languageService: ILanguageService
+	) {}
 
 	provideTextContent(uri: URI): Promise<ITextModel> | null {
 		if (uri.scheme === USER_DATA_SYNC_SCHEME) {
@@ -2139,8 +2191,8 @@ class UserDataRemoteContentProvider implements ITextModelContentProvider {
 					this.modelService.createModel(
 						content || "",
 						this.languageService.createById("jsonc"),
-						uri,
-					),
+						uri
+					)
 				);
 		}
 		return null;

@@ -37,7 +37,7 @@ abstract class SimplePasteAndDropProvider
 		_model: ITextModel,
 		_ranges: readonly IRange[],
 		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<DocumentPasteEdit | undefined> {
 		const edit = await this.getEdit(dataTransfer, token);
 		return edit
@@ -47,7 +47,7 @@ abstract class SimplePasteAndDropProvider
 					detail: edit.detail,
 					handledMimeType: edit.handledMimeType,
 					yieldTo: edit.yieldTo,
-			  }
+				}
 			: undefined;
 	}
 
@@ -55,7 +55,7 @@ abstract class SimplePasteAndDropProvider
 		_model: ITextModel,
 		_position: IPosition,
 		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<DocumentOnDropEdit | undefined> {
 		const edit = await this.getEdit(dataTransfer, token);
 		return edit
@@ -64,13 +64,13 @@ abstract class SimplePasteAndDropProvider
 					label: edit.label,
 					handledMimeType: edit.handledMimeType,
 					yieldTo: edit.yieldTo,
-			  }
+				}
 			: undefined;
 	}
 
 	protected abstract getEdit(
 		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<DocumentPasteEdit | undefined>;
 }
 
@@ -81,7 +81,7 @@ class DefaultTextProvider extends SimplePasteAndDropProvider {
 
 	protected async getEdit(
 		dataTransfer: IReadonlyVSDataTransfer,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Promise<DocumentPasteEdit | undefined> {
 		const textEntry = dataTransfer.get(Mimes.text);
 		if (!textEntry) {
@@ -111,7 +111,7 @@ class PathProvider extends SimplePasteAndDropProvider {
 
 	protected async getEdit(
 		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<DocumentPasteEdit | undefined> {
 		const entries = await extractUriList(dataTransfer);
 		if (!entries.length || token.isCancellationRequested) {
@@ -137,8 +137,8 @@ class PathProvider extends SimplePasteAndDropProvider {
 				entries.length > 1
 					? localize(
 							"defaultDropProvider.uriList.uris",
-							"Insert Uris",
-					  )
+							"Insert Uris"
+						)
 					: localize("defaultDropProvider.uriList.uri", "Insert Uri");
 		} else {
 			// All the paths are file paths
@@ -146,12 +146,12 @@ class PathProvider extends SimplePasteAndDropProvider {
 				entries.length > 1
 					? localize(
 							"defaultDropProvider.uriList.paths",
-							"Insert Paths",
-					  )
+							"Insert Paths"
+						)
 					: localize(
 							"defaultDropProvider.uriList.path",
-							"Insert Path",
-					  );
+							"Insert Path"
+						);
 		}
 
 		return {
@@ -169,14 +169,15 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 	readonly pasteMimeTypes = [Mimes.uriList];
 
 	constructor(
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 	}
 
 	protected async getEdit(
 		dataTransfer: IReadonlyVSDataTransfer,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<DocumentPasteEdit | undefined> {
 		const entries = await extractUriList(dataTransfer);
 		if (!entries.length || token.isCancellationRequested) {
@@ -188,7 +189,7 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 				const root =
 					this._workspaceContextService.getWorkspaceFolder(uri);
 				return root ? relativePath(root.uri, uri) : undefined;
-			}),
+			})
 		);
 
 		if (!relativeUris.length) {
@@ -202,19 +203,19 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 				entries.length > 1
 					? localize(
 							"defaultDropProvider.uriList.relativePaths",
-							"Insert Relative Paths",
-					  )
+							"Insert Relative Paths"
+						)
 					: localize(
 							"defaultDropProvider.uriList.relativePath",
-							"Insert Relative Path",
-					  ),
+							"Insert Relative Path"
+						),
 			detail: builtInLabel,
 		};
 	}
 }
 
 async function extractUriList(
-	dataTransfer: IReadonlyVSDataTransfer,
+	dataTransfer: IReadonlyVSDataTransfer
 ): Promise<{ readonly uri: URI; readonly originalText: string }[]> {
 	const urlListEntry = dataTransfer.get(Mimes.uriList);
 	if (!urlListEntry) {
@@ -235,56 +236,60 @@ async function extractUriList(
 
 export class DefaultDropProvidersFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 
 		this._register(
 			languageFeaturesService.documentOnDropEditProvider.register(
 				"*",
-				new DefaultTextProvider(),
-			),
+				new DefaultTextProvider()
+			)
 		);
 		this._register(
 			languageFeaturesService.documentOnDropEditProvider.register(
 				"*",
-				new PathProvider(),
-			),
+				new PathProvider()
+			)
 		);
 		this._register(
 			languageFeaturesService.documentOnDropEditProvider.register(
 				"*",
-				new RelativePathProvider(workspaceContextService),
-			),
+				new RelativePathProvider(workspaceContextService)
+			)
 		);
 	}
 }
 
 export class DefaultPasteProvidersFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 
 		this._register(
 			languageFeaturesService.documentPasteEditProvider.register(
 				"*",
-				new DefaultTextProvider(),
-			),
+				new DefaultTextProvider()
+			)
 		);
 		this._register(
 			languageFeaturesService.documentPasteEditProvider.register(
 				"*",
-				new PathProvider(),
-			),
+				new PathProvider()
+			)
 		);
 		this._register(
 			languageFeaturesService.documentPasteEditProvider.register(
 				"*",
-				new RelativePathProvider(workspaceContextService),
-			),
+				new RelativePathProvider(workspaceContextService)
+			)
 		);
 	}
 }

@@ -29,12 +29,12 @@ class ManageExtensionAction extends Action {
 	constructor(
 		extensionId: string,
 		label: string,
-		commandService: ICommandService,
+		commandService: ICommandService
 	) {
 		super(extensionId, label, undefined, true, () => {
 			return commandService.executeCommand(
 				"_extensions.manage",
-				extensionId,
+				extensionId
 			);
 		});
 	}
@@ -66,7 +66,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 	async $startProgress(
 		handle: number,
 		options: IProgressOptions,
-		extensionId?: string,
+		extensionId?: string
 	): Promise<void> {
 		const task = this._createTask(handle);
 
@@ -78,7 +78,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 					new ManageExtensionAction(
 						extensionId,
 						localize("manageExtension", "Manage Extension"),
-						this._commandService,
+						this._commandService
 					),
 				],
 			};
@@ -87,7 +87,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 		}
 
 		this._progressService.withProgress(options, task, () =>
-			this._proxy.$acceptProgressCanceled(handle),
+			this._proxy.$acceptProgressCanceled(handle)
 		);
 	}
 

@@ -73,7 +73,7 @@ export function renderViewTree(container: HTMLElement): HTMLElement {
 export function renderExpressionValue(
 	expressionOrValue: IExpressionContainer | string,
 	container: HTMLElement,
-	options: IRenderValueOptions,
+	options: IRenderValueOptions
 ): void {
 	let value =
 		typeof expressionOrValue === "string"
@@ -145,8 +145,8 @@ export function renderExpressionValue(
 				value,
 				false,
 				session ? session.root : undefined,
-				true,
-			),
+				true
+			)
 		);
 	} else {
 		container.textContent = value;
@@ -161,7 +161,7 @@ export function renderVariable(
 	data: IVariableTemplateData,
 	showChanged: boolean,
 	highlights: IHighlight[],
-	linkDetector?: LinkDetector,
+	linkDetector?: LinkDetector
 ): void {
 	if (variable.available) {
 		let text = variable.name;
@@ -171,15 +171,15 @@ export function renderVariable(
 		data.label.set(
 			text,
 			highlights,
-			variable.type ? variable.type : variable.name,
+			variable.type ? variable.type : variable.name
 		);
 		data.name.classList.toggle(
 			"virtual",
-			variable.presentationHint?.kind === "virtual",
+			variable.presentationHint?.kind === "virtual"
 		);
 		data.name.classList.toggle(
 			"internal",
-			variable.presentationHint?.visibility === "internal",
+			variable.presentationHint?.visibility === "internal"
 		);
 	} else if (
 		variable.value &&
@@ -225,8 +225,9 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 {
 	constructor(
 		@IDebugService protected debugService: IDebugService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-	) { }
+		@IContextViewService
+		private readonly contextViewService: IContextViewService
+	) {}
 
 	abstract get templateId(): string;
 
@@ -237,7 +238,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 		lazyButton.classList.add(...ThemeIcon.asClassNameArray(Codicon.eye));
 		lazyButton.title = localize(
 			"debug.lazyButton.tooltip",
-			"Click to expand",
+			"Click to expand"
 		);
 		const value = dom.append(expression, $("span.value"));
 
@@ -245,7 +246,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 
 		const inputBoxContainer = dom.append(
 			expression,
-			$(".inputBoxContainer"),
+			$(".inputBoxContainer")
 		);
 
 		const templateDisposable = new DisposableStore();
@@ -276,7 +277,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 						.getViewModel()
 						.evaluateLazyExpression(template.currentElement);
 				}
-			}),
+			})
 		);
 
 		return template;
@@ -285,19 +286,19 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 	public abstract renderElement(
 		node: ITreeNode<T, FuzzyScore>,
 		index: number,
-		data: IExpressionTemplateData,
+		data: IExpressionTemplateData
 	): void;
 
 	protected renderExpressionElement(
 		element: IExpression,
 		node: ITreeNode<T, FuzzyScore>,
-		data: IExpressionTemplateData,
+		data: IExpressionTemplateData
 	): void {
 		data.currentElement = element;
 		this.renderExpression(
 			node.element,
 			data,
-			createMatches(node.filterData),
+			createMatches(node.filterData)
 		);
 		if (data.actionBar) {
 			this.renderActionBar!(data.actionBar, element, data);
@@ -311,7 +312,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 		) {
 			const options = this.getInputBoxOptions(
 				element,
-				!!selectedExpression?.settingWatch,
+				!!selectedExpression?.settingWatch
 			);
 			if (options) {
 				data.elementDisposable.push(
@@ -319,8 +320,8 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 						data.name,
 						data.value,
 						data.inputBoxContainer,
-						options,
-					),
+						options
+					)
 				);
 			}
 		}
@@ -330,7 +331,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 		nameElement: HTMLElement,
 		valueElement: HTMLElement,
 		inputBoxContainer: HTMLElement,
-		options: IInputBoxOptions,
+		options: IInputBoxOptions
 	): IDisposable {
 		nameElement.style.display = "none";
 		valueElement.style.display = "none";
@@ -340,7 +341,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 		const inputBox = new InputBox(
 			inputBoxContainer,
 			this.contextViewService,
-			{ ...options, inputBoxStyles: defaultInputBoxStyles },
+			{ ...options, inputBoxStyles: defaultInputBoxStyles }
 		);
 
 		inputBox.value = options.initialValue;
@@ -361,7 +362,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 						.setSelectedExpression(undefined, false);
 					options.onFinish(value, success);
 				}
-			},
+			}
 		);
 
 		const toDispose = [
@@ -377,14 +378,14 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 						e.stopPropagation();
 						done(isEnter, true);
 					}
-				},
+				}
 			),
 			dom.addDisposableListener(
 				inputBox.inputElement,
 				dom.EventType.BLUR,
 				() => {
 					done(true, true);
-				},
+				}
 			),
 			dom.addDisposableListener(
 				inputBox.inputElement,
@@ -393,7 +394,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 					// Do not expand / collapse selected elements
 					e.preventDefault();
 					e.stopPropagation();
-				},
+				}
 			),
 		];
 
@@ -405,23 +406,23 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 	protected abstract renderExpression(
 		expression: T,
 		data: IExpressionTemplateData,
-		highlights: IHighlight[],
+		highlights: IHighlight[]
 	): void;
 	protected abstract getInputBoxOptions(
 		expression: IExpression,
-		settingValue: boolean,
+		settingValue: boolean
 	): IInputBoxOptions | undefined;
 
 	protected renderActionBar?(
 		actionBar: ActionBar,
 		expression: IExpression,
-		data: IExpressionTemplateData,
+		data: IExpressionTemplateData
 	): void;
 
 	disposeElement(
 		node: ITreeNode<T, FuzzyScore>,
 		index: number,
-		templateData: IExpressionTemplateData,
+		templateData: IExpressionTemplateData
 	): void {
 		dispose(templateData.elementDisposable);
 		templateData.elementDisposable = [];

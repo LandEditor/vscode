@@ -48,7 +48,7 @@ export class BracketElectricCharacterSupport {
 	public onElectricCharacter(
 		character: string,
 		context: ScopedLineTokens,
-		column: number,
+		column: number
 	): IElectricAction | null {
 		if (
 			!this._richEditBrackets ||
@@ -71,7 +71,7 @@ export class BracketElectricCharacterSupport {
 			1,
 			text,
 			0,
-			text.length,
+			text.length
 		);
 		if (!r) {
 			return null;
@@ -87,7 +87,7 @@ export class BracketElectricCharacterSupport {
 		}
 
 		const textBeforeBracket = context.getActualLineContentBefore(
-			r.startColumn - 1,
+			r.startColumn - 1
 		);
 		if (!/^\s*$/.test(textBeforeBracket)) {
 			// There is other text on the line before the bracket

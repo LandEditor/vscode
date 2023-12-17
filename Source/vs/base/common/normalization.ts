@@ -19,7 +19,7 @@ const nonAsciiCharactersPattern = /[^\u0000-\u0080]/;
 function normalize(
 	str: string,
 	form: string,
-	normalizedCache: LRUCache<string, string>,
+	normalizedCache: LRUCache<string, string>
 ): string {
 	if (!str) {
 		return str;

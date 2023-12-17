@@ -64,7 +64,7 @@ export const HC_LIGHT_THEME_NAME = "hc-light";
 
 const colorRegistry = Registry.as<IColorRegistry>(Extensions.ColorContribution);
 const themingRegistry = Registry.as<IThemingRegistry>(
-	ThemingExtensions.ThemingContribution,
+	ThemingExtensions.ThemingContribution
 );
 
 class StandaloneTheme implements IStandaloneTheme {
@@ -131,7 +131,7 @@ class StandaloneTheme implements IStandaloneTheme {
 
 	public getColor(
 		colorId: ColorIdentifier,
-		useDefault?: boolean,
+		useDefault?: boolean
 	): Color | undefined {
 		const color = this.getColors().get(colorId);
 		if (color) {
@@ -200,7 +200,7 @@ class StandaloneTheme implements IStandaloneTheme {
 			}
 			this._tokenTheme = TokenTheme.createFromRawTokenTheme(
 				rules,
-				encodedTokensColors,
+				encodedTokensColors
 			);
 		}
 		return this._tokenTheme;
@@ -209,11 +209,11 @@ class StandaloneTheme implements IStandaloneTheme {
 	public getTokenStyleMetadata(
 		type: string,
 		modifiers: string[],
-		modelLanguage: string,
+		modelLanguage: string
 	): ITokenStyle | undefined {
 		// use theme rules match
 		const style = this.tokenTheme._match(
-			[type].concat(modifiers).join("."),
+			[type].concat(modifiers).join(".")
 		);
 		const metadata = style.metadata;
 		const foreground = TokenMetadata.getForeground(metadata);
@@ -268,18 +268,18 @@ export class StandaloneThemeService
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _onColorThemeChange = this._register(
-		new Emitter<IStandaloneTheme>(),
+		new Emitter<IStandaloneTheme>()
 	);
 	public readonly onDidColorThemeChange = this._onColorThemeChange.event;
 
 	private readonly _onFileIconThemeChange = this._register(
-		new Emitter<IFileIconTheme>(),
+		new Emitter<IFileIconTheme>()
 	);
 	public readonly onDidFileIconThemeChange =
 		this._onFileIconThemeChange.event;
 
 	private readonly _onProductIconThemeChange = this._register(
-		new Emitter<IProductIconTheme>(),
+		new Emitter<IProductIconTheme>()
 	);
 	public readonly onDidProductIconThemeChange =
 		this._onProductIconThemeChange.event;
@@ -305,19 +305,19 @@ export class StandaloneThemeService
 		this._knownThemes = new Map<string, StandaloneTheme>();
 		this._knownThemes.set(
 			VS_LIGHT_THEME_NAME,
-			newBuiltInTheme(VS_LIGHT_THEME_NAME),
+			newBuiltInTheme(VS_LIGHT_THEME_NAME)
 		);
 		this._knownThemes.set(
 			VS_DARK_THEME_NAME,
-			newBuiltInTheme(VS_DARK_THEME_NAME),
+			newBuiltInTheme(VS_DARK_THEME_NAME)
 		);
 		this._knownThemes.set(
 			HC_BLACK_THEME_NAME,
-			newBuiltInTheme(HC_BLACK_THEME_NAME),
+			newBuiltInTheme(HC_BLACK_THEME_NAME)
 		);
 		this._knownThemes.set(
 			HC_LIGHT_THEME_NAME,
-			newBuiltInTheme(HC_LIGHT_THEME_NAME),
+			newBuiltInTheme(HC_LIGHT_THEME_NAME)
 		);
 
 		const iconsStyleSheet = this._register(getIconsStyleSheet(this));
@@ -335,7 +335,7 @@ export class StandaloneThemeService
 			iconsStyleSheet.onDidChange(() => {
 				this._codiconCSS = iconsStyleSheet.getCSS();
 				this._updateCSS();
-			}),
+			})
 		);
 
 		addMatchMediaChangeListener("(forced-colors: active)", () => {
@@ -357,7 +357,7 @@ export class StandaloneThemeService
 				(style) => {
 					style.className = "monaco-colors";
 					style.textContent = this._allCSS;
-				},
+				}
 			);
 			this._styleElements.push(this._globalStyleElement);
 		}
@@ -384,7 +384,7 @@ export class StandaloneThemeService
 
 	public defineTheme(
 		themeName: string,
-		themeData: IStandaloneThemeData,
+		themeData: IStandaloneThemeData
 	): void {
 		if (!/^[a-z0-9\-]+$/i.test(themeName)) {
 			throw new Error("Illegal theme name!");
@@ -395,7 +395,7 @@ export class StandaloneThemeService
 		// set or replace theme
 		this._knownThemes.set(
 			themeName,
-			new StandaloneTheme(themeName, themeData),
+			new StandaloneTheme(themeName, themeData)
 		);
 
 		if (isBuiltinTheme(themeName)) {
@@ -430,7 +430,7 @@ export class StandaloneThemeService
 	}
 
 	private _updateActualTheme(
-		desiredTheme: IStandaloneTheme | undefined,
+		desiredTheme: IStandaloneTheme | undefined
 	): void {
 		if (!desiredTheme || this._theme === desiredTheme) {
 			// Nothing to do
@@ -443,7 +443,7 @@ export class StandaloneThemeService
 	private _onOSSchemeChanged() {
 		if (this._autoDetectHighContrast) {
 			const wantsHighContrast = mainWindow.matchMedia(
-				`(forced-colors: active)`,
+				`(forced-colors: active)`
 			).matches;
 			if (wantsHighContrast !== isHighContrast(this._theme.type)) {
 				// switch to high contrast or non-high contrast but stick to dark or light
@@ -487,14 +487,14 @@ export class StandaloneThemeService
 			const color = this._theme.getColor(item.id, true);
 			if (color) {
 				colorVariables.push(
-					`${asCssVariableName(item.id)}: ${color.toString()};`,
+					`${asCssVariableName(item.id)}: ${color.toString()};`
 				);
 			}
 		}
 		ruleCollector.addRule(
 			`.monaco-editor, .monaco-diff-editor, .monaco-component { ${colorVariables.join(
-				"\n",
-			)} }`,
+				"\n"
+			)} }`
 		);
 
 		const colorMap =
@@ -511,7 +511,7 @@ export class StandaloneThemeService
 	private _updateCSS(): void {
 		this._allCSS = `${this._codiconCSS}\n${this._themeCSS}`;
 		this._styleElements.forEach(
-			(styleElement) => (styleElement.textContent = this._allCSS),
+			(styleElement) => (styleElement.textContent = this._allCSS)
 		);
 	}
 

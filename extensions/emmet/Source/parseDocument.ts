@@ -19,7 +19,7 @@ const _parseCache = new Map<string, Pair<number, FlatNode> | undefined>();
 
 export function getRootNode(
 	document: TextDocument,
-	useCache: boolean,
+	useCache: boolean
 ): FlatNode {
 	const key = document.uri.toString();
 	const result = _parseCache.get(key);

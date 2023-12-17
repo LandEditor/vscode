@@ -13,7 +13,7 @@ export class NativeHostService implements INativeHostService {
 
 	constructor(
 		readonly windowId: number,
-		@IMainProcessService mainProcessService: IMainProcessService,
+		@IMainProcessService mainProcessService: IMainProcessService
 	) {
 		return ProxyChannel.toService<INativeHostService>(
 			mainProcessService.getChannel("nativeHost"),
@@ -25,7 +25,7 @@ export class NativeHostService implements INativeHostService {
 
 					return properties;
 				})(),
-			},
+			}
 		);
 	}
 }

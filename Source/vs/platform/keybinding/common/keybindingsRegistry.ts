@@ -82,7 +82,7 @@ export interface IKeybindingsRegistry {
 	registerKeybindingRule(rule: IKeybindingRule): IDisposable;
 	setExtensionKeybindings(rules: IExtensionKeybindingRule[]): void;
 	registerCommandAndKeybindingRule(
-		desc: ICommandAndKeybindingRule,
+		desc: ICommandAndKeybindingRule
 	): IDisposable;
 	getDefaultKeybindings(): IKeybindingItem[];
 }
@@ -139,8 +139,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 						rule.args,
 						rule.weight,
 						0,
-						rule.when,
-					),
+						rule.when
+					)
 				);
 			}
 		}
@@ -157,8 +157,8 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 							rule.args,
 							rule.weight,
 							-i - 1,
-							rule.when,
-						),
+							rule.when
+						)
 					);
 				}
 			}
@@ -189,11 +189,11 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	}
 
 	public registerCommandAndKeybindingRule(
-		desc: ICommandAndKeybindingRule,
+		desc: ICommandAndKeybindingRule
 	): IDisposable {
 		return combinedDisposable(
 			this.registerKeybindingRule(desc),
-			CommandsRegistry.registerCommand(desc),
+			CommandsRegistry.registerCommand(desc)
 		);
 	}
 
@@ -203,7 +203,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 		commandArgs: any,
 		weight1: number,
 		weight2: number,
-		when: ContextKeyExpression | null | undefined,
+		when: ContextKeyExpression | null | undefined
 	): IDisposable {
 		const remove = this._coreKeybindings.push({
 			keybinding: keybinding,
@@ -226,7 +226,7 @@ class KeybindingsRegistryImpl implements IKeybindingsRegistry {
 	public getDefaultKeybindings(): IKeybindingItem[] {
 		if (!this._cachedMergedKeybindings) {
 			this._cachedMergedKeybindings = Array.from(
-				this._coreKeybindings,
+				this._coreKeybindings
 			).concat(this._extensionKeybindings);
 			this._cachedMergedKeybindings.sort(sorter);
 		}

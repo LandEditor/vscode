@@ -28,7 +28,7 @@ export class BufferMarkCapability
 	private _anonymousMarkers: Map<number, IMarker> = new Map();
 
 	private readonly _onMarkAdded = this._register(
-		new Emitter<IMarkProperties>(),
+		new Emitter<IMarkProperties>()
 	);
 	readonly onMarkAdded = this._onMarkAdded.event;
 

@@ -60,13 +60,13 @@ export interface InputData {
 
 export class MergeEditorModel extends EditorModel {
 	private readonly input1TextModelDiffs = this._register(
-		new TextModelDiffs(this.base, this.input1.textModel, this.diffComputer),
+		new TextModelDiffs(this.base, this.input1.textModel, this.diffComputer)
 	);
 	private readonly input2TextModelDiffs = this._register(
-		new TextModelDiffs(this.base, this.input2.textModel, this.diffComputer),
+		new TextModelDiffs(this.base, this.input2.textModel, this.diffComputer)
 	);
 	private readonly resultTextModelDiffs = this._register(
-		new TextModelDiffs(this.base, this.resultTextModel, this.diffComputer),
+		new TextModelDiffs(this.base, this.resultTextModel, this.diffComputer)
 	);
 	public readonly modifiedBaseRanges = derived<ModifiedBaseRange[]>(
 		this,
@@ -78,9 +78,9 @@ export class MergeEditorModel extends EditorModel {
 				input2Diffs,
 				this.base,
 				this.input1.textModel,
-				this.input2.textModel,
+				this.input2.textModel
 			);
-		},
+		}
 	);
 
 	private readonly modifiedBaseRangeResultStates = derived(this, (reader) => {
@@ -90,7 +90,7 @@ export class MergeEditorModel extends EditorModel {
 				.map<[ModifiedBaseRange, ModifiedBaseRangeData]>((s) => [
 					s,
 					new ModifiedBaseRangeData(s),
-				]),
+				])
 		);
 		return map;
 	});
@@ -106,7 +106,7 @@ export class MergeEditorModel extends EditorModel {
 		private readonly options: { resetResult: boolean },
 		public readonly telemetry: MergeEditorTelemetry,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IUndoRedoService private readonly undoRedoService: IUndoRedoService,
+		@IUndoRedoService private readonly undoRedoService: IUndoRedoService
 	) {
 		super();
 
@@ -126,34 +126,62 @@ export class MergeEditorModel extends EditorModel {
 				autorunHandleChanges(
 					{
 						handleChange: (ctx) => {
-							if (ctx.didChange(this.modifiedBaseRangeResultStates)) {
+							if (
+								ctx.didChange(
+									this.modifiedBaseRangeResultStates
+								)
+							) {
 								shouldRecomputeHandledFromAccepted = true;
 							}
-							return ctx.didChange(this.resultTextModelDiffs.diffs)
-								// Ignore non-text changes as we update the state directly
-								? ctx.change === TextModelDiffChangeReason.textChange
+							return ctx.didChange(
+								this.resultTextModelDiffs.diffs
+							)
+								? // Ignore non-text changes as we update the state directly
+									ctx.change ===
+										TextModelDiffChangeReason.textChange
 								: true;
 						},
 					},
 					(reader) => {
 						/** @description Merge Editor Model: Recompute State From Result */
-						const states = this.modifiedBaseRangeResultStates.read(reader);
+						const states =
+							this.modifiedBaseRangeResultStates.read(reader);
 						if (!this.isUpToDate.read(reader)) {
 							return;
 						}
-						const resultDiffs = this.resultTextModelDiffs.diffs.read(reader);
-						transaction(tx => {
+						const resultDiffs =
+							this.resultTextModelDiffs.diffs.read(reader);
+						transaction((tx) => {
 							/** @description Merge Editor Model: Recompute State */
 
-							this.updateBaseRangeAcceptedState(resultDiffs, states, tx);
+							this.updateBaseRangeAcceptedState(
+								resultDiffs,
+								states,
+								tx
+							);
 
 							if (shouldRecomputeHandledFromAccepted) {
 								shouldRecomputeHandledFromAccepted = false;
-								for (const [_range, observableState] of states) {
-									const state = observableState.accepted.get();
-									const handled = !(state.kind === ModifiedBaseRangeStateKind.base || state.kind === ModifiedBaseRangeStateKind.unrecognized);
-									observableState.handledInput1.set(handled, tx);
-									observableState.handledInput2.set(handled, tx);
+								for (const [
+									_range,
+									observableState,
+								] of states) {
+									const state =
+										observableState.accepted.get();
+									const handled = !(
+										state.kind ===
+											ModifiedBaseRangeStateKind.base ||
+										state.kind ===
+											ModifiedBaseRangeStateKind.unrecognized
+									);
+									observableState.handledInput1.set(
+										handled,
+										tx
+									);
+									observableState.handledInput2.set(
+										handled,
+										tx
+									);
 								}
 							}
 						});
@@ -172,7 +200,7 @@ export class MergeEditorModel extends EditorModel {
 	public async reset(): Promise<void> {
 		await waitForState(
 			this.inputDiffComputingState,
-			(state) => state === MergeEditorModelState.upToDate,
+			(state) => state === MergeEditorModelState.upToDate
 		);
 		const states = this.modifiedBaseRangeResultStates.get();
 
@@ -185,19 +213,19 @@ export class MergeEditorModel extends EditorModel {
 				if (range.input1Diffs.length === 0) {
 					newState = ModifiedBaseRangeState.base.withInputValue(
 						2,
-						true,
+						true
 					);
 					handled = true;
 				} else if (range.input2Diffs.length === 0) {
 					newState = ModifiedBaseRangeState.base.withInputValue(
 						1,
-						true,
+						true
 					);
 					handled = true;
 				} else if (range.isEqualChange) {
 					newState = ModifiedBaseRangeState.base.withInputValue(
 						1,
-						true,
+						true
 					);
 					handled = true;
 				} else {
@@ -220,7 +248,7 @@ export class MergeEditorModel extends EditorModel {
 						text: this.computeAutoMergedResult(),
 					},
 				],
-				() => null,
+				() => null
 			);
 		});
 	}
@@ -250,8 +278,8 @@ export class MergeEditorModel extends EditorModel {
 				baseLines,
 				LineRange.fromLineNumbers(
 					baseStartLineNumber,
-					baseRange.baseRange.startLineNumber,
-				),
+					baseRange.baseRange.startLineNumber
+				)
 			);
 			baseStartLineNumber = baseRange.baseRange.endLineNumberExclusive;
 
@@ -268,10 +296,7 @@ export class MergeEditorModel extends EditorModel {
 
 		appendLinesToResult(
 			baseLines,
-			LineRange.fromLineNumbers(
-				baseStartLineNumber,
-				baseLines.length + 1,
-			),
+			LineRange.fromLineNumbers(baseStartLineNumber, baseLines.length + 1)
 		);
 
 		return resultLines.join(this.resultTextModel.getEOL());
@@ -292,35 +317,35 @@ export class MergeEditorModel extends EditorModel {
 		return this.getInputResultMapping(
 			this.baseInput1Diffs.read(reader),
 			this.baseResultDiffs.read(reader),
-			this.input1.textModel.getLineCount(),
+			this.input1.textModel.getLineCount()
 		);
 	});
 
 	public readonly resultInput1Mapping = derived(this, (reader) =>
-		this.input1ResultMapping.read(reader).reverse(),
+		this.input1ResultMapping.read(reader).reverse()
 	);
 
 	public readonly input2ResultMapping = derived(this, (reader) => {
 		return this.getInputResultMapping(
 			this.baseInput2Diffs.read(reader),
 			this.baseResultDiffs.read(reader),
-			this.input2.textModel.getLineCount(),
+			this.input2.textModel.getLineCount()
 		);
 	});
 
 	public readonly resultInput2Mapping = derived(this, (reader) =>
-		this.input2ResultMapping.read(reader).reverse(),
+		this.input2ResultMapping.read(reader).reverse()
 	);
 
 	private getInputResultMapping(
 		inputLinesDiffs: DetailedLineRangeMapping[],
 		resultDiffs: DetailedLineRangeMapping[],
-		inputLineCount: number,
+		inputLineCount: number
 	) {
 		const map = DocumentLineRangeMap.betweenOutputs(
 			inputLinesDiffs,
 			resultDiffs,
-			inputLineCount,
+			inputLineCount
 		);
 		return new DocumentLineRangeMap(
 			map.lineRangeMappings.map((m) =>
@@ -328,18 +353,18 @@ export class MergeEditorModel extends EditorModel {
 					? new LineRangeMapping(
 							// We can do this because two adjacent diffs have one line in between.
 							m.inputRange.deltaStart(-1),
-							m.outputRange.deltaStart(-1),
-					  )
-					: m,
+							m.outputRange.deltaStart(-1)
+						)
+					: m
 			),
-			map.inputLineCount,
+			map.inputLineCount
 		);
 	}
 
 	public readonly baseResultMapping = derived(this, (reader) => {
 		const map = new DocumentLineRangeMap(
 			this.baseResultDiffs.read(reader),
-			-1,
+			-1
 		);
 		return new DocumentLineRangeMap(
 			map.lineRangeMappings.map((m) =>
@@ -347,16 +372,16 @@ export class MergeEditorModel extends EditorModel {
 					? new LineRangeMapping(
 							// We can do this because two adjacent diffs have one line in between.
 							m.inputRange.deltaStart(-1),
-							m.outputRange.deltaStart(-1),
-					  )
-					: m,
+							m.outputRange.deltaStart(-1)
+						)
+					: m
 			),
-			map.inputLineCount,
+			map.inputLineCount
 		);
 	});
 
 	public readonly resultBaseMapping = derived(this, (reader) =>
-		this.baseResultMapping.read(reader).reverse(),
+		this.baseResultMapping.read(reader).reverse()
 	);
 
 	public translateInputRangeToBase(input: 1 | 2, range: Range): Range {
@@ -366,7 +391,7 @@ export class MergeEditorModel extends EditorModel {
 				: this.baseInput2Diffs.get();
 		const map = new DocumentRangeMap(
 			baseInputDiffs.flatMap((d) => d.rangeMappings),
-			0,
+			0
 		).reverse();
 		return map.projectRange(range).outputRange;
 	}
@@ -378,14 +403,14 @@ export class MergeEditorModel extends EditorModel {
 				: this.baseInput2Diffs.get();
 		const map = new DocumentRangeMap(
 			baseInputDiffs.flatMap((d) => d.rangeMappings),
-			0,
+			0
 		);
 		return map.projectRange(range).outputRange;
 	}
 
 	public getLineRangeInResult(
 		baseRange: LineRange,
-		reader?: IReader,
+		reader?: IReader
 	): LineRange {
 		return this.resultTextModelDiffs.getResultLineRange(baseRange, reader);
 	}
@@ -393,7 +418,7 @@ export class MergeEditorModel extends EditorModel {
 	public translateResultRangeToBase(range: Range): Range {
 		const map = new DocumentRangeMap(
 			this.baseResultDiffs.get().flatMap((d) => d.rangeMappings),
-			0,
+			0
 		).reverse();
 		return map.projectRange(range).outputRange;
 	}
@@ -401,13 +426,13 @@ export class MergeEditorModel extends EditorModel {
 	public translateBaseRangeToResult(range: Range): Range {
 		const map = new DocumentRangeMap(
 			this.baseResultDiffs.get().flatMap((d) => d.rangeMappings),
-			0,
+			0
 		);
 		return map.projectRange(range).outputRange;
 	}
 
 	public findModifiedBaseRangesInRange(
-		rangeInBase: LineRange,
+		rangeInBase: LineRange
 	): ModifiedBaseRange[] {
 		// TODO use binary search
 		return this.modifiedBaseRanges
@@ -450,19 +475,19 @@ export class MergeEditorModel extends EditorModel {
 		this,
 		(reader) =>
 			this.diffComputingState.read(reader) ===
-			MergeEditorModelState.upToDate,
+			MergeEditorModelState.upToDate
 	);
 
 	public readonly onInitialized = waitForState(
 		this.diffComputingState,
-		(state) => state === MergeEditorModelState.upToDate,
+		(state) => state === MergeEditorModelState.upToDate
 	).then(() => {});
 
 	private firstRun = true;
 	private updateBaseRangeAcceptedState(
 		resultDiffs: DetailedLineRangeMapping[],
 		states: Map<ModifiedBaseRange, ModifiedBaseRangeData>,
-		tx: ITransaction,
+		tx: ITransaction
 	): void {
 		const baseRangeWithStoreAndTouchingDiffs = leftJoin(
 			states,
@@ -472,8 +497,8 @@ export class MergeEditorModel extends EditorModel {
 					? CompareResult.neitherLessOrGreaterThan
 					: LineRange.compareByStart(
 							baseRange[0].baseRange,
-							diff.inputRange,
-					  ),
+							diff.inputRange
+						)
 		);
 
 		for (const row of baseRangeWithStoreAndTouchingDiffs) {
@@ -497,7 +522,7 @@ export class MergeEditorModel extends EditorModel {
 
 	private computeState(
 		baseRange: ModifiedBaseRange,
-		conflictingDiffs: DetailedLineRangeMapping[],
+		conflictingDiffs: DetailedLineRangeMapping[]
 	): ModifiedBaseRangeState {
 		if (conflictingDiffs.length === 0) {
 			return ModifiedBaseRangeState.base;
@@ -505,12 +530,12 @@ export class MergeEditorModel extends EditorModel {
 		const conflictingEdits = conflictingDiffs.map((d) => d.getLineEdit());
 
 		function editsAgreeWithDiffs(
-			diffs: readonly DetailedLineRangeMapping[],
+			diffs: readonly DetailedLineRangeMapping[]
 		): boolean {
 			return equals(
 				conflictingEdits,
 				diffs.map((d) => d.getLineEdit()),
-				(a, b) => a.equals(b),
+				(a, b) => a.equals(b)
 			);
 		}
 
@@ -541,10 +566,10 @@ export class MergeEditorModel extends EditorModel {
 			if (edit) {
 				const resultRange =
 					this.resultTextModelDiffs.getResultLineRange(
-						baseRange.baseRange,
+						baseRange.baseRange
 					);
 				const existingLines = resultRange.getLines(
-					this.resultTextModel,
+					this.resultTextModel
 				);
 
 				if (equals(edit.newLines, existingLines, (a, b) => a === b)) {
@@ -557,7 +582,7 @@ export class MergeEditorModel extends EditorModel {
 	}
 
 	public getState(
-		baseRange: ModifiedBaseRange,
+		baseRange: ModifiedBaseRange
 	): IObservable<ModifiedBaseRangeState> {
 		const existingState = this.modifiedBaseRangeResultStates
 			.get()
@@ -573,7 +598,7 @@ export class MergeEditorModel extends EditorModel {
 		state: ModifiedBaseRangeState,
 		_markInputAsHandled: boolean | InputNumber,
 		tx: ITransaction,
-		_pushStackElement: boolean = false,
+		_pushStackElement: boolean = false
 	): void {
 		if (!this.isUpToDate.get()) {
 			throw new BugIndicatingError("Cannot set state while updating");
@@ -587,7 +612,7 @@ export class MergeEditorModel extends EditorModel {
 		}
 
 		const conflictingDiffs = this.resultTextModelDiffs.findTouchingDiffs(
-			baseRange.baseRange,
+			baseRange.baseRange
 		);
 		const group = new UndoRedoGroup();
 		if (conflictingDiffs) {
@@ -610,9 +635,9 @@ export class MergeEditorModel extends EditorModel {
 					new WeakRef(this),
 					new WeakRef(existingState),
 					input1Handled,
-					input2Handled,
+					input2Handled
 				),
-				group,
+				group
 			);
 		}
 
@@ -621,7 +646,7 @@ export class MergeEditorModel extends EditorModel {
 			this.resultTextModelDiffs.applyEditRelativeToOriginal(
 				edit,
 				tx,
-				group,
+				group
 			);
 			this.resultTextModel.pushStackElement();
 		}
@@ -645,7 +670,7 @@ export class MergeEditorModel extends EditorModel {
 						ModifiedBaseRangeState.base,
 						false,
 						tx,
-						false,
+						false
 					);
 				}
 			}
@@ -659,7 +684,7 @@ export class MergeEditorModel extends EditorModel {
 
 	public isInputHandled(
 		baseRange: ModifiedBaseRange,
-		inputNumber: InputNumber,
+		inputNumber: InputNumber
 	): IObservable<boolean> {
 		const state = this.modifiedBaseRangeResultStates.get().get(baseRange)!;
 		return inputNumber === 1 ? state.handledInput1 : state.handledInput2;
@@ -669,7 +694,7 @@ export class MergeEditorModel extends EditorModel {
 		baseRange: ModifiedBaseRange,
 		inputNumber: InputNumber,
 		handled: boolean,
-		tx: ITransaction,
+		tx: ITransaction
 	): void {
 		const state = this.modifiedBaseRangeResultStates.get().get(baseRange)!;
 		if (state.handled.get() === handled) {
@@ -722,7 +747,7 @@ export class MergeEditorModel extends EditorModel {
 	public setHandled(
 		baseRange: ModifiedBaseRange,
 		handled: boolean,
-		tx: ITransaction,
+		tx: ITransaction
 	): void {
 		const state = this.modifiedBaseRangeResultStates.get().get(baseRange)!;
 		if (state.handled.get() === handled) {
@@ -745,7 +770,7 @@ export class MergeEditorModel extends EditorModel {
 	});
 
 	public readonly hasUnhandledConflicts = this.unhandledConflictsCount.map(
-		(value) => /** @description hasUnhandledConflicts */ value > 0,
+		(value) => /** @description hasUnhandledConflicts */ value > 0
 	);
 
 	public setLanguageId(languageId: string, source?: string): void {
@@ -771,7 +796,7 @@ export class MergeEditorModel extends EditorModel {
 	public async getResultValueWithConflictMarkers(): Promise<string> {
 		await waitForState(
 			this.diffComputingState,
-			(state) => state === MergeEditorModelState.upToDate,
+			(state) => state === MergeEditorModelState.upToDate
 		);
 
 		if (this.unhandledConflictsCount.get() === 0) {
@@ -802,18 +827,15 @@ export class MergeEditorModel extends EditorModel {
 				continue;
 			}
 			const resultRange = this.resultTextModelDiffs.getResultLineRange(
-				range.baseRange,
+				range.baseRange
 			);
 
 			appendLinesToResult(
 				resultLines,
 				LineRange.fromLineNumbers(
 					resultStartLineNumber,
-					Math.max(
-						resultStartLineNumber,
-						resultRange.startLineNumber,
-					),
-				),
+					Math.max(resultStartLineNumber, resultRange.startLineNumber)
+				)
 			);
 			resultStartLineNumber = resultRange.endLineNumberExclusive;
 
@@ -836,8 +858,8 @@ export class MergeEditorModel extends EditorModel {
 			resultLines,
 			LineRange.fromLineNumbers(
 				resultStartLineNumber,
-				resultLines.length + 1,
-			),
+				resultLines.length + 1
+			)
 		);
 		return outputLines.join("\n");
 	}
@@ -845,13 +867,13 @@ export class MergeEditorModel extends EditorModel {
 	public get conflictCount(): number {
 		return arrayCount(
 			this.modifiedBaseRanges.get(),
-			(r) => r.isConflicting,
+			(r) => r.isConflicting
 		);
 	}
 	public get combinableConflictCount(): number {
 		return arrayCount(
 			this.modifiedBaseRanges.get(),
-			(r) => r.isConflicting && r.canBeCombined,
+			(r) => r.isConflicting && r.canBeCombined
 		);
 	}
 
@@ -860,7 +882,7 @@ export class MergeEditorModel extends EditorModel {
 			this.modifiedBaseRangeResultStates.get().entries(),
 			([r, s]) =>
 				r.isConflicting &&
-				s.accepted.get().kind === ModifiedBaseRangeStateKind.base,
+				s.accepted.get().kind === ModifiedBaseRangeStateKind.base
 		);
 	}
 	public get conflictsResolvedWithInput1(): number {
@@ -868,7 +890,7 @@ export class MergeEditorModel extends EditorModel {
 			this.modifiedBaseRangeResultStates.get().entries(),
 			([r, s]) =>
 				r.isConflicting &&
-				s.accepted.get().kind === ModifiedBaseRangeStateKind.input1,
+				s.accepted.get().kind === ModifiedBaseRangeStateKind.input1
 		);
 	}
 	public get conflictsResolvedWithInput2(): number {
@@ -876,7 +898,7 @@ export class MergeEditorModel extends EditorModel {
 			this.modifiedBaseRangeResultStates.get().entries(),
 			([r, s]) =>
 				r.isConflicting &&
-				s.accepted.get().kind === ModifiedBaseRangeStateKind.input2,
+				s.accepted.get().kind === ModifiedBaseRangeStateKind.input2
 		);
 	}
 	public get conflictsResolvedWithSmartCombination(): number {
@@ -889,7 +911,7 @@ export class MergeEditorModel extends EditorModel {
 					state.kind === ModifiedBaseRangeStateKind.both &&
 					state.smartCombination
 				);
-			},
+			}
 		);
 	}
 
@@ -899,7 +921,7 @@ export class MergeEditorModel extends EditorModel {
 			([r, s]) =>
 				r.isConflicting &&
 				s.accepted.get().kind ===
-					ModifiedBaseRangeStateKind.unrecognized,
+					ModifiedBaseRangeStateKind.unrecognized
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualSmartCombine(): number {
@@ -913,7 +935,7 @@ export class MergeEditorModel extends EditorModel {
 					state.kind === ModifiedBaseRangeStateKind.both &&
 					state.smartCombination
 				);
-			},
+			}
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualInput1(): number {
@@ -926,7 +948,7 @@ export class MergeEditorModel extends EditorModel {
 					s.computedFromDiffing &&
 					state.kind === ModifiedBaseRangeStateKind.input1
 				);
-			},
+			}
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualInput2(): number {
@@ -939,7 +961,7 @@ export class MergeEditorModel extends EditorModel {
 					s.computedFromDiffing &&
 					state.kind === ModifiedBaseRangeStateKind.input2
 				);
-			},
+			}
 		);
 	}
 
@@ -954,7 +976,7 @@ export class MergeEditorModel extends EditorModel {
 					s.previousNonDiffingState?.kind ===
 						ModifiedBaseRangeStateKind.base
 				);
-			},
+			}
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualNoneAndStartedWithInput1(): number {
@@ -968,7 +990,7 @@ export class MergeEditorModel extends EditorModel {
 					s.previousNonDiffingState?.kind ===
 						ModifiedBaseRangeStateKind.input1
 				);
-			},
+			}
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualNoneAndStartedWithInput2(): number {
@@ -982,7 +1004,7 @@ export class MergeEditorModel extends EditorModel {
 					s.previousNonDiffingState?.kind ===
 						ModifiedBaseRangeStateKind.input2
 				);
-			},
+			}
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualNoneAndStartedWithBothNonSmart(): number {
@@ -997,7 +1019,7 @@ export class MergeEditorModel extends EditorModel {
 						ModifiedBaseRangeStateKind.both &&
 					!s.previousNonDiffingState?.smartCombination
 				);
-			},
+			}
 		);
 	}
 	public get manuallySolvedConflictCountThatEqualNoneAndStartedWithBothSmart(): number {
@@ -1012,14 +1034,14 @@ export class MergeEditorModel extends EditorModel {
 						ModifiedBaseRangeStateKind.both &&
 					s.previousNonDiffingState?.smartCombination
 				);
-			},
+			}
 		);
 	}
 }
 
 function arrayCount<T>(
 	array: Iterable<T>,
-	predicate: (value: T) => boolean,
+	predicate: (value: T) => boolean
 ): number {
 	let count = 0;
 	for (const value of array) {
@@ -1036,15 +1058,15 @@ class ModifiedBaseRangeData {
 	public accepted: ISettableObservable<ModifiedBaseRangeState> =
 		observableValue(
 			`BaseRangeState${this.baseRange.baseRange}`,
-			ModifiedBaseRangeState.base,
+			ModifiedBaseRangeState.base
 		);
 	public handledInput1: ISettableObservable<boolean> = observableValue(
 		`BaseRangeHandledState${this.baseRange.baseRange}.Input1`,
-		false,
+		false
 	);
 	public handledInput2: ISettableObservable<boolean> = observableValue(
 		`BaseRangeHandledState${this.baseRange.baseRange}.Input2`,
-		false,
+		false
 	);
 
 	public computedFromDiffing = false;
@@ -1054,7 +1076,7 @@ class ModifiedBaseRangeData {
 	public readonly handled = derived(
 		this,
 		(reader) =>
-			this.handledInput1.read(reader) && this.handledInput2.read(reader),
+			this.handledInput1.read(reader) && this.handledInput2.read(reader)
 	);
 }
 
@@ -1068,7 +1090,7 @@ class MarkAsHandledUndoRedoElement implements IResourceUndoRedoElement {
 	public readonly code = "undoMarkAsHandled";
 	public readonly label = localize(
 		"undoMarkAsHandled",
-		"Undo Mark As Handled",
+		"Undo Mark As Handled"
 	);
 
 	public readonly type = UndoRedoElementType.Resource;
@@ -1078,7 +1100,7 @@ class MarkAsHandledUndoRedoElement implements IResourceUndoRedoElement {
 		private readonly mergeEditorModelRef: WeakRef<MergeEditorModel>,
 		private readonly stateRef: WeakRef<ModifiedBaseRangeData>,
 		private readonly input1Handled: boolean,
-		private readonly input2Handled: boolean,
+		private readonly input2Handled: boolean
 	) {}
 
 	public redo() {

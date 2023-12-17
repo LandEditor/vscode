@@ -13,5 +13,5 @@ import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle
 
 // Register Workspace Tags Contribution
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(WorkspaceTags, LifecyclePhase.Eventually);

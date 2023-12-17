@@ -154,7 +154,7 @@ if (locale) {
 		userDataPath,
 		metaDataFile,
 		locale,
-		osLocale,
+		osLocale
 	);
 }
 
@@ -291,11 +291,11 @@ function configureCommandlineSwitchesSync(cliArgs) {
 							(id) =>
 								id &&
 								typeof id === "string" &&
-								process.argv.push("--enable-proposed-api", id),
+								process.argv.push("--enable-proposed-api", id)
 						);
 					} else {
 						console.error(
-							`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`,
+							`Unexpected value for \`enable-proposed-api\` in argv.json. Expected array of extension ids.`
 						);
 					}
 					break;
@@ -322,7 +322,7 @@ function configureCommandlineSwitchesSync(cliArgs) {
 	// Following features are disabled from the runtime:
 	// `CalculateNativeWinOcclusion` - Disable native window occlusion tracker (https://groups.google.com/a/chromium.org/g/embedder-dev/c/ZF3uHHyWLKw/m/VDN2hDXMAAAJ)
 	const featuresToDisable = `CalculateNativeWinOcclusion,${app.commandLine.getSwitchValue(
-		"disable-features",
+		"disable-features"
 	)}`;
 	app.commandLine.appendSwitch("disable-features", featuresToDisable);
 
@@ -341,14 +341,14 @@ function readArgvConfigSync() {
 	let argvConfig;
 	try {
 		argvConfig = JSON.parse(
-			stripComments(fs.readFileSync(argvConfigPath).toString()),
+			stripComments(fs.readFileSync(argvConfigPath).toString())
 		);
 	} catch (error) {
 		if (error && error.code === "ENOENT") {
 			createDefaultArgvConfigSync(argvConfigPath);
 		} else {
 			console.warn(
-				`Unable to read argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`,
+				`Unable to read argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`
 			);
 		}
 	}
@@ -392,7 +392,7 @@ function createDefaultArgvConfigSync(argvConfigPath) {
 		fs.writeFileSync(argvConfigPath, defaultArgvConfigContent.join("\n"));
 	} catch (error) {
 		console.error(
-			`Unable to create argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`,
+			`Unable to create argv.json configuration file in ${argvConfigPath}, falling back to defaults (${error})`
 		);
 	}
 }
@@ -420,7 +420,7 @@ function configureCrashReporter() {
 
 		if (!path.isAbsolute(crashReporterDirectory)) {
 			console.error(
-				`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`,
+				`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`
 			);
 			app.exit(1);
 		}
@@ -430,7 +430,7 @@ function configureCrashReporter() {
 				fs.mkdirSync(crashReporterDirectory, { recursive: true });
 			} catch (error) {
 				console.error(
-					`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`,
+					`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`
 				);
 				app.exit(1);
 			}
@@ -439,7 +439,7 @@ function configureCrashReporter() {
 		// Crashes are stored in the crashDumps directory by default, so we
 		// need to change that directory to the provided one
 		console.log(
-			`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`,
+			`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`
 		);
 		app.setPath("crashDumps", crashReporterDirectory);
 	}
@@ -486,7 +486,7 @@ function configureCrashReporter() {
 					"&iid=",
 					crashReporterId,
 					"&sid=",
-					crashReporterId,
+					crashReporterId
 				);
 				// Send the id for child node process that are explicitly starting crash reporter.
 				// For vscode this is ExtensionHost process currently.
@@ -502,7 +502,7 @@ function configureCrashReporter() {
 						endOfArgsMarkerIndex,
 						0,
 						"--crash-reporter-id",
-						crashReporterId,
+						crashReporterId
 					);
 				}
 			}
@@ -519,7 +519,7 @@ function configureCrashReporter() {
 			? product.crashReporter.companyName
 			: undefined) || "Microsoft";
 	const uploadToServer = Boolean(
-		!process.env["VSCODE_DEV"] && submitURL && !crashReporterDirectory,
+		!process.env["VSCODE_DEV"] && submitURL && !crashReporterDirectory
 	);
 	crashReporter.start({
 		companyName,
@@ -644,7 +644,7 @@ function getCodeCachePath() {
 function mkdirp(dir) {
 	return new Promise((resolve, reject) => {
 		fs.mkdir(dir, { recursive: true }, (err) =>
-			err && err.code !== "EEXIST" ? reject(err) : resolve(dir),
+			err && err.code !== "EEXIST" ? reject(err) : resolve(dir)
 		);
 	});
 }
@@ -729,7 +729,7 @@ async function resolveNlsConfiguration() {
 		userDataPath,
 		metaDataFile,
 		appLocale,
-		osLocale,
+		osLocale
 	);
 	return (
 		nlsConfiguration ?? { locale: "en", osLocale, availableLanguages: {} }

@@ -46,15 +46,24 @@ export class DialogHandlerContribution
 	) {
 		super();
 
-		this.impl = new BrowserDialogHandler(logService, layoutService, keybindingService, instantiationService, productService, clipboardService);
+		this.impl = new BrowserDialogHandler(
+			logService,
+			layoutService,
+			keybindingService,
+			instantiationService,
+			productService,
+			clipboardService
+		);
 
 		this.model = (this.dialogService as DialogService).model;
 
-		this._register(this.model.onWillShowDialog(() => {
-			if (!this.currentDialog) {
-				this.processDialogs();
-			}
-		}));
+		this._register(
+			this.model.onWillShowDialog(() => {
+				if (!this.currentDialog) {
+					this.processDialogs();
+				}
+			})
+		);
 
 		this.processDialogs();
 	}
@@ -88,9 +97,9 @@ export class DialogHandlerContribution
 }
 
 const workbenchRegistry = Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 );
 workbenchRegistry.registerWorkbenchContribution(
 	DialogHandlerContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );

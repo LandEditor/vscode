@@ -177,7 +177,7 @@ const WINDOWS_FORBIDDEN_NAMES =
 	/^(con|prn|aux|clock\$|nul|lpt[0-9]|com[0-9])(\.(.*?))?$/i;
 export function isValidBasename(
 	name: string | null | undefined,
-	isWindowsOS: boolean = isWindows,
+	isWindowsOS: boolean = isWindows
 ): boolean {
 	const invalidFileChars = isWindowsOS
 		? WINDOWS_INVALID_FILE_CHARS
@@ -223,7 +223,7 @@ export function isValidBasename(
 export function isEqual(
 	pathA: string,
 	pathB: string,
-	ignoreCase?: boolean,
+	ignoreCase?: boolean
 ): boolean {
 	const identityEquals = pathA === pathB;
 	if (!ignoreCase || identityEquals) {
@@ -246,7 +246,7 @@ export function isEqualOrParent(
 	base: string,
 	parentCandidate: string,
 	ignoreCase?: boolean,
-	separator = sep,
+	separator = sep
 ): boolean {
 	if (base === parentCandidate) {
 		return true;
@@ -346,7 +346,7 @@ export function isRootOrDriveLetter(path: string): boolean {
 
 export function hasDriveLetter(
 	path: string,
-	isWindowsOS: boolean = isWindows,
+	isWindowsOS: boolean = isWindows
 ): boolean {
 	if (isWindowsOS) {
 		return (
@@ -360,7 +360,7 @@ export function hasDriveLetter(
 
 export function getDriveLetter(
 	path: string,
-	isWindowsOS: boolean = isWindows,
+	isWindowsOS: boolean = isWindows
 ): string | undefined {
 	return hasDriveLetter(path, isWindowsOS) ? path[0] : undefined;
 }
@@ -368,7 +368,7 @@ export function getDriveLetter(
 export function indexOfPath(
 	path: string,
 	candidate: string,
-	ignoreCase?: boolean,
+	ignoreCase?: boolean
 ): number {
 	if (candidate.length > path.length) {
 		return -1;
@@ -393,7 +393,7 @@ export interface IPathWithLineAndColumn {
 }
 
 export function parseLineAndColumnAware(
-	rawPath: string,
+	rawPath: string
 ): IPathWithLineAndColumn {
 	const segments = rawPath.split(":"); // C:\file.txt:<line>:<column>
 
@@ -432,7 +432,7 @@ const windowsSafePathFirstChars =
 export function randomPath(
 	parent?: string,
 	prefix?: string,
-	randomLength = 8,
+	randomLength = 8
 ): string {
 	let suffix = "";
 	for (let i = 0; i < randomLength; i++) {
@@ -455,7 +455,7 @@ export function randomPath(
 		}
 
 		suffix += pathCharsTouse.charAt(
-			Math.floor(Math.random() * pathCharsTouse.length),
+			Math.floor(Math.random() * pathCharsTouse.length)
 		);
 	}
 

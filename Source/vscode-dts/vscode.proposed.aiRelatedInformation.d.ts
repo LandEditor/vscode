@@ -39,14 +39,14 @@ declare module "vscode" {
 	export interface RelatedInformationProvider {
 		provideRelatedInformation(
 			query: string,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<RelatedInformationResult[]>;
 	}
 
 	export interface EmbeddingVectorProvider {
 		provideEmbeddingVector(
 			strings: string[],
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<number[][]>;
 	}
 
@@ -54,15 +54,15 @@ declare module "vscode" {
 		export function getRelatedInformation(
 			query: string,
 			types: RelatedInformationType[],
-			token: CancellationToken,
+			token: CancellationToken
 		): Thenable<RelatedInformationResult[]>;
 		export function registerRelatedInformationProvider(
 			type: RelatedInformationType,
-			provider: RelatedInformationProvider,
+			provider: RelatedInformationProvider
 		): Disposable;
 		export function registerEmbeddingVectorProvider(
 			model: string,
-			provider: EmbeddingVectorProvider,
+			provider: EmbeddingVectorProvider
 		): Disposable;
 	}
 }

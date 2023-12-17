@@ -41,7 +41,7 @@ export interface IconContribution {
 export namespace IconContribution {
 	export function getDefinition(
 		contribution: IconContribution,
-		registry: IIconRegistry,
+		registry: IIconRegistry
 	): IconDefinition | undefined {
 		let definition = contribution.defaults;
 		while (ThemeIcon.isThemeIcon(definition)) {
@@ -83,7 +83,7 @@ export namespace IconFontDefinition {
 			json &&
 			Array.isArray(json.src) &&
 			json.src.every(
-				(s: any) => isString(s.format) && isString(s.location),
+				(s: any) => isString(s.format) && isString(s.location)
 			)
 		) {
 			return {
@@ -116,7 +116,7 @@ export interface IIconRegistry {
 	registerIcon(
 		id: IconIdentifier,
 		defaults: IconDefaults,
-		description?: string,
+		description?: string
 	): ThemeIcon;
 
 	/**
@@ -151,7 +151,7 @@ export interface IIconRegistry {
 	 */
 	registerIconFont(
 		id: string,
-		definition: IconFontDefinition,
+		definition: IconFontDefinition
 	): IconFontDefinition;
 
 	/**
@@ -179,14 +179,14 @@ class IconRegistry implements IIconRegistry {
 						type: "string",
 						description: localize(
 							"iconDefinition.fontId",
-							"The id of the font to use. If not set, the font that is defined first is used.",
+							"The id of the font to use. If not set, the font that is defined first is used."
 						),
 					},
 					fontCharacter: {
 						type: "string",
 						description: localize(
 							"iconDefinition.fontCharacter",
-							"The font character associated with the icon definition.",
+							"The font character associated with the icon definition."
 						),
 					},
 				},
@@ -218,15 +218,14 @@ class IconRegistry implements IIconRegistry {
 		id: string,
 		defaults: IconDefaults,
 		description?: string,
-		deprecationMessage?: string,
+		deprecationMessage?: string
 	): ThemeIcon {
 		const existing = this.iconsById[id];
 		if (existing) {
 			if (description && !existing.description) {
 				existing.description = description;
-				this.iconSchema.properties[
-					id
-				].markdownDescription = `${description} $(${id})`;
+				this.iconSchema.properties[id].markdownDescription =
+					`${description} $(${id})`;
 				const enumIndex = this.iconReferenceSchema.enum.indexOf(id);
 				if (enumIndex !== -1) {
 					this.iconReferenceSchema.enumDescriptions[enumIndex] =
@@ -287,7 +286,7 @@ class IconRegistry implements IIconRegistry {
 
 	public registerIconFont(
 		id: string,
-		definition: IconFontDefinition,
+		definition: IconFontDefinition
 	): IconFontDefinition {
 		const existing = this.iconFontsById[id];
 		if (existing) {
@@ -320,13 +319,13 @@ class IconRegistry implements IIconRegistry {
 		const reference = [];
 
 		reference.push(
-			`| preview     | identifier                        | default codicon ID                | description`,
+			`| preview     | identifier                        | default codicon ID                | description`
 		);
 		reference.push(
-			`| ----------- | --------------------------------- | --------------------------------- | --------------------------------- |`,
+			`| ----------- | --------------------------------- | --------------------------------- | --------------------------------- |`
 		);
 		const contributions = Object.keys(this.iconsById).map(
-			(key) => this.iconsById[key],
+			(key) => this.iconsById[key]
 		);
 
 		for (const i of contributions
@@ -335,7 +334,7 @@ class IconRegistry implements IIconRegistry {
 			reference.push(
 				`|<i class="${classNames(i)}"></i>|${i.id}|${
 					ThemeIcon.isThemeIcon(i.defaults) ? i.defaults.id : i.id
-				}|${i.description || ""}|`,
+				}|${i.description || ""}|`
 			);
 		}
 
@@ -359,13 +358,13 @@ export function registerIcon(
 	id: string,
 	defaults: IconDefaults,
 	description: string,
-	deprecationMessage?: string,
+	deprecationMessage?: string
 ): ThemeIcon {
 	return iconRegistry.registerIcon(
 		id,
 		defaults,
 		description,
-		deprecationMessage,
+		deprecationMessage
 	);
 }
 
@@ -385,13 +384,13 @@ initialize();
 export const iconsSchemaId = "vscode://schemas/icons";
 
 const schemaRegistry = platform.Registry.as<IJSONContributionRegistry>(
-	JSONExtensions.JSONContribution,
+	JSONExtensions.JSONContribution
 );
 schemaRegistry.registerSchema(iconsSchemaId, iconRegistry.getIconSchema());
 
 const delayer = new RunOnceScheduler(
 	() => schemaRegistry.notifySchemaChanged(iconsSchemaId),
-	200,
+	200
 );
 iconRegistry.onDidChange(() => {
 	if (!delayer.isScheduled()) {
@@ -406,18 +405,18 @@ iconRegistry.onDidChange(() => {
 export const widgetClose = registerIcon(
 	"widget-close",
 	Codicon.close,
-	localize("widgetClose", "Icon for the close action in widgets."),
+	localize("widgetClose", "Icon for the close action in widgets.")
 );
 
 export const gotoPreviousLocation = registerIcon(
 	"goto-previous-location",
 	Codicon.arrowUp,
-	localize("previousChangeIcon", "Icon for goto previous editor location."),
+	localize("previousChangeIcon", "Icon for goto previous editor location.")
 );
 export const gotoNextLocation = registerIcon(
 	"goto-next-location",
 	Codicon.arrowDown,
-	localize("nextChangeIcon", "Icon for goto next editor location."),
+	localize("nextChangeIcon", "Icon for goto next editor location.")
 );
 
 export const syncing = ThemeIcon.modify(Codicon.sync, "spin");

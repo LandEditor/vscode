@@ -28,13 +28,13 @@ export class CommentThreadAdditionalActions<
 		private _commentThread: languages.CommentThread<T>,
 		private _contextKeyService: IContextKeyService,
 		private _commentMenus: CommentMenus,
-		private _actionRunDelegate: (() => void) | null,
+		private _actionRunDelegate: (() => void) | null
 	) {
 		super();
 
 		this._container = dom.append(
 			container,
-			dom.$(".comment-additional-actions"),
+			dom.$(".comment-additional-actions")
 		);
 		dom.append(this._container, dom.$(".section-separator"));
 
@@ -77,17 +77,17 @@ export class CommentThreadAdditionalActions<
 
 	private _createAdditionalActions(container: HTMLElement) {
 		const menu = this._commentMenus.getCommentThreadAdditionalActions(
-			this._contextKeyService,
+			this._contextKeyService
 		);
 		this._register(menu);
 		this._register(
 			menu.onDidChange(() => {
 				this._commentFormActions.setActions(
 					menu,
-					/*hasOnlySecondaryActions*/ true,
+					/*hasOnlySecondaryActions*/ true
 				);
 				this._enableDisableMenu(menu);
-			}),
+			})
 		);
 
 		this._commentFormActions = new CommentFormActions(
@@ -100,13 +100,13 @@ export class CommentThreadAdditionalActions<
 					$mid: MarshalledId.CommentThreadInstance,
 				});
 			},
-			4,
+			4
 		);
 
 		this._register(this._commentFormActions);
 		this._commentFormActions.setActions(
 			menu,
-			/*hasOnlySecondaryActions*/ true,
+			/*hasOnlySecondaryActions*/ true
 		);
 		this._enableDisableMenu(menu);
 	}

@@ -11,7 +11,7 @@ function log(...args) {
 	console.log(
 		`[${new Date().toLocaleTimeString("en", { hour12: false })}]`,
 		"[distro]",
-		...args,
+		...args
 	);
 }
 function mixin(mixinPath) {
@@ -21,7 +21,7 @@ function mixin(mixinPath) {
 	}
 	log(`Mixing in distro npm dependencies: ${mixinPath}`);
 	const distroPackageJson = JSON.parse(
-		fs.readFileSync(`${mixinPath}/package.json`, "utf8"),
+		fs.readFileSync(`${mixinPath}/package.json`, "utf8")
 	);
 	const targetPath = path.relative(".build/distro/npm", mixinPath);
 	for (const dependency of Object.keys(distroPackageJson.dependencies)) {
@@ -32,7 +32,7 @@ function mixin(mixinPath) {
 		fs.cpSync(
 			`${mixinPath}/node_modules/${dependency}`,
 			`./${targetPath}/node_modules/${dependency}`,
-			{ recursive: true, force: true, dereference: true },
+			{ recursive: true, force: true, dereference: true }
 		);
 	}
 	log(`Mixed in distro npm dependencies: ${mixinPath} ✔︎`);

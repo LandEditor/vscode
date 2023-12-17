@@ -125,94 +125,137 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IListService listService: IListService,
 		@IThemeService themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IDecorationsService decorationsService: IDecorationsService,
 		@IThemeService private readonly _themeService: IThemeService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IHoverService private readonly _hoverService: IHoverService,
+		@IHoverService private readonly _hoverService: IHoverService
 	) {
-		super('TerminalTabsList', container,
+		super(
+			"TerminalTabsList",
+			container,
 			{
 				getHeight: () => TerminalTabsListSizes.TabHeight,
-				getTemplateId: () => 'terminal.tabs'
+				getTemplateId: () => "terminal.tabs",
 			},
-			[instantiationService.createInstance(TerminalTabsRenderer, container, instantiationService.createInstance(ResourceLabels, DEFAULT_LABELS_CONTAINER), () => this.getSelectedElements())],
+			[
+				instantiationService.createInstance(
+					TerminalTabsRenderer,
+					container,
+					instantiationService.createInstance(
+						ResourceLabels,
+						DEFAULT_LABELS_CONTAINER
+					),
+					() => this.getSelectedElements()
+				),
+			],
 			{
 				horizontalScrolling: false,
 				supportDynamicHeights: false,
 				selectionNavigation: true,
 				identityProvider: {
-					getId: e => e?.instanceId
+					getId: (e) => e?.instanceId,
 				},
-				accessibilityProvider: instantiationService.createInstance(TerminalTabsAccessibilityProvider),
-				smoothScrolling: _configurationService.getValue<boolean>('workbench.list.smoothScrolling'),
+				accessibilityProvider: instantiationService.createInstance(
+					TerminalTabsAccessibilityProvider
+				),
+				smoothScrolling: _configurationService.getValue<boolean>(
+					"workbench.list.smoothScrolling"
+				),
 				multipleSelectionSupport: true,
 				paddingBottom: TerminalTabsListSizes.TabHeight,
-				dnd: instantiationService.createInstance(TerminalTabsDragAndDrop),
-				openOnSingleClick: true
+				dnd: instantiationService.createInstance(
+					TerminalTabsDragAndDrop
+				),
+				openOnSingleClick: true,
 			},
 			contextKeyService,
 			listService,
 			_configurationService,
-			instantiationService,
+			instantiationService
 		);
 
 		const instanceDisposables: IDisposable[] = [
-			this._terminalGroupService.onDidChangeInstances(() => this.refresh()),
+			this._terminalGroupService.onDidChangeInstances(() =>
+				this.refresh()
+			),
 			this._terminalGroupService.onDidChangeGroups(() => this.refresh()),
 			this._terminalGroupService.onDidShow(() => this.refresh()),
-			this._terminalGroupService.onDidChangeInstanceCapability(() => this.refresh()),
-			this._terminalService.onAnyInstanceTitleChange(() => this.refresh()),
+			this._terminalGroupService.onDidChangeInstanceCapability(() =>
+				this.refresh()
+			),
+			this._terminalService.onAnyInstanceTitleChange(() =>
+				this.refresh()
+			),
 			this._terminalService.onAnyInstanceIconChange(() => this.refresh()),
-			this._terminalService.onAnyInstancePrimaryStatusChange(() => this.refresh()),
-			this._terminalService.onDidChangeConnectionState(() => this.refresh()),
+			this._terminalService.onAnyInstancePrimaryStatusChange(() =>
+				this.refresh()
+			),
+			this._terminalService.onDidChangeConnectionState(() =>
+				this.refresh()
+			),
 			this._themeService.onDidColorThemeChange(() => this.refresh()),
-			this._terminalGroupService.onDidChangeActiveInstance(e => {
+			this._terminalGroupService.onDidChangeActiveInstance((e) => {
 				if (e) {
 					const i = this._terminalGroupService.instances.indexOf(e);
 					this.setSelection([i]);
 					this.reveal(i);
 				}
 				this.refresh();
-			})
+			}),
 		];
 
 		// Dispose of instance listeners on shutdown to avoid extra work and so tabs don't disappear
 		// briefly
-		lifecycleService.onWillShutdown(e => {
+		lifecycleService.onWillShutdown((e) => {
 			dispose(instanceDisposables);
 		});
 
-		this.onMouseDblClick(async e => {
+		this.onMouseDblClick(async (e) => {
 			const focus = this.getFocus();
 			if (focus.length === 0) {
-				const instance = await this._terminalService.createTerminal({ location: TerminalLocation.Panel });
+				const instance = await this._terminalService.createTerminal({
+					location: TerminalLocation.Panel,
+				});
 				this._terminalGroupService.setActiveInstance(instance);
 				await instance.focusWhenReady();
 			}
 
-			if (this._terminalService.getEditingTerminal()?.instanceId === e.element?.instanceId) {
+			if (
+				this._terminalService.getEditingTerminal()?.instanceId ===
+				e.element?.instanceId
+			) {
 				return;
 			}
 
-			if (this._getFocusMode() === 'doubleClick' && this.getFocus().length === 1) {
+			if (
+				this._getFocusMode() === "doubleClick" &&
+				this.getFocus().length === 1
+			) {
 				e.element?.focus(true);
 			}
 		});
 
 		// on left click, if focus mode = single click, focus the element
 		// unless multi-selection is in progress
-		this.onMouseClick(async e => {
-			if (this._terminalService.getEditingTerminal()?.instanceId === e.element?.instanceId) {
+		this.onMouseClick(async (e) => {
+			if (
+				this._terminalService.getEditingTerminal()?.instanceId ===
+				e.element?.instanceId
+			) {
 				return;
 			}
 
 			if (e.browserEvent.altKey && e.element) {
-				await this._terminalService.createTerminal({ location: { parentTerminal: e.element } });
-			} else if (this._getFocusMode() === 'singleClick') {
+				await this._terminalService.createTerminal({
+					location: { parentTerminal: e.element },
+				});
+			} else if (this._getFocusMode() === "singleClick") {
 				if (this.getSelection().length <= 1) {
 					e.element?.focus(true);
 				}
@@ -221,24 +264,26 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 
 		// on right click, set the focus to that element
 		// unless multi-selection is in progress
-		this.onContextMenu(e => {
+		this.onContextMenu((e) => {
 			if (!e.element) {
 				this.setSelection([]);
 				return;
 			}
 			const selection = this.getSelectedElements();
-			if (!selection || !selection.find(s => e.element === s)) {
+			if (!selection || !selection.find((s) => e.element === s)) {
 				this.setFocus(e.index !== undefined ? [e.index] : []);
 			}
 		});
 
-		this._terminalTabsSingleSelectedContextKey = TerminalContextKeys.tabsSingularSelection.bindTo(contextKeyService);
-		this._isSplitContextKey = TerminalContextKeys.splitTerminal.bindTo(contextKeyService);
+		this._terminalTabsSingleSelectedContextKey =
+			TerminalContextKeys.tabsSingularSelection.bindTo(contextKeyService);
+		this._isSplitContextKey =
+			TerminalContextKeys.splitTerminal.bindTo(contextKeyService);
 
-		this.onDidChangeSelection(e => this._updateContextKey());
+		this.onDidChangeSelection((e) => this._updateContextKey());
 		this.onDidChangeFocus(() => this._updateContextKey());
 
-		this.onDidOpen(async e => {
+		this.onDidOpen(async (e) => {
 			const instance = e.element;
 			if (!instance) {
 				return;
@@ -249,8 +294,14 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 			}
 		});
 		if (!this._decorationsProvider) {
-			this._decorationsProvider = this.disposables.add(instantiationService.createInstance(TabDecorationsProvider));
-			this.disposables.add(decorationsService.registerDecorationsProvider(this._decorationsProvider));
+			this._decorationsProvider = this.disposables.add(
+				instantiationService.createInstance(TabDecorationsProvider)
+			);
+			this.disposables.add(
+				decorationsService.registerDecorationsProvider(
+					this._decorationsProvider
+				)
+			);
 		}
 		this.refresh();
 	}
@@ -269,7 +320,7 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 		this.splice(
 			0,
 			this.length,
-			this._terminalGroupService.instances.slice(),
+			this._terminalGroupService.instances.slice()
 		);
 	}
 
@@ -285,18 +336,18 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 				target: this.getHTMLElement(),
 				trapFocus: true,
 			},
-			true,
+			true
 		);
 	}
 
 	private _updateContextKey() {
 		this._terminalTabsSingleSelectedContextKey.set(
-			this.getSelectedElements().length === 1,
+			this.getSelectedElements().length === 1
 		);
 		const instance = this.getFocusedElements();
 		this._isSplitContextKey.set(
 			instance.length > 0 &&
-				this._terminalGroupService.instanceIsSplit(instance[0]),
+				this._terminalGroupService.instanceIsSplit(instance[0])
 		);
 	}
 }
@@ -310,17 +361,21 @@ class TerminalTabsRenderer
 		private readonly _container: HTMLElement,
 		private readonly _labels: ResourceLabels,
 		private readonly _getSelection: () => ITerminalInstance[],
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IHoverService private readonly _hoverService: IHoverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IListService private readonly _listService: IListService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IContextViewService private readonly _contextViewService: IContextViewService
-	) {
-	}
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService
+	) {}
 
 	renderTemplate(container: HTMLElement): ITerminalTabEntryTemplate {
 		const element = DOM.append(container, $(".terminal-tabs-entry"));
@@ -331,7 +386,7 @@ class TerminalTabsRenderer
 			supportIcons: true,
 			hoverDelegate: {
 				delay: this._configurationService.getValue<number>(
-					"workbench.hover.delay",
+					"workbench.hover.delay"
 				),
 				showHover: (options) => {
 					return this._hoverService.showHover({
@@ -354,8 +409,8 @@ class TerminalTabsRenderer
 					? this._instantiationService.createInstance(
 							MenuEntryActionViewItem,
 							action,
-							undefined,
-					  )
+							undefined
+						)
 					: undefined,
 		});
 
@@ -385,21 +440,21 @@ class TerminalTabsRenderer
 	renderElement(
 		instance: ITerminalInstance,
 		index: number,
-		template: ITerminalTabEntryTemplate,
+		template: ITerminalTabEntryTemplate
 	): void {
 		const hasText = !this.shouldHideText();
 
 		const group = this._terminalGroupService.getGroupForInstance(instance);
 		if (!group) {
 			throw new Error(
-				`Could not find group for instance "${instance.instanceId}"`,
+				`Could not find group for instance "${instance.instanceId}"`
 			);
 		}
 
 		template.element.classList.toggle("has-text", hasText);
 		template.element.classList.toggle(
 			"is-active",
-			this._terminalGroupService.activeInstance === instance,
+			this._terminalGroupService.activeInstance === instance
 		);
 
 		let prefix: string = "";
@@ -419,7 +474,7 @@ class TerminalTabsRenderer
 
 		const iconId = this._instantiationService.invokeFunction(
 			getIconId,
-			instance,
+			instance
 		);
 		const hasActionbar = !this.shouldHideActionBar();
 		let label: string = "";
@@ -455,8 +510,8 @@ class TerminalTabsRenderer
 					if (e.button === 1 /*middle*/) {
 						this._terminalService.safeDisposeTerminal(instance);
 					}
-				},
-			),
+				}
+			)
 		);
 
 		const extraClasses: string[] = [];
@@ -466,7 +521,7 @@ class TerminalTabsRenderer
 		}
 		const uriClasses = getUriClasses(
 			instance,
-			this._themeService.getColorTheme().type,
+			this._themeService.getColorTheme().type
 		);
 		if (uriClasses) {
 			extraClasses.push(...uriClasses);
@@ -488,7 +543,7 @@ class TerminalTabsRenderer
 					markdownNotSupportedFallback: undefined,
 				},
 				extraClasses,
-			},
+			}
 		);
 		const editableData = this._terminalService.getEditableData(instance);
 		template.label.element.classList.toggle("editable-tab", !!editableData);
@@ -496,11 +551,11 @@ class TerminalTabsRenderer
 			template.elementDisposables.add(
 				this._renderInputBox(
 					template.label.element.querySelector(
-						".monaco-icon-label-container",
+						".monaco-icon-label-container"
 					)!,
 					instance,
-					editableData,
-				),
+					editableData
+				)
 			);
 			template.actionBar.clear();
 		}
@@ -509,7 +564,7 @@ class TerminalTabsRenderer
 	private _renderInputBox(
 		container: HTMLElement,
 		instance: ITerminalInstance,
-		editableData: IEditableData,
+		editableData: IEditableData
 	): IDisposable {
 		const value = instance.title || "";
 
@@ -530,7 +585,7 @@ class TerminalTabsRenderer
 			},
 			ariaLabel: localize(
 				"terminalInputAriaLabel",
-				"Type terminal name. Press Enter to confirm or Escape to cancel.",
+				"Type terminal name. Press Enter to confirm or Escape to cancel."
 			),
 			inputBoxStyles: defaultInputBoxStyles,
 		});
@@ -548,7 +603,7 @@ class TerminalTabsRenderer
 				if (finishEditing) {
 					editableData.onFinish(value, success);
 				}
-			},
+			}
 		);
 
 		const showInputBoxNotification = () => {
@@ -562,8 +617,8 @@ class TerminalTabsRenderer
 							message.severity === Severity.Info
 								? MessageType.INFO
 								: message.severity === Severity.Warning
-								  ? MessageType.WARNING
-								  : MessageType.ERROR,
+									? MessageType.WARNING
+									: MessageType.ERROR,
 					});
 				} else {
 					inputBox.hideMessage();
@@ -584,21 +639,21 @@ class TerminalTabsRenderer
 					} else if (e.equals(KeyCode.Escape)) {
 						done(false, true);
 					}
-				},
+				}
 			),
 			DOM.addStandardDisposableListener(
 				inputBox.inputElement,
 				DOM.EventType.KEY_UP,
 				(e: IKeyboardEvent) => {
 					showInputBoxNotification();
-				},
+				}
 			),
 			DOM.addDisposableListener(
 				inputBox.inputElement,
 				DOM.EventType.BLUR,
 				() => {
 					done(inputBox.isInputValid(), true);
-				},
+				}
 			),
 		];
 
@@ -610,7 +665,7 @@ class TerminalTabsRenderer
 	disposeElement(
 		instance: ITerminalInstance,
 		index: number,
-		templateData: ITerminalTabEntryTemplate,
+		templateData: ITerminalTabEntryTemplate
 	): void {
 		templateData.elementDisposables.clear();
 		templateData.actionBar.clear();
@@ -624,7 +679,7 @@ class TerminalTabsRenderer
 
 	fillActionBar(
 		instance: ITerminalInstance,
-		template: ITerminalTabEntryTemplate,
+		template: ITerminalTabEntryTemplate
 	): void {
 		// If the instance is within the selection, split all selected
 		const actions = [
@@ -639,7 +694,7 @@ class TerminalTabsRenderer
 							location: { parentTerminal: e },
 						});
 					});
-				},
+				}
 			),
 			new Action(
 				TerminalCommandId.KillActiveTab,
@@ -648,9 +703,9 @@ class TerminalTabsRenderer
 				true,
 				async () => {
 					this._runForSelectionOrInstance(instance, (e) =>
-						this._terminalService.safeDisposeTerminal(e),
+						this._terminalService.safeDisposeTerminal(e)
 					);
-				},
+				}
 			),
 		];
 		// TODO: Cache these in a way that will use the correct instance
@@ -668,7 +723,7 @@ class TerminalTabsRenderer
 
 	private _runForSelectionOrInstance(
 		instance: ITerminalInstance,
-		callback: (instance: ITerminalInstance) => void,
+		callback: (instance: ITerminalInstance) => void
 	) {
 		const selection = this._getSelection();
 		if (selection.includes(instance)) {
@@ -699,8 +754,9 @@ class TerminalTabsAccessibilityProvider
 	implements IListAccessibilityProvider<ITerminalInstance>
 {
 	constructor(
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-	) { }
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService
+	) {}
 
 	getWidgetAriaLabel(): string {
 		return localize("terminal.tabs", "Terminal tabs");
@@ -725,7 +781,7 @@ class TerminalTabsAccessibilityProvider
 				instance.instanceId,
 				instance.title,
 				terminalIndex + 1,
-				tab.terminalInstances.length,
+				tab.terminalInstances.length
 			);
 		} else {
 			ariaLabel = localize(
@@ -735,7 +791,7 @@ class TerminalTabsAccessibilityProvider
 				},
 				"Terminal {0} {1}",
 				instance.instanceId,
-				instance.title,
+				instance.title
 			);
 		}
 		return ariaLabel;
@@ -752,7 +808,8 @@ class TerminalTabsDragAndDrop
 
 	constructor(
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService
 	) {
 		super();
 		this._primaryBackend = this._terminalService.getPrimaryBackend();
@@ -771,7 +828,7 @@ class TerminalTabsDragAndDrop
 
 	getDragLabel?(
 		elements: ITerminalInstance[],
-		originalEvent: DragEvent,
+		originalEvent: DragEvent
 	): string | undefined {
 		return elements.length === 1 ? elements[0].title : undefined;
 	}
@@ -792,12 +849,12 @@ class TerminalTabsDragAndDrop
 		}
 		// Attach terminals type to event
 		const terminals: ITerminalInstance[] = dndData.filter(
-			(e) => "instanceId" in (e as any),
+			(e) => "instanceId" in (e as any)
 		);
 		if (terminals.length > 0) {
 			originalEvent.dataTransfer.setData(
 				TerminalDataTransfers.Terminals,
-				JSON.stringify(terminals.map((e) => e.resource.toString())),
+				JSON.stringify(terminals.map((e) => e.resource.toString()))
 			);
 		}
 	}
@@ -806,7 +863,7 @@ class TerminalTabsDragAndDrop
 		data: IDragAndDropData,
 		targetInstance: ITerminalInstance | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent,
+		originalEvent: DragEvent
 	): boolean | IListDragOverReaction {
 		if (data instanceof NativeDragAndDropData) {
 			if (
@@ -815,7 +872,7 @@ class TerminalTabsDragAndDrop
 					DataTransfers.FILES,
 					DataTransfers.RESOURCES,
 					TerminalDataTransfers.Terminals,
-					CodeDataTransfers.FILES,
+					CodeDataTransfers.FILES
 				)
 			) {
 				return false;
@@ -843,7 +900,7 @@ class TerminalTabsDragAndDrop
 					this._autoFocusInstance = undefined;
 				},
 				500,
-				this._store,
+				this._store
 			);
 		}
 
@@ -858,7 +915,7 @@ class TerminalTabsDragAndDrop
 		data: IDragAndDropData,
 		targetInstance: ITerminalInstance | undefined,
 		targetIndex: number | undefined,
-		originalEvent: DragEvent,
+		originalEvent: DragEvent
 	): Promise<void> {
 		this._autoFocusDisposable.dispose();
 		this._autoFocusInstance = undefined;
@@ -879,8 +936,8 @@ class TerminalTabsDragAndDrop
 						promises.push(
 							this._primaryBackend.requestDetachInstance(
 								terminalIdentifier.workspaceId,
-								terminalIdentifier.instanceId,
-							),
+								terminalIdentifier.instanceId
+							)
 						);
 					}
 				}
@@ -939,7 +996,7 @@ class TerminalTabsDragAndDrop
 
 	private async _handleExternalDrop(
 		instance: ITerminalInstance | undefined,
-		e: DragEvent,
+		e: DragEvent
 	) {
 		if (!instance || !e.dataTransfer) {
 			return;
@@ -990,7 +1047,11 @@ class TabDecorationsProvider
 		@ITerminalService private readonly _terminalService: ITerminalService
 	) {
 		super();
-		this._register(this._terminalService.onAnyInstancePrimaryStatusChange(e => this._onDidChange.fire([e.resource])));
+		this._register(
+			this._terminalService.onAnyInstancePrimaryStatusChange((e) =>
+				this._onDidChange.fire([e.resource])
+			)
+		);
 	}
 
 	provideDecorations(resource: URI): IDecorationData | undefined {

@@ -19,12 +19,16 @@ import { IStorageService } from "vs/platform/storage/common/storage";
 
 export class ExtensionsContributions extends Disposable {
 	constructor(
-		@INativeServerExtensionManagementService extensionManagementService: INativeServerExtensionManagementService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@IExtensionStorageService extensionStorageService: IExtensionStorageService,
-		@IGlobalExtensionEnablementService extensionEnablementService: IGlobalExtensionEnablementService,
+		@INativeServerExtensionManagementService
+		extensionManagementService: INativeServerExtensionManagementService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@IExtensionStorageService
+		extensionStorageService: IExtensionStorageService,
+		@IGlobalExtensionEnablementService
+		extensionEnablementService: IGlobalExtensionEnablementService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		super();
 
@@ -34,11 +38,11 @@ export class ExtensionsContributions extends Disposable {
 			extensionGalleryService,
 			extensionStorageService,
 			extensionEnablementService,
-			logService,
+			logService
 		);
 		ExtensionStorageService.removeOutdatedExtensionVersions(
 			extensionManagementService,
-			storageService,
+			storageService
 		);
 	}
 }

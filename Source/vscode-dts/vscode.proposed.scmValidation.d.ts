@@ -47,7 +47,7 @@ declare module "vscode" {
 		 */
 		showValidationMessage(
 			message: string | MarkdownString,
-			type: SourceControlInputBoxValidationType,
+			type: SourceControlInputBoxValidationType
 		): void;
 
 		/**
@@ -56,7 +56,7 @@ declare module "vscode" {
 		 */
 		validateInput?(
 			value: string,
-			cursorPosition: number,
+			cursorPosition: number
 		): ProviderResult<SourceControlInputBoxValidation>;
 	}
 }

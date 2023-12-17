@@ -35,14 +35,14 @@ export interface IChatAgent extends IChatAgentData {
 		request: IChatAgentRequest,
 		progress: (part: IChatProgress) => void,
 		history: IChatMessage[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentResult>;
 	provideFollowups?(
 		sessionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatFollowup[]>;
 	provideSlashCommands(
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentCommand[]>;
 }
 
@@ -117,12 +117,12 @@ export interface IChatAgentService {
 		request: IChatAgentRequest,
 		progress: (part: IChatProgress) => void,
 		history: IChatMessage[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentResult>;
 	getFollowups(
 		id: string,
 		sessionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatFollowup[]>;
 	getAgents(): Array<IChatAgent>;
 	getAgent(id: string): IChatAgent | undefined;
@@ -173,14 +173,14 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 	getDefaultAgent(): IChatAgent | undefined {
 		return Iterable.find(
 			this._agents.values(),
-			(a) => !!a.agent.metadata.isDefault,
+			(a) => !!a.agent.metadata.isDefault
 		)?.agent;
 	}
 
 	getSecondaryAgent(): IChatAgent | undefined {
 		return Iterable.find(
 			this._agents.values(),
-			(a) => !!a.agent.metadata.isSecondary,
+			(a) => !!a.agent.metadata.isSecondary
 		)?.agent;
 	}
 
@@ -202,7 +202,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 		request: IChatAgentRequest,
 		progress: (part: IChatProgress) => void,
 		history: IChatMessage[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatAgentResult> {
 		const data = this._agents.get(id);
 		if (!data) {
@@ -215,7 +215,7 @@ export class ChatAgentService extends Disposable implements IChatAgentService {
 	async getFollowups(
 		id: string,
 		sessionId: string,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<IChatFollowup[]> {
 		const data = this._agents.get(id);
 		if (!data) {

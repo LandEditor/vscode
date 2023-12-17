@@ -22,7 +22,7 @@ declare module "vscode" {
 		/** @deprecated */
 		export function getTokenInformationAtPosition(
 			document: TextDocument,
-			position: Position,
+			position: Position
 		): Thenable<TokenInformation>;
 	}
 }

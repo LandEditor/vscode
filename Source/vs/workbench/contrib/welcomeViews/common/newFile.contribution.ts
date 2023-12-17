@@ -70,7 +70,7 @@ registerAction2(
 		async run(accessor: ServicesAccessor): Promise<boolean> {
 			return assertIsDefined(NewFileTemplatesManager.Instance).run();
 		}
-	},
+	}
 );
 
 type NewFileItem = {
@@ -86,17 +86,26 @@ class NewFileTemplatesManager extends Disposable {
 	private menu: IMenu;
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IMenuService menuService: IMenuService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IMenuService menuService: IMenuService
 	) {
 		super();
 
 		NewFileTemplatesManager.Instance = this;
 
-		this._register({ dispose() { if (NewFileTemplatesManager.Instance === this) { NewFileTemplatesManager.Instance = undefined; } } });
+		this._register({
+			dispose() {
+				if (NewFileTemplatesManager.Instance === this) {
+					NewFileTemplatesManager.Instance = undefined;
+				}
+			},
+		});
 
 		this.menu = menuService.createMenu(MenuId.NewFile, contextKeyService);
 	}
@@ -143,7 +152,7 @@ class NewFileTemplatesManager extends Disposable {
 		qp.title = localize("newFileTitle", "New File...");
 		qp.placeholder = localize(
 			"newFilePlaceholder",
-			"Select File Type or Enter File Name...",
+			"Select File Type or Enter File Name..."
 		);
 		qp.sortByLabel = false;
 		qp.matchOnDetail = true;
@@ -193,7 +202,7 @@ class NewFileTemplatesManager extends Disposable {
 					const command = entry.commandID;
 					const keybinding = this.keybindingService.lookupKeybinding(
 						command || "",
-						this.contextKeyService,
+						this.contextKeyService
 					);
 					if (lastSeparator !== entry.group) {
 						items.push({
@@ -213,10 +222,10 @@ class NewFileTemplatesManager extends Disposable {
 										iconClass: "codicon codicon-gear",
 										tooltip: localize(
 											"change keybinding",
-											"Configure Keybinding",
+											"Configure Keybinding"
 										),
 									},
-							  ]
+								]
 							: [],
 						detail: "",
 						description: entry.from,
@@ -227,7 +236,7 @@ class NewFileTemplatesManager extends Disposable {
 		refreshQp(entries);
 
 		disposables.add(
-			this.menu.onDidChange(() => refreshQp(this.allEntries())),
+			this.menu.onDidChange(() => refreshQp(this.allEntries()))
 		);
 
 		disposables.add(
@@ -246,13 +255,13 @@ class NewFileTemplatesManager extends Disposable {
 					title: localize(
 						"miNewFileWithName",
 						"Create New File ({0})",
-						val,
+						val
 					),
 					group: "file",
 					from: builtInSource,
 				};
 				refreshQp([currentTextEntry, ...entries]);
-			}),
+			})
 		);
 
 		disposables.add(
@@ -265,10 +274,10 @@ class NewFileTemplatesManager extends Disposable {
 				if (selected) {
 					await this.commandService.executeCommand(
 						selected.commandID,
-						selected.commandArgs,
+						selected.commandArgs
 					);
 				}
-			}),
+			})
 		);
 
 		disposables.add(
@@ -276,7 +285,7 @@ class NewFileTemplatesManager extends Disposable {
 				qp.dispose();
 				disposables.dispose();
 				resolveResult(false);
-			}),
+			})
 		);
 
 		disposables.add(
@@ -284,10 +293,10 @@ class NewFileTemplatesManager extends Disposable {
 				qp.hide();
 				this.commandService.executeCommand(
 					"workbench.action.openGlobalKeybindings",
-					(e.item as IQuickPickItem & NewFileItem).commandID,
+					(e.item as IQuickPickItem & NewFileItem).commandID
 				);
 				resolveResult(false);
-			}),
+			})
 		);
 
 		qp.show();
@@ -297,10 +306,10 @@ class NewFileTemplatesManager extends Disposable {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	NewFileTemplatesManager,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );
 
 MenuRegistry.appendMenuItem(MenuId.NewFile, {

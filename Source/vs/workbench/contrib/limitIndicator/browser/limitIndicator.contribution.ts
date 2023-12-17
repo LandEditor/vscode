@@ -27,7 +27,7 @@ import { ColorDetector } from "vs/editor/contrib/colorPicker/browser/colorDetect
 const openSettingsCommand = "workbench.action.openSettings";
 const configureSettingsLabel = nls.localize(
 	"status.button.configure",
-	"Configure",
+	"Configure"
 );
 
 /**
@@ -40,7 +40,7 @@ export class LimitIndicatorContribution
 {
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@ILanguageStatusService languageStatusService: ILanguageStatusService,
+		@ILanguageStatusService languageStatusService: ILanguageStatusService
 	) {
 		super();
 
@@ -50,7 +50,7 @@ export class LimitIndicatorContribution
 		];
 		const statusEntries = accessors.map(
 			(indicator) =>
-				new LanguageStatusEntry(languageStatusService, indicator),
+				new LanguageStatusEntry(languageStatusService, indicator)
 		);
 		statusEntries.forEach((entry) => this._register(entry));
 
@@ -65,11 +65,11 @@ export class LimitIndicatorContribution
 			const editor = getCodeEditor(activeControl);
 
 			statusEntries.forEach((statusEntry) =>
-				statusEntry.onActiveEditorChanged(editor),
+				statusEntry.onActiveEditorChanged(editor)
 			);
 		};
 		this._register(
-			editorService.onDidActiveEditorChange(onActiveEditorChanged),
+			editorService.onDidActiveEditorChange(onActiveEditorChanged)
 		);
 
 		onActiveEditorChanged();
@@ -96,15 +96,15 @@ class ColorDecorationAccessor implements LanguageFeatureAccessor {
 	readonly id = "decoratorsLimitInfo";
 	readonly name = nls.localize(
 		"colorDecoratorsStatusItem.name",
-		"Color Decorator Status",
+		"Color Decorator Status"
 	);
 	readonly label = nls.localize(
 		"status.limitedColorDecorators.short",
-		"Color Decorators",
+		"Color Decorators"
 	);
 	readonly source = nls.localize(
 		"colorDecoratorsStatusItem.source",
-		"Color Decorators",
+		"Color Decorators"
 	);
 	readonly settingsId = "editor.colorDecoratorsLimit";
 
@@ -117,11 +117,11 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
 	readonly id = "foldingLimitInfo";
 	readonly name = nls.localize(
 		"foldingRangesStatusItem.name",
-		"Folding Status",
+		"Folding Status"
 	);
 	readonly label = nls.localize(
 		"status.limitedFoldingRanges.short",
-		"Folding Ranges",
+		"Folding Ranges"
 	);
 	readonly source = nls.localize("foldingRangesStatusItem.source", "Folding");
 	readonly settingsId = "editor.foldingMaximumRegions";
@@ -137,7 +137,7 @@ class LanguageStatusEntry {
 
 	constructor(
 		private languageStatusService: ILanguageStatusService,
-		private accessor: LanguageFeatureAccessor,
+		private accessor: LanguageFeatureAccessor
 	) {}
 
 	onActiveEditorChanged(editor: ICodeEditor | null): boolean {
@@ -175,7 +175,7 @@ class LanguageStatusEntry {
 				detail: nls.localize(
 					"status.limited.details",
 					"only {0} shown for performance reasons",
-					info.limited,
+					info.limited
 				),
 				command: {
 					id: openSettingsCommand,
@@ -200,8 +200,8 @@ class LanguageStatusEntry {
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	LimitIndicatorContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

@@ -30,9 +30,13 @@ export class BufferContentTracker extends Disposable {
 	bufferToEditorLineMapping: Map<number, number> = new Map();
 
 	constructor(
-		private readonly _xterm: Pick<IXtermTerminal, 'getFont'> & { raw: Terminal },
+		private readonly _xterm: Pick<IXtermTerminal, "getFont"> & {
+			raw: Terminal;
+		},
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService) {
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
+	) {
 		super();
 	}
 
@@ -52,12 +56,12 @@ export class BufferContentTracker extends Disposable {
 		this._updateCachedContent();
 		this._updateViewportContent();
 		this._lastCachedMarker = this._register(
-			this._xterm.raw.registerMarker(),
+			this._xterm.raw.registerMarker()
 		);
 		this._logService.debug(
 			"Buffer content tracker: set ",
 			this._lines.length,
-			" lines",
+			" lines"
 		);
 	}
 
@@ -74,7 +78,7 @@ export class BufferContentTracker extends Disposable {
 
 		// to keep the cache size down, remove any lines that are no longer in the scrollback
 		const scrollback: number = this._configurationService.getValue(
-			TerminalSettingId.Scrollback,
+			TerminalSettingId.Scrollback
 		);
 		const maxBufferSize = scrollback + this._xterm.raw.rows - 1;
 		const linesToAdd = end - start;
@@ -88,7 +92,7 @@ export class BufferContentTracker extends Disposable {
 				numToRemove,
 				" lines from top of cached lines, now ",
 				this._lines.length,
-				" lines",
+				" lines"
 			);
 		}
 
@@ -102,7 +106,7 @@ export class BufferContentTracker extends Disposable {
 			}
 			this.bufferToEditorLineMapping.set(
 				i,
-				this._lines.length + cachedLines.length,
+				this._lines.length + cachedLines.length
 			);
 			const isWrapped = buffer.getLine(i + 1)?.isWrapped;
 			currentLine += line.translateToString(!isWrapped);
@@ -119,7 +123,7 @@ export class BufferContentTracker extends Disposable {
 		this._logService.debug(
 			"Buffer content tracker:",
 			cachedLines.length,
-			" lines cached",
+			" lines cached"
 		);
 		this._lines.push(...cachedLines);
 	}
@@ -144,7 +148,7 @@ export class BufferContentTracker extends Disposable {
 		this._logService.debug(
 			"Buffer content tracker: removed lines from viewport, now ",
 			this._lines.length,
-			" lines cached",
+			" lines cached"
 		);
 	}
 
@@ -178,7 +182,7 @@ export class BufferContentTracker extends Disposable {
 		this._logService.debug(
 			"Viewport content update complete, ",
 			this._lines.length,
-			" lines in the viewport",
+			" lines in the viewport"
 		);
 	}
 }

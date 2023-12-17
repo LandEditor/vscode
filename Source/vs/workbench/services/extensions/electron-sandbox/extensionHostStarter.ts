@@ -11,5 +11,5 @@ import {
 
 registerMainProcessRemoteService(
 	IExtensionHostStarter,
-	ipcExtensionHostStarterChannelName,
+	ipcExtensionHostStarterChannelName
 );

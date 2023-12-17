@@ -23,7 +23,7 @@ import {
 export class TaskService extends AbstractTaskService {
 	private static readonly ProcessTaskSystemSupportMessage = nls.localize(
 		"taskService.processTaskSystem",
-		"Process task system is not support in the web.",
+		"Process task system is not support in the web."
 	);
 
 	protected _getTaskSystem(): ITaskSystem {
@@ -44,7 +44,7 @@ export class TaskService extends AbstractTaskService {
 	}
 
 	protected _computeLegacyConfiguration(
-		workspaceFolder: IWorkspaceFolder,
+		workspaceFolder: IWorkspaceFolder
 	): Promise<IWorkspaceFolderConfigurationResult> {
 		throw new Error(TaskService.ProcessTaskSystemSupportMessage);
 	}

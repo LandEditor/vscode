@@ -47,8 +47,10 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IExtensionTipsService private readonly extensionTipsService: IExtensionTipsService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IExtensionTipsService
+		private readonly extensionTipsService: IExtensionTipsService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService
 	) {
 		super();
 	}
@@ -57,8 +59,8 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 		await this.fetch();
 		this._register(
 			this.workspaceContextService.onDidChangeWorkspaceFolders((e) =>
-				this.onWorkspaceFoldersChanged(e),
-			),
+				this.onWorkspaceFoldersChanged(e)
+			)
 		);
 	}
 
@@ -85,18 +87,18 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 		}
 		this.importantTips = [...importantTips.values()];
 		this.otherTips = [...otherTips.values()].filter(
-			(tip) => !importantTips.has(tip.extensionId),
+			(tip) => !importantTips.has(tip.extensionId)
 		);
 		this._otherRecommendations = this.otherTips.map((tip) =>
-			this.toExtensionRecommendation(tip),
+			this.toExtensionRecommendation(tip)
 		);
 		this._importantRecommendations = this.importantTips.map((tip) =>
-			this.toExtensionRecommendation(tip),
+			this.toExtensionRecommendation(tip)
 		);
 	}
 
 	private async onWorkspaceFoldersChanged(
-		event: IWorkspaceFoldersChangeEvent,
+		event: IWorkspaceFoldersChangeEvent
 	): Promise<void> {
 		if (event.added.length) {
 			const oldImportantRecommended = this.importantTips;
@@ -105,8 +107,8 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 			if (
 				this.importantTips.some((current) =>
 					oldImportantRecommended.every(
-						(old) => current.extensionId !== old.extensionId,
-					),
+						(old) => current.extensionId !== old.extensionId
+					)
 				)
 			) {
 				this._onDidChangeRecommendations.fire();
@@ -115,7 +117,7 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 	}
 
 	private toExtensionRecommendation(
-		tip: IConfigBasedExtensionTip,
+		tip: IConfigBasedExtensionTip
 	): ConfigBasedExtensionRecommendation {
 		return {
 			extensionId: tip.extensionId,
@@ -123,7 +125,7 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 				reasonId: ExtensionRecommendationReason.WorkspaceConfig,
 				reasonText: localize(
 					"exeBasedRecommendation",
-					"This extension is recommended because of the current workspace configuration",
+					"This extension is recommended because of the current workspace configuration"
 				),
 			},
 			whenNotInstalled: tip.whenNotInstalled,

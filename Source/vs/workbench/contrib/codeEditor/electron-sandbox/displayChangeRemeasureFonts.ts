@@ -18,20 +18,20 @@ class DisplayChangeRemeasureFonts
 	extends Disposable
 	implements IWorkbenchContribution
 {
-	constructor(
-		@INativeHostService nativeHostService: INativeHostService
-	) {
+	constructor(@INativeHostService nativeHostService: INativeHostService) {
 		super();
 
-		this._register(nativeHostService.onDidChangeDisplay(() => {
-			FontMeasurements.clearAllFontInfos();
-		}));
+		this._register(
+			nativeHostService.onDidChangeDisplay(() => {
+				FontMeasurements.clearAllFontInfos();
+			})
+		);
 	}
 }
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
+	WorkbenchExtensions.Workbench
 ).registerWorkbenchContribution(
 	DisplayChangeRemeasureFonts,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

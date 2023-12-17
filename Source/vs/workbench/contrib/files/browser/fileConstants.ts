@@ -27,7 +27,7 @@ export const SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID =
 	"workbench.action.files.saveWithoutFormatting";
 export const SAVE_FILE_WITHOUT_FORMATTING_LABEL = nls.localize(
 	"saveWithoutFormatting",
-	"Save without Formatting",
+	"Save without Formatting"
 );
 
 export const SAVE_ALL_COMMAND_ID = "saveAll";
@@ -40,25 +40,25 @@ export const SAVE_FILES_COMMAND_ID = "workbench.action.files.saveFiles";
 
 export const OpenEditorsGroupContext = new RawContextKey<boolean>(
 	"groupFocusedInOpenEditors",
-	false,
+	false
 );
 export const OpenEditorsDirtyEditorContext = new RawContextKey<boolean>(
 	"dirtyEditorFocusedInOpenEditors",
-	false,
+	false
 );
 export const OpenEditorsReadonlyEditorContext = new RawContextKey<boolean>(
 	"readonlyEditorFocusedInOpenEditors",
-	false,
+	false
 );
 export const ResourceSelectedForCompareContext = new RawContextKey<boolean>(
 	"resourceSelectedForCompare",
-	false,
+	false
 );
 
 export const REMOVE_ROOT_FOLDER_COMMAND_ID = "removeRootFolder";
 export const REMOVE_ROOT_FOLDER_LABEL = nls.localize(
 	"removeFolderFromWorkspace",
-	"Remove Folder from Workspace",
+	"Remove Folder from Workspace"
 );
 
 export const PREVIOUS_COMPRESSED_FOLDER = "previousCompressedFolder";
@@ -69,6 +69,6 @@ export const NEW_UNTITLED_FILE_COMMAND_ID =
 	"workbench.action.files.newUntitledFile";
 export const NEW_UNTITLED_FILE_LABEL = nls.localize(
 	"newUntitledFile",
-	"New Untitled Text File",
+	"New Untitled Text File"
 );
 export const NEW_FILE_COMMAND_ID = "workbench.action.files.newFile";

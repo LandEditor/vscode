@@ -46,8 +46,10 @@ export class ProtocolMainService
 	]); // https://github.com/microsoft/vscode/issues/119384
 
 	constructor(
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
@@ -58,8 +60,16 @@ export class ProtocolMainService
 		// - storage    : all files in global and workspace storage (https://github.com/microsoft/vscode/issues/116735)
 		this.addValidFileRoot(environmentService.appRoot);
 		this.addValidFileRoot(environmentService.extensionsPath);
-		this.addValidFileRoot(userDataProfilesService.defaultProfile.globalStorageHome.with({ scheme: Schemas.file }).fsPath);
-		this.addValidFileRoot(environmentService.workspaceStorageHome.with({ scheme: Schemas.file }).fsPath);
+		this.addValidFileRoot(
+			userDataProfilesService.defaultProfile.globalStorageHome.with({
+				scheme: Schemas.file,
+			}).fsPath
+		);
+		this.addValidFileRoot(
+			environmentService.workspaceStorageHome.with({
+				scheme: Schemas.file,
+			}).fsPath
+		);
 
 		// Handle protocols
 		this.handleProtocols();
@@ -71,24 +81,23 @@ export class ProtocolMainService
 		// Register vscode-file:// handler
 		defaultSession.protocol.registerFileProtocol(
 			Schemas.vscodeFileResource,
-			(request, callback) =>
-				this.handleResourceRequest(request, callback),
+			(request, callback) => this.handleResourceRequest(request, callback)
 		);
 
 		// Block any file:// access
 		defaultSession.protocol.interceptFileProtocol(
 			Schemas.file,
-			(request, callback) => this.handleFileRequest(request, callback),
+			(request, callback) => this.handleFileRequest(request, callback)
 		);
 
 		// Cleanup
 		this._register(
 			toDisposable(() => {
 				defaultSession.protocol.unregisterProtocol(
-					Schemas.vscodeFileResource,
+					Schemas.vscodeFileResource
 				);
 				defaultSession.protocol.uninterceptProtocol(Schemas.file);
-			}),
+			})
 		);
 	}
 
@@ -110,12 +119,12 @@ export class ProtocolMainService
 
 	private handleFileRequest(
 		request: Electron.ProtocolRequest,
-		callback: ProtocolCallback,
+		callback: ProtocolCallback
 	) {
 		const uri = URI.parse(request.url);
 
 		this.logService.error(
-			`Refused to load resource ${uri.fsPath} from ${Schemas.file}: protocol (original URL: ${request.url})`,
+			`Refused to load resource ${uri.fsPath} from ${Schemas.file}: protocol (original URL: ${request.url})`
 		);
 
 		return callback({ error: -3 /* ABORTED */ });
@@ -127,7 +136,7 @@ export class ProtocolMainService
 
 	private handleResourceRequest(
 		request: Electron.ProtocolRequest,
-		callback: ProtocolCallback,
+		callback: ProtocolCallback
 	): void {
 		const path = this.requestToNormalizedFilePath(request);
 
@@ -155,14 +164,14 @@ export class ProtocolMainService
 
 		// finally block to load the resource
 		this.logService.error(
-			`${Schemas.vscodeFileResource}: Refused to load resource ${path} from ${Schemas.vscodeFileResource}: protocol (original URL: ${request.url})`,
+			`${Schemas.vscodeFileResource}: Refused to load resource ${path} from ${Schemas.vscodeFileResource}: protocol (original URL: ${request.url})`
 		);
 
 		return callback({ error: -3 /* ABORTED */ });
 	}
 
 	private requestToNormalizedFilePath(
-		request: Electron.ProtocolRequest,
+		request: Electron.ProtocolRequest
 	): string {
 		// 1.) Use `URI.parse()` util from us to convert the raw
 		//     URL into our URI.
@@ -196,7 +205,7 @@ export class ProtocolMainService
 		validatedIpcMain.handle(channel, handler);
 
 		this.logService.trace(
-			`IPC Object URL: Registered new channel ${channel}.`,
+			`IPC Object URL: Registered new channel ${channel}.`
 		);
 
 		return {
@@ -204,7 +213,7 @@ export class ProtocolMainService
 			update: (updatedObj) => (obj = updatedObj),
 			dispose: () => {
 				this.logService.trace(
-					`IPC Object URL: Removed channel ${channel}.`,
+					`IPC Object URL: Removed channel ${channel}.`
 				);
 
 				validatedIpcMain.removeHandler(channel);

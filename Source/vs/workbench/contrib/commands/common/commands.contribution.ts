@@ -29,7 +29,7 @@ class RunCommands extends Action2 {
 			metadata: {
 				description: nls.localize(
 					"runCommands.description",
-					"Run several commands",
+					"Run several commands"
 				),
 				args: [
 					{
@@ -42,7 +42,7 @@ class RunCommands extends Action2 {
 									type: "array",
 									description: nls.localize(
 										"runCommands.commands",
-										"Commands to run",
+										"Commands to run"
 									),
 									items: {
 										anyOf: [
@@ -91,8 +91,8 @@ class RunCommands extends Action2 {
 			notificationService.error(
 				nls.localize(
 					"runCommands.invalidArgs",
-					"'runCommands' has received an argument with incorrect type. Please, review the argument passed to the command.",
-				),
+					"'runCommands' has received an argument with incorrect type. Please, review the argument passed to the command."
+				)
 			);
 			return;
 		}
@@ -101,8 +101,8 @@ class RunCommands extends Action2 {
 			notificationService.warn(
 				nls.localize(
 					"runCommands.noCommandsToRun",
-					"'runCommands' has not received commands to run. Did you forget to pass commands in the 'runCommands' argument?",
-				),
+					"'runCommands' has not received commands to run. Did you forget to pass commands in the 'runCommands' argument?"
+				)
 			);
 			return;
 		}
@@ -117,23 +117,23 @@ class RunCommands extends Action2 {
 
 				logService.debug(
 					`runCommands: executing ${i}-th command: ${JSON.stringify(
-						cmd,
-					)}`,
+						cmd
+					)}`
 				);
 
 				const r = await this._runCommand(commandService, cmd);
 
 				logService.debug(
 					`runCommands: executed ${i}-th command with return value: ${JSON.stringify(
-						r,
-					)}`,
+						r
+					)}`
 				);
 			}
 		} catch (err) {
 			logService.debug(
 				`runCommands: executing ${i}-th command resulted in an error: ${
 					err instanceof Error ? err.message : JSON.stringify(err)
-				}`,
+				}`
 			);
 
 			notificationService.error(err);

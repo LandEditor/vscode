@@ -57,27 +57,49 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IWorkspaceContextService contextService: WorkspaceService,
 		@INativeHostService private nativeHostService: INativeHostService,
-		@IWorkbenchConfigurationService configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		configurationService: IWorkbenchConfigurationService,
 		@IStorageService private storageService: IStorageService,
 		@IExtensionService private extensionService: IExtensionService,
-		@IWorkingCopyBackupService private workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyBackupService
+		private workingCopyBackupService: IWorkingCopyBackupService,
 		@INotificationService notificationService: INotificationService,
 		@ICommandService commandService: ICommandService,
 		@IFileService fileService: IFileService,
 		@ITextFileService textFileService: ITextFileService,
 		@IWorkspacesService workspacesService: IWorkspacesService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IFileDialogService fileDialogService: IFileDialogService,
 		@IDialogService dialogService: IDialogService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IHostService hostService: IHostService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService userDataProfileService: IUserDataProfileService
 	) {
-		super(jsonEditingService, contextService, configurationService, notificationService, commandService, fileService, textFileService, workspacesService, environmentService, fileDialogService, dialogService, hostService, uriIdentityService, workspaceTrustManagementService, userDataProfilesService, userDataProfileService);
+		super(
+			jsonEditingService,
+			contextService,
+			configurationService,
+			notificationService,
+			commandService,
+			fileService,
+			textFileService,
+			workspacesService,
+			environmentService,
+			fileDialogService,
+			dialogService,
+			hostService,
+			uriIdentityService,
+			workspaceTrustManagementService,
+			userDataProfilesService,
+			userDataProfileService
+		);
 
 		this.registerListeners();
 	}
@@ -90,7 +112,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 	}
 
 	private async saveUntitledBeforeShutdown(
-		reason: ShutdownReason,
+		reason: ShutdownReason
 	): Promise<boolean> {
 		if (reason !== ShutdownReason.LOAD && reason !== ShutdownReason.CLOSE) {
 			return false; // only interested when window is closing or loading
@@ -101,7 +123,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 			!workspaceIdentifier ||
 			!isUntitledWorkspace(
 				workspaceIdentifier.configPath,
-				this.environmentService,
+				this.environmentService
 			)
 		) {
 			return false; // only care about untitled workspaces to ask for saving
@@ -118,11 +140,11 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 
 		const confirmSaveUntitledWorkspace =
 			this.configurationService.getValue<boolean>(
-				"window.confirmSaveUntitledWorkspace",
+				"window.confirmSaveUntitledWorkspace"
 			) !== false;
 		if (!confirmSaveUntitledWorkspace) {
 			await this.workspacesService.deleteUntitledWorkspace(
-				workspaceIdentifier,
+				workspaceIdentifier
 			);
 
 			return false; // no confirmation configured
@@ -134,17 +156,17 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 				type: Severity.Warning,
 				message: localize(
 					"saveWorkspaceMessage",
-					"Do you want to save your workspace configuration as a file?",
+					"Do you want to save your workspace configuration as a file?"
 				),
 				detail: localize(
 					"saveWorkspaceDetail",
-					"Save your workspace if you plan to open it again.",
+					"Save your workspace if you plan to open it again."
 				),
 				buttons: [
 					{
 						label: localize(
 							{ key: "save", comment: ["&& denotes a mnemonic"] },
-							"&&Save",
+							"&&Save"
 						),
 						run: async () => {
 							const newWorkspacePath =
@@ -159,19 +181,19 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 							try {
 								await this.saveWorkspaceAs(
 									workspaceIdentifier,
-									newWorkspacePath,
+									newWorkspacePath
 								);
 
 								// Make sure to add the new workspace to the history to find it again
 								const newWorkspaceIdentifier =
 									await this.workspacesService.getWorkspaceIdentifier(
-										newWorkspacePath,
+										newWorkspacePath
 									);
 								await this.workspacesService.addRecentlyOpened([
 									{
 										label: this.labelService.getWorkspaceLabel(
 											newWorkspaceIdentifier,
-											{ verbose: Verbosity.LONG },
+											{ verbose: Verbosity.LONG }
 										),
 										workspace: newWorkspaceIdentifier,
 										remoteAuthority:
@@ -182,7 +204,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 
 								// Delete the untitled one
 								await this.workspacesService.deleteUntitledWorkspace(
-									workspaceIdentifier,
+									workspaceIdentifier
 								);
 							} catch (error) {
 								// ignore
@@ -197,11 +219,11 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 								key: "doNotSave",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"Do&&n't Save",
+							"Do&&n't Save"
 						),
 						run: async () => {
 							await this.workspacesService.deleteUntitledWorkspace(
-								workspaceIdentifier,
+								workspaceIdentifier
 							);
 
 							return false;
@@ -218,7 +240,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 				checkbox: {
 					label: localize(
 						"doNotAskAgain",
-						"Always discard untitled workspaces without asking",
+						"Always discard untitled workspaces without asking"
 					),
 				},
 			});
@@ -227,7 +249,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 			await this.configurationService.updateValue(
 				"window.confirmSaveUntitledWorkspace",
 				false,
-				ConfigurationTarget.USER,
+				ConfigurationTarget.USER
 			);
 		}
 
@@ -235,7 +257,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 	}
 
 	override async isValidTargetWorkspacePath(
-		workspaceUri: URI,
+		workspaceUri: URI
 	): Promise<boolean> {
 		const windows = await this.nativeHostService.getWindows({
 			includeAuxiliaryWindows: false,
@@ -248,20 +270,20 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 					isWorkspaceIdentifier(window.workspace) &&
 					this.uriIdentityService.extUri.isEqual(
 						window.workspace.configPath,
-						workspaceUri,
-					),
+						workspaceUri
+					)
 			)
 		) {
 			await this.dialogService.info(
 				localize(
 					"workspaceOpenedMessage",
 					"Unable to save workspace '{0}'",
-					basename(workspaceUri),
+					basename(workspaceUri)
 				),
 				localize(
 					"workspaceOpenedDetail",
-					"The workspace is already opened in another window. Please close that window first and then try again.",
-				),
+					"The workspace is already opened in another window. Please close that window first and then try again."
+				)
 			);
 
 			return false;
@@ -274,8 +296,8 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		const stopped = await this.extensionService.stopExtensionHosts(
 			localize(
 				"restartExtensionHost.reason",
-				"Opening a multi-root workspace.",
-			),
+				"Opening a multi-root workspace."
+			)
 		);
 		if (!stopped) {
 			return;
@@ -286,7 +308,7 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 			// Migrate storage to new workspace
 			await this.storageService.switch(
 				result.workspace,
-				true /* preserve data */,
+				true /* preserve data */
 			);
 
 			// Reinitialize backup service
@@ -298,10 +320,10 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 					? URI.file(result.backupPath).with({
 							scheme: this.environmentService.userRoamingDataHome
 								.scheme,
-					  })
+						})
 					: undefined;
 				this.workingCopyBackupService.reinitialize(
-					newBackupWorkspaceHome,
+					newBackupWorkspaceHome
 				);
 			}
 		}
@@ -322,5 +344,5 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 registerSingleton(
 	IWorkspaceEditingService,
 	NativeWorkspaceEditingService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

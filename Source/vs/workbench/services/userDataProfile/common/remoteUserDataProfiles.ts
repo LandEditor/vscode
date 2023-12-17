@@ -31,7 +31,7 @@ const associatedRemoteProfilesKey = "associatedRemoteProfiles";
 
 export const IRemoteUserDataProfilesService =
 	createDecorator<IRemoteUserDataProfilesService>(
-		"IRemoteUserDataProfilesService",
+		"IRemoteUserDataProfilesService"
 	);
 export interface IRemoteUserDataProfilesService {
 	readonly _serviceBrand: undefined;
@@ -50,12 +50,16 @@ class RemoteUserDataProfilesService
 	private remoteUserDataProfilesService: IUserDataProfilesService | undefined;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IStorageService private readonly storageService: IStorageService,
-		@ILogService private readonly logService: ILogService,
+		@ILogService private readonly logService: ILogService
 	) {
 		super();
 		this.initPromise = this.init();
@@ -75,18 +79,18 @@ class RemoteUserDataProfilesService
 		this.remoteUserDataProfilesService = new UserDataProfilesService(
 			environment.profiles.all,
 			environment.profiles.home,
-			connection.getChannel("userDataProfiles"),
+			connection.getChannel("userDataProfiles")
 		);
 		this._register(
 			this.userDataProfilesService.onDidChangeProfiles((e) =>
-				this.onDidChangeLocalProfiles(e),
-			),
+				this.onDidChangeLocalProfiles(e)
+			)
 		);
 
 		// Associate current local profile with remote profile
 		const remoteProfile = await this.getAssociatedRemoteProfile(
 			this.userDataProfileService.currentProfile,
-			this.remoteUserDataProfilesService,
+			this.remoteUserDataProfilesService
 		);
 		if (!remoteProfile.isDefault) {
 			this.setAssociatedRemoteProfiles([
@@ -99,16 +103,16 @@ class RemoteUserDataProfilesService
 	}
 
 	private async onDidChangeLocalProfiles(
-		e: DidChangeProfilesEvent,
+		e: DidChangeProfilesEvent
 	): Promise<void> {
 		for (const profile of e.removed) {
 			const remoteProfile =
 				this.remoteUserDataProfilesService?.profiles.find(
-					(p) => p.id === profile.id,
+					(p) => p.id === profile.id
 				);
 			if (remoteProfile) {
 				await this.remoteUserDataProfilesService?.removeProfile(
-					remoteProfile,
+					remoteProfile
 				);
 			}
 		}
@@ -119,7 +123,7 @@ class RemoteUserDataProfilesService
 
 		if (!this.remoteUserDataProfilesService) {
 			throw new Error(
-				"Remote profiles service not available in the current window",
+				"Remote profiles service not available in the current window"
 			);
 		}
 
@@ -127,25 +131,25 @@ class RemoteUserDataProfilesService
 	}
 
 	async getRemoteProfile(
-		localProfile: IUserDataProfile,
+		localProfile: IUserDataProfile
 	): Promise<IUserDataProfile> {
 		await this.initPromise;
 
 		if (!this.remoteUserDataProfilesService) {
 			throw new Error(
-				"Remote profiles service not available in the current window",
+				"Remote profiles service not available in the current window"
 			);
 		}
 
 		return this.getAssociatedRemoteProfile(
 			localProfile,
-			this.remoteUserDataProfilesService,
+			this.remoteUserDataProfilesService
 		);
 	}
 
 	private async getAssociatedRemoteProfile(
 		localProfile: IUserDataProfile,
-		remoteUserDataProfilesService: IUserDataProfilesService,
+		remoteUserDataProfilesService: IUserDataProfilesService
 	): Promise<IUserDataProfile> {
 		// If the local profile is the default profile, return the remote default profile
 		if (localProfile.isDefault) {
@@ -153,7 +157,7 @@ class RemoteUserDataProfilesService
 		}
 
 		let profile = remoteUserDataProfilesService.profiles.find(
-			(p) => p.id === localProfile.id,
+			(p) => p.id === localProfile.id
 		);
 		if (!profile) {
 			profile = await remoteUserDataProfilesService.createProfile(
@@ -163,7 +167,7 @@ class RemoteUserDataProfilesService
 					shortName: localProfile.shortName,
 					transient: localProfile.isTransient,
 					useDefaultFlags: localProfile.useDefaultFlags,
-				},
+				}
 			);
 			this.setAssociatedRemoteProfiles([
 				...this.getAssociatedRemoteProfiles(),
@@ -195,12 +199,12 @@ class RemoteUserDataProfilesService
 					associatedRemoteProfilesKey,
 					JSON.stringify(remotes),
 					StorageScope.APPLICATION,
-					StorageTarget.MACHINE,
+					StorageTarget.MACHINE
 				);
 			} else {
 				this.storageService.remove(
 					associatedRemoteProfilesKey,
-					StorageScope.APPLICATION,
+					StorageScope.APPLICATION
 				);
 			}
 		}
@@ -210,7 +214,7 @@ class RemoteUserDataProfilesService
 		if (this.environmentService.remoteAuthority) {
 			const value = this.storageService.get(
 				associatedRemoteProfilesKey,
-				StorageScope.APPLICATION,
+				StorageScope.APPLICATION
 			);
 			try {
 				return value ? JSON.parse(value) : {};
@@ -226,13 +230,13 @@ class RemoteUserDataProfilesService
 		for (const profileId of this.getAssociatedRemoteProfiles()) {
 			const remoteProfile =
 				this.remoteUserDataProfilesService?.profiles.find(
-					(p) => p.id === profileId,
+					(p) => p.id === profileId
 				);
 			if (!remoteProfile) {
 				continue;
 			}
 			const localProfile = this.userDataProfilesService.profiles.find(
-				(p) => p.id === profileId,
+				(p) => p.id === profileId
 			);
 			if (localProfile) {
 				if (
@@ -244,7 +248,7 @@ class RemoteUserDataProfilesService
 						{
 							name: localProfile.name,
 							shortName: localProfile.shortName,
-						},
+						}
 					);
 				}
 				associatedRemoteProfiles.push(profileId);
@@ -253,7 +257,7 @@ class RemoteUserDataProfilesService
 			if (remoteProfile) {
 				// Cleanup remote profiles those are not available locally
 				await this.remoteUserDataProfilesService?.removeProfile(
-					remoteProfile,
+					remoteProfile
 				);
 			}
 		}
@@ -264,5 +268,5 @@ class RemoteUserDataProfilesService
 registerSingleton(
 	IRemoteUserDataProfilesService,
 	RemoteUserDataProfilesService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

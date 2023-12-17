@@ -32,7 +32,7 @@ declare module vsdaWeb {
 		| BufferSource
 		| WebAssembly.Module;
 	export function init(
-		module_or_path?: InitInput | Promise<InitInput>,
+		module_or_path?: InitInput | Promise<InitInput>
 	): Promise<unknown>;
 }
 
@@ -48,7 +48,9 @@ const IV_SIZE = 16;
 const STEP_SIZE = KEY_SIZE + IV_SIZE;
 
 export class SignService extends AbstractSignService implements ISignService {
-	constructor(@IProductService private readonly productService: IProductService) {
+	constructor(
+		@IProductService private readonly productService: IProductService
+	) {
 		super();
 	}
 	protected override getValidator(): Promise<IVsdaValidator> {
@@ -83,13 +85,13 @@ export class SignService extends AbstractSignService implements ISignService {
 						}
 					},
 					50,
-					$window,
+					$window
 				);
 			}).finally(() => checkInterval!.dispose()),
 		]);
 
 		const keyBytes = new TextEncoder().encode(
-			this.productService.serverLicense?.join("\n") || "",
+			this.productService.serverLicense?.join("\n") || ""
 		);
 		for (let i = 0; i + STEP_SIZE < keyBytes.length; i += STEP_SIZE) {
 			const key = await crypto.subtle.importKey(
@@ -97,12 +99,12 @@ export class SignService extends AbstractSignService implements ISignService {
 				keyBytes.slice(i + IV_SIZE, i + IV_SIZE + KEY_SIZE),
 				{ name: "AES-CBC" },
 				false,
-				["decrypt"],
+				["decrypt"]
 			);
 			wasm = await crypto.subtle.decrypt(
 				{ name: "AES-CBC", iv: keyBytes.slice(i, i + IV_SIZE) },
 				key,
-				wasm,
+				wasm
 			);
 		}
 
@@ -113,7 +115,7 @@ export class SignService extends AbstractSignService implements ISignService {
 
 	private async getWasmBytes(): Promise<ArrayBuffer> {
 		const response = await fetch(
-			FileAccess.asBrowserUri("vsda/../vsda_bg.wasm").toString(true),
+			FileAccess.asBrowserUri("vsda/../vsda_bg.wasm").toString(true)
 		);
 		if (!response.ok) {
 			throw new Error("error loading vsda");

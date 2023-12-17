@@ -18,7 +18,7 @@ export class ToggleReactionsAction extends Action {
 			ToggleReactionsAction.ID,
 			title || nls.localize("pickReactions", "Pick Reactions..."),
 			"toggle-reactions",
-			true,
+			true
 		);
 		this.toggleDropdownMenu = toggleDropdownMenu;
 	}
@@ -49,13 +49,13 @@ export class ReactionActionViewItem extends ActionViewItem {
 		if (!action.icon) {
 			const reactionLabel = dom.append(
 				this.label,
-				dom.$("span.reaction-label"),
+				dom.$("span.reaction-label")
 			);
 			reactionLabel.innerText = action.label;
 		} else {
 			const reactionIcon = dom.append(
 				this.label,
-				dom.$(".reaction-icon"),
+				dom.$(".reaction-icon")
 			);
 			const uri = URI.revive(action.icon);
 			reactionIcon.style.backgroundImage = dom.asCSSUrl(uri);
@@ -64,7 +64,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 		if (action.count) {
 			const reactionCount = dom.append(
 				this.label,
-				dom.$("span.reaction-count"),
+				dom.$("span.reaction-count")
 			);
 			reactionCount.innerText = `${action.count}`;
 		}
@@ -87,7 +87,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				},
 				"{0}{1} reaction",
 				toggleMessage,
-				action.label,
+				action.label
 			);
 		} else if (action.count === 1) {
 			return nls.localize(
@@ -101,7 +101,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				},
 				"{0}1 reaction with {1}",
 				toggleMessage,
-				action.label,
+				action.label
 			);
 		} else if (action.count > 1) {
 			return nls.localize(
@@ -116,7 +116,7 @@ export class ReactionActionViewItem extends ActionViewItem {
 				"{0}{1} reactions with {2}",
 				toggleMessage,
 				action.count,
-				action.label,
+				action.label
 			);
 		}
 		return undefined;
@@ -131,7 +131,7 @@ export class ReactionAction extends Action {
 		enabled: boolean = true,
 		actionCallback?: (event?: any) => Promise<any>,
 		public icon?: UriComponents,
-		public count?: number,
+		public count?: number
 	) {
 		super(ReactionAction.ID, label, cssClass, enabled, actionCallback);
 	}

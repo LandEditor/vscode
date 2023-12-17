@@ -75,9 +75,12 @@ export class ProxyAuthHandler extends Disposable {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IEncryptionMainService private readonly encryptionMainService: IEncryptionMainService,
-		@IApplicationStorageMainService private readonly applicationStorageMainService: IApplicationStorageMainService
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@IEncryptionMainService
+		private readonly encryptionMainService: IEncryptionMainService,
+		@IApplicationStorageMainService
+		private readonly applicationStorageMainService: IApplicationStorageMainService
 	) {
 		super();
 
@@ -93,8 +96,8 @@ export class ProxyAuthHandler extends Disposable {
 				webContents: WebContents,
 				req: ElectronAuthenticationResponseDetails,
 				authInfo: AuthInfo,
-				callback,
-			) => ({ event, webContents, req, authInfo, callback }),
+				callback
+			) => ({ event, webContents, req, authInfo, callback })
 		);
 		this._register(onLogin(this.onLogin, this));
 	}
@@ -115,7 +118,7 @@ export class ProxyAuthHandler extends Disposable {
 			req.firstAuthAttempt
 		) {
 			this.logService.trace(
-				"auth#onLogin (proxy) - exit - proxy dialog already shown",
+				"auth#onLogin (proxy) - exit - proxy dialog already shown"
 			);
 
 			return; // only one dialog per session at max (except when firstAuthAttempt: false which indicates a login problem)
@@ -128,7 +131,7 @@ export class ProxyAuthHandler extends Disposable {
 		let credentials: Credentials | undefined = undefined;
 		if (!this.pendingProxyResolve) {
 			this.logService.trace(
-				"auth#onLogin (proxy) - no pending proxy handling found, starting new",
+				"auth#onLogin (proxy) - no pending proxy handling found, starting new"
 			);
 
 			this.pendingProxyResolve = this.resolveProxyCredentials(authInfo);
@@ -139,7 +142,7 @@ export class ProxyAuthHandler extends Disposable {
 			}
 		} else {
 			this.logService.trace(
-				"auth#onLogin (proxy) - pending proxy handling found",
+				"auth#onLogin (proxy) - pending proxy handling found"
 			);
 
 			credentials = await this.pendingProxyResolve;
@@ -156,7 +159,7 @@ export class ProxyAuthHandler extends Disposable {
 	}
 
 	private async resolveProxyCredentials(
-		authInfo: AuthInfo,
+		authInfo: AuthInfo
 	): Promise<Credentials | undefined> {
 		this.logService.trace("auth#resolveProxyCredentials (proxy) - enter");
 
@@ -164,18 +167,18 @@ export class ProxyAuthHandler extends Disposable {
 			const credentials = await this.doResolveProxyCredentials(authInfo);
 			if (credentials) {
 				this.logService.trace(
-					"auth#resolveProxyCredentials (proxy) - got credentials",
+					"auth#resolveProxyCredentials (proxy) - got credentials"
 				);
 
 				return credentials;
 			} else {
 				this.logService.trace(
-					"auth#resolveProxyCredentials (proxy) - did not get credentials",
+					"auth#resolveProxyCredentials (proxy) - did not get credentials"
 				);
 			}
 		} finally {
 			this.logService.trace(
-				"auth#resolveProxyCredentials (proxy) - exit",
+				"auth#resolveProxyCredentials (proxy) - exit"
 			);
 		}
 
@@ -183,11 +186,11 @@ export class ProxyAuthHandler extends Disposable {
 	}
 
 	private async doResolveProxyCredentials(
-		authInfo: AuthInfo,
+		authInfo: AuthInfo
 	): Promise<Credentials | undefined> {
 		this.logService.trace(
 			"auth#doResolveProxyCredentials - enter",
-			authInfo,
+			authInfo
 		);
 
 		// Compute a hash over the authentication info to be used
@@ -199,7 +202,7 @@ export class ProxyAuthHandler extends Disposable {
 				scheme: authInfo.scheme,
 				host: authInfo.host,
 				port: authInfo.port,
-			}),
+			})
 		);
 
 		let storedUsername: string | undefined;
@@ -208,11 +211,11 @@ export class ProxyAuthHandler extends Disposable {
 			// Try to find stored credentials for the given auth info
 			const encryptedValue = this.applicationStorageMainService.get(
 				this.PROXY_CREDENTIALS_SERVICE_KEY + authInfoHash,
-				StorageScope.APPLICATION,
+				StorageScope.APPLICATION
 			);
 			if (encryptedValue) {
 				const credentials: Credentials = JSON.parse(
-					await this.encryptionMainService.decrypt(encryptedValue),
+					await this.encryptionMainService.decrypt(encryptedValue)
 				);
 				storedUsername = credentials.username;
 				storedPassword = credentials.password;
@@ -230,7 +233,7 @@ export class ProxyAuthHandler extends Disposable {
 			typeof storedPassword === "string"
 		) {
 			this.logService.trace(
-				"auth#doResolveProxyCredentials (proxy) - exit - found stored credentials to use",
+				"auth#doResolveProxyCredentials (proxy) - exit - found stored credentials to use"
 			);
 			this.state = ProxyAuthState.StoredCredentialsUsed;
 
@@ -245,14 +248,14 @@ export class ProxyAuthHandler extends Disposable {
 			this.windowsMainService.getLastActiveWindow();
 		if (!window) {
 			this.logService.trace(
-				"auth#doResolveProxyCredentials (proxy) - exit - no opened window found to show dialog in",
+				"auth#doResolveProxyCredentials (proxy) - exit - no opened window found to show dialog in"
 			);
 
 			return undefined; // unexpected
 		}
 
 		this.logService.trace(
-			`auth#doResolveProxyCredentials (proxy) - asking window ${window.id} to handle proxy login`,
+			`auth#doResolveProxyCredentials (proxy) - asking window ${window.id} to handle proxy login`
 		);
 
 		// Open proxy dialog
@@ -265,7 +268,7 @@ export class ProxyAuthHandler extends Disposable {
 		window.sendWhenReady(
 			"vscode:openProxyAuthenticationDialog",
 			CancellationToken.None,
-			payload,
+			payload
 		);
 		this.state = ProxyAuthState.LoginDialogShown;
 
@@ -278,15 +281,15 @@ export class ProxyAuthHandler extends Disposable {
 				channel: string,
 				reply:
 					| (Credentials & { remember: boolean })
-					| undefined /* canceled */,
+					| undefined /* canceled */
 			) => {
 				if (channel === payload.replyChannel) {
 					this.logService.trace(
-						`auth#doResolveProxyCredentials - exit - received credentials from window ${window.id}`,
+						`auth#doResolveProxyCredentials - exit - received credentials from window ${window.id}`
 					);
 					window.win?.webContents.off(
 						"ipc-message",
-						proxyAuthResponseHandler,
+						proxyAuthResponseHandler
 					);
 
 					// We got credentials from the window
@@ -301,7 +304,7 @@ export class ProxyAuthHandler extends Disposable {
 							if (reply.remember) {
 								const encryptedSerializedCredentials =
 									await this.encryptionMainService.encrypt(
-										JSON.stringify(credentials),
+										JSON.stringify(credentials)
 									);
 								this.applicationStorageMainService.store(
 									this.PROXY_CREDENTIALS_SERVICE_KEY +
@@ -309,13 +312,13 @@ export class ProxyAuthHandler extends Disposable {
 									encryptedSerializedCredentials,
 									StorageScope.APPLICATION,
 									// Always store in machine scope because we do not want these values to be synced
-									StorageTarget.MACHINE,
+									StorageTarget.MACHINE
 								);
 							} else {
 								this.applicationStorageMainService.remove(
 									this.PROXY_CREDENTIALS_SERVICE_KEY +
 										authInfoHash,
-									StorageScope.APPLICATION,
+									StorageScope.APPLICATION
 								);
 							}
 						} catch (error) {

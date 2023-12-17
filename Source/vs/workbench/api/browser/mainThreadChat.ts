@@ -26,7 +26,7 @@ import {
 @extHostNamedCustomer(MainContext.MainThreadChat)
 export class MainThreadChat extends Disposable implements MainThreadChatShape {
 	private readonly _providerRegistrations = this._register(
-		new DisposableMap<number>(),
+		new DisposableMap<number>()
 	);
 	private readonly _stateEmitters = new Map<number, Emitter<any>>();
 
@@ -35,8 +35,10 @@ export class MainThreadChat extends Disposable implements MainThreadChatShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IChatService private readonly _chatService: IChatService,
-		@IChatWidgetService private readonly _chatWidgetService: IChatWidgetService,
-		@IChatContributionService private readonly chatContribService: IChatContributionService,
+		@IChatWidgetService
+		private readonly _chatWidgetService: IChatWidgetService,
+		@IChatContributionService
+		private readonly chatContribService: IChatContributionService
 	) {
 		super();
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostChat);
@@ -46,7 +48,7 @@ export class MainThreadChat extends Disposable implements MainThreadChatShape {
 		const sessionIdStr = this._chatService.getSessionId(sessionId);
 		if (!sessionIdStr) {
 			throw new Error(
-				`Failed to transfer session. Unknown session provider ID: ${sessionId}`,
+				`Failed to transfer session. Unknown session provider ID: ${sessionId}`
 			);
 		}
 
@@ -55,17 +57,17 @@ export class MainThreadChat extends Disposable implements MainThreadChatShape {
 		const inputValue = widget?.inputEditor.getValue() ?? "";
 		this._chatService.transferChatSession(
 			{ sessionId: sessionIdStr, inputValue: inputValue },
-			URI.revive(toWorkspace),
+			URI.revive(toWorkspace)
 		);
 	}
 
 	async $registerChatProvider(handle: number, id: string): Promise<void> {
 		const registration = this.chatContribService.registeredProviders.find(
-			(staticProvider) => staticProvider.id === id,
+			(staticProvider) => staticProvider.id === id
 		);
 		if (!registration) {
 			throw new Error(
-				`Provider ${id} must be declared in the package.json.`,
+				`Provider ${id} must be declared in the package.json.`
 			);
 		}
 
@@ -88,7 +90,7 @@ export class MainThreadChat extends Disposable implements MainThreadChatShape {
 					id: session.id,
 					requesterUsername: session.requesterUsername,
 					requesterAvatarIconUri: URI.revive(
-						session.requesterAvatarIconUri,
+						session.requesterAvatarIconUri
 					),
 					responderUsername: session.responderUsername,
 					responderAvatarIconUri,
@@ -117,14 +119,14 @@ export class MainThreadChat extends Disposable implements MainThreadChatShape {
 
 	async $sendRequestToProvider(
 		providerId: string,
-		message: IChatDynamicRequest,
+		message: IChatDynamicRequest
 	): Promise<void> {
 		const widget =
 			await this._chatWidgetService.revealViewForProvider(providerId);
 		if (widget && widget.viewModel) {
 			this._chatService.sendRequestToProvider(
 				widget.viewModel.sessionId,
-				message,
+				message
 			);
 		}
 	}

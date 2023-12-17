@@ -57,7 +57,7 @@ declare module "vscode" {
 		export function registerDocumentDropEditProvider(
 			selector: DocumentSelector,
 			provider: DocumentDropEditProvider,
-			metadata?: DocumentDropEditProviderMetadata,
+			metadata?: DocumentDropEditProviderMetadata
 		): Disposable;
 	}
 }

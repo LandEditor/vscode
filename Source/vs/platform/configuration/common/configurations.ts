@@ -26,7 +26,7 @@ import { Registry } from "vs/platform/registry/common/platform";
 
 export class DefaultConfiguration extends Disposable {
 	private readonly _onDidChangeConfiguration = this._register(
-		new Emitter<{ defaults: ConfigurationModel; properties: string[] }>(),
+		new Emitter<{ defaults: ConfigurationModel; properties: string[] }>()
 	);
 	readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
 
@@ -39,13 +39,13 @@ export class DefaultConfiguration extends Disposable {
 		this.resetConfigurationModel();
 		this._register(
 			Registry.as<IConfigurationRegistry>(
-				Extensions.Configuration,
+				Extensions.Configuration
 			).onDidUpdateConfiguration(({ properties, defaultsOverrides }) =>
 				this.onDidUpdateConfiguration(
 					Array.from(properties),
-					defaultsOverrides,
-				),
-			),
+					defaultsOverrides
+				)
+			)
 		);
 		return this.configurationModel;
 	}
@@ -57,13 +57,13 @@ export class DefaultConfiguration extends Disposable {
 
 	protected onDidUpdateConfiguration(
 		properties: string[],
-		defaultsOverrides?: boolean,
+		defaultsOverrides?: boolean
 	): void {
 		this.updateConfigurationModel(
 			properties,
 			Registry.as<IConfigurationRegistry>(
-				Extensions.Configuration,
-			).getConfigurationProperties(),
+				Extensions.Configuration
+			).getConfigurationProperties()
 		);
 		this._onDidChangeConfiguration.fire({
 			defaults: this.configurationModel,
@@ -78,14 +78,14 @@ export class DefaultConfiguration extends Disposable {
 	private resetConfigurationModel(): void {
 		this._configurationModel = new ConfigurationModel();
 		const properties = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		).getConfigurationProperties();
 		this.updateConfigurationModel(Object.keys(properties), properties);
 	}
 
 	private updateConfigurationModel(
 		properties: string[],
-		configurationProperties: IStringDictionary<IRegisteredConfigurationPropertySchema>,
+		configurationProperties: IStringDictionary<IRegisteredConfigurationPropertySchema>
 	): void {
 		const configurationDefaultsOverrides =
 			this.getConfigurationDefaultOverrides();
@@ -122,7 +122,7 @@ export class PolicyConfiguration
 	implements IPolicyConfiguration
 {
 	private readonly _onDidChangeConfiguration = this._register(
-		new Emitter<ConfigurationModel>(),
+		new Emitter<ConfigurationModel>()
 	);
 	readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
 
@@ -143,38 +143,38 @@ export class PolicyConfiguration
 		this.logService.trace("PolicyConfiguration#initialize");
 		this.update(
 			await this.updatePolicyDefinitions(
-				this.defaultConfiguration.configurationModel.keys,
+				this.defaultConfiguration.configurationModel.keys
 			),
-			false,
+			false
 		);
 		this._register(
 			this.policyService.onDidChange((policyNames) =>
-				this.onDidChangePolicies(policyNames),
-			),
+				this.onDidChangePolicies(policyNames)
+			)
 		);
 		this._register(
 			this.defaultConfiguration.onDidChangeConfiguration(
 				async ({ properties }) =>
 					this.update(
 						await this.updatePolicyDefinitions(properties),
-						true,
-					),
-			),
+						true
+					)
+			)
 		);
 		return this._configurationModel;
 	}
 
 	private async updatePolicyDefinitions(
-		properties: string[],
+		properties: string[]
 	): Promise<string[]> {
 		this.logService.trace(
 			"PolicyConfiguration#updatePolicyDefinitions",
-			properties,
+			properties
 		);
 		const policyDefinitions: IStringDictionary<PolicyDefinition> = {};
 		const keys: string[] = [];
 		const configurationProperties = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		).getConfigurationProperties();
 
 		for (const key of properties) {
@@ -187,7 +187,7 @@ export class PolicyConfiguration
 			if (config.policy) {
 				if (config.type !== "string" && config.type !== "number") {
 					this.logService.warn(
-						`Policy ${config.policy.name} has unsupported type ${config.type}`,
+						`Policy ${config.policy.name} has unsupported type ${config.type}`
 					);
 					continue;
 				}
@@ -206,15 +206,15 @@ export class PolicyConfiguration
 	private onDidChangePolicies(policyNames: readonly PolicyName[]): void {
 		this.logService.trace(
 			"PolicyConfiguration#onDidChangePolicies",
-			policyNames,
+			policyNames
 		);
 		const policyConfigurations = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		).getPolicyConfigurations();
 		const keys = coalesce(
 			policyNames.map((policyName) =>
-				policyConfigurations.get(policyName),
-			),
+				policyConfigurations.get(policyName)
+			)
 		);
 		this.update(keys, true);
 	}
@@ -222,7 +222,7 @@ export class PolicyConfiguration
 	private update(keys: string[], trigger: boolean): void {
 		this.logService.trace("PolicyConfiguration#update", keys);
 		const configurationProperties = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		).getConfigurationProperties();
 		const changed: [string, PolicyValue | undefined][] = [];
 		const wasEmpty = this._configurationModel.isEmpty();
@@ -237,8 +237,8 @@ export class PolicyConfiguration
 						? policyValue !== undefined
 						: !equals(
 								this._configurationModel.getValue(key),
-								policyValue,
-						  )
+								policyValue
+							)
 				) {
 					changed.push([key, policyValue]);
 				}

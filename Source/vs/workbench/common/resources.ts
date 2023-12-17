@@ -42,8 +42,10 @@ export class ResourceGlobMatcher extends Disposable {
 	constructor(
 		private getExpression: (folder?: URI) => IExpression | undefined,
 		private shouldUpdate: (event: IConfigurationChangeEvent) => boolean,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 
@@ -58,13 +60,13 @@ export class ResourceGlobMatcher extends Disposable {
 				if (this.shouldUpdate(e)) {
 					this.updateExpressions(true);
 				}
-			}),
+			})
 		);
 
 		this._register(
 			this.contextService.onDidChangeWorkspaceFolders(() =>
-				this.updateExpressions(true),
-			),
+				this.updateExpressions(true)
+			)
 		);
 	}
 
@@ -84,18 +86,18 @@ export class ResourceGlobMatcher extends Disposable {
 					!currentExpression ||
 					!equals(
 						currentExpression.expression,
-						newExpression.expression,
+						newExpression.expression
 					)
 				) {
 					changed = true;
 
 					this.mapFolderToParsedExpression.set(
 						folderUriStr,
-						parse(newExpression.expression),
+						parse(newExpression.expression)
 					);
 					this.mapFolderToConfiguredExpression.set(
 						folderUriStr,
-						newExpression,
+						newExpression
 					);
 				}
 			} else {
@@ -112,7 +114,7 @@ export class ResourceGlobMatcher extends Disposable {
 		const foldersMap = new ResourceSet(
 			this.contextService
 				.getWorkspace()
-				.folders.map((folder) => folder.uri),
+				.folders.map((folder) => folder.uri)
 		);
 		for (const [folder] of this.mapFolderToConfiguredExpression) {
 			if (folder === ResourceGlobMatcher.NO_FOLDER) {
@@ -131,25 +133,25 @@ export class ResourceGlobMatcher extends Disposable {
 		const globalNewExpression = this.doGetExpression(undefined);
 		const globalCurrentExpression =
 			this.mapFolderToConfiguredExpression.get(
-				ResourceGlobMatcher.NO_FOLDER,
+				ResourceGlobMatcher.NO_FOLDER
 			);
 		if (globalNewExpression) {
 			if (
 				!globalCurrentExpression ||
 				!equals(
 					globalCurrentExpression.expression,
-					globalNewExpression.expression,
+					globalNewExpression.expression
 				)
 			) {
 				changed = true;
 
 				this.mapFolderToParsedExpression.set(
 					ResourceGlobMatcher.NO_FOLDER,
-					parse(globalNewExpression.expression),
+					parse(globalNewExpression.expression)
 				);
 				this.mapFolderToConfiguredExpression.set(
 					ResourceGlobMatcher.NO_FOLDER,
-					globalNewExpression,
+					globalNewExpression
 				);
 			}
 		} else {
@@ -157,10 +159,10 @@ export class ResourceGlobMatcher extends Disposable {
 				changed = true;
 
 				this.mapFolderToParsedExpression.delete(
-					ResourceGlobMatcher.NO_FOLDER,
+					ResourceGlobMatcher.NO_FOLDER
 				);
 				this.mapFolderToConfiguredExpression.delete(
-					ResourceGlobMatcher.NO_FOLDER,
+					ResourceGlobMatcher.NO_FOLDER
 				);
 			}
 		}
@@ -171,7 +173,7 @@ export class ResourceGlobMatcher extends Disposable {
 	}
 
 	private doGetExpression(
-		resource: URI | undefined,
+		resource: URI | undefined
 	): IConfiguredExpression | undefined {
 		const expression = this.getExpression(resource);
 		if (!expression) {
@@ -201,13 +203,13 @@ export class ResourceGlobMatcher extends Disposable {
 
 			const driveLetter = getDriveLetter(
 				massagedKey,
-				true /* probe for windows */,
+				true /* probe for windows */
 			);
 			if (driveLetter) {
 				const driveLetterLower = driveLetter.toLowerCase();
 				if (driveLetter !== driveLetter.toLowerCase()) {
 					massagedKey = `${driveLetterLower}${massagedKey.substring(
-						1,
+						1
 					)}`;
 				}
 			}
@@ -234,17 +236,17 @@ export class ResourceGlobMatcher extends Disposable {
 			this.mapFolderToParsedExpression.has(folder.uri.toString())
 		) {
 			expressionForFolder = this.mapFolderToParsedExpression.get(
-				folder.uri.toString(),
+				folder.uri.toString()
 			);
 			expressionConfigForFolder =
 				this.mapFolderToConfiguredExpression.get(folder.uri.toString());
 		} else {
 			expressionForFolder = this.mapFolderToParsedExpression.get(
-				ResourceGlobMatcher.NO_FOLDER,
+				ResourceGlobMatcher.NO_FOLDER
 			);
 			expressionConfigForFolder =
 				this.mapFolderToConfiguredExpression.get(
-					ResourceGlobMatcher.NO_FOLDER,
+					ResourceGlobMatcher.NO_FOLDER
 				);
 		}
 
@@ -282,7 +284,7 @@ export class ResourceGlobMatcher extends Disposable {
 			return !!expressionForFolder(
 				this.uriToPath(resource),
 				undefined,
-				hasSibling,
+				hasSibling
 			);
 		}
 

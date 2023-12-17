@@ -34,7 +34,8 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 		@ICommandService commandService: ICommandService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IInlineChatSessionService inlineChatSessionService: IInlineChatSessionService,
+		@IInlineChatSessionService
+		inlineChatSessionService: IInlineChatSessionService,
 		@IInlineChatService inlineChatService: IInlineChatService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IProductService productService: IProductService
@@ -51,13 +52,17 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 			productService
 		);
 
-		const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+		const activeEditor = getNotebookEditorFromEditorPane(
+			this._editorService.activeEditorPane
+		);
 
 		if (!activeEditor) {
 			return;
 		}
 
-		this.toDispose.push(activeEditor.onDidChangeActiveCell(() => this.update()));
+		this.toDispose.push(
+			activeEditor.onDidChangeActiveCell(() => this.update())
+		);
 	}
 
 	protected override _getOptions(): IEmptyTextEditorHintOptions {
@@ -81,7 +86,7 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 		}
 
 		const activeEditor = getNotebookEditorFromEditorPane(
-			this._editorService.activeEditorPane,
+			this._editorService.activeEditorPane
 		);
 		if (!activeEditor) {
 			return false;
@@ -100,5 +105,5 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 registerEditorContribution(
 	EmptyCellEditorHintContribution.CONTRIB_ID,
 	EmptyCellEditorHintContribution,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // eager because it needs to render a help message

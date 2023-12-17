@@ -24,9 +24,9 @@ export function removeTag() {
 		.reduce<vscode.Range[]>(
 			(prev, selection) =>
 				prev.concat(
-					getRangesToRemove(editor.document, rootNode, selection),
+					getRangesToRemove(editor.document, rootNode, selection)
 				),
-			[],
+			[]
 		);
 
 	return editor.edit((editBuilder) => {
@@ -44,14 +44,14 @@ export function removeTag() {
 function getRangesToRemove(
 	document: vscode.TextDocument,
 	rootNode: HtmlFlatNode,
-	selection: vscode.Selection,
+	selection: vscode.Selection
 ): vscode.Range[] {
 	const offset = document.offsetAt(selection.start);
 	const nodeToUpdate = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		offset,
-		true,
+		true
 	);
 	if (!nodeToUpdate) {
 		return [];
@@ -62,7 +62,7 @@ function getRangesToRemove(
 		openTagRange = offsetRangeToVsRange(
 			document,
 			nodeToUpdate.open.start,
-			nodeToUpdate.open.end,
+			nodeToUpdate.open.end
 		);
 	}
 	let closeTagRange: vscode.Range | undefined;
@@ -70,7 +70,7 @@ function getRangesToRemove(
 		closeTagRange = offsetRangeToVsRange(
 			document,
 			nodeToUpdate.close.start,
-			nodeToUpdate.close.end,
+			nodeToUpdate.close.end
 		);
 	}
 
@@ -79,13 +79,13 @@ function getRangesToRemove(
 			openTagRange.end.line,
 			openTagRange.end.character,
 			closeTagRange.start.line,
-			closeTagRange.start.character,
+			closeTagRange.start.character
 		);
 		const outerCombinedRange = new vscode.Range(
 			openTagRange.start.line,
 			openTagRange.start.character,
 			closeTagRange.end.line,
-			closeTagRange.end.character,
+			closeTagRange.end.character
 		);
 		// Special case: there is only whitespace in between.
 		if (
@@ -103,7 +103,7 @@ function getRangesToRemove(
 			const indentAmountToRemove = calculateIndentAmountToRemove(
 				document,
 				openTagRange,
-				closeTagRange,
+				closeTagRange
 			);
 			let firstInnerNonEmptyLine: number | undefined;
 			let lastInnerNonEmptyLine: number | undefined;
@@ -114,7 +114,7 @@ function getRangesToRemove(
 			) {
 				if (!document.lineAt(i).isEmptyOrWhitespace) {
 					rangesToRemove.push(
-						new vscode.Range(i, 0, i, indentAmountToRemove),
+						new vscode.Range(i, 0, i, indentAmountToRemove)
 					);
 					if (firstInnerNonEmptyLine === undefined) {
 						// We found the first non-empty inner line.
@@ -133,11 +133,12 @@ function getRangesToRemove(
 				rangesToRemove.push(
 					new vscode.Range(
 						lastInnerNonEmptyLine,
-						document.lineAt(lastInnerNonEmptyLine).range.end
-							.character,
+						document.lineAt(
+							lastInnerNonEmptyLine
+						).range.end.character,
 						closeTagRange.end.line,
-						closeTagRange.end.character,
-					),
+						closeTagRange.end.character
+					)
 				);
 			} else {
 				rangesToRemove.push(closeTagRange);
@@ -153,8 +154,9 @@ function getRangesToRemove(
 					openTagRange.start.line,
 					openTagRange.start.character,
 					firstInnerNonEmptyLine,
-					document.lineAt(firstInnerNonEmptyLine)
-						.firstNonWhitespaceCharacterIndex,
+					document.lineAt(
+						firstInnerNonEmptyLine
+					).firstNonWhitespaceCharacterIndex
 				);
 				rangesToRemove.shift();
 			}
@@ -165,7 +167,7 @@ function getRangesToRemove(
 
 function entireLineIsTag(
 	document: vscode.TextDocument,
-	range: vscode.Range,
+	range: vscode.Range
 ): boolean {
 	if (range.start.line === range.end.line) {
 		const lineText = document.lineAt(range.start).text;
@@ -183,7 +185,7 @@ function entireLineIsTag(
 function calculateIndentAmountToRemove(
 	document: vscode.TextDocument,
 	openRange: vscode.Range,
-	closeRange: vscode.Range,
+	closeRange: vscode.Range
 ): number {
 	const startLine = openRange.start.line;
 	const endLine = closeRange.start.line;
@@ -211,7 +213,7 @@ function calculateIndentAmountToRemove(
 		} else {
 			indentAmount = Math.min(
 				contentIndent - startLineIndent,
-				contentIndent - endLineIndent,
+				contentIndent - endLineIndent
 			);
 		}
 	}

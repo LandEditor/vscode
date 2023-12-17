@@ -24,11 +24,11 @@ CommandsRegistry.registerCommand(
 			return (
 				await outlineService.getOrCreate(
 					reference.object.textEditorModel,
-					CancellationToken.None,
+					CancellationToken.None
 				)
 			).getTopLevelSymbols();
 		} finally {
 			reference.dispose();
 		}
-	},
+	}
 );

@@ -38,12 +38,12 @@ export class FetchFileSystemProvider
 			}
 			throw createFileSystemProviderError(
 				res.statusText,
-				FileSystemProviderErrorCode.Unknown,
+				FileSystemProviderErrorCode.Unknown
 			);
 		} catch (err) {
 			throw createFileSystemProviderError(
 				err,
-				FileSystemProviderErrorCode.Unknown,
+				FileSystemProviderErrorCode.Unknown
 			);
 		}
 	}
@@ -66,7 +66,7 @@ export class FetchFileSystemProvider
 	writeFile(
 		_resource: URI,
 		_content: Uint8Array,
-		_opts: IFileWriteOptions,
+		_opts: IFileWriteOptions
 	): Promise<void> {
 		throw new NotSupportedError();
 	}

@@ -68,18 +68,18 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 	// --- begin event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		this._readConfig();
 		return true;
 	}
 	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent,
+		e: viewEvents.ViewCursorStateChangedEvent
 	): boolean {
 		const primaryViewPosition = e.selections[0].getPosition();
 		this._lastCursorModelPosition =
 			this._context.viewModel.coordinatesConverter.convertViewPositionToModelPosition(
-				primaryViewPosition,
+				primaryViewPosition
 			);
 
 		let shouldRender = false;
@@ -99,27 +99,27 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 		return true;
 	}
 	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent,
+		e: viewEvents.ViewLinesChangedEvent
 	): boolean {
 		return true;
 	}
 	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent,
+		e: viewEvents.ViewLinesDeletedEvent
 	): boolean {
 		return true;
 	}
 	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent,
+		e: viewEvents.ViewLinesInsertedEvent
 	): boolean {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		return e.scrollTopChanged;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
+		e: viewEvents.ViewZonesChangedEvent
 	): boolean {
 		return true;
 	}
@@ -129,7 +129,7 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 	private _getLineRenderLineNumber(viewLineNumber: number): string {
 		const modelPosition =
 			this._context.viewModel.coordinatesConverter.convertViewPositionToModelPosition(
-				new Position(viewLineNumber, 1),
+				new Position(viewLineNumber, 1)
 			);
 		if (modelPosition.column !== 1) {
 			return "";
@@ -142,7 +142,7 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 
 		if (this._renderLineNumbers === RenderLineNumbersType.Relative) {
 			const diff = Math.abs(
-				this._lastCursorModelPosition.lineNumber - modelLineNumber,
+				this._lastCursorModelPosition.lineNumber - modelLineNumber
 			);
 			if (diff === 0) {
 				return (
@@ -216,9 +216,8 @@ export class LineNumbersOverlay extends DynamicViewOverlay {
 				extraClassName = " active-line-number";
 			}
 
-			output[
-				lineIndex
-			] = `<div class="${LineNumbersOverlay.CLASS_NAME}${lineHeightClassName}${extraClassName}" style="left:${this._lineNumbersLeft}px;width:${this._lineNumbersWidth}px;">${renderLineNumber}</div>`;
+			output[lineIndex] =
+				`<div class="${LineNumbersOverlay.CLASS_NAME}${lineHeightClassName}${extraClassName}" style="left:${this._lineNumbersLeft}px;width:${this._lineNumbersWidth}px;">${renderLineNumber}</div>`;
 		}
 
 		this._renderResult = output;
@@ -241,13 +240,13 @@ registerThemingParticipant((theme, collector) => {
 	const editorDimmedLineNumberColor = theme.getColor(editorDimmedLineNumber);
 	if (editorDimmedLineNumberColor) {
 		collector.addRule(
-			`.monaco-editor .line-numbers.dimmed-line-number { color: ${editorDimmedLineNumberColor}; }`,
+			`.monaco-editor .line-numbers.dimmed-line-number { color: ${editorDimmedLineNumberColor}; }`
 		);
 	} else if (editorLineNumbersColor) {
 		collector.addRule(
 			`.monaco-editor .line-numbers.dimmed-line-number { color: ${editorLineNumbersColor.transparent(
-				0.4,
-			)}; }`,
+				0.4
+			)}; }`
 		);
 	}
 });

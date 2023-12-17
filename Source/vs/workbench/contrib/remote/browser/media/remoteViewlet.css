@@ -13,7 +13,11 @@
 	flex-wrap: nowrap;
 }
 
-.remote-help-content .monaco-list .monaco-list-row .remote-help-tree-node-item > .remote-help-tree-node-item-icon {
+.remote-help-content
+	.monaco-list
+	.monaco-list-row
+	.remote-help-tree-node-item
+	> .remote-help-tree-node-item-icon {
 	background-size: 16px;
 	background-position: left center;
 	background-repeat: no-repeat;
@@ -29,7 +33,9 @@
 	width: 0px !important;
 }
 
-.remote-help-tree-node-item-icon .monaco-icon-label-container > .monaco-icon-name-container {
+.remote-help-tree-node-item-icon
+	.monaco-icon-label-container
+	> .monaco-icon-name-container {
 	padding-left: 22px;
 }
 

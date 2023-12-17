@@ -32,7 +32,7 @@ export interface IHoverService {
 	 */
 	showHover(
 		options: IHoverOptions,
-		focus?: boolean,
+		focus?: boolean
 	): IHoverWidget | undefined;
 
 	/**

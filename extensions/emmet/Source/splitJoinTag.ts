@@ -36,7 +36,7 @@ export function splitJoinTag() {
 					documentText,
 					rootNode,
 					offset,
-					true,
+					true
 				);
 				if (nodeToUpdate) {
 					const textEdit = getRangesToReplace(document, nodeToUpdate);
@@ -48,7 +48,7 @@ export function splitJoinTag() {
 
 function getRangesToReplace(
 	document: vscode.TextDocument,
-	nodeToUpdate: HtmlFlatNode,
+	nodeToUpdate: HtmlFlatNode
 ): vscode.TextEdit {
 	let rangeToReplace: vscode.Range;
 	let textToReplaceWith: string;

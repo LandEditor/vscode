@@ -15,12 +15,12 @@ const parcelWatcher = require("@parcel/watcher");
 /** @type {RunFunction} */
 module.exports.run = async function (debugSession) {
 	const watcher = await DirWatcher.watchRecursively(
-		path.join(__dirname, "../out/"),
+		path.join(__dirname, "../out/")
 	);
 
 	const sub = watcher.onDidChange((changes) => {
 		const supportedChanges = changes.filter(
-			(c) => c.path.endsWith(".js") || c.path.endsWith(".css"),
+			(c) => c.path.endsWith(".js") || c.path.endsWith(".css")
 		);
 		debugSession.evalJs(
 			function (changes, debugSessionName) {
@@ -63,19 +63,19 @@ module.exports.run = async function (debugSession) {
 					]).find((l) =>
 						new URL(
 							l.href,
-							document.location.href,
-						).pathname.endsWith(relativePath),
+							document.location.href
+						).pathname.endsWith(relativePath)
 					);
 					if (styleSheet) {
 						setMessage(
 							`reload ${formatPath(
-								relativePath,
-							)} - ${new Date().toLocaleTimeString()}`,
+								relativePath
+							)} - ${new Date().toLocaleTimeString()}`
 						);
 						console.log(
 							debugSessionName,
 							"css reloaded",
-							relativePath,
+							relativePath
 						);
 						styleSheet.href =
 							styleSheet.href.replace(/\?.*/, "") +
@@ -84,13 +84,13 @@ module.exports.run = async function (debugSession) {
 					} else {
 						setMessage(
 							`could not reload ${formatPath(
-								relativePath,
-							)} - ${new Date().toLocaleTimeString()}`,
+								relativePath
+							)} - ${new Date().toLocaleTimeString()}`
 						);
 						console.log(
 							debugSessionName,
 							"ignoring css change, as stylesheet is not loaded",
-							relativePath,
+							relativePath
 						);
 					}
 				}
@@ -109,14 +109,14 @@ module.exports.run = async function (debugSession) {
 						console.log(
 							debugSessionName,
 							"ignoring js change, as moduleManager is not available",
-							relativePath,
+							relativePath
 						);
 						return;
 					}
 
 					const moduleId =
 						moduleManager._moduleIdProvider.getModuleId(
-							moduleIdStr,
+							moduleIdStr
 						);
 					const oldModule = moduleManager._modules2[moduleId];
 
@@ -124,7 +124,7 @@ module.exports.run = async function (debugSession) {
 						console.log(
 							debugSessionName,
 							"ignoring js change, as module is not loaded",
-							relativePath,
+							relativePath
 						);
 						return;
 					}
@@ -143,20 +143,20 @@ module.exports.run = async function (debugSession) {
 						console.log(
 							debugSessionName,
 							"ignoring js change, as module does not support hot-reload",
-							relativePath,
+							relativePath
 						);
 						hotReloadData.shouldReload = true;
 						setMessage(
 							`hot reload not supported for ${formatPath(
-								relativePath,
-							)} - ${new Date().toLocaleTimeString()}`,
+								relativePath
+							)} - ${new Date().toLocaleTimeString()}`
 						);
 						return;
 					}
 
 					// Eval maintains source maps
 					function newScript(
-						/* this parameter is used by newSrc */ define,
+						/* this parameter is used by newSrc */ define
 					) {
 						// eslint-disable-next-line no-eval
 						eval(newSrc); // CodeQL [SM01632] This code is only executed during development. It is required for the hot-reload functionality.
@@ -171,7 +171,7 @@ module.exports.run = async function (debugSession) {
 							moduleManager.defineModule(
 								moduleIdStr,
 								deps,
-								callback,
+								callback
 							);
 							const newModule = moduleManager._modules2[moduleId];
 
@@ -185,13 +185,13 @@ module.exports.run = async function (debugSession) {
 								hotReloadData.shouldReload = true;
 								setMessage(
 									`hot reload failed ${formatPath(
-										relativePath,
-									)} - ${new Date().toLocaleTimeString()}`,
+										relativePath
+									)} - ${new Date().toLocaleTimeString()}`
 								);
 								console.log(
 									debugSessionName,
 									"hot reload was not successful",
-									relativePath,
+									relativePath
 								);
 								return;
 							}
@@ -199,14 +199,14 @@ module.exports.run = async function (debugSession) {
 							console.log(
 								debugSessionName,
 								"hot reloaded",
-								moduleIdStr,
+								moduleIdStr
 							);
 							setMessage(
 								`successfully reloaded ${formatPath(
-									relativePath,
-								)} - ${new Date().toLocaleTimeString()}`,
+									relativePath
+								)} - ${new Date().toLocaleTimeString()}`
 							);
-						},
+						}
 					);
 				}
 
@@ -270,7 +270,7 @@ module.exports.run = async function (debugSession) {
 				}
 			},
 			supportedChanges,
-			debugSession.name.substring(0, 25),
+			debugSession.name.substring(0, 25)
 		);
 	});
 

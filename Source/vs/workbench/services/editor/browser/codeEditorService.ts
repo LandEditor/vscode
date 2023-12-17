@@ -33,12 +33,19 @@ export class CodeEditorService extends AbstractCodeEditorService {
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
 		@IThemeService themeService: IThemeService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super(themeService);
 
-		this._register(this.registerCodeEditorOpenHandler(this.doOpenCodeEditor.bind(this)));
-		this._register(this.registerCodeEditorOpenHandler(this.doOpenCodeEditorFromDiff.bind(this)));
+		this._register(
+			this.registerCodeEditorOpenHandler(this.doOpenCodeEditor.bind(this))
+		);
+		this._register(
+			this.registerCodeEditorOpenHandler(
+				this.doOpenCodeEditorFromDiff.bind(this)
+			)
+		);
 	}
 
 	getActiveCodeEditor(): ICodeEditor | null {
@@ -66,7 +73,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 	private async doOpenCodeEditorFromDiff(
 		input: IResourceEditorInput,
 		source: ICodeEditor | null,
-		sideBySide?: boolean,
+		sideBySide?: boolean
 	): Promise<ICodeEditor | null> {
 		// Special case: If the active editor is a diff editor and the request to open originates and
 		// targets the modified side of it, we just apply the request there to prevent opening the modified
@@ -82,7 +89,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 			activeTextEditorControl.getModel() && // we need a target model to compare with
 			isEqual(
 				input.resource,
-				activeTextEditorControl.getModel()?.modified.uri,
+				activeTextEditorControl.getModel()?.modified.uri
 			) // we need the input resources to match with modified side
 		) {
 			const targetEditor = activeTextEditorControl.getModifiedEditor();
@@ -90,7 +97,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 			applyTextEditorOptions(
 				input.options,
 				targetEditor,
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 
 			return targetEditor;
@@ -103,7 +110,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 	private async doOpenCodeEditor(
 		input: IResourceEditorInput,
 		source: ICodeEditor | null,
-		sideBySide?: boolean,
+		sideBySide?: boolean
 	): Promise<ICodeEditor | null> {
 		// Special case: we want to detect the request to open an editor that
 		// is different from the current one to decide whether the current editor
@@ -131,7 +138,7 @@ export class CodeEditorService extends AbstractCodeEditorService {
 		// Open as editor
 		const control = await this.editorService.openEditor(
 			input,
-			sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
+			sideBySide ? SIDE_GROUP : ACTIVE_GROUP
 		);
 		if (control) {
 			const widget = control.getControl();
@@ -154,5 +161,5 @@ export class CodeEditorService extends AbstractCodeEditorService {
 registerSingleton(
 	ICodeEditorService,
 	CodeEditorService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

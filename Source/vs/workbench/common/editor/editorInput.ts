@@ -60,7 +60,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	protected readonly _onDidChangeDirty = this._register(new Emitter<void>());
 	protected readonly _onDidChangeLabel = this._register(new Emitter<void>());
 	protected readonly _onDidChangeCapabilities = this._register(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 
 	private readonly _onWillDispose = this._register(new Emitter<void>());
@@ -247,7 +247,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async save(
 		group: GroupIdentifier,
-		options?: ISaveOptions,
+		options?: ISaveOptions
 	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
@@ -263,7 +263,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async saveAs(
 		group: GroupIdentifier,
-		options?: ISaveOptions,
+		options?: ISaveOptions
 	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		return this;
 	}
@@ -273,7 +273,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async revert(
 		group: GroupIdentifier,
-		options?: IRevertOptions,
+		options?: IRevertOptions
 	): Promise<void> {}
 
 	/**
@@ -286,7 +286,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 */
 	async rename(
 		group: GroupIdentifier,
-		target: URI,
+		target: URI
 	): Promise<IMoveResult | undefined> {
 		return undefined;
 	}
@@ -321,7 +321,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 
 		return isEqual(
 			this.resource,
-			EditorResourceAccessor.getCanonicalUri(otherInput),
+			EditorResourceAccessor.getCanonicalUri(otherInput)
 		);
 	}
 
@@ -333,7 +333,7 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * for the editor to open in.
 	 */
 	prefersEditorPane<T extends IEditorDescriptor<IEditorPane>>(
-		editorPanes: T[],
+		editorPanes: T[]
 	): T | undefined {
 		return firstOrDefault(editorPanes);
 	}
@@ -350,9 +350,9 @@ export abstract class EditorInput extends AbstractEditorInput {
 	 * preserve as much view state as possible from the typed input based on
 	 * the group the editor is opened.
 	 */
-	toUntyped(options?: { preserveViewState: GroupIdentifier }):
-		| IUntypedEditorInput
-		| undefined {
+	toUntyped(options?: {
+		preserveViewState: GroupIdentifier;
+	}): IUntypedEditorInput | undefined {
 		return undefined;
 	}
 

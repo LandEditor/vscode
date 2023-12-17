@@ -6,7 +6,7 @@
 export function getWordAtText(
 	text: string,
 	offset: number,
-	wordDefinition: RegExp,
+	wordDefinition: RegExp
 ): { start: number; length: number } {
 	let lineStart = offset;
 	while (

@@ -31,8 +31,10 @@ export class MenubarMainService implements IMenubarMainService {
 	private menubar: Promise<Menubar>;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@ILogService private readonly logService: ILogService
 	) {
 		this.menubar = this.installMenuBarAfterWindowOpen();
@@ -40,7 +42,7 @@ export class MenubarMainService implements IMenubarMainService {
 
 	private async installMenuBarAfterWindowOpen(): Promise<Menubar> {
 		await this.lifecycleMainService.when(
-			LifecycleMainPhase.AfterWindowOpen,
+			LifecycleMainPhase.AfterWindowOpen
 		);
 
 		return this.instantiationService.createInstance(Menubar);

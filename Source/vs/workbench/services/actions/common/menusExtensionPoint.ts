@@ -58,7 +58,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorTitleRun,
 		description: localize(
 			"menus.editorTitleRun",
-			"Run submenu inside the editor title menu",
+			"Run submenu inside the editor title menu"
 		),
 	},
 	{
@@ -71,7 +71,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorContextCopy,
 		description: localize(
 			"menus.editorContextCopyAs",
-			"'Copy as' submenu in the editor context menu",
+			"'Copy as' submenu in the editor context menu"
 		),
 	},
 	{
@@ -79,7 +79,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorContextShare,
 		description: localize(
 			"menus.editorContextShare",
-			"'Share' submenu in the editor context menu",
+			"'Share' submenu in the editor context menu"
 		),
 		proposed: "contribShareMenu",
 	},
@@ -88,7 +88,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.ExplorerContext,
 		description: localize(
 			"menus.explorerContext",
-			"The file explorer context menu",
+			"The file explorer context menu"
 		),
 	},
 	{
@@ -96,7 +96,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.ExplorerContextShare,
 		description: localize(
 			"menus.explorerContextShare",
-			"'Share' submenu in the file explorer context menu",
+			"'Share' submenu in the file explorer context menu"
 		),
 		proposed: "contribShareMenu",
 	},
@@ -105,7 +105,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorTitleContext,
 		description: localize(
 			"menus.editorTabContext",
-			"The editor tabs context menu",
+			"The editor tabs context menu"
 		),
 	},
 	{
@@ -113,7 +113,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorTitleContextShare,
 		description: localize(
 			"menus.editorTitleContextShare",
-			"'Share' submenu inside the editor title context menu",
+			"'Share' submenu inside the editor title context menu"
 		),
 		proposed: "contribShareMenu",
 	},
@@ -122,7 +122,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.DebugCallStackContext,
 		description: localize(
 			"menus.debugCallstackContext",
-			"The debug callstack view context menu",
+			"The debug callstack view context menu"
 		),
 	},
 	{
@@ -130,7 +130,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.DebugVariablesContext,
 		description: localize(
 			"menus.debugVariablesContext",
-			"The debug variables view context menu",
+			"The debug variables view context menu"
 		),
 	},
 	{
@@ -143,7 +143,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.MenubarHomeMenu,
 		description: localize(
 			"menus.home",
-			"The home indicator context menu (web only)",
+			"The home indicator context menu (web only)"
 		),
 		proposed: "contribMenuBarHome",
 		supportsSubmenus: false,
@@ -153,7 +153,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.MenubarCopy,
 		description: localize(
 			"menus.opy",
-			"'Copy as' submenu in the top level Edit menu",
+			"'Copy as' submenu in the top level Edit menu"
 		),
 	},
 	{
@@ -161,7 +161,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMTitle,
 		description: localize(
 			"menus.scmTitle",
-			"The Source Control title menu",
+			"The Source Control title menu"
 		),
 	},
 	{
@@ -169,7 +169,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMSourceControl,
 		description: localize(
 			"menus.scmSourceControl",
-			"The Source Control menu",
+			"The Source Control menu"
 		),
 	},
 	{
@@ -177,7 +177,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMResourceContext,
 		description: localize(
 			"menus.resourceStateContext",
-			"The Source Control resource state context menu",
+			"The Source Control resource state context menu"
 		),
 	},
 	{
@@ -185,7 +185,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMResourceFolderContext,
 		description: localize(
 			"menus.resourceFolderContext",
-			"The Source Control resource folder context menu",
+			"The Source Control resource folder context menu"
 		),
 	},
 	{
@@ -193,7 +193,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMResourceGroupContext,
 		description: localize(
 			"menus.resourceGroupContext",
-			"The Source Control resource group context menu",
+			"The Source Control resource group context menu"
 		),
 	},
 	{
@@ -201,7 +201,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMChangeContext,
 		description: localize(
 			"menus.changeTitle",
-			"The Source Control inline change menu",
+			"The Source Control inline change menu"
 		),
 	},
 	{
@@ -209,7 +209,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.SCMInputBox,
 		description: localize(
 			"menus.input",
-			"The Source Control input box menu",
+			"The Source Control input box menu"
 		),
 		proposed: "contribSourceControlInputBoxMenu",
 	},
@@ -218,7 +218,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.StatusBarRemoteIndicatorMenu,
 		description: localize(
 			"menus.statusBarRemoteIndicator",
-			"The remote indicator menu in the status bar",
+			"The remote indicator menu in the status bar"
 		),
 		supportsSubmenus: false,
 	},
@@ -227,7 +227,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TerminalInstanceContext,
 		description: localize(
 			"menus.terminalContext",
-			"The terminal context menu",
+			"The terminal context menu"
 		),
 	},
 	{
@@ -235,7 +235,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TerminalTabContext,
 		description: localize(
 			"menus.terminalTabContext",
-			"The terminal tabs context menu",
+			"The terminal tabs context menu"
 		),
 	},
 	{
@@ -243,7 +243,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.ViewTitle,
 		description: localize(
 			"view.viewTitle",
-			"The contributed view title menu",
+			"The contributed view title menu"
 		),
 	},
 	{
@@ -251,7 +251,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.ViewItemContext,
 		description: localize(
 			"view.itemContext",
-			"The contributed view item context menu",
+			"The contributed view item context menu"
 		),
 	},
 	{
@@ -259,7 +259,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentEditorActions,
 		description: localize(
 			"commentThread.editorActions",
-			"The contributed comment editor actions",
+			"The contributed comment editor actions"
 		),
 		proposed: "contribCommentEditorActionsMenu",
 	},
@@ -268,7 +268,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentThreadTitle,
 		description: localize(
 			"commentThread.title",
-			"The contributed comment thread title menu",
+			"The contributed comment thread title menu"
 		),
 	},
 	{
@@ -276,7 +276,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentThreadActions,
 		description: localize(
 			"commentThread.actions",
-			"The contributed comment thread context menu, rendered as buttons below the comment editor",
+			"The contributed comment thread context menu, rendered as buttons below the comment editor"
 		),
 		supportsSubmenus: false,
 	},
@@ -285,7 +285,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentThreadAdditionalActions,
 		description: localize(
 			"commentThread.actions",
-			"The contributed comment thread context menu, rendered as buttons below the comment editor",
+			"The contributed comment thread context menu, rendered as buttons below the comment editor"
 		),
 		supportsSubmenus: false,
 		proposed: "contribCommentThreadAdditionalMenu",
@@ -295,7 +295,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentThreadTitleContext,
 		description: localize(
 			"commentThread.titleContext",
-			"The contributed comment thread title's peek context menu, rendered as a right click menu on the comment thread's peek title.",
+			"The contributed comment thread title's peek context menu, rendered as a right click menu on the comment thread's peek title."
 		),
 		proposed: "contribCommentPeekContext",
 	},
@@ -304,7 +304,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentTitle,
 		description: localize(
 			"comment.title",
-			"The contributed comment title menu",
+			"The contributed comment title menu"
 		),
 	},
 	{
@@ -312,7 +312,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentActions,
 		description: localize(
 			"comment.actions",
-			"The contributed comment context menu, rendered as buttons below the comment editor",
+			"The contributed comment context menu, rendered as buttons below the comment editor"
 		),
 		supportsSubmenus: false,
 	},
@@ -321,7 +321,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.CommentThreadCommentContext,
 		description: localize(
 			"comment.commentContext",
-			"The contributed comment context menu, rendered as a right click menu on the an individual comment in the comment thread's peek view.",
+			"The contributed comment context menu, rendered as a right click menu on the an individual comment in the comment thread's peek view."
 		),
 		proposed: "contribCommentPeekContext",
 	},
@@ -330,7 +330,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.NotebookToolbar,
 		description: localize(
 			"notebook.toolbar",
-			"The contributed notebook toolbar menu",
+			"The contributed notebook toolbar menu"
 		),
 	},
 	{
@@ -338,7 +338,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.NotebookKernelSource,
 		description: localize(
 			"notebook.kernelSource",
-			"The contributed notebook kernel sources menu",
+			"The contributed notebook kernel sources menu"
 		),
 		proposed: "notebookKernelSource",
 	},
@@ -347,7 +347,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.NotebookCellTitle,
 		description: localize(
 			"notebook.cell.title",
-			"The contributed notebook cell title menu",
+			"The contributed notebook cell title menu"
 		),
 	},
 	{
@@ -355,7 +355,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.NotebookCellExecute,
 		description: localize(
 			"notebook.cell.execute",
-			"The contributed notebook cell execution menu",
+			"The contributed notebook cell execution menu"
 		),
 	},
 	{
@@ -363,7 +363,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.InteractiveToolbar,
 		description: localize(
 			"interactive.toolbar",
-			"The contributed interactive toolbar menu",
+			"The contributed interactive toolbar menu"
 		),
 	},
 	{
@@ -371,7 +371,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.InteractiveCellTitle,
 		description: localize(
 			"interactive.cell.title",
-			"The contributed interactive cell title menu",
+			"The contributed interactive cell title menu"
 		),
 	},
 	{
@@ -379,7 +379,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TestItem,
 		description: localize(
 			"testing.item.context",
-			"The contributed test item menu",
+			"The contributed test item menu"
 		),
 	},
 	{
@@ -387,7 +387,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TestItemGutter,
 		description: localize(
 			"testing.item.gutter.title",
-			"The menu for a gutter decoration for a test item",
+			"The menu for a gutter decoration for a test item"
 		),
 	},
 	{
@@ -395,7 +395,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TestMessageContext,
 		description: localize(
 			"testing.message.context.title",
-			"A prominent button overlaying editor content where the message is displayed",
+			"A prominent button overlaying editor content where the message is displayed"
 		),
 	},
 	{
@@ -403,7 +403,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TestMessageContent,
 		description: localize(
 			"testing.message.content.title",
-			"Context menu for the message in the results tree",
+			"Context menu for the message in the results tree"
 		),
 	},
 	{
@@ -411,7 +411,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.ExtensionContext,
 		description: localize(
 			"menus.extensionContext",
-			"The extension context menu",
+			"The extension context menu"
 		),
 	},
 	{
@@ -419,7 +419,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TimelineTitle,
 		description: localize(
 			"view.timelineTitle",
-			"The Timeline view title menu",
+			"The Timeline view title menu"
 		),
 	},
 	{
@@ -427,7 +427,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TimelineItemContext,
 		description: localize(
 			"view.timelineContext",
-			"The Timeline view item context menu",
+			"The Timeline view item context menu"
 		),
 	},
 	{
@@ -435,7 +435,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TunnelContext,
 		description: localize(
 			"view.tunnelContext",
-			"The Ports view item context menu",
+			"The Ports view item context menu"
 		),
 	},
 	{
@@ -443,7 +443,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TunnelOriginInline,
 		description: localize(
 			"view.tunnelOriginInline",
-			"The Ports view item origin inline menu",
+			"The Ports view item origin inline menu"
 		),
 	},
 	{
@@ -451,7 +451,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.TunnelPortInline,
 		description: localize(
 			"view.tunnelPortInline",
-			"The Ports view item port inline menu",
+			"The Ports view item port inline menu"
 		),
 	},
 	{
@@ -459,7 +459,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.NewFile,
 		description: localize(
 			"file.newFile",
-			"The 'New File...' quick pick, shown on welcome page and File menu.",
+			"The 'New File...' quick pick, shown on welcome page and File menu."
 		),
 		supportsSubmenus: false,
 	},
@@ -473,7 +473,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.MenubarShare,
 		description: localize(
 			"menus.share",
-			"Share submenu shown in the top level File menu.",
+			"Share submenu shown in the top level File menu."
 		),
 		proposed: "contribShareMenu",
 	},
@@ -482,7 +482,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.InlineCompletionsActions,
 		description: localize(
 			"inlineCompletions.actions",
-			"The actions shown when hovering on an inline completion",
+			"The actions shown when hovering on an inline completion"
 		),
 		supportsSubmenus: false,
 		proposed: "inlineCompletionsAdditions",
@@ -492,7 +492,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorContent,
 		description: localize(
 			"merge.toolbar",
-			"The prominent button in an editor, overlays its content",
+			"The prominent button in an editor, overlays its content"
 		),
 		proposed: "contribEditorContentMenu",
 	},
@@ -501,7 +501,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.EditorLineNumberContext,
 		description: localize(
 			"editorLineNumberContext",
-			"The contributed editor line number context menu",
+			"The contributed editor line number context menu"
 		),
 	},
 	{
@@ -509,7 +509,7 @@ const apiMenus: IAPIMenu[] = [
 		id: MenuId.MergeInputResultToolbar,
 		description: localize(
 			"menus.mergeEditorResult",
-			"The result toolbar of the merge editor",
+			"The result toolbar of the merge editor"
 		),
 		proposed: "contribMergeEditorMenus",
 	},
@@ -538,22 +538,22 @@ namespace schema {
 	}
 
 	export function isMenuItem(
-		item: IUserFriendlyMenuItem | IUserFriendlySubmenuItem,
+		item: IUserFriendlyMenuItem | IUserFriendlySubmenuItem
 	): item is IUserFriendlyMenuItem {
 		return typeof (item as IUserFriendlyMenuItem).command === "string";
 	}
 
 	export function isValidMenuItem(
 		item: IUserFriendlyMenuItem,
-		collector: ExtensionMessageCollector,
+		collector: ExtensionMessageCollector
 	): boolean {
 		if (typeof item.command !== "string") {
 			collector.error(
 				localize(
 					"requirestring",
 					"property `{0}` is mandatory and must be of type `string`",
-					"command",
-				),
+					"command"
+				)
 			);
 			return false;
 		}
@@ -562,8 +562,8 @@ namespace schema {
 				localize(
 					"optstring",
 					"property `{0}` can be omitted or must be of type `string`",
-					"alt",
-				),
+					"alt"
+				)
 			);
 			return false;
 		}
@@ -572,8 +572,8 @@ namespace schema {
 				localize(
 					"optstring",
 					"property `{0}` can be omitted or must be of type `string`",
-					"when",
-				),
+					"when"
+				)
 			);
 			return false;
 		}
@@ -582,8 +582,8 @@ namespace schema {
 				localize(
 					"optstring",
 					"property `{0}` can be omitted or must be of type `string`",
-					"group",
-				),
+					"group"
+				)
 			);
 			return false;
 		}
@@ -593,15 +593,15 @@ namespace schema {
 
 	export function isValidSubmenuItem(
 		item: IUserFriendlySubmenuItem,
-		collector: ExtensionMessageCollector,
+		collector: ExtensionMessageCollector
 	): boolean {
 		if (typeof item.submenu !== "string") {
 			collector.error(
 				localize(
 					"requirestring",
 					"property `{0}` is mandatory and must be of type `string`",
-					"submenu",
-				),
+					"submenu"
+				)
 			);
 			return false;
 		}
@@ -610,8 +610,8 @@ namespace schema {
 				localize(
 					"optstring",
 					"property `{0}` can be omitted or must be of type `string`",
-					"when",
-				),
+					"when"
+				)
 			);
 			return false;
 		}
@@ -620,8 +620,8 @@ namespace schema {
 				localize(
 					"optstring",
 					"property `{0}` can be omitted or must be of type `string`",
-					"group",
-				),
+					"group"
+				)
 			);
 			return false;
 		}
@@ -631,11 +631,11 @@ namespace schema {
 
 	export function isValidItems(
 		items: (IUserFriendlyMenuItem | IUserFriendlySubmenuItem)[],
-		collector: ExtensionMessageCollector,
+		collector: ExtensionMessageCollector
 	): boolean {
 		if (!Array.isArray(items)) {
 			collector.error(
-				localize("requirearray", "submenu items must be an array"),
+				localize("requirearray", "submenu items must be an array")
 			);
 			return false;
 		}
@@ -657,11 +657,11 @@ namespace schema {
 
 	export function isValidSubmenu(
 		submenu: IUserFriendlySubmenu,
-		collector: ExtensionMessageCollector,
+		collector: ExtensionMessageCollector
 	): boolean {
 		if (typeof submenu !== "object") {
 			collector.error(
-				localize("require", "submenu items must be an object"),
+				localize("require", "submenu items must be an object")
 			);
 			return false;
 		}
@@ -671,8 +671,8 @@ namespace schema {
 				localize(
 					"requirestring",
 					"property `{0}` is mandatory and must be of type `string`",
-					"id",
-				),
+					"id"
+				)
 			);
 			return false;
 		}
@@ -681,8 +681,8 @@ namespace schema {
 				localize(
 					"requirestring",
 					"property `{0}` is mandatory and must be of type `string`",
-					"label",
-				),
+					"label"
+				)
 			);
 			return false;
 		}
@@ -697,28 +697,28 @@ namespace schema {
 			command: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.command",
-					"Identifier of the command to execute. The command must be declared in the 'commands'-section",
+					"Identifier of the command to execute. The command must be declared in the 'commands'-section"
 				),
 				type: "string",
 			},
 			alt: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.alt",
-					"Identifier of an alternative command to execute. The command must be declared in the 'commands'-section",
+					"Identifier of an alternative command to execute. The command must be declared in the 'commands'-section"
 				),
 				type: "string",
 			},
 			when: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.when",
-					"Condition which must be true to show this item",
+					"Condition which must be true to show this item"
 				),
 				type: "string",
 			},
 			group: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.group",
-					"Group into which this item belongs",
+					"Group into which this item belongs"
 				),
 				type: "string",
 			},
@@ -732,21 +732,21 @@ namespace schema {
 			submenu: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.submenu",
-					"Identifier of the submenu to display in this item.",
+					"Identifier of the submenu to display in this item."
 				),
 				type: "string",
 			},
 			when: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.when",
-					"Condition which must be true to show this item",
+					"Condition which must be true to show this item"
 				),
 				type: "string",
 			},
 			group: {
 				description: localize(
 					"vscode.extension.contributes.menuItem.group",
-					"Group into which this item belongs",
+					"Group into which this item belongs"
 				),
 				type: "string",
 			},
@@ -760,14 +760,14 @@ namespace schema {
 			id: {
 				description: localize(
 					"vscode.extension.contributes.submenu.id",
-					"Identifier of the menu to display as a submenu.",
+					"Identifier of the menu to display as a submenu."
 				),
 				type: "string",
 			},
 			label: {
 				description: localize(
 					"vscode.extension.contributes.submenu.label",
-					"The label of the menu item which leads to this submenu.",
+					"The label of the menu item which leads to this submenu."
 				),
 				type: "string",
 			},
@@ -779,7 +779,7 @@ namespace schema {
 							"do not translate or change `\\$(zap)`, \\ in front of $ is important.",
 						],
 					},
-					"(Optional) Icon which is used to represent the submenu in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `\\$(zap)`",
+					"(Optional) Icon which is used to represent the submenu in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `\\$(zap)`"
 				),
 				anyOf: [
 					{
@@ -791,14 +791,14 @@ namespace schema {
 							light: {
 								description: localize(
 									"vscode.extension.contributes.submenu.icon.light",
-									"Icon path when a light theme is used",
+									"Icon path when a light theme is used"
 								),
 								type: "string",
 							},
 							dark: {
 								description: localize(
 									"vscode.extension.contributes.submenu.icon.dark",
-									"Icon path when a dark theme is used",
+									"Icon path when a dark theme is used"
 								),
 								type: "string",
 							},
@@ -812,7 +812,7 @@ namespace schema {
 	export const menusContribution: IJSONSchema = {
 		description: localize(
 			"vscode.extension.contributes.menus",
-			"Contributes menu items to the editor",
+			"Contributes menu items to the editor"
 		),
 		type: "object",
 		properties: index(
@@ -824,15 +824,15 @@ namespace schema {
 							"proposed",
 							'Proposed API, requires `enabledApiProposal: ["{0}"]` - {1}',
 							menu.proposed,
-							menu.description,
-					  )
+							menu.description
+						)
 					: menu.description,
 				type: "array",
 				items:
 					menu.supportsSubmenus === false
 						? menuItem
 						: { oneOf: [menuItem, submenuItem] },
-			}),
+			})
 		),
 		additionalProperties: {
 			description: "Submenu",
@@ -844,7 +844,7 @@ namespace schema {
 	export const submenusContribution: IJSONSchema = {
 		description: localize(
 			"vscode.extension.contributes.submenus",
-			"Contributes submenu items to the editor",
+			"Contributes submenu items to the editor"
 		),
 		type: "array",
 		items: submenu,
@@ -865,7 +865,7 @@ namespace schema {
 
 	export function isValidCommand(
 		command: IUserFriendlyCommand,
-		collector: ExtensionMessageCollector,
+		collector: ExtensionMessageCollector
 	): boolean {
 		if (!command) {
 			collector.error(localize("nonempty", "expected non-empty value."));
@@ -876,8 +876,8 @@ namespace schema {
 				localize(
 					"requirestring",
 					"property `{0}` is mandatory and must be of type `string`",
-					"command",
-				),
+					"command"
+				)
 			);
 			return false;
 		}
@@ -895,8 +895,8 @@ namespace schema {
 				localize(
 					"optstring",
 					"property `{0}` can be omitted or must be of type `string`",
-					"precondition",
-				),
+					"precondition"
+				)
 			);
 			return false;
 		}
@@ -914,7 +914,7 @@ namespace schema {
 
 	function isValidIcon(
 		icon: IUserFriendlyIcon | undefined,
-		collector: ExtensionMessageCollector,
+		collector: ExtensionMessageCollector
 	): boolean {
 		if (typeof icon === "undefined") {
 			return true;
@@ -930,8 +930,8 @@ namespace schema {
 		collector.error(
 			localize(
 				"opticon",
-				"property `icon` can be omitted or must be either a string or a literal like `{dark, light}`",
-			),
+				"property `icon` can be omitted or must be either a string or a literal like `{dark, light}`"
+			)
 		);
 		return false;
 	}
@@ -939,15 +939,15 @@ namespace schema {
 	function isValidLocalizedString(
 		localized: string | ILocalizedString,
 		collector: ExtensionMessageCollector,
-		propertyName: string,
+		propertyName: string
 	): boolean {
 		if (typeof localized === "undefined") {
 			collector.error(
 				localize(
 					"requireStringOrObject",
 					"property `{0}` is mandatory and must be of type `string` or `object`",
-					propertyName,
-				),
+					propertyName
+				)
 			);
 			return false;
 		} else if (
@@ -958,8 +958,8 @@ namespace schema {
 				localize(
 					"requirestring",
 					"property `{0}` is mandatory and must be of type `string`",
-					propertyName,
-				),
+					propertyName
+				)
 			);
 			return false;
 		} else if (
@@ -972,8 +972,8 @@ namespace schema {
 					"requirestrings",
 					"properties `{0}` and `{1}` are mandatory and must be of type `string`",
 					`${propertyName}.value`,
-					`${propertyName}.original`,
-				),
+					`${propertyName}.original`
+				)
 			);
 			return false;
 		}
@@ -988,35 +988,35 @@ namespace schema {
 			command: {
 				description: localize(
 					"vscode.extension.contributes.commandType.command",
-					"Identifier of the command to execute",
+					"Identifier of the command to execute"
 				),
 				type: "string",
 			},
 			title: {
 				description: localize(
 					"vscode.extension.contributes.commandType.title",
-					"Title by which the command is represented in the UI",
+					"Title by which the command is represented in the UI"
 				),
 				type: "string",
 			},
 			shortTitle: {
 				markdownDescription: localize(
 					"vscode.extension.contributes.commandType.shortTitle",
-					"(Optional) Short title by which the command is represented in the UI. Menus pick either `title` or `shortTitle` depending on the context in which they show commands.",
+					"(Optional) Short title by which the command is represented in the UI. Menus pick either `title` or `shortTitle` depending on the context in which they show commands."
 				),
 				type: "string",
 			},
 			category: {
 				description: localize(
 					"vscode.extension.contributes.commandType.category",
-					"(Optional) Category string by which the command is grouped in the UI",
+					"(Optional) Category string by which the command is grouped in the UI"
 				),
 				type: "string",
 			},
 			enablement: {
 				description: localize(
 					"vscode.extension.contributes.commandType.precondition",
-					"(Optional) Condition which must be true to enable the command in the UI (menu and keybindings). Does not prevent executing the command by other means, like the `executeCommand`-api.",
+					"(Optional) Condition which must be true to enable the command in the UI (menu and keybindings). Does not prevent executing the command by other means, like the `executeCommand`-api."
 				),
 				type: "string",
 			},
@@ -1028,7 +1028,7 @@ namespace schema {
 							"do not translate or change `\\$(zap)`, \\ in front of $ is important.",
 						],
 					},
-					"(Optional) Icon which is used to represent the command in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `\\$(zap)`",
+					"(Optional) Icon which is used to represent the command in the UI. Either a file path, an object with file paths for dark and light themes, or a theme icon references, like `\\$(zap)`"
 				),
 				anyOf: [
 					{
@@ -1040,14 +1040,14 @@ namespace schema {
 							light: {
 								description: localize(
 									"vscode.extension.contributes.commandType.icon.light",
-									"Icon path when a light theme is used",
+									"Icon path when a light theme is used"
 								),
 								type: "string",
 							},
 							dark: {
 								description: localize(
 									"vscode.extension.contributes.commandType.icon.dark",
-									"Icon path when a dark theme is used",
+									"Icon path when a dark theme is used"
 								),
 								type: "string",
 							},
@@ -1061,7 +1061,7 @@ namespace schema {
 	export const commandsContribution: IJSONSchema = {
 		description: localize(
 			"vscode.extension.contributes.commands",
-			"Contributes commands to the command palette.",
+			"Contributes commands to the command palette."
 		),
 		oneOf: [
 			commandType,
@@ -1082,7 +1082,7 @@ export const commandsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 	jsonSchema: schema.commandsContribution,
 	activationEventsGenerator: (
 		contribs: schema.IUserFriendlyCommand[],
-		result: { push(item: string): void },
+		result: { push(item: string): void }
 	) => {
 		for (const contrib of contribs) {
 			if (contrib.command) {
@@ -1095,7 +1095,7 @@ export const commandsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 commandsExtensionPoint.setHandler((extensions) => {
 	function handleCommand(
 		userFriendlyCommand: schema.IUserFriendlyCommand,
-		extension: IExtensionPointUser<any>,
+		extension: IExtensionPointUser<any>
 	) {
 		if (!schema.isValidCommand(userFriendlyCommand, extension.collector)) {
 			return;
@@ -1110,22 +1110,22 @@ commandsExtensionPoint.setHandler((extensions) => {
 				absoluteIcon = ThemeIcon.fromString(icon) ?? {
 					dark: resources.joinPath(
 						extension.description.extensionLocation,
-						icon,
+						icon
 					),
 					light: resources.joinPath(
 						extension.description.extensionLocation,
-						icon,
+						icon
 					),
 				};
 			} else {
 				absoluteIcon = {
 					dark: resources.joinPath(
 						extension.description.extensionLocation,
-						icon.dark,
+						icon.dark
 					),
 					light: resources.joinPath(
 						extension.description.extensionLocation,
-						icon.light,
+						icon.light
 					),
 				};
 			}
@@ -1140,16 +1140,16 @@ commandsExtensionPoint.setHandler((extensions) => {
 						"Command `{0}` already registered by {1} ({2})",
 						userFriendlyCommand.command,
 						existingCmd.source.title,
-						existingCmd.source.id,
-					),
+						existingCmd.source.id
+					)
 				);
 			} else {
 				extension.collector.info(
 					localize(
 						"dup0",
 						"Command `{0}` already registered",
-						userFriendlyCommand.command,
-					),
+						userFriendlyCommand.command
+					)
 				);
 			}
 		}
@@ -1168,7 +1168,7 @@ commandsExtensionPoint.setHandler((extensions) => {
 				category,
 				precondition: ContextKeyExpr.deserialize(enablement),
 				icon: absoluteIcon,
-			}),
+			})
 		);
 	}
 
@@ -1218,8 +1218,8 @@ submenusExtensionPoint.setHandler((extensions) => {
 					localize(
 						"submenuId.invalid.id",
 						"`{0}` is not a valid submenu identifier",
-						submenuInfo.id,
-					),
+						submenuInfo.id
+					)
 				);
 				continue;
 			}
@@ -1228,8 +1228,8 @@ submenusExtensionPoint.setHandler((extensions) => {
 					localize(
 						"submenuId.duplicate.id",
 						"The `{0}` submenu was already previously registered.",
-						submenuInfo.id,
-					),
+						submenuInfo.id
+					)
 				);
 				continue;
 			}
@@ -1238,8 +1238,8 @@ submenusExtensionPoint.setHandler((extensions) => {
 					localize(
 						"submenuId.invalid.label",
 						"`{0}` is not a valid submenu label",
-						submenuInfo.label,
-					),
+						submenuInfo.label
+					)
 				);
 				continue;
 			}
@@ -1253,18 +1253,18 @@ submenusExtensionPoint.setHandler((extensions) => {
 					absoluteIcon = ThemeIcon.fromString(submenuInfo.icon) || {
 						dark: resources.joinPath(
 							extension.description.extensionLocation,
-							submenuInfo.icon,
+							submenuInfo.icon
 						),
 					};
 				} else {
 					absoluteIcon = {
 						dark: resources.joinPath(
 							extension.description.extensionLocation,
-							submenuInfo.icon.dark,
+							submenuInfo.icon.dark
 						),
 						light: resources.joinPath(
 							extension.description.extensionLocation,
-							submenuInfo.icon.light,
+							submenuInfo.icon.light
 						),
 					};
 				}
@@ -1340,8 +1340,8 @@ menusExtensionPoint.setHandler((extensions) => {
 						"{0} is a proposed menu identifier. It requires 'package.json#enabledApiProposals: [\"{1}\"]' and is only available when running out of dev or with the following command line switch: --enable-proposed-api {2}",
 						entry[0],
 						menu.proposed,
-						extension.description.identifier.value,
-					),
+						extension.description.identifier.value
+					)
 				);
 				continue;
 			}
@@ -1361,8 +1361,8 @@ menusExtensionPoint.setHandler((extensions) => {
 							localize(
 								"missing.command",
 								"Menu item references a command `{0}` which is not defined in the 'commands' section.",
-								menuItem.command,
-							),
+								menuItem.command
+							)
 						);
 						continue;
 					}
@@ -1371,16 +1371,16 @@ menusExtensionPoint.setHandler((extensions) => {
 							localize(
 								"missing.altCommand",
 								"Menu item references an alt-command `{0}` which is not defined in the 'commands' section.",
-								menuItem.alt,
-							),
+								menuItem.alt
+							)
 						);
 					}
 					if (menuItem.command === menuItem.alt) {
 						collector.info(
 							localize(
 								"dupe.command",
-								"Menu item references the same command as default and alt-command",
-							),
+								"Menu item references the same command as default and alt-command"
+							)
 						);
 					}
 
@@ -1396,8 +1396,8 @@ menusExtensionPoint.setHandler((extensions) => {
 						collector.error(
 							localize(
 								"unsupported.submenureference",
-								"Menu item references a submenu for a menu which doesn't have submenu support.",
-							),
+								"Menu item references a submenu for a menu which doesn't have submenu support."
+							)
 						);
 						continue;
 					}
@@ -1409,14 +1409,14 @@ menusExtensionPoint.setHandler((extensions) => {
 							localize(
 								"missing.submenu",
 								"Menu item references a submenu `{0}` which is not defined in the 'submenus' section.",
-								menuItem.submenu,
-							),
+								menuItem.submenu
+							)
 						);
 						continue;
 					}
 
 					let submenuRegistrations = _submenuMenuItems.get(
-						menu.id.id,
+						menu.id.id
 					);
 
 					if (!submenuRegistrations) {
@@ -1430,8 +1430,8 @@ menusExtensionPoint.setHandler((extensions) => {
 								"submenuItem.duplicate",
 								"The `{0}` submenu was already contributed to the `{1}` menu.",
 								menuItem.submenu,
-								entry[0],
-							),
+								entry[0]
+							)
 						);
 						continue;
 					}
@@ -1461,7 +1461,7 @@ menusExtensionPoint.setHandler((extensions) => {
 
 				item.when = ContextKeyExpr.deserialize(menuItem.when);
 				_menuRegistrations.add(
-					MenuRegistry.appendMenuItem(menu.id, item),
+					MenuRegistry.appendMenuItem(menu.id, item)
 				);
 			}
 		}

@@ -25,7 +25,7 @@ perf.mark("code/server/codeLoaded");
 const errorReporter: ErrorReporter = {
 	onMultipleValues: (id: string, usedValue: string) => {
 		console.error(
-			`Option '${id}' can only be defined once. Using value ${usedValue}.`,
+			`Option '${id}' can only be defined once. Using value ${usedValue}.`
 		);
 	},
 	onEmptyValue: (id) => {
@@ -86,7 +86,7 @@ export function spawnCli() {
  * invoked by server-main.js
  */
 export function createServer(
-	address: string | net.AddressInfo | null,
+	address: string | net.AddressInfo | null
 ): Promise<IServerAPI> {
 	return doCreateServer(address, args, REMOTE_DATA_FOLDER);
 }

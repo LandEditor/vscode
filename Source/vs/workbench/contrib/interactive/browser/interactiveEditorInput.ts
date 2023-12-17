@@ -40,14 +40,14 @@ export class InteractiveEditorInput
 		resource: URI,
 		inputResource: URI,
 		title?: string,
-		language?: string,
+		language?: string
 	) {
 		return instantiationService.createInstance(
 			InteractiveEditorInput,
 			resource,
 			inputResource,
 			title,
-			language,
+			language
 		);
 	}
 
@@ -118,16 +118,27 @@ export class InteractiveEditorInput
 		languageId: string | undefined,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ITextModelService textModelService: ITextModelService,
-		@IInteractiveDocumentService interactiveDocumentService: IInteractiveDocumentService,
+		@IInteractiveDocumentService
+		interactiveDocumentService: IInteractiveDocumentService,
 		@IInteractiveHistoryService historyService: IInteractiveHistoryService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IFileDialogService private readonly _fileDialogService: IFileDialogService
+		@IFileDialogService
+		private readonly _fileDialogService: IFileDialogService
 	) {
-		const input = NotebookEditorInput.getOrCreate(instantiationService, resource, undefined, 'interactive', {});
+		const input = NotebookEditorInput.getOrCreate(
+			instantiationService,
+			resource,
+			undefined,
+			"interactive",
+			{}
+		);
 		super();
 		this._notebookEditorInput = input;
 		this._register(this._notebookEditorInput);
-		this.name = title ?? InteractiveEditorInput.windowNames[resource.path] ?? paths.basename(resource.path, paths.extname(resource.path));
+		this.name =
+			title ??
+			InteractiveEditorInput.windowNames[resource.path] ??
+			paths.basename(resource.path, paths.extname(resource.path));
 		this._initLanguage = languageId;
 		this._resource = resource;
 		this._inputResource = inputResource;
@@ -148,22 +159,22 @@ export class InteractiveEditorInput
 				if (!this.isDisposed()) {
 					this.dispose();
 				}
-			}),
+			})
 		);
 
 		// Re-emit some events from the primary side to the outside
 		this._register(
-			this.primary.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
+			this.primary.onDidChangeDirty(() => this._onDidChangeDirty.fire())
 		);
 		this._register(
-			this.primary.onDidChangeLabel(() => this._onDidChangeLabel.fire()),
+			this.primary.onDidChangeLabel(() => this._onDidChangeLabel.fire())
 		);
 
 		// Re-emit some events from both sides to the outside
 		this._register(
 			this.primary.onDidChangeCapabilities(() =>
-				this._onDidChangeCapabilities.fire(),
-			),
+				this._onDidChangeCapabilities.fire()
+			)
 		);
 	}
 
@@ -209,10 +220,10 @@ export class InteractiveEditorInput
 		this._interactiveDocumentService.willCreateInteractiveDocument(
 			this.resource!,
 			this.inputResource,
-			resolvedLanguage,
+			resolvedLanguage
 		);
 		this._inputModelRef = await this._textModelService.createModelReference(
-			this.inputResource,
+			this.inputResource
 		);
 
 		return this._inputModelRef.object.textEditorModel;
@@ -220,7 +231,7 @@ export class InteractiveEditorInput
 
 	override async save(
 		group: GroupIdentifier,
-		options?: ISaveOptions,
+		options?: ISaveOptions
 	): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (this._editorModelReference) {
 			if (this.hasCapability(EditorInputCapabilities.Untitled)) {
@@ -237,7 +248,7 @@ export class InteractiveEditorInput
 
 	override async saveAs(
 		group: GroupIdentifier,
-		options?: ISaveOptions,
+		options?: ISaveOptions
 	): Promise<IUntypedEditorInput | undefined> {
 		if (!this._editorModelReference) {
 			return undefined;
@@ -253,12 +264,12 @@ export class InteractiveEditorInput
 		const filename = this.getName() + ".ipynb";
 		const pathCandidate = joinPath(
 			await this._fileDialogService.defaultFilePath(),
-			filename,
+			filename
 		);
 
 		const target = await this._fileDialogService.pickFileToSave(
 			pathCandidate,
-			options?.availableFileSystems,
+			options?.availableFileSystems
 		);
 		if (!target) {
 			return undefined; // save cancelled
@@ -297,7 +308,7 @@ export class InteractiveEditorInput
 		this._editorModelReference = null;
 		this._interactiveDocumentService.willRemoveInteractiveDocument(
 			this.resource!,
-			this.inputResource,
+			this.inputResource
 		);
 		this._inputModelRef?.dispose();
 		this._inputModelRef = null;

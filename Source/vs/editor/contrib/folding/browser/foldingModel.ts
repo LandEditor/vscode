@@ -23,10 +23,10 @@ export interface IDecorationProvider {
 	getDecorationOption(
 		isCollapsed: boolean,
 		isHidden: boolean,
-		isManual: boolean,
+		isManual: boolean
 	): IModelDecorationOptions;
 	changeDecorations<T>(
-		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T,
+		callback: (changeAccessor: IModelDecorationsChangeAccessor) => T
 	): T | null;
 	removeDecorations(decorationIds: string[]): void;
 }
@@ -68,13 +68,13 @@ export class FoldingModel {
 
 	constructor(
 		textModel: ITextModel,
-		decorationProvider: IDecorationProvider,
+		decorationProvider: IDecorationProvider
 	) {
 		this._textModel = textModel;
 		this._decorationProvider = decorationProvider;
 		this._regions = new FoldingRegions(
 			new Uint32Array(0),
-			new Uint32Array(0),
+			new Uint32Array(0)
 		);
 		this._editorDecorationIds = [];
 	}
@@ -84,7 +84,7 @@ export class FoldingModel {
 			return;
 		}
 		toggledRegions = toggledRegions.sort(
-			(r1, r2) => r1.regionIndex - r2.regionIndex,
+			(r1, r2) => r1.regionIndex - r2.regionIndex
 		);
 
 		const processed: { [key: string]: boolean | undefined } = {};
@@ -104,8 +104,8 @@ export class FoldingModel {
 							this._decorationProvider.getDecorationOption(
 								isCollapsed,
 								endLineNumber <= lastHiddenLine,
-								isManual,
-							),
+								isManual
+							)
 						);
 					}
 					if (isCollapsed && endLineNumber > lastHiddenLine) {
@@ -127,7 +127,7 @@ export class FoldingModel {
 
 					dirtyRegionEndLine = Math.max(
 						dirtyRegionEndLine,
-						this._regions.getEndLineNumber(index),
+						this._regions.getEndLineNumber(index)
 					);
 				}
 			}
@@ -168,14 +168,14 @@ export class FoldingModel {
 
 	public update(
 		newRegions: FoldingRegions,
-		blockedLineNumers: number[] = [],
+		blockedLineNumers: number[] = []
 	): void {
 		const foldedOrManualRanges =
 			this._currentFoldedOrManualRanges(blockedLineNumers);
 		const newRanges = FoldingRegions.sanitizeAndMerge(
 			newRegions,
 			foldedOrManualRanges,
-			this._textModel.getLineCount(),
+			this._textModel.getLineCount()
 		);
 		this.updatePost(FoldingRegions.fromFoldRanges(newRanges));
 	}
@@ -200,7 +200,7 @@ export class FoldingModel {
 				options: this._decorationProvider.getDecorationOption(
 					isCollapsed,
 					endLineNumber <= lastHiddenLine,
-					isManual,
+					isManual
 				),
 			});
 			if (isCollapsed && endLineNumber > lastHiddenLine) {
@@ -211,15 +211,15 @@ export class FoldingModel {
 			(accessor) =>
 				(this._editorDecorationIds = accessor.deltaDecorations(
 					this._editorDecorationIds,
-					newEditorDecorations,
-				)),
+					newEditorDecorations
+				))
 		);
 		this._regions = newRegions;
 		this._updateEventEmitter.fire({ model: this });
 	}
 
 	private _currentFoldedOrManualRanges(
-		blockedLineNumers: number[] = [],
+		blockedLineNumers: number[] = []
 	): FoldRange[] {
 		const isBlocked = (startLineNumber: number, endLineNumber: number) => {
 			for (const blockedLineNumber of blockedLineNumers) {
@@ -241,14 +241,14 @@ export class FoldingModel {
 			if (isCollapsed || source !== FoldSource.provider) {
 				const foldRange = this._regions.toFoldRange(i);
 				const decRange = this._textModel.getDecorationRange(
-					this._editorDecorationIds[i],
+					this._editorDecorationIds[i]
 				);
 				if (decRange) {
 					if (
 						isCollapsed &&
 						isBlocked(
 							decRange.startLineNumber,
-							decRange.endLineNumber,
+							decRange.endLineNumber
 						)
 					) {
 						isCollapsed = false; // uncollapse is the range is blocked
@@ -285,7 +285,7 @@ export class FoldingModel {
 			}
 			const checksum = this._getLinesChecksum(
 				range.startLineNumber + 1,
-				range.endLineNumber,
+				range.endLineNumber
 			);
 			result.push({
 				startLineNumber: range.startLineNumber,
@@ -317,7 +317,7 @@ export class FoldingModel {
 			}
 			const checksum = this._getLinesChecksum(
 				range.startLineNumber + 1,
-				range.endLineNumber,
+				range.endLineNumber
 			);
 			if (!range.checksum || checksum === range.checksum) {
 				rangesToRestore.push({
@@ -333,18 +333,18 @@ export class FoldingModel {
 		const newRanges = FoldingRegions.sanitizeAndMerge(
 			this._regions,
 			rangesToRestore,
-			maxLineNumber,
+			maxLineNumber
 		);
 		this.updatePost(FoldingRegions.fromFoldRanges(newRanges));
 	}
 
 	private _getLinesChecksum(
 		lineNumber1: number,
-		lineNumber2: number,
+		lineNumber2: number
 	): number {
 		const h = hash(
 			this._textModel.getLineContent(lineNumber1) +
-				this._textModel.getLineContent(lineNumber2),
+				this._textModel.getLineContent(lineNumber2)
 		);
 		return h % 1000000; // 6 digits is plenty
 	}
@@ -355,7 +355,7 @@ export class FoldingModel {
 
 	getAllRegionsAtLine(
 		lineNumber: number,
-		filter?: (r: FoldingRegion, level: number) => boolean,
+		filter?: (r: FoldingRegion, level: number) => boolean
 	): FoldingRegion[] {
 		const result: FoldingRegion[] = [];
 		if (this._regions) {
@@ -385,7 +385,7 @@ export class FoldingModel {
 
 	getRegionsInside(
 		region: FoldingRegion | null,
-		filter?: RegionFilter | RegionFilterWithLevel,
+		filter?: RegionFilter | RegionFilterWithLevel
 	): FoldingRegion[] {
 		const result: FoldingRegion[] = [];
 		const index = region ? region.regionIndex + 1 : 0;
@@ -437,7 +437,7 @@ type RegionFilterWithLevel = (r: FoldingRegion, level: number) => boolean;
 export function toggleCollapseState(
 	foldingModel: FoldingModel,
 	levels: number,
-	lineNumbers: number[],
+	lineNumbers: number[]
 ) {
 	const toToggle: FoldingRegion[] = [];
 	for (const lineNumber of lineNumbers) {
@@ -449,7 +449,7 @@ export function toggleCollapseState(
 				const regionsInside = foldingModel.getRegionsInside(
 					region,
 					(r, level: number) =>
-						r.isCollapsed !== doCollapse && level < levels,
+						r.isCollapsed !== doCollapse && level < levels
 				);
 				toToggle.push(...regionsInside);
 			}
@@ -468,7 +468,7 @@ export function setCollapseStateLevelsDown(
 	foldingModel: FoldingModel,
 	doCollapse: boolean,
 	levels = Number.MAX_VALUE,
-	lineNumbers?: number[],
+	lineNumbers?: number[]
 ): void {
 	const toToggle: FoldingRegion[] = [];
 	if (lineNumbers && lineNumbers.length > 0) {
@@ -482,7 +482,7 @@ export function setCollapseStateLevelsDown(
 					const regionsInside = foldingModel.getRegionsInside(
 						region,
 						(r, level: number) =>
-							r.isCollapsed !== doCollapse && level < levels,
+							r.isCollapsed !== doCollapse && level < levels
 					);
 					toToggle.push(...regionsInside);
 				}
@@ -491,8 +491,7 @@ export function setCollapseStateLevelsDown(
 	} else {
 		const regionsInside = foldingModel.getRegionsInside(
 			null,
-			(r, level: number) =>
-				r.isCollapsed !== doCollapse && level < levels,
+			(r, level: number) => r.isCollapsed !== doCollapse && level < levels
 		);
 		toToggle.push(...regionsInside);
 	}
@@ -509,14 +508,14 @@ export function setCollapseStateLevelsUp(
 	foldingModel: FoldingModel,
 	doCollapse: boolean,
 	levels: number,
-	lineNumbers: number[],
+	lineNumbers: number[]
 ): void {
 	const toToggle: FoldingRegion[] = [];
 	for (const lineNumber of lineNumbers) {
 		const regions = foldingModel.getAllRegionsAtLine(
 			lineNumber,
 			(region, level) =>
-				region.isCollapsed !== doCollapse && level <= levels,
+				region.isCollapsed !== doCollapse && level <= levels
 		);
 		toToggle.push(...regions);
 	}
@@ -531,13 +530,13 @@ export function setCollapseStateLevelsUp(
 export function setCollapseStateUp(
 	foldingModel: FoldingModel,
 	doCollapse: boolean,
-	lineNumbers: number[],
+	lineNumbers: number[]
 ): void {
 	const toToggle: FoldingRegion[] = [];
 	for (const lineNumber of lineNumbers) {
 		const regions = foldingModel.getAllRegionsAtLine(
 			lineNumber,
-			(region) => region.isCollapsed !== doCollapse,
+			(region) => region.isCollapsed !== doCollapse
 		);
 		if (regions.length > 0) {
 			toToggle.push(regions[0]);
@@ -555,7 +554,7 @@ export function setCollapseStateAtLevel(
 	foldingModel: FoldingModel,
 	foldLevel: number,
 	doCollapse: boolean,
-	blockedLineNumbers: number[],
+	blockedLineNumbers: number[]
 ): void {
 	const filter = (region: FoldingRegion, level: number) =>
 		level === foldLevel &&
@@ -573,7 +572,7 @@ export function setCollapseStateAtLevel(
 export function setCollapseStateForRest(
 	foldingModel: FoldingModel,
 	doCollapse: boolean,
-	blockedLineNumbers: number[],
+	blockedLineNumbers: number[]
 ): void {
 	const filteredRegions: FoldingRegion[] = [];
 	for (const lineNumber of blockedLineNumbers) {
@@ -586,7 +585,7 @@ export function setCollapseStateForRest(
 		filteredRegions.every(
 			(filteredRegion) =>
 				!filteredRegion.containedBy(region) &&
-				!region.containedBy(filteredRegion),
+				!region.containedBy(filteredRegion)
 		) && region.isCollapsed !== doCollapse;
 	const toToggle = foldingModel.getRegionsInside(null, filter);
 	foldingModel.toggleCollapseState(toToggle);
@@ -599,7 +598,7 @@ export function setCollapseStateForRest(
 export function setCollapseStateForMatchingLines(
 	foldingModel: FoldingModel,
 	regExp: RegExp,
-	doCollapse: boolean,
+	doCollapse: boolean
 ): void {
 	const editorModel = foldingModel.textModel;
 	const regions = foldingModel.regions;
@@ -622,7 +621,7 @@ export function setCollapseStateForMatchingLines(
 export function setCollapseStateForType(
 	foldingModel: FoldingModel,
 	type: string,
-	doCollapse: boolean,
+	doCollapse: boolean
 ): void {
 	const regions = foldingModel.regions;
 	const toToggle: FoldingRegion[] = [];
@@ -646,7 +645,7 @@ export function setCollapseStateForType(
  */
 export function getParentFoldLine(
 	lineNumber: number,
-	foldingModel: FoldingModel,
+	foldingModel: FoldingModel
 ): number | null {
 	let startLineNumber: number | null = null;
 	const foldingRegion = foldingModel.getRegionAtLine(lineNumber);
@@ -675,7 +674,7 @@ export function getParentFoldLine(
  */
 export function getPreviousFoldLine(
 	lineNumber: number,
-	foldingModel: FoldingModel,
+	foldingModel: FoldingModel
 ): number | null {
 	let foldingRegion = foldingModel.getRegionAtLine(lineNumber);
 	// If on the folding range start line, go to previous sibling.
@@ -692,7 +691,7 @@ export function getPreviousFoldLine(
 			let minLineNumber = 0;
 			if (expectedParentIndex !== -1) {
 				minLineNumber = foldingModel.regions.getStartLineNumber(
-					foldingRegion.parentIndex,
+					foldingRegion.parentIndex
 				);
 			}
 
@@ -700,7 +699,7 @@ export function getPreviousFoldLine(
 			while (foldingRegion !== null) {
 				if (foldingRegion.regionIndex > 0) {
 					foldingRegion = foldingModel.regions.toRegion(
-						foldingRegion.regionIndex - 1,
+						foldingRegion.regionIndex - 1
 					);
 
 					// Keep at same level.
@@ -720,7 +719,7 @@ export function getPreviousFoldLine(
 		// Go to last fold that's before the current line.
 		if (foldingModel.regions.length > 0) {
 			foldingRegion = foldingModel.regions.toRegion(
-				foldingModel.regions.length - 1,
+				foldingModel.regions.length - 1
 			);
 			while (foldingRegion !== null) {
 				// Found fold before current line.
@@ -729,7 +728,7 @@ export function getPreviousFoldLine(
 				}
 				if (foldingRegion.regionIndex > 0) {
 					foldingRegion = foldingModel.regions.toRegion(
-						foldingRegion.regionIndex - 1,
+						foldingRegion.regionIndex - 1
 					);
 				} else {
 					foldingRegion = null;
@@ -749,7 +748,7 @@ export function getPreviousFoldLine(
  */
 export function getNextFoldLine(
 	lineNumber: number,
-	foldingModel: FoldingModel,
+	foldingModel: FoldingModel
 ): number | null {
 	let foldingRegion = foldingModel.getRegionAtLine(lineNumber);
 	// If on the folding range start line, go to next sibling.
@@ -762,13 +761,13 @@ export function getNextFoldLine(
 		let maxLineNumber = 0;
 		if (expectedParentIndex !== -1) {
 			maxLineNumber = foldingModel.regions.getEndLineNumber(
-				foldingRegion.parentIndex,
+				foldingRegion.parentIndex
 			);
 		} else if (foldingModel.regions.length === 0) {
 			return null;
 		} else {
 			maxLineNumber = foldingModel.regions.getEndLineNumber(
-				foldingModel.regions.length - 1,
+				foldingModel.regions.length - 1
 			);
 		}
 
@@ -776,7 +775,7 @@ export function getNextFoldLine(
 		while (foldingRegion !== null) {
 			if (foldingRegion.regionIndex < foldingModel.regions.length) {
 				foldingRegion = foldingModel.regions.toRegion(
-					foldingRegion.regionIndex + 1,
+					foldingRegion.regionIndex + 1
 				);
 
 				// Keep at same level.
@@ -800,7 +799,7 @@ export function getNextFoldLine(
 				}
 				if (foldingRegion.regionIndex < foldingModel.regions.length) {
 					foldingRegion = foldingModel.regions.toRegion(
-						foldingRegion.regionIndex + 1,
+						foldingRegion.regionIndex + 1
 					);
 				} else {
 					foldingRegion = null;

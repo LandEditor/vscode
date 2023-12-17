@@ -212,7 +212,7 @@ export interface INotebookRendererInfo {
 	matchesWithoutKernel(mimeType: string): NotebookRendererMatch;
 	matches(
 		mimeType: string,
-		kernelProvides: ReadonlyArray<string>,
+		kernelProvides: ReadonlyArray<string>
 	): NotebookRendererMatch;
 }
 
@@ -290,7 +290,7 @@ export interface INotebookTextModel {
 	reset(
 		cells: ICellDto2[],
 		metadata: NotebookDocumentMetadata,
-		transientOptions: TransientOptions,
+		transientOptions: TransientOptions
 	): void;
 	applyEdits(
 		rawEdits: ICellEditOperation[],
@@ -298,7 +298,7 @@ export interface INotebookTextModel {
 		beginSelectionState: ISelectionState | undefined,
 		endSelectionsComputer: () => ISelectionState | undefined,
 		undoRedoGroup: UndoRedoGroup | undefined,
-		computeUndoRedo?: boolean,
+		computeUndoRedo?: boolean
 	): boolean;
 	onDidChangeContent: Event<NotebookTextModelChangedEvent>;
 	onWillDispose: Event<void>;
@@ -649,13 +649,13 @@ export namespace CellUri {
 		const fragment = `${p}${s}s${encodeBase64(
 			VSBuffer.fromString(notebook.scheme),
 			true,
-			true,
+			true
 		)}`;
 		return notebook.with({ scheme, fragment });
 	}
 
 	export function parse(
-		cell: URI,
+		cell: URI
 	): { notebook: URI; handle: number } | undefined {
 		if (cell.scheme !== scheme) {
 			return undefined;
@@ -668,10 +668,10 @@ export namespace CellUri {
 
 		const handle = parseInt(
 			cell.fragment.substring(0, idx).replace(_padRegexp, ""),
-			_radix,
+			_radix
 		);
 		const _scheme = decodeBase64(
-			cell.fragment.substring(idx + 1),
+			cell.fragment.substring(idx + 1)
 		).toString();
 
 		if (isNaN(handle)) {
@@ -693,7 +693,7 @@ export namespace CellUri {
 	}
 
 	export function parseCellOutputUri(
-		uri: URI,
+		uri: URI
 	): { notebook: URI; outputId?: string } | undefined {
 		if (uri.scheme !== Schemas.vscodeNotebookCellOutput) {
 			return;
@@ -701,7 +701,7 @@ export namespace CellUri {
 
 		const match =
 			/^op([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\,(.*)$/i.exec(
-				uri.fragment,
+				uri.fragment
 			);
 		if (!match) {
 			return undefined;
@@ -721,7 +721,7 @@ export namespace CellUri {
 	export function generateCellPropertyUri(
 		notebook: URI,
 		handle: number,
-		scheme: string,
+		scheme: string
 	): URI {
 		return CellUri.generate(notebook, handle).with({ scheme: scheme });
 	}
@@ -748,7 +748,7 @@ export class MimeTypeDisplayOrder {
 
 	constructor(
 		initialValue: readonly string[] = [],
-		private readonly defaultOrder = NOTEBOOK_DISPLAY_ORDER,
+		private readonly defaultOrder = NOTEBOOK_DISPLAY_ORDER
 	) {
 		this.order = [...new Set(initialValue)].map((pattern) => ({
 			pattern,
@@ -761,7 +761,7 @@ export class MimeTypeDisplayOrder {
 	 */
 	public sort(mimetypes: Iterable<string>): string[] {
 		const remaining = new Map(
-			Iterable.map(mimetypes, (m) => [m, normalizeSlashes(m)]),
+			Iterable.map(mimetypes, (m) => [m, normalizeSlashes(m)])
 		);
 		let sorted: string[] = [];
 
@@ -780,8 +780,8 @@ export class MimeTypeDisplayOrder {
 				[...remaining.keys()].sort(
 					(a, b) =>
 						this.defaultOrder.indexOf(a) -
-						this.defaultOrder.indexOf(b),
-				),
+						this.defaultOrder.indexOf(b)
+				)
 			);
 		}
 
@@ -794,7 +794,7 @@ export class MimeTypeDisplayOrder {
 	 */
 	public prioritize(
 		chosenMimetype: string,
-		otherMimetypes: readonly string[],
+		otherMimetypes: readonly string[]
 	) {
 		const chosenIndex = this.findIndex(chosenMimetype);
 		if (chosenIndex === -1) {
@@ -809,14 +809,14 @@ export class MimeTypeDisplayOrder {
 		// Get the other mimetypes that are before the chosenMimetype. Then, move
 		// them after it, retaining order.
 		const uniqueIndicies = new Set(
-			otherMimetypes.map((m) => this.findIndex(m, chosenIndex)),
+			otherMimetypes.map((m) => this.findIndex(m, chosenIndex))
 		);
 		uniqueIndicies.delete(-1);
 		const otherIndices = Array.from(uniqueIndicies).sort();
 		this.order.splice(
 			chosenIndex + 1,
 			0,
-			...otherIndices.map((i) => this.order[i]),
+			...otherIndices.map((i) => this.order[i])
 		);
 
 		for (let oi = otherIndices.length - 1; oi >= 0; oi--) {
@@ -852,14 +852,14 @@ export function diff<T>(
 	before: T[],
 	after: T[],
 	contains: (a: T) => boolean,
-	equal: (a: T, b: T) => boolean = (a: T, b: T) => a === b,
+	equal: (a: T, b: T) => boolean = (a: T, b: T) => a === b
 ): ISplice<T>[] {
 	const result: IMutableSplice<T>[] = [];
 
 	function pushSplice(
 		start: number,
 		deleteCount: number,
-		toInsert: T[],
+		toInsert: T[]
 	): void {
 		if (deleteCount === 0 && toInsert.length === 0) {
 			return;
@@ -1009,7 +1009,7 @@ export function isDocumentExcludePattern(
 	filenamePattern:
 		| string
 		| glob.IRelativePattern
-		| INotebookExclusiveDocumentFilter,
+		| INotebookExclusiveDocumentFilter
 ): filenamePattern is {
 	include: string | glob.IRelativePattern;
 	exclude: string | glob.IRelativePattern;
@@ -1029,7 +1029,7 @@ export function isDocumentExcludePattern(
 export function notebookDocumentFilterMatch(
 	filter: INotebookDocumentFilter,
 	viewType: string,
-	resource: URI,
+	resource: URI
 ): boolean {
 	if (
 		Array.isArray(filter.viewType) &&
@@ -1047,7 +1047,7 @@ export function notebookDocumentFilterMatch(
 			? filter.filenamePattern.include
 			: (filter.filenamePattern as string | glob.IRelativePattern);
 		const excludeFilenamePattern = isDocumentExcludePattern(
-			filter.filenamePattern,
+			filter.filenamePattern
 		)
 			? filter.filenamePattern.exclude
 			: undefined;
@@ -1059,7 +1059,7 @@ export function notebookDocumentFilterMatch(
 				if (
 					glob.match(
 						excludeFilenamePattern,
-						basename(resource.fsPath).toLowerCase(),
+						basename(resource.fsPath).toLowerCase()
 					)
 				) {
 					// should exclude
@@ -1079,7 +1079,7 @@ export interface INotebookCellStatusBarItemProvider {
 	provideCellStatusBarItems(
 		uri: URI,
 		index: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<INotebookCellStatusBarItemList | undefined>;
 }
 
@@ -1180,7 +1180,7 @@ export class NotebookWorkingCopyTypeIdentifier {
 	static parse(candidate: string): string | undefined {
 		if (candidate.startsWith(NotebookWorkingCopyTypeIdentifier._prefix)) {
 			return candidate.substring(
-				NotebookWorkingCopyTypeIdentifier._prefix.length,
+				NotebookWorkingCopyTypeIdentifier._prefix.length
 			);
 		}
 		return undefined;
@@ -1224,7 +1224,7 @@ export function compressOutputItemStreams(outputs: Uint8Array[]) {
 
 	let didCompression = compressStreamBuffer(buffers);
 	const concatenated = VSBuffer.concat(
-		buffers.map((buffer) => VSBuffer.wrap(buffer)),
+		buffers.map((buffer) => VSBuffer.wrap(buffer))
 	);
 	const data = formatStreamText(concatenated);
 	didCompression =
@@ -1234,7 +1234,7 @@ export function compressOutputItemStreams(outputs: Uint8Array[]) {
 
 export const MOVE_CURSOR_1_LINE_COMMAND = `${String.fromCharCode(27)}[A`;
 const MOVE_CURSOR_1_LINE_COMMAND_BYTES = MOVE_CURSOR_1_LINE_COMMAND.split(
-	"",
+	""
 ).map((c) => c.charCodeAt(0));
 const LINE_FEED = 10;
 function compressStreamBuffer(streams: Uint8Array[]) {
@@ -1261,7 +1261,7 @@ function compressStreamBuffer(streams: Uint8Array[]) {
 			didCompress = true;
 			streams[index - 1] = previousStream.subarray(
 				0,
-				lastIndexOfLineFeed,
+				lastIndexOfLineFeed
 			);
 			streams[index] = stream.subarray(MOVE_CURSOR_1_LINE_COMMAND.length);
 		}
@@ -1312,7 +1312,7 @@ function formatStreamText(buffer: VSBuffer): VSBuffer {
 	}
 	// Do the same thing jupyter is doing
 	return VSBuffer.fromString(
-		fixCarriageReturn(fixBackspace(textDecoder.decode(buffer.buffer))),
+		fixCarriageReturn(fixBackspace(textDecoder.decode(buffer.buffer)))
 	);
 }
 

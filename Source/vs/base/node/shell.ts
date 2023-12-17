@@ -15,7 +15,7 @@ import * as processes from "vs/base/node/processes";
  */
 export async function getSystemShell(
 	os: platform.OperatingSystem,
-	env: platform.IProcessEnvironment,
+	env: platform.IProcessEnvironment
 ): Promise<string> {
 	if (os === platform.OperatingSystem.Windows) {
 		if (platform.isWindows) {
@@ -31,7 +31,7 @@ export async function getSystemShell(
 let _TERMINAL_DEFAULT_SHELL_UNIX_LIKE: string | null = null;
 function getSystemShellUnixLike(
 	os: platform.OperatingSystem,
-	env: platform.IProcessEnvironment,
+	env: platform.IProcessEnvironment
 ): string {
 	// Only use $SHELL for the current OS
 	if (

@@ -36,14 +36,14 @@ registerEditorAction(
 				alias: "Format Modified Lines",
 				precondition: ContextKeyExpr.and(
 					EditorContextKeys.writable,
-					EditorContextKeys.hasDocumentSelectionFormattingProvider,
+					EditorContextKeys.hasDocumentSelectionFormattingProvider
 				),
 			});
 		}
 
 		async run(
 			accessor: ServicesAccessor,
-			editor: ICodeEditor,
+			editor: ICodeEditor
 		): Promise<void> {
 			const instaService = accessor.get(IInstantiationService);
 
@@ -53,7 +53,7 @@ registerEditorAction(
 
 			const ranges = await instaService.invokeFunction(
 				getModifiedRanges,
-				editor.getModel(),
+				editor.getModel()
 			);
 			if (isNonEmptyArray(ranges)) {
 				return instaService.invokeFunction(
@@ -63,16 +63,16 @@ registerEditorAction(
 					FormattingMode.Explicit,
 					Progress.None,
 					CancellationToken.None,
-					true,
+					true
 				);
 			}
 		}
-	},
+	}
 );
 
 export async function getModifiedRanges(
 	accessor: ServicesAccessor,
-	modified: ITextModel,
+	modified: ITextModel
 ): Promise<Range[] | undefined | null> {
 	const quickDiffService = accessor.get(IQuickDiffService);
 	const workerService = accessor.get(IEditorWorkerService);
@@ -82,7 +82,7 @@ export async function getModifiedRanges(
 		quickDiffService,
 		modified.uri,
 		modified.getLanguageId(),
-		shouldSynchronizeModel(modified),
+		shouldSynchronizeModel(modified)
 	);
 	if (!original) {
 		return null; // let undefined signify no changes, null represents no source control (there's probably a better way, but I can't think of one rn)
@@ -97,7 +97,7 @@ export async function getModifiedRanges(
 		const changes = await workerService.computeDirtyDiff(
 			original,
 			modified.uri,
-			false,
+			false
 		);
 		if (!isNonEmptyArray(changes)) {
 			return undefined;
@@ -110,9 +110,9 @@ export async function getModifiedRanges(
 						1,
 						change.modifiedEndLineNumber ||
 							change.modifiedStartLineNumber /*endLineNumber is 0 when things got deleted*/,
-						Number.MAX_SAFE_INTEGER,
-					),
-				),
+						Number.MAX_SAFE_INTEGER
+					)
+				)
 			);
 		}
 	} finally {

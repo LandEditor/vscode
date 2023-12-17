@@ -64,12 +64,12 @@ interface IAccountUsage {
 export function readAccountUsages(
 	storageService: IStorageService,
 	providerId: string,
-	accountName: string,
+	accountName: string
 ): IAccountUsage[] {
 	const accountKey = `${providerId}-${accountName}-usages`;
 	const storedUsages = storageService.get(
 		accountKey,
-		StorageScope.APPLICATION,
+		StorageScope.APPLICATION
 	);
 	let usages: IAccountUsage[] = [];
 	if (storedUsages) {
@@ -86,7 +86,7 @@ export function readAccountUsages(
 export function removeAccountUsage(
 	storageService: IStorageService,
 	providerId: string,
-	accountName: string,
+	accountName: string
 ): void {
 	const accountKey = `${providerId}-${accountName}-usages`;
 	storageService.remove(accountKey, StorageScope.APPLICATION);
@@ -97,13 +97,13 @@ export function addAccountUsage(
 	providerId: string,
 	accountName: string,
 	extensionId: string,
-	extensionName: string,
+	extensionName: string
 ) {
 	const accountKey = `${providerId}-${accountName}-usages`;
 	const usages = readAccountUsages(storageService, providerId, accountName);
 
 	const existingUsageIndex = usages.findIndex(
-		(usage) => usage.extensionId === extensionId,
+		(usage) => usage.extensionId === extensionId
 	);
 	if (existingUsageIndex > -1) {
 		usages.splice(existingUsageIndex, 1, {
@@ -123,7 +123,7 @@ export function addAccountUsage(
 		accountKey,
 		JSON.stringify(usages),
 		StorageScope.APPLICATION,
-		StorageTarget.MACHINE,
+		StorageTarget.MACHINE
 	);
 }
 
@@ -136,10 +136,10 @@ export type AuthenticationSessionInfo = {
 };
 export async function getCurrentAuthenticationSessionInfo(
 	secretStorageService: ISecretStorageService,
-	productService: IProductService,
+	productService: IProductService
 ): Promise<AuthenticationSessionInfo | undefined> {
 	const authenticationSessionValue = await secretStorageService.get(
-		`${productService.urlProtocol}.loginAccount`,
+		`${productService.urlProtocol}.loginAccount`
 	);
 	if (authenticationSessionValue) {
 		try {
@@ -170,13 +170,13 @@ export interface AllowedExtension {
 export function readAllowedExtensions(
 	storageService: IStorageService,
 	providerId: string,
-	accountName: string,
+	accountName: string
 ): AllowedExtension[] {
 	let trustedExtensions: AllowedExtension[] = [];
 	try {
 		const trustedExtensionSrc = storageService.get(
 			`${providerId}-${accountName}`,
-			StorageScope.APPLICATION,
+			StorageScope.APPLICATION
 		);
 		if (trustedExtensionSrc) {
 			trustedExtensions = JSON.parse(trustedExtensionSrc);
@@ -202,10 +202,10 @@ CommandsRegistry.registerCommand(
 	"workbench.getCodeExchangeProxyEndpoints",
 	function (accessor, _) {
 		const environmentService = accessor.get(
-			IBrowserWorkbenchEnvironmentService,
+			IBrowserWorkbenchEnvironmentService
 		);
 		return environmentService.options?.codeExchangeProxyEndpoints;
-	},
+	}
 );
 
 const authenticationDefinitionSchema: IJSONSchema = {
@@ -216,14 +216,14 @@ const authenticationDefinitionSchema: IJSONSchema = {
 			type: "string",
 			description: nls.localize(
 				"authentication.id",
-				"The id of the authentication provider.",
+				"The id of the authentication provider."
 			),
 		},
 		label: {
 			type: "string",
 			description: nls.localize(
 				"authentication.label",
-				"The human readable name of the authentication provider.",
+				"The human readable name of the authentication provider."
 			),
 		},
 	},
@@ -239,7 +239,7 @@ const authenticationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 				key: "authenticationExtensionPoint",
 				comment: [`'Contributes' means adds here`],
 			},
-			"Contributes authentication",
+			"Contributes authentication"
 		),
 		type: "array",
 		items: authenticationDefinitionSchema,
@@ -248,7 +248,7 @@ const authenticationExtPoint = ExtensionsRegistry.registerExtensionPoint<
 		for (const authenticationProvider of authenticationProviders) {
 			if (authenticationProvider.id) {
 				result.push(
-					`onAuthenticationRequest:${authenticationProvider.id}`,
+					`onAuthenticationRequest:${authenticationProvider.id}`
 				);
 			}
 		}
@@ -262,11 +262,11 @@ let placeholderMenuItem: IDisposable | undefined = MenuRegistry.appendMenuItem(
 			id: "noAuthenticationProviders",
 			title: nls.localize(
 				"authentication.Placeholder",
-				"No accounts requested yet...",
+				"No accounts requested yet..."
 			),
 			precondition: ContextKeyExpr.false(),
 		},
-	},
+	}
 );
 
 export class AuthenticationService
@@ -313,7 +313,7 @@ export class AuthenticationService
 			providerId: string;
 			label: string;
 			event: AuthenticationSessionsChangeEvent;
-		}>(),
+		}>()
 	);
 	readonly onDidChangeSessions: Event<{
 		providerId: string;
@@ -333,35 +333,58 @@ export class AuthenticationService
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IProductService private readonly productService: IProductService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IProductService private readonly productService: IProductService
 	) {
 		super();
 
 		authenticationExtPoint.setHandler((extensions, { added, removed }) => {
-			added.forEach(point => {
+			added.forEach((point) => {
 				for (const provider of point.value) {
 					if (isFalsyOrWhitespace(provider.id)) {
-						point.collector.error(nls.localize('authentication.missingId', 'An authentication contribution must specify an id.'));
+						point.collector.error(
+							nls.localize(
+								"authentication.missingId",
+								"An authentication contribution must specify an id."
+							)
+						);
 						continue;
 					}
 
 					if (isFalsyOrWhitespace(provider.label)) {
-						point.collector.error(nls.localize('authentication.missingLabel', 'An authentication contribution must specify a label.'));
+						point.collector.error(
+							nls.localize(
+								"authentication.missingLabel",
+								"An authentication contribution must specify a label."
+							)
+						);
 						continue;
 					}
 
-					if (!this.declaredProviders.some(p => p.id === provider.id)) {
+					if (
+						!this.declaredProviders.some(
+							(p) => p.id === provider.id
+						)
+					) {
 						this.declaredProviders.push(provider);
 					} else {
-						point.collector.error(nls.localize('authentication.idConflict', "This authentication id '{0}' has already been registered", provider.id));
+						point.collector.error(
+							nls.localize(
+								"authentication.idConflict",
+								"This authentication id '{0}' has already been registered",
+								provider.id
+							)
+						);
 					}
 				}
 			});
 
-			const removedExtPoints = flatten(removed.map(r => r.value));
-			removedExtPoints.forEach(point => {
-				const index = this.declaredProviders.findIndex(provider => provider.id === point.id);
+			const removedExtPoints = flatten(removed.map((r) => r.value));
+			removedExtPoints.forEach((point) => {
+				const index = this.declaredProviders.findIndex(
+					(provider) => provider.id === point.id
+				);
 				if (index > -1) {
 					this.declaredProviders.splice(index, 1);
 				}
@@ -385,7 +408,7 @@ export class AuthenticationService
 
 	registerAuthenticationProvider(
 		id: string,
-		authenticationProvider: IAuthenticationProvider,
+		authenticationProvider: IAuthenticationProvider
 	): void {
 		this._authenticationProviders.set(id, authenticationProvider);
 		this._onDidRegisterAuthenticationProvider.fire({
@@ -425,14 +448,14 @@ export class AuthenticationService
 						title: nls.localize("loading", "Loading..."),
 						precondition: ContextKeyExpr.false(),
 					},
-				},
+				}
 			);
 		}
 	}
 
 	async sessionsUpdate(
 		id: string,
-		event: AuthenticationSessionsChangeEvent,
+		event: AuthenticationSessionsChangeEvent
 	): Promise<void> {
 		const provider = this._authenticationProviders.get(id);
 		if (provider) {
@@ -456,10 +479,10 @@ export class AuthenticationService
 
 	private async updateNewSessionRequests(
 		provider: IAuthenticationProvider,
-		addedSessions: readonly AuthenticationSession[],
+		addedSessions: readonly AuthenticationSession[]
 	): Promise<void> {
 		const existingRequestsForProvider = this._signInRequestItems.get(
-			provider.id,
+			provider.id
 		);
 		if (!existingRequestsForProvider) {
 			return;
@@ -470,7 +493,7 @@ export class AuthenticationService
 				addedSessions.some(
 					(session) =>
 						session.scopes.slice().join(SCOPESLIST_SEPARATOR) ===
-						requestedScopes,
+						requestedScopes
 				)
 			) {
 				const sessionRequest =
@@ -483,7 +506,7 @@ export class AuthenticationService
 				} else {
 					this._signInRequestItems.set(
 						provider.id,
-						existingRequestsForProvider,
+						existingRequestsForProvider
 					);
 				}
 			}
@@ -492,7 +515,7 @@ export class AuthenticationService
 
 	private async updateAccessRequests(
 		providerId: string,
-		removedSessions: readonly AuthenticationSession[],
+		removedSessions: readonly AuthenticationSession[]
 	) {
 		const providerRequests =
 			this._sessionAccessRequestItems.get(providerId);
@@ -502,12 +525,12 @@ export class AuthenticationService
 					const indexOfSession = providerRequests[
 						extensionId
 					].possibleSessions.findIndex(
-						(session) => session.id === removed.id,
+						(session) => session.id === removed.id
 					);
 					if (indexOfSession) {
 						providerRequests[extensionId].possibleSessions.splice(
 							indexOfSession,
-							1,
+							1
 						);
 					}
 				});
@@ -536,7 +559,7 @@ export class AuthenticationService
 
 		if (numberOfRequests > 0) {
 			const badge = new NumberBadge(numberOfRequests, () =>
-				nls.localize("sign in", "Sign in requested"),
+				nls.localize("sign in", "Sign in requested")
 			);
 			this._accountBadgeDisposable.value =
 				this.activityService.showAccountsActivity({ badge });
@@ -564,15 +587,15 @@ export class AuthenticationService
 	isAccessAllowed(
 		providerId: string,
 		accountName: string,
-		extensionId: string,
+		extensionId: string
 	): boolean | undefined {
 		const allowList = readAllowedExtensions(
 			this.storageService,
 			providerId,
-			accountName,
+			accountName
 		);
 		const extensionData = allowList.find(
-			(extension) => extension.id === extensionId,
+			(extension) => extension.id === extensionId
 		);
 		if (extensionData) {
 			// This property didn't exist on this data previously, inclusion in the list at all indicates allowance
@@ -583,7 +606,7 @@ export class AuthenticationService
 
 		if (
 			this.productService.trustedExtensionAuthAccess?.includes(
-				extensionId,
+				extensionId
 			)
 		) {
 			return true;
@@ -597,15 +620,15 @@ export class AuthenticationService
 		accountName: string,
 		extensionId: string,
 		extensionName: string,
-		isAllowed: boolean,
+		isAllowed: boolean
 	): void {
 		const allowList = readAllowedExtensions(
 			this.storageService,
 			providerId,
-			accountName,
+			accountName
 		);
 		const index = allowList.findIndex(
-			(extension) => extension.id === extensionId,
+			(extension) => extension.id === extensionId
 		);
 		if (index === -1) {
 			allowList.push({
@@ -621,7 +644,7 @@ export class AuthenticationService
 			`${providerId}-${accountName}`,
 			JSON.stringify(allowList),
 			StorageScope.APPLICATION,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 	}
 
@@ -630,7 +653,7 @@ export class AuthenticationService
 	updateSessionPreference(
 		providerId: string,
 		extensionId: string,
-		session: AuthenticationSession,
+		session: AuthenticationSession
 	): void {
 		// The 3 parts of this key are important:
 		// * Extension id: The extension that has a preference
@@ -645,20 +668,20 @@ export class AuthenticationService
 			key,
 			session.id,
 			StorageScope.WORKSPACE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 		this.storageService.store(
 			key,
 			session.id,
 			StorageScope.APPLICATION,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
 	getSessionPreference(
 		providerId: string,
 		extensionId: string,
-		scopes: string[],
+		scopes: string[]
 	): string | undefined {
 		// The 3 parts of this key are important:
 		// * Extension id: The extension that has a preference
@@ -676,7 +699,7 @@ export class AuthenticationService
 	removeSessionPreference(
 		providerId: string,
 		extensionId: string,
-		scopes: string[],
+		scopes: string[]
 	): void {
 		// The 3 parts of this key are important:
 		// * Extension id: The extension that has a preference
@@ -698,7 +721,7 @@ export class AuthenticationService
 		providerId: string,
 		accountName: string,
 		extensionId: string,
-		extensionName: string,
+		extensionName: string
 	): Promise<boolean> {
 		const providerName = this.getLabel(providerId);
 		enum SessionPromptChoice {
@@ -714,7 +737,7 @@ export class AuthenticationService
 					"The extension '{0}' wants to access the {1} account '{2}'.",
 					extensionName,
 					providerName,
-					accountName,
+					accountName
 				),
 				buttons: [
 					{
@@ -723,14 +746,14 @@ export class AuthenticationService
 								key: "allow",
 								comment: ["&& denotes a mnemonic"],
 							},
-							"&&Allow",
+							"&&Allow"
 						),
 						run: () => SessionPromptChoice.Allow,
 					},
 					{
 						label: nls.localize(
 							{ key: "deny", comment: ["&& denotes a mnemonic"] },
-							"&&Deny",
+							"&&Deny"
 						),
 						run: () => SessionPromptChoice.Deny,
 					},
@@ -738,7 +761,7 @@ export class AuthenticationService
 				cancelButton: {
 					run: () => SessionPromptChoice.Cancel,
 				},
-			},
+			}
 		);
 
 		if (result !== SessionPromptChoice.Cancel) {
@@ -747,7 +770,7 @@ export class AuthenticationService
 				accountName,
 				extensionId,
 				extensionName,
-				result === SessionPromptChoice.Allow,
+				result === SessionPromptChoice.Allow
 			);
 			this.removeAccessRequest(providerId, extensionId);
 		}
@@ -760,7 +783,7 @@ export class AuthenticationService
 		extensionId: string,
 		extensionName: string,
 		scopes: string[],
-		availableSessions: AuthenticationSession[],
+		availableSessions: AuthenticationSession[]
 	): Promise<AuthenticationSession> {
 		return new Promise((resolve, reject) => {
 			// This function should be used only when there are sessions to disambiguate.
@@ -784,7 +807,7 @@ export class AuthenticationService
 			items.push({
 				label: nls.localize(
 					"useOtherAccount",
-					"Sign in to another account",
+					"Sign in to another account"
 				),
 			});
 
@@ -801,12 +824,12 @@ export class AuthenticationService
 				},
 				"The extension '{0}' wants to access a {1} account",
 				extensionName,
-				providerName,
+				providerName
 			);
 			quickPick.placeholder = nls.localize(
 				"getSessionPlateholder",
 				"Select an account for '{0}' to use or Esc to cancel",
-				extensionName,
+				extensionName
 			);
 
 			quickPick.onDidAccept(async (_) => {
@@ -820,7 +843,7 @@ export class AuthenticationService
 					accountName,
 					extensionId,
 					extensionName,
-					true,
+					true
 				);
 				this.updateSessionPreference(providerId, extensionId, session);
 				this.removeAccessRequest(providerId, extensionId);
@@ -845,7 +868,7 @@ export class AuthenticationService
 		providerId: string,
 		extensionId: string,
 		extensionName: string,
-		scopes: string[],
+		scopes: string[]
 	): Promise<void> {
 		const providerRequests =
 			this._sessionAccessRequestItems.get(providerId) || {};
@@ -866,7 +889,7 @@ export class AuthenticationService
 					extensionId,
 					extensionName,
 					scopes,
-					possibleSessions,
+					possibleSessions
 				);
 			} catch (_) {
 				// ignore cancel
@@ -876,7 +899,7 @@ export class AuthenticationService
 				providerId,
 				possibleSessions[0].account.label,
 				extensionId,
-				extensionName,
+				extensionName
 			);
 			if (approved) {
 				session = possibleSessions[0];
@@ -889,7 +912,7 @@ export class AuthenticationService
 				providerId,
 				session.account.label,
 				extensionId,
-				extensionName,
+				extensionName
 			);
 			const providerName = this.getLabel(providerId);
 			this._onDidChangeSessions.fire({
@@ -905,7 +928,7 @@ export class AuthenticationService
 		extensionId: string,
 		extensionName: string,
 		scopes: string[],
-		possibleSessions: AuthenticationSession[],
+		possibleSessions: AuthenticationSession[]
 	): void {
 		const providerRequests =
 			this._sessionAccessRequestItems.get(providerId) || {};
@@ -927,7 +950,7 @@ export class AuthenticationService
 					},
 					"Grant access to {0} for {1}... (1)",
 					this.getLabel(providerId),
-					extensionName,
+					extensionName
 				),
 			},
 		});
@@ -936,13 +959,13 @@ export class AuthenticationService
 			id: `${providerId}${extensionId}Access`,
 			handler: async (accessor) => {
 				const authenticationService = accessor.get(
-					IAuthenticationService,
+					IAuthenticationService
 				);
 				authenticationService.completeSessionAccessRequest(
 					providerId,
 					extensionId,
 					extensionName,
-					scopes,
+					scopes
 				);
 			},
 		});
@@ -959,7 +982,7 @@ export class AuthenticationService
 		providerId: string,
 		scopes: string[],
 		extensionId: string,
-		extensionName: string,
+		extensionName: string
 	): Promise<void> {
 		let provider = this._authenticationProviders.get(providerId);
 		if (!provider) {
@@ -975,7 +998,7 @@ export class AuthenticationService
 							dispose.dispose();
 							resolve();
 						}
-					},
+					}
 				);
 			});
 		}
@@ -990,7 +1013,7 @@ export class AuthenticationService
 			providerRequests &&
 			providerRequests[scopesList] &&
 			providerRequests[scopesList].requestingExtensionIds.includes(
-				extensionId,
+				extensionId
 			);
 
 		if (extensionHasExistingRequest) {
@@ -1014,7 +1037,7 @@ export class AuthenticationService
 					},
 					"Sign in with {0} to use {1} (1)",
 					provider.label,
-					extensionName,
+					extensionName
 				),
 			},
 		});
@@ -1023,11 +1046,11 @@ export class AuthenticationService
 			id: commandId,
 			handler: async (accessor) => {
 				const authenticationService = accessor.get(
-					IAuthenticationService,
+					IAuthenticationService
 				);
 				const session = await authenticationService.createSession(
 					providerId,
-					scopes,
+					scopes
 				);
 
 				this.updateAllowedExtension(
@@ -1035,7 +1058,7 @@ export class AuthenticationService
 					session.account.label,
 					extensionId,
 					extensionName,
-					true,
+					true
 				);
 				this.updateSessionPreference(providerId, extensionId, session);
 			},
@@ -1076,7 +1099,7 @@ export class AuthenticationService
 			return authProvider.label;
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
@@ -1087,20 +1110,18 @@ export class AuthenticationService
 			return authProvider.supportsMultipleAccounts;
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
 
 	private async tryActivateProvider(
 		providerId: string,
-		activateImmediate: boolean,
+		activateImmediate: boolean
 	): Promise<IAuthenticationProvider> {
 		await this.extensionService.activateByEvent(
 			getAuthenticationProviderActivationEvent(providerId),
-			activateImmediate
-				? ActivationKind.Immediate
-				: ActivationKind.Normal,
+			activateImmediate ? ActivationKind.Immediate : ActivationKind.Normal
 		);
 		let provider = this._authenticationProviders.get(providerId);
 		if (provider) {
@@ -1119,22 +1140,22 @@ export class AuthenticationService
 							resolve(provider);
 						} else {
 							throw new Error(
-								`No authentication provider '${providerId}' is currently registered.`,
+								`No authentication provider '${providerId}' is currently registered.`
 							);
 						}
 					}
 				});
-			},
+			}
 		);
 
 		const didTimeout: Promise<IAuthenticationProvider> = new Promise(
 			(_, reject) => {
 				setTimeout(() => {
 					reject(
-						"Timed out waiting for authentication provider to register",
+						"Timed out waiting for authentication provider to register"
 					);
 				}, 5000);
-			},
+			}
 		);
 
 		return Promise.race([didRegister, didTimeout]);
@@ -1143,7 +1164,7 @@ export class AuthenticationService
 	async getSessions(
 		id: string,
 		scopes?: string[],
-		activateImmediate: boolean = false,
+		activateImmediate: boolean = false
 	): Promise<ReadonlyArray<AuthenticationSession>> {
 		const authProvider =
 			this._authenticationProviders.get(id) ||
@@ -1152,7 +1173,7 @@ export class AuthenticationService
 			return await authProvider.getSessions(scopes);
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
@@ -1160,7 +1181,7 @@ export class AuthenticationService
 	async createSession(
 		id: string,
 		scopes: string[],
-		options?: IAuthenticationCreateSessionOptions,
+		options?: IAuthenticationCreateSessionOptions
 	): Promise<AuthenticationSession> {
 		const authProvider =
 			this._authenticationProviders.get(id) ||
@@ -1171,7 +1192,7 @@ export class AuthenticationService
 			});
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
@@ -1182,21 +1203,21 @@ export class AuthenticationService
 			return authProvider.removeSession(sessionId);
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
 
 	async manageTrustedExtensionsForAccount(
 		id: string,
-		accountName: string,
+		accountName: string
 	): Promise<void> {
 		const authProvider = this._authenticationProviders.get(id);
 		if (authProvider) {
 			return authProvider.manageTrustedExtensions(accountName);
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
@@ -1204,14 +1225,14 @@ export class AuthenticationService
 	async removeAccountSessions(
 		id: string,
 		accountName: string,
-		sessions: AuthenticationSession[],
+		sessions: AuthenticationSession[]
 	): Promise<void> {
 		const authProvider = this._authenticationProviders.get(id);
 		if (authProvider) {
 			return authProvider.removeAccountSessions(accountName, sessions);
 		} else {
 			throw new Error(
-				`No authentication provider '${id}' is currently registered.`,
+				`No authentication provider '${id}' is currently registered.`
 			);
 		}
 	}
@@ -1220,5 +1241,5 @@ export class AuthenticationService
 registerSingleton(
 	IAuthenticationService,
 	AuthenticationService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

@@ -103,7 +103,7 @@ class InspectContextKeysAction extends Action2 {
 		const activeDocument = getActiveDocument();
 		activeDocument.body.appendChild(hoverFeedback);
 		disposables.add(
-			toDisposable(() => activeDocument.body.removeChild(hoverFeedback)),
+			toDisposable(() => activeDocument.body.removeChild(hoverFeedback))
 		);
 
 		hoverFeedback.style.position = "absolute";
@@ -112,7 +112,7 @@ class InspectContextKeysAction extends Action2 {
 		hoverFeedback.style.zIndex = "1000";
 
 		const onMouseMove = disposables.add(
-			new DomEmitter(activeDocument, "mousemove", true),
+			new DomEmitter(activeDocument, "mousemove", true)
 		);
 		disposables.add(
 			onMouseMove.event((e) => {
@@ -123,11 +123,11 @@ class InspectContextKeysAction extends Action2 {
 				hoverFeedback.style.left = `${position.left}px`;
 				hoverFeedback.style.width = `${position.width}px`;
 				hoverFeedback.style.height = `${position.height}px`;
-			}),
+			})
 		);
 
 		const onMouseDown = disposables.add(
-			new DomEmitter(activeDocument, "mousedown", true),
+			new DomEmitter(activeDocument, "mousedown", true)
 		);
 		Event.once(onMouseDown.event)(
 			(e) => {
@@ -135,11 +135,11 @@ class InspectContextKeysAction extends Action2 {
 				e.stopPropagation();
 			},
 			null,
-			disposables,
+			disposables
 		);
 
 		const onMouseUp = disposables.add(
-			new DomEmitter(activeDocument, "mouseup", true),
+			new DomEmitter(activeDocument, "mouseup", true)
 		);
 		Event.once(onMouseUp.event)(
 			(e) => {
@@ -147,14 +147,14 @@ class InspectContextKeysAction extends Action2 {
 				e.stopPropagation();
 
 				const context = contextKeyService.getContext(
-					e.target as HTMLElement,
+					e.target as HTMLElement
 				) as Context;
 				console.log(context.collectAllValues());
 
 				dispose(disposables);
 			},
 			null,
-			disposables,
+			disposables
 		);
 	}
 }
@@ -176,7 +176,7 @@ class ToggleScreencastModeAction extends Action2 {
 			title: {
 				value: localize(
 					"toggle screencast mode",
-					"Toggle Screencast Mode",
+					"Toggle Screencast Mode"
 				),
 				original: "Toggle Screencast Mode",
 			},
@@ -212,29 +212,29 @@ class ToggleScreencastModeAction extends Action2 {
 
 		function registerContainerListeners(
 			container: HTMLElement,
-			disposables: DisposableStore,
+			disposables: DisposableStore
 		): void {
 			disposables.add(
 				disposables
 					.add(new DomEmitter(container, "mousedown", true))
-					.event((e) => onMouseDown.fire(e)),
+					.event((e) => onMouseDown.fire(e))
 			);
 			disposables.add(
 				disposables
 					.add(new DomEmitter(container, "mouseup", true))
-					.event((e) => onMouseUp.fire(e)),
+					.event((e) => onMouseUp.fire(e))
 			);
 			disposables.add(
 				disposables
 					.add(new DomEmitter(container, "mousemove", true))
-					.event((e) => onMouseMove.fire(e)),
+					.event((e) => onMouseMove.fire(e))
 			);
 		}
 
 		for (const { window, disposables } of getWindows()) {
 			registerContainerListeners(
 				layoutService.getContainer(window),
-				disposables,
+				disposables
 			);
 		}
 
@@ -242,23 +242,23 @@ class ToggleScreencastModeAction extends Action2 {
 			onDidRegisterWindow(({ window, disposables }) =>
 				registerContainerListeners(
 					layoutService.getContainer(window),
-					disposables,
-				),
-			),
+					disposables
+				)
+			)
 		);
 
 		disposables.add(
 			layoutService.onDidChangeActiveContainer(() => {
 				layoutService.activeContainer.appendChild(mouseMarker);
 				layoutService.activeContainer.appendChild(keyboardMarker);
-			}),
+			})
 		);
 
 		const updateMouseIndicatorColor = () => {
 			mouseMarker.style.borderColor = Color.fromHex(
 				configurationService.getValue<string>(
-					"screencastMode.mouseIndicatorColor",
-				),
+					"screencastMode.mouseIndicatorColor"
+				)
 			).toString();
 		};
 
@@ -266,10 +266,10 @@ class ToggleScreencastModeAction extends Action2 {
 		const updateMouseIndicatorSize = () => {
 			mouseIndicatorSize = clamp(
 				configurationService.getValue<number>(
-					"screencastMode.mouseIndicatorSize",
+					"screencastMode.mouseIndicatorSize"
 				) || 20,
 				20,
-				100,
+				100
 			);
 
 			mouseMarker.style.height = `${mouseIndicatorSize}px`;
@@ -305,26 +305,26 @@ class ToggleScreencastModeAction extends Action2 {
 					mouseMarker.style.display = "none";
 					mouseMoveListener.dispose();
 				});
-			}),
+			})
 		);
 
 		const updateKeyboardFontSize = () => {
 			keyboardMarker.style.fontSize = `${clamp(
 				configurationService.getValue<number>(
-					"screencastMode.fontSize",
+					"screencastMode.fontSize"
 				) || 56,
 				20,
-				100,
+				100
 			)}px`;
 		};
 
 		const updateKeyboardMarker = () => {
 			keyboardMarker.style.bottom = `${clamp(
 				configurationService.getValue<number>(
-					"screencastMode.verticalOffset",
+					"screencastMode.verticalOffset"
 				) || 0,
 				0,
-				90,
+				90
 			)}%`;
 		};
 
@@ -332,10 +332,10 @@ class ToggleScreencastModeAction extends Action2 {
 		const updateKeyboardMarkerTimeout = () => {
 			keyboardMarkerTimeout = clamp(
 				configurationService.getValue<number>(
-					"screencastMode.keyboardOverlayTimeout",
+					"screencastMode.keyboardOverlayTimeout"
 				) || 800,
 				500,
-				5000,
+				5000
 			);
 		};
 
@@ -355,7 +355,7 @@ class ToggleScreencastModeAction extends Action2 {
 
 				if (
 					e.affectsConfiguration(
-						"screencastMode.keyboardOverlayTimeout",
+						"screencastMode.keyboardOverlayTimeout"
 					)
 				) {
 					updateKeyboardMarkerTimeout();
@@ -372,43 +372,43 @@ class ToggleScreencastModeAction extends Action2 {
 				) {
 					updateMouseIndicatorSize();
 				}
-			}),
+			})
 		);
 
 		const onKeyDown = disposables.add(new Emitter<KeyboardEvent>());
 		const onCompositionStart = disposables.add(
-			new Emitter<CompositionEvent>(),
+			new Emitter<CompositionEvent>()
 		);
 		const onCompositionUpdate = disposables.add(
-			new Emitter<CompositionEvent>(),
+			new Emitter<CompositionEvent>()
 		);
 		const onCompositionEnd = disposables.add(
-			new Emitter<CompositionEvent>(),
+			new Emitter<CompositionEvent>()
 		);
 
 		function registerWindowListeners(
 			window: Window,
-			disposables: DisposableStore,
+			disposables: DisposableStore
 		): void {
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "keydown", true))
-					.event((e) => onKeyDown.fire(e)),
+					.event((e) => onKeyDown.fire(e))
 			);
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "compositionstart", true))
-					.event((e) => onCompositionStart.fire(e)),
+					.event((e) => onCompositionStart.fire(e))
 			);
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "compositionupdate", true))
-					.event((e) => onCompositionUpdate.fire(e)),
+					.event((e) => onCompositionUpdate.fire(e))
 			);
 			disposables.add(
 				disposables
 					.add(new DomEmitter(window, "compositionend", true))
-					.event((e) => onCompositionEnd.fire(e)),
+					.event((e) => onCompositionEnd.fire(e))
 			);
 		}
 
@@ -418,8 +418,8 @@ class ToggleScreencastModeAction extends Action2 {
 
 		disposables.add(
 			onDidRegisterWindow(({ window, disposables }) =>
-				registerWindowListeners(window, disposables),
-			),
+				registerWindowListeners(window, disposables)
+			)
 		);
 
 		let length = 0;
@@ -435,7 +435,7 @@ class ToggleScreencastModeAction extends Action2 {
 		disposables.add(
 			onCompositionStart.event((e) => {
 				imeBackSpace = true;
-			}),
+			})
 		);
 
 		disposables.add(
@@ -453,14 +453,14 @@ class ToggleScreencastModeAction extends Action2 {
 					append(keyboardMarker, $("span.key", {}, `Backspace`));
 				}
 				clearKeyboardScheduler.schedule();
-			}),
+			})
 		);
 
 		disposables.add(
 			onCompositionEnd.event((e) => {
 				composing = undefined;
 				length++;
-			}),
+			})
 		);
 
 		disposables.add(
@@ -468,7 +468,7 @@ class ToggleScreencastModeAction extends Action2 {
 				if (
 					e.key === "Process" ||
 					/[\uac00-\ud787\u3131-\u314e\u314f-\u3163\u3041-\u3094\u30a1-\u30f4\u30fc\u3005\u3006\u3024\u4e00-\u9fa5]/u.test(
-						e.key,
+						e.key
 					)
 				) {
 					if (e.code === "Backspace") {
@@ -489,12 +489,12 @@ class ToggleScreencastModeAction extends Action2 {
 
 				const options =
 					configurationService.getValue<IScreencastKeyboardOptions>(
-						"screencastMode.keyboardOptions",
+						"screencastMode.keyboardOptions"
 					);
 				const event = new StandardKeyboardEvent(e);
 				const shortcut = keybindingService.softDispatch(
 					event,
-					event.target,
+					event.target
 				);
 
 				// Hide the single arrow key pressed
@@ -550,8 +550,8 @@ class ToggleScreencastModeAction extends Action2 {
 					if (this._isKbFound(shortcut) && shortcut.commandId) {
 						const keybindings = keybindingService
 							.lookupKeybindings(shortcut.commandId)
-							.filter((k) =>
-								k.getLabel()?.endsWith(keyLabel ?? ""),
+							.filter(
+								(k) => k.getLabel()?.endsWith(keyLabel ?? "")
 							);
 
 						if (keybindings.length > 0) {
@@ -564,7 +564,7 @@ class ToggleScreencastModeAction extends Action2 {
 				if ((options.showCommands ?? true) && commandAndGroupLabel) {
 					append(
 						keyboardMarker,
-						$("span.title", {}, `${commandAndGroupLabel} `),
+						$("span.title", {}, `${commandAndGroupLabel} `)
 					);
 				}
 
@@ -584,14 +584,14 @@ class ToggleScreencastModeAction extends Action2 {
 
 				length++;
 				clearKeyboardScheduler.schedule();
-			}),
+			})
 		);
 
 		ToggleScreencastModeAction.disposable = disposables;
 	}
 
 	private _isKbFound(
-		resolutionResult: ResolutionResult,
+		resolutionResult: ResolutionResult
 	): resolutionResult is {
 		kind: ResultKind.KbFound;
 		commandId: string | null;
@@ -602,7 +602,7 @@ class ToggleScreencastModeAction extends Action2 {
 	}
 
 	private getCommandDetails(
-		commandId: string,
+		commandId: string
 	): { title: string; category?: string } | undefined {
 		const fromMenuRegistry = MenuRegistry.getCommand(commandId);
 
@@ -651,7 +651,7 @@ class LogStorageAction extends Action2 {
 							"A developer only action to log the contents of the storage for the current window.",
 						],
 					},
-					"Log Storage Database Contents",
+					"Log Storage Database Contents"
 				),
 				original: "Log Storage Database Contents",
 			},
@@ -669,12 +669,12 @@ class LogStorageAction extends Action2 {
 		dialogService.info(
 			localize(
 				"storageLogDialogMessage",
-				"The storage database contents have been logged to the developer tools.",
+				"The storage database contents have been logged to the developer tools."
 			),
 			localize(
 				"storageLogDialogDetails",
-				"Open developer tools from the menu and select the Console tab.",
-			),
+				"Open developer tools from the menu and select the Console tab."
+			)
 		);
 	}
 }
@@ -691,7 +691,7 @@ class LogWorkingCopiesAction extends Action2 {
 							"A developer only action to log the working copies that exist.",
 						],
 					},
-					"Log Working Copies",
+					"Log Working Copies"
 				),
 				original: "Log Working Copies",
 			},
@@ -703,7 +703,7 @@ class LogWorkingCopiesAction extends Action2 {
 	async run(accessor: ServicesAccessor): Promise<void> {
 		const workingCopyService = accessor.get(IWorkingCopyService);
 		const workingCopyBackupService = accessor.get(
-			IWorkingCopyBackupService,
+			IWorkingCopyBackupService
 		);
 		const logService = accessor.get(ILogService);
 		const outputService = accessor.get(IOutputService);
@@ -720,8 +720,8 @@ class LogWorkingCopiesAction extends Action2 {
 								workingCopy.isDirty() ? "● " : ""
 							}${workingCopy.resource.toString(true)} (typeId: ${
 								workingCopy.typeId || "<no typeId>"
-							})`,
-				  )
+							})`
+					)
 				: ["<none>"]),
 			``,
 			`[Backups]`,
@@ -730,8 +730,8 @@ class LogWorkingCopiesAction extends Action2 {
 						(backup) =>
 							`${backup.resource.toString(true)} (typeId: ${
 								backup.typeId || "<no typeId>"
-							})`,
-				  )
+							})`
+					)
 				: ["<none>"]),
 		];
 
@@ -750,7 +750,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 			title: {
 				value: localize(
 					"removeLargeStorageDatabaseEntries",
-					"Remove Large Storage Database Entries...",
+					"Remove Large Storage Database Entries..."
 				),
 				original: "Remove Large Storage Database Entries...",
 			},
@@ -807,11 +807,11 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 								scope === StorageScope.APPLICATION
 									? localize("global", "Global")
 									: scope === StorageScope.PROFILE
-									  ? localize("profile", "Profile")
-									  : localize("workspace", "Workspace"),
+										? localize("profile", "Profile")
+										: localize("workspace", "Workspace"),
 								target === StorageTarget.MACHINE
 									? localize("machine", "Machine")
-									: localize("user", "User"),
+									: localize("user", "User")
 							),
 						});
 					}
@@ -826,7 +826,7 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 				const disposables = new DisposableStore();
 
 				const picker = disposables.add(
-					quickInputService.createQuickPick<IStorageItem>(),
+					quickInputService.createQuickPick<IStorageItem>()
 				);
 				picker.items = items;
 				picker.canSelectMany = true;
@@ -835,17 +835,17 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 				picker.hideCheckAll = true;
 				picker.customLabel = localize(
 					"removeLargeStorageEntriesPickerButton",
-					"Remove",
+					"Remove"
 				);
 				picker.placeholder = localize(
 					"removeLargeStorageEntriesPickerPlaceholder",
-					"Select large entries to remove from storage",
+					"Select large entries to remove from storage"
 				);
 
 				if (items.length === 0) {
 					picker.description = localize(
 						"removeLargeStorageEntriesPickerDescriptionNoEntries",
-						"There are no large storage entries to remove.",
+						"There are no large storage entries to remove."
 					);
 				}
 
@@ -855,11 +855,11 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 					picker.onDidCustom(() => {
 						resolve(picker.selectedItems);
 						picker.hide();
-					}),
+					})
 				);
 
 				disposables.add(picker.onDidHide(() => disposables.dispose()));
-			},
+			}
 		);
 
 		if (selectedItems.length === 0) {
@@ -870,19 +870,19 @@ class RemoveLargeStorageEntriesAction extends Action2 {
 			type: "warning",
 			message: localize(
 				"removeLargeStorageEntriesConfirmRemove",
-				"Do you want to remove the selected storage entries from the database?",
+				"Do you want to remove the selected storage entries from the database?"
 			),
 			detail: localize(
 				"removeLargeStorageEntriesConfirmRemoveDetail",
 				"{0}\n\nThis action is irreversible and may result in data loss!",
-				selectedItems.map((item) => item.label).join("\n"),
+				selectedItems.map((item) => item.label).join("\n")
 			),
 			primaryButton: localize(
 				{
 					key: "removeLargeStorageEntriesButtonLabel",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Remove",
+				"&&Remove"
 			),
 		});
 
@@ -916,7 +916,7 @@ class StartTrackDisposables extends Action2 {
 			title: {
 				value: localize(
 					"startTrackDisposables",
-					"Start Tracking Disposables",
+					"Start Tracking Disposables"
 				),
 				original: "Start Tracking Disposables",
 			},
@@ -924,7 +924,7 @@ class StartTrackDisposables extends Action2 {
 			f1: true,
 			precondition: ContextKeyExpr.and(
 				DisposablesSnapshotStateContext.isEqualTo("pending").negate(),
-				DisposablesSnapshotStateContext.isEqualTo("started").negate(),
+				DisposablesSnapshotStateContext.isEqualTo("started").negate()
 			),
 		});
 	}
@@ -932,7 +932,7 @@ class StartTrackDisposables extends Action2 {
 	run(accessor: ServicesAccessor): void {
 		const disposablesSnapshotStateContext =
 			DisposablesSnapshotStateContext.bindTo(
-				accessor.get(IContextKeyService),
+				accessor.get(IContextKeyService)
 			);
 		disposablesSnapshotStateContext.set("started");
 
@@ -950,7 +950,7 @@ class SnapshotTrackedDisposables extends Action2 {
 			title: {
 				value: localize(
 					"snapshotTrackedDisposables",
-					"Snapshot Tracked Disposables",
+					"Snapshot Tracked Disposables"
 				),
 				original: "Snapshot Tracked Disposables",
 			},
@@ -963,14 +963,14 @@ class SnapshotTrackedDisposables extends Action2 {
 	run(accessor: ServicesAccessor): void {
 		const disposablesSnapshotStateContext =
 			DisposablesSnapshotStateContext.bindTo(
-				accessor.get(IContextKeyService),
+				accessor.get(IContextKeyService)
 			);
 		disposablesSnapshotStateContext.set("pending");
 
 		trackedDisposables = new Set(
 			tracker
 				?.computeLeakingDisposables(1000)
-				?.leaks.map((disposable) => disposable.value),
+				?.leaks.map((disposable) => disposable.value)
 		);
 	}
 }
@@ -982,7 +982,7 @@ class StopTrackDisposables extends Action2 {
 			title: {
 				value: localize(
 					"stopTrackDisposables",
-					"Stop Tracking Disposables",
+					"Stop Tracking Disposables"
 				),
 				original: "Stop Tracking Disposables",
 			},
@@ -997,7 +997,7 @@ class StopTrackDisposables extends Action2 {
 
 		const disposablesSnapshotStateContext =
 			DisposablesSnapshotStateContext.bindTo(
-				accessor.get(IContextKeyService),
+				accessor.get(IContextKeyService)
 			);
 		disposablesSnapshotStateContext.set("stopped");
 
@@ -1005,7 +1005,7 @@ class StopTrackDisposables extends Action2 {
 			const disposableLeaks = new Set<DisposableInfo>();
 
 			for (const disposable of new Set(
-				tracker.computeLeakingDisposables(1000)?.leaks,
+				tracker.computeLeakingDisposables(1000)?.leaks
 			) ?? []) {
 				if (trackedDisposables.has(disposable.value)) {
 					disposableLeaks.add(disposable);
@@ -1014,7 +1014,7 @@ class StopTrackDisposables extends Action2 {
 
 			const leaks = tracker.computeLeakingDisposables(
 				1000,
-				Array.from(disposableLeaks),
+				Array.from(disposableLeaks)
 			);
 			if (leaks) {
 				editorService.openEditor({
@@ -1046,7 +1046,7 @@ if (!product.commit) {
 
 // Screen Cast Mode
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	id: "screencastMode",
@@ -1061,7 +1061,7 @@ configurationRegistry.registerConfiguration({
 			maximum: 90,
 			description: localize(
 				"screencastMode.location.verticalPosition",
-				"Controls the vertical offset of the screencast mode overlay from the bottom as a percentage of the workbench height.",
+				"Controls the vertical offset of the screencast mode overlay from the bottom as a percentage of the workbench height."
 			),
 		},
 		"screencastMode.fontSize": {
@@ -1071,14 +1071,14 @@ configurationRegistry.registerConfiguration({
 			maximum: 100,
 			description: localize(
 				"screencastMode.fontSize",
-				"Controls the font size (in pixels) of the screencast mode keyboard.",
+				"Controls the font size (in pixels) of the screencast mode keyboard."
 			),
 		},
 		"screencastMode.keyboardOptions": {
 			type: "object",
 			description: localize(
 				"screencastMode.keyboardOptions.description",
-				"Options for customizing the keyboard overlay in screencast mode.",
+				"Options for customizing the keyboard overlay in screencast mode."
 			),
 			properties: {
 				showKeys: {
@@ -1086,7 +1086,7 @@ configurationRegistry.registerConfiguration({
 					default: true,
 					description: localize(
 						"screencastMode.keyboardOptions.showKeys",
-						"Show raw keys.",
+						"Show raw keys."
 					),
 				},
 				showKeybindings: {
@@ -1094,7 +1094,7 @@ configurationRegistry.registerConfiguration({
 					default: true,
 					description: localize(
 						"screencastMode.keyboardOptions.showKeybindings",
-						"Show keyboard shortcuts.",
+						"Show keyboard shortcuts."
 					),
 				},
 				showCommands: {
@@ -1102,7 +1102,7 @@ configurationRegistry.registerConfiguration({
 					default: true,
 					description: localize(
 						"screencastMode.keyboardOptions.showCommands",
-						"Show command names.",
+						"Show command names."
 					),
 				},
 				showCommandGroups: {
@@ -1110,7 +1110,7 @@ configurationRegistry.registerConfiguration({
 					default: false,
 					description: localize(
 						"screencastMode.keyboardOptions.showCommandGroups",
-						"Show command group names, when commands are also shown.",
+						"Show command group names, when commands are also shown."
 					),
 				},
 				showSingleEditorCursorMoves: {
@@ -1118,7 +1118,7 @@ configurationRegistry.registerConfiguration({
 					default: true,
 					description: localize(
 						"screencastMode.keyboardOptions.showSingleEditorCursorMoves",
-						"Show single editor cursor move commands.",
+						"Show single editor cursor move commands."
 					),
 				},
 			},
@@ -1138,7 +1138,7 @@ configurationRegistry.registerConfiguration({
 			maximum: 5000,
 			description: localize(
 				"screencastMode.keyboardOverlayTimeout",
-				"Controls how long (in milliseconds) the keyboard overlay is shown in screencast mode.",
+				"Controls how long (in milliseconds) the keyboard overlay is shown in screencast mode."
 			),
 		},
 		"screencastMode.mouseIndicatorColor": {
@@ -1147,7 +1147,7 @@ configurationRegistry.registerConfiguration({
 			default: "#FF0000",
 			description: localize(
 				"screencastMode.mouseIndicatorColor",
-				"Controls the color in hex (#RGB, #RGBA, #RRGGBB or #RRGGBBAA) of the mouse indicator in screencast mode.",
+				"Controls the color in hex (#RGB, #RGBA, #RRGGBB or #RRGGBBAA) of the mouse indicator in screencast mode."
 			),
 		},
 		"screencastMode.mouseIndicatorSize": {
@@ -1157,7 +1157,7 @@ configurationRegistry.registerConfiguration({
 			maximum: 100,
 			description: localize(
 				"screencastMode.mouseIndicatorSize",
-				"Controls the size (in pixels) of the mouse indicator in screencast mode.",
+				"Controls the size (in pixels) of the mouse indicator in screencast mode."
 			),
 		},
 	},

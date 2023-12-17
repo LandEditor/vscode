@@ -114,7 +114,7 @@ export function sanitizeProcessEnvironment(
 			set[key] = true;
 			return set;
 		},
-		{} as Record<string, boolean>,
+		{} as Record<string, boolean>
 	);
 	const keysToRemove = [
 		/^ELECTRON_.+$/,
@@ -142,7 +142,7 @@ export function sanitizeProcessEnvironment(
  * @param env The env object to change
  */
 export function removeDangerousEnvVariables(
-	env: IProcessEnvironment | undefined,
+	env: IProcessEnvironment | undefined
 ): void {
 	if (!env) {
 		return;

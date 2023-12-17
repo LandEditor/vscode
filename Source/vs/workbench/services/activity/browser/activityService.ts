@@ -34,12 +34,21 @@ class ViewContainerActivityByView extends Disposable {
 
 	constructor(
 		private readonly viewId: string,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IActivityService private readonly activityService: IActivityService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IActivityService private readonly activityService: IActivityService
 	) {
 		super();
-		this._register(Event.filter(this.viewDescriptorService.onDidChangeContainer, e => e.views.some(view => view.id === viewId))(() => this.update()));
-		this._register(Event.filter(this.viewDescriptorService.onDidChangeLocation, e => e.views.some(view => view.id === viewId))(() => this.update()));
+		this._register(
+			Event.filter(this.viewDescriptorService.onDidChangeContainer, (e) =>
+				e.views.some((view) => view.id === viewId)
+			)(() => this.update())
+		);
+		this._register(
+			Event.filter(this.viewDescriptorService.onDidChangeLocation, (e) =>
+				e.views.some((view) => view.id === viewId)
+			)(() => this.update())
+		);
 	}
 
 	setActivity(activity: IActivity): void {
@@ -55,13 +64,13 @@ class ViewContainerActivityByView extends Disposable {
 	private update(): void {
 		this.activityDisposable.dispose();
 		const container = this.viewDescriptorService.getViewContainerByViewId(
-			this.viewId,
+			this.viewId
 		);
 		if (container && this.activity) {
 			this.activityDisposable =
 				this.activityService.showViewContainerActivity(
 					container.id,
-					this.activity,
+					this.activity
 				);
 		}
 	}
@@ -83,7 +92,7 @@ export class ActivityService extends Disposable implements IActivityService {
 	private readonly viewActivities = new Map<string, IViewActivity>();
 
 	private readonly _onDidChangeActivity = this._register(
-		new Emitter<string | ViewContainer>(),
+		new Emitter<string | ViewContainer>()
 	);
 	readonly onDidChangeActivity = this._onDidChangeActivity.event;
 
@@ -91,15 +100,17 @@ export class ActivityService extends Disposable implements IActivityService {
 	private readonly globalActivities = new Map<string, IActivity[]>();
 
 	constructor(
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 	}
 
 	showViewContainerActivity(
 		viewContainerId: string,
-		activity: IActivity,
+		activity: IActivity
 	): IDisposable {
 		const viewContainer =
 			this.viewDescriptorService.getViewContainerById(viewContainerId);
@@ -152,7 +163,7 @@ export class ActivityService extends Disposable implements IActivityService {
 				id: 1,
 				activity: this.instantiationService.createInstance(
 					ViewContainerActivityByView,
-					viewId,
+					viewId
 				),
 			};
 

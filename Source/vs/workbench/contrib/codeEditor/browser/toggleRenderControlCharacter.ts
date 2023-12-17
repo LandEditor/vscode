@@ -23,14 +23,14 @@ export class ToggleRenderControlCharacterAction extends Action2 {
 			title: {
 				value: localize(
 					"toggleRenderControlCharacters",
-					"Toggle Control Characters",
+					"Toggle Control Characters"
 				),
 				mnemonicTitle: localize(
 					{
 						key: "miToggleRenderControlCharacters",
 						comment: ["&& denotes a mnemonic"],
 					},
-					"Render &&Control Characters",
+					"Render &&Control Characters"
 				),
 				original: "Toggle Control Characters",
 			},
@@ -38,7 +38,7 @@ export class ToggleRenderControlCharacterAction extends Action2 {
 			f1: true,
 			toggled: ContextKeyExpr.equals(
 				"config.editor.renderControlCharacters",
-				true,
+				true
 			),
 			menu: {
 				id: MenuId.MenubarAppearanceMenu,
@@ -53,11 +53,11 @@ export class ToggleRenderControlCharacterAction extends Action2 {
 
 		const newRenderControlCharacters =
 			!configurationService.getValue<boolean>(
-				"editor.renderControlCharacters",
+				"editor.renderControlCharacters"
 			);
 		return configurationService.updateValue(
 			"editor.renderControlCharacters",
-			newRenderControlCharacters,
+			newRenderControlCharacters
 		);
 	}
 }

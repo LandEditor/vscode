@@ -34,7 +34,7 @@ import {
 class MainThreadNotebook {
 	constructor(
 		readonly editor: INotebookEditor,
-		readonly disposables: DisposableStore,
+		readonly disposables: DisposableStore
 	) {}
 
 	dispose() {
@@ -55,15 +55,32 @@ export class MainThreadNotebookEditors
 	constructor(
 		extHostContext: IExtHostContext,
 		@IEditorService private readonly _editorService: IEditorService,
-		@INotebookEditorService private readonly _notebookEditorService: INotebookEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@INotebookEditorService
+		private readonly _notebookEditorService: INotebookEditorService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookEditors);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookEditors
+		);
 
-		this._editorService.onDidActiveEditorChange(() => this._updateEditorViewColumns(), this, this._disposables);
-		this._editorGroupService.onDidRemoveGroup(() => this._updateEditorViewColumns(), this, this._disposables);
-		this._editorGroupService.onDidMoveGroup(() => this._updateEditorViewColumns(), this, this._disposables);
+		this._editorService.onDidActiveEditorChange(
+			() => this._updateEditorViewColumns(),
+			this,
+			this._disposables
+		);
+		this._editorGroupService.onDidRemoveGroup(
+			() => this._updateEditorViewColumns(),
+			this,
+			this._disposables
+		);
+		this._editorGroupService.onDidMoveGroup(
+			() => this._updateEditorViewColumns(),
+			this,
+			this._disposables
+		);
 	}
 
 	dispose(): void {
@@ -79,7 +96,7 @@ export class MainThreadNotebookEditors
 					this._proxy.$acceptEditorPropertiesChanged(editor.getId(), {
 						visibleRanges: { ranges: editor.visibleRanges },
 					});
-				}),
+				})
 			);
 
 			editorDisposables.add(
@@ -87,7 +104,7 @@ export class MainThreadNotebookEditors
 					this._proxy.$acceptEditorPropertiesChanged(editor.getId(), {
 						selections: { selections: editor.getSelections() },
 					});
-				}),
+				})
 			);
 
 			const wrapper = new MainThreadNotebook(editor, editorDisposables);
@@ -109,7 +126,7 @@ export class MainThreadNotebookEditors
 			if (candidate && this._mainThreadEditors.has(candidate.getId())) {
 				result[candidate.getId()] = editorGroupToColumn(
 					this._editorGroupService,
-					editorPane.group,
+					editorPane.group
 				);
 			}
 		}
@@ -122,7 +139,7 @@ export class MainThreadNotebookEditors
 	async $tryShowNotebookDocument(
 		resource: UriComponents,
 		viewType: string,
-		options: INotebookDocumentShowOptions,
+		options: INotebookDocumentShowOptions
 	): Promise<string> {
 		const editorOptions: INotebookEditorOptions = {
 			cellSelections: options.selections,
@@ -142,8 +159,8 @@ export class MainThreadNotebookEditors
 			columnToEditorGroup(
 				this._editorGroupService,
 				this._configurationService,
-				options.position,
-			),
+				options.position
+			)
 		);
 		const notebookEditor = getNotebookEditorFromEditorPane(editorPane);
 
@@ -152,8 +169,8 @@ export class MainThreadNotebookEditors
 		} else {
 			throw new Error(
 				`Notebook Editor creation failure for document ${JSON.stringify(
-					resource,
-				)}`,
+					resource
+				)}`
 			);
 		}
 	}
@@ -161,7 +178,7 @@ export class MainThreadNotebookEditors
 	async $tryRevealRange(
 		id: string,
 		range: ICellRange,
-		revealType: NotebookEditorRevealType,
+		revealType: NotebookEditorRevealType
 	): Promise<void> {
 		const editor = this._notebookEditorService.getNotebookEditor(id);
 		if (!editor) {

@@ -69,7 +69,7 @@ export class TerminalEditorInput
 	private _group: IEditorGroup | undefined;
 
 	protected readonly _onDidRequestAttach = this._register(
-		new Emitter<ITerminalInstance>(),
+		new Emitter<ITerminalInstance>()
 	);
 	readonly onDidRequestAttach = this._onDidRequestAttach.event;
 
@@ -77,7 +77,7 @@ export class TerminalEditorInput
 		this._group = group;
 		if (group?.scopedContextKeyService) {
 			this._terminalInstance?.setParentContextKeyService(
-				group.scopedContextKeyService,
+				group.scopedContextKeyService
 			);
 		}
 	}
@@ -114,14 +114,14 @@ export class TerminalEditorInput
 	override copy(): EditorInput {
 		const instance = this._terminalInstanceService.createInstance(
 			this._copyLaunchConfig || {},
-			TerminalLocation.Editor,
+			TerminalLocation.Editor
 		);
 		instance.focusWhenReady();
 		this._copyLaunchConfig = undefined;
 		return this._instantiationService.createInstance(
 			TerminalEditorInput,
 			instance.resource,
-			instance,
+			instance
 		);
 	}
 
@@ -146,7 +146,7 @@ export class TerminalEditorInput
 		}
 		const confirmOnKill =
 			this._configurationService.getValue<ConfirmOnKill>(
-				TerminalSettingId.ConfirmOnKill,
+				TerminalSettingId.ConfirmOnKill
 			);
 		if (confirmOnKill === "editor" || confirmOnKill === "always") {
 			return this._terminalInstance?.hasChildProcesses || false;
@@ -155,35 +155,35 @@ export class TerminalEditorInput
 	}
 
 	async confirm(
-		terminals: ReadonlyArray<IEditorIdentifier>,
+		terminals: ReadonlyArray<IEditorIdentifier>
 	): Promise<ConfirmResult> {
 		const { confirmed } = await this._dialogService.confirm({
 			type: Severity.Warning,
 			message: localize(
 				"confirmDirtyTerminal.message",
-				"Do you want to terminate running processes?",
+				"Do you want to terminate running processes?"
 			),
 			primaryButton: localize(
 				{
 					key: "confirmDirtyTerminal.button",
 					comment: ["&& denotes a mnemonic"],
 				},
-				"&&Terminate",
+				"&&Terminate"
 			),
 			detail:
 				terminals.length > 1
 					? terminals
 							.map((terminal) => terminal.editor.getName())
 							.join("\n") +
-					  "\n\n" +
-					  localize(
+						"\n\n" +
+						localize(
 							"confirmDirtyTerminals.detail",
-							"Closing will terminate the running processes in the terminals.",
-					  )
+							"Closing will terminate the running processes in the terminals."
+						)
 					: localize(
 							"confirmDirtyTerminal.detail",
-							"Closing will terminate the running processes in this terminal.",
-					  ),
+							"Closing will terminate the running processes in this terminal."
+						),
 		});
 
 		return confirmed ? ConfirmResult.DONT_SAVE : ConfirmResult.CANCEL;
@@ -198,16 +198,21 @@ export class TerminalEditorInput
 		public readonly resource: URI,
 		private _terminalInstance: ITerminalInstance | undefined,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@IContextKeyService private _contextKeyService: IContextKeyService,
 		@IDialogService private readonly _dialogService: IDialogService
 	) {
 		super();
 
-		this._terminalEditorFocusContextKey = TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
+		this._terminalEditorFocusContextKey =
+			TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
 
 		if (_terminalInstance) {
 			this._setupInstanceListeners();
@@ -221,10 +226,10 @@ export class TerminalEditorInput
 		}
 
 		const instanceOnDidFocusListener = instance.onDidFocus(() =>
-			this._terminalEditorFocusContextKey.set(true),
+			this._terminalEditorFocusContextKey.set(true)
 		);
 		const instanceOnDidBlurListener = instance.onDidBlur(() =>
-			this._terminalEditorFocusContextKey.reset(),
+			this._terminalEditorFocusContextKey.reset()
 		);
 
 		this._register(
@@ -238,7 +243,7 @@ export class TerminalEditorInput
 					instanceOnDidFocusListener,
 					instanceOnDidBlurListener,
 				]);
-			}),
+			})
 		);
 
 		const disposeListeners = [
@@ -253,7 +258,7 @@ export class TerminalEditorInput
 			instanceOnDidFocusListener,
 			instanceOnDidBlurListener,
 			instance.statusList.onDidChangePrimaryStatus(() =>
-				this._onDidChangeLabel.fire(),
+				this._onDidChangeLabel.fire()
 			),
 		];
 
@@ -266,7 +271,7 @@ export class TerminalEditorInput
 			// Don't touch processes if the shutdown was a result of reload as they will be reattached
 			const shouldPersistTerminals =
 				this._configurationService.getValue<boolean>(
-					TerminalSettingId.EnablePersistentSessions,
+					TerminalSettingId.EnablePersistentSessions
 				) && e.reason === ShutdownReason.RELOAD;
 			if (shouldPersistTerminals) {
 				instance.detachProcessAndDispose(TerminalExitReason.Shutdown);
@@ -301,7 +306,7 @@ export class TerminalEditorInput
 		}
 		const uriClasses = getUriClasses(
 			this._terminalInstance,
-			this._themeService.getColorTheme().type,
+			this._themeService.getColorTheme().type
 		);
 		if (uriClasses) {
 			extraClasses.push(...uriClasses);
@@ -317,7 +322,7 @@ export class TerminalEditorInput
 		if (!this._isShuttingDown) {
 			this._terminalInstance?.detachFromElement();
 			this._terminalInstance?.setParentContextKeyService(
-				this._contextKeyService,
+				this._contextKeyService
 			);
 			this._isDetached = true;
 		}

@@ -25,7 +25,7 @@ namespace RemoteRepositories {
 
 		remoteHub =
 			extensions.getExtension<RemoteHubApi>(
-				"ms-vscode.remote-repositories",
+				"ms-vscode.remote-repositories"
 			) ??
 			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub") ??
 			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub-insiders");

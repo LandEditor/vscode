@@ -13,7 +13,7 @@ import {
 import { Registry } from "vs/platform/registry/common/platform";
 
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	id: "update",
@@ -28,22 +28,22 @@ configurationRegistry.registerConfiguration({
 			scope: ConfigurationScope.APPLICATION,
 			description: localize(
 				"updateMode",
-				"Configure whether you receive automatic updates. Requires a restart after change. The updates are fetched from a Microsoft online service.",
+				"Configure whether you receive automatic updates. Requires a restart after change. The updates are fetched from a Microsoft online service."
 			),
 			tags: ["usesOnlineServices"],
 			enumDescriptions: [
 				localize("none", "Disable updates."),
 				localize(
 					"manual",
-					"Disable automatic background update checks. Updates will be available if you manually check for updates.",
+					"Disable automatic background update checks. Updates will be available if you manually check for updates."
 				),
 				localize(
 					"start",
-					"Check for updates only on startup. Disable automatic background update checks.",
+					"Check for updates only on startup. Disable automatic background update checks."
 				),
 				localize(
 					"default",
-					"Enable automatic update checks. Code will check for updates automatically and periodically.",
+					"Enable automatic update checks. Code will check for updates automatically and periodically."
 				),
 			],
 			policy: {
@@ -57,12 +57,12 @@ configurationRegistry.registerConfiguration({
 			scope: ConfigurationScope.APPLICATION,
 			description: localize(
 				"updateMode",
-				"Configure whether you receive automatic updates. Requires a restart after change. The updates are fetched from a Microsoft online service.",
+				"Configure whether you receive automatic updates. Requires a restart after change. The updates are fetched from a Microsoft online service."
 			),
 			deprecationMessage: localize(
 				"deprecated",
 				"This setting is deprecated, please use '{0}' instead.",
-				"update.mode",
+				"update.mode"
 			),
 		},
 		"update.enableWindowsBackgroundUpdates": {
@@ -71,11 +71,11 @@ configurationRegistry.registerConfiguration({
 			scope: ConfigurationScope.APPLICATION,
 			title: localize(
 				"enableWindowsBackgroundUpdatesTitle",
-				"Enable Background Updates on Windows",
+				"Enable Background Updates on Windows"
 			),
 			description: localize(
 				"enableWindowsBackgroundUpdates",
-				"Enable to download and install new VS Code versions in the background on Windows.",
+				"Enable to download and install new VS Code versions in the background on Windows."
 			),
 			included: isWindows && !isWeb,
 		},
@@ -85,7 +85,7 @@ configurationRegistry.registerConfiguration({
 			scope: ConfigurationScope.APPLICATION,
 			description: localize(
 				"showReleaseNotes",
-				"Show Release Notes after an update. The Release Notes are fetched from a Microsoft online service.",
+				"Show Release Notes after an update. The Release Notes are fetched from a Microsoft online service."
 			),
 			tags: ["usesOnlineServices"],
 		},

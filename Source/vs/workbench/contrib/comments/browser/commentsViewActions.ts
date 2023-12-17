@@ -26,11 +26,11 @@ import { viewFilterSubmenu } from "vs/workbench/browser/parts/views/viewFilter";
 
 const CONTEXT_KEY_SHOW_RESOLVED = new RawContextKey<boolean>(
 	"commentsView.showResolvedFilter",
-	true,
+	true
 );
 const CONTEXT_KEY_SHOW_UNRESOLVED = new RawContextKey<boolean>(
 	"commentsView.showUnResolvedFilter",
-	true,
+	true
 );
 
 export interface CommentsFiltersChangeEvent {
@@ -51,7 +51,7 @@ export class CommentsFilters extends Disposable {
 
 	constructor(
 		options: CommentsFiltersOptions,
-		private readonly contextKeyService: IContextKeyService,
+		private readonly contextKeyService: IContextKeyService
 	) {
 		super();
 		this._showResolved.set(options.showResolved);
@@ -59,7 +59,7 @@ export class CommentsFilters extends Disposable {
 	}
 
 	private readonly _showUnresolved = CONTEXT_KEY_SHOW_UNRESOLVED.bindTo(
-		this.contextKeyService,
+		this.contextKeyService
 	);
 	get showUnresolved(): boolean {
 		return !!this._showUnresolved.get();
@@ -74,7 +74,7 @@ export class CommentsFilters extends Disposable {
 	}
 
 	private _showResolved = CONTEXT_KEY_SHOW_RESOLVED.bindTo(
-		this.contextKeyService,
+		this.contextKeyService
 	);
 	get showResolved(): boolean {
 		return !!this._showResolved.get();
@@ -105,11 +105,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			commentsView: ICommentsView,
+			commentsView: ICommentsView
 		): Promise<void> {
 			commentsView.focus();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -128,11 +128,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			commentsView: ICommentsView,
+			commentsView: ICommentsView
 		): Promise<void> {
 			commentsView.clearFilterText();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -151,11 +151,11 @@ registerAction2(
 		}
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			commentsView: ICommentsView,
+			commentsView: ICommentsView
 		): Promise<void> {
 			commentsView.focusFilter();
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -165,7 +165,7 @@ registerAction2(
 				id: `workbench.actions.${COMMENTS_VIEW_ID}.toggleUnResolvedComments`,
 				title: localize(
 					"toggle unresolved",
-					"Toggle Unresolved Comments",
+					"Toggle Unresolved Comments"
 				),
 				category: localize("comments", "Comments"),
 				toggled: {
@@ -184,11 +184,11 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: ICommentsView,
+			view: ICommentsView
 		): Promise<void> {
 			view.filters.showUnresolved = !view.filters.showUnresolved;
 		}
-	},
+	}
 );
 
 registerAction2(
@@ -214,9 +214,9 @@ registerAction2(
 
 		async runInView(
 			serviceAccessor: ServicesAccessor,
-			view: ICommentsView,
+			view: ICommentsView
 		): Promise<void> {
 			view.filters.showResolved = !view.filters.showResolved;
 		}
-	},
+	}
 );

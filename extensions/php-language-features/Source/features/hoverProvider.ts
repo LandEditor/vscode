@@ -20,7 +20,7 @@ export default class PHPHoverProvider implements HoverProvider {
 	public provideHover(
 		document: TextDocument,
 		position: Position,
-		_token: CancellationToken,
+		_token: CancellationToken
 	): Hover | undefined {
 		const enable = workspace
 			.getConfiguration("php")

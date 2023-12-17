@@ -17,7 +17,7 @@ declare module "vscode" {
 		 */
 		provideTerminalQuickFixes(
 			commandMatchResult: TerminalCommandMatchResult,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<
 			SingleOrMany<
 				| TerminalQuickFixTerminalCommand
@@ -43,7 +43,7 @@ declare module "vscode" {
 		 */
 		export function registerTerminalQuickFixProvider(
 			id: string,
-			provider: TerminalQuickFixProvider,
+			provider: TerminalQuickFixProvider
 		): Disposable;
 	}
 

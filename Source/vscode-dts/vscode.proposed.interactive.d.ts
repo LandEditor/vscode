@@ -83,34 +83,36 @@ declare module "vscode" {
 
 	export interface InteractiveEditorSessionProvider<
 		S extends InteractiveEditorSession = InteractiveEditorSession,
-		R extends InteractiveEditorResponse | InteractiveEditorMessageResponse =
+		R extends
+			| InteractiveEditorResponse
+			| InteractiveEditorMessageResponse =
 			| InteractiveEditorResponse
 			| InteractiveEditorMessageResponse,
 	> {
 		// Create a session. The lifetime of this session is the duration of the editing session with the input mode widget.
 		prepareInteractiveEditorSession(
 			context: TextDocumentContext,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<S>;
 
 		provideInteractiveEditorResponse(
 			session: S,
 			request: InteractiveEditorRequest,
 			progress: Progress<InteractiveEditorProgressItem>,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<R>;
 
 		provideFollowups?(
 			session: S,
 			response: R,
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<InteractiveEditorReplyFollowup[]>;
 
 		// eslint-disable-next-line local/vscode-dts-provider-naming
 		handleInteractiveEditorResponseFeedback?(
 			session: S,
 			response: R,
-			kind: InteractiveEditorResponseFeedbackKind,
+			kind: InteractiveEditorResponseFeedbackKind
 		): void;
 	}
 
@@ -151,10 +153,10 @@ declare module "vscode" {
 		S extends InteractiveSession = InteractiveSession,
 	> {
 		provideWelcomeMessage?(
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<InteractiveWelcomeMessageContent[]>;
 		provideSampleQuestions?(
-			token: CancellationToken,
+			token: CancellationToken
 		): ProviderResult<InteractiveSessionReplyFollowup[]>;
 		prepareSession(token: CancellationToken): ProviderResult<S>;
 	}
@@ -172,22 +174,22 @@ declare module "vscode" {
 
 		export function registerInteractiveSessionProvider(
 			id: string,
-			provider: InteractiveSessionProvider,
+			provider: InteractiveSessionProvider
 		): Disposable;
 
 		export function sendInteractiveRequestToProvider(
 			providerId: string,
-			message: InteractiveSessionDynamicRequest,
+			message: InteractiveSessionDynamicRequest
 		): void;
 
 		export function registerInteractiveEditorSessionProvider(
 			provider: InteractiveEditorSessionProvider,
-			metadata?: InteractiveEditorSessionProviderMetadata,
+			metadata?: InteractiveEditorSessionProviderMetadata
 		): Disposable;
 
 		export function transferChatSession(
 			session: InteractiveSession,
-			toWorkspace: Uri,
+			toWorkspace: Uri
 		): void;
 	}
 }

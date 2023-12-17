@@ -24,7 +24,7 @@ export class ExtensionSecrets implements vscode.SecretStorage {
 
 	constructor(
 		extensionDescription: IExtensionDescription,
-		secretState: ExtHostSecretState,
+		secretState: ExtHostSecretState
 	) {
 		this._id = ExtensionIdentifier.toKey(extensionDescription.identifier);
 		this.#secretState = secretState;

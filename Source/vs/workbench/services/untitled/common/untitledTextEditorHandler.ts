@@ -35,10 +35,12 @@ interface ISerializedUntitledTextEditorInput {
 
 export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 	constructor(
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IPathService private readonly pathService: IPathService
-	) { }
+	) {}
 
 	canSerialize(editorInput: EditorInput): boolean {
 		return (
@@ -62,7 +64,7 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 			resource = toLocalResource(
 				resource,
 				this.environmentService.remoteAuthority,
-				this.pathService.defaultUriScheme,
+				this.pathService.defaultUriScheme
 			); // untitled with associated file path use the local schema
 		}
 
@@ -89,24 +91,22 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 
 	deserialize(
 		instantiationService: IInstantiationService,
-		serializedEditorInput: string,
+		serializedEditorInput: string
 	): UntitledTextEditorInput {
 		return instantiationService.invokeFunction((accessor) => {
 			const deserialized: ISerializedUntitledTextEditorInput = JSON.parse(
-				serializedEditorInput,
+				serializedEditorInput
 			);
 			const resource = URI.revive(deserialized.resourceJSON);
 			const languageId = deserialized.modeId;
 			const encoding = deserialized.encoding;
 
-			return accessor
-				.get(ITextEditorService)
-				.createTextEditor({
-					resource,
-					languageId,
-					encoding,
-					forceUntitled: true,
-				}) as UntitledTextEditorInput;
+			return accessor.get(ITextEditorService).createTextEditor({
+				resource,
+				languageId,
+				encoding,
+				forceUntitled: true,
+			}) as UntitledTextEditorInput;
 		});
 	}
 }
@@ -116,11 +116,15 @@ export class UntitledTextEditorWorkingCopyEditorHandler
 	implements IWorkbenchContribution, IWorkingCopyEditorHandler
 {
 	constructor(
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IPathService private readonly pathService: IPathService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService,
-		@IUntitledTextEditorService private readonly untitledTextEditorService: IUntitledTextEditorService
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
+		@IUntitledTextEditorService
+		private readonly untitledTextEditorService: IUntitledTextEditorService
 	) {
 		super();
 
@@ -152,13 +156,13 @@ export class UntitledTextEditorWorkingCopyEditorHandler
 		// ensure to restore the local resource it had
 		if (
 			this.untitledTextEditorService.isUntitledWithAssociatedResource(
-				workingCopy.resource,
+				workingCopy.resource
 			)
 		) {
 			editorInputResource = toLocalResource(
 				workingCopy.resource,
 				this.environmentService.remoteAuthority,
-				this.pathService.defaultUriScheme,
+				this.pathService.defaultUriScheme
 			);
 		} else {
 			editorInputResource = workingCopy.resource;

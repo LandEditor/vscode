@@ -26,24 +26,24 @@ export class EditorGutter<
 	private readonly scrollTop = observableFromEvent(
 		this._editor.onDidScrollChange,
 		(e) =>
-			/** @description editor.onDidScrollChange */ this._editor.getScrollTop(),
+			/** @description editor.onDidScrollChange */ this._editor.getScrollTop()
 	);
 	private readonly isScrollTopZero = this.scrollTop.map(
-		(scrollTop) => /** @description isScrollTopZero */ scrollTop === 0,
+		(scrollTop) => /** @description isScrollTopZero */ scrollTop === 0
 	);
 	private readonly modelAttached = observableFromEvent(
 		this._editor.onDidChangeModel,
 		(e) =>
-			/** @description editor.onDidChangeModel */ this._editor.hasModel(),
+			/** @description editor.onDidChangeModel */ this._editor.hasModel()
 	);
 
 	private readonly editorOnDidChangeViewZones = observableSignalFromEvent(
 		"onDidChangeViewZones",
-		this._editor.onDidChangeViewZones,
+		this._editor.onDidChangeViewZones
 	);
 	private readonly editorOnDidContentSizeChange = observableSignalFromEvent(
 		"onDidContentSizeChange",
-		this._editor.onDidContentSizeChange,
+		this._editor.onDidContentSizeChange
 	);
 	private readonly domNodeSizeChanged =
 		observableSignal("domNodeSizeChanged");
@@ -51,7 +51,7 @@ export class EditorGutter<
 	constructor(
 		private readonly _editor: CodeEditorWidget,
 		private readonly _domNode: HTMLElement,
-		private readonly itemProvider: IGutterItemProvider<T>,
+		private readonly itemProvider: IGutterItemProvider<T>
 	) {
 		super();
 		this._domNode.className = "gutter monaco-editor";
@@ -60,7 +60,7 @@ export class EditorGutter<
 				role: "presentation",
 				ariaHidden: "true",
 				style: { width: "100%" },
-			}).root,
+			}).root
 		);
 
 		const o = new ResizeObserver(() => {
@@ -78,13 +78,13 @@ export class EditorGutter<
 				scrollDecoration.className = this.isScrollTopZero.read(reader)
 					? ""
 					: "scroll-decoration";
-			}),
+			})
 		);
 
 		this._register(
 			autorun((reader) =>
-				/** @description EditorGutter.Render */ this.render(reader),
-			),
+				/** @description EditorGutter.Render */ this.render(reader)
+			)
 		);
 	}
 
@@ -115,12 +115,12 @@ export class EditorGutter<
 
 			const visibleRange2 = new LineRange(
 				visibleRange.startLineNumber,
-				visibleRange.endLineNumber - visibleRange.startLineNumber,
+				visibleRange.endLineNumber - visibleRange.startLineNumber
 			).deltaEnd(1);
 
 			const gutterItems = this.itemProvider.getIntersectingGutterItems(
 				visibleRange2,
-				reader,
+				reader
 			);
 
 			for (const gutterItem of gutterItems) {
@@ -135,7 +135,7 @@ export class EditorGutter<
 					this._domNode.appendChild(viewDomNode);
 					const itemView = this.itemProvider.createView(
 						gutterItem,
-						viewDomNode,
+						viewDomNode
 					);
 					view = new ManagedGutterItemView(itemView, viewDomNode);
 					this.views.set(gutterItem.id, view);
@@ -148,16 +148,16 @@ export class EditorGutter<
 					this._editor.getModel()!.getLineCount()
 						? this._editor.getTopForLineNumber(
 								gutterItem.range.startLineNumber,
-								true,
-						  ) - scrollTop
+								true
+							) - scrollTop
 						: this._editor.getBottomForLineNumber(
 								gutterItem.range.startLineNumber - 1,
-								false,
-						  ) - scrollTop;
+								false
+							) - scrollTop;
 				const bottom =
 					this._editor.getBottomForLineNumber(
 						gutterItem.range.endLineNumberExclusive - 1,
-						true,
+						true
 					) - scrollTop;
 
 				const height = bottom - top;
@@ -169,7 +169,7 @@ export class EditorGutter<
 					top,
 					height,
 					0,
-					this._domNode.clientHeight,
+					this._domNode.clientHeight
 				);
 			}
 		}
@@ -186,7 +186,7 @@ export class EditorGutter<
 class ManagedGutterItemView {
 	constructor(
 		public readonly gutterItemView: IGutterItemView<any>,
-		public readonly domNode: HTMLDivElement,
+		public readonly domNode: HTMLDivElement
 	) {}
 }
 
@@ -208,6 +208,6 @@ export interface IGutterItemView<T extends IGutterItemInfo>
 		top: number,
 		height: number,
 		viewTop: number,
-		viewHeight: number,
+		viewHeight: number
 	): void;
 }

@@ -17,7 +17,7 @@ export class MdLinkOpener {
 
 	public async resolveDocumentLink(
 		linkText: string,
-		fromResource: vscode.Uri,
+		fromResource: vscode.Uri
 	): Promise<proto.ResolvedDocumentLinkTarget> {
 		return this._client.resolveLinkTarget(linkText, fromResource);
 	}
@@ -25,11 +25,11 @@ export class MdLinkOpener {
 	public async openDocumentLink(
 		linkText: string,
 		fromResource: vscode.Uri,
-		viewColumn?: vscode.ViewColumn,
+		viewColumn?: vscode.ViewColumn
 	): Promise<void> {
 		const resolved = await this._client.resolveLinkTarget(
 			linkText,
-			fromResource,
+			fromResource
 		);
 		if (!resolved) {
 			return;
@@ -47,7 +47,7 @@ export class MdLinkOpener {
 				// If no explicit viewColumn is given, check if the editor is already open in a tab
 				if (typeof viewColumn === "undefined") {
 					for (const tab of vscode.window.tabGroups.all.flatMap(
-						(x) => x.tabs,
+						(x) => x.tabs
 					)) {
 						if (tab.input instanceof vscode.TabInputText) {
 							if (tab.input.uri.fsPath === uri.fsPath) {
@@ -66,8 +66,8 @@ export class MdLinkOpener {
 								resolved.position.line,
 								resolved.position.character,
 								resolved.position.line,
-								resolved.position.character,
-						  )
+								resolved.position.character
+							)
 						: undefined,
 					viewColumn: viewColumn ?? getViewColumn(fromResource),
 				});
@@ -80,7 +80,7 @@ function getViewColumn(resource: vscode.Uri): vscode.ViewColumn {
 	const config = vscode.workspace.getConfiguration("markdown", resource);
 	const openLinks = config.get<OpenMarkdownLinks>(
 		"links.openLocation",
-		OpenMarkdownLinks.currentGroup,
+		OpenMarkdownLinks.currentGroup
 	);
 	switch (openLinks) {
 		case OpenMarkdownLinks.beside:

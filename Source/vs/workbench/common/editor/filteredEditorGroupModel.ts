@@ -22,7 +22,7 @@ abstract class FilteredEditorGroupModel
 	implements IReadonlyEditorGroupModel
 {
 	private readonly _onDidModelChange = this._register(
-		new Emitter<IGroupModelChangeEvent>(),
+		new Emitter<IGroupModelChangeEvent>()
 	);
 	readonly onDidModelChange = this._onDidModelChange.event;
 
@@ -38,7 +38,7 @@ abstract class FilteredEditorGroupModel
 					}
 				}
 				this._onDidModelChange.fire(e);
-			}),
+			})
 		);
 	}
 
@@ -76,20 +76,20 @@ abstract class FilteredEditorGroupModel
 	isFirst(editor: EditorInput): boolean {
 		return this.model.isFirst(
 			editor,
-			this.getEditors(EditorsOrder.SEQUENTIAL),
+			this.getEditors(EditorsOrder.SEQUENTIAL)
 		);
 	}
 
 	isLast(editor: EditorInput): boolean {
 		return this.model.isLast(
 			editor,
-			this.getEditors(EditorsOrder.SEQUENTIAL),
+			this.getEditors(EditorsOrder.SEQUENTIAL)
 		);
 	}
 
 	getEditors(
 		order: EditorsOrder,
-		options?: { excludeSticky?: boolean },
+		options?: { excludeSticky?: boolean }
 	): EditorInput[] {
 		const editors = this.model.getEditors(order, options);
 		return editors.filter((e) => this.filter(e));
@@ -97,7 +97,7 @@ abstract class FilteredEditorGroupModel
 
 	findEditor(
 		candidate: EditorInput | null,
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): [EditorInput, number] | undefined {
 		const result = this.model.findEditor(candidate, options);
 		if (!result) {
@@ -112,11 +112,11 @@ abstract class FilteredEditorGroupModel
 	abstract indexOf(
 		editor: EditorInput | IUntypedEditorInput | null,
 		editors?: EditorInput[],
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): number;
 	abstract contains(
 		editor: EditorInput | IUntypedEditorInput,
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): boolean;
 
 	protected abstract filter(editorOrIndex: EditorInput | number): boolean;
@@ -129,7 +129,7 @@ export class StickyEditorGroupModel extends FilteredEditorGroupModel {
 
 	override getEditors(
 		order: EditorsOrder,
-		options?: { excludeSticky?: boolean },
+		options?: { excludeSticky?: boolean }
 	): EditorInput[] {
 		if (options?.excludeSticky) {
 			return [];
@@ -155,7 +155,7 @@ export class StickyEditorGroupModel extends FilteredEditorGroupModel {
 	indexOf(
 		editor: EditorInput | IUntypedEditorInput | null,
 		editors?: EditorInput[],
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): number {
 		const editorIndex = this.model.indexOf(editor, editors, options);
 		if (editorIndex < 0 || editorIndex >= this.model.stickyCount) {
@@ -166,7 +166,7 @@ export class StickyEditorGroupModel extends FilteredEditorGroupModel {
 
 	contains(
 		candidate: EditorInput | IUntypedEditorInput,
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): boolean {
 		const editorIndex = this.model.indexOf(candidate, undefined, options);
 		return editorIndex >= 0 && editorIndex < this.model.stickyCount;
@@ -191,7 +191,7 @@ export class UnstickyEditorGroupModel extends FilteredEditorGroupModel {
 
 	override getEditors(
 		order: EditorsOrder,
-		options?: { excludeSticky?: boolean },
+		options?: { excludeSticky?: boolean }
 	): EditorInput[] {
 		if (order === EditorsOrder.SEQUENTIAL) {
 			return this.model
@@ -210,7 +210,7 @@ export class UnstickyEditorGroupModel extends FilteredEditorGroupModel {
 	indexOf(
 		editor: EditorInput | IUntypedEditorInput | null,
 		editors?: EditorInput[],
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): number {
 		const editorIndex = this.model.indexOf(editor, editors, options);
 		if (
@@ -224,7 +224,7 @@ export class UnstickyEditorGroupModel extends FilteredEditorGroupModel {
 
 	contains(
 		candidate: EditorInput | IUntypedEditorInput,
-		options?: IMatchEditorOptions,
+		options?: IMatchEditorOptions
 	): boolean {
 		const editorIndex = this.model.indexOf(candidate, undefined, options);
 		return (

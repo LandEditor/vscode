@@ -23,15 +23,18 @@ import { IExtensionService } from "vs/workbench/services/extensions/common/exten
 export class ConfigurationResolverService extends BaseConfigurationResolverService {
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ICommandService commandService: ICommandService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@ILabelService labelService: ILabelService,
-		@IShellEnvironmentService shellEnvironmentService: IShellEnvironmentService,
+		@IShellEnvironmentService
+		shellEnvironmentService: IShellEnvironmentService,
 		@IPathService pathService: IPathService,
-		@IExtensionService extensionService: IExtensionService,
+		@IExtensionService extensionService: IExtensionService
 	) {
 		super(
 			{
@@ -50,7 +53,7 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 			quickInputService,
 			labelService,
 			pathService,
-			extensionService,
+			extensionService
 		);
 	}
 }
@@ -58,5 +61,5 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 registerSingleton(
 	IConfigurationResolverService,
 	ConfigurationResolverService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

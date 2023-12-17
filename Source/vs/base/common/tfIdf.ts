@@ -67,7 +67,7 @@ export class TfIdfCalculator {
 				const score = this.computeSimilarityScore(
 					chunk,
 					embedding,
-					idfCache,
+					idfCache
 				);
 				if (score > 0) {
 					scores.push({ key, score });
@@ -93,7 +93,7 @@ export class TfIdfCalculator {
 
 		// Only match on words that are at least 3 characters long and start with a letter
 		for (const [word] of input.matchAll(
-			/\b\p{Letter}[\p{Letter}\d]{2,}\b/gu,
+			/\b\p{Letter}[\p{Letter}\d]{2,}\b/gu
 		)) {
 			yield normalize(word);
 
@@ -146,7 +146,7 @@ export class TfIdfCalculator {
 				for (const term of tf.keys()) {
 					this.chunkOccurrences.set(
 						term,
-						(this.chunkOccurrences.get(term) ?? 0) + 1,
+						(this.chunkOccurrences.get(term) ?? 0) + 1
 					);
 				}
 
@@ -187,7 +187,7 @@ export class TfIdfCalculator {
 	private computeSimilarityScore(
 		chunk: DocumentChunkEntry,
 		queryEmbedding: SparseEmbedding,
-		idfCache: Map<string, number>,
+		idfCache: Map<string, number>
 	): number {
 		// Compute the dot product between the chunk's embedding and the query embedding
 
@@ -245,7 +245,7 @@ export class TfIdfCalculator {
  * @returns normalized scores
  */
 export function normalizeTfIdfScores(
-	scores: TfIdfScore[],
+	scores: TfIdfScore[]
 ): NormalizedTfIdfScore[] {
 	// copy of scores
 	const result = scores.slice(0) as { score: number }[];

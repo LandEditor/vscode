@@ -22,7 +22,7 @@ export class ImplicitActivationEventsImpl {
 
 	public register<T>(
 		extensionPointName: string,
-		generator: IActivationEventsGenerator<T>,
+		generator: IActivationEventsGenerator<T>
 	): void {
 		this._generators.set(extensionPointName, generator);
 	}
@@ -32,12 +32,12 @@ export class ImplicitActivationEventsImpl {
 	 * where all extension points and all implicit activation events generators are known.
 	 */
 	public readActivationEvents(
-		extensionDescription: IExtensionDescription,
+		extensionDescription: IExtensionDescription
 	): string[] {
 		if (!this._cache.has(extensionDescription)) {
 			this._cache.set(
 				extensionDescription,
-				this._readActivationEvents(extensionDescription),
+				this._readActivationEvents(extensionDescription)
 			);
 		}
 		return this._cache.get(extensionDescription)!;
@@ -48,7 +48,7 @@ export class ImplicitActivationEventsImpl {
 	 * where all extension points and all implicit activation events generators are known.
 	 */
 	public createActivationEventsMap(
-		extensionDescriptions: IExtensionDescription[],
+		extensionDescriptions: IExtensionDescription[]
 	): { [extensionId: string]: string[] } {
 		const result: { [extensionId: string]: string[] } = Object.create(null);
 		for (const extensionDescription of extensionDescriptions) {
@@ -79,7 +79,7 @@ export class ImplicitActivationEventsImpl {
 			// TODO@joao: there's no easy way to contribute this
 			if (activationEvents[i] === "onUri") {
 				activationEvents[i] = `onUri:${ExtensionIdentifier.toKey(
-					desc.identifier,
+					desc.identifier
 				)}`;
 			}
 		}

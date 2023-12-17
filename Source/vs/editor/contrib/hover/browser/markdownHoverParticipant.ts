@@ -41,7 +41,7 @@ export class MarkdownHover implements IHoverPart {
 		public readonly range: Range,
 		public readonly contents: IMarkdownString[],
 		public readonly isBeforeContent: boolean,
-		public readonly ordinal: number,
+		public readonly ordinal: number
 	) {}
 
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
@@ -62,9 +62,11 @@ export class MarkdownHoverParticipant
 		protected readonly _editor: ICodeEditor,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService protected readonly _languageFeaturesService: ILanguageFeaturesService,
-	) { }
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		protected readonly _languageFeaturesService: ILanguageFeaturesService
+	) {}
 
 	public createLoadingMessage(anchor: HoverAnchor): MarkdownHover | null {
 		return new MarkdownHover(
@@ -72,17 +74,17 @@ export class MarkdownHoverParticipant
 			anchor.range,
 			[
 				new MarkdownString().appendText(
-					nls.localize("modesContentHover.loading", "Loading..."),
+					nls.localize("modesContentHover.loading", "Loading...")
 				),
 			],
 			false,
-			2000,
+			2000
 		);
 	}
 
 	public computeSync(
 		anchor: HoverAnchor,
-		lineDecorations: IModelDecoration[],
+		lineDecorations: IModelDecoration[]
 	): MarkdownHover[] {
 		if (!this._editor.hasModel() || anchor.type !== HoverAnchorType.Range) {
 			return [];
@@ -98,17 +100,17 @@ export class MarkdownHoverParticipant
 		const lineLength = model.getLineLength(lineNumber);
 		const languageId = model.getLanguageIdAtPosition(
 			anchor.range.startLineNumber,
-			anchor.range.startColumn,
+			anchor.range.startColumn
 		);
 		const stopRenderingLineAfter = this._editor.getOption(
-			EditorOption.stopRenderingLineAfter,
+			EditorOption.stopRenderingLineAfter
 		);
 		const maxTokenizationLineLength =
 			this._configurationService.getValue<number>(
 				"editor.maxTokenizationLineLength",
 				{
 					overrideIdentifier: languageId,
-				},
+				}
 			);
 		let stopRenderingMessage = false;
 		if (
@@ -125,13 +127,13 @@ export class MarkdownHoverParticipant
 						{
 							value: nls.localize(
 								"stopped rendering",
-								"Rendering paused for long line for performance reasons. This can be configured via `editor.stopRenderingLineAfter`.",
+								"Rendering paused for long line for performance reasons. This can be configured via `editor.stopRenderingLineAfter`."
 							),
 						},
 					],
 					false,
-					index++,
-				),
+					index++
+				)
 			);
 		}
 		if (
@@ -147,13 +149,13 @@ export class MarkdownHoverParticipant
 						{
 							value: nls.localize(
 								"too many characters",
-								"Tokenization is skipped for long lines for performance reasons. This can be configured via `editor.maxTokenizationLineLength`.",
+								"Tokenization is skipped for long lines for performance reasons. This can be configured via `editor.maxTokenizationLineLength`."
 							),
 						},
 					],
 					false,
-					index++,
-				),
+					index++
+				)
 			);
 		}
 
@@ -182,7 +184,7 @@ export class MarkdownHoverParticipant
 				anchor.range.startLineNumber,
 				startColumn,
 				anchor.range.startLineNumber,
-				endColumn,
+				endColumn
 			);
 			result.push(
 				new MarkdownHover(
@@ -190,8 +192,8 @@ export class MarkdownHoverParticipant
 					range,
 					asArray(hoverMessage),
 					isBeforeContent,
-					index++,
-				),
+					index++
+				)
 			);
 		}
 
@@ -201,7 +203,7 @@ export class MarkdownHoverParticipant
 	public computeAsync(
 		anchor: HoverAnchor,
 		lineDecorations: IModelDecoration[],
-		token: CancellationToken,
+		token: CancellationToken
 	): AsyncIterableObject<MarkdownHover> {
 		if (!this._editor.hasModel() || anchor.type !== HoverAnchorType.Range) {
 			return AsyncIterableObject.EMPTY;
@@ -215,13 +217,13 @@ export class MarkdownHoverParticipant
 
 		const position = new Position(
 			anchor.range.startLineNumber,
-			anchor.range.startColumn,
+			anchor.range.startColumn
 		);
 		return getHover(
 			this._languageFeaturesService.hoverProvider,
 			model,
 			position,
-			token,
+			token
 		)
 			.filter((item) => !isEmptyMarkdownString(item.hover.contents))
 			.map((item) => {
@@ -233,21 +235,21 @@ export class MarkdownHoverParticipant
 					rng,
 					item.hover.contents,
 					false,
-					item.ordinal,
+					item.ordinal
 				);
 			});
 	}
 
 	public renderHoverParts(
 		context: IEditorHoverRenderContext,
-		hoverParts: MarkdownHover[],
+		hoverParts: MarkdownHover[]
 	): IDisposable {
 		return renderMarkdownHovers(
 			context,
 			hoverParts,
 			this._editor,
 			this._languageService,
-			this._openerService,
+			this._openerService
 		);
 	}
 }
@@ -257,7 +259,7 @@ export function renderMarkdownHovers(
 	hoverParts: MarkdownHover[],
 	editor: ICodeEditor,
 	languageService: ILanguageService,
-	openerService: IOpenerService,
+	openerService: IOpenerService
 ): IDisposable {
 	// Sort hover parts to keep them stable since they might come in async, out-of-order
 	hoverParts.sort((a, b) => a.ordinal - b.ordinal);
@@ -271,21 +273,17 @@ export function renderMarkdownHovers(
 			const markdownHoverElement = $("div.hover-row.markdown-hover");
 			const hoverContentsElement = dom.append(
 				markdownHoverElement,
-				$("div.hover-contents"),
+				$("div.hover-contents")
 			);
 			const renderer = disposables.add(
-				new MarkdownRenderer(
-					{ editor },
-					languageService,
-					openerService,
-				),
+				new MarkdownRenderer({ editor }, languageService, openerService)
 			);
 			disposables.add(
 				renderer.onDidRenderAsync(() => {
 					hoverContentsElement.className =
 						"hover-contents code-hover-contents";
 					context.onContentsChanged();
-				}),
+				})
 			);
 			const renderedContents = disposables.add(renderer.render(contents));
 			hoverContentsElement.appendChild(renderedContents.element);

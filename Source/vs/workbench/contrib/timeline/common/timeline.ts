@@ -107,7 +107,7 @@ export interface TimelineProvider
 	provideTimeline(
 		uri: URI,
 		options: TimelineOptions,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<Timeline | undefined>;
 }
 
@@ -162,7 +162,7 @@ export interface ITimelineService {
 		id: string,
 		uri: URI,
 		options: TimelineOptions,
-		tokenSource: CancellationTokenSource,
+		tokenSource: CancellationTokenSource
 	): TimelineRequest | undefined;
 
 	setUri(uri: URI): void;

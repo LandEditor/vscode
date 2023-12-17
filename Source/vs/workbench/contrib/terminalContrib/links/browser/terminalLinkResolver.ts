@@ -28,10 +28,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 	// both local and remote terminals are present
 	private readonly _resolvedLinkCaches: Map<string, LinkCache> = new Map();
 
-	constructor(
-		@IFileService private readonly _fileService: IFileService,
-	) {
-	}
+	constructor(@IFileService private readonly _fileService: IFileService) {}
 
 	async resolveLink(
 		processManager: Pick<
@@ -39,17 +36,17 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 			"initialCwd" | "os" | "remoteAuthority" | "userHome"
 		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
 		link: string,
-		uri?: URI,
+		uri?: URI
 	): Promise<ResolvedLink> {
 		// Get the link cache
 		let cache = this._resolvedLinkCaches.get(
-			processManager.remoteAuthority ?? "",
+			processManager.remoteAuthority ?? ""
 		);
 		if (!cache) {
 			cache = new LinkCache();
 			this._resolvedLinkCaches.set(
 				processManager.remoteAuthority ?? "",
-				cache,
+				cache
 			);
 		}
 
@@ -93,7 +90,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		) {
 			linkUrl = await processManager.backend.getWslPath(
 				linkUrl,
-				"unix-to-win",
+				"unix-to-win"
 			);
 		}
 		// Skip preprocessing if it looks like a special Windows -> WSL link
@@ -109,7 +106,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 				linkUrl,
 				processManager.initialCwd,
 				processManager.os,
-				processManager.userHome,
+				processManager.userHome
 			);
 			if (!preprocessedLink) {
 				cache.set(link, null);
@@ -151,7 +148,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 		link: string,
 		initialCwd: string,
 		os: OperatingSystem | undefined,
-		userHome: string | undefined,
+		userHome: string | undefined
 	): string | null {
 		const osPath = this._getOsPath(os);
 		if (link.charAt(0) === "~") {
@@ -214,7 +211,7 @@ class LinkCache {
 		}
 		this._cacheTilTimeout = mainWindow.setTimeout(
 			() => this._cache.clear(),
-			LinkCacheConstants.TTL,
+			LinkCacheConstants.TTL
 		);
 		this._cache.set(this._getKey(link), value);
 	}

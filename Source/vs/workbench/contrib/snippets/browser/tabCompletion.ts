@@ -42,12 +42,12 @@ export class TabCompletionController implements IEditorContribution {
 
 	static readonly ContextKey = new RawContextKey<boolean>(
 		"hasSnippetCompletions",
-		undefined,
+		undefined
 	);
 
 	static get(editor: ICodeEditor): TabCompletionController | null {
 		return editor.getContribution<TabCompletionController>(
-			TabCompletionController.ID,
+			TabCompletionController.ID
 		);
 	}
 
@@ -62,12 +62,15 @@ export class TabCompletionController implements IEditorContribution {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@ISnippetsService private readonly _snippetService: ISnippetsService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IContextKeyService contextKeyService: IContextKeyService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IContextKeyService contextKeyService: IContextKeyService
 	) {
-		this._hasSnippets = TabCompletionController.ContextKey.bindTo(contextKeyService);
-		this._configListener = this._editor.onDidChangeConfiguration(e => {
+		this._hasSnippets =
+			TabCompletionController.ContextKey.bindTo(contextKeyService);
+		this._configListener = this._editor.onDidChangeConfiguration((e) => {
 			if (e.hasChanged(EditorOption.tabCompletion)) {
 				this._update();
 			}
@@ -91,7 +94,7 @@ export class TabCompletionController implements IEditorContribution {
 			} else {
 				this._selectionListener =
 					this._editor.onDidChangeCursorSelection((e) =>
-						this._updateSnippets(),
+						this._updateSnippets()
 					);
 				if (this._editor.getModel()) {
 					this._updateSnippets();
@@ -115,7 +118,7 @@ export class TabCompletionController implements IEditorContribution {
 		model.tokenization.tokenizeIfCheap(selection.positionLineNumber);
 		const id = model.getLanguageIdAtPosition(
 			selection.positionLineNumber,
-			selection.positionColumn,
+			selection.positionColumn
 		);
 		const snippets = this._snippetService.getSnippetsSync(id);
 
@@ -129,7 +132,7 @@ export class TabCompletionController implements IEditorContribution {
 			// empty selection -> real text (no whitespace) left of cursor
 			const prefix = getNonWhitespacePrefix(
 				model,
-				selection.getPosition(),
+				selection.getPosition()
 			);
 			if (prefix) {
 				for (const snippet of snippets) {
@@ -175,7 +178,7 @@ export class TabCompletionController implements IEditorContribution {
 					const suggestions = this._activeSnippets.map((snippet) => {
 						const range = Range.fromPositions(
 							position.delta(0, -snippet.prefix.length),
-							position,
+							position
 						);
 						return new SnippetCompletion(snippet, range);
 					});
@@ -189,7 +192,7 @@ export class TabCompletionController implements IEditorContribution {
 						pattern: model.uri.fsPath,
 						scheme: model.uri.scheme,
 					},
-					this._completionProvider,
+					this._completionProvider
 				);
 		}
 	}
@@ -210,7 +213,7 @@ export class TabCompletionController implements IEditorContribution {
 			if (snippet.needsClipboard) {
 				const state = new EditorState(
 					this._editor,
-					CodeEditorStateFlag.Value | CodeEditorStateFlag.Position,
+					CodeEditorStateFlag.Value | CodeEditorStateFlag.Position
 				);
 				clipboardText = await this._clipboardService.readText();
 				if (!state.validate(this._editor)) {
@@ -234,12 +237,12 @@ export class TabCompletionController implements IEditorContribution {
 registerEditorContribution(
 	TabCompletionController.ID,
 	TabCompletionController,
-	EditorContributionInstantiation.Eager,
+	EditorContributionInstantiation.Eager
 ); // eager because it needs to define a context key
 
 const TabCompletionCommand =
 	EditorCommand.bindToContribution<TabCompletionController>(
-		TabCompletionController.get,
+		TabCompletionController.get
 	);
 
 registerEditorCommand(
@@ -252,9 +255,9 @@ registerEditorCommand(
 			kbExpr: ContextKeyExpr.and(
 				EditorContextKeys.editorTextFocus,
 				EditorContextKeys.tabDoesNotMoveFocus,
-				SnippetController2.InSnippetMode.toNegated(),
+				SnippetController2.InSnippetMode.toNegated()
 			),
 			primary: KeyCode.Tab,
 		},
-	}),
+	})
 );

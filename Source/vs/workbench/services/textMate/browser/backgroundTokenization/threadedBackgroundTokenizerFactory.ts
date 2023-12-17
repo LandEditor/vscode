@@ -61,18 +61,28 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	private _grammarDefinitions: IValidGrammarDefinition[] = [];
 
 	constructor(
-		private readonly _reportTokenizationTime: (timeMs: number, languageId: string, sourceExtensionId: string | undefined, lineLength: number, isRandomSample: boolean) => void,
+		private readonly _reportTokenizationTime: (
+			timeMs: number,
+			languageId: string,
+			sourceExtensionId: string | undefined,
+			lineLength: number,
+			isRandomSample: boolean
+		) => void,
 		private readonly _shouldTokenizeAsync: () => boolean,
-		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
 		@IModelService private readonly _modelService: IModelService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-	) {
-	}
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@ITelemetryService private readonly _telemetryService: ITelemetryService
+	) {}
 
 	public dispose(): void {
 		this._disposeWorker();
@@ -82,7 +92,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	public createBackgroundTokenizer(
 		textModel: ITextModel,
 		tokenStore: IBackgroundTokenizationStore,
-		maxTokenizationLineLength: IObservable<number>,
+		maxTokenizationLineLength: IObservable<number>
 	): IBackgroundTokenizer | undefined {
 		// fallback to default sync background tokenizer
 		if (!this._shouldTokenizeAsync() || textModel.isTooLargeForSyncing()) {
@@ -111,24 +121,24 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 								this._languageService.languageIdCodec,
 								tokenStore,
 								this._configurationService,
-								maxTokenizationLineLength,
+								maxTokenizationLineLength
 							);
 						controllerContainer.controller = controller;
 						this._workerTokenizerControllers.set(
 							controller.controllerId,
-							controller,
+							controller
 						);
 						return toDisposable(() => {
 							controllerContainer.controller = undefined;
 							this._workerTokenizerControllers.delete(
-								controller.controllerId,
+								controller.controllerId
 							);
 							controller.dispose();
 						});
-					}),
+					})
 				);
 				return controllerContainer;
-			},
+			}
 		);
 
 		return {
@@ -146,7 +156,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				) {
 					container.controller.requestTokens(
 						startLineNumber,
-						endLineNumberExclusive,
+						endLineNumberExclusive
 					);
 				}
 			},
@@ -156,7 +166,8 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				) {
 					return;
 				}
-				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens = true;
+				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens =
+					true;
 
 				this._notificationService.error({
 					message:
@@ -177,7 +188,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	}
 
 	public setGrammarDefinitions(
-		grammarDefinitions: IValidGrammarDefinition[],
+		grammarDefinitions: IValidGrammarDefinition[]
 	): void {
 		this._grammarDefinitions = grammarDefinitions;
 		this._disposeWorker();
@@ -193,7 +204,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 		) {
 			this._workerProxy.acceptTheme(
 				this._currentTheme,
-				this._currentTokenColorMap,
+				this._currentTokenColorMap
 			);
 		}
 	}
@@ -235,14 +246,14 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 			readFile: async (_resource: UriComponents): Promise<string> => {
 				const resource = URI.revive(_resource);
 				return this._extensionResourceLoaderService.readExtensionResource(
-					resource,
+					resource
 				);
 			},
 			setTokensAndStates: async (
 				controllerId: number,
 				versionId: number,
 				tokens: Uint8Array,
-				lineEndStateDeltas: StateDeltas[],
+				lineEndStateDeltas: StateDeltas[]
 			): Promise<void> => {
 				const controller =
 					this._workerTokenizerControllers.get(controllerId);
@@ -254,7 +265,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 						controllerId,
 						versionId,
 						tokens,
-						lineEndStateDeltas,
+						lineEndStateDeltas
 					);
 				}
 			},
@@ -263,14 +274,14 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				languageId: string,
 				sourceExtensionId: string | undefined,
 				lineLength: number,
-				isRandomSample: boolean,
+				isRandomSample: boolean
 			): void => {
 				this._reportTokenizationTime(
 					timeMs,
 					languageId,
 					sourceExtensionId,
 					lineLength,
-					isRandomSample,
+					isRandomSample
 				);
 			},
 		};
@@ -284,7 +295,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 					moduleId:
 						"vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker",
 					host,
-				},
+				}
 			));
 		const proxy = await worker.getProxy();
 
@@ -296,7 +307,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 		if (this._currentTheme && this._currentTokenColorMap) {
 			this._workerProxy.acceptTheme(
 				this._currentTheme,
-				this._currentTokenColorMap,
+				this._currentTokenColorMap
 			);
 		}
 		return proxy;
@@ -319,7 +330,7 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 
 function keepAliveWhenAttached(
 	textModel: ITextModel,
-	factory: () => IDisposable,
+	factory: () => IDisposable
 ): IDisposable {
 	const disposableStore = new DisposableStore();
 	const subStore = disposableStore.add(new DisposableStore());
@@ -336,7 +347,7 @@ function keepAliveWhenAttached(
 	disposableStore.add(
 		textModel.onDidChangeAttached(() => {
 			checkAttached();
-		}),
+		})
 	);
 	return disposableStore;
 }

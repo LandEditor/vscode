@@ -24,7 +24,7 @@ export interface IExtensionRecommendationReason {
 
 export const IExtensionRecommendationsService =
 	createDecorator<IExtensionRecommendationsService>(
-		"extensionRecommendationsService",
+		"extensionRecommendationsService"
 	);
 
 export interface IExtensionRecommendationsService {
@@ -37,7 +37,7 @@ export interface IExtensionRecommendationsService {
 	getOtherRecommendations(): Promise<string[]>;
 	getFileBasedRecommendations(): string[];
 	getExeBasedRecommendations(
-		exe?: string,
+		exe?: string
 	): Promise<{ important: string[]; others: string[] }>;
 	getConfigBasedRecommendations(): Promise<{
 		important: string[];
@@ -56,7 +56,7 @@ export type IgnoredRecommendationChangeNotification = {
 
 export const IExtensionIgnoredRecommendationsService =
 	createDecorator<IExtensionIgnoredRecommendationsService>(
-		"IExtensionIgnoredRecommendationsService",
+		"IExtensionIgnoredRecommendationsService"
 	);
 
 export interface IExtensionIgnoredRecommendationsService {
@@ -69,6 +69,6 @@ export interface IExtensionIgnoredRecommendationsService {
 	readonly globalIgnoredRecommendations: string[];
 	toggleGlobalIgnoredRecommendation(
 		extensionId: string,
-		ignore: boolean,
+		ignore: boolean
 	): void;
 }

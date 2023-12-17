@@ -17,7 +17,7 @@ export default class MergeDecorator implements vscode.Disposable {
 
 	constructor(
 		private context: vscode.ExtensionContext,
-		trackerService: interfaces.IDocumentMergeConflictTrackerService,
+		trackerService: interfaces.IDocumentMergeConflictTrackerService
 	) {
 		this.tracker = trackerService.createTracker("decorator");
 	}
@@ -28,7 +28,7 @@ export default class MergeDecorator implements vscode.Disposable {
 
 		// Check if we already have a set of active windows, attempt to track these.
 		vscode.window.visibleTextEditors.forEach((e) =>
-			this.applyDecorations(e),
+			this.applyDecorations(e)
 		);
 
 		vscode.workspace.onDidOpenTextDocument(
@@ -36,7 +36,7 @@ export default class MergeDecorator implements vscode.Disposable {
 				this.applyDecorationsFromEvent(event);
 			},
 			null,
-			this.context.subscriptions,
+			this.context.subscriptions
 		);
 
 		vscode.workspace.onDidChangeTextDocument(
@@ -44,7 +44,7 @@ export default class MergeDecorator implements vscode.Disposable {
 				this.applyDecorationsFromEvent(event.document);
 			},
 			null,
-			this.context.subscriptions,
+			this.context.subscriptions
 		);
 
 		vscode.window.onDidChangeVisibleTextEditors(
@@ -53,7 +53,7 @@ export default class MergeDecorator implements vscode.Disposable {
 				e.forEach((e) => this.applyDecorations(e));
 			},
 			null,
-			this.context.subscriptions,
+			this.context.subscriptions
 		);
 	}
 
@@ -69,11 +69,11 @@ export default class MergeDecorator implements vscode.Disposable {
 	}
 
 	private registerDecorationTypes(
-		config: interfaces.IExtensionConfiguration,
+		config: interfaces.IExtensionConfiguration
 	) {
 		// Dispose of existing decorations
 		Object.keys(this.decorations).forEach((k) =>
-			this.decorations[k].dispose(),
+			this.decorations[k].dispose()
 		);
 		this.decorations = {};
 
@@ -89,8 +89,8 @@ export default class MergeDecorator implements vscode.Disposable {
 					this.generateBlockRenderOptions(
 						"merge.currentContentBackground",
 						"editorOverviewRuler.currentContentForeground",
-						config,
-					),
+						config
+					)
 				);
 
 			this.decorations["incoming.content"] =
@@ -98,8 +98,8 @@ export default class MergeDecorator implements vscode.Disposable {
 					this.generateBlockRenderOptions(
 						"merge.incomingContentBackground",
 						"editorOverviewRuler.incomingContentForeground",
-						config,
-					),
+						config
+					)
 				);
 
 			this.decorations["commonAncestors.content"] =
@@ -107,8 +107,8 @@ export default class MergeDecorator implements vscode.Disposable {
 					this.generateBlockRenderOptions(
 						"merge.commonContentBackground",
 						"editorOverviewRuler.commonContentForeground",
-						config,
-					),
+						config
+					)
 				);
 		}
 
@@ -117,7 +117,7 @@ export default class MergeDecorator implements vscode.Disposable {
 				vscode.window.createTextEditorDecorationType({
 					isWholeLine: this.decorationUsesWholeLine,
 					backgroundColor: new vscode.ThemeColor(
-						"merge.currentHeaderBackground",
+						"merge.currentHeaderBackground"
 					),
 					color: new vscode.ThemeColor("editor.foreground"),
 					outlineStyle: "solid",
@@ -133,7 +133,7 @@ export default class MergeDecorator implements vscode.Disposable {
 				vscode.window.createTextEditorDecorationType({
 					isWholeLine: this.decorationUsesWholeLine,
 					backgroundColor: new vscode.ThemeColor(
-						"merge.commonHeaderBackground",
+						"merge.commonHeaderBackground"
 					),
 					color: new vscode.ThemeColor("editor.foreground"),
 					outlineStyle: "solid",
@@ -153,7 +153,7 @@ export default class MergeDecorator implements vscode.Disposable {
 			this.decorations["incoming.header"] =
 				vscode.window.createTextEditorDecorationType({
 					backgroundColor: new vscode.ThemeColor(
-						"merge.incomingHeaderBackground",
+						"merge.incomingHeaderBackground"
 					),
 					color: new vscode.ThemeColor("editor.foreground"),
 					outlineStyle: "solid",
@@ -180,20 +180,20 @@ export default class MergeDecorator implements vscode.Disposable {
 	private generateBlockRenderOptions(
 		backgroundColor: string,
 		overviewRulerColor: string,
-		config: interfaces.IExtensionConfiguration,
+		config: interfaces.IExtensionConfiguration
 	): vscode.DecorationRenderOptions {
 		const renderOptions: vscode.DecorationRenderOptions = {};
 
 		if (config.enableDecorations) {
 			renderOptions.backgroundColor = new vscode.ThemeColor(
-				backgroundColor,
+				backgroundColor
 			);
 			renderOptions.isWholeLine = this.decorationUsesWholeLine;
 		}
 
 		if (config.enableEditorOverview) {
 			renderOptions.overviewRulerColor = new vscode.ThemeColor(
-				overviewRulerColor,
+				overviewRulerColor
 			);
 			renderOptions.overviewRulerLane = vscode.OverviewRulerLane.Full;
 		}
@@ -255,13 +255,13 @@ export default class MergeDecorator implements vscode.Disposable {
 				if (!conflict.current.decoratorContent.isEmpty) {
 					pushDecoration(
 						"current.content",
-						conflict.current.decoratorContent,
+						conflict.current.decoratorContent
 					);
 				}
 				if (!conflict.incoming.decoratorContent.isEmpty) {
 					pushDecoration(
 						"incoming.content",
-						conflict.incoming.decoratorContent,
+						conflict.incoming.decoratorContent
 					);
 				}
 
@@ -269,7 +269,7 @@ export default class MergeDecorator implements vscode.Disposable {
 					if (!commonAncestorsRegion.decoratorContent.isEmpty) {
 						pushDecoration(
 							"commonAncestors.content",
-							commonAncestorsRegion.decoratorContent,
+							commonAncestorsRegion.decoratorContent
 						);
 					}
 				});
@@ -283,9 +283,9 @@ export default class MergeDecorator implements vscode.Disposable {
 						(commonAncestorsRegion) => {
 							pushDecoration(
 								"commonAncestors.header",
-								commonAncestorsRegion.header,
+								commonAncestorsRegion.header
 							);
-						},
+						}
 					);
 				}
 			});
@@ -298,7 +298,7 @@ export default class MergeDecorator implements vscode.Disposable {
 				if (decorationType) {
 					editor.setDecorations(
 						decorationType,
-						matchDecorations[decorationKey],
+						matchDecorations[decorationKey]
 					);
 				}
 			});

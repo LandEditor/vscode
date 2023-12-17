@@ -71,18 +71,23 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 	private globalStateUserData: IUserData | null = null;
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@ISecretStorageService private readonly secretStorageService: ISecretStorageService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@ISecretStorageService
+		private readonly secretStorageService: ISecretStorageService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IProductService private readonly productService: IProductService,
 		@IRequestService private readonly requestService: IRequestService,
 		@ILogService private readonly logService: ILogService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService
 	) {
-		this.createUserDataSyncStoreClient().then(userDataSyncStoreClient => {
+		this.createUserDataSyncStoreClient().then((userDataSyncStoreClient) => {
 			if (!userDataSyncStoreClient) {
 				this.initializationFinished.open();
 			}
@@ -102,21 +107,21 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 				try {
 					if (!isWeb) {
 						this.logService.trace(
-							`Skipping initializing user data in desktop`,
+							`Skipping initializing user data in desktop`
 						);
 						return;
 					}
 
 					if (!this.storageService.isNew(StorageScope.APPLICATION)) {
 						this.logService.trace(
-							`Skipping initializing user data as application was opened before`,
+							`Skipping initializing user data as application was opened before`
 						);
 						return;
 					}
 
 					if (!this.storageService.isNew(StorageScope.WORKSPACE)) {
 						this.logService.trace(
-							`Skipping initializing user data as workspace was opened before`,
+							`Skipping initializing user data as workspace was opened before`
 						);
 						return;
 					}
@@ -128,7 +133,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 							.enabled
 					) {
 						this.logService.trace(
-							`Skipping initializing user data as settings sync is disabled`,
+							`Skipping initializing user data as settings sync is disabled`
 						);
 						return;
 					}
@@ -138,20 +143,20 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 						authenticationSession =
 							await getCurrentAuthenticationSessionInfo(
 								this.secretStorageService,
-								this.productService,
+								this.productService
 							);
 					} catch (error) {
 						this.logService.error(error);
 					}
 					if (!authenticationSession) {
 						this.logService.trace(
-							`Skipping initializing user data as authentication session is not set`,
+							`Skipping initializing user data as authentication session is not set`
 						);
 						return;
 					}
 
 					await this.initializeUserDataSyncStore(
-						authenticationSession,
+						authenticationSession
 					);
 
 					const userDataSyncStore =
@@ -159,7 +164,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 							.userDataSyncStore;
 					if (!userDataSyncStore) {
 						this.logService.trace(
-							`Skipping initializing user data as sync service is not provided`,
+							`Skipping initializing user data as sync service is not provided`
 						);
 						return;
 					}
@@ -171,11 +176,11 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 						this.logService,
 						this.environmentService,
 						this.fileService,
-						this.storageService,
+						this.storageService
 					);
 					userDataSyncStoreClient.setAuthToken(
 						authenticationSession.accessToken,
-						authenticationSession.providerId,
+						authenticationSession.providerId
 					);
 
 					const manifest =
@@ -183,13 +188,13 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					if (manifest === null) {
 						userDataSyncStoreClient.dispose();
 						this.logService.trace(
-							`Skipping initializing user data as there is no data`,
+							`Skipping initializing user data as there is no data`
 						);
 						return;
 					}
 
 					this.logService.info(
-						`Using settings sync service ${userDataSyncStore.url.toString()} for initialization`,
+						`Using settings sync service ${userDataSyncStore.url.toString()} for initialization`
 					);
 					return userDataSyncStoreClient;
 				} catch (error) {
@@ -203,7 +208,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 	}
 
 	private async initializeUserDataSyncStore(
-		authenticationSession: AuthenticationSessionInfo,
+		authenticationSession: AuthenticationSessionInfo
 	): Promise<void> {
 		const userDataSyncStore =
 			this.userDataSyncStoreManagementService.userDataSyncStore;
@@ -221,19 +226,19 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					this.logService,
 					this.environmentService,
 					this.fileService,
-					this.storageService,
-				),
+					this.storageService
+				)
 			);
 			userDataSyncStoreClient.setAuthToken(
 				authenticationSession.accessToken,
-				authenticationSession.providerId,
+				authenticationSession.providerId
 			);
 
 			// Cache global state data for global state initialization
 			this.globalStateUserData =
 				await userDataSyncStoreClient.readResource(
 					SyncResource.GlobalState,
-					null,
+					null
 				);
 
 			if (this.globalStateUserData) {
@@ -243,11 +248,11 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 						this.storageService,
 						this.environmentService,
 						this.fileService,
-						this.logService,
+						this.logService
 					).getSyncStoreType(this.globalStateUserData);
 				if (userDataSyncStoreType) {
 					await this.userDataSyncStoreManagementService.switch(
-						userDataSyncStoreType,
+						userDataSyncStoreType
 					);
 
 					// Unset cached global state data if urls are changed
@@ -255,7 +260,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 						!isEqual(
 							userDataSyncStore.url,
 							this.userDataSyncStoreManagementService
-								.userDataSyncStore?.url,
+								.userDataSyncStore?.url
 						)
 					) {
 						this.logService.info("Switched settings sync store");
@@ -274,7 +279,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 
 	async requiresInitialization(): Promise<boolean> {
 		this.logService.trace(
-			`UserDataInitializationService#requiresInitialization`,
+			`UserDataInitializationService#requiresInitialization`
 		);
 		const userDataSyncStoreClient =
 			await this.createUserDataSyncStoreClient();
@@ -283,7 +288,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 
 	async initializeRequiredResources(): Promise<void> {
 		this.logService.trace(
-			`UserDataInitializationService#initializeRequiredResources`,
+			`UserDataInitializationService#initializeRequiredResources`
 		);
 		return this.initialize([
 			SyncResource.Settings,
@@ -292,11 +297,11 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 	}
 
 	async initializeOtherResources(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		try {
 			this.logService.trace(
-				`UserDataInitializationService#initializeOtherResources`,
+				`UserDataInitializationService#initializeOtherResources`
 			);
 			await Promise.allSettled([
 				this.initialize([
@@ -312,7 +317,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 	}
 
 	private async initializeExtensions(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		try {
 			await Promise.all([
@@ -326,22 +331,22 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 
 	private initializeInstalledExtensionsPromise: Promise<void> | undefined;
 	async initializeInstalledExtensions(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		if (!this.initializeInstalledExtensionsPromise) {
 			this.initializeInstalledExtensionsPromise = (async () => {
 				this.logService.trace(
-					`UserDataInitializationService#initializeInstalledExtensions`,
+					`UserDataInitializationService#initializeInstalledExtensions`
 				);
 				const extensionsPreviewInitializer =
 					await this.getExtensionsPreviewInitializer(
-						instantiationService,
+						instantiationService
 					);
 				if (extensionsPreviewInitializer) {
 					await instantiationService
 						.createInstance(
 							InstalledExtensionsInitializer,
-							extensionsPreviewInitializer,
+							extensionsPreviewInitializer
 						)
 						.initialize();
 				}
@@ -352,22 +357,22 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 
 	private initializeNewExtensionsPromise: Promise<void> | undefined;
 	private async initializeNewExtensions(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<void> {
 		if (!this.initializeNewExtensionsPromise) {
 			this.initializeNewExtensionsPromise = (async () => {
 				this.logService.trace(
-					`UserDataInitializationService#initializeNewExtensions`,
+					`UserDataInitializationService#initializeNewExtensions`
 				);
 				const extensionsPreviewInitializer =
 					await this.getExtensionsPreviewInitializer(
-						instantiationService,
+						instantiationService
 					);
 				if (extensionsPreviewInitializer) {
 					await instantiationService
 						.createInstance(
 							NewExtensionsInitializer,
-							extensionsPreviewInitializer,
+							extensionsPreviewInitializer
 						)
 						.initialize();
 				}
@@ -380,7 +385,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 		| Promise<ExtensionsPreviewInitializer | null>
 		| undefined;
 	private getExtensionsPreviewInitializer(
-		instantiationService: IInstantiationService,
+		instantiationService: IInstantiationService
 	): Promise<ExtensionsPreviewInitializer | null> {
 		if (!this.extensionsPreviewInitializerPromise) {
 			this.extensionsPreviewInitializerPromise = (async () => {
@@ -391,11 +396,11 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 				}
 				const userData = await userDataSyncStoreClient.readResource(
 					SyncResource.Extensions,
-					null,
+					null
 				);
 				return instantiationService.createInstance(
 					ExtensionsPreviewInitializer,
-					userData,
+					userData
 				);
 			})();
 		}
@@ -415,14 +420,14 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					if (this.initialized.includes(syncResource)) {
 						this.logService.info(
 							`${getSyncAreaLabel(
-								syncResource,
-							)} initialized already.`,
+								syncResource
+							)} initialized already.`
 						);
 						return;
 					}
 					this.initialized.push(syncResource);
 					this.logService.trace(
-						`Initializing ${getSyncAreaLabel(syncResource)}`,
+						`Initializing ${getSyncAreaLabel(syncResource)}`
 					);
 					const initializer =
 						this.createSyncResourceInitializer(syncResource);
@@ -430,26 +435,26 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 						syncResource,
 						syncResource === SyncResource.GlobalState
 							? this.globalStateUserData
-							: null,
+							: null
 					);
 					await initializer.initialize(userData);
 					this.logService.info(
-						`Initialized ${getSyncAreaLabel(syncResource)}`,
+						`Initialized ${getSyncAreaLabel(syncResource)}`
 					);
 				} catch (error) {
 					this.logService.info(
 						`Error while initializing ${getSyncAreaLabel(
-							syncResource,
-						)}`,
+							syncResource
+						)}`
 					);
 					this.logService.error(error);
 				}
-			}),
+			})
 		);
 	}
 
 	private createSyncResourceInitializer(
-		syncResource: SyncResource,
+		syncResource: SyncResource
 	): IUserDataSyncResourceInitializer {
 		switch (syncResource) {
 			case SyncResource.Settings:
@@ -459,7 +464,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					this.environmentService,
 					this.logService,
 					this.storageService,
-					this.uriIdentityService,
+					this.uriIdentityService
 				);
 			case SyncResource.Keybindings:
 				return new KeybindingsInitializer(
@@ -468,7 +473,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					this.environmentService,
 					this.logService,
 					this.storageService,
-					this.uriIdentityService,
+					this.uriIdentityService
 				);
 			case SyncResource.Tasks:
 				return new TasksInitializer(
@@ -477,7 +482,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					this.environmentService,
 					this.logService,
 					this.storageService,
-					this.uriIdentityService,
+					this.uriIdentityService
 				);
 			case SyncResource.Snippets:
 				return new SnippetsInitializer(
@@ -486,7 +491,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					this.environmentService,
 					this.logService,
 					this.storageService,
-					this.uriIdentityService,
+					this.uriIdentityService
 				);
 			case SyncResource.GlobalState:
 				return new GlobalStateInitializer(
@@ -495,7 +500,7 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 					this.userDataProfilesService,
 					this.environmentService,
 					this.logService,
-					this.uriIdentityService,
+					this.uriIdentityService
 				);
 		}
 		throw new Error(`Cannot create initializer for ${syncResource}`);
@@ -510,14 +515,17 @@ class ExtensionsPreviewInitializer extends AbstractExtensionsInitializer {
 
 	constructor(
 		private readonly extensionsData: IUserData,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
-		@IIgnoredExtensionsManagementService ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
+		@IIgnoredExtensionsManagementService
+		ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,
-		@IUriIdentityService uriIdentityService: IUriIdentityService,
+		@IUriIdentityService uriIdentityService: IUriIdentityService
 	) {
 		super(
 			extensionManagementService,
@@ -527,7 +535,7 @@ class ExtensionsPreviewInitializer extends AbstractExtensionsInitializer {
 			environmentService,
 			logService,
 			storageService,
-			uriIdentityService,
+			uriIdentityService
 		);
 	}
 
@@ -545,12 +553,12 @@ class ExtensionsPreviewInitializer extends AbstractExtensionsInitializer {
 	}
 
 	protected override async doInitialize(
-		remoteUserData: IRemoteUserData,
+		remoteUserData: IRemoteUserData
 	): Promise<void> {
 		const remoteExtensions = await this.parseExtensions(remoteUserData);
 		if (!remoteExtensions) {
 			this.logService.info(
-				"Skipping initializing extensions because remote extensions does not exist.",
+				"Skipping initializing extensions because remote extensions does not exist."
 			);
 			return;
 		}
@@ -558,7 +566,7 @@ class ExtensionsPreviewInitializer extends AbstractExtensionsInitializer {
 			await this.extensionManagementService.getInstalled();
 		this.preview = this.generatePreview(
 			remoteExtensions,
-			installedExtensions,
+			installedExtensions
 		);
 	}
 }
@@ -568,11 +576,13 @@ class InstalledExtensionsInitializer
 {
 	constructor(
 		private readonly extensionsPreviewInitializer: ExtensionsPreviewInitializer,
-		@IGlobalExtensionEnablementService private readonly extensionEnablementService: IGlobalExtensionEnablementService,
-		@IExtensionStorageService private readonly extensionStorageService: IExtensionStorageService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-	) {
-	}
+		@IGlobalExtensionEnablementService
+		private readonly extensionEnablementService: IGlobalExtensionEnablementService,
+		@IExtensionStorageService
+		private readonly extensionStorageService: IExtensionStorageService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService
+	) {}
 
 	async initialize(): Promise<void> {
 		const preview = await this.extensionsPreviewInitializer.getPreview();
@@ -584,24 +594,21 @@ class InstalledExtensionsInitializer
 		for (const installedExtension of preview.installedExtensions) {
 			const syncExtension = preview.remoteExtensions.find(
 				({ identifier }) =>
-					areSameExtensions(
-						identifier,
-						installedExtension.identifier,
-					),
+					areSameExtensions(identifier, installedExtension.identifier)
 			);
 			if (syncExtension?.state) {
 				const extensionState =
 					this.extensionStorageService.getExtensionState(
 						installedExtension,
-						true,
+						true
 					) || {};
 				Object.keys(syncExtension.state).forEach(
-					(key) => (extensionState[key] = syncExtension.state![key]),
+					(key) => (extensionState[key] = syncExtension.state![key])
 				);
 				this.extensionStorageService.setExtensionState(
 					installedExtension,
 					extensionState,
-					true,
+					true
 				);
 			}
 		}
@@ -611,7 +618,7 @@ class InstalledExtensionsInitializer
 			for (const identifier of preview.disabledExtensions) {
 				this.logService.trace(`Disabling extension...`, identifier.id);
 				await this.extensionEnablementService.disableExtension(
-					identifier,
+					identifier
 				);
 				this.logService.info(`Disabling extension`, identifier.id);
 			}
@@ -623,12 +630,15 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 	constructor(
 		private readonly extensionsPreviewInitializer: ExtensionsPreviewInitializer,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionStorageService private readonly extensionStorageService: IExtensionStorageService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-	) {
-	}
+		@IExtensionStorageService
+		private readonly extensionStorageService: IExtensionStorageService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService
+	) {}
 
 	async initialize(): Promise<void> {
 		const preview = await this.extensionsPreviewInitializer.getPreview();
@@ -642,7 +652,7 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 		const galleryExtensions = await this.galleryService.getExtensions(
 			preview.newExtensions,
 			{ targetPlatform, compatible: true },
-			CancellationToken.None,
+			CancellationToken.None
 		);
 		for (const galleryExtension of galleryExtensions) {
 			try {
@@ -650,8 +660,8 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 					({ identifier }) =>
 						areSameExtensions(
 							identifier,
-							galleryExtension.identifier,
-						),
+							galleryExtension.identifier
+						)
 				);
 				if (!extensionToSync) {
 					continue;
@@ -660,37 +670,38 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 					this.extensionStorageService.setExtensionState(
 						galleryExtension,
 						extensionToSync.state,
-						true,
+						true
 					);
 				}
 				this.logService.trace(
 					`Installing extension...`,
-					galleryExtension.identifier.id,
+					galleryExtension.identifier.id
 				);
 				const local =
 					await this.extensionManagementService.installFromGallery(
 						galleryExtension,
 						{
-							isMachineScoped: false /* set isMachineScoped to prevent install and sync dialog in web */,
+							isMachineScoped:
+								false /* set isMachineScoped to prevent install and sync dialog in web */,
 							donotIncludePackAndDependencies: true,
 							installGivenVersion: !!extensionToSync.version,
 							installPreReleaseVersion:
 								extensionToSync.preRelease,
-						},
+						}
 					);
 				if (
 					!preview.disabledExtensions.some((identifier) =>
 						areSameExtensions(
 							identifier,
-							galleryExtension.identifier,
-						),
+							galleryExtension.identifier
+						)
 					)
 				) {
 					newlyEnabledExtensions.push(local);
 				}
 				this.logService.info(
 					`Installed extension.`,
-					galleryExtension.identifier.id,
+					galleryExtension.identifier.id
 				);
 			} catch (error) {
 				this.logService.error(error);
@@ -698,7 +709,7 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 		}
 
 		const canEnabledExtensions = newlyEnabledExtensions.filter((e) =>
-			this.extensionService.canAddExtension(toExtensionDescription(e)),
+			this.extensionService.canAddExtension(toExtensionDescription(e))
 		);
 		if (!(await this.areExtensionsRunning(canEnabledExtensions))) {
 			await new Promise<void>((c, e) => {
@@ -707,7 +718,7 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 						try {
 							if (
 								await this.areExtensionsRunning(
-									canEnabledExtensions,
+									canEnabledExtensions
 								)
 							) {
 								disposable.dispose();
@@ -716,21 +727,21 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 						} catch (error) {
 							e(error);
 						}
-					},
+					}
 				);
 			});
 		}
 	}
 
 	private async areExtensionsRunning(
-		extensions: ILocalExtension[],
+		extensions: ILocalExtension[]
 	): Promise<boolean> {
 		await this.extensionService.whenInstalledExtensionsRegistered();
 		const runningExtensions = this.extensionService.extensions;
 		return extensions.every((e) =>
 			runningExtensions.some((r) =>
-				areSameExtensions({ id: r.identifier.value }, e.identifier),
-			),
+				areSameExtensions({ id: r.identifier.value }, e.identifier)
+			)
 		);
 	}
 }

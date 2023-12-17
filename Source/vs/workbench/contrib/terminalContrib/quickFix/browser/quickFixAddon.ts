@@ -121,35 +121,58 @@ export class TerminalQuickFixAddon
 	constructor(
 		private readonly _aliases: string[][] | undefined,
 		private readonly _capabilities: ITerminalCapabilityStore,
-		@ITerminalQuickFixService private readonly _quickFixService: ITerminalQuickFixService,
+		@ITerminalQuickFixService
+		private readonly _quickFixService: ITerminalQuickFixService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IAudioCueService private readonly _audioCueService: IAudioCueService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IActionWidgetService private readonly _actionWidgetService: IActionWidgetService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IActionWidgetService
+		private readonly _actionWidgetService: IActionWidgetService,
 		@ILabelService private readonly _labelService: ILabelService
 	) {
 		super();
-		const commandDetectionCapability = this._capabilities.get(TerminalCapability.CommandDetection);
+		const commandDetectionCapability = this._capabilities.get(
+			TerminalCapability.CommandDetection
+		);
 		if (commandDetectionCapability) {
 			this._registerCommandHandlers();
 		} else {
-			this._register(this._capabilities.onDidAddCapabilityType(c => {
-				if (c === TerminalCapability.CommandDetection) {
-					this._registerCommandHandlers();
-				}
-			}));
+			this._register(
+				this._capabilities.onDidAddCapabilityType((c) => {
+					if (c === TerminalCapability.CommandDetection) {
+						this._registerCommandHandlers();
+					}
+				})
+			);
 		}
-		this._register(this._quickFixService.onDidRegisterProvider(result => this.registerCommandFinishedListener(convertToQuickFixOptions(result))));
-		this._quickFixService.extensionQuickFixes.then(quickFixSelectors => {
+		this._register(
+			this._quickFixService.onDidRegisterProvider((result) =>
+				this.registerCommandFinishedListener(
+					convertToQuickFixOptions(result)
+				)
+			)
+		);
+		this._quickFixService.extensionQuickFixes.then((quickFixSelectors) => {
 			for (const selector of quickFixSelectors) {
 				this.registerCommandSelector(selector);
 			}
 		});
-		this._register(this._quickFixService.onDidRegisterCommandSelector(selector => this.registerCommandSelector(selector)));
-		this._register(this._quickFixService.onDidUnregisterProvider(id => this._commandListeners.delete(id)));
+		this._register(
+			this._quickFixService.onDidRegisterCommandSelector((selector) =>
+				this.registerCommandSelector(selector)
+			)
+		);
+		this._register(
+			this._quickFixService.onDidUnregisterProvider((id) =>
+				this._commandListeners.delete(id)
+			)
+		);
 	}
 
 	activate(terminal: Terminal): void {
@@ -164,7 +187,7 @@ export class TerminalQuickFixAddon
 		// TODO: What's documentation do? Need a vscode command?
 		const actions = this._currentRenderContext.quickFixes.map(
 			(f) =>
-				new TerminalQuickFixItem(f, f.type, f.source, f.label, f.kind),
+				new TerminalQuickFixItem(f, f.type, f.source, f.label, f.kind)
 		);
 		const documentation = this._currentRenderContext.quickFixes.map((f) => {
 			return { id: f.source, title: f.label, tooltip: f.source };
@@ -195,7 +218,7 @@ export class TerminalQuickFixAddon
 			toActionWidgetItems(actionSet.validActions, true),
 			delegate,
 			this._currentRenderContext.anchor,
-			this._currentRenderContext.parentElement,
+			this._currentRenderContext.parentElement
 		);
 	}
 
@@ -220,7 +243,7 @@ export class TerminalQuickFixAddon
 	registerCommandFinishedListener(
 		options:
 			| ITerminalQuickFixOptions
-			| ITerminalQuickFixResolvedExtensionOptions,
+			| ITerminalQuickFixResolvedExtensionOptions
 	): void {
 		const matcherKey = options.commandLineMatcher.toString();
 		let currentOptions = this._commandListeners.get(matcherKey) || [];
@@ -233,7 +256,7 @@ export class TerminalQuickFixAddon
 	private _registerCommandHandlers(): void {
 		const terminal = this._terminal;
 		const commandDetection = this._capabilities.get(
-			TerminalCapability.CommandDetection,
+			TerminalCapability.CommandDetection
 		);
 		if (!terminal || !commandDetection) {
 			return;
@@ -241,8 +264,8 @@ export class TerminalQuickFixAddon
 		this._register(
 			commandDetection.onCommandFinished(
 				async (command) =>
-					await this._resolveQuickFixes(command, this._aliases),
-			),
+					await this._resolveQuickFixes(command, this._aliases)
+			)
 		);
 	}
 
@@ -252,7 +275,7 @@ export class TerminalQuickFixAddon
 	 */
 	private async _resolveQuickFixes(
 		command: ITerminalCommand,
-		aliases?: string[][],
+		aliases?: string[][]
 	): Promise<void> {
 		const terminal = this._terminal;
 		if (!terminal || command.wasReplayed) {
@@ -264,14 +287,14 @@ export class TerminalQuickFixAddon
 
 		const resolver = async (
 			selector: ITerminalQuickFixOptions,
-			lines?: string[],
+			lines?: string[]
 		) => {
 			if (lines === undefined) {
 				return undefined;
 			}
 			const id = selector.id;
 			await this._extensionService.activateByEvent(
-				`onTerminalQuickFixRequest:${id}`,
+				`onTerminalQuickFixRequest:${id}`
 			);
 			return this._quickFixService.providers
 				.get(id)
@@ -286,7 +309,7 @@ export class TerminalQuickFixAddon
 						kind: selector.kind,
 						id: selector.id,
 					},
-					new CancellationTokenSource().token,
+					new CancellationTokenSource().token
 				);
 		};
 		const result = await getQuickFixesForCommand(
@@ -298,7 +321,7 @@ export class TerminalQuickFixAddon
 			this._openerService,
 			this._labelService,
 			this._onDidRequestRerunCommand,
-			resolver,
+			resolver
 		);
 		if (!result) {
 			return;
@@ -392,8 +415,8 @@ export class TerminalQuickFixAddon
 			}
 			e.classList.add(
 				...ThemeIcon.asClassNameArray(
-					isExplainOnly ? Codicon.sparkle : Codicon.lightBulb,
-				),
+					isExplainOnly ? Codicon.sparkle : Codicon.lightBulb
+				)
 			);
 
 			updateLayout(this._configurationService, e);
@@ -412,8 +435,8 @@ export class TerminalQuickFixAddon
 			};
 			this._register(
 				dom.addDisposableListener(e, dom.EventType.CLICK, () =>
-					this.showMenu(),
-				),
+					this.showMenu()
+				)
 			);
 		});
 		decoration.onDispose(() => (this._currentRenderContext = undefined));
@@ -444,8 +467,8 @@ export async function getQuickFixesForCommand(
 	}>,
 	getResolvedFixes?: (
 		selector: ITerminalQuickFixOptions,
-		lines?: string[],
-	) => Promise<ITerminalQuickFix | ITerminalQuickFix[] | undefined>,
+		lines?: string[]
+	) => Promise<ITerminalQuickFix | ITerminalQuickFix[] | undefined>
 ): Promise<ITerminalAction[] | undefined> {
 	// Prevent duplicates by tracking added entries
 	const commandQuickFixSet: Set<string> = new Set();
@@ -473,10 +496,10 @@ export async function getQuickFixesForCommand(
 						terminal.buffer.active,
 						terminalCommand,
 						terminal.cols,
-						option.outputMatcher,
+						option.outputMatcher
 					),
 					option,
-					new CancellationTokenSource().token,
+					new CancellationTokenSource().token
 				);
 			} else if (option.type === "unresolved") {
 				if (!getResolvedFixes) {
@@ -489,13 +512,13 @@ export async function getQuickFixesForCommand(
 								terminal.buffer.active,
 								terminalCommand,
 								terminal.cols,
-								option.outputMatcher,
-						  )
-						: undefined,
+								option.outputMatcher
+							)
+						: undefined
 				);
 			} else if (option.type === "internal") {
 				const commandLineMatch = newCommand.match(
-					option.commandLineMatcher,
+					option.commandLineMatcher
 				);
 				if (!commandLineMatch) {
 					continue;
@@ -535,7 +558,7 @@ export async function getQuickFixesForCommand(
 								const label = localize(
 									"quickFix.command",
 									"Run: {0}",
-									fix.terminalCommand,
+									fix.terminalCommand
 								);
 								action = {
 									type: TerminalQuickFixType.TerminalCommand,
@@ -577,7 +600,7 @@ export async function getQuickFixesForCommand(
 								const label = localize(
 									"quickFix.opener",
 									"Open: {0}",
-									uriLabel,
+									uriLabel
 								);
 								action = {
 									source: quickFix.source,
@@ -640,7 +663,7 @@ export async function getQuickFixesForCommand(
 }
 
 function convertToQuickFixOptions(
-	selectorProvider: ITerminalQuickFixProviderSelector,
+	selectorProvider: ITerminalQuickFixProviderSelector
 ): ITerminalQuickFixResolvedExtensionOptions {
 	return {
 		id: selectorProvider.selector.id,
@@ -660,13 +683,13 @@ class TerminalQuickFixItem {
 		readonly type: TerminalQuickFixType,
 		readonly source: string,
 		readonly title: string | undefined,
-		readonly kind: "fix" | "explain" = "fix",
+		readonly kind: "fix" | "explain" = "fix"
 	) {}
 }
 
 function toActionWidgetItems(
 	inputQuickFixes: readonly TerminalQuickFixItem[],
-	showHeaders: boolean,
+	showHeaders: boolean
 ): IActionListItem<TerminalQuickFixItem>[] {
 	const menuItems: IActionListItem<TerminalQuickFixItem>[] = [];
 	menuItems.push({

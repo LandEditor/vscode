@@ -36,15 +36,38 @@ export class MultiRowEditorControl
 		private readonly groupsView: IEditorGroupsView,
 		private readonly groupView: IEditorGroupView,
 		private readonly model: IReadonlyEditorGroupModel,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService
 	) {
 		super();
 
-		const stickyModel = this._register(new StickyEditorGroupModel(this.model));
-		const unstickyModel = this._register(new UnstickyEditorGroupModel(this.model));
+		const stickyModel = this._register(
+			new StickyEditorGroupModel(this.model)
+		);
+		const unstickyModel = this._register(
+			new UnstickyEditorGroupModel(this.model)
+		);
 
-		this.stickyEditorTabsControl = this._register(this.instantiationService.createInstance(MultiEditorTabsControl, this.parent, editorPartsView, this.groupsView, this.groupView, stickyModel));
-		this.unstickyEditorTabsControl = this._register(this.instantiationService.createInstance(MultiEditorTabsControl, this.parent, editorPartsView, this.groupsView, this.groupView, unstickyModel));
+		this.stickyEditorTabsControl = this._register(
+			this.instantiationService.createInstance(
+				MultiEditorTabsControl,
+				this.parent,
+				editorPartsView,
+				this.groupsView,
+				this.groupView,
+				stickyModel
+			)
+		);
+		this.unstickyEditorTabsControl = this._register(
+			this.instantiationService.createInstance(
+				MultiEditorTabsControl,
+				this.parent,
+				editorPartsView,
+				this.groupsView,
+				this.groupView,
+				unstickyModel
+			)
+		);
 
 		this.handlePinnedTabsSeparateRowToolbars();
 	}
@@ -70,10 +93,10 @@ export class MultiRowEditorControl
 
 	openEditor(
 		editor: EditorInput,
-		options: IInternalEditorOpenOptions,
+		options: IInternalEditorOpenOptions
 	): boolean {
 		const [editorTabController, otherTabController] = this.model.isSticky(
-			editor,
+			editor
 		)
 			? [this.stickyEditorTabsControl, this.unstickyEditorTabsControl]
 			: [this.unstickyEditorTabsControl, this.stickyEditorTabsControl];
@@ -140,7 +163,7 @@ export class MultiRowEditorControl
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
-		stickyStateChange: boolean,
+		stickyStateChange: boolean
 	): void {
 		if (stickyStateChange) {
 			// If sticky state changes, move editor between tab bars
@@ -159,14 +182,14 @@ export class MultiRowEditorControl
 					editor,
 					fromIndex,
 					targetIndex,
-					stickyStateChange,
+					stickyStateChange
 				);
 			} else {
 				this.unstickyEditorTabsControl.moveEditor(
 					editor,
 					fromIndex - this.model.stickyCount,
 					targetIndex - this.model.stickyCount,
-					stickyStateChange,
+					stickyStateChange
 				);
 			}
 		}
@@ -205,7 +228,7 @@ export class MultiRowEditorControl
 
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions,
+		newOptions: IEditorPartOptions
 	): void {
 		this.stickyEditorTabsControl.updateOptions(oldOptions, newOptions);
 		this.unstickyEditorTabsControl.updateOptions(oldOptions, newOptions);
@@ -218,16 +241,16 @@ export class MultiRowEditorControl
 			container: dimensions.container,
 			available: new Dimension(
 				dimensions.available.width,
-				dimensions.available.height - stickyDimensions.height,
+				dimensions.available.height - stickyDimensions.height
 			),
 		};
 		const unstickyDimensions = this.unstickyEditorTabsControl.layout(
-			unstickyAvailableDimensions,
+			unstickyAvailableDimensions
 		);
 
 		return new Dimension(
 			dimensions.container.width,
-			stickyDimensions.height + unstickyDimensions.height,
+			stickyDimensions.height + unstickyDimensions.height
 		);
 	}
 

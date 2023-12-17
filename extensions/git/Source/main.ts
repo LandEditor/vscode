@@ -51,7 +51,7 @@ async function createModel(
 	context: ExtensionContext,
 	logger: LogOutputChannel,
 	telemetryReporter: TelemetryReporter,
-	disposables: Disposable[],
+	disposables: Disposable[]
 ): Promise<Model> {
 	const pathValue = workspace
 		.getConfiguration("git")
@@ -59,15 +59,15 @@ async function createModel(
 	let pathHints = Array.isArray(pathValue)
 		? pathValue
 		: pathValue
-		  ? [pathValue]
-		  : [];
+			? [pathValue]
+			: [];
 
 	const { isTrusted, workspaceFolders = [] } = workspace;
 	const excludes = isTrusted
 		? []
 		: workspaceFolders.map((f) =>
-				path.normalize(f.uri.fsPath).replace(/[\r\n]+$/, ""),
-		  );
+				path.normalize(f.uri.fsPath).replace(/[\r\n]+$/, "")
+			);
 
 	if (!isTrusted && pathHints.length !== 0) {
 		// Filter out any non-absolute paths
@@ -89,7 +89,7 @@ async function createModel(
 			}
 			return !skip;
 		},
-		logger,
+		logger
 	);
 
 	let ipcServer: IPCServer | undefined = undefined;
@@ -136,7 +136,7 @@ async function createModel(
 		context.globalState,
 		context.workspaceState,
 		logger,
-		telemetryReporter,
+		telemetryReporter
 	);
 	disposables.push(model);
 
@@ -144,7 +144,7 @@ async function createModel(
 		commands.executeCommand(
 			"setContext",
 			"gitOpenRepositoryCount",
-			`${model.repositories.length}`,
+			`${model.repositories.length}`
 		);
 	model.onDidOpenRepository(onRepository, null, disposables);
 	model.onDidCloseRepository(onRepository, null, disposables);
@@ -161,7 +161,7 @@ async function createModel(
 	};
 	git.onOutput.addListener("log", onOutput);
 	disposables.push(
-		toDisposable(() => git.onOutput.removeListener("log", onOutput)),
+		toDisposable(() => git.onOutput.removeListener("log", onOutput))
 	);
 
 	const cc = new CommandCenter(
@@ -169,14 +169,14 @@ async function createModel(
 		model,
 		context.globalState,
 		logger,
-		telemetryReporter,
+		telemetryReporter
 	);
 	disposables.push(
 		cc,
 		new GitFileSystemProvider(model),
 		new GitDecorations(model),
 		new GitTimelineProvider(model, cc),
-		new GitEditSessionIdentityProvider(model),
+		new GitEditSessionIdentityProvider(model)
 	);
 
 	const postCommitCommandsProvider = new GitPostCommitCommandsProvider();
@@ -186,7 +186,7 @@ async function createModel(
 	commands.executeCommand(
 		"setContext",
 		"gitVersion2.35",
-		git.compareGitVersionTo("2.35") >= 0,
+		git.compareGitVersionTo("2.35") >= 0
 	);
 
 	return model;
@@ -201,7 +201,7 @@ async function isGitRepository(folder: WorkspaceFolder): Promise<boolean> {
 
 	try {
 		const dotGitStat = await new Promise<fs.Stats>((c, e) =>
-			fs.stat(dotGit, (err, stat) => (err ? e(err) : c(stat))),
+			fs.stat(dotGit, (err, stat) => (err ? e(err) : c(stat)))
 		);
 		return dotGitStat.isDirectory();
 	} catch (err) {
@@ -223,7 +223,7 @@ async function warnAboutMissingGit(): Promise<void> {
 	}
 
 	const areGitRepositories = await Promise.all(
-		workspace.workspaceFolders.map(isGitRepository),
+		workspace.workspaceFolders.map(isGitRepository)
 	);
 
 	if (areGitRepositories.every((isGitRepository) => !isGitRepository)) {
@@ -234,16 +234,16 @@ async function warnAboutMissingGit(): Promise<void> {
 	const neverShowAgain = l10n.t("Don't Show Again");
 	const choice = await window.showWarningMessage(
 		l10n.t(
-			'Git not found. Install it or configure it using the "git.path" setting.',
+			'Git not found. Install it or configure it using the "git.path" setting.'
 		),
 		download,
-		neverShowAgain,
+		neverShowAgain
 	);
 
 	if (choice === download) {
 		commands.executeCommand(
 			"vscode.open",
-			Uri.parse("https://aka.ms/vscode-download-git"),
+			Uri.parse("https://aka.ms/vscode-download-git")
 		);
 	} else if (choice === neverShowAgain) {
 		await config.update("ignoreMissingGitWarning", true, true);
@@ -251,11 +251,11 @@ async function warnAboutMissingGit(): Promise<void> {
 }
 
 export async function _activate(
-	context: ExtensionContext,
+	context: ExtensionContext
 ): Promise<GitExtensionImpl> {
 	const disposables: Disposable[] = [];
 	context.subscriptions.push(
-		new Disposable(() => Disposable.from(...disposables).dispose()),
+		new Disposable(() => Disposable.from(...disposables).dispose())
 	);
 
 	const logger = window.createOutputChannel("Git", { log: true });
@@ -277,14 +277,14 @@ export async function _activate(
 	if (!enabled) {
 		const onConfigChange = filterEvent(
 			workspace.onDidChangeConfiguration,
-			(e) => e.affectsConfiguration("git"),
+			(e) => e.affectsConfiguration("git")
 		);
 		const onEnabled = filterEvent(
 			onConfigChange,
 			() =>
 				workspace
 					.getConfiguration("git", null)
-					.get<boolean>("enabled") === true,
+					.get<boolean>("enabled") === true
 		);
 		const result = new GitExtensionImpl();
 
@@ -294,8 +294,8 @@ export async function _activate(
 					context,
 					logger,
 					telemetryReporter,
-					disposables,
-				)),
+					disposables
+				))
 		);
 		return result;
 	}
@@ -305,7 +305,7 @@ export async function _activate(
 			context,
 			logger,
 			telemetryReporter,
-			disposables,
+			disposables
 		);
 		return new GitExtensionImpl(model);
 	} catch (err) {
@@ -338,7 +338,7 @@ export function getExtensionContext(): ExtensionContext {
 }
 
 export async function activate(
-	context: ExtensionContext,
+	context: ExtensionContext
 ): Promise<GitExtension> {
 	_context = context;
 
@@ -365,16 +365,16 @@ async function checkGitv1(info: IGit): Promise<void> {
 	const choice = await window.showWarningMessage(
 		l10n.t(
 			'You seem to have git "{0}" installed. Code works best with git >= 2',
-			info.version,
+			info.version
 		),
 		update,
-		neverShowAgain,
+		neverShowAgain
 	);
 
 	if (choice === update) {
 		commands.executeCommand(
 			"vscode.open",
-			Uri.parse("https://aka.ms/vscode-download-git"),
+			Uri.parse("https://aka.ms/vscode-download-git")
 		);
 	} else if (choice === neverShowAgain) {
 		await config.update("ignoreLegacyWarning", true, true);
@@ -399,16 +399,16 @@ async function checkGitWindows(info: IGit): Promise<void> {
 	const choice = await window.showWarningMessage(
 		l10n.t(
 			'There are known issues with the installed Git "{0}". Please update to Git >= 2.27 for the git features to work correctly.',
-			info.version,
+			info.version
 		),
 		update,
-		neverShowAgain,
+		neverShowAgain
 	);
 
 	if (choice === update) {
 		commands.executeCommand(
 			"vscode.open",
-			Uri.parse("https://aka.ms/vscode-download-git"),
+			Uri.parse("https://aka.ms/vscode-download-git")
 		);
 	} else if (choice === neverShowAgain) {
 		await config.update("ignoreWindowsGit27Warning", true, true);

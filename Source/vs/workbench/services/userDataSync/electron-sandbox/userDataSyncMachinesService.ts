@@ -32,7 +32,7 @@ class UserDataSyncMachinesService
 		@ISharedProcessService sharedProcessService: ISharedProcessService
 	) {
 		super();
-		this.channel = sharedProcessService.getChannel('userDataSyncMachines');
+		this.channel = sharedProcessService.getChannel("userDataSyncMachines");
 	}
 
 	getMachines(): Promise<IUserDataSyncMachine[]> {
@@ -59,5 +59,5 @@ class UserDataSyncMachinesService
 registerSingleton(
 	IUserDataSyncMachinesService,
 	UserDataSyncMachinesService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

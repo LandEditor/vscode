@@ -22,7 +22,7 @@ class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
 		document: vscode.TextDocument,
 		position: vscode.Position,
 		options: vscode.ReferenceContext,
-		token: vscode.CancellationToken,
+		token: vscode.CancellationToken
 	): Promise<vscode.Location[]> {
 		const filepath = this.client.toOpenTsFilePath(document);
 		if (!filepath) {
@@ -31,7 +31,7 @@ class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
 
 		const args = typeConverters.Position.toFileLocationRequestArgs(
 			filepath,
-			position,
+			position
 		);
 		const response = await this.client.execute("references", args, token);
 		if (response.type !== "response" || !response.body) {
@@ -53,21 +53,21 @@ class TypeScriptReferenceSupport implements vscode.ReferenceProvider {
 
 export function register(
 	selector: DocumentSelector,
-	client: ITypeScriptServiceClient,
+	client: ITypeScriptServiceClient
 ) {
 	return conditionalRegistration(
 		[
 			requireSomeCapability(
 				client,
 				ClientCapability.EnhancedSyntax,
-				ClientCapability.Semantic,
+				ClientCapability.Semantic
 			),
 		],
 		() => {
 			return vscode.languages.registerReferenceProvider(
 				selector.syntax,
-				new TypeScriptReferenceSupport(client),
+				new TypeScriptReferenceSupport(client)
 			);
-		},
+		}
 	);
 }

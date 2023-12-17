@@ -15,7 +15,7 @@ export interface IEmptyWindowBackupInfo extends IBaseBackupInfo {
 }
 
 export function isEmptyWindowBackupInfo(
-	obj: unknown,
+	obj: unknown
 ): obj is IEmptyWindowBackupInfo {
 	const candidate = obj as IEmptyWindowBackupInfo | undefined;
 
@@ -29,7 +29,7 @@ export interface ISerializedWorkspaceBackupInfo {
 }
 
 export function deserializeWorkspaceInfos(
-	serializedBackupWorkspaces: ISerializedBackupWorkspaces,
+	serializedBackupWorkspaces: ISerializedBackupWorkspaces
 ): IWorkspaceBackupInfo[] {
 	let workspaceBackupInfos: IWorkspaceBackupInfo[] = [];
 	try {
@@ -41,7 +41,7 @@ export function deserializeWorkspaceInfos(
 						configPath: URI.parse(workspace.configURIPath),
 					},
 					remoteAuthority: workspace.remoteAuthority,
-				}),
+				})
 			);
 		}
 	} catch (e) {
@@ -57,7 +57,7 @@ export interface ISerializedFolderBackupInfo {
 }
 
 export function deserializeFolderInfos(
-	serializedBackupWorkspaces: ISerializedBackupWorkspaces,
+	serializedBackupWorkspaces: ISerializedBackupWorkspaces
 ): IFolderBackupInfo[] {
 	let folderBackupInfos: IFolderBackupInfo[] = [];
 	try {
@@ -66,7 +66,7 @@ export function deserializeFolderInfos(
 				(folder) => ({
 					folderUri: URI.parse(folder.folderUri),
 					remoteAuthority: folder.remoteAuthority,
-				}),
+				})
 			);
 		}
 	} catch (e) {

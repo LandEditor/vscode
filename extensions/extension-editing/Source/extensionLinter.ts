@@ -43,7 +43,7 @@ import {
 const product = JSON.parse(
 	fs.readFileSync(path.join(env.appRoot, "product.json"), {
 		encoding: "utf-8",
-	}),
+	})
 );
 const allowedBadgeProviders: string[] = (
 	product.extensionAllowedBadgeProviders || []
@@ -76,23 +76,23 @@ function isTrustedSVGSource(uri: Uri): boolean {
 const httpsRequired = l10n.t("Images must use the HTTPS protocol.");
 const svgsNotValid = l10n.t("SVGs are not a valid image source.");
 const embeddedSvgsNotValid = l10n.t(
-	"Embedded SVGs are not a valid image source.",
+	"Embedded SVGs are not a valid image source."
 );
 const dataUrlsNotValid = l10n.t("Data URLs are not a valid image source.");
 const relativeUrlRequiresHttpsRepository = l10n.t(
-	"Relative image URLs require a repository with HTTPS protocol to be specified in the package.json.",
+	"Relative image URLs require a repository with HTTPS protocol to be specified in the package.json."
 );
 const relativeBadgeUrlRequiresHttpsRepository = l10n.t(
-	"Relative badge URLs require a repository with HTTPS protocol to be specified in this package.json.",
+	"Relative badge URLs require a repository with HTTPS protocol to be specified in this package.json."
 );
 const apiProposalNotListed = l10n.t(
-	"This proposal cannot be used because for this extension the product defines a fixed set of API proposals. You can test your extension but before publishing you MUST reach out to the VS Code team.",
+	"This proposal cannot be used because for this extension the product defines a fixed set of API proposals. You can test your extension but before publishing you MUST reach out to the VS Code team."
 );
 const bumpEngineForImplicitActivationEvents = l10n.t(
-	"This activation event can be removed for extensions targeting engine version ^1.75 as VS Code will generate these automatically from your package.json contribution declarations.",
+	"This activation event can be removed for extensions targeting engine version ^1.75 as VS Code will generate these automatically from your package.json contribution declarations."
 );
 const starActivation = l10n.t(
-	"Using '*' activation is usually a bad idea as it impacts performance.",
+	"Using '*' activation is usually a bad idea as it impacts performance."
 );
 const parsingErrorHeader = l10n.t("Error parsing the when-clause:");
 
@@ -136,20 +136,20 @@ export class ExtensionLinter {
 		this.disposables.push(
 			workspace.onDidOpenTextDocument((document) => this.queue(document)),
 			workspace.onDidChangeTextDocument((event) =>
-				this.queue(event.document),
+				this.queue(event.document)
 			),
 			workspace.onDidCloseTextDocument((document) =>
-				this.clear(document),
+				this.clear(document)
 			),
 			this.fileWatcher.onDidChange((uri) =>
-				this.packageJsonChanged(this.getUriFolder(uri)),
+				this.packageJsonChanged(this.getUriFolder(uri))
 			),
 			this.fileWatcher.onDidCreate((uri) =>
-				this.packageJsonChanged(this.getUriFolder(uri)),
+				this.packageJsonChanged(this.getUriFolder(uri))
 			),
 			this.fileWatcher.onDidDelete((uri) =>
-				this.packageJsonChanged(this.getUriFolder(uri)),
-			),
+				this.packageJsonChanged(this.getUriFolder(uri))
+			)
 		);
 		workspace.textDocuments.forEach((document) => this.queue(document));
 	}
@@ -200,7 +200,7 @@ export class ExtensionLinter {
 			const tree = parseTree(document.getText());
 			const info = this.readPackageJsonInfo(
 				this.getUriFolder(document.uri),
-				tree,
+				tree
 			);
 			if (tree && info.isExtension) {
 				const icon = findNodeAtLocation(tree, ["icon"]);
@@ -212,7 +212,7 @@ export class ExtensionLinter {
 						icon.offset + icon.length - 1,
 						icon.value,
 						Context.ICON,
-						info,
+						info
 					);
 				}
 
@@ -229,8 +229,8 @@ export class ExtensionLinter {
 								url!.offset + url!.length - 1,
 								url!.value,
 								Context.BADGE,
-								info,
-							),
+								info
+							)
 						);
 				}
 
@@ -245,7 +245,7 @@ export class ExtensionLinter {
 					enabledApiProposals?.type === "array"
 				) {
 					const extensionId = `${getNodeValue(
-						publisher,
+						publisher
 					)}.${getNodeValue(name)}`;
 					const effectiveProposalNames =
 						extensionEnabledApiProposals[extensionId];
@@ -257,19 +257,19 @@ export class ExtensionLinter {
 							if (
 								child.type === "string" &&
 								!effectiveProposalNames.includes(
-									getNodeValue(child),
+									getNodeValue(child)
 								)
 							) {
 								const start = document.positionAt(child.offset);
 								const end = document.positionAt(
-									child.offset + child.length,
+									child.offset + child.length
 								);
 								diagnostics.push(
 									new Diagnostic(
 										new Range(start, end),
 										apiProposalNotListed,
-										DiagnosticSeverity.Error,
-									),
+										DiagnosticSeverity.Error
+									)
 								);
 							}
 						}
@@ -292,18 +292,18 @@ export class ExtensionLinter {
 						// Redundant Implicit Activation
 						if (
 							info.implicitActivationEvents?.has(
-								activationEvent,
+								activationEvent
 							) &&
 							redundantImplicitActivationEventPrefixes.some(
-								(prefix) => activationEvent.startsWith(prefix),
+								(prefix) => activationEvent.startsWith(prefix)
 							)
 						) {
 							const start = document.positionAt(
-								activationEventNode.offset,
+								activationEventNode.offset
 							);
 							const end = document.positionAt(
 								activationEventNode.offset +
-									activationEventNode.length,
+									activationEventNode.length
 							);
 							const message = isImplicitActivationSupported
 								? redundantImplicitActivationEvent
@@ -314,8 +314,8 @@ export class ExtensionLinter {
 									message,
 									isImplicitActivationSupported
 										? DiagnosticSeverity.Warning
-										: DiagnosticSeverity.Information,
-								),
+										: DiagnosticSeverity.Information
+								)
 							);
 						}
 
@@ -324,22 +324,22 @@ export class ExtensionLinter {
 							if (
 								isImplicitActivationSupported &&
 								activationEvent.startsWith(
-									implicitActivationEventPrefix,
+									implicitActivationEventPrefix
 								)
 							) {
 								const start = document.positionAt(
-									activationEventNode.offset,
+									activationEventNode.offset
 								);
 								const end = document.positionAt(
 									activationEventNode.offset +
-										activationEventNode.length,
+										activationEventNode.length
 								);
 								diagnostics.push(
 									new Diagnostic(
 										new Range(start, end),
 										implicitActivationEvent,
-										DiagnosticSeverity.Error,
-									),
+										DiagnosticSeverity.Error
+									)
 								);
 							}
 						}
@@ -347,21 +347,21 @@ export class ExtensionLinter {
 						// Star activation
 						if (activationEvent === "*") {
 							const start = document.positionAt(
-								activationEventNode.offset,
+								activationEventNode.offset
 							);
 							const end = document.positionAt(
 								activationEventNode.offset +
-									activationEventNode.length,
+									activationEventNode.length
 							);
 							const diagnostic = new Diagnostic(
 								new Range(start, end),
 								starActivation,
-								DiagnosticSeverity.Information,
+								DiagnosticSeverity.Information
 							);
 							diagnostic.code = {
 								value: "star-activation",
 								target: Uri.parse(
-									"https://code.visualstudio.com/api/references/activation-events#Start-up",
+									"https://code.visualstudio.com/api/references/activation-events#Start-up"
 								),
 							};
 							diagnostics.push(diagnostic);
@@ -371,7 +371,7 @@ export class ExtensionLinter {
 
 				const whenClauseLinting = await this.lintWhenClauses(
 					findNodeAtLocation(tree, ["contributes"]),
-					document,
+					document
 				);
 				diagnostics.push(...whenClauseLinting);
 			}
@@ -382,7 +382,7 @@ export class ExtensionLinter {
 	/** lints `when` and `enablement` clauses */
 	private async lintWhenClauses(
 		contributesNode: JsonNode | undefined,
-		document: TextDocument,
+		document: TextDocument
 	): Promise<Diagnostic[]> {
 		if (!contributesNode) {
 			return [];
@@ -416,7 +416,7 @@ export class ExtensionLinter {
 					case "array":
 						if (node.children) {
 							node.children.forEach((n) =>
-								findWhens(n, clauseName),
+								findWhens(n, clauseName)
 							);
 						}
 				}
@@ -432,7 +432,7 @@ export class ExtensionLinter {
 
 		findWhens(
 			findNodeAtLocation(contributesNode, ["commands"]),
-			"enablement",
+			"enablement"
 		);
 
 		const parseResults = await commands.executeCommand<
@@ -441,8 +441,8 @@ export class ExtensionLinter {
 			"_validateWhenClauses",
 			whenClauses.map(
 				(w) =>
-					w.value as string /* we make sure to capture only if `w.value` is string above */,
-			),
+					w.value as string /* we make sure to capture only if `w.value` is string above */
+			)
 		);
 
 		const diagnostics: Diagnostic[] = [];
@@ -451,30 +451,30 @@ export class ExtensionLinter {
 
 			const jsonStringScanner = new JsonStringScanner(
 				document.getText(),
-				whenClauseJSONNode.offset + 1,
+				whenClauseJSONNode.offset + 1
 			);
 
 			for (const error of parseResults[i]) {
 				const realOffset = jsonStringScanner.getOffsetInEncoded(
-					error.offset,
+					error.offset
 				);
 				const realOffsetEnd = jsonStringScanner.getOffsetInEncoded(
-					error.offset + error.length,
+					error.offset + error.length
 				);
 				const start = document.positionAt(
-					realOffset /* +1 to account for the quote (I think) */,
+					realOffset /* +1 to account for the quote (I think) */
 				);
 				const end = document.positionAt(realOffsetEnd);
 				const errMsg = `${parsingErrorHeader}\n\n${error.errorMessage}`;
 				const diagnostic = new Diagnostic(
 					new Range(start, end),
 					errMsg,
-					DiagnosticSeverity.Error,
+					DiagnosticSeverity.Error
 				);
 				diagnostic.code = {
 					value: "See docs",
 					target: Uri.parse(
-						"https://code.visualstudio.com/api/references/when-clause-contexts",
+						"https://code.visualstudio.com/api/references/when-clause-contexts"
 					),
 				};
 				diagnostics.push(diagnostic);
@@ -511,16 +511,16 @@ export class ExtensionLinter {
 					this: ExtensionLinter,
 					tokens: MarkdownItType.Token[],
 					begin = 0,
-					end = text.length,
+					end = text.length
 				): TokenAndPosition[] {
 					const tokensAndPositions = tokens.map<TokenAndPosition>(
 						(token) => {
 							if (token.map) {
 								const tokenBegin = document.offsetAt(
-									new Position(token.map[0], 0),
+									new Position(token.map[0], 0)
 								);
 								const tokenEnd = (begin = document.offsetAt(
-									new Position(token.map[1], 0),
+									new Position(token.map[1], 0)
 								));
 								return {
 									token,
@@ -535,7 +535,7 @@ export class ExtensionLinter {
 									begin,
 									end,
 									token,
-									token.attrGet("src"),
+									token.attrGet("src")
 								);
 							const other =
 								image ||
@@ -544,7 +544,7 @@ export class ExtensionLinter {
 									begin,
 									end,
 									token,
-									token.content,
+									token.content
 								);
 							return (
 								other || {
@@ -553,23 +553,23 @@ export class ExtensionLinter {
 									end: begin,
 								}
 							);
-						},
+						}
 					);
 					return tokensAndPositions.concat(
 						...tokensAndPositions
 							.filter(
 								(tnp) =>
 									tnp.token.children &&
-									tnp.token.children.length,
+									tnp.token.children.length
 							)
 							.map((tnp) =>
 								toTokensAndPositions.call(
 									this,
 									tnp.token.children,
 									tnp.begin,
-									tnp.end,
-								),
-							),
+									tnp.end
+								)
+							)
 					);
 				}.call(this, tokens);
 
@@ -578,7 +578,7 @@ export class ExtensionLinter {
 			tokensAndPositions
 				.filter(
 					(tnp) =>
-						tnp.token.type === "image" && tnp.token.attrGet("src"),
+						tnp.token.type === "image" && tnp.token.attrGet("src")
 				)
 				.map((inp) => {
 					const src = inp.token.attrGet("src")!;
@@ -591,7 +591,7 @@ export class ExtensionLinter {
 							begin + src.length,
 							src,
 							Context.MARKDOWN,
-							info,
+							info
 						);
 					} else {
 						const content = inp.token.content;
@@ -604,7 +604,7 @@ export class ExtensionLinter {
 								begin + content.length,
 								src,
 								Context.MARKDOWN,
-								info,
+								info
 							);
 						}
 					}
@@ -627,7 +627,7 @@ export class ExtensionLinter {
 								if (src && src.value && location) {
 									const begin = text.indexOf(
 										src.value,
-										tnp.begin + location.startOffset,
+										tnp.begin + location.startOffset
 									);
 									if (begin !== -1 && begin < tnp.end) {
 										this.addDiagnostics(
@@ -637,7 +637,7 @@ export class ExtensionLinter {
 											begin + src.value.length,
 											src.value,
 											Context.MARKDOWN,
-											info,
+											info
 										);
 									}
 								}
@@ -646,23 +646,23 @@ export class ExtensionLinter {
 								const end = tnp.begin + location.endOffset;
 								const range = new Range(
 									document.positionAt(begin),
-									document.positionAt(end),
+									document.positionAt(end)
 								);
 								svgStart = new Diagnostic(
 									range,
 									embeddedSvgsNotValid,
-									DiagnosticSeverity.Warning,
+									DiagnosticSeverity.Warning
 								);
 								diagnostics.push(svgStart);
 							}
-						},
+						}
 					);
 					parser.on("endTag", (name, location) => {
 						if (name === "svg" && svgStart && location) {
 							const end = tnp.begin + location.endOffset;
 							svgStart.range = new Range(
 								svgStart.range.start,
-								document.positionAt(end),
+								document.positionAt(end)
 							);
 						}
 					});
@@ -680,7 +680,7 @@ export class ExtensionLinter {
 		begin: number,
 		end: number,
 		token: MarkdownItType.Token,
-		content: string | null,
+		content: string | null
 	) {
 		if (content) {
 			const tokenBegin = text.indexOf(content, begin);
@@ -758,7 +758,7 @@ export class ExtensionLinter {
 			.filter(
 				(document) =>
 					this.getUriFolder(document.uri).toString().toLowerCase() ===
-					str,
+					str
 			)
 			.forEach((document) => this.queueReadme(document));
 	}
@@ -774,14 +774,14 @@ export class ExtensionLinter {
 		end: number,
 		src: string,
 		context: Context,
-		info: PackageJsonInfo,
+		info: PackageJsonInfo
 	) {
 		const hasScheme = /^\w[\w\d+.-]*:/.test(src);
 		const uri = parseUri(
 			src,
 			info.repository
 				? info.repository.toString()
-				: document.uri.toString(),
+				: document.uri.toString()
 		);
 		if (!uri) {
 			return;
@@ -791,28 +791,24 @@ export class ExtensionLinter {
 		if (hasScheme && scheme !== "https" && scheme !== "data") {
 			const range = new Range(
 				document.positionAt(begin),
-				document.positionAt(end),
+				document.positionAt(end)
 			);
 			diagnostics.push(
-				new Diagnostic(
-					range,
-					httpsRequired,
-					DiagnosticSeverity.Warning,
-				),
+				new Diagnostic(range, httpsRequired, DiagnosticSeverity.Warning)
 			);
 		}
 
 		if (hasScheme && scheme === "data") {
 			const range = new Range(
 				document.positionAt(begin),
-				document.positionAt(end),
+				document.positionAt(end)
 			);
 			diagnostics.push(
 				new Diagnostic(
 					range,
 					dataUrlsNotValid,
-					DiagnosticSeverity.Warning,
-				),
+					DiagnosticSeverity.Warning
+				)
 			);
 		}
 
@@ -823,7 +819,7 @@ export class ExtensionLinter {
 		) {
 			const range = new Range(
 				document.positionAt(begin),
-				document.positionAt(end),
+				document.positionAt(end)
 			);
 			const message = (() => {
 				switch (context) {
@@ -834,7 +830,7 @@ export class ExtensionLinter {
 				}
 			})();
 			diagnostics.push(
-				new Diagnostic(range, message, DiagnosticSeverity.Warning),
+				new Diagnostic(range, message, DiagnosticSeverity.Warning)
 			);
 		}
 
@@ -844,10 +840,10 @@ export class ExtensionLinter {
 		) {
 			const range = new Range(
 				document.positionAt(begin),
-				document.positionAt(end),
+				document.positionAt(end)
 			);
 			diagnostics.push(
-				new Diagnostic(range, svgsNotValid, DiagnosticSeverity.Warning),
+				new Diagnostic(range, svgsNotValid, DiagnosticSeverity.Warning)
 			);
 		}
 	}
@@ -866,7 +862,7 @@ export class ExtensionLinter {
 function parseUri(
 	src: string,
 	base?: string,
-	retry: boolean = true,
+	retry: boolean = true
 ): Uri | null {
 	try {
 		const url = new URL(src, base);
@@ -941,7 +937,7 @@ function parseImplicitActivationEvents(tree: JsonNode): Set<string> {
 	]);
 	viewContributions?.children?.forEach((viewContribution) => {
 		const views = viewContribution.children?.find(
-			(node) => node.type === "array",
+			(node) => node.type === "array"
 		);
 		views?.children?.forEach((view) => {
 			const id = findNodeAtLocation(view, ["id"]);

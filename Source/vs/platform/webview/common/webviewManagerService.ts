@@ -7,7 +7,7 @@ import { Event } from "vs/base/common/event";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IWebviewManagerService = createDecorator<IWebviewManagerService>(
-	"webviewManagerService",
+	"webviewManagerService"
 );
 
 export interface WebviewWebContentsId {
@@ -39,19 +39,19 @@ export interface IWebviewManagerService {
 
 	setIgnoreMenuShortcuts(
 		id: WebviewWebContentsId | WebviewWindowId,
-		enabled: boolean,
+		enabled: boolean
 	): Promise<void>;
 
 	findInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,
 		text: string,
-		options: FindInFrameOptions,
+		options: FindInFrameOptions
 	): Promise<void>;
 
 	stopFindInFrame(
 		windowId: WebviewWindowId,
 		frameName: string,
-		options: { keepSelection?: boolean },
+		options: { keepSelection?: boolean }
 	): Promise<void>;
 }

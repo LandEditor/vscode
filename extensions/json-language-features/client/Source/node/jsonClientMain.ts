@@ -74,7 +74,7 @@ export async function activate(context: ExtensionContext) {
 	const newLanguageClient: LanguageClientConstructor = (
 		id: string,
 		name: string,
-		clientOptions: LanguageClientOptions,
+		clientOptions: LanguageClientOptions
 	) => {
 		clientOptions.outputChannel = outputChannel;
 		return new LanguageClient(id, name, serverOptions, clientOptions);
@@ -109,7 +109,7 @@ interface IPackageInfo {
 }
 
 async function getPackageInfo(
-	context: ExtensionContext,
+	context: ExtensionContext
 ): Promise<IPackageInfo> {
 	const location = context.asAbsolutePath("./package.json");
 	try {
@@ -152,7 +152,7 @@ const retryTimeoutInHours = 2 * 24; // 2 days
 
 async function getSchemaRequestService(
 	context: ExtensionContext,
-	log: Log,
+	log: Log
 ): Promise<SchemaRequestService> {
 	let cache: JSONSchemaCache | undefined = undefined;
 	const globalStorage = context.globalStorageUri;
@@ -161,28 +161,28 @@ async function getSchemaRequestService(
 	if (globalStorage.scheme === "file") {
 		const schemaCacheLocation = path.join(
 			globalStorage.fsPath,
-			"json-schema-cache",
+			"json-schema-cache"
 		);
 		await fs.mkdir(schemaCacheLocation, { recursive: true });
 
 		const schemaCache = new JSONSchemaCache(
 			schemaCacheLocation,
-			context.globalState,
+			context.globalState
 		);
 		log.trace(
 			`[json schema cache] initial state: ${JSON.stringify(
 				schemaCache.getCacheInfo(),
 				null,
-				" ",
-			)}`,
+				" "
+			)}`
 		);
 		cache = schemaCache;
 		clearCache = async () => {
 			const cachedSchemas = await schemaCache.clearCache();
 			log.trace(
 				`[json schema cache] cache cleared. Previously cached schemas: ${cachedSchemas.join(
-					", ",
-				)}`,
+					", "
+				)}`
 			);
 			return cachedSchemas;
 		};
@@ -201,7 +201,7 @@ async function getSchemaRequestService(
 		}
 		try {
 			log.trace(
-				`[json schema cache] Requesting schema ${uri} etag ${etag}...`,
+				`[json schema cache] Requesting schema ${uri} etag ${etag}...`
 			);
 
 			const response = await xhr({
@@ -213,12 +213,12 @@ async function getSchemaRequestService(
 				const etag = response.headers["etag"];
 				if (typeof etag === "string") {
 					log.trace(
-						`[json schema cache] Storing schema ${uri} etag ${etag} in cache`,
+						`[json schema cache] Storing schema ${uri} etag ${etag} in cache`
 					);
 					await cache.putSchema(uri, etag, response.responseText);
 				} else {
 					log.trace(
-						`[json schema cache] Response: schema ${uri} no etag`,
+						`[json schema cache] Response: schema ${uri} no etag`
 					);
 				}
 			}
@@ -227,13 +227,13 @@ async function getSchemaRequestService(
 			if (isXHRResponse(error)) {
 				if (error.status === 304 && etag && cache) {
 					log.trace(
-						`[json schema cache] Response: schema ${uri} unchanged etag ${etag}`,
+						`[json schema cache] Response: schema ${uri} unchanged etag ${etag}`
 					);
 
 					const content = await cache.getSchema(uri, etag, true);
 					if (content) {
 						log.trace(
-							`[json schema cache] Get schema ${uri} etag ${etag} from cache`,
+							`[json schema cache] Get schema ${uri} etag ${etag} from cache`
 						);
 						return content;
 					}
@@ -244,14 +244,14 @@ async function getSchemaRequestService(
 				if (status && error.responseText) {
 					status = `${status}\n${error.responseText.substring(
 						0,
-						200,
+						200
 					)}`;
 				}
 				if (!status) {
 					status = error.toString();
 				}
 				log.trace(
-					`[json schema cache] Respond schema ${uri} error ${status}`,
+					`[json schema cache] Respond schema ${uri} error ${status}`
 				);
 
 				throw status;
@@ -265,14 +265,14 @@ async function getSchemaRequestService(
 			if (cache && /^https?:\/\/json\.schemastore\.org\//.test(uri)) {
 				const content = await cache.getSchemaIfUpdatedSince(
 					uri,
-					retryTimeoutInHours,
+					retryTimeoutInHours
 				);
 				if (content) {
 					if (log.isTrace()) {
 						log.trace(
 							`[json schema cache] Schema ${uri} from cache without request (last accessed ${cache.getLastUpdatedInHours(
-								uri,
-							)} hours ago)`,
+								uri
+							)} hours ago)`
 						);
 					}
 

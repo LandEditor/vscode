@@ -35,7 +35,7 @@ class ExtHostNotebookDocumentSaveParticipant
 
 	constructor(extHostContext: IExtHostContext) {
 		this._proxy = extHostContext.getProxy(
-			ExtHostContext.ExtHostNotebookDocumentSaveParticipant,
+			ExtHostContext.ExtHostNotebookDocumentSaveParticipant
 		);
 	}
 
@@ -43,7 +43,7 @@ class ExtHostNotebookDocumentSaveParticipant
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
 		env: { reason: SaveReason },
 		_progress: IProgress<IProgressStep>,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		if (
 			!workingCopy.model ||
@@ -61,11 +61,11 @@ class ExtHostNotebookDocumentSaveParticipant
 						new Error(
 							localize(
 								"timeout.onWillSave",
-								"Aborted onWillSaveNotebookDocument-event after 1750ms",
-							),
-						),
+								"Aborted onWillSaveNotebookDocument-event after 1750ms"
+							)
+						)
 					),
-				1750,
+				1750
 			);
 			this._proxy
 				.$participateInSave(workingCopy.resource, env.reason, token)
@@ -87,9 +87,16 @@ export class SaveParticipant {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService
 	) {
-		this._saveParticipantDisposable = this.workingCopyFileService.addSaveParticipant(instantiationService.createInstance(ExtHostNotebookDocumentSaveParticipant, extHostContext));
+		this._saveParticipantDisposable =
+			this.workingCopyFileService.addSaveParticipant(
+				instantiationService.createInstance(
+					ExtHostNotebookDocumentSaveParticipant,
+					extHostContext
+				)
+			);
 	}
 
 	dispose(): void {

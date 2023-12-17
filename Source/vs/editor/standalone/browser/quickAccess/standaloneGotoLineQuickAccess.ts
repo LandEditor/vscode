@@ -25,7 +25,9 @@ import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
 export class StandaloneGotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProvider {
 	protected readonly onDidActiveTextEditorControlChange = Event.None;
 
-	constructor(@ICodeEditorService private readonly editorService: ICodeEditorService) {
+	constructor(
+		@ICodeEditorService private readonly editorService: ICodeEditorService
+	) {
 		super();
 	}
 
@@ -62,7 +64,7 @@ export class GotoLineAction extends EditorAction {
 registerEditorAction(GotoLineAction);
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess,
+	Extensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: StandaloneGotoLineQuickAccessProvider,
 	prefix: StandaloneGotoLineQuickAccessProvider.PREFIX,

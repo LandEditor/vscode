@@ -35,12 +35,12 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		this._domNode.setContain("strict");
 
 		this._zoneManager = new OverviewZoneManager((lineNumber: number) =>
-			this._context.viewLayout.getVerticalOffsetForLineNumber(lineNumber),
+			this._context.viewLayout.getVerticalOffsetForLineNumber(lineNumber)
 		);
 		this._zoneManager.setDOMWidth(0);
 		this._zoneManager.setDOMHeight(0);
 		this._zoneManager.setOuterHeight(
-			this._context.viewLayout.getScrollHeight(),
+			this._context.viewLayout.getScrollHeight()
 		);
 		this._zoneManager.setLineHeight(options.get(EditorOption.lineHeight));
 
@@ -57,20 +57,20 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 	// ---- begin view event handlers
 
 	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
+		e: viewEvents.ViewConfigurationChangedEvent
 	): boolean {
 		const options = this._context.configuration.options;
 
 		if (e.hasChanged(EditorOption.lineHeight)) {
 			this._zoneManager.setLineHeight(
-				options.get(EditorOption.lineHeight),
+				options.get(EditorOption.lineHeight)
 			);
 			this._render();
 		}
 
 		if (e.hasChanged(EditorOption.pixelRatio)) {
 			this._zoneManager.setPixelRatio(
-				options.get(EditorOption.pixelRatio),
+				options.get(EditorOption.pixelRatio)
 			);
 			this._domNode.setWidth(this._zoneManager.getDOMWidth());
 			this._domNode.setHeight(this._zoneManager.getDOMHeight());
@@ -86,7 +86,7 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		return true;
 	}
 	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
+		e: viewEvents.ViewScrollChangedEvent
 	): boolean {
 		if (e.scrollHeightChanged) {
 			this._zoneManager.setOuterHeight(e.scrollHeight);
@@ -95,7 +95,7 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		return true;
 	}
 	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
+		e: viewEvents.ViewZonesChangedEvent
 	): boolean {
 		this._render();
 		return true;
@@ -156,7 +156,7 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 		ctx: CanvasRenderingContext2D,
 		colorZones: ColorZone[],
 		id2Color: string[],
-		width: number,
+		width: number
 	): void {
 		let currentColorId = 0;
 		let currentFrom = 0;
@@ -182,7 +182,7 @@ export class OverviewRuler extends ViewEventHandler implements IOverviewRuler {
 						0,
 						currentFrom,
 						width,
-						currentTo - currentFrom,
+						currentTo - currentFrom
 					);
 					currentFrom = zoneFrom;
 					currentTo = zoneTo;

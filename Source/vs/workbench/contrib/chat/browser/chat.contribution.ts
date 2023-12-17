@@ -122,7 +122,7 @@ import { CancellationToken } from "vs/base/common/cancellation";
 
 // Register configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
+	ConfigurationExtensions.Configuration
 );
 configurationRegistry.registerConfiguration({
 	id: "chatSidebar",
@@ -133,7 +133,7 @@ configurationRegistry.registerConfiguration({
 			type: "number",
 			description: nls.localize(
 				"interactiveSession.editor.fontSize",
-				"Controls the font size in pixels in chat codeblocks.",
+				"Controls the font size in pixels in chat codeblocks."
 			),
 			default: isMacintosh ? 12 : 14,
 		},
@@ -141,7 +141,7 @@ configurationRegistry.registerConfiguration({
 			type: "string",
 			description: nls.localize(
 				"interactiveSession.editor.fontFamily",
-				"Controls the font family in chat codeblocks.",
+				"Controls the font family in chat codeblocks."
 			),
 			default: "default",
 		},
@@ -149,7 +149,7 @@ configurationRegistry.registerConfiguration({
 			type: "string",
 			description: nls.localize(
 				"interactiveSession.editor.fontWeight",
-				"Controls the font weight in chat codeblocks.",
+				"Controls the font weight in chat codeblocks."
 			),
 			default: "default",
 		},
@@ -157,7 +157,7 @@ configurationRegistry.registerConfiguration({
 			type: "string",
 			description: nls.localize(
 				"interactiveSession.editor.wordWrap",
-				"Controls whether lines should wrap in chat codeblocks.",
+				"Controls whether lines should wrap in chat codeblocks."
 			),
 			default: "off",
 			enum: ["on", "off"],
@@ -166,7 +166,7 @@ configurationRegistry.registerConfiguration({
 			type: "number",
 			description: nls.localize(
 				"interactiveSession.editor.lineHeight",
-				"Controls the line height in pixels in chat codeblocks. Use 0 to compute the line height from the font size.",
+				"Controls the line height in pixels in chat codeblocks. Use 0 to compute the line height from the font size."
 			),
 			default: 0,
 		},
@@ -174,20 +174,20 @@ configurationRegistry.registerConfiguration({
 });
 
 Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
+	EditorExtensions.EditorPane
 ).registerEditorPane(
 	EditorPaneDescriptor.create(
 		ChatEditor,
 		ChatEditorInput.EditorID,
-		nls.localize("chat", "Chat"),
+		nls.localize("chat", "Chat")
 	),
-	[new SyncDescriptor(ChatEditorInput)],
+	[new SyncDescriptor(ChatEditorInput)]
 );
 
 class ChatResolverContribution extends Disposable {
 	constructor(
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
@@ -210,13 +210,13 @@ class ChatResolverContribution extends Disposable {
 							editor: instantiationService.createInstance(
 								ChatEditorInput,
 								resource,
-								options as IChatEditorOptions,
+								options as IChatEditorOptions
 							),
 							options,
 						};
 					},
-				},
-			),
+				}
+			)
 		);
 	}
 }
@@ -231,7 +231,7 @@ class ChatAccessibleViewContribution extends Disposable {
 				"panelChat",
 				(accessor) => {
 					const accessibleViewService = accessor.get(
-						IAccessibleViewService,
+						IAccessibleViewService
 					);
 					const widgetService = accessor.get(IChatWidgetService);
 					const codeEditorService = accessor.get(ICodeEditorService);
@@ -239,13 +239,13 @@ class ChatAccessibleViewContribution extends Disposable {
 						accessibleViewService,
 						widgetService,
 						codeEditorService,
-						true,
+						true
 					);
 					function renderAccessibleView(
 						accessibleViewService: IAccessibleViewService,
 						widgetService: IChatWidgetService,
 						codeEditorService: ICodeEditorService,
-						initialRender?: boolean,
+						initialRender?: boolean
 					): boolean {
 						const widget = widgetService.lastFocusedWidget;
 						if (!widget) {
@@ -280,11 +280,11 @@ class ChatAccessibleViewContribution extends Disposable {
 							for (const content of focusedItem.content) {
 								if (Array.isArray(content)) {
 									welcomeReplyContents.push(
-										...content.map((m) => m.message),
+										...content.map((m) => m.message)
 									);
 								} else {
 									welcomeReplyContents.push(
-										(content as IMarkdownString).value,
+										(content as IMarkdownString).value
 									);
 								}
 							}
@@ -305,7 +305,7 @@ class ChatAccessibleViewContribution extends Disposable {
 							.filter((i) => isResponseVM(i));
 						const length = responses?.length;
 						const responseIndex = responses?.findIndex(
-							(i) => i === focusedItem,
+							(i) => i === focusedItem
 						);
 
 						accessibleViewService.show({
@@ -329,23 +329,23 @@ class ChatAccessibleViewContribution extends Disposable {
 								renderAccessibleView(
 									accessibleViewService,
 									widgetService,
-									codeEditorService,
+									codeEditorService
 								);
 							},
 							previous() {
 								verifiedWidget.moveFocus(
 									focusedItem,
-									"previous",
+									"previous"
 								);
 								alertFocusChange(
 									responseIndex,
 									length,
-									"previous",
+									"previous"
 								);
 								renderAccessibleView(
 									accessibleViewService,
 									widgetService,
-									codeEditorService,
+									codeEditorService
 								);
 							},
 							options: { type: AccessibleViewType.View },
@@ -353,8 +353,8 @@ class ChatAccessibleViewContribution extends Disposable {
 						return true;
 					}
 				},
-				CONTEXT_IN_CHAT_SESSION,
-			),
+				CONTEXT_IN_CHAT_SESSION
+			)
 		);
 	}
 }
@@ -363,7 +363,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 	constructor(
 		@IChatSlashCommandService slashCommandService: IChatSlashCommandService,
 		@ICommandService commandService: ICommandService,
-		@IChatAgentService chatAgentService: IChatAgentService,
+		@IChatAgentService chatAgentService: IChatAgentService
 	) {
 		super();
 		this._store.add(
@@ -376,8 +376,8 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 				},
 				async () => {
 					commandService.executeCommand(ACTION_ID_CLEAR_CHAT);
-				},
-			),
+				}
+			)
 		);
 		this._store.add(
 			slashCommandService.registerSlashCommand(
@@ -393,7 +393,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 					if (defaultAgent?.metadata.helpTextPrefix) {
 						if (
 							isMarkdownString(
-								defaultAgent.metadata.helpTextPrefix,
+								defaultAgent.metadata.helpTextPrefix
 							)
 						) {
 							progress.report({
@@ -420,12 +420,12 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 											inputValue: `${agentWithLeader} ${a.metadata.sampleRequest}`,
 										};
 									const urlSafeArg = encodeURIComponent(
-										JSON.stringify(actionArg),
+										JSON.stringify(actionArg)
 									);
 									const agentLine = `* [\`${agentWithLeader}\`](command:${SubmitAction.ID}?${urlSafeArg}) - ${a.metadata.description}`;
 									const commands =
 										await a.provideSlashCommands(
-											CancellationToken.None,
+											CancellationToken.None
 										);
 									const commandText = commands
 										.map((c) => {
@@ -437,14 +437,14 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 												};
 											const urlSafeArg =
 												encodeURIComponent(
-													JSON.stringify(actionArg),
+													JSON.stringify(actionArg)
 												);
 											return `\t* [\`${chatSubcommandLeader}${c.name}\`](command:${SubmitAction.ID}?${urlSafeArg}) - ${c.description}`;
 										})
 										.join("\n");
 
 									return agentLine + "\n" + commandText;
-								}),
+								})
 						)
 					).join("\n");
 					progress.report({
@@ -457,7 +457,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 						progress.report({ content: "\n\n", kind: "content" });
 						if (
 							isMarkdownString(
-								defaultAgent.metadata.helpTextPostfix,
+								defaultAgent.metadata.helpTextPostfix
 							)
 						) {
 							progress.report({
@@ -471,8 +471,8 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 							});
 						}
 					}
-				},
-			),
+				}
+			)
 		);
 	}
 }
@@ -481,18 +481,18 @@ const workbenchContributionsRegistry =
 	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ChatResolverContribution,
-	LifecyclePhase.Starting,
+	LifecyclePhase.Starting
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ChatAccessibleViewContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 workbenchContributionsRegistry.registerWorkbenchContribution(
 	ChatSlashStaticSlashCommandsContribution,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
+	EditorExtensions.EditorFactory
 ).registerEditorSerializer(ChatEditorInput.TypeID, ChatEditorInputSerializer);
 
 registerChatActions();
@@ -510,45 +510,45 @@ registerSingleton(IChatService, ChatService, InstantiationType.Delayed);
 registerSingleton(
 	IChatContributionService,
 	ChatContributionService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatWidgetService,
 	ChatWidgetService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IQuickChatService,
 	QuickChatService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatAccessibilityService,
 	ChatAccessibilityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatWidgetHistoryService,
 	ChatWidgetHistoryService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatProviderService,
 	ChatProviderService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatSlashCommandService,
 	ChatSlashCommandService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatAgentService,
 	ChatAgentService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );
 registerSingleton(
 	IChatVariablesService,
 	ChatVariablesService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

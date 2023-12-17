@@ -39,7 +39,8 @@ export class GlobalExtensionEnablementService
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService
 	) {
 		super();
 		this.storageManger = this._register(new StorageManager(storageService));
@@ -48,25 +49,25 @@ export class GlobalExtensionEnablementService
 				this._onDidChangeEnablement.fire({
 					extensions,
 					source: "storage",
-				}),
-			),
+				})
+			)
 		);
 		this._register(
 			extensionManagementService.onDidInstallExtensions((e) =>
 				e.forEach(({ local, operation }) => {
 					if (local && operation === InstallOperation.Migrate) {
 						this._removeFromDisabledExtensions(
-							local.identifier,
+							local.identifier
 						); /* Reset migrated extensions */
 					}
-				}),
-			),
+				})
+			)
 		);
 	}
 
 	async enableExtension(
 		extension: IExtensionIdentifier,
-		source?: string,
+		source?: string
 	): Promise<boolean> {
 		if (this._removeFromDisabledExtensions(extension)) {
 			this._onDidChangeEnablement.fire({
@@ -80,7 +81,7 @@ export class GlobalExtensionEnablementService
 
 	async disableExtension(
 		extension: IExtensionIdentifier,
-		source?: string,
+		source?: string
 	): Promise<boolean> {
 		if (this._addToDisabledExtensions(extension)) {
 			this._onDidChangeEnablement.fire({
@@ -101,7 +102,7 @@ export class GlobalExtensionEnablementService
 	}
 
 	private _addToDisabledExtensions(
-		identifier: IExtensionIdentifier,
+		identifier: IExtensionIdentifier
 	): boolean {
 		const disabledExtensions = this.getDisabledExtensions();
 		if (
@@ -115,7 +116,7 @@ export class GlobalExtensionEnablementService
 	}
 
 	private _removeFromDisabledExtensions(
-		identifier: IExtensionIdentifier,
+		identifier: IExtensionIdentifier
 	): boolean {
 		const disabledExtensions = this.getDisabledExtensions();
 		for (let index = 0; index < disabledExtensions.length; index++) {
@@ -130,11 +131,11 @@ export class GlobalExtensionEnablementService
 	}
 
 	private _setDisabledExtensions(
-		disabledExtensions: IExtensionIdentifier[],
+		disabledExtensions: IExtensionIdentifier[]
 	): void {
 		this._setExtensions(
 			DISABLED_EXTENSIONS_STORAGE_PATH,
-			disabledExtensions,
+			disabledExtensions
 		);
 	}
 
@@ -144,7 +145,7 @@ export class GlobalExtensionEnablementService
 
 	private _setExtensions(
 		storageId: string,
-		extensions: IExtensionIdentifier[],
+		extensions: IExtensionIdentifier[]
 	): void {
 		this.storageManger.set(storageId, extensions, StorageScope.PROFILE);
 	}
@@ -154,7 +155,7 @@ export class StorageManager extends Disposable {
 	private storage: { [key: string]: string } = Object.create(null);
 
 	private _onDidChange: Emitter<IExtensionIdentifier[]> = this._register(
-		new Emitter<IExtensionIdentifier[]>(),
+		new Emitter<IExtensionIdentifier[]>()
 	);
 	readonly onDidChange: Event<IExtensionIdentifier[]> =
 		this._onDidChange.event;
@@ -165,8 +166,8 @@ export class StorageManager extends Disposable {
 			storageService.onDidChangeValue(
 				StorageScope.PROFILE,
 				undefined,
-				this._register(new DisposableStore()),
-			)((e) => this.onDidStorageChange(e)),
+				this._register(new DisposableStore())
+			)((e) => this.onDidStorageChange(e))
 		);
 	}
 
@@ -185,7 +186,7 @@ export class StorageManager extends Disposable {
 
 	set(key: string, value: IExtensionIdentifier[], scope: StorageScope): void {
 		const newValue: string = JSON.stringify(
-			value.map(({ id, uuid }) => <IExtensionIdentifier>{ id, uuid }),
+			value.map(({ id, uuid }) => <IExtensionIdentifier>{ id, uuid })
 		);
 		const oldValue = this._get(key, scope);
 		if (oldValue !== newValue) {
@@ -201,34 +202,34 @@ export class StorageManager extends Disposable {
 	}
 
 	private onDidStorageChange(
-		storageChangeEvent: IProfileStorageValueChangeEvent,
+		storageChangeEvent: IProfileStorageValueChangeEvent
 	): void {
 		if (!isUndefinedOrNull(this.storage[storageChangeEvent.key])) {
 			const newValue = this._get(
 				storageChangeEvent.key,
-				storageChangeEvent.scope,
+				storageChangeEvent.scope
 			);
 			if (newValue !== this.storage[storageChangeEvent.key]) {
 				const oldValues = this.get(
 					storageChangeEvent.key,
-					storageChangeEvent.scope,
+					storageChangeEvent.scope
 				);
 				delete this.storage[storageChangeEvent.key];
 				const newValues = this.get(
 					storageChangeEvent.key,
-					storageChangeEvent.scope,
+					storageChangeEvent.scope
 				);
 				const added = oldValues.filter(
 					(oldValue) =>
 						!newValues.some((newValue) =>
-							areSameExtensions(oldValue, newValue),
-						),
+							areSameExtensions(oldValue, newValue)
+						)
 				);
 				const removed = newValues.filter(
 					(newValue) =>
 						!oldValues.some((oldValue) =>
-							areSameExtensions(oldValue, newValue),
-						),
+							areSameExtensions(oldValue, newValue)
+						)
 				);
 				if (added.length || removed.length) {
 					this._onDidChange.fire([...added, ...removed]);
@@ -244,7 +245,7 @@ export class StorageManager extends Disposable {
 	private _set(
 		key: string,
 		value: string | undefined,
-		scope: StorageScope,
+		scope: StorageScope
 	): void {
 		if (value) {
 			// Enablement state is synced separately through extensions

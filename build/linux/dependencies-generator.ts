@@ -40,7 +40,7 @@ export async function getDependencies(
 	packageType: "deb" | "rpm",
 	buildDir: string,
 	applicationName: string,
-	arch: string,
+	arch: string
 ): Promise<string[]> {
 	if (packageType === "deb") {
 		if (!isDebianArchString(arch)) {
@@ -56,7 +56,7 @@ export async function getDependencies(
 		buildDir,
 		"resources",
 		"app",
-		"node_modules.asar.unpacked",
+		"node_modules.asar.unpacked"
 	);
 	const findResult = spawnSync("find", [
 		nativeModulesPath,
@@ -84,14 +84,14 @@ export async function getDependencies(
 	let dependencies: Set<string>[];
 	if (packageType === "deb") {
 		const chromiumSysroot = await getChromiumSysroot(
-			arch as DebianArchString,
+			arch as DebianArchString
 		);
 		const vscodeSysroot = await getVSCodeSysroot(arch as DebianArchString);
 		dependencies = generatePackageDepsDebian(
 			files,
 			arch as DebianArchString,
 			chromiumSysroot,
-			vscodeSysroot,
+			vscodeSysroot
 		);
 	} else {
 		dependencies = generatePackageDepsRpm(files);
@@ -104,7 +104,7 @@ export async function getDependencies(
 	const sortedDependencies: string[] = Array.from(mergedDependencies)
 		.filter((dependency) => {
 			return !bundledDeps.some((bundledDep) =>
-				dependency.startsWith(bundledDep),
+				dependency.startsWith(bundledDep)
 			);
 		})
 		.sort();

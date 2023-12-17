@@ -27,7 +27,7 @@ export interface ILanguageDetectionService {
 	 */
 	detectLanguage(
 		resource: URI,
-		supportedLangs?: string[],
+		supportedLangs?: string[]
 	): Promise<string | undefined>;
 }
 

@@ -53,13 +53,13 @@ import {
 
 namespace CustomDataChangedNotification {
 	export const type: NotificationType<string[]> = new NotificationType(
-		"html/customDataChanged",
+		"html/customDataChanged"
 	);
 }
 
 namespace CustomDataContent {
 	export const type: RequestType<string, string, any> = new RequestType(
-		"html/customDataContent",
+		"html/customDataContent"
 	);
 }
 
@@ -112,14 +112,14 @@ export interface TelemetryReporter {
 		},
 		measurements?: {
 			[key: string]: number;
-		},
+		}
 	): void;
 }
 
 export type LanguageClientConstructor = (
 	name: string,
 	description: string,
-	clientOptions: LanguageClientOptions,
+	clientOptions: LanguageClientOptions
 ) => BaseLanguageClient;
 
 export const languageServerDescription = l10n.t("HTML Language Server");
@@ -146,7 +146,7 @@ export interface AsyncDisposable {
 export async function startClient(
 	context: ExtensionContext,
 	newLanguageClient: LanguageClientConstructor,
-	runtime: Runtime,
+	runtime: Runtime
 ): Promise<AsyncDisposable> {
 	const outputChannel = window.createOutputChannel(languageServerDescription);
 
@@ -157,7 +157,7 @@ export async function startClient(
 		languageParticipants,
 		newLanguageClient,
 		outputChannel,
-		runtime,
+		runtime
 	);
 
 	const promptForLinkedEditingKey = "html.promptForLinkedEditing";
@@ -178,24 +178,24 @@ export async function startClient(
 					) {
 						context.globalState.update(
 							promptForLinkedEditingKey,
-							false,
+							false
 						);
 						activeEditorListener.dispose();
 						const configure = l10n.t("Configure");
 						const res = await window.showInformationMessage(
 							l10n.t(
-								"VS Code now has built-in support for auto-renaming tags. Do you want to enable it?",
+								"VS Code now has built-in support for auto-renaming tags. Do you want to enable it?"
 							),
-							configure,
+							configure
 						);
 						if (res === configure) {
 							commands.executeCommand(
 								"workbench.action.openSettings",
-								SettingIds.linkedEditing,
+								SettingIds.linkedEditing
 							);
 						}
 					}
-				},
+				}
 			);
 			context.subscriptions.push(activeEditorListener);
 		}
@@ -209,7 +209,7 @@ export async function startClient(
 		restartTrigger = runtime.timer.setTimeout(async () => {
 			if (client) {
 				outputChannel.appendLine(
-					"Extensions have changed, restarting HTML server...",
+					"Extensions have changed, restarting HTML server..."
 				);
 				outputChannel.appendLine("");
 				const oldClient = client;
@@ -219,7 +219,7 @@ export async function startClient(
 					languageParticipants,
 					newLanguageClient,
 					outputChannel,
-					runtime,
+					runtime
 				);
 			}
 		}, 2000);
@@ -238,7 +238,7 @@ async function startClientWithParticipants(
 	languageParticipants: LanguageParticipants,
 	newLanguageClient: LanguageClientConstructor,
 	outputChannel: OutputChannel,
-	runtime: Runtime,
+	runtime: Runtime
 ): Promise<AsyncDisposable> {
 	const toDispose: Disposable[] = [];
 
@@ -266,7 +266,7 @@ async function startClientWithParticipants(
 				position: Position,
 				context: CompletionContext,
 				token: CancellationToken,
-				next: ProvideCompletionItemsSignature,
+				next: ProvideCompletionItemsSignature
 			): ProviderResult<CompletionItem[] | CompletionList> {
 				function updateRanges(item: CompletionItem) {
 					const range = item.range;
@@ -282,7 +282,7 @@ async function startClientWithParticipants(
 					}
 				}
 				function updateProposals(
-					r: CompletionItem[] | CompletionList | null | undefined,
+					r: CompletionItem[] | CompletionList | null | undefined
 				): CompletionItem[] | CompletionList | null | undefined {
 					if (r) {
 						(Array.isArray(r) ? r : r.items).forEach(updateRanges);
@@ -290,7 +290,7 @@ async function startClientWithParticipants(
 					return r;
 				}
 				const isThenable = <T>(
-					obj: ProviderResult<T>,
+					obj: ProviderResult<T>
 				): obj is Thenable<T> => obj && (<any>obj)["then"];
 
 				const r = next(document, position, context, token);
@@ -311,7 +311,7 @@ async function startClientWithParticipants(
 	const client = newLanguageClient(
 		"html",
 		languageServerDescription,
-		clientOptions,
+		clientOptions
 	);
 	client.registerProposedFeatures();
 
@@ -323,32 +323,32 @@ async function startClientWithParticipants(
 
 	client.sendNotification(
 		CustomDataChangedNotification.type,
-		customDataSource.uris,
+		customDataSource.uris
 	);
 	customDataSource.onDidChange(
 		() => {
 			client.sendNotification(
 				CustomDataChangedNotification.type,
-				customDataSource.uris,
+				customDataSource.uris
 			);
 		},
 		undefined,
-		toDispose,
+		toDispose
 	);
 	toDispose.push(
-		client.onRequest(CustomDataContent.type, customDataSource.getContent),
+		client.onRequest(CustomDataContent.type, customDataSource.getContent)
 	);
 
 	const insertRequestor = (
 		kind: "autoQuote" | "autoClose",
 		document: TextDocument,
-		position: Position,
+		position: Position
 	): Promise<string> => {
 		const param: AutoInsertParams = {
 			kind,
 			textDocument:
 				client.code2ProtocolConverter.asTextDocumentIdentifier(
-					document,
+					document
 				),
 			position: client.code2ProtocolConverter.asPosition(position),
 		};
@@ -358,7 +358,7 @@ async function startClientWithParticipants(
 	const disposable = activateAutoInsertion(
 		insertRequestor,
 		languageParticipants,
-		runtime,
+		runtime
 	);
 	toDispose.push(disposable);
 
@@ -376,8 +376,8 @@ async function startClientWithParticipants(
 		workspace.onDidChangeConfiguration(
 			(e) =>
 				e.affectsConfiguration(SettingIds.formatEnable) &&
-				updateFormatterRegistration(),
-		),
+				updateFormatterRegistration()
+		)
 	);
 
 	client.sendRequest(SemanticTokenLegendRequest.type).then((legend) => {
@@ -388,7 +388,7 @@ async function startClientWithParticipants(
 					const params: SemanticTokenParams = {
 						textDocument:
 							client.code2ProtocolConverter.asTextDocumentIdentifier(
-								doc,
+								doc
 							),
 					};
 					return client
@@ -404,7 +404,7 @@ async function startClientWithParticipants(
 					const params: SemanticTokenParams = {
 						textDocument:
 							client.code2ProtocolConverter.asTextDocumentIdentifier(
-								doc,
+								doc
 							),
 						ranges: [client.code2ProtocolConverter.asRange(range)],
 					};
@@ -422,8 +422,8 @@ async function startClientWithParticipants(
 				languages.registerDocumentSemanticTokensProvider(
 					documentSelector,
 					provider,
-					new SemanticTokensLegend(legend.types, legend.modifiers),
-				),
+					new SemanticTokensLegend(legend.types, legend.modifiers)
+				)
 			);
 		}
 	});
@@ -444,45 +444,45 @@ async function startClientWithParticipants(
 							document: TextDocument,
 							range: Range,
 							options: FormattingOptions,
-							token: CancellationToken,
+							token: CancellationToken
 						): ProviderResult<TextEdit[]> {
 							const filesConfig = workspace.getConfiguration(
 								"files",
-								document,
+								document
 							);
 							const fileFormattingOptions = {
 								trimTrailingWhitespace:
 									filesConfig.get<boolean>(
-										"trimTrailingWhitespace",
+										"trimTrailingWhitespace"
 									),
 								trimFinalNewlines:
 									filesConfig.get<boolean>(
-										"trimFinalNewlines",
+										"trimFinalNewlines"
 									),
 								insertFinalNewline:
 									filesConfig.get<boolean>(
-										"insertFinalNewline",
+										"insertFinalNewline"
 									),
 							};
 							const params: DocumentRangeFormattingParams = {
 								textDocument:
 									client.code2ProtocolConverter.asTextDocumentIdentifier(
-										document,
+										document
 									),
 								range: client.code2ProtocolConverter.asRange(
-									range,
+									range
 								),
 								options:
 									client.code2ProtocolConverter.asFormattingOptions(
 										options,
-										fileFormattingOptions,
+										fileFormattingOptions
 									),
 							};
 							return client
 								.sendRequest(
 									DocumentRangeFormattingRequest.type,
 									params,
-									token,
+									token
 								)
 								.then(
 									client.protocol2CodeConverter.asTextEdits,
@@ -491,13 +491,13 @@ async function startClientWithParticipants(
 											DocumentRangeFormattingRequest.type,
 											undefined,
 											error,
-											[],
+											[]
 										);
 										return Promise.resolve([]);
-									},
+									}
 								);
 						},
-					},
+					}
 				);
 		}
 	}
@@ -509,35 +509,35 @@ async function startClientWithParticipants(
 			provideCompletionItems(doc, pos) {
 				const results: CompletionItem[] = [];
 				const lineUntilPos = doc.getText(
-					new Range(new Position(pos.line, 0), pos),
+					new Range(new Position(pos.line, 0), pos)
 				);
 				const match = lineUntilPos.match(regionCompletionRegExpr);
 				if (match) {
 					const range = new Range(
 						new Position(pos.line, match[1].length),
-						pos,
+						pos
 					);
 					const beginProposal = new CompletionItem(
 						"#region",
-						CompletionItemKind.Snippet,
+						CompletionItemKind.Snippet
 					);
 					beginProposal.range = range;
 					beginProposal.insertText = new SnippetString(
-						"<!-- #region $1-->",
+						"<!-- #region $1-->"
 					);
 					beginProposal.documentation = l10n.t(
-						"Folding Region Start",
+						"Folding Region Start"
 					);
 					beginProposal.filterText = match[2];
 					beginProposal.sortText = "za";
 					results.push(beginProposal);
 					const endProposal = new CompletionItem(
 						"#endregion",
-						CompletionItemKind.Snippet,
+						CompletionItemKind.Snippet
 					);
 					endProposal.range = range;
 					endProposal.insertText = new SnippetString(
-						"<!-- #endregion -->",
+						"<!-- #endregion -->"
 					);
 					endProposal.documentation = l10n.t("Folding Region End");
 					endProposal.filterText = match[2];
@@ -553,11 +553,11 @@ async function startClientWithParticipants(
 				) {
 					const range = new Range(
 						new Position(pos.line, match2[1].length),
-						pos,
+						pos
 					);
 					const snippetProposal = new CompletionItem(
 						"HTML sample",
-						CompletionItemKind.Snippet,
+						CompletionItemKind.Snippet
 					);
 					snippetProposal.range = range;
 					const content = [
@@ -578,7 +578,7 @@ async function startClientWithParticipants(
 					].join("\n");
 					snippetProposal.insertText = new SnippetString(content);
 					snippetProposal.documentation = l10n.t(
-						"Simple HTML5 starting point",
+						"Simple HTML5 starting point"
 					);
 					snippetProposal.filterText = match2[2];
 					snippetProposal.sortText = "za";
@@ -586,7 +586,7 @@ async function startClientWithParticipants(
 				}
 				return results;
 			},
-		}),
+		})
 	);
 
 	return {

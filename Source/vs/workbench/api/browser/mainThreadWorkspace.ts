@@ -80,32 +80,67 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ISearchService private readonly _searchService: ISearchService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@IEditSessionIdentityService private readonly _editSessionIdentityService: IEditSessionIdentityService,
-		@ICanonicalUriService private readonly _canonicalUriService: ICanonicalUriService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@IEditSessionIdentityService
+		private readonly _editSessionIdentityService: IEditSessionIdentityService,
+		@ICanonicalUriService
+		private readonly _canonicalUriService: ICanonicalUriService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IWorkspaceEditingService private readonly _workspaceEditingService: IWorkspaceEditingService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IWorkspaceEditingService
+		private readonly _workspaceEditingService: IWorkspaceEditingService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IRequestService private readonly _requestService: IRequestService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkspaceTrustRequestService private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustRequestService
+		private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostWorkspace);
 		const workspace = this._contextService.getWorkspace();
 		// The workspace file is provided be a unknown file system provider. It might come
 		// from the extension host. So initialize now knowing that `rootPath` is undefined.
-		if (workspace.configuration && !isNative && !fileService.hasProvider(workspace.configuration)) {
-			this._proxy.$initializeWorkspace(this.getWorkspaceData(workspace), this.isWorkspaceTrusted());
+		if (
+			workspace.configuration &&
+			!isNative &&
+			!fileService.hasProvider(workspace.configuration)
+		) {
+			this._proxy.$initializeWorkspace(
+				this.getWorkspaceData(workspace),
+				this.isWorkspaceTrusted()
+			);
 		} else {
-			this._contextService.getCompleteWorkspace().then(workspace => this._proxy.$initializeWorkspace(this.getWorkspaceData(workspace), this.isWorkspaceTrusted()));
+			this._contextService
+				.getCompleteWorkspace()
+				.then((workspace) =>
+					this._proxy.$initializeWorkspace(
+						this.getWorkspaceData(workspace),
+						this.isWorkspaceTrusted()
+					)
+				);
 		}
-		this._contextService.onDidChangeWorkspaceFolders(this._onDidChangeWorkspace, this, this._toDispose);
-		this._contextService.onDidChangeWorkbenchState(this._onDidChangeWorkspace, this, this._toDispose);
-		this._workspaceTrustManagementService.onDidChangeTrust(this._onDidGrantWorkspaceTrust, this, this._toDispose);
+		this._contextService.onDidChangeWorkspaceFolders(
+			this._onDidChangeWorkspace,
+			this,
+			this._toDispose
+		);
+		this._contextService.onDidChangeWorkbenchState(
+			this._onDidChangeWorkspace,
+			this,
+			this._toDispose
+		);
+		this._workspaceTrustManagementService.onDidChangeTrust(
+			this._onDidGrantWorkspaceTrust,
+			this,
+			this._toDispose
+		);
 	}
 
 	dispose(): void {
@@ -123,7 +158,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		extensionName: string,
 		index: number,
 		deleteCount: number,
-		foldersToAdd: { uri: UriComponents; name?: string }[],
+		foldersToAdd: { uri: UriComponents; name?: string }[]
 	): Promise<void> {
 		const workspaceFoldersToAdd = foldersToAdd.map((f) => ({
 			uri: URI.revive(f.uri),
@@ -135,23 +170,23 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			this.getStatusMessage(
 				extensionName,
 				workspaceFoldersToAdd.length,
-				deleteCount,
+				deleteCount
 			),
-			{ hideAfter: 10 * 1000 /* 10s */ },
+			{ hideAfter: 10 * 1000 /* 10s */ }
 		);
 
 		return this._workspaceEditingService.updateFolders(
 			index,
 			deleteCount,
 			workspaceFoldersToAdd,
-			true,
+			true
 		);
 	}
 
 	private getStatusMessage(
 		extensionName: string,
 		addCount: number,
-		removeCount: number,
+		removeCount: number
 	): string {
 		let message: string;
 
@@ -164,14 +199,14 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				message = localize(
 					"folderStatusMessageAddSingleFolder",
 					"Extension '{0}' added 1 folder to the workspace",
-					extensionName,
+					extensionName
 				);
 			} else {
 				message = localize(
 					"folderStatusMessageAddMultipleFolders",
 					"Extension '{0}' added {1} folders to the workspace",
 					extensionName,
-					addCount,
+					addCount
 				);
 			}
 		}
@@ -182,14 +217,14 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				message = localize(
 					"folderStatusMessageRemoveSingleFolder",
 					"Extension '{0}' removed 1 folder from the workspace",
-					extensionName,
+					extensionName
 				);
 			} else {
 				message = localize(
 					"folderStatusMessageRemoveMultipleFolders",
 					"Extension '{0}' removed {1} folders from the workspace",
 					extensionName,
-					removeCount,
+					removeCount
 				);
 			}
 		}
@@ -199,7 +234,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			message = localize(
 				"folderStatusChangeFolder",
 				"Extension '{0}' changed folders of the workspace",
-				extensionName,
+				extensionName
 			);
 		}
 
@@ -208,7 +243,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 
 	private _onDidChangeWorkspace(): void {
 		this._proxy.$acceptWorkspaceData(
-			this.getWorkspaceData(this._contextService.getWorkspace()),
+			this.getWorkspaceData(this._contextService.getWorkspace())
 		);
 	}
 
@@ -221,8 +256,8 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			isUntitled: workspace.configuration
 				? isUntitledWorkspace(
 						workspace.configuration,
-						this._environmentService,
-				  )
+						this._environmentService
+					)
 				: false,
 			folders: workspace.folders,
 			id: workspace.id,
@@ -238,7 +273,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		_includeFolder: UriComponents | null,
 		excludePatternOrDisregardExcludes: string | false | null,
 		maxResults: number | null,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<UriComponents[] | null> {
 		const includeFolder = URI.revive(_includeFolder);
 		const workspace = this._contextService.getWorkspace();
@@ -257,7 +292,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 						? excludePatternOrDisregardExcludes
 						: undefined,
 				_reason: "startFileSearch",
-			},
+			}
 		);
 
 		return this._searchService.fileSearch(query, token).then(
@@ -269,7 +304,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					return Promise.reject(err);
 				}
 				return null;
-			},
+			}
 		);
 	}
 
@@ -278,7 +313,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 		_folder: UriComponents | null,
 		options: ITextQueryBuilderOptions,
 		requestId: number,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<ITextSearchComplete | null> {
 		const folder = URI.revive(_folder);
 		const workspace = this._contextService.getWorkspace();
@@ -307,7 +342,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					}
 
 					return null;
-				},
+				}
 			);
 
 		return search;
@@ -316,10 +351,10 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	$checkExists(
 		folders: readonly UriComponents[],
 		includes: string[],
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<boolean> {
 		return this._instantiationService.invokeFunction((accessor) =>
-			checkGlobFileExists(accessor, folders, includes, token),
+			checkGlobFileExists(accessor, folders, includes, token)
 		);
 	}
 
@@ -327,7 +362,7 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 
 	async $save(
 		uriComponents: UriComponents,
-		options: { saveAs: boolean },
+		options: { saveAs: boolean }
 	): Promise<UriComponents | undefined> {
 		const uri = URI.revive(uriComponents);
 
@@ -354,8 +389,8 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 			result.editors.map((editor) =>
 				EditorResourceAccessor.getCanonicalUri(editor, {
 					supportSideBySide: SideBySideEditor.PRIMARY,
-				}),
-			),
+				})
+			)
 		);
 	}
 
@@ -376,10 +411,10 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	// --- trust ---
 
 	$requestWorkspaceTrust(
-		options?: WorkspaceTrustRequestOptions,
+		options?: WorkspaceTrustRequestOptions
 	): Promise<boolean | undefined> {
 		return this._workspaceTrustRequestService.requestWorkspaceTrust(
-			options,
+			options
 		);
 	}
 
@@ -401,27 +436,27 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 					scheme: scheme,
 					getEditSessionIdentifier: async (
 						workspaceFolder: WorkspaceFolder,
-						token: CancellationToken,
+						token: CancellationToken
 					) => {
 						return this._proxy.$getEditSessionIdentifier(
 							workspaceFolder.uri,
-							token,
+							token
 						);
 					},
 					provideEditSessionIdentityMatch: async (
 						workspaceFolder: WorkspaceFolder,
 						identity1: string,
 						identity2: string,
-						token: CancellationToken,
+						token: CancellationToken
 					) => {
 						return this._proxy.$provideEditSessionIdentityMatch(
 							workspaceFolder.uri,
 							identity1,
 							identity2,
-							token,
+							token
 						);
 					},
-				},
+				}
 			);
 
 		this.registeredEditSessionProviders.set(handle, disposable);
@@ -444,12 +479,12 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 				provideCanonicalUri: async (
 					uri: UriComponents,
 					targetScheme: string,
-					token: CancellationToken,
+					token: CancellationToken
 				) => {
 					const result = await this._proxy.$provideCanonicalUri(
 						uri,
 						targetScheme,
-						token,
+						token
 					);
 					if (result) {
 						return URI.revive(result);

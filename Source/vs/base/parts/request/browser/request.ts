@@ -14,7 +14,7 @@ import {
 
 export function request(
 	options: IRequestOptions,
-	token: CancellationToken,
+	token: CancellationToken
 ): Promise<IRequestContext> {
 	if (options.proxyAuthorization) {
 		options.headers = {
@@ -30,7 +30,7 @@ export function request(
 			options.url || "",
 			true,
 			options.user,
-			options.password,
+			options.password
 		);
 		setRequestHeaders(xhr, options);
 
@@ -41,9 +41,9 @@ export function request(
 					? new Error(
 							(xhr.statusText &&
 								"XHR failed: " + xhr.statusText) ||
-								"XHR failed",
-					  )
-					: new OfflineError(),
+								"XHR failed"
+						)
+					: new OfflineError()
 			);
 		xhr.onload = (e) => {
 			resolve({
@@ -52,7 +52,7 @@ export function request(
 					headers: getResponseHeaders(xhr),
 				},
 				stream: bufferToStream(
-					VSBuffer.wrap(new Uint8Array(xhr.response)),
+					VSBuffer.wrap(new Uint8Array(xhr.response))
 				),
 			});
 		};
@@ -75,7 +75,7 @@ export function request(
 
 function setRequestHeaders(
 	xhr: XMLHttpRequest,
-	options: IRequestOptions,
+	options: IRequestOptions
 ): void {
 	if (options.headers) {
 		outer: for (const k in options.headers) {

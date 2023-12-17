@@ -15,7 +15,7 @@ export class DebugTitleContribution implements IWorkbenchContribution {
 	constructor(
 		@IDebugService debugService: IDebugService,
 		@IHostService hostService: IHostService,
-		@ITitleService titleService: ITitleService,
+		@ITitleService titleService: ITitleService
 	) {
 		const updateTitle = () => {
 			if (debugService.state === State.Stopped && !hostService.hasFocus) {

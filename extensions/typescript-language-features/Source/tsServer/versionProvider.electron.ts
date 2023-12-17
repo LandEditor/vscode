@@ -19,11 +19,11 @@ export class DiskTypeScriptVersionProvider
 	implements ITypeScriptVersionProvider
 {
 	public constructor(
-		private configuration?: TypeScriptServiceConfiguration,
+		private configuration?: TypeScriptServiceConfiguration
 	) {}
 
 	public updateConfiguration(
-		configuration: TypeScriptServiceConfiguration,
+		configuration: TypeScriptServiceConfiguration
 	): void {
 		this.configuration = configuration;
 	}
@@ -36,7 +36,7 @@ export class DiskTypeScriptVersionProvider
 		if (this.configuration?.globalTsdk) {
 			const globals = this.loadVersionsFromSetting(
 				TypeScriptVersionSource.UserSetting,
-				this.configuration.globalTsdk,
+				this.configuration.globalTsdk
 			);
 			if (globals?.length) {
 				return globals[0];
@@ -60,7 +60,7 @@ export class DiskTypeScriptVersionProvider
 
 	public get localVersions(): TypeScriptVersion[] {
 		const allVersions = this.localTsdkVersions.concat(
-			this.localNodeModulesVersions,
+			this.localNodeModulesVersions
 		);
 		const paths = new Set<string>();
 		return allVersions.filter((x) => {
@@ -76,7 +76,7 @@ export class DiskTypeScriptVersionProvider
 		const version = this.getContributedVersion(
 			TypeScriptVersionSource.Bundled,
 			"vscode.typescript-language-features",
-			["..", "node_modules"],
+			["..", "node_modules"]
 		);
 		if (version) {
 			return version;
@@ -84,8 +84,8 @@ export class DiskTypeScriptVersionProvider
 
 		vscode.window.showErrorMessage(
 			vscode.l10n.t(
-				"VS Code's tsserver was deleted by another application such as a misbehaving virus detection tool. Please reinstall VS Code.",
-			),
+				"VS Code's tsserver was deleted by another application such as a misbehaving virus detection tool. Please reinstall VS Code."
+			)
 		);
 		throw new Error("Could not find bundled tsserver.js");
 	}
@@ -94,14 +94,14 @@ export class DiskTypeScriptVersionProvider
 		return this.getContributedVersion(
 			TypeScriptVersionSource.TsNightlyExtension,
 			"ms-vscode.vscode-typescript-next",
-			["node_modules"],
+			["node_modules"]
 		);
 	}
 
 	private getContributedVersion(
 		source: TypeScriptVersionSource,
 		extensionId: string,
-		pathToTs: readonly string[],
+		pathToTs: readonly string[]
 	): TypeScriptVersion | undefined {
 		try {
 			const extension = vscode.extensions.getExtension(extensionId);
@@ -111,13 +111,13 @@ export class DiskTypeScriptVersionProvider
 					...pathToTs,
 					"typescript",
 					"lib",
-					"tsserver.js",
+					"tsserver.js"
 				);
 				const bundledVersion = new TypeScriptVersion(
 					source,
 					serverPath,
 					DiskTypeScriptVersionProvider.getApiVersion(serverPath),
-					"",
+					""
 				);
 				if (bundledVersion.isValid) {
 					return bundledVersion;
@@ -134,14 +134,14 @@ export class DiskTypeScriptVersionProvider
 		return localTsdk
 			? this.loadVersionsFromSetting(
 					TypeScriptVersionSource.WorkspaceSetting,
-					localTsdk,
-			  )
+					localTsdk
+				)
 			: [];
 	}
 
 	private loadVersionsFromSetting(
 		source: TypeScriptVersionSource,
-		tsdkPathSetting: string,
+		tsdkPathSetting: string
 	): TypeScriptVersion[] {
 		if (path.isAbsolute(tsdkPathSetting)) {
 			const serverPath = path.join(tsdkPathSetting, "tsserver.js");
@@ -150,14 +150,14 @@ export class DiskTypeScriptVersionProvider
 					source,
 					serverPath,
 					DiskTypeScriptVersionProvider.getApiVersion(serverPath),
-					tsdkPathSetting,
+					tsdkPathSetting
 				),
 			];
 		}
 
 		const workspacePath =
 			RelativeWorkspacePathResolver.asAbsoluteWorkspacePath(
-				tsdkPathSetting,
+				tsdkPathSetting
 			);
 		if (workspacePath !== undefined) {
 			const serverPath = path.join(workspacePath, "tsserver.js");
@@ -166,7 +166,7 @@ export class DiskTypeScriptVersionProvider
 					source,
 					serverPath,
 					DiskTypeScriptVersionProvider.getApiVersion(serverPath),
-					tsdkPathSetting,
+					tsdkPathSetting
 				),
 			];
 		}
@@ -177,13 +177,13 @@ export class DiskTypeScriptVersionProvider
 	private get localNodeModulesVersions(): TypeScriptVersion[] {
 		return this.loadTypeScriptVersionsFromPath(
 			TypeScriptVersionSource.NodeModules,
-			path.join("node_modules", "typescript", "lib"),
+			path.join("node_modules", "typescript", "lib")
 		).filter((x) => x.isValid);
 	}
 
 	private loadTypeScriptVersionsFromPath(
 		source: TypeScriptVersionSource,
-		relativePath: string,
+		relativePath: string
 	): TypeScriptVersion[] {
 		if (!vscode.workspace.workspaceFolders) {
 			return [];
@@ -199,15 +199,15 @@ export class DiskTypeScriptVersionProvider
 			const serverPath = path.join(
 				root.uri.fsPath,
 				relativePath,
-				"tsserver.js",
+				"tsserver.js"
 			);
 			versions.push(
 				new TypeScriptVersion(
 					source,
 					serverPath,
 					DiskTypeScriptVersionProvider.getApiVersion(serverPath),
-					label,
-				),
+					label
+				)
 			);
 		}
 		return versions;

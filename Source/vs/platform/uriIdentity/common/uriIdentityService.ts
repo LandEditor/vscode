@@ -40,7 +40,6 @@ export class UriIdentityService implements IUriIdentityService {
 	private readonly _limit = 2 ** 16;
 
 	constructor(@IFileService private readonly _fileService: IFileService) {
-
 		const schemeIgnoresPathCasingCache = new Map<string, boolean>();
 
 		// assume path casing matters unless the file system provider spec'ed the opposite.
@@ -52,21 +51,34 @@ export class UriIdentityService implements IUriIdentityService {
 			let ignorePathCasing = schemeIgnoresPathCasingCache.get(uri.scheme);
 			if (ignorePathCasing === undefined) {
 				// retrieve once and then case per scheme until a change happens
-				ignorePathCasing = _fileService.hasProvider(uri) && !this._fileService.hasCapability(uri, FileSystemProviderCapabilities.PathCaseSensitive);
+				ignorePathCasing =
+					_fileService.hasProvider(uri) &&
+					!this._fileService.hasCapability(
+						uri,
+						FileSystemProviderCapabilities.PathCaseSensitive
+					);
 				schemeIgnoresPathCasingCache.set(uri.scheme, ignorePathCasing);
 			}
 			return ignorePathCasing;
 		};
-		this._dispooables.add(Event.any<IFileSystemProviderCapabilitiesChangeEvent | IFileSystemProviderRegistrationEvent>(
-			_fileService.onDidChangeFileSystemProviderRegistrations,
-			_fileService.onDidChangeFileSystemProviderCapabilities
-		)(e => {
-			// remove from cache
-			schemeIgnoresPathCasingCache.delete(e.scheme);
-		}));
+		this._dispooables.add(
+			Event.any<
+				| IFileSystemProviderCapabilitiesChangeEvent
+				| IFileSystemProviderRegistrationEvent
+			>(
+				_fileService.onDidChangeFileSystemProviderRegistrations,
+				_fileService.onDidChangeFileSystemProviderCapabilities
+			)((e) => {
+				// remove from cache
+				schemeIgnoresPathCasingCache.delete(e.scheme);
+			})
+		);
 
 		this.extUri = new ExtUri(ignorePathCasing);
-		this._canonicalUris = new SkipList((a, b) => this.extUri.compare(a, b, true), this._limit);
+		this._canonicalUris = new SkipList(
+			(a, b) => this.extUri.compare(a, b, true),
+			this._limit
+		);
 	}
 
 	dispose(): void {
@@ -123,5 +135,5 @@ export class UriIdentityService implements IUriIdentityService {
 registerSingleton(
 	IUriIdentityService,
 	UriIdentityService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

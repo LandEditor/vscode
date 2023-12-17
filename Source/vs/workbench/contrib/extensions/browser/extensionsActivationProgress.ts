@@ -21,7 +21,7 @@ export class ExtensionActivationProgress implements IWorkbenchContribution {
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
 		@IProgressService progressService: IProgressService,
-		@ILogService logService: ILogService,
+		@ILogService logService: ILogService
 	) {
 		const options = {
 			location: ProgressLocation.Window,

@@ -25,17 +25,17 @@ import { IViewLineTokens } from "vs/editor/common/tokens/lineTokens";
 
 export function fixBracketsInLine(
 	tokens: IViewLineTokens,
-	languageConfigurationService: ILanguageConfigurationService,
+	languageConfigurationService: ILanguageConfigurationService
 ): string {
 	const denseKeyProvider = new DenseKeyProvider<string>();
 	const bracketTokens = new LanguageAgnosticBracketTokens(
 		denseKeyProvider,
 		(languageId) =>
-			languageConfigurationService.getLanguageConfiguration(languageId),
+			languageConfigurationService.getLanguageConfiguration(languageId)
 	);
 	const tokenizer = new TextBufferTokenizer(
 		new StaticTokenizerSource([tokens]),
-		bracketTokens,
+		bracketTokens
 	);
 	const node = parseDocument(tokenizer, [], undefined, true);
 
@@ -57,12 +57,12 @@ export function fixBracketsInLine(
 			} else {
 				const singleLangBracketTokens =
 					bracketTokens.getSingleLanguageBracketTokens(
-						node.openingBracket.languageId,
+						node.openingBracket.languageId
 					);
 
 				const closingTokenText =
 					singleLangBracketTokens.findClosingTokenText(
-						node.openingBracket.bracketIds,
+						node.openingBracket.bracketIds
 					);
 				str += closingTokenText;
 			}
@@ -75,8 +75,8 @@ export function fixBracketsInLine(
 			str += line.substring(
 				lengthGetColumnCountIfZeroLineCount(offset),
 				lengthGetColumnCountIfZeroLineCount(
-					lengthAdd(offset, node.length),
-				),
+					lengthAdd(offset, node.length)
+				)
 			);
 		} else if (node.kind === AstNodeKind.List) {
 			for (const child of node.children) {

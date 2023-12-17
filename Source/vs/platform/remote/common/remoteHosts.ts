@@ -13,10 +13,10 @@ export function getRemoteAuthority(uri: URI): string | undefined {
 export function getRemoteName(authority: string): string;
 export function getRemoteName(authority: undefined): undefined;
 export function getRemoteName(
-	authority: string | undefined,
+	authority: string | undefined
 ): string | undefined;
 export function getRemoteName(
-	authority: string | undefined,
+	authority: string | undefined
 ): string | undefined {
 	if (!authority) {
 		return undefined;
@@ -48,7 +48,7 @@ export function parseAuthorityWithPort(authority: string): {
 	const { host, port } = parseAuthority(authority);
 	if (typeof port === "undefined") {
 		throw new Error(
-			`Invalid remote authority: ${authority}. It must either be a remote of form <remoteName>+<arg> or a remote host of form <host>:<port>.`,
+			`Invalid remote authority: ${authority}. It must either be a remote of form <remoteName>+<arg> or a remote host of form <host>:<port>.`
 		);
 	}
 	return { host, port };
@@ -56,7 +56,7 @@ export function parseAuthorityWithPort(authority: string): {
 
 export function parseAuthorityWithOptionalPort(
 	authority: string,
-	defaultPort: number,
+	defaultPort: number
 ): { host: string; port: number } {
 	let { host, port } = parseAuthority(authority);
 	if (typeof port === "undefined") {

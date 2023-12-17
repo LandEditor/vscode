@@ -8,7 +8,7 @@ import { URI } from "vs/base/common/uri";
 import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 export const IProtocolMainService = createDecorator<IProtocolMainService>(
-	"protocolMainService",
+	"protocolMainService"
 );
 
 export interface IIPCObjectUrl<T> extends IDisposable {

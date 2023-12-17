@@ -47,8 +47,10 @@ export class NotificationsList extends Disposable {
 	constructor(
 		private readonly container: HTMLElement,
 		private readonly options: INotificationsListOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService
 	) {
 		super();
 	}
@@ -73,18 +75,18 @@ export class NotificationsList extends Disposable {
 		this.listContainer.classList.add("notifications-list-container");
 
 		const actionRunner = this._register(
-			this.instantiationService.createInstance(NotificationActionRunner),
+			this.instantiationService.createInstance(NotificationActionRunner)
 		);
 
 		// Notification Renderer
 		const renderer = this.instantiationService.createInstance(
 			NotificationRenderer,
-			actionRunner,
+			actionRunner
 		);
 
 		// List
 		const listDelegate = (this.listDelegate = new NotificationsListDelegate(
-			this.listContainer,
+			this.listContainer
 		));
 		const options = this.options;
 		const list = (this.list = <WorkbenchList<INotificationViewItem>>(
@@ -105,10 +107,10 @@ export class NotificationsList extends Disposable {
 						accessibilityProvider:
 							this.instantiationService.createInstance(
 								NotificationAccessibilityProvider,
-								options,
+								options
 							),
-					},
-				),
+					}
+				)
 			)
 		));
 
@@ -117,8 +119,8 @@ export class NotificationsList extends Disposable {
 			this.instantiationService.createInstance(
 				CopyNotificationMessageAction,
 				CopyNotificationMessageAction.ID,
-				CopyNotificationMessageAction.LABEL,
-			),
+				CopyNotificationMessageAction.LABEL
+			)
 		);
 		this._register(
 			list.onContextMenu((e) => {
@@ -132,28 +134,28 @@ export class NotificationsList extends Disposable {
 					getActionsContext: () => e.element,
 					actionRunner,
 				});
-			}),
+			})
 		);
 
 		// Toggle on double click
 		this._register(
 			list.onMouseDblClick((event) =>
-				(event.element as INotificationViewItem).toggle(),
-			),
+				(event.element as INotificationViewItem).toggle()
+			)
 		);
 
 		// Clear focus when DOM focus moves out
 		// Use document.hasFocus() to not clear the focus when the entire window lost focus
 		// This ensures that when the focus comes back, the notification is still focused
 		const listFocusTracker = this._register(
-			trackFocus(list.getHTMLElement()),
+			trackFocus(list.getHTMLElement())
 		);
 		this._register(
 			listFocusTracker.onDidBlur(() => {
 				if (getWindow(this.listContainer).document.hasFocus()) {
 					list.setFocus([]);
 				}
-			}),
+			})
 		);
 
 		// Context key
@@ -167,7 +169,7 @@ export class NotificationsList extends Disposable {
 				if (e.indexes.length > 0) {
 					list.setSelection([]);
 				}
-			}),
+			})
 		);
 
 		this.container.appendChild(this.listContainer);
@@ -176,11 +178,11 @@ export class NotificationsList extends Disposable {
 	updateNotificationsList(
 		start: number,
 		deleteCount: number,
-		items: INotificationViewItem[] = [],
+		items: INotificationViewItem[] = []
 	) {
 		const [list, listContainer] = assertAllDefined(
 			this.list,
-			this.listContainer,
+			this.listContainer
 		);
 		const listHasDOMFocus = isAncestorOfActiveElement(listContainer);
 
@@ -243,7 +245,7 @@ export class NotificationsList extends Disposable {
 
 		const [list, listDelegate] = assertAllDefined(
 			this.list,
-			this.listDelegate,
+			this.listDelegate
 		);
 		list.updateElementHeight(index, listDelegate.getHeight(item));
 		list.layout();
@@ -305,9 +307,11 @@ class NotificationAccessibilityProvider
 {
 	constructor(
 		private readonly _options: INotificationsListOptions,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
-	) { }
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService
+	) {}
 	getAriaLabel(element: INotificationViewItem): string {
 		let accessibleViewHint: string | undefined;
 		const keybinding = this._keybindingService
@@ -315,19 +319,19 @@ class NotificationAccessibilityProvider
 			?.getAriaLabel();
 		if (
 			this._configurationService.getValue(
-				"accessibility.verbosity.notification",
+				"accessibility.verbosity.notification"
 			)
 		) {
 			accessibleViewHint = keybinding
 				? localize(
 						"notificationAccessibleViewHint",
 						"Inspect the response in the accessible view with {0}",
-						keybinding,
-				  )
+						keybinding
+					)
 				: localize(
 						"notificationAccessibleViewHintNoKb",
-						"Inspect the response in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding",
-				  );
+						"Inspect the response in the accessible view via the command Open Accessible View which is currently not triggerable via keybinding"
+					);
 		}
 		if (!element.source) {
 			return accessibleViewHint
@@ -335,13 +339,13 @@ class NotificationAccessibilityProvider
 						"notificationAriaLabelHint",
 						"{0}, notification, {1}",
 						element.message.raw,
-						accessibleViewHint,
-				  )
+						accessibleViewHint
+					)
 				: localize(
 						"notificationAriaLabel",
 						"{0}, notification",
-						element.message.raw,
-				  );
+						element.message.raw
+					);
 		}
 
 		return accessibleViewHint
@@ -350,14 +354,14 @@ class NotificationAccessibilityProvider
 					"{0}, source: {1}, notification, {2}",
 					element.message.raw,
 					element.source,
-					accessibleViewHint,
-			  )
+					accessibleViewHint
+				)
 			: localize(
 					"notificationWithSourceAriaLabel",
 					"{0}, source: {1}, notification",
 					element.message.raw,
-					element.source,
-			  );
+					element.source
+				);
 	}
 	getWidgetAriaLabel(): string {
 		return (

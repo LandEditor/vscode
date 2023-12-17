@@ -12,7 +12,7 @@ export class CodiconActionViewItem extends MenuEntryActionViewItem {
 		if (this.options.label && this.label) {
 			DOM.reset(
 				this.label,
-				...renderLabelWithIcons(this._commandAction.label ?? ""),
+				...renderLabelWithIcons(this._commandAction.label ?? "")
 			);
 		}
 	}

@@ -25,7 +25,7 @@ class LongLinesHelper extends Disposable implements IEditorContribution {
 		this._register(
 			this._editor.onMouseDown((e) => {
 				const stopRenderingLineAfter = this._editor.getOption(
-					EditorOption.stopRenderingLineAfter,
+					EditorOption.stopRenderingLineAfter
 				);
 				if (
 					stopRenderingLineAfter >= 0 &&
@@ -36,7 +36,7 @@ class LongLinesHelper extends Disposable implements IEditorContribution {
 						stopRenderingLineAfter: -1,
 					});
 				}
-			}),
+			})
 		);
 	}
 }
@@ -44,5 +44,5 @@ class LongLinesHelper extends Disposable implements IEditorContribution {
 registerEditorContribution(
 	LongLinesHelper.ID,
 	LongLinesHelper,
-	EditorContributionInstantiation.BeforeFirstInteraction,
+	EditorContributionInstantiation.BeforeFirstInteraction
 );

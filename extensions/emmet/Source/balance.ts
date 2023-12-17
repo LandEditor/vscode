@@ -34,7 +34,7 @@ function balance(out: boolean) {
 	let newSelections: readonly vscode.Selection[] = editor.selections.map(
 		(selection) => {
 			return rangeFn(document, rootNode, selection);
-		},
+		}
 	);
 
 	// check whether we are starting a balance elsewhere
@@ -60,14 +60,14 @@ function balance(out: boolean) {
 function getRangeToBalanceOut(
 	document: vscode.TextDocument,
 	rootNode: HtmlFlatNode,
-	selection: vscode.Selection,
+	selection: vscode.Selection
 ): vscode.Selection {
 	const offset = document.offsetAt(selection.start);
 	const nodeToBalance = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		offset,
-		false,
+		false
 	);
 	if (!nodeToBalance) {
 		return selection;
@@ -76,7 +76,7 @@ function getRangeToBalanceOut(
 		return offsetRangeToSelection(
 			document,
 			nodeToBalance.start,
-			nodeToBalance.end,
+			nodeToBalance.end
 		);
 	}
 
@@ -90,23 +90,23 @@ function getRangeToBalanceOut(
 		innerSelection = offsetRangeToSelection(
 			document,
 			nodeToBalance.close.start,
-			nodeToBalance.open.end,
+			nodeToBalance.open.end
 		);
 		outerSelection = offsetRangeToSelection(
 			document,
 			nodeToBalance.close.end,
-			nodeToBalance.open.start,
+			nodeToBalance.open.start
 		);
 	} else {
 		innerSelection = offsetRangeToSelection(
 			document,
 			nodeToBalance.open.end,
-			nodeToBalance.close.start,
+			nodeToBalance.close.start
 		);
 		outerSelection = offsetRangeToSelection(
 			document,
 			nodeToBalance.open.start,
-			nodeToBalance.close.end,
+			nodeToBalance.close.end
 		);
 	}
 
@@ -128,14 +128,14 @@ function getRangeToBalanceOut(
 function getRangeToBalanceIn(
 	document: vscode.TextDocument,
 	rootNode: HtmlFlatNode,
-	selection: vscode.Selection,
+	selection: vscode.Selection
 ): vscode.Selection {
 	const offset = document.offsetAt(selection.start);
 	const nodeToBalance = getHtmlFlatNode(
 		document.getText(),
 		rootNode,
 		offset,
-		true,
+		true
 	);
 	if (!nodeToBalance) {
 		return selection;
@@ -158,7 +158,7 @@ function getRangeToBalanceIn(
 			return offsetRangeToSelection(
 				document,
 				nodeToBalance.open.end,
-				nodeToBalance.close.start,
+				nodeToBalance.close.start
 			);
 		}
 	}
@@ -177,7 +177,7 @@ function getRangeToBalanceIn(
 		return offsetRangeToSelection(
 			document,
 			firstChild.open.end,
-			firstChild.close.start,
+			firstChild.close.start
 		);
 	}
 
@@ -186,7 +186,7 @@ function getRangeToBalanceIn(
 
 function areSameSelections(
 	a: readonly vscode.Selection[],
-	b: readonly vscode.Selection[],
+	b: readonly vscode.Selection[]
 ): boolean {
 	if (a.length !== b.length) {
 		return false;

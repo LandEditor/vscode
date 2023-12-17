@@ -19,8 +19,7 @@ export function initialize(foreignModule: any) {
 		(msg) => {
 			globalThis.postMessage(msg);
 		},
-		(host: IEditorWorkerHost) =>
-			new EditorSimpleWorker(host, foreignModule),
+		(host: IEditorWorkerHost) => new EditorSimpleWorker(host, foreignModule)
 	);
 
 	globalThis.onmessage = (e: MessageEvent) => {

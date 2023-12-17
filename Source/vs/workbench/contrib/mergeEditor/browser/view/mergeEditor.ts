@@ -131,18 +131,18 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 
 	private rootHtmlElement: HTMLElement | undefined;
 	private readonly _grid = this._register(
-		new MutableDisposable<Grid<IView>>(),
+		new MutableDisposable<Grid<IView>>()
 	);
 	private readonly input1View = this._register(
 		this.instantiationService.createInstance(
 			InputCodeEditorView,
 			1,
-			this._viewModel,
-		),
+			this._viewModel
+		)
 	);
 	private readonly baseView = observableValue<BaseCodeEditorView | undefined>(
 		this,
-		undefined,
+		undefined
 	);
 	private readonly baseViewOptions = observableValue<
 		Readonly<ICodeEditorOptions> | undefined
@@ -151,22 +151,22 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 		this.instantiationService.createInstance(
 			InputCodeEditorView,
 			2,
-			this._viewModel,
-		),
+			this._viewModel
+		)
 	);
 
 	private readonly inputResultView = this._register(
 		this.instantiationService.createInstance(
 			ResultCodeEditorView,
-			this._viewModel,
-		),
+			this._viewModel
+		)
 	);
 	private readonly _layoutMode = this.instantiationService.createInstance(
-		MergeEditorLayoutStore,
+		MergeEditorLayoutStore
 	);
 	private readonly _layoutModeObs = observableValue(
 		this,
-		this._layoutMode.value,
+		this._layoutMode.value
 	);
 	private readonly _ctxIsMergeEditor: IContextKey<boolean> =
 		ctxIsMergeEditor.bindTo(this.contextKeyService);
@@ -175,12 +175,12 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 	private readonly _ctxShowBase: IContextKey<boolean> =
 		ctxMergeEditorShowBase.bindTo(this.contextKeyService);
 	private readonly _ctxShowBaseAtTop = ctxMergeEditorShowBaseAtTop.bindTo(
-		this.contextKeyService,
+		this.contextKeyService
 	);
 	private readonly _ctxResultUri: IContextKey<string> =
 		ctxMergeResultUri.bindTo(this.contextKeyService);
 	private readonly _ctxBaseUri: IContextKey<string> = ctxMergeBaseUri.bindTo(
-		this.contextKeyService,
+		this.contextKeyService
 	);
 	private readonly _ctxShowNonConflictingChanges: IContextKey<boolean> =
 		ctxMergeEditorShowNonConflictingChanges.bindTo(this.contextKeyService);
@@ -196,20 +196,20 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 
 	private get inputsWritable(): boolean {
 		return !!this._configurationService.getValue<boolean>(
-			"mergeEditor.writableInputs",
+			"mergeEditor.writableInputs"
 		);
 	}
 
 	private readonly viewZoneComputer = new ViewZoneComputer(
 		this.input1View.editor,
 		this.input2View.editor,
-		this.inputResultView.editor,
+		this.inputResultView.editor
 	);
 
 	protected readonly codeLensesVisible = observableConfigValue<boolean>(
 		"mergeEditor.showCodeLenses",
 		true,
-		this.configurationService,
+		this.configurationService
 	);
 
 	private readonly scrollSynchronizer = this._register(
@@ -219,25 +219,40 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			this.input2View,
 			this.baseView,
 			this.inputResultView,
-			this._layoutModeObs,
-		),
+			this._layoutModeObs
+		)
 	);
 
 	constructor(
 		@IInstantiationService instantiation: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService storageService: IStorageService,
 		@IThemeService themeService: IThemeService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IFileService fileService: IFileService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
-		super(MergeEditor.ID, telemetryService, instantiation, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService, fileService);
+		super(
+			MergeEditor.ID,
+			telemetryService,
+			instantiation,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService,
+			fileService
+		);
 	}
 
 	override dispose(): void {
@@ -275,7 +290,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 
 	protected createEditorControl(
 		parent: HTMLElement,
-		initialOptions: ICodeEditorOptions,
+		initialOptions: ICodeEditorOptions
 	): void {
 		this.rootHtmlElement = parent;
 		parent.classList.add("merge-editor");
@@ -295,14 +310,14 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 				glyphMargin: false,
 				lineNumbersMinChars: 2,
 				readOnly: !this.inputsWritable,
-			},
+			}
 		);
 
 		this.input1View.updateOptions(inputOptions);
 		this.input2View.updateOptions(inputOptions);
 		this.baseViewOptions.set(
 			{ ...this.input2View.editor.getRawOptions() },
-			undefined,
+			undefined
 		);
 		this.inputResultView.updateOptions(options);
 	}
@@ -319,7 +334,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 		input: EditorInput,
 		options: IEditorOptions | undefined,
 		context: IEditorOpenContext,
-		token: CancellationToken,
+		token: CancellationToken
 	): Promise<void> {
 		if (!(input instanceof MergeEditorInput)) {
 			throw new BugIndicatingError("ONLY MergeEditorInput is supported");
@@ -342,7 +357,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			this.input2View,
 			this.inputResultView,
 			this.baseView,
-			this.showNonConflictingChanges,
+			this.showNonConflictingChanges
 		);
 
 		model.telemetry.reportMergeEditorOpened({
@@ -367,7 +382,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			toDisposable(() => {
 				this._ctxBaseUri.reset();
 				this._ctxResultUri.reset();
-			}),
+			})
 		);
 
 		// Set the view zones before restoring view state!
@@ -407,10 +422,10 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 															this.inputResultView
 																.editor,
 															resultViewZoneAccessor,
-															shouldAlignResult,
-														),
+															shouldAlignResult
+														)
 													);
-												},
+												}
 											);
 										} else {
 											store.add(
@@ -426,19 +441,19 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 													false,
 													this.inputResultView.editor,
 													resultViewZoneAccessor,
-													shouldAlignResult,
-												),
+													shouldAlignResult
+												)
 											);
 										}
-									},
+									}
 								);
-							},
+							}
 						);
-					},
+					}
 				);
 
 				this.scrollSynchronizer.updateScrolling();
-			}),
+			})
 		);
 
 		const viewState = this.loadEditorViewState(input, context);
@@ -454,13 +469,13 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 						return;
 					}
 					this.input1View.editor.revealLineInCenter(
-						firstConflict.input1Range.startLineNumber,
+						firstConflict.input1Range.startLineNumber
 					);
 					transaction((tx) => {
 						/** @description setActiveModifiedBaseRange */
 						viewModel.setActiveModifiedBaseRange(firstConflict, tx);
 					});
-				}),
+				})
 			);
 		}
 
@@ -468,23 +483,23 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 		const mirrorWordWrapTransientState = (candidate: ITextModel) => {
 			const candidateState = readTransientState(
 				candidate,
-				this._codeEditorService,
+				this._codeEditorService
 			);
 
 			writeTransientState(
 				model.input2.textModel,
 				candidateState,
-				this._codeEditorService,
+				this._codeEditorService
 			);
 			writeTransientState(
 				model.input1.textModel,
 				candidateState,
-				this._codeEditorService,
+				this._codeEditorService
 			);
 			writeTransientState(
 				model.resultTextModel,
 				candidateState,
-				this._codeEditorService,
+				this._codeEditorService
 			);
 
 			const baseTextModel = this.baseView.get()?.editor.getModel();
@@ -492,7 +507,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 				writeTransientState(
 					baseTextModel,
 					candidateState,
-					this._codeEditorService,
+					this._codeEditorService
 				);
 			}
 		};
@@ -500,8 +515,8 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			this._codeEditorService.onDidChangeTransientModelProperty(
 				(candidate) => {
 					mirrorWordWrapTransientState(candidate);
-				},
-			),
+				}
+			)
 		);
 		mirrorWordWrapTransientState(this.inputResultView.editor.getModel()!);
 
@@ -517,8 +532,8 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 					for (const model of this.baseInput1Input2()) {
 						this._disposable.add(
 							model.onDidChangeContent(() =>
-								this._checkBaseInput1Input2AllEmpty(),
-							),
+								this._checkBaseInput1Input2AllEmpty()
+							)
 						);
 					}
 				}
@@ -551,10 +566,10 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 								forceReplaceDirty: true,
 							},
 						],
-						that.group ?? that.editorGroupService.activeGroup,
+						that.group ?? that.editorGroupService.activeGroup
 					);
 				}
-			})(),
+			})()
 		);
 	}
 
@@ -570,7 +585,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 		shouldAlignBase: boolean,
 		resultEditor: ICodeEditor,
 		resultViewZoneAccessor: IViewZoneChangeAccessor,
-		shouldAlignResult: boolean,
+		shouldAlignResult: boolean
 	): IDisposable {
 		const input1ViewZoneIds: string[] = [];
 		const input2ViewZoneIds: string[] = [];
@@ -586,7 +601,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 					this.showNonConflictingChanges.read(reader),
 				shouldAlignBase,
 				shouldAlignResult,
-			},
+			}
 		);
 
 		const disposableStore = new DisposableStore();
@@ -596,7 +611,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 				v.create(
 					baseViewZoneAccessor,
 					baseViewZoneIds,
-					disposableStore,
+					disposableStore
 				);
 			}
 		}
@@ -605,7 +620,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			v.create(
 				resultViewZoneAccessor,
 				resultViewZoneIds,
-				disposableStore,
+				disposableStore
 			);
 		}
 
@@ -613,7 +628,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			v.create(
 				input1ViewZoneAccessor,
 				input1ViewZoneIds,
-				disposableStore,
+				disposableStore
 			);
 		}
 
@@ -621,7 +636,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			v.create(
 				input2ViewZoneAccessor,
 				input2ViewZoneIds,
-				disposableStore,
+				disposableStore
 			);
 		}
 
@@ -660,7 +675,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 			applyTextEditorOptions(
 				options,
 				this.inputResultView.editor,
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 		}
 	}
@@ -700,7 +715,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 
 	protected override setEditorVisible(
 		visible: boolean,
-		group: IEditorGroup | undefined,
+		group: IEditorGroup | undefined
 	): void {
 		super.setEditorVisible(visible, group);
 
@@ -728,7 +743,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 	override get scopedContextKeyService(): IContextKeyService | undefined {
 		const control = this.getControl();
 		return control?.invokeWithinContext((accessor) =>
-			accessor.get(IContextKeyService),
+			accessor.get(IContextKeyService)
 		);
 	}
 
@@ -784,7 +799,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 	}
 
 	private readonly baseViewDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 
 	private applyLayout(layout: IMergeEditorLayout): void {
@@ -796,8 +811,8 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 				const baseView = this.baseViewDisposables.add(
 					this.instantiationService.createInstance(
 						BaseCodeEditorView,
-						this.viewModel,
-					),
+						this.viewModel
+					)
 				);
 				this.baseViewDisposables.add(
 					autorun((reader) => {
@@ -806,7 +821,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 						if (options) {
 							baseView.updateOptions(options);
 						}
-					}),
+					})
 				);
 				this.baseView.set(baseView, tx);
 			} else if (!layout.showBase && this.baseView.get()) {
@@ -821,7 +836,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 							? {
 									size: 38,
 									data: this.baseView.get()!.view,
-							  }
+								}
 							: undefined,
 						{
 							size: 38,
@@ -837,7 +852,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 							size: 62,
 							data: this.inputResultView.view,
 						},
-					].filter(isDefined),
+					].filter(isDefined)
 				);
 			} else if (layout.kind === "columns") {
 				this.setGrid(
@@ -846,7 +861,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 							? {
 									size: 40,
 									data: this.baseView.get()!.view,
-							  }
+								}
 							: undefined,
 						{
 							size: 60,
@@ -856,7 +871,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 								{ data: this.input2View.view },
 							],
 						},
-					].filter(isDefined),
+					].filter(isDefined)
 				);
 			}
 
@@ -889,7 +904,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 						Color.transparent,
 				},
 				proportionalLayout: true,
-			},
+			}
 		);
 
 		reset(this.rootHtmlElement!, this._grid.value.element);
@@ -921,7 +936,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 	}
 
 	protected computeEditorViewState(
-		resource: URI,
+		resource: URI
 	): IMergeEditorViewState | undefined {
 		if (!isEqual(this.inputModel.get()?.resultUri, resource)) {
 			return undefined;
@@ -947,23 +962,23 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 	private readonly showNonConflictingChangesStore =
 		this.instantiationService.createInstance(
 			PersistentStore<boolean>,
-			"mergeEditor/showNonConflictingChanges",
+			"mergeEditor/showNonConflictingChanges"
 		);
 	private readonly showNonConflictingChanges = observableValue(
 		this,
-		this.showNonConflictingChangesStore.get() ?? false,
+		this.showNonConflictingChangesStore.get() ?? false
 	);
 
 	public toggleShowNonConflictingChanges(): void {
 		this.showNonConflictingChanges.set(
 			!this.showNonConflictingChanges.get(),
-			undefined,
+			undefined
 		);
 		this.showNonConflictingChangesStore.set(
-			this.showNonConflictingChanges.get(),
+			this.showNonConflictingChanges.get()
 		);
 		this._ctxShowNonConflictingChanges.set(
-			this.showNonConflictingChanges.get(),
+			this.showNonConflictingChanges.get()
 		);
 	}
 }
@@ -984,9 +999,13 @@ class MergeEditorLayoutStore {
 	};
 
 	constructor(@IStorageService private _storageService: IStorageService) {
-		const value = _storageService.get(MergeEditorLayoutStore._key, StorageScope.PROFILE, 'mixed');
+		const value = _storageService.get(
+			MergeEditorLayoutStore._key,
+			StorageScope.PROFILE,
+			"mixed"
+		);
 
-		if (value === 'mixed' || value === 'columns') {
+		if (value === "mixed" || value === "columns") {
 			this._value = { kind: value, showBase: false, showBaseAtTop: true };
 		} else if (value) {
 			try {
@@ -1008,7 +1027,7 @@ class MergeEditorLayoutStore {
 				MergeEditorLayoutStore._key,
 				JSON.stringify(this._value),
 				StorageScope.PROFILE,
-				StorageTarget.USER,
+				StorageTarget.USER
 			);
 		}
 	}
@@ -1017,16 +1036,20 @@ class MergeEditorLayoutStore {
 export class MergeEditorOpenHandlerContribution extends Disposable {
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@ICodeEditorService codeEditorService: ICodeEditorService,
+		@ICodeEditorService codeEditorService: ICodeEditorService
 	) {
 		super();
-		this._store.add(codeEditorService.registerCodeEditorOpenHandler(this.openCodeEditorFromMergeEditor.bind(this)));
+		this._store.add(
+			codeEditorService.registerCodeEditorOpenHandler(
+				this.openCodeEditorFromMergeEditor.bind(this)
+			)
+		);
 	}
 
 	private async openCodeEditorFromMergeEditor(
 		input: ITextResourceEditorInput,
 		_source: ICodeEditor | null,
-		sideBySide?: boolean | undefined,
+		sideBySide?: boolean | undefined
 	): Promise<ICodeEditor | null> {
 		const activePane = this._editorService.activeEditorPane;
 		if (
@@ -1043,7 +1066,7 @@ export class MergeEditorOpenHandlerContribution extends Disposable {
 			applyTextEditorOptions(
 				input.options,
 				targetEditor,
-				ScrollType.Smooth,
+				ScrollType.Smooth
 			);
 			return targetEditor;
 		}
@@ -1056,12 +1079,12 @@ export class MergeEditorOpenHandlerContribution extends Disposable {
 export class MergeEditorResolverContribution extends Disposable {
 	constructor(
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
 
 		const mergeEditorInputFactory: MergeEditorInputFactoryFunction = (
-			mergeEditor: IResourceMergeEditorInput,
+			mergeEditor: IResourceMergeEditorInput
 		): EditorInputWithOptions => {
 			return {
 				editor: instantiationService.createInstance(
@@ -1083,7 +1106,7 @@ export class MergeEditorResolverContribution extends Disposable {
 						description: mergeEditor.input2.description ?? "",
 						detail: mergeEditor.input2.detail,
 					},
-					mergeEditor.result.resource,
+					mergeEditor.result.resource
 				),
 			};
 		};
@@ -1100,8 +1123,8 @@ export class MergeEditorResolverContribution extends Disposable {
 				{},
 				{
 					createMergeEditorInput: mergeEditorInputFactory,
-				},
-			),
+				}
+			)
 		);
 	}
 }

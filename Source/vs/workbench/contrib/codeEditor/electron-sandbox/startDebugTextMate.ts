@@ -31,7 +31,7 @@ class StartDebugTextMate extends Action2 {
 			title: {
 				value: nls.localize(
 					"startDebugTextMate",
-					"Start Text Mate Syntax Grammar Logging",
+					"Start Text Mate Syntax Grammar Logging"
 				),
 				original: "Start Text Mate Syntax Grammar Logging",
 			},
@@ -56,7 +56,7 @@ class StartDebugTextMate extends Action2 {
 					lineCount,
 					Constants.MAX_SAFE_SMALL_INTEGER,
 					lineCount,
-					Constants.MAX_SAFE_SMALL_INTEGER,
+					Constants.MAX_SAFE_SMALL_INTEGER
 				),
 				text: str,
 			},
@@ -70,14 +70,14 @@ class StartDebugTextMate extends Action2 {
 		const codeEditorService = accessor.get(ICodeEditorService);
 		const hostService = accessor.get(IHostService);
 		const environmentService = accessor.get(
-			INativeWorkbenchEnvironmentService,
+			INativeWorkbenchEnvironmentService
 		);
 		const loggerService = accessor.get(ILoggerService);
 		const fileService = accessor.get(IFileService);
 
 		const pathInTemp = joinPath(
 			environmentService.tmpDir,
-			`vcode-tm-log-${generateUuid()}.txt`,
+			`vcode-tm-log-${generateUuid()}.txt`
 		);
 		await fileService.createFile(pathInTemp);
 		const logger = loggerService.createLogger(pathInTemp, {
@@ -124,7 +124,7 @@ class StartDebugTextMate extends Action2 {
 				logger.info(str);
 				logger.flush();
 			},
-			() => {},
+			() => {}
 		);
 	}
 }

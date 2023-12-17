@@ -24,7 +24,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 	constructor(
 		scrollable: Scrollable,
 		options: ScrollableElementResolvedOptions,
-		host: ScrollbarHost,
+		host: ScrollbarHost
 	) {
 		const scrollDimensions = scrollable.getScrollDimensions();
 		const scrollPosition = scrollable.getCurrentScrollPosition();
@@ -40,7 +40,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 				0,
 				scrollDimensions.height,
 				scrollDimensions.scrollHeight,
-				scrollPosition.scrollTop,
+				scrollPosition.scrollTop
 			),
 			visibility: options.vertical,
 			extraScrollbarClassName: "vertical",
@@ -77,7 +77,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 				bgHeight: options.arrowSize,
 				onActivate: () =>
 					this._host.onMouseWheel(
-						new StandardWheelEvent(null, 0, -1),
+						new StandardWheelEvent(null, 0, -1)
 					),
 			});
 		}
@@ -85,11 +85,10 @@ export class VerticalScrollbar extends AbstractScrollbar {
 		this._createSlider(
 			0,
 			Math.floor(
-				(options.verticalScrollbarSize - options.verticalSliderSize) /
-					2,
+				(options.verticalScrollbarSize - options.verticalSliderSize) / 2
 			),
 			options.verticalSliderSize,
-			undefined,
+			undefined
 		);
 	}
 
@@ -117,7 +116,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 
 	protected _pointerDownRelativePosition(
 		offsetX: number,
-		offsetY: number,
+		offsetY: number
 	): number {
 		return offsetY;
 	}
@@ -127,7 +126,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 	}
 
 	protected _sliderOrthogonalPointerPosition(
-		e: ISimplifiedPointerEvent,
+		e: ISimplifiedPointerEvent
 	): number {
 		return e.pageX;
 	}
@@ -138,7 +137,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 
 	public writeScrollPosition(
 		target: INewScrollPosition,
-		scrollPosition: number,
+		scrollPosition: number
 	): void {
 		target.scrollTop = scrollPosition;
 	}
@@ -147,7 +146,7 @@ export class VerticalScrollbar extends AbstractScrollbar {
 		this.updateScrollbarSize(
 			options.vertical === ScrollbarVisibility.Hidden
 				? 0
-				: options.verticalScrollbarSize,
+				: options.verticalScrollbarSize
 		);
 		// give priority to vertical scroll bar over horizontal and let it scroll all the way to the bottom
 		this._scrollbarState.setOppositeScrollbarSize(0);

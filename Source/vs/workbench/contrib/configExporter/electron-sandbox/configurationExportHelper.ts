@@ -36,15 +36,19 @@ interface IConfigurationExport {
 
 export class DefaultConfigurationExportHelper {
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IFileService private readonly fileService: IFileService,
 		@IProductService private readonly productService: IProductService
 	) {
-		const exportDefaultConfigurationPath = environmentService.args['export-default-configuration'];
+		const exportDefaultConfigurationPath =
+			environmentService.args["export-default-configuration"];
 		if (exportDefaultConfigurationPath) {
-			this.writeConfigModelAndQuit(URI.file(exportDefaultConfigurationPath));
+			this.writeConfigModelAndQuit(
+				URI.file(exportDefaultConfigurationPath)
+			);
 		}
 	}
 
@@ -63,13 +67,13 @@ export class DefaultConfigurationExportHelper {
 		const resultString = JSON.stringify(config, undefined, "  ");
 		await this.fileService.writeFile(
 			target,
-			VSBuffer.fromString(resultString),
+			VSBuffer.fromString(resultString)
 		);
 	}
 
 	private getConfigModel(): IConfigurationExport {
 		const configRegistry = Registry.as<IConfigurationRegistry>(
-			Extensions.Configuration,
+			Extensions.Configuration
 		);
 		const configurations = configRegistry.getConfigurations().slice();
 		const settings: IExportedConfigurationNode[] = [];
@@ -77,7 +81,7 @@ export class DefaultConfigurationExportHelper {
 
 		const processProperty = (
 			name: string,
-			prop: IConfigurationPropertySchema,
+			prop: IConfigurationPropertySchema
 		) => {
 			if (processedNames.has(name)) {
 				console.warn("Setting is registered twice: " + name);

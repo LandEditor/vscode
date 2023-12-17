@@ -115,7 +115,7 @@ export interface ILayoutAnchor {
 export function layout(
 	viewportSize: number,
 	viewSize: number,
-	anchor: ILayoutAnchor,
+	anchor: ILayoutAnchor
 ): number {
 	const layoutAfterAnchorBoundary =
 		anchor.mode === LayoutAnchorMode.ALIGN
@@ -177,14 +177,14 @@ export class ContextView extends Disposable {
 		this.setContainer(container, domPosition);
 		this._register(
 			toDisposable(() =>
-				this.setContainer(null, ContextViewDOMPosition.ABSOLUTE),
-			),
+				this.setContainer(null, ContextViewDOMPosition.ABSOLUTE)
+			)
 		);
 	}
 
 	setContainer(
 		container: HTMLElement | null,
-		domPosition: ContextViewDOMPosition,
+		domPosition: ContextViewDOMPosition
 	): void {
 		this.useFixedPosition = domPosition !== ContextViewDOMPosition.ABSOLUTE;
 		const usedShadowDOM = this.useShadowDOM;
@@ -239,8 +239,8 @@ export class ContextView extends Disposable {
 						event,
 						(e) => {
 							this.onDOMEvent(e, false);
-						},
-					),
+						}
+					)
 				);
 			});
 
@@ -252,8 +252,8 @@ export class ContextView extends Disposable {
 						(e) => {
 							this.onDOMEvent(e, true);
 						},
-						true,
-					),
+						true
+					)
 				);
 			});
 
@@ -396,7 +396,7 @@ export class ContextView extends Disposable {
 				layout(
 					activeWindow.innerHeight,
 					viewSizeHeight,
-					verticalAnchor,
+					verticalAnchor
 				) + activeWindow.pageYOffset;
 
 			// if view intersects vertically with anchor,  we must avoid the anchor
@@ -406,7 +406,7 @@ export class ContextView extends Disposable {
 					{
 						start: verticalAnchor.offset,
 						end: verticalAnchor.offset + verticalAnchor.size,
-					},
+					}
 				)
 			) {
 				horizontalAnchor.mode = LayoutAnchorMode.AVOID;
@@ -415,7 +415,7 @@ export class ContextView extends Disposable {
 			left = layout(
 				activeWindow.innerWidth,
 				viewSizeWidth,
-				horizontalAnchor,
+				horizontalAnchor
 			);
 		} else {
 			const horizontalAnchor: ILayoutAnchor = {
@@ -439,7 +439,7 @@ export class ContextView extends Disposable {
 			left = layout(
 				activeWindow.innerWidth,
 				viewSizeWidth,
-				horizontalAnchor,
+				horizontalAnchor
 			);
 
 			// if view intersects horizontally with anchor, we must avoid the anchor
@@ -449,7 +449,7 @@ export class ContextView extends Disposable {
 					{
 						start: horizontalAnchor.offset,
 						end: horizontalAnchor.offset + horizontalAnchor.size,
-					},
+					}
 				)
 			) {
 				verticalAnchor.mode = LayoutAnchorMode.AVOID;
@@ -459,16 +459,16 @@ export class ContextView extends Disposable {
 				layout(
 					activeWindow.innerHeight,
 					viewSizeHeight,
-					verticalAnchor,
+					verticalAnchor
 				) + activeWindow.pageYOffset;
 		}
 
 		this.view.classList.remove("top", "bottom", "left", "right");
 		this.view.classList.add(
-			anchorPosition === AnchorPosition.BELOW ? "bottom" : "top",
+			anchorPosition === AnchorPosition.BELOW ? "bottom" : "top"
 		);
 		this.view.classList.add(
-			anchorAlignment === AnchorAlignment.LEFT ? "left" : "right",
+			anchorAlignment === AnchorAlignment.LEFT ? "left" : "right"
 		);
 		this.view.classList.toggle("fixed", this.useFixedPosition);
 
@@ -510,7 +510,7 @@ export class ContextView extends Disposable {
 			if (this.delegate.onDOMEvent) {
 				this.delegate.onDOMEvent(
 					e,
-					<HTMLElement>DOM.getWindow(e).document.activeElement,
+					<HTMLElement>DOM.getWindow(e).document.activeElement
 				);
 			} else if (
 				onCapture &&

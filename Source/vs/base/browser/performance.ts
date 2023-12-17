@@ -176,7 +176,7 @@ export namespace inputLatency {
 			performance.measure(
 				"inputlatency",
 				"inputlatency/start",
-				"inputlatency/end",
+				"inputlatency/end"
 			);
 
 			addMeasure("keydown", totalKeydownTime);
@@ -200,17 +200,17 @@ export namespace inputLatency {
 
 	function addMeasure(
 		entryName: string,
-		cumulativeMeasurement: ICumulativeMeasurement,
+		cumulativeMeasurement: ICumulativeMeasurement
 	): void {
 		const duration = performance.getEntriesByName(entryName)[0].duration;
 		cumulativeMeasurement.total += duration;
 		cumulativeMeasurement.min = Math.min(
 			cumulativeMeasurement.min,
-			duration,
+			duration
 		);
 		cumulativeMeasurement.max = Math.max(
 			cumulativeMeasurement.max,
-			duration,
+			duration
 		);
 	}
 
@@ -282,7 +282,7 @@ export namespace inputLatency {
 	}
 
 	function cumulativeToFinalMeasurement(
-		cumulative: ICumulativeMeasurement,
+		cumulative: ICumulativeMeasurement
 	): IInputLatencySingleMeasurement {
 		return {
 			average: cumulative.total / measurementsCount,
@@ -292,7 +292,7 @@ export namespace inputLatency {
 	}
 
 	function clearCumulativeMeasurement(
-		cumulative: ICumulativeMeasurement,
+		cumulative: ICumulativeMeasurement
 	): void {
 		cumulative.total = 0;
 		cumulative.min = Number.MAX_VALUE;

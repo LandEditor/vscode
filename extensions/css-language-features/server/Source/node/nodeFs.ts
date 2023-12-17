@@ -84,7 +84,7 @@ export function getNodeFSRequestService(): RequestService {
 							} else {
 								return [stat.name, FileType.Unknown];
 							}
-						}),
+						})
 					);
 				});
 			});

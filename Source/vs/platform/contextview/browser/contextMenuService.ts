@@ -37,7 +37,7 @@ export class ContextMenuService
 				this.contextViewService,
 				this.telemetryService,
 				this.notificationService,
-				this.keybindingService,
+				this.keybindingService
 			);
 		}
 
@@ -45,22 +45,26 @@ export class ContextMenuService
 	}
 
 	private readonly _onDidShowContextMenu = this._store.add(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidShowContextMenu = this._onDidShowContextMenu.event;
 
 	private readonly _onDidHideContextMenu = this._store.add(
-		new Emitter<void>(),
+		new Emitter<void>()
 	);
 	readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
 
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService
 	) {
 		super();
 	}
@@ -72,12 +76,12 @@ export class ContextMenuService
 	// ContextMenu
 
 	showContextMenu(
-		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
+		delegate: IContextMenuDelegate | IContextMenuMenuDelegate
 	): void {
 		delegate = ContextMenuMenuDelegate.transform(
 			delegate,
 			this.menuService,
-			this.contextKeyService,
+			this.contextKeyService
 		);
 
 		this.contextMenuHandler.showContextMenu({
@@ -95,7 +99,7 @@ export class ContextMenuService
 
 export namespace ContextMenuMenuDelegate {
 	function is(
-		thing: IContextMenuDelegate | IContextMenuMenuDelegate,
+		thing: IContextMenuDelegate | IContextMenuMenuDelegate
 	): thing is IContextMenuMenuDelegate {
 		return (
 			thing && (<IContextMenuMenuDelegate>thing).menuId instanceof MenuId
@@ -105,7 +109,7 @@ export namespace ContextMenuMenuDelegate {
 	export function transform(
 		delegate: IContextMenuDelegate | IContextMenuMenuDelegate,
 		menuService: IMenuService,
-		globalContextKeyService: IContextKeyService,
+		globalContextKeyService: IContextKeyService
 	): IContextMenuDelegate {
 		if (!is(delegate)) {
 			return delegate;
@@ -118,12 +122,12 @@ export namespace ContextMenuMenuDelegate {
 				if (menuId) {
 					const menu = menuService.createMenu(
 						menuId,
-						contextKeyService ?? globalContextKeyService,
+						contextKeyService ?? globalContextKeyService
 					);
 					createAndFillInContextMenuActions(
 						menu,
 						menuActionOptions,
-						target,
+						target
 					);
 					menu.dispose();
 				}

@@ -100,7 +100,7 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 
 	override run(
 		action: IAction,
-		context?: { preserveFocus?: boolean },
+		context?: { preserveFocus?: boolean }
 	): Promise<void> {
 		// Even though we have a fixed context for editor commands,
 		// allow to preserve the context that is given to us in case
@@ -121,11 +121,11 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 export interface IEditorTabsControl extends IDisposable {
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions,
+		newOptions: IEditorPartOptions
 	): void;
 	openEditor(
 		editor: EditorInput,
-		options?: IInternalEditorOpenOptions,
+		options?: IInternalEditorOpenOptions
 	): boolean;
 	openEditors(editors: EditorInput[]): boolean;
 	beforeCloseEditor(editor: EditorInput): void;
@@ -135,7 +135,7 @@ export interface IEditorTabsControl extends IDisposable {
 		editor: EditorInput,
 		fromIndex: number,
 		targetIndex: number,
-		stickyStateChange: boolean,
+		stickyStateChange: boolean
 	): void;
 	pinEditor(editor: EditorInput): void;
 	stickEditor(editor: EditorInput): void;
@@ -166,10 +166,10 @@ export abstract class EditorTabsControl
 	protected editorActionsToolbarContainer: HTMLElement | undefined;
 	private editorActionsToolbar: WorkbenchToolBar | undefined;
 	private readonly editorActionsToolbarDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 	private readonly editorActionsDisposables = this._register(
-		new DisposableStore(),
+		new DisposableStore()
 	);
 
 	private readonly contextMenuContextKeyService: IContextKeyService;
@@ -194,35 +194,67 @@ export abstract class EditorTabsControl
 		protected readonly groupsView: IEditorGroupsView,
 		protected readonly groupView: IEditorGroupView,
 		protected readonly tabsModel: IReadonlyEditorGroupModel,
-		@IContextMenuService protected readonly contextMenuService: IContextMenuService,
-		@IInstantiationService protected instantiationService: IInstantiationService,
-		@IContextKeyService protected readonly contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IContextMenuService
+		protected readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
+		@IContextKeyService
+		protected readonly contextKeyService: IContextKeyService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IQuickInputService protected quickInputService: IQuickInputService,
 		@IThemeService themeService: IThemeService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
 		@IHostService private readonly hostService: IHostService
 	) {
 		super(themeService);
 
-		this.contextMenuContextKeyService = this._register(this.contextKeyService.createScoped(parent));
-		const scopedInstantiationService = this.instantiationService.createChild(new ServiceCollection(
-			[IContextKeyService, this.contextMenuContextKeyService],
-		));
+		this.contextMenuContextKeyService = this._register(
+			this.contextKeyService.createScoped(parent)
+		);
+		const scopedInstantiationService =
+			this.instantiationService.createChild(
+				new ServiceCollection([
+					IContextKeyService,
+					this.contextMenuContextKeyService,
+				])
+			);
 
-		this.resourceContext = this._register(scopedInstantiationService.createInstance(ResourceContextKey));
+		this.resourceContext = this._register(
+			scopedInstantiationService.createInstance(ResourceContextKey)
+		);
 
-		this.editorPinnedContext = ActiveEditorPinnedContext.bindTo(this.contextMenuContextKeyService);
-		this.editorIsFirstContext = ActiveEditorFirstInGroupContext.bindTo(this.contextMenuContextKeyService);
-		this.editorIsLastContext = ActiveEditorLastInGroupContext.bindTo(this.contextMenuContextKeyService);
-		this.editorStickyContext = ActiveEditorStickyContext.bindTo(this.contextMenuContextKeyService);
-		this.editorAvailableEditorIds = ActiveEditorAvailableEditorIdsContext.bindTo(this.contextMenuContextKeyService);
+		this.editorPinnedContext = ActiveEditorPinnedContext.bindTo(
+			this.contextMenuContextKeyService
+		);
+		this.editorIsFirstContext = ActiveEditorFirstInGroupContext.bindTo(
+			this.contextMenuContextKeyService
+		);
+		this.editorIsLastContext = ActiveEditorLastInGroupContext.bindTo(
+			this.contextMenuContextKeyService
+		);
+		this.editorStickyContext = ActiveEditorStickyContext.bindTo(
+			this.contextMenuContextKeyService
+		);
+		this.editorAvailableEditorIds =
+			ActiveEditorAvailableEditorIdsContext.bindTo(
+				this.contextMenuContextKeyService
+			);
 
-		this.editorCanSplitInGroupContext = ActiveEditorCanSplitInGroupContext.bindTo(this.contextMenuContextKeyService);
-		this.sideBySideEditorContext = SideBySideEditorActiveContext.bindTo(this.contextMenuContextKeyService);
+		this.editorCanSplitInGroupContext =
+			ActiveEditorCanSplitInGroupContext.bindTo(
+				this.contextMenuContextKeyService
+			);
+		this.sideBySideEditorContext = SideBySideEditorActiveContext.bindTo(
+			this.contextMenuContextKeyService
+		);
 
-		this.groupLockedContext = ActiveEditorGroupLockedContext.bindTo(this.contextMenuContextKeyService);
+		this.groupLockedContext = ActiveEditorGroupLockedContext.bindTo(
+			this.contextMenuContextKeyService
+		);
 
 		this.renderDropdownAsChildElement = false;
 
@@ -242,14 +274,14 @@ export abstract class EditorTabsControl
 
 	protected createEditorActionsToolBar(
 		parent: HTMLElement,
-		classes: string[],
+		classes: string[]
 	): void {
 		this.editorActionsToolbarContainer = document.createElement("div");
 		this.editorActionsToolbarContainer.classList.add(...classes);
 		parent.appendChild(this.editorActionsToolbarContainer);
 
 		this.handleEditorActionToolBarVisibility(
-			this.editorActionsToolbarContainer,
+			this.editorActionsToolbarContainer
 		);
 	}
 
@@ -286,11 +318,11 @@ export abstract class EditorTabsControl
 					orientation: ActionsOrientation.HORIZONTAL,
 					ariaLabel: localize(
 						"ariaLabelEditorActions",
-						"Editor actions",
+						"Editor actions"
 					),
 					getKeyBinding: (action) => this.getKeybinding(action),
 					actionRunner: this.editorActionsToolbarDisposables.add(
-						new EditorCommandsContextActionRunner(context),
+						new EditorCommandsContextActionRunner(context)
 					),
 					anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
 					renderDropdownAsChildElement:
@@ -302,8 +334,8 @@ export abstract class EditorTabsControl
 						exempted: EDITOR_CORE_NAVIGATION_COMMANDS,
 					},
 					highlightToggledItems: true,
-				},
-			),
+				}
+			)
 		);
 
 		// Context
@@ -316,12 +348,12 @@ export abstract class EditorTabsControl
 				if (e.error && !isCancellationError(e.error)) {
 					this.notificationService.error(e.error);
 				}
-			}),
+			})
 		);
 	}
 
 	private actionViewItemProvider(
-		action: IAction,
+		action: IAction
 	): IActionViewItem | undefined {
 		const activeEditorPane = this.groupView.activeEditorPane;
 
@@ -348,24 +380,24 @@ export abstract class EditorTabsControl
 		this.editorActionsDisposables.clear();
 
 		const editorActions = this.groupView.createEditorActions(
-			this.editorActionsDisposables,
+			this.editorActionsDisposables
 		);
 		this.editorActionsDisposables.add(
-			editorActions.onDidChange(() => this.updateEditorActionsToolbar()),
+			editorActions.onDidChange(() => this.updateEditorActionsToolbar())
 		);
 
 		const editorActionsToolbar = assertIsDefined(this.editorActionsToolbar);
 		const { primary, secondary } = this.prepareEditorActions(
-			editorActions.actions,
+			editorActions.actions
 		);
 		editorActionsToolbar.setActions(
 			prepareActions(primary),
-			prepareActions(secondary),
+			prepareActions(secondary)
 		);
 	}
 
 	protected abstract prepareEditorActions(
-		editorActions: IToolbarActions,
+		editorActions: IToolbarActions
 	): IToolbarActions;
 	private getEditorPaneAwareContextKeyService(): IContextKeyService {
 		return (
@@ -393,7 +425,7 @@ export abstract class EditorTabsControl
 		// Set editor group as transfer
 		this.groupTransfer.setData(
 			[new DraggedEditorGroupIdentifier(this.groupView.id)],
-			DraggedEditorGroupIdentifier.prototype,
+			DraggedEditorGroupIdentifier.prototype
 		);
 		if (e.dataTransfer) {
 			e.dataTransfer.effectAllowed = "copyMove";
@@ -405,7 +437,7 @@ export abstract class EditorTabsControl
 			hasDataTransfer = this.doFillResourceDataTransfers(
 				this.groupView.getEditors(EditorsOrder.SEQUENTIAL),
 				e,
-				isNewWindowOperation,
+				isNewWindowOperation
 			);
 		}
 
@@ -415,7 +447,7 @@ export abstract class EditorTabsControl
 				hasDataTransfer = this.doFillResourceDataTransfers(
 					[this.groupView.activeEditor],
 					e,
-					isNewWindowOperation,
+					isNewWindowOperation
 				);
 			}
 		}
@@ -424,7 +456,7 @@ export abstract class EditorTabsControl
 		if (!hasDataTransfer && isFirefox) {
 			e.dataTransfer?.setData(
 				DataTransfers.TEXT,
-				String(this.groupView.label),
+				String(this.groupView.label)
 			);
 		}
 
@@ -439,7 +471,7 @@ export abstract class EditorTabsControl
 					"draggedEditorGroup",
 					"{0} (+{1})",
 					label,
-					this.groupView.count - 1,
+					this.groupView.count - 1
 				);
 			}
 
@@ -448,7 +480,7 @@ export abstract class EditorTabsControl
 				label,
 				"monaco-editor-group-drag-image",
 				this.getColor(listActiveSelectionBackground),
-				this.getColor(listActiveSelectionForeground),
+				this.getColor(listActiveSelectionForeground)
 			);
 		}
 
@@ -459,7 +491,7 @@ export abstract class EditorTabsControl
 		e: DragEvent,
 		previousDragEvent: DragEvent | undefined,
 		element: HTMLElement,
-		isNewWindowOperation: boolean,
+		isNewWindowOperation: boolean
 	): Promise<void> {
 		this.groupTransfer.clearData(DraggedEditorGroupIdentifier.prototype);
 
@@ -473,7 +505,7 @@ export abstract class EditorTabsControl
 
 		const auxiliaryEditorPart = await this.maybeCreateAuxiliaryEditorPartAt(
 			e,
-			element,
+			element
 		);
 		if (!auxiliaryEditorPart) {
 			return;
@@ -491,7 +523,7 @@ export abstract class EditorTabsControl
 
 	protected async maybeCreateAuxiliaryEditorPartAt(
 		e: DragEvent,
-		offsetElement: HTMLElement,
+		offsetElement: HTMLElement
 	): Promise<IAuxiliaryEditorPart | undefined> {
 		const { point, display } =
 			(await this.hostService.getCursorScreenPoint()) ?? {
@@ -546,7 +578,7 @@ export abstract class EditorTabsControl
 	protected isMoveOperation(
 		e: DragEvent,
 		sourceGroup: GroupIdentifier,
-		sourceEditor?: EditorInput,
+		sourceEditor?: EditorInput
 	): boolean {
 		if (sourceEditor?.hasCapability(EditorInputCapabilities.Singleton)) {
 			return true; // Singleton editors cannot be split
@@ -560,7 +592,7 @@ export abstract class EditorTabsControl
 	protected doFillResourceDataTransfers(
 		editors: readonly EditorInput[],
 		e: DragEvent,
-		disableStandardTransfer: boolean,
+		disableStandardTransfer: boolean
 	): boolean {
 		if (editors.length) {
 			this.instantiationService.invokeFunction(
@@ -570,7 +602,7 @@ export abstract class EditorTabsControl
 					groupId: this.groupView.id,
 				})),
 				e,
-				{ disableStandardTransfer },
+				{ disableStandardTransfer }
 			);
 
 			return true;
@@ -582,14 +614,14 @@ export abstract class EditorTabsControl
 	protected onTabContextMenu(
 		editor: EditorInput,
 		e: Event,
-		node: HTMLElement,
+		node: HTMLElement
 	): void {
 		// Update contexts based on editor picked and remember previous to restore
 		this.resourceContext.set(
 			EditorResourceAccessor.getOriginalUri(
 				editor,
-				{ supportSideBySide: SideBySideEditor.PRIMARY } ?? null,
-			),
+				{ supportSideBySide: SideBySideEditor.PRIMARY } ?? null
+			)
 		);
 		this.editorPinnedContext.set(this.tabsModel.isPinned(editor));
 		this.editorIsFirstContext.set(this.tabsModel.isFirst(editor));
@@ -597,15 +629,15 @@ export abstract class EditorTabsControl
 		this.editorStickyContext.set(this.tabsModel.isSticky(editor));
 		this.groupLockedContext.set(this.tabsModel.isLocked);
 		this.editorCanSplitInGroupContext.set(
-			editor.hasCapability(EditorInputCapabilities.CanSplitInGroup),
+			editor.hasCapability(EditorInputCapabilities.CanSplitInGroup)
 		);
 		this.sideBySideEditorContext.set(
-			editor.typeId === SideBySideEditorInput.ID,
+			editor.typeId === SideBySideEditorInput.ID
 		);
 		applyAvailableEditorIds(
 			this.editorAvailableEditorIds,
 			editor,
-			this.editorResolverService,
+			this.editorResolverService
 		);
 
 		// Find target anchor
@@ -630,7 +662,7 @@ export abstract class EditorTabsControl
 			getKeyBinding: (action) =>
 				this.keybindingService.lookupKeybinding(
 					action.id,
-					this.contextMenuContextKeyService,
+					this.contextMenuContextKeyService
 				),
 			onHide: () => this.groupsView.activeGroup.focus(), // restore focus to active group
 		});
@@ -639,7 +671,7 @@ export abstract class EditorTabsControl
 	protected getKeybinding(action: IAction): ResolvedKeybinding | undefined {
 		return this.keybindingService.lookupKeybinding(
 			action.id,
-			this.getEditorPaneAwareContextKeyService(),
+			this.getEditorPaneAwareContextKeyService()
 		);
 	}
 
@@ -658,13 +690,13 @@ export abstract class EditorTabsControl
 	protected updateTabHeight(): void {
 		this.parent.style.setProperty(
 			"--editor-group-tab-height",
-			`${this.tabHeight}px`,
+			`${this.tabHeight}px`
 		);
 	}
 
 	updateOptions(
 		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions,
+		newOptions: IEditorPartOptions
 	): void {
 		// Update tab height
 		if (oldOptions.tabHeight !== newOptions.tabHeight) {
@@ -679,7 +711,7 @@ export abstract class EditorTabsControl
 		) {
 			if (this.editorActionsToolbarContainer) {
 				this.handleEditorActionToolBarVisibility(
-					this.editorActionsToolbarContainer,
+					this.editorActionsToolbarContainer
 				);
 				this.updateEditorActionsToolbar();
 			}
@@ -699,7 +731,7 @@ export abstract class EditorTabsControl
 	abstract moveEditor(
 		editor: EditorInput,
 		fromIndex: number,
-		targetIndex: number,
+		targetIndex: number
 	): void;
 
 	abstract pinEditor(editor: EditorInput): void;

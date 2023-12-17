@@ -30,7 +30,7 @@ export interface IActivityService {
 	 */
 	showViewContainerActivity(
 		viewContainerId: string,
-		badge: IActivity,
+		badge: IActivity
 	): IDisposable;
 
 	/**
@@ -76,7 +76,7 @@ class BaseBadge implements IBadge {
 export class NumberBadge extends BaseBadge {
 	constructor(
 		readonly number: number,
-		descriptorFn: (num: number) => string,
+		descriptorFn: (num: number) => string
 	) {
 		super(descriptorFn);
 
@@ -89,7 +89,10 @@ export class NumberBadge extends BaseBadge {
 }
 
 export class IconBadge extends BaseBadge {
-	constructor(readonly icon: ThemeIcon, descriptorFn: () => string) {
+	constructor(
+		readonly icon: ThemeIcon,
+		descriptorFn: () => string
+	) {
 		super(descriptorFn);
 	}
 }

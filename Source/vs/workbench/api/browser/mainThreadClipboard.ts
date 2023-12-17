@@ -14,8 +14,8 @@ import { IClipboardService } from "vs/platform/clipboard/common/clipboardService
 export class MainThreadClipboard implements MainThreadClipboardShape {
 	constructor(
 		_context: any,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-	) { }
+		@IClipboardService private readonly _clipboardService: IClipboardService
+	) {}
 
 	dispose(): void {
 		// nothing

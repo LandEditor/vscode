@@ -105,7 +105,7 @@ export class EditorResolverService
 
 	// Events
 	private readonly _onDidChangeEditorRegistrations = this._register(
-		new PauseableEmitter<void>(),
+		new PauseableEmitter<void>()
 	);
 	readonly onDidChangeEditorRegistrations =
 		this._onDidChangeEditorRegistrations.event;
@@ -133,11 +133,16 @@ export class EditorResolverService
 	private cache: Set<string> | undefined;
 
 	constructor(
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IExtensionService private readonly extensionService: IExtensionService,
@@ -145,13 +150,26 @@ export class EditorResolverService
 	) {
 		super();
 		// Read in the cache on statup
-		this.cache = new Set<string>(JSON.parse(this.storageService.get(EditorResolverService.cacheStorageID, StorageScope.PROFILE, JSON.stringify([]))));
-		this.storageService.remove(EditorResolverService.cacheStorageID, StorageScope.PROFILE);
+		this.cache = new Set<string>(
+			JSON.parse(
+				this.storageService.get(
+					EditorResolverService.cacheStorageID,
+					StorageScope.PROFILE,
+					JSON.stringify([])
+				)
+			)
+		);
+		this.storageService.remove(
+			EditorResolverService.cacheStorageID,
+			StorageScope.PROFILE
+		);
 
-		this._register(this.storageService.onWillSaveState(() => {
-			// We want to store the glob patterns we would activate on, this allows us to know if we need to await the ext host on startup for opening a resource
-			this.cacheEditors();
-		}));
+		this._register(
+			this.storageService.onWillSaveState(() => {
+				// We want to store the glob patterns we would activate on, this allows us to know if we need to await the ext host on startup for opening a resource
+				this.cacheEditors();
+			})
+		);
 
 		// When extensions have registered we no longer need the cache
 		this.extensionService.onDidRegisterExtensions(() => {
@@ -161,7 +179,7 @@ export class EditorResolverService
 
 	private resolveUntypedInputAndGroup(
 		editor: IUntypedEditorInput,
-		preferredGroup: PreferredGroup | undefined,
+		preferredGroup: PreferredGroup | undefined
 	):
 		| Promise<
 				| [
@@ -179,7 +197,7 @@ export class EditorResolverService
 		const findGroupResult = this.instantiationService.invokeFunction(
 			findGroup,
 			untypedEditor,
-			preferredGroup,
+			preferredGroup
 		);
 		if (findGroupResult instanceof Promise) {
 			return findGroupResult.then(([group, activation]) => [
@@ -195,7 +213,7 @@ export class EditorResolverService
 
 	async resolveEditor(
 		editor: IUntypedEditorInput,
-		preferredGroup: PreferredGroup | undefined,
+		preferredGroup: PreferredGroup | undefined
 	): Promise<ResolvedEditor> {
 		// Update the flattened editors
 		this._flattenedEditors = this._flattenEditorsMap();
@@ -212,7 +230,7 @@ export class EditorResolverService
 			| undefined;
 		const resolvedUntypedAndGroupResult = this.resolveUntypedInputAndGroup(
 			editor,
-			preferredGroup,
+			preferredGroup
 		);
 		if (resolvedUntypedAndGroupResult instanceof Promise) {
 			resolvedUntypedAndGroup = await resolvedUntypedAndGroupResult;
@@ -261,7 +279,7 @@ export class EditorResolverService
 			untypedEditor.options?.override as
 				| string
 				| EditorResolution.EXCLUSIVE_ONLY
-				| undefined,
+				| undefined
 		);
 		// If no editor was found and this was a typed editor or an editor with an explicit override we could not resolve it
 		if (
@@ -274,7 +292,7 @@ export class EditorResolverService
 			// Simple untyped editors that we could not resolve will be resolved to the default editor
 			const resolvedEditor = this.getEditor(
 				resource,
-				DEFAULT_EDITOR_ASSOCIATION.id,
+				DEFAULT_EDITOR_ASSOCIATION.id
 			);
 			selectedEditor = resolvedEditor?.editor;
 			conflictingDefault = resolvedEditor?.conflictingDefault;
@@ -290,14 +308,14 @@ export class EditorResolverService
 		) {
 			let resource2 = EditorResourceAccessor.getCanonicalUri(
 				untypedEditor,
-				{ supportSideBySide: SideBySideEditor.SECONDARY },
+				{ supportSideBySide: SideBySideEditor.SECONDARY }
 			);
 			if (!resource2) {
 				resource2 = URI.from({ scheme: Schemas.untitled });
 			}
 			const { editor: selectedEditor2 } = this.getEditor(
 				resource2,
-				undefined,
+				undefined
 			);
 			if (
 				!selectedEditor2 ||
@@ -333,7 +351,7 @@ export class EditorResolverService
 		const input = await this.doResolveEditor(
 			untypedEditor,
 			group,
-			selectedEditor,
+			selectedEditor
 		);
 		if (conflictingDefault && input) {
 			// Show the conflicting default dialog
@@ -342,7 +360,7 @@ export class EditorResolverService
 				selectedEditor.editorInfo.label,
 				untypedEditor,
 				input.editor,
-				group,
+				group
 			);
 		}
 
@@ -350,7 +368,7 @@ export class EditorResolverService
 			this.sendEditorResolutionTelemetry(input.editor);
 			if (input.editor.editorId !== selectedEditor.editorInfo.id) {
 				this.logService.warn(
-					`Editor ID Mismatch: ${input.editor.editorId} !== ${selectedEditor.editorInfo.id}. This will cause bugs. Please ensure editorInput.editorId matches the registered id`,
+					`Editor ID Mismatch: ${input.editor.editorId} !== ${selectedEditor.editorInfo.id}. This will cause bugs. Please ensure editorInput.editorId matches the registered id`
 				);
 			}
 			return { ...input, group };
@@ -360,18 +378,18 @@ export class EditorResolverService
 
 	private async doResolveSideBySideEditor(
 		editor: IResourceSideBySideEditorInput,
-		preferredGroup: PreferredGroup | undefined,
+		preferredGroup: PreferredGroup | undefined
 	): Promise<ResolvedEditor> {
 		const primaryResolvedEditor = await this.resolveEditor(
 			editor.primary,
-			preferredGroup,
+			preferredGroup
 		);
 		if (!isEditorInputWithOptionsAndGroup(primaryResolvedEditor)) {
 			return ResolvedStatus.NONE;
 		}
 		const secondaryResolvedEditor = await this.resolveEditor(
 			editor.secondary,
-			primaryResolvedEditor.group ?? preferredGroup,
+			primaryResolvedEditor.group ?? preferredGroup
 		);
 		if (!isEditorInputWithOptionsAndGroup(secondaryResolvedEditor)) {
 			return ResolvedStatus.NONE;
@@ -383,7 +401,7 @@ export class EditorResolverService
 				editor.label,
 				editor.description,
 				secondaryResolvedEditor.editor,
-				primaryResolvedEditor.editor,
+				primaryResolvedEditor.editor
 			),
 			options: editor.options,
 		};
@@ -402,7 +420,7 @@ export class EditorResolverService
 		globPattern: string | glob.IRelativePattern,
 		editorInfo: RegisteredEditorInfo,
 		options: RegisteredEditorOptions,
-		editorFactoryObject: EditorInputFactoryObject,
+		editorFactoryObject: EditorInputFactoryObject
 	): IDisposable {
 		let registeredEditor = this._editors.get(globPattern);
 		if (registeredEditor === undefined) {
@@ -438,18 +456,18 @@ export class EditorResolverService
 		let matchingAssociations = associations.filter(
 			(association) =>
 				association.filenamePattern &&
-				globMatchesResource(association.filenamePattern, resource),
+				globMatchesResource(association.filenamePattern, resource)
 		);
 		// Sort matching associations based on glob length as a longer glob will be more specific
 		matchingAssociations = matchingAssociations.sort(
 			(a, b) =>
 				(b.filenamePattern?.length ?? 0) -
-				(a.filenamePattern?.length ?? 0),
+				(a.filenamePattern?.length ?? 0)
 		);
 		const allEditors: RegisteredEditors = this._registeredEditors;
 		// Ensure that the settings are valid editors
 		return matchingAssociations.filter((association) =>
-			allEditors.find((c) => c.editorInfo.id === association.viewType),
+			allEditors.find((c) => c.editorInfo.id === association.viewType)
 		);
 	}
 
@@ -556,7 +574,7 @@ export class EditorResolverService
 		}
 		this.configurationService.updateValue(
 			editorsAssociationsSettingId,
-			newSettingObject,
+			newSettingObject
 		);
 	}
 
@@ -568,7 +586,7 @@ export class EditorResolverService
 		for (const [key, editors] of this._flattenedEditors) {
 			for (const editor of editors) {
 				const foundInSettings = userSettings.find(
-					(setting) => setting.viewType === editor.editorInfo.id,
+					(setting) => setting.viewType === editor.editorInfo.id
 				);
 				if (
 					(foundInSettings &&
@@ -608,7 +626,7 @@ export class EditorResolverService
 				editors.find(
 					(e) =>
 						e.editorInfo.priority ===
-						RegisteredEditorPriority.exclusive,
+						RegisteredEditorPriority.exclusive
 				)
 			) {
 				return [];
@@ -619,7 +637,7 @@ export class EditorResolverService
 		// All
 		return distinct(
 			this._registeredEditors.map((editor) => editor.editorInfo),
-			(editor) => editor.id,
+			(editor) => editor.id
 		);
 	}
 
@@ -629,11 +647,11 @@ export class EditorResolverService
 	 */
 	private getEditor(
 		resource: URI,
-		editorId: string | EditorResolution.EXCLUSIVE_ONLY | undefined,
+		editorId: string | EditorResolution.EXCLUSIVE_ONLY | undefined
 	): { editor: RegisteredEditor | undefined; conflictingDefault: boolean } {
 		const findMatchingEditor = (
 			editors: RegisteredEditors,
-			viewType: string,
+			viewType: string
 		) => {
 			return editors.find((editor) => {
 				if (
@@ -671,7 +689,7 @@ export class EditorResolverService
 			(editor) =>
 				priorityToRank(editor.editorInfo.priority) >=
 					priorityToRank(minPriority) &&
-				editor.editorInfo.id !== DEFAULT_EDITOR_ASSOCIATION.id,
+				editor.editorInfo.id !== DEFAULT_EDITOR_ASSOCIATION.id
 		);
 		if (possibleEditors.length === 0) {
 			return {
@@ -680,8 +698,8 @@ export class EditorResolverService
 					minPriority !== RegisteredEditorPriority.exclusive
 						? findMatchingEditor(
 								editors,
-								associationsFromSetting[0].viewType,
-						  )
+								associationsFromSetting[0].viewType
+							)
 						: undefined,
 				conflictingDefault: false,
 			};
@@ -692,7 +710,7 @@ export class EditorResolverService
 			RegisteredEditorPriority.exclusive
 				? possibleEditors[0].editorInfo.id
 				: associationsFromSetting[0]?.viewType ||
-				  possibleEditors[0].editorInfo.id;
+					possibleEditors[0].editorInfo.id;
 
 		let conflictingDefault = false;
 
@@ -700,7 +718,7 @@ export class EditorResolverService
 		possibleEditors = possibleEditors.filter(
 			(editor) =>
 				editor.editorInfo.priority !==
-				RegisteredEditorPriority.exclusive,
+				RegisteredEditorPriority.exclusive
 		);
 		if (
 			associationsFromSetting.length === 0 &&
@@ -718,7 +736,7 @@ export class EditorResolverService
 	private async doResolveEditor(
 		editor: IUntypedEditorInput,
 		group: IEditorGroup,
-		selectedEditor: RegisteredEditor,
+		selectedEditor: RegisteredEditor
 	): Promise<EditorInputWithOptions | undefined> {
 		let options = editor.options;
 		const resource = EditorResourceAccessor.getCanonicalUri(editor, {
@@ -742,7 +760,7 @@ export class EditorResolverService
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createMergeEditorInput(
 					editor,
-					group,
+					group
 				);
 			return {
 				editor: inputWithOptions.editor,
@@ -758,7 +776,7 @@ export class EditorResolverService
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createDiffEditorInput(
 					editor,
-					group,
+					group
 				);
 			return {
 				editor: inputWithOptions.editor,
@@ -776,7 +794,7 @@ export class EditorResolverService
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createMultiDiffEditorInput(
 					editor,
-					group,
+					group
 				);
 			return {
 				editor: inputWithOptions.editor,
@@ -786,7 +804,7 @@ export class EditorResolverService
 
 		if (isResourceSideBySideEditorInput(editor)) {
 			throw new Error(
-				`Untyped side by side editor input not supported here.`,
+				`Untyped side by side editor input not supported here.`
 			);
 		}
 
@@ -797,7 +815,7 @@ export class EditorResolverService
 			const inputWithOptions =
 				await selectedEditor.editorFactoryObject.createUntitledEditorInput(
 					editor,
-					group,
+					group
 				);
 			return {
 				editor: inputWithOptions.editor,
@@ -819,7 +837,7 @@ export class EditorResolverService
 			const foundInput = await this.moveExistingEditorForResource(
 				resource,
 				selectedEditor.editorInfo.id,
-				group,
+				group
 			);
 			if (foundInput) {
 				return { editor: foundInput, options };
@@ -835,7 +853,7 @@ export class EditorResolverService
 		const inputWithOptions =
 			await selectedEditor.editorFactoryObject.createEditorInput(
 				editor,
-				group,
+				group
 			);
 		options = inputWithOptions.options ?? options;
 		const input = inputWithOptions.editor;
@@ -854,11 +872,11 @@ export class EditorResolverService
 	private async moveExistingEditorForResource(
 		resource: URI,
 		viewType: string,
-		targetGroup: IEditorGroup,
+		targetGroup: IEditorGroup
 	): Promise<EditorInput | undefined> {
 		const editorInfoForResource = this.findExistingEditorsForResource(
 			resource,
-			viewType,
+			viewType
 		);
 		if (!editorInfoForResource.length) {
 			return;
@@ -892,7 +910,7 @@ export class EditorResolverService
 	 */
 	private findExistingEditorsForResource(
 		resource: URI,
-		editorId: string,
+		editorId: string
 	): Array<{ editor: EditorInput; group: IEditorGroup }> {
 		const out: Array<{ editor: EditorInput; group: IEditorGroup }> = [];
 		const orderedGroups = distinct([...this.editorGroupService.groups]);
@@ -915,7 +933,7 @@ export class EditorResolverService
 		editorName: string,
 		untypedInput: IUntypedEditorInput,
 		currentEditor: EditorInput,
-		group: IEditorGroup,
+		group: IEditorGroup
 	) {
 		type StoredChoice = {
 			[key: string]: string[];
@@ -925,21 +943,21 @@ export class EditorResolverService
 			this.storageService.get(
 				EditorResolverService.conflictingDefaultsStorageID,
 				StorageScope.PROFILE,
-				"{}",
-			),
+				"{}"
+			)
 		);
 		const globForResource = `*${extname(resource)}`;
 		// Writes to the storage service that a choice has been made for the currently installed editors
 		const writeCurrentEditorsToStorage = () => {
 			storedChoices[globForResource] = [];
 			editors.forEach((editor) =>
-				storedChoices[globForResource].push(editor.editorInfo.id),
+				storedChoices[globForResource].push(editor.editorInfo.id)
 			);
 			this.storageService.store(
 				EditorResolverService.conflictingDefaultsStorageID,
 				JSON.stringify(storedChoices),
 				StorageScope.PROFILE,
-				StorageTarget.MACHINE,
+				StorageTarget.MACHINE
 			);
 		};
 
@@ -947,7 +965,7 @@ export class EditorResolverService
 		if (
 			storedChoices[globForResource] &&
 			storedChoices[globForResource].find(
-				(editorID) => editorID === currentEditor.editorId,
+				(editorID) => editorID === currentEditor.editorId
 			)
 		) {
 			return;
@@ -957,19 +975,19 @@ export class EditorResolverService
 			Severity.Warning,
 			localize(
 				"editorResolver.conflictingDefaults",
-				"There are multiple default editors available for the resource.",
+				"There are multiple default editors available for the resource."
 			),
 			[
 				{
 					label: localize(
 						"editorResolver.configureDefault",
-						"Configure Default",
+						"Configure Default"
 					),
 					run: async () => {
 						// Show the picker and tell it to update the setting to whatever the user selected
 						const picked = await this.doPickEditor(
 							untypedInput,
-							true,
+							true
 						);
 						if (!picked) {
 							return;
@@ -977,7 +995,7 @@ export class EditorResolverService
 						untypedInput.options = picked;
 						const replacementEditor = await this.resolveEditor(
 							untypedInput,
-							group,
+							group
 						);
 						if (
 							replacementEditor === ResolvedStatus.ABORT ||
@@ -999,11 +1017,11 @@ export class EditorResolverService
 					label: localize(
 						"editorResolver.keepDefault",
 						"Keep {0}",
-						editorName,
+						editorName
 					),
 					run: writeCurrentEditorsToStorage,
 				},
-			],
+			]
 		);
 		// If the user pressed X we assume they want to keep the current editor as default
 		const onCloseListener = handle.onDidClose(() => {
@@ -1014,10 +1032,10 @@ export class EditorResolverService
 
 	private mapEditorsToQuickPickEntry(
 		resource: URI,
-		showDefaultPicker?: boolean,
+		showDefaultPicker?: boolean
 	) {
 		const currentEditor = firstOrDefault(
-			this.editorGroupService.activeGroup.findEditors(resource),
+			this.editorGroupService.activeGroup.findEditors(resource)
 		);
 		// If untitled, we want all registered editors
 		let registeredEditors =
@@ -1025,8 +1043,8 @@ export class EditorResolverService
 				? this._registeredEditors.filter(
 						(e) =>
 							e.editorInfo.priority !==
-							RegisteredEditorPriority.exclusive,
-				  )
+							RegisteredEditorPriority.exclusive
+					)
 				: this.findMatchingEditors(resource);
 		// We don't want duplicate Id entries
 		registeredEditors = distinct(registeredEditors, (c) => c.editorInfo.id);
@@ -1048,15 +1066,15 @@ export class EditorResolverService
 		const quickPickEntries: Array<QuickPickItem> = [];
 		const currentlyActiveLabel = localize(
 			"promptOpenWith.currentlyActive",
-			"Active",
+			"Active"
 		);
 		const currentDefaultLabel = localize(
 			"promptOpenWith.currentDefault",
-			"Default",
+			"Default"
 		);
 		const currentDefaultAndActiveLabel = localize(
 			"promptOpenWith.currentDefaultAndActive",
-			"Active and Default",
+			"Active and Default"
 		);
 		// Default order = setting -> highest priority -> text
 		let defaultViewType = defaultSetting;
@@ -1086,10 +1104,10 @@ export class EditorResolverService
 					isActive && isDefault
 						? currentDefaultAndActiveLabel
 						: isActive
-						  ? currentlyActiveLabel
-						  : isDefault
-							  ? currentDefaultLabel
-							  : undefined,
+							? currentlyActiveLabel
+							: isDefault
+								? currentDefaultLabel
+								: undefined,
 				detail: editor.editorInfo.detail ?? editor.editorInfo.priority,
 			};
 			quickPickEntries.push(quickPickEntry);
@@ -1102,7 +1120,7 @@ export class EditorResolverService
 				label: localize(
 					"promptOpenWith.configureDefault",
 					"Configure default editor for '{0}'...",
-					`*${extname(resource)}`,
+					`*${extname(resource)}`
 				),
 			};
 			quickPickEntries.push(configureDefaultEntry);
@@ -1112,7 +1130,7 @@ export class EditorResolverService
 
 	private async doPickEditor(
 		editor: IUntypedEditorInput,
-		showDefaultPicker?: boolean,
+		showDefaultPicker?: boolean
 	): Promise<IEditorOptions | undefined> {
 		type EditorPick = {
 			readonly item: IQuickPickItem;
@@ -1131,7 +1149,7 @@ export class EditorResolverService
 		// Get all the editors for the resource as quickpick entries
 		const editorPicks = this.mapEditorsToQuickPickEntry(
 			resource,
-			showDefaultPicker,
+			showDefaultPicker
 		);
 
 		// Create the editor picker
@@ -1141,18 +1159,18 @@ export class EditorResolverService
 			? localize(
 					"promptOpenWith.updateDefaultPlaceHolder",
 					"Select new default editor for '{0}'",
-					`*${extname(resource)}`,
-			  )
+					`*${extname(resource)}`
+				)
 			: localize(
 					"promptOpenWith.placeHolder",
 					"Select editor for '{0}'",
-					basename(resource),
-			  );
+					basename(resource)
+				);
 		editorPicker.placeholder = placeHolderMessage;
 		editorPicker.canAcceptInBackground = true;
 		editorPicker.items = editorPicks;
 		const firstItem = editorPicker.items.find(
-			(item) => item.type === "item",
+			(item) => item.type === "item"
 		) as IQuickPickItem | undefined;
 		if (firstItem) {
 			editorPicker.selectedItems = [firstItem];
@@ -1177,7 +1195,7 @@ export class EditorResolverService
 				if (resource && showDefaultPicker && result?.item.id) {
 					this.updateUserAssociations(
 						`*${extname(resource)}`,
-						result.item.id,
+						result.item.id
 					);
 				}
 
@@ -1194,7 +1212,7 @@ export class EditorResolverService
 				if (resource && e.item && e.item.id) {
 					this.updateUserAssociations(
 						`*${extname(resource)}`,
-						e.item.id,
+						e.item.id
 					);
 				}
 			});
@@ -1258,7 +1276,7 @@ export class EditorResolverService
 			const nonOptional = !!contribPoint.find(
 				(c) =>
 					c.editorInfo.priority !== RegisteredEditorPriority.option &&
-					c.editorInfo.id !== DEFAULT_EDITOR_ASSOCIATION.id,
+					c.editorInfo.id !== DEFAULT_EDITOR_ASSOCIATION.id
 			);
 			// Don't keep a cache of the optional ones as those wouldn't be opened on start anyways
 			if (!nonOptional) {
@@ -1282,7 +1300,7 @@ export class EditorResolverService
 			EditorResolverService.cacheStorageID,
 			JSON.stringify(Array.from(cacheStorage)),
 			StorageScope.PROFILE,
-			StorageTarget.MACHINE,
+			StorageTarget.MACHINE
 		);
 	}
 
@@ -1303,5 +1321,5 @@ export class EditorResolverService
 registerSingleton(
 	IEditorResolverService,
 	EditorResolverService,
-	InstantiationType.Eager,
+	InstantiationType.Eager
 );

@@ -104,10 +104,10 @@ export interface IUntitledTextEditorModelManager {
 	 */
 	create(options?: INewUntitledTextEditorOptions): IUntitledTextEditorModel;
 	create(
-		options?: INewUntitledTextEditorWithAssociatedResourceOptions,
+		options?: INewUntitledTextEditorWithAssociatedResourceOptions
 	): IUntitledTextEditorModel;
 	create(
-		options?: IExistingUntitledTextEditorOptions,
+		options?: IExistingUntitledTextEditorOptions
 	): IUntitledTextEditorModel;
 
 	/**
@@ -128,13 +128,13 @@ export interface IUntitledTextEditorModelManager {
 	 * instance instead of creating a new one.
 	 */
 	resolve(
-		options?: INewUntitledTextEditorOptions,
+		options?: INewUntitledTextEditorOptions
 	): Promise<IUntitledTextEditorModel>;
 	resolve(
-		options?: INewUntitledTextEditorWithAssociatedResourceOptions,
+		options?: INewUntitledTextEditorWithAssociatedResourceOptions
 	): Promise<IUntitledTextEditorModel>;
 	resolve(
-		options?: IExistingUntitledTextEditorOptions,
+		options?: IExistingUntitledTextEditorOptions
 	): Promise<IUntitledTextEditorModel>;
 
 	/**
@@ -165,22 +165,22 @@ export class UntitledTextEditorService
 		/Untitled-\d+/;
 
 	private readonly _onDidChangeDirty = this._register(
-		new Emitter<IUntitledTextEditorModel>(),
+		new Emitter<IUntitledTextEditorModel>()
 	);
 	readonly onDidChangeDirty = this._onDidChangeDirty.event;
 
 	private readonly _onDidChangeEncoding = this._register(
-		new Emitter<IUntitledTextEditorModel>(),
+		new Emitter<IUntitledTextEditorModel>()
 	);
 	readonly onDidChangeEncoding = this._onDidChangeEncoding.event;
 
 	private readonly _onWillDispose = this._register(
-		new Emitter<IUntitledTextEditorModel>(),
+		new Emitter<IUntitledTextEditorModel>()
 	);
 	readonly onWillDispose = this._onWillDispose.event;
 
 	private readonly _onDidChangeLabel = this._register(
-		new Emitter<IUntitledTextEditorModel>(),
+		new Emitter<IUntitledTextEditorModel>()
 	);
 	readonly onDidChangeLabel = this._onDidChangeLabel.event;
 
@@ -188,8 +188,10 @@ export class UntitledTextEditorService
 		new ResourceMap<UntitledTextEditorModel>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
 	}
@@ -203,7 +205,7 @@ export class UntitledTextEditorService
 	}
 
 	async resolve(
-		options?: IInternalUntitledTextEditorOptions,
+		options?: IInternalUntitledTextEditorOptions
 	): Promise<UntitledTextEditorModel> {
 		const model = this.doCreateOrGet(options);
 		await model.resolve();
@@ -212,13 +214,13 @@ export class UntitledTextEditorService
 	}
 
 	create(
-		options?: IInternalUntitledTextEditorOptions,
+		options?: IInternalUntitledTextEditorOptions
 	): UntitledTextEditorModel {
 		return this.doCreateOrGet(options);
 	}
 
 	private doCreateOrGet(
-		options: IInternalUntitledTextEditorOptions = Object.create(null),
+		options: IInternalUntitledTextEditorOptions = Object.create(null)
 	): UntitledTextEditorModel {
 		const massagedOptions = this.massageOptions(options);
 
@@ -228,7 +230,7 @@ export class UntitledTextEditorService
 			this.mapResourceToModel.has(massagedOptions.untitledResource)
 		) {
 			return this.mapResourceToModel.get(
-				massagedOptions.untitledResource,
+				massagedOptions.untitledResource
 			)!;
 		}
 
@@ -237,7 +239,7 @@ export class UntitledTextEditorService
 	}
 
 	private massageOptions(
-		options: IInternalUntitledTextEditorOptions,
+		options: IInternalUntitledTextEditorOptions
 	): IInternalUntitledTextEditorOptions {
 		const massagedOptions: IInternalUntitledTextEditorOptions =
 			Object.create(null);
@@ -278,7 +280,7 @@ export class UntitledTextEditorService
 	}
 
 	private doCreate(
-		options: IInternalUntitledTextEditorOptions,
+		options: IInternalUntitledTextEditorOptions
 	): UntitledTextEditorModel {
 		// Create a new untitled resource if none is provided
 		let untitledResource = options.untitledResource;
@@ -301,8 +303,8 @@ export class UntitledTextEditorService
 				!!options.associatedResource,
 				options.initialValue,
 				options.languageId,
-				options.encoding,
-			),
+				options.encoding
+			)
 		);
 
 		this.registerModel(model);
@@ -314,18 +316,18 @@ export class UntitledTextEditorService
 		// Install model listeners
 		const modelListeners = new DisposableStore();
 		modelListeners.add(
-			model.onDidChangeDirty(() => this._onDidChangeDirty.fire(model)),
+			model.onDidChangeDirty(() => this._onDidChangeDirty.fire(model))
 		);
 		modelListeners.add(
-			model.onDidChangeName(() => this._onDidChangeLabel.fire(model)),
+			model.onDidChangeName(() => this._onDidChangeLabel.fire(model))
 		);
 		modelListeners.add(
 			model.onDidChangeEncoding(() =>
-				this._onDidChangeEncoding.fire(model),
-			),
+				this._onDidChangeEncoding.fire(model)
+			)
 		);
 		modelListeners.add(
-			model.onWillDispose(() => this._onWillDispose.fire(model)),
+			model.onWillDispose(() => this._onWillDispose.fire(model))
 		);
 
 		// Remove from cache on dispose
@@ -352,7 +354,7 @@ export class UntitledTextEditorService
 			resource.scheme === Schemas.untitled &&
 			resource.path.length > 1 &&
 			!UntitledTextEditorService.UNTITLED_WITHOUT_ASSOCIATED_RESOURCE_REGEX.test(
-				resource.path,
+				resource.path
 			)
 		);
 	}
@@ -383,5 +385,5 @@ export class UntitledTextEditorService
 registerSingleton(
 	IUntitledTextEditorService,
 	UntitledTextEditorService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

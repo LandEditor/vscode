@@ -129,31 +129,53 @@ export class HoverWidget extends Widget {
 
 	constructor(
 		options: IHoverOptions,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService
 	) {
 		super();
 
-		this._linkHandler = options.linkHandler || (url => {
-			return openLinkFromMarkdown(this._openerService, url, isMarkdownString(options.content) ? options.content.isTrusted : undefined);
-		});
+		this._linkHandler =
+			options.linkHandler ||
+			((url) => {
+				return openLinkFromMarkdown(
+					this._openerService,
+					url,
+					isMarkdownString(options.content)
+						? options.content.isTrusted
+						: undefined
+				);
+			});
 
-		this._target = 'targetElements' in options.target ? options.target : new ElementHoverTarget(options.target);
+		this._target =
+			"targetElements" in options.target
+				? options.target
+				: new ElementHoverTarget(options.target);
 
-		this._hoverPointer = options.appearance?.showPointer ? $('div.workbench-hover-pointer') : undefined;
+		this._hoverPointer = options.appearance?.showPointer
+			? $("div.workbench-hover-pointer")
+			: undefined;
 		this._hover = this._register(new BaseHoverWidget());
-		this._hover.containerDomNode.classList.add('workbench-hover', 'fadeIn');
+		this._hover.containerDomNode.classList.add("workbench-hover", "fadeIn");
 		if (options.appearance?.compact) {
-			this._hover.containerDomNode.classList.add('workbench-hover', 'compact');
+			this._hover.containerDomNode.classList.add(
+				"workbench-hover",
+				"compact"
+			);
 		}
 		if (options.appearance?.skipFadeInAnimation) {
-			this._hover.containerDomNode.classList.add('skip-fade-in');
+			this._hover.containerDomNode.classList.add("skip-fade-in");
 		}
 		if (options.additionalClasses) {
-			this._hover.containerDomNode.classList.add(...options.additionalClasses);
+			this._hover.containerDomNode.classList.add(
+				...options.additionalClasses
+			);
 		}
 		if (options.position?.forcePosition) {
 			this._forcePosition = true;
@@ -162,50 +184,60 @@ export class HoverWidget extends Widget {
 			this._enableFocusTraps = true;
 		}
 
-		this._hoverPosition = options.position?.hoverPosition ?? HoverPosition.ABOVE;
+		this._hoverPosition =
+			options.position?.hoverPosition ?? HoverPosition.ABOVE;
 
 		// Don't allow mousedown out of the widget, otherwise preventDefault will call and text will
 		// not be selected.
-		this.onmousedown(this._hover.containerDomNode, e => e.stopPropagation());
+		this.onmousedown(this._hover.containerDomNode, (e) =>
+			e.stopPropagation()
+		);
 
 		// Hide hover on escape
-		this.onkeydown(this._hover.containerDomNode, e => {
+		this.onkeydown(this._hover.containerDomNode, (e) => {
 			if (e.equals(KeyCode.Escape)) {
 				this.dispose();
 			}
 		});
 
 		// Hide when the window loses focus
-		this._register(dom.addDisposableListener(this._targetWindow, 'blur', () => this.dispose()));
+		this._register(
+			dom.addDisposableListener(this._targetWindow, "blur", () =>
+				this.dispose()
+			)
+		);
 
-		const rowElement = $('div.hover-row.markdown-hover');
-		const contentsElement = $('div.hover-contents');
-		if (typeof options.content === 'string') {
+		const rowElement = $("div.hover-row.markdown-hover");
+		const contentsElement = $("div.hover-contents");
+		if (typeof options.content === "string") {
 			contentsElement.textContent = options.content;
-			contentsElement.style.whiteSpace = 'pre-wrap';
-
+			contentsElement.style.whiteSpace = "pre-wrap";
 		} else if (options.content instanceof HTMLElement) {
 			contentsElement.appendChild(options.content);
-			contentsElement.classList.add('html-hover-contents');
-
+			contentsElement.classList.add("html-hover-contents");
 		} else {
 			const markdown = options.content;
 			const mdRenderer = this._instantiationService.createInstance(
 				MarkdownRenderer,
-				{ codeBlockFontFamily: this._configurationService.getValue<IEditorOptions>('editor').fontFamily || EDITOR_FONT_DEFAULTS.fontFamily }
+				{
+					codeBlockFontFamily:
+						this._configurationService.getValue<IEditorOptions>(
+							"editor"
+						).fontFamily || EDITOR_FONT_DEFAULTS.fontFamily,
+				}
 			);
 
 			const { element } = mdRenderer.render(markdown, {
 				actionHandler: {
 					callback: (content) => this._linkHandler(content),
-					disposables: this._messageListeners
+					disposables: this._messageListeners,
 				},
 				asyncRenderCallback: () => {
-					contentsElement.classList.add('code-hover-contents');
+					contentsElement.classList.add("code-hover-contents");
 					this.layout();
 					// This changes the dimensions of the hover so trigger a layout
 					this._onRequestLayout.fire();
-				}
+				},
 			});
 			contentsElement.appendChild(element);
 		}
@@ -213,26 +245,34 @@ export class HoverWidget extends Widget {
 		this._hover.contentsDomNode.appendChild(rowElement);
 
 		if (options.actions && options.actions.length > 0) {
-			const statusBarElement = $('div.hover-row.status-bar');
-			const actionsElement = $('div.actions');
-			options.actions.forEach(action => {
-				const keybinding = this._keybindingService.lookupKeybinding(action.commandId);
-				const keybindingLabel = keybinding ? keybinding.getLabel() : null;
-				HoverAction.render(actionsElement, {
-					label: action.label,
-					commandId: action.commandId,
-					run: e => {
-						action.run(e);
-						this.dispose();
+			const statusBarElement = $("div.hover-row.status-bar");
+			const actionsElement = $("div.actions");
+			options.actions.forEach((action) => {
+				const keybinding = this._keybindingService.lookupKeybinding(
+					action.commandId
+				);
+				const keybindingLabel = keybinding
+					? keybinding.getLabel()
+					: null;
+				HoverAction.render(
+					actionsElement,
+					{
+						label: action.label,
+						commandId: action.commandId,
+						run: (e) => {
+							action.run(e);
+							this.dispose();
+						},
+						iconClass: action.iconClass,
 					},
-					iconClass: action.iconClass
-				}, keybindingLabel);
+					keybindingLabel
+				);
 			});
 			statusBarElement.appendChild(actionsElement);
 			this._hover.containerDomNode.appendChild(statusBarElement);
 		}
 
-		this._hoverContainer = $('div.workbench-hover-container');
+		this._hoverContainer = $("div.workbench-hover-container");
 		if (this._hoverPointer) {
 			this._hoverContainer.appendChild(this._hoverPointer);
 		}
@@ -247,8 +287,11 @@ export class HoverWidget extends Widget {
 			if (options.persistence?.hideOnHover === undefined) {
 				// When unset, will default to true when it's a string or when it's markdown that
 				// appears to have a link using a naive check for '](' and '</a>'
-				hideOnHover = typeof options.content === 'string' ||
-					isMarkdownString(options.content) && !options.content.value.includes('](') && !options.content.value.includes('</a>');
+				hideOnHover =
+					typeof options.content === "string" ||
+					(isMarkdownString(options.content) &&
+						!options.content.value.includes("](") &&
+						!options.content.value.includes("</a>"));
 			} else {
 				// It's set explicitly
 				hideOnHover = options.persistence.hideOnHover;
@@ -257,9 +300,13 @@ export class HoverWidget extends Widget {
 
 		// Show the hover hint if needed
 		if (hideOnHover && options.appearance?.showHoverHint) {
-			const statusBarElement = $('div.hover-row.status-bar');
-			const infoElement = $('div.info');
-			infoElement.textContent = localize('hoverhint', 'Hold {0} key to mouse over', isMacintosh ? 'Option' : 'Alt');
+			const statusBarElement = $("div.hover-row.status-bar");
+			const infoElement = $("div.info");
+			infoElement.textContent = localize(
+				"hoverhint",
+				"Hold {0} key to mouse over",
+				isMacintosh ? "Option" : "Alt"
+			);
 			statusBarElement.appendChild(infoElement);
 			this._hover.containerDomNode.appendChild(statusBarElement);
 		}
@@ -268,24 +315,35 @@ export class HoverWidget extends Widget {
 		if (!hideOnHover) {
 			mouseTrackerTargets.push(this._hoverContainer);
 		}
-		const mouseTracker = this._register(new CompositeMouseTracker(mouseTrackerTargets));
-		this._register(mouseTracker.onMouseOut(() => {
-			if (!this._isLocked) {
-				this.dispose();
-			}
-		}));
+		const mouseTracker = this._register(
+			new CompositeMouseTracker(mouseTrackerTargets)
+		);
+		this._register(
+			mouseTracker.onMouseOut(() => {
+				if (!this._isLocked) {
+					this.dispose();
+				}
+			})
+		);
 
 		// Setup another mouse tracker when hideOnHover is set in order to track the hover as well
 		// when it is locked. This ensures the hover will hide on mouseout after alt has been
 		// released to unlock the element.
 		if (hideOnHover) {
-			const mouseTracker2Targets = [...this._target.targetElements, this._hoverContainer];
-			this._lockMouseTracker = this._register(new CompositeMouseTracker(mouseTracker2Targets));
-			this._register(this._lockMouseTracker.onMouseOut(() => {
-				if (!this._isLocked) {
-					this.dispose();
-				}
-			}));
+			const mouseTracker2Targets = [
+				...this._target.targetElements,
+				this._hoverContainer,
+			];
+			this._lockMouseTracker = this._register(
+				new CompositeMouseTracker(mouseTracker2Targets)
+			);
+			this._register(
+				this._lockMouseTracker.onMouseOut(() => {
+					if (!this._isLocked) {
+						this.dispose();
+					}
+				})
+			);
 		} else {
 			this._lockMouseTracker = mouseTracker;
 		}
@@ -300,16 +358,16 @@ export class HoverWidget extends Widget {
 		// Add a hover tab loop if the hover has at least one element with a valid tabIndex
 		const firstContainerFocusElement = this._hover.containerDomNode;
 		const lastContainerFocusElement = this.findLastFocusableChild(
-			this._hover.containerDomNode,
+			this._hover.containerDomNode
 		);
 		if (lastContainerFocusElement) {
 			const beforeContainerFocusElement = dom.prepend(
 				this._hoverContainer,
-				$("div"),
+				$("div")
 			);
 			const afterContainerFocusElement = dom.append(
 				this._hoverContainer,
-				$("div"),
+				$("div")
 			);
 			beforeContainerFocusElement.tabIndex = 0;
 			afterContainerFocusElement.tabIndex = 0;
@@ -320,8 +378,8 @@ export class HoverWidget extends Widget {
 					(e) => {
 						firstContainerFocusElement.focus();
 						e.preventDefault();
-					},
-				),
+					}
+				)
 			);
 			this._register(
 				dom.addDisposableListener(
@@ -330,8 +388,8 @@ export class HoverWidget extends Widget {
 					(e) => {
 						lastContainerFocusElement.focus();
 						e.preventDefault();
-					},
-				),
+					}
+				)
 			);
 		}
 	}
@@ -340,7 +398,7 @@ export class HoverWidget extends Widget {
 		if (root.hasChildNodes()) {
 			for (let i = 0; i < root.childNodes.length; i++) {
 				const node = root.childNodes.item(
-					root.childNodes.length - i - 1,
+					root.childNodes.length - i - 1
 				);
 				if (node.nodeType === node.ELEMENT_NODE) {
 					const parsedNode = node as HTMLElement;
@@ -364,18 +422,18 @@ export class HoverWidget extends Widget {
 	public render(container: HTMLElement): void {
 		container.appendChild(this._hoverContainer);
 		const hoverFocused = this._hoverContainer.contains(
-			this._hoverContainer.ownerDocument.activeElement,
+			this._hoverContainer.ownerDocument.activeElement
 		);
 		const accessibleViewHint =
 			hoverFocused &&
 			getHoverAccessibleViewHint(
 				this._configurationService.getValue(
-					"accessibility.verbosity.hover",
+					"accessibility.verbosity.hover"
 				) === true &&
 					this._accessibilityService.isScreenReaderOptimized(),
 				this._keybindingService
 					.lookupKeybinding("editor.action.accessibleView")
-					?.getAriaLabel(),
+					?.getAriaLabel()
 			);
 		if (accessibleViewHint) {
 			status(accessibleViewHint);
@@ -401,7 +459,7 @@ export class HoverWidget extends Widget {
 		};
 
 		const targetBounds = this._target.targetElements.map((e) =>
-			getZoomAccountedBoundingClientRect(e),
+			getZoomAccountedBoundingClientRect(e)
 		);
 		const top = Math.min(...targetBounds.map((e) => e.top));
 		const right = Math.max(...targetBounds.map((e) => e.right));
@@ -510,7 +568,7 @@ export class HoverWidget extends Widget {
 					this._targetDocumentElement.clientWidth -
 						hoverWidth -
 						Constants.HoverWindowEdgeMargin,
-					this._targetDocumentElement.clientLeft,
+					this._targetDocumentElement.clientLeft
 				);
 			}
 		}
@@ -652,7 +710,7 @@ export class HoverWidget extends Widget {
 			} else if (this._hoverPosition === HoverPosition.BELOW) {
 				maxHeight = Math.min(
 					maxHeight,
-					this._targetWindow.innerHeight - target.bottom - padding,
+					this._targetWindow.innerHeight - target.bottom - padding
 				);
 			}
 		}
@@ -685,7 +743,7 @@ export class HoverWidget extends Widget {
 				this._hoverPointer.classList.add(
 					this._hoverPosition === HoverPosition.LEFT
 						? "right"
-						: "left",
+						: "left"
 				);
 				const hoverHeight = this._hover.containerDomNode.clientHeight;
 
@@ -712,7 +770,7 @@ export class HoverWidget extends Widget {
 				this._hoverPointer.classList.add(
 					this._hoverPosition === HoverPosition.ABOVE
 						? "bottom"
-						: "top",
+						: "top"
 				);
 				const hoverWidth = this._hover.containerDomNode.clientWidth;
 
@@ -769,10 +827,10 @@ class CompositeMouseTracker extends Widget {
 	constructor(private _elements: HTMLElement[]) {
 		super();
 		this._elements.forEach((n) =>
-			this.onmouseover(n, () => this._onTargetMouseOver(n)),
+			this.onmouseover(n, () => this._onTargetMouseOver(n))
 		);
 		this._elements.forEach((n) =>
-			this.onmouseleave(n, () => this._onTargetMouseLeave(n)),
+			this.onmouseleave(n, () => this._onTargetMouseLeave(n))
 		);
 	}
 

@@ -12,7 +12,7 @@ import { QuickHelpNLS } from "vs/editor/common/standaloneStrings";
 import { HelpQuickAccessProvider } from "vs/platform/quickinput/browser/helpQuickAccess";
 
 Registry.as<IQuickAccessRegistry>(
-	Extensions.Quickaccess,
+	Extensions.Quickaccess
 ).registerQuickAccessProvider({
 	ctor: HelpQuickAccessProvider,
 	prefix: "",

@@ -78,7 +78,7 @@ export class HistoryNavigator<T> implements INavigator<T> {
 			elements,
 			0,
 			elements.length,
-			elements.length,
+			elements.length
 		);
 	}
 
@@ -128,7 +128,10 @@ export class HistoryNavigator2<T> {
 		return this._size;
 	}
 
-	constructor(history: readonly T[], private capacity: number = 10) {
+	constructor(
+		history: readonly T[],
+		private capacity: number = 10
+	) {
 		if (history.length < 1) {
 			throw new Error("not supported");
 		}

@@ -17,15 +17,15 @@ import {
 // -- startup timings
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(
 	BrowserResourcePerformanceMarks,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );
 
 Registry.as<IWorkbenchContributionsRegistry>(
-	Extensions.Workbench,
+	Extensions.Workbench
 ).registerWorkbenchContribution(
 	BrowserStartupTimings,
-	LifecyclePhase.Eventually,
+	LifecyclePhase.Eventually
 );

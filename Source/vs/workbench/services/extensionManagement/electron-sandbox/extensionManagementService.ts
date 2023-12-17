@@ -37,28 +37,49 @@ import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/c
 
 export class ExtensionManagementService extends BaseExtensionManagementService {
 	constructor(
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IProductService productService: IProductService,
 		@IDownloadService downloadService: IDownloadService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IDialogService dialogService: IDialogService,
-		@IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkspaceTrustRequestService
+		workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
-		@IInstantiationService instantiationService: IInstantiationService,
+		@IInstantiationService instantiationService: IInstantiationService
 	) {
-		super(extensionManagementServerService, extensionGalleryService, userDataProfileService, configurationService, productService, downloadService, userDataSyncEnablementService, dialogService, workspaceTrustRequestService, extensionManifestPropertiesService, fileService, logService, instantiationService);
+		super(
+			extensionManagementServerService,
+			extensionGalleryService,
+			userDataProfileService,
+			configurationService,
+			productService,
+			downloadService,
+			userDataSyncEnablementService,
+			dialogService,
+			workspaceTrustRequestService,
+			extensionManifestPropertiesService,
+			fileService,
+			logService,
+			instantiationService
+		);
 	}
 
 	protected override async installVSIXInServer(
 		vsix: URI,
 		server: IExtensionManagementServer,
-		options: InstallVSIXOptions | undefined,
+		options: InstallVSIXOptions | undefined
 	): Promise<ILocalExtension> {
 		if (
 			vsix.scheme === Schemas.vscodeRemote &&
@@ -68,7 +89,7 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 		) {
 			const downloadedLocation = joinPath(
 				this.environmentService.tmpDir,
-				generateUuid(),
+				generateUuid()
 			);
 			await this.downloadService.download(vsix, downloadedLocation);
 			vsix = downloadedLocation;
@@ -80,5 +101,5 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 registerSingleton(
 	IWorkbenchExtensionManagementService,
 	ExtensionManagementService,
-	InstantiationType.Delayed,
+	InstantiationType.Delayed
 );

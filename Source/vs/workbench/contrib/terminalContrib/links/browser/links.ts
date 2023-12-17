@@ -17,7 +17,7 @@ import { ITextEditorSelection } from "vs/platform/editor/common/editor";
 
 export const ITerminalLinkProviderService =
 	createDecorator<ITerminalLinkProviderService>(
-		"terminalLinkProviderService",
+		"terminalLinkProviderService"
 	);
 export interface ITerminalLinkProviderService {
 	readonly _serviceBrand: undefined;
@@ -38,7 +38,7 @@ export interface ITerminalLinkResolver {
 			"initialCwd" | "os" | "remoteAuthority" | "userHome"
 		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
 		link: string,
-		uri?: URI,
+		uri?: URI
 	): Promise<ResolvedLink>;
 }
 
@@ -70,7 +70,7 @@ export interface ITerminalLinkDetector {
 	detect(
 		lines: IBufferLine[],
 		startLine: number,
-		endLine: number,
+		endLine: number
 	): ITerminalSimpleLink[] | Promise<ITerminalSimpleLink[]>;
 }
 

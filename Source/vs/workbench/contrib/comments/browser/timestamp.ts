@@ -21,7 +21,7 @@ export class TimestampWidget extends Disposable {
 	constructor(
 		private configurationService: IConfigurationService,
 		container: HTMLElement,
-		timeStamp?: Date,
+		timeStamp?: Date
 	) {
 		super();
 		this._date = dom.append(container, dom.$("span.timestamp"));
@@ -32,7 +32,7 @@ export class TimestampWidget extends Disposable {
 
 	private get useRelativeTimeSetting(): boolean {
 		return this.configurationService.getValue<ICommentsConfiguration>(
-			COMMENTS_SECTION,
+			COMMENTS_SECTION
 		).useRelativeTime;
 	}
 

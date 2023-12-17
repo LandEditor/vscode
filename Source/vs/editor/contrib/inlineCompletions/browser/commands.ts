@@ -33,12 +33,12 @@ export class ShowNextInlineSuggestionAction extends EditorAction {
 			id: ShowNextInlineSuggestionAction.ID,
 			label: nls.localize(
 				"action.inlineSuggest.showNext",
-				"Show Next Inline Suggestion",
+				"Show Next Inline Suggestion"
 			),
 			alias: "Show Next Inline Suggestion",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				InlineCompletionContextKeys.inlineSuggestionVisible,
+				InlineCompletionContextKeys.inlineSuggestionVisible
 			),
 			kbOpts: {
 				weight: 100,
@@ -49,7 +49,7 @@ export class ShowNextInlineSuggestionAction extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		controller?.model.get()?.next();
@@ -63,12 +63,12 @@ export class ShowPreviousInlineSuggestionAction extends EditorAction {
 			id: ShowPreviousInlineSuggestionAction.ID,
 			label: nls.localize(
 				"action.inlineSuggest.showPrevious",
-				"Show Previous Inline Suggestion",
+				"Show Previous Inline Suggestion"
 			),
 			alias: "Show Previous Inline Suggestion",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				InlineCompletionContextKeys.inlineSuggestionVisible,
+				InlineCompletionContextKeys.inlineSuggestionVisible
 			),
 			kbOpts: {
 				weight: 100,
@@ -79,7 +79,7 @@ export class ShowPreviousInlineSuggestionAction extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		controller?.model.get()?.previous();
@@ -92,7 +92,7 @@ export class TriggerInlineSuggestionAction extends EditorAction {
 			id: "editor.action.inlineSuggest.trigger",
 			label: nls.localize(
 				"action.inlineSuggest.trigger",
-				"Trigger Inline Suggestion",
+				"Trigger Inline Suggestion"
 			),
 			alias: "Trigger Inline Suggestion",
 			precondition: EditorContextKeys.writable,
@@ -101,7 +101,7 @@ export class TriggerInlineSuggestionAction extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		await asyncTransaction(async (tx) => {
@@ -118,19 +118,19 @@ export class AcceptNextWordOfInlineCompletion extends EditorAction {
 			id: "editor.action.inlineSuggest.acceptNextWord",
 			label: nls.localize(
 				"action.inlineSuggest.acceptNextWord",
-				"Accept Next Word Of Inline Suggestion",
+				"Accept Next Word Of Inline Suggestion"
 			),
 			alias: "Accept Next Word Of Inline Suggestion",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				InlineCompletionContextKeys.inlineSuggestionVisible,
+				InlineCompletionContextKeys.inlineSuggestionVisible
 			),
 			kbOpts: {
 				weight: KeybindingWeight.EditorContrib + 1,
 				primary: KeyMod.CtrlCmd | KeyCode.RightArrow,
 				kbExpr: ContextKeyExpr.and(
 					EditorContextKeys.writable,
-					InlineCompletionContextKeys.inlineSuggestionVisible,
+					InlineCompletionContextKeys.inlineSuggestionVisible
 				),
 			},
 			menuOpts: [
@@ -146,7 +146,7 @@ export class AcceptNextWordOfInlineCompletion extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		await controller?.model.get()?.acceptNextWord(controller.editor);
@@ -159,12 +159,12 @@ export class AcceptNextLineOfInlineCompletion extends EditorAction {
 			id: "editor.action.inlineSuggest.acceptNextLine",
 			label: nls.localize(
 				"action.inlineSuggest.acceptNextLine",
-				"Accept Next Line Of Inline Suggestion",
+				"Accept Next Line Of Inline Suggestion"
 			),
 			alias: "Accept Next Line Of Inline Suggestion",
 			precondition: ContextKeyExpr.and(
 				EditorContextKeys.writable,
-				InlineCompletionContextKeys.inlineSuggestionVisible,
+				InlineCompletionContextKeys.inlineSuggestionVisible
 			),
 			kbOpts: {
 				weight: KeybindingWeight.EditorContrib + 1,
@@ -182,7 +182,7 @@ export class AcceptNextLineOfInlineCompletion extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		await controller?.model.get()?.acceptNextLine(controller.editor);
@@ -195,7 +195,7 @@ export class AcceptInlineCompletion extends EditorAction {
 			id: inlineSuggestCommitId,
 			label: nls.localize(
 				"action.inlineSuggest.accept",
-				"Accept Inline Suggestion",
+				"Accept Inline Suggestion"
 			),
 			alias: "Accept Inline Suggestion",
 			precondition: InlineCompletionContextKeys.inlineSuggestionVisible,
@@ -215,7 +215,7 @@ export class AcceptInlineCompletion extends EditorAction {
 					EditorContextKeys.tabMovesFocus.toNegated(),
 					InlineCompletionContextKeys.inlineSuggestionHasIndentationLessThanTabSize,
 					SuggestContext.Visible.toNegated(),
-					EditorContextKeys.hoverFocused.toNegated(),
+					EditorContextKeys.hoverFocused.toNegated()
 				),
 			},
 		});
@@ -223,7 +223,7 @@ export class AcceptInlineCompletion extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		if (controller) {
@@ -241,7 +241,7 @@ export class HideInlineCompletion extends EditorAction {
 			id: HideInlineCompletion.ID,
 			label: nls.localize(
 				"action.inlineSuggest.hide",
-				"Hide Inline Suggestion",
+				"Hide Inline Suggestion"
 			),
 			alias: "Hide Inline Suggestion",
 			precondition: InlineCompletionContextKeys.inlineSuggestionVisible,
@@ -254,7 +254,7 @@ export class HideInlineCompletion extends EditorAction {
 
 	public async run(
 		accessor: ServicesAccessor | undefined,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		transaction((tx) => {
@@ -271,7 +271,7 @@ export class ToggleAlwaysShowInlineSuggestionToolbar extends Action2 {
 			id: ToggleAlwaysShowInlineSuggestionToolbar.ID,
 			title: nls.localize(
 				"action.inlineSuggest.alwaysShowToolbar",
-				"Always Show Toolbar",
+				"Always Show Toolbar"
 			),
 			f1: false,
 			precondition: undefined,
@@ -284,18 +284,18 @@ export class ToggleAlwaysShowInlineSuggestionToolbar extends Action2 {
 			],
 			toggled: ContextKeyExpr.equals(
 				"config.editor.inlineSuggest.showToolbar",
-				"always",
+				"always"
 			),
 		});
 	}
 
 	public async run(
 		accessor: ServicesAccessor,
-		editor: ICodeEditor,
+		editor: ICodeEditor
 	): Promise<void> {
 		const configService = accessor.get(IConfigurationService);
 		const currentValue = configService.getValue<"always" | "onHover">(
-			"editor.inlineSuggest.showToolbar",
+			"editor.inlineSuggest.showToolbar"
 		);
 		const newValue = currentValue === "always" ? "onHover" : "always";
 		configService.updateValue("editor.inlineSuggest.showToolbar", newValue);
