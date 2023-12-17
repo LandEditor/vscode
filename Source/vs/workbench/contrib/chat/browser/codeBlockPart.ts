@@ -3,42 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./codeBlockPart';
+import "vs/css!./codeBlockPart";
 
-import * as dom from 'vs/base/browser/dom';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
+import * as dom from "vs/base/browser/dom";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 
-import { Button } from 'vs/base/browser/ui/button/button';
-import { Codicon } from 'vs/base/common/codicons';
-import { EditorExtensionsRegistry } from 'vs/editor/browser/editorExtensions';
-import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditorWidget';
-import { EDITOR_FONT_DEFAULTS, IEditorOptions } from 'vs/editor/common/config/editorOptions';
-import { Range } from 'vs/editor/common/core/range';
-import { ILanguageService } from 'vs/editor/common/languages/language';
-import { PLAINTEXT_LANGUAGE_ID } from 'vs/editor/common/languages/modesRegistry';
-import { EndOfLinePreference, ITextModel } from 'vs/editor/common/model';
-import { IModelService } from 'vs/editor/common/services/model';
-import { BracketMatchingController } from 'vs/editor/contrib/bracketMatching/browser/bracketMatching';
-import { ContextMenuController } from 'vs/editor/contrib/contextmenu/browser/contextmenu';
-import { ViewportSemanticTokensContribution } from 'vs/editor/contrib/semanticTokens/browser/viewportSemanticTokens';
-import { SmartSelectController } from 'vs/editor/contrib/smartSelect/browser/smartSelect';
-import { WordHighlighterContribution } from 'vs/editor/contrib/wordHighlighter/browser/wordHighlighter';
-import { localize } from 'vs/nls';
-import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
-import { MenuWorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
-import { MenuId } from 'vs/platform/actions/common/actions';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { AccessibilityVerbositySettingId } from 'vs/workbench/contrib/accessibility/browser/accessibilityConfiguration';
-import { IMarkdownVulnerability } from 'vs/workbench/contrib/chat/browser/chatMarkdownDecorationsRenderer';
-import { ChatEditorOptions } from 'vs/workbench/contrib/chat/browser/chatOptions';
-import { IChatResponseViewModel, isResponseVM } from 'vs/workbench/contrib/chat/common/chatViewModel';
-import { MenuPreventer } from 'vs/workbench/contrib/codeEditor/browser/menuPreventer';
-import { SelectionClipboardContributionID } from 'vs/workbench/contrib/codeEditor/browser/selectionClipboard';
-import { getSimpleEditorOptions } from 'vs/workbench/contrib/codeEditor/browser/simpleEditorOptions';
+import { Button } from "vs/base/browser/ui/button/button";
+import { Codicon } from "vs/base/common/codicons";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
+import { CodeEditorWidget } from "vs/editor/browser/widget/codeEditorWidget";
+import {
+	EDITOR_FONT_DEFAULTS,
+	IEditorOptions,
+} from "vs/editor/common/config/editorOptions";
+import { Range } from "vs/editor/common/core/range";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { EndOfLinePreference, ITextModel } from "vs/editor/common/model";
+import { IModelService } from "vs/editor/common/services/model";
+import { BracketMatchingController } from "vs/editor/contrib/bracketMatching/browser/bracketMatching";
+import { ContextMenuController } from "vs/editor/contrib/contextmenu/browser/contextmenu";
+import { ViewportSemanticTokensContribution } from "vs/editor/contrib/semanticTokens/browser/viewportSemanticTokens";
+import { SmartSelectController } from "vs/editor/contrib/smartSelect/browser/smartSelect";
+import { WordHighlighterContribution } from "vs/editor/contrib/wordHighlighter/browser/wordHighlighter";
+import { localize } from "vs/nls";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { MenuWorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
+import { MenuId } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { AccessibilityVerbositySettingId } from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import { IMarkdownVulnerability } from "vs/workbench/contrib/chat/browser/chatMarkdownDecorationsRenderer";
+import { ChatEditorOptions } from "vs/workbench/contrib/chat/browser/chatOptions";
+import {
+	IChatResponseViewModel,
+	isResponseVM,
+} from "vs/workbench/contrib/chat/common/chatViewModel";
+import { MenuPreventer } from "vs/workbench/contrib/codeEditor/browser/menuPreventer";
+import { SelectionClipboardContributionID } from "vs/workbench/contrib/codeEditor/browser/selectionClipboard";
+import { getSimpleEditorOptions } from "vs/workbench/contrib/codeEditor/browser/simpleEditorOptions";
 
 const $ = dom.$;
 
@@ -59,7 +65,6 @@ export interface ICodeBlockActionContext {
 	element: unknown;
 }
 
-
 export interface ICodeBlockPart {
 	readonly onDidChangeContentHeight: Event<void>;
 	readonly element: HTMLElement;
@@ -73,8 +78,11 @@ export interface ICodeBlockPart {
 const defaultCodeblockPadding = 10;
 
 export class CodeBlockPart extends Disposable implements ICodeBlockPart {
-	private readonly _onDidChangeContentHeight = this._register(new Emitter<void>());
-	public readonly onDidChangeContentHeight = this._onDidChangeContentHeight.event;
+	private readonly _onDidChangeContentHeight = this._register(
+		new Emitter<void>(),
+	);
+	public readonly onDidChangeContentHeight =
+		this._onDidChangeContentHeight.event;
 
 	private readonly editor: CodeEditorWidget;
 	private readonly toolbar: MenuWorkbenchToolBar;
@@ -212,33 +220,46 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	private updatePaddingForLayout() {
 		// scrollWidth = "the width of the content that needs to be scrolled"
 		// contentWidth = "the width of the area where content is displayed"
-		const horizontalScrollbarVisible = this.currentScrollWidth > this.editor.getLayoutInfo().contentWidth;
-		const scrollbarHeight = this.editor.getLayoutInfo().horizontalScrollbarHeight;
-		const bottomPadding = horizontalScrollbarVisible ?
-			Math.max(defaultCodeblockPadding - scrollbarHeight, 2) :
-			defaultCodeblockPadding;
-		this.editor.updateOptions({ padding: { top: defaultCodeblockPadding, bottom: bottomPadding } });
+		const horizontalScrollbarVisible =
+			this.currentScrollWidth > this.editor.getLayoutInfo().contentWidth;
+		const scrollbarHeight =
+			this.editor.getLayoutInfo().horizontalScrollbarHeight;
+		const bottomPadding = horizontalScrollbarVisible
+			? Math.max(defaultCodeblockPadding - scrollbarHeight, 2)
+			: defaultCodeblockPadding;
+		this.editor.updateOptions({
+			padding: { top: defaultCodeblockPadding, bottom: bottomPadding },
+		});
 	}
 
 	private _configureForScreenReader(): void {
 		const toolbarElt = this.toolbar.getElement();
 		if (this.accessibilityService.isScreenReaderOptimized()) {
-			toolbarElt.style.display = 'block';
-			toolbarElt.ariaLabel = this.configurationService.getValue(AccessibilityVerbositySettingId.Chat) ? localize('chat.codeBlock.toolbarVerbose', 'Toolbar for code block which can be reached via tab') : localize('chat.codeBlock.toolbar', 'Code block toolbar');
+			toolbarElt.style.display = "block";
+			toolbarElt.ariaLabel = this.configurationService.getValue(
+				AccessibilityVerbositySettingId.Chat,
+			)
+				? localize(
+						"chat.codeBlock.toolbarVerbose",
+						"Toolbar for code block which can be reached via tab",
+				  )
+				: localize("chat.codeBlock.toolbar", "Code block toolbar");
 		} else {
-			toolbarElt.style.display = '';
+			toolbarElt.style.display = "";
 		}
-
 	}
 
 	private getEditorOptionsFromConfig(): IEditorOptions {
 		return {
 			wordWrap: this.options.configuration.resultEditor.wordWrap,
-			fontLigatures: this.options.configuration.resultEditor.fontLigatures,
-			bracketPairColorization: this.options.configuration.resultEditor.bracketPairColorization,
-			fontFamily: this.options.configuration.resultEditor.fontFamily === 'default' ?
-				EDITOR_FONT_DEFAULTS.fontFamily :
-				this.options.configuration.resultEditor.fontFamily,
+			fontLigatures:
+				this.options.configuration.resultEditor.fontLigatures,
+			bracketPairColorization:
+				this.options.configuration.resultEditor.bracketPairColorization,
+			fontFamily:
+				this.options.configuration.resultEditor.fontFamily === "default"
+					? EDITOR_FONT_DEFAULTS.fontFamily
+					: this.options.configuration.resultEditor.fontFamily,
 			fontSize: this.options.configuration.resultEditor.fontSize,
 			fontWeight: this.options.configuration.resultEditor.fontWeight,
 			lineHeight: this.options.configuration.resultEditor.lineHeight,
@@ -248,10 +269,12 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 	layout(width: number): void {
 		const realContentHeight = this.editor.getContentHeight();
 		const editorBorder = 2;
-		this.editor.layout({ width: width - editorBorder, height: realContentHeight });
+		this.editor.layout({
+			width: width - editorBorder,
+			height: realContentHeight,
+		});
 		this.updatePaddingForLayout();
 	}
-
 
 	render(data: ICodeBlockData, width: number): void {
 		this.currentCodeBlockData = data;
@@ -259,7 +282,7 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 			this.contextKeyService.updateParent(data.parentContextKeyService);
 		}
 
-		if (this.options.configuration.resultEditor.wordWrap === 'on') {
+		if (this.options.configuration.resultEditor.wordWrap === "on") {
 			// Intialize the editor with the new proper width so that getContentHeight
 			// will be computed correctly in the next call to layout()
 			this.layout(width);
@@ -268,16 +291,24 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 		const text = this.fixCodeText(data.text, data.languageId);
 		this.setText(text);
 
-		const vscodeLanguageId = this.languageService.getLanguageIdByLanguageName(data.languageId) ?? undefined;
+		const vscodeLanguageId =
+			this.languageService.getLanguageIdByLanguageName(data.languageId) ??
+			undefined;
 		this.setLanguage(vscodeLanguageId);
 
 		this.layout(width);
-		this.editor.updateOptions({ ariaLabel: localize('chat.codeBlockLabel', "Code block {0}", data.codeBlockIndex + 1) });
+		this.editor.updateOptions({
+			ariaLabel: localize(
+				"chat.codeBlockLabel",
+				"Code block {0}",
+				data.codeBlockIndex + 1,
+			),
+		});
 		this.toolbar.context = <ICodeBlockActionContext>{
 			code: data.text,
 			codeBlockIndex: data.codeBlockIndex,
 			element: data.element,
-			languageId: vscodeLanguageId
+			languageId: vscodeLanguageId,
 		};
 
 		if (data.hideToolbar) {
@@ -288,30 +319,53 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 
 		if (data.vulns?.length && isResponseVM(data.element)) {
 			dom.clearNode(this.vulnsListElement);
-			this.element.classList.remove('no-vulns');
-			this.element.classList.toggle('chat-vulnerabilities-collapsed', !data.element.vulnerabilitiesListExpanded);
-			dom.append(this.vulnsListElement, ...data.vulns.map(v => $('li', undefined, $('span.chat-vuln-title', undefined, v.title), ' ' + v.description)));
+			this.element.classList.remove("no-vulns");
+			this.element.classList.toggle(
+				"chat-vulnerabilities-collapsed",
+				!data.element.vulnerabilitiesListExpanded,
+			);
+			dom.append(
+				this.vulnsListElement,
+				...data.vulns.map((v) =>
+					$(
+						"li",
+						undefined,
+						$("span.chat-vuln-title", undefined, v.title),
+						" " + v.description,
+					),
+				),
+			);
 			this.vulnsButton.label = this.getVulnerabilitiesLabel();
 		} else {
-			this.element.classList.add('no-vulns');
+			this.element.classList.add("no-vulns");
 		}
 	}
 
 	private getVulnerabilitiesLabel(): string {
 		if (!this.currentCodeBlockData || !this.currentCodeBlockData.vulns) {
-			return '';
+			return "";
 		}
 
-		const referencesLabel = this.currentCodeBlockData.vulns.length > 1 ?
-			localize('vulnerabilitiesPlural', "{0} vulnerabilities", this.currentCodeBlockData.vulns.length) :
-			localize('vulnerabilitiesSingular', "{0} vulnerability", 1);
-		const icon = (element: IChatResponseViewModel) => element.vulnerabilitiesListExpanded ? Codicon.chevronDown : Codicon.chevronRight;
-		return `${referencesLabel} $(${icon(this.currentCodeBlockData.element as IChatResponseViewModel).id})`;
+		const referencesLabel =
+			this.currentCodeBlockData.vulns.length > 1
+				? localize(
+						"vulnerabilitiesPlural",
+						"{0} vulnerabilities",
+						this.currentCodeBlockData.vulns.length,
+				  )
+				: localize("vulnerabilitiesSingular", "{0} vulnerability", 1);
+		const icon = (element: IChatResponseViewModel) =>
+			element.vulnerabilitiesListExpanded
+				? Codicon.chevronDown
+				: Codicon.chevronRight;
+		return `${referencesLabel} $(${
+			icon(this.currentCodeBlockData.element as IChatResponseViewModel).id
+		})`;
 	}
 
 	private fixCodeText(text: string, languageId: string): string {
-		if (languageId === 'php') {
-			if (!text.trim().startsWith('<')) {
+		if (languageId === "php") {
+			if (!text.trim().startsWith("<")) {
 				return `<?php\n${text}\n?>`;
 			}
 		}
@@ -329,7 +383,12 @@ export class CodeBlockPart extends Disposable implements ICodeBlockPart {
 			const text = newText.slice(currentText.length);
 			const lastLine = this.textModel.getLineCount();
 			const lastCol = this.textModel.getLineMaxColumn(lastLine);
-			this.textModel.applyEdits([{ range: new Range(lastLine, lastCol, lastLine, lastCol), text }]);
+			this.textModel.applyEdits([
+				{
+					range: new Range(lastLine, lastCol, lastLine, lastCol),
+					text,
+				},
+			]);
 		} else {
 			// console.log(`Failed to optimize setText`);
 			this.textModel.setValue(newText);

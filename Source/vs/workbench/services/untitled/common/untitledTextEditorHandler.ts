@@ -3,23 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from 'vs/base/common/network';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { IEditorSerializer } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { ITextEditorService } from 'vs/workbench/services/textfile/common/textEditorService';
-import { isEqual, toLocalResource } from 'vs/base/common/resources';
-import { PLAINTEXT_LANGUAGE_ID } from 'vs/editor/common/languages/modesRegistry';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
-import { IPathService } from 'vs/workbench/services/path/common/pathService';
-import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { IWorkingCopyIdentifier, NO_TYPE_ID } from 'vs/workbench/services/workingCopy/common/workingCopy';
-import { IWorkingCopyEditorHandler, IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService';
-import { IUntitledTextEditorService } from 'vs/workbench/services/untitled/common/untitledTextEditorService';
+import { Schemas } from "vs/base/common/network";
+import { Disposable } from "vs/base/common/lifecycle";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { IEditorSerializer } from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import { ITextEditorService } from "vs/workbench/services/textfile/common/textEditorService";
+import { isEqual, toLocalResource } from "vs/base/common/resources";
+import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import { IPathService } from "vs/workbench/services/path/common/pathService";
+import { UntitledTextEditorInput } from "vs/workbench/services/untitled/common/untitledTextEditorInput";
+import { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import {
+	IWorkingCopyIdentifier,
+	NO_TYPE_ID,
+} from "vs/workbench/services/workingCopy/common/workingCopy";
+import {
+	IWorkingCopyEditorHandler,
+	IWorkingCopyEditorService,
+} from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
+import { IUntitledTextEditorService } from "vs/workbench/services/untitled/common/untitledTextEditorService";
 
 interface ISerializedUntitledTextEditorInput {
 	readonly resourceJSON: UriComponents;
@@ -28,7 +34,6 @@ interface ISerializedUntitledTextEditorInput {
 }
 
 export class UntitledTextEditorInputSerializer implements IEditorSerializer {
-
 	constructor(
 		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
@@ -36,11 +41,17 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 	) { }
 
 	canSerialize(editorInput: EditorInput): boolean {
-		return this.filesConfigurationService.isHotExitEnabled && !editorInput.isDisposed();
+		return (
+			this.filesConfigurationService.isHotExitEnabled &&
+			!editorInput.isDisposed()
+		);
 	}
 
 	serialize(editorInput: EditorInput): string | undefined {
-		if (!this.filesConfigurationService.isHotExitEnabled || editorInput.isDisposed()) {
+		if (
+			!this.filesConfigurationService.isHotExitEnabled ||
+			editorInput.isDisposed()
+		) {
 			return undefined;
 		}
 
@@ -48,7 +59,11 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 
 		let resource = untitledTextEditorInput.resource;
 		if (untitledTextEditorInput.model.hasAssociatedFilePath) {
-			resource = toLocalResource(resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme); // untitled with associated file path use the local schema
+			resource = toLocalResource(
+				resource,
+				this.environmentService.remoteAuthority,
+				this.pathService.defaultUriScheme,
+			); // untitled with associated file path use the local schema
 		}
 
 		// Language: only remember language if it is either specific (not text)
@@ -66,26 +81,40 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 		const serialized: ISerializedUntitledTextEditorInput = {
 			resourceJSON: resource.toJSON(),
 			modeId: languageId,
-			encoding: untitledTextEditorInput.getEncoding()
+			encoding: untitledTextEditorInput.getEncoding(),
 		};
 
 		return JSON.stringify(serialized);
 	}
 
-	deserialize(instantiationService: IInstantiationService, serializedEditorInput: string): UntitledTextEditorInput {
-		return instantiationService.invokeFunction(accessor => {
-			const deserialized: ISerializedUntitledTextEditorInput = JSON.parse(serializedEditorInput);
+	deserialize(
+		instantiationService: IInstantiationService,
+		serializedEditorInput: string,
+	): UntitledTextEditorInput {
+		return instantiationService.invokeFunction((accessor) => {
+			const deserialized: ISerializedUntitledTextEditorInput = JSON.parse(
+				serializedEditorInput,
+			);
 			const resource = URI.revive(deserialized.resourceJSON);
 			const languageId = deserialized.modeId;
 			const encoding = deserialized.encoding;
 
-			return accessor.get(ITextEditorService).createTextEditor({ resource, languageId, encoding, forceUntitled: true }) as UntitledTextEditorInput;
+			return accessor
+				.get(ITextEditorService)
+				.createTextEditor({
+					resource,
+					languageId,
+					encoding,
+					forceUntitled: true,
+				}) as UntitledTextEditorInput;
 		});
 	}
 }
 
-export class UntitledTextEditorWorkingCopyEditorHandler extends Disposable implements IWorkbenchContribution, IWorkingCopyEditorHandler {
-
+export class UntitledTextEditorWorkingCopyEditorHandler
+	extends Disposable
+	implements IWorkbenchContribution, IWorkingCopyEditorHandler
+{
 	constructor(
 		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
 		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
@@ -99,7 +128,10 @@ export class UntitledTextEditorWorkingCopyEditorHandler extends Disposable imple
 	}
 
 	handles(workingCopy: IWorkingCopyIdentifier): boolean {
-		return workingCopy.resource.scheme === Schemas.untitled && workingCopy.typeId === NO_TYPE_ID;
+		return (
+			workingCopy.resource.scheme === Schemas.untitled &&
+			workingCopy.typeId === NO_TYPE_ID
+		);
 	}
 
 	isOpen(workingCopy: IWorkingCopyIdentifier, editor: EditorInput): boolean {
@@ -107,7 +139,10 @@ export class UntitledTextEditorWorkingCopyEditorHandler extends Disposable imple
 			return false;
 		}
 
-		return editor instanceof UntitledTextEditorInput && isEqual(workingCopy.resource, editor.resource);
+		return (
+			editor instanceof UntitledTextEditorInput &&
+			isEqual(workingCopy.resource, editor.resource)
+		);
 	}
 
 	createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput {
@@ -115,12 +150,23 @@ export class UntitledTextEditorWorkingCopyEditorHandler extends Disposable imple
 
 		// If the untitled has an associated resource,
 		// ensure to restore the local resource it had
-		if (this.untitledTextEditorService.isUntitledWithAssociatedResource(workingCopy.resource)) {
-			editorInputResource = toLocalResource(workingCopy.resource, this.environmentService.remoteAuthority, this.pathService.defaultUriScheme);
+		if (
+			this.untitledTextEditorService.isUntitledWithAssociatedResource(
+				workingCopy.resource,
+			)
+		) {
+			editorInputResource = toLocalResource(
+				workingCopy.resource,
+				this.environmentService.remoteAuthority,
+				this.pathService.defaultUriScheme,
+			);
 		} else {
 			editorInputResource = workingCopy.resource;
 		}
 
-		return this.textEditorService.createTextEditor({ resource: editorInputResource, forceUntitled: true });
+		return this.textEditorService.createTextEditor({
+			resource: editorInputResource,
+			forceUntitled: true,
+		});
 	}
 }

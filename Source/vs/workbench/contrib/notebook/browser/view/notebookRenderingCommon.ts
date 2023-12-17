@@ -3,24 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FastDomNode } from 'vs/base/browser/fastDomNode';
-import { IMouseWheelEvent } from 'vs/base/browser/mouseEvent';
-import { IListContextMenuEvent, IListEvent, IListMouseEvent } from 'vs/base/browser/ui/list/list';
-import { IListStyles } from 'vs/base/browser/ui/list/listWidget';
-import { Event } from 'vs/base/common/event';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { ScrollEvent } from 'vs/base/common/scrollable';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { Range } from 'vs/editor/common/core/range';
-import { Selection } from 'vs/editor/common/core/selection';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IWorkbenchListOptionsUpdate } from 'vs/platform/list/browser/listService';
-import { CellRevealRangeType, CellRevealType, ICellOutputViewModel, ICellViewModel } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { CellPartsCollection } from 'vs/workbench/contrib/notebook/browser/view/cellPart';
-import { CellViewModel, NotebookViewModel } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl';
-import { ICellRange } from 'vs/workbench/contrib/notebook/common/notebookRange';
-
+import { FastDomNode } from "vs/base/browser/fastDomNode";
+import { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
+import {
+	IListContextMenuEvent,
+	IListEvent,
+	IListMouseEvent,
+} from "vs/base/browser/ui/list/list";
+import { IListStyles } from "vs/base/browser/ui/list/listWidget";
+import { Event } from "vs/base/common/event";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { ScrollEvent } from "vs/base/common/scrollable";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import { Range } from "vs/editor/common/core/range";
+import { Selection } from "vs/editor/common/core/selection";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { IWorkbenchListOptionsUpdate } from "vs/platform/list/browser/listService";
+import {
+	CellRevealRangeType,
+	CellRevealType,
+	ICellOutputViewModel,
+	ICellViewModel,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { CellPartsCollection } from "vs/workbench/contrib/notebook/browser/view/cellPart";
+import {
+	CellViewModel,
+	NotebookViewModel,
+} from "vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl";
+import { ICellRange } from "vs/workbench/contrib/notebook/common/notebookRange";
 
 export interface INotebookCellList {
 	isDisposed: boolean;
@@ -68,13 +79,21 @@ export interface INotebookCellList {
 	scrollToBottom(): void;
 	revealCell(cell: ICellViewModel, revealType: CellRevealType): Promise<void>;
 	revealCells(range: ICellRange): void;
-	revealRangeInCell(cell: ICellViewModel, range: Selection | Range, revealType: CellRevealRangeType): Promise<void>;
+	revealRangeInCell(
+		cell: ICellViewModel,
+		range: Selection | Range,
+		revealType: CellRevealRangeType,
+	): Promise<void>;
 	revealCellOffsetInCenter(element: ICellViewModel, offset: number): void;
 	setHiddenAreas(_ranges: ICellRange[], triggerViewUpdate: boolean): boolean;
 	domElementOfElement(element: ICellViewModel): HTMLElement | null;
 	focusView(): void;
 	triggerScrollFromMouseWheelEvent(browserEvent: IMouseWheelEvent): void;
-	updateElementHeight2(element: ICellViewModel, size: number, anchorElementIndex?: number | null): void;
+	updateElementHeight2(
+		element: ICellViewModel,
+		size: number,
+		anchorElementIndex?: number | null,
+	): void;
 	domFocus(): void;
 	focusContainer(): void;
 	setCellEditorSelection(element: ICellViewModel, range: Range): void;
@@ -113,5 +132,3 @@ export interface CodeCellRenderTemplate extends BaseCellRenderTemplate {
 	focusSinkElement: HTMLElement;
 	editor: ICodeEditor;
 }
-
-

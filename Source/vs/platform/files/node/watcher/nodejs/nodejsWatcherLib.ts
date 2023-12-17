@@ -3,23 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { watch } from 'fs';
-import { RunOnceWorker, ThrottledWorker } from 'vs/base/common/async';
-import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
-import { isEqualOrParent } from 'vs/base/common/extpath';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { normalizeNFC } from 'vs/base/common/normalization';
-import { basename, dirname, join } from 'vs/base/common/path';
-import { isLinux, isMacintosh } from 'vs/base/common/platform';
-import { joinPath } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { realcase } from 'vs/base/node/extpath';
-import { Promises } from 'vs/base/node/pfs';
-import { FileChangeType, IFileChange } from 'vs/platform/files/common/files';
-import { ILogMessage, coalesceEvents, INonRecursiveWatchRequest, parseWatcherPatterns } from 'vs/platform/files/common/watcher';
+import { watch } from "fs";
+import { RunOnceWorker, ThrottledWorker } from "vs/base/common/async";
+import {
+	CancellationToken,
+	CancellationTokenSource,
+} from "vs/base/common/cancellation";
+import { isEqualOrParent } from "vs/base/common/extpath";
+import {
+	Disposable,
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { normalizeNFC } from "vs/base/common/normalization";
+import { basename, dirname, join } from "vs/base/common/path";
+import { isLinux, isMacintosh } from "vs/base/common/platform";
+import { joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { realcase } from "vs/base/node/extpath";
+import { Promises } from "vs/base/node/pfs";
+import { FileChangeType, IFileChange } from "vs/platform/files/common/files";
+import {
+	ILogMessage,
+	coalesceEvents,
+	INonRecursiveWatchRequest,
+	parseWatcherPatterns,
+} from "vs/platform/files/common/watcher";
 
 export class NodeJSFileWatcherLibrary extends Disposable {
-
 	// A delay in reacting to file deletes to support
 	// atomic save operations where a tool may chose
 	// to delete a file before creating it again for
@@ -36,21 +48,33 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 	// recursive watcher because we can have many individual
 	// node.js watchers per request.
 	// (https://github.com/microsoft/vscode/issues/124723)
-	private readonly throttledFileChangesEmitter = this._register(new ThrottledWorker<IFileChange>(
-		{
-			maxWorkChunkSize: 100,	// only process up to 100 changes at once before...
-			throttleDelay: 200,	  	// ...resting for 200ms until we process events again...
-			maxBufferedWork: 10000 	// ...but never buffering more than 10000 events in memory
-		},
-		events => this.onDidFilesChange(events)
-	));
+	private readonly throttledFileChangesEmitter = this._register(
+		new ThrottledWorker<IFileChange>(
+			{
+				maxWorkChunkSize: 100, // only process up to 100 changes at once before...
+				throttleDelay: 200, // ...resting for 200ms until we process events again...
+				maxBufferedWork: 10000, // ...but never buffering more than 10000 events in memory
+			},
+			(events) => this.onDidFilesChange(events),
+		),
+	);
 
 	// Aggregate file changes over FILE_CHANGES_HANDLER_DELAY
 	// to coalesce events and reduce spam.
-	private readonly fileChangesAggregator = this._register(new RunOnceWorker<IFileChange>(events => this.handleFileChanges(events), NodeJSFileWatcherLibrary.FILE_CHANGES_HANDLER_DELAY));
+	private readonly fileChangesAggregator = this._register(
+		new RunOnceWorker<IFileChange>(
+			(events) => this.handleFileChanges(events),
+			NodeJSFileWatcherLibrary.FILE_CHANGES_HANDLER_DELAY,
+		),
+	);
 
-	private readonly excludes = parseWatcherPatterns(this.request.path, this.request.excludes);
-	private readonly includes = this.request.includes ? parseWatcherPatterns(this.request.path, this.request.includes) : undefined;
+	private readonly excludes = parseWatcherPatterns(
+		this.request.path,
+		this.request.excludes,
+	);
+	private readonly includes = this.request.includes
+		? parseWatcherPatterns(this.request.path, this.request.includes)
+		: undefined;
 
 	private readonly cts = new CancellationTokenSource();
 
@@ -60,7 +84,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		private request: INonRecursiveWatchRequest,
 		private onDidFilesChange: (changes: IFileChange[]) => void,
 		private onLogMessage?: (msg: ILogMessage) => void,
-		private verboseLogging?: boolean
+		private verboseLogging?: boolean,
 	) {
 		super();
 	}
@@ -76,9 +100,8 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			// Watch via node.js
 			const stat = await Promises.stat(realPath);
 			this._register(await this.doWatch(realPath, stat.isDirectory()));
-
 		} catch (error) {
-			if (error.code !== 'ENOENT') {
+			if (error.code !== "ENOENT") {
 				this.error(error);
 			} else {
 				this.trace(error);
@@ -86,23 +109,26 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		}
 	}
 
-	private async normalizePath(request: INonRecursiveWatchRequest): Promise<string> {
+	private async normalizePath(
+		request: INonRecursiveWatchRequest,
+	): Promise<string> {
 		let realPath = request.path;
 
 		try {
-
 			// First check for symbolic link
 			realPath = await Promises.realpath(request.path);
 
 			// Second check for casing difference
 			// Note: this will be a no-op on Linux platforms
 			if (request.path === realPath) {
-				realPath = await realcase(request.path) ?? request.path;
+				realPath = (await realcase(request.path)) ?? request.path;
 			}
 
 			// Correct watch path as needed
 			if (request.path !== realPath) {
-				this.trace(`correcting a path to watch that seems to be a symbolic link or wrong casing (original: ${request.path}, real: ${realPath})`);
+				this.trace(
+					`correcting a path to watch that seems to be a symbolic link or wrong casing (original: ${request.path}, real: ${realPath})`,
+				);
 			}
 		} catch (error) {
 			// ignore
@@ -111,15 +137,19 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		return realPath;
 	}
 
-	private async doWatch(path: string, isDirectory: boolean): Promise<IDisposable> {
-
+	private async doWatch(
+		path: string,
+		isDirectory: boolean,
+	): Promise<IDisposable> {
 		// macOS: watching samba shares can crash VSCode so we do
 		// a simple check for the file path pointing to /Volumes
 		// (https://github.com/microsoft/vscode/issues/106879)
 		// TODO@electron this needs a revisit when the crash is
 		// fixed or mitigated upstream.
-		if (isMacintosh && isEqualOrParent(path, '/Volumes/', true)) {
-			this.error(`Refusing to watch ${path} for changes using fs.watch() for possibly being a network share where watching is unreliable and unstable.`);
+		if (isMacintosh && isEqualOrParent(path, "/Volumes/", true)) {
+			this.error(
+				`Refusing to watch ${path} for changes using fs.watch() for possibly being a network share where watching is unreliable and unstable.`,
+			);
 
 			return Disposable.None;
 		}
@@ -134,10 +164,12 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 			// Creating watcher can fail with an exception
 			const watcher = watch(path);
-			disposables.add(toDisposable(() => {
-				watcher.removeAllListeners();
-				watcher.close();
-			}));
+			disposables.add(
+				toDisposable(() => {
+					watcher.removeAllListeners();
+					watcher.close();
+				}),
+			);
 
 			this.trace(`Started watching: '${path}'`);
 
@@ -154,22 +186,26 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			}
 
 			const mapPathToStatDisposable = new Map<string, IDisposable>();
-			disposables.add(toDisposable(() => {
-				for (const [, disposable] of mapPathToStatDisposable) {
-					disposable.dispose();
-				}
-				mapPathToStatDisposable.clear();
-			}));
+			disposables.add(
+				toDisposable(() => {
+					for (const [, disposable] of mapPathToStatDisposable) {
+						disposable.dispose();
+					}
+					mapPathToStatDisposable.clear();
+				}),
+			);
 
-			watcher.on('error', (code: number, signal: string) => {
-				this.error(`Failed to watch ${path} for changes using fs.watch() (${code}, ${signal})`);
+			watcher.on("error", (code: number, signal: string) => {
+				this.error(
+					`Failed to watch ${path} for changes using fs.watch() (${code}, ${signal})`,
+				);
 
 				// The watcher is no longer functional reliably
 				// so we go ahead and dispose it
 				this.dispose();
 			});
 
-			watcher.on('change', (type, raw) => {
+			watcher.on("change", (type, raw) => {
 				if (cts.token.isCancellationRequested) {
 					return; // ignore if already disposed
 				}
@@ -177,8 +213,9 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 				this.trace(`[raw] ["${type}"] ${raw}`);
 
 				// Normalize file name
-				let changedFileName = '';
-				if (raw) { // https://github.com/microsoft/vscode/issues/38191
+				let changedFileName = "";
+				if (raw) {
+					// https://github.com/microsoft/vscode/issues/38191
 					changedFileName = raw.toString();
 					if (isMacintosh) {
 						// Mac: uses NFD unicode form on disk, but we want NFC
@@ -187,16 +224,17 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 					}
 				}
 
-				if (!changedFileName || (type !== 'change' && type !== 'rename')) {
+				if (
+					!changedFileName ||
+					(type !== "change" && type !== "rename")
+				) {
 					return; // ignore unexpected events
 				}
 
 				// Folder
 				if (isDirectory) {
-
 					// Folder child added/deleted
-					if (type === 'rename') {
-
+					if (type === "rename") {
 						// Cancel any previous stats for this file if existing
 						mapPathToStatDisposable.get(changedFileName)?.dispose();
 
@@ -227,8 +265,13 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							//
 							// Same as with recursive watching, we do not
 							// emit a delete event in this case.
-							if (changedFileName === pathBasename && !await Promises.exists(path)) {
-								this.warn('Watcher shutdown because watched path got deleted');
+							if (
+								changedFileName === pathBasename &&
+								!(await Promises.exists(path))
+							) {
+								this.warn(
+									"Watcher shutdown because watched path got deleted",
+								);
 
 								// The watcher is no longer functional reliably
 								// so we go ahead and dispose it
@@ -241,7 +284,9 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							// file system, we need to use `existsChildStrictCase` helper
 							// because otherwise we would wrongly assume a file exists
 							// when it was renamed to same name but different case.
-							const fileExists = await this.existsChildStrictCase(join(path, changedFileName));
+							const fileExists = await this.existsChildStrictCase(
+								join(path, changedFileName),
+							);
 
 							if (cts.token.isCancellationRequested) {
 								return; // ignore if disposed by now
@@ -263,15 +308,24 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 								type = FileChangeType.DELETED;
 							}
 
-							this.onFileChange({ resource: joinPath(requestResource, changedFileName), type, cId: this.request.correlationId });
+							this.onFileChange({
+								resource: joinPath(
+									requestResource,
+									changedFileName,
+								),
+								type,
+								cId: this.request.correlationId,
+							});
 						}, NodeJSFileWatcherLibrary.FILE_DELETE_HANDLER_DELAY);
 
-						mapPathToStatDisposable.set(changedFileName, toDisposable(() => clearTimeout(timeoutHandle)));
+						mapPathToStatDisposable.set(
+							changedFileName,
+							toDisposable(() => clearTimeout(timeoutHandle)),
+						);
 					}
 
 					// Folder child changed
 					else {
-
 						// Figure out the correct event type: if this is the
 						// first time we see this child, it can only be added
 						let type: FileChangeType;
@@ -282,16 +336,21 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 							folderChildren.add(changedFileName);
 						}
 
-						this.onFileChange({ resource: joinPath(requestResource, changedFileName), type, cId: this.request.correlationId });
+						this.onFileChange({
+							resource: joinPath(
+								requestResource,
+								changedFileName,
+							),
+							type,
+							cId: this.request.correlationId,
+						});
 					}
 				}
 
 				// File
 				else {
-
 					// File added/deleted
-					if (type === 'rename' || changedFileName !== pathBasename) {
-
+					if (type === "rename" || changedFileName !== pathBasename) {
 						// Depending on the OS the watcher runs on, there
 						// is different behaviour for when the watched
 						// file path is being deleted:
@@ -321,14 +380,30 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 							// File still exists, so emit as change event and reapply the watcher
 							if (fileExists) {
-								this.onFileChange({ resource: requestResource, type: FileChangeType.UPDATED, cId: this.request.correlationId }, true /* skip excludes/includes (file is explicitly watched) */);
+								this.onFileChange(
+									{
+										resource: requestResource,
+										type: FileChangeType.UPDATED,
+										cId: this.request.correlationId,
+									},
+									true /* skip excludes/includes (file is explicitly watched) */,
+								);
 
-								disposables.add(await this.doWatch(path, false));
+								disposables.add(
+									await this.doWatch(path, false),
+								);
 							}
 
 							// File seems to be really gone, so emit a deleted event and dispose
 							else {
-								this.onFileChange({ resource: requestResource, type: FileChangeType.DELETED, cId: this.request.correlationId }, true /* skip excludes/includes (file is explicitly watched) */);
+								this.onFileChange(
+									{
+										resource: requestResource,
+										type: FileChangeType.DELETED,
+										cId: this.request.correlationId,
+									},
+									true /* skip excludes/includes (file is explicitly watched) */,
+								);
 
 								// Important to flush the event delivery
 								// before disposing the watcher, otherwise
@@ -342,18 +417,32 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 						// Very important to dispose the watcher which now points to a stale inode
 						// and wire in a new disposable that tracks our timeout that is installed
 						disposables.clear();
-						disposables.add(toDisposable(() => clearTimeout(timeoutHandle)));
+						disposables.add(
+							toDisposable(() => clearTimeout(timeoutHandle)),
+						);
 					}
 
 					// File changed
 					else {
-						this.onFileChange({ resource: requestResource, type: FileChangeType.UPDATED, cId: this.request.correlationId }, true /* skip excludes/includes (file is explicitly watched) */);
+						this.onFileChange(
+							{
+								resource: requestResource,
+								type: FileChangeType.UPDATED,
+								cId: this.request.correlationId,
+							},
+							true /* skip excludes/includes (file is explicitly watched) */,
+						);
 					}
 				}
 			});
 		} catch (error) {
-			if (await Promises.exists(path) && !cts.token.isCancellationRequested) {
-				this.error(`Failed to watch ${path} for changes using fs.watch() (${error.toString()})`);
+			if (
+				(await Promises.exists(path)) &&
+				!cts.token.isCancellationRequested
+			) {
+				this.error(
+					`Failed to watch ${path} for changes using fs.watch() (${error.toString()})`,
+				);
 			}
 		}
 
@@ -363,24 +452,45 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 		});
 	}
 
-	private onFileChange(event: IFileChange, skipIncludeExcludeChecks = false): void {
+	private onFileChange(
+		event: IFileChange,
+		skipIncludeExcludeChecks = false,
+	): void {
 		if (this.cts.token.isCancellationRequested) {
 			return;
 		}
 
 		// Logging
 		if (this.verboseLogging) {
-			this.trace(`${event.type === FileChangeType.ADDED ? '[ADDED]' : event.type === FileChangeType.DELETED ? '[DELETED]' : '[CHANGED]'} ${event.resource.fsPath}`);
+			this.trace(
+				`${
+					event.type === FileChangeType.ADDED
+						? "[ADDED]"
+						: event.type === FileChangeType.DELETED
+						  ? "[DELETED]"
+						  : "[CHANGED]"
+				} ${event.resource.fsPath}`,
+			);
 		}
 
 		// Add to aggregator unless excluded or not included (not if explicitly disabled)
-		if (!skipIncludeExcludeChecks && this.excludes.some(exclude => exclude(event.resource.fsPath))) {
+		if (
+			!skipIncludeExcludeChecks &&
+			this.excludes.some((exclude) => exclude(event.resource.fsPath))
+		) {
 			if (this.verboseLogging) {
 				this.trace(` >> ignored (excluded) ${event.resource.fsPath}`);
 			}
-		} else if (!skipIncludeExcludeChecks && this.includes && this.includes.length > 0 && !this.includes.some(include => include(event.resource.fsPath))) {
+		} else if (
+			!skipIncludeExcludeChecks &&
+			this.includes &&
+			this.includes.length > 0 &&
+			!this.includes.some((include) => include(event.resource.fsPath))
+		) {
 			if (this.verboseLogging) {
-				this.trace(` >> ignored (not included) ${event.resource.fsPath}`);
+				this.trace(
+					` >> ignored (not included) ${event.resource.fsPath}`,
+				);
 			}
 		} else {
 			this.fileChangesAggregator.work(event);
@@ -388,27 +498,38 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 	}
 
 	private handleFileChanges(fileChanges: IFileChange[]): void {
-
 		// Coalesce events: merge events of same kind
 		const coalescedFileChanges = coalesceEvents(fileChanges);
 		if (coalescedFileChanges.length > 0) {
-
 			// Logging
 			if (this.verboseLogging) {
 				for (const event of coalescedFileChanges) {
-					this.trace(` >> normalized ${event.type === FileChangeType.ADDED ? '[ADDED]' : event.type === FileChangeType.DELETED ? '[DELETED]' : '[CHANGED]'} ${event.resource.fsPath}`);
+					this.trace(
+						` >> normalized ${
+							event.type === FileChangeType.ADDED
+								? "[ADDED]"
+								: event.type === FileChangeType.DELETED
+								  ? "[DELETED]"
+								  : "[CHANGED]"
+						} ${event.resource.fsPath}`,
+					);
 				}
 			}
 
 			// Broadcast to clients via throttled emitter
-			const worked = this.throttledFileChangesEmitter.work(coalescedFileChanges);
+			const worked =
+				this.throttledFileChangesEmitter.work(coalescedFileChanges);
 
 			// Logging
 			if (!worked) {
-				this.warn(`started ignoring events due to too many file change events at once (incoming: ${coalescedFileChanges.length}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`);
+				this.warn(
+					`started ignoring events due to too many file change events at once (incoming: ${coalescedFileChanges.length}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`,
+				);
 			} else {
 				if (this.throttledFileChangesEmitter.pending > 0) {
-					this.trace(`started throttling events due to large amount of file change events at once (pending: ${this.throttledFileChangesEmitter.pending}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`);
+					this.trace(
+						`started throttling events due to large amount of file change events at once (pending: ${this.throttledFileChangesEmitter.pending}, most recent change: ${coalescedFileChanges[0].resource.fsPath}). Use 'files.watcherExclude' setting to exclude folders with lots of changing files (e.g. compilation output).`,
+					);
 				}
 			}
 		}
@@ -423,7 +544,7 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 			const pathBasename = basename(path);
 			const children = await Promises.readdir(dirname(path));
 
-			return children.some(child => child === pathBasename);
+			return children.some((child) => child === pathBasename);
 		} catch (error) {
 			this.trace(error);
 
@@ -437,19 +558,28 @@ export class NodeJSFileWatcherLibrary extends Disposable {
 
 	private error(error: string): void {
 		if (!this.cts.token.isCancellationRequested) {
-			this.onLogMessage?.({ type: 'error', message: `[File Watcher (node.js)] ${error}` });
+			this.onLogMessage?.({
+				type: "error",
+				message: `[File Watcher (node.js)] ${error}`,
+			});
 		}
 	}
 
 	private warn(message: string): void {
 		if (!this.cts.token.isCancellationRequested) {
-			this.onLogMessage?.({ type: 'warn', message: `[File Watcher (node.js)] ${message}` });
+			this.onLogMessage?.({
+				type: "warn",
+				message: `[File Watcher (node.js)] ${message}`,
+			});
 		}
 	}
 
 	private trace(message: string): void {
 		if (!this.cts.token.isCancellationRequested && this.verboseLogging) {
-			this.onLogMessage?.({ type: 'trace', message: `[File Watcher (node.js)] ${message}` });
+			this.onLogMessage?.({
+				type: "trace",
+				message: `[File Watcher (node.js)] ${message}`,
+			});
 		}
 	}
 
@@ -466,8 +596,14 @@ export class NodeJSFileWatcherLibrary extends Disposable {
  * Watch the provided `path` for changes and return
  * the data in chunks of `Uint8Array` for further use.
  */
-export async function watchFileContents(path: string, onData: (chunk: Uint8Array) => void, onReady: () => void, token: CancellationToken, bufferSize = 512): Promise<void> {
-	const handle = await Promises.open(path, 'r');
+export async function watchFileContents(
+	path: string,
+	onData: (chunk: Uint8Array) => void,
+	onReady: () => void,
+	token: CancellationToken,
+	bufferSize = 512,
+): Promise<void> {
+	const handle = await Promises.open(path, "r");
 	const buffer = Buffer.allocUnsafe(bufferSize);
 
 	const cts = new CancellationTokenSource(token);
@@ -475,12 +611,15 @@ export async function watchFileContents(path: string, onData: (chunk: Uint8Array
 	let error: Error | undefined = undefined;
 	let isReading = false;
 
-	const request: INonRecursiveWatchRequest = { path, excludes: [], recursive: false };
-	const watcher = new NodeJSFileWatcherLibrary(request, changes => {
+	const request: INonRecursiveWatchRequest = {
+		path,
+		excludes: [],
+		recursive: false,
+	};
+	const watcher = new NodeJSFileWatcherLibrary(request, (changes) => {
 		(async () => {
 			for (const { type } of changes) {
 				if (type === FileChangeType.UPDATED) {
-
 					if (isReading) {
 						return; // return early if we are already reading the output
 					}
@@ -491,8 +630,17 @@ export async function watchFileContents(path: string, onData: (chunk: Uint8Array
 						// Consume the new contents of the file until finished
 						// everytime there is a change event signalling a change
 						while (!cts.token.isCancellationRequested) {
-							const { bytesRead } = await Promises.read(handle, buffer, 0, bufferSize, null);
-							if (!bytesRead || cts.token.isCancellationRequested) {
+							const { bytesRead } = await Promises.read(
+								handle,
+								buffer,
+								0,
+								bufferSize,
+								null,
+							);
+							if (
+								!bytesRead ||
+								cts.token.isCancellationRequested
+							) {
 								break;
 							}
 

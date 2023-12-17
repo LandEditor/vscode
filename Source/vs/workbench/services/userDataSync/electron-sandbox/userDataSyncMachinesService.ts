@@ -3,20 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ISharedProcessService } from 'vs/platform/ipc/electron-sandbox/services';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IChannel } from 'vs/base/parts/ipc/common/ipc';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IUserDataSyncMachinesService, IUserDataSyncMachine } from 'vs/platform/userDataSync/common/userDataSyncMachines';
-import { Event } from 'vs/base/common/event';
+import { ISharedProcessService } from "vs/platform/ipc/electron-sandbox/services";
+import { Disposable } from "vs/base/common/lifecycle";
+import { IChannel } from "vs/base/parts/ipc/common/ipc";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
+	IUserDataSyncMachinesService,
+	IUserDataSyncMachine,
+} from "vs/platform/userDataSync/common/userDataSyncMachines";
+import { Event } from "vs/base/common/event";
 
-class UserDataSyncMachinesService extends Disposable implements IUserDataSyncMachinesService {
-
+class UserDataSyncMachinesService
+	extends Disposable
+	implements IUserDataSyncMachinesService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly channel: IChannel;
 
-	get onDidChange(): Event<void> { return this.channel.listen<void>('onDidChange'); }
+	get onDidChange(): Event<void> {
+		return this.channel.listen<void>("onDidChange");
+	}
 
 	constructor(
 		@ISharedProcessService sharedProcessService: ISharedProcessService
@@ -26,25 +36,28 @@ class UserDataSyncMachinesService extends Disposable implements IUserDataSyncMac
 	}
 
 	getMachines(): Promise<IUserDataSyncMachine[]> {
-		return this.channel.call<IUserDataSyncMachine[]>('getMachines');
+		return this.channel.call<IUserDataSyncMachine[]>("getMachines");
 	}
 
 	addCurrentMachine(): Promise<void> {
-		return this.channel.call('addCurrentMachine');
+		return this.channel.call("addCurrentMachine");
 	}
 
 	removeCurrentMachine(): Promise<void> {
-		return this.channel.call('removeCurrentMachine');
+		return this.channel.call("removeCurrentMachine");
 	}
 
 	renameMachine(machineId: string, name: string): Promise<void> {
-		return this.channel.call('renameMachine', [machineId, name]);
+		return this.channel.call("renameMachine", [machineId, name]);
 	}
 
 	setEnablements(enablements: [string, boolean][]): Promise<void> {
-		return this.channel.call('setEnablements', enablements);
+		return this.channel.call("setEnablements", enablements);
 	}
-
 }
 
-registerSingleton(IUserDataSyncMachinesService, UserDataSyncMachinesService, InstantiationType.Delayed);
+registerSingleton(
+	IUserDataSyncMachinesService,
+	UserDataSyncMachinesService,
+	InstantiationType.Delayed,
+);

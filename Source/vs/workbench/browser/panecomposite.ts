@@ -3,28 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Registry } from 'vs/platform/registry/common/platform';
-import { Composite, CompositeDescriptor, CompositeRegistry } from 'vs/workbench/browser/composite';
-import { IConstructorSignature, BrandedService, IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { URI } from 'vs/base/common/uri';
-import { Dimension } from 'vs/base/browser/dom';
-import { IActionViewItem } from 'vs/base/browser/ui/actionbar/actionbar';
-import { IAction, Separator } from 'vs/base/common/actions';
-import { MenuId, SubmenuItemAction } from 'vs/platform/actions/common/actions';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { ViewPaneContainer, ViewsSubMenu } from 'vs/workbench/browser/parts/views/viewPaneContainer';
-import { IPaneComposite } from 'vs/workbench/common/panecomposite';
-import { IView } from 'vs/workbench/common/views';
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-import { VIEWPANE_FILTER_ACTION } from 'vs/workbench/browser/parts/views/viewPane';
-import { IBoundarySashes } from 'vs/base/browser/ui/sash/sash';
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	Composite,
+	CompositeDescriptor,
+	CompositeRegistry,
+} from "vs/workbench/browser/composite";
+import {
+	IConstructorSignature,
+	BrandedService,
+	IInstantiationService,
+} from "vs/platform/instantiation/common/instantiation";
+import { URI } from "vs/base/common/uri";
+import { Dimension } from "vs/base/browser/dom";
+import { IActionViewItem } from "vs/base/browser/ui/actionbar/actionbar";
+import { IAction, Separator } from "vs/base/common/actions";
+import { MenuId, SubmenuItemAction } from "vs/platform/actions/common/actions";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import {
+	ViewPaneContainer,
+	ViewsSubMenu,
+} from "vs/workbench/browser/parts/views/viewPaneContainer";
+import { IPaneComposite } from "vs/workbench/common/panecomposite";
+import { IView } from "vs/workbench/common/views";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { VIEWPANE_FILTER_ACTION } from "vs/workbench/browser/parts/views/viewPane";
+import { IBoundarySashes } from "vs/base/browser/ui/sash/sash";
 
-export abstract class PaneComposite extends Composite implements IPaneComposite {
-
+export abstract class PaneComposite
+	extends Composite
+	implements IPaneComposite
+{
 	private viewPaneContainer?: ViewPaneContainer;
 
 	constructor(
@@ -42,8 +55,14 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 
 	override create(parent: HTMLElement): void {
 		super.create(parent);
-		this.viewPaneContainer = this._register(this.createViewPaneContainer(parent));
-		this._register(this.viewPaneContainer.onTitleAreaUpdate(() => this.updateTitleArea()));
+		this.viewPaneContainer = this._register(
+			this.createViewPaneContainer(parent),
+		);
+		this._register(
+			this.viewPaneContainer.onTitleAreaUpdate(() =>
+				this.updateTitleArea(),
+			),
+		);
 		this.viewPaneContainer.create(parent);
 	}
 
@@ -77,7 +96,9 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 	}
 
 	override getContextMenuActions(): readonly IAction[] {
-		return this.viewPaneContainer?.menuActions?.getContextMenuActions() ?? [];
+		return (
+			this.viewPaneContainer?.menuActions?.getContextMenuActions() ?? []
+		);
 	}
 
 	override getMenuIds(): MenuId[] {
@@ -94,7 +115,9 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 	override getActions(): readonly IAction[] {
 		const result = [];
 		if (this.viewPaneContainer?.menuActions) {
-			result.push(...this.viewPaneContainer.menuActions.getPrimaryActions());
+			result.push(
+				...this.viewPaneContainer.menuActions.getPrimaryActions(),
+			);
 			if (this.viewPaneContainer.isViewMergedWithContainer()) {
 				const viewPane = this.viewPaneContainer.panes[0];
 				if (viewPane.shouldShowFilterInHeader()) {
@@ -111,17 +134,31 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 			return [];
 		}
 
-		const viewPaneActions = this.viewPaneContainer.isViewMergedWithContainer() ? this.viewPaneContainer.panes[0].menuActions.getSecondaryActions() : [];
-		let menuActions = this.viewPaneContainer.menuActions.getSecondaryActions();
+		const viewPaneActions =
+			this.viewPaneContainer.isViewMergedWithContainer()
+				? this.viewPaneContainer.panes[0].menuActions.getSecondaryActions()
+				: [];
+		let menuActions =
+			this.viewPaneContainer.menuActions.getSecondaryActions();
 
-		const viewsSubmenuActionIndex = menuActions.findIndex(action => action instanceof SubmenuItemAction && action.item.submenu === ViewsSubMenu);
+		const viewsSubmenuActionIndex = menuActions.findIndex(
+			(action) =>
+				action instanceof SubmenuItemAction &&
+				action.item.submenu === ViewsSubMenu,
+		);
 		if (viewsSubmenuActionIndex !== -1) {
-			const viewsSubmenuAction = <SubmenuItemAction>menuActions[viewsSubmenuActionIndex];
+			const viewsSubmenuAction = <SubmenuItemAction>(
+				menuActions[viewsSubmenuActionIndex]
+			);
 			if (viewsSubmenuAction.actions.some(({ enabled }) => enabled)) {
 				if (menuActions.length === 1 && viewPaneActions.length === 0) {
 					menuActions = viewsSubmenuAction.actions.slice();
 				} else if (viewsSubmenuActionIndex !== 0) {
-					menuActions = [viewsSubmenuAction, ...menuActions.slice(0, viewsSubmenuActionIndex), ...menuActions.slice(viewsSubmenuActionIndex + 1)];
+					menuActions = [
+						viewsSubmenuAction,
+						...menuActions.slice(0, viewsSubmenuActionIndex),
+						...menuActions.slice(viewsSubmenuActionIndex + 1),
+					];
 				}
 			} else {
 				// Remove views submenu if none of the actions are enabled
@@ -130,11 +167,7 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		}
 
 		if (menuActions.length && viewPaneActions.length) {
-			return [
-				...menuActions,
-				new Separator(),
-				...viewPaneActions
-			];
+			return [...menuActions, new Separator(), ...viewPaneActions];
 		}
 
 		return menuActions.length ? menuActions : viewPaneActions;
@@ -145,7 +178,7 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 	}
 
 	override getTitle(): string {
-		return this.viewPaneContainer?.getTitle() ?? '';
+		return this.viewPaneContainer?.getTitle() ?? "";
 	}
 
 	override focus(): void {
@@ -153,26 +186,33 @@ export abstract class PaneComposite extends Composite implements IPaneComposite 
 		this.viewPaneContainer?.focus();
 	}
 
-	protected abstract createViewPaneContainer(parent: HTMLElement): ViewPaneContainer;
+	protected abstract createViewPaneContainer(
+		parent: HTMLElement,
+	): ViewPaneContainer;
 }
-
 
 /**
  * A Pane Composite descriptor is a lightweight descriptor of a Pane Composite in the workbench.
  */
 export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> {
-
 	static create<Services extends BrandedService[]>(
-		ctor: { new(...services: Services): PaneComposite },
+		ctor: { new (...services: Services): PaneComposite },
 		id: string,
 		name: string,
 		cssClass?: string,
 		order?: number,
 		requestedIndex?: number,
-		iconUrl?: URI
+		iconUrl?: URI,
 	): PaneCompositeDescriptor {
-
-		return new PaneCompositeDescriptor(ctor as IConstructorSignature<PaneComposite>, id, name, cssClass, order, requestedIndex, iconUrl);
+		return new PaneCompositeDescriptor(
+			ctor as IConstructorSignature<PaneComposite>,
+			id,
+			name,
+			cssClass,
+			order,
+			requestedIndex,
+			iconUrl,
+		);
 	}
 
 	private constructor(
@@ -182,20 +222,19 @@ export class PaneCompositeDescriptor extends CompositeDescriptor<PaneComposite> 
 		cssClass?: string,
 		order?: number,
 		requestedIndex?: number,
-		readonly iconUrl?: URI
+		readonly iconUrl?: URI,
 	) {
 		super(ctor, id, name, cssClass, order, requestedIndex);
 	}
 }
 
 export const Extensions = {
-	Viewlets: 'workbench.contributions.viewlets',
-	Panels: 'workbench.contributions.panels',
-	Auxiliary: 'workbench.contributions.auxiliary',
+	Viewlets: "workbench.contributions.viewlets",
+	Panels: "workbench.contributions.panels",
+	Auxiliary: "workbench.contributions.auxiliary",
 };
 
 export class PaneCompositeRegistry extends CompositeRegistry<PaneComposite> {
-
 	/**
 	 * Registers a viewlet to the platform.
 	 */

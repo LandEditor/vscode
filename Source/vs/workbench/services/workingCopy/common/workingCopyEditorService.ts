@@ -3,19 +3,29 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from 'vs/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { EditorsOrder, IEditorIdentifier } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { IWorkingCopy, IWorkingCopyIdentifier } from 'vs/workbench/services/workingCopy/common/workingCopy';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { Emitter, Event } from "vs/base/common/event";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { EditorsOrder, IEditorIdentifier } from "vs/workbench/common/editor";
+import { EditorInput } from "vs/workbench/common/editor/editorInput";
+import {
+	IWorkingCopy,
+	IWorkingCopyIdentifier,
+} from "vs/workbench/services/workingCopy/common/workingCopy";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
-export const IWorkingCopyEditorService = createDecorator<IWorkingCopyEditorService>('workingCopyEditorService');
+export const IWorkingCopyEditorService =
+	createDecorator<IWorkingCopyEditorService>("workingCopyEditorService");
 
 export interface IWorkingCopyEditorHandler {
-
 	/**
 	 * Whether the handler is capable of opening the specific backup in
 	 * an editor.
@@ -30,11 +40,12 @@ export interface IWorkingCopyEditorHandler {
 	/**
 	 * Create an editor that is suitable of opening the provided working copy.
 	 */
-	createEditor(workingCopy: IWorkingCopyIdentifier): EditorInput | Promise<EditorInput>;
+	createEditor(
+		workingCopy: IWorkingCopyIdentifier,
+	): EditorInput | Promise<EditorInput>;
 }
 
 export interface IWorkingCopyEditorService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -53,11 +64,15 @@ export interface IWorkingCopyEditorService {
 	findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined;
 }
 
-export class WorkingCopyEditorService extends Disposable implements IWorkingCopyEditorService {
-
+export class WorkingCopyEditorService
+	extends Disposable
+	implements IWorkingCopyEditorService
+{
 	declare readonly _serviceBrand: undefined;
 
-	private readonly _onDidRegisterHandler = this._register(new Emitter<IWorkingCopyEditorHandler>());
+	private readonly _onDidRegisterHandler = this._register(
+		new Emitter<IWorkingCopyEditorHandler>(),
+	);
 	readonly onDidRegisterHandler = this._onDidRegisterHandler.event;
 
 	private readonly handlers = new Set<IWorkingCopyEditorHandler>();
@@ -67,7 +82,6 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
 	}
 
 	registerHandler(handler: IWorkingCopyEditorHandler): IDisposable {
-
 		// Add to registry and emit as event
 		this.handlers.add(handler);
 		this._onDidRegisterHandler.fire(handler);
@@ -76,7 +90,9 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
 	}
 
 	findEditor(workingCopy: IWorkingCopy): IEditorIdentifier | undefined {
-		for (const editorIdentifier of this.editorService.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE)) {
+		for (const editorIdentifier of this.editorService.getEditors(
+			EditorsOrder.MOST_RECENTLY_ACTIVE,
+		)) {
 			if (this.isOpen(workingCopy, editorIdentifier.editor)) {
 				return editorIdentifier;
 			}
@@ -97,4 +113,8 @@ export class WorkingCopyEditorService extends Disposable implements IWorkingCopy
 }
 
 // Register Service
-registerSingleton(IWorkingCopyEditorService, WorkingCopyEditorService, InstantiationType.Delayed);
+registerSingleton(
+	IWorkingCopyEditorService,
+	WorkingCopyEditorService,
+	InstantiationType.Delayed,
+);

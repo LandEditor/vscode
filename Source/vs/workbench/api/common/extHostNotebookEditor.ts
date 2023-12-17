@@ -3,16 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { illegalArgument } from 'vs/base/common/errors';
-import { MainThreadNotebookEditorsShape } from 'vs/workbench/api/common/extHost.protocol';
-import * as extHostConverter from 'vs/workbench/api/common/extHostTypeConverters';
-import * as extHostTypes from 'vs/workbench/api/common/extHostTypes';
-import * as vscode from 'vscode';
-import { ExtHostNotebookDocument } from './extHostNotebookDocument';
+import { illegalArgument } from "vs/base/common/errors";
+import { MainThreadNotebookEditorsShape } from "vs/workbench/api/common/extHost.protocol";
+import * as extHostConverter from "vs/workbench/api/common/extHostTypeConverters";
+import * as extHostTypes from "vs/workbench/api/common/extHostTypes";
+import * as vscode from "vscode";
+import { ExtHostNotebookDocument } from "./extHostNotebookDocument";
 
 export class ExtHostNotebookEditor {
-
-	public static readonly apiEditorsToExtHost = new WeakMap<vscode.NotebookEditor, ExtHostNotebookEditor>();
+	public static readonly apiEditorsToExtHost = new WeakMap<
+		vscode.NotebookEditor,
+		ExtHostNotebookEditor
+	>();
 
 	private _selections: vscode.NotebookRange[] = [];
 	private _visibleRanges: vscode.NotebookRange[] = [];
@@ -28,7 +30,7 @@ export class ExtHostNotebookEditor {
 		readonly notebookData: ExtHostNotebookDocument,
 		visibleRanges: vscode.NotebookRange[],
 		selections: vscode.NotebookRange[],
-		viewColumn: vscode.ViewColumn | undefined
+		viewColumn: vscode.ViewColumn | undefined,
 	) {
 		this._selections = selections;
 		this._visibleRanges = visibleRanges;
@@ -52,8 +54,11 @@ export class ExtHostNotebookEditor {
 					return that._selections;
 				},
 				set selections(value: vscode.NotebookRange[]) {
-					if (!Array.isArray(value) || !value.every(extHostTypes.NotebookRange.isNotebookRange)) {
-						throw illegalArgument('selections');
+					if (
+						!Array.isArray(value) ||
+						!value.every(extHostTypes.NotebookRange.isNotebookRange)
+					) {
+						throw illegalArgument("selections");
 					}
 					that._selections = value;
 					that._trySetSelections(value);
@@ -65,7 +70,8 @@ export class ExtHostNotebookEditor {
 					that._proxy.$tryRevealRange(
 						that.id,
 						extHostConverter.NotebookRange.from(range),
-						revealType ?? extHostTypes.NotebookEditorRevealType.Default
+						revealType ??
+							extHostTypes.NotebookEditorRevealType.Default,
 					);
 				},
 				get viewColumn() {
@@ -95,7 +101,10 @@ export class ExtHostNotebookEditor {
 	}
 
 	private _trySetSelections(value: vscode.NotebookRange[]): void {
-		this._proxy.$trySetSelections(this.id, value.map(extHostConverter.NotebookRange.from));
+		this._proxy.$trySetSelections(
+			this.id,
+			value.map(extHostConverter.NotebookRange.from),
+		);
 	}
 
 	_acceptViewColumn(value: vscode.ViewColumn | undefined) {

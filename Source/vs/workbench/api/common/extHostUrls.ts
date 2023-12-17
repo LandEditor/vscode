@@ -3,37 +3,51 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from 'vscode';
-import { MainContext, IMainContext, ExtHostUrlsShape, MainThreadUrlsShape } from './extHost.protocol';
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { toDisposable } from 'vs/base/common/lifecycle';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { ExtensionIdentifierSet, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import type * as vscode from "vscode";
+import {
+	MainContext,
+	IMainContext,
+	ExtHostUrlsShape,
+	MainThreadUrlsShape,
+} from "./extHost.protocol";
+import { URI, UriComponents } from "vs/base/common/uri";
+import { toDisposable } from "vs/base/common/lifecycle";
+import { onUnexpectedError } from "vs/base/common/errors";
+import {
+	ExtensionIdentifierSet,
+	IExtensionDescription,
+} from "vs/platform/extensions/common/extensions";
 
 export class ExtHostUrls implements ExtHostUrlsShape {
-
 	private static HandlePool = 0;
 	private readonly _proxy: MainThreadUrlsShape;
 
 	private handles = new ExtensionIdentifierSet();
 	private handlers = new Map<number, vscode.UriHandler>();
 
-	constructor(
-		mainContext: IMainContext
-	) {
+	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadUrls);
 	}
 
-	registerUriHandler(extension: IExtensionDescription, handler: vscode.UriHandler): vscode.Disposable {
+	registerUriHandler(
+		extension: IExtensionDescription,
+		handler: vscode.UriHandler,
+	): vscode.Disposable {
 		const extensionId = extension.identifier;
 		if (this.handles.has(extensionId)) {
-			throw new Error(`Protocol handler already registered for extension ${extensionId}`);
+			throw new Error(
+				`Protocol handler already registered for extension ${extensionId}`,
+			);
 		}
 
 		const handle = ExtHostUrls.HandlePool++;
 		this.handles.add(extensionId);
 		this.handlers.set(handle, handler);
-		this._proxy.$registerUriHandler(handle, extensionId, extension.displayName || extension.name);
+		this._proxy.$registerUriHandler(
+			handle,
+			extensionId,
+			extension.displayName || extension.name,
+		);
 
 		return toDisposable(() => {
 			this.handles.delete(extensionId);

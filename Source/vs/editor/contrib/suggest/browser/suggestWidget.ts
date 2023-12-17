@@ -3,51 +3,208 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from 'vs/base/browser/dom';
-import { IKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import 'vs/base/browser/ui/codicons/codiconStyles'; // The codicon symbol styles are defined here and must be loaded
-import { IListEvent, IListGestureEvent, IListMouseEvent } from 'vs/base/browser/ui/list/list';
-import { List } from 'vs/base/browser/ui/list/listWidget';
-import { CancelablePromise, createCancelablePromise, disposableTimeout, TimeoutTimer } from 'vs/base/common/async';
-import { onUnexpectedError } from 'vs/base/common/errors';
-import { Emitter, Event, PauseableEmitter } from 'vs/base/common/event';
-import { DisposableStore, IDisposable, MutableDisposable } from 'vs/base/common/lifecycle';
-import { clamp } from 'vs/base/common/numbers';
-import * as strings from 'vs/base/common/strings';
-import 'vs/css!./media/suggest';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition, IEditorMouseEvent } from 'vs/editor/browser/editorBrowser';
-import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/embeddedCodeEditorWidget';
-import { EditorOption } from 'vs/editor/common/config/editorOptions';
-import { IPosition } from 'vs/editor/common/core/position';
-import { SuggestWidgetStatus } from 'vs/editor/contrib/suggest/browser/suggestWidgetStatus';
-import 'vs/editor/contrib/symbolIcons/browser/symbolIcons'; // The codicon symbol colors are defined here and must be loaded to get colors
-import * as nls from 'vs/nls';
-import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { activeContrastBorder, editorForeground, editorWidgetBackground, editorWidgetBorder, listFocusHighlightForeground, listHighlightForeground, quickInputListFocusBackground, quickInputListFocusForeground, quickInputListFocusIconForeground, registerColor, transparent } from 'vs/platform/theme/common/colorRegistry';
-import { isHighContrast } from 'vs/platform/theme/common/theme';
-import { IColorTheme, IThemeService } from 'vs/platform/theme/common/themeService';
-import { CompletionModel } from './completionModel';
-import { ResizableHTMLElement } from 'vs/base/browser/ui/resizable/resizable';
-import { CompletionItem, Context as SuggestContext, suggestWidgetStatusbarMenu } from './suggest';
-import { canExpandCompletionItem, SuggestDetailsOverlay, SuggestDetailsWidget } from './suggestWidgetDetails';
-import { getAriaId, ItemRenderer } from './suggestWidgetRenderer';
-import { getListStyles } from 'vs/platform/theme/browser/defaultStyles';
-import { status } from 'vs/base/browser/ui/aria/aria';
+import * as dom from "vs/base/browser/dom";
+import { IKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import "vs/base/browser/ui/codicons/codiconStyles"; // The codicon symbol styles are defined here and must be loaded
+import {
+	IListEvent,
+	IListGestureEvent,
+	IListMouseEvent,
+} from "vs/base/browser/ui/list/list";
+import { List } from "vs/base/browser/ui/list/listWidget";
+import {
+	CancelablePromise,
+	createCancelablePromise,
+	disposableTimeout,
+	TimeoutTimer,
+} from "vs/base/common/async";
+import { onUnexpectedError } from "vs/base/common/errors";
+import { Emitter, Event, PauseableEmitter } from "vs/base/common/event";
+import {
+	DisposableStore,
+	IDisposable,
+	MutableDisposable,
+} from "vs/base/common/lifecycle";
+import { clamp } from "vs/base/common/numbers";
+import * as strings from "vs/base/common/strings";
+import "vs/css!./media/suggest";
+import {
+	ContentWidgetPositionPreference,
+	ICodeEditor,
+	IContentWidget,
+	IContentWidgetPosition,
+	IEditorMouseEvent,
+} from "vs/editor/browser/editorBrowser";
+import { EmbeddedCodeEditorWidget } from "vs/editor/browser/widget/embeddedCodeEditorWidget";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
+import { IPosition } from "vs/editor/common/core/position";
+import { SuggestWidgetStatus } from "vs/editor/contrib/suggest/browser/suggestWidgetStatus";
+import "vs/editor/contrib/symbolIcons/browser/symbolIcons"; // The codicon symbol colors are defined here and must be loaded to get colors
+import * as nls from "vs/nls";
+import {
+	IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import {
+	activeContrastBorder,
+	editorForeground,
+	editorWidgetBackground,
+	editorWidgetBorder,
+	listFocusHighlightForeground,
+	listHighlightForeground,
+	quickInputListFocusBackground,
+	quickInputListFocusForeground,
+	quickInputListFocusIconForeground,
+	registerColor,
+	transparent,
+} from "vs/platform/theme/common/colorRegistry";
+import { isHighContrast } from "vs/platform/theme/common/theme";
+import {
+	IColorTheme,
+	IThemeService,
+} from "vs/platform/theme/common/themeService";
+import { CompletionModel } from "./completionModel";
+import { ResizableHTMLElement } from "vs/base/browser/ui/resizable/resizable";
+import {
+	CompletionItem,
+	Context as SuggestContext,
+	suggestWidgetStatusbarMenu,
+} from "./suggest";
+import {
+	canExpandCompletionItem,
+	SuggestDetailsOverlay,
+	SuggestDetailsWidget,
+} from "./suggestWidgetDetails";
+import { getAriaId, ItemRenderer } from "./suggestWidgetRenderer";
+import { getListStyles } from "vs/platform/theme/browser/defaultStyles";
+import { status } from "vs/base/browser/ui/aria/aria";
 
 /**
  * Suggest widget colors
  */
-registerColor('editorSuggestWidget.background', { dark: editorWidgetBackground, light: editorWidgetBackground, hcDark: editorWidgetBackground, hcLight: editorWidgetBackground }, nls.localize('editorSuggestWidgetBackground', 'Background color of the suggest widget.'));
-registerColor('editorSuggestWidget.border', { dark: editorWidgetBorder, light: editorWidgetBorder, hcDark: editorWidgetBorder, hcLight: editorWidgetBorder }, nls.localize('editorSuggestWidgetBorder', 'Border color of the suggest widget.'));
-const editorSuggestWidgetForeground = registerColor('editorSuggestWidget.foreground', { dark: editorForeground, light: editorForeground, hcDark: editorForeground, hcLight: editorForeground }, nls.localize('editorSuggestWidgetForeground', 'Foreground color of the suggest widget.'));
-registerColor('editorSuggestWidget.selectedForeground', { dark: quickInputListFocusForeground, light: quickInputListFocusForeground, hcDark: quickInputListFocusForeground, hcLight: quickInputListFocusForeground }, nls.localize('editorSuggestWidgetSelectedForeground', 'Foreground color of the selected entry in the suggest widget.'));
-registerColor('editorSuggestWidget.selectedIconForeground', { dark: quickInputListFocusIconForeground, light: quickInputListFocusIconForeground, hcDark: quickInputListFocusIconForeground, hcLight: quickInputListFocusIconForeground }, nls.localize('editorSuggestWidgetSelectedIconForeground', 'Icon foreground color of the selected entry in the suggest widget.'));
-export const editorSuggestWidgetSelectedBackground = registerColor('editorSuggestWidget.selectedBackground', { dark: quickInputListFocusBackground, light: quickInputListFocusBackground, hcDark: quickInputListFocusBackground, hcLight: quickInputListFocusBackground }, nls.localize('editorSuggestWidgetSelectedBackground', 'Background color of the selected entry in the suggest widget.'));
-registerColor('editorSuggestWidget.highlightForeground', { dark: listHighlightForeground, light: listHighlightForeground, hcDark: listHighlightForeground, hcLight: listHighlightForeground }, nls.localize('editorSuggestWidgetHighlightForeground', 'Color of the match highlights in the suggest widget.'));
-registerColor('editorSuggestWidget.focusHighlightForeground', { dark: listFocusHighlightForeground, light: listFocusHighlightForeground, hcDark: listFocusHighlightForeground, hcLight: listFocusHighlightForeground }, nls.localize('editorSuggestWidgetFocusHighlightForeground', 'Color of the match highlights in the suggest widget when an item is focused.'));
-registerColor('editorSuggestWidgetStatus.foreground', { dark: transparent(editorSuggestWidgetForeground, .5), light: transparent(editorSuggestWidgetForeground, .5), hcDark: transparent(editorSuggestWidgetForeground, .5), hcLight: transparent(editorSuggestWidgetForeground, .5) }, nls.localize('editorSuggestWidgetStatusForeground', 'Foreground color of the suggest widget status.'));
+registerColor(
+	"editorSuggestWidget.background",
+	{
+		dark: editorWidgetBackground,
+		light: editorWidgetBackground,
+		hcDark: editorWidgetBackground,
+		hcLight: editorWidgetBackground,
+	},
+	nls.localize(
+		"editorSuggestWidgetBackground",
+		"Background color of the suggest widget.",
+	),
+);
+registerColor(
+	"editorSuggestWidget.border",
+	{
+		dark: editorWidgetBorder,
+		light: editorWidgetBorder,
+		hcDark: editorWidgetBorder,
+		hcLight: editorWidgetBorder,
+	},
+	nls.localize(
+		"editorSuggestWidgetBorder",
+		"Border color of the suggest widget.",
+	),
+);
+const editorSuggestWidgetForeground = registerColor(
+	"editorSuggestWidget.foreground",
+	{
+		dark: editorForeground,
+		light: editorForeground,
+		hcDark: editorForeground,
+		hcLight: editorForeground,
+	},
+	nls.localize(
+		"editorSuggestWidgetForeground",
+		"Foreground color of the suggest widget.",
+	),
+);
+registerColor(
+	"editorSuggestWidget.selectedForeground",
+	{
+		dark: quickInputListFocusForeground,
+		light: quickInputListFocusForeground,
+		hcDark: quickInputListFocusForeground,
+		hcLight: quickInputListFocusForeground,
+	},
+	nls.localize(
+		"editorSuggestWidgetSelectedForeground",
+		"Foreground color of the selected entry in the suggest widget.",
+	),
+);
+registerColor(
+	"editorSuggestWidget.selectedIconForeground",
+	{
+		dark: quickInputListFocusIconForeground,
+		light: quickInputListFocusIconForeground,
+		hcDark: quickInputListFocusIconForeground,
+		hcLight: quickInputListFocusIconForeground,
+	},
+	nls.localize(
+		"editorSuggestWidgetSelectedIconForeground",
+		"Icon foreground color of the selected entry in the suggest widget.",
+	),
+);
+export const editorSuggestWidgetSelectedBackground = registerColor(
+	"editorSuggestWidget.selectedBackground",
+	{
+		dark: quickInputListFocusBackground,
+		light: quickInputListFocusBackground,
+		hcDark: quickInputListFocusBackground,
+		hcLight: quickInputListFocusBackground,
+	},
+	nls.localize(
+		"editorSuggestWidgetSelectedBackground",
+		"Background color of the selected entry in the suggest widget.",
+	),
+);
+registerColor(
+	"editorSuggestWidget.highlightForeground",
+	{
+		dark: listHighlightForeground,
+		light: listHighlightForeground,
+		hcDark: listHighlightForeground,
+		hcLight: listHighlightForeground,
+	},
+	nls.localize(
+		"editorSuggestWidgetHighlightForeground",
+		"Color of the match highlights in the suggest widget.",
+	),
+);
+registerColor(
+	"editorSuggestWidget.focusHighlightForeground",
+	{
+		dark: listFocusHighlightForeground,
+		light: listFocusHighlightForeground,
+		hcDark: listFocusHighlightForeground,
+		hcLight: listFocusHighlightForeground,
+	},
+	nls.localize(
+		"editorSuggestWidgetFocusHighlightForeground",
+		"Color of the match highlights in the suggest widget when an item is focused.",
+	),
+);
+registerColor(
+	"editorSuggestWidgetStatus.foreground",
+	{
+		dark: transparent(editorSuggestWidgetForeground, 0.5),
+		light: transparent(editorSuggestWidgetForeground, 0.5),
+		hcDark: transparent(editorSuggestWidgetForeground, 0.5),
+		hcLight: transparent(editorSuggestWidgetForeground, 0.5),
+	},
+	nls.localize(
+		"editorSuggestWidgetStatusForeground",
+		"Foreground color of the suggest widget status.",
+	),
+);
 
 const enum State {
 	Hidden,
@@ -55,7 +212,7 @@ const enum State {
 	Empty,
 	Open,
 	Frozen,
-	Details
+	Details,
 }
 
 export interface ISelectedSuggestion {
@@ -65,18 +222,19 @@ export interface ISelectedSuggestion {
 }
 
 class PersistedWidgetSize {
-
 	private readonly _key: string;
 
 	constructor(
 		private readonly _service: IStorageService,
-		editor: ICodeEditor
+		editor: ICodeEditor,
 	) {
-		this._key = `suggestWidget.size/${editor.getEditorType()}/${editor instanceof EmbeddedCodeEditorWidget}`;
+		this._key = `suggestWidget.size/${editor.getEditorType()}/${
+			editor instanceof EmbeddedCodeEditorWidget
+		}`;
 	}
 
 	restore(): dom.Dimension | undefined {
-		const raw = this._service.get(this._key, StorageScope.PROFILE) ?? '';
+		const raw = this._service.get(this._key, StorageScope.PROFILE) ?? "";
 		try {
 			const obj = JSON.parse(raw);
 			if (dom.Dimension.is(obj)) {
@@ -89,7 +247,12 @@ class PersistedWidgetSize {
 	}
 
 	store(size: dom.Dimension) {
-		this._service.store(this._key, JSON.stringify(size), StorageScope.PROFILE, StorageTarget.MACHINE);
+		this._service.store(
+			this._key,
+			JSON.stringify(size),
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE,
+		);
 	}
 
 	reset(): void {
@@ -98,9 +261,14 @@ class PersistedWidgetSize {
 }
 
 export class SuggestWidget implements IDisposable {
-
-	private static LOADING_MESSAGE: string = nls.localize('suggestWidget.loading', "Loading...");
-	private static NO_SUGGESTIONS_MESSAGE: string = nls.localize('suggestWidget.noSuggestions', "No suggestions.");
+	private static LOADING_MESSAGE: string = nls.localize(
+		"suggestWidget.loading",
+		"Loading...",
+	);
+	private static NO_SUGGESTIONS_MESSAGE: string = nls.localize(
+		"suggestWidget.noSuggestions",
+		"No suggestions.",
+	);
 
 	private _state: State = State.Hidden;
 	private _isAuto: boolean = false;
@@ -132,7 +300,6 @@ export class SuggestWidget implements IDisposable {
 	private readonly _showTimeout = new TimeoutTimer();
 	private readonly _disposables = new DisposableStore();
 
-
 	private readonly _onDidSelect = new PauseableEmitter<ISelectedSuggestion>();
 	private readonly _onDidFocus = new PauseableEmitter<ISelectedSuggestion>();
 	private readonly _onDidHide = new Emitter<this>();
@@ -144,7 +311,8 @@ export class SuggestWidget implements IDisposable {
 	readonly onDidShow: Event<this> = this._onDidShow.event;
 
 	private readonly _onDetailsKeydown = new Emitter<IKeyboardEvent>();
-	readonly onDetailsKeyDown: Event<IKeyboardEvent> = this._onDetailsKeydown.event;
+	readonly onDetailsKeyDown: Event<IKeyboardEvent> =
+		this._onDetailsKeydown.event;
 
 	constructor(
 		private readonly editor: ICodeEditor,
@@ -331,8 +499,13 @@ export class SuggestWidget implements IDisposable {
 		}
 	}
 
-	private _onListMouseDownOrTap(e: IListMouseEvent<CompletionItem> | IListGestureEvent<CompletionItem>): void {
-		if (typeof e.element === 'undefined' || typeof e.index === 'undefined') {
+	private _onListMouseDownOrTap(
+		e: IListMouseEvent<CompletionItem> | IListGestureEvent<CompletionItem>,
+	): void {
+		if (
+			typeof e.element === "undefined" ||
+			typeof e.index === "undefined"
+		) {
 			return;
 		}
 
@@ -387,7 +560,6 @@ export class SuggestWidget implements IDisposable {
 		const index = e.indexes[0];
 
 		if (item !== this._focusedItem) {
-
 			this._currentSuggestionDetails?.cancel();
 			this._currentSuggestionDetails = undefined;
 
@@ -395,40 +567,51 @@ export class SuggestWidget implements IDisposable {
 
 			this._list.reveal(index);
 
-			this._currentSuggestionDetails = createCancelablePromise(async token => {
-				const loading = disposableTimeout(() => {
-					if (this._isDetailsVisible()) {
-						this.showDetails(true);
+			this._currentSuggestionDetails = createCancelablePromise(
+				async (token) => {
+					const loading = disposableTimeout(() => {
+						if (this._isDetailsVisible()) {
+							this.showDetails(true);
+						}
+					}, 250);
+					const sub = token.onCancellationRequested(() =>
+						loading.dispose(),
+					);
+					try {
+						return await item.resolve(token);
+					} finally {
+						loading.dispose();
+						sub.dispose();
 					}
-				}, 250);
-				const sub = token.onCancellationRequested(() => loading.dispose());
-				try {
-					return await item.resolve(token);
-				} finally {
-					loading.dispose();
-					sub.dispose();
-				}
-			});
+				},
+			);
 
-			this._currentSuggestionDetails.then(() => {
-				if (index >= this._list.length || item !== this._list.element(index)) {
-					return;
-				}
+			this._currentSuggestionDetails
+				.then(() => {
+					if (
+						index >= this._list.length ||
+						item !== this._list.element(index)
+					) {
+						return;
+					}
 
-				// item can have extra information, so re-render
-				this._ignoreFocusEvents = true;
-				this._list.splice(index, 1, [item]);
-				this._list.setFocus([index]);
-				this._ignoreFocusEvents = false;
+					// item can have extra information, so re-render
+					this._ignoreFocusEvents = true;
+					this._list.splice(index, 1, [item]);
+					this._list.setFocus([index]);
+					this._ignoreFocusEvents = false;
 
-				if (this._isDetailsVisible()) {
-					this.showDetails(false);
-				} else {
-					this.element.domNode.classList.remove('docs-side');
-				}
+					if (this._isDetailsVisible()) {
+						this.showDetails(false);
+					} else {
+						this.element.domNode.classList.remove("docs-side");
+					}
 
-				this.editor.setAriaOptions({ activeDescendant: getAriaId(index) });
-			}).catch(onUnexpectedError);
+					this.editor.setAriaOptions({
+						activeDescendant: getAriaId(index),
+					});
+				})
+				.catch(onUnexpectedError);
 		}
 
 		// emit an event
@@ -436,18 +619,21 @@ export class SuggestWidget implements IDisposable {
 	}
 
 	private _setState(state: State): void {
-
 		if (this._state === state) {
 			return;
 		}
 		this._state = state;
 
-		this.element.domNode.classList.toggle('frozen', state === State.Frozen);
-		this.element.domNode.classList.remove('message');
+		this.element.domNode.classList.toggle("frozen", state === State.Frozen);
+		this.element.domNode.classList.remove("message");
 
 		switch (state) {
 			case State.Hidden:
-				dom.hide(this._messageElement, this._listElement, this._status.element);
+				dom.hide(
+					this._messageElement,
+					this._listElement,
+					this._status.element,
+				);
 				this._details.hide(true);
 				this._status.hide();
 				this._contentWidget.hide();
@@ -455,15 +641,16 @@ export class SuggestWidget implements IDisposable {
 				this._ctxSuggestWidgetMultipleSuggestions.reset();
 				this._ctxSuggestWidgetHasFocusedSuggestion.reset();
 				this._showTimeout.cancel();
-				this.element.domNode.classList.remove('visible');
+				this.element.domNode.classList.remove("visible");
 				this._list.splice(0, this._list.length);
 				this._focusedItem = undefined;
 				this._cappedHeight = undefined;
 				this._explainMode = false;
 				break;
 			case State.Loading:
-				this.element.domNode.classList.add('message');
-				this._messageElement.textContent = SuggestWidget.LOADING_MESSAGE;
+				this.element.domNode.classList.add("message");
+				this._messageElement.textContent =
+					SuggestWidget.LOADING_MESSAGE;
 				dom.hide(this._listElement, this._status.element);
 				dom.show(this._messageElement);
 				this._details.hide();
@@ -472,8 +659,9 @@ export class SuggestWidget implements IDisposable {
 				status(SuggestWidget.LOADING_MESSAGE);
 				break;
 			case State.Empty:
-				this.element.domNode.classList.add('message');
-				this._messageElement.textContent = SuggestWidget.NO_SUGGESTIONS_MESSAGE;
+				this.element.domNode.classList.add("message");
+				this._messageElement.textContent =
+					SuggestWidget.NO_SUGGESTIONS_MESSAGE;
 				dom.hide(this._listElement, this._status.element);
 				dom.show(this._messageElement);
 				this._details.hide();
@@ -507,7 +695,7 @@ export class SuggestWidget implements IDisposable {
 		this._ctxSuggestWidgetVisible.set(true);
 
 		this._showTimeout.cancelAndSet(() => {
-			this.element.domNode.classList.add('visible');
+			this.element.domNode.classList.add("visible");
 			this._onDidShow.fire(this);
 		}, 100);
 	}
@@ -520,12 +708,20 @@ export class SuggestWidget implements IDisposable {
 		this._isAuto = !!auto;
 
 		if (!this._isAuto) {
-			this._loadingTimeout = disposableTimeout(() => this._setState(State.Loading), delay);
+			this._loadingTimeout = disposableTimeout(
+				() => this._setState(State.Loading),
+				delay,
+			);
 		}
 	}
 
-	showSuggestions(completionModel: CompletionModel, selectionIndex: number, isFrozen: boolean, isAuto: boolean, noFocus: boolean): void {
-
+	showSuggestions(
+		completionModel: CompletionModel,
+		selectionIndex: number,
+		isFrozen: boolean,
+		isAuto: boolean,
+		noFocus: boolean,
+	): void {
 		this._contentWidget.setPosition(this.editor.getPosition());
 		this._loadingTimeout?.dispose();
 
@@ -536,7 +732,11 @@ export class SuggestWidget implements IDisposable {
 			this._completionModel = completionModel;
 		}
 
-		if (isFrozen && this._state !== State.Empty && this._state !== State.Hidden) {
+		if (
+			isFrozen &&
+			this._state !== State.Empty &&
+			this._state !== State.Hidden
+		) {
 			this._setState(State.Frozen);
 			return;
 		}
@@ -560,7 +760,11 @@ export class SuggestWidget implements IDisposable {
 		this._onDidFocus.pause();
 		this._onDidSelect.pause();
 		try {
-			this._list.splice(0, this._list.length, this._completionModel.items);
+			this._list.splice(
+				0,
+				this._list.length,
+				this._completionModel.items,
+			);
 			this._setState(isFrozen ? State.Frozen : State.Open);
 			this._list.reveal(selectionIndex, 0);
 			this._list.setFocus(noFocus ? [] : [selectionIndex]);
@@ -569,12 +773,15 @@ export class SuggestWidget implements IDisposable {
 			this._onDidSelect.resume();
 		}
 
-		this._pendingLayout.value = dom.runAtThisOrScheduleAtNextAnimationFrame(dom.getWindow(this.element.domNode), () => {
-			this._pendingLayout.clear();
-			this._layout(this.element.size);
-			// Reset focus border
-			this._details.widget.domNode.classList.remove('focused');
-		});
+		this._pendingLayout.value = dom.runAtThisOrScheduleAtNextAnimationFrame(
+			dom.getWindow(this.element.domNode),
+			() => {
+				this._pendingLayout.clear();
+				this._layout(this.element.size);
+				// Reset focus border
+				this._details.widget.domNode.classList.remove("focused");
+			},
+		);
 	}
 
 	focusSelected(): void {
@@ -668,17 +875,17 @@ export class SuggestWidget implements IDisposable {
 	}
 
 	getFocusedItem(): ISelectedSuggestion | undefined {
-		if (this._state !== State.Hidden
-			&& this._state !== State.Empty
-			&& this._state !== State.Loading
-			&& this._completionModel
-			&& this._list.getFocus().length > 0
+		if (
+			this._state !== State.Hidden &&
+			this._state !== State.Empty &&
+			this._state !== State.Loading &&
+			this._completionModel &&
+			this._list.getFocus().length > 0
 		) {
-
 			return {
 				item: this._list.getFocusedElements()[0],
 				index: this._list.getFocus()[0],
-				model: this._completionModel
+				model: this._completionModel,
 			};
 		}
 		return undefined;
@@ -687,11 +894,10 @@ export class SuggestWidget implements IDisposable {
 	toggleDetailsFocus(): void {
 		if (this._state === State.Details) {
 			this._setState(State.Open);
-			this._details.widget.domNode.classList.remove('focused');
-
+			this._details.widget.domNode.classList.remove("focused");
 		} else if (this._state === State.Open && this._isDetailsVisible()) {
 			this._setState(State.Details);
-			this._details.widget.domNode.classList.add('focused');
+			this._details.widget.domNode.classList.add("focused");
 		}
 	}
 
@@ -702,9 +908,14 @@ export class SuggestWidget implements IDisposable {
 			this._ctxSuggestWidgetDetailsVisible.set(false);
 			this._setDetailsVisible(false);
 			this._details.hide();
-			this.element.domNode.classList.remove('shows-details');
-
-		} else if ((canExpandCompletionItem(this._list.getFocusedElements()[0]) || this._explainMode) && (this._state === State.Open || this._state === State.Details || this._state === State.Frozen)) {
+			this.element.domNode.classList.remove("shows-details");
+		} else if (
+			(canExpandCompletionItem(this._list.getFocusedElements()[0]) ||
+				this._explainMode) &&
+			(this._state === State.Open ||
+				this._state === State.Details ||
+				this._state === State.Frozen)
+		) {
 			// show details widget (iff possible)
 			this._ctxSuggestWidgetDetailsVisible.set(true);
 			this._setDetailsVisible(true);
@@ -713,22 +924,29 @@ export class SuggestWidget implements IDisposable {
 	}
 
 	showDetails(loading: boolean): void {
-		this._pendingShowDetails.value = dom.runAtThisOrScheduleAtNextAnimationFrame(dom.getWindow(this.element.domNode), () => {
-			this._pendingShowDetails.clear();
-			this._details.show();
-			if (loading) {
-				this._details.widget.renderLoading();
-			} else {
-				this._details.widget.renderItem(this._list.getFocusedElements()[0], this._explainMode);
-			}
-			if (!this._details.widget.isEmpty) {
-				this._positionDetails();
-				this.element.domNode.classList.add('shows-details');
-			} else {
-				this._details.hide();
-			}
-			this.editor.focus();
-		});
+		this._pendingShowDetails.value =
+			dom.runAtThisOrScheduleAtNextAnimationFrame(
+				dom.getWindow(this.element.domNode),
+				() => {
+					this._pendingShowDetails.clear();
+					this._details.show();
+					if (loading) {
+						this._details.widget.renderLoading();
+					} else {
+						this._details.widget.renderItem(
+							this._list.getFocusedElements()[0],
+							this._explainMode,
+						);
+					}
+					if (!this._details.widget.isEmpty) {
+						this._positionDetails();
+						this.element.domNode.classList.add("shows-details");
+					} else {
+						this._details.hide();
+					}
+					this.editor.focus();
+				},
+			);
 	}
 
 	toggleExplainMode(): void {
@@ -758,7 +976,9 @@ export class SuggestWidget implements IDisposable {
 		// ensure that a reasonable widget height is persisted so that
 		// accidential "resize-to-single-items" cases aren't happening
 		const dim = this._persistedSize.restore();
-		const minPersistedHeight = Math.ceil(this.getLayoutInfo().itemHeight * 4.3);
+		const minPersistedHeight = Math.ceil(
+			this.getLayoutInfo().itemHeight * 4.3,
+		);
 		if (dim && dim.height < minPersistedHeight) {
 			this._persistedSize.store(dim.with(undefined, minPersistedHeight));
 		}
@@ -794,7 +1014,9 @@ export class SuggestWidget implements IDisposable {
 			return;
 		}
 
-		const bodyBox = dom.getClientArea(this.element.domNode.ownerDocument.body);
+		const bodyBox = dom.getClientArea(
+			this.element.domNode.ownerDocument.body,
+		);
 		const info = this.getLayoutInfo();
 
 		if (!size) {
@@ -812,29 +1034,52 @@ export class SuggestWidget implements IDisposable {
 			height = info.itemHeight + info.borderHeight;
 			width = info.defaultSize.width / 2;
 			this.element.enableSashes(false, false, false, false);
-			this.element.minSize = this.element.maxSize = new dom.Dimension(width, height);
-			this._contentWidget.setPreference(ContentWidgetPositionPreference.BELOW);
-
+			this.element.minSize = this.element.maxSize = new dom.Dimension(
+				width,
+				height,
+			);
+			this._contentWidget.setPreference(
+				ContentWidgetPositionPreference.BELOW,
+			);
 		} else {
 			// showing items
 
 			// width math
-			const maxWidth = bodyBox.width - info.borderHeight - 2 * info.horizontalPadding;
+			const maxWidth =
+				bodyBox.width - info.borderHeight - 2 * info.horizontalPadding;
 			if (width > maxWidth) {
 				width = maxWidth;
 			}
-			const preferredWidth = this._completionModel ? this._completionModel.stats.pLabelLen * info.typicalHalfwidthCharacterWidth : width;
+			const preferredWidth = this._completionModel
+				? this._completionModel.stats.pLabelLen *
+				  info.typicalHalfwidthCharacterWidth
+				: width;
 
 			// height math
-			const fullHeight = info.statusBarHeight + this._list.contentHeight + info.borderHeight;
+			const fullHeight =
+				info.statusBarHeight +
+				this._list.contentHeight +
+				info.borderHeight;
 			const minHeight = info.itemHeight + info.statusBarHeight;
-			const editorBox = dom.getDomNodePagePosition(this.editor.getDomNode());
-			const cursorBox = this.editor.getScrolledVisiblePosition(this.editor.getPosition());
-			const cursorBottom = editorBox.top + cursorBox.top + cursorBox.height;
-			const maxHeightBelow = Math.min(bodyBox.height - cursorBottom - info.verticalPadding, fullHeight);
-			const availableSpaceAbove = editorBox.top + cursorBox.top - info.verticalPadding;
+			const editorBox = dom.getDomNodePagePosition(
+				this.editor.getDomNode(),
+			);
+			const cursorBox = this.editor.getScrolledVisiblePosition(
+				this.editor.getPosition(),
+			);
+			const cursorBottom =
+				editorBox.top + cursorBox.top + cursorBox.height;
+			const maxHeightBelow = Math.min(
+				bodyBox.height - cursorBottom - info.verticalPadding,
+				fullHeight,
+			);
+			const availableSpaceAbove =
+				editorBox.top + cursorBox.top - info.verticalPadding;
 			const maxHeightAbove = Math.min(availableSpaceAbove, fullHeight);
-			let maxHeight = Math.min(Math.max(maxHeightAbove, maxHeightBelow) + info.borderHeight, fullHeight);
+			let maxHeight = Math.min(
+				Math.max(maxHeightAbove, maxHeightBelow) + info.borderHeight,
+				fullHeight,
+			);
 
 			if (height === this._cappedHeight?.capped) {
 				// Restore the old (wanted) height when the current
@@ -850,31 +1095,45 @@ export class SuggestWidget implements IDisposable {
 			}
 
 			const forceRenderingAboveRequiredSpace = 150;
-			if (height > maxHeightBelow || (this._forceRenderingAbove && availableSpaceAbove > forceRenderingAboveRequiredSpace)) {
-				this._contentWidget.setPreference(ContentWidgetPositionPreference.ABOVE);
+			if (
+				height > maxHeightBelow ||
+				(this._forceRenderingAbove &&
+					availableSpaceAbove > forceRenderingAboveRequiredSpace)
+			) {
+				this._contentWidget.setPreference(
+					ContentWidgetPositionPreference.ABOVE,
+				);
 				this.element.enableSashes(true, true, false, false);
 				maxHeight = maxHeightAbove;
 			} else {
-				this._contentWidget.setPreference(ContentWidgetPositionPreference.BELOW);
+				this._contentWidget.setPreference(
+					ContentWidgetPositionPreference.BELOW,
+				);
 				this.element.enableSashes(false, true, true, false);
 				maxHeight = maxHeightBelow;
 			}
-			this.element.preferredSize = new dom.Dimension(preferredWidth, info.defaultSize.height);
+			this.element.preferredSize = new dom.Dimension(
+				preferredWidth,
+				info.defaultSize.height,
+			);
 			this.element.maxSize = new dom.Dimension(maxWidth, maxHeight);
 			this.element.minSize = new dom.Dimension(220, minHeight);
 
 			// Know when the height was capped to fit and remember
 			// the wanted height for later. This is required when going
 			// left to widen suggestions.
-			this._cappedHeight = height === fullHeight
-				? { wanted: this._cappedHeight?.wanted ?? size.height, capped: height }
-				: undefined;
+			this._cappedHeight =
+				height === fullHeight
+					? {
+							wanted: this._cappedHeight?.wanted ?? size.height,
+							capped: height,
+					  }
+					: undefined;
 		}
 		this._resize(width, height);
 	}
 
 	private _resize(width: number, height: number): void {
-
 		const { width: maxWidth, height: maxHeight } = this.element.maxSize;
 		width = Math.min(maxWidth, width);
 		height = Math.min(maxHeight, height);
@@ -890,14 +1149,28 @@ export class SuggestWidget implements IDisposable {
 
 	private _positionDetails(): void {
 		if (this._isDetailsVisible()) {
-			this._details.placeAtAnchor(this.element.domNode, this._contentWidget.getPosition()?.preference[0] === ContentWidgetPositionPreference.BELOW);
+			this._details.placeAtAnchor(
+				this.element.domNode,
+				this._contentWidget.getPosition()?.preference[0] ===
+					ContentWidgetPositionPreference.BELOW,
+			);
 		}
 	}
 
 	getLayoutInfo() {
 		const fontInfo = this.editor.getOption(EditorOption.fontInfo);
-		const itemHeight = clamp(this.editor.getOption(EditorOption.suggestLineHeight) || fontInfo.lineHeight, 8, 1000);
-		const statusBarHeight = !this.editor.getOption(EditorOption.suggest).showStatusBar || this._state === State.Empty || this._state === State.Loading ? 0 : itemHeight;
+		const itemHeight = clamp(
+			this.editor.getOption(EditorOption.suggestLineHeight) ||
+				fontInfo.lineHeight,
+			8,
+			1000,
+		);
+		const statusBarHeight =
+			!this.editor.getOption(EditorOption.suggest).showStatusBar ||
+			this._state === State.Empty ||
+			this._state === State.Loading
+				? 0
+				: itemHeight;
 		const borderWidth = this._details.widget.borderWidth;
 		const borderHeight = 2 * borderWidth;
 
@@ -906,19 +1179,32 @@ export class SuggestWidget implements IDisposable {
 			statusBarHeight,
 			borderWidth,
 			borderHeight,
-			typicalHalfwidthCharacterWidth: fontInfo.typicalHalfwidthCharacterWidth,
+			typicalHalfwidthCharacterWidth:
+				fontInfo.typicalHalfwidthCharacterWidth,
 			verticalPadding: 22,
 			horizontalPadding: 14,
-			defaultSize: new dom.Dimension(430, statusBarHeight + 12 * itemHeight + borderHeight)
+			defaultSize: new dom.Dimension(
+				430,
+				statusBarHeight + 12 * itemHeight + borderHeight,
+			),
 		};
 	}
 
 	private _isDetailsVisible(): boolean {
-		return this._storageService.getBoolean('expandSuggestionDocs', StorageScope.PROFILE, false);
+		return this._storageService.getBoolean(
+			"expandSuggestionDocs",
+			StorageScope.PROFILE,
+			false,
+		);
 	}
 
 	private _setDetailsVisible(value: boolean) {
-		this._storageService.store('expandSuggestionDocs', value, StorageScope.PROFILE, StorageTarget.USER);
+		this._storageService.store(
+			"expandSuggestionDocs",
+			value,
+			StorageScope.PROFILE,
+			StorageTarget.USER,
+		);
 	}
 
 	forceRenderingAbove() {
@@ -934,7 +1220,6 @@ export class SuggestWidget implements IDisposable {
 }
 
 export class SuggestContentWidget implements IContentWidget {
-
 	readonly allowEditorOverflow = true;
 	readonly suppressMouseDown = false;
 
@@ -947,8 +1232,8 @@ export class SuggestContentWidget implements IContentWidget {
 
 	constructor(
 		private readonly _widget: SuggestWidget,
-		private readonly _editor: ICodeEditor
-	) { }
+		private readonly _editor: ICodeEditor,
+	) {}
 
 	dispose(): void {
 		if (this._added) {
@@ -958,7 +1243,7 @@ export class SuggestContentWidget implements IContentWidget {
 	}
 
 	getId(): string {
-		return 'editor.widget.suggestWidget';
+		return "editor.widget.suggestWidget";
 	}
 
 	getDomNode(): HTMLElement {
@@ -990,14 +1275,17 @@ export class SuggestContentWidget implements IContentWidget {
 		}
 		return {
 			position: this._position,
-			preference: [this._preference]
+			preference: [this._preference],
 		};
 	}
 
 	beforeRender() {
 		const { height, width } = this._widget.element.size;
 		const { borderWidth, horizontalPadding } = this._widget.getLayoutInfo();
-		return new dom.Dimension(width + 2 * borderWidth + horizontalPadding, height + 2 * borderWidth);
+		return new dom.Dimension(
+			width + 2 * borderWidth + horizontalPadding,
+			height + 2 * borderWidth,
+		);
 	}
 
 	afterRender(position: ContentWidgetPositionPreference | null) {

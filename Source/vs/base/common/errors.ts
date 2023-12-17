@@ -17,17 +17,18 @@ export class ErrorHandler {
 	private listeners: ErrorListenerCallback[];
 
 	constructor() {
-
 		this.listeners = [];
 
 		this.unexpectedErrorHandler = function (e: any) {
 			setTimeout(() => {
 				if (e.stack) {
 					if (ErrorNoTelemetry.isErrorNoTelemetry(e)) {
-						throw new ErrorNoTelemetry(e.message + '\n\n' + e.stack);
+						throw new ErrorNoTelemetry(
+							e.message + "\n\n" + e.stack,
+						);
 					}
 
-					throw new Error(e.message + '\n\n' + e.stack);
+					throw new Error(e.message + "\n\n" + e.stack);
 				}
 
 				throw e;
@@ -53,7 +54,9 @@ export class ErrorHandler {
 		this.listeners.splice(this.listeners.indexOf(listener), 1);
 	}
 
-	setUnexpectedErrorHandler(newUnexpectedErrorHandler: (e: any) => void): void {
+	setUnexpectedErrorHandler(
+		newUnexpectedErrorHandler: (e: any) => void,
+	): void {
 		this.unexpectedErrorHandler = newUnexpectedErrorHandler;
 	}
 
@@ -75,7 +78,9 @@ export class ErrorHandler {
 export const errorHandler = new ErrorHandler();
 
 /** @skipMangle */
-export function setUnexpectedErrorHandler(newUnexpectedErrorHandler: (e: any) => void): void {
+export function setUnexpectedErrorHandler(
+	newUnexpectedErrorHandler: (e: any) => void,
+): void {
 	errorHandler.setUnexpectedErrorHandler(newUnexpectedErrorHandler);
 }
 
@@ -86,12 +91,12 @@ export function setUnexpectedErrorHandler(newUnexpectedErrorHandler: (e: any) =>
  * @see https://github.com/microsoft/vscode-remote-release/issues/6481
  */
 export function isSigPipeError(e: unknown): e is Error {
-	if (!e || typeof e !== 'object') {
+	if (!e || typeof e !== "object") {
 		return false;
 	}
 
 	const cast = e as Record<string, string | undefined>;
-	return cast.code === 'EPIPE' && cast.syscall?.toUpperCase() === 'WRITE';
+	return cast.code === "EPIPE" && cast.syscall?.toUpperCase() === "WRITE";
 }
 
 export function onUnexpectedError(e: any): undefined {
@@ -129,7 +134,7 @@ export function transformErrorForSerialization(error: any): any {
 			name,
 			message,
 			stack,
-			noTelemetry: ErrorNoTelemetry.isErrorNoTelemetry(error)
+			noTelemetry: ErrorNoTelemetry.isErrorNoTelemetry(error),
 		};
 	}
 
@@ -155,7 +160,7 @@ export interface V8CallSite {
 	toString(): string;
 }
 
-const canceledName = 'Canceled';
+const canceledName = "Canceled";
 
 /**
  * Checks if the given error is a promise in canceled state
@@ -164,7 +169,11 @@ export function isCancellationError(error: any): boolean {
 	if (error instanceof CancellationError) {
 		return true;
 	}
-	return error instanceof Error && error.name === canceledName && error.message === canceledName;
+	return (
+		error instanceof Error &&
+		error.name === canceledName &&
+		error.message === canceledName
+	);
 }
 
 // !!!IMPORTANT!!!
@@ -189,7 +198,7 @@ export function illegalArgument(name?: string): Error {
 	if (name) {
 		return new Error(`Illegal argument: ${name}`);
 	} else {
-		return new Error('Illegal argument');
+		return new Error("Illegal argument");
 	}
 }
 
@@ -197,19 +206,23 @@ export function illegalState(name?: string): Error {
 	if (name) {
 		return new Error(`Illegal state: ${name}`);
 	} else {
-		return new Error('Illegal state');
+		return new Error("Illegal state");
 	}
 }
 
 export class ReadonlyError extends TypeError {
 	constructor(name?: string) {
-		super(name ? `${name} is read-only and cannot be changed` : 'Cannot change read-only property');
+		super(
+			name
+				? `${name} is read-only and cannot be changed`
+				: "Cannot change read-only property",
+		);
 	}
 }
 
 export function getErrorMessage(err: any): string {
 	if (!err) {
-		return 'Error';
+		return "Error";
 	}
 
 	if (err.message) {
@@ -217,7 +230,7 @@ export function getErrorMessage(err: any): string {
 	}
 
 	if (err.stack) {
-		return err.stack.split('\n')[0];
+		return err.stack.split("\n")[0];
 	}
 
 	return String(err);
@@ -225,7 +238,7 @@ export function getErrorMessage(err: any): string {
 
 export class NotImplementedError extends Error {
 	constructor(message?: string) {
-		super('NotImplemented');
+		super("NotImplemented");
 		if (message) {
 			this.message = message;
 		}
@@ -234,7 +247,7 @@ export class NotImplementedError extends Error {
 
 export class NotSupportedError extends Error {
 	constructor(message?: string) {
-		super('NotSupported');
+		super("NotSupported");
 		if (message) {
 			this.message = message;
 		}
@@ -253,7 +266,7 @@ export class ErrorNoTelemetry extends Error {
 
 	constructor(msg?: string) {
 		super(msg);
-		this.name = 'CodeExpectedError';
+		this.name = "CodeExpectedError";
 	}
 
 	public static fromError(err: Error): ErrorNoTelemetry {
@@ -268,7 +281,7 @@ export class ErrorNoTelemetry extends Error {
 	}
 
 	public static isErrorNoTelemetry(err: Error): err is ErrorNoTelemetry {
-		return err.name === 'CodeExpectedError';
+		return err.name === "CodeExpectedError";
 	}
 }
 
@@ -279,7 +292,7 @@ export class ErrorNoTelemetry extends Error {
  */
 export class BugIndicatingError extends Error {
 	constructor(message?: string) {
-		super(message || 'An unexpected bug occurred.');
+		super(message || "An unexpected bug occurred.");
 		Object.setPrototypeOf(this, BugIndicatingError.prototype);
 
 		// Because we know for sure only buggy code throws this,

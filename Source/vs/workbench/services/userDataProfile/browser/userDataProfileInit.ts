@@ -3,29 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStorageService, StorageScope } from 'vs/platform/storage/common/storage';
-import { IFileService } from 'vs/platform/files/common/files';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ILogService } from 'vs/platform/log/common/log';
-import { Barrier, Promises } from 'vs/base/common/async';
-import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
-import { IUserDataInitializer } from 'vs/workbench/services/userData/browser/userDataInit';
-import { IProfileResourceInitializer, IUserDataProfileService, IUserDataProfileTemplate } from 'vs/workbench/services/userDataProfile/common/userDataProfile';
-import { SettingsResourceInitializer } from 'vs/workbench/services/userDataProfile/browser/settingsResource';
-import { GlobalStateResourceInitializer } from 'vs/workbench/services/userDataProfile/browser/globalStateResource';
-import { KeybindingsResourceInitializer } from 'vs/workbench/services/userDataProfile/browser/keybindingsResource';
-import { TasksResourceInitializer } from 'vs/workbench/services/userDataProfile/browser/tasksResource';
-import { SnippetsResourceInitializer } from 'vs/workbench/services/userDataProfile/browser/snippetsResource';
-import { ExtensionsResourceInitializer } from 'vs/workbench/services/userDataProfile/browser/extensionsResource';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
-import { isString } from 'vs/base/common/types';
-import { IRequestService, asJson } from 'vs/platform/request/common/request';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { URI } from 'vs/base/common/uri';
-import { ProfileResourceType } from 'vs/platform/userDataProfile/common/userDataProfile';
+import {
+	IStorageService,
+	StorageScope,
+} from "vs/platform/storage/common/storage";
+import { IFileService } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ILogService } from "vs/platform/log/common/log";
+import { Barrier, Promises } from "vs/base/common/async";
+import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
+import { IUserDataInitializer } from "vs/workbench/services/userData/browser/userDataInit";
+import {
+	IProfileResourceInitializer,
+	IUserDataProfileService,
+	IUserDataProfileTemplate,
+} from "vs/workbench/services/userDataProfile/common/userDataProfile";
+import { SettingsResourceInitializer } from "vs/workbench/services/userDataProfile/browser/settingsResource";
+import { GlobalStateResourceInitializer } from "vs/workbench/services/userDataProfile/browser/globalStateResource";
+import { KeybindingsResourceInitializer } from "vs/workbench/services/userDataProfile/browser/keybindingsResource";
+import { TasksResourceInitializer } from "vs/workbench/services/userDataProfile/browser/tasksResource";
+import { SnippetsResourceInitializer } from "vs/workbench/services/userDataProfile/browser/snippetsResource";
+import { ExtensionsResourceInitializer } from "vs/workbench/services/userDataProfile/browser/extensionsResource";
+import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { isString } from "vs/base/common/types";
+import { IRequestService, asJson } from "vs/platform/request/common/request";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { URI } from "vs/base/common/uri";
+import { ProfileResourceType } from "vs/platform/userDataProfile/common/userDataProfile";
 
 export class UserDataProfileInitializer implements IUserDataInitializer {
-
 	_serviceBrand: any;
 
 	private readonly initialized: ProfileResourceType[] = [];
@@ -57,33 +63,87 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 	}
 
 	async initializeRequiredResources(): Promise<void> {
-		this.logService.trace(`UserDataProfileInitializer#initializeRequiredResources`);
+		this.logService.trace(
+			`UserDataProfileInitializer#initializeRequiredResources`,
+		);
 		const promises = [];
 		const profileTemplate = await this.getProfileTemplate();
 		if (profileTemplate?.settings) {
-			promises.push(this.initialize(new SettingsResourceInitializer(this.userDataProfileService, this.fileService, this.logService), profileTemplate.settings, ProfileResourceType.Settings));
+			promises.push(
+				this.initialize(
+					new SettingsResourceInitializer(
+						this.userDataProfileService,
+						this.fileService,
+						this.logService,
+					),
+					profileTemplate.settings,
+					ProfileResourceType.Settings,
+				),
+			);
 		}
 		if (profileTemplate?.globalState) {
-			promises.push(this.initialize(new GlobalStateResourceInitializer(this.storageService), profileTemplate.globalState, ProfileResourceType.GlobalState));
+			promises.push(
+				this.initialize(
+					new GlobalStateResourceInitializer(this.storageService),
+					profileTemplate.globalState,
+					ProfileResourceType.GlobalState,
+				),
+			);
 		}
 		await Promise.all(promises);
 	}
 
-	async initializeOtherResources(instantiationService: IInstantiationService): Promise<void> {
+	async initializeOtherResources(
+		instantiationService: IInstantiationService,
+	): Promise<void> {
 		try {
-			this.logService.trace(`UserDataProfileInitializer#initializeOtherResources`);
+			this.logService.trace(
+				`UserDataProfileInitializer#initializeOtherResources`,
+			);
 			const promises = [];
 			const profileTemplate = await this.getProfileTemplate();
 			if (profileTemplate?.keybindings) {
-				promises.push(this.initialize(new KeybindingsResourceInitializer(this.userDataProfileService, this.fileService, this.logService), profileTemplate.keybindings, ProfileResourceType.Keybindings));
+				promises.push(
+					this.initialize(
+						new KeybindingsResourceInitializer(
+							this.userDataProfileService,
+							this.fileService,
+							this.logService,
+						),
+						profileTemplate.keybindings,
+						ProfileResourceType.Keybindings,
+					),
+				);
 			}
 			if (profileTemplate?.tasks) {
-				promises.push(this.initialize(new TasksResourceInitializer(this.userDataProfileService, this.fileService, this.logService), profileTemplate.tasks, ProfileResourceType.Tasks));
+				promises.push(
+					this.initialize(
+						new TasksResourceInitializer(
+							this.userDataProfileService,
+							this.fileService,
+							this.logService,
+						),
+						profileTemplate.tasks,
+						ProfileResourceType.Tasks,
+					),
+				);
 			}
 			if (profileTemplate?.snippets) {
-				promises.push(this.initialize(new SnippetsResourceInitializer(this.userDataProfileService, this.fileService, this.uriIdentityService), profileTemplate.snippets, ProfileResourceType.Snippets));
+				promises.push(
+					this.initialize(
+						new SnippetsResourceInitializer(
+							this.userDataProfileService,
+							this.fileService,
+							this.uriIdentityService,
+						),
+						profileTemplate.snippets,
+						ProfileResourceType.Snippets,
+					),
+				);
 			}
-			promises.push(this.initializeInstalledExtensions(instantiationService));
+			promises.push(
+				this.initializeInstalledExtensions(instantiationService),
+			);
 			await Promises.settled(promises);
 		} finally {
 			this.initializationFinished.open();
@@ -91,20 +151,29 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 	}
 
 	private initializeInstalledExtensionsPromise: Promise<void> | undefined;
-	async initializeInstalledExtensions(instantiationService: IInstantiationService): Promise<void> {
+	async initializeInstalledExtensions(
+		instantiationService: IInstantiationService,
+	): Promise<void> {
 		if (!this.initializeInstalledExtensionsPromise) {
 			const profileTemplate = await this.getProfileTemplate();
 			if (profileTemplate?.extensions) {
-				this.initializeInstalledExtensionsPromise = this.initialize(instantiationService.createInstance(ExtensionsResourceInitializer), profileTemplate.extensions, ProfileResourceType.Extensions);
+				this.initializeInstalledExtensionsPromise = this.initialize(
+					instantiationService.createInstance(
+						ExtensionsResourceInitializer,
+					),
+					profileTemplate.extensions,
+					ProfileResourceType.Extensions,
+				);
 			} else {
 				this.initializeInstalledExtensionsPromise = Promise.resolve();
 			}
-
 		}
 		return this.initializeInstalledExtensionsPromise;
 	}
 
-	private profileTemplatePromise: Promise<IUserDataProfileTemplate | null> | undefined;
+	private profileTemplatePromise:
+		| Promise<IUserDataProfileTemplate | null>
+		| undefined;
 	private getProfileTemplate(): Promise<IUserDataProfileTemplate | null> {
 		if (!this.profileTemplatePromise) {
 			this.profileTemplatePromise = this.doGetProfileTemplate();
@@ -118,19 +187,28 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 		}
 		if (isString(this.environmentService.options.profile.contents)) {
 			try {
-				return JSON.parse(this.environmentService.options.profile.contents);
+				return JSON.parse(
+					this.environmentService.options.profile.contents,
+				);
 			} catch (error) {
 				this.logService.error(error);
 				return null;
 			}
 		}
 		try {
-			const url = URI.revive(this.environmentService.options.profile.contents).toString(true);
-			const context = await this.requestService.request({ type: 'GET', url }, CancellationToken.None);
+			const url = URI.revive(
+				this.environmentService.options.profile.contents,
+			).toString(true);
+			const context = await this.requestService.request(
+				{ type: "GET", url },
+				CancellationToken.None,
+			);
 			if (context.res.statusCode === 200) {
 				return await asJson(context);
 			} else {
-				this.logService.warn(`UserDataProfileInitializer: Failed to get profile from URL: ${url}. Status code: ${context.res.statusCode}.`);
+				this.logService.warn(
+					`UserDataProfileInitializer: Failed to get profile from URL: ${url}. Status code: ${context.res.statusCode}.`,
+				);
 			}
 		} catch (error) {
 			this.logService.error(error);
@@ -138,20 +216,31 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 		return null;
 	}
 
-	private async initialize(initializer: IProfileResourceInitializer, content: string, profileResource: ProfileResourceType): Promise<void> {
+	private async initialize(
+		initializer: IProfileResourceInitializer,
+		content: string,
+		profileResource: ProfileResourceType,
+	): Promise<void> {
 		try {
 			if (this.initialized.includes(profileResource)) {
-				this.logService.info(`UserDataProfileInitializer: ${profileResource} initialized already.`);
+				this.logService.info(
+					`UserDataProfileInitializer: ${profileResource} initialized already.`,
+				);
 				return;
 			}
 			this.initialized.push(profileResource);
-			this.logService.trace(`UserDataProfileInitializer: Initializing ${profileResource}`);
+			this.logService.trace(
+				`UserDataProfileInitializer: Initializing ${profileResource}`,
+			);
 			await initializer.initialize(content);
-			this.logService.info(`UserDataProfileInitializer: Initialized ${profileResource}`);
+			this.logService.info(
+				`UserDataProfileInitializer: Initialized ${profileResource}`,
+			);
 		} catch (error) {
-			this.logService.info(`UserDataProfileInitializer: Error while initializing ${profileResource}`);
+			this.logService.info(
+				`UserDataProfileInitializer: Error while initializing ${profileResource}`,
+			);
 			this.logService.error(error);
 		}
 	}
-
 }

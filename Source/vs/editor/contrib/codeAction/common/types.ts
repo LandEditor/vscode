@@ -3,39 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { onUnexpectedExternalError } from 'vs/base/common/errors';
-import { Position } from 'vs/editor/common/core/position';
-import * as languages from 'vs/editor/common/languages';
-import { ActionSet } from 'vs/platform/actionWidget/common/actionWidget';
+import { CancellationToken } from "vs/base/common/cancellation";
+import { onUnexpectedExternalError } from "vs/base/common/errors";
+import { Position } from "vs/editor/common/core/position";
+import * as languages from "vs/editor/common/languages";
+import { ActionSet } from "vs/platform/actionWidget/common/actionWidget";
 
 export class CodeActionKind {
-	private static readonly sep = '.';
+	private static readonly sep = ".";
 
-	public static readonly None = new CodeActionKind('@@none@@'); // Special code action that contains nothing
-	public static readonly Empty = new CodeActionKind('');
-	public static readonly QuickFix = new CodeActionKind('quickfix');
-	public static readonly Refactor = new CodeActionKind('refactor');
-	public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
-	public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
-	public static readonly RefactorMove = CodeActionKind.Refactor.append('move');
-	public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
-	public static readonly Notebook = new CodeActionKind('notebook');
-	public static readonly Source = new CodeActionKind('source');
-	public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
-	public static readonly SourceFixAll = CodeActionKind.Source.append('fixAll');
-	public static readonly SurroundWith = CodeActionKind.Refactor.append('surround');
+	public static readonly None = new CodeActionKind("@@none@@"); // Special code action that contains nothing
+	public static readonly Empty = new CodeActionKind("");
+	public static readonly QuickFix = new CodeActionKind("quickfix");
+	public static readonly Refactor = new CodeActionKind("refactor");
+	public static readonly RefactorExtract =
+		CodeActionKind.Refactor.append("extract");
+	public static readonly RefactorInline =
+		CodeActionKind.Refactor.append("inline");
+	public static readonly RefactorMove =
+		CodeActionKind.Refactor.append("move");
+	public static readonly RefactorRewrite =
+		CodeActionKind.Refactor.append("rewrite");
+	public static readonly Notebook = new CodeActionKind("notebook");
+	public static readonly Source = new CodeActionKind("source");
+	public static readonly SourceOrganizeImports =
+		CodeActionKind.Source.append("organizeImports");
+	public static readonly SourceFixAll =
+		CodeActionKind.Source.append("fixAll");
+	public static readonly SurroundWith =
+		CodeActionKind.Refactor.append("surround");
 
-	constructor(
-		public readonly value: string
-	) { }
+	constructor(public readonly value: string) {}
 
 	public equals(other: CodeActionKind): boolean {
 		return this.value === other.value;
 	}
 
 	public contains(other: CodeActionKind): boolean {
-		return this.equals(other) || this.value === '' || other.value.startsWith(this.value + CodeActionKind.sep);
+		return (
+			this.equals(other) ||
+			this.value === "" ||
+			other.value.startsWith(this.value + CodeActionKind.sep)
+		);
 	}
 
 	public intersects(other: CodeActionKind): boolean {
@@ -48,24 +57,24 @@ export class CodeActionKind {
 }
 
 export const enum CodeActionAutoApply {
-	IfSingle = 'ifSingle',
-	First = 'first',
-	Never = 'never',
+	IfSingle = "ifSingle",
+	First = "first",
+	Never = "never",
 }
 
 export enum CodeActionTriggerSource {
-	Refactor = 'refactor',
-	RefactorPreview = 'refactor preview',
-	Lightbulb = 'lightbulb',
-	Default = 'other (default)',
-	SourceAction = 'source action',
-	QuickFix = 'quick fix action',
-	FixAll = 'fix all',
-	OrganizeImports = 'organize imports',
-	AutoFix = 'auto fix',
-	QuickFixHover = 'quick fix hover window',
-	OnSave = 'save participants',
-	ProblemsView = 'problems view'
+	Refactor = "refactor",
+	RefactorPreview = "refactor preview",
+	Lightbulb = "lightbulb",
+	Default = "other (default)",
+	SourceAction = "source action",
+	QuickFix = "quick fix action",
+	FixAll = "fix all",
+	OrganizeImports = "organize imports",
+	AutoFix = "auto fix",
+	QuickFixHover = "quick fix hover window",
+	OnSave = "save participants",
+	ProblemsView = "problems view",
 }
 
 export interface CodeActionFilter {
@@ -75,28 +84,43 @@ export interface CodeActionFilter {
 	readonly onlyIncludePreferredActions?: boolean;
 }
 
-export function mayIncludeActionsOfKind(filter: CodeActionFilter, providedKind: CodeActionKind): boolean {
+export function mayIncludeActionsOfKind(
+	filter: CodeActionFilter,
+	providedKind: CodeActionKind,
+): boolean {
 	// A provided kind may be a subset or superset of our filtered kind.
 	if (filter.include && !filter.include.intersects(providedKind)) {
 		return false;
 	}
 
 	if (filter.excludes) {
-		if (filter.excludes.some(exclude => excludesAction(providedKind, exclude, filter.include))) {
+		if (
+			filter.excludes.some((exclude) =>
+				excludesAction(providedKind, exclude, filter.include),
+			)
+		) {
 			return false;
 		}
 	}
 
 	// Don't return source actions unless they are explicitly requested
-	if (!filter.includeSourceActions && CodeActionKind.Source.contains(providedKind)) {
+	if (
+		!filter.includeSourceActions &&
+		CodeActionKind.Source.contains(providedKind)
+	) {
 		return false;
 	}
 
 	return true;
 }
 
-export function filtersAction(filter: CodeActionFilter, action: languages.CodeAction): boolean {
-	const actionKind = action.kind ? new CodeActionKind(action.kind) : undefined;
+export function filtersAction(
+	filter: CodeActionFilter,
+	action: languages.CodeAction,
+): boolean {
+	const actionKind = action.kind
+		? new CodeActionKind(action.kind)
+		: undefined;
 
 	// Filter out actions by kind
 	if (filter.include) {
@@ -106,7 +130,12 @@ export function filtersAction(filter: CodeActionFilter, action: languages.CodeAc
 	}
 
 	if (filter.excludes) {
-		if (actionKind && filter.excludes.some(exclude => excludesAction(actionKind, exclude, filter.include))) {
+		if (
+			actionKind &&
+			filter.excludes.some((exclude) =>
+				excludesAction(actionKind, exclude, filter.include),
+			)
+		) {
 			return false;
 		}
 	}
@@ -127,7 +156,11 @@ export function filtersAction(filter: CodeActionFilter, action: languages.CodeAc
 	return true;
 }
 
-function excludesAction(providedKind: CodeActionKind, exclude: CodeActionKind, include: CodeActionKind | undefined): boolean {
+function excludesAction(
+	providedKind: CodeActionKind,
+	exclude: CodeActionKind,
+	include: CodeActionKind | undefined,
+): boolean {
 	if (!exclude.contains(providedKind)) {
 		return false;
 	}
@@ -150,57 +183,72 @@ export interface CodeActionTrigger {
 }
 
 export class CodeActionCommandArgs {
-	public static fromUser(arg: any, defaults: { kind: CodeActionKind; apply: CodeActionAutoApply }): CodeActionCommandArgs {
-		if (!arg || typeof arg !== 'object') {
-			return new CodeActionCommandArgs(defaults.kind, defaults.apply, false);
+	public static fromUser(
+		arg: any,
+		defaults: { kind: CodeActionKind; apply: CodeActionAutoApply },
+	): CodeActionCommandArgs {
+		if (!arg || typeof arg !== "object") {
+			return new CodeActionCommandArgs(
+				defaults.kind,
+				defaults.apply,
+				false,
+			);
 		}
 		return new CodeActionCommandArgs(
 			CodeActionCommandArgs.getKindFromUser(arg, defaults.kind),
 			CodeActionCommandArgs.getApplyFromUser(arg, defaults.apply),
-			CodeActionCommandArgs.getPreferredUser(arg));
+			CodeActionCommandArgs.getPreferredUser(arg),
+		);
 	}
 
-	private static getApplyFromUser(arg: any, defaultAutoApply: CodeActionAutoApply) {
-		switch (typeof arg.apply === 'string' ? arg.apply.toLowerCase() : '') {
-			case 'first': return CodeActionAutoApply.First;
-			case 'never': return CodeActionAutoApply.Never;
-			case 'ifsingle': return CodeActionAutoApply.IfSingle;
-			default: return defaultAutoApply;
+	private static getApplyFromUser(
+		arg: any,
+		defaultAutoApply: CodeActionAutoApply,
+	) {
+		switch (typeof arg.apply === "string" ? arg.apply.toLowerCase() : "") {
+			case "first":
+				return CodeActionAutoApply.First;
+			case "never":
+				return CodeActionAutoApply.Never;
+			case "ifsingle":
+				return CodeActionAutoApply.IfSingle;
+			default:
+				return defaultAutoApply;
 		}
 	}
 
 	private static getKindFromUser(arg: any, defaultKind: CodeActionKind) {
-		return typeof arg.kind === 'string'
+		return typeof arg.kind === "string"
 			? new CodeActionKind(arg.kind)
 			: defaultKind;
 	}
 
 	private static getPreferredUser(arg: any): boolean {
-		return typeof arg.preferred === 'boolean'
-			? arg.preferred
-			: false;
+		return typeof arg.preferred === "boolean" ? arg.preferred : false;
 	}
 
 	private constructor(
 		public readonly kind: CodeActionKind,
 		public readonly apply: CodeActionAutoApply,
 		public readonly preferred: boolean,
-	) { }
+	) {}
 }
 
 export class CodeActionItem {
-
 	constructor(
 		public readonly action: languages.CodeAction,
 		public readonly provider: languages.CodeActionProvider | undefined,
 		public highlightRange?: boolean,
-	) { }
+	) {}
 
 	async resolve(token: CancellationToken): Promise<this> {
 		if (this.provider?.resolveCodeAction && !this.action.edit) {
 			let action: languages.CodeAction | undefined | null;
 			try {
-				action = await this.provider.resolveCodeAction(this.action, token);
+				action = await this.provider.resolveCodeAction(
+					this.action,
+					token,
+				);
 			} catch (err) {
 				onUnexpectedExternalError(err);
 			}

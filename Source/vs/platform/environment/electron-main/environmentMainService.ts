@@ -3,22 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { memoize } from 'vs/base/common/decorators';
-import { join } from 'vs/base/common/path';
-import { isLinux } from 'vs/base/common/platform';
-import { createStaticIPCHandle } from 'vs/base/parts/ipc/node/ipc.net';
-import { IEnvironmentService, INativeEnvironmentService } from 'vs/platform/environment/common/environment';
-import { NativeEnvironmentService } from 'vs/platform/environment/node/environmentService';
-import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { memoize } from "vs/base/common/decorators";
+import { join } from "vs/base/common/path";
+import { isLinux } from "vs/base/common/platform";
+import { createStaticIPCHandle } from "vs/base/parts/ipc/node/ipc.net";
+import {
+	IEnvironmentService,
+	INativeEnvironmentService,
+} from "vs/platform/environment/common/environment";
+import { NativeEnvironmentService } from "vs/platform/environment/node/environmentService";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
 
-export const IEnvironmentMainService = refineServiceDecorator<IEnvironmentService, IEnvironmentMainService>(IEnvironmentService);
+export const IEnvironmentMainService = refineServiceDecorator<
+	IEnvironmentService,
+	IEnvironmentMainService
+>(IEnvironmentService);
 
 /**
  * A subclass of the `INativeEnvironmentService` to be used only in electron-main
  * environments.
  */
 export interface IEnvironmentMainService extends INativeEnvironmentService {
-
 	// --- NLS cache path
 	readonly cachedLanguagesPath: string;
 
@@ -40,40 +45,62 @@ export interface IEnvironmentMainService extends INativeEnvironmentService {
 	restoreSnapExportedVariables(): void;
 }
 
-export class EnvironmentMainService extends NativeEnvironmentService implements IEnvironmentMainService {
-
+export class EnvironmentMainService
+	extends NativeEnvironmentService
+	implements IEnvironmentMainService
+{
 	private _snapEnv: Record<string, string> = {};
 
 	@memoize
-	get cachedLanguagesPath(): string { return join(this.userDataPath, 'clp'); }
+	get cachedLanguagesPath(): string {
+		return join(this.userDataPath, "clp");
+	}
 
 	@memoize
-	get backupHome(): string { return join(this.userDataPath, 'Backups'); }
+	get backupHome(): string {
+		return join(this.userDataPath, "Backups");
+	}
 
 	@memoize
-	get mainIPCHandle(): string { return createStaticIPCHandle(this.userDataPath, 'main', this.productService.version); }
+	get mainIPCHandle(): string {
+		return createStaticIPCHandle(
+			this.userDataPath,
+			"main",
+			this.productService.version,
+		);
+	}
 
 	@memoize
-	get mainLockfile(): string { return join(this.userDataPath, 'code.lock'); }
+	get mainLockfile(): string {
+		return join(this.userDataPath, "code.lock");
+	}
 
 	@memoize
-	get disableUpdates(): boolean { return !!this.args['disable-updates']; }
+	get disableUpdates(): boolean {
+		return !!this.args["disable-updates"];
+	}
 
 	@memoize
-	get crossOriginIsolated(): boolean { return !!this.args['enable-coi']; }
+	get crossOriginIsolated(): boolean {
+		return !!this.args["enable-coi"];
+	}
 
 	@memoize
-	get codeCachePath(): string | undefined { return process.env['VSCODE_CODE_CACHE_PATH'] || undefined; }
+	get codeCachePath(): string | undefined {
+		return process.env["VSCODE_CODE_CACHE_PATH"] || undefined;
+	}
 
 	@memoize
-	get useCodeCache(): boolean { return !!this.codeCachePath; }
+	get useCodeCache(): boolean {
+		return !!this.codeCachePath;
+	}
 
 	unsetSnapExportedVariables() {
 		if (!isLinux) {
 			return;
 		}
 		for (const key in process.env) {
-			if (key.endsWith('_VSCODE_SNAP_ORIG')) {
+			if (key.endsWith("_VSCODE_SNAP_ORIG")) {
 				const originalKey = key.slice(0, -17); // Remove the _VSCODE_SNAP_ORIG suffix
 				if (this._snapEnv[originalKey]) {
 					continue;

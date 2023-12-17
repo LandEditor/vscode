@@ -3,23 +3,47 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import 'vs/css!./media/hover';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { registerThemingParticipant } from 'vs/platform/theme/common/themeService';
-import { editorHoverBorder } from 'vs/platform/theme/common/colorRegistry';
-import { IHoverService, IHoverOptions, IHoverWidget } from 'vs/workbench/services/hover/browser/hover';
-import { IContextMenuService, IContextViewService } from 'vs/platform/contextview/browser/contextView';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { HoverWidget } from 'vs/workbench/services/hover/browser/hoverWidget';
-import { IContextViewProvider, IDelegate } from 'vs/base/browser/ui/contextview/contextview';
-import { DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { addDisposableListener, EventType, getActiveElement, isAncestorOfActiveElement, isAncestor, getWindow } from 'vs/base/browser/dom';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { StandardKeyboardEvent } from 'vs/base/browser/keyboardEvent';
-import { ResultKind } from 'vs/platform/keybinding/common/keybindingResolver';
-import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
-import { mainWindow } from 'vs/base/browser/window';
+import "vs/css!./media/hover";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
+import { editorHoverBorder } from "vs/platform/theme/common/colorRegistry";
+import {
+	IHoverService,
+	IHoverOptions,
+	IHoverWidget,
+} from "vs/workbench/services/hover/browser/hover";
+import {
+	IContextMenuService,
+	IContextViewService,
+} from "vs/platform/contextview/browser/contextView";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { HoverWidget } from "vs/workbench/services/hover/browser/hoverWidget";
+import {
+	IContextViewProvider,
+	IDelegate,
+} from "vs/base/browser/ui/contextview/contextview";
+import {
+	DisposableStore,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import {
+	addDisposableListener,
+	EventType,
+	getActiveElement,
+	isAncestorOfActiveElement,
+	isAncestor,
+	getWindow,
+} from "vs/base/browser/dom";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { StandardKeyboardEvent } from "vs/base/browser/keyboardEvent";
+import { ResultKind } from "vs/platform/keybinding/common/keybindingResolver";
+import { IAccessibilityService } from "vs/platform/accessibility/common/accessibility";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import { mainWindow } from "vs/base/browser/window";
 
 export class HoverService implements IHoverService {
 	declare readonly _serviceBrand: undefined;
@@ -41,32 +65,50 @@ export class HoverService implements IHoverService {
 		contextMenuService.onDidShowContextMenu(() => this.hideHover());
 	}
 
-	showHover(options: IHoverOptions, focus?: boolean, skipLastFocusedUpdate?: boolean): IHoverWidget | undefined {
-		if (getHoverOptionsIdentity(this._currentHoverOptions) === getHoverOptionsIdentity(options)) {
+	showHover(
+		options: IHoverOptions,
+		focus?: boolean,
+		skipLastFocusedUpdate?: boolean,
+	): IHoverWidget | undefined {
+		if (
+			getHoverOptionsIdentity(this._currentHoverOptions) ===
+			getHoverOptionsIdentity(options)
+		) {
 			return undefined;
 		}
-		if (this._currentHover && this._currentHoverOptions?.persistence?.sticky) {
+		if (
+			this._currentHover &&
+			this._currentHoverOptions?.persistence?.sticky
+		) {
 			return undefined;
 		}
 		this._currentHoverOptions = options;
 		this._lastHoverOptions = options;
-		const trapFocus = options.trapFocus || this._accessibilityService.isScreenReaderOptimized();
+		const trapFocus =
+			options.trapFocus ||
+			this._accessibilityService.isScreenReaderOptimized();
 		const activeElement = getActiveElement();
 		// HACK, remove this check when #189076 is fixed
 		if (!skipLastFocusedUpdate) {
 			if (trapFocus && activeElement) {
-				this._lastFocusedElementBeforeOpen = activeElement as HTMLElement;
+				this._lastFocusedElementBeforeOpen =
+					activeElement as HTMLElement;
 			} else {
 				this._lastFocusedElementBeforeOpen = undefined;
 			}
 		}
 		const hoverDisposables = new DisposableStore();
-		const hover = this._instantiationService.createInstance(HoverWidget, options);
+		const hover = this._instantiationService.createInstance(
+			HoverWidget,
+			options,
+		);
 		if (options.persistence?.sticky) {
 			hover.isLocked = true;
 		}
 		hover.onDispose(() => {
-			const hoverWasFocused = this._currentHover?.domNode && isAncestorOfActiveElement(this._currentHover.domNode!);
+			const hoverWasFocused =
+				this._currentHover?.domNode &&
+				isAncestorOfActiveElement(this._currentHover.domNode!);
 			if (hoverWasFocused) {
 				// Required to handle cases such as closing the hover with the escape key
 				this._lastFocusedElementBeforeOpen?.focus();
@@ -81,42 +123,104 @@ export class HoverService implements IHoverService {
 		});
 		// Set the container explicitly to enable aux window support
 		if (!options.container) {
-			const targetElement = options.target instanceof HTMLElement ? options.target : options.target.targetElements[0];
-			options.container = this._layoutService.getContainer(getWindow(targetElement));
+			const targetElement =
+				options.target instanceof HTMLElement
+					? options.target
+					: options.target.targetElements[0];
+			options.container = this._layoutService.getContainer(
+				getWindow(targetElement),
+			);
 		}
 		const provider = this._contextViewService as IContextViewProvider;
 		provider.showContextView(
 			new HoverContextViewDelegate(hover, focus),
-			options.container
+			options.container,
 		);
 		hover.onRequestLayout(() => provider.layout());
 		if (options.persistence?.sticky) {
-			hoverDisposables.add(addDisposableListener(getWindow(options.container).document, EventType.MOUSE_DOWN, e => {
-				if (!isAncestor(e.target as HTMLElement, hover.domNode)) {
-					this.doHideHover();
-				}
-			}));
+			hoverDisposables.add(
+				addDisposableListener(
+					getWindow(options.container).document,
+					EventType.MOUSE_DOWN,
+					(e) => {
+						if (
+							!isAncestor(e.target as HTMLElement, hover.domNode)
+						) {
+							this.doHideHover();
+						}
+					},
+				),
+			);
 		} else {
-			if ('targetElements' in options.target) {
+			if ("targetElements" in options.target) {
 				for (const element of options.target.targetElements) {
-					hoverDisposables.add(addDisposableListener(element, EventType.CLICK, () => this.hideHover()));
+					hoverDisposables.add(
+						addDisposableListener(element, EventType.CLICK, () =>
+							this.hideHover(),
+						),
+					);
 				}
 			} else {
-				hoverDisposables.add(addDisposableListener(options.target, EventType.CLICK, () => this.hideHover()));
+				hoverDisposables.add(
+					addDisposableListener(options.target, EventType.CLICK, () =>
+						this.hideHover(),
+					),
+				);
 			}
 			const focusedElement = getActiveElement();
 			if (focusedElement) {
-				const focusedElementDocument = getWindow(focusedElement).document;
-				hoverDisposables.add(addDisposableListener(focusedElement, EventType.KEY_DOWN, e => this._keyDown(e, hover, !!options.persistence?.hideOnKeyDown)));
-				hoverDisposables.add(addDisposableListener(focusedElementDocument, EventType.KEY_DOWN, e => this._keyDown(e, hover, !!options.persistence?.hideOnKeyDown)));
-				hoverDisposables.add(addDisposableListener(focusedElement, EventType.KEY_UP, e => this._keyUp(e, hover)));
-				hoverDisposables.add(addDisposableListener(focusedElementDocument, EventType.KEY_UP, e => this._keyUp(e, hover)));
+				const focusedElementDocument =
+					getWindow(focusedElement).document;
+				hoverDisposables.add(
+					addDisposableListener(
+						focusedElement,
+						EventType.KEY_DOWN,
+						(e) =>
+							this._keyDown(
+								e,
+								hover,
+								!!options.persistence?.hideOnKeyDown,
+							),
+					),
+				);
+				hoverDisposables.add(
+					addDisposableListener(
+						focusedElementDocument,
+						EventType.KEY_DOWN,
+						(e) =>
+							this._keyDown(
+								e,
+								hover,
+								!!options.persistence?.hideOnKeyDown,
+							),
+					),
+				);
+				hoverDisposables.add(
+					addDisposableListener(
+						focusedElement,
+						EventType.KEY_UP,
+						(e) => this._keyUp(e, hover),
+					),
+				);
+				hoverDisposables.add(
+					addDisposableListener(
+						focusedElementDocument,
+						EventType.KEY_UP,
+						(e) => this._keyUp(e, hover),
+					),
+				);
 			}
 		}
 
-		if ('IntersectionObserver' in mainWindow) {
-			const observer = new IntersectionObserver(e => this._intersectionChange(e, hover), { threshold: 0 });
-			const firstTargetElement = 'targetElements' in options.target ? options.target.targetElements[0] : options.target;
+		if ("IntersectionObserver" in mainWindow) {
+			const observer = new IntersectionObserver(
+				(e) => this._intersectionChange(e, hover),
+				{ threshold: 0 },
+			);
+			const firstTargetElement =
+				"targetElements" in options.target
+					? options.target.targetElements[0]
+					: options.target;
 			observer.observe(firstTargetElement);
 			hoverDisposables.add(toDisposable(() => observer.disconnect()));
 		}
@@ -139,7 +243,10 @@ export class HoverService implements IHoverService {
 		this._contextViewService.hideContextView();
 	}
 
-	private _intersectionChange(entries: IntersectionObserverEntry[], hover: IDisposable): void {
+	private _intersectionChange(
+		entries: IntersectionObserverEntry[],
+		hover: IDisposable,
+	): void {
 		const entry = entries[entries.length - 1];
 		if (!entry.isIntersecting) {
 			hover.dispose();
@@ -153,24 +260,37 @@ export class HoverService implements IHoverService {
 		this.showHover(this._lastHoverOptions, true, true);
 	}
 
-	private _keyDown(e: KeyboardEvent, hover: HoverWidget, hideOnKeyDown: boolean) {
-		if (e.key === 'Alt') {
+	private _keyDown(
+		e: KeyboardEvent,
+		hover: HoverWidget,
+		hideOnKeyDown: boolean,
+	) {
+		if (e.key === "Alt") {
 			hover.isLocked = true;
 			return;
 		}
 		const event = new StandardKeyboardEvent(e);
 		const keybinding = this._keybindingService.resolveKeyboardEvent(event);
-		if (keybinding.getSingleModifierDispatchChords().some(value => !!value) || this._keybindingService.softDispatch(event, event.target).kind !== ResultKind.NoMatchingKb) {
+		if (
+			keybinding
+				.getSingleModifierDispatchChords()
+				.some((value) => !!value) ||
+			this._keybindingService.softDispatch(event, event.target).kind !==
+				ResultKind.NoMatchingKb
+		) {
 			return;
 		}
-		if (hideOnKeyDown && (!this._currentHoverOptions?.trapFocus || e.key !== 'Tab')) {
+		if (
+			hideOnKeyDown &&
+			(!this._currentHoverOptions?.trapFocus || e.key !== "Tab")
+		) {
 			this.hideHover();
 			this._lastFocusedElementBeforeOpen?.focus();
 		}
 	}
 
 	private _keyUp(e: KeyboardEvent, hover: HoverWidget) {
-		if (e.key === 'Alt') {
+		if (e.key === "Alt") {
 			hover.isLocked = false;
 			// Hide if alt is released while the mouse is not over hover/target
 			if (!hover.isMouseIn) {
@@ -181,7 +301,9 @@ export class HoverService implements IHoverService {
 	}
 }
 
-function getHoverOptionsIdentity(options: IHoverOptions | undefined): IHoverOptions | number | string | undefined {
+function getHoverOptionsIdentity(
+	options: IHoverOptions | undefined,
+): IHoverOptions | number | string | undefined {
 	if (options === undefined) {
 		return undefined;
 	}
@@ -189,16 +311,14 @@ function getHoverOptionsIdentity(options: IHoverOptions | undefined): IHoverOpti
 }
 
 class HoverContextViewDelegate implements IDelegate {
-
 	get anchorPosition() {
 		return this._hover.anchor;
 	}
 
 	constructor(
 		private readonly _hover: HoverWidget,
-		private readonly _focus: boolean = false
-	) {
-	}
+		private readonly _focus: boolean = false,
+	) {}
 
 	render(container: HTMLElement) {
 		this._hover.render(container);
@@ -211,7 +331,7 @@ class HoverContextViewDelegate implements IDelegate {
 	getAnchor() {
 		return {
 			x: this._hover.x,
-			y: this._hover.y
+			y: this._hover.y,
 		};
 	}
 
@@ -225,7 +345,15 @@ registerSingleton(IHoverService, HoverService, InstantiationType.Delayed);
 registerThemingParticipant((theme, collector) => {
 	const hoverBorder = theme.getColor(editorHoverBorder);
 	if (hoverBorder) {
-		collector.addRule(`.monaco-workbench .workbench-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
-		collector.addRule(`.monaco-workbench .workbench-hover hr { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
+		collector.addRule(
+			`.monaco-workbench .workbench-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(
+				0.5,
+			)}; }`,
+		);
+		collector.addRule(
+			`.monaco-workbench .workbench-hover hr { border-top: 1px solid ${hoverBorder.transparent(
+				0.5,
+			)}; }`,
+		);
 	}
 });

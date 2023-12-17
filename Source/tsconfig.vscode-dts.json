@@ -16,7 +16,5 @@
 			"ES2022"
 		],
 	},
-	"include": [
-		"vscode-dts/vscode.d.ts"
-	]
+	"include": ["vscode-dts/vscode.d.ts"]
 }

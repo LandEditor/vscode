@@ -3,11 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IBreakpointContribution } from 'vs/workbench/contrib/debug/common/debug';
+import {
+	ContextKeyExpr,
+	ContextKeyExpression,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IBreakpointContribution } from "vs/workbench/contrib/debug/common/debug";
 
 export class Breakpoints {
-
 	private breakpointsWhen: ContextKeyExpression | undefined;
 
 	constructor(
@@ -22,6 +25,9 @@ export class Breakpoints {
 	}
 
 	get enabled(): boolean {
-		return !this.breakpointsWhen || this.contextKeyService.contextMatchesRules(this.breakpointsWhen);
+		return (
+			!this.breakpointsWhen ||
+			this.contextKeyService.contextMatchesRules(this.breakpointsWhen)
+		);
 	}
 }

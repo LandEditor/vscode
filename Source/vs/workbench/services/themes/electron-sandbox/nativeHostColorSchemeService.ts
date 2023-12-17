@@ -3,23 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from 'vs/base/common/event';
-import { INativeHostService } from 'vs/platform/native/common/native';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IHostColorSchemeService } from 'vs/workbench/services/themes/common/hostColorSchemeService';
-import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { isBoolean, isObject } from 'vs/base/common/types';
-import { IColorScheme } from 'vs/platform/window/common/window';
+import { Emitter } from "vs/base/common/event";
+import { INativeHostService } from "vs/platform/native/common/native";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { Disposable } from "vs/base/common/lifecycle";
+import { IHostColorSchemeService } from "vs/workbench/services/themes/common/hostColorSchemeService";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { isBoolean, isObject } from "vs/base/common/types";
+import { IColorScheme } from "vs/platform/window/common/window";
 
-export class NativeHostColorSchemeService extends Disposable implements IHostColorSchemeService {
-
-	static readonly STORAGE_KEY = 'HostColorSchemeData';
+export class NativeHostColorSchemeService
+	extends Disposable
+	implements IHostColorSchemeService
+{
+	static readonly STORAGE_KEY = "HostColorSchemeData";
 
 	declare readonly _serviceBrand: undefined;
 
-	private readonly _onDidChangeColorScheme = this._register(new Emitter<void>());
+	private readonly _onDidChangeColorScheme = this._register(
+		new Emitter<void>(),
+	);
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
 	public dark: boolean;
@@ -44,11 +55,18 @@ export class NativeHostColorSchemeService extends Disposable implements IHostCol
 	}
 
 	private getStoredValue(): IColorScheme | undefined {
-		const stored = this.storageService.get(NativeHostColorSchemeService.STORAGE_KEY, StorageScope.APPLICATION);
+		const stored = this.storageService.get(
+			NativeHostColorSchemeService.STORAGE_KEY,
+			StorageScope.APPLICATION,
+		);
 		if (stored) {
 			try {
 				const scheme = JSON.parse(stored);
-				if (isObject(scheme) && isBoolean(scheme.highContrast) && isBoolean(scheme.dark)) {
+				if (
+					isObject(scheme) &&
+					isBoolean(scheme.highContrast) &&
+					isBoolean(scheme.dark)
+				) {
 					return scheme as IColorScheme;
 				}
 			} catch (e) {
@@ -60,14 +78,21 @@ export class NativeHostColorSchemeService extends Disposable implements IHostCol
 
 	private update({ highContrast, dark }: IColorScheme) {
 		if (dark !== this.dark || highContrast !== this.highContrast) {
-
 			this.dark = dark;
 			this.highContrast = highContrast;
-			this.storageService.store(NativeHostColorSchemeService.STORAGE_KEY, JSON.stringify({ highContrast, dark }), StorageScope.APPLICATION, StorageTarget.MACHINE);
+			this.storageService.store(
+				NativeHostColorSchemeService.STORAGE_KEY,
+				JSON.stringify({ highContrast, dark }),
+				StorageScope.APPLICATION,
+				StorageTarget.MACHINE,
+			);
 			this._onDidChangeColorScheme.fire();
 		}
 	}
-
 }
 
-registerSingleton(IHostColorSchemeService, NativeHostColorSchemeService, InstantiationType.Delayed);
+registerSingleton(
+	IHostColorSchemeService,
+	NativeHostColorSchemeService,
+	InstantiationType.Delayed,
+);

@@ -3,27 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ICommandService, ICommandEvent, CommandsRegistry } from 'vs/platform/commands/common/commands';
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
-import { Event, Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ILogService } from 'vs/platform/log/common/log';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { timeout } from 'vs/base/common/async';
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import {
+	ICommandService,
+	ICommandEvent,
+	CommandsRegistry,
+} from "vs/platform/commands/common/commands";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { Event, Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { timeout } from "vs/base/common/async";
 
 export class CommandService extends Disposable implements ICommandService {
-
 	declare readonly _serviceBrand: undefined;
 
 	private _extensionHostIsReady: boolean = false;
 	private _starActivation: Promise<void> | null;
 
-	private readonly _onWillExecuteCommand: Emitter<ICommandEvent> = this._register(new Emitter<ICommandEvent>());
-	public readonly onWillExecuteCommand: Event<ICommandEvent> = this._onWillExecuteCommand.event;
+	private readonly _onWillExecuteCommand: Emitter<ICommandEvent> =
+		this._register(new Emitter<ICommandEvent>());
+	public readonly onWillExecuteCommand: Event<ICommandEvent> =
+		this._onWillExecuteCommand.event;
 
-	private readonly _onDidExecuteCommand: Emitter<ICommandEvent> = new Emitter<ICommandEvent>();
-	public readonly onDidExecuteCommand: Event<ICommandEvent> = this._onDidExecuteCommand.event;
+	private readonly _onDidExecuteCommand: Emitter<ICommandEvent> =
+		new Emitter<ICommandEvent>();
+	public readonly onDidExecuteCommand: Event<ICommandEvent> =
+		this._onDidExecuteCommand.event;
 
 	constructor(
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
@@ -40,20 +50,19 @@ export class CommandService extends Disposable implements ICommandService {
 			// wait for * activation, limited to at most 30s
 			this._starActivation = Promise.race<any>([
 				this._extensionService.activateByEvent(`*`),
-				timeout(30000)
+				timeout(30000),
 			]);
 		}
 		return this._starActivation;
 	}
 
 	async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
-		this._logService.trace('CommandService#executeCommand', id);
+		this._logService.trace("CommandService#executeCommand", id);
 
 		const activationEvent = `onCommand:${id}`;
 		const commandIsRegistered = !!CommandsRegistry.getCommand(id);
 
 		if (commandIsRegistered) {
-
 			// if the activation event has already resolved (i.e. subsequent call),
 			// we will execute the registered command immediately
 			if (this._extensionService.activationEventIsDone(activationEvent)) {
@@ -79,7 +88,12 @@ export class CommandService extends Disposable implements ICommandService {
 			Promise.race<any>([
 				// race * activation against command registration
 				this._activateStar(),
-				Event.toPromise(Event.filter(CommandsRegistry.onDidRegisterCommand, e => e === id))
+				Event.toPromise(
+					Event.filter(
+						CommandsRegistry.onDidRegisterCommand,
+						(e) => e === id,
+					),
+				),
 			]),
 		]);
 		return this._tryExecuteCommand(id, args);
@@ -92,7 +106,10 @@ export class CommandService extends Disposable implements ICommandService {
 		}
 		try {
 			this._onWillExecuteCommand.fire({ commandId: id, args });
-			const result = this._instantiationService.invokeFunction(command.handler, ...args);
+			const result = this._instantiationService.invokeFunction(
+				command.handler,
+				...args,
+			);
 			this._onDidExecuteCommand.fire({ commandId: id, args });
 			return Promise.resolve(result);
 		} catch (err) {

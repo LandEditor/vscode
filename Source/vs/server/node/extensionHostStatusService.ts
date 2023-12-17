@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IExtensionHostExitInfo } from 'vs/workbench/services/remote/common/remoteAgentService';
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { IExtensionHostExitInfo } from "vs/workbench/services/remote/common/remoteAgentService";
 
-export const IExtensionHostStatusService = createDecorator<IExtensionHostStatusService>('extensionHostStatusService');
+export const IExtensionHostStatusService =
+	createDecorator<IExtensionHostStatusService>("extensionHostStatusService");
 
 export interface IExtensionHostStatusService {
 	readonly _serviceBrand: undefined;

@@ -3,13 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { WebviewThemeDataProvider } from 'vs/workbench/contrib/webview/browser/themeing';
-import { IOverlayWebview, IWebview, IWebviewElement, IWebviewService, WebviewInitInfo } from 'vs/workbench/contrib/webview/browser/webview';
-import { WebviewElement } from 'vs/workbench/contrib/webview/browser/webviewElement';
-import { OverlayWebview } from './overlayWebview';
+import { Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { WebviewThemeDataProvider } from "vs/workbench/contrib/webview/browser/themeing";
+import {
+	IOverlayWebview,
+	IWebview,
+	IWebviewElement,
+	IWebviewService,
+	WebviewInitInfo,
+} from "vs/workbench/contrib/webview/browser/webview";
+import { WebviewElement } from "vs/workbench/contrib/webview/browser/webviewElement";
+import { OverlayWebview } from "./overlayWebview";
 
 export class WebviewService extends Disposable implements IWebviewService {
 	declare readonly _serviceBrand: undefined;
@@ -25,7 +31,9 @@ export class WebviewService extends Disposable implements IWebviewService {
 
 	private _activeWebview?: IWebview;
 
-	public get activeWebview() { return this._activeWebview; }
+	public get activeWebview() {
+		return this._activeWebview;
+	}
 
 	private _updateActiveWebview(value: IWebview | undefined) {
 		if (value !== this._activeWebview) {
@@ -40,17 +48,27 @@ export class WebviewService extends Disposable implements IWebviewService {
 		return this._webviews.values();
 	}
 
-	private readonly _onDidChangeActiveWebview = this._register(new Emitter<IWebview | undefined>());
-	public readonly onDidChangeActiveWebview = this._onDidChangeActiveWebview.event;
+	private readonly _onDidChangeActiveWebview = this._register(
+		new Emitter<IWebview | undefined>(),
+	);
+	public readonly onDidChangeActiveWebview =
+		this._onDidChangeActiveWebview.event;
 
 	createWebviewElement(initInfo: WebviewInitInfo): IWebviewElement {
-		const webview = this._instantiationService.createInstance(WebviewElement, initInfo, this._webviewThemeDataProvider);
+		const webview = this._instantiationService.createInstance(
+			WebviewElement,
+			initInfo,
+			this._webviewThemeDataProvider,
+		);
 		this.registerNewWebview(webview);
 		return webview;
 	}
 
 	createWebviewOverlay(initInfo: WebviewInitInfo): IOverlayWebview {
-		const webview = this._instantiationService.createInstance(OverlayWebview, initInfo);
+		const webview = this._instantiationService.createInstance(
+			OverlayWebview,
+			initInfo,
+		);
 		this.registerNewWebview(webview);
 		return webview;
 	}

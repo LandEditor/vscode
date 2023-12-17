@@ -3,7 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IV8Profile, IV8ProfileNode } from 'vs/platform/profiling/common/profiling';
+import type {
+	IV8Profile,
+	IV8ProfileNode,
+} from "vs/platform/profiling/common/profiling";
 
 // #region
 // https://github.com/microsoft/vscode-js-profile-visualizer/blob/6e7401128ee860be113a916f80fcfe20ac99418e/packages/vscode-js-profile-core/src/cpu/model.ts#L4
@@ -77,12 +80,14 @@ export interface ICpuProfileRaw extends IV8Profile {
 	nodes: IProfileNode[];
 }
 
-
 /**
  * Recursive function that computes and caches the aggregate time for the
  * children of the computed now.
  */
-const computeAggregateTime = (index: number, nodes: IComputedNode[]): number => {
+const computeAggregateTime = (
+	index: number,
+	nodes: IComputedNode[],
+): number => {
 	const row = nodes[index];
 	if (row.aggregateTime) {
 		return row.aggregateTime;
@@ -96,10 +101,14 @@ const computeAggregateTime = (index: number, nodes: IComputedNode[]): number => 
 	return (row.aggregateTime = total);
 };
 
-const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotationLocation> => {
-
+const ensureSourceLocations = (
+	profile: ICpuProfileRaw,
+): ReadonlyArray<IAnnotationLocation> => {
 	let locationIdCounter = 0;
-	const locationsByRef = new Map<string, { id: number; callFrame: CdpCallFrame; location: ISourceLocation }>();
+	const locationsByRef = new Map<
+		string,
+		{ id: number; callFrame: CdpCallFrame; location: ISourceLocation }
+	>();
 
 	const getLocationIdFor = (callFrame: CdpCallFrame) => {
 		const ref = [
@@ -108,7 +117,7 @@ const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotati
 			callFrame.scriptId,
 			callFrame.lineNumber,
 			callFrame.columnNumber,
-		].join(':');
+		].join(":");
 
 		const existing = locationsByRef.get(ref);
 		if (existing) {
@@ -134,7 +143,7 @@ const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotati
 
 	for (const node of profile.nodes) {
 		node.locationId = getLocationIdFor(node.callFrame);
-		node.positionTicks = node.positionTicks?.map(tick => ({
+		node.positionTicks = node.positionTicks?.map((tick) => ({
 			...tick,
 			// weirdly, line numbers here are 1-based, not 0-based. The position tick
 			// only gives line-level granularity, so 'mark' the entire range of source
@@ -154,7 +163,7 @@ const ensureSourceLocations = (profile: ICpuProfileRaw): ReadonlyArray<IAnnotati
 
 	return [...locationsByRef.values()]
 		.sort((a, b) => a.id - b.id)
-		.map(l => ({ locations: [l.location], callFrame: l.callFrame }));
+		.map((l) => ({ locations: [l.location], callFrame: l.callFrame }));
 };
 
 /**
@@ -188,7 +197,10 @@ export const buildModel = (profile: ICpuProfileRaw): IProfileModel => {
 		};
 	});
 
-	const idMap = new Map<number /* id in profile */, number /* incrementing ID */>();
+	const idMap = new Map<
+		number /* id in profile */,
+		number /* incrementing ID */
+	>();
 	const mapId = (nodeId: number) => {
 		let id = idMap.get(nodeId);
 		if (id === undefined) {
@@ -273,11 +285,11 @@ export class BottomUpNode {
 			aggregateTime: 0,
 			ticks: 0,
 			callFrame: {
-				functionName: '(root)',
+				functionName: "(root)",
 				lineNumber: -1,
 				columnNumber: -1,
-				scriptId: '0',
-				url: '',
+				scriptId: "0",
+				url: "",
 			},
 		});
 	}
@@ -300,16 +312,23 @@ export class BottomUpNode {
 		return this.location.src;
 	}
 
-	constructor(public readonly location: ILocation, public readonly parent?: BottomUpNode) { }
+	constructor(
+		public readonly location: ILocation,
+		public readonly parent?: BottomUpNode,
+	) {}
 
 	public addNode(node: IComputedNode) {
 		this.selfTime += node.selfTime;
 		this.aggregateTime += node.aggregateTime;
 	}
-
 }
 
-export const processNode = (aggregate: BottomUpNode, node: IComputedNode, model: IProfileModel, initialNode = node) => {
+export const processNode = (
+	aggregate: BottomUpNode,
+	node: IComputedNode,
+	model: IProfileModel,
+	initialNode = node,
+) => {
 	let child = aggregate.children[node.locationId];
 	if (!child) {
 		child = new BottomUpNode(model.locations[node.locationId], aggregate);
@@ -325,7 +344,6 @@ export const processNode = (aggregate: BottomUpNode, node: IComputedNode, model:
 };
 
 //#endregion
-
 
 export interface BottomUpSample {
 	selfTime: number;

@@ -5,16 +5,16 @@
 
 // @ts-check
 (function () {
-	'use strict';
+	"use strict";
 
-	const { ipcRenderer, webFrame, contextBridge } = require('electron');
+	const { ipcRenderer, webFrame, contextBridge } = require("electron");
 
 	/**
 	 * @param {string} channel
 	 * @returns {true | never}
 	 */
 	function validateIPC(channel) {
-		if (!channel || !channel.startsWith('vscode:')) {
+		if (!channel || !channel.startsWith("vscode:")) {
 			throw new Error(`Unsupported event IPC channel '${channel}'`);
 		}
 
@@ -22,7 +22,6 @@
 	}
 
 	const globals = {
-
 		/**
 		 * A minimal set of methods exposed from Electron's `ipcRenderer`
 		 * to support communication to main process.
@@ -32,7 +31,6 @@
 		 * @type {IpcRenderer}
 		 */
 		ipcRenderer: {
-
 			/**
 			 * @param {string} channel
 			 * @param {any[]} args
@@ -52,7 +50,7 @@
 				validateIPC(channel);
 
 				return ipcRenderer.invoke(channel, ...args);
-			}
+			},
 		},
 
 		/**
@@ -61,21 +59,20 @@
 		 * @type {import('./electronTypes').WebFrame}
 		 */
 		webFrame: {
-
 			/**
 			 * @param {number} level
 			 */
 			setZoomLevel(level) {
-				if (typeof level === 'number') {
+				if (typeof level === "number") {
 					webFrame.setZoomLevel(level);
 				}
-			}
-		}
+			},
+		},
 	};
 
 	try {
-		contextBridge.exposeInMainWorld('vscode', globals);
+		contextBridge.exposeInMainWorld("vscode", globals);
 	} catch (error) {
 		console.error(error);
 	}
-}());
+})();

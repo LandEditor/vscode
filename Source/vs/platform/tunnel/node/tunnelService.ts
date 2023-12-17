@@ -3,31 +3,64 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as net from 'net';
-import * as os from 'os';
-import { BROWSER_RESTRICTED_PORTS, findFreePortFaster } from 'vs/base/node/ports';
-import { NodeSocket } from 'vs/base/parts/ipc/node/ipc.net';
+import * as net from "net";
+import * as os from "os";
+import {
+	BROWSER_RESTRICTED_PORTS,
+	findFreePortFaster,
+} from "vs/base/node/ports";
+import { NodeSocket } from "vs/base/parts/ipc/node/ipc.net";
 
-import { Barrier } from 'vs/base/common/async';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { OS } from 'vs/base/common/platform';
-import { ISocket } from 'vs/base/parts/ipc/common/ipc.net';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IProductService } from 'vs/platform/product/common/productService';
-import { IAddressProvider, IConnectionOptions, connectRemoteAgentTunnel } from 'vs/platform/remote/common/remoteAgentConnection';
-import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService';
-import { ISignService } from 'vs/platform/sign/common/sign';
-import { AbstractTunnelService, ISharedTunnelsService, ITunnelProvider, ITunnelService, RemoteTunnel, TunnelPrivacyId, isAllInterfaces, isLocalhost, isPortPrivileged, isTunnelProvider } from 'vs/platform/tunnel/common/tunnel';
-import { VSBuffer } from 'vs/base/common/buffer';
+import { Barrier } from "vs/base/common/async";
+import { Disposable } from "vs/base/common/lifecycle";
+import { OS } from "vs/base/common/platform";
+import { ISocket } from "vs/base/parts/ipc/common/ipc.net";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILogService } from "vs/platform/log/common/log";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IAddressProvider,
+	IConnectionOptions,
+	connectRemoteAgentTunnel,
+} from "vs/platform/remote/common/remoteAgentConnection";
+import { IRemoteSocketFactoryService } from "vs/platform/remote/common/remoteSocketFactoryService";
+import { ISignService } from "vs/platform/sign/common/sign";
+import {
+	AbstractTunnelService,
+	ISharedTunnelsService,
+	ITunnelProvider,
+	ITunnelService,
+	RemoteTunnel,
+	TunnelPrivacyId,
+	isAllInterfaces,
+	isLocalhost,
+	isPortPrivileged,
+	isTunnelProvider,
+} from "vs/platform/tunnel/common/tunnel";
+import { VSBuffer } from "vs/base/common/buffer";
 
-async function createRemoteTunnel(options: IConnectionOptions, defaultTunnelHost: string, tunnelRemoteHost: string, tunnelRemotePort: number, tunnelLocalPort?: number): Promise<RemoteTunnel> {
+async function createRemoteTunnel(
+	options: IConnectionOptions,
+	defaultTunnelHost: string,
+	tunnelRemoteHost: string,
+	tunnelRemotePort: number,
+	tunnelLocalPort?: number,
+): Promise<RemoteTunnel> {
 	let readyTunnel: NodeRemoteTunnel | undefined;
 	for (let attempts = 3; attempts; attempts--) {
 		readyTunnel?.dispose();
-		const tunnel = new NodeRemoteTunnel(options, defaultTunnelHost, tunnelRemoteHost, tunnelRemotePort, tunnelLocalPort);
+		const tunnel = new NodeRemoteTunnel(
+			options,
+			defaultTunnelHost,
+			tunnelRemoteHost,
+			tunnelRemotePort,
+			tunnelLocalPort,
+		);
 		readyTunnel = await tunnel.waitForReady();
-		if ((tunnelLocalPort && BROWSER_RESTRICTED_PORTS[tunnelLocalPort]) || !BROWSER_RESTRICTED_PORTS[readyTunnel.tunnelLocalPort]) {
+		if (
+			(tunnelLocalPort && BROWSER_RESTRICTED_PORTS[tunnelLocalPort]) ||
+			!BROWSER_RESTRICTED_PORTS[readyTunnel.tunnelLocalPort]
+		) {
 			break;
 		}
 	}
@@ -35,7 +68,6 @@ async function createRemoteTunnel(options: IConnectionOptions, defaultTunnelHost
 }
 
 export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
-
 	public readonly tunnelRemotePort: number;
 	public tunnelLocalPort!: number;
 	public tunnelRemoteHost: string;
@@ -52,21 +84,27 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 
 	private readonly _socketsDispose: Map<string, () => void> = new Map();
 
-	constructor(options: IConnectionOptions, private readonly defaultTunnelHost: string, tunnelRemoteHost: string, tunnelRemotePort: number, private readonly suggestedLocalPort?: number) {
+	constructor(
+		options: IConnectionOptions,
+		private readonly defaultTunnelHost: string,
+		tunnelRemoteHost: string,
+		tunnelRemotePort: number,
+		private readonly suggestedLocalPort?: number,
+	) {
 		super();
 		this._options = options;
 		this._server = net.createServer();
 		this._barrier = new Barrier();
 
 		this._listeningListener = () => this._barrier.open();
-		this._server.on('listening', this._listeningListener);
+		this._server.on("listening", this._listeningListener);
 
 		this._connectionListener = (socket) => this._onConnection(socket);
-		this._server.on('connection', this._connectionListener);
+		this._server.on("connection", this._connectionListener);
 
 		// If there is no error listener and there is an error it will crash the whole window
-		this._errorListener = () => { };
-		this._server.on('error', this._errorListener);
+		this._errorListener = () => {};
+		this._server.on("error", this._errorListener);
 
 		this.tunnelRemotePort = tunnelRemotePort;
 		this.tunnelRemoteHost = tunnelRemoteHost;
@@ -74,19 +112,21 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 
 	public override async dispose(): Promise<void> {
 		super.dispose();
-		this._server.removeListener('listening', this._listeningListener);
-		this._server.removeListener('connection', this._connectionListener);
-		this._server.removeListener('error', this._errorListener);
+		this._server.removeListener("listening", this._listeningListener);
+		this._server.removeListener("connection", this._connectionListener);
+		this._server.removeListener("error", this._errorListener);
 		this._server.close();
 		const disposers = Array.from(this._socketsDispose.values());
-		disposers.forEach(disposer => {
+		disposers.forEach((disposer) => {
 			disposer();
 		});
 	}
 
 	public async waitForReady(): Promise<this> {
 		const startPort = this.suggestedLocalPort ?? this.tunnelRemotePort;
-		const hostname = isAllInterfaces(this.defaultTunnelHost) ? '0.0.0.0' : '127.0.0.1';
+		const hostname = isAllInterfaces(this.defaultTunnelHost)
+			? "0.0.0.0"
+			: "127.0.0.1";
 		// try to get the same port number as the remote port number...
 		let localPort = await findFreePortFaster(startPort, 2, 1000, hostname);
 
@@ -105,7 +145,9 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		}
 
 		this.tunnelLocalPort = address.port;
-		this.localAddress = `${this.tunnelRemoteHost === '127.0.0.1' ? '127.0.0.1' : 'localhost'}:${address.port}`;
+		this.localAddress = `${
+			this.tunnelRemoteHost === "127.0.0.1" ? "127.0.0.1" : "localhost"
+		}:${address.port}`;
 		return this;
 	}
 
@@ -113,8 +155,16 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		// pause reading on the socket until we have a chance to forward its data
 		localSocket.pause();
 
-		const tunnelRemoteHost = (isLocalhost(this.tunnelRemoteHost) || isAllInterfaces(this.tunnelRemoteHost)) ? 'localhost' : this.tunnelRemoteHost;
-		const protocol = await connectRemoteAgentTunnel(this._options, tunnelRemoteHost, this.tunnelRemotePort);
+		const tunnelRemoteHost =
+			isLocalhost(this.tunnelRemoteHost) ||
+			isAllInterfaces(this.tunnelRemoteHost)
+				? "localhost"
+				: this.tunnelRemoteHost;
+		const protocol = await connectRemoteAgentTunnel(
+			this._options,
+			tunnelRemoteHost,
+			this.tunnelRemotePort,
+		);
 		const remoteSocket = protocol.getSocket();
 		const dataChunk = protocol.readEntireBuffer();
 		protocol.dispose();
@@ -123,14 +173,14 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 			localSocket.write(dataChunk.buffer);
 		}
 
-		localSocket.on('end', () => {
+		localSocket.on("end", () => {
 			if (localSocket.localAddress) {
 				this._socketsDispose.delete(localSocket.localAddress);
 			}
 			remoteSocket.end();
 		});
-		localSocket.on('close', () => remoteSocket.end());
-		localSocket.on('error', () => {
+		localSocket.on("close", () => remoteSocket.end());
+		localSocket.on("error", () => {
 			if (localSocket.localAddress) {
 				this._socketsDispose.delete(localSocket.localAddress);
 			}
@@ -156,19 +206,25 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 		}
 	}
 
-	private _mirrorGenericSocket(localSocket: net.Socket, remoteSocket: ISocket) {
+	private _mirrorGenericSocket(
+		localSocket: net.Socket,
+		remoteSocket: ISocket,
+	) {
 		remoteSocket.onClose(() => localSocket.destroy());
 		remoteSocket.onEnd(() => localSocket.end());
-		remoteSocket.onData(d => localSocket.write(d.buffer));
-		localSocket.on('data', d => remoteSocket.write(VSBuffer.wrap(d)));
+		remoteSocket.onData((d) => localSocket.write(d.buffer));
+		localSocket.on("data", (d) => remoteSocket.write(VSBuffer.wrap(d)));
 		localSocket.resume();
 	}
 
-	private _mirrorNodeSocket(localSocket: net.Socket, remoteNodeSocket: NodeSocket) {
+	private _mirrorNodeSocket(
+		localSocket: net.Socket,
+		remoteNodeSocket: NodeSocket,
+	) {
 		const remoteSocket = remoteNodeSocket.socket;
-		remoteSocket.on('end', () => localSocket.end());
-		remoteSocket.on('close', () => localSocket.end());
-		remoteSocket.on('error', () => {
+		remoteSocket.on("end", () => localSocket.end());
+		remoteSocket.on("close", () => localSocket.end());
+		remoteSocket.on("error", () => {
 			localSocket.destroy();
 		});
 
@@ -192,7 +248,16 @@ export class BaseTunnelService extends AbstractTunnelService {
 		return isPortPrivileged(port, this.defaultTunnelHost, OS, os.release());
 	}
 
-	protected retainOrCreateTunnel(addressOrTunnelProvider: IAddressProvider | ITunnelProvider, remoteHost: string, remotePort: number, localHost: string, localPort: number | undefined, elevateIfNeeded: boolean, privacy?: string, protocol?: string): Promise<RemoteTunnel | string | undefined> | undefined {
+	protected retainOrCreateTunnel(
+		addressOrTunnelProvider: IAddressProvider | ITunnelProvider,
+		remoteHost: string,
+		remotePort: number,
+		localHost: string,
+		localPort: number | undefined,
+		elevateIfNeeded: boolean,
+		privacy?: string,
+		protocol?: string,
+	): Promise<RemoteTunnel | string | undefined> | undefined {
 		const existing = this.getTunnelFromMap(remoteHost, remotePort);
 		if (existing) {
 			++existing.refcount;
@@ -200,9 +265,19 @@ export class BaseTunnelService extends AbstractTunnelService {
 		}
 
 		if (isTunnelProvider(addressOrTunnelProvider)) {
-			return this.createWithProvider(addressOrTunnelProvider, remoteHost, remotePort, localPort, elevateIfNeeded, privacy, protocol);
+			return this.createWithProvider(
+				addressOrTunnelProvider,
+				remoteHost,
+				remotePort,
+				localPort,
+				elevateIfNeeded,
+				privacy,
+				protocol,
+			);
 		} else {
-			this.logService.trace(`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`);
+			this.logService.trace(
+				`ForwardedPorts: (TunnelService) Creating tunnel without provider ${remoteHost}:${remotePort} on local port ${localPort}.`,
+			);
 			const options: IConnectionOptions = {
 				commit: this.productService.commit,
 				quality: this.productService.quality,
@@ -210,11 +285,19 @@ export class BaseTunnelService extends AbstractTunnelService {
 				remoteSocketFactoryService: this.remoteSocketFactoryService,
 				signService: this.signService,
 				logService: this.logService,
-				ipcLogger: null
+				ipcLogger: null,
 			};
 
-			const tunnel = createRemoteTunnel(options, localHost, remoteHost, remotePort, localPort);
-			this.logService.trace('ForwardedPorts: (TunnelService) Tunnel created without provider.');
+			const tunnel = createRemoteTunnel(
+				options,
+				localHost,
+				remoteHost,
+				remotePort,
+				localPort,
+			);
+			this.logService.trace(
+				"ForwardedPorts: (TunnelService) Tunnel created without provider.",
+			);
 			this.addTunnelToMap(remoteHost, remotePort, tunnel);
 			return tunnel;
 		}
@@ -227,13 +310,22 @@ export class TunnelService extends BaseTunnelService {
 		@ILogService logService: ILogService,
 		@ISignService signService: ISignService,
 		@IProductService productService: IProductService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
-		super(remoteSocketFactoryService, logService, signService, productService, configurationService);
+		super(
+			remoteSocketFactoryService,
+			logService,
+			signService,
+			productService,
+			configurationService,
+		);
 	}
 }
 
-export class SharedTunnelsService extends Disposable implements ISharedTunnelsService {
+export class SharedTunnelsService
+	extends Disposable
+	implements ISharedTunnelsService
+{
 	declare readonly _serviceBrand: undefined;
 	private readonly _tunnelServices: Map<string, ITunnelService> = new Map();
 
@@ -247,10 +339,28 @@ export class SharedTunnelsService extends Disposable implements ISharedTunnelsSe
 		super();
 	}
 
-	async openTunnel(authority: string, addressProvider: IAddressProvider | undefined, remoteHost: string | undefined, remotePort: number, localHost: string, localPort?: number, elevateIfNeeded?: boolean, privacy?: string, protocol?: string): Promise<RemoteTunnel | string | undefined> {
-		this.logService.trace(`ForwardedPorts: (SharedTunnelService) openTunnel request for ${remoteHost}:${remotePort} on local port ${localPort}.`);
+	async openTunnel(
+		authority: string,
+		addressProvider: IAddressProvider | undefined,
+		remoteHost: string | undefined,
+		remotePort: number,
+		localHost: string,
+		localPort?: number,
+		elevateIfNeeded?: boolean,
+		privacy?: string,
+		protocol?: string,
+	): Promise<RemoteTunnel | string | undefined> {
+		this.logService.trace(
+			`ForwardedPorts: (SharedTunnelService) openTunnel request for ${remoteHost}:${remotePort} on local port ${localPort}.`,
+		);
 		if (!this._tunnelServices.has(authority)) {
-			const tunnelService = new TunnelService(this.remoteSocketFactoryService, this.logService, this.signService, this.productService, this.configurationService);
+			const tunnelService = new TunnelService(
+				this.remoteSocketFactoryService,
+				this.logService,
+				this.signService,
+				this.productService,
+				this.configurationService,
+			);
 			this._register(tunnelService);
 			this._tunnelServices.set(authority, tunnelService);
 			tunnelService.onTunnelClosed(async () => {
@@ -260,6 +370,17 @@ export class SharedTunnelsService extends Disposable implements ISharedTunnelsSe
 				}
 			});
 		}
-		return this._tunnelServices.get(authority)!.openTunnel(addressProvider, remoteHost, remotePort, localHost, localPort, elevateIfNeeded, privacy, protocol);
+		return this._tunnelServices
+			.get(authority)!
+			.openTunnel(
+				addressProvider,
+				remoteHost,
+				remotePort,
+				localHost,
+				localPort,
+				elevateIfNeeded,
+				privacy,
+				protocol,
+			);
 	}
 }

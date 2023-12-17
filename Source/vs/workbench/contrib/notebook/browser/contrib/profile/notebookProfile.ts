@@ -3,60 +3,68 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { ServicesAccessor } from 'vs/editor/browser/editorExtensions';
-import { localize } from 'vs/nls';
-import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { NotebookSetting } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { IWorkbenchAssignmentService } from 'vs/workbench/services/assignment/common/assignmentService';
-import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } from 'vs/workbench/common/contributions';
-import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { Disposable } from "vs/base/common/lifecycle";
+import { Registry } from "vs/platform/registry/common/platform";
+import { ServicesAccessor } from "vs/editor/browser/editorExtensions";
+import { localize } from "vs/nls";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { NotebookSetting } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { IWorkbenchAssignmentService } from "vs/workbench/services/assignment/common/assignmentService";
+import {
+	Extensions as WorkbenchExtensions,
+	IWorkbenchContributionsRegistry,
+} from "vs/workbench/common/contributions";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 export enum NotebookProfileType {
-	default = 'default',
-	jupyter = 'jupyter',
-	colab = 'colab'
+	default = "default",
+	jupyter = "jupyter",
+	colab = "colab",
 }
 
 const profiles = {
 	[NotebookProfileType.default]: {
-		[NotebookSetting.focusIndicator]: 'gutter',
-		[NotebookSetting.insertToolbarLocation]: 'both',
+		[NotebookSetting.focusIndicator]: "gutter",
+		[NotebookSetting.insertToolbarLocation]: "both",
 		[NotebookSetting.globalToolbar]: true,
-		[NotebookSetting.cellToolbarLocation]: { default: 'right' },
+		[NotebookSetting.cellToolbarLocation]: { default: "right" },
 		[NotebookSetting.compactView]: true,
-		[NotebookSetting.showCellStatusBar]: 'visible',
+		[NotebookSetting.showCellStatusBar]: "visible",
 		[NotebookSetting.consolidatedRunButton]: true,
-		[NotebookSetting.undoRedoPerCell]: false
+		[NotebookSetting.undoRedoPerCell]: false,
 	},
 	[NotebookProfileType.jupyter]: {
-		[NotebookSetting.focusIndicator]: 'gutter',
-		[NotebookSetting.insertToolbarLocation]: 'notebookToolbar',
+		[NotebookSetting.focusIndicator]: "gutter",
+		[NotebookSetting.insertToolbarLocation]: "notebookToolbar",
 		[NotebookSetting.globalToolbar]: true,
-		[NotebookSetting.cellToolbarLocation]: { default: 'left' },
+		[NotebookSetting.cellToolbarLocation]: { default: "left" },
 		[NotebookSetting.compactView]: true,
-		[NotebookSetting.showCellStatusBar]: 'visible',
+		[NotebookSetting.showCellStatusBar]: "visible",
 		[NotebookSetting.consolidatedRunButton]: false,
-		[NotebookSetting.undoRedoPerCell]: true
+		[NotebookSetting.undoRedoPerCell]: true,
 	},
 	[NotebookProfileType.colab]: {
-		[NotebookSetting.focusIndicator]: 'border',
-		[NotebookSetting.insertToolbarLocation]: 'betweenCells',
+		[NotebookSetting.focusIndicator]: "border",
+		[NotebookSetting.insertToolbarLocation]: "betweenCells",
 		[NotebookSetting.globalToolbar]: false,
-		[NotebookSetting.cellToolbarLocation]: { default: 'right' },
+		[NotebookSetting.cellToolbarLocation]: { default: "right" },
 		[NotebookSetting.compactView]: false,
-		[NotebookSetting.showCellStatusBar]: 'hidden',
+		[NotebookSetting.showCellStatusBar]: "hidden",
 		[NotebookSetting.consolidatedRunButton]: true,
-		[NotebookSetting.undoRedoPerCell]: false
-	}
+		[NotebookSetting.undoRedoPerCell]: false,
+	},
 };
 
-async function applyProfile(configService: IConfigurationService, profile: Record<string, any>): Promise<void> {
+async function applyProfile(
+	configService: IConfigurationService,
+	profile: Record<string, any>,
+): Promise<void> {
 	const promises = [];
 	for (const settingKey in profile) {
-		promises.push(configService.updateValue(settingKey, profile[settingKey]));
+		promises.push(
+			configService.updateValue(settingKey, profile[settingKey]),
+		);
 	}
 
 	await Promise.all(promises);
@@ -66,29 +74,33 @@ export interface ISetProfileArgs {
 	profile: NotebookProfileType;
 }
 
-registerAction2(class extends Action2 {
-	constructor() {
-		super({
-			id: 'notebook.setProfile',
-			title: localize('setProfileTitle', "Set Profile")
-		});
-	}
-
-	async run(accessor: ServicesAccessor, args: unknown): Promise<void> {
-		if (!isSetProfileArgs(args)) {
-			return;
+registerAction2(
+	class extends Action2 {
+		constructor() {
+			super({
+				id: "notebook.setProfile",
+				title: localize("setProfileTitle", "Set Profile"),
+			});
 		}
 
-		const configService = accessor.get(IConfigurationService);
-		return applyProfile(configService, profiles[args.profile]);
-	}
-});
+		async run(accessor: ServicesAccessor, args: unknown): Promise<void> {
+			if (!isSetProfileArgs(args)) {
+				return;
+			}
+
+			const configService = accessor.get(IConfigurationService);
+			return applyProfile(configService, profiles[args.profile]);
+		}
+	},
+);
 
 function isSetProfileArgs(args: unknown): args is ISetProfileArgs {
 	const setProfileArgs = args as ISetProfileArgs;
-	return setProfileArgs.profile === NotebookProfileType.colab ||
+	return (
+		setProfileArgs.profile === NotebookProfileType.colab ||
 		setProfileArgs.profile === NotebookProfileType.default ||
-		setProfileArgs.profile === NotebookProfileType.jupyter;
+		setProfileArgs.profile === NotebookProfileType.jupyter
+	);
 }
 
 export class NotebookProfileContribution extends Disposable {
@@ -124,6 +136,9 @@ export class NotebookProfileContribution extends Disposable {
 	}
 }
 
-const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
-workbenchContributionsRegistry.registerWorkbenchContribution(NotebookProfileContribution, LifecyclePhase.Ready);
-
+const workbenchContributionsRegistry =
+	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
+workbenchContributionsRegistry.registerWorkbenchContribution(
+	NotebookProfileContribution,
+	LifecyclePhase.Ready,
+);

@@ -3,32 +3,54 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { basename } from 'vs/base/common/resources';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { EditorContributionInstantiation, registerEditorContribution } from 'vs/editor/browser/editorExtensions';
-import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
-import { EditorOption } from 'vs/editor/common/config/editorOptions';
-import { IEditorContribution } from 'vs/editor/common/editorCommon';
-import { ITextModel } from 'vs/editor/common/model';
-import * as nls from 'vs/nls';
-import { IConfirmationResult, IDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { Disposable } from "vs/base/common/lifecycle";
+import { basename } from "vs/base/common/resources";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from "vs/editor/browser/editorExtensions";
+import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
+import { IEditorContribution } from "vs/editor/common/editorCommon";
+import { ITextModel } from "vs/editor/common/model";
+import * as nls from "vs/nls";
+import {
+	IConfirmationResult,
+	IDialogService,
+} from "vs/platform/dialogs/common/dialogs";
 
-const ignoreUnusualLineTerminators = 'ignoreUnusualLineTerminators';
+const ignoreUnusualLineTerminators = "ignoreUnusualLineTerminators";
 
-function writeIgnoreState(codeEditorService: ICodeEditorService, model: ITextModel, state: boolean): void {
-	codeEditorService.setModelProperty(model.uri, ignoreUnusualLineTerminators, state);
+function writeIgnoreState(
+	codeEditorService: ICodeEditorService,
+	model: ITextModel,
+	state: boolean,
+): void {
+	codeEditorService.setModelProperty(
+		model.uri,
+		ignoreUnusualLineTerminators,
+		state,
+	);
 }
 
-function readIgnoreState(codeEditorService: ICodeEditorService, model: ITextModel): boolean | undefined {
-	return codeEditorService.getModelProperty(model.uri, ignoreUnusualLineTerminators);
+function readIgnoreState(
+	codeEditorService: ICodeEditorService,
+	model: ITextModel,
+): boolean | undefined {
+	return codeEditorService.getModelProperty(
+		model.uri,
+		ignoreUnusualLineTerminators,
+	);
 }
 
-export class UnusualLineTerminatorsDetector extends Disposable implements IEditorContribution {
+export class UnusualLineTerminatorsDetector
+	extends Disposable
+	implements IEditorContribution
+{
+	public static readonly ID = "editor.contrib.unusualLineTerminatorsDetector";
 
-	public static readonly ID = 'editor.contrib.unusualLineTerminatorsDetector';
-
-	private _config: 'auto' | 'off' | 'prompt';
+	private _config: "auto" | "off" | "prompt";
 	private _isPresentingDialog: boolean = false;
 
 	constructor(
@@ -62,7 +84,7 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
 	}
 
 	private async _checkForUnusualLineTerminators(): Promise<void> {
-		if (this._config === 'off') {
+		if (this._config === "off") {
 			return;
 		}
 		if (!this._editor.hasModel()) {
@@ -82,7 +104,7 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
 			return;
 		}
 
-		if (this._config === 'auto') {
+		if (this._config === "auto") {
 			// just do it!
 			model.removeUnusualLineTerminators(this._editor.getSelections());
 			return;
@@ -98,11 +120,30 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
 		try {
 			this._isPresentingDialog = true;
 			result = await this._dialogService.confirm({
-				title: nls.localize('unusualLineTerminators.title', "Unusual Line Terminators"),
-				message: nls.localize('unusualLineTerminators.message', "Detected unusual line terminators"),
-				detail: nls.localize('unusualLineTerminators.detail', "The file '{0}' contains one or more unusual line terminator characters, like Line Separator (LS) or Paragraph Separator (PS).\n\nIt is recommended to remove them from the file. This can be configured via `editor.unusualLineTerminators`.", basename(model.uri)),
-				primaryButton: nls.localize({ key: 'unusualLineTerminators.fix', comment: ['&& denotes a mnemonic'] }, "&&Remove Unusual Line Terminators"),
-				cancelButton: nls.localize('unusualLineTerminators.ignore', "Ignore")
+				title: nls.localize(
+					"unusualLineTerminators.title",
+					"Unusual Line Terminators",
+				),
+				message: nls.localize(
+					"unusualLineTerminators.message",
+					"Detected unusual line terminators",
+				),
+				detail: nls.localize(
+					"unusualLineTerminators.detail",
+					"The file '{0}' contains one or more unusual line terminator characters, like Line Separator (LS) or Paragraph Separator (PS).\n\nIt is recommended to remove them from the file. This can be configured via `editor.unusualLineTerminators`.",
+					basename(model.uri),
+				),
+				primaryButton: nls.localize(
+					{
+						key: "unusualLineTerminators.fix",
+						comment: ["&& denotes a mnemonic"],
+					},
+					"&&Remove Unusual Line Terminators",
+				),
+				cancelButton: nls.localize(
+					"unusualLineTerminators.ignore",
+					"Ignore",
+				),
 			});
 		} finally {
 			this._isPresentingDialog = false;
@@ -118,4 +159,8 @@ export class UnusualLineTerminatorsDetector extends Disposable implements IEdito
 	}
 }
 
-registerEditorContribution(UnusualLineTerminatorsDetector.ID, UnusualLineTerminatorsDetector, EditorContributionInstantiation.AfterFirstRender);
+registerEditorContribution(
+	UnusualLineTerminatorsDetector.ID,
+	UnusualLineTerminatorsDetector,
+	EditorContributionInstantiation.AfterFirstRender,
+);

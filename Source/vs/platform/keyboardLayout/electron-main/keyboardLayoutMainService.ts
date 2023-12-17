@@ -3,23 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as nativeKeymap from 'native-keymap';
-import * as platform from 'vs/base/common/platform';
-import { Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IKeyboardLayoutData, INativeKeyboardLayoutService } from 'vs/platform/keyboardLayout/common/keyboardLayoutService';
-import { ILifecycleMainService, LifecycleMainPhase } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
+import type * as nativeKeymap from "native-keymap";
+import * as platform from "vs/base/common/platform";
+import { Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IKeyboardLayoutData,
+	INativeKeyboardLayoutService,
+} from "vs/platform/keyboardLayout/common/keyboardLayoutService";
+import {
+	ILifecycleMainService,
+	LifecycleMainPhase,
+} from "vs/platform/lifecycle/electron-main/lifecycleMainService";
 
-export const IKeyboardLayoutMainService = createDecorator<IKeyboardLayoutMainService>('keyboardLayoutMainService');
+export const IKeyboardLayoutMainService =
+	createDecorator<IKeyboardLayoutMainService>("keyboardLayoutMainService");
 
-export interface IKeyboardLayoutMainService extends INativeKeyboardLayoutService { }
+export interface IKeyboardLayoutMainService
+	extends INativeKeyboardLayoutService {}
 
-export class KeyboardLayoutMainService extends Disposable implements INativeKeyboardLayoutService {
-
+export class KeyboardLayoutMainService
+	extends Disposable
+	implements INativeKeyboardLayoutService
+{
 	declare readonly _serviceBrand: undefined;
 
-	private readonly _onDidChangeKeyboardLayout = this._register(new Emitter<IKeyboardLayoutData>());
+	private readonly _onDidChangeKeyboardLayout = this._register(
+		new Emitter<IKeyboardLayoutData>(),
+	);
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
 	private _initPromise: Promise<void> | null;
@@ -46,7 +58,7 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
 	}
 
 	private async _doInitialize(): Promise<void> {
-		const nativeKeymapMod = await import('native-keymap');
+		const nativeKeymapMod = await import("native-keymap");
 
 		this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
 		if (!platform.isCI) {
@@ -54,7 +66,8 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
 			// Do not register the keyboard layout change listener in CI because it doesn't work
 			// on the build machines and it just adds noise to the build logs.
 			nativeKeymapMod.onDidChangeKeyboardLayout(() => {
-				this._keyboardLayoutData = readKeyboardLayoutData(nativeKeymapMod);
+				this._keyboardLayoutData =
+					readKeyboardLayoutData(nativeKeymapMod);
 				this._onDidChangeKeyboardLayout.fire(this._keyboardLayoutData);
 			});
 		}
@@ -66,7 +79,9 @@ export class KeyboardLayoutMainService extends Disposable implements INativeKeyb
 	}
 }
 
-function readKeyboardLayoutData(nativeKeymapMod: typeof nativeKeymap): IKeyboardLayoutData {
+function readKeyboardLayoutData(
+	nativeKeymapMod: typeof nativeKeymap,
+): IKeyboardLayoutData {
 	const keyboardMapping = nativeKeymapMod.getKeyMap();
 	const keyboardLayoutInfo = nativeKeymapMod.getCurrentKeyboardLayout();
 	return { keyboardMapping, keyboardLayoutInfo };

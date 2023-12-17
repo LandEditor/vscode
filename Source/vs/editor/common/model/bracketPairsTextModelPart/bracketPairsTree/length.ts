@@ -3,32 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { splitLines } from 'vs/base/common/strings';
-import { Position } from 'vs/editor/common/core/position';
-import { Range } from 'vs/editor/common/core/range';
+import { splitLines } from "vs/base/common/strings";
+import { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
 
 /**
  * Represents a non-negative length in terms of line and column count.
  * Prefer using {@link Length} for performance reasons.
-*/
+ */
 export class LengthObj {
 	public static zero = new LengthObj(0, 0);
 
-	public static lengthDiffNonNegative(start: LengthObj, end: LengthObj): LengthObj {
+	public static lengthDiffNonNegative(
+		start: LengthObj,
+		end: LengthObj,
+	): LengthObj {
 		if (end.isLessThan(start)) {
 			return LengthObj.zero;
 		}
 		if (start.lineCount === end.lineCount) {
 			return new LengthObj(0, end.columnCount - start.columnCount);
 		} else {
-			return new LengthObj(end.lineCount - start.lineCount, end.columnCount);
+			return new LengthObj(
+				end.lineCount - start.lineCount,
+				end.columnCount,
+			);
 		}
 	}
 
 	constructor(
 		public readonly lineCount: number,
-		public readonly columnCount: number
-	) { }
+		public readonly columnCount: number,
+	) {}
 
 	public isZero() {
 		return this.lineCount === 0 && this.columnCount === 0;
@@ -53,7 +59,10 @@ export class LengthObj {
 	}
 
 	public equals(other: LengthObj): boolean {
-		return this.lineCount === other.lineCount && this.columnCount === other.columnCount;
+		return (
+			this.lineCount === other.lineCount &&
+			this.columnCount === other.columnCount
+		);
 	}
 
 	public compare(other: LengthObj): number {
@@ -65,9 +74,15 @@ export class LengthObj {
 
 	public add(other: LengthObj): LengthObj {
 		if (other.lineCount === 0) {
-			return new LengthObj(this.lineCount, this.columnCount + other.columnCount);
+			return new LengthObj(
+				this.lineCount,
+				this.columnCount + other.columnCount,
+			);
 		} else {
-			return new LengthObj(this.lineCount + other.lineCount, other.columnCount);
+			return new LengthObj(
+				this.lineCount + other.lineCount,
+				other.columnCount,
+			);
 		}
 	}
 
@@ -78,9 +93,14 @@ export class LengthObj {
 
 /**
  * The end must be greater than or equal to the start.
-*/
-export function lengthDiff(startLineCount: number, startColumnCount: number, endLineCount: number, endColumnCount: number): Length {
-	return (startLineCount !== endLineCount)
+ */
+export function lengthDiff(
+	startLineCount: number,
+	startColumnCount: number,
+	endLineCount: number,
+	endColumnCount: number,
+): Length {
+	return startLineCount !== endLineCount
 		? toLength(endLineCount - startLineCount, endColumnCount)
 		: toLength(0, endColumnCount - startColumnCount);
 }
@@ -88,13 +108,13 @@ export function lengthDiff(startLineCount: number, startColumnCount: number, end
 /**
  * Represents a non-negative length in terms of line and column count.
  * Does not allocate.
-*/
-export type Length = { _brand: 'Length' };
+ */
+export type Length = { _brand: "Length" };
 
 export const lengthZero = 0 as any as Length;
 
 export function lengthIsZero(length: Length): boolean {
-	return length as any as number === 0;
+	return (length as any as number) === 0;
 }
 
 /*
@@ -125,27 +145,31 @@ export function lengthToObj(length: Length): LengthObj {
 }
 
 export function lengthGetLineCount(length: Length): number {
-	return Math.floor(length as any as number / factor);
+	return Math.floor((length as any as number) / factor);
 }
 
 /**
  * Returns the amount of columns of the given length, assuming that it does not span any line.
-*/
+ */
 export function lengthGetColumnCountIfZeroLineCount(length: Length): number {
 	return length as any as number;
 }
-
 
 // [10 lines, 5 cols] + [ 0 lines, 3 cols] = [10 lines, 8 cols]
 // [10 lines, 5 cols] + [20 lines, 3 cols] = [30 lines, 3 cols]
 export function lengthAdd(length1: Length, length2: Length): Length;
 export function lengthAdd(l1: any, l2: any): Length {
 	let r = l1 + l2;
-	if (l2 >= factor) { r = r - (l1 % factor); }
+	if (l2 >= factor) {
+		r = r - (l1 % factor);
+	}
 	return r;
 }
 
-export function sumLengths<T>(items: readonly T[], lengthFn: (item: T) => Length): Length {
+export function sumLengths<T>(
+	items: readonly T[],
+	lengthFn: (item: T) => Length,
+): Length {
 	return items.reduce((a, b) => lengthAdd(a, lengthFn(b)), lengthZero);
 }
 
@@ -156,7 +180,10 @@ export function lengthEquals(length1: Length, length2: Length): boolean {
 /**
  * Returns a non negative length `result` such that `lengthAdd(length1, result) = length2`, or zero if such length does not exist.
  */
-export function lengthDiffNonNegative(length1: Length, length2: Length): Length {
+export function lengthDiffNonNegative(
+	length1: Length,
+	length2: Length,
+): Length {
 	const l1 = length1 as any as number;
 	const l2 = length2 as any as number;
 
@@ -189,7 +216,10 @@ export function lengthLessThanEqual(length1: Length, length2: Length): boolean {
 	return (length1 as any as number) <= (length2 as any as number);
 }
 
-export function lengthGreaterThanEqual(length1: Length, length2: Length): boolean {
+export function lengthGreaterThanEqual(
+	length1: Length,
+	length2: Length,
+): boolean {
 	return (length1 as any as number) >= (length2 as any as number);
 }
 
@@ -213,14 +243,22 @@ export function lengthsToRange(lengthStart: Length, lengthEnd: Length): Range {
 	const lineCount2 = Math.floor(l2 / factor);
 	const colCount2 = l2 - lineCount2 * factor;
 
-	return new Range(lineCount + 1, colCount + 1, lineCount2 + 1, colCount2 + 1);
+	return new Range(
+		lineCount + 1,
+		colCount + 1,
+		lineCount2 + 1,
+		colCount2 + 1,
+	);
 }
 
 export function lengthOfRange(range: Range): LengthObj {
 	if (range.startLineNumber === range.endLineNumber) {
 		return new LengthObj(0, range.endColumn - range.startColumn);
 	} else {
-		return new LengthObj(range.endLineNumber - range.startLineNumber, range.endColumn - 1);
+		return new LengthObj(
+			range.endLineNumber - range.startLineNumber,
+			range.endColumn - 1,
+		);
 	}
 }
 
@@ -242,7 +280,7 @@ export function lengthOfStringObj(str: string): LengthObj {
 
 /**
  * Computes a numeric hash of the given length.
-*/
+ */
 export function lengthHash(length: Length): number {
 	return length as any;
 }

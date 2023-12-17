@@ -3,45 +3,72 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Barrier } from 'vs/base/common/async';
-import { Emitter } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { mark } from 'vs/base/common/performance';
-import { URI } from 'vs/base/common/uri';
-import { IPtyHostProcessReplayEvent, ISerializedCommandDetectionCapability } from 'vs/platform/terminal/common/capabilities/capabilities';
-import { IProcessDataEvent, ITerminalChildProcess, ITerminalLaunchError, IProcessProperty, IProcessPropertyMap, ProcessPropertyType, IProcessReadyEvent, ITerminalLogService } from 'vs/platform/terminal/common/terminal';
-import { RemoteTerminalChannelClient } from 'vs/workbench/contrib/terminal/common/remote/remoteTerminalChannel';
-import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
+import { Barrier } from "vs/base/common/async";
+import { Emitter } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { mark } from "vs/base/common/performance";
+import { URI } from "vs/base/common/uri";
+import {
+	IPtyHostProcessReplayEvent,
+	ISerializedCommandDetectionCapability,
+} from "vs/platform/terminal/common/capabilities/capabilities";
+import {
+	IProcessDataEvent,
+	ITerminalChildProcess,
+	ITerminalLaunchError,
+	IProcessProperty,
+	IProcessPropertyMap,
+	ProcessPropertyType,
+	IProcessReadyEvent,
+	ITerminalLogService,
+} from "vs/platform/terminal/common/terminal";
+import { RemoteTerminalChannelClient } from "vs/workbench/contrib/terminal/common/remote/remoteTerminalChannel";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
 
 export class RemotePty extends Disposable implements ITerminalChildProcess {
 	private readonly _startBarrier: Barrier;
 	private readonly _properties: IProcessPropertyMap = {
-		cwd: '',
-		initialCwd: '',
+		cwd: "",
+		initialCwd: "",
 		fixedDimensions: { cols: undefined, rows: undefined },
-		title: '',
+		title: "",
 		shellType: undefined,
 		hasChildProcesses: true,
 		resolvedShellLaunchConfig: {},
 		overrideDimensions: undefined,
 		failedShellIntegrationActivation: false,
-		usedShellIntegrationInjection: undefined
+		usedShellIntegrationInjection: undefined,
 	};
-	private readonly _lastDimensions: { cols: number; rows: number } = { cols: -1, rows: -1 };
+	private readonly _lastDimensions: { cols: number; rows: number } = {
+		cols: -1,
+		rows: -1,
+	};
 
 	private _inReplay = false;
 
-	private readonly _onProcessData = this._register(new Emitter<string | IProcessDataEvent>());
+	private readonly _onProcessData = this._register(
+		new Emitter<string | IProcessDataEvent>(),
+	);
 	readonly onProcessData = this._onProcessData.event;
-	private readonly _onProcessReplayComplete = this._register(new Emitter<void>());
+	private readonly _onProcessReplayComplete = this._register(
+		new Emitter<void>(),
+	);
 	readonly onProcessReplayComplete = this._onProcessReplayComplete.event;
-	private readonly _onProcessReady = this._register(new Emitter<IProcessReadyEvent>());
+	private readonly _onProcessReady = this._register(
+		new Emitter<IProcessReadyEvent>(),
+	);
 	readonly onProcessReady = this._onProcessReady.event;
-	private readonly _onDidChangeProperty = this._register(new Emitter<IProcessProperty<any>>());
+	private readonly _onDidChangeProperty = this._register(
+		new Emitter<IProcessProperty<any>>(),
+	);
 	readonly onDidChangeProperty = this._onDidChangeProperty.event;
-	private readonly _onProcessExit = this._register(new Emitter<number | undefined>());
+	private readonly _onProcessExit = this._register(
+		new Emitter<number | undefined>(),
+	);
 	readonly onProcessExit = this._onProcessExit.event;
-	private readonly _onRestoreCommands = this._register(new Emitter<ISerializedCommandDetectionCapability>());
+	private readonly _onRestoreCommands = this._register(
+		new Emitter<ISerializedCommandDetectionCapability>(),
+	);
 	readonly onRestoreCommands = this._onRestoreCommands.event;
 
 	constructor(
@@ -55,19 +82,23 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		this._startBarrier = new Barrier();
 	}
 
-	async start(): Promise<ITerminalLaunchError | { injectedArgs: string[] } | undefined> {
+	async start(): Promise<
+		ITerminalLaunchError | { injectedArgs: string[] } | undefined
+	> {
 		// Fetch the environment to check shell permissions
 		const env = await this._remoteAgentService.getEnvironment();
 		if (!env) {
 			// Extension host processes are only allowed in remote extension hosts currently
-			throw new Error('Could not fetch remote environment');
+			throw new Error("Could not fetch remote environment");
 		}
 
-		this._logService.trace('Spawning remote agent process', { terminalId: this.id });
+		this._logService.trace("Spawning remote agent process", {
+			terminalId: this.id,
+		});
 
 		const startResult = await this._remoteTerminalChannel.start(this.id);
 
-		if (startResult && 'message' in startResult) {
+		if (startResult && "message" in startResult) {
 			// An error occurred
 			return startResult;
 		}
@@ -78,11 +109,14 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 
 	async detach(forcePersist?: boolean): Promise<void> {
 		await this._startBarrier.wait();
-		return this._remoteTerminalChannel.detachFromProcess(this.id, forcePersist);
+		return this._remoteTerminalChannel.detachFromProcess(
+			this.id,
+			forcePersist,
+		);
 	}
 
 	shutdown(immediate: boolean): void {
-		this._startBarrier.wait().then(_ => {
+		this._startBarrier.wait().then((_) => {
 			this._remoteTerminalChannel.shutdown(this.id, immediate);
 		});
 	}
@@ -92,16 +126,20 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 			return;
 		}
 
-		this._startBarrier.wait().then(_ => {
+		this._startBarrier.wait().then((_) => {
 			this._remoteTerminalChannel.input(this.id, data);
 		});
 	}
 
 	resize(cols: number, rows: number): void {
-		if (this._inReplay || this._lastDimensions.cols === cols && this._lastDimensions.rows === rows) {
+		if (
+			this._inReplay ||
+			(this._lastDimensions.cols === cols &&
+				this._lastDimensions.rows === rows)
+		) {
 			return;
 		}
-		this._startBarrier.wait().then(_ => {
+		this._startBarrier.wait().then((_) => {
 			this._lastDimensions.cols = cols;
 			this._lastDimensions.rows = rows;
 			this._remoteTerminalChannel.resize(this.id, cols, rows);
@@ -112,9 +150,13 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		await this._remoteTerminalChannel.clearBuffer(this.id);
 	}
 
-	freePortKillProcess(port: string): Promise<{ port: string; processId: string }> {
+	freePortKillProcess(
+		port: string,
+	): Promise<{ port: string; processId: string }> {
 		if (!this._remoteTerminalChannel.freePortKillProcess) {
-			throw new Error('freePortKillProcess does not exist on the local pty service');
+			throw new Error(
+				"freePortKillProcess does not exist on the local pty service",
+			);
 		}
 		return this._remoteTerminalChannel.freePortKillProcess(port);
 	}
@@ -125,12 +167,15 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 			return;
 		}
 
-		this._startBarrier.wait().then(_ => {
-			this._remoteTerminalChannel.acknowledgeDataEvent(this.id, charCount);
+		this._startBarrier.wait().then((_) => {
+			this._remoteTerminalChannel.acknowledgeDataEvent(
+				this.id,
+				charCount,
+			);
 		});
 	}
 
-	async setUnicodeVersion(version: '6' | '11'): Promise<void> {
+	async setUnicodeVersion(version: "6" | "11"): Promise<void> {
 		return this._remoteTerminalChannel.setUnicodeVersion(this.id, version);
 	}
 
@@ -142,11 +187,16 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		return this._properties.cwd || this._properties.initialCwd;
 	}
 
-	async refreshProperty<T extends ProcessPropertyType>(type: T): Promise<IProcessPropertyMap[T]> {
+	async refreshProperty<T extends ProcessPropertyType>(
+		type: T,
+	): Promise<IProcessPropertyMap[T]> {
 		return this._remoteTerminalChannel.refreshProperty(this.id, type);
 	}
 
-	async updateProperty<T extends ProcessPropertyType>(type: T, value: IProcessPropertyMap[T]): Promise<void> {
+	async updateProperty<T extends ProcessPropertyType>(
+		type: T,
+		value: IProcessPropertyMap[T],
+	): Promise<void> {
 		return this._remoteTerminalChannel.updateProperty(this.id, type, value);
 	}
 
@@ -171,7 +221,7 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 				this._properties.initialCwd = value;
 				break;
 			case ProcessPropertyType.ResolvedShellLaunchConfig:
-				if (value.cwd && typeof value.cwd !== 'string') {
+				if (value.cwd && typeof value.cwd !== "string") {
 					value.cwd = URI.revive(value.cwd);
 				}
 		}
@@ -185,9 +235,19 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 			for (const innerEvent of e.events) {
 				if (innerEvent.cols !== 0 || innerEvent.rows !== 0) {
 					// never override with 0x0 as that is a marker for an unknown initial size
-					this._onDidChangeProperty.fire({ type: ProcessPropertyType.OverrideDimensions, value: { cols: innerEvent.cols, rows: innerEvent.rows, forceExactSize: true } });
+					this._onDidChangeProperty.fire({
+						type: ProcessPropertyType.OverrideDimensions,
+						value: {
+							cols: innerEvent.cols,
+							rows: innerEvent.rows,
+							forceExactSize: true,
+						},
+					});
 				}
-				const e: IProcessDataEvent = { data: innerEvent.data, trackCommit: true };
+				const e: IProcessDataEvent = {
+					data: innerEvent.data,
+					trackCommit: true,
+				};
 				this._onProcessData.fire(e);
 				await e.writePromise;
 			}
@@ -200,7 +260,10 @@ export class RemotePty extends Disposable implements ITerminalChildProcess {
 		}
 
 		// remove size override
-		this._onDidChangeProperty.fire({ type: ProcessPropertyType.OverrideDimensions, value: undefined });
+		this._onDidChangeProperty.fire({
+			type: ProcessPropertyType.OverrideDimensions,
+			value: undefined,
+		});
 
 		mark(`code/terminal/didHandleReplay/${this.id}`);
 		this._onProcessReplayComplete.fire();

@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ResolvedKeybinding, Keybinding } from 'vs/base/common/keybindings';
-import { IKeyboardEvent } from 'vs/platform/keybinding/common/keybinding';
+import { ResolvedKeybinding, Keybinding } from "vs/base/common/keybindings";
+import { IKeyboardEvent } from "vs/platform/keybinding/common/keybinding";
 
 export interface IKeyboardMapper {
 	dumpDebugInfo(): string;
@@ -13,7 +13,6 @@ export interface IKeyboardMapper {
 }
 
 export class CachedKeyboardMapper implements IKeyboardMapper {
-
 	private _actual: IKeyboardMapper;
 	private _cache: Map<string, ResolvedKeybinding[]>;
 
@@ -26,7 +25,9 @@ export class CachedKeyboardMapper implements IKeyboardMapper {
 		return this._actual.dumpDebugInfo();
 	}
 
-	public resolveKeyboardEvent(keyboardEvent: IKeyboardEvent): ResolvedKeybinding {
+	public resolveKeyboardEvent(
+		keyboardEvent: IKeyboardEvent,
+	): ResolvedKeybinding {
 		return this._actual.resolveKeyboardEvent(keyboardEvent);
 	}
 

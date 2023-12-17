@@ -3,15 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { ILoggerService } from 'vs/platform/log/common/log';
-import { RequestService } from 'vs/platform/request/browser/requestService';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IRequestService } from 'vs/platform/request/common/request';
-import { INativeHostService } from 'vs/platform/native/common/native';
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { ILoggerService } from "vs/platform/log/common/log";
+import { RequestService } from "vs/platform/request/browser/requestService";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IRequestService } from "vs/platform/request/common/request";
+import { INativeHostService } from "vs/platform/native/common/native";
 
 export class NativeRequestService extends RequestService {
-
 	constructor(
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILoggerService loggerService: ILoggerService,
@@ -29,4 +31,8 @@ export class NativeRequestService extends RequestService {
 	}
 }
 
-registerSingleton(IRequestService, NativeRequestService, InstantiationType.Delayed);
+registerSingleton(
+	IRequestService,
+	NativeRequestService,
+	InstantiationType.Delayed,
+);

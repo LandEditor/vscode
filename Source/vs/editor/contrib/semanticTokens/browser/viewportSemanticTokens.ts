@@ -3,31 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancelablePromise, createCancelablePromise, RunOnceScheduler } from 'vs/base/common/async';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { EditorContributionInstantiation, registerEditorContribution } from 'vs/editor/browser/editorExtensions';
-import { Range } from 'vs/editor/common/core/range';
-import { IEditorContribution } from 'vs/editor/common/editorCommon';
-import { ITextModel } from 'vs/editor/common/model';
-import { getDocumentRangeSemanticTokens, hasDocumentRangeSemanticTokensProvider } from 'vs/editor/contrib/semanticTokens/common/getSemanticTokens';
-import { isSemanticColoringEnabled, SEMANTIC_HIGHLIGHTING_SETTING_ID } from 'vs/editor/contrib/semanticTokens/common/semanticTokensConfig';
-import { toMultilineTokens2 } from 'vs/editor/common/services/semanticTokensProviderStyling';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { IFeatureDebounceInformation, ILanguageFeatureDebounceService } from 'vs/editor/common/services/languageFeatureDebounce';
-import { StopWatch } from 'vs/base/common/stopwatch';
-import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry';
-import { DocumentRangeSemanticTokensProvider } from 'vs/editor/common/languages';
-import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
-import { ISemanticTokensStylingService } from 'vs/editor/common/services/semanticTokensStyling';
+import {
+	CancelablePromise,
+	createCancelablePromise,
+	RunOnceScheduler,
+} from "vs/base/common/async";
+import { Disposable } from "vs/base/common/lifecycle";
+import { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from "vs/editor/browser/editorExtensions";
+import { Range } from "vs/editor/common/core/range";
+import { IEditorContribution } from "vs/editor/common/editorCommon";
+import { ITextModel } from "vs/editor/common/model";
+import {
+	getDocumentRangeSemanticTokens,
+	hasDocumentRangeSemanticTokensProvider,
+} from "vs/editor/contrib/semanticTokens/common/getSemanticTokens";
+import {
+	isSemanticColoringEnabled,
+	SEMANTIC_HIGHLIGHTING_SETTING_ID,
+} from "vs/editor/contrib/semanticTokens/common/semanticTokensConfig";
+import { toMultilineTokens2 } from "vs/editor/common/services/semanticTokensProviderStyling";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import {
+	IFeatureDebounceInformation,
+	ILanguageFeatureDebounceService,
+} from "vs/editor/common/services/languageFeatureDebounce";
+import { StopWatch } from "vs/base/common/stopwatch";
+import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
+import { DocumentRangeSemanticTokensProvider } from "vs/editor/common/languages";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { ISemanticTokensStylingService } from "vs/editor/common/services/semanticTokensStyling";
 
-export class ViewportSemanticTokensContribution extends Disposable implements IEditorContribution {
+export class ViewportSemanticTokensContribution
+	extends Disposable
+	implements IEditorContribution
+{
+	public static readonly ID = "editor.contrib.viewportSemanticTokens";
 
-	public static readonly ID = 'editor.contrib.viewportSemanticTokens';
-
-	public static get(editor: ICodeEditor): ViewportSemanticTokensContribution | null {
-		return editor.getContribution<ViewportSemanticTokensContribution>(ViewportSemanticTokensContribution.ID);
+	public static get(
+		editor: ICodeEditor,
+	): ViewportSemanticTokensContribution | null {
+		return editor.getContribution<ViewportSemanticTokensContribution>(
+			ViewportSemanticTokensContribution.ID,
+		);
 	}
 
 	private readonly _editor: ICodeEditor;
@@ -107,7 +129,13 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
 		if (model.tokenization.hasCompleteSemanticTokens()) {
 			return;
 		}
-		if (!isSemanticColoringEnabled(model, this._themeService, this._configurationService)) {
+		if (
+			!isSemanticColoringEnabled(
+				model,
+				this._themeService,
+				this._configurationService,
+			)
+		) {
 			if (model.tokenization.hasSomeSemanticTokens()) {
 				model.tokenization.setSemanticTokens(null, false);
 			}
@@ -119,26 +147,59 @@ export class ViewportSemanticTokensContribution extends Disposable implements IE
 			}
 			return;
 		}
-		const visibleRanges = this._editor.getVisibleRangesPlusViewportAboveBelow();
+		const visibleRanges =
+			this._editor.getVisibleRangesPlusViewportAboveBelow();
 
-		this._outstandingRequests = this._outstandingRequests.concat(visibleRanges.map(range => this._requestRange(model, range)));
+		this._outstandingRequests = this._outstandingRequests.concat(
+			visibleRanges.map((range) => this._requestRange(model, range)),
+		);
 	}
 
-	private _requestRange(model: ITextModel, range: Range): CancelablePromise<any> {
+	private _requestRange(
+		model: ITextModel,
+		range: Range,
+	): CancelablePromise<any> {
 		const requestVersionId = model.getVersionId();
-		const request = createCancelablePromise(token => Promise.resolve(getDocumentRangeSemanticTokens(this._provider, model, range, token)));
+		const request = createCancelablePromise((token) =>
+			Promise.resolve(
+				getDocumentRangeSemanticTokens(
+					this._provider,
+					model,
+					range,
+					token,
+				),
+			),
+		);
 		const sw = new StopWatch(false);
-		request.then((r) => {
-			this._debounceInformation.update(model, sw.elapsed());
-			if (!r || !r.tokens || model.isDisposed() || model.getVersionId() !== requestVersionId) {
-				return;
-			}
-			const { provider, tokens: result } = r;
-			const styling = this._semanticTokensStylingService.getStyling(provider);
-			model.tokenization.setPartialSemanticTokens(range, toMultilineTokens2(result, styling, model.getLanguageId()));
-		}).then(() => this._removeOutstandingRequest(request), () => this._removeOutstandingRequest(request));
+		request
+			.then((r) => {
+				this._debounceInformation.update(model, sw.elapsed());
+				if (
+					!r ||
+					!r.tokens ||
+					model.isDisposed() ||
+					model.getVersionId() !== requestVersionId
+				) {
+					return;
+				}
+				const { provider, tokens: result } = r;
+				const styling =
+					this._semanticTokensStylingService.getStyling(provider);
+				model.tokenization.setPartialSemanticTokens(
+					range,
+					toMultilineTokens2(result, styling, model.getLanguageId()),
+				);
+			})
+			.then(
+				() => this._removeOutstandingRequest(request),
+				() => this._removeOutstandingRequest(request),
+			);
 		return request;
 	}
 }
 
-registerEditorContribution(ViewportSemanticTokensContribution.ID, ViewportSemanticTokensContribution, EditorContributionInstantiation.AfterFirstRender);
+registerEditorContribution(
+	ViewportSemanticTokensContribution.ID,
+	ViewportSemanticTokensContribution,
+	EditorContributionInstantiation.AfterFirstRender,
+);
